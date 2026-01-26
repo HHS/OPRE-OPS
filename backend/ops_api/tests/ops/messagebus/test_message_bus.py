@@ -100,7 +100,7 @@ def test_message_bus_error_isolation(loaded_db, mocker):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_message_bus_cleanup_prevents_duplicates(loaded_db, mocker):
+def test_message_bus_resubscribing_same_callback_is_idempotent(loaded_db, mocker):
     """Test that cleanup properly disconnects signals to prevent duplicate execution."""
     mock_callback = mocker.MagicMock()
 

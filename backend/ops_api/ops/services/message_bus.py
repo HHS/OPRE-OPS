@@ -51,9 +51,27 @@ class MessageBus:
 
         self.published_events.clear()
 
+    @classmethod
+    def subscribe_globally(cls, event_type: OpsEventType, callback: MessageBusSubscriber):
+        """
+        Subscribe to an event type globally (process-level) with a callback function.
+
+        This method is used for one-time subscription setup during app initialization.
+        Subscriptions persist across all requests.
+
+        :param event_type: The event type to subscribe to.
+        :param callback: The callback function to call when the event is published.
+                        Must follow the MessageBusSubscriber protocol (accept event and session).
+        """
+        logger.debug(f"Globally subscribing to {event_type} with callback {callback}")
+        ops_signal = signal(event_type.name)
+        ops_signal.connect(callback)
+
     def subscribe(self, event_type: OpsEventType, callback: MessageBusSubscriber):
         """
         Subscribe to an event type with a callback function.
+
+        Note: This is a legacy instance method. For app initialization, use subscribe_globally() instead.
 
         :param event_type: The event type to subscribe to.
         :param callback: The callback function to call when the event is published.
@@ -78,12 +96,15 @@ class MessageBus:
 
     def cleanup(self) -> None:
         """
-        Clean up all subscriptions and published events.
+        Clean up request-specific state without affecting process-level signal subscriptions.
 
         Note: We do NOT disconnect Blinker signals because:
         1. Signals are process-level, not request-level
-        2. They're set up once in before_request and reused across requests
+        2. They're set up once at app initialization using MessageBus.subscribe_globally()
+           (see initialize_event_subscriptions in ops/__init__.py)
         3. Disconnecting would break all subsequent requests
+
+        This method only clears the request-specific published_events list.
         """
         # Only clear the published events list
         self.published_events.clear()

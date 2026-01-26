@@ -148,6 +148,9 @@ def create_app() -> Flask:  # noqa: C901
     def update_create_update_by(session: Session):
         handle_create_update_by_attrs(session)
 
+    # Initialize event subscriptions once at app startup
+    initialize_event_subscriptions()
+
     @app.before_request
     def before_request():
         request_id.set(str(uuid.uuid4())[:8])
@@ -189,6 +192,39 @@ def log_request():
     logger.info(f"Request: {request_data}")
 
 
+def initialize_event_subscriptions():
+    """
+    Initialize all event subscriptions once at app startup.
+
+    This function sets up signal subscriptions that are process-level
+    and persist across all requests. Subscriptions are configured once during
+    app initialization rather than per-request to avoid redundant setup.
+    """
+    # Subscribe to events that should generate CAN history events
+    MessageBus.subscribe_globally(OpsEventType.CREATE_NEW_CAN, can_history_trigger)
+    MessageBus.subscribe_globally(OpsEventType.UPDATE_CAN, can_history_trigger)
+    MessageBus.subscribe_globally(OpsEventType.CREATE_CAN_FUNDING_BUDGET, can_history_trigger)
+    MessageBus.subscribe_globally(OpsEventType.UPDATE_CAN_FUNDING_BUDGET, can_history_trigger)
+    MessageBus.subscribe_globally(OpsEventType.CREATE_CAN_FUNDING_RECEIVED, can_history_trigger)
+    MessageBus.subscribe_globally(OpsEventType.UPDATE_CAN_FUNDING_RECEIVED, can_history_trigger)
+    MessageBus.subscribe_globally(OpsEventType.DELETE_CAN_FUNDING_RECEIVED, can_history_trigger)
+
+    # Subscribe to events that should generate agreement history events
+    MessageBus.subscribe_globally(OpsEventType.UPDATE_AGREEMENT, agreement_history_trigger)
+    MessageBus.subscribe_globally(OpsEventType.CREATE_BLI, agreement_history_trigger)
+    MessageBus.subscribe_globally(OpsEventType.UPDATE_BLI, agreement_history_trigger)
+    MessageBus.subscribe_globally(OpsEventType.DELETE_BLI, agreement_history_trigger)
+    MessageBus.subscribe_globally(OpsEventType.CREATE_NEW_AGREEMENT, agreement_history_trigger)
+    MessageBus.subscribe_globally(OpsEventType.CREATE_CHANGE_REQUEST, agreement_history_trigger)
+    MessageBus.subscribe_globally(OpsEventType.UPDATE_CHANGE_REQUEST, agreement_history_trigger)
+    # Subscribe to UPDATE_CHANGE_REQUEST for procurement tracker creation
+    MessageBus.subscribe_globally(OpsEventType.UPDATE_CHANGE_REQUEST, procurement_tracker_trigger)
+    MessageBus.subscribe_globally(OpsEventType.UPDATE_PROCUREMENT_SHOP, agreement_history_trigger)
+    MessageBus.subscribe_globally(OpsEventType.CREATE_SERVICES_COMPONENT, agreement_history_trigger)
+    MessageBus.subscribe_globally(OpsEventType.UPDATE_SERVICES_COMPONENT, agreement_history_trigger)
+    MessageBus.subscribe_globally(OpsEventType.DELETE_SERVICES_COMPONENT, agreement_history_trigger)
+
+
 def before_request_function(app: Flask, request: request):
     req_id = request_id.get()
     logger.configure(extra={"request_id": req_id})
@@ -224,30 +260,9 @@ def before_request_function(app: Flask, request: request):
             logger.info(f"Checking user session for {current_user.oidc_id}")
             check_user_session_function(current_user)
 
+    # Create a new MessageBus instance for this request
+    # Event subscriptions are initialized once at app startup (see initialize_event_subscriptions)
     request.message_bus = MessageBus()
-    # Subscribe to events that should generate CAN history events
-    request.message_bus.subscribe(OpsEventType.CREATE_NEW_CAN, can_history_trigger)
-    request.message_bus.subscribe(OpsEventType.UPDATE_CAN, can_history_trigger)
-    request.message_bus.subscribe(OpsEventType.CREATE_CAN_FUNDING_BUDGET, can_history_trigger)
-    request.message_bus.subscribe(OpsEventType.UPDATE_CAN_FUNDING_BUDGET, can_history_trigger)
-    request.message_bus.subscribe(OpsEventType.CREATE_CAN_FUNDING_RECEIVED, can_history_trigger)
-    request.message_bus.subscribe(OpsEventType.UPDATE_CAN_FUNDING_RECEIVED, can_history_trigger)
-    request.message_bus.subscribe(OpsEventType.DELETE_CAN_FUNDING_RECEIVED, can_history_trigger)
-
-    # Subscribe to events that should generate agreement history events
-    request.message_bus.subscribe(OpsEventType.UPDATE_AGREEMENT, agreement_history_trigger)
-    request.message_bus.subscribe(OpsEventType.CREATE_BLI, agreement_history_trigger)
-    request.message_bus.subscribe(OpsEventType.UPDATE_BLI, agreement_history_trigger)
-    request.message_bus.subscribe(OpsEventType.DELETE_BLI, agreement_history_trigger)
-    request.message_bus.subscribe(OpsEventType.CREATE_NEW_AGREEMENT, agreement_history_trigger)
-    request.message_bus.subscribe(OpsEventType.CREATE_CHANGE_REQUEST, agreement_history_trigger)
-    request.message_bus.subscribe(OpsEventType.UPDATE_CHANGE_REQUEST, agreement_history_trigger)
-    # Subscribe to UPDATE_CHANGE_REQUEST for procurement tracker creation
-    request.message_bus.subscribe(OpsEventType.UPDATE_CHANGE_REQUEST, procurement_tracker_trigger)
-    request.message_bus.subscribe(OpsEventType.UPDATE_PROCUREMENT_SHOP, agreement_history_trigger)
-    request.message_bus.subscribe(OpsEventType.CREATE_SERVICES_COMPONENT, agreement_history_trigger)
-    request.message_bus.subscribe(OpsEventType.UPDATE_SERVICES_COMPONENT, agreement_history_trigger)
-    request.message_bus.subscribe(OpsEventType.DELETE_SERVICES_COMPONENT, agreement_history_trigger)
 
 
 def check_csrf(app: Flask, flask_request: Request) -> None:

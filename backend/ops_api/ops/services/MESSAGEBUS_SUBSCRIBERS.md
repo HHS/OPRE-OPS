@@ -72,19 +72,28 @@ def my_feature_trigger(event: OpsEvent, session: Session) -> None:
 
 ### Step 2: Register the Subscriber
 
-In `ops/__init__.py`, import and register your subscriber in the `before_request()` function:
+In `ops/__init__.py`, import and register your subscriber in the `initialize_event_subscriptions()` function:
 
 ```python
 # At the top of the file
 from ops_api.ops.services.my_feature_messages import my_feature_trigger
 
-# In the before_request() function, after creating the MessageBus
-request.message_bus = MessageBus()
+# In the initialize_event_subscriptions() function
+# This function is called once at app startup
+def initialize_event_subscriptions():
+    """Initialize all event subscriptions once at app startup."""
+    # ... existing subscriptions ...
 
-# Register your subscriber for relevant events
-request.message_bus.subscribe(OpsEventType.CREATE_MY_FEATURE, my_feature_trigger)
-request.message_bus.subscribe(OpsEventType.UPDATE_MY_FEATURE, my_feature_trigger)
+    # Register your subscriber for relevant events
+    MessageBus.subscribe_globally(OpsEventType.CREATE_MY_FEATURE, my_feature_trigger)
+    MessageBus.subscribe_globally(OpsEventType.UPDATE_MY_FEATURE, my_feature_trigger)
 ```
+
+**Important Notes:**
+- Subscriptions are set up **once at app initialization**, not per-request
+- Use `MessageBus.subscribe_globally()` (class method), not `.subscribe()` (instance method)
+- Subscriptions persist across all requests for the lifetime of the app process
+- Each request gets its own `MessageBus()` instance to publish events, but shares the global subscriptions
 
 ## Current Subscribers
 
@@ -283,9 +292,9 @@ def test_messagebus_calls_subscriber(mocker):
 
 ### Subscriber Not Being Called
 
-1. **Check registration**: Ensure your subscriber is registered in `ops/__init__.py`
+1. **Check registration**: Ensure your subscriber is registered in `initialize_event_subscriptions()` in `ops/__init__.py` using `MessageBus.subscribe_globally()`
 2. **Check event type**: Verify you're publishing the correct event type
-3. **Check timing**: Subscribers are only called when `message_bus.handle()` is invoked
+3. **Check timing**: Subscribers are only called when `message_bus.handle()` is invoked (typically in the teardown_request hook)
 
 ### Type Errors
 
