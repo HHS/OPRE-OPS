@@ -115,22 +115,20 @@ def create_app() -> Flask:  # noqa: C901
 
     @app.teardown_request
     def teardown_request(exception=None):
-        # Only handle message bus and commit if no exception occurred
+        # Handle message bus events and commit after request completes
+        # Note: This results in a second commit after the service layer's commit.
+        # While not ideal, this approach avoids the complexity of hook-based solutions
+        # which can cause recursion issues. Subscribers use dry_run=True to prevent
+        # them from committing, letting this teardown handle the final commit.
         if not exception and hasattr(request, "message_bus"):
-            # Check if any events were published before handling
-            has_events = len(request.message_bus.published_events) > 0
-
-            request.message_bus.handle()
-            request.message_bus.cleanup()
-
-            # Only commit if events were actually published and handled
-            # This prevents unnecessary commits that could interfere with history tracking
-            if has_events:
+            if len(request.message_bus.published_events) > 0:
                 try:
+                    request.message_bus.handle()
                     app.db_session.commit()
                 except Exception as e:
-                    logger.error(f"Failed to commit message bus changes: {e}", exc_info=True)
+                    logger.error(f"Failed to handle message bus events: {e}", exc_info=True)
                     app.db_session.rollback()
+            request.message_bus.cleanup()
 
     @event.listens_for(db_session, "before_commit")
     def receive_before_commit(session: Session):

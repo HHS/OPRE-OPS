@@ -189,6 +189,8 @@ def test_get_can_history_list_from_api_with_nonexistent_can(auth_client, mocker)
 def test_create_can_can_history_event(loaded_db, test_create_can_history_item):
     before_can_history_count = loaded_db.query(CANHistory).count()
     can_history_trigger(test_create_can_history_item, loaded_db)
+
+    loaded_db.flush()  # Ensure items are visible to queries
     can_history_list = loaded_db.query(CANHistory).all()
     after_can_history_count = len(can_history_list)
     assert after_can_history_count == before_can_history_count + 1
@@ -208,7 +210,15 @@ def test_create_can_can_history_event(loaded_db, test_create_can_history_item):
 def test_create_can_can_history_next_fiscal_year(loaded_db):
     next_fy_can_ops_event = loaded_db.get(OpsEvent, 17)
     can_history_trigger(next_fy_can_ops_event, loaded_db)
-    can_history_list = loaded_db.query(CANHistory).all()
+
+    loaded_db.flush()  # Ensure items are visible to queries
+    # Filter for history items created by this specific ops event
+    can_history_list = (
+        loaded_db.query(CANHistory)
+        .where(CANHistory.ops_event_id == next_fy_can_ops_event.id)
+        .order_by(CANHistory.id)
+        .all()
+    )
     can_history_count = len(can_history_list)
     new_can_history_item = can_history_list[can_history_count - 1]
 
@@ -222,6 +232,7 @@ def test_create_can_can_history_next_fiscal_year(loaded_db):
 def test_create_can_history_create_can_funding_budget(loaded_db):
     funding_budget_created_event = loaded_db.get(OpsEvent, 20)
     can_history_trigger(funding_budget_created_event, loaded_db)
+    loaded_db.flush()  # Ensure items are visible to queries
     can_history_list = loaded_db.query(CANHistory).where(CANHistory.ops_event_id == 20).all()
     can_history_count = len(can_history_list)
     new_can_history_item = can_history_list[can_history_count - 1]
@@ -237,6 +248,7 @@ def test_create_can_history_create_can_funding_budget(loaded_db):
 
     funding_budget_created_event_2 = loaded_db.get(OpsEvent, 25)
     can_history_trigger(funding_budget_created_event_2, loaded_db)
+    loaded_db.flush()  # Ensure items are visible to queries
     history_list = loaded_db.query(CANHistory).where(CANHistory.ops_event_id == 25).all()
     history_count = len(history_list)
     new_can_history_item_2 = history_list[history_count - 1]
@@ -258,6 +270,7 @@ def test_create_can_history_create_can_funding_budget(loaded_db):
 def test_create_create_can_funding_received(loaded_db):
     funding_received_created_event = loaded_db.get(OpsEvent, 21)
     can_history_trigger(funding_received_created_event, loaded_db)
+    loaded_db.flush()  # Ensure items are visible to queries
     can_history_list = loaded_db.query(CANHistory).all()
     can_history_count = len(can_history_list)
     new_can_history_item = can_history_list[can_history_count - 1]
@@ -280,6 +293,7 @@ def test_create_create_can_funding_received(loaded_db):
 def test_create_can_history_delete_can_funding_received(loaded_db):
     funding_received_deleted_event = loaded_db.get(OpsEvent, 24)
     can_history_trigger(funding_received_deleted_event, loaded_db)
+    loaded_db.flush()  # Ensure items are visible to queries
     can_history_list = loaded_db.query(CANHistory).all()
     can_history_count = len(can_history_list)
     new_can_history_item = can_history_list[can_history_count - 1]
@@ -302,6 +316,7 @@ def test_create_can_history_delete_can_funding_received(loaded_db):
 def test_update_can_can_history(loaded_db):
     update_can_event = loaded_db.get(OpsEvent, 26)
     can_history_trigger(update_can_event, loaded_db)
+    loaded_db.flush()  # Ensure items are visible to queries
     can_update_history_events = (
         loaded_db.execute(select(CANHistory).where(CANHistory.ops_event_id == 26)).scalars().all()
     )
@@ -323,6 +338,7 @@ def test_update_can_can_history(loaded_db):
 def test_update_can_funding_budget_can_history(loaded_db):
     update_can_event = loaded_db.get(OpsEvent, 22)
     can_history_trigger(update_can_event, loaded_db)
+    loaded_db.flush()  # Ensure items are visible to queries
     can_funding_budget_updates = (
         loaded_db.execute(select(CANHistory).where(CANHistory.ops_event_id == 22)).scalars().all()
     )
@@ -342,6 +358,7 @@ def test_update_can_funding_budget_can_history(loaded_db):
 def test_update_can_funding_received_can_history(loaded_db):
     update_can_event = loaded_db.get(OpsEvent, 23)
     can_history_trigger(update_can_event, loaded_db)
+    loaded_db.flush()  # Ensure items are visible to queries
     can_funding_received_updates = (
         loaded_db.execute(select(CANHistory).where(CANHistory.ops_event_id == 23)).scalars().all()
     )
@@ -361,6 +378,7 @@ def test_update_can_funding_received_can_history(loaded_db):
 def test_update_can_portfolio_can_history_regular_user(loaded_db):
     update_can_event = loaded_db.get(OpsEvent, 27)
     can_history_trigger(update_can_event, loaded_db)
+    loaded_db.flush()  # Ensure items are visible to queries
     can_update_history_events = (
         loaded_db.execute(select(CANHistory).where(CANHistory.ops_event_id == 27)).scalars().all()
     )
@@ -390,6 +408,7 @@ def test_update_can_portfolio_can_history_regular_user(loaded_db):
 def test_update_can_portfolio_can_history_system_user(loaded_db):
     update_can_event = loaded_db.get(OpsEvent, 29)
     can_history_trigger(update_can_event, loaded_db)
+    loaded_db.flush()  # Ensure items are visible to queries
     can_update_history_events = (
         loaded_db.execute(select(CANHistory).where(CANHistory.ops_event_id == 29)).scalars().all()
     )
@@ -419,6 +438,7 @@ def test_update_can_portfolio_can_history_system_user(loaded_db):
 def test_update_can_nickname_system_user(loaded_db):
     update_can_event = loaded_db.get(OpsEvent, 30)
     can_history_trigger(update_can_event, loaded_db)
+    loaded_db.flush()  # Ensure items are visible to queries
     can_update_history_events = (
         loaded_db.execute(select(CANHistory).where(CANHistory.ops_event_id == 30)).scalars().all()
     )
@@ -441,6 +461,7 @@ def test_update_no_duplicate_messages(loaded_db):
     can_history_trigger(update_can_event, loaded_db)
     # trigger can history call a second time, which is occasionally possible during normal run of the test
     can_history_trigger(update_can_event, loaded_db)
+    loaded_db.flush()  # Ensure items are visible to queries
     can_update_history_events = (
         loaded_db.execute(select(CANHistory).where(CANHistory.ops_event_id == 30)).scalars().all()
     )
