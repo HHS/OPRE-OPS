@@ -124,8 +124,8 @@ describe("agreement details", () => {
     it("should not allow editing OBLIGATED BLIs", () => {
         cy.visit("/agreements/10/budget-lines");
         cy.get("#edit").click();
-        cy.get("[data-testid='budget-line-row-15005']").trigger("mouseover");
-        cy.get("[data-testid='budget-line-row-15005'] .usa-tooltip .usa-tooltip__body").should(
+        cy.get("[data-testid='budget-line-row-15005']").first().trigger("mouseover");
+        cy.get("[data-testid='budget-line-row-15005'] .usa-tooltip .usa-tooltip__body").first().should(
             "contain",
             "Obligated budget lines cannot be edited"
         );
@@ -134,8 +134,8 @@ describe("agreement details", () => {
     it("should not allow editing EXECUTING BLIs", () => {
         cy.visit("/agreements/10/budget-lines");
         cy.get("#edit").click();
-        cy.get("[data-testid='budget-line-row-15004']").trigger("mouseover");
-        cy.get("[data-testid='budget-line-row-15004'] .usa-tooltip .usa-tooltip__body").should(
+        cy.get("[data-testid='budget-line-row-15004']").first().trigger("mouseover");
+        cy.get("[data-testid='budget-line-row-15004'] .usa-tooltip .usa-tooltip__body").first().should(
             "contain",
             "If you need to edit a budget line in Executing Status, please contact the budget team"
         );
