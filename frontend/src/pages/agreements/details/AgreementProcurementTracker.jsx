@@ -2,6 +2,7 @@ import StepIndicator from "../../../components/UI/StepIndicator";
 import { useGetProcurementTrackersByAgreementIdQuery } from "../../../api/opsAPI";
 import { IS_PROCUREMENT_TRACKER_READY } from "../../../constants";
 import DebugCode from "../../../components/DebugCode";
+import Accordion from "../../../components/UI/Accordion";
 
 /**
  * @typedef {Object} AgreementProcurementTrackerProps
@@ -69,6 +70,23 @@ const AgreementProcurementTracker = ({ agreement }) => {
                 currentStep={currentStep}
             />
             {/* Accordions */}
+            {activeTracker?.steps.length > 0 &&
+                activeTracker?.steps?.map((step) => {
+                    return (
+                        <Accordion
+                            heading={`Step ${step.step_number} of ${activeTracker?.steps.length} ${step.step_type}
+`}
+                            isClosed={activeTracker.active_step_number !== step.step_number}
+                            level={3}
+                            key={step.id}
+                        >
+                            {/* ComboBox for Users*/}
+                            {/* DatePicker for Date Completed */}
+                            {/* TextArea for optional Notes*/}
+                            <p>{step.step_type}</p>
+                        </Accordion>
+                    );
+                })}
             {activeTracker && <DebugCode data={activeTracker}></DebugCode>}
         </>
     );
