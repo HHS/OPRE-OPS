@@ -9,7 +9,7 @@ from ops_api.ops.validation.base import ValidationRule
 from ops_api.ops.validation.context import ValidationContext
 
 
-class ProcurementTrackerValidator:
+class ProcurementTrackerStepsValidator:
     """
     Orchestrates validation of procurement tracker update requests.
 
@@ -28,7 +28,7 @@ class ProcurementTrackerValidator:
 
     def _get_default_validators(self) -> List[ValidationRule]:
         """
-        Get the default set of validation rules for agreement updates.
+        Get the default set of validation rules for procurement tracker steps updates.
 
         Returns:
             List of validation rules in execution order
@@ -51,7 +51,7 @@ class ProcurementTrackerValidator:
 
     def validate_step(
         self,
-        procurement_tracker: ProcurementTrackerStep,
+        procurement_tracker_step: ProcurementTrackerStep,
         user: User,
         updated_fields: Dict[str, Any],
         db_session: Session,
@@ -60,7 +60,7 @@ class ProcurementTrackerValidator:
         Execute all validation rules in sequence.
 
         Args:
-            procurement_tracker: The procurement tracker being validated
+            procurement_tracker_step: The procurement tracker being validated
             user: The user making the request
             updated_fields: Dictionary of fields being updated
             db_session: Database session for queries
@@ -75,7 +75,7 @@ class ProcurementTrackerValidator:
 
         # Execute all validators
         for validator in self.validators:
-            validator.validate(procurement_tracker, context)
+            validator.validate(procurement_tracker_step, context)
 
     def add_validator(self, validator: ValidationRule) -> None:
         """Add a validation rule to the validator."""

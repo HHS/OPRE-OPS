@@ -9,7 +9,7 @@ from sqlalchemy.orm import selectinload
 
 from models import ProcurementTrackerStep, User
 from ops_api.ops.services.ops_service import ResourceNotFoundError
-from ops_api.ops.validation.procurement_tracker_validator import ProcurementTrackerValidator
+from ops_api.ops.validation.procurement_tracker_steps_validator import ProcurementTrackerStepsValidator
 
 
 class ProcurementTrackerStepService:
@@ -68,7 +68,7 @@ class ProcurementTrackerStepService:
         logger.debug(f"Updating procurement tracker step {id} with data: {data}")
 
         step = self.get(id)
-        validator = ProcurementTrackerValidator()
+        validator = ProcurementTrackerStepsValidator()
         validator.validate_step(
             procurement_tracker=step,
             user=current_user,
