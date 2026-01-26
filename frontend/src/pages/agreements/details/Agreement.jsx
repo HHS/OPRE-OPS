@@ -15,7 +15,7 @@ import DocumentView from "../../../components/Agreements/Documents/DocumentView"
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import Tag from "../../../components/UI/Tag";
 import { calculateFeeTotal, isNotDevelopedYet } from "../../../helpers/agreement.helpers";
-import { hasBlIsInReview } from "../../../helpers/budgetLines.helpers";
+import { hasAnyBliInSelectedStatus, hasBlIsInReview } from "../../../helpers/budgetLines.helpers";
 import { getAwardingEntityIds } from "../../../helpers/procurementShop.helpers";
 import { convertToCurrency } from "../../../helpers/utils";
 import { useChangeRequestsForAgreement } from "../../../hooks/useChangeRequests.hooks";
@@ -23,6 +23,8 @@ import icons from "../../../uswds/img/sprite.svg";
 import { AgreementType } from "../agreements.constants";
 import AgreementBudgetLines from "./AgreementBudgetLines";
 import AgreementDetails from "./AgreementDetails";
+import AgreementProcurementTracker from "./AgreementProcurementTracker";
+import { BUDGET_LINE_STATUSES } from "../../../components/BudgetLineItems/BLIReviewTable/BLIReviewTable.constants";
 
 const Agreement = () => {
     const navigate = useNavigate();
@@ -166,7 +168,10 @@ const Agreement = () => {
     const showNonContractAlert = isAgreementNotDeveloped && isTempUiAlertVisible;
 
     const isAgreementAwarded = agreement?.is_awarded;
-
+    const hasInExecutionBli = hasAnyBliInSelectedStatus(
+        agreement?.budget_line_items ?? [],
+        BUDGET_LINE_STATUSES.IN_EXECUTION
+    );
     return (
         <App breadCrumbName={agreement?.name}>
             {showReviewAlert && (
@@ -217,6 +222,7 @@ const Agreement = () => {
                         agreementId={agreement?.id ?? 0}
                         isAgreementNotDeveloped={isAgreementNotDeveloped}
                         isAgreementAwarded={isAgreementAwarded ?? false}
+                        hasInExecutionBli={hasInExecutionBli ?? false}
                     />
                 </section>
 
@@ -248,6 +254,10 @@ const Agreement = () => {
                                 isAgreementAwarded={isAgreementAwarded ?? false}
                             />
                         }
+                    />
+                    <Route
+                        path="procurement-tracker"
+                        element={<AgreementProcurementTracker agreement={agreement} />}
                     />
                     <Route
                         path="documents"
