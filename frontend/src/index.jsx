@@ -297,12 +297,12 @@ const startApp = async () => {
     if (rootElement) {
         ReactDOM.createRoot(rootElement, {
             onUncaughtError: (error, errorInfo) => {
-                console.error('Uncaught error:', error);
-                console.error('Error Info:', errorInfo);
+                console.error("Uncaught error:", error);
+                console.error("Error Info:", errorInfo);
             },
             onCaughtError: (error, errorInfo) => {
-                console.error('Caught error:', error);
-                console.error('Error Info:', errorInfo);
+                console.error("Caught error:", error);
+                console.error("Error Info:", errorInfo);
             }
         }).render(
             <React.StrictMode>
