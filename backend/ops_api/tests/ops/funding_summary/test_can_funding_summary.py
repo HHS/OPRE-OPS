@@ -200,8 +200,7 @@ def test_can_get_can_funding_summary_all_cans_no_fiscal_year_match(
     assert response.json["total_funding"] == 0.0
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_can_funding_summary_no_fiscal_year(loaded_db, test_can) -> None:
+def test_get_can_funding_summary_no_fiscal_year(loaded_db, test_can, app_ctx) -> None:
     result = get_can_funding_summary(test_can)
 
     # Remove these because they are set according to when the test was run
@@ -345,9 +344,7 @@ def test_get_can_funding_summary_no_fiscal_year(loaded_db, test_can) -> None:
     }
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_can_funding_summary_with_fiscal_year(loaded_db, test_can) -> None:
+def test_get_can_funding_summary_with_fiscal_year(loaded_db, test_can, app_ctx) -> None:
     result = get_can_funding_summary(test_can, 2023)
 
     # Remove these because they are set according to when the test was run
@@ -943,8 +940,7 @@ def test_get_can_funding_summary_with_no_funding_details(
     assert_funding_summary(result, expected_cf, expected_nf, expected_tf)
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_can_funding_summary_with_null_bli_amounts(loaded_db) -> None:
+def test_get_can_funding_summary_with_null_bli_amounts(loaded_db, app_ctx) -> None:
     # Create a mock CAN with budget line items that have NULL amounts
     funding_details = MagicMock(
         fiscal_year=2023,

@@ -1,10 +1,7 @@
-import pytest
-
 from models import CLIN
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_clin_retrieve(loaded_db):
+def test_clin_retrieve(loaded_db, app_ctx):
     clin = loaded_db.query(CLIN).filter(CLIN.name == "CLIN 1").one()
 
     assert clin is not None
@@ -13,8 +10,7 @@ def test_clin_retrieve(loaded_db):
     assert len(clin.budget_line_items) > 0
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_clin_get_all(auth_client, loaded_db):
+def test_clin_get_all(auth_client, loaded_db, app_ctx):
     # count = loaded_db.query(CLIN).count()
 
     response = auth_client.get("/api/v1/clins/")
@@ -22,8 +18,7 @@ def test_clin_get_all(auth_client, loaded_db):
     # assert len(response.json) == count
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_clin_get_by_id(auth_client, loaded_db):
+def test_clin_get_by_id(auth_client, loaded_db, app_ctx):
     response = auth_client.get("/api/v1/clins/123")
     assert response.status_code == 404
     # assert response.json["name"] == "123"

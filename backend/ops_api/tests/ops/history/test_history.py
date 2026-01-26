@@ -13,8 +13,7 @@ from models import (
 )
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_bli_history(loaded_db: Session, test_can: CAN):
+def test_bli_history(loaded_db: Session, test_can: CAN, app_ctx):
     bli = GrantBudgetLineItem(
         line_description="Grant Expendeture GA999",
         agreement_id=1,
@@ -54,8 +53,7 @@ def test_bli_history(loaded_db: Session, test_can: CAN):
     assert result[0].event_details["line_description"] == "(UPDATED) Grant Expendeture GA999"
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_bli_history_force_an_error(loaded_db):
+def test_bli_history_force_an_error(loaded_db, app_ctx):
     bli = GrantBudgetLineItem(
         line_description="Grant Expendeture GA999",
         agreement_id=1000000,
@@ -73,8 +71,7 @@ def test_bli_history_force_an_error(loaded_db):
         assert result[0].event_details["agreement_id"] == 1000000
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_history_expanded(loaded_db: Session, test_can: CAN):
+def test_history_expanded(loaded_db: Session, test_can: CAN, app_ctx):
     """test the new columns for class_name, row_key to query for history of specific record
     and verify the new changes column contains the changes
     """
@@ -129,8 +126,7 @@ def test_history_expanded(loaded_db: Session, test_can: CAN):
     assert result[0].event_details["line_description"] == "(UPDATED) Grant Expenditure GA999"
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_history_expanded_with_web_client(auth_client, loaded_db, test_user, test_admin_user):
+def test_history_expanded_with_web_client(auth_client, loaded_db, test_user, test_admin_user, app_ctx):
     """test history with new columns with edits made using an authenticated web client"""
     # POST: create agreement
     post_data = {

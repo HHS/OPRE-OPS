@@ -1,4 +1,3 @@
-import pytest
 from flask import url_for
 
 
@@ -7,8 +6,7 @@ def test_index(client):
     assert b"It works!" in response.data
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_csrf_protection_azure_prod(app, auth_client, mocker):
+def test_csrf_protection_azure_prod(app, auth_client, mocker, app_ctx):
     """
     Test the happy path for CSRF protection in Azure production environment
     i.e. the headers are correct and the request is successful.
@@ -37,8 +35,7 @@ def test_csrf_protection_azure_prod(app, auth_client, mocker):
     assert response.status_code == 200
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_csrf_protection_azure_prod_host_not_set(app, auth_client, mocker):
+def test_csrf_protection_azure_prod_host_not_set(app, auth_client, mocker, app_ctx):
     """
     Test the CSRF protection in Azure production environment when either the Host header is not set.
     """
@@ -61,8 +58,7 @@ def test_csrf_protection_azure_prod_host_not_set(app, auth_client, mocker):
     assert response.status_code == 401
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_csrf_protection_azure_prod_referer_not_set(app, auth_client, mocker):
+def test_csrf_protection_azure_prod_referer_not_set(app, auth_client, mocker, app_ctx):
     """
     Test the CSRF protection in Azure production environment when the Referer header is not set.
     """
@@ -77,8 +73,7 @@ def test_csrf_protection_azure_prod_referer_not_set(app, auth_client, mocker):
     assert response.status_code == 401
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_csrf_protection_azure_prod_host_not_matching(app, auth_client, mocker):
+def test_csrf_protection_azure_prod_host_not_matching(app, auth_client, mocker, app_ctx):
     """
     Test the CSRF protection in Azure production environment when the Host header does not match the Azure backend prefix.
     """
@@ -106,8 +101,7 @@ def test_csrf_protection_azure_prod_host_not_matching(app, auth_client, mocker):
     assert response.status_code == 401
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_csrf_protection_azure_prod_referrer_not_matching(app, auth_client, mocker):
+def test_csrf_protection_azure_prod_referrer_not_matching(app, auth_client, mocker, app_ctx):
     """
     Test the CSRF protection in Azure production environment when the Referer header does not match the OPS_FRONTEND_URL.
     """
@@ -135,8 +129,7 @@ def test_csrf_protection_azure_prod_referrer_not_matching(app, auth_client, mock
     assert response.status_code == 401
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_csrf_protection_azure_prod_wrong_port(app, auth_client, mocker):
+def test_csrf_protection_azure_prod_wrong_port(app, auth_client, mocker, app_ctx):
     """
     Test the CSRF protection in Azure production environment when the Host header port is not 443.
     """
@@ -164,8 +157,7 @@ def test_csrf_protection_azure_prod_wrong_port(app, auth_client, mocker):
     assert response.status_code == 401
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_csrf_protection_azure_prod_wrong_protocol(app, auth_client, mocker):
+def test_csrf_protection_azure_prod_wrong_protocol(app, auth_client, mocker, app_ctx):
     """
     Test the CSRF protection in Azure production environment when the Referer header protocol is not https.
     """
@@ -193,8 +185,7 @@ def test_csrf_protection_azure_prod_wrong_protocol(app, auth_client, mocker):
     assert response.status_code == 401
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_csrf_protection_localhost_unchanged(app, auth_client, mocker):
+def test_csrf_protection_localhost_unchanged(app, auth_client, mocker, app_ctx):
     """
     Test the CSRF protection in localhost environment where the headers are not changed.
     This should not raise any errors and should return a 200 status code.
@@ -212,8 +203,7 @@ def test_csrf_protection_localhost_unchanged(app, auth_client, mocker):
     assert response.status_code == 200
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_csrf_protection_azure_prod_exclude_health_probe(app, auth_client, mocker):
+def test_csrf_protection_azure_prod_exclude_health_probe(app, auth_client, mocker, app_ctx):
     """
     Test the CSRF protection in Azure production environment for the health probe endpoint.
     This should not raise any errors and should return a 200 status code.

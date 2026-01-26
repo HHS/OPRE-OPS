@@ -9,8 +9,7 @@ from ops_api.ops.auth.exceptions import InvalidUserSessionError
 from ops_api.ops.auth.utils import get_all_active_user_sessions
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_check_user_session_decorator_with_active_session(mocker):
+def test_check_user_session_decorator_with_active_session(mocker, app_ctx):
     # Arrange
     mock_get_latest_user_session = mocker.patch("ops_api.ops.auth.decorators.get_latest_user_session")
     mock_user_session = mocker.MagicMock()
@@ -37,8 +36,7 @@ def test_check_user_session_decorator_with_active_session(mocker):
     assert result == "success"
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_check_user_session_decorator_without_active_session(loaded_db, mocker):
+def test_check_user_session_decorator_without_active_session(loaded_db, mocker, app_ctx):
     # Arrange
     mock_get_latest_user_session = mocker.patch("ops_api.ops.auth.decorators.get_latest_user_session")
     mock_user_session = mocker.MagicMock()
@@ -67,8 +65,7 @@ def test_any_endpoint_active_session(auth_client, loaded_db, mocker):
     assert response.status_code == 200
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_check_user_session_token_doesnt_match(mocker, loaded_db):
+def test_check_user_session_token_doesnt_match(mocker, loaded_db, app_ctx):
     # Arrange
     mock_get_latest_user_session = mocker.patch("ops_api.ops.auth.decorators.get_latest_user_session")
     mock_user_session = mocker.MagicMock()
@@ -96,8 +93,7 @@ def test_check_user_session_token_doesnt_match(mocker, loaded_db):
     assert all([not user_session.is_active for user_session in user_sessions])
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_idle_timeout(mocker, loaded_db):
+def test_idle_timeout(mocker, loaded_db, app_ctx):
     # Arrange
     mock_get_latest_user_session = mocker.patch("ops_api.ops.auth.decorators.get_latest_user_session")
     mock_user_session = mocker.MagicMock()
@@ -123,8 +119,7 @@ def test_idle_timeout(mocker, loaded_db):
     assert all([not user_session.is_active for user_session in user_sessions])
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_idle_no_timeout(mocker, loaded_db):
+def test_idle_no_timeout(mocker, loaded_db, app_ctx):
     # Arrange
     mock_get_latest_user_session = mocker.patch("ops_api.ops.auth.decorators.get_latest_user_session")
     mock_user_session = mocker.MagicMock()
@@ -150,8 +145,7 @@ def test_idle_no_timeout(mocker, loaded_db):
     assert result == "success"
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_check_user_session_exclude_options(auth_client, mocker):
+def test_check_user_session_exclude_options(auth_client, mocker, app_ctx):
     # If the request method is OPTIONS, then the check_user_session function should not be called
     mock = mocker.patch("ops_api.ops.__init__.check_user_session_function")
     result = auth_client.options(url_for("api.agreements-group"))

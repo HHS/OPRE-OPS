@@ -1,4 +1,3 @@
-import pytest
 from flask import url_for
 from flask_jwt_extended import create_access_token
 
@@ -6,14 +5,12 @@ from models import UserStatus
 from models.users import User
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_post_user_no_auth(client, test_user):
+def test_post_user_no_auth(client, test_user, app_ctx):
     response = client.post(url_for("api.users-group"), json={"first_name": "New First Name"})
     assert response.status_code == 401
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_post_user_unauthorized_different_user(client, loaded_db, test_non_admin_user, test_user):
+def test_post_user_unauthorized_different_user(client, loaded_db, test_non_admin_user, test_user, app_ctx):
     """
     Test that a regular user cannot create a new user.
     """
@@ -26,8 +23,7 @@ def test_post_user_unauthorized_different_user(client, loaded_db, test_non_admin
     assert response.status_code == 403
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_post_user_min_params(auth_client, loaded_db, test_admin_user):
+def test_post_user_min_params(auth_client, loaded_db, test_admin_user, app_ctx):
     response = auth_client.post(
         url_for("api.users-group"),
         json={"email": "new_user@example.com"},
@@ -53,8 +49,7 @@ def test_post_user_min_params(auth_client, loaded_db, test_admin_user):
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_post_user_max_params(auth_client, loaded_db, test_admin_user):
+def test_post_user_max_params(auth_client, loaded_db, test_admin_user, app_ctx):
     response = auth_client.post(
         url_for("api.users-group"),
         json={

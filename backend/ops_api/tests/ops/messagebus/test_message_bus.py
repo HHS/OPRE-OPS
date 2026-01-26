@@ -1,12 +1,9 @@
-import pytest
-
 from models import OpsEvent, OpsEventType
 from ops_api.ops.services.message_bus import MessageBus
 from ops_api.ops.utils.events import OpsEventHandler
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_message_bus_handle(loaded_db, mocker):
+def test_message_bus_handle(loaded_db, mocker, app_ctx):
     mock_callback_1 = mocker.MagicMock()
     mock_callback_2 = mocker.MagicMock()
     mock_callback_3 = mocker.MagicMock()
@@ -25,8 +22,7 @@ def test_message_bus_handle(loaded_db, mocker):
     mock_callback_3.assert_called()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_message_bus_create_cans(loaded_db, mocker):
+def test_message_bus_create_cans(loaded_db, mocker, app_ctx):
     mock_callback_1 = mocker.MagicMock()
     mock_callback_2 = mocker.MagicMock()
     mock_callback_3 = mocker.MagicMock()

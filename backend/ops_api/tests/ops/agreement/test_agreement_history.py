@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta
 
-import pytest
 from sqlalchemy import select
 
 from models import AgreementHistory, AgreementHistoryType, OpsEvent, OpsEventStatus, OpsEventType
@@ -13,8 +12,7 @@ test_user_name = "Amelia Popham"
 timestamp = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_update_agreement_agreement_history_trigger(loaded_db):
+def test_update_agreement_agreement_history_trigger(loaded_db, app_ctx):
     next_agreement_history_ops_event = loaded_db.get(OpsEvent, 32)
     agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
     agreement_history_list = loaded_db.query(AgreementHistory).all()
@@ -87,8 +85,7 @@ def test_update_agreement_agreement_history_trigger(loaded_db):
     )
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_update_add_remove_team_member_history_trigger(loaded_db):
+def test_update_add_remove_team_member_history_trigger(loaded_db, app_ctx):
     next_agreement_history_ops_event = loaded_db.get(OpsEvent, 34)
     agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
     agreement_history_list = loaded_db.query(AgreementHistory).all()
@@ -108,8 +105,7 @@ def test_update_add_remove_team_member_history_trigger(loaded_db):
     assert new_agreement_history_item_3.history_message == "Team Member Dave Director added by System Admin."
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_update_bli_status_change_history_trigger(loaded_db):
+def test_update_bli_status_change_history_trigger(loaded_db, app_ctx):
     next_agreement_history_ops_event = loaded_db.get(OpsEvent, 35)
     agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
     agreement_history_list = loaded_db.query(AgreementHistory).all()
@@ -125,8 +121,7 @@ def test_update_bli_status_change_history_trigger(loaded_db):
     )
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_update_bli_properties_change_history_trigger(loaded_db):
+def test_update_bli_properties_change_history_trigger(loaded_db, app_ctx):
     next_agreement_history_ops_event = loaded_db.get(OpsEvent, 36)
     agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
     agreement_history_list = loaded_db.query(AgreementHistory).all()
@@ -228,8 +223,7 @@ def test_agreement_history_change_request_approve_deny(loaded_db):
     )
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_proc_shop_change_requests(loaded_db):
+def test_proc_shop_change_requests(loaded_db, app_ctx):
     proc_shop_agreement_history_ops_event = loaded_db.get(OpsEvent, 43)
     agreement_history_trigger(proc_shop_agreement_history_ops_event, loaded_db)
     agreement_history_list = loaded_db.query(AgreementHistory).all()
@@ -283,8 +277,7 @@ def test_proc_shop_change_requests(loaded_db):
     )
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_proc_shop_updates(loaded_db):
+def test_proc_shop_updates(loaded_db, app_ctx):
     # Test changes to procurement shop that don't require change requests
     proc_shop_agreement_history_ops_event = loaded_db.get(OpsEvent, 46)
     agreement_history_trigger(proc_shop_agreement_history_ops_event, loaded_db)
@@ -301,8 +294,7 @@ def test_proc_shop_updates(loaded_db):
     )
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_proc_shop_fee_changes(loaded_db):
+def test_proc_shop_fee_changes(loaded_db, app_ctx):
     # Test changes to procurement shop that don't require change requests
     proc_shop_agreement_history_ops_event = loaded_db.get(OpsEvent, 47)
     agreement_history_trigger(proc_shop_agreement_history_ops_event, loaded_db)
@@ -317,8 +309,7 @@ def test_proc_shop_fee_changes(loaded_db):
     )
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreement_history_create_bli(loaded_db):
+def test_agreement_history_create_bli(loaded_db, app_ctx):
     next_agreement_history_ops_event = loaded_db.get(OpsEvent, 48)
     agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
     agreement_history_list = loaded_db.query(AgreementHistory).all()
@@ -330,8 +321,7 @@ def test_agreement_history_create_bli(loaded_db):
     assert new_agreement_history_item.history_message == "Steve Tekell added a new budget line 16041."
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreement_history_create_agreement(loaded_db):
+def test_agreement_history_create_agreement(loaded_db, app_ctx):
     next_agreement_history_ops_event = loaded_db.get(OpsEvent, 49)
     agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
     agreement_history_list = loaded_db.query(AgreementHistory).all()
@@ -343,8 +333,7 @@ def test_agreement_history_create_agreement(loaded_db):
     assert new_agreement_history_item.history_message == "Agreement created by Steve Tekell."
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreement_history_services_components(loaded_db):
+def test_agreement_history_services_components(loaded_db, app_ctx):
     next_agreement_history_ops_event = loaded_db.get(OpsEvent, 50)
     agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
     agreement_history_list = loaded_db.query(AgreementHistory).all()
@@ -412,8 +401,7 @@ def test_agreement_history_services_components(loaded_db):
     )
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreement_history_bli_deletion(loaded_db):
+def test_agreement_history_bli_deletion(loaded_db, app_ctx):
     next_agreement_history_ops_event = loaded_db.get(OpsEvent, 64)
     agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
     agreement_history_list = loaded_db.query(AgreementHistory).all()
@@ -425,8 +413,7 @@ def test_agreement_history_bli_deletion(loaded_db):
     assert new_agreement_history_item.history_message == "Steve Tekell deleted the Draft BL 16044."
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreement_history_draft_bli_change(loaded_db):
+def test_agreement_history_draft_bli_change(loaded_db, app_ctx):
     # 5 total events to test for
     next_agreement_history_ops_event = loaded_db.get(OpsEvent, 63)
     agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
@@ -475,8 +462,7 @@ def test_agreement_history_draft_bli_change(loaded_db):
     )
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreement_history_cor_and_reason_changes(loaded_db):
+def test_agreement_history_cor_and_reason_changes(loaded_db, app_ctx):
     # 5 total events to test for
     next_agreement_history_ops_event = loaded_db.get(OpsEvent, 65)
     agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
@@ -506,8 +492,7 @@ def test_agreement_history_cor_and_reason_changes(loaded_db):
     )
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreement_history_agreement_agency_changes(loaded_db):
+def test_agreement_history_agreement_agency_changes(loaded_db, app_ctx):
     # 5 total events to test for
     next_agreement_history_ops_event = loaded_db.get(OpsEvent, 66)
     agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
@@ -532,8 +517,7 @@ def test_agreement_history_agreement_agency_changes(loaded_db):
     )
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreement_history_research_methodologies_and_special_topics(loaded_db):
+def test_agreement_history_research_methodologies_and_special_topics(loaded_db, app_ctx):
     # clean up existing AgreementHistory entries before this test
     loaded_db.query(AgreementHistory).delete()
     loaded_db.flush()
@@ -611,8 +595,7 @@ def test_add_history_events_prevents_duplicates_in_same_batch(loaded_db):
     assert final_count == initial_count + 1, "Should only add one event, duplicate should be prevented"
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_add_history_events_prevents_duplicates_from_database(loaded_db):
+def test_add_history_events_prevents_duplicates_from_database(loaded_db, app_ctx):
     """Test that add_history_events prevents duplicates that already exist in the database."""
     # Add first event
     event1 = AgreementHistory(
@@ -647,8 +630,7 @@ def test_add_history_events_prevents_duplicates_from_database(loaded_db):
     assert final_count == initial_count, "Should not add duplicate that exists in DB"
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_add_history_events_allows_different_messages(loaded_db):
+def test_add_history_events_allows_different_messages(loaded_db, app_ctx):
     """Test that events with different messages are not considered duplicates."""
     event1 = AgreementHistory(
         agreement_id=1,
@@ -678,8 +660,7 @@ def test_add_history_events_allows_different_messages(loaded_db):
     assert final_count == initial_count + 2, "Should add both events with different messages"
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_add_history_events_allows_different_types(loaded_db):
+def test_add_history_events_allows_different_types(loaded_db, app_ctx):
     """Test that events with different types are not considered duplicates."""
     event1 = AgreementHistory(
         agreement_id=1,
@@ -709,8 +690,7 @@ def test_add_history_events_allows_different_types(loaded_db):
     assert final_count == initial_count + 2, "Should add both events with different types"
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_add_history_events_allows_events_outside_time_window(loaded_db):
+def test_add_history_events_allows_events_outside_time_window(loaded_db, app_ctx):
     """Test that events outside the 1-minute time window are not considered duplicates."""
     base_time = datetime.utcnow()
     timestamp1 = base_time.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
@@ -745,8 +725,7 @@ def test_add_history_events_allows_events_outside_time_window(loaded_db):
     assert final_count == initial_count + 2, "Should add both events outside time window"
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_add_history_events_deduplicates_with_different_ops_event_ids(loaded_db):
+def test_add_history_events_deduplicates_with_different_ops_event_ids(loaded_db, app_ctx):
     """Test that duplicates with different ops_event_ids are still caught."""
 
     event_1 = OpsEvent(event_type=OpsEventType.CREATE_BLI, event_status=OpsEventStatus.SUCCESS, event_details={})
