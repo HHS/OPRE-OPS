@@ -32,7 +32,7 @@ flake8 = "==7.3.0"
 isort = "==7.0.0"
 nox = "==2025.11.12"
 numpy = "==2.4.1"
-pytest = "==8.4.2"
+pytest = "==9.0.2"
 pytest-bdd = "==8.1.0"
 pytest-cov = "==7.0.0"
 pytest-docker = {extras = ["docker-compose-v2"], version = "==3.2.5"}
