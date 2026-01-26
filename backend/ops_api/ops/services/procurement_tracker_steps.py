@@ -70,7 +70,7 @@ class ProcurementTrackerStepService:
         step = self.get(id)
         validator = ProcurementTrackerStepsValidator()
         validator.validate_step(
-            procurement_tracker=step,
+            procurement_tracker_step=step,
             user=current_user,
             updated_fields=data,
             db_session=self.db_session,

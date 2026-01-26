@@ -231,10 +231,6 @@ def procurement_tracker_no_steps(loaded_db, context):
 def have_valid_completed_procurement_step(context):
     data = {
         "status": "COMPLETED",
-        "id": context["procurement_tracker_step"].id,
-        "procurement_tracker_id": context["procurement_tracker"].id,
-        "step_number": context["procurement_tracker_step"].step_number,
-        "step_type": "ACQUISITION_PLANNING",
         "date_completed": "2025-12-25",
         "task_completed_by": context["user_id"],
     }
@@ -246,10 +242,6 @@ def have_valid_completed_procurement_step(context):
 def have_procurement_step_with_nonexistent_user(context):
     data = {
         "status": "COMPLETED",
-        "id": context["procurement_tracker_step"].id,
-        "procurement_tracker_id": context["procurement_tracker"].id,
-        "step_number": context["procurement_tracker_step"].step_number,
-        "step_type": "ACQUISITION_PLANNING",
         "date_completed": "2025-12-25",
         "task_completed_by": 999,
     }
@@ -261,10 +253,6 @@ def have_procurement_step_with_nonexistent_user(context):
 def have_procurement_step_with_invalid_completion_date(context):
     data = {
         "status": "COMPLETED",
-        "id": context["procurement_tracker_step"].id,
-        "procurement_tracker_id": context["procurement_tracker"].id,
-        "step_number": context["procurement_tracker_step"].step_number,
-        "step_type": "ACQUISITION_PLANNING",
         "date_completed": "2025-25-25",
         "task_completed_by": context["user_id"],
     }
@@ -276,10 +264,6 @@ def have_procurement_step_with_invalid_completion_date(context):
 def have_procurement_step_with_invalid_status(context):
     data = {
         "status": "BAD_STATUS",
-        "id": context["procurement_tracker_step"].id,
-        "procurement_tracker_id": context["procurement_tracker"].id,
-        "step_number": context["procurement_tracker_step"].step_number,
-        "step_type": "ACQUISITION_PLANNING",
         "date_completed": "2025-12-25",
         "task_completed_by": context["user_id"],
     }
@@ -291,9 +275,6 @@ def have_procurement_step_with_invalid_status(context):
 def have_procurement_step_with_no_presolicitation_package(context):
     data = {
         "status": "COMPLETED",
-        "id": context["procurement_tracker_step"].id,
-        "step_number": context["procurement_tracker_step"].step_number,
-        "step_type": "ACQUISITION_PLANNING",
     }
 
     context["request_body"] = data

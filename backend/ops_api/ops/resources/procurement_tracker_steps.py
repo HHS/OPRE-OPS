@@ -12,7 +12,7 @@ from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.schemas.procurement_tracker_steps import (
     ProcurementTrackerStepPatchRequestSchema,
     ProcurementTrackerStepResponseSchema,
-    QueryParametersSchema,
+    ProcurementTrackerStepsQueryParametersSchema,
 )
 from ops_api.ops.services.procurement_tracker_steps import ProcurementTrackerStepService
 from ops_api.ops.utils.errors import error_simulator
@@ -97,7 +97,7 @@ class ProcurementTrackerStepListAPI(BaseListAPI):
     def get(self) -> Response:
         """Get list of procurement tracker steps with optional filtering."""
         # Validate request parameters
-        request_schema = QueryParametersSchema()
+        request_schema = ProcurementTrackerStepsQueryParametersSchema()
         data = request_schema.load(request.args.to_dict(flat=False))
 
         logger.debug("Beginning procurement tracker step queries")
