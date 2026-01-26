@@ -63,8 +63,7 @@ def db_with_active_user_session(loaded_db, test_user):
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_logout(app, client, db_with_active_user_session):
+def test_logout(app, client, db_with_active_user_session, app_ctx):
     jwt = create_oauth_jwt(
         "fakeauth",
         app.config,

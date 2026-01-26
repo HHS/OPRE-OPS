@@ -1,13 +1,10 @@
 import datetime
 from unittest.mock import patch
 
-import pytest
-
 from ops_api.ops.utils.fiscal_year import get_current_fiscal_year
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_current_fiscal_year():
+def test_get_current_fiscal_year(app_ctx):
     assert get_current_fiscal_year() == 2023
 
     # simulate running outside of unit tests - getenv is used in is_unit_test

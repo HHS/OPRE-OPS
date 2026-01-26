@@ -8,8 +8,7 @@ from models.notifications import ChangeRequestNotification, Notification
 from ops_api.ops.resources.notifications import RecipientSchema
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_notification_retrieve(loaded_db):
+def test_notification_retrieve(loaded_db, app_ctx):
     notification = loaded_db.get(Notification, 1)
 
     assert notification is not None
@@ -21,8 +20,7 @@ def test_notification_retrieve(loaded_db):
 
 
 @pytest.fixture()
-@pytest.mark.usefixtures("app_ctx")
-def notification(loaded_db, test_admin_user):
+def notification(loaded_db, test_admin_user, app_ctx):
     notification = Notification(
         title="System Notification",
         message="This is a system notification",
@@ -41,8 +39,7 @@ def notification(loaded_db, test_admin_user):
 
 
 @pytest.fixture()
-@pytest.mark.usefixtures("app_ctx")
-def change_request_notification(loaded_db, test_user, test_admin_user):
+def change_request_notification(loaded_db, test_user, test_admin_user, app_ctx):
     change_request = AgreementChangeRequest()
     change_request.agreement_id = 1
     change_request.status = ChangeRequestStatus.APPROVED
@@ -74,8 +71,7 @@ def change_request_notification(loaded_db, test_user, test_admin_user):
 
 
 @pytest.fixture()
-@pytest.mark.usefixtures("app_ctx")
-def notification_for_another_user(loaded_db):
+def notification_for_another_user(loaded_db, app_ctx):
     john = User(
         oidc_id="41b88469-b7e8-4dbc-83d1-7e9a61d596b3",
         email="john@example.com",
@@ -103,8 +99,7 @@ def notification_for_another_user(loaded_db):
 
 
 @pytest.fixture()
-@pytest.mark.usefixtures("app_ctx")
-def notification_is_read_is_true(loaded_db):
+def notification_is_read_is_true(loaded_db, app_ctx):
     john = User(
         oidc_id="41b88469-b7e8-4dbc-83d1-7e9a61d596b3",
         email="john@example.com",
@@ -141,8 +136,7 @@ def test_notification_creation(loaded_db, notification):
     assert notification in user.notifications
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_notifications_get_all(auth_client, loaded_db):
+def test_notifications_get_all(auth_client, loaded_db, app_ctx):
     db_count = loaded_db.query(Notification).count()
     assert db_count > 0
 
@@ -151,8 +145,7 @@ def test_notifications_get_all(auth_client, loaded_db):
     assert len(response.json) == db_count
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_notifications_get_by_user_id(auth_client, loaded_db, notification):
+def test_notifications_get_by_user_id(auth_client, loaded_db, notification, app_ctx):
     user_id = notification.recipient.id
     db_count = loaded_db.query(Notification).filter(Notification.recipient_id == user_id).count()
     assert db_count > 0
@@ -169,8 +162,7 @@ def test_notifications_get_by_user_id(auth_client, loaded_db, notification):
     assert response.json[0]["notification_type"] == "NOTIFICATION"
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_notifications_get_by_oidc_id(auth_client, loaded_db, notification):
+def test_notifications_get_by_oidc_id(auth_client, loaded_db, notification, app_ctx):
     oidc_id = str(notification.recipient.oidc_id)
     db_count = loaded_db.query(Notification).filter(Notification.recipient_id == notification.recipient_id).count()
     assert db_count > 0
@@ -186,8 +178,7 @@ def test_notifications_get_by_oidc_id(auth_client, loaded_db, notification):
     assert response.json[0]["recipient"]["oidc_id"] == oidc_id
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_notifications_get_by_is_read(auth_client, loaded_db, notification, notification_is_read_is_true):
+def test_notifications_get_by_is_read(auth_client, loaded_db, notification, notification_is_read_is_true, app_ctx):
     db_count = loaded_db.query(Notification).filter(Notification.is_read.is_(False)).count()
     assert db_count > 0
 
@@ -216,8 +207,7 @@ def test_notifications_get_by_is_read(auth_client, loaded_db, notification, noti
     assert response.json[0]["expires"] == "2031-12-31"
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_notification_get_by_id(auth_client, loaded_db, test_user):
+def test_notification_get_by_id(auth_client, loaded_db, test_user, app_ctx):
     response = auth_client.get(url_for("api.notifications-item", id=1))
 
     assert response.status_code == 200
@@ -231,8 +221,7 @@ def test_notification_get_by_id(auth_client, loaded_db, test_user):
     assert response.json["recipient"]["full_name"] == "Chris Fortunato"
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_notification_auth(client, loaded_db):
+def test_notification_auth(client, loaded_db, app_ctx):
     response = client.get(url_for("api.notifications-item", id=1))
 
     assert response.status_code == 401
@@ -242,8 +231,7 @@ def test_notification_auth(client, loaded_db):
     assert response.status_code == 401
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_put_notification(auth_client, notification, test_user):
+def test_put_notification(auth_client, notification, test_user, app_ctx):
     data = {
         "is_read": False,
         "title": "Updated Notification",
@@ -269,8 +257,7 @@ def test_put_notification(auth_client, notification, test_user):
     assert response.json["created_on"] != response.json["updated_on"]
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_put_notification_ack(auth_client, notification, test_user):
+def test_put_notification_ack(auth_client, notification, test_user, app_ctx):
     data = {
         "is_read": True,
         "title": "Updated Notification",
@@ -296,9 +283,7 @@ def test_put_notification_ack(auth_client, notification, test_user):
     assert response.json["created_on"] != response.json["updated_on"]
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_patch_notification(auth_client, notification):
+def test_patch_notification(auth_client, notification, app_ctx):
     response = auth_client.patch(url_for("api.notifications-item", id=notification.id), json={"is_read": False})
 
     recipient_schema = RecipientSchema()
@@ -310,9 +295,7 @@ def test_patch_notification(auth_client, notification):
     assert response.json["expires"] == notification.expires.isoformat()
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_patch_notification_ack(auth_client, notification):
+def test_patch_notification_ack(auth_client, notification, app_ctx):
     response = auth_client.patch(url_for("api.notifications-item", id=notification.id), json={"is_read": True})
 
     recipient_schema = RecipientSchema()
@@ -325,9 +308,7 @@ def test_patch_notification_ack(auth_client, notification):
     assert response.json["expires"] == notification.expires.isoformat()
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_patch_notification_ack_must_be_user(auth_client, notification_for_another_user):
+def test_patch_notification_ack_must_be_user(auth_client, notification_for_another_user, app_ctx):
     # Test that a user cannot acknowledge a notification that is not theirs
     response = auth_client.patch(
         url_for("api.notifications-item", id=notification_for_another_user.id),
@@ -337,10 +318,7 @@ def test_patch_notification_ack_must_be_user(auth_client, notification_for_anoth
     assert response.status_code == 400
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_notifications_get_by_agreement_id(
-    auth_client, loaded_db, notification, change_request_notification, test_user
-):
+def test_notifications_get_by_agreement_id(auth_client, loaded_db, notification, change_request_notification, test_user, app_ctx):
     agreement_id = change_request_notification.change_request.agreement_id
     test_user_oidc_id = str(change_request_notification.recipient.oidc_id)
     db_count = (

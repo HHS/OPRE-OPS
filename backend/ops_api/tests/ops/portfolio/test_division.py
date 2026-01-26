@@ -1,10 +1,7 @@
-import pytest
-
 from models.portfolios import Division
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_division_lookup(loaded_db):
+def test_division_lookup(loaded_db, app_ctx):
     division = loaded_db.get(Division, 1)
     assert division is not None
     assert division.name == "Child Care"
@@ -18,15 +15,13 @@ def test_division_create():
     assert division.to_dict()["abbreviation"] == "DV3"
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_divisions_list(auth_client):
+def test_get_divisions_list(auth_client, app_ctx):
     response = auth_client.get("/api/v1/divisions/")
     assert response.status_code == 200
     assert len(response.json) == 9
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_divisions_by_id(auth_client):
+def test_get_divisions_by_id(auth_client, app_ctx):
     response = auth_client.get("/api/v1/divisions/1")
     assert response.status_code == 200
     assert response.json["id"] == 1

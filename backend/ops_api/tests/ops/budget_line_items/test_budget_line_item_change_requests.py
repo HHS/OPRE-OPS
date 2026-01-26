@@ -13,7 +13,6 @@ from models import (
 )
 
 
-@pytest.mark.usefixtures("app_ctx", "loaded_db")
 @pytest.mark.parametrize(
     "bli_status",
     [
@@ -21,7 +20,7 @@ from models import (
         BudgetLineItemStatus.OBLIGATED,
     ],
 )
-def test_bli_in_review_true_if_agreement_cr_in_review(loaded_db, test_admin_user, bli_status):
+def test_bli_in_review_true_if_agreement_cr_in_review(loaded_db, test_admin_user, bli_status, app_ctx):
     # Create a test agreement
     agreement = ContractAgreement(
         agreement_type=AgreementType.CONTRACT,
@@ -103,8 +102,7 @@ def test_bli_in_review_true_if_agreement_cr_in_review(loaded_db, test_admin_user
     assert loaded_db.get(ContractAgreement, agreement.id) is None, "Agreement should be deleted after test"
 
 
-@pytest.mark.usefixtures("app_ctx", "loaded_db")
-def test_bli_in_review_with_no_agreement_crs_should_return_one_bli_cr(loaded_db):
+def test_bli_in_review_with_no_agreement_crs_should_return_one_bli_cr(loaded_db, app_ctx):
     # Create a test agreement
     agreement = GrantAgreement(
         agreement_type=AgreementType.GRANT,

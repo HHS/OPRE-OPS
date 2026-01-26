@@ -205,11 +205,10 @@ def test_creates_change_request_when_planned_bli(mock_event_handler, mock_cr_ser
     assert result == 101
 
 
-@pytest.mark.usefixtures("app_ctx")
 class TestAgreementsPagination:
     """Test suite for pagination functionality in AgreementsService.get_list()"""
 
-    def test_pagination_returns_first_page_with_default_limit(self, loaded_db):
+    def test_pagination_returns_first_page_with_default_limit(self, loaded_db, app_ctx):
         """Test that default limit of 10 returns first 10 results"""
         service = AgreementsService(loaded_db)
         agreement_classes = [
@@ -227,7 +226,7 @@ class TestAgreementsPagination:
         assert metadata["limit"] == 10
         assert metadata["offset"] == 0
 
-    def test_pagination_with_custom_limit(self, loaded_db):
+    def test_pagination_with_custom_limit(self, loaded_db, app_ctx):
         """Test pagination with custom limit value"""
         service = AgreementsService(loaded_db)
         agreement_classes = [
@@ -245,7 +244,7 @@ class TestAgreementsPagination:
         assert metadata["limit"] == 5
         assert metadata["offset"] == 0
 
-    def test_pagination_with_offset(self, loaded_db):
+    def test_pagination_with_offset(self, loaded_db, app_ctx):
         """Test pagination with offset to get second page"""
         service = AgreementsService(loaded_db)
         agreement_classes = [
@@ -272,7 +271,7 @@ class TestAgreementsPagination:
         if len(results_page1) > 0 and len(results_page2) > 0:
             assert results_page1[0].id != results_page2[0].id
 
-    def test_pagination_with_limit_exceeding_results(self, loaded_db):
+    def test_pagination_with_limit_exceeding_results(self, loaded_db, app_ctx):
         """Test pagination when limit exceeds total results"""
         service = AgreementsService(loaded_db)
         agreement_classes = [
@@ -292,7 +291,7 @@ class TestAgreementsPagination:
         assert metadata["offset"] == 0
         assert len(results) == metadata["count"]  # All results returned
 
-    def test_pagination_with_offset_beyond_results(self, loaded_db):
+    def test_pagination_with_offset_beyond_results(self, loaded_db, app_ctx):
         """Test pagination when offset exceeds total results"""
         service = AgreementsService(loaded_db)
         agreement_classes = [
@@ -311,7 +310,7 @@ class TestAgreementsPagination:
         assert metadata["offset"] == 1000
         assert metadata["count"] >= 0  # Total count should still be correct
 
-    def test_pagination_boundary_last_page(self, loaded_db):
+    def test_pagination_boundary_last_page(self, loaded_db, app_ctx):
         """Test pagination on the last page with partial results"""
         service = AgreementsService(loaded_db)
         agreement_classes = [
@@ -337,7 +336,7 @@ class TestAgreementsPagination:
             assert metadata["offset"] == offset
             assert metadata["count"] == total_count
 
-    def test_metadata_count_reflects_total_before_pagination(self, loaded_db):
+    def test_metadata_count_reflects_total_before_pagination(self, loaded_db, app_ctx):
         """Test that metadata count shows total results, not paginated count"""
         service = AgreementsService(loaded_db)
         agreement_classes = [
@@ -356,7 +355,7 @@ class TestAgreementsPagination:
         assert metadata["count"] >= len(results)
         assert len(results) <= 2
 
-    def test_metadata_contains_all_required_fields(self, loaded_db):
+    def test_metadata_contains_all_required_fields(self, loaded_db, app_ctx):
         """Test that metadata contains count, limit, and offset"""
         service = AgreementsService(loaded_db)
         agreement_classes = [
@@ -377,7 +376,7 @@ class TestAgreementsPagination:
         assert isinstance(metadata["limit"], int)
         assert isinstance(metadata["offset"], int)
 
-    def test_metadata_count_consistent_across_pages(self, loaded_db):
+    def test_metadata_count_consistent_across_pages(self, loaded_db, app_ctx):
         """Test that total count remains consistent across different pages"""
         service = AgreementsService(loaded_db)
         agreement_classes = [
@@ -399,7 +398,7 @@ class TestAgreementsPagination:
         # Total count should be the same
         assert metadata_page1["count"] == metadata_page2["count"]
 
-    def test_pagination_with_single_agreement_type(self, loaded_db):
+    def test_pagination_with_single_agreement_type(self, loaded_db, app_ctx):
         """Test pagination works with just one agreement type"""
         service = AgreementsService(loaded_db)
         agreement_classes = [ContractAgreement]
@@ -411,7 +410,7 @@ class TestAgreementsPagination:
         assert all(isinstance(agr, ContractAgreement) for agr in results)
         assert metadata["count"] >= 0
 
-    def test_pagination_combines_multiple_agreement_types(self, loaded_db):
+    def test_pagination_combines_multiple_agreement_types(self, loaded_db, app_ctx):
         """Test that pagination correctly combines results from multiple agreement types"""
         service = AgreementsService(loaded_db)
 
@@ -427,7 +426,7 @@ class TestAgreementsPagination:
         assert combined_meta["count"] == expected_total
 
     @patch("ops_api.ops.utils.agreements_helpers.get_current_user")
-    def test_pagination_with_ownership_filter(self, mock_get_user, loaded_db):
+    def test_pagination_with_ownership_filter(self, mock_get_user, loaded_db, app_ctx):
         """Test that pagination works with ownership filter"""
         # Mock authenticated user
         mock_user = MagicMock()
@@ -453,7 +452,7 @@ class TestAgreementsPagination:
         assert metadata["offset"] == 0
 
     @patch("ops_api.ops.utils.agreements_helpers.get_current_user")
-    def test_pagination_ownership_filter_affects_count(self, mock_get_user, loaded_db):
+    def test_pagination_ownership_filter_affects_count(self, mock_get_user, loaded_db, app_ctx):
         """Test that ownership filter changes the total count appropriately"""
         # Mock authenticated user
         mock_user = MagicMock()
@@ -481,11 +480,10 @@ class TestAgreementsPagination:
         assert metadata_filtered["count"] <= metadata_all["count"]
 
 
-@pytest.mark.usefixtures("app_ctx")
 class TestAgreementsAtomicCreation:
     """Test suite for atomic agreement creation with nested entities"""
 
-    def test_create_agreement_with_budget_line_items_without_services_component_ref(self, loaded_db):
+    def test_create_agreement_with_budget_line_items_without_services_component_ref(self, loaded_db, app_ctx):
         """Test that budget line items can be created without services_component_ref (backward compatibility)"""
         service = AgreementsService(loaded_db)
 
@@ -519,7 +517,7 @@ class TestAgreementsAtomicCreation:
         assert results["budget_line_items_created"] == 2
         assert results["services_components_created"] == 0
 
-    def test_create_agreement_with_blis_referencing_scs(self, loaded_db):
+    def test_create_agreement_with_blis_referencing_scs(self, loaded_db, app_ctx):
         """Test that budget line items can reference services components using services_component_ref"""
         service = AgreementsService(loaded_db)
 
@@ -570,7 +568,7 @@ class TestAgreementsAtomicCreation:
         assert len(agreement.budget_line_items) == 2
         assert all(bli.services_component_id is not None for bli in agreement.budget_line_items)
 
-    def test_create_agreement_with_invalid_services_component_ref(self, loaded_db):
+    def test_create_agreement_with_invalid_services_component_ref(self, loaded_db, app_ctx):
         """Test that invalid services_component_ref raises ValidationError"""
         service = AgreementsService(loaded_db)
 
@@ -597,7 +595,7 @@ class TestAgreementsAtomicCreation:
         assert "services_component_ref" in exc_info.value.validation_errors
         assert "nonexistent_ref" in str(exc_info.value.validation_errors["services_component_ref"][0])
 
-    def test_create_agreement_with_default_numeric_sc_refs(self, loaded_db):
+    def test_create_agreement_with_default_numeric_sc_refs(self, loaded_db, app_ctx):
         """Test that services components without explicit ref use numeric index as default"""
         service = AgreementsService(loaded_db)
 
@@ -635,11 +633,10 @@ class TestAgreementsAtomicCreation:
         assert results["services_components_created"] == 2
 
 
-@pytest.mark.usefixtures("app_ctx")
 class TestAgreementsAtomicCreationRollback:
     """Test suite for transaction rollback behavior in atomic agreement creation"""
 
-    def test_invalid_can_id_causes_complete_rollback(self, loaded_db):
+    def test_invalid_can_id_causes_complete_rollback(self, loaded_db, app_ctx):
         """Test that invalid CAN ID causes complete rollback - no agreement or BLIs created"""
         from ops_api.ops.services.ops_service import ResourceNotFoundError
 
@@ -684,7 +681,7 @@ class TestAgreementsAtomicCreationRollback:
         assert final_agreement_count == initial_agreement_count, "Agreement should not be created after rollback"
         assert final_bli_count == initial_bli_count, "No budget line items should be created after rollback"
 
-    def test_invalid_services_component_ref_causes_complete_rollback(self, loaded_db):
+    def test_invalid_services_component_ref_causes_complete_rollback(self, loaded_db, app_ctx):
         """Test that invalid services_component_ref causes complete rollback - no agreement, SCs, or BLIs created"""
         from models import ServicesComponent
 
@@ -735,7 +732,7 @@ class TestAgreementsAtomicCreationRollback:
         assert final_sc_count == initial_sc_count, "Services components should not be created after rollback"
         assert final_bli_count == initial_bli_count, "Budget line items should not be created after rollback"
 
-    def test_no_orphaned_services_components_after_bli_failure(self, loaded_db):
+    def test_no_orphaned_services_components_after_bli_failure(self, loaded_db, app_ctx):
         """Test that services components are not orphaned when BLI creation fails"""
         from models import ServicesComponent
         from ops_api.ops.services.ops_service import ResourceNotFoundError
@@ -790,7 +787,7 @@ class TestAgreementsAtomicCreationRollback:
         final_sc_count = loaded_db.query(ServicesComponent).count()
         assert final_sc_count == initial_sc_count, "No orphaned services components should exist after rollback"
 
-    def test_database_state_unchanged_after_rollback(self, loaded_db):
+    def test_database_state_unchanged_after_rollback(self, loaded_db, app_ctx):
         """Test that database state is completely unchanged after a failed transaction"""
         from models import ServicesComponent
         from ops_api.ops.services.ops_service import ResourceNotFoundError
@@ -860,7 +857,7 @@ class TestAgreementsAtomicCreationRollback:
         latest_agreement_id_after = latest_agreement_after.id if latest_agreement_after else 0
         assert latest_agreement_id_after == latest_agreement_id, "No new agreement IDs should be allocated"
 
-    def test_bli_creation_failure_after_multiple_scs_created(self, loaded_db):
+    def test_bli_creation_failure_after_multiple_scs_created(self, loaded_db, app_ctx):
         """Test rollback when BLI fails after multiple SCs have been successfully created"""
         from models import ServicesComponent
         from ops_api.ops.services.ops_service import ResourceNotFoundError
@@ -928,7 +925,7 @@ class TestAgreementsAtomicCreationRollback:
         assert final_sc_count == initial_sc_count, "All 4 services components should be rolled back"
         assert final_bli_count == initial_bli_count, "All budget line items should be rolled back"
 
-    def test_first_bli_failure_prevents_subsequent_bli_creation(self, loaded_db):
+    def test_first_bli_failure_prevents_subsequent_bli_creation(self, loaded_db, app_ctx):
         """Test that if first BLI fails, subsequent BLIs are not created"""
         from ops_api.ops.services.ops_service import ResourceNotFoundError
 
@@ -972,11 +969,10 @@ class TestAgreementsAtomicCreationRollback:
         assert final_bli_count == initial_bli_count, "No BLIs should be created when first one fails"
 
 
-@pytest.mark.usefixtures("app_ctx")
 class TestAgreementsDuplicateNameHandling:
     """Test suite for duplicate agreement name validation"""
 
-    def test_create_agreement_with_duplicate_name_raises_validation_error(self, loaded_db):
+    def test_create_agreement_with_duplicate_name_raises_validation_error(self, loaded_db, app_ctx):
         """Test that creating an agreement with a duplicate name (same type) raises ValidationError"""
         service = AgreementsService(loaded_db)
 
@@ -1007,7 +1003,7 @@ class TestAgreementsDuplicateNameHandling:
         assert "already exists" in str(exc_info.value.validation_errors["name"][0])
         assert "unique" in str(exc_info.value.validation_errors["name"][0]).lower()
 
-    def test_create_agreement_with_duplicate_name_case_insensitive(self, loaded_db):
+    def test_create_agreement_with_duplicate_name_case_insensitive(self, loaded_db, app_ctx):
         """Test that duplicate name check is case-insensitive"""
         service = AgreementsService(loaded_db)
 
@@ -1036,7 +1032,7 @@ class TestAgreementsDuplicateNameHandling:
 
         assert "name" in exc_info.value.validation_errors
 
-    def test_create_agreement_with_same_name_different_type_succeeds(self, loaded_db):
+    def test_create_agreement_with_same_name_different_type_succeeds(self, loaded_db, app_ctx):
         """Test that agreements with same name but different types can coexist"""
         service = AgreementsService(loaded_db)
 
@@ -1066,9 +1062,7 @@ class TestAgreementsDuplicateNameHandling:
 
     @patch("ops_api.ops.services.agreements.get_current_user")
     @patch("ops_api.ops.validation.rules.agreement.check_user_association")
-    def test_update_agreement_with_duplicate_name_raises_validation_error(
-        self, mock_check_association, mock_get_user_services, loaded_db
-    ):
+    def test_update_agreement_with_duplicate_name_raises_validation_error(self, mock_check_association, mock_get_user_services, loaded_db, app_ctx):
         """Test that updating an agreement to a duplicate name (same type) raises ValidationError"""
         # Mock authorization check to always pass
         mock_check_association.return_value = True
@@ -1117,9 +1111,7 @@ class TestAgreementsDuplicateNameHandling:
 
     @patch("ops_api.ops.services.agreements.get_current_user")
     @patch("ops_api.ops.validation.rules.agreement.check_user_association")
-    def test_update_agreement_with_duplicate_name_case_insensitive(
-        self, mock_check_association, mock_get_user_services, loaded_db
-    ):
+    def test_update_agreement_with_duplicate_name_case_insensitive(self, mock_check_association, mock_get_user_services, loaded_db, app_ctx):
         """Test that duplicate name check on update is case-insensitive"""
         # Mock authorization check to always pass
         mock_check_association.return_value = True
@@ -1163,7 +1155,7 @@ class TestAgreementsDuplicateNameHandling:
 
     @patch("ops_api.ops.services.agreements.get_current_user")
     @patch("ops_api.ops.validation.rules.agreement.check_user_association")
-    def test_update_agreement_keeps_same_name_succeeds(self, mock_check_association, mock_get_user_services, loaded_db):
+    def test_update_agreement_keeps_same_name_succeeds(self, mock_check_association, mock_get_user_services, loaded_db, app_ctx):
         """Test that updating an agreement while keeping its own name succeeds"""
         # Mock authorization check to always pass
         mock_check_association.return_value = True

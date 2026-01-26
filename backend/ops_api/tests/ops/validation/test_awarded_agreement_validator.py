@@ -8,11 +8,10 @@ from ops_api.ops.validation.awarded_agreement_validator import AwardedAgreementV
 from ops_api.ops.validation.rules.awarded import ImmutableAwardedFieldsRule
 
 
-@pytest.mark.usefixtures("app_ctx")
 class TestAwardedAgreementValidator:
     """Test suite for AwardedAgreementValidator."""
 
-    def test_validator_includes_base_and_awarded_validators(self):
+    def test_validator_includes_base_and_awarded_validators(self, app_ctx):
         """Test that AwardedAgreementValidator includes both base and awarded-specific validators."""
         validator = AwardedAgreementValidator()
 
@@ -23,7 +22,7 @@ class TestAwardedAgreementValidator:
         awarded_rule_present = any(isinstance(v, ImmutableAwardedFieldsRule) for v in validator.validators)
         assert awarded_rule_present
 
-    def test_validate_raises_error_for_immutable_field_on_awarded_agreement(self, test_user, loaded_db, monkeypatch):
+    def test_validate_raises_error_for_immutable_field_on_awarded_agreement(self, test_user, loaded_db, monkeypatch, app_ctx):
         """Test that validator prevents immutable field changes on awarded agreements."""
         agreement = ContractAgreement(
             name="Test Agreement - Awarded Immutable Field",
@@ -49,7 +48,7 @@ class TestAwardedAgreementValidator:
         loaded_db.delete(agreement)
         loaded_db.commit()
 
-    def test_validate_allows_non_immutable_field_changes_on_awarded_agreement(self, test_user, loaded_db, monkeypatch):
+    def test_validate_allows_non_immutable_field_changes_on_awarded_agreement(self, test_user, loaded_db, monkeypatch, app_ctx):
         """Test that validator allows non-immutable field changes on awarded agreements."""
         agreement = ContractAgreement(
             name="Test Agreement - Awarded Non Immutable",
@@ -72,7 +71,7 @@ class TestAwardedAgreementValidator:
         loaded_db.delete(agreement)
         loaded_db.commit()
 
-    def test_validate_still_checks_base_validation_rules(self, loaded_db, monkeypatch):
+    def test_validate_still_checks_base_validation_rules(self, loaded_db, monkeypatch, app_ctx):
         """Test that AwardedAgreementValidator still checks base validation rules."""
         from models import User
 
@@ -99,7 +98,7 @@ class TestAwardedAgreementValidator:
         loaded_db.delete(unauthorized_user)
         loaded_db.commit()
 
-    def test_validator_can_be_initialized_with_custom_validators(self):
+    def test_validator_can_be_initialized_with_custom_validators(self, app_ctx):
         """Test that AwardedAgreementValidator can accept custom validators."""
         from ops_api.ops.validation.rules.agreement import AgreementTypeImmutableRule
 

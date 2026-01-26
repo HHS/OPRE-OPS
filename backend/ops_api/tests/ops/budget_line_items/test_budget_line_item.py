@@ -144,8 +144,7 @@ def test_bli_new_no_need_by_date(loaded_db, test_can):
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_budget_line_item_lookup(loaded_db, test_bli):
+def test_budget_line_item_lookup(loaded_db, test_bli, app_ctx):
     bli = loaded_db.get(BudgetLineItem, test_bli.id)
     assert bli is not None
     assert bli.id == test_bli.id
@@ -175,17 +174,13 @@ def test_get_budget_line_items_list(auth_client, loaded_db):
     assert response.json[0]["_meta"]["total_count"] == count
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_budget_line_items_list_by_id(auth_client, test_bli):
+def test_get_budget_line_items_list_by_id(auth_client, test_bli, app_ctx):
     response = auth_client.get(f"/api/v1/budget-line-items/{test_bli.id}")
     assert response.status_code == 200
     assert response.json["id"] == test_bli.id
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_budget_line_items_list_by_can(auth_client, loaded_db):
+def test_get_budget_line_items_list_by_can(auth_client, loaded_db, app_ctx):
     response = auth_client.get(
         url_for("api.budget-line-items-group"),
         query_string={"can_id": 500, "enable_obe": True},
@@ -197,9 +192,7 @@ def test_get_budget_line_items_list_by_can(auth_client, loaded_db):
         assert item["can_id"] == 500
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_budget_line_items_list_by_agreement(auth_client, loaded_db):
+def test_get_budget_line_items_list_by_agreement(auth_client, loaded_db, app_ctx):
     response = auth_client.get(
         url_for("api.budget-line-items-group"),
         query_string={"agreement_id": 1, "enable_obe": True},
@@ -218,9 +211,7 @@ def test_get_budget_line_items_auth_required(client):
     assert response.status_code == 401
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_budget_line_items_list_by_status(auth_client, loaded_db):
+def test_get_budget_line_items_list_by_status(auth_client, loaded_db, app_ctx):
     response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"status": "IN_EXECUTION"})
     assert response.status_code == 200
 
@@ -231,16 +222,12 @@ def test_get_budget_line_items_list_by_status(auth_client, loaded_db):
         assert item["status"] == "IN_EXECUTION"
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_post_budget_line_items_empty_post(auth_client):
+def test_post_budget_line_items_empty_post(auth_client, app_ctx):
     response = auth_client.post("/api/v1/budget-line-items/", json={})
     assert response.status_code == 400
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_post_budget_line_items(loaded_db, auth_client, test_can):
+def test_post_budget_line_items(loaded_db, auth_client, test_can, app_ctx):
     data = {
         "line_description": "LI 1",
         "comments": "blah blah",
@@ -265,9 +252,7 @@ def test_post_budget_line_items(loaded_db, auth_client, test_can):
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_post_budget_line_items_missing_agreement(auth_client, test_can):
+def test_post_budget_line_items_missing_agreement(auth_client, test_can, app_ctx):
     data = {
         "line_description": "LI 1",
         "comments": "blah blah",
@@ -281,9 +266,7 @@ def test_post_budget_line_items_missing_agreement(auth_client, test_can):
     assert response.status_code == 400
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_post_budget_line_items_missing_optional_comments(loaded_db, auth_client, test_can):
+def test_post_budget_line_items_missing_optional_comments(loaded_db, auth_client, test_can, app_ctx):
     data = {
         "line_description": "LI 1",
         "agreement_id": 1,
@@ -302,9 +285,7 @@ def test_post_budget_line_items_missing_optional_comments(loaded_db, auth_client
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_post_budget_line_items_invalid_can(auth_client):
+def test_post_budget_line_items_invalid_can(auth_client, app_ctx):
     data = {
         "line_description": "LI 1",
         "comments": "blah blah",
@@ -319,9 +300,7 @@ def test_post_budget_line_items_invalid_can(auth_client):
     assert response.status_code == 404
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_post_budget_line_items_auth_required(client, test_can):
+def test_post_budget_line_items_auth_required(client, test_can, app_ctx):
     data = {
         "line_description": "LI 1",
         "comments": "blah blah",
@@ -336,9 +315,7 @@ def test_post_budget_line_items_auth_required(client, test_can):
     assert response.status_code == 401
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_post_budget_line_items_only_agreement_id_required(auth_client, loaded_db):
+def test_post_budget_line_items_only_agreement_id_required(auth_client, loaded_db, app_ctx):
     data = {"agreement_id": 1}
     response = auth_client.post("/api/v1/budget-line-items/", json=data)
     assert response.status_code == 201
@@ -351,8 +328,7 @@ def test_post_budget_line_items_only_agreement_id_required(auth_client, loaded_d
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_put_budget_line_items(auth_client, test_bli_new):
+def test_put_budget_line_items(auth_client, test_bli_new, app_ctx):
     data = {
         "line_description": "Updated LI 1",
         "comments": "hah hah",
@@ -375,8 +351,7 @@ def test_put_budget_line_items(auth_client, test_bli_new):
     assert response.json["created_on"] != response.json["updated_on"]
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_put_budget_line_items_cannot_change_agreement(auth_client, test_bli_new):
+def test_put_budget_line_items_cannot_change_agreement(auth_client, test_bli_new, app_ctx):
     data = {
         "agreement_id": 2,
     }
@@ -384,9 +359,7 @@ def test_put_budget_line_items_cannot_change_agreement(auth_client, test_bli_new
     assert response.status_code == 400
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_put_budget_line_items_minimum(auth_client, loaded_db, test_can):
+def test_put_budget_line_items_minimum(auth_client, loaded_db, test_can, app_ctx):
     bli = ContractBudgetLineItem(
         id=1000,
         line_description="LI 1",
@@ -421,9 +394,7 @@ def test_put_budget_line_items_minimum(auth_client, loaded_db, test_can):
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_put_budget_line_items_bad_status(auth_client, loaded_db, test_can):
+def test_put_budget_line_items_bad_status(auth_client, loaded_db, test_can, app_ctx):
     bli = ContractBudgetLineItem(
         id=1000,
         line_description="LI 1",
@@ -450,9 +421,7 @@ def test_put_budget_line_items_bad_status(auth_client, loaded_db, test_can):
         loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_put_budget_line_items_bad_date(auth_client, loaded_db, test_can):
+def test_put_budget_line_items_bad_date(auth_client, loaded_db, test_can, app_ctx):
     bli = ContractBudgetLineItem(
         id=1000,
         line_description="LI 1",
@@ -478,31 +447,23 @@ def test_put_budget_line_items_bad_date(auth_client, loaded_db, test_can):
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_put_budget_line_items_bad_can(auth_client, test_bli_new):
+def test_put_budget_line_items_bad_can(auth_client, test_bli_new, app_ctx):
     data = {"can_id": 1000000, "agreement_id": 1, "status": "DRAFT"}
     response = auth_client.put(f"/api/v1/budget-line-items/{test_bli_new.id}", json=data)
     assert response.status_code == 404
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_put_budget_line_items_auth(client, loaded_db):
+def test_put_budget_line_items_auth(client, loaded_db, app_ctx):
     response = client.put("/api/v1/budget-line-items/1000", json={})
     assert response.status_code == 401
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_put_budget_line_items_empty_request(auth_client, loaded_db, test_bli_new):
+def test_put_budget_line_items_empty_request(auth_client, loaded_db, test_bli_new, app_ctx):
     response = auth_client.put(f"/api/v1/budget-line-items/{test_bli_new.id}", json={})
     assert response.status_code == 400
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_put_budget_line_items_non_existent_bli(auth_client, loaded_db):
+def test_put_budget_line_items_non_existent_bli(auth_client, loaded_db, app_ctx):
     data = {
         "line_description": "Updated LI 1",
         "comments": "hah hah",
@@ -517,9 +478,7 @@ def test_put_budget_line_items_non_existent_bli(auth_client, loaded_db):
     assert response.status_code == 404
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_patch_budget_line_items(auth_client, loaded_db, test_can):
+def test_patch_budget_line_items(auth_client, loaded_db, test_can, app_ctx):
     # TODO: setting the services_component_id is not working on create
     bli = ContractBudgetLineItem(
         line_description="LI 1",
@@ -564,9 +523,7 @@ def test_patch_budget_line_items(auth_client, loaded_db, test_can):
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_patch_budget_line_items_update_two_attributes(auth_client, loaded_db, test_can):
+def test_patch_budget_line_items_update_two_attributes(auth_client, loaded_db, test_can, app_ctx):
     bli = ContractBudgetLineItem(
         id=1000,
         line_description="LI 1",
@@ -607,15 +564,12 @@ def test_patch_budget_line_items_update_two_attributes(auth_client, loaded_db, t
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_patch_budget_line_items_auth_required(client):
+def test_patch_budget_line_items_auth_required(client, app_ctx):
     response = client.patch("/api/v1/budget-line-items/1", json={})
     assert response.status_code == 401
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_patch_budget_line_items_bad_status(auth_client, loaded_db, test_can, test_bli_new):
+def test_patch_budget_line_items_bad_status(auth_client, loaded_db, test_can, test_bli_new, app_ctx):
     data = {
         "line_description": "LI 1",
         "comments": "blah blah",
@@ -629,16 +583,12 @@ def test_patch_budget_line_items_bad_status(auth_client, loaded_db, test_can, te
     assert response.status_code == 400
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_patch_budget_line_items_empty_data(auth_client, test_bli):
+def test_patch_budget_line_items_empty_data(auth_client, test_bli, app_ctx):
     response = auth_client.patch(f"/api/v1/budget-line-items/{test_bli.id}", json={})
     assert response.status_code == 200
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_patch_budget_line_items_invalid_can(auth_client, test_bli_new):
+def test_patch_budget_line_items_invalid_can(auth_client, test_bli_new, app_ctx):
     data = {
         "line_description": "LI 1",
         "comments": "blah blah",
@@ -654,9 +604,7 @@ def test_patch_budget_line_items_invalid_can(auth_client, test_bli_new):
 
 
 @pytest.mark.skip("Status change (from DRAFT to PLANNED) is not allowed as direct edit. Replace/rework this test.")
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_patch_budget_line_items_update_status(auth_client, loaded_db, test_can):
+def test_patch_budget_line_items_update_status(auth_client, loaded_db, test_can, app_ctx):
     bli = ContractBudgetLineItem(
         id=1000,
         line_description="LI 1",
@@ -684,8 +632,7 @@ def test_patch_budget_line_items_update_status(auth_client, loaded_db, test_can)
         loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_patch_budget_line_items_history(loaded_db, test_can):
+def test_patch_budget_line_items_history(loaded_db, test_can, app_ctx):
     bli = ContractBudgetLineItem(
         line_description="LI 1",
         comments="blah blah",
@@ -726,15 +673,12 @@ def test_patch_budget_line_items_history(loaded_db, test_can):
         loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_budget_line_item_portfolio_id(loaded_db, test_bli_new):
+def test_budget_line_item_portfolio_id(loaded_db, test_bli_new, app_ctx):
     can = loaded_db.get(CAN, test_bli_new.can_id)
     assert test_bli_new.portfolio_id == can.portfolio_id
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_put_budget_line_item_portfolio_id_ignored(auth_client, loaded_db, test_bli_new):
+def test_put_budget_line_item_portfolio_id_ignored(auth_client, loaded_db, test_bli_new, app_ctx):
     data = {
         "line_description": "Updated LI 1",
         "comments": "hah hah",
@@ -750,12 +694,12 @@ def test_put_budget_line_item_portfolio_id_ignored(auth_client, loaded_db, test_
     assert response.status_code == 200, "portfolio_id should be ignored"
 
 
-@pytest.mark.usefixtures("app_ctx")
 def test_budget_line_item_fiscal_year(
     loaded_db,
     test_bli_new,
     test_bli_new_previous_year,
     test_bli_new_previous_fiscal_year,
+    app_ctx,
 ):
     assert test_bli_new.fiscal_year == test_bli_new.date_needed.year, "test_bli_new.date_needed == 2043-01-01"
     assert (
@@ -766,38 +710,33 @@ def test_budget_line_item_fiscal_year(
     ), "test_bli_new_previous_fiscal_year.date_needed == 2042-09-01"
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_budget_line_item_portfolio_id_null(auth_client, loaded_db, test_bli_new_no_can):
+def test_budget_line_item_portfolio_id_null(auth_client, loaded_db, test_bli_new_no_can, app_ctx):
     assert test_bli_new_no_can.portfolio_id is None
     response = auth_client.get(f"/api/v1/budget-line-items/{test_bli_new_no_can.id}")
     assert response.status_code == 200
     assert response.json["portfolio_id"] is None
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_budget_line_item_fiscal_year_null(auth_client, loaded_db, test_bli_new_no_need_by_date):
+def test_budget_line_item_fiscal_year_null(auth_client, loaded_db, test_bli_new_no_need_by_date, app_ctx):
     assert test_bli_new_no_need_by_date.fiscal_year is None
     response = auth_client.get(f"/api/v1/budget-line-items/{test_bli_new_no_need_by_date.id}")
     assert response.status_code == 200
     assert response.json["fiscal_year"] is None
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_budget_line_item_team_members(loaded_db, test_bli_new):
+def test_budget_line_item_team_members(loaded_db, test_bli_new, app_ctx):
     team_members = test_bli_new.agreement.team_members
     assert len(team_members) > 0
     assert test_bli_new.team_members == team_members
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_budget_line_item_team_members_response(auth_client, loaded_db, test_bli_new):
+def test_budget_line_item_team_members_response(auth_client, loaded_db, test_bli_new, app_ctx):
     response = auth_client.get(f"/api/v1/budget-line-items/{test_bli_new.id}")
     assert response.status_code == 200
     assert len(response.json["team_members"]) > 0
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_patch_budget_line_items_using_e2e_test(auth_client, test_bli_new, test_can):
+def test_patch_budget_line_items_using_e2e_test(auth_client, test_bli_new, test_can, app_ctx):
     data = {
         "amount": 111111,
         "can_id": test_can.id,
@@ -815,16 +754,13 @@ def test_patch_budget_line_items_using_e2e_test(auth_client, test_bli_new, test_
     assert response.status_code == 200
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_patch_budget_line_items_with_null_date_needed(auth_client, test_bli_new):
+def test_patch_budget_line_items_with_null_date_needed(auth_client, test_bli_new, app_ctx):
     response = auth_client.patch(f"/api/v1/budget-line-items/{test_bli_new.id}", json={"date_needed": None})
     assert response.status_code == 200
     assert response.json["date_needed"] is None
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_valid_services_component(auth_client, loaded_db, test_bli_new):
+def test_valid_services_component(auth_client, loaded_db, test_bli_new, app_ctx):
     sc = ServicesComponent(agreement_id=6, number=99, optional=False)
     loaded_db.add(sc)
     loaded_db.commit()
@@ -850,9 +786,7 @@ def test_valid_services_component(auth_client, loaded_db, test_bli_new):
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_delete_budget_line_items(auth_client, loaded_db, test_can):
+def test_delete_budget_line_items(auth_client, loaded_db, test_can, app_ctx):
     bli = ContractBudgetLineItem(
         line_description="LI 1",
         agreement_id=1,
@@ -920,8 +854,7 @@ def test_budget_line_item_validation_create_invalid(auth_client, app, test_can, 
     session.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_budget_line_item_validation_patch_to_invalid(auth_client, app, test_can, test_project):
+def test_budget_line_item_validation_patch_to_invalid(auth_client, app, test_can, test_project, app_ctx):
     session = app.db_session
 
     # create agreement (using API)
@@ -976,8 +909,7 @@ def test_budget_line_item_validation_patch_to_invalid(auth_client, app, test_can
     session.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_budget_line_item_validation_patch_to_zero_or_negative_amount(auth_client, app, test_can, test_project):
+def test_budget_line_item_validation_patch_to_zero_or_negative_amount(auth_client, app, test_can, test_project, app_ctx):
     session = app.db_session
 
     # create agreement (using API)
@@ -1031,8 +963,7 @@ def test_budget_line_item_validation_patch_to_zero_or_negative_amount(auth_clien
     session.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_budget_line_item_validation_patch_to_invalid_date(auth_client, app, test_can, test_project):
+def test_budget_line_item_validation_patch_to_invalid_date(auth_client, app, test_can, test_project, app_ctx):
     session = app.db_session
 
     # create agreement (using API)
@@ -1078,9 +1009,7 @@ def test_budget_line_item_validation_patch_to_invalid_date(auth_client, app, tes
     session.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_patch_budget_line_items_valid_user_change_request(auth_client, test_bli):
+def test_patch_budget_line_items_valid_user_change_request(auth_client, test_bli, app_ctx):
     data = {
         "status": "DRAFT",
     }
@@ -1088,9 +1017,7 @@ def test_patch_budget_line_items_valid_user_change_request(auth_client, test_bli
     assert response.status_code == 200
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_patch_budget_line_items_invalid_user_change_request(basic_user_auth_client, test_bli):
+def test_patch_budget_line_items_invalid_user_change_request(basic_user_auth_client, test_bli, app_ctx):
     data = {
         "status": "PLANNED",
     }
@@ -1098,9 +1025,7 @@ def test_patch_budget_line_items_invalid_user_change_request(basic_user_auth_cli
     assert response.status_code == 403
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_invalid_post_budget_line_items(loaded_db, basic_user_auth_client, test_can):
+def test_invalid_post_budget_line_items(loaded_db, basic_user_auth_client, test_can, app_ctx):
     data = {
         "line_description": "LI 1",
         "comments": "blah blah",
@@ -1116,8 +1041,7 @@ def test_invalid_post_budget_line_items(loaded_db, basic_user_auth_client, test_
     assert response.status_code == 403
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_budget_line_items_get_all_by_fiscal_year(auth_client, loaded_db):
+def test_budget_line_items_get_all_by_fiscal_year(auth_client, loaded_db, app_ctx):
     # determine how many blis in the DB are in fiscal year 2044
     stmt = select(BudgetLineItem.id).distinct().where(BudgetLineItem.fiscal_year == 2044)
     blis = loaded_db.scalars(stmt).all()
@@ -1155,8 +1079,7 @@ def test_budget_line_items_get_all_by_fiscal_year(auth_client, loaded_db):
     assert response.json[0]["_meta"]["total_count"] == len(set_of_blis)
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_budget_line_items_get_all_by_budget_line_status(auth_client, loaded_db):
+def test_budget_line_items_get_all_by_budget_line_status(auth_client, loaded_db, app_ctx):
     # determine how many blis in the DB are in budget line status "DRAFT"
     stmt = select(BudgetLineItem).distinct().where(BudgetLineItem.status == BudgetLineItemStatus.DRAFT.name)
     blis = loaded_db.scalars(stmt).all()
@@ -1187,8 +1110,7 @@ def test_budget_line_items_get_all_by_budget_line_status(auth_client, loaded_db)
     assert response.json[0]["_meta"]["total_count"] == len(blis)
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_budget_line_items_get_all_by_portfolio(auth_client, loaded_db):
+def test_budget_line_items_get_all_by_portfolio(auth_client, loaded_db, app_ctx):
     # determine how many blis in the DB are in portfolio 1
     stmt = select(BudgetLineItem).where(BudgetLineItem.portfolio_id == 1)
     blis = loaded_db.scalars(stmt).all()
@@ -1336,8 +1258,7 @@ def test_get_budget_line_items_list_meta(auth_client, loaded_db):
     assert meta["total_in_execution_amount"] == float(total_in_execution_amount)
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_budget_line_items_get_all_only_my(basic_user_auth_client, budget_team_auth_client, loaded_db):
+def test_budget_line_items_get_all_only_my(basic_user_auth_client, budget_team_auth_client, loaded_db, app_ctx):
     response = basic_user_auth_client.get(
         url_for("api.budget-line-items-group"),
         query_string={"only_my": False, "limit": 10, "offset": 0},
@@ -1495,9 +1416,7 @@ def test_budget_line_items_correct_number_of_pages(auth_client, loaded_db):
     assert response.json[0]["_meta"]["number_of_pages"] == 8
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_budget_line_items_list_by_id_with_meta(auth_client, test_bli):
+def test_get_budget_line_items_list_by_id_with_meta(auth_client, test_bli, app_ctx):
     response = auth_client.get(f"/api/v1/budget-line-items/{test_bli.id}")
     assert response.status_code == 200
     assert response.json["_meta"]["isEditable"] is True
@@ -1515,9 +1434,7 @@ def test_get_budget_line_items_list_with_meta(auth_client, loaded_db):
     assert any(item["_meta"]["isEditable"] for item in data)
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_budget_line_items_filter_options(system_owner_auth_client):
+def test_get_budget_line_items_filter_options(system_owner_auth_client, app_ctx):
     response = system_owner_auth_client.get("/api/v1/budget-line-items-filters/?only_my=True&enable_obe=True")
     assert response.status_code == 200
     assert len(response.json) > 0
@@ -1572,9 +1489,7 @@ def test_get_budget_line_items_filter_options_no_permission(no_perms_auth_client
     assert response.status_code == 403
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_budget_line_items_includes_fee(auth_client, test_bli_new):
+def test_get_budget_line_items_includes_fee(auth_client, test_bli_new, app_ctx):
     response = auth_client.get("/api/v1/budget-line-items/")
     assert response.status_code == 200
     assert isinstance(response.json, list)
@@ -1582,16 +1497,14 @@ def test_get_budget_line_items_includes_fee(auth_client, test_bli_new):
     assert isinstance(response.json[0]["fees"], float)
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_budget_line_item_by_id_includes_fee(auth_client, test_bli_new):
+def test_get_budget_line_item_by_id_includes_fee(auth_client, test_bli_new, app_ctx):
     response = auth_client.get(f"/api/v1/budget-line-items/{test_bli_new.id}")
     assert response.status_code == 200
     assert "fees" in response.json
     assert isinstance(response.json["fees"], float)
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_budget_line_item_fee_calculation(auth_client, loaded_db, test_bli_new):
+def test_budget_line_item_fee_calculation(auth_client, loaded_db, test_bli_new, app_ctx):
     # Create a Procurement Shop
     procurement_shop = ProcurementShop(
         name="test bli fees with set procurement shop",
@@ -1649,8 +1562,7 @@ def test_budget_line_item_fee_calculation(auth_client, loaded_db, test_bli_new):
     assert loaded_db.get(ContractAgreement, agreement.id) is None
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_budget_line_item_fees_is_zero_when_proc_fee_is_null(auth_client, test_bli_new):
+def test_budget_line_item_fees_is_zero_when_proc_fee_is_null(auth_client, test_bli_new, app_ctx):
     test_bli_new.proc_shop_fee_percentage = None
     test_bli_new.amount = 100.0
     auth_client.application.db_session.commit()
@@ -1662,8 +1574,7 @@ def test_budget_line_item_fees_is_zero_when_proc_fee_is_null(auth_client, test_b
     assert response.json["fees"] == 0.0
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_budget_line_items_get_all_obe_budget_lines(auth_client, loaded_db):
+def test_budget_line_items_get_all_obe_budget_lines(auth_client, loaded_db, app_ctx):
     # determine how many blis in the DB are OBE"
     stmt = select(BudgetLineItem).distinct().where(BudgetLineItem.is_obe)
     blis = loaded_db.scalars(stmt).all()
@@ -1677,9 +1588,7 @@ def test_budget_line_items_get_all_obe_budget_lines(auth_client, loaded_db):
     assert len(response.json) == len(blis)
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_obe_budget_lines(auth_client, loaded_db):
+def test_get_obe_budget_lines(auth_client, loaded_db, app_ctx):
     response = auth_client.get(
         url_for("api.budget-line-items-group"),
         query_string={"status": "Overcome by Events", "enable_obe": True},
@@ -1693,8 +1602,7 @@ def test_get_obe_budget_lines(auth_client, loaded_db):
         assert item["is_obe"] is True
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_post_aa_budget_line_items_min(db_for_aa_agreement, auth_client, test_can):
+def test_post_aa_budget_line_items_min(db_for_aa_agreement, auth_client, test_can, app_ctx):
     """
     Test creating a budget line item for an AA agreement with minimum required fields.
 
@@ -1730,8 +1638,7 @@ def test_post_aa_budget_line_items_min(db_for_aa_agreement, auth_client, test_ca
     db_for_aa_agreement.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_post_aa_budget_line_items_max(db_for_aa_agreement, auth_client, test_can):
+def test_post_aa_budget_line_items_max(db_for_aa_agreement, auth_client, test_can, app_ctx):
     """
     Test creating a budget line item for an AA agreement with all fields filled.
     """
@@ -1775,8 +1682,7 @@ def test_post_aa_budget_line_items_max(db_for_aa_agreement, auth_client, test_ca
     db_for_aa_agreement.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_put_aa_budget_line_items_min(db_for_aa_agreement, auth_client, test_can):
+def test_put_aa_budget_line_items_min(db_for_aa_agreement, auth_client, test_can, app_ctx):
     """
     Test updating a budget line item for an AA agreement with minimum required fields.
     """
@@ -1819,8 +1725,7 @@ def test_put_aa_budget_line_items_min(db_for_aa_agreement, auth_client, test_can
     db_for_aa_agreement.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_put_aa_budget_line_items_update_status(db_for_aa_agreement, auth_client, test_can, loaded_db):
+def test_put_aa_budget_line_items_update_status(db_for_aa_agreement, auth_client, test_can, loaded_db, app_ctx):
     """
     Test updating a budget line item status for an AA agreement.
 
@@ -1902,8 +1807,7 @@ def test_put_aa_budget_line_items_update_status(db_for_aa_agreement, auth_client
     db_for_aa_agreement.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_patch_aa_budget_line_items_min(db_for_aa_agreement, auth_client, test_can):
+def test_patch_aa_budget_line_items_min(db_for_aa_agreement, auth_client, test_can, app_ctx):
     """
     Test updating a budget line item for an AA agreement with minimum required fields.
     """
@@ -1946,8 +1850,7 @@ def test_patch_aa_budget_line_items_min(db_for_aa_agreement, auth_client, test_c
     db_for_aa_agreement.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_patch_aa_budget_line_items_update_status(db_for_aa_agreement, auth_client, test_can, loaded_db):
+def test_patch_aa_budget_line_items_update_status(db_for_aa_agreement, auth_client, test_can, loaded_db, app_ctx):
     """
     Test updating a budget line item status for an AA agreement.
 
@@ -2023,8 +1926,7 @@ def test_patch_aa_budget_line_items_update_status(db_for_aa_agreement, auth_clie
     db_for_aa_agreement.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_put_aa_budget_line_items_max(db_for_aa_agreement, auth_client, test_can):
+def test_put_aa_budget_line_items_max(db_for_aa_agreement, auth_client, test_can, app_ctx):
     """
     Test updating a budget line item for an AA agreement with all fields filled.
     """
@@ -2090,8 +1992,7 @@ def test_put_aa_budget_line_items_max(db_for_aa_agreement, auth_client, test_can
     db_for_aa_agreement.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_patch_aa_budget_line_items_max(db_for_aa_agreement, auth_client, test_can):
+def test_patch_aa_budget_line_items_max(db_for_aa_agreement, auth_client, test_can, app_ctx):
     """
     Test updating a budget line item for an AA agreement with all fields filled.
     """
@@ -2156,8 +2057,7 @@ def test_patch_aa_budget_line_items_max(db_for_aa_agreement, auth_client, test_c
     db_for_aa_agreement.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_put_aa_budget_line_items_non_draft(db_for_aa_agreement, auth_client, test_can, loaded_db):
+def test_put_aa_budget_line_items_non_draft(db_for_aa_agreement, auth_client, test_can, loaded_db, app_ctx):
     """
     Test updating a budget line item for an AA agreement that is not in DRAFT status generates a change request.
     """
@@ -2249,8 +2149,7 @@ def test_put_aa_budget_line_items_non_draft(db_for_aa_agreement, auth_client, te
     db_for_aa_agreement.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_patch_aa_budget_line_items_non_draft(db_for_aa_agreement, auth_client, test_can, loaded_db):
+def test_patch_aa_budget_line_items_non_draft(db_for_aa_agreement, auth_client, test_can, loaded_db, app_ctx):
     """
     Test updating a budget line item for an AA agreement that is not in DRAFT status generates a change request.
     """
@@ -2503,7 +2402,6 @@ def test_bli_by_id_returns_correct_project_title(auth_client, loaded_db):
     assert bli.agreement.project.title == title
 
 
-@pytest.mark.usefixtures("app_ctx", "loaded_db")
 @pytest.mark.parametrize(
     "bli_status",
     [
@@ -2513,7 +2411,7 @@ def test_bli_by_id_returns_correct_project_title(auth_client, loaded_db):
         BudgetLineItemStatus.OBLIGATED,
     ],
 )
-def test_user_unset_can_in_contract_bli(loaded_db, bli_status, auth_client, test_cans, test_project, test_admin_user):
+def test_user_unset_can_in_contract_bli(loaded_db, bli_status, auth_client, test_cans, test_project, test_admin_user, app_ctx):
     agreement = ContractAgreement(
         agreement_type=AgreementType.CONTRACT,
         name=f"{bli_status} BLI Agreement",
@@ -2556,7 +2454,6 @@ def test_user_unset_can_in_contract_bli(loaded_db, bli_status, auth_client, test
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx", "loaded_db")
 @pytest.mark.parametrize(
     "bli_status",
     [
@@ -2566,7 +2463,7 @@ def test_user_unset_can_in_contract_bli(loaded_db, bli_status, auth_client, test
         BudgetLineItemStatus.OBLIGATED,
     ],
 )
-def test_user_change_can_in_contract_bli(loaded_db, bli_status, auth_client, test_cans, test_project, test_admin_user):
+def test_user_change_can_in_contract_bli(loaded_db, bli_status, auth_client, test_cans, test_project, test_admin_user, app_ctx):
     agreement = ContractAgreement(
         agreement_type=AgreementType.CONTRACT,
         name=f"{bli_status} BLI Agreement",
@@ -2656,9 +2553,7 @@ def test_get_budget_line_items_max_limit(auth_client):
     assert response.status_code == 400
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_budget_line_items_filter_by_budget_total_min(auth_client, loaded_db):
+def test_get_budget_line_items_filter_by_budget_total_min(auth_client, loaded_db, app_ctx):
     """
     Test filtering budget line items by minimum budget line total (amount + fees).
     """
@@ -2687,9 +2582,7 @@ def test_get_budget_line_items_filter_by_budget_total_min(auth_client, loaded_db
         assert item["total"] >= threshold, f"BLI {item['id']} total {item['total']} is less than threshold {threshold}"
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_budget_line_items_filter_by_budget_total_max(auth_client, loaded_db):
+def test_get_budget_line_items_filter_by_budget_total_max(auth_client, loaded_db, app_ctx):
     """
     Test filtering budget line items by maximum budget line total (amount + fees).
     """
@@ -2720,9 +2613,7 @@ def test_get_budget_line_items_filter_by_budget_total_max(auth_client, loaded_db
         ), f"BLI {item['id']} total {item['total']} is greater than threshold {threshold}"
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_budget_line_items_filter_by_budget_total_range(auth_client, loaded_db):
+def test_get_budget_line_items_filter_by_budget_total_range(auth_client, loaded_db, app_ctx):
     """
     Test filtering budget line items by both min and max budget line total.
     """
@@ -2760,9 +2651,7 @@ def test_get_budget_line_items_filter_by_budget_total_range(auth_client, loaded_
         ), f"BLI {item['id']} total {item['total']} is outside range [{min_threshold}, {max_threshold}]"
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_budget_line_items_filter_by_budget_total_with_null_totals(auth_client, loaded_db, test_can):
+def test_get_budget_line_items_filter_by_budget_total_with_null_totals(auth_client, loaded_db, test_can, app_ctx):
     """
     Test that budget line items with null totals are correctly filtered out.
     """
@@ -2802,9 +2691,7 @@ def test_get_budget_line_items_filter_by_budget_total_with_null_totals(auth_clie
         loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_budget_line_items_filter_by_agreement_type(auth_client, loaded_db):
+def test_get_budget_line_items_filter_by_agreement_type(auth_client, loaded_db, app_ctx):
     """
     Test filtering budget line items by agreement type.
     """
@@ -2837,9 +2724,7 @@ def test_get_budget_line_items_filter_by_agreement_type(auth_client, loaded_db):
     assert returned_ids.issubset(expected_ids), "Returned BLIs should all have CONTRACT agreement type"
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_budget_line_items_filter_by_invalid_agreement_type(auth_client):
+def test_get_budget_line_items_filter_by_invalid_agreement_type(auth_client, app_ctx):
     """
     Test that filtering by an invalid agreement type raises a ValidationError.
     """
@@ -2852,9 +2737,7 @@ def test_get_budget_line_items_filter_by_invalid_agreement_type(auth_client):
     assert response.json["message"] == "Validation failed"
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_budget_line_items_filter_by_agreement_name(auth_client, loaded_db):
+def test_get_budget_line_items_filter_by_agreement_name(auth_client, loaded_db, app_ctx):
     """
     Test filtering budget line items by agreement name.
     """
@@ -2891,9 +2774,7 @@ def test_get_budget_line_items_filter_by_agreement_name(auth_client, loaded_db):
     assert returned_ids.issubset(expected_ids), f"Returned BLIs should all have agreement name '{agreement_name}'"
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_budget_line_items_filter_by_can_active_period(auth_client, loaded_db):
+def test_get_budget_line_items_filter_by_can_active_period(auth_client, loaded_db, app_ctx):
     """
     Test filtering budget line items by CAN active period.
     """
@@ -2922,9 +2803,7 @@ def test_get_budget_line_items_filter_by_can_active_period(auth_client, loaded_d
     assert returned_ids.issubset(expected_ids), "Returned BLIs should all have CAN active period = 1"
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_budget_line_items_filter_by_multiple_new_filters(auth_client, loaded_db):
+def test_get_budget_line_items_filter_by_multiple_new_filters(auth_client, loaded_db, app_ctx):
     """
     Test filtering budget line items by multiple new filters combined.
     """
@@ -2967,9 +2846,7 @@ def test_get_budget_line_items_filter_by_multiple_new_filters(auth_client, loade
         assert returned_ids.issubset(expected_ids), "Returned BLIs should match both filters"
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_budget_line_items_filter_by_can_active_period_with_null_cans(auth_client, loaded_db):
+def test_get_budget_line_items_filter_by_can_active_period_with_null_cans(auth_client, loaded_db, app_ctx):
     """
     Test that budget line items with null CANs are correctly filtered out when filtering by active period.
     """
@@ -2994,9 +2871,7 @@ def test_get_budget_line_items_filter_by_can_active_period_with_null_cans(auth_c
         assert item["can_id"] is not None, "BLIs with null CAN should be filtered out"
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_budget_line_items_sort_by_agreement_type(auth_client, loaded_db):
+def test_get_budget_line_items_sort_by_agreement_type(auth_client, loaded_db, app_ctx):
     """
     Test sorting budget line items by agreement type.
     """
@@ -3023,9 +2898,7 @@ def test_get_budget_line_items_sort_by_agreement_type(auth_client, loaded_db):
         assert agreement_types == sorted(agreement_types), "BLIs should be sorted by agreement type ascending"
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_budget_line_items_sort_by_agreement_type_descending(auth_client, loaded_db):
+def test_get_budget_line_items_sort_by_agreement_type_descending(auth_client, loaded_db, app_ctx):
     """
     Test sorting budget line items by agreement type descending.
     """
@@ -3054,9 +2927,7 @@ def test_get_budget_line_items_sort_by_agreement_type_descending(auth_client, lo
         ), "BLIs should be sorted by agreement type descending"
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_budget_line_items_sort_by_portfolio(auth_client, loaded_db):
+def test_get_budget_line_items_sort_by_portfolio(auth_client, loaded_db, app_ctx):
     """
     Test sorting budget line items by portfolio abbreviation.
     """
@@ -3085,9 +2956,7 @@ def test_get_budget_line_items_sort_by_portfolio(auth_client, loaded_db):
         assert portfolio_abbrs == sorted(portfolio_abbrs), "BLIs should be sorted by portfolio abbreviation ascending"
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_budget_line_items_sort_by_portfolio_descending(auth_client, loaded_db):
+def test_get_budget_line_items_sort_by_portfolio_descending(auth_client, loaded_db, app_ctx):
     """
     Test sorting budget line items by portfolio abbreviation descending.
     """
@@ -3118,9 +2987,7 @@ def test_get_budget_line_items_sort_by_portfolio_descending(auth_client, loaded_
         ), "BLIs should be sorted by portfolio abbreviation descending"
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_budget_line_items_filter_by_portfolio_with_portfolio_sort(auth_client, loaded_db):
+def test_get_budget_line_items_filter_by_portfolio_with_portfolio_sort(auth_client, loaded_db, app_ctx):
     """
     Test filtering budget line items by portfolio while sorting by portfolio.
     This tests the bug fix for ensuring CAN.portfolio_id is used when sorting by PORTFOLIO.
@@ -3164,9 +3031,7 @@ def test_get_budget_line_items_filter_by_portfolio_with_portfolio_sort(auth_clie
         assert returned_ids.issubset(expected_ids), f"Returned BLIs should all have portfolio {portfolio_id}"
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_budget_line_items_filter_by_portfolio_with_can_number_sort(auth_client, loaded_db):
+def test_get_budget_line_items_filter_by_portfolio_with_can_number_sort(auth_client, loaded_db, app_ctx):
     """
     Test filtering budget line items by portfolio while sorting by CAN number.
     This tests the bug fix for ensuring CAN.portfolio_id is used when sorting by CAN_NUMBER.

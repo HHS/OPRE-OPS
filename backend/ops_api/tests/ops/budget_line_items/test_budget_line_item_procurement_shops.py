@@ -64,8 +64,7 @@ def test_fees_calculation_with_procurement_shop_fee(mock_procurement_shop_fee):
     assert bli.total == Decimal("1000500.00000")
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_post_schema_accepts_procurement_shop_fee_id():
+def test_post_schema_accepts_procurement_shop_fee_id(app_ctx):
     """Test POST schema accepts procurement_shop_fee_id"""
     schema = POSTRequestBodySchema()
     # Create valid data with procurement_shop_fee_id
@@ -84,8 +83,7 @@ def test_post_schema_accepts_procurement_shop_fee_id():
     assert result is not None
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_patch_schema_accepts_procurement_shop_fee_id():
+def test_patch_schema_accepts_procurement_shop_fee_id(app_ctx):
     """Test PATCH schema accepts procurement_shop_fee_id"""
     schema = PATCHRequestBodySchema()
 
@@ -157,8 +155,7 @@ def test_serialization_with_procurement_shop_fee(mock_procurement_shop_fee):
     assert bli_dict["procurement_shop_fee_id"] == 4
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_budget_line_item_procurement_shop_lookup(loaded_db, test_bli):
+def test_budget_line_item_procurement_shop_lookup(loaded_db, test_bli, app_ctx):
     """Test retrieving procurement shop information from a BLI."""
     bli = loaded_db.get(BudgetLineItem, test_bli.id)
     assert bli is not None
@@ -169,8 +166,7 @@ def test_budget_line_item_procurement_shop_lookup(loaded_db, test_bli):
     assert "procurement_shop_fee" in bli_dict
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_budget_line_item_with_procurement_shop_fee(loaded_db, test_can):
+def test_budget_line_item_with_procurement_shop_fee(loaded_db, test_can, app_ctx):
     """Test creating a BLI with procurement shop."""
     # Find an existing procurement shop
     procurement_shop_fee = loaded_db.scalars(select(ProcurementShopFee).limit(1)).first()
@@ -199,8 +195,7 @@ def test_budget_line_item_with_procurement_shop_fee(loaded_db, test_can):
         loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_procurement_shop_fees_for_budget_line_items(auth_client):
+def test_get_procurement_shop_fees_for_budget_line_items(auth_client, app_ctx):
     """Test budget lines items contain procurement shop fee information"""
     response = auth_client.get(
         url_for("api.budget-line-items-group"),

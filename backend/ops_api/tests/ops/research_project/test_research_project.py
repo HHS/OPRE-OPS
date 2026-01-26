@@ -1,6 +1,5 @@
 import uuid
 
-import pytest
 from flask import url_for
 
 from models import ProjectType
@@ -16,21 +15,18 @@ def test_research_projects_get_all(auth_client, loaded_db):
     assert len(response.json) == count
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_research_projects_get_by_id(auth_client, loaded_db, test_project):
+def test_research_projects_get_by_id(auth_client, loaded_db, test_project, app_ctx):
     response = auth_client.get(url_for("api.research-projects-item", id=test_project.id))
     assert response.status_code == 200
     assert response.json["title"] == "Human Services Interoperability Support"
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_research_projects_get_by_id_404(auth_client, loaded_db):
+def test_research_projects_get_by_id_404(auth_client, loaded_db, app_ctx):
     response = auth_client.get(url_for("api.research-projects-item", id="1000000"))
     assert response.status_code == 404
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_research_projects_serialization(auth_client, loaded_db, test_user, test_project):
+def test_research_projects_serialization(auth_client, loaded_db, test_user, test_project, app_ctx):
     response = auth_client.get(url_for("api.research-projects-item", id=test_project.id))
     assert response.status_code == 200
     assert response.json["id"] == test_project.id
@@ -40,8 +36,7 @@ def test_research_projects_serialization(auth_client, loaded_db, test_user, test
     assert response.json["team_leaders"][0]["full_name"] == "Chris Fortunato"
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_research_projects_with_fiscal_year_found(auth_client, loaded_db, test_project):
+def test_research_projects_with_fiscal_year_found(auth_client, loaded_db, test_project, app_ctx):
     response = auth_client.get(url_for("api.research-projects-group", fiscal_year=2023))
     assert response.status_code == 200
     assert len(response.json) == 4
@@ -49,15 +44,13 @@ def test_research_projects_with_fiscal_year_found(auth_client, loaded_db, test_p
     assert response.json[0]["id"] == test_project.id
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_research_projects_with_fiscal_year_not_found(auth_client, loaded_db):
+def test_research_projects_with_fiscal_year_not_found(auth_client, loaded_db, app_ctx):
     response = auth_client.get(url_for("api.research-projects-group", fiscal_year=2000))
     assert response.status_code == 200
     assert len(response.json) == 0
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_query_for_fiscal_year_with_fiscal_year_found(loaded_db, test_project):
+def test_get_query_for_fiscal_year_with_fiscal_year_found(loaded_db, test_project, app_ctx):
     stmt = ResearchProjectListAPI._get_query(2023)
     result = loaded_db.execute(stmt).fetchall()
     assert len(result) == 4
@@ -65,15 +58,13 @@ def test_get_query_for_fiscal_year_with_fiscal_year_found(loaded_db, test_projec
     assert result[0][0].id == test_project.id
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_query_for_fiscal_year_with_fiscal_year_not_found(loaded_db):
+def test_get_query_for_fiscal_year_with_fiscal_year_not_found(loaded_db, app_ctx):
     stmt = ResearchProjectListAPI._get_query(1900)
     result = loaded_db.execute(stmt).fetchall()
     assert len(result) == 0
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_query_for_fiscal_year_with_portfolio_id_found(loaded_db, test_project):
+def test_get_query_for_fiscal_year_with_portfolio_id_found(loaded_db, test_project, app_ctx):
     stmt = ResearchProjectListAPI._get_query(2023, 6)
     result = loaded_db.execute(stmt).fetchall()
     assert len(result) == 2
@@ -81,8 +72,7 @@ def test_get_query_for_fiscal_year_with_portfolio_id_found(loaded_db, test_proje
     assert result[0][0].id == test_project.id
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_query_for_fiscal_year_with_portfolio_id_not_found(loaded_db):
+def test_get_query_for_fiscal_year_with_portfolio_id_not_found(loaded_db, app_ctx):
     stmt = ResearchProjectListAPI._get_query(2023, 3)
     result = loaded_db.execute(stmt).fetchall()
     assert len(result) == 3
@@ -115,21 +105,17 @@ def test_research_project_search(auth_client, loaded_db):
     assert len(response.json) == 0
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_research_projects_get_by_id_auth(client, loaded_db):
+def test_research_projects_get_by_id_auth(client, loaded_db, app_ctx):
     response = client.get(url_for("api.research-projects-item", id="1"))
     assert response.status_code == 401
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_research_projects_auth(client, loaded_db):
+def test_research_projects_auth(client, loaded_db, app_ctx):
     response = client.get(url_for("api.research-projects-group"))
     assert response.status_code == 401
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_post_research_projects(auth_client):
+def test_post_research_projects(auth_client, app_ctx):
     data = {
         "project_type": ProjectType.RESEARCH.name,
         "title": "Research Project #1",
@@ -158,9 +144,7 @@ def test_post_research_projects(auth_client):
     assert [person in expected_team_leaders for person in response.json["team_leaders"]]
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_post_research_projects_minimum(auth_client):
+def test_post_research_projects_minimum(auth_client, app_ctx):
     data = {
         "project_type": ProjectType.RESEARCH.name,
         "title": "Research Project #1",
@@ -172,16 +156,12 @@ def test_post_research_projects_minimum(auth_client):
     assert response.json["team_leaders"] == []
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_post_research_projects_empty_post(auth_client):
+def test_post_research_projects_empty_post(auth_client, app_ctx):
     response = auth_client.post(url_for("api.research-projects-group"), json={})
     assert response.status_code == 400
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_post_research_projects_bad_origination_date(auth_client):
+def test_post_research_projects_bad_origination_date(auth_client, app_ctx):
     data = {
         "project_type": ProjectType.RESEARCH.name,
         "title": "Research Project #1",
@@ -195,9 +175,7 @@ def test_post_research_projects_bad_origination_date(auth_client):
     assert response.status_code == 400
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_post_research_projects_bad_team_leaders(auth_client):
+def test_post_research_projects_bad_team_leaders(auth_client, app_ctx):
     data = {
         "project_type": ProjectType.RESEARCH.name,
         "title": "Research Project #1",
@@ -211,9 +189,7 @@ def test_post_research_projects_bad_team_leaders(auth_client):
     assert response.status_code == 400
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_post_research_projects_missing_title(auth_client):
+def test_post_research_projects_missing_title(auth_client, app_ctx):
     data = {
         "project_type": ProjectType.RESEARCH.name,
         "short_title": "RP1" + uuid.uuid4().hex,
@@ -226,9 +202,7 @@ def test_post_research_projects_missing_title(auth_client):
     assert response.status_code == 400
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_post_research_projects_auth_required(client):
+def test_post_research_projects_auth_required(client, app_ctx):
     data = {
         "project_type": ProjectType.RESEARCH.name,
         "title": "Research Project #1",

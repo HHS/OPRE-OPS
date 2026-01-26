@@ -1,11 +1,9 @@
 from unittest.mock import Mock, patch
 
-import pytest
 from flask import current_app
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_health(client):
+def test_get_health(client, app_ctx):
     """
     test /api/v1/health/ for several scenarios
     Currently, this could work without docker/db, but it's in the session

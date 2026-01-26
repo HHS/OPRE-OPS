@@ -1,14 +1,10 @@
 from decimal import Decimal
 
-import pytest
-
 from models import CAN, BudgetLineItem, BudgetLineItemStatus, CANFundingDetails
 from ops_api.ops.resources.portfolio_cans import PortfolioCansAPI
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_portfolio_cans(auth_client):
+def test_portfolio_cans(auth_client, app_ctx):
     response = auth_client.get("/api/v1/portfolios/1/cans/")
     assert response.status_code == 200
     assert len(response.json) == 3
@@ -16,17 +12,13 @@ def test_portfolio_cans(auth_client):
     assert response.json[1]["portfolio_id"] == 1
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_portfolio_cans_with_year_2022(auth_client):
+def test_portfolio_cans_with_year_2022(auth_client, app_ctx):
     response = auth_client.get("/api/v1/portfolios/1/cans/?year=2022")
     assert response.status_code == 200
     assert len(response.json) == 0
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_portfolio_cans_with_year_2021(auth_client):
+def test_portfolio_cans_with_year_2021(auth_client, app_ctx):
     response = auth_client.get("/api/v1/portfolios/1/cans/?year=2021&budgetFiscalYear=2021")
     assert response.status_code == 200
     assert len(response.json) == 2
@@ -36,9 +28,7 @@ def test_portfolio_cans_with_year_2021(auth_client):
     assert len(response.json[1]["budget_line_items"]) == 0
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_portfolio_cans_with_budget_fiscal_year_2044(auth_client):
+def test_portfolio_cans_with_budget_fiscal_year_2044(auth_client, app_ctx):
     response = auth_client.get("/api/v1/portfolios/1/cans/?budgetFiscalYear=2044")
     assert response.status_code == 200
     assert len(response.json) == 1
@@ -49,9 +39,7 @@ def test_portfolio_cans_with_budget_fiscal_year_2044(auth_client):
     assert can["funding_details"]["fiscal_year"] == 2044
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_portfolio_cans_with_budget_bad_query_params(auth_client):
+def test_portfolio_cans_with_budget_bad_query_params(auth_client, app_ctx):
     response = auth_client.get("/api/v1/portfolios/1/cans/?budgetFiscalYear=test")
     assert response.status_code == 400
 
@@ -83,9 +71,7 @@ def test_blis_on_child_wellfare_research_with_budget_fiscal_year_2021(auth_clien
     assert response_fy21.json[1]["portfolio_id"] == 1
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_bli_with_null_date_needed(app, auth_client):
+def test_bli_with_null_date_needed(app, auth_client, app_ctx):
     response = auth_client.get("/api/v1/portfolios/4/cans/?budgetFiscalYear=2022")
     assert response.status_code == 200
 

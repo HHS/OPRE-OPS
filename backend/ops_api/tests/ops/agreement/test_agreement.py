@@ -39,8 +39,7 @@ from models import (
 from models.budget_line_items import BudgetLineItem, ContractBudgetLineItem
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreement_retrieve(loaded_db):
+def test_agreement_retrieve(loaded_db, app_ctx):
     agreement = loaded_db.get(Agreement, 1)
 
     assert agreement is not None
@@ -51,8 +50,7 @@ def test_agreement_retrieve(loaded_db):
     assert agreement.agreement_type.name == "CONTRACT"
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreements_get_all(auth_client, loaded_db, test_project):
+def test_agreements_get_all(auth_client, loaded_db, test_project, app_ctx):
     stmt = select(func.count()).select_from(Agreement)
     count = loaded_db.scalar(stmt)
 
@@ -72,8 +70,7 @@ def test_agreements_get_all(auth_client, loaded_db, test_project):
     assert "budget_line_items" in contract
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreements_get_all_by_fiscal_year(auth_client, loaded_db):
+def test_agreements_get_all_by_fiscal_year(auth_client, loaded_db, app_ctx):
     # determine how many agreements in the DB are in fiscal year 2043
     stmt = select(Agreement).distinct().join(BudgetLineItem).where(BudgetLineItem.fiscal_year == 2043)
     agreements = loaded_db.scalars(stmt).all()
@@ -105,8 +102,7 @@ def test_agreements_get_all_by_fiscal_year(auth_client, loaded_db):
     assert response.json["count"] == len(agreement_ids)
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreements_get_all_by_budget_line_status(auth_client, loaded_db):
+def test_agreements_get_all_by_budget_line_status(auth_client, loaded_db, app_ctx):
     # determine how many agreements in the DB are in budget line status "DRAFT"
     stmt = (
         select(Agreement)
@@ -141,8 +137,7 @@ def test_agreements_get_all_by_budget_line_status(auth_client, loaded_db):
     assert len(response.json["data"]) == len(agreements)
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreements_get_all_by_portfolio(auth_client, loaded_db):
+def test_agreements_get_all_by_portfolio(auth_client, loaded_db, app_ctx):
     # determine how many agreements in the DB are in portfolio 1
     stmt = select(Agreement).distinct().join(BudgetLineItem).where(BudgetLineItem.portfolio_id == 1)
     agreements = loaded_db.scalars(stmt).all()
@@ -161,8 +156,7 @@ def test_agreements_get_all_by_portfolio(auth_client, loaded_db):
     assert len(response.json["data"]) == 0
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreements_get_by_id(auth_client):
+def test_agreements_get_by_id(auth_client, app_ctx):
     response = auth_client.get(url_for("api.agreements-item", id=1))
     assert response.status_code == 200
     assert response.json["name"] == "Contract #1: African American Child and Family Research Center"
@@ -176,14 +170,12 @@ def test_agreements_get_by_id(auth_client):
     assert response.json["change_requests_in_review"] is None
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreements_get_by_id_404(auth_client):
+def test_agreements_get_by_id_404(auth_client, app_ctx):
     response = auth_client.get(url_for("api.agreements-item", id=1000))
     assert response.status_code == 404
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreements_serialization(auth_client, loaded_db):
+def test_agreements_serialization(auth_client, loaded_db, app_ctx):
     response = auth_client.get(url_for("api.agreements-item", id=1))
     assert response.status_code == 200
 
@@ -231,8 +223,7 @@ def test_agreements_serialization(auth_client, loaded_db):
     assert special_topics[1]["name"] == "Special Topic 2"
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreement_is_awarded_serialization_in_detail_endpoint(auth_client, loaded_db):
+def test_agreement_is_awarded_serialization_in_detail_endpoint(auth_client, loaded_db, app_ctx):
     """Test that is_awarded is properly serialized in GET /agreements/{id} endpoint."""
     # Test 1: Contract agreement with no procurement actions (should be False)
     contract_no_actions = ContractAgreement(
@@ -339,8 +330,7 @@ def test_agreement_is_awarded_serialization_in_detail_endpoint(auth_client, load
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreement_is_awarded_serialization_in_list_endpoint(auth_client, loaded_db):
+def test_agreement_is_awarded_serialization_in_list_endpoint(auth_client, loaded_db, app_ctx):
     """Test that is_awarded is properly serialized in GET /agreements endpoint."""
     # Create test agreements
     contract_not_awarded = ContractAgreement(
@@ -426,15 +416,13 @@ def test_agreement_is_awarded_serialization_in_list_endpoint(auth_client, loaded
 
 
 @pytest.mark.skip("Need to consult whether this should return ALL or NONE if the value is empty")
-@pytest.mark.usefixtures("app_ctx")
-def test_agreements_with_project_empty(auth_client):
+def test_agreements_with_project_empty(auth_client, app_ctx):
     response = auth_client.get(url_for("api.agreements-group"), query_string={"project_id": ""})
     assert response.status_code == 200
     assert len(response.json["data"]) == 6
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreements_with_project_found(auth_client, test_project):
+def test_agreements_with_project_found(auth_client, test_project, app_ctx):
     response = auth_client.get(url_for("api.agreements-group"), query_string={"project_id": test_project.id})
     assert response.status_code == 200
     assert len(response.json["data"]) == 3
@@ -443,8 +431,7 @@ def test_agreements_with_project_found(auth_client, test_project):
     assert response.json["data"][2]["id"] == 2
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_agreements_by_nickname(auth_client):
+def test_get_agreements_by_nickname(auth_client, app_ctx):
     response = auth_client.get(url_for("api.agreements-group"), query_string={"nick_name": "AA1"})
     assert response.status_code == 200
     assert len(response.json["data"]) == 1
@@ -455,9 +442,8 @@ def test_get_agreements_by_nickname(auth_client):
     assert len(response.json["data"]) == 0
 
 
-@pytest.mark.usefixtures("app_ctx")
 @pytest.mark.parametrize(["simulated_error", "expected"], [["true", 500], ["400", 400], ["false", 200]])
-def test_agreements_with_simulated_error(auth_client, simulated_error, expected):
+def test_agreements_with_simulated_error(auth_client, simulated_error, expected, app_ctx):
     response = auth_client.get(
         url_for("api.agreements-group"),
         query_string={"simulatedError": simulated_error, "project_id": "1"},
@@ -481,24 +467,21 @@ def test_agreements_with_simulated_error(auth_client, simulated_error, expected)
         ("name", "Contract #1: African American Child and Family Research Center"),
     ),
 )
-@pytest.mark.usefixtures("app_ctx")
-def test_agreements_with_filter(auth_client, key, value, loaded_db):
+def test_agreements_with_filter(auth_client, key, value, loaded_db, app_ctx):
     query_dict = {key: value}
     response = auth_client.get(url_for("api.agreements-group"), query_string=query_dict)
     assert response.status_code == 200
     assert all(item[key] == value for item in response.json["data"] if key in item)
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreements_with_only_my_filter(division_director_auth_client):
+def test_agreements_with_only_my_filter(division_director_auth_client, app_ctx):
     query_dict = {"only_my": True}
     response = division_director_auth_client.get(url_for("api.agreements-group"), query_string=query_dict)
     assert response.status_code == 200
     assert len(response.json["data"]) > 1, "Expected multiple agreements for division director"
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreements_with_project_not_found(auth_client, loaded_db):
+def test_agreements_with_project_not_found(auth_client, loaded_db, app_ctx):
     response = auth_client.get(
         url_for("api.agreements-group"),
         query_string={"project_id": "1000000"},
@@ -728,20 +711,17 @@ def test_agreement_name_filter_exact_match_multiple_names(auth_client, loaded_db
         assert agreement["name"].lower() in [name1.lower(), name2.lower()]
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreements_get_by_id_auth(client, loaded_db):
+def test_agreements_get_by_id_auth(client, loaded_db, app_ctx):
     response = client.get(url_for("api.agreements-item", id=1))
     assert response.status_code == 401
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreements_auth(client, loaded_db):
+def test_agreements_auth(client, loaded_db, app_ctx):
     response = client.get(url_for("api.agreements-group"))
     assert response.status_code == 401
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreement_as_contract_has_contract_fields(loaded_db):
+def test_agreement_as_contract_has_contract_fields(loaded_db, app_ctx):
     stmt = select(Agreement).where(Agreement.id == 1)
     agreement = loaded_db.scalar(stmt)
 
@@ -750,8 +730,7 @@ def test_agreement_as_contract_has_contract_fields(loaded_db):
 
 
 @pytest.fixture()
-@pytest.mark.usefixtures("app_ctx")
-def contract_agreement_for_create_test(loaded_db):
+def contract_agreement_for_create_test(loaded_db, app_ctx):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
         contract_number="XXXX000000002",
@@ -769,8 +748,7 @@ def contract_agreement_for_create_test(loaded_db):
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreement_create_contract_agreement(loaded_db, contract_agreement_for_create_test):
+def test_agreement_create_contract_agreement(loaded_db, contract_agreement_for_create_test, app_ctx):
     stmt = select(Agreement).where(Agreement.id == contract_agreement_for_create_test.id)
     agreement = loaded_db.scalar(stmt)
 
@@ -779,8 +757,7 @@ def test_agreement_create_contract_agreement(loaded_db, contract_agreement_for_c
     assert agreement.service_requirement_type == ServiceRequirementType.SEVERABLE
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreement_create_grant_agreement(loaded_db):
+def test_agreement_create_grant_agreement(loaded_db, app_ctx):
     grant_agreement = GrantAgreement(
         name="GNTXX12399",
         foa="NIH",
@@ -796,8 +773,7 @@ def test_agreement_create_grant_agreement(loaded_db):
 
 
 @pytest.fixture()
-@pytest.mark.usefixtures("app_ctx")
-def test_contract(loaded_db, test_vendor, test_admin_user, test_project):
+def test_contract(loaded_db, test_vendor, test_admin_user, test_project, app_ctx):
     contract_agreement = ContractAgreement(
         name="CTXX12399-fixture",
         contract_number="XXXX000000002",
@@ -822,8 +798,7 @@ def test_contract(loaded_db, test_vendor, test_admin_user, test_project):
 
 
 @pytest.fixture()
-@pytest.mark.usefixtures("app_ctx")
-def test_psf(loaded_db):
+def test_psf(loaded_db, app_ctx):
     """Create a ProcurementShopFee for testing"""
     ps = ProcurementShop(name="Whatever", abbr="WHO")
 
@@ -849,8 +824,7 @@ def test_psf(loaded_db):
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreements_put_by_id_400_for_type_change(auth_client, test_contract):
+def test_agreements_put_by_id_400_for_type_change(auth_client, test_contract, app_ctx):
     """400 is returned if the agreement_type is changed"""
 
     response = auth_client.put(
@@ -863,8 +837,7 @@ def test_agreements_put_by_id_400_for_type_change(auth_client, test_contract):
     assert response.status_code == 400
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreements_put_by_id_400_for_missing_required(auth_client, test_contract):
+def test_agreements_put_by_id_400_for_missing_required(auth_client, test_contract, app_ctx):
     """400 is returned required fields are missing"""
     response = auth_client.put(
         url_for("api.agreements-item", id=test_contract.id),
@@ -875,8 +848,7 @@ def test_agreements_put_by_id_400_for_missing_required(auth_client, test_contrac
     assert response.status_code == 400
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_create_agreements_400_with_bad_research_methodology(auth_client):
+def test_create_agreements_400_with_bad_research_methodology(auth_client, app_ctx):
     """400 is returned when creating an agreement with invalid research methodology"""
     response = auth_client.post(
         url_for("api.agreements-group"),
@@ -961,8 +933,7 @@ def test_update_agreements_400_with_bad_research_methodology(auth_client, test_c
     assert response.status_code == 400
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_create_agreements_400_with_bad_special_topic(auth_client):
+def test_create_agreements_400_with_bad_special_topic(auth_client, app_ctx):
     """400 is returned when creating an agreement with invalid special topic"""
     response = auth_client.post(
         url_for("api.agreements-group"),
@@ -1024,8 +995,7 @@ def test_update_agreements_400_with_bad_special_topic(auth_client, test_contract
     assert response.status_code == 400
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreements_put_by_id_contract(auth_client, loaded_db, test_contract):
+def test_agreements_put_by_id_contract(auth_client, loaded_db, test_contract, app_ctx):
     """PUT CONTRACT Agreement"""
     response = auth_client.put(
         url_for("api.agreements-item", id=test_contract.id),
@@ -1055,8 +1025,7 @@ def test_agreements_put_by_id_contract(auth_client, loaded_db, test_contract):
     assert agreement.change_requests_in_review is None
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreements_put_by_id_contract_remove_fields(auth_client, loaded_db, test_contract):
+def test_agreements_put_by_id_contract_remove_fields(auth_client, loaded_db, test_contract, app_ctx):
     """PUT CONTRACT Agreement and verify missing fields are removed (for PUT)"""
     response = auth_client.put(
         url_for("api.agreements-item", id=test_contract.id),
@@ -1081,8 +1050,7 @@ def test_agreements_put_by_id_contract_remove_fields(auth_client, loaded_db, tes
     assert agreement.change_requests_in_review is None
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreements_put_by_id_grant(auth_client, loaded_db):
+def test_agreements_put_by_id_grant(auth_client, loaded_db, app_ctx):
     """PUT GRANT Agreement"""
     response = auth_client.put(
         url_for("api.agreements-item", id=3),
@@ -1106,8 +1074,7 @@ def test_agreements_put_by_id_grant(auth_client, loaded_db):
     assert agreement.change_requests_in_review is None
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreements_patch_by_id_400_for_type_change(auth_client, loaded_db, test_contract):
+def test_agreements_patch_by_id_400_for_type_change(auth_client, loaded_db, test_contract, app_ctx):
     """400 for invalid type change"""
     response = auth_client.patch(
         url_for("api.agreements-item", id=test_contract.id),
@@ -1120,8 +1087,7 @@ def test_agreements_patch_by_id_400_for_type_change(auth_client, loaded_db, test
     assert response.status_code == 400
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreements_patch_by_id_contract(auth_client, loaded_db, test_contract):
+def test_agreements_patch_by_id_contract(auth_client, loaded_db, test_contract, app_ctx):
     """PATCH CONTRACT"""
     response = auth_client.patch(
         url_for("api.agreements-item", id=test_contract.id),
@@ -1163,8 +1129,7 @@ def test_agreements_patch_by_id_contract(auth_client, loaded_db, test_contract):
     assert len(agreement.special_topics) == 2
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreements_patch_by_id_contract_with_nones(auth_client, loaded_db, test_contract):
+def test_agreements_patch_by_id_contract_with_nones(auth_client, loaded_db, test_contract, app_ctx):
     """Patch CONTRACT with setting fields to None/empty"""
     # set fields to non-None/non-empty
     response = auth_client.patch(
@@ -1210,8 +1175,7 @@ def test_agreements_patch_by_id_contract_with_nones(auth_client, loaded_db, test
     assert test_contract.change_requests_in_review is None
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreements_patch_by_id_grant(auth_client, loaded_db):
+def test_agreements_patch_by_id_grant(auth_client, loaded_db, app_ctx):
     """PATCH GRANT"""
     response = auth_client.patch(
         url_for("api.agreements-item", id=3),
@@ -1237,8 +1201,7 @@ def test_agreements_patch_by_id_grant(auth_client, loaded_db):
     assert agreement.change_requests_in_review is None
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreements_patch_by_id_just_notes(auth_client, loaded_db, test_contract):
+def test_agreements_patch_by_id_just_notes(auth_client, loaded_db, test_contract, app_ctx):
     """PATCH with just notes to test out other fields being optional"""
     response = auth_client.patch(
         url_for("api.agreements-item", id=test_contract.id),
@@ -1251,8 +1214,7 @@ def test_agreements_patch_by_id_just_notes(auth_client, loaded_db, test_contract
     assert test_contract.notes == "Test PATCH"
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreements_delete_contract_by_id(auth_client, loaded_db, test_contract):
+def test_agreements_delete_contract_by_id(auth_client, loaded_db, test_contract, app_ctx):
     response = auth_client.delete(url_for("api.agreements-item", id=test_contract.id))
     assert response.status_code == 200
 
@@ -1262,8 +1224,7 @@ def test_agreements_delete_contract_by_id(auth_client, loaded_db, test_contract)
     assert agreement is None
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreements_delete_non_contract_by_id(auth_client, loaded_db, basic_user_auth_client):
+def test_agreements_delete_non_contract_by_id(auth_client, loaded_db, basic_user_auth_client, app_ctx):
     grant_agreement = GrantAgreement(
         name="test",
         foa="NIH",
@@ -1289,17 +1250,13 @@ def test_agreements_delete_non_contract_by_id(auth_client, loaded_db, basic_user
     assert agreement is None
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_iaa_agreement(auth_client, loaded_db):
+def test_get_iaa_agreement(auth_client, loaded_db, app_ctx):
     response = auth_client.get(url_for("api.agreements-item", id=4))
     assert response.status_code == 200
     assert response.json["agreement_type"] == "IAA"
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_post_iaa_agreement(auth_client, loaded_db):
+def test_post_iaa_agreement(auth_client, loaded_db, app_ctx):
 
     response = auth_client.post(
         url_for("api.agreements-group"),
@@ -1317,8 +1274,7 @@ def test_post_iaa_agreement(auth_client, loaded_db):
     assert response.status_code == 200
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreements_post(auth_client, loaded_db):
+def test_agreements_post(auth_client, loaded_db, app_ctx):
     response = auth_client.post(
         url_for("api.agreements-group"),
         json={
@@ -1333,8 +1289,7 @@ def test_agreements_post(auth_client, loaded_db):
     assert response.status_code == 200
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreements_post_contract_with_service_requirement_type(auth_client, loaded_db, test_project):
+def test_agreements_post_contract_with_service_requirement_type(auth_client, loaded_db, test_project, app_ctx):
     response = auth_client.post(
         url_for("api.agreements-group"),
         json={
@@ -1378,8 +1333,7 @@ def test_agreements_post_contract_with_service_requirement_type(auth_client, loa
     assert response.status_code == 200
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreements_post_contract_with_vendor(auth_client, loaded_db, test_user, test_admin_user, test_project):
+def test_agreements_post_contract_with_vendor(auth_client, loaded_db, test_user, test_admin_user, test_project, app_ctx):
     response = auth_client.post(
         url_for("api.agreements-group"),
         json={
@@ -1422,8 +1376,7 @@ def test_agreements_post_contract_with_vendor(auth_client, loaded_db, test_user,
     assert response.status_code == 200
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreements_post_duplicate_name_case_insensitive(auth_client, loaded_db, test_contract):
+def test_agreements_post_duplicate_name_case_insensitive(auth_client, loaded_db, test_contract, app_ctx):
     """Test that POSTing an agreement with a duplicate name (case-insensitive) returns 400"""
     # test_contract has name "CTXX12399-fixture" and agreement_type CONTRACT
     # Attempt to POST with same name but different case
@@ -1437,8 +1390,7 @@ def test_agreements_post_duplicate_name_case_insensitive(auth_client, loaded_db,
     assert response.status_code == 400
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreements_patch_by_id_e2e(auth_client, loaded_db, test_contract, test_project):
+def test_agreements_patch_by_id_e2e(auth_client, loaded_db, test_contract, test_project, app_ctx):
     """PATCH with mimicking the e2e test"""
     response = auth_client.patch(
         url_for("api.agreements-item", id=test_contract.id),
@@ -1488,10 +1440,7 @@ def test_agreements_patch_by_id_e2e(auth_client, loaded_db, test_contract, test_
     assert [m.id for m in agreement.team_members] == [502, 504]
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_update_agreement_procurement_shop_without_blis(
-    auth_client, loaded_db, test_contract, test_project, test_admin_user, test_vendor
-):
+def test_update_agreement_procurement_shop_without_blis(auth_client, loaded_db, test_contract, test_project, test_admin_user, test_vendor, app_ctx):
     response = auth_client.patch(
         url_for("api.agreements-item", id=test_contract.id),
         json={
@@ -1514,8 +1463,7 @@ def test_update_agreement_procurement_shop_without_blis(
     assert agreement.project_officer_id == test_admin_user.id
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_update_agreement_procurement_shop_error_with_bli_in_execution(auth_client, loaded_db, test_contract, test_can):
+def test_update_agreement_procurement_shop_error_with_bli_in_execution(auth_client, loaded_db, test_contract, test_can, app_ctx):
     """Test that changing agreement procurement shop fails when BLIs are in execution or higher"""
     # Create a BLI in IN_EXECUTION status
     bli = ContractBudgetLineItem(
@@ -1544,8 +1492,7 @@ def test_update_agreement_procurement_shop_error_with_bli_in_execution(auth_clie
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_update_agreement_procurement_shop_with_draft_bli(auth_client, loaded_db, test_contract, test_can):
+def test_update_agreement_procurement_shop_with_draft_bli(auth_client, loaded_db, test_contract, test_can, app_ctx):
     """Test that changing agreement procurement shop will update draft BLI's procurement shop fee"""
 
     bli = ContractBudgetLineItem(
@@ -1574,8 +1521,7 @@ def test_update_agreement_procurement_shop_with_draft_bli(auth_client, loaded_db
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_update_agreement_procurement_shop_with_planned_bli(auth_client, loaded_db, test_contract, test_can):
+def test_update_agreement_procurement_shop_with_planned_bli(auth_client, loaded_db, test_contract, test_can, app_ctx):
     """Test that changing agreement procurement shop with a PLANNED BLI will start a change request"""
 
     bli = ContractBudgetLineItem(
@@ -1648,8 +1594,7 @@ def test_agreements_get_by_id_in_review(auth_client, loaded_db, test_vendor, tes
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreements_get_contract_by_id(auth_client, loaded_db, test_contract):
+def test_agreements_get_contract_by_id(auth_client, loaded_db, test_contract, app_ctx):
     response = auth_client.get(
         url_for("api.agreements-item", id=test_contract.id),
     )
@@ -1665,8 +1610,7 @@ def test_agreements_get_contract_by_id(auth_client, loaded_db, test_contract):
     assert data["created_by"] is test_contract.created_by
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreements_patch_contract_by_id(auth_client, loaded_db, test_contract):
+def test_agreements_patch_contract_by_id(auth_client, loaded_db, test_contract, app_ctx):
     response = auth_client.patch(
         url_for("api.agreements-item", id=test_contract.id),
         json={"service_requirement_type": "SEVERABLE"},
@@ -1689,8 +1633,7 @@ def test_agreements_patch_contract_by_id(auth_client, loaded_db, test_contract):
     assert data["created_by"] is test_contract.created_by
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreements_patch_contract_update_existing_vendor(auth_client, loaded_db, test_contract):
+def test_agreements_patch_contract_update_existing_vendor(auth_client, loaded_db, test_contract, app_ctx):
     response = auth_client.patch(
         url_for("api.agreements-item", id=test_contract.id),
         json={"vendor": "Vendor 2"},
@@ -1715,8 +1658,7 @@ def test_agreements_patch_contract_update_existing_vendor(auth_client, loaded_db
     assert data["vendor"] == "Vendor 2"
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreements_patch_contract_update_new_vendor(auth_client, loaded_db, test_contract):
+def test_agreements_patch_contract_update_new_vendor(auth_client, loaded_db, test_contract, app_ctx):
     response = auth_client.patch(
         url_for("api.agreements-item", id=test_contract.id),
         json={"vendor": "Random Test Vendor"},
@@ -1740,8 +1682,7 @@ def test_agreements_patch_contract_update_new_vendor(auth_client, loaded_db, tes
     assert data["vendor"] == "Random Test Vendor"
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreements_includes_meta(auth_client, basic_user_auth_client, loaded_db):
+def test_agreements_includes_meta(auth_client, basic_user_auth_client, loaded_db, app_ctx):
     response = auth_client.get(url_for("api.agreements-group"))
     assert response.status_code == 200
 
@@ -1765,7 +1706,6 @@ def test_agreements_includes_meta(auth_client, basic_user_auth_client, loaded_db
     assert any(not item["_meta"]["isEditable"] for item in data)
 
 
-@pytest.mark.usefixtures("app_ctx")
 def test_agreement_updates_by_team_leaders(
     division_director_auth_client,
     auth_client,
@@ -1774,6 +1714,7 @@ def test_agreement_updates_by_team_leaders(
     test_project,
     test_admin_user,
     test_vendor,
+    app_ctx,
 ):
     # Add test division director as a team member to the test contract agreement
     response = auth_client.patch(
@@ -1857,8 +1798,7 @@ def test_agreement_updates_by_team_leaders(
     assert [m.id for m in agreement.team_members] == [522]
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_agreement_returns_portfolio_team_leaders(auth_client, loaded_db):
+def test_get_agreement_returns_portfolio_team_leaders(auth_client, loaded_db, app_ctx):
     stmt = select(Agreement).where(Agreement.id == 9)
     agreement = loaded_db.scalar(stmt)
 
@@ -1917,8 +1857,7 @@ def test_get_agreement_returns_portfolio_team_leaders(auth_client, loaded_db):
             assert tl["id"] in portfolio_team_leaders_ids
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreement_get_events_are_persisted(auth_client, loaded_db):
+def test_agreement_get_events_are_persisted(auth_client, loaded_db, app_ctx):
     # Count existing GET_AGREEMENT events before our test
     initial_event_count = loaded_db.scalar(
         select(func.count()).select_from(OpsEvent).where(OpsEvent.event_type == OpsEventType.GET_AGREEMENT)
@@ -1969,8 +1908,7 @@ def test_agreement_get_events_are_persisted(auth_client, loaded_db):
     assert item_event.event_details["agreement_id"] == 1
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_agreement_returns_empty_portfolio_team_leaders(auth_client, loaded_db, test_contract):
+def test_get_agreement_returns_empty_portfolio_team_leaders(auth_client, loaded_db, test_contract, app_ctx):
     """Test that an agreement with no budget lines returns empty portfolio team leaders"""
 
     response = auth_client.get(
@@ -1983,8 +1921,7 @@ def test_get_agreement_returns_empty_portfolio_team_leaders(auth_client, loaded_
     assert response.json["division_directors"] == []
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreements_post_aa_agreement_min(auth_client, db_for_aa_agreement):
+def test_agreements_post_aa_agreement_min(auth_client, db_for_aa_agreement, app_ctx):
     response = auth_client.post(
         url_for("api.agreements-group"),
         json={
@@ -2020,8 +1957,7 @@ def test_agreements_post_aa_agreement_min(auth_client, db_for_aa_agreement):
     db_for_aa_agreement.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreements_post_aa_agreement_max(auth_client, db_for_aa_agreement):
+def test_agreements_post_aa_agreement_max(auth_client, db_for_aa_agreement, app_ctx):
     response = auth_client.post(
         url_for("api.agreements-group"),
         json={
@@ -2124,8 +2060,7 @@ def test_agreements_post_aa_agreement_max(auth_client, db_for_aa_agreement):
     db_for_aa_agreement.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreements_put_aa_agreement_min(auth_client, db_for_aa_agreement):
+def test_agreements_put_aa_agreement_min(auth_client, db_for_aa_agreement, app_ctx):
     # Create an AA agreement first
     response = auth_client.post(
         url_for("api.agreements-group"),
@@ -2179,8 +2114,7 @@ def test_agreements_put_aa_agreement_min(auth_client, db_for_aa_agreement):
     db_for_aa_agreement.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreements_put_aa_agreement_max(auth_client, db_for_aa_agreement):
+def test_agreements_put_aa_agreement_max(auth_client, db_for_aa_agreement, app_ctx):
     # Create an AA agreement first
     response = auth_client.post(
         url_for("api.agreements-group"),
@@ -2299,8 +2233,7 @@ def test_agreements_put_aa_agreement_max(auth_client, db_for_aa_agreement):
     db_for_aa_agreement.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreements_get_aa_agreement_max(auth_client, db_for_aa_agreement):
+def test_agreements_get_aa_agreement_max(auth_client, db_for_aa_agreement, app_ctx):
     # create an AaAgreement with max params and get it
     aa = AaAgreement(
         name="Test AA Agreement",
@@ -2398,8 +2331,7 @@ def test_agreements_get_aa_agreement_max(auth_client, db_for_aa_agreement):
     db_for_aa_agreement.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreements_get_aa_agreement_list_max(auth_client, db_for_aa_agreement):
+def test_agreements_get_aa_agreement_list_max(auth_client, db_for_aa_agreement, app_ctx):
     # create an AaAgreement with max params and get it
     aa = AaAgreement(
         name="Test AA Agreement",
@@ -2501,8 +2433,7 @@ def test_agreements_get_aa_agreement_list_max(auth_client, db_for_aa_agreement):
     db_for_aa_agreement.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreements_patch_procurement_shop(auth_client, loaded_db, test_contract):
+def test_agreements_patch_procurement_shop(auth_client, loaded_db, test_contract, app_ctx):
     """PATCH to change the procurement shop of a contract agreement."""
     # First clear the awarding_entity_id to test adding one
     test_contract.awarding_entity_id = None
@@ -2522,11 +2453,10 @@ def test_agreements_patch_procurement_shop(auth_client, loaded_db, test_contract
     assert agreement.awarding_entity_id == 2
 
 
-@pytest.mark.usefixtures("app_ctx")
 class TestAgreementsPaginationAPI:
     """Integration tests for pagination functionality in the agreements API endpoint"""
 
-    def test_get_agreements_default_pagination(self, auth_client, loaded_db):
+    def test_get_agreements_default_pagination(self, auth_client, loaded_db, app_ctx):
         """GET /agreements/ returns first 10 with default pagination"""
         response = auth_client.get(url_for("api.agreements-group"))
 
@@ -2541,7 +2471,7 @@ class TestAgreementsPaginationAPI:
         assert response.json["limit"] == 10
         assert response.json["offset"] == 0
 
-    def test_get_agreements_with_limit_offset(self, auth_client, loaded_db):
+    def test_get_agreements_with_limit_offset(self, auth_client, loaded_db, app_ctx):
         """GET /agreements/?limit=10&offset=0 works correctly"""
         response = auth_client.get(url_for("api.agreements-group"), query_string={"limit": 10, "offset": 0})
 
@@ -2550,7 +2480,7 @@ class TestAgreementsPaginationAPI:
         assert response.json["limit"] == 10
         assert response.json["offset"] == 0
 
-    def test_get_agreements_second_page(self, auth_client, loaded_db):
+    def test_get_agreements_second_page(self, auth_client, loaded_db, app_ctx):
         """GET /agreements/?limit=10&offset=10 returns next 10"""
         # Get first page
         response_page1 = auth_client.get(url_for("api.agreements-group"), query_string={"limit": 5, "offset": 0})
@@ -2574,7 +2504,7 @@ class TestAgreementsPaginationAPI:
             page2_ids = {agr["id"] for agr in response_page2.json["data"]}
             assert page1_ids != page2_ids
 
-    def test_get_agreements_custom_page_size(self, auth_client, loaded_db):
+    def test_get_agreements_custom_page_size(self, auth_client, loaded_db, app_ctx):
         """GET /agreements/?limit=25&offset=0 returns up to 25"""
         response = auth_client.get(url_for("api.agreements-group"), query_string={"limit": 25, "offset": 0})
 
@@ -2582,7 +2512,7 @@ class TestAgreementsPaginationAPI:
         assert len(response.json["data"]) <= 25
         assert response.json["limit"] == 25
 
-    def test_response_has_wrapped_format(self, auth_client, loaded_db):
+    def test_response_has_wrapped_format(self, auth_client, loaded_db, app_ctx):
         """Response contains data, count, limit, offset"""
         response = auth_client.get(url_for("api.agreements-group"))
 
@@ -2592,14 +2522,14 @@ class TestAgreementsPaginationAPI:
         assert "limit" in response.json
         assert "offset" in response.json
 
-    def test_response_agreements_is_list(self, auth_client, loaded_db):
+    def test_response_agreements_is_list(self, auth_client, loaded_db, app_ctx):
         """data field is a list"""
         response = auth_client.get(url_for("api.agreements-group"))
 
         assert response.status_code == 200
         assert isinstance(response.json["data"], list)
 
-    def test_response_metadata_types(self, auth_client, loaded_db):
+    def test_response_metadata_types(self, auth_client, loaded_db, app_ctx):
         """count, limit, offset are integers"""
         response = auth_client.get(url_for("api.agreements-group"))
 
@@ -2608,7 +2538,7 @@ class TestAgreementsPaginationAPI:
         assert isinstance(response.json["limit"], int)
         assert isinstance(response.json["offset"], int)
 
-    def test_response_agreement_structure(self, auth_client, loaded_db):
+    def test_response_agreement_structure(self, auth_client, loaded_db, app_ctx):
         """Each agreement has expected fields"""
         response = auth_client.get(url_for("api.agreements-group"))
 
@@ -2622,25 +2552,25 @@ class TestAgreementsPaginationAPI:
         assert "agreement_type" in agreement
         assert "_meta" in agreement
 
-    def test_invalid_limit_zero(self, auth_client, loaded_db):
+    def test_invalid_limit_zero(self, auth_client, loaded_db, app_ctx):
         """GET /agreements/?limit=0 returns 400"""
         response = auth_client.get(url_for("api.agreements-group"), query_string={"limit": 0})
 
         assert response.status_code == 400
 
-    def test_invalid_limit_too_high(self, auth_client, loaded_db):
+    def test_invalid_limit_too_high(self, auth_client, loaded_db, app_ctx):
         """GET /agreements/?limit=100 returns 400"""
         response = auth_client.get(url_for("api.agreements-group"), query_string={"limit": 100})
 
         assert response.status_code == 400
 
-    def test_invalid_offset_negative(self, auth_client, loaded_db):
+    def test_invalid_offset_negative(self, auth_client, loaded_db, app_ctx):
         """GET /agreements/?offset=-1 returns 400"""
         response = auth_client.get(url_for("api.agreements-group"), query_string={"offset": -1})
 
         assert response.status_code == 400
 
-    def test_pagination_with_fiscal_year_filter(self, auth_client, loaded_db):
+    def test_pagination_with_fiscal_year_filter(self, auth_client, loaded_db, app_ctx):
         """Filtered results paginate correctly"""
         response = auth_client.get(
             url_for("api.agreements-group"),
@@ -2653,7 +2583,7 @@ class TestAgreementsPaginationAPI:
         # Count should reflect filtered total
         assert response.json["count"] <= response.json["count"]
 
-    def test_pagination_with_portfolio_filter(self, auth_client, loaded_db):
+    def test_pagination_with_portfolio_filter(self, auth_client, loaded_db, app_ctx):
         """Count reflects filtered total"""
         # Get unfiltered count
         response_all = auth_client.get(url_for("api.agreements-group"), query_string={"limit": 50})
@@ -2667,7 +2597,7 @@ class TestAgreementsPaginationAPI:
         # Filtered count should be <= total count
         assert response_filtered.json["count"] <= response_all.json["count"]
 
-    def test_pagination_with_status_filter(self, auth_client, loaded_db):
+    def test_pagination_with_status_filter(self, auth_client, loaded_db, app_ctx):
         """Multiple filters + pagination"""
         response = auth_client.get(
             url_for("api.agreements-group"),
@@ -2683,7 +2613,7 @@ class TestAgreementsPaginationAPI:
         assert response.json["limit"] == 5
         assert response.json["offset"] == 0
 
-    def test_pagination_with_only_my(self, auth_client, loaded_db):
+    def test_pagination_with_only_my(self, auth_client, loaded_db, app_ctx):
         """Ownership filter + pagination"""
         response = auth_client.get(
             url_for("api.agreements-group"),
@@ -2694,7 +2624,7 @@ class TestAgreementsPaginationAPI:
         assert response.json["limit"] == 10
         assert response.json["offset"] == 0
 
-    def test_pagination_with_sort_by_name(self, auth_client, loaded_db):
+    def test_pagination_with_sort_by_name(self, auth_client, loaded_db, app_ctx):
         """Results sorted before pagination"""
         response = auth_client.get(
             url_for("api.agreements-group"),
@@ -2709,7 +2639,7 @@ class TestAgreementsPaginationAPI:
         if len(names) > 1:
             assert names == sorted(names)
 
-    def test_pagination_with_sort_descending(self, auth_client, loaded_db):
+    def test_pagination_with_sort_descending(self, auth_client, loaded_db, app_ctx):
         """Descending sort + pagination"""
         response = auth_client.get(
             url_for("api.agreements-group"),
@@ -2729,7 +2659,7 @@ class TestAgreementsPaginationAPI:
         if len(names) > 1:
             assert names == sorted(names, reverse=True)
 
-    def test_pagination_maintains_sort_across_pages(self, auth_client, loaded_db):
+    def test_pagination_maintains_sort_across_pages(self, auth_client, loaded_db, app_ctx):
         """Consistent sort order across pages"""
         # Get first page
         response_page1 = auth_client.get(
@@ -2754,7 +2684,7 @@ class TestAgreementsPaginationAPI:
             if last_name_page1 and first_name_page2:
                 assert last_name_page1 <= first_name_page2
 
-    def test_pagination_empty_results(self, auth_client, loaded_db):
+    def test_pagination_empty_results(self, auth_client, loaded_db, app_ctx):
         """Pagination with filters that return no results"""
         response = auth_client.get(
             url_for("api.agreements-group"),
@@ -2767,7 +2697,7 @@ class TestAgreementsPaginationAPI:
         assert response.json["limit"] == 10
         assert response.json["offset"] == 0
 
-    def test_pagination_offset_beyond_results(self, auth_client, loaded_db):
+    def test_pagination_offset_beyond_results(self, auth_client, loaded_db, app_ctx):
         """Offset beyond total results returns empty list"""
         response = auth_client.get(url_for("api.agreements-group"), query_string={"limit": 10, "offset": 10000})
 
@@ -2775,7 +2705,7 @@ class TestAgreementsPaginationAPI:
         assert len(response.json["data"]) == 0
         assert response.json["offset"] == 10000
 
-    def test_pagination_boundary_last_page(self, auth_client, loaded_db):
+    def test_pagination_boundary_last_page(self, auth_client, loaded_db, app_ctx):
         """Last page with partial results"""
         # Get total count
         response_all = auth_client.get(url_for("api.agreements-group"), query_string={"limit": 50})
@@ -2793,7 +2723,7 @@ class TestAgreementsPaginationAPI:
             assert len(response.json["data"]) == 3
             assert response.json["count"] == total_count
 
-    def test_pagination_max_limit_allowed(self, auth_client, loaded_db):
+    def test_pagination_max_limit_allowed(self, auth_client, loaded_db, app_ctx):
         """Maximum limit of 50 is allowed"""
         response = auth_client.get(url_for("api.agreements-group"), query_string={"limit": 50, "offset": 0})
 
@@ -2805,7 +2735,7 @@ class TestAgreementsPaginationAPI:
 
 
 @pytest.fixture
-def awarded_contract_agreement(loaded_db, test_project):
+def awarded_contract_agreement(loaded_db, test_project, app_ctx):
     """Create a ContractAgreement with awarded status."""
     agreement = ContractAgreement(
         name="Awarded Contract Test Agreement",
@@ -2839,15 +2769,12 @@ def awarded_contract_agreement(loaded_db, test_project):
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
 class TestAwardedAgreementPatch:
     """Integration tests for PATCH /agreements on awarded agreements."""
 
     # ==================== Category 1: Regular User - Immutable Field Updates (Should Fail) ====================
 
-    def test_patch_awarded_contract_regular_user_update_name_fails(
-        self, auth_client, awarded_contract_agreement, loaded_db
-    ):
+    def test_patch_awarded_contract_regular_user_update_name_fails(self, auth_client, awarded_contract_agreement, loaded_db, app_ctx):
         """Test that a regular user cannot update the 'name' field on an awarded contract."""
         original_name = awarded_contract_agreement.name
 
@@ -2867,9 +2794,7 @@ class TestAwardedAgreementPatch:
         loaded_db.refresh(awarded_contract_agreement)
         assert awarded_contract_agreement.name == original_name
 
-    def test_patch_awarded_contract_regular_user_update_contract_type_fails(
-        self, auth_client, awarded_contract_agreement, loaded_db
-    ):
+    def test_patch_awarded_contract_regular_user_update_contract_type_fails(self, auth_client, awarded_contract_agreement, loaded_db, app_ctx):
         """Test that a regular user cannot update 'contract_type' on an awarded contract."""
         original_type = awarded_contract_agreement.contract_type
 
@@ -2888,9 +2813,7 @@ class TestAwardedAgreementPatch:
         loaded_db.refresh(awarded_contract_agreement)
         assert awarded_contract_agreement.contract_type == original_type
 
-    def test_patch_awarded_contract_regular_user_update_multiple_immutable_fields_fails(
-        self, auth_client, awarded_contract_agreement, loaded_db
-    ):
+    def test_patch_awarded_contract_regular_user_update_multiple_immutable_fields_fails(self, auth_client, awarded_contract_agreement, loaded_db, app_ctx):
         """Test that updating multiple immutable fields returns errors for all of them."""
         original_name = awarded_contract_agreement.name
         original_reason = awarded_contract_agreement.agreement_reason
@@ -2912,9 +2835,7 @@ class TestAwardedAgreementPatch:
         assert awarded_contract_agreement.name == original_name
         assert awarded_contract_agreement.agreement_reason == original_reason
 
-    def test_patch_awarded_contract_regular_user_update_service_requirement_type_fails(
-        self, auth_client, awarded_contract_agreement, loaded_db
-    ):
+    def test_patch_awarded_contract_regular_user_update_service_requirement_type_fails(self, auth_client, awarded_contract_agreement, loaded_db, app_ctx):
         """Test that regular user cannot update 'service_requirement_type' on awarded contract."""
         original_type = awarded_contract_agreement.service_requirement_type
 
@@ -2932,9 +2853,7 @@ class TestAwardedAgreementPatch:
         loaded_db.refresh(awarded_contract_agreement)
         assert awarded_contract_agreement.service_requirement_type == original_type
 
-    def test_patch_awarded_contract_regular_user_update_psc_id_fails(
-        self, auth_client, awarded_contract_agreement, loaded_db
-    ):
+    def test_patch_awarded_contract_regular_user_update_psc_id_fails(self, auth_client, awarded_contract_agreement, loaded_db, app_ctx):
         """Test that regular user cannot update 'product_service_code_id' on awarded contract."""
         original_psc_id = awarded_contract_agreement.product_service_code_id
 
@@ -2952,9 +2871,7 @@ class TestAwardedAgreementPatch:
         loaded_db.refresh(awarded_contract_agreement)
         assert awarded_contract_agreement.product_service_code_id == original_psc_id
 
-    def test_patch_awarded_contract_regular_user_update_awarding_entity_id_fails(
-        self, auth_client, awarded_contract_agreement, loaded_db
-    ):
+    def test_patch_awarded_contract_regular_user_update_awarding_entity_id_fails(self, auth_client, awarded_contract_agreement, loaded_db, app_ctx):
         """Test that regular user cannot update 'awarding_entity_id' (procurement shop) on awarded contract."""
         original_entity_id = awarded_contract_agreement.awarding_entity_id
 
@@ -2972,9 +2889,7 @@ class TestAwardedAgreementPatch:
         loaded_db.refresh(awarded_contract_agreement)
         assert awarded_contract_agreement.awarding_entity_id == original_entity_id
 
-    def test_patch_awarded_contract_regular_user_update_agreement_reason_fails(
-        self, auth_client, awarded_contract_agreement, loaded_db
-    ):
+    def test_patch_awarded_contract_regular_user_update_agreement_reason_fails(self, auth_client, awarded_contract_agreement, loaded_db, app_ctx):
         """Test that regular user cannot update 'agreement_reason' on awarded contract."""
         original_reason = awarded_contract_agreement.agreement_reason
 
@@ -2994,9 +2909,7 @@ class TestAwardedAgreementPatch:
 
     # ==================== Category 2: Regular User - Mutable Field Updates (Should Succeed) ====================
 
-    def test_patch_awarded_contract_regular_user_update_description_succeeds(
-        self, auth_client, awarded_contract_agreement, loaded_db
-    ):
+    def test_patch_awarded_contract_regular_user_update_description_succeeds(self, auth_client, awarded_contract_agreement, loaded_db, app_ctx):
         """Test that a regular user can update 'description' on an awarded contract."""
         new_description = "Updated description for awarded contract"
 
@@ -3013,9 +2926,7 @@ class TestAwardedAgreementPatch:
         loaded_db.refresh(awarded_contract_agreement)
         assert awarded_contract_agreement.description == new_description
 
-    def test_patch_awarded_contract_regular_user_update_notes_succeeds(
-        self, auth_client, awarded_contract_agreement, loaded_db
-    ):
+    def test_patch_awarded_contract_regular_user_update_notes_succeeds(self, auth_client, awarded_contract_agreement, loaded_db, app_ctx):
         """Test that a regular user can update 'notes' on an awarded contract."""
         new_notes = "Important notes about this awarded contract"
 
@@ -3032,9 +2943,7 @@ class TestAwardedAgreementPatch:
         loaded_db.refresh(awarded_contract_agreement)
         assert awarded_contract_agreement.notes == new_notes
 
-    def test_patch_awarded_contract_regular_user_update_project_officer_succeeds(
-        self, auth_client, awarded_contract_agreement, loaded_db
-    ):
+    def test_patch_awarded_contract_regular_user_update_project_officer_succeeds(self, auth_client, awarded_contract_agreement, loaded_db, app_ctx):
         """Test that a regular user can update 'project_officer_id' on an awarded contract."""
         new_po_id = 501  # Different user
 
@@ -3051,9 +2960,7 @@ class TestAwardedAgreementPatch:
         loaded_db.refresh(awarded_contract_agreement)
         assert awarded_contract_agreement.project_officer_id == new_po_id
 
-    def test_patch_awarded_contract_regular_user_update_team_members_succeeds(
-        self, auth_client, awarded_contract_agreement, loaded_db
-    ):
+    def test_patch_awarded_contract_regular_user_update_team_members_succeeds(self, auth_client, awarded_contract_agreement, loaded_db, app_ctx):
         """Test that a regular user can update 'team_members' on an awarded contract."""
         response = auth_client.patch(
             url_for("api.agreements-item", id=awarded_contract_agreement.id),
@@ -3069,9 +2976,7 @@ class TestAwardedAgreementPatch:
         team_member_ids = [tm.id for tm in awarded_contract_agreement.team_members]
         assert set(team_member_ids) == {502, 503}
 
-    def test_patch_awarded_contract_regular_user_update_multiple_mutable_fields_succeeds(
-        self, auth_client, awarded_contract_agreement, loaded_db
-    ):
+    def test_patch_awarded_contract_regular_user_update_multiple_mutable_fields_succeeds(self, auth_client, awarded_contract_agreement, loaded_db, app_ctx):
         """Test that a regular user can update multiple mutable fields on an awarded contract."""
         new_description = "Updated description"
         new_notes = "Updated notes"
@@ -3093,9 +2998,7 @@ class TestAwardedAgreementPatch:
         assert awarded_contract_agreement.notes == new_notes
         assert len(awarded_contract_agreement.team_members) == 1
 
-    def test_patch_awarded_contract_regular_user_mix_mutable_immutable_fails(
-        self, auth_client, awarded_contract_agreement, loaded_db
-    ):
+    def test_patch_awarded_contract_regular_user_mix_mutable_immutable_fails(self, auth_client, awarded_contract_agreement, loaded_db, app_ctx):
         """Test that updating both mutable and immutable fields fails with errors for immutable ones."""
         original_name = awarded_contract_agreement.name
         original_description = awarded_contract_agreement.description
@@ -3118,9 +3021,7 @@ class TestAwardedAgreementPatch:
 
     # ==================== Category 3: Super User - Immutable Field Updates (Should Succeed) ====================
 
-    def test_patch_awarded_contract_super_user_update_name_succeeds(
-        self, power_user_auth_client, awarded_contract_agreement, loaded_db
-    ):
+    def test_patch_awarded_contract_super_user_update_name_succeeds(self, power_user_auth_client, awarded_contract_agreement, loaded_db, app_ctx):
         """Test that a super user can update 'name' on an awarded contract."""
         new_name = "Super User Updated Name"
 
@@ -3137,9 +3038,7 @@ class TestAwardedAgreementPatch:
         loaded_db.refresh(awarded_contract_agreement)
         assert awarded_contract_agreement.name == new_name
 
-    def test_patch_awarded_contract_super_user_update_contract_type_succeeds(
-        self, power_user_auth_client, awarded_contract_agreement, loaded_db
-    ):
+    def test_patch_awarded_contract_super_user_update_contract_type_succeeds(self, power_user_auth_client, awarded_contract_agreement, loaded_db, app_ctx):
         """Test that a super user can update 'contract_type' on an awarded contract."""
         response = power_user_auth_client.patch(
             url_for("api.agreements-item", id=awarded_contract_agreement.id),
@@ -3154,9 +3053,7 @@ class TestAwardedAgreementPatch:
         loaded_db.refresh(awarded_contract_agreement)
         assert awarded_contract_agreement.contract_type == ContractType.TIME_AND_MATERIALS
 
-    def test_patch_awarded_contract_super_user_update_multiple_immutable_fields_succeeds(
-        self, power_user_auth_client, awarded_contract_agreement, loaded_db
-    ):
+    def test_patch_awarded_contract_super_user_update_multiple_immutable_fields_succeeds(self, power_user_auth_client, awarded_contract_agreement, loaded_db, app_ctx):
         """Test that a super user can update multiple immutable fields on an awarded contract."""
         new_name = "Super User New Name"
 
@@ -3177,9 +3074,7 @@ class TestAwardedAgreementPatch:
         assert awarded_contract_agreement.agreement_reason == AgreementReason.RECOMPETE
         assert awarded_contract_agreement.service_requirement_type == ServiceRequirementType.NON_SEVERABLE
 
-    def test_patch_awarded_contract_super_user_update_all_immutable_fields_succeeds(
-        self, power_user_auth_client, awarded_contract_agreement, loaded_db
-    ):
+    def test_patch_awarded_contract_super_user_update_all_immutable_fields_succeeds(self, power_user_auth_client, awarded_contract_agreement, loaded_db, app_ctx):
         """Test that a super user can update ALL immutable fields on an awarded contract."""
         response = power_user_auth_client.patch(
             url_for("api.agreements-item", id=awarded_contract_agreement.id),
@@ -3204,9 +3099,7 @@ class TestAwardedAgreementPatch:
         assert awarded_contract_agreement.awarding_entity_id == 2
         assert awarded_contract_agreement.agreement_reason == AgreementReason.LOGICAL_FOLLOW_ON
 
-    def test_patch_awarded_contract_super_user_update_mix_fields_succeeds(
-        self, power_user_auth_client, awarded_contract_agreement, loaded_db
-    ):
+    def test_patch_awarded_contract_super_user_update_mix_fields_succeeds(self, power_user_auth_client, awarded_contract_agreement, loaded_db, app_ctx):
         """Test that a super user can update both mutable and immutable fields together."""
         new_name = "Super User Mixed Update"
         new_description = "Updated description"
@@ -3228,9 +3121,7 @@ class TestAwardedAgreementPatch:
 
     # ==================== Category 4: Super User - Mutable Field Updates (Should Succeed) ====================
 
-    def test_patch_awarded_contract_super_user_update_mutable_fields_succeeds(
-        self, power_user_auth_client, awarded_contract_agreement, loaded_db
-    ):
+    def test_patch_awarded_contract_super_user_update_mutable_fields_succeeds(self, power_user_auth_client, awarded_contract_agreement, loaded_db, app_ctx):
         """Test that a super user can update mutable fields (same as regular users)."""
         new_description = "Super user updated description"
         new_notes = "Super user notes"
@@ -3252,9 +3143,7 @@ class TestAwardedAgreementPatch:
 
     # ==================== Category 5: Edge Cases ====================
 
-    def test_patch_awarded_contract_regular_user_same_value_succeeds(
-        self, auth_client, awarded_contract_agreement, loaded_db
-    ):
+    def test_patch_awarded_contract_regular_user_same_value_succeeds(self, auth_client, awarded_contract_agreement, loaded_db, app_ctx):
         """Test that updating an immutable field with its current value is allowed."""
         current_name = awarded_contract_agreement.name
 
@@ -3271,9 +3160,7 @@ class TestAwardedAgreementPatch:
         loaded_db.refresh(awarded_contract_agreement)
         assert awarded_contract_agreement.name == current_name
 
-    def test_patch_non_awarded_contract_regular_user_update_any_field_succeeds(
-        self, auth_client, test_contract, loaded_db
-    ):
+    def test_patch_non_awarded_contract_regular_user_update_any_field_succeeds(self, auth_client, test_contract, loaded_db, app_ctx):
         """Test that regular users can update 'immutable' fields on non-awarded contracts."""
         new_name = "Updated Name on Non-Awarded Contract"
 
@@ -3293,7 +3180,7 @@ class TestAwardedAgreementPatch:
         loaded_db.refresh(test_contract)
         assert test_contract.name == new_name
 
-    def test_patch_awarded_aa_agreement_immutable_fields(self, auth_client, loaded_db, test_project):
+    def test_patch_awarded_aa_agreement_immutable_fields(self, auth_client, loaded_db, test_project, app_ctx):
         """Test that AA agreements have additional immutable fields (requesting/servicing agency)."""
         # Get agencies
         req_agency = loaded_db.scalar(select(AgreementAgency).where(AgreementAgency.requesting == True))  # noqa: E712
@@ -3353,7 +3240,7 @@ class TestAwardedAgreementPatch:
         loaded_db.delete(aa_agreement)
         loaded_db.commit()
 
-    def test_patch_awarded_grant_no_immutable_fields(self, auth_client, loaded_db, test_project):
+    def test_patch_awarded_grant_no_immutable_fields(self, auth_client, loaded_db, test_project, app_ctx):
         """Test that GrantAgreements have no immutable fields even when awarded."""
         # Create awarded grant
         grant = GrantAgreement(

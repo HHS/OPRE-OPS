@@ -63,8 +63,7 @@ def test_procurement_action_with_budget_lines(loaded_db, test_procurement_action
 # Service Layer Tests
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_procurement_action_service_get(loaded_db, test_procurement_action):
+def test_procurement_action_service_get(loaded_db, test_procurement_action, app_ctx):
     """Test ProcurementActionService.get() retrieves a procurement action by ID."""
     service = ProcurementActionService(loaded_db)
 
@@ -76,8 +75,7 @@ def test_procurement_action_service_get(loaded_db, test_procurement_action):
     assert procurement_action.agreement_id == test_procurement_action.agreement_id
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_procurement_action_service_get_nonexistent(loaded_db):
+def test_procurement_action_service_get_nonexistent(loaded_db, app_ctx):
     """Test ProcurementActionService.get() raises ResourceNotFoundError for invalid ID."""
     service = ProcurementActionService(loaded_db)
 
@@ -85,8 +83,7 @@ def test_procurement_action_service_get_nonexistent(loaded_db):
         service.get(999999)
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_procurement_action_service_get_list_no_filters(loaded_db):
+def test_procurement_action_service_get_list_no_filters(loaded_db, app_ctx):
     """Test ProcurementActionService.get_list() returns all procurement actions without filters."""
     service = ProcurementActionService(loaded_db)
 
@@ -96,8 +93,7 @@ def test_procurement_action_service_get_list_no_filters(loaded_db):
     assert metadata["count"] > 0
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_procurement_action_service_get_list_by_agreement_id(loaded_db, test_procurement_action):
+def test_procurement_action_service_get_list_by_agreement_id(loaded_db, test_procurement_action, app_ctx):
     """Test ProcurementActionService.get_list() filters by agreement_id."""
     service = ProcurementActionService(loaded_db)
 
@@ -108,8 +104,7 @@ def test_procurement_action_service_get_list_by_agreement_id(loaded_db, test_pro
         assert pa.agreement_id == test_procurement_action.agreement_id
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_procurement_action_service_get_list_by_status(loaded_db):
+def test_procurement_action_service_get_list_by_status(loaded_db, app_ctx):
     """Test ProcurementActionService.get_list() filters by status."""
     service = ProcurementActionService(loaded_db)
 
@@ -119,8 +114,7 @@ def test_procurement_action_service_get_list_by_status(loaded_db):
         assert pa.status == ProcurementActionStatus.PLANNED
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_procurement_action_service_get_list_by_award_type(loaded_db):
+def test_procurement_action_service_get_list_by_award_type(loaded_db, app_ctx):
     """Test ProcurementActionService.get_list() filters by award_type."""
     service = ProcurementActionService(loaded_db)
 
@@ -130,8 +124,7 @@ def test_procurement_action_service_get_list_by_award_type(loaded_db):
         assert pa.award_type == AwardType.NEW_AWARD
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_procurement_action_service_get_list_by_procurement_shop_id(loaded_db, test_procurement_action):
+def test_procurement_action_service_get_list_by_procurement_shop_id(loaded_db, test_procurement_action, app_ctx):
     """Test ProcurementActionService.get_list() filters by procurement_shop_id."""
     service = ProcurementActionService(loaded_db)
 
@@ -142,10 +135,7 @@ def test_procurement_action_service_get_list_by_procurement_shop_id(loaded_db, t
         assert pa.procurement_shop_id == test_procurement_action.procurement_shop_id
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_procurement_action_service_get_list_by_budget_line_item_id(
-    loaded_db, test_procurement_action_with_budget_lines
-):
+def test_procurement_action_service_get_list_by_budget_line_item_id(loaded_db, test_procurement_action_with_budget_lines, app_ctx):
     """Test ProcurementActionService.get_list() filters by budget_line_item_id."""
     service = ProcurementActionService(loaded_db)
 
@@ -165,8 +155,7 @@ def test_procurement_action_service_get_list_by_budget_line_item_id(
         assert test_procurement_action_with_budget_lines.id in pa_ids
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_procurement_action_service_get_list_with_pagination(loaded_db):
+def test_procurement_action_service_get_list_with_pagination(loaded_db, app_ctx):
     """Test ProcurementActionService.get_list() respects pagination parameters."""
     service = ProcurementActionService(loaded_db)
 
@@ -193,8 +182,7 @@ def test_procurement_action_service_get_list_with_pagination(loaded_db):
         assert not set(page1_ids).intersection(set(page2_ids))
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_procurement_action_service_get_list_invalid_status(loaded_db):
+def test_procurement_action_service_get_list_invalid_status(loaded_db, app_ctx):
     """Test ProcurementActionService.get_list() handles invalid status gracefully."""
     service = ProcurementActionService(loaded_db)
 
@@ -204,8 +192,7 @@ def test_procurement_action_service_get_list_invalid_status(loaded_db):
     assert metadata["count"] == 0
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_procurement_action_service_get_list_invalid_award_type(loaded_db):
+def test_procurement_action_service_get_list_invalid_award_type(loaded_db, app_ctx):
     """Test ProcurementActionService.get_list() handles invalid award_type gracefully."""
     service = ProcurementActionService(loaded_db)
 
@@ -218,9 +205,7 @@ def test_procurement_action_service_get_list_invalid_award_type(loaded_db):
 # API Endpoint Tests
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_procurement_action_detail(auth_client, test_procurement_action):
+def test_get_procurement_action_detail(auth_client, test_procurement_action, app_ctx):
     """Test GET /api/v1/procurement-actions/<id> returns procurement action details."""
     response = auth_client.get(f"/api/v1/procurement-actions/{test_procurement_action.id}")
 
@@ -239,18 +224,14 @@ def test_get_procurement_action_detail(auth_client, test_procurement_action):
     assert "budget_lines_total" in response.json
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_procurement_action_detail_not_found(auth_client):
+def test_get_procurement_action_detail_not_found(auth_client, app_ctx):
     """Test GET /api/v1/procurement-actions/<id> returns 404 for invalid ID."""
     response = auth_client.get("/api/v1/procurement-actions/999999")
 
     assert response.status_code == 404
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_procurement_actions_list(auth_client):
+def test_get_procurement_actions_list(auth_client, app_ctx):
     """Test GET /api/v1/procurement-actions/ returns list of procurement actions."""
     response = auth_client.get("/api/v1/procurement-actions/")
 
@@ -263,9 +244,7 @@ def test_get_procurement_actions_list(auth_client):
     assert response.json["count"] > 0
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_procurement_actions_list_filter_by_agreement_id(auth_client, test_procurement_action):
+def test_get_procurement_actions_list_filter_by_agreement_id(auth_client, test_procurement_action, app_ctx):
     """Test GET /api/v1/procurement-actions/ filters by agreement_id."""
     response = auth_client.get(
         url_for("api.procurement-actions-group"),
@@ -278,9 +257,7 @@ def test_get_procurement_actions_list_filter_by_agreement_id(auth_client, test_p
         assert pa["agreement_id"] == test_procurement_action.agreement_id
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_procurement_actions_list_filter_by_status(auth_client):
+def test_get_procurement_actions_list_filter_by_status(auth_client, app_ctx):
     """Test GET /api/v1/procurement-actions/ filters by status."""
     response = auth_client.get(
         url_for("api.procurement-actions-group"),
@@ -292,9 +269,7 @@ def test_get_procurement_actions_list_filter_by_status(auth_client):
         assert pa["status"] == "PLANNED"
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_procurement_actions_list_filter_by_award_type(auth_client):
+def test_get_procurement_actions_list_filter_by_award_type(auth_client, app_ctx):
     """Test GET /api/v1/procurement-actions/ filters by award_type."""
     response = auth_client.get(
         url_for("api.procurement-actions-group"),
@@ -306,9 +281,7 @@ def test_get_procurement_actions_list_filter_by_award_type(auth_client):
         assert pa["award_type"] == "NEW_AWARD"
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_procurement_actions_list_filter_by_procurement_shop_id(auth_client, test_procurement_action):
+def test_get_procurement_actions_list_filter_by_procurement_shop_id(auth_client, test_procurement_action, app_ctx):
     """Test GET /api/v1/procurement-actions/ filters by procurement_shop_id."""
     response = auth_client.get(
         url_for("api.procurement-actions-group"),
@@ -321,9 +294,7 @@ def test_get_procurement_actions_list_filter_by_procurement_shop_id(auth_client,
         assert pa["procurement_shop_id"] == test_procurement_action.procurement_shop_id
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_procurement_actions_list_with_pagination(auth_client):
+def test_get_procurement_actions_list_with_pagination(auth_client, app_ctx):
     """Test GET /api/v1/procurement-actions/ supports pagination."""
     # Get first page
     response1 = auth_client.get(
@@ -356,9 +327,7 @@ def test_get_procurement_actions_list_with_pagination(auth_client):
         assert not set(page1_ids).intersection(set(page2_ids))
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_procurement_actions_list_multiple_filters(auth_client, test_procurement_action):
+def test_get_procurement_actions_list_multiple_filters(auth_client, test_procurement_action, app_ctx):
     """Test GET /api/v1/procurement-actions/ with multiple filters combined."""
     response = auth_client.get(
         url_for("api.procurement-actions-group"),
@@ -376,9 +345,7 @@ def test_get_procurement_actions_list_multiple_filters(auth_client, test_procure
         assert pa["procurement_shop_id"] == test_procurement_action.procurement_shop_id
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_procurement_action_detail_schema_structure(auth_client, test_procurement_action):
+def test_get_procurement_action_detail_schema_structure(auth_client, test_procurement_action, app_ctx):
     """Test GET /api/v1/procurement-actions/{id} returns proper schema structure."""
     response = auth_client.get(f"/api/v1/procurement-actions/{test_procurement_action.id}")
 
@@ -406,9 +373,7 @@ def test_get_procurement_action_detail_schema_structure(auth_client, test_procur
     assert "totals_match" in response.json
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_procurement_actions_list_response_lighter_schema(auth_client):
+def test_get_procurement_actions_list_response_lighter_schema(auth_client, app_ctx):
     """Test GET /api/v1/procurement-actions/ uses lighter schema than detail endpoint."""
     # Get list response
     list_response = auth_client.get("/api/v1/procurement-actions/")
@@ -432,9 +397,7 @@ def test_get_procurement_actions_list_response_lighter_schema(auth_client):
             assert isinstance(list_item["budget_line_items"], list)
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_procurement_action_requires_authentication(client):
+def test_procurement_action_requires_authentication(client, app_ctx):
     """Test that procurement action endpoints require authentication."""
     # Test detail endpoint
     response = client.get("/api/v1/procurement-actions/1")

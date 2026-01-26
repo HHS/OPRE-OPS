@@ -7,8 +7,7 @@ from sqlalchemy import select
 from models.procurement_shops import ProcurementShop, ProcurementShopFee
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_procurement_shop_lookup(loaded_db):
+def test_procurement_shop_lookup(loaded_db, app_ctx):
     ps = loaded_db.get(ProcurementShop, 1)
     assert ps is not None
     assert ps.id == 1
@@ -18,8 +17,7 @@ def test_procurement_shop_lookup(loaded_db):
     assert ps.display_name == ps.name
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_procurement_shop_creation(loaded_db):
+def test_procurement_shop_creation(loaded_db, app_ctx):
     ps = ProcurementShop(
         name="Whatever",
         abbr="WHO",
@@ -48,9 +46,7 @@ def test_procurement_shop_creation(loaded_db):
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_procurement_shops_list(auth_client):
+def test_get_procurement_shops_list(auth_client, app_ctx):
     response = auth_client.get("/api/v1/procurement-shops/")
     assert response.status_code == 200
     assert len(response.json) == 4
@@ -58,16 +54,13 @@ def test_get_procurement_shops_list(auth_client):
     assert response.json[1]["id"] == 2
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_procurement_shops_list_by_id(auth_client):
+def test_get_procurement_shops_list_by_id(auth_client, app_ctx):
     response = auth_client.get("/api/v1/procurement-shops/1")
     assert response.status_code == 200
     assert response.json["id"] == 1
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_fee_percentage_with_active_fee(loaded_db):
+def test_fee_percentage_with_active_fee(loaded_db, app_ctx):
     # Create a procurement shop
     ps = ProcurementShop(name="Test Shop", abbr="TS")
     loaded_db.add(ps)
@@ -96,8 +89,7 @@ def test_fee_percentage_with_active_fee(loaded_db):
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_fee_percentage_with_no_end_date(loaded_db):
+def test_fee_percentage_with_no_end_date(loaded_db, app_ctx):
     # Create a procurement shop
     ps = ProcurementShop(name="Test Shop", abbr="TS")
     loaded_db.add(ps)
@@ -124,8 +116,7 @@ def test_fee_percentage_with_no_end_date(loaded_db):
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_fee_percentage_with_multiple_fees(loaded_db):
+def test_fee_percentage_with_multiple_fees(loaded_db, app_ctx):
     # Create a procurement shop
     ps = ProcurementShop(name="Test Shop", abbr="TS")
     loaded_db.add(ps)
@@ -176,8 +167,7 @@ def test_fee_percentage_with_multiple_fees(loaded_db):
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_fee_percentage_with_no_fees(loaded_db):
+def test_fee_percentage_with_no_fees(loaded_db, app_ctx):
     # Create a procurement shop with no fees
     ps = ProcurementShop(name="Test Shop", abbr="TS")
     loaded_db.add(ps)
@@ -191,8 +181,7 @@ def test_fee_percentage_with_no_fees(loaded_db):
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_fee_percentage_expression(loaded_db):
+def test_fee_percentage_expression(loaded_db, app_ctx):
     # Create a procurement shop
     ps = ProcurementShop(name="Test Shop", abbr="TS")
     loaded_db.add(ps)
@@ -227,8 +216,7 @@ def test_fee_percentage_expression(loaded_db):
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_current_fee_with_active_fee(loaded_db):
+def test_current_fee_with_active_fee(loaded_db, app_ctx):
     # Create a procurement shop
     ps = ProcurementShop(name="Test Shop", abbr="TS")
     loaded_db.add(ps)
@@ -259,8 +247,7 @@ def test_current_fee_with_active_fee(loaded_db):
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_current_fee_with_no_end_date(loaded_db):
+def test_current_fee_with_no_end_date(loaded_db, app_ctx):
     # Create a procurement shop
     ps = ProcurementShop(name="Test Shop", abbr="TS")
     loaded_db.add(ps)
@@ -289,8 +276,7 @@ def test_current_fee_with_no_end_date(loaded_db):
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_current_fee_with_multiple_fees(loaded_db):
+def test_current_fee_with_multiple_fees(loaded_db, app_ctx):
     # Create a procurement shop
     ps = ProcurementShop(name="Test Shop", abbr="TS")
     loaded_db.add(ps)
@@ -343,8 +329,7 @@ def test_current_fee_with_multiple_fees(loaded_db):
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_current_fee_with_no_fees(loaded_db):
+def test_current_fee_with_no_fees(loaded_db, app_ctx):
     # Create a procurement shop with no fees
     ps = ProcurementShop(name="Test Shop", abbr="TS")
     loaded_db.add(ps)
@@ -358,8 +343,7 @@ def test_current_fee_with_no_fees(loaded_db):
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_current_fee_expression(loaded_db):
+def test_current_fee_expression(loaded_db, app_ctx):
     # Create a procurement shop
     ps = ProcurementShop(name="Test Shop", abbr="TS")
     loaded_db.add(ps)
@@ -396,8 +380,7 @@ def test_current_fee_expression(loaded_db):
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_overlapping_date_ranges_current_fee(loaded_db):
+def test_overlapping_date_ranges_current_fee(loaded_db, app_ctx):
     # Create a procurement shop
     ps = ProcurementShop(name="Overlapping Test Shop", abbr="OTS")
     loaded_db.add(ps)
@@ -440,8 +423,7 @@ def test_overlapping_date_ranges_current_fee(loaded_db):
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_overlapping_date_ranges_fee_percentage(loaded_db):
+def test_overlapping_date_ranges_fee_percentage(loaded_db, app_ctx):
     # Create a procurement shop
     ps = ProcurementShop(name="Overlapping Test Shop", abbr="OTS")
     loaded_db.add(ps)
@@ -482,8 +464,7 @@ def test_overlapping_date_ranges_fee_percentage(loaded_db):
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_overlapping_date_ranges_expression(loaded_db):
+def test_overlapping_date_ranges_expression(loaded_db, app_ctx):
     # Create a procurement shop
     ps = ProcurementShop(name="Overlapping Test Shop", abbr="OTS")
     loaded_db.add(ps)
@@ -534,8 +515,7 @@ def test_overlapping_date_ranges_expression(loaded_db):
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_null_start_dates_with_overlapping_ranges(loaded_db):
+def test_null_start_dates_with_overlapping_ranges(loaded_db, app_ctx):
     # Create a procurement shop
     ps = ProcurementShop(name="Null Date Test Shop", abbr="NTS")
     loaded_db.add(ps)
@@ -580,8 +560,7 @@ def test_null_start_dates_with_overlapping_ranges(loaded_db):
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_procurement_shop_fees_history(auth_client, loaded_db):
+def test_get_procurement_shop_fees_history(auth_client, loaded_db, app_ctx):
     """Test retrieving historical procurement shop fees."""
     # Find a procurement shop with fee history
     procurement_shop = loaded_db.scalars(
@@ -605,8 +584,7 @@ def test_get_procurement_shop_fees_history(auth_client, loaded_db):
     assert len(response.json["procurement_shop_fees"]) == len(shop_fees)
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_all_procurement_shops(auth_client):
+def test_get_all_procurement_shops(auth_client, app_ctx):
     """Test retrieving all procurement shops."""
     response = auth_client.get("/api/v1/procurement-shops/")
     assert response.status_code == 200
