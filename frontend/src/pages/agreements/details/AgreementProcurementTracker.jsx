@@ -2,6 +2,7 @@ import StepIndicator from "../../../components/UI/StepIndicator";
 import { useGetProcurementTrackersByAgreementIdQuery } from "../../../api/opsAPI";
 import { IS_PROCUREMENT_TRACKER_READY } from "../../../constants";
 import DebugCode from "../../../components/DebugCode";
+import Accordion from "../../../components/UI/Accordion";
 
 /**
  * @typedef {Object} AgreementProcurementTrackerProps
@@ -68,7 +69,14 @@ const AgreementProcurementTracker = ({ agreement }) => {
                 steps={wizardSteps}
                 currentStep={currentStep}
             />
+
             {/* Accordions */}
+            <Accordion
+                heading="1 of 6 Acquisition Planning"
+            >
+                <p>Once the pre-solicitation package is sufficiently drafted and signed by all parties, send it to the Procurement Shop and check this step as complete.</p>
+
+            </Accordion>
             {activeTracker && <DebugCode data={activeTracker}></DebugCode>}
         </>
     );
