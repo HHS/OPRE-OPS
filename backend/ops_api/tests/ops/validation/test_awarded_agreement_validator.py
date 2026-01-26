@@ -22,7 +22,9 @@ class TestAwardedAgreementValidator:
         awarded_rule_present = any(isinstance(v, ImmutableAwardedFieldsRule) for v in validator.validators)
         assert awarded_rule_present
 
-    def test_validate_raises_error_for_immutable_field_on_awarded_agreement(self, test_user, loaded_db, monkeypatch, app_ctx):
+    def test_validate_raises_error_for_immutable_field_on_awarded_agreement(
+        self, test_user, loaded_db, monkeypatch, app_ctx
+    ):
         """Test that validator prevents immutable field changes on awarded agreements."""
         agreement = ContractAgreement(
             name="Test Agreement - Awarded Immutable Field",
@@ -48,7 +50,9 @@ class TestAwardedAgreementValidator:
         loaded_db.delete(agreement)
         loaded_db.commit()
 
-    def test_validate_allows_non_immutable_field_changes_on_awarded_agreement(self, test_user, loaded_db, monkeypatch, app_ctx):
+    def test_validate_allows_non_immutable_field_changes_on_awarded_agreement(
+        self, test_user, loaded_db, monkeypatch, app_ctx
+    ):
         """Test that validator allows non-immutable field changes on awarded agreements."""
         agreement = ContractAgreement(
             name="Test Agreement - Awarded Non Immutable",

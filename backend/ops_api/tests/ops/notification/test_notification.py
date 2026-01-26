@@ -318,7 +318,9 @@ def test_patch_notification_ack_must_be_user(auth_client, notification_for_anoth
     assert response.status_code == 400
 
 
-def test_notifications_get_by_agreement_id(auth_client, loaded_db, notification, change_request_notification, test_user, app_ctx):
+def test_notifications_get_by_agreement_id(
+    auth_client, loaded_db, notification, change_request_notification, test_user, app_ctx
+):
     agreement_id = change_request_notification.change_request.agreement_id
     test_user_oidc_id = str(change_request_notification.recipient.oidc_id)
     db_count = (

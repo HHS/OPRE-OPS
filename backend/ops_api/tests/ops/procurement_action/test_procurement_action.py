@@ -135,7 +135,9 @@ def test_procurement_action_service_get_list_by_procurement_shop_id(loaded_db, t
         assert pa.procurement_shop_id == test_procurement_action.procurement_shop_id
 
 
-def test_procurement_action_service_get_list_by_budget_line_item_id(loaded_db, test_procurement_action_with_budget_lines, app_ctx):
+def test_procurement_action_service_get_list_by_budget_line_item_id(
+    loaded_db, test_procurement_action_with_budget_lines, app_ctx
+):
     """Test ProcurementActionService.get_list() filters by budget_line_item_id."""
     service = ProcurementActionService(loaded_db)
 

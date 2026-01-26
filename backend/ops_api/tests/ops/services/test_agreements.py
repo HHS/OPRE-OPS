@@ -1062,7 +1062,9 @@ class TestAgreementsDuplicateNameHandling:
 
     @patch("ops_api.ops.services.agreements.get_current_user")
     @patch("ops_api.ops.validation.rules.agreement.check_user_association")
-    def test_update_agreement_with_duplicate_name_raises_validation_error(self, mock_check_association, mock_get_user_services, loaded_db, app_ctx):
+    def test_update_agreement_with_duplicate_name_raises_validation_error(
+        self, mock_check_association, mock_get_user_services, loaded_db, app_ctx
+    ):
         """Test that updating an agreement to a duplicate name (same type) raises ValidationError"""
         # Mock authorization check to always pass
         mock_check_association.return_value = True
@@ -1111,7 +1113,9 @@ class TestAgreementsDuplicateNameHandling:
 
     @patch("ops_api.ops.services.agreements.get_current_user")
     @patch("ops_api.ops.validation.rules.agreement.check_user_association")
-    def test_update_agreement_with_duplicate_name_case_insensitive(self, mock_check_association, mock_get_user_services, loaded_db, app_ctx):
+    def test_update_agreement_with_duplicate_name_case_insensitive(
+        self, mock_check_association, mock_get_user_services, loaded_db, app_ctx
+    ):
         """Test that duplicate name check on update is case-insensitive"""
         # Mock authorization check to always pass
         mock_check_association.return_value = True
@@ -1155,7 +1159,9 @@ class TestAgreementsDuplicateNameHandling:
 
     @patch("ops_api.ops.services.agreements.get_current_user")
     @patch("ops_api.ops.validation.rules.agreement.check_user_association")
-    def test_update_agreement_keeps_same_name_succeeds(self, mock_check_association, mock_get_user_services, loaded_db, app_ctx):
+    def test_update_agreement_keeps_same_name_succeeds(
+        self, mock_check_association, mock_get_user_services, loaded_db, app_ctx
+    ):
         """Test that updating an agreement while keeping its own name succeeds"""
         # Mock authorization check to always pass
         mock_check_association.return_value = True

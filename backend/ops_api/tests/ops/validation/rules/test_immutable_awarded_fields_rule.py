@@ -132,7 +132,9 @@ class TestImmutableAwardedFieldsRule:
         loaded_db.delete(agreement)
         loaded_db.commit()
 
-    def test_validate_raises_error_for_multiple_immutable_fields_changed(self, test_user, loaded_db, monkeypatch, app_ctx):
+    def test_validate_raises_error_for_multiple_immutable_fields_changed(
+        self, test_user, loaded_db, monkeypatch, app_ctx
+    ):
         """Test that validation fails when multiple immutable fields are changed."""
         agreement = ContractAgreement(
             name="Test Agreement - Multiple Fields Changed",

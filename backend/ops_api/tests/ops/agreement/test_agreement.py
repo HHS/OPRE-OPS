@@ -1333,7 +1333,9 @@ def test_agreements_post_contract_with_service_requirement_type(auth_client, loa
     assert response.status_code == 200
 
 
-def test_agreements_post_contract_with_vendor(auth_client, loaded_db, test_user, test_admin_user, test_project, app_ctx):
+def test_agreements_post_contract_with_vendor(
+    auth_client, loaded_db, test_user, test_admin_user, test_project, app_ctx
+):
     response = auth_client.post(
         url_for("api.agreements-group"),
         json={
@@ -1440,7 +1442,9 @@ def test_agreements_patch_by_id_e2e(auth_client, loaded_db, test_contract, test_
     assert [m.id for m in agreement.team_members] == [502, 504]
 
 
-def test_update_agreement_procurement_shop_without_blis(auth_client, loaded_db, test_contract, test_project, test_admin_user, test_vendor, app_ctx):
+def test_update_agreement_procurement_shop_without_blis(
+    auth_client, loaded_db, test_contract, test_project, test_admin_user, test_vendor, app_ctx
+):
     response = auth_client.patch(
         url_for("api.agreements-item", id=test_contract.id),
         json={
@@ -1463,7 +1467,9 @@ def test_update_agreement_procurement_shop_without_blis(auth_client, loaded_db, 
     assert agreement.project_officer_id == test_admin_user.id
 
 
-def test_update_agreement_procurement_shop_error_with_bli_in_execution(auth_client, loaded_db, test_contract, test_can, app_ctx):
+def test_update_agreement_procurement_shop_error_with_bli_in_execution(
+    auth_client, loaded_db, test_contract, test_can, app_ctx
+):
     """Test that changing agreement procurement shop fails when BLIs are in execution or higher"""
     # Create a BLI in IN_EXECUTION status
     bli = ContractBudgetLineItem(
@@ -2774,7 +2780,9 @@ class TestAwardedAgreementPatch:
 
     # ==================== Category 1: Regular User - Immutable Field Updates (Should Fail) ====================
 
-    def test_patch_awarded_contract_regular_user_update_name_fails(self, auth_client, awarded_contract_agreement, loaded_db, app_ctx):
+    def test_patch_awarded_contract_regular_user_update_name_fails(
+        self, auth_client, awarded_contract_agreement, loaded_db, app_ctx
+    ):
         """Test that a regular user cannot update the 'name' field on an awarded contract."""
         original_name = awarded_contract_agreement.name
 
@@ -2794,7 +2802,9 @@ class TestAwardedAgreementPatch:
         loaded_db.refresh(awarded_contract_agreement)
         assert awarded_contract_agreement.name == original_name
 
-    def test_patch_awarded_contract_regular_user_update_contract_type_fails(self, auth_client, awarded_contract_agreement, loaded_db, app_ctx):
+    def test_patch_awarded_contract_regular_user_update_contract_type_fails(
+        self, auth_client, awarded_contract_agreement, loaded_db, app_ctx
+    ):
         """Test that a regular user cannot update 'contract_type' on an awarded contract."""
         original_type = awarded_contract_agreement.contract_type
 
@@ -2813,7 +2823,9 @@ class TestAwardedAgreementPatch:
         loaded_db.refresh(awarded_contract_agreement)
         assert awarded_contract_agreement.contract_type == original_type
 
-    def test_patch_awarded_contract_regular_user_update_multiple_immutable_fields_fails(self, auth_client, awarded_contract_agreement, loaded_db, app_ctx):
+    def test_patch_awarded_contract_regular_user_update_multiple_immutable_fields_fails(
+        self, auth_client, awarded_contract_agreement, loaded_db, app_ctx
+    ):
         """Test that updating multiple immutable fields returns errors for all of them."""
         original_name = awarded_contract_agreement.name
         original_reason = awarded_contract_agreement.agreement_reason
@@ -2835,7 +2847,9 @@ class TestAwardedAgreementPatch:
         assert awarded_contract_agreement.name == original_name
         assert awarded_contract_agreement.agreement_reason == original_reason
 
-    def test_patch_awarded_contract_regular_user_update_service_requirement_type_fails(self, auth_client, awarded_contract_agreement, loaded_db, app_ctx):
+    def test_patch_awarded_contract_regular_user_update_service_requirement_type_fails(
+        self, auth_client, awarded_contract_agreement, loaded_db, app_ctx
+    ):
         """Test that regular user cannot update 'service_requirement_type' on awarded contract."""
         original_type = awarded_contract_agreement.service_requirement_type
 
@@ -2853,7 +2867,9 @@ class TestAwardedAgreementPatch:
         loaded_db.refresh(awarded_contract_agreement)
         assert awarded_contract_agreement.service_requirement_type == original_type
 
-    def test_patch_awarded_contract_regular_user_update_psc_id_fails(self, auth_client, awarded_contract_agreement, loaded_db, app_ctx):
+    def test_patch_awarded_contract_regular_user_update_psc_id_fails(
+        self, auth_client, awarded_contract_agreement, loaded_db, app_ctx
+    ):
         """Test that regular user cannot update 'product_service_code_id' on awarded contract."""
         original_psc_id = awarded_contract_agreement.product_service_code_id
 
@@ -2871,7 +2887,9 @@ class TestAwardedAgreementPatch:
         loaded_db.refresh(awarded_contract_agreement)
         assert awarded_contract_agreement.product_service_code_id == original_psc_id
 
-    def test_patch_awarded_contract_regular_user_update_awarding_entity_id_fails(self, auth_client, awarded_contract_agreement, loaded_db, app_ctx):
+    def test_patch_awarded_contract_regular_user_update_awarding_entity_id_fails(
+        self, auth_client, awarded_contract_agreement, loaded_db, app_ctx
+    ):
         """Test that regular user cannot update 'awarding_entity_id' (procurement shop) on awarded contract."""
         original_entity_id = awarded_contract_agreement.awarding_entity_id
 
@@ -2889,7 +2907,9 @@ class TestAwardedAgreementPatch:
         loaded_db.refresh(awarded_contract_agreement)
         assert awarded_contract_agreement.awarding_entity_id == original_entity_id
 
-    def test_patch_awarded_contract_regular_user_update_agreement_reason_fails(self, auth_client, awarded_contract_agreement, loaded_db, app_ctx):
+    def test_patch_awarded_contract_regular_user_update_agreement_reason_fails(
+        self, auth_client, awarded_contract_agreement, loaded_db, app_ctx
+    ):
         """Test that regular user cannot update 'agreement_reason' on awarded contract."""
         original_reason = awarded_contract_agreement.agreement_reason
 
@@ -2909,7 +2929,9 @@ class TestAwardedAgreementPatch:
 
     # ==================== Category 2: Regular User - Mutable Field Updates (Should Succeed) ====================
 
-    def test_patch_awarded_contract_regular_user_update_description_succeeds(self, auth_client, awarded_contract_agreement, loaded_db, app_ctx):
+    def test_patch_awarded_contract_regular_user_update_description_succeeds(
+        self, auth_client, awarded_contract_agreement, loaded_db, app_ctx
+    ):
         """Test that a regular user can update 'description' on an awarded contract."""
         new_description = "Updated description for awarded contract"
 
@@ -2926,7 +2948,9 @@ class TestAwardedAgreementPatch:
         loaded_db.refresh(awarded_contract_agreement)
         assert awarded_contract_agreement.description == new_description
 
-    def test_patch_awarded_contract_regular_user_update_notes_succeeds(self, auth_client, awarded_contract_agreement, loaded_db, app_ctx):
+    def test_patch_awarded_contract_regular_user_update_notes_succeeds(
+        self, auth_client, awarded_contract_agreement, loaded_db, app_ctx
+    ):
         """Test that a regular user can update 'notes' on an awarded contract."""
         new_notes = "Important notes about this awarded contract"
 
@@ -2943,7 +2967,9 @@ class TestAwardedAgreementPatch:
         loaded_db.refresh(awarded_contract_agreement)
         assert awarded_contract_agreement.notes == new_notes
 
-    def test_patch_awarded_contract_regular_user_update_project_officer_succeeds(self, auth_client, awarded_contract_agreement, loaded_db, app_ctx):
+    def test_patch_awarded_contract_regular_user_update_project_officer_succeeds(
+        self, auth_client, awarded_contract_agreement, loaded_db, app_ctx
+    ):
         """Test that a regular user can update 'project_officer_id' on an awarded contract."""
         new_po_id = 501  # Different user
 
@@ -2960,7 +2986,9 @@ class TestAwardedAgreementPatch:
         loaded_db.refresh(awarded_contract_agreement)
         assert awarded_contract_agreement.project_officer_id == new_po_id
 
-    def test_patch_awarded_contract_regular_user_update_team_members_succeeds(self, auth_client, awarded_contract_agreement, loaded_db, app_ctx):
+    def test_patch_awarded_contract_regular_user_update_team_members_succeeds(
+        self, auth_client, awarded_contract_agreement, loaded_db, app_ctx
+    ):
         """Test that a regular user can update 'team_members' on an awarded contract."""
         response = auth_client.patch(
             url_for("api.agreements-item", id=awarded_contract_agreement.id),
@@ -2976,7 +3004,9 @@ class TestAwardedAgreementPatch:
         team_member_ids = [tm.id for tm in awarded_contract_agreement.team_members]
         assert set(team_member_ids) == {502, 503}
 
-    def test_patch_awarded_contract_regular_user_update_multiple_mutable_fields_succeeds(self, auth_client, awarded_contract_agreement, loaded_db, app_ctx):
+    def test_patch_awarded_contract_regular_user_update_multiple_mutable_fields_succeeds(
+        self, auth_client, awarded_contract_agreement, loaded_db, app_ctx
+    ):
         """Test that a regular user can update multiple mutable fields on an awarded contract."""
         new_description = "Updated description"
         new_notes = "Updated notes"
@@ -2998,7 +3028,9 @@ class TestAwardedAgreementPatch:
         assert awarded_contract_agreement.notes == new_notes
         assert len(awarded_contract_agreement.team_members) == 1
 
-    def test_patch_awarded_contract_regular_user_mix_mutable_immutable_fails(self, auth_client, awarded_contract_agreement, loaded_db, app_ctx):
+    def test_patch_awarded_contract_regular_user_mix_mutable_immutable_fails(
+        self, auth_client, awarded_contract_agreement, loaded_db, app_ctx
+    ):
         """Test that updating both mutable and immutable fields fails with errors for immutable ones."""
         original_name = awarded_contract_agreement.name
         original_description = awarded_contract_agreement.description
@@ -3021,7 +3053,9 @@ class TestAwardedAgreementPatch:
 
     # ==================== Category 3: Super User - Immutable Field Updates (Should Succeed) ====================
 
-    def test_patch_awarded_contract_super_user_update_name_succeeds(self, power_user_auth_client, awarded_contract_agreement, loaded_db, app_ctx):
+    def test_patch_awarded_contract_super_user_update_name_succeeds(
+        self, power_user_auth_client, awarded_contract_agreement, loaded_db, app_ctx
+    ):
         """Test that a super user can update 'name' on an awarded contract."""
         new_name = "Super User Updated Name"
 
@@ -3038,7 +3072,9 @@ class TestAwardedAgreementPatch:
         loaded_db.refresh(awarded_contract_agreement)
         assert awarded_contract_agreement.name == new_name
 
-    def test_patch_awarded_contract_super_user_update_contract_type_succeeds(self, power_user_auth_client, awarded_contract_agreement, loaded_db, app_ctx):
+    def test_patch_awarded_contract_super_user_update_contract_type_succeeds(
+        self, power_user_auth_client, awarded_contract_agreement, loaded_db, app_ctx
+    ):
         """Test that a super user can update 'contract_type' on an awarded contract."""
         response = power_user_auth_client.patch(
             url_for("api.agreements-item", id=awarded_contract_agreement.id),
@@ -3053,7 +3089,9 @@ class TestAwardedAgreementPatch:
         loaded_db.refresh(awarded_contract_agreement)
         assert awarded_contract_agreement.contract_type == ContractType.TIME_AND_MATERIALS
 
-    def test_patch_awarded_contract_super_user_update_multiple_immutable_fields_succeeds(self, power_user_auth_client, awarded_contract_agreement, loaded_db, app_ctx):
+    def test_patch_awarded_contract_super_user_update_multiple_immutable_fields_succeeds(
+        self, power_user_auth_client, awarded_contract_agreement, loaded_db, app_ctx
+    ):
         """Test that a super user can update multiple immutable fields on an awarded contract."""
         new_name = "Super User New Name"
 
@@ -3074,7 +3112,9 @@ class TestAwardedAgreementPatch:
         assert awarded_contract_agreement.agreement_reason == AgreementReason.RECOMPETE
         assert awarded_contract_agreement.service_requirement_type == ServiceRequirementType.NON_SEVERABLE
 
-    def test_patch_awarded_contract_super_user_update_all_immutable_fields_succeeds(self, power_user_auth_client, awarded_contract_agreement, loaded_db, app_ctx):
+    def test_patch_awarded_contract_super_user_update_all_immutable_fields_succeeds(
+        self, power_user_auth_client, awarded_contract_agreement, loaded_db, app_ctx
+    ):
         """Test that a super user can update ALL immutable fields on an awarded contract."""
         response = power_user_auth_client.patch(
             url_for("api.agreements-item", id=awarded_contract_agreement.id),
@@ -3099,7 +3139,9 @@ class TestAwardedAgreementPatch:
         assert awarded_contract_agreement.awarding_entity_id == 2
         assert awarded_contract_agreement.agreement_reason == AgreementReason.LOGICAL_FOLLOW_ON
 
-    def test_patch_awarded_contract_super_user_update_mix_fields_succeeds(self, power_user_auth_client, awarded_contract_agreement, loaded_db, app_ctx):
+    def test_patch_awarded_contract_super_user_update_mix_fields_succeeds(
+        self, power_user_auth_client, awarded_contract_agreement, loaded_db, app_ctx
+    ):
         """Test that a super user can update both mutable and immutable fields together."""
         new_name = "Super User Mixed Update"
         new_description = "Updated description"
@@ -3121,7 +3163,9 @@ class TestAwardedAgreementPatch:
 
     # ==================== Category 4: Super User - Mutable Field Updates (Should Succeed) ====================
 
-    def test_patch_awarded_contract_super_user_update_mutable_fields_succeeds(self, power_user_auth_client, awarded_contract_agreement, loaded_db, app_ctx):
+    def test_patch_awarded_contract_super_user_update_mutable_fields_succeeds(
+        self, power_user_auth_client, awarded_contract_agreement, loaded_db, app_ctx
+    ):
         """Test that a super user can update mutable fields (same as regular users)."""
         new_description = "Super user updated description"
         new_notes = "Super user notes"
@@ -3143,7 +3187,9 @@ class TestAwardedAgreementPatch:
 
     # ==================== Category 5: Edge Cases ====================
 
-    def test_patch_awarded_contract_regular_user_same_value_succeeds(self, auth_client, awarded_contract_agreement, loaded_db, app_ctx):
+    def test_patch_awarded_contract_regular_user_same_value_succeeds(
+        self, auth_client, awarded_contract_agreement, loaded_db, app_ctx
+    ):
         """Test that updating an immutable field with its current value is allowed."""
         current_name = awarded_contract_agreement.name
 
@@ -3160,7 +3206,9 @@ class TestAwardedAgreementPatch:
         loaded_db.refresh(awarded_contract_agreement)
         assert awarded_contract_agreement.name == current_name
 
-    def test_patch_non_awarded_contract_regular_user_update_any_field_succeeds(self, auth_client, test_contract, loaded_db, app_ctx):
+    def test_patch_non_awarded_contract_regular_user_update_any_field_succeeds(
+        self, auth_client, test_contract, loaded_db, app_ctx
+    ):
         """Test that regular users can update 'immutable' fields on non-awarded contracts."""
         new_name = "Updated Name on Non-Awarded Contract"
 

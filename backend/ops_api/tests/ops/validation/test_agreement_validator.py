@@ -146,7 +146,9 @@ class TestAgreementValidator:
         loaded_db.delete(agreement)
         loaded_db.commit()
 
-    def test_validate_raises_error_for_immutable_field_on_awarded_agreement(self, test_user, loaded_db, monkeypatch, app_ctx):
+    def test_validate_raises_error_for_immutable_field_on_awarded_agreement(
+        self, test_user, loaded_db, monkeypatch, app_ctx
+    ):
         """Test that validator raises ValidationError when updating immutable field on awarded agreement."""
         from models import ContractType
         from models.procurement_action import AwardType, ProcurementAction, ProcurementActionStatus

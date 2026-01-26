@@ -909,7 +909,9 @@ def test_budget_line_item_validation_patch_to_invalid(auth_client, app, test_can
     session.commit()
 
 
-def test_budget_line_item_validation_patch_to_zero_or_negative_amount(auth_client, app, test_can, test_project, app_ctx):
+def test_budget_line_item_validation_patch_to_zero_or_negative_amount(
+    auth_client, app, test_can, test_project, app_ctx
+):
     session = app.db_session
 
     # create agreement (using API)
@@ -2411,7 +2413,9 @@ def test_bli_by_id_returns_correct_project_title(auth_client, loaded_db):
         BudgetLineItemStatus.OBLIGATED,
     ],
 )
-def test_user_unset_can_in_contract_bli(loaded_db, bli_status, auth_client, test_cans, test_project, test_admin_user, app_ctx):
+def test_user_unset_can_in_contract_bli(
+    loaded_db, bli_status, auth_client, test_cans, test_project, test_admin_user, app_ctx
+):
     agreement = ContractAgreement(
         agreement_type=AgreementType.CONTRACT,
         name=f"{bli_status} BLI Agreement",
@@ -2463,7 +2467,9 @@ def test_user_unset_can_in_contract_bli(loaded_db, bli_status, auth_client, test
         BudgetLineItemStatus.OBLIGATED,
     ],
 )
-def test_user_change_can_in_contract_bli(loaded_db, bli_status, auth_client, test_cans, test_project, test_admin_user, app_ctx):
+def test_user_change_can_in_contract_bli(
+    loaded_db, bli_status, auth_client, test_cans, test_project, test_admin_user, app_ctx
+):
     agreement = ContractAgreement(
         agreement_type=AgreementType.CONTRACT,
         name=f"{bli_status} BLI Agreement",

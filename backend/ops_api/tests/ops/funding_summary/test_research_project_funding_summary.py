@@ -21,7 +21,9 @@ def test_get_research_project_funding_summary(auth_client, app_ctx, db_loaded_wi
     assert response.json["total_funding"] == 20000000.0
 
 
-def test_get_research_project_funding_summary_invalid_query_string(auth_client, app_ctx, db_loaded_with_research_projects):
+def test_get_research_project_funding_summary_invalid_query_string(
+    auth_client, app_ctx, db_loaded_with_research_projects
+):
     query_string = {"portfolioId": "blah", "fiscalYear": "blah"}
 
     response = auth_client.get(url_for("api.research-project-funding-summary-group"), query_string=query_string)
@@ -33,7 +35,9 @@ def test_get_research_project_funding_summary_invalid_query_string(auth_client, 
     }
 
 
-def test_get_research_project_funding_summary_invalid_query_string_portfolio_id(auth_client, app_ctx, db_loaded_with_research_projects):
+def test_get_research_project_funding_summary_invalid_query_string_portfolio_id(
+    auth_client, app_ctx, db_loaded_with_research_projects
+):
     query_string = {"portfolioId": 0, "fiscalYear": 2020}
 
     response = auth_client.get(url_for("api.research-project-funding-summary-group"), query_string=query_string)
@@ -42,7 +46,9 @@ def test_get_research_project_funding_summary_invalid_query_string_portfolio_id(
     assert response.json == {"portfolioId": ["Must be greater than or equal to 1."]}
 
 
-def test_get_research_project_funding_summary_invalid_query_string_fiscal_year(auth_client, app_ctx, db_loaded_with_research_projects):
+def test_get_research_project_funding_summary_invalid_query_string_fiscal_year(
+    auth_client, app_ctx, db_loaded_with_research_projects
+):
     query_string = {"portfolioId": 1, "fiscalYear": 1899}
 
     response = auth_client.get(url_for("api.research-project-funding-summary-group"), query_string=query_string)

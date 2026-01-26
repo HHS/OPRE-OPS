@@ -391,7 +391,9 @@ def test_services_components_delete_as_basic_user(basic_user_auth_client, loaded
     assert not deleted_sc
 
 
-def test_services_components_delete_forbidden_as_basic_user(basic_user_auth_client, system_owner_auth_client, loaded_db, test_project, app_ctx):
+def test_services_components_delete_forbidden_as_basic_user(
+    basic_user_auth_client, system_owner_auth_client, loaded_db, test_project, app_ctx
+):
     # User ID for the test
     budget_team_user_id = 523
     so_user_id = 520
