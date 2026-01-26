@@ -56,7 +56,15 @@ class ProcurementTrackerStepSchema(Schema):
         unknown = EXCLUDE
 
     # Base fields common to all steps
+
+    # Base fields common to all steps
+    id = fields.Integer(required=True)
+    procurement_tracker_id = fields.Integer(required=True)
+    step_number = fields.Integer(required=True)
+    step_type = fields.Enum(ProcurementTrackerStepType, required=True)
     status = fields.Enum(ProcurementTrackerStepStatus, required=True)
+    step_start_date = fields.Date(allow_none=True)
+    step_completed_date = fields.Date(allow_none=True)
 
     # ACQUISITION_PLANNING-specific fields (use prefixed names from model, rename in output)
     acquisition_planning_task_completed_by = fields.Integer(
