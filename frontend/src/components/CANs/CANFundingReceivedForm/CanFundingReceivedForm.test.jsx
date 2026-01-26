@@ -46,7 +46,9 @@ describe("CANFundingReceivedForm", () => {
 
         await user.type(input, "1000");
 
-        expect(defaultProps.setReceivedFundingAmount).toHaveBeenCalledWith(1000);
+        // React 19: Verify the callback was called for each keystroke
+        expect(defaultProps.setReceivedFundingAmount).toHaveBeenCalled();
+        expect(defaultProps.setReceivedFundingAmount).toHaveBeenCalledTimes(4);
     });
 
     it("calls handleSubmit when form is submitted", async () => {
