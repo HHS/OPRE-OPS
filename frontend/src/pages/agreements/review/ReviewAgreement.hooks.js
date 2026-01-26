@@ -189,7 +189,7 @@ const useReviewAgreement = (agreementId) => {
                     return;
                 }
                 Object.entries(errors).forEach(([fieldName, messages]) => {
-                    const errorKey = `Budget Line - ${fieldName}`;
+                    const errorKey = `${fieldName}`;
                     if (seenBudgetLineErrors.has(errorKey)) {
                         return;
                     }

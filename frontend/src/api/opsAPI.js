@@ -65,7 +65,8 @@ export const opsApi = createApi({
         "ChangeRequests",
         "Divisions",
         "Documents",
-        "Cans"
+        "Cans",
+        "ProcurementTrackers"
     ],
     baseQuery: getBaseQueryWithReauth(baseQuery),
     endpoints: (builder) => ({
@@ -856,6 +857,10 @@ export const opsApi = createApi({
         getSpecialTopics: builder.query({
             query: () => `/special-topics/`,
             providesTags: ["SpecialTopics"]
+        }),
+        getProcurementTrackersByAgreementId: builder.query({
+            query: (agreement_id) => `/procurement-trackers/?agreement_id=${agreement_id}`,
+            providesTags: ["ProcurementTrackers"]
         })
     })
 });
@@ -952,5 +957,6 @@ export const {
     useGetDocumentsByAgreementIdQuery,
     useUpdateDocumentStatusMutation,
     useGetResearchMethodologiesQuery,
-    useGetSpecialTopicsQuery
+    useGetSpecialTopicsQuery,
+    useGetProcurementTrackersByAgreementIdQuery
 } = opsApi;
