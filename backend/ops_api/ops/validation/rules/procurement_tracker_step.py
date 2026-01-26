@@ -113,15 +113,15 @@ class RequiredFieldsRule(ValidationRule):
 
     def validate(self, procurement_tracker_step: ProcurementTrackerStep, context: ValidationContext) -> None:
         updated_fields = context.updated_fields
-        presolicitation_fields = ["notes", "task_completed_by", "date_completed"]
-        required_presolicitation_fields = ["task_completed_by", "date_completed"]
-        presolicitation_field_found = [field for field in presolicitation_fields if field in updated_fields]
-        if presolicitation_field_found:
-            missing_fields = [field for field in required_presolicitation_fields if field not in updated_fields]
+        acquisition_planning = ["notes", "task_completed_by", "date_completed"]
+        required_acquisition_planning_fields = ["task_completed_by", "date_completed"]
+        acquisition_planning_field_found = [field for field in acquisition_planning if field in updated_fields]
+        if acquisition_planning_field_found:
+            missing_fields = [field for field in required_acquisition_planning_fields if field not in updated_fields]
             if missing_fields:
                 raise ValidationError(
                     {
-                        field: f"{field} is required when updating procurement tracker step with presolicitation package provided."
+                        field: f"{field} is required when updating procurement tracker step with acquisition planning package provided."
                         for field in missing_fields
                     }
                 )
