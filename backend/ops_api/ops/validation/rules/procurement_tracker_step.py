@@ -32,8 +32,9 @@ class UserAssociationRule(ValidationRule):
             or not procurement_tracker_step.procurement_tracker.agreement
         ):
             raise ValidationError(
-                f"Procurement tracker step {procurement_tracker_step.id} is not linked to a valid agreement.",
-                "ProcurementTrackerStep",
+                {
+                    "agreement": f"Procurement tracker step {procurement_tracker_step.id} is not linked to a valid agreement."
+                }
             )
         agreement = procurement_tracker_step.procurement_tracker.agreement
         # Check if user is associated with the procurement tracker step using existing helper

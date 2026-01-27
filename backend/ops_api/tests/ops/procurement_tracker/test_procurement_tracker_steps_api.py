@@ -16,6 +16,9 @@ def test_get_procurement_tracker_step_by_id(auth_client):
     assert data["status"] == "PENDING"
     assert data["step_type"] == "ACQUISITION_PLANNING"
     assert data["step_class"] == "default_step"
+    assert data["task_completed_by"] is None
+    assert data["date_completed"] is None
+    assert data["notes"] is None
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -40,8 +43,12 @@ def test_get_procurement_tracker_steps_list(auth_client):
     assert "offset" in response.json
 
     # Verify pagination metadata
-    # Count is 12 when running this test alone, but 108 when run with the full suite sorry
-    assert response.json["count"] == 108
+    # Verify data
+    data = response.json["data"]
+    assert len(data) == 10
+    # Verify pagination metadata (without relying on a global, environment-dependent count)
+    assert isinstance(response.json["count"], int)
+    assert response.json["count"] >= len(data)
     assert response.json["limit"] == 10
     assert response.json["offset"] == 0
 
@@ -81,11 +88,14 @@ def test_get_procurement_tracker_steps_list_with_pagination(auth_client):
     # Get first tracker only
     response = auth_client.get("/api/v1/procurement-tracker-steps/?limit=1&offset=0")
     assert response.status_code == 200
-    # Count is 12 when running this test alone, but 108 when run with the full suite sorry
-    assert response.json["count"] == 108
+    # Verify data
+    data = response.json["data"]
+    assert len(data) == 1
+    # Verify pagination metadata (without relying on a global, environment-dependent count)
+    assert isinstance(response.json["count"], int)
+    assert response.json["count"] >= len(data)
     assert response.json["limit"] == 1
     assert response.json["offset"] == 0
-    assert len(response.json["data"]) == 1
     assert response.json["data"][0]["id"] == 1
     assert response.json["data"][0]["procurement_tracker_id"] == 1
     assert response.json["data"][0]["step_number"] == 1
@@ -93,7 +103,9 @@ def test_get_procurement_tracker_steps_list_with_pagination(auth_client):
     # Get second tracker only
     response = auth_client.get("/api/v1/procurement-tracker-steps/?limit=1&offset=1")
     assert response.status_code == 200
-    assert response.json["count"] == 108
+    data = response.json["data"]
+    assert len(data) == 1
+    assert response.json["count"] >= len(data)
     assert response.json["limit"] == 1
     assert response.json["offset"] == 1
     assert len(response.json["data"]) == 1
@@ -206,3 +218,24 @@ def test_get_procurement_tracker_step_response_structure(auth_client):
 
     for field in expected_fields:
         assert field in data, f"Expected field '{field}' not found in response"
+
+
+def test_update_procurement_tracker_step_by_id(auth_client, app_ctx, loaded_db):
+    """Test updating a procurement tracker step by ID."""
+    update_data = {
+        "status": "COMPLETED",
+        "task_completed_by": 500,
+        "date_completed": "2024-01-15",
+        "notes": "Step completed successfully.",
+    }
+    response = auth_client.patch("/api/v1/procurement-tracker-steps/1", json=update_data)
+    assert response.status_code == 200
+
+    data = response.json
+    assert data["id"] == 1
+    assert data["procurement_tracker_id"] == 1
+    assert data["step_number"] == 1
+    assert data["status"] == "COMPLETED"
+    assert data["task_completed_by"] == 500
+    assert data["date_completed"] == "2024-01-15"
+    assert data["notes"] == "Step completed successfully."

@@ -23,9 +23,15 @@ class ProcurementTrackerStepResponseSchema(Schema):
 
     # Step-specific fields (conditionally included based on step_type)
     # Acquisition planning related fields
-    task_completed_by = fields.Integer(allow_none=True)
-    date_completed = fields.Date(allow_none=True)
-    notes = fields.String(allow_none=True)
+    acquisition_planning_task_completed_by = fields.Integer(
+        allow_none=True, data_key="task_completed_by", attribute="acquisition_planning_task_completed_by"
+    )
+    acquisition_planning_date_completed = fields.Date(
+        allow_none=True, data_key="date_completed", attribute="acquisition_planning_date_completed"
+    )
+    acquisition_planning_notes = fields.String(
+        allow_none=True, data_key="notes", attribute="acquisition_planning_notes"
+    )
 
     # BaseModel fields
     display_name = fields.String(dump_only=True)
@@ -35,7 +41,16 @@ class ProcurementTrackerStepResponseSchema(Schema):
     @post_dump
     def remove_none_values(self, data, **kwargs):
         """Remove None values from the output."""
-        return {key: value for key, value in data.items() if value is not None}
+        """Remove None values from the output.
+        For ACQUISITION_PLANNING steps, keep step-specific keys even when None
+        so that clients can reliably render/edit those fields.
+        """
+        step_type = data.get("step_type")
+        is_acquisition_planning = step_type == ProcurementTrackerStepType.ACQUISITION_PLANNING or step_type == getattr(
+            ProcurementTrackerStepType.ACQUISITION_PLANNING, "name", None
+        )
+        preserve_keys = {"task_completed_by", "date_completed", "notes"} if is_acquisition_planning else set()
+        return {key: value for key, value in data.items() if value is not None or key in preserve_keys}
 
 
 class ProcurementTrackerStepPatchRequestSchema(Schema):
