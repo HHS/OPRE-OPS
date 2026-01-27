@@ -78,8 +78,10 @@ function ServicesComponentListItem({
                                     icon={faPen}
                                     size="2x"
                                     className={`${
-                                        isEditDisabled ? "text-gray-30" : "text-primary"
-                                    } height-2 width-2 margin-right-1 cursor-pointer`}
+                                        isEditDisabled
+                                            ? "text-gray-30 cursor-not-allowed"
+                                            : "text-primary cursor-pointer"
+                                    } height-2 width-2 margin-right-1`}
                                 />
                             </button>
                         </Tooltip>
@@ -100,8 +102,10 @@ function ServicesComponentListItem({
                                     icon={faTrash}
                                     size="2x"
                                     className={`${
-                                        isDeleteDisabled ? "text-gray-30" : "text-primary"
-                                    } height-2 width-2 cursor-pointer`}
+                                        isDeleteDisabled
+                                            ? "text-gray-30 cursor-not-allowed"
+                                            : "text-primary cursor-pointer"
+                                    } height-2 width-2 `}
                                 />
                             </button>
                         </Tooltip>
