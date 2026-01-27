@@ -23,6 +23,28 @@ def test_create_default_tracker_with_steps(loaded_db):
     assert tracker.steps[5].step_type == ProcurementTrackerStepType.AWARD
 
 
+def test_tracker_initialization_defaults(loaded_db):
+    """Test that tracker is initialized with step 1 active and with start date."""
+    tracker = DefaultProcurementTracker.create_with_steps(agreement_id=1)
+    loaded_db.add(tracker)
+    loaded_db.commit()
+
+    # Verify active_step_number is set to 1
+    assert tracker.active_step_number == 1
+
+    # Verify step 1 is ACTIVE
+    step_1 = tracker.steps[0]
+    assert step_1.status == ProcurementTrackerStepStatus.ACTIVE
+
+    # Verify step 1 has step_start_date set to today
+    assert step_1.step_start_date == date.today()
+
+    # Verify other steps are PENDING with no start date
+    for step in tracker.steps[1:]:
+        assert step.status == ProcurementTrackerStepStatus.PENDING
+        assert step.step_start_date is None
+
+
 def test_steps_have_real_ids(loaded_db):
     """Test that each step has a real database ID."""
     tracker = DefaultProcurementTracker.create_with_steps(agreement_id=1)
@@ -172,15 +194,15 @@ def test_step_status_enum(loaded_db):
     loaded_db.commit()
 
     step_1 = tracker.steps[0]
-    assert step_1.status == ProcurementTrackerStepStatus.PENDING
-
-    step_1.status = ProcurementTrackerStepStatus.ACTIVE
-    loaded_db.commit()
     assert step_1.status == ProcurementTrackerStepStatus.ACTIVE
 
     step_1.status = ProcurementTrackerStepStatus.COMPLETED
     loaded_db.commit()
     assert step_1.status == ProcurementTrackerStepStatus.COMPLETED
+
+    step_1.status = ProcurementTrackerStepStatus.SKIPPED
+    loaded_db.commit()
+    assert step_1.status == ProcurementTrackerStepStatus.SKIPPED
 
 
 def test_relationship_to_agreement(app, loaded_db):
@@ -237,12 +259,12 @@ def test_step_dates(loaded_db):
 
 
 def test_active_step_number(loaded_db):
-    """Test setting and updating active_step_number."""
+    """Test that active_step_number is initialized to 1 and can be updated."""
     tracker = DefaultProcurementTracker.create_with_steps(agreement_id=1)
-    tracker.active_step_number = 1
     loaded_db.add(tracker)
     loaded_db.commit()
 
+    # Should be initialized to 1
     assert tracker.active_step_number == 1
 
     # Update to next step

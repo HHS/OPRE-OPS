@@ -1,7 +1,7 @@
 .legendGrid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    grid-template-rows: repeat(3, auto);
+    grid-template-rows: repeat(4, auto);
     grid-auto-flow: column;
     gap: 0.5rem 1rem;
     margin-top: 1rem;
@@ -44,4 +44,9 @@
     display: inline-block;
     min-width: 2.5rem;
     text-align: center;
+}
+
+.placeholder {
+    visibility: hidden;
+    height: 0;
 }

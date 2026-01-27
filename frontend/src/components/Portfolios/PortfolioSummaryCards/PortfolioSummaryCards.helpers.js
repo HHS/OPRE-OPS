@@ -87,6 +87,7 @@ export const sortPortfoliosByStaticOrder = (portfolios) => {
 
 /**
  * Transforms portfolios into data format for horizontal stacked bar chart
+ * Maintains grid column positions while compacting each column (no gaps)
  * @param {Array} sortedPortfolios - Sorted portfolio array
  * @param {number} totalBudget - Sum of all portfolio budgets
  * @returns {Array} Data array with { id, label, abbreviation, value, color, percent }
@@ -96,21 +97,93 @@ export const transformPortfoliosToChartData = (sortedPortfolios, totalBudget) =>
         return [];
     }
 
-    return sortedPortfolios.map((portfolio, index) => {
-        const value = portfolio?.fundingSummary?.total_funding?.amount || 0;
-        const percent = calculatePercent(value, totalBudget);
-
-        // Find color from PORTFOLIO_ORDER
-        const config = findPortfolioOrderConfig(portfolio.abbreviation);
-        const color = config ? config.color : FALLBACK_COLOR;
-
-        return {
-            id: portfolio.id || index,
-            label: portfolio.name || portfolio.abbreviation,
-            abbreviation: portfolio.abbreviation,
-            value: Number(value),
-            color,
-            percent
-        };
+    // Create a map of abbreviation -> portfolio for quick lookup
+    const portfolioMap = new Map();
+    sortedPortfolios.forEach((portfolio) => {
+        portfolioMap.set(portfolio.abbreviation, portfolio);
     });
+
+    // Define column boundaries based on PORTFOLIO_ORDER (4 columns with 4 rows max)
+    // Column 1: indices 0-3, Column 2: 4-7, Column 3: 8-10, Column 4: 11-12
+    const columnBoundaries = [
+        { start: 0, end: 4 }, // Column 1: CC, CWR, HS, OTIP
+        { start: 4, end: 8 }, // Column 2: ADR, HMRF, HV, DV
+        { start: 8, end: 11 }, // Column 3: WR, DO, OD
+        { start: 11, end: 13 } // Column 4: Non-OPRE, OCDO
+    ];
+
+    const ROWS_PER_COLUMN = 4;
+    const result = [];
+    const processedAbbreviations = new Set();
+
+    // Process each column separately
+    columnBoundaries.forEach((boundary) => {
+        const columnItems = [];
+
+        // Collect existing portfolios for this column
+        for (let i = boundary.start; i < boundary.end; i++) {
+            const config = PORTFOLIO_ORDER[i];
+
+            // Check for portfolio using abbreviation or aliases
+            let portfolio = portfolioMap.get(config.abbreviation);
+            if (!portfolio && config.aliases) {
+                // Check aliases
+                for (const alias of config.aliases) {
+                    portfolio = portfolioMap.get(alias);
+                    if (portfolio) break;
+                }
+            }
+
+            if (portfolio) {
+                const value = portfolio?.fundingSummary?.total_funding?.amount || 0;
+                const percent = calculatePercent(value, totalBudget);
+
+                columnItems.push({
+                    id: portfolio.id || i,
+                    label: portfolio.name || portfolio.abbreviation,
+                    abbreviation: portfolio.abbreviation,
+                    value: Number(value),
+                    color: config.color,
+                    percent
+                });
+                processedAbbreviations.add(portfolio.abbreviation);
+            }
+        }
+
+        // Add the existing items to result
+        result.push(...columnItems);
+
+        // Pad the column with placeholders to maintain grid alignment (always 4 rows)
+        const placeholdersNeeded = ROWS_PER_COLUMN - columnItems.length;
+        for (let i = 0; i < placeholdersNeeded; i++) {
+            result.push({
+                id: `placeholder-col${boundary.start}-${i}`,
+                label: "",
+                abbreviation: "",
+                value: 0,
+                color: "",
+                percent: 0,
+                isPlaceholder: true
+            });
+        }
+    });
+
+    // Handle unknown portfolios (not in PORTFOLIO_ORDER) - append at the end
+    sortedPortfolios.forEach((portfolio, index) => {
+        if (!processedAbbreviations.has(portfolio.abbreviation)) {
+            const value = portfolio?.fundingSummary?.total_funding?.amount || 0;
+            const percent = calculatePercent(value, totalBudget);
+
+            result.push({
+                id: portfolio.id || `unknown-${index}`,
+                label: portfolio.name || portfolio.abbreviation,
+                abbreviation: portfolio.abbreviation,
+                value: Number(value),
+                color: FALLBACK_COLOR,
+                percent
+            });
+        }
+    });
+
+    return result;
 };

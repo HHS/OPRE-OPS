@@ -1,7 +1,7 @@
 /**
  * Static order for portfolios by division and abbreviation
  * This defines the display order for the portfolio budget summary card
- * Arranged in 4-column grid: [CC, CWR, HS] [AD, HMRF, HV] [WR, OD] [Non-OPRE, OCDO]
+ * Arranged in 4-column grid: [CC, CWR, HS, OTIP] [ADR, HMRF, HV, DV] [WR, DO, OD] [Non-OPRE, OCDO]
  */
 export const PORTFOLIO_ORDER = [
     // Column 1 - DCFD Division
@@ -21,6 +21,11 @@ export const PORTFOLIO_ORDER = [
         division: "DCFD",
         color: "var(--portfolio-bar-graph-hs)" // Light Blue
     },
+    {
+        abbreviation: "OTIP",
+        division: "DCFD",
+        color: "var(--portfolio-bar-graph-otip)" // Light Blue
+    },
 
     // Column 2 - DFS Division
     {
@@ -39,6 +44,11 @@ export const PORTFOLIO_ORDER = [
         division: "DFS",
         color: "var(--portfolio-bar-graph-hv)" // Light Coral
     },
+    {
+        abbreviation: "DV",
+        division: "DFS",
+        color: "var(--portfolio-bar-graph-dv)" // Light Coral
+    },
 
     // Column 3 - DEI Division & OD
     {
@@ -47,9 +57,10 @@ export const PORTFOLIO_ORDER = [
         color: "var(--portfolio-bar-graph-wr)" // Dark Green
     },
     {
-        abbreviation: "DD",
-        division: "DD",
-        color: "var(--portfolio-bar-graph-dd)" // Gold
+        abbreviation: "DO",
+        division: "DECONI",
+        color: "var(--portfolio-bar-graph-dd)", // Gold
+        aliases: ["DD"]
     },
     {
         abbreviation: "OD",
