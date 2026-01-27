@@ -65,7 +65,7 @@ class CompletedByAuthorizationRule(ValidationRule):
         # Get the user from database
         completed_by_user = context.db_session.get(User, task_completed_by_id)
         if not completed_by_user:
-            # Raise Auth Error instad of validation error so users can't use this endpoint to figure out the valid existing users
+            # Raise Auth Error instead of validation error so users can't use this endpoint to figure out the valid existing users
             raise AuthorizationError(
                 f"User {task_completed_by_id} is not authorized to be marked as task_completed_by for procurement tracker step {procurement_tracker_step.id}.",
                 "ProcurementTrackerStep",

@@ -123,8 +123,7 @@ def bdd_client(basic_user_auth_client):
 
 
 @given("I have a Contract Agreement with OPS user as a team member")
-def agreement_with_ops_user(bdd_client, test_user, loaded_db, context):
-    test_user_id = 521  # The id of the user in our auth client
+def agreement_with_ops_user(bdd_client, test_non_admin_user, loaded_db, context):
     contract_agreement = ContractAgreement(
         name="ABCD12345",
         contract_number="CT1234",
@@ -134,18 +133,17 @@ def agreement_with_ops_user(bdd_client, test_user, loaded_db, context):
         description="Test Contract Agreement",
         awarding_entity_id=1,
         agreement_reason=AgreementReason.NEW_REQ,
-        project_officer_id=test_user_id,  # The id of the user in our auth client
+        project_officer_id=test_non_admin_user.id,  # The id of the user in our auth client
     )
     loaded_db.add(contract_agreement)
     loaded_db.commit()
 
     context["agreement"] = contract_agreement
-    context["user_id"] = test_user_id
+    context["user_id"] = test_non_admin_user.id
 
 
 @given("I have a Contract Agreement without OPS user as a team member")
-def agreement_without_ops_user(bdd_client, test_user, loaded_db, context):
-    test_user_id = 521
+def agreement_without_ops_user(bdd_client, test_non_admin_user, loaded_db, context):
     contract_agreement = ContractAgreement(
         name="ABCD12345",
         contract_number="CT99999",
@@ -160,7 +158,7 @@ def agreement_without_ops_user(bdd_client, test_user, loaded_db, context):
     loaded_db.commit()
 
     context["agreement"] = contract_agreement
-    context["user_id"] = test_user_id
+    context["user_id"] = test_non_admin_user.id
 
 
 @given("I have a procurement tracker with an empty step number 1")
@@ -284,9 +282,16 @@ def have_procurement_step_with_no_presolicitation_package(context):
 def submit_procurement_step_update(bdd_client, loaded_db, context):
     step1 = context["procurement_tracker_step"]
 
+    # In scenarios where the procurement tracker has no persisted steps,
+    # step1.id may be None. Use a clearly non-existent integer ID so that
+    # the route is hit and the application-level 404 is exercised.
+    step_id = getattr(step1, "id", None)
+    if step_id is None:
+        step_id = 9999
+
     request_body = context.get("request_body", {})
 
-    context["response_patch"] = bdd_client.patch(f"/api/v1/procurement-tracker-steps/{step1.id}", json=request_body)
+    context["response_patch"] = bdd_client.patch(f"/api/v1/procurement-tracker-steps/{step_id}", json=request_body)
 
 
 @then("I should get a message that it was successful")
