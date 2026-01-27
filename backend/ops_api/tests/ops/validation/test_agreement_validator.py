@@ -13,11 +13,10 @@ from ops_api.ops.validation.awarded_agreement_validator import AwardedAgreementV
 from ops_api.ops.validation.rules.agreement import AgreementTypeImmutableRule
 
 
-@pytest.mark.usefixtures("app_ctx")
 class TestAgreementValidator:
     """Test suite for AgreementValidator."""
 
-    def test_validator_has_default_validators(self):
+    def test_validator_has_default_validators(self, app_ctx):
         """Test that validator initializes with default validators."""
         validator = AgreementValidator()
 
@@ -25,7 +24,7 @@ class TestAgreementValidator:
         assert all(hasattr(v, "validate") for v in validator.validators)
         assert all(hasattr(v, "name") for v in validator.validators)
 
-    def test_validator_accepts_custom_validators(self):
+    def test_validator_accepts_custom_validators(self, app_ctx):
         """Test that validator can be initialized with custom validators."""
         custom_validators = [AgreementTypeImmutableRule()]
         validator = AgreementValidator(validators=custom_validators)
@@ -33,7 +32,7 @@ class TestAgreementValidator:
         assert len(validator.validators) == 1
         assert isinstance(validator.validators[0], AgreementTypeImmutableRule)
 
-    def test_validate_executes_all_validators_in_order(self, test_user, loaded_db):
+    def test_validate_executes_all_validators_in_order(self, test_user, loaded_db, app_ctx):
         """Test that validate method executes all validators."""
         agreement = ContractAgreement(
             name="Test Agreement - All Validators",
@@ -53,7 +52,7 @@ class TestAgreementValidator:
         loaded_db.delete(agreement)
         loaded_db.commit()
 
-    def test_validate_raises_resource_not_found_error(self, test_user, loaded_db):
+    def test_validate_raises_resource_not_found_error(self, test_user, loaded_db, app_ctx):
         """Test that validator raises ResourceNotFoundError when agreement is None."""
         validator = AgreementValidator()
         updated_fields = {"id": 999, "name": "Test"}
@@ -61,7 +60,7 @@ class TestAgreementValidator:
         with pytest.raises(ResourceNotFoundError):
             validator.validate(None, test_user, updated_fields, loaded_db)
 
-    def test_validate_raises_authorization_error(self, loaded_db):
+    def test_validate_raises_authorization_error(self, loaded_db, app_ctx):
         """Test that validator raises AuthorizationError for unauthorized user."""
         # Create unauthorized user
         from models import User
@@ -84,7 +83,7 @@ class TestAgreementValidator:
         loaded_db.delete(unauthorized_user)
         loaded_db.commit()
 
-    def test_validate_raises_validation_error_for_agreement_type_change(self, test_user, loaded_db):
+    def test_validate_raises_validation_error_for_agreement_type_change(self, test_user, loaded_db, app_ctx):
         """Test that validator raises ValidationError when agreement type changes."""
         agreement = ContractAgreement(
             name="Test Agreement - Type Change Error",
@@ -106,7 +105,7 @@ class TestAgreementValidator:
         loaded_db.delete(agreement)
         loaded_db.commit()
 
-    def test_add_validator_adds_rule(self):
+    def test_add_validator_adds_rule(self, app_ctx):
         """Test that add_validator adds a new rule to the validator."""
         validator = AgreementValidator(validators=[])
         initial_count = len(validator.validators)
@@ -117,7 +116,7 @@ class TestAgreementValidator:
         assert len(validator.validators) == initial_count + 1
         assert validator.validators[-1] == rule
 
-    def test_remove_validator_removes_rule(self):
+    def test_remove_validator_removes_rule(self, app_ctx):
         """Test that remove_validator removes a rule by class type."""
         rule = AgreementTypeImmutableRule()
         validator = AgreementValidator(validators=[rule])
@@ -127,7 +126,7 @@ class TestAgreementValidator:
 
         assert len(validator.validators) == 0
 
-    def test_validation_context_created_correctly(self, test_user, loaded_db):
+    def test_validation_context_created_correctly(self, test_user, loaded_db, app_ctx):
         """Test that validation context is created with correct values."""
         agreement = ContractAgreement(
             name="Test Agreement - Context Creation",
@@ -147,7 +146,9 @@ class TestAgreementValidator:
         loaded_db.delete(agreement)
         loaded_db.commit()
 
-    def test_validate_raises_error_for_immutable_field_on_awarded_agreement(self, test_user, loaded_db, monkeypatch):
+    def test_validate_raises_error_for_immutable_field_on_awarded_agreement(
+        self, test_user, loaded_db, monkeypatch, app_ctx
+    ):
         """Test that validator raises ValidationError when updating immutable field on awarded agreement."""
         from models import ContractType
         from models.procurement_action import AwardType, ProcurementAction, ProcurementActionStatus
@@ -182,7 +183,7 @@ class TestAgreementValidator:
         loaded_db.delete(agreement)
         loaded_db.commit()
 
-    def test_validate_allows_mutable_field_updates_on_awarded_agreement(self, test_user, loaded_db):
+    def test_validate_allows_mutable_field_updates_on_awarded_agreement(self, test_user, loaded_db, app_ctx):
         """Test that validator allows updating mutable fields on awarded agreement."""
         from models.procurement_action import AwardType, ProcurementAction, ProcurementActionStatus
 
@@ -213,7 +214,7 @@ class TestAgreementValidator:
         loaded_db.delete(agreement)
         loaded_db.commit()
 
-    def test_validate_allows_super_user_to_modify_immutable_fields_on_awarded_agreement(self, loaded_db):
+    def test_validate_allows_super_user_to_modify_immutable_fields_on_awarded_agreement(self, loaded_db, app_ctx):
         """Test that super users can modify immutable fields on awarded agreement."""
         from models import Role, User
         from models.procurement_action import AwardType, ProcurementAction, ProcurementActionStatus

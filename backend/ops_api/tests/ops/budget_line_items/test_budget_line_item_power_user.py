@@ -118,7 +118,6 @@ def test_services_component(loaded_db, test_contract):
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx", "loaded_db")
 @pytest.mark.parametrize(
     "bli_status",
     [
@@ -129,7 +128,7 @@ def test_services_component(loaded_db, test_contract):
     ],
 )
 def test_power_user_can_update_contract_bli_amount_without_change_request(
-    loaded_db, bli_status, power_user_auth_client, test_can, test_contract
+    loaded_db, bli_status, power_user_auth_client, test_can, test_contract, app_ctx
 ):
     agreement = test_contract
 
@@ -169,7 +168,6 @@ def test_power_user_can_update_contract_bli_amount_without_change_request(
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx", "loaded_db")
 @pytest.mark.parametrize(
     "bli_status",
     [
@@ -180,7 +178,7 @@ def test_power_user_can_update_contract_bli_amount_without_change_request(
     ],
 )
 def test_power_user_cannot_update_contract_bli_that_is_in_review(
-    loaded_db, bli_status, power_user_auth_client, test_can, test_contract
+    loaded_db, bli_status, power_user_auth_client, test_can, test_contract, app_ctx
 ):
     agreement = test_contract
 
@@ -227,7 +225,6 @@ def test_power_user_cannot_update_contract_bli_that_is_in_review(
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx", "loaded_db")
 @pytest.mark.parametrize(
     "bli_status",
     [
@@ -238,7 +235,7 @@ def test_power_user_cannot_update_contract_bli_that_is_in_review(
     ],
 )
 def test_power_user_can_update_obe_contract_bli_amount_without_change_request(
-    loaded_db, bli_status, power_user_auth_client, test_can, test_contract
+    loaded_db, bli_status, power_user_auth_client, test_can, test_contract, app_ctx
 ):
     agreement = test_contract
 
@@ -279,7 +276,6 @@ def test_power_user_can_update_obe_contract_bli_amount_without_change_request(
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx", "loaded_db")
 @pytest.mark.parametrize(
     "bli_status",
     [
@@ -290,7 +286,7 @@ def test_power_user_can_update_obe_contract_bli_amount_without_change_request(
     ],
 )
 def test_power_user_can_update_grant_bli_amount_without_change_request(
-    loaded_db, bli_status, power_user_auth_client, test_can, test_grant
+    loaded_db, bli_status, power_user_auth_client, test_can, test_grant, app_ctx
 ):
     agreement = test_grant
 
@@ -333,7 +329,6 @@ def test_power_user_can_update_grant_bli_amount_without_change_request(
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx", "loaded_db")
 @pytest.mark.parametrize(
     "bli_status",
     [
@@ -344,7 +339,7 @@ def test_power_user_can_update_grant_bli_amount_without_change_request(
     ],
 )
 def test_power_user_cannot_update_grant_bli_that_is_in_review(
-    loaded_db, bli_status, power_user_auth_client, test_can, test_grant
+    loaded_db, bli_status, power_user_auth_client, test_can, test_grant, app_ctx
 ):
     # Create a test agreement - need to make sure all required fields are populated
     agreement = test_grant
@@ -392,7 +387,6 @@ def test_power_user_cannot_update_grant_bli_that_is_in_review(
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx", "loaded_db")
 @pytest.mark.parametrize(
     "bli_status",
     [
@@ -410,6 +404,7 @@ def test_power_user_can_update_AA_bli_amount_without_change_request(
     db_for_aa_agreement,
     test_aa,
     test_services_component,
+    app_ctx,
 ):
 
     agreement = test_aa
@@ -456,7 +451,6 @@ def test_power_user_can_update_AA_bli_amount_without_change_request(
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx", "loaded_db")
 @pytest.mark.parametrize(
     "bli_status",
     [
@@ -521,7 +515,6 @@ def test_power_user_cannot_update_AA_bli_that_is_in_review(
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx", "loaded_db")
 @pytest.mark.parametrize(
     "bli_status",
     [
@@ -537,6 +530,7 @@ def test_power_user_can_update_IAA_bli_amount_without_change_request(
     power_user_auth_client,
     test_can,
     test_iaa,
+    app_ctx,
 ):
     agreement = test_iaa
 
@@ -577,7 +571,6 @@ def test_power_user_can_update_IAA_bli_amount_without_change_request(
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx", "loaded_db")
 @pytest.mark.parametrize(
     "bli_status",
     [
@@ -640,7 +633,6 @@ def test_power_user_cannot_update_IAA_bli_that_is_in_review(
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx", "loaded_db")
 @pytest.mark.parametrize(
     "bli_status",
     [
@@ -691,7 +683,6 @@ def test_power_user_can_update_direct_obligation_bli_amount_without_change_reque
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx", "loaded_db")
 @pytest.mark.parametrize(
     "bli_status",
     [
@@ -748,7 +739,6 @@ def test_power_user_cannot_update_direct_obligation_bli_that_is_in_review(
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx", "loaded_db")
 @pytest.mark.parametrize(
     "bli_status",
     [
@@ -790,7 +780,6 @@ def test_power_user_change_can_in_contract_bli_without_change_request(
     loaded_db.delete(bli)
 
 
-@pytest.mark.usefixtures("app_ctx", "loaded_db")
 @pytest.mark.parametrize(
     "bli_status",
     [
@@ -860,7 +849,6 @@ def test_power_user_update_obligate_by_date(
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx", "loaded_db")
 @pytest.mark.parametrize(
     "bli_status",
     [
@@ -925,7 +913,6 @@ def test_power_user_cannot_update_can_in_contract_bli_that_is_in_review(
     loaded_db.delete(agreement)
 
 
-@pytest.mark.usefixtures("app_ctx", "loaded_db")
 @pytest.mark.parametrize(
     "bli_status",
     [

@@ -1,7 +1,5 @@
 import traceback
 
-import pytest
-
 from models.events import OpsEventStatus, OpsEventType
 from models.utils import generate_events_update
 from ops_api.ops.utils.events import OpsEventHandler
@@ -13,8 +11,7 @@ def test_ops_event_handler_init():
     assert oeh.event_type == OpsEventType.LOGIN_ATTEMPT
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_ops_event_handler_enter(mocker):
+def test_ops_event_handler_enter(mocker, app_ctx):
     mocker.patch("ops_api.ops.utils.events.request")
     oeh = OpsEventHandler(OpsEventType.LOGIN_ATTEMPT)
     oeh_enter = oeh.__enter__()
@@ -22,8 +19,7 @@ def test_ops_event_handler_enter(mocker):
     assert "request.json" in oeh.metadata
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_ops_event_handler_exit_fail(loaded_db, mocker):
+def test_ops_event_handler_exit_fail(loaded_db, mocker, app_ctx):
     mocker.patch("ops_api.ops.utils.events.request")
     mock_cm = mocker.patch("ops_api.ops.utils.events.Session")
     mock_session = mocker.MagicMock()
@@ -38,8 +34,7 @@ def test_ops_event_handler_exit_fail(loaded_db, mocker):
     assert event.event_details["error_type"] == "<class 'Exception'>"
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_ops_event_handler_exit_success(loaded_db, mocker):
+def test_ops_event_handler_exit_success(loaded_db, mocker, app_ctx):
     # setup mocks
     mocker.patch("ops_api.ops.utils.events.request")
     mock_cm = mocker.patch("ops_api.ops.utils.events.Session")
@@ -53,8 +48,7 @@ def test_ops_event_handler_exit_success(loaded_db, mocker):
     assert event.event_status == OpsEventStatus.SUCCESS
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_generate_events_update_no_updates(loaded_db):
+def test_generate_events_update_no_updates(loaded_db, app_ctx):
     """Test that when there are no changes between the old and new funding budget"""
     can_id = 500
     user_id = 516

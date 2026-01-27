@@ -1,11 +1,7 @@
 """Tests for procurement tracker API endpoints."""
 
-import pytest
 
-
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_procurement_tracker_by_id(auth_client):
+def test_get_procurement_tracker_by_id(auth_client, app_ctx):
     """Test retrieving a single procurement tracker by ID."""
     response = auth_client.get("/api/v1/procurement-trackers/1")
     assert response.status_code == 200
@@ -41,17 +37,13 @@ def test_get_procurement_tracker_by_id(auth_client):
     assert "notes" not in step_2
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_procurement_tracker_by_id_not_found(auth_client):
+def test_get_procurement_tracker_by_id_not_found(auth_client, app_ctx):
     """Test retrieving a non-existent procurement tracker returns 404."""
     response = auth_client.get("/api/v1/procurement-trackers/9999")
     assert response.status_code == 404
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_procurement_trackers_list(auth_client):
+def test_get_procurement_trackers_list(auth_client, app_ctx):
     """Test retrieving list of procurement trackers."""
     response = auth_client.get("/api/v1/procurement-trackers/")
     assert response.status_code == 200
@@ -78,9 +70,7 @@ def test_get_procurement_trackers_list(auth_client):
     assert len(data[0]["steps"]) == 6
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_procurement_trackers_list_with_pagination(auth_client):
+def test_get_procurement_trackers_list_with_pagination(auth_client, app_ctx):
     """Test pagination parameters work correctly."""
     # Get first tracker only
     response = auth_client.get("/api/v1/procurement-trackers/?limit=1&offset=0")
@@ -101,9 +91,7 @@ def test_get_procurement_trackers_list_with_pagination(auth_client):
     assert response.json["data"][0]["id"] == 2
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_procurement_trackers_list_filter_by_agreement_id(auth_client):
+def test_get_procurement_trackers_list_filter_by_agreement_id(auth_client, app_ctx):
     """Test filtering procurement trackers by agreement_id."""
     # Filter by agreement 13 (should return tracker 1)
     response = auth_client.get("/api/v1/procurement-trackers/?agreement_id=13")
@@ -128,9 +116,7 @@ def test_get_procurement_trackers_list_filter_by_agreement_id(auth_client):
     assert len(response.json["data"]) == 0
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_procurement_trackers_list_filter_by_multiple_agreement_ids(auth_client):
+def test_get_procurement_trackers_list_filter_by_multiple_agreement_ids(auth_client, app_ctx):
     """Test filtering by multiple agreement IDs."""
     response = auth_client.get("/api/v1/procurement-trackers/?agreement_id=13&agreement_id=14")
     assert response.status_code == 200
@@ -138,9 +124,7 @@ def test_get_procurement_trackers_list_filter_by_multiple_agreement_ids(auth_cli
     assert len(response.json["data"]) == 2
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_procurement_trackers_list_pagination_limits(auth_client):
+def test_get_procurement_trackers_list_pagination_limits(auth_client, app_ctx):
     """Test pagination limit validation."""
     # Valid limit
     response = auth_client.get("/api/v1/procurement-trackers/?limit=50")
@@ -155,9 +139,7 @@ def test_get_procurement_trackers_list_pagination_limits(auth_client):
     assert response.status_code == 400
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_procurement_trackers_list_offset_validation(auth_client):
+def test_get_procurement_trackers_list_offset_validation(auth_client, app_ctx):
     """Test offset validation."""
     # Valid offset
     response = auth_client.get("/api/v1/procurement-trackers/?offset=0")
@@ -168,9 +150,7 @@ def test_get_procurement_trackers_list_offset_validation(auth_client):
     assert response.status_code == 400
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_procurement_tracker_steps_ordering(auth_client):
+def test_get_procurement_tracker_steps_ordering(auth_client, app_ctx):
     """Test that steps are returned in correct order by step_number."""
     response = auth_client.get("/api/v1/procurement-trackers/1")
     assert response.status_code == 200
@@ -193,25 +173,19 @@ def test_get_procurement_tracker_steps_ordering(auth_client):
         assert steps[i]["step_type"] == expected_type
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_procurement_tracker_unauthorized(client):
+def test_get_procurement_tracker_unauthorized(client, app_ctx):
     """Test that unauthorized requests are rejected."""
     response = client.get("/api/v1/procurement-trackers/1")
     assert response.status_code == 401
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_procurement_trackers_list_unauthorized(client):
+def test_get_procurement_trackers_list_unauthorized(client, app_ctx):
     """Test that unauthorized list requests are rejected."""
     response = client.get("/api/v1/procurement-trackers/")
     assert response.status_code == 401
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_procurement_tracker_all_step_fields(auth_client):
+def test_get_procurement_tracker_all_step_fields(auth_client, app_ctx):
     """Test that all expected fields are present in steps."""
     response = auth_client.get("/api/v1/procurement-trackers/1")
     assert response.status_code == 200
@@ -242,9 +216,7 @@ def test_get_procurement_tracker_all_step_fields(auth_client):
         assert "notes" not in step
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_procurement_tracker_response_structure(auth_client):
+def test_get_procurement_tracker_response_structure(auth_client, app_ctx):
     """Test that the response has all expected top-level fields."""
     response = auth_client.get("/api/v1/procurement-trackers/1")
     assert response.status_code == 200

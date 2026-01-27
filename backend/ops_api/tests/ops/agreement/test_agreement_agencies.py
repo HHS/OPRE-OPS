@@ -1,4 +1,3 @@
-import pytest
 from flask import url_for
 
 from models import AgreementAgency
@@ -8,8 +7,7 @@ test_user_id = 503
 test_user_name = "Amelia Popham"
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_agreement_agency(loaded_db):
+def test_get_agreement_agency(loaded_db, app_ctx):
     agreement_agency_service = AgreementAgencyService(loaded_db)
     agreement_agency = agreement_agency_service.get(1)
     assert agreement_agency is not None
@@ -26,8 +24,7 @@ def test_get_agreement_agency(loaded_db):
     assert agreement_agency2.servicing is True
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_agreement_agency_list(loaded_db):
+def test_get_agreement_agency_list(loaded_db, app_ctx):
     agreement_agency_service = AgreementAgencyService(loaded_db)
     agreement_agency_list = agreement_agency_service.get_list(10, 0, False, True)
     assert agreement_agency_list[0] is not None
@@ -47,8 +44,7 @@ def test_get_agreement_agency_list(loaded_db):
     assert len(agreement_agency_list_3) == 5
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_create_update_delete_agreement_agency(loaded_db):
+def test_create_update_delete_agreement_agency(loaded_db, app_ctx):
     agreement_agency_service = AgreementAgencyService(loaded_db)
     new_agency = {
         "name": "New Agency",
@@ -81,8 +77,7 @@ def test_create_update_delete_agreement_agency(loaded_db):
     assert loaded_db.get(AgreementAgency, created_agency.id) is None
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_agreement_agency_apis(auth_client):
+def test_get_agreement_agency_apis(auth_client, app_ctx):
     url_get_one = url_for("api.agreement-agency-item", id=1)
     response = auth_client.get(url_get_one)
     assert response.status_code == 200

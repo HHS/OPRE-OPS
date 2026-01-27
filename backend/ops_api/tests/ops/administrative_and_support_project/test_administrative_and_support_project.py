@@ -1,6 +1,5 @@
 import uuid
 
-import pytest
 from flask import url_for
 
 from models import AdministrativeAndSupportProject, ProjectType
@@ -51,8 +50,7 @@ def test_administrative_and_support_projects_with_fiscal_year_not_found(auth_cli
     assert len(response.json) == 0
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_query_for_fiscal_year_with_fiscal_year_found(loaded_db):
+def test_get_query_for_fiscal_year_with_fiscal_year_found(loaded_db, app_ctx):
     stmt = AdministrativeAndSupportProjectListAPI._get_query(2023)
     result = loaded_db.execute(stmt).fetchall()
     assert len(result) == 1
@@ -60,15 +58,13 @@ def test_get_query_for_fiscal_year_with_fiscal_year_found(loaded_db):
     assert result[0][0].id == 1013
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_query_for_fiscal_year_with_fiscal_year_not_found(loaded_db):
+def test_get_query_for_fiscal_year_with_fiscal_year_not_found(loaded_db, app_ctx):
     stmt = AdministrativeAndSupportProjectListAPI._get_query(1900)
     result = loaded_db.execute(stmt).fetchall()
     assert len(result) == 0
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_query_for_fiscal_year_with_portfolio_id_found(loaded_db):
+def test_get_query_for_fiscal_year_with_portfolio_id_found(loaded_db, app_ctx):
     stmt = AdministrativeAndSupportProjectListAPI._get_query(2023, 3)
     result = loaded_db.execute(stmt).fetchall()
     assert len(result) == 1
@@ -76,8 +72,7 @@ def test_get_query_for_fiscal_year_with_portfolio_id_found(loaded_db):
     assert result[0][0].id == 1013
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_query_for_fiscal_year_with_portfolio_id_not_found(loaded_db):
+def test_get_query_for_fiscal_year_with_portfolio_id_not_found(loaded_db, app_ctx):
     stmt = AdministrativeAndSupportProjectListAPI._get_query(2023, 6)
     result = loaded_db.execute(stmt).fetchall()
     assert len(result) == 0
@@ -115,8 +110,7 @@ def test_administrative_and_support_projects_auth(client, loaded_db):
     assert response.status_code == 401
 
 
-@pytest.mark.usefixtures("loaded_db")
-def test_post_administrative_and_support_projects(auth_client):
+def test_post_administrative_and_support_projects(auth_client, loaded_db):
     data = {
         "project_type": ProjectType.RESEARCH.name,
         "title": "Research Project #1",
@@ -143,8 +137,7 @@ def test_post_administrative_and_support_projects(auth_client):
     ]
 
 
-@pytest.mark.usefixtures("loaded_db")
-def test_post_administrative_and_support_projects_minimum(auth_client):
+def test_post_administrative_and_support_projects_minimum(auth_client, loaded_db):
     data = {
         "project_type": ProjectType.RESEARCH.name,
         "title": "Research Project #1",
@@ -156,14 +149,12 @@ def test_post_administrative_and_support_projects_minimum(auth_client):
     assert response.json["team_leaders"] == []
 
 
-@pytest.mark.usefixtures("loaded_db")
-def test_post_administrative_and_support_projects_empty_post(auth_client):
+def test_post_administrative_and_support_projects_empty_post(auth_client, loaded_db):
     response = auth_client.post(url_for("api.administrative-and-support-projects-group"), json={})
     assert response.status_code == 400
 
 
-@pytest.mark.usefixtures("loaded_db")
-def test_post_administrative_and_support_projects_bad_team_leaders(auth_client):
+def test_post_administrative_and_support_projects_bad_team_leaders(auth_client, loaded_db):
     data = {
         "project_type": ProjectType.RESEARCH.name,
         "title": "Research Project #1",
@@ -179,8 +170,7 @@ def test_post_administrative_and_support_projects_bad_team_leaders(auth_client):
     assert response.status_code == 400
 
 
-@pytest.mark.usefixtures("loaded_db")
-def test_post_administrative_and_support_projects_missing_title(auth_client):
+def test_post_administrative_and_support_projects_missing_title(auth_client, loaded_db):
     data = {
         "project_type": ProjectType.RESEARCH.name,
         "short_title": "RP1" + uuid.uuid4().hex,
@@ -195,8 +185,7 @@ def test_post_administrative_and_support_projects_missing_title(auth_client):
     assert response.status_code == 400
 
 
-@pytest.mark.usefixtures("loaded_db")
-def test_post_administrative_and_support_projects_auth_required(client):
+def test_post_administrative_and_support_projects_auth_required(client, loaded_db):
     data = {
         "project_type": ProjectType.RESEARCH.name,
         "title": "Research Project #1",

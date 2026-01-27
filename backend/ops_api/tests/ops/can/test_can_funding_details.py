@@ -1,12 +1,10 @@
-import pytest
 from sqlalchemy import select
 
 from models import CANFundingDetails, CANMethodOfTransfer
 from ops.services.can_funding_details import CANFundingDetailsService
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_funding_details_get_all(auth_client, mocker, test_can_funding_details):
+def test_funding_details_get_all(auth_client, mocker, test_can_funding_details, app_ctx):
     mocker_get_funding_details = mocker.patch(
         "ops_api.ops.services.can_funding_details.CANFundingDetailsService.get_list"
     )
@@ -24,8 +22,7 @@ def test_service_can_get_all(loaded_db):
     assert len(response) == count
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_funding_details_get_by_id(auth_client, mocker, test_can_funding_details):
+def test_funding_details_get_by_id(auth_client, mocker, test_can_funding_details, app_ctx):
     mocker_get_funding_details = mocker.patch("ops_api.ops.services.can_funding_details.CANFundingDetailsService.get")
     mocker_get_funding_details.return_value = test_can_funding_details
     response = auth_client.get(f"/api/v1/can-funding-details/{test_can_funding_details.id}")
@@ -45,8 +42,7 @@ def test_funding_details_service_get_by_id(test_can_funding_details):
 
 
 # Testing CANFundingDetails Creation
-@pytest.mark.usefixtures("app_ctx")
-def test_funding_details_post_creates_funding_details(budget_team_auth_client, mocker):
+def test_funding_details_post_creates_funding_details(budget_team_auth_client, mocker, app_ctx):
     input_data = {
         "fund_code": "AAXXXX20241DAD",
         "fiscal_year": 2024,
@@ -80,8 +76,7 @@ def test_funding_details_post_creates_funding_details(budget_team_auth_client, m
     assert response.json["method_of_transfer"] == "DIRECT"
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_basic_user_cannot_post_funding_details(basic_user_auth_client):
+def test_basic_user_cannot_post_funding_details(basic_user_auth_client, app_ctx):
     input_data = {
         "fund_code": "AAXXXX20241DAD",
         "fiscal_year": 2024,
@@ -122,8 +117,7 @@ def test_service_create_funding_details(loaded_db):
 
 
 # Testing updating CANs by PATCH
-@pytest.mark.usefixtures("app_ctx")
-def test_funding_details_patch(budget_team_auth_client, mocker):
+def test_funding_details_patch(budget_team_auth_client, mocker, app_ctx):
     test_details_id = 1
     update_data = {
         "method_of_transfer": "COST_SHARE",
@@ -148,8 +142,7 @@ def test_funding_details_patch(budget_team_auth_client, mocker):
     assert response.json["fund_code"] == funding_details.fund_code
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_funding_details_patch_404(budget_team_auth_client):
+def test_funding_details_patch_404(budget_team_auth_client, app_ctx):
     test_details_id = 518
     update_data = {
         "method_of_transfer": "COST_SHARE",
@@ -160,8 +153,7 @@ def test_funding_details_patch_404(budget_team_auth_client):
     assert response.status_code == 404
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_basic_user_cannot_patch_funding_detailss(basic_user_auth_client):
+def test_basic_user_cannot_patch_funding_detailss(basic_user_auth_client, app_ctx):
     update_data = {
         "method_of_transfer": "COST_SHARE",
     }
@@ -202,8 +194,7 @@ def test_service_patch_funding_details(loaded_db):
 
 
 # Testing updating CANFundingDetailss by PUT
-@pytest.mark.usefixtures("app_ctx")
-def test_funding_details_put(budget_team_auth_client, mocker):
+def test_funding_details_put(budget_team_auth_client, mocker, app_ctx):
     test_funding_details_id = 1
     update_data = {
         "method_of_transfer": "COST_SHARE",
@@ -237,8 +228,7 @@ def test_funding_details_put(budget_team_auth_client, mocker):
     assert response.json["fund_code"] == funding_details.fund_code
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_basic_user_cannot_put_funding_details(basic_user_auth_client):
+def test_basic_user_cannot_put_funding_details(basic_user_auth_client, app_ctx):
     update_data = {
         "method_of_transfer": "COST_SHARE",
         "fiscal_year": 2024,
@@ -249,8 +239,7 @@ def test_basic_user_cannot_put_funding_details(basic_user_auth_client):
     assert response.status_code == 403
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_funding_details_put_404(budget_team_auth_client):
+def test_funding_details_put_404(budget_team_auth_client, app_ctx):
     test_funding_details_id = 900
     update_data = {
         "method_of_transfer": "COST_SHARE",
@@ -303,8 +292,7 @@ def test_service_update_funding_details_with_nones(loaded_db):
 
 
 # Testing deleting CANFundingDetailss
-@pytest.mark.usefixtures("app_ctx")
-def test_funding_details_delete(budget_team_auth_client, mocker):
+def test_funding_details_delete(budget_team_auth_client, mocker, app_ctx):
     test_funding_details_id = 517
 
     mocker_delete_funding_details = mocker.patch(
@@ -318,8 +306,7 @@ def test_funding_details_delete(budget_team_auth_client, mocker):
     assert response.json["id"] == test_funding_details_id
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_can_delete_404(budget_team_auth_client):
+def test_can_delete_404(budget_team_auth_client, app_ctx):
     test_can_id = 900
 
     response = budget_team_auth_client.delete(f"/api/v1/can-funding-details/{test_can_id}")
@@ -327,8 +314,7 @@ def test_can_delete_404(budget_team_auth_client):
     assert response.status_code == 404
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_basic_user_cannot_delete_cans(basic_user_auth_client):
+def test_basic_user_cannot_delete_cans(basic_user_auth_client, app_ctx):
     response = basic_user_auth_client.delete("/api/v1/can-funding-details/517")
 
     assert response.status_code == 403
