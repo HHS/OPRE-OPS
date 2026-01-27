@@ -31,7 +31,7 @@ jobs:
           context: ${{ github.workspace }}/${{ env.WORKING_DIR }}
           dockerfile: ${{ github.workspace }}/${{ env.WORKING_DIR }}/${{ env.DOCKER_FILE }}
           image_tags: "${{ github.sha }},${{ env.ENVIRONMENT }}"
-          build_args: "VITE_BACKEND_DOMAIN=https://${{ env.ENVIRONMENT }}.${{ env.DOMAIN_NAME }}, MODE=${{ env.ENVIRONMENT }}, VITE_ENABLE_MSW=true"
+          build_args: "VITE_BACKEND_DOMAIN=https://${{ env.ENVIRONMENT }}.${{ env.DOMAIN_NAME }}, MODE=${{ env.ENVIRONMENT }}, VITE_ENABLE_MSW=false"
 
   deploy-frontend:
     needs: build-frontend
