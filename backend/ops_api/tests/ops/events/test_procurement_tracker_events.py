@@ -417,9 +417,7 @@ def test_created_tracker_has_correct_status(mock_session, mock_event_bli_exec, m
         procurement_tracker_trigger(mock_event_bli_exec, mock_session)
 
         # Verify create_with_steps was called with correct arguments including created_by
-        mock_create.assert_called_once_with(
-            agreement_id=100, status=ProcurementTrackerStatus.ACTIVE, created_by=42
-        )
+        mock_create.assert_called_once_with(agreement_id=100, status=ProcurementTrackerStatus.ACTIVE, created_by=42)
 
 
 # Tests for SQLAlchemy 2.0 filters and tracker-to-action association
