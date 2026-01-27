@@ -33,8 +33,16 @@ function ServicesComponentListItem({
     isSubComponent
 }) {
     const [isHovered, setIsHovered] = React.useState(false);
+
     const isFirstServiceComponent = number === 1;
-    const disabledMsg = "all agreements must start with an SC1 or Base Period";
+    const isEditDisabled = isSubComponent;
+    const isDeleteDisabled = isSubComponent || isFirstServiceComponent;
+
+    const SUB_COMPONENT_DISABLED_MSG = "Sub-Services Components are from legacy contracts and cannot be edited";
+    const FIRST_SERVICE_COMPONENT_DISABLED_MSG = "All agreements must start with an SC1 or Base Period";
+
+    const disabledEditMsg = SUB_COMPONENT_DISABLED_MSG;
+    const disabledDeleteMsg = isSubComponent ? SUB_COMPONENT_DISABLED_MSG : FIRST_SERVICE_COMPONENT_DISABLED_MSG;
 
     return (
         <div
@@ -50,46 +58,49 @@ function ServicesComponentListItem({
                 >
                     {title}
                 </h2>
-                {isHovered && !isSubComponent && (
+                {isHovered && (
                     <div>
                         <Tooltip
-                            label="Edit"
+                            label={isEditDisabled ? disabledEditMsg : "Edit"}
                             position="top"
                         >
                             <button
                                 id="edit"
-                                aria-label="Edit"
+                                aria-label={isEditDisabled ? disabledEditMsg : "Edit"}
                                 data-cy="services-component-item-edit-button"
                                 onClick={() => {
                                     setFormDataById(id);
                                     scrollToCenter("services-component-form");
                                 }}
+                                disabled={isEditDisabled}
                             >
                                 <FontAwesomeIcon
                                     icon={faPen}
                                     size="2x"
-                                    className="text-primary height-2 width-2 margin-right-1 cursor-pointer"
+                                    className={`${
+                                        isEditDisabled ? "text-gray-30" : "text-primary"
+                                    } height-2 width-2 margin-right-1 cursor-pointer`}
                                 />
                             </button>
                         </Tooltip>
                         <Tooltip
-                            label={`${isFirstServiceComponent ? disabledMsg : "Delete"}`}
+                            label={`${isDeleteDisabled ? disabledDeleteMsg : "Delete"}`}
                             position="top"
                         >
                             <button
                                 id="delete"
-                                aria-label={`${isFirstServiceComponent ? disabledMsg : "Delete"}`}
+                                aria-label={`${isDeleteDisabled ? disabledDeleteMsg : "Delete"}`}
                                 data-cy="services-component-item-delete-button"
                                 onClick={() => {
                                     handleDelete(id);
                                 }}
-                                disabled={isFirstServiceComponent}
+                                disabled={isDeleteDisabled}
                             >
                                 <FontAwesomeIcon
                                     icon={faTrash}
                                     size="2x"
                                     className={`${
-                                        isFirstServiceComponent ? "text-gray-30" : "text-primary"
+                                        isDeleteDisabled ? "text-gray-30" : "text-primary"
                                     } height-2 width-2 cursor-pointer`}
                                 />
                             </button>
