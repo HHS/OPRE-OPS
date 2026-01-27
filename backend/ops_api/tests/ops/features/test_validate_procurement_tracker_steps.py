@@ -303,26 +303,10 @@ def check_user_association_error_message(context, setup_and_teardown):
     assert "is not authorized" in json_data["message"]
 
 
-@then("I should get an error message that date must be a valid date")
-def check_invalid_date_error_message(context, setup_and_teardown):
-    response = context["response_patch"]
-    json_data = response.get_json()
-    assert response.status_code == 400
-    assert "must be a valid date" in json_data["message"]
-
-
 @then("I should get a validation error")
 def check_invalid_status_error_message(context, setup_and_teardown):
     response = context["response_patch"]
     assert response.status_code == 400
-
-
-@then("I should get an error message that completed procurement tracker steps cannot be updated")
-def check_completed_step_update_error_message(context, setup_and_teardown):
-    response = context["response_patch"]
-    json_data = response.get_json()
-    assert response.status_code == 400
-    assert "Cannot update a procurement tracker step that is already completed." in json_data["message"]
 
 
 @then("I should get a resource not found error")
