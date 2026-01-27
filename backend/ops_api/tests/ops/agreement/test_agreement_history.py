@@ -15,7 +15,15 @@ timestamp = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 def test_update_agreement_agreement_history_trigger(loaded_db, app_ctx):
     next_agreement_history_ops_event = loaded_db.get(OpsEvent, 32)
     agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
-    agreement_history_list = loaded_db.query(AgreementHistory).all()
+
+    loaded_db.flush()  # Ensure items are visible to queries
+    # Filter for history items created by this specific ops event
+    agreement_history_list = (
+        loaded_db.query(AgreementHistory)
+        .where(AgreementHistory.ops_event_id == next_agreement_history_ops_event.id)
+        .order_by(AgreementHistory.id)
+        .all()
+    )
     agreement_history_count = len(agreement_history_list)
     new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
     new_agreement_history_item_2 = agreement_history_list[agreement_history_count - 2]
@@ -37,7 +45,15 @@ def test_update_agreement_agreement_history_trigger(loaded_db, app_ctx):
     next_agreement_history_ops_event_2 = loaded_db.get(OpsEvent, 33)
     agreement_history_trigger(next_agreement_history_ops_event_2, loaded_db)
 
-    agreement_history_list = loaded_db.query(AgreementHistory).all()
+    loaded_db.flush()  # Ensure items are visible to queries
+
+    # Filter for history items created by this specific ops event
+    agreement_history_list = (
+        loaded_db.query(AgreementHistory)
+        .where(AgreementHistory.ops_event_id == next_agreement_history_ops_event_2.id)
+        .order_by(AgreementHistory.id)
+        .all()
+    )
     agreement_history_count = len(agreement_history_list)
 
     agreement_service_requirement_type_change = agreement_history_list[agreement_history_count - 1]
@@ -88,7 +104,15 @@ def test_update_agreement_agreement_history_trigger(loaded_db, app_ctx):
 def test_update_add_remove_team_member_history_trigger(loaded_db, app_ctx):
     next_agreement_history_ops_event = loaded_db.get(OpsEvent, 34)
     agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
-    agreement_history_list = loaded_db.query(AgreementHistory).all()
+
+    loaded_db.flush()  # Ensure items are visible to queries
+    # Filter for history items created by this specific ops event
+    agreement_history_list = (
+        loaded_db.query(AgreementHistory)
+        .where(AgreementHistory.ops_event_id == next_agreement_history_ops_event.id)
+        .order_by(AgreementHistory.id)
+        .all()
+    )
     agreement_history_count = len(agreement_history_list)
     new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
     new_agreement_history_item_2 = agreement_history_list[agreement_history_count - 2]
@@ -108,7 +132,15 @@ def test_update_add_remove_team_member_history_trigger(loaded_db, app_ctx):
 def test_update_bli_status_change_history_trigger(loaded_db, app_ctx):
     next_agreement_history_ops_event = loaded_db.get(OpsEvent, 35)
     agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
-    agreement_history_list = loaded_db.query(AgreementHistory).all()
+
+    loaded_db.flush()  # Ensure items are visible to queries
+    # Filter for history items created by this specific ops event
+    agreement_history_list = (
+        loaded_db.query(AgreementHistory)
+        .where(AgreementHistory.ops_event_id == next_agreement_history_ops_event.id)
+        .order_by(AgreementHistory.id)
+        .all()
+    )
     agreement_history_count = len(agreement_history_list)
     new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
 
@@ -124,7 +156,15 @@ def test_update_bli_status_change_history_trigger(loaded_db, app_ctx):
 def test_update_bli_properties_change_history_trigger(loaded_db, app_ctx):
     next_agreement_history_ops_event = loaded_db.get(OpsEvent, 36)
     agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
-    agreement_history_list = loaded_db.query(AgreementHistory).all()
+
+    loaded_db.flush()  # Ensure items are visible to queries
+    # Filter for history items created by this specific ops event
+    agreement_history_list = (
+        loaded_db.query(AgreementHistory)
+        .where(AgreementHistory.ops_event_id == next_agreement_history_ops_event.id)
+        .order_by(AgreementHistory.id)
+        .all()
+    )
     agreement_history_count = len(agreement_history_list)
     new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
 
@@ -138,7 +178,15 @@ def test_update_bli_properties_change_history_trigger(loaded_db, app_ctx):
 
     amount_change_history_ops_event = loaded_db.get(OpsEvent, 37)
     agreement_history_trigger(amount_change_history_ops_event, loaded_db)
-    agreement_history_list = loaded_db.query(AgreementHistory).all()
+
+    loaded_db.flush()  # Ensure items are visible to queries
+    # Filter for history items created by this specific ops event
+    agreement_history_list = (
+        loaded_db.query(AgreementHistory)
+        .where(AgreementHistory.ops_event_id == amount_change_history_ops_event.id)
+        .order_by(AgreementHistory.id)
+        .all()
+    )
     agreement_history_count = len(agreement_history_list)
     new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
 
@@ -152,7 +200,15 @@ def test_update_bli_properties_change_history_trigger(loaded_db, app_ctx):
 
     obligated_by_change_history_ops_event = loaded_db.get(OpsEvent, 38)
     agreement_history_trigger(obligated_by_change_history_ops_event, loaded_db)
-    agreement_history_list = loaded_db.query(AgreementHistory).all()
+
+    loaded_db.flush()  # Ensure items are visible to queries
+    # Filter for history items created by this specific ops event
+    agreement_history_list = (
+        loaded_db.query(AgreementHistory)
+        .where(AgreementHistory.ops_event_id == obligated_by_change_history_ops_event.id)
+        .order_by(AgreementHistory.id)
+        .all()
+    )
     agreement_history_count = len(agreement_history_list)
     new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
 
@@ -168,7 +224,15 @@ def test_update_bli_properties_change_history_trigger(loaded_db, app_ctx):
 def test_agreement_history_change_request_approve_deny(loaded_db):
     next_agreement_history_ops_event = loaded_db.get(OpsEvent, 39)
     agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
-    agreement_history_list = loaded_db.query(AgreementHistory).all()
+
+    loaded_db.flush()  # Ensure items are visible to queries
+    # Filter for history items created by this specific ops event
+    agreement_history_list = (
+        loaded_db.query(AgreementHistory)
+        .where(AgreementHistory.ops_event_id == next_agreement_history_ops_event.id)
+        .order_by(AgreementHistory.id)
+        .all()
+    )
     agreement_history_count = len(agreement_history_list)
     new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
 
@@ -182,7 +246,15 @@ def test_agreement_history_change_request_approve_deny(loaded_db):
 
     can_agreement_history_ops_event = loaded_db.get(OpsEvent, 40)
     agreement_history_trigger(can_agreement_history_ops_event, loaded_db)
-    agreement_history_list = loaded_db.query(AgreementHistory).all()
+
+    loaded_db.flush()  # Ensure items are visible to queries
+    # Filter for history items created by this specific ops event
+    agreement_history_list = (
+        loaded_db.query(AgreementHistory)
+        .where(AgreementHistory.ops_event_id == can_agreement_history_ops_event.id)
+        .order_by(AgreementHistory.id)
+        .all()
+    )
     agreement_history_count = len(agreement_history_list)
     can_agreement_history_item = agreement_history_list[agreement_history_count - 1]
 
@@ -196,7 +268,15 @@ def test_agreement_history_change_request_approve_deny(loaded_db):
 
     can_agreement_history_ops_event = loaded_db.get(OpsEvent, 41)
     agreement_history_trigger(can_agreement_history_ops_event, loaded_db)
-    agreement_history_list = loaded_db.query(AgreementHistory).all()
+
+    loaded_db.flush()  # Ensure items are visible to queries
+    # Filter for history items created by this specific ops event
+    agreement_history_list = (
+        loaded_db.query(AgreementHistory)
+        .where(AgreementHistory.ops_event_id == can_agreement_history_ops_event.id)
+        .order_by(AgreementHistory.id)
+        .all()
+    )
     agreement_history_count = len(agreement_history_list)
     can_agreement_history_item = agreement_history_list[agreement_history_count - 1]
 
@@ -210,7 +290,15 @@ def test_agreement_history_change_request_approve_deny(loaded_db):
 
     can_agreement_history_ops_event = loaded_db.get(OpsEvent, 42)
     agreement_history_trigger(can_agreement_history_ops_event, loaded_db)
-    agreement_history_list = loaded_db.query(AgreementHistory).all()
+
+    loaded_db.flush()  # Ensure items are visible to queries
+    # Filter for history items created by this specific ops event
+    agreement_history_list = (
+        loaded_db.query(AgreementHistory)
+        .where(AgreementHistory.ops_event_id == can_agreement_history_ops_event.id)
+        .order_by(AgreementHistory.id)
+        .all()
+    )
     agreement_history_count = len(agreement_history_list)
     can_agreement_history_item = agreement_history_list[agreement_history_count - 1]
 
@@ -226,7 +314,15 @@ def test_agreement_history_change_request_approve_deny(loaded_db):
 def test_proc_shop_change_requests(loaded_db, app_ctx):
     proc_shop_agreement_history_ops_event = loaded_db.get(OpsEvent, 43)
     agreement_history_trigger(proc_shop_agreement_history_ops_event, loaded_db)
-    agreement_history_list = loaded_db.query(AgreementHistory).all()
+
+    loaded_db.flush()  # Ensure items are visible to queries
+    # Filter for history items created by this specific ops event
+    agreement_history_list = (
+        loaded_db.query(AgreementHistory)
+        .where(AgreementHistory.ops_event_id == proc_shop_agreement_history_ops_event.id)
+        .order_by(AgreementHistory.id)
+        .all()
+    )
     agreement_history_count = len(agreement_history_list)
     proc_shop_change_request = agreement_history_list[agreement_history_count - 1]
 
@@ -241,6 +337,8 @@ def test_proc_shop_change_requests(loaded_db, app_ctx):
 
     proc_shop_agreement_history_ops_event = loaded_db.get(OpsEvent, 44)
     agreement_history_trigger(proc_shop_agreement_history_ops_event, loaded_db)
+
+    loaded_db.flush()  # Ensure items are visible to queries
 
     proc_shop_change_request = loaded_db.scalar(
         select(AgreementHistory)
@@ -260,6 +358,8 @@ def test_proc_shop_change_requests(loaded_db, app_ctx):
 
     proc_shop_agreement_history_ops_event = loaded_db.get(OpsEvent, 45)
     agreement_history_trigger(proc_shop_agreement_history_ops_event, loaded_db)
+
+    loaded_db.flush()  # Ensure items are visible to queries
 
     proc_shop_change_request = loaded_db.scalar(
         select(AgreementHistory)
@@ -281,7 +381,15 @@ def test_proc_shop_updates(loaded_db, app_ctx):
     # Test changes to procurement shop that don't require change requests
     proc_shop_agreement_history_ops_event = loaded_db.get(OpsEvent, 46)
     agreement_history_trigger(proc_shop_agreement_history_ops_event, loaded_db)
-    agreement_history_list = loaded_db.query(AgreementHistory).all()
+
+    loaded_db.flush()  # Ensure items are visible to queries
+    # Filter for history items created by this specific ops event
+    agreement_history_list = (
+        loaded_db.query(AgreementHistory)
+        .where(AgreementHistory.ops_event_id == proc_shop_agreement_history_ops_event.id)
+        .order_by(AgreementHistory.id)
+        .all()
+    )
     agreement_history_count = len(agreement_history_list)
     proc_shop_change_request = agreement_history_list[agreement_history_count - 1]
 
@@ -298,7 +406,15 @@ def test_proc_shop_fee_changes(loaded_db, app_ctx):
     # Test changes to procurement shop that don't require change requests
     proc_shop_agreement_history_ops_event = loaded_db.get(OpsEvent, 47)
     agreement_history_trigger(proc_shop_agreement_history_ops_event, loaded_db)
-    agreement_history_list = loaded_db.query(AgreementHistory).all()
+
+    loaded_db.flush()  # Ensure items are visible to queries
+    # Filter for history items created by this specific ops event
+    agreement_history_list = (
+        loaded_db.query(AgreementHistory)
+        .where(AgreementHistory.ops_event_id == proc_shop_agreement_history_ops_event.id)
+        .order_by(AgreementHistory.id)
+        .all()
+    )
     agreement_history_count = len(agreement_history_list)
     proc_shop_change_request = agreement_history_list[agreement_history_count - 1]
 
@@ -312,7 +428,15 @@ def test_proc_shop_fee_changes(loaded_db, app_ctx):
 def test_agreement_history_create_bli(loaded_db, app_ctx):
     next_agreement_history_ops_event = loaded_db.get(OpsEvent, 48)
     agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
-    agreement_history_list = loaded_db.query(AgreementHistory).all()
+
+    loaded_db.flush()  # Ensure items are visible to queries
+    # Filter for history items created by this specific ops event
+    agreement_history_list = (
+        loaded_db.query(AgreementHistory)
+        .where(AgreementHistory.ops_event_id == next_agreement_history_ops_event.id)
+        .order_by(AgreementHistory.id)
+        .all()
+    )
     agreement_history_count = len(agreement_history_list)
     new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
 
@@ -324,7 +448,15 @@ def test_agreement_history_create_bli(loaded_db, app_ctx):
 def test_agreement_history_create_agreement(loaded_db, app_ctx):
     next_agreement_history_ops_event = loaded_db.get(OpsEvent, 49)
     agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
-    agreement_history_list = loaded_db.query(AgreementHistory).all()
+
+    loaded_db.flush()  # Ensure items are visible to queries
+    # Filter for history items created by this specific ops event
+    agreement_history_list = (
+        loaded_db.query(AgreementHistory)
+        .where(AgreementHistory.ops_event_id == next_agreement_history_ops_event.id)
+        .order_by(AgreementHistory.id)
+        .all()
+    )
     agreement_history_count = len(agreement_history_list)
     new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
 
@@ -336,7 +468,15 @@ def test_agreement_history_create_agreement(loaded_db, app_ctx):
 def test_agreement_history_services_components(loaded_db, app_ctx):
     next_agreement_history_ops_event = loaded_db.get(OpsEvent, 50)
     agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
-    agreement_history_list = loaded_db.query(AgreementHistory).all()
+
+    loaded_db.flush()  # Ensure items are visible to queries
+    # Filter for history items created by this specific ops event
+    agreement_history_list = (
+        loaded_db.query(AgreementHistory)
+        .where(AgreementHistory.ops_event_id == next_agreement_history_ops_event.id)
+        .order_by(AgreementHistory.id)
+        .all()
+    )
     agreement_history_count = len(agreement_history_list)
     new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
 
@@ -349,7 +489,15 @@ def test_agreement_history_services_components(loaded_db, app_ctx):
 
     next_agreement_history_ops_event = loaded_db.get(OpsEvent, 51)
     agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
-    agreement_history_list = loaded_db.query(AgreementHistory).all()
+
+    loaded_db.flush()  # Ensure items are visible to queries
+    # Filter for history items created by this specific ops event
+    agreement_history_list = (
+        loaded_db.query(AgreementHistory)
+        .where(AgreementHistory.ops_event_id == next_agreement_history_ops_event.id)
+        .order_by(AgreementHistory.id)
+        .all()
+    )
     agreement_history_count = len(agreement_history_list)
     new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
 
@@ -362,7 +510,15 @@ def test_agreement_history_services_components(loaded_db, app_ctx):
 
     next_agreement_history_ops_event = loaded_db.get(OpsEvent, 52)
     agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
-    agreement_history_list = loaded_db.query(AgreementHistory).all()
+
+    loaded_db.flush()  # Ensure items are visible to queries
+    # Filter for history items created by this specific ops event
+    agreement_history_list = (
+        loaded_db.query(AgreementHistory)
+        .where(AgreementHistory.ops_event_id == next_agreement_history_ops_event.id)
+        .order_by(AgreementHistory.id)
+        .all()
+    )
     agreement_history_count = len(agreement_history_list)
     first_agreement_item = agreement_history_list[agreement_history_count - 1]
     second_agreement_item = agreement_history_list[agreement_history_count - 2]
@@ -404,7 +560,15 @@ def test_agreement_history_services_components(loaded_db, app_ctx):
 def test_agreement_history_bli_deletion(loaded_db, app_ctx):
     next_agreement_history_ops_event = loaded_db.get(OpsEvent, 64)
     agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
-    agreement_history_list = loaded_db.query(AgreementHistory).all()
+
+    loaded_db.flush()  # Ensure items are visible to queries
+    # Filter for history items created by this specific ops event
+    agreement_history_list = (
+        loaded_db.query(AgreementHistory)
+        .where(AgreementHistory.ops_event_id == next_agreement_history_ops_event.id)
+        .order_by(AgreementHistory.id)
+        .all()
+    )
     agreement_history_count = len(agreement_history_list)
     new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
 
@@ -417,7 +581,15 @@ def test_agreement_history_draft_bli_change(loaded_db, app_ctx):
     # 5 total events to test for
     next_agreement_history_ops_event = loaded_db.get(OpsEvent, 63)
     agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
-    agreement_history_list = loaded_db.query(AgreementHistory).all()
+
+    loaded_db.flush()  # Ensure items are visible to queries
+    # Filter for history items created by this specific ops event
+    agreement_history_list = (
+        loaded_db.query(AgreementHistory)
+        .where(AgreementHistory.ops_event_id == next_agreement_history_ops_event.id)
+        .order_by(AgreementHistory.id)
+        .all()
+    )
     agreement_history_count = len(agreement_history_list)
     new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
 
@@ -466,7 +638,15 @@ def test_agreement_history_cor_and_reason_changes(loaded_db, app_ctx):
     # 5 total events to test for
     next_agreement_history_ops_event = loaded_db.get(OpsEvent, 65)
     agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
-    agreement_history_list = loaded_db.query(AgreementHistory).all()
+
+    loaded_db.flush()  # Ensure items are visible to queries
+    # Filter for history items created by this specific ops event
+    agreement_history_list = (
+        loaded_db.query(AgreementHistory)
+        .where(AgreementHistory.ops_event_id == next_agreement_history_ops_event.id)
+        .order_by(AgreementHistory.id)
+        .all()
+    )
     agreement_history_count = len(agreement_history_list)
     new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
 
@@ -496,7 +676,15 @@ def test_agreement_history_agreement_agency_changes(loaded_db, app_ctx):
     # 5 total events to test for
     next_agreement_history_ops_event = loaded_db.get(OpsEvent, 66)
     agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
-    agreement_history_list = loaded_db.query(AgreementHistory).all()
+
+    loaded_db.flush()  # Ensure items are visible to queries
+    # Filter for history items created by this specific ops event
+    agreement_history_list = (
+        loaded_db.query(AgreementHistory)
+        .where(AgreementHistory.ops_event_id == next_agreement_history_ops_event.id)
+        .order_by(AgreementHistory.id)
+        .all()
+    )
     agreement_history_count = len(agreement_history_list)
     new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
 
@@ -525,7 +713,15 @@ def test_agreement_history_research_methodologies_and_special_topics(loaded_db, 
     # 4 total events to test for
     next_agreement_history_ops_event = loaded_db.get(OpsEvent, 67)
     agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
-    agreement_history_list = loaded_db.query(AgreementHistory).all()
+
+    loaded_db.flush()  # Ensure items are visible to queries
+    # Filter for history items created by this specific ops event
+    agreement_history_list = (
+        loaded_db.query(AgreementHistory)
+        .where(AgreementHistory.ops_event_id == next_agreement_history_ops_event.id)
+        .order_by(AgreementHistory.id)
+        .all()
+    )
     agreement_history_count = len(agreement_history_list)
     new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
 

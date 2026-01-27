@@ -111,6 +111,13 @@ class BudgetLineItemChangeRequest(AgreementChangeRequest):
     def has_status_change(cls):
         return cls.requested_change_data.has_key("status")
 
+    def to_dict(self):
+        """Override to_dict to include hybrid properties."""
+        data = super().to_dict()
+        data["has_budget_change"] = bool(self.has_budget_change)
+        data["has_status_change"] = bool(self.has_status_change)
+        return data
+
 
 # require agreement_id for Agreement changes.
 # (It has to be Optional in the model to keep the column nullable for other types)

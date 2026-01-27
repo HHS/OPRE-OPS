@@ -51,6 +51,7 @@ def can_history_trigger_func(
     event: OpsEvent,
     session: Session,
     system_user: User,
+    dry_run: bool = False,
 ):
     # Do not attempt to insert events into CAN History for failed or unknown status events
     if event.event_status == OpsEventStatus.FAILED or event.event_status == OpsEventStatus.UNKNOWN:
@@ -168,7 +169,8 @@ def can_history_trigger_func(
             )
             history_events.append(history_event)
     add_history_events(history_events, session)
-    session.commit()
+    if not dry_run:
+        session.commit()
 
 
 def format_fiscal_year(timestamp) -> int:
@@ -250,9 +252,17 @@ def create_can_update_history_event(
 def add_history_events(events: List[CANHistory], session):
     '''Add a list of CANHistory events to the database session. First check that there are not any matching events already in the database to prevent duplicates.'''
     for event in events:
+        # Query the database for existing events
         can_history_items = session.query(CANHistory).where(CANHistory.ops_event_id == event.ops_event_id).all()
+
+        # Also check pending objects in the session that haven't been flushed yet
+        pending_items = [obj for obj in session.new if isinstance(obj, CANHistory) and obj.ops_event_id == event.ops_event_id]
+
+        # Combine both database and pending items
+        all_items = can_history_items + pending_items
+
         duplicate_found = False
-        for item in can_history_items:
+        for item in all_items:
             if item.timestamp == event.timestamp and item.history_type == event.history_type and item.history_message == event.history_message and item.fiscal_year == event.fiscal_year:
                 # enough fields match that we're willing to say this is a duplicate.
                 duplicate_found = True
