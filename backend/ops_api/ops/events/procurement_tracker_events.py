@@ -85,7 +85,7 @@ def procurement_tracker_trigger(event: OpsEvent, session: Session) -> None:
 
         # Handle creation based on what exists
         _handle_tracker_action_creation(
-            session, agreement_id, budget_line_item_id, budget_line_item, existing_tracker, existing_action
+            session, agreement_id, budget_line_item_id, budget_line_item, existing_tracker, existing_action, event
         )
 
     except IntegrityError as e:
@@ -206,13 +206,16 @@ def _get_existing_tracker_and_action(
     return existing_tracker, existing_action
 
 
-def _create_new_procurement_action(session: Session, agreement_id: int) -> ProcurementAction:
+def _create_new_procurement_action(
+    session: Session, agreement_id: int, created_by: Optional[int] = None
+) -> ProcurementAction:
     """
     Create a new ProcurementAction with default values.
 
     Args:
         session: SQLAlchemy session
         agreement_id: Agreement ID for the action
+        created_by: User ID of the creator
 
     Returns:
         The created ProcurementAction instance
@@ -222,6 +225,7 @@ def _create_new_procurement_action(session: Session, agreement_id: int) -> Procu
         status=ProcurementActionStatus.PLANNED,
         award_type=AwardType.NEW_AWARD,
         agreement_mod_id=None,
+        created_by=created_by,
     )
     session.add(action)
     return action
@@ -253,6 +257,7 @@ def _handle_tracker_action_creation(
     budget_line_item: BudgetLineItem,
     existing_tracker: Optional[DefaultProcurementTracker],
     existing_action: Optional[ProcurementAction],
+    event: OpsEvent,
 ) -> None:
     """
     Handle creation of tracker and/or action based on what exists.
@@ -270,6 +275,7 @@ def _handle_tracker_action_creation(
         budget_line_item: BudgetLineItem instance
         existing_tracker: Existing tracker or None
         existing_action: Existing action or None
+        event: OpsEvent with user context
     """
     tracker_exists = existing_tracker is not None
     action_exists = existing_action is not None
@@ -290,11 +296,11 @@ def _handle_tracker_action_creation(
         logger.info(f"Creating tracker and action for agreement {agreement_id}")
 
         tracker = DefaultProcurementTracker.create_with_steps(
-            agreement_id=agreement_id, status=ProcurementTrackerStatus.ACTIVE
+            agreement_id=agreement_id, status=ProcurementTrackerStatus.ACTIVE, created_by=event.created_by
         )
         session.add(tracker)
 
-        action = _create_new_procurement_action(session, agreement_id)
+        action = _create_new_procurement_action(session, agreement_id, created_by=event.created_by)
         session.flush()  # Ensure action.id is available
 
         # Link tracker to action
@@ -313,7 +319,7 @@ def _handle_tracker_action_creation(
         # Only tracker exists - create action and link tracker to it
         logger.warning(f"Tracker exists but action missing for agreement {agreement_id}, creating action")
 
-        action = _create_new_procurement_action(session, agreement_id)
+        action = _create_new_procurement_action(session, agreement_id, created_by=event.created_by)
         session.flush()  # Ensure action.id is available
 
         # Link tracker to new action
@@ -329,7 +335,7 @@ def _handle_tracker_action_creation(
     logger.warning(f"Action exists but tracker missing for agreement {agreement_id}, creating tracker")
 
     tracker = DefaultProcurementTracker.create_with_steps(
-        agreement_id=agreement_id, status=ProcurementTrackerStatus.ACTIVE
+        agreement_id=agreement_id, status=ProcurementTrackerStatus.ACTIVE, created_by=event.created_by
     )
     session.add(tracker)
     session.flush()  # Ensure tracker.id is available

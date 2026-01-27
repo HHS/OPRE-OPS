@@ -66,6 +66,7 @@ def mock_event_bli_exec():
     event = Mock(spec=OpsEvent)
     event.id = 1
     event.event_type = OpsEventType.UPDATE_CHANGE_REQUEST
+    event.created_by = 42  # Mock user ID
     event.event_details = {
         "change_request": {
             "change_request_type": ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST.name,
@@ -393,6 +394,7 @@ def test_created_action_has_correct_defaults(mock_session, mock_event_bli_exec, 
     assert created_action.status == ProcurementActionStatus.PLANNED
     assert created_action.award_type == AwardType.NEW_AWARD
     assert created_action.agreement_mod_id is None
+    assert created_action.created_by == 42  # Should be set from event.created_by
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -414,8 +416,10 @@ def test_created_tracker_has_correct_status(mock_session, mock_event_bli_exec, m
         mock_create.return_value = Mock(spec=DefaultProcurementTracker)
         procurement_tracker_trigger(mock_event_bli_exec, mock_session)
 
-        # Verify create_with_steps was called with correct arguments
-        mock_create.assert_called_once_with(agreement_id=100, status=ProcurementTrackerStatus.ACTIVE)
+        # Verify create_with_steps was called with correct arguments including created_by
+        mock_create.assert_called_once_with(
+            agreement_id=100, status=ProcurementTrackerStatus.ACTIVE, created_by=42
+        )
 
 
 # Tests for SQLAlchemy 2.0 filters and tracker-to-action association
