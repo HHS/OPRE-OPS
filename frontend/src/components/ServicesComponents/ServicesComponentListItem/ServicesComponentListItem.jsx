@@ -86,12 +86,12 @@ function ServicesComponentListItem({
                             </button>
                         </Tooltip>
                         <Tooltip
-                            label={`${isDeleteDisabled ? disabledDeleteMsg : "Delete"}`}
+                            label={isDeleteDisabled ? disabledDeleteMsg : "Delete"}
                             position="top"
                         >
                             <button
                                 id="delete"
-                                aria-label={`${isDeleteDisabled ? disabledDeleteMsg : "Delete"}`}
+                                aria-label={isDeleteDisabled ? disabledDeleteMsg : "Delete"}
                                 data-cy="services-component-item-delete-button"
                                 onClick={() => {
                                     handleDelete(id);
