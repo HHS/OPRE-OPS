@@ -593,7 +593,7 @@ const canData = [
             "             The promotion of children’s safety, permanence, and well-being are the principles that guide child             welfare practice and policy. ACF seeks to improve the safety, permanency, and well-being of children through             leadership, support for necessary services, and productive partnerships with states, tribes, and              communities. ACF’s Children’s Bureau has the primary responsibility for administering federal programs             that support state child welfare services. ACF provides matching federal funds to states, tribes, and             communities to help them operate every aspect of their child welfare systems. This includes the             prevention of child abuse and neglect, the support of permanent placements through adoption and             subsidized guardianship, and the creation and maintenance of information systems necessary to support             these programs. ACF supports a number of research and evaluation activities as well as learning from a             broad array of other activities relevant to child welfare such as performance management, technical             assistance, stakeholder engagement, site monitoring, developing systems to oversee and use data, and             continuous quality improvement. ACF also analyzes and reports information on administrative data             such as the National Child Abuse and Neglect Data System (NCANDS), Adoption and Foster Care             Analysis and Reporting System (AFCARS), and National Youth in Transition Database (NYTD)             \n\nOver the past several decades, research and evaluation activities in child welfare have increased             significantly. This body of knowledge has shown that child maltreatment is a complex problem associated             with multiple, interrelated risk and protective factors at individual, family, community, and contextual             levels.  This research has demonstrated that child abuse and neglect may have long-lasting and cumulative             effects on the well-being of children into adulthood. There is burgeoning research examining the             potential effectiveness of preventative and intervention treatments to improve the safety, stability,             and well-being of children and their families.             \n\nOPRE’s child welfare research portfolio includes research on children who are maltreated or who are at             risk for child maltreatment; children and families who come to the attention of child protective services;             and children and families who are receiving child welfare services either in their families of origin or             in substitute care settings. OPRE also partners with the Children’s Bureau to conduct research covering a             broad array of topics, including identification of antecedents and consequences of child maltreatment,             strategies for prevention of maltreatment, and service needs and service outcomes for children who come             to the attention of child welfare.        ",
         display_name: "Child Welfare Research",
         division: {
-            abbreviation: "DFCD",
+            abbreviation: "DCFD",
             created_by: null,
             created_by_user: null,
             created_on: "2024-07-29T14:44:44.541526Z",
@@ -672,7 +672,7 @@ const canData = [
             "             Established in 1965, Head Start was designed to promote the school readiness of children, ages             three to five, from families with low income, by supporting the development of the whole child through             high-quality, comprehensive services. In 1994, the Early Head Start program was established to provide             the same comprehensive services to families with low income who have infants and toddlers, as well as             pregnant women. Today, ACF’s Office of Head Start oversees approximately 1,600 Head Start and Early Head             Start grantees that serve nearly one million children, birth to age five, and their families.             \n\nFor over 50 years, Head Start research has examined the impact of its programs as a whole and how             those impacts vary for different populations, communities, or program characteristics. In doing so,             Head Start research targets strategies for improving program quality and child and family outcomes.             Through partnerships between researchers and local programs, Head Start develops and evaluates             innovations in Head Start practice related to infant mental health, parenting, dual language learning,             curricular enhancements, caregiver-child interactions, dual-generation approaches, and other topics.             This growing research base provides valuable information not only for guiding program improvements in             Head Start itself, but also for the larger field of ECE.      ",
         display_name: "Head Start",
         division: {
-            abbreviation: "DFCD",
+            abbreviation: "DCFD",
             created_by: null,
             created_by_user: null,
             created_on: "2024-07-29T14:44:44.541526Z",
@@ -751,7 +751,7 @@ const canData = [
             "            Quality child care and early education programs are a critical resource for families, support young            children’s development in a variety of domains, and assist parents in accessing comprehensive services            for their families.            \n\nACF supports working families with low incomes by providing funding and implementing policies intended            to increase access to affordable, quality child care and early education programs serving children from            birth through age 13. ACF’s Office of Child Care administers the Child Care and Development Fund (CCDF),            which is a block grant authorized under the Child Care and Development Block Grant (CCDBG). In 2021,            CCDF made $9.5 billion available to state, territory, and tribal governments to support children and            their families by paying for child care that meets families’ needs and supports children’s development            and well-being. CCDF also provides funding to improve the quality of care by supporting efforts such as            child care licensing, quality improvement systems, and training and education for child care workers.            \n\nOPRE’s child care research portfolio aims to increase knowledge about the efficacy of child care            subsidy policies and programs in enhancing employment and economic self-sufficiency of low-income            families, and in improving quality in child care and early education settings to support learning and            development of children from birth through age 13. Research demonstrating the link between subsidies,            quality child care and early education, and positive child and family outcomes has encouraged efforts to            enhance early care and education programs through investments of CCDF quality set-aside funds.      ",
         display_name: "Child Care",
         division: {
-            abbreviation: "DFCD",
+            abbreviation: "DCFD",
             created_by: null,
             created_by_user: null,
             created_on: "2024-07-29T14:44:44.541526Z",
@@ -2093,7 +2093,7 @@ const selectedBudgetLines_ProcurementShop = [
             number: "G99SHARED",
             portfolio: {
                 division: {
-                    abbreviation: "DFCD",
+                    abbreviation: "DCFD",
                     created_by: null,
                     created_on: "2025-08-08T18:26:34.526624Z",
                     deputy_division_director_id: null,
@@ -2203,7 +2203,7 @@ const selectedBudgetLines_ProcurementShop = [
             number: "G99SHARED",
             portfolio: {
                 division: {
-                    abbreviation: "DFCD",
+                    abbreviation: "DCFD",
                     created_by: null,
                     created_on: "2025-08-08T18:26:34.526624Z",
                     deputy_division_director_id: null,

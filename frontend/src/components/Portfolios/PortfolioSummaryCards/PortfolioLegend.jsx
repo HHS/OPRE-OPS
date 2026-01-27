@@ -28,11 +28,22 @@ const PortfolioLegend = ({ data, activeId = 0 }) => {
             data-testid="portfolio-legend"
         >
             {data.map((item) => {
+                // Skip rendering placeholder items but keep them in grid for positioning
+                if (item.isPlaceholder) {
+                    return (
+                        <div
+                            key={item.id}
+                            className={styles.placeholder}
+                            aria-hidden="true"
+                        />
+                    );
+                }
+
                 const isActive = activeId === item.id;
                 const displayPercent = item.percent < 1 && item.percent > 0 ? "<1" : item.percent;
 
                 // Portfolios with light backgrounds need dark text for readability
-                const lightBackgroundPortfolios = ["CC", "HS", "HMRF", "HV", "DD", "Non-OPRE", "OCDO"];
+                const lightBackgroundPortfolios = ["CC", "HS", "HMRF", "HV", "DD", "Non-OPRE", "OCDO", "OTIP"];
                 const textColor = lightBackgroundPortfolios.includes(item.abbreviation) ? "#1B1B1B" : "#FFFFFF";
 
                 return (

@@ -6390,7 +6390,7 @@ components:
           ],
           "description": "The promotion of childrens safety, ... to the attention of child welfare.",
           "division": {
-              "abbreviation": "DFCD",
+              "abbreviation": "DCFD",
               "id": 1,
               "name": "Division of Child and Family Development"
               "division_director_id": "522"
