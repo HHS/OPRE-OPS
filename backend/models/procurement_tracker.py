@@ -10,6 +10,7 @@ from sqlalchemy import (
     Integer,
     String,
     Text,
+    Index,
 )
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -82,18 +83,22 @@ class ProcurementTracker(BaseModel):
 
     __tablename__ = "procurement_tracker"
 
+    __table_args__ = (Index("idx_procurement_tracker_agreement_id_status", "agreement_id", "status"),)
+
     id: Mapped[int] = BaseModel.get_pk_column()
 
     agreement_id: Mapped[int] = mapped_column(
         Integer,
         ForeignKey("agreement.id"),
         nullable=False,
+        index=True,
     )
 
     status: Mapped[ProcurementTrackerStatus] = mapped_column(
         ENUM(ProcurementTrackerStatus),
         nullable=False,
         default=ProcurementTrackerStatus.ACTIVE,
+        index=True,
     )
 
     procurement_action: Mapped[Optional[int]] = mapped_column(
