@@ -114,8 +114,8 @@ class BudgetLineItemChangeRequest(AgreementChangeRequest):
     def to_dict(self):
         """Override to_dict to include hybrid properties."""
         data = super().to_dict()
-        data["has_budget_change"] = self.has_budget_change
-        data["has_status_change"] = self.has_status_change
+        data["has_budget_change"] = bool(self.has_budget_change)
+        data["has_status_change"] = bool(self.has_status_change)
         return data
 
 
