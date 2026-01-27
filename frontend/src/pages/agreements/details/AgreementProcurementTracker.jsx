@@ -3,6 +3,9 @@ import { useGetProcurementTrackersByAgreementIdQuery } from "../../../api/opsAPI
 import { IS_PROCUREMENT_TRACKER_READY } from "../../../constants";
 import DebugCode from "../../../components/DebugCode";
 import Accordion from "../../../components/UI/Accordion";
+import ComboBox from "../../../components/UI/Form/ComboBox";
+import DatePicker from "../../../components/UI/USWDS/DatePicker";
+import TextArea from "../../../components/UI/Form/TextArea";
 
 /**
  * @typedef {Object} AgreementProcurementTrackerProps
@@ -83,6 +86,57 @@ const AgreementProcurementTracker = ({ agreement }) => {
                             {/* ComboBox for Users*/}
                             {/* DatePicker for Date Completed */}
                             {/* TextArea for optional Notes*/}
+                            <p>
+                                Once the pre-solicitation package is sufficiently drafted and signed by all parties,
+                                send it to the Procurement Shop and check this step as complete.
+                            </p>
+                            <fieldset className="usa-fieldset">
+                                <div className="usa-checkbox">
+                                    <input
+                                        className="usa-checkbox__input"
+                                        id="step-1-checkbox"
+                                        type="checkbox"
+                                        name="step-1-checkbox"
+                                    />
+                                    <label
+                                        className="usa-checkbox__label"
+                                        htmlFor="step-1-checkbox"
+                                    >
+                                        The pre-solicitation package has been sent to the Procurement Shop for review
+                                    </label>
+                                </div>
+                                <ComboBox />
+                                <DatePicker
+                                    id="date-completed"
+                                    name="dateCompleted"
+                                    label="Date Completed"
+                                    hint="mm/dd/yyyy"
+                                    onChange={""}
+                                />
+                                <TextArea
+                                    name="notes"
+                                    label="Notes"
+                                    className="margin-top-0"
+                                    maxLength={750}
+                                    // value={formData?.description || ""}
+                                    onChange={""}
+                                />
+                                <button
+                                    className="usa-button usa-button--unstyled margin-right-2"
+                                    data-cy="cancel-button"
+                                    onClick={""}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    className="usa-button"
+                                    data-cy="continue-btn"
+                                    onClick={""}
+                                    disabled={""}
+                                >
+                                    Complete Step 1
+                                </button>
+                            </fieldset>
                             <p>{step.step_type}</p>
                         </Accordion>
                     );
