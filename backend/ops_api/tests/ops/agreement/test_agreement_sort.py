@@ -2,8 +2,6 @@ from datetime import date, timedelta
 from decimal import Decimal
 from unittest.mock import MagicMock
 
-import pytest
-
 from models import BudgetLineItemStatus
 from ops_api.ops.services.agreements import agreement_total_sort, next_budget_line_sort
 
@@ -180,8 +178,7 @@ def test_agreement_total_with_mixed_statuses_and_fees():
     assert result == expected
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreement_total_sort_with_none_amount():
+def test_agreement_total_sort_with_none_amount(app_ctx):
     # Create mock BLIs with one having None amount
     bli_1 = MagicMock(
         status=BudgetLineItemStatus.PLANNED,
@@ -212,8 +209,7 @@ def test_agreement_total_sort_with_none_amount():
     assert result == expected
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_next_budget_line_sort_with_none_amount():
+def test_next_budget_line_sort_with_none_amount(app_ctx):
     # Create mock BLIs with the 'next' one having None amount
     today = date.today()
     tomorrow = today + timedelta(days=1)
@@ -246,8 +242,7 @@ def test_next_budget_line_sort_with_none_amount():
     assert result == expected
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_next_budget_line_sort_with_fee_and_none_amount():
+def test_next_budget_line_sort_with_fee_and_none_amount(app_ctx):
     # Create mock BLIs with the 'next' one having None amount but has fee
     today = date.today()
     tomorrow = today + timedelta(days=1)
@@ -272,8 +267,7 @@ def test_next_budget_line_sort_with_fee_and_none_amount():
     assert result == expected
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreement_total_sort_with_multiple_none_amounts():
+def test_agreement_total_sort_with_multiple_none_amounts(app_ctx):
     # Create mock BLIs with multiple None amounts
     bli_1 = MagicMock(status=BudgetLineItemStatus.PLANNED, amount=None, fees=Decimal("0.00"))
     bli_2 = MagicMock(status=BudgetLineItemStatus.IN_EXECUTION, amount=None, fees=Decimal("0.00"))
@@ -295,8 +289,7 @@ def test_agreement_total_sort_with_multiple_none_amounts():
     assert result == expected
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreement_total_sort_with_all_none_amounts():
+def test_agreement_total_sort_with_all_none_amounts(app_ctx):
     # Create mock BLIs with all None amounts
     bli_1 = MagicMock(status=BudgetLineItemStatus.PLANNED, amount=None)
     bli_2 = MagicMock(status=BudgetLineItemStatus.IN_EXECUTION, amount=None)

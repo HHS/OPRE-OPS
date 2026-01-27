@@ -1,4 +1,3 @@
-import pytest
 from sqlalchemy import select
 
 from models import CANHistory, CANHistoryType, OpsEvent, Portfolio
@@ -6,8 +5,7 @@ from ops_api.ops.services.can_history import CANHistoryService
 from ops_api.ops.services.can_messages import can_history_trigger
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_can_history(loaded_db):
+def test_get_can_history(loaded_db, app_ctx):
     test_can_id = 500
     count = loaded_db.query(CANHistory).where(CANHistory.can_id == test_can_id).count()
     can_history_service = CANHistoryService()
@@ -16,8 +14,7 @@ def test_get_can_history(loaded_db):
     assert len(response) == count
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_can_history_custom_length():
+def test_get_can_history_custom_length(app_ctx):
     test_can_id = 500
     test_limit = 5
     can_history_service = CANHistoryService()
@@ -26,8 +23,7 @@ def test_get_can_history_custom_length():
     assert len(response) == test_limit
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_can_history_custom_offset():
+def test_get_can_history_custom_offset(app_ctx):
     test_can_id = 500
     can_history_service = CANHistoryService()
     # Set a limit higher than our test data so we can get all results
@@ -42,8 +38,7 @@ def test_get_can_history_custom_offset():
     assert offset_second_CAN.history_type == CANHistoryType.CAN_FUNDING_CREATED
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_can_history_custom_fiscal_year():
+def test_get_can_history_custom_fiscal_year(app_ctx):
     test_can_id = 516
     can_history_service = CANHistoryService()
     # Set a fiscal year which returns no cans
@@ -55,8 +50,7 @@ def test_get_can_history_custom_fiscal_year():
     assert len(response_2) == 1
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_can_history_nonexistent_can():
+def test_get_can_history_nonexistent_can(app_ctx):
     test_can_id = 300
     can_history_service = CANHistoryService()
     # Try to get a non-existent CAN and return an empty result instead of throwing any errors.
@@ -64,8 +58,7 @@ def test_get_can_history_nonexistent_can():
     assert len(response) == 0
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_can_history_ascending_sort():
+def test_get_can_history_ascending_sort(app_ctx):
     test_can_id = 501
     can_history_service = CANHistoryService()
     ascending_sort_response = can_history_service.get(test_can_id, 10, 0, 2025, True)
@@ -79,8 +72,7 @@ def test_get_can_history_ascending_sort():
     assert newest_can_history_event.history_type == CANHistoryType.CAN_NICKNAME_EDITED
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_can_history_list_from_api(auth_client, mocker):
+def test_get_can_history_list_from_api(auth_client, mocker, app_ctx):
     test_can_id = 500
     mock_can_history_list = []
     for x in range(1, 11):
@@ -105,8 +97,7 @@ def test_get_can_history_list_from_api(auth_client, mocker):
     assert len(response.json) == 10
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_can_history_list_from_api_with_params(auth_client, mocker):
+def test_get_can_history_list_from_api_with_params(auth_client, mocker, app_ctx):
     test_can_id = 500
     mock_can_history_list = []
     for x in range(1, 6):
@@ -131,28 +122,24 @@ def test_get_can_history_list_from_api_with_params(auth_client, mocker):
     assert len(response.json) == 5
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_can_history_list_from_api_with_bad_limit(auth_client):
+def test_get_can_history_list_from_api_with_bad_limit(auth_client, app_ctx):
     test_can_id = 500
     response = auth_client.get(f"/api/v1/can-history/?can_id={test_can_id}&fiscal_year=2025&limit=0")
     assert response.status_code == 400
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_can_history_list_from_api_with_bad_offset(auth_client):
+def test_get_can_history_list_from_api_with_bad_offset(auth_client, app_ctx):
     test_can_id = 500
     response = auth_client.get(f"/api/v1/can-history/?can_id={test_can_id}&fiscal_year=2025&offset=-1")
     assert response.status_code == 400
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_can_history_list_from_api_with_no_can_id(auth_client):
+def test_get_can_history_list_from_api_with_no_can_id(auth_client, app_ctx):
     response = auth_client.get("/api/v1/can-history/")
     assert response.status_code == 400
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_can_history_from_api_no_fiscal_year(auth_client, mocker):
+def test_get_can_history_from_api_no_fiscal_year(auth_client, mocker, app_ctx):
     test_can_id = 500
     mock_can_history_list = []
     mocker_get_can_history = mocker.patch("ops_api.ops.services.can_history.CANHistoryService.get")
@@ -162,8 +149,7 @@ def test_get_can_history_from_api_no_fiscal_year(auth_client, mocker):
     assert response.status_code == 200
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_can_history_from_api_asc_sort(auth_client, mocker):
+def test_get_can_history_from_api_asc_sort(auth_client, mocker, app_ctx):
     test_can_id = 500
     mock_can_history_list = []
     mocker_get_can_history = mocker.patch("ops_api.ops.services.can_history.CANHistoryService.get")
@@ -173,8 +159,7 @@ def test_get_can_history_from_api_asc_sort(auth_client, mocker):
     assert response.status_code == 200
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_can_history_list_from_api_with_nonexistent_can(auth_client, mocker):
+def test_get_can_history_list_from_api_with_nonexistent_can(auth_client, mocker, app_ctx):
     test_can_id = 400
     mock_can_history_list = []
     mocker_get_can_history = mocker.patch("ops_api.ops.services.can_history.CANHistoryService.get")
@@ -185,8 +170,7 @@ def test_get_can_history_list_from_api_with_nonexistent_can(auth_client, mocker)
     assert len(response.json) == 0
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_create_can_can_history_event(loaded_db, test_create_can_history_item):
+def test_create_can_can_history_event(loaded_db, test_create_can_history_item, app_ctx):
     before_can_history_count = loaded_db.query(CANHistory).count()
     can_history_trigger(test_create_can_history_item, loaded_db)
 
@@ -206,8 +190,7 @@ def test_create_can_can_history_event(loaded_db, test_create_can_history_item):
     assert new_can_history_item.fiscal_year == 2025
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_create_can_can_history_next_fiscal_year(loaded_db):
+def test_create_can_can_history_next_fiscal_year(loaded_db, app_ctx):
     next_fy_can_ops_event = loaded_db.get(OpsEvent, 17)
     can_history_trigger(next_fy_can_ops_event, loaded_db)
 
@@ -228,8 +211,7 @@ def test_create_can_can_history_next_fiscal_year(loaded_db):
     assert new_can_history_item.fiscal_year == 2026
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_create_can_history_create_can_funding_budget(loaded_db):
+def test_create_can_history_create_can_funding_budget(loaded_db, app_ctx):
     funding_budget_created_event = loaded_db.get(OpsEvent, 20)
     can_history_trigger(funding_budget_created_event, loaded_db)
     loaded_db.flush()  # Ensure items are visible to queries
@@ -266,8 +248,7 @@ def test_create_can_history_create_can_funding_budget(loaded_db):
     assert new_can_history_item_2.fiscal_year == 2025
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_create_create_can_funding_received(loaded_db):
+def test_create_create_can_funding_received(loaded_db, app_ctx):
     funding_received_created_event = loaded_db.get(OpsEvent, 21)
     can_history_trigger(funding_received_created_event, loaded_db)
     loaded_db.flush()  # Ensure items are visible to queries
@@ -289,8 +270,7 @@ def test_create_create_can_funding_received(loaded_db):
     assert new_can_history_item.fiscal_year == 2025
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_create_can_history_delete_can_funding_received(loaded_db):
+def test_create_can_history_delete_can_funding_received(loaded_db, app_ctx):
     funding_received_deleted_event = loaded_db.get(OpsEvent, 24)
     can_history_trigger(funding_received_deleted_event, loaded_db)
     loaded_db.flush()  # Ensure items are visible to queries
@@ -312,8 +292,7 @@ def test_create_can_history_delete_can_funding_received(loaded_db):
     assert new_can_history_item.fiscal_year == 2025
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_update_can_can_history(loaded_db):
+def test_update_can_can_history(loaded_db, app_ctx):
     update_can_event = loaded_db.get(OpsEvent, 26)
     can_history_trigger(update_can_event, loaded_db)
     loaded_db.flush()  # Ensure items are visible to queries
@@ -334,8 +313,7 @@ def test_update_can_can_history(loaded_db):
     assert description_can_history_event.fiscal_year == 2025
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_update_can_funding_budget_can_history(loaded_db):
+def test_update_can_funding_budget_can_history(loaded_db, app_ctx):
     update_can_event = loaded_db.get(OpsEvent, 22)
     can_history_trigger(update_can_event, loaded_db)
     loaded_db.flush()  # Ensure items are visible to queries
@@ -354,8 +332,7 @@ def test_update_can_funding_budget_can_history(loaded_db):
     assert funding_budget_history_event.fiscal_year == 2025
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_update_can_funding_received_can_history(loaded_db):
+def test_update_can_funding_received_can_history(loaded_db, app_ctx):
     update_can_event = loaded_db.get(OpsEvent, 23)
     can_history_trigger(update_can_event, loaded_db)
     loaded_db.flush()  # Ensure items are visible to queries
@@ -374,8 +351,7 @@ def test_update_can_funding_received_can_history(loaded_db):
     assert funding_received_history_event.fiscal_year == 2025
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_update_can_portfolio_can_history_regular_user(loaded_db):
+def test_update_can_portfolio_can_history_regular_user(loaded_db, app_ctx):
     update_can_event = loaded_db.get(OpsEvent, 27)
     can_history_trigger(update_can_event, loaded_db)
     loaded_db.flush()  # Ensure items are visible to queries
@@ -404,8 +380,7 @@ def test_update_can_portfolio_can_history_regular_user(loaded_db):
     assert can_division_event.fiscal_year == 2025
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_update_can_portfolio_can_history_system_user(loaded_db):
+def test_update_can_portfolio_can_history_system_user(loaded_db, app_ctx):
     update_can_event = loaded_db.get(OpsEvent, 29)
     can_history_trigger(update_can_event, loaded_db)
     loaded_db.flush()  # Ensure items are visible to queries
@@ -434,8 +409,7 @@ def test_update_can_portfolio_can_history_system_user(loaded_db):
     assert can_division_event.fiscal_year == 2025
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_update_can_nickname_system_user(loaded_db):
+def test_update_can_nickname_system_user(loaded_db, app_ctx):
     update_can_event = loaded_db.get(OpsEvent, 30)
     can_history_trigger(update_can_event, loaded_db)
     loaded_db.flush()  # Ensure items are visible to queries
@@ -455,8 +429,7 @@ def test_update_can_nickname_system_user(loaded_db):
     assert nickname_event.fiscal_year == 2025
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_update_no_duplicate_messages(loaded_db):
+def test_update_no_duplicate_messages(loaded_db, app_ctx):
     update_can_event = loaded_db.get(OpsEvent, 30)
     can_history_trigger(update_can_event, loaded_db)
     # trigger can history call a second time, which is occasionally possible during normal run of the test

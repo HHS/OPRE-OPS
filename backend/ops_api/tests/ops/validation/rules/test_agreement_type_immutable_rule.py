@@ -8,16 +8,15 @@ from ops_api.ops.validation.context import ValidationContext
 from ops_api.ops.validation.rules.agreement import AgreementTypeImmutableRule
 
 
-@pytest.mark.usefixtures("app_ctx")
 class TestAgreementTypeImmutableRule:
     """Test suite for AgreementTypeImmutableRule."""
 
-    def test_name_property(self):
+    def test_name_property(self, app_ctx):
         """Test that the rule has the correct name."""
         rule = AgreementTypeImmutableRule()
         assert rule.name == "Agreement Type Immutable"
 
-    def test_validate_passes_when_agreement_type_not_in_update(self, test_user, loaded_db):
+    def test_validate_passes_when_agreement_type_not_in_update(self, test_user, loaded_db, app_ctx):
         """Test that validation passes when agreement_type is not being updated."""
         agreement = ContractAgreement(name="Test Agreement - Type Not Updated", agreement_type=AgreementType.CONTRACT)
         loaded_db.add(agreement)
@@ -33,7 +32,7 @@ class TestAgreementTypeImmutableRule:
         loaded_db.delete(agreement)
         loaded_db.commit()
 
-    def test_validate_passes_when_agreement_type_unchanged(self, test_user, loaded_db):
+    def test_validate_passes_when_agreement_type_unchanged(self, test_user, loaded_db, app_ctx):
         """Test that validation passes when agreement_type is same as current."""
         agreement = ContractAgreement(name="Test Agreement - Type Unchanged", agreement_type=AgreementType.CONTRACT)
         loaded_db.add(agreement)
@@ -51,7 +50,7 @@ class TestAgreementTypeImmutableRule:
         loaded_db.delete(agreement)
         loaded_db.commit()
 
-    def test_validate_raises_error_when_agreement_type_changes(self, test_user, loaded_db):
+    def test_validate_raises_error_when_agreement_type_changes(self, test_user, loaded_db, app_ctx):
         """Test that validation fails when agreement_type is changed."""
         agreement = ContractAgreement(name="Test Agreement - Type Changed", agreement_type=AgreementType.CONTRACT)
         loaded_db.add(agreement)

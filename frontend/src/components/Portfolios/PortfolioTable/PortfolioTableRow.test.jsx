@@ -29,7 +29,7 @@ describe("PortfolioTableRow", () => {
     it("renders portfolio name as link", () => {
         renderWithRouter(<PortfolioTableRow {...defaultProps} />);
 
-        const link = screen.getByRole("link", { name: "Child Care" });
+        const link = screen.getByRole("link", { name: "Child Care (CC)" });
         expect(link).toBeInTheDocument();
         expect(link).toHaveAttribute("href", "/portfolios/1/spending?fy=2025");
     });
@@ -127,6 +127,7 @@ describe("PortfolioTableRow", () => {
         const portfolioWithoutFunding = {
             id: 1,
             name: "Test Portfolio",
+            abbreviation: "TP",
             fundingSummary: null
         };
 
@@ -137,7 +138,7 @@ describe("PortfolioTableRow", () => {
             />
         );
 
-        expect(screen.getByRole("link", { name: "Test Portfolio" })).toBeInTheDocument();
+        expect(screen.getByRole("link", { name: "Test Portfolio (TP)" })).toBeInTheDocument();
         // Should show TBD for missing values
         const tbdElements = screen.getAllByText("TBD");
         expect(tbdElements.length).toBeGreaterThan(0);
@@ -146,7 +147,8 @@ describe("PortfolioTableRow", () => {
     it("handles missing name with TBD", () => {
         const portfolioWithoutName = {
             ...mockPortfolio,
-            name: null
+            name: null,
+            abbreviation: null
         };
 
         renderWithRouter(
@@ -156,7 +158,7 @@ describe("PortfolioTableRow", () => {
             />
         );
 
-        expect(screen.getByText("TBD")).toBeInTheDocument();
+        expect(screen.getByRole("link", { name: "TBD" })).toBeInTheDocument();
     });
 
     it("formats large numbers correctly", () => {
@@ -226,7 +228,7 @@ describe("PortfolioTableRow", () => {
         renderWithRouter(<PortfolioTableRow {...defaultProps} />);
 
         // Verify the row renders by checking for link (unique to first cell)
-        const link = screen.getByRole("link", { name: "Child Care" });
+        const link = screen.getByRole("link", { name: "Child Care (CC)" });
         expect(link).toBeInTheDocument();
 
         // Verify all four values are rendered (Name as link, Total, Spending, Available as currency)

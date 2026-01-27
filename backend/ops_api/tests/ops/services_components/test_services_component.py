@@ -15,8 +15,7 @@ from models import (
 )
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_services_component_retrieve(loaded_db):
+def test_services_component_retrieve(loaded_db, app_ctx):
     sc = loaded_db.get(ServicesComponent, 1)
 
     assert sc is not None
@@ -48,8 +47,7 @@ def test_services_component_creation(loaded_db):
     assert sc.display_name == "OSC2"
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_period_duration_calculation(loaded_db):
+def test_period_duration_calculation(loaded_db, app_ctx):
     # Test for a Services Component with both start and end dates
     sc_with_dates = ServicesComponent(
         number=3,
@@ -62,8 +60,7 @@ def test_period_duration_calculation(loaded_db):
     assert sc_with_dates.period_duration.days == expected_duration
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_period_duration_calculation_with_missing_dates(loaded_db):
+def test_period_duration_calculation_with_missing_dates(loaded_db, app_ctx):
     # Test for a Services Component with no end date
     sc_no_end_date = ServicesComponent(
         number=4,
@@ -125,8 +122,7 @@ def test_services_components_get_all(auth_client, loaded_db):
     assert len(response.json) == count
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_services_components_get_by_id(auth_client, loaded_db):
+def test_services_components_get_by_id(auth_client, loaded_db, app_ctx):
     response = auth_client.get(url_for("api.services-component-item", id=1))
     assert response.status_code == 200
     resp_json = response.json
@@ -141,8 +137,7 @@ def test_services_components_get_by_id(auth_client, loaded_db):
     assert resp_json["period_end"] == "2044-06-13"
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_services_components_get_list(auth_client):
+def test_services_components_get_list(auth_client, app_ctx):
     response = auth_client.get(url_for("api.services-component-group"), query_string={"agreement_id": 1})
     assert response.status_code == 200
     resp_json = response.json
@@ -164,8 +159,7 @@ def test_services_components_get_list(auth_client):
         assert sc1[key] == value
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_services_components_post(auth_client, loaded_db):
+def test_services_components_post(auth_client, loaded_db, app_ctx):
     data = {
         "agreement_id": 1,
         "number": 99,
@@ -190,8 +184,7 @@ def test_services_components_post(auth_client, loaded_db):
     assert sc.period_end == datetime.date(2044, 6, 13)
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_services_components_patch(auth_client, loaded_db, test_service_component):
+def test_services_components_patch(auth_client, loaded_db, test_service_component, app_ctx):
     new_sc_id = test_service_component.id
 
     patch_data = {
@@ -214,8 +207,7 @@ def test_services_components_patch(auth_client, loaded_db, test_service_componen
     assert sc.period_end == datetime.date(2054, 7, 15)
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_services_components_put(auth_client, loaded_db, test_service_component):
+def test_services_components_put(auth_client, loaded_db, test_service_component, app_ctx):
     new_sc_id = test_service_component.id
 
     put_data = {
@@ -254,8 +246,7 @@ def test_services_components_put(auth_client, loaded_db, test_service_component)
     assert sc.period_end == datetime.date(2054, 7, 15)
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_services_components_delete(auth_client, loaded_db, test_service_component):
+def test_services_components_delete(auth_client, loaded_db, test_service_component, app_ctx):
     new_sc_id = test_service_component.id
 
     response = auth_client.delete(url_for("api.services-component-item", id=new_sc_id))
@@ -265,8 +256,7 @@ def test_services_components_delete(auth_client, loaded_db, test_service_compone
     assert not sc
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_services_components_delete_cascades_from_agreement(auth_client, loaded_db, test_project):
+def test_services_components_delete_cascades_from_agreement(auth_client, loaded_db, test_project, app_ctx):
     ca = ContractAgreement(
         name="CTXX12399-cascade",
         contract_number="XXXX000000002",
@@ -306,8 +296,7 @@ def test_services_components_delete_cascades_from_agreement(auth_client, loaded_
     assert not deleted_sc
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_services_components_delete_does_not_cascade_to_agreement(auth_client, loaded_db, test_project):
+def test_services_components_delete_does_not_cascade_to_agreement(auth_client, loaded_db, test_project, app_ctx):
     ca = ContractAgreement(
         name="CTXX12399-no-cascade",
         contract_number="XXXX000000002",
@@ -353,8 +342,7 @@ def test_services_components_delete_does_not_cascade_to_agreement(auth_client, l
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_services_components_delete_as_basic_user(basic_user_auth_client, loaded_db, test_project):
+def test_services_components_delete_as_basic_user(basic_user_auth_client, loaded_db, test_project, app_ctx):
     # User ID for the test
     basic_user_id = 521
 
@@ -403,9 +391,8 @@ def test_services_components_delete_as_basic_user(basic_user_auth_client, loaded
     assert not deleted_sc
 
 
-@pytest.mark.usefixtures("app_ctx")
 def test_services_components_delete_forbidden_as_basic_user(
-    basic_user_auth_client, system_owner_auth_client, loaded_db, test_project
+    basic_user_auth_client, system_owner_auth_client, loaded_db, test_project, app_ctx
 ):
     # User ID for the test
     budget_team_user_id = 523
@@ -467,8 +454,7 @@ def test_services_components_delete_forbidden_as_basic_user(
 
 
 @pytest.fixture()
-@pytest.mark.usefixtures("app_ctx")
-def test_service_component(loaded_db, test_project):
+def test_service_component(loaded_db, test_project, app_ctx):
     dd_auth_client_id = 522
     dd_user = loaded_db.get(User, dd_auth_client_id)
 
@@ -561,12 +547,12 @@ def test_team_leaders_can_put_service_components(
     assert response2.status_code == 403
 
 
-@pytest.mark.usefixtures("app_ctx")
 def test_team_leaders_can_post_services_components(
     division_director_auth_client,
     test_service_component,
     basic_user_auth_client,
     loaded_db,
+    app_ctx,
 ):
 
     data = {

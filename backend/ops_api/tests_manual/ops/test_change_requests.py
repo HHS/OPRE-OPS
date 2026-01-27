@@ -17,8 +17,7 @@ test_user_name = "Amelia Popham"
     "test_change_requests.py::test_budget_line_item_patch_with_budgets_change_requests" not in sys.argv,
     reason="Skip unless run manually by itself",
 )
-@pytest.mark.usefixtures("app_ctx")
-def test_budget_line_item_patch_with_budgets_change_requests(auth_client, app):
+def test_budget_line_item_patch_with_budgets_change_requests(auth_client, app, app_ctx):
     session = app.db_session
     agreement_id = 1
     hists = find_agreement_histories(agreement_id, limit=100)
@@ -150,8 +149,7 @@ def test_budget_line_item_patch_with_budgets_change_requests(auth_client, app):
     "test_change_requests.py::test_budget_line_item_change_request_history" not in sys.argv,
     reason="Skip unless run manually by itself",
 )
-@pytest.mark.usefixtures("app_ctx")
-def test_budget_line_item_change_request_history(auth_client, app):
+def test_budget_line_item_change_request_history(auth_client, app, app_ctx):
     data = {
         "agreement_type": "CONTRACT",
         "agreement_reason": "NEW_REQ",
@@ -307,8 +305,7 @@ def test_budget_line_item_change_request_history(auth_client, app):
     "test_change_requests.py::test_agreement_history_with_change_requests" not in sys.argv,
     reason="Skip unless run manually by itself",
 )
-@pytest.mark.usefixtures("app_ctx")
-def test_agreement_history_with_change_requests(auth_client, app):
+def test_agreement_history_with_change_requests(auth_client, app, app_ctx):
     session = app.db_session
     agreement_id = None
     bli = None
@@ -529,8 +526,7 @@ def test_agreement_history_with_change_requests(auth_client, app):
     "test_change_requests.py::test_change_request_list" not in sys.argv,
     reason="Skip unless run manually by itself",
 )
-@pytest.mark.usefixtures("app_ctx")
-def test_change_request_list(auth_client, app):
+def test_change_request_list(auth_client, app, app_ctx):
     session = app.db_session
 
     # verify no change request in list to review for this user
@@ -606,8 +602,7 @@ def test_change_request_list(auth_client, app):
     session.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_budget_line_item_create_status_change_request(auth_client, app):
+def test_budget_line_item_create_status_change_request(auth_client, app, app_ctx):
     session = app.db_session
     agreement_id = 1
 
@@ -682,8 +677,7 @@ def test_budget_line_item_create_status_change_request(auth_client, app):
     assert ag_bli_other["change_requests_in_review"] is None
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_budget_line_item_patch_with_status_change_requests(auth_client, app):
+def test_budget_line_item_patch_with_status_change_requests(auth_client, app, app_ctx):
     session = app.db_session
     agreement_id = 1
 

@@ -1,6 +1,5 @@
 from decimal import Decimal
 
-import pytest
 from sqlalchemy import select
 
 from models import CANFundingReceived
@@ -15,8 +14,7 @@ input_data = {
 }
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_funding_received_get_all(auth_client, mocker, test_can):
+def test_funding_received_get_all(auth_client, mocker, test_can, app_ctx):
     mocker_get_can = mocker.patch("ops_api.ops.services.can_funding_received.CANFundingReceivedService.get_list")
     mocker_get_can.return_value = [test_can]
     response = auth_client.get("/api/v1/can-funding-received/")
@@ -32,8 +30,7 @@ def test_funding_received_service_get_all(auth_client, loaded_db):
     assert len(response) == count
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_funding_received_get_by_id(auth_client, mocker, test_can):
+def test_funding_received_get_by_id(auth_client, mocker, test_can, app_ctx):
     mocker_get_can = mocker.patch("ops_api.ops.services.can_funding_received.CANFundingReceivedService.get")
     mocker_get_can.return_value = test_can
     response = auth_client.get(f"/api/v1/can-funding-received/{test_can.id}")
@@ -58,8 +55,7 @@ def test_funding_received_post_400_missing_funding(budget_team_auth_client):
 
 
 # Testing CANFundingReceived Creation
-@pytest.mark.usefixtures("app_ctx")
-def test_funding_received_post_creates_funding_received(budget_team_auth_client, mocker):
+def test_funding_received_post_creates_funding_received(budget_team_auth_client, mocker, app_ctx):
     mock_output_data = CANFundingReceived(can_id=500, fiscal_year=2024, funding=Decimal("123456.12"), notes="Test Note")
     mocker_create_funding_received = mocker.patch(
         "ops_api.ops.services.can_funding_received.CANFundingReceivedService.create"
@@ -90,8 +86,7 @@ def test_funding_received_post_creates_funding_received(budget_team_auth_client,
     assert response.json["funding"] == float(mock_output_data.funding)
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_basic_user_cannot_post_funding_received(basic_user_auth_client):
+def test_basic_user_cannot_post_funding_received(basic_user_auth_client, app_ctx):
     response = basic_user_auth_client.post("/api/v1/can-funding-received/", json=input_data)
 
     assert response.status_code == 403
@@ -118,8 +113,7 @@ def test_service_create_funding_received(loaded_db):
 
 
 # Testing updating CANs by PATCH
-@pytest.mark.usefixtures("app_ctx")
-def test_funding_received_patch(budget_team_auth_client, mocker):
+def test_funding_received_patch(budget_team_auth_client, mocker, app_ctx):
     test_funding_id = 600
     update_data = {
         "notes": "Fake test update",
@@ -154,8 +148,7 @@ def test_funding_received_patch(budget_team_auth_client, mocker):
     assert response.json["notes"] == funding_received.notes
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_funding_received_patch_404(budget_team_auth_client):
+def test_funding_received_patch_404(budget_team_auth_client, app_ctx):
     test_funding_id = 600
     update_data = {
         "notes": "Test CANFundingReceived Created by unit test",
@@ -166,8 +159,7 @@ def test_funding_received_patch_404(budget_team_auth_client):
     assert response.status_code == 404
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_basic_user_cannot_patch_funding_received(basic_user_auth_client):
+def test_basic_user_cannot_patch_funding_received(basic_user_auth_client, app_ctx):
     data = {
         "notes": "An updated can description",
     }
@@ -209,8 +201,7 @@ def test_service_patch_funding_received(loaded_db):
 
 
 # Testing updating CANFundingReceived by PUT
-@pytest.mark.usefixtures("app_ctx")
-def test_funding_received_put(budget_team_auth_client, mocker):
+def test_funding_received_put(budget_team_auth_client, mocker, app_ctx):
     test_funding_received_id = 517
     update_data = {
         "can_id": 500,
@@ -250,8 +241,7 @@ def test_funding_received_put(budget_team_auth_client, mocker):
     assert response.json["can_id"] == funding_received.can_id
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_basic_user_cannot_put_funding_received(basic_user_auth_client):
+def test_basic_user_cannot_put_funding_received(basic_user_auth_client, app_ctx):
     data = {
         "notes": "An updated can description",
     }
@@ -260,8 +250,7 @@ def test_basic_user_cannot_put_funding_received(basic_user_auth_client):
     assert response.status_code == 403
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_funding_received_put_404(budget_team_auth_client):
+def test_funding_received_put_404(budget_team_auth_client, app_ctx):
     test_funding_received_id = 600
 
     response = budget_team_auth_client.put(f"/api/v1/can-funding-received/{test_funding_received_id}", json=input_data)
@@ -302,8 +291,7 @@ def test_service_update_funding_received_with_nones(loaded_db):
 
 
 # Testing deleting CANFundingReceived
-@pytest.mark.usefixtures("app_ctx")
-def test_funding_received_delete(budget_team_auth_client, mocker, test_budget_team_user):
+def test_funding_received_delete(budget_team_auth_client, mocker, test_budget_team_user, app_ctx):
     test_funding_received_id = 517
 
     mocker_delete_funding_received = mocker.patch(
@@ -335,16 +323,14 @@ def test_funding_received_delete(budget_team_auth_client, mocker, test_budget_te
     assert response.json["id"] == test_funding_received_id
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_can_delete_404(budget_team_auth_client, mocker):
+def test_can_delete_404(budget_team_auth_client, mocker, app_ctx):
     test_can_id = 600
     response = budget_team_auth_client.delete(f"/api/v1/can-funding-received/{test_can_id}")
 
     assert response.status_code == 404
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_basic_user_cannot_delete_cans(basic_user_auth_client, mocker):
+def test_basic_user_cannot_delete_cans(basic_user_auth_client, mocker, app_ctx):
     response = basic_user_auth_client.delete("/api/v1/can-funding-received/517")
     context_manager = DummyContextManager()
     mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__enter__")

@@ -22,8 +22,7 @@ def cleanup_signals():
         ops_signal.receivers.clear()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_message_bus_handle(loaded_db, mocker):
+def test_message_bus_handle(loaded_db, mocker, app_ctx):
     mock_callback_1 = mocker.MagicMock()
     mock_callback_2 = mocker.MagicMock()
     mock_callback_3 = mocker.MagicMock()
@@ -45,8 +44,7 @@ def test_message_bus_handle(loaded_db, mocker):
     message_bus.cleanup()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_message_bus_create_cans(loaded_db, mocker):
+def test_message_bus_create_cans(loaded_db, mocker, app_ctx):
     mock_callback_1 = mocker.MagicMock()
     mock_callback_2 = mocker.MagicMock()
     mock_callback_3 = mocker.MagicMock()
@@ -73,8 +71,7 @@ def test_message_bus_create_cans(loaded_db, mocker):
     message_bus.cleanup()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_message_bus_error_isolation(loaded_db, mocker):
+def test_message_bus_error_isolation(loaded_db, mocker, app_ctx):
     """Test that one failing subscriber doesn't prevent others from running."""
     mock_callback_1 = mocker.MagicMock()
     mock_callback_2 = mocker.MagicMock(side_effect=Exception("Subscriber 2 failed"))
@@ -99,8 +96,7 @@ def test_message_bus_error_isolation(loaded_db, mocker):
     message_bus.cleanup()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_message_bus_resubscribing_same_callback_is_idempotent(loaded_db, mocker):
+def test_message_bus_resubscribing_same_callback_is_idempotent(loaded_db, mocker, app_ctx):
     """Test that cleanup properly disconnects signals to prevent duplicate execution."""
     mock_callback = mocker.MagicMock()
 
@@ -122,8 +118,7 @@ def test_message_bus_resubscribing_same_callback_is_idempotent(loaded_db, mocker
     assert mock_callback.call_count == 2
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_message_bus_multiple_event_types(loaded_db, mocker):
+def test_message_bus_multiple_event_types(loaded_db, mocker, app_ctx):
     """Test handling multiple different event types in same message bus."""
     mock_can_callback = mocker.MagicMock()
     mock_agreement_callback = mocker.MagicMock()
@@ -145,8 +140,7 @@ def test_message_bus_multiple_event_types(loaded_db, mocker):
     message_bus.cleanup()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_message_bus_logs_subscriber_exceptions(loaded_db, mocker):
+def test_message_bus_logs_subscriber_exceptions(loaded_db, mocker, app_ctx):
     """Test that subscriber exceptions are properly logged with details."""
     mock_callback = mocker.MagicMock(side_effect=ValueError("Test error message"))
     mock_logger = mocker.patch("ops_api.ops.services.message_bus.logger")
@@ -167,8 +161,7 @@ def test_message_bus_logs_subscriber_exceptions(loaded_db, mocker):
     message_bus.cleanup()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_message_bus_cleanup_clears_lists_but_keeps_signals(loaded_db, mocker):
+def test_message_bus_cleanup_clears_lists_but_keeps_signals(loaded_db, mocker, app_ctx):
     """Test that cleanup clears tracking lists but leaves signals connected.
 
     Blinker signals are process-level, not request-level, so they should remain

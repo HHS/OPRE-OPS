@@ -194,7 +194,6 @@ def test_update_awarding_entity_creates_agreement_change_request(
     cr_service.delete(change_request_id)
 
 
-@pytest.mark.usefixtures("app_ctx")
 def test_update_procurement_shop_creates_change_request_e2e(
     auth_client,
     division_director_auth_client,
@@ -203,6 +202,7 @@ def test_update_procurement_shop_creates_change_request_e2e(
     loaded_db,
     test_grant_agreement,
     test_cr_blis,
+    app_ctx,
 ):
     # PATCH the procurement shop
     response = auth_client.patch(

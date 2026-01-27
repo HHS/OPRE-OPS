@@ -7,8 +7,7 @@ from ops_api.ops import db
 
 
 @pytest.mark.skip("Refactor me.")
-@pytest.mark.usefixtures("app_ctx")
-def test_serialize_mixin(loaded_db):
+def test_serialize_mixin(loaded_db, app_ctx):
     class XUser(BaseModel):
         __tablename__ = "test_user"
         id = Column(Integer, primary_key=True)

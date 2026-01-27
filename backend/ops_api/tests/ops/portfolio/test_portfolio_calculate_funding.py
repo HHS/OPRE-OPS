@@ -19,8 +19,7 @@ from ops_api.ops.utils.portfolios import (
 )
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_portfolio_calc_funding_amounts_2022(auth_client, loaded_db):
+def test_portfolio_calc_funding_amounts_2022(auth_client, loaded_db, app_ctx):
     response = auth_client.get("/api/v1/portfolios/1/calcFunding/?fiscal_year=2022")
 
     assert response.status_code == 200
@@ -32,8 +31,7 @@ def test_portfolio_calc_funding_amounts_2022(auth_client, loaded_db):
     assert response.json["carry_forward_funding"]["amount"] == 0.00
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_portfolio_calc_funding_amounts_2023(auth_client, loaded_db):
+def test_portfolio_calc_funding_amounts_2023(auth_client, loaded_db, app_ctx):
     response = auth_client.get("/api/v1/portfolios/1/calcFunding/?fiscal_year=2023")
 
     assert response.status_code == 200
@@ -45,8 +43,7 @@ def test_portfolio_calc_funding_amounts_2023(auth_client, loaded_db):
     assert response.json["carry_forward_funding"]["amount"] == 20000000.0
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_portfolio_calc_funding_percents(auth_client, loaded_db):
+def test_portfolio_calc_funding_percents(auth_client, loaded_db, app_ctx):
     response = auth_client.get("/api/v1/portfolios/1/calcFunding/?fiscal_year=2023")
     assert response.status_code == 200
     assert response.json["available_funding"]["percent"] == "100.0"
@@ -56,8 +53,7 @@ def test_portfolio_calc_funding_percents(auth_client, loaded_db):
 
 
 @pytest.fixture()
-@pytest.mark.usefixtures("app_ctx")
-def db_loaded_with_data_for_total_fiscal_year_funding(app, loaded_db):
+def db_loaded_with_data_for_total_fiscal_year_funding(app, loaded_db, app_ctx):
     # simple case with 1 CAN and 1 BLI
     portfolio = Portfolio(name="UNIT TEST PORTFOLIO", division_id=1)
     can = CAN(number="TEST_CAN")
@@ -132,10 +128,7 @@ def db_loaded_with_data_for_total_fiscal_year_funding(app, loaded_db):
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_total_fiscal_year_funding(
-    db_loaded_with_data_for_total_fiscal_year_funding,
-):
+def test_get_total_fiscal_year_funding(db_loaded_with_data_for_total_fiscal_year_funding, app_ctx):
     # get Portfolio for test
     stmt = select(Portfolio).where(Portfolio.name == "UNIT TEST PORTFOLIO")
     portfolio = db_loaded_with_data_for_total_fiscal_year_funding.execute(stmt).scalar()
@@ -150,8 +143,7 @@ def test_get_total_fiscal_year_funding(
     assert result == Decimal(0), "No Portfolio"
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_carry_forward_total(db_loaded_with_data_for_total_fiscal_year_funding):
+def test_get_carry_forward_total(db_loaded_with_data_for_total_fiscal_year_funding, app_ctx):
     # get Portfolio for test
     stmt = select(Portfolio).where(Portfolio.name == "UNIT TEST PORTFOLIO")
     portfolio = db_loaded_with_data_for_total_fiscal_year_funding.execute(stmt).scalar()
@@ -166,10 +158,7 @@ def test_get_carry_forward_total(db_loaded_with_data_for_total_fiscal_year_fundi
     assert result == Decimal(0), "No Portfolio"
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_budget_line_item_total_draft(
-    db_loaded_with_data_for_total_fiscal_year_funding,
-):
+def test_get_budget_line_item_total_draft(db_loaded_with_data_for_total_fiscal_year_funding, app_ctx):
     # get Portfolio for test
     stmt = select(Portfolio).where(Portfolio.name == "UNIT TEST PORTFOLIO")
     portfolio = db_loaded_with_data_for_total_fiscal_year_funding.execute(stmt).scalar()
@@ -181,10 +170,7 @@ def test_get_budget_line_item_total_draft(
     assert result == Decimal(0), "No Portfolio"
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_budget_line_item_total_planned(
-    db_loaded_with_data_for_total_fiscal_year_funding,
-):
+def test_get_budget_line_item_total_planned(db_loaded_with_data_for_total_fiscal_year_funding, app_ctx):
     # get Portfolio for test
     stmt = select(Portfolio).where(Portfolio.name == "UNIT TEST PORTFOLIO")
     portfolio = db_loaded_with_data_for_total_fiscal_year_funding.execute(stmt).scalar()
@@ -196,10 +182,7 @@ def test_get_budget_line_item_total_planned(
     assert result == Decimal(0), "No Portfolio"
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_budget_line_item_total_in_execution(
-    db_loaded_with_data_for_total_fiscal_year_funding,
-):
+def test_get_budget_line_item_total_in_execution(db_loaded_with_data_for_total_fiscal_year_funding, app_ctx):
     # get Portfolio for test
     stmt = select(Portfolio).where(Portfolio.name == "UNIT TEST PORTFOLIO")
     portfolio = db_loaded_with_data_for_total_fiscal_year_funding.execute(stmt).scalar()
@@ -211,10 +194,7 @@ def test_get_budget_line_item_total_in_execution(
     assert result == Decimal(0), "No Portfolio"
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_budget_line_item_total_obligated(
-    db_loaded_with_data_for_total_fiscal_year_funding,
-):
+def test_get_budget_line_item_total_obligated(db_loaded_with_data_for_total_fiscal_year_funding, app_ctx):
     # get Portfolio for test
     stmt = select(Portfolio).where(Portfolio.name == "UNIT TEST PORTFOLIO")
     portfolio = db_loaded_with_data_for_total_fiscal_year_funding.execute(stmt).scalar()

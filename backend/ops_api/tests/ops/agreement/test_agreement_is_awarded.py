@@ -1,7 +1,5 @@
 """Unit tests for Agreement.is_awarded property."""
 
-import pytest
-
 from models import (
     AaAgreement,
     Agreement,
@@ -17,11 +15,10 @@ from models import (
 )
 
 
-@pytest.mark.usefixtures("app_ctx")
 class TestAgreementIsAwarded:
     """Test suite for Agreement.is_awarded property."""
 
-    def test_agreement_with_no_procurement_actions_is_not_awarded(self, loaded_db):
+    def test_agreement_with_no_procurement_actions_is_not_awarded(self, loaded_db, app_ctx):
         """Test that an agreement with no procurement actions returns False."""
         # Create an agreement with no procurement actions
         agreement = ContractAgreement(
@@ -33,7 +30,7 @@ class TestAgreementIsAwarded:
 
         assert agreement.is_awarded is False
 
-    def test_agreement_with_awarded_status_and_new_award_type_is_awarded(self, loaded_db):
+    def test_agreement_with_awarded_status_and_new_award_type_is_awarded(self, loaded_db, app_ctx):
         """Test that an agreement with AWARDED status and NEW_AWARD type returns True."""
         agreement = ContractAgreement(
             name="Test Agreement - Awarded New Award",
@@ -54,7 +51,7 @@ class TestAgreementIsAwarded:
         loaded_db.refresh(agreement)
         assert agreement.is_awarded is True
 
-    def test_agreement_with_certified_status_and_new_award_type_is_awarded(self, loaded_db):
+    def test_agreement_with_certified_status_and_new_award_type_is_awarded(self, loaded_db, app_ctx):
         """Test that an agreement with CERTIFIED status and NEW_AWARD type returns True."""
         agreement = ContractAgreement(
             name="Test Agreement - Certified New Award",
@@ -75,7 +72,7 @@ class TestAgreementIsAwarded:
         loaded_db.refresh(agreement)
         assert agreement.is_awarded is True
 
-    def test_agreement_with_awarded_status_but_non_new_award_type_is_not_awarded(self, loaded_db):
+    def test_agreement_with_awarded_status_but_non_new_award_type_is_not_awarded(self, loaded_db, app_ctx):
         """Test that an agreement with AWARDED status but non-NEW_AWARD type returns False."""
         agreement = ContractAgreement(
             name="Test Agreement - Awarded Modification",
@@ -97,7 +94,7 @@ class TestAgreementIsAwarded:
         loaded_db.refresh(agreement)
         assert agreement.is_awarded is False
 
-    def test_agreement_with_new_award_type_but_non_awarded_status_is_not_awarded(self, loaded_db):
+    def test_agreement_with_new_award_type_but_non_awarded_status_is_not_awarded(self, loaded_db, app_ctx):
         """Test that an agreement with NEW_AWARD type but non-AWARDED/CERTIFIED status returns False."""
         test_cases = [
             ProcurementActionStatus.PLANNED,
@@ -126,7 +123,7 @@ class TestAgreementIsAwarded:
             loaded_db.refresh(agreement)
             assert agreement.is_awarded is False, f"Agreement with status {status.name} should not be awarded"
 
-    def test_agreement_with_multiple_procurement_actions_one_matching_is_awarded(self, loaded_db):
+    def test_agreement_with_multiple_procurement_actions_one_matching_is_awarded(self, loaded_db, app_ctx):
         """Test that an agreement with multiple procurement actions where at least one matches returns True."""
         agreement = ContractAgreement(
             name="Test Agreement - Multiple Actions One Match",
@@ -165,7 +162,7 @@ class TestAgreementIsAwarded:
         loaded_db.refresh(agreement)
         assert agreement.is_awarded is True
 
-    def test_agreement_with_multiple_procurement_actions_none_matching_is_not_awarded(self, loaded_db):
+    def test_agreement_with_multiple_procurement_actions_none_matching_is_not_awarded(self, loaded_db, app_ctx):
         """Test that an agreement with multiple procurement actions where none match returns False."""
         agreement = ContractAgreement(
             name="Test Agreement - Multiple Actions No Match",
@@ -204,7 +201,7 @@ class TestAgreementIsAwarded:
         loaded_db.refresh(agreement)
         assert agreement.is_awarded is False
 
-    def test_agreement_with_all_non_new_award_types_is_not_awarded(self, loaded_db):
+    def test_agreement_with_all_non_new_award_types_is_not_awarded(self, loaded_db, app_ctx):
         """Test that an agreement with AWARDED status but various non-NEW_AWARD types returns False."""
         non_new_award_types = [
             AwardType.MODIFICATION,
@@ -236,7 +233,7 @@ class TestAgreementIsAwarded:
             loaded_db.refresh(agreement)
             assert agreement.is_awarded is False, f"Agreement with award_type {award_type.name} should not be awarded"
 
-    def test_agreement_with_null_status_is_not_awarded(self, loaded_db):
+    def test_agreement_with_null_status_is_not_awarded(self, loaded_db, app_ctx):
         """Test that an agreement with null status returns False."""
         agreement = ContractAgreement(
             name="Test Agreement - Null Status",
@@ -257,7 +254,7 @@ class TestAgreementIsAwarded:
         loaded_db.refresh(agreement)
         assert agreement.is_awarded is False
 
-    def test_agreement_with_null_award_type_is_not_awarded(self, loaded_db):
+    def test_agreement_with_null_award_type_is_not_awarded(self, loaded_db, app_ctx):
         """Test that an agreement with null award_type returns False."""
         agreement = ContractAgreement(
             name="Test Agreement - Null Award Type",
@@ -278,7 +275,7 @@ class TestAgreementIsAwarded:
         loaded_db.refresh(agreement)
         assert agreement.is_awarded is False
 
-    def test_agreement_loaded_from_database_has_correct_is_awarded_status(self, loaded_db):
+    def test_agreement_loaded_from_database_has_correct_is_awarded_status(self, loaded_db, app_ctx):
         """Test that is_awarded works correctly when agreement is loaded from database."""
         # Create and commit an awarded agreement
         agreement = ContractAgreement(
@@ -306,7 +303,7 @@ class TestAgreementIsAwarded:
         assert loaded_agreement is not None
         assert loaded_agreement.is_awarded is True
 
-    def test_agreement_grant_is_awarded(self, loaded_db):
+    def test_agreement_grant_is_awarded(self, loaded_db, app_ctx):
         """Test that a grant agreement with AWARDED status and NEW_AWARD type returns True."""
         agreement = GrantAgreement(
             name="Test Grant Agreement - Awarded New Award",
@@ -327,7 +324,7 @@ class TestAgreementIsAwarded:
         loaded_db.refresh(agreement)
         assert agreement.is_awarded is True
 
-    def test_agreement_iaa_is_awarded(self, loaded_db):
+    def test_agreement_iaa_is_awarded(self, loaded_db, app_ctx):
         """Test that an IAA agreement with AWARDED status and NEW_AWARD type returns True."""
         agreement = IaaAgreement(
             name="Test IAA Agreement - Awarded New Award",
@@ -349,7 +346,7 @@ class TestAgreementIsAwarded:
         loaded_db.refresh(agreement)
         assert agreement.is_awarded is True
 
-    def test_agreement_aa_is_awarded(self, loaded_db):
+    def test_agreement_aa_is_awarded(self, loaded_db, app_ctx):
         """Test that an AA agreement with AWARDED status and NEW_AWARD type returns True."""
         agreement = AaAgreement(
             name="Test AA Agreement - Awarded New Award",
@@ -372,7 +369,7 @@ class TestAgreementIsAwarded:
         loaded_db.refresh(agreement)
         assert agreement.is_awarded is True
 
-    def test_agreement_direct_is_awarded(self, loaded_db):
+    def test_agreement_direct_is_awarded(self, loaded_db, app_ctx):
         """Test that a Direct agreement with AWARDED status and NEW_AWARD type returns True."""
         agreement = DirectAgreement(
             name="Test Direct Agreement - Awarded New Award",
