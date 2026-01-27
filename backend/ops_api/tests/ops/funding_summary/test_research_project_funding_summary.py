@@ -12,9 +12,7 @@ from models import (
 )
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("db_loaded_with_research_projects")
-def test_get_research_project_funding_summary(auth_client):
+def test_get_research_project_funding_summary(auth_client, app_ctx, db_loaded_with_research_projects):
     query_string = {"portfolioId": 1, "fiscalYear": 2023}
 
     response = auth_client.get(url_for("api.research-project-funding-summary-group"), query_string=query_string)
@@ -23,9 +21,9 @@ def test_get_research_project_funding_summary(auth_client):
     assert response.json["total_funding"] == 20000000.0
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("db_loaded_with_research_projects")
-def test_get_research_project_funding_summary_invalid_query_string(auth_client):
+def test_get_research_project_funding_summary_invalid_query_string(
+    auth_client, app_ctx, db_loaded_with_research_projects
+):
     query_string = {"portfolioId": "blah", "fiscalYear": "blah"}
 
     response = auth_client.get(url_for("api.research-project-funding-summary-group"), query_string=query_string)
@@ -37,10 +35,8 @@ def test_get_research_project_funding_summary_invalid_query_string(auth_client):
     }
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("db_loaded_with_research_projects")
 def test_get_research_project_funding_summary_invalid_query_string_portfolio_id(
-    auth_client,
+    auth_client, app_ctx, db_loaded_with_research_projects
 ):
     query_string = {"portfolioId": 0, "fiscalYear": 2020}
 
@@ -50,10 +46,8 @@ def test_get_research_project_funding_summary_invalid_query_string_portfolio_id(
     assert response.json == {"portfolioId": ["Must be greater than or equal to 1."]}
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("db_loaded_with_research_projects")
 def test_get_research_project_funding_summary_invalid_query_string_fiscal_year(
-    auth_client,
+    auth_client, app_ctx, db_loaded_with_research_projects
 ):
     query_string = {"portfolioId": 1, "fiscalYear": 1899}
 
@@ -63,9 +57,7 @@ def test_get_research_project_funding_summary_invalid_query_string_fiscal_year(
     assert response.json == {"fiscalYear": ["Must be greater than or equal to 1900."]}
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("db_loaded_with_research_projects")
-def test_get_research_project_funding_summary_no_data(auth_client):
+def test_get_research_project_funding_summary_no_data(auth_client, app_ctx, db_loaded_with_research_projects):
     query_string = {"portfolioId": 1000, "fiscalYear": 1910}
 
     response = auth_client.get(url_for("api.research-project-funding-summary-group"), query_string=query_string)
@@ -75,8 +67,7 @@ def test_get_research_project_funding_summary_no_data(auth_client):
 
 
 @pytest.fixture()
-@pytest.mark.usefixtures("app_ctx")
-def db_loaded_with_research_projects(app, loaded_db):
+def db_loaded_with_research_projects(app, loaded_db, app_ctx):
     with app.app_context():
         research_project_rp1 = ResearchProject(title="RP1", short_title="RP1")
         research_project_rp2 = ResearchProject(title="RP2", short_title="RP2")

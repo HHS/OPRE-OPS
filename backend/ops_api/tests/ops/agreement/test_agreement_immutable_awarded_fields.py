@@ -1,6 +1,5 @@
 """Unit tests for Agreement.immutable_awarded_fields property."""
 
-import pytest
 from flask import url_for
 from sqlalchemy import Integer, String, select
 
@@ -22,11 +21,10 @@ from models import (
 )
 
 
-@pytest.mark.usefixtures("app_ctx")
 class TestAgreementImmutableAwardedFields:
     """Test suite for Agreement.immutable_awarded_fields property."""
 
-    def test_contract_agreement_immutable_fields(self, loaded_db):
+    def test_contract_agreement_immutable_fields(self, loaded_db, app_ctx):
         """Test that ContractAgreement instance returns correct immutable fields."""
         agreement = ContractAgreement(
             name="Test Contract Agreement",
@@ -56,7 +54,7 @@ class TestAgreementImmutableAwardedFields:
         loaded_db.delete(agreement)
         loaded_db.commit()
 
-    def test_contract_agreement_immutable_fields_count(self, loaded_db):
+    def test_contract_agreement_immutable_fields_count(self, loaded_db, app_ctx):
         """Test that ContractAgreement returns exactly 6 immutable fields."""
         agreement = ContractAgreement(
             name="Test Contract Agreement - Count",
@@ -71,7 +69,7 @@ class TestAgreementImmutableAwardedFields:
         loaded_db.delete(agreement)
         loaded_db.commit()
 
-    def test_grant_agreement_immutable_fields_empty(self, loaded_db):
+    def test_grant_agreement_immutable_fields_empty(self, loaded_db, app_ctx):
         """Test that GrantAgreement returns empty list for immutable fields."""
         agreement = GrantAgreement(
             name="Test Grant Agreement",
@@ -90,7 +88,7 @@ class TestAgreementImmutableAwardedFields:
         loaded_db.delete(agreement)
         loaded_db.commit()
 
-    def test_iaa_agreement_immutable_fields_empty(self, loaded_db):
+    def test_iaa_agreement_immutable_fields_empty(self, loaded_db, app_ctx):
         """Test that IaaAgreement returns empty list for immutable fields."""
         agreement = IaaAgreement(
             name="Test IAA Agreement",
@@ -110,7 +108,7 @@ class TestAgreementImmutableAwardedFields:
         loaded_db.delete(agreement)
         loaded_db.commit()
 
-    def test_aa_agreement_immutable_fields(self, loaded_db):
+    def test_aa_agreement_immutable_fields(self, loaded_db, app_ctx):
         """Test that AaAgreement instance returns correct immutable fields."""
         agreement = AaAgreement(
             name="Test AA Agreement",
@@ -144,7 +142,7 @@ class TestAgreementImmutableAwardedFields:
         loaded_db.delete(agreement)
         loaded_db.commit()
 
-    def test_aa_agreement_immutable_fields_count(self, loaded_db):
+    def test_aa_agreement_immutable_fields_count(self, loaded_db, app_ctx):
         """Test that AaAgreement returns exactly 8 immutable fields."""
         agreement = AaAgreement(
             name="Test AA Agreement - Count",
@@ -161,7 +159,7 @@ class TestAgreementImmutableAwardedFields:
         loaded_db.delete(agreement)
         loaded_db.commit()
 
-    def test_direct_agreement_immutable_fields_empty(self, loaded_db):
+    def test_direct_agreement_immutable_fields_empty(self, loaded_db, app_ctx):
         """Test that DirectAgreement returns empty list for immutable fields."""
         agreement = DirectAgreement(
             name="Test Direct Agreement",
@@ -180,7 +178,7 @@ class TestAgreementImmutableAwardedFields:
         loaded_db.delete(agreement)
         loaded_db.commit()
 
-    def test_property_matches_classmethod(self, loaded_db):
+    def test_property_matches_classmethod(self, loaded_db, app_ctx):
         """Test that immutable_awarded_fields property returns same result as classmethod."""
         agreement = ContractAgreement(
             name="Test Contract Agreement - Classmethod Match",
@@ -202,7 +200,7 @@ class TestAgreementImmutableAwardedFields:
         loaded_db.delete(agreement)
         loaded_db.commit()
 
-    def test_property_is_accessible_without_parentheses(self, loaded_db):
+    def test_property_is_accessible_without_parentheses(self, loaded_db, app_ctx):
         """Test that immutable_awarded_fields is accessed as a property (no parentheses)."""
         agreement = ContractAgreement(
             name="Test Contract Agreement - Property Access",
@@ -226,7 +224,7 @@ class TestAgreementImmutableAwardedFields:
         loaded_db.delete(agreement)
         loaded_db.commit()
 
-    def test_loaded_from_database_has_correct_immutable_fields(self, loaded_db):
+    def test_loaded_from_database_has_correct_immutable_fields(self, loaded_db, app_ctx):
         """Test that immutable_awarded_fields works correctly when agreement is loaded from database."""
         # Create and commit an agreement
         agreement = ContractAgreement(
@@ -261,7 +259,7 @@ class TestAgreementImmutableAwardedFields:
         loaded_db.delete(loaded_agreement)
         loaded_db.commit()
 
-    def test_multiple_instances_have_independent_results(self, loaded_db):
+    def test_multiple_instances_have_independent_results(self, loaded_db, app_ctx):
         """Test that multiple instances can independently access immutable_awarded_fields."""
         contract_agreement = ContractAgreement(
             name="Test Contract Agreement - Multiple Instances",
@@ -289,7 +287,7 @@ class TestAgreementImmutableAwardedFields:
         loaded_db.delete(grant_agreement)
         loaded_db.commit()
 
-    def test_all_agreement_types_have_property(self, loaded_db):
+    def test_all_agreement_types_have_property(self, loaded_db, app_ctx):
         """Test that all Agreement subclasses have the immutable_awarded_fields property."""
         agreement_instances = [
             ContractAgreement(
@@ -331,7 +329,7 @@ class TestAgreementImmutableAwardedFields:
             loaded_db.delete(agreement)
         loaded_db.commit()
 
-    def test_property_returns_list_of_strings(self, loaded_db):
+    def test_property_returns_list_of_strings(self, loaded_db, app_ctx):
         """Test that immutable_awarded_fields returns a list of strings."""
         agreement = ContractAgreement(
             name="Test Contract Agreement - List of Strings",
@@ -350,7 +348,7 @@ class TestAgreementImmutableAwardedFields:
         loaded_db.delete(agreement)
         loaded_db.commit()
 
-    def test_aa_agreement_includes_aa_specific_fields(self, loaded_db):
+    def test_aa_agreement_includes_aa_specific_fields(self, loaded_db, app_ctx):
         """Test that AaAgreement immutable fields include AA-specific agency fields."""
         agreement = AaAgreement(
             name="Test AA Agreement - Specific Fields",
@@ -375,7 +373,7 @@ class TestAgreementImmutableAwardedFields:
         loaded_db.delete(agreement)
         loaded_db.commit()
 
-    def test_property_consistent_across_multiple_accesses(self, loaded_db):
+    def test_property_consistent_across_multiple_accesses(self, loaded_db, app_ctx):
         """Test that accessing the property multiple times returns consistent results."""
         agreement = ContractAgreement(
             name="Test Contract Agreement - Consistent Access",
@@ -398,7 +396,7 @@ class TestAgreementImmutableAwardedFields:
         loaded_db.delete(agreement)
         loaded_db.commit()
 
-    def test_no_duplicate_fields_in_property_result(self, loaded_db):
+    def test_no_duplicate_fields_in_property_result(self, loaded_db, app_ctx):
         """Test that immutable_awarded_fields does not contain duplicate fields."""
         test_agreements = [
             ContractAgreement(
@@ -429,7 +427,7 @@ class TestAgreementImmutableAwardedFields:
             loaded_db.delete(agreement)
         loaded_db.commit()
 
-    def test_attempting_to_modify_immutable_fields_marks_ops_event_failed(self, loaded_db, auth_client):
+    def test_attempting_to_modify_immutable_fields_marks_ops_event_failed(self, loaded_db, auth_client, app_ctx):
         """Test that attempting to modify immutable fields results in an OpsEvent failure."""
         agreement = ContractAgreement(
             name="Test Contract Agreement - Modify Immutable",

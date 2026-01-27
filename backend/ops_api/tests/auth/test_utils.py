@@ -39,8 +39,7 @@ def test_get_jwt_no_key(app):
 
 
 @pytest.mark.skip(reason="Need to clean up auth a bit")
-@pytest.mark.usefixtures("app_ctx")
-def test_get_jwt_is_valid_jws(app):
+def test_get_jwt_is_valid_jws(app, app_ctx):
     header = {"alg": "RS256"}
     payload = {
         "iss": "client_id",
@@ -55,8 +54,7 @@ def test_get_jwt_is_valid_jws(app):
 
 
 @pytest.mark.skip("Need to work out better key management for TESTS")
-@pytest.mark.usefixtures("app_ctx")
-def test_create_access_token(loaded_db, app):
+def test_create_access_token(loaded_db, app, app_ctx):
     user = loaded_db.session.get(User, "00000000-0000-1111-a111-000000000001")
     access_token = create_access_token(identity=user)
     pub_key = current_app.config.get("JWT_PUBLIC_KEY")
@@ -64,8 +62,7 @@ def test_create_access_token(loaded_db, app):
     assert decoded["sub"] == user.oidc_id
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_authorization_gateway_authorize_successful(mocker):
+def test_authorization_gateway_authorize_successful(mocker, app_ctx):
     class MockAuthorizationProvider:
         def is_authorized(self, user_id: str, permission: list[str]):
             return True

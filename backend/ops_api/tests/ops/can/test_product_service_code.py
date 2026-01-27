@@ -1,17 +1,13 @@
-import pytest
-
 from models import ProductServiceCode
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_product_service_code_list(auth_client):
+def test_get_product_service_code_list(auth_client, app_ctx):
     response = auth_client.get("/api/v1/product-service-codes/")
     assert response.status_code == 200
     assert len(response.json) == 2
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_product_service_code_lookup(loaded_db):
+def test_product_service_code_lookup(loaded_db, app_ctx):
     psc = loaded_db.query(ProductServiceCode).filter(ProductServiceCode.id == 2).one()
     assert psc is not None
     assert psc.id == 2

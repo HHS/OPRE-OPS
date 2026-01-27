@@ -1,4 +1,3 @@
-import pytest
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.serialization import (
     Encoding,
@@ -21,8 +20,7 @@ def test_auth_post_fails(client):
     assert res.status_code == 400
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_jwt_not_none(app):
+def test_get_jwt_not_none(app, app_ctx):
     key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
     encoded = key.private_bytes(Encoding.PEM, PrivateFormat.TraditionalOpenSSL, NoEncryption())
     with app.test_request_context("/auth/login", method="POST", data={"provider": "fakeauth", "code": ""}):
