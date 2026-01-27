@@ -866,7 +866,7 @@ export const opsApi = createApi({
         updateProcurementTrackerStep: builder.mutation({
             query: ({ stepId, data }) => {
                 return {
-                    url: `/procurement-trackers-steps/${stepId}`,
+                    url: `/procurement-tracker-steps/${stepId}`,
                     method: "PATCH",
                     headers: { "Content-Type": "application/json " },
                     body: data
