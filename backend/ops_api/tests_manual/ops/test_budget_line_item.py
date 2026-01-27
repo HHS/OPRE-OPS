@@ -10,8 +10,7 @@ from models import Agreement, BudgetLineItem, BudgetLineItemStatus
     "test_budget_line_item.py::test_budget_line_item_validation" not in sys.argv,
     reason="Skip unless run manually by itself",
 )
-@pytest.mark.usefixtures("app_ctx")
-def test_budget_line_item_validation(auth_client, app):
+def test_budget_line_item_validation(auth_client, app, app_ctx):
     session = app.db_session
     agreement_id = None
     bli_id = None
@@ -142,8 +141,7 @@ def test_budget_line_item_validation(auth_client, app):
     "test_budget_line_item.py::test_budget_line_item_validation_create_invalid" not in sys.argv,
     reason="Skip unless run manually by itself",
 )
-@pytest.mark.usefixtures("app_ctx")
-def test_budget_line_item_validation_create_invalid(auth_client, app):
+def test_budget_line_item_validation_create_invalid(auth_client, app, app_ctx):
     session = app.db_session
     agreement_id = None
     bli_id = None
@@ -196,8 +194,7 @@ def test_budget_line_item_validation_create_invalid(auth_client, app):
     "test_budget_line_item.py::test_budget_line_item_validation_status_change" not in sys.argv,
     reason="Skip unless run manually by itself",
 )
-@pytest.mark.usefixtures("app_ctx")
-def test_budget_line_item_validation_status_change(auth_client, app):
+def test_budget_line_item_validation_status_change(auth_client, app, app_ctx):
     session = app.db_session
     agreement_id = None
     bli_id = None
@@ -260,8 +257,7 @@ def test_budget_line_item_validation_status_change(auth_client, app):
     "test_budget_line_item.py::test_budget_line_item_validation_patch_to_invalid" not in sys.argv,
     reason="Skip unless run manually by itself",
 )
-@pytest.mark.usefixtures("app_ctx")
-def test_budget_line_item_validation_patch_to_invalid(auth_client, app):
+def test_budget_line_item_validation_patch_to_invalid(auth_client, app, app_ctx):
     session = app.db_session
     agreement_id = None
     bli_id = None

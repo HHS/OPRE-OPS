@@ -8,16 +8,15 @@ from ops_api.ops.validation.context import ValidationContext
 from ops_api.ops.validation.rules.awarded import ImmutableAwardedFieldsRule
 
 
-@pytest.mark.usefixtures("app_ctx")
 class TestImmutableAwardedFieldsRule:
     """Test suite for ImmutableAwardedFieldsRule."""
 
-    def test_name_property(self):
+    def test_name_property(self, app_ctx):
         """Test that the rule has the correct name."""
         rule = ImmutableAwardedFieldsRule()
         assert rule.name == "Immutable Awarded Fields"
 
-    def test_validate_passes_when_agreement_not_awarded(self, test_user, loaded_db):
+    def test_validate_passes_when_agreement_not_awarded(self, test_user, loaded_db, app_ctx):
         """Test that validation passes when agreement is not awarded."""
         agreement = ContractAgreement(name="Test Agreement - Not Awarded", agreement_type=AgreementType.CONTRACT)
         # Ensure is_awarded returns False (no budget lines in obligated status)
@@ -36,7 +35,7 @@ class TestImmutableAwardedFieldsRule:
         loaded_db.delete(agreement)
         loaded_db.commit()
 
-    def test_validate_passes_when_no_immutable_fields_for_type(self, test_user, loaded_db, monkeypatch):
+    def test_validate_passes_when_no_immutable_fields_for_type(self, test_user, loaded_db, monkeypatch, app_ctx):
         """Test that validation passes for agreement types with no immutable fields."""
         agreement = GrantAgreement(name="Test Grant", agreement_type=AgreementType.GRANT)
         loaded_db.add(agreement)
@@ -55,7 +54,7 @@ class TestImmutableAwardedFieldsRule:
         loaded_db.delete(agreement)
         loaded_db.commit()
 
-    def test_validate_passes_when_immutable_field_value_unchanged(self, test_user, loaded_db, monkeypatch):
+    def test_validate_passes_when_immutable_field_value_unchanged(self, test_user, loaded_db, monkeypatch, app_ctx):
         """Test that validation passes when immutable field value stays the same."""
         agreement = ContractAgreement(name="Test Agreement - Field Unchanged", agreement_type=AgreementType.CONTRACT)
         loaded_db.add(agreement)
@@ -78,7 +77,7 @@ class TestImmutableAwardedFieldsRule:
         loaded_db.delete(agreement)
         loaded_db.commit()
 
-    def test_validate_passes_when_updating_non_immutable_field(self, test_user, loaded_db, monkeypatch):
+    def test_validate_passes_when_updating_non_immutable_field(self, test_user, loaded_db, monkeypatch, app_ctx):
         """Test that validation passes when updating non-immutable fields."""
         agreement = ContractAgreement(
             name="Test Agreement - Non Immutable Field", agreement_type=AgreementType.CONTRACT
@@ -103,7 +102,7 @@ class TestImmutableAwardedFieldsRule:
         loaded_db.delete(agreement)
         loaded_db.commit()
 
-    def test_validate_raises_error_when_immutable_field_changed(self, test_user, loaded_db, monkeypatch):
+    def test_validate_raises_error_when_immutable_field_changed(self, test_user, loaded_db, monkeypatch, app_ctx):
         """Test that validation fails when an immutable field is changed on awarded agreement."""
         agreement = ContractAgreement(
             name="Test Agreement - Immutable Field Changed", agreement_type=AgreementType.CONTRACT
@@ -133,7 +132,9 @@ class TestImmutableAwardedFieldsRule:
         loaded_db.delete(agreement)
         loaded_db.commit()
 
-    def test_validate_raises_error_for_multiple_immutable_fields_changed(self, test_user, loaded_db, monkeypatch):
+    def test_validate_raises_error_for_multiple_immutable_fields_changed(
+        self, test_user, loaded_db, monkeypatch, app_ctx
+    ):
         """Test that validation fails when multiple immutable fields are changed."""
         agreement = ContractAgreement(
             name="Test Agreement - Multiple Fields Changed",
@@ -165,7 +166,7 @@ class TestImmutableAwardedFieldsRule:
         loaded_db.delete(agreement)
         loaded_db.commit()
 
-    def test_validate_passes_when_user_is_superuser(self, loaded_db, monkeypatch):
+    def test_validate_passes_when_user_is_superuser(self, loaded_db, monkeypatch, app_ctx):
         """Test that validation passes for super users."""
         from models import Role, User
 

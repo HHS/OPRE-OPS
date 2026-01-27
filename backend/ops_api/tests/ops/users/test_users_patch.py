@@ -41,14 +41,12 @@ def new_user(app, loaded_db):
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_patch_user_no_user_found(auth_client):
+def test_patch_user_no_user_found(auth_client, app_ctx):
     response = auth_client.patch(url_for("api.users-item", id=9999), json={"first_name": "New First Name"})
     assert response.status_code == 404
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_patch_user_no_auth(client, test_user):
+def test_patch_user_no_auth(client, test_user, app_ctx):
     response = client.patch(
         url_for("api.users-item", id=test_user.id),
         json={"first_name": "New First Name"},
@@ -56,8 +54,7 @@ def test_patch_user_no_auth(client, test_user):
     assert response.status_code == 401
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_patch_user_unauthorized_different_user(client, loaded_db, test_non_admin_user, test_user):
+def test_patch_user_unauthorized_different_user(client, loaded_db, test_non_admin_user, test_user, app_ctx):
     """
     Test that a regular user cannot update another user's details.
     """
@@ -74,8 +71,7 @@ def test_patch_user_unauthorized_different_user(client, loaded_db, test_non_admi
     assert response.status_code == 400
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_patch_user(auth_client, new_user, loaded_db, test_admin_user):
+def test_patch_user(auth_client, new_user, loaded_db, test_admin_user, app_ctx):
     # add a couple roles to the user
     new_user.roles.append(loaded_db.get(Role, 1))
     new_user.roles.append(loaded_db.get(Role, 2))
@@ -170,8 +166,7 @@ def test_patch_user_changing_status_deactivates_user_session(auth_client, new_us
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_patch_user_cannot_deactivate_yourself(auth_client, new_user, loaded_db, test_admin_user):
+def test_patch_user_cannot_deactivate_yourself(auth_client, new_user, loaded_db, test_admin_user, app_ctx):
     response = auth_client.patch(
         url_for("api.users-item", id=test_admin_user.id),
         json={
