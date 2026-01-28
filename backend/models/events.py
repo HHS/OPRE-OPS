@@ -100,6 +100,18 @@ class OpsEventType(Enum):
     UPDATE_USER_SESSION = auto()
     DELETE_USER_SESSION = auto()
 
+    # Procurement Tracker Related Events
+    CREATE_PROCUREMENT_TRACKER = auto()
+    UPDATE_PROCUREMENT_TRACKER = auto()  # When ProcurementTracker advances through steps and completes
+    DELETE_PROCUREMENT_TRACKER = auto()
+
+    UPDATE_PROCUREMENT_TRACKER_STEP = auto()
+
+    # Procurement Action Related Events
+    CREATE_PROCUREMENT_ACTION = auto()
+    UPDATE_PROCUREMENT_ACTION = auto()
+    DELETE_PROCUREMENT_ACTION = auto()
+
 
 class OpsEventStatus(Enum):
     SUCCESS = 1
