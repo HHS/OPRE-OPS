@@ -10,8 +10,14 @@ export default function useAgreementProcurementTracker() {
     const [step1Notes, setStep1Notes] = React.useState("");
     const [patchStepOne] = useUpdateProcurementTrackerStepMutation();
 
-    const MemoizedDatePicker = React.memo(DatePicker);
+    // TODO: add to TypeScript definitions
+    const STEP_STATUSES = {
+        PENDING: "PENDING",
+        COMPLETED: "COMPLETED"
+    };
 
+    const MemoizedDatePicker = React.memo(DatePicker);
+    // STEP 1
     const handleStep1Complete = async (stepId) => {
         const payload = {
             status: "COMPLETED",
@@ -26,6 +32,15 @@ export default function useAgreementProcurementTracker() {
         console.log("Procurement Tracker Step 1 Updated");
     };
 
+    const cancelStep1 = () => {
+        setIsPreSolicitationPackageSent(false);
+        setSelectedUser({});
+        setStep1DateCompleted("");
+        setStep1Notes("");
+    };
+
+    const disableStep1Continue = !isPreSolicitationPackageSent || !selectedUser?.id || !step1DateCompleted;
+
     return {
         isPreSolicitationPackageSent,
         setIsPreSolicitationPackageSent,
@@ -36,6 +51,9 @@ export default function useAgreementProcurementTracker() {
         MemoizedDatePicker,
         step1Notes,
         setStep1Notes,
-        handleStep1Complete
+        handleStep1Complete,
+        cancelStep1,
+        disableStep1Continue,
+        STEP_STATUSES
     };
 }

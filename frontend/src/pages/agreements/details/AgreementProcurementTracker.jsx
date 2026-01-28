@@ -30,7 +30,10 @@ const AgreementProcurementTracker = ({ agreement }) => {
         MemoizedDatePicker,
         setStep1Notes,
         step1Notes,
-        handleStep1Complete
+        handleStep1Complete,
+        cancelStep1,
+        disableStep1Continue,
+        STEP_STATUSES
     } = useAgreementProcurementTracker();
 
     const { data, isLoading, isError } = useGetProcurementTrackersByAgreementIdQuery(agreementId, {
@@ -66,6 +69,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
     const activeTracker = trackers.find((tracker) => tracker.status === "ACTIVE");
 
     if (!activeTracker) {
+        // TODO: add inactive procurement tracker
         return <div>No active Procurement Tracker found.</div>;
     }
 
@@ -87,6 +91,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
             {/* Accordions */}
             {activeTracker?.steps.length > 0 &&
                 activeTracker?.steps?.map((step) => {
+                    // TODO : Create separate components for each step type
                     return (
                         <Accordion
                             heading={`Step ${step.step_number} of ${activeTracker?.steps.length} ${step.step_type}
@@ -95,10 +100,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                             level={3}
                             key={step.id}
                         >
-                            {/* ComboBox for Users*/}
-                            {/* DatePicker for Date Completed */}
-                            {/* TextArea for optional Notes*/}
-                            {step.step_number === 1 && (
+                            {step.step_number === 1 && step.status === STEP_STATUSES.PENDING && (
                                 <fieldset className="usa-fieldset">
                                     <p>
                                         Once the pre-solicitation package is sufficiently drafted and signed by all
@@ -141,22 +143,17 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                     />
                                     <TextArea
                                         name="notes"
-                                        label="Notes"
+                                        label="Notes (optional)"
                                         className="margin-top-0"
                                         maxLength={750}
                                         value={step1Notes}
-                                        onChange={(name, value) => setStep1Notes(value)}
+                                        onChange={(_, value) => setStep1Notes(value)}
                                         isDisabled={!isPreSolicitationPackageSent}
                                     />
                                     <button
                                         className="usa-button usa-button--unstyled margin-right-2"
                                         data-cy="cancel-button"
-                                        onClick={() => {
-                                            setIsPreSolicitationPackageSent(false);
-                                            setSelectedUser({});
-                                            setStep1DateCompleted("");
-                                            setStep1Notes("");
-                                        }}
+                                        onClick={cancelStep1}
                                     >
                                         Cancel
                                     </button>
@@ -164,14 +161,13 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                         className="usa-button"
                                         data-cy="continue-btn"
                                         onClick={() => handleStep1Complete(step.id)}
-                                        disabled={
-                                            !isPreSolicitationPackageSent || !selectedUser?.id || !step1DateCompleted
-                                        }
+                                        disabled={disableStep1Continue}
                                     >
                                         Complete Step 1
                                     </button>
                                 </fieldset>
                             )}
+                            {step.step_number === 1 && step.status === STEP_STATUSES.COMPLETED && <p>I AM HERE</p>}
                         </Accordion>
                     );
                 })}
