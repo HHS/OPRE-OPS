@@ -277,6 +277,51 @@ def _create_procurement_tracker_event(
     return ops_event
 
 
+def _create_procurement_action_event(
+    session: Session,
+    action: ProcurementAction,
+    created_by: Optional[int] = None,
+    event_status: OpsEventStatus = OpsEventStatus.SUCCESS,
+    error_message: Optional[str] = None,
+) -> OpsEvent:
+    """
+    Create a CREATE_PROCUREMENT_ACTION event.
+
+    Args:
+        session: SQLAlchemy session
+        action: The created action (can be None for FAILED events)
+        created_by: User ID of the creator
+        event_status: SUCCESS or FAILED
+        error_message: Error message for FAILED events
+
+    Returns:
+        The created OpsEvent instance
+    """
+    event_details = {
+        "agreement_id": action.agreement_id if action else None,
+        "action_id": action.id if action else None,
+        "agreement_mod_id": action.agreement_mod_id if action else None,
+        "status": action.status.name if action else None,
+        "award_type": action.award_type.name if action else None,
+    }
+
+    if error_message:
+        event_details["error_message"] = error_message
+
+    ops_event = OpsEvent(
+        event_type=OpsEventType.CREATE_PROCUREMENT_ACTION,
+        event_status=event_status,
+        created_by=created_by,
+        event_details=event_details,
+    )
+    session.add(ops_event)
+    logger.debug(
+        f"Created {event_status.name} event for CREATE_PROCUREMENT_ACTION "
+        f"(action_id={action.id if action else None})"
+    )
+    return ops_event
+
+
 def _associate_budget_line_with_action(
     budget_line_item: BudgetLineItem, action: ProcurementAction, budget_line_item_id: int, agreement_id: int
 ) -> None:
@@ -355,8 +400,9 @@ def _handle_tracker_action_creation(
         # Associate budget line with action
         budget_line_item.procurement_action_id = action.id
 
-        # Create SUCCESS event for tracker creation
+        # Create SUCCESS events for tracker and action creation
         _create_procurement_tracker_event(session, tracker, created_by=event.created_by)
+        _create_procurement_action_event(session, action, created_by=event.created_by)
 
         logger.info(
             f"Successfully created tracker and action for agreement {agreement_id}, "
@@ -376,6 +422,9 @@ def _handle_tracker_action_creation(
 
         # Associate budget line with action
         budget_line_item.procurement_action_id = action.id
+
+        # Create SUCCESS event for action creation
+        _create_procurement_action_event(session, action, created_by=event.created_by)
 
         logger.info(f"Created missing action for agreement {agreement_id}, associated BLI {budget_line_item_id}")
         return
