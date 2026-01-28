@@ -52,7 +52,7 @@ class ProcurementTrackerStepItemAPI(BaseItemAPI):
     @is_authorized(PermissionType.PATCH, Permission.AGREEMENT)
     def patch(self, id: int) -> Response:
         """Update a procurement tracker step by ID."""
-        with OpsEventHandler(OpsEventType.UPDATE_AGREEMENT) as event_meta:
+        with OpsEventHandler(OpsEventType.UPDATE_PROCUREMENT_TRACKER_STEP) as event_meta:
             logger.debug(f"Patching procurement tracker step {id}")
 
             # Load and validate request data
