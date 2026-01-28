@@ -264,8 +264,8 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
 
             // Don't wait for the services component alert - just proceed
 
-            cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).trigger("mouseover");
-            cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).get("[data-cy='edit-row']").click();
+            cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).first().trigger("mouseover");
+            cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).first().get("[data-cy='edit-row']").click();
             cy.get("#enteredAmount").clear();
             cy.get("#enteredAmount").type("999999");
             cy.get("#allServicesComponentSelect").select("SC1");
