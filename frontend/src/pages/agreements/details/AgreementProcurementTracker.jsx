@@ -6,6 +6,9 @@ import Accordion from "../../../components/UI/Accordion";
 import TextArea from "../../../components/UI/Form/TextArea";
 import useAgreementProcurementTracker from "./AgreementProcurementTracker.hooks";
 import UsersComboBox from "../../../components/Agreements/UsersComboBox";
+import Tag from "../../../components/UI/Tag";
+import useGetUserFullNameFromId from "../../../hooks/user.hooks";
+import { formatDateToMonthDayYear } from "../../../helpers/utils";
 
 /**
  * @typedef {Object} AgreementProcurementTrackerProps
@@ -41,6 +44,17 @@ const AgreementProcurementTracker = ({ agreement }) => {
         refetchOnMountOrArgChange: true
     });
 
+    // Extract tracker data
+    const trackers = data?.data || [];
+    const activeTracker = trackers.find((tracker) => tracker.status === "ACTIVE");
+    const step1CompletedByUserName = useGetUserFullNameFromId(
+        activeTracker?.steps.find((step) => step.step_number === 1)?.task_completed_by
+    );
+    const step1DateCompletedLabel = formatDateToMonthDayYear(
+        activeTracker?.steps.find((step) => step.step_number === 1)?.date_completed
+    );
+    const step1NotesLabel = activeTracker?.steps.find((step) => step.step_number === 1)?.notes;
+
     const wizardSteps = [
         "Acquisition Planning",
         "Pre-Solicitation",
@@ -63,10 +77,6 @@ const AgreementProcurementTracker = ({ agreement }) => {
     if (!IS_PROCUREMENT_TRACKER_READY) {
         return <div>The Procurement Tracker feature is coming soon.</div>;
     }
-
-    // Extract tracker data
-    const trackers = data?.data || [];
-    const activeTracker = trackers.find((tracker) => tracker.status === "ACTIVE");
 
     if (!activeTracker) {
         // TODO: add inactive procurement tracker
@@ -167,7 +177,30 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                     </button>
                                 </fieldset>
                             )}
-                            {step.step_number === 1 && step.status === STEP_STATUSES.COMPLETED && <p>I AM HERE</p>}
+                            {step.step_number === 1 && step.status === STEP_STATUSES.COMPLETED && (
+                                <div>
+                                    <p>
+                                        When the pre-solicitation package has been sufficiently drafted and signed by
+                                        all parties, send it to the Procurement Shop and update the task below.
+                                    </p>
+                                    <p>The pre-solicitation package has been sent to the Procurement Shop for review</p>
+
+                                    <dl>
+                                        <dt>Completed By</dt>
+                                        <Tag
+                                            text={step1CompletedByUserName}
+                                            tagStyle="primaryDarkTextLightBackground"
+                                        />
+                                        <dt>Date Completed</dt>
+                                        <Tag
+                                            text={step1DateCompletedLabel}
+                                            tagStyle="primaryDarkTextLightBackground"
+                                        />
+                                        <dt>Notes</dt>
+                                        <p>{step1NotesLabel}</p>
+                                    </dl>
+                                </div>
+                            )}
                         </Accordion>
                     );
                 })}
