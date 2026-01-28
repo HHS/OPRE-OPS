@@ -27,7 +27,7 @@ describe("BudgetSummaryCard", () => {
 
         render(<BigBudgetCard {...overBudgetProps} />);
 
-        expect(screen.getByTitle("Over Budget")).toBeInTheDocument();
+        expect(screen.getByText("Over Budget")).toBeInTheDocument();
     });
 
     it("displays correct spending and funding amounts", () => {
