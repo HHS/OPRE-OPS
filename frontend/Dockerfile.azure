@@ -39,7 +39,7 @@ COPY vite-env/env.${MODE}.local .env
 RUN VITE_BACKEND_DOMAIN=${VITE_BACKEND_DOMAIN} VITE_ENABLE_MSW=${VITE_ENABLE_MSW} NODE_ENV=${MODE} bun run build --mode ${MODE}
 
 # ---- Release Stage ----
-FROM alpine:3.23.2 as release
+FROM alpine:3.23.3 as release
 
 # hadolint ignore=DL3018
 RUN apk update && apk add --no-cache nginx && rm -rf /var/cache/apk/*
