@@ -851,9 +851,9 @@ describe("AgreementProcurementTracker", () => {
             expect(screen.getByText("Date Completed")).toBeInTheDocument();
             const tags = screen.getAllByTestId("tag");
             // The date should be formatted by formatDateToMonthDayYear
-            expect(
-                tags.some((tag) => tag.textContent.includes("January") || tag.textContent.includes("2024"))
-            ).toBe(true);
+            expect(tags.some((tag) => tag.textContent.includes("January") || tag.textContent.includes("2024"))).toBe(
+                true
+            );
         });
 
         it("renders Notes in completed state", () => {
