@@ -46,9 +46,9 @@ describe("Procurement Tracker Step 1", () => {
 
         // check definition list for correct data
         cy.get("dl").within(() => {
-            cy.get("span").eq(0).should("have.text", "Amy Madigan");
-            cy.get("span").eq(1).should("have.text", "January 1, 2026");
-            cy.get("dt").contains("Notes").next().should("have.text", "notes for testing");
+            cy.get("dd").eq(0).should("have.text", "Amy Madigan");
+            cy.get("dd").eq(1).should("have.text", "January 1, 2026");
+            cy.get("dd").eq(2).should("have.text", "notes for testing");
         });
     });
 });

@@ -1,14 +1,14 @@
-import StepIndicator from "../../../components/UI/StepIndicator";
 import { useGetProcurementTrackersByAgreementIdQuery } from "../../../api/opsAPI";
-import { IS_PROCUREMENT_TRACKER_READY } from "../../../constants";
+import UsersComboBox from "../../../components/Agreements/UsersComboBox";
 import DebugCode from "../../../components/DebugCode";
 import Accordion from "../../../components/UI/Accordion";
 import TextArea from "../../../components/UI/Form/TextArea";
-import useAgreementProcurementTracker from "./AgreementProcurementTracker.hooks";
-import UsersComboBox from "../../../components/Agreements/UsersComboBox";
-import Tag from "../../../components/UI/Tag";
-import useGetUserFullNameFromId from "../../../hooks/user.hooks";
+import StepIndicator from "../../../components/UI/StepIndicator";
+import TermTag from "../../../components/UI/Term/TermTag";
+import { IS_PROCUREMENT_TRACKER_READY } from "../../../constants";
 import { formatDateToMonthDayYear } from "../../../helpers/utils";
+import useGetUserFullNameFromId from "../../../hooks/user.hooks";
+import useAgreementProcurementTracker from "./AgreementProcurementTracker.hooks";
 
 /**
  * @typedef {Object} AgreementProcurementTrackerProps
@@ -186,18 +186,16 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                     <p>The pre-solicitation package has been sent to the Procurement Shop for review</p>
 
                                     <dl>
-                                        <dt>Completed By</dt>
-                                        <Tag
-                                            text={step1CompletedByUserName}
-                                            tagStyle="primaryDarkTextLightBackground"
+                                        <TermTag
+                                            term="Completed By"
+                                            description={step1CompletedByUserName}
                                         />
-                                        <dt>Date Completed</dt>
-                                        <Tag
-                                            text={step1DateCompletedLabel}
-                                            tagStyle="primaryDarkTextLightBackground"
+                                        <TermTag
+                                            term="Date Completed"
+                                            description={step1DateCompletedLabel}
                                         />
-                                        <dt>Notes</dt>
-                                        <p>{step1NotesLabel}</p>
+                                        <dt className="margin-0 text-base-dark margin-top-3 font-12px">Notes</dt>
+                                        <dd className="margin-0 margin-top-1">{step1NotesLabel}</dd>
                                     </dl>
                                 </div>
                             )}
