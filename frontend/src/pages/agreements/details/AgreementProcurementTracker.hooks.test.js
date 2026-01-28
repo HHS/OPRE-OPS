@@ -162,14 +162,28 @@ describe("useAgreementProcurementTracker", () => {
         });
         useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepOneError, { isLoading: false }]);
 
+        // Mock window.alert
+        const mockAlert = vi.fn();
+        vi.stubGlobal("alert", mockAlert);
+
+        // Mock console.error
+        const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
         const { result } = renderHook(() => useAgreementProcurementTracker());
 
-        // eslint-disable-next-line vitest/no-unneeded-async-expect-function
-        await expect(async () => {
-            await act(async () => {
-                await result.current.handleStep1Complete(101);
-            });
-        }).rejects.toThrow("API Error");
+        await act(async () => {
+            await result.current.handleStep1Complete(101);
+        });
+
+        // Verify error was logged
+        expect(consoleErrorSpy).toHaveBeenCalledWith("Failed to update Procurement Tracker Step 1", mockError);
+
+        // Verify alert was called
+        expect(mockAlert).toHaveBeenCalledWith("Unable to update Procurement Tracker Step 1. Please try again.");
+
+        // Cleanup
+        consoleErrorSpy.mockRestore();
+        vi.unstubAllGlobals();
     });
 
     it("handleStep1Complete with all fields populated", async () => {
@@ -197,6 +211,35 @@ describe("useAgreementProcurementTracker", () => {
                 task_completed_by: 10,
                 date_completed: "2024-02-20",
                 notes: "All documents reviewed and approved"
+            }
+        });
+    });
+
+    it("handleStep1Complete trims whitespace from notes", async () => {
+        const { result } = renderHook(() => useAgreementProcurementTracker());
+        const stepId = 201;
+        const testUser = { id: 10, full_name: "Jane Smith", email: "jane@example.com" };
+        const testDate = "2024-02-20";
+        const testNotesWithWhitespace = "  Notes with whitespace  ";
+
+        act(() => {
+            result.current.setIsPreSolicitationPackageSent(true);
+            result.current.setSelectedUser(testUser);
+            result.current.setStep1DateCompleted(testDate);
+            result.current.setStep1Notes(testNotesWithWhitespace);
+        });
+
+        await act(async () => {
+            await result.current.handleStep1Complete(stepId);
+        });
+
+        expect(mockPatchStepOne).toHaveBeenCalledWith({
+            stepId: 201,
+            data: {
+                status: "COMPLETED",
+                task_completed_by: 10,
+                date_completed: "2024-02-20",
+                notes: "Notes with whitespace"
             }
         });
     });
