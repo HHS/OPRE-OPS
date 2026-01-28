@@ -105,8 +105,8 @@ def test_creates_tracker_and_action_on_first_exec_transition(
     with patch.object(DefaultProcurementTracker, "create_with_steps", return_value=mock_tracker):
         procurement_tracker_trigger(mock_event_bli_exec, mock_session)
 
-    # Verify tracker and action were created
-    assert mock_session.add.call_count == 2
+    # Verify tracker, action, and event were created
+    assert mock_session.add.call_count == 3
     # Verify flush was called to get action.id
     mock_session.flush.assert_called_once()
 
@@ -186,8 +186,8 @@ def test_creates_tracker_when_only_action_exists(mock_session, mock_event_bli_ex
     with patch.object(DefaultProcurementTracker, "create_with_steps", return_value=mock_tracker):
         procurement_tracker_trigger(mock_event_bli_exec, mock_session)
 
-    # Verify only tracker was created (not action)
-    assert mock_session.add.call_count == 1
+    # Verify tracker and event were created (not action)
+    assert mock_session.add.call_count == 2
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -442,8 +442,8 @@ def test_ignores_inactive_trackers(mock_session, mock_event_bli_exec, mock_agree
     with patch.object(DefaultProcurementTracker, "create_with_steps", return_value=mock_tracker):
         procurement_tracker_trigger(mock_event_bli_exec, mock_session)
 
-    # Verify new tracker and action were created (because INACTIVE tracker was not found)
-    assert mock_session.add.call_count == 2
+    # Verify new tracker, action, and event were created (because INACTIVE tracker was not found)
+    assert mock_session.add.call_count == 3
     mock_session.flush.assert_called_once()
 
 
@@ -466,8 +466,8 @@ def test_ignores_completed_trackers(mock_session, mock_event_bli_exec, mock_agre
     with patch.object(DefaultProcurementTracker, "create_with_steps", return_value=mock_tracker):
         procurement_tracker_trigger(mock_event_bli_exec, mock_session)
 
-    # Verify new tracker and action were created (because COMPLETED tracker was not found)
-    assert mock_session.add.call_count == 2
+    # Verify new tracker, action, and event were created (because COMPLETED tracker was not found)
+    assert mock_session.add.call_count == 3
     mock_session.flush.assert_called_once()
 
 
@@ -490,8 +490,8 @@ def test_ignores_awarded_actions(mock_session, mock_event_bli_exec, mock_agreeme
     with patch.object(DefaultProcurementTracker, "create_with_steps", return_value=mock_tracker):
         procurement_tracker_trigger(mock_event_bli_exec, mock_session)
 
-    # Verify new tracker and action were created
-    assert mock_session.add.call_count == 2
+    # Verify new tracker, action, and event were created
+    assert mock_session.add.call_count == 3
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -513,8 +513,8 @@ def test_ignores_certified_actions(mock_session, mock_event_bli_exec, mock_agree
     with patch.object(DefaultProcurementTracker, "create_with_steps", return_value=mock_tracker):
         procurement_tracker_trigger(mock_event_bli_exec, mock_session)
 
-    # Verify new tracker and action were created
-    assert mock_session.add.call_count == 2
+    # Verify new tracker, action, and event were created
+    assert mock_session.add.call_count == 3
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -536,8 +536,8 @@ def test_ignores_cancelled_actions(mock_session, mock_event_bli_exec, mock_agree
     with patch.object(DefaultProcurementTracker, "create_with_steps", return_value=mock_tracker):
         procurement_tracker_trigger(mock_event_bli_exec, mock_session)
 
-    # Verify new tracker and action were created
-    assert mock_session.add.call_count == 2
+    # Verify new tracker, action, and event were created
+    assert mock_session.add.call_count == 3
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -807,8 +807,8 @@ def test_concurrent_events_both_see_existing_after_first_commits(
     with patch.object(DefaultProcurementTracker, "create_with_steps", return_value=mock_tracker):
         procurement_tracker_trigger(mock_event_bli_exec, mock_session)
 
-    # Verify tracker and action were created
-    assert mock_session.add.call_count == 2
+    # Verify tracker, action, and event were created
+    assert mock_session.add.call_count == 3
 
     # Reset for second event
     mock_session.reset_mock()
@@ -892,8 +892,8 @@ def test_multiple_blis_same_agreement_all_get_associated(mock_session, mock_agre
     with patch.object(DefaultProcurementTracker, "create_with_steps", return_value=mock_tracker):
         procurement_tracker_trigger(event_1, mock_session)
 
-    # Verify tracker and action were created
-    assert mock_session.add.call_count == 2
+    # Verify tracker, action, and event were created
+    assert mock_session.add.call_count == 3
 
     # Create mock existing tracker and action for subsequent events
     mock_existing_tracker = Mock(spec=DefaultProcurementTracker)
@@ -963,3 +963,178 @@ def test_multiple_blis_same_agreement_all_get_associated(mock_session, mock_agre
     # Verify third BLI was associated
     assert mock_bli_3.procurement_action_id == 50
     mock_session.add.assert_not_called()
+
+
+# CREATE_PROCUREMENT_TRACKER Event Tests
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_create_procurement_tracker_event_success_both_created(
+    mock_session, mock_event_bli_exec, mock_agreement, mock_bli
+):
+    """Test that CREATE_PROCUREMENT_TRACKER SUCCESS event is created when tracker and action are created."""
+    # Setup: Agreement exists, not awarded, no tracker or action exists
+    mock_session.scalar.side_effect = [
+        mock_agreement,  # Agreement query with lock
+        None,  # Tracker query (not found)
+        None,  # Action query (not found)
+    ]
+
+    mock_session.get.side_effect = lambda model_class, id: {
+        (BudgetLineItem, 1): mock_bli,
+    }.get((model_class, id))
+
+    # Track added objects and assign IDs when flush is called
+    added_objects = []
+
+    def capture_add(obj):
+        added_objects.append(obj)
+
+    def assign_ids_on_flush():
+        for obj in added_objects:
+            if isinstance(obj, ProcurementAction) and (not hasattr(obj, "id") or obj.id is None):
+                obj.id = 50  # Assign action ID
+
+    mock_session.add.side_effect = capture_add
+    mock_session.flush.side_effect = assign_ids_on_flush
+
+    # Mock DefaultProcurementTracker.create_with_steps - use MagicMock to allow attribute assignment
+    mock_tracker = MagicMock(spec=DefaultProcurementTracker)
+    mock_tracker.id = 999
+    mock_tracker.agreement_id = 100
+    mock_tracker.procurement_action = None  # Initially None
+    mock_tracker.status = ProcurementTrackerStatus.ACTIVE
+    mock_tracker.active_step_number = 1
+
+    with patch.object(DefaultProcurementTracker, "create_with_steps", return_value=mock_tracker):
+        procurement_tracker_trigger(mock_event_bli_exec, mock_session)
+
+    # Verify CREATE_PROCUREMENT_TRACKER event was created
+    # Should have 3 calls: tracker, action, and the event
+    assert mock_session.add.call_count == 3
+
+    # Get the last call (which should be the event)
+    last_call = mock_session.add.call_args_list[-1]
+    event_arg = last_call[0][0]
+
+    # Verify it's an OpsEvent with correct type and status
+    assert isinstance(event_arg, OpsEvent)
+    assert event_arg.event_type == OpsEventType.CREATE_PROCUREMENT_TRACKER
+    from models.events import OpsEventStatus
+
+    assert event_arg.event_status == OpsEventStatus.SUCCESS
+    assert event_arg.created_by == 42  # From mock_event_bli_exec
+
+    # Verify event_details contain correct information
+    assert event_arg.event_details["agreement_id"] == 100
+    assert event_arg.event_details["tracker_id"] == 999
+    assert event_arg.event_details["procurement_action_id"] == 50
+    assert event_arg.event_details["status"] == "ACTIVE"
+    assert event_arg.event_details["active_step_number"] == 1
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_create_procurement_tracker_event_success_only_tracker_created(
+    mock_session, mock_event_bli_exec, mock_agreement, mock_bli
+):
+    """Test that CREATE_PROCUREMENT_TRACKER SUCCESS event is created when only tracker is created."""
+    mock_existing_action = Mock(spec=ProcurementAction)
+    mock_existing_action.id = 50
+
+    # Mock scalar to return agreement first, then None for tracker, then existing action
+    mock_session.scalar.side_effect = [
+        mock_agreement,  # Agreement query with lock
+        None,  # Tracker query (not found)
+        mock_existing_action,  # Action query (found)
+    ]
+
+    mock_session.get.side_effect = lambda model_class, id: {
+        (BudgetLineItem, 1): mock_bli,
+    }.get((model_class, id))
+
+    # Mock DefaultProcurementTracker.create_with_steps
+    mock_tracker = Mock(spec=DefaultProcurementTracker)
+    mock_tracker.id = 888
+    mock_tracker.agreement_id = 100
+    mock_tracker.procurement_action = 50
+    mock_tracker.status = ProcurementTrackerStatus.ACTIVE
+    mock_tracker.active_step_number = 1
+
+    with patch.object(DefaultProcurementTracker, "create_with_steps", return_value=mock_tracker):
+        procurement_tracker_trigger(mock_event_bli_exec, mock_session)
+
+    # Verify CREATE_PROCUREMENT_TRACKER event was created
+    # Should have 2 calls: tracker and the event (action already existed)
+    assert mock_session.add.call_count == 2
+
+    # Get the last call (which should be the event)
+    last_call = mock_session.add.call_args_list[-1]
+    event_arg = last_call[0][0]
+
+    # Verify it's an OpsEvent with correct type and status
+    assert isinstance(event_arg, OpsEvent)
+    assert event_arg.event_type == OpsEventType.CREATE_PROCUREMENT_TRACKER
+    from models.events import OpsEventStatus
+
+    assert event_arg.event_status == OpsEventStatus.SUCCESS
+
+    # Verify event_details
+    assert event_arg.event_details["agreement_id"] == 100
+    assert event_arg.event_details["tracker_id"] == 888
+    assert event_arg.event_details["procurement_action_id"] == 50
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_create_procurement_tracker_event_not_created_when_tracker_exists(
+    mock_session, mock_event_bli_exec, mock_agreement, mock_bli
+):
+    """Test that CREATE_PROCUREMENT_TRACKER event is NOT created when tracker already exists."""
+    # Setup: Both tracker and action already exist
+    mock_existing_tracker = Mock(spec=DefaultProcurementTracker)
+    mock_existing_action = Mock(spec=ProcurementAction)
+    mock_existing_action.id = 50
+    mock_bli.procurement_action_id = 50  # Already associated
+
+    mock_session.scalar.side_effect = [
+        mock_agreement,  # Agreement query with lock
+        mock_existing_tracker,  # Tracker query (found)
+        mock_existing_action,  # Action query (found)
+    ]
+
+    mock_session.get.side_effect = lambda model_class, id: {
+        (BudgetLineItem, 1): mock_bli,
+    }.get((model_class, id))
+
+    procurement_tracker_trigger(mock_event_bli_exec, mock_session)
+
+    # Verify no CREATE_PROCUREMENT_TRACKER event was created (no entities added)
+    mock_session.add.assert_not_called()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_create_procurement_tracker_event_not_created_when_only_action_created(
+    mock_session, mock_event_bli_exec, mock_agreement, mock_bli
+):
+    """Test that CREATE_PROCUREMENT_TRACKER event is NOT created when only action is created."""
+    # Setup: Tracker exists but action doesn't (inconsistent state)
+    mock_existing_tracker = Mock(spec=DefaultProcurementTracker)
+
+    mock_session.scalar.side_effect = [
+        mock_agreement,  # Agreement query with lock
+        mock_existing_tracker,  # Tracker query (found)
+        None,  # Action query (not found)
+    ]
+
+    mock_session.get.side_effect = lambda model_class, id: {
+        (BudgetLineItem, 1): mock_bli,
+    }.get((model_class, id))
+
+    procurement_tracker_trigger(mock_event_bli_exec, mock_session)
+
+    # Verify only action was created (not tracker, so no CREATE_PROCUREMENT_TRACKER event)
+    # Should have 1 call for the action only
+    assert mock_session.add.call_count == 1
+
+    # Get the call and verify it's NOT an OpsEvent
+    call_arg = mock_session.add.call_args_list[0][0][0]
+    assert not isinstance(call_arg, OpsEvent)

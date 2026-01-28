@@ -22,6 +22,7 @@ from models import (
     OpsEvent,
     ProcurementAction,
 )
+from models.events import OpsEventStatus, OpsEventType
 from models.procurement_action import AwardType, ProcurementActionStatus
 from models.procurement_tracker import ProcurementTrackerStatus
 
@@ -231,6 +232,51 @@ def _create_new_procurement_action(
     return action
 
 
+def _create_procurement_tracker_event(
+    session: Session,
+    tracker: DefaultProcurementTracker,
+    created_by: Optional[int] = None,
+    event_status: OpsEventStatus = OpsEventStatus.SUCCESS,
+    error_message: Optional[str] = None,
+) -> OpsEvent:
+    """
+    Create a CREATE_PROCUREMENT_TRACKER event.
+
+    Args:
+        session: SQLAlchemy session
+        tracker: The created tracker (can be None for FAILED events)
+        created_by: User ID of the creator
+        event_status: SUCCESS or FAILED
+        error_message: Error message for FAILED events
+
+    Returns:
+        The created OpsEvent instance
+    """
+    event_details = {
+        "agreement_id": tracker.agreement_id if tracker else None,
+        "tracker_id": tracker.id if tracker else None,
+        "procurement_action_id": tracker.procurement_action if tracker else None,
+        "status": tracker.status.name if tracker else None,
+        "active_step_number": tracker.active_step_number if tracker else None,
+    }
+
+    if error_message:
+        event_details["error_message"] = error_message
+
+    ops_event = OpsEvent(
+        event_type=OpsEventType.CREATE_PROCUREMENT_TRACKER,
+        event_status=event_status,
+        created_by=created_by,
+        event_details=event_details,
+    )
+    session.add(ops_event)
+    logger.debug(
+        f"Created {event_status.name} event for CREATE_PROCUREMENT_TRACKER "
+        f"(tracker_id={tracker.id if tracker else None})"
+    )
+    return ops_event
+
+
 def _associate_budget_line_with_action(
     budget_line_item: BudgetLineItem, action: ProcurementAction, budget_line_item_id: int, agreement_id: int
 ) -> None:
@@ -301,13 +347,16 @@ def _handle_tracker_action_creation(
         session.add(tracker)
 
         action = _create_new_procurement_action(session, agreement_id, created_by=event.created_by)
-        session.flush()  # Ensure action.id is available
+        session.flush()  # Ensure action.id and tracker.id are available
 
         # Link tracker to action
         tracker.procurement_action = action.id
 
         # Associate budget line with action
         budget_line_item.procurement_action_id = action.id
+
+        # Create SUCCESS event for tracker creation
+        _create_procurement_tracker_event(session, tracker, created_by=event.created_by)
 
         logger.info(
             f"Successfully created tracker and action for agreement {agreement_id}, "
@@ -345,5 +394,8 @@ def _handle_tracker_action_creation(
 
     # Associate budget line with action
     _associate_budget_line_with_action(budget_line_item, existing_action, budget_line_item_id, agreement_id)
+
+    # Create SUCCESS event for tracker creation
+    _create_procurement_tracker_event(session, tracker, created_by=event.created_by)
 
     logger.info(f"Created missing tracker for agreement {agreement_id}")
