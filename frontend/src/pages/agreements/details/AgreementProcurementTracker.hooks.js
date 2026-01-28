@@ -1,6 +1,6 @@
 import React from "react";
-import DatePicker from "../../../components/UI/USWDS/DatePicker";
 import { useUpdateProcurementTrackerStepMutation } from "../../../api/opsAPI";
+import DatePicker from "../../../components/UI/USWDS/DatePicker";
 import { formatDateForApi } from "../../../helpers/utils";
 
 export default function useAgreementProcurementTracker() {
@@ -23,13 +23,21 @@ export default function useAgreementProcurementTracker() {
             status: "COMPLETED",
             task_completed_by: selectedUser.id,
             date_completed: formatDateForApi(step1DateCompleted),
-            notes: step1Notes
+            notes: step1Notes.trim()
         };
-        await patchStepOne({
-            stepId,
-            data: payload
-        }).unwrap();
-        console.log("Procurement Tracker Step 1 Updated");
+        //
+        try {
+            await patchStepOne({
+                stepId,
+                data: payload
+            }).unwrap();
+            console.log("Procurement Tracker Step 1 Updated");
+        } catch (error) {
+            console.error("Failed to update Procurement Tracker Step 1", error);
+            if (typeof window !== "undefined" && typeof window.alert === "function") {
+                window.alert("Unable to update Procurement Tracker Step 1. Please try again.");
+            }
+        }
     };
 
     const cancelStep1 = () => {

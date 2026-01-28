@@ -104,8 +104,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                     // TODO : Create separate components for each step type
                     return (
                         <Accordion
-                            heading={`Step ${step.step_number} of ${activeTracker?.steps.length} ${step.step_type}
-`}
+                            heading={`Step ${step.step_number} of ${activeTracker?.steps.length} ${step.step_type}`}
                             isClosed={activeTracker.active_step_number !== step.step_number}
                             level={3}
                             key={step.id}
@@ -150,6 +149,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                         value={step1DateCompleted}
                                         onChange={(e) => setStep1DateCompleted(e.target.value)}
                                         isDisabled={!isPreSolicitationPackageSent}
+                                        maxDate={new Date()}
                                     />
                                     <TextArea
                                         name="notes"

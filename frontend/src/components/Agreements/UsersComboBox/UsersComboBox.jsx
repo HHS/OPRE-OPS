@@ -8,9 +8,8 @@ import ComboBox from "../../UI/Form/ComboBox";
  * @param {Function} props.setSelectedUser - A function to call when the selected user changes.
  * @param {string} [props.label] - The label for the input (optional).
  * @param {boolean} [props.isDisabled] - Whether the comboBox is disabled (optional).
- * @returns
+ * @returns {React.ReactElement} The UsersComboBox component.
  */
-
 const UsersComboBox = ({ selectedUser, setSelectedUser, label = "Choose a user", isDisabled = false }) => {
     const { data: users, error: errorUsers, isLoading: isLoadingUsers } = useGetUsersQuery({});
 
@@ -23,7 +22,6 @@ const UsersComboBox = ({ selectedUser, setSelectedUser, label = "Choose a user",
 
     const handleChange = (user) => {
         setSelectedUser(user);
-        // onChange("user", user.id);
     };
 
     return (
@@ -32,7 +30,6 @@ const UsersComboBox = ({ selectedUser, setSelectedUser, label = "Choose a user",
             disabled={isDisabled}
         >
             <label
-                // className={`${legendClassname} ${messages.length ? "usa-label--error" : ""}`}
                 htmlFor="users-combobox-input"
                 id="users-label"
             >
@@ -43,10 +40,7 @@ const UsersComboBox = ({ selectedUser, setSelectedUser, label = "Choose a user",
                 data={users}
                 selectedData={selectedUser}
                 setSelectedData={handleChange}
-                // defaultString={defaultString}
                 optionText={(user) => user.full_name || user.email}
-                // overrideStyles={overrideStyles}
-                // messages={messages}
                 isDisabled={isDisabled}
             />
         </fieldset>

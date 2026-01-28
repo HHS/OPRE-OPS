@@ -868,7 +868,7 @@ export const opsApi = createApi({
                 return {
                     url: `/procurement-tracker-steps/${stepId}`,
                     method: "PATCH",
-                    headers: { "Content-Type": "application/json " },
+                    headers: { "Content-Type": "application/json" },
                     body: data
                 };
             },
