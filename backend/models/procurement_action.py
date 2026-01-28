@@ -5,7 +5,7 @@ from decimal import Decimal
 from enum import Enum, auto
 from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import Date, ForeignKey, Integer, Numeric, String, Text
+from sqlalchemy import Date, ForeignKey, Integer, Numeric, String, Text, Index
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -66,10 +66,14 @@ class ProcurementAction(BaseModel):
 
     __tablename__ = "procurement_action"
 
+    __table_args__ = (
+        Index("ix_procurement_action_agreement_id_award_type_status", "agreement_id", "award_type", "status"),
+    )
+
     id: Mapped[int] = BaseModel.get_pk_column()
 
     # Core relationships
-    agreement_id: Mapped[int] = mapped_column(ForeignKey("agreement.id"))
+    agreement_id: Mapped[int] = mapped_column(ForeignKey("agreement.id"), index=True)
     agreement: Mapped["Agreement"] = relationship("Agreement", back_populates="procurement_actions")
 
     # Optional link to modification (null for initial awards)
@@ -91,10 +95,12 @@ class ProcurementAction(BaseModel):
     )
 
     # Award type and modification type (similar to MAPS AAP.SYS_AWARD_TYPE_ID and SYS_CONTRACT_MOD_TYPE_ID)
-    award_type: Mapped[Optional[AwardType]] = mapped_column(ENUM(AwardType), nullable=True)
+    award_type: Mapped[Optional[AwardType]] = mapped_column(ENUM(AwardType), nullable=True, index=True)
 
     # Procurement action status
-    status: Mapped[Optional[ProcurementActionStatus]] = mapped_column(ENUM(ProcurementActionStatus), nullable=True)
+    status: Mapped[Optional[ProcurementActionStatus]] = mapped_column(
+        ENUM(ProcurementActionStatus), nullable=True, index=True
+    )
 
     # Procurement shop details
     procurement_shop_id: Mapped[Optional[int]] = mapped_column(ForeignKey("procurement_shop.id"), nullable=True)

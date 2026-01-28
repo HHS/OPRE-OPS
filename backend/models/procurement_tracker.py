@@ -10,6 +10,7 @@ from sqlalchemy import (
     Integer,
     String,
     Text,
+    Index,
 )
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -82,18 +83,22 @@ class ProcurementTracker(BaseModel):
 
     __tablename__ = "procurement_tracker"
 
+    __table_args__ = (Index("idx_procurement_tracker_agreement_id_status", "agreement_id", "status"),)
+
     id: Mapped[int] = BaseModel.get_pk_column()
 
     agreement_id: Mapped[int] = mapped_column(
         Integer,
         ForeignKey("agreement.id"),
         nullable=False,
+        index=True,
     )
 
     status: Mapped[ProcurementTrackerStatus] = mapped_column(
         ENUM(ProcurementTrackerStatus),
         nullable=False,
         default=ProcurementTrackerStatus.ACTIVE,
+        index=True,
     )
 
     procurement_action: Mapped[Optional[int]] = mapped_column(
@@ -341,7 +346,7 @@ class DefaultProcurementTracker(ProcurementTracker):
         Returns:
             DefaultProcurementTracker instance with 6 steps attached
         """
-        tracker = cls(agreement_id=agreement_id, **kwargs)
+        tracker = cls(agreement_id=agreement_id, active_step_number=1, **kwargs)
 
         # Define the 6 steps
         step_definitions = [
@@ -355,11 +360,20 @@ class DefaultProcurementTracker(ProcurementTracker):
 
         # Create step instances
         for step_number, step_type in step_definitions:
-            step = DefaultProcurementTrackerStep(
-                step_number=step_number,
-                step_type=step_type,
-                status=ProcurementTrackerStepStatus.PENDING,
-            )
+            # Step 1 starts as ACTIVE with current date, others are PENDING
+            if step_number == 1:
+                step = DefaultProcurementTrackerStep(
+                    step_number=step_number,
+                    step_type=step_type,
+                    status=ProcurementTrackerStepStatus.ACTIVE,
+                    step_start_date=date.today(),
+                )
+            else:
+                step = DefaultProcurementTrackerStep(
+                    step_number=step_number,
+                    step_type=step_type,
+                    status=ProcurementTrackerStepStatus.PENDING,
+                )
             tracker.steps.append(step)
 
         return tracker

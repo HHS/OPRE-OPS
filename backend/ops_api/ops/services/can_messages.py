@@ -11,6 +11,8 @@ def can_history_trigger(
 ):
     try:
         sys_user = get_sys_user(session)
-        can_history_trigger_func(event, session, sys_user)
+        # Pass dry_run=True to prevent subscriber from committing
+        # The outer transaction will handle the commit
+        can_history_trigger_func(event, session, sys_user, dry_run=True)
     except Exception as e:
         logger.error(f"Error in can_history_trigger: {e}")

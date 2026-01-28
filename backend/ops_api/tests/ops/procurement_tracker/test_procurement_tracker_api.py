@@ -12,7 +12,7 @@ def test_get_procurement_tracker_by_id(auth_client, app_ctx):
     assert data["status"] == "ACTIVE"
     assert data["tracker_type"] == "DEFAULT"
     assert data["active_step_number"] == 1
-    assert data["procurement_action"] is None
+    assert data["procurement_action"] == 100
 
     # Verify steps are included
     assert "steps" in data
