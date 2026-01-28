@@ -151,7 +151,12 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                     <button
                                         className="usa-button usa-button--unstyled margin-right-2"
                                         data-cy="cancel-button"
-                                        onClick={""}
+                                        onClick={() => {
+                                            setIsPreSolicitationPackageSent(false);
+                                            setSelectedUser({});
+                                            setStep1DateCompleted("");
+                                            setStep1Notes("");
+                                        }}
                                     >
                                         Cancel
                                     </button>
@@ -159,7 +164,9 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                         className="usa-button"
                                         data-cy="continue-btn"
                                         onClick={() => handleStep1Complete(step.id)}
-                                        disabled={""}
+                                        disabled={
+                                            !isPreSolicitationPackageSent || !selectedUser?.id || !step1DateCompleted
+                                        }
                                     >
                                         Complete Step 1
                                     </button>
