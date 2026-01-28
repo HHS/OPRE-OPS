@@ -212,4 +212,108 @@ describe("useAgreementProcurementTracker", () => {
         expect(result1.current.step1Notes).toBe("Notes from instance 1");
         expect(result2.current.step1Notes).toBe("");
     });
+
+    describe("cancelStep1", () => {
+        it("resets all step 1 form state to initial values", () => {
+            const { result } = renderHook(() => useAgreementProcurementTracker());
+
+            // Set all form values
+            act(() => {
+                result.current.setIsPreSolicitationPackageSent(true);
+                result.current.setSelectedUser({ id: 1, full_name: "Test User", email: "test@example.com" });
+                result.current.setStep1DateCompleted("2024-01-15");
+                result.current.setStep1Notes("Some notes here");
+            });
+
+            // Verify values are set
+            expect(result.current.isPreSolicitationPackageSent).toBe(true);
+            expect(result.current.selectedUser).toEqual({
+                id: 1,
+                full_name: "Test User",
+                email: "test@example.com"
+            });
+            expect(result.current.step1DateCompleted).toBe("2024-01-15");
+            expect(result.current.step1Notes).toBe("Some notes here");
+
+            // Call cancelStep1
+            act(() => {
+                result.current.cancelStep1();
+            });
+
+            // Verify all values are reset
+            expect(result.current.isPreSolicitationPackageSent).toBe(false);
+            expect(result.current.selectedUser).toEqual({});
+            expect(result.current.step1DateCompleted).toBe("");
+            expect(result.current.step1Notes).toBe("");
+        });
+    });
+
+    describe("disableStep1Continue", () => {
+        it("is true when checkbox is not checked", () => {
+            const { result } = renderHook(() => useAgreementProcurementTracker());
+
+            expect(result.current.disableStep1Continue).toBe(true);
+        });
+
+        it("is true when checkbox is checked but no user is selected", () => {
+            const { result } = renderHook(() => useAgreementProcurementTracker());
+
+            act(() => {
+                result.current.setIsPreSolicitationPackageSent(true);
+                result.current.setStep1DateCompleted("2024-01-15");
+            });
+
+            expect(result.current.disableStep1Continue).toBe(true);
+        });
+
+        it("is true when checkbox is checked and user is selected but no date", () => {
+            const { result } = renderHook(() => useAgreementProcurementTracker());
+
+            act(() => {
+                result.current.setIsPreSolicitationPackageSent(true);
+                result.current.setSelectedUser({ id: 1, full_name: "Test User" });
+            });
+
+            expect(result.current.disableStep1Continue).toBe(true);
+        });
+
+        it("is false when all required fields are filled", () => {
+            const { result } = renderHook(() => useAgreementProcurementTracker());
+
+            act(() => {
+                result.current.setIsPreSolicitationPackageSent(true);
+                result.current.setSelectedUser({ id: 1, full_name: "Test User" });
+                result.current.setStep1DateCompleted("2024-01-15");
+            });
+
+            expect(result.current.disableStep1Continue).toBe(false);
+        });
+
+        it("is true when checkbox is unchecked after being checked", () => {
+            const { result } = renderHook(() => useAgreementProcurementTracker());
+
+            act(() => {
+                result.current.setIsPreSolicitationPackageSent(true);
+                result.current.setSelectedUser({ id: 1, full_name: "Test User" });
+                result.current.setStep1DateCompleted("2024-01-15");
+            });
+
+            expect(result.current.disableStep1Continue).toBe(false);
+
+            act(() => {
+                result.current.setIsPreSolicitationPackageSent(false);
+            });
+
+            expect(result.current.disableStep1Continue).toBe(true);
+        });
+    });
+
+    it("exports STEP_STATUSES constants", () => {
+        const { result } = renderHook(() => useAgreementProcurementTracker());
+
+        expect(result.current.STEP_STATUSES).toEqual({
+            PENDING: "PENDING",
+            COMPLETED: "COMPLETED"
+        });
+    });
 });

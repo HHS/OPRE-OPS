@@ -87,11 +87,42 @@ vi.mock("../../../constants", () => ({
     IS_PROCUREMENT_TRACKER_READY: true
 }));
 
+// Mock user hooks
+vi.mock("../../../hooks/user.hooks", () => ({
+    default: vi.fn()
+}));
+
+// Mock formatDateToMonthDayYear helper
+vi.mock("../../../helpers/utils", () => ({
+    formatDateToMonthDayYear: vi.fn((date) => {
+        if (!date) return "";
+        return new Date(date).toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric"
+        });
+    }),
+    formatDateForApi: vi.fn((date) => date)
+}));
+
+// Mock Tag component
+vi.mock("../../../components/UI/Tag", () => ({
+    default: ({ text, tagStyle }) => (
+        <span
+            data-testid="tag"
+            data-tag-style={tagStyle}
+        >
+            {text}
+        </span>
+    )
+}));
+
 import {
     useGetProcurementTrackersByAgreementIdQuery,
     useUpdateProcurementTrackerStepMutation,
     useGetUsersQuery
 } from "../../../api/opsAPI";
+import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 
 describe("AgreementProcurementTracker", () => {
     const mockAgreement = {
@@ -132,6 +163,8 @@ describe("AgreementProcurementTracker", () => {
             isLoading: false,
             error: undefined
         });
+        // Mock useGetUserFullNameFromId
+        useGetUserFullNameFromId.mockReturnValue("Test User");
     });
 
     afterEach(() => {
@@ -324,13 +357,13 @@ describe("AgreementProcurementTracker", () => {
                             id: 101,
                             step_number: 1,
                             step_type: "Pre-Solicitation",
-                            status: "IN_PROGRESS"
+                            status: "PENDING"
                         },
                         {
                             id: 102,
                             step_number: 2,
                             step_type: "Solicitation",
-                            status: "NOT_STARTED"
+                            status: "PENDING"
                         }
                     ]
                 }
@@ -671,7 +704,213 @@ describe("AgreementProcurementTracker", () => {
                 </Provider>
             );
 
+            expect(screen.getByText("Notes (optional)")).toBeInTheDocument();
+        });
+
+        it("calls cancelStep1 when Cancel button is clicked", () => {
+            useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
+                data: mockTrackerWithSteps,
+                isLoading: false,
+                isError: false
+            });
+
+            render(
+                <Provider store={setupStore()}>
+                    <AgreementProcurementTracker agreement={mockAgreement} />
+                </Provider>
+            );
+
+            const checkbox = screen.getByRole("checkbox");
+            fireEvent.click(checkbox);
+
+            // Select a user
+            const userSelectButton = screen.getByText("Select User");
+            fireEvent.click(userSelectButton);
+
+            // Set date
+            const dateInput = screen.getByTestId("datepicker-input");
+            fireEvent.change(dateInput, { target: { value: "2024-01-15" } });
+
+            // Set notes
+            const textarea = screen.getByTestId("textarea-input");
+            fireEvent.change(textarea, { target: { value: "Test notes" } });
+
+            // Click cancel
+            const cancelButton = screen.getByText("Cancel");
+            fireEvent.click(cancelButton);
+
+            // Verify form is reset
+            expect(checkbox).not.toBeChecked();
+        });
+
+        it("disables Complete Step 1 button when required fields are missing", () => {
+            useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
+                data: mockTrackerWithSteps,
+                isLoading: false,
+                isError: false
+            });
+
+            render(
+                <Provider store={setupStore()}>
+                    <AgreementProcurementTracker agreement={mockAgreement} />
+                </Provider>
+            );
+
+            const completeButton = screen.getByText("Complete Step 1");
+            expect(completeButton).toBeDisabled();
+        });
+    });
+
+    describe("Step 1 Completed State", () => {
+        const mockTrackerWithCompletedStep = {
+            data: [
+                {
+                    id: 4,
+                    agreement_id: 13,
+                    display_name: "ProcurementTracker#4",
+                    status: "ACTIVE",
+                    tracker_type: "DEFAULT",
+                    active_step_number: 1,
+                    steps: [
+                        {
+                            id: 101,
+                            step_number: 1,
+                            step_type: "Pre-Solicitation",
+                            status: "COMPLETED",
+                            task_completed_by: 5,
+                            date_completed: "2024-01-15T00:00:00.000Z",
+                            notes: "Pre-solicitation package sent successfully"
+                        },
+                        {
+                            id: 102,
+                            step_number: 2,
+                            step_type: "Solicitation",
+                            status: "PENDING"
+                        }
+                    ]
+                }
+            ]
+        };
+
+        beforeEach(() => {
+            useGetUserFullNameFromId.mockReturnValue("John Doe");
+        });
+
+        it("renders completed state for step 1", () => {
+            useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
+                data: mockTrackerWithCompletedStep,
+                isLoading: false,
+                isError: false
+            });
+
+            render(
+                <Provider store={setupStore()}>
+                    <AgreementProcurementTracker agreement={mockAgreement} />
+                </Provider>
+            );
+
+            expect(
+                screen.getByText(/When the pre-solicitation package has been sufficiently drafted and signed/)
+            ).toBeInTheDocument();
+            expect(
+                screen.getByText("The pre-solicitation package has been sent to the Procurement Shop for review")
+            ).toBeInTheDocument();
+        });
+
+        it("renders Completed By tag with user name", () => {
+            useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
+                data: mockTrackerWithCompletedStep,
+                isLoading: false,
+                isError: false
+            });
+
+            render(
+                <Provider store={setupStore()}>
+                    <AgreementProcurementTracker agreement={mockAgreement} />
+                </Provider>
+            );
+
+            expect(screen.getByText("Completed By")).toBeInTheDocument();
+            const tags = screen.getAllByTestId("tag");
+            expect(tags.some((tag) => tag.textContent === "John Doe")).toBe(true);
+        });
+
+        it("renders Date Completed tag with formatted date", () => {
+            useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
+                data: mockTrackerWithCompletedStep,
+                isLoading: false,
+                isError: false
+            });
+
+            render(
+                <Provider store={setupStore()}>
+                    <AgreementProcurementTracker agreement={mockAgreement} />
+                </Provider>
+            );
+
+            expect(screen.getByText("Date Completed")).toBeInTheDocument();
+            const tags = screen.getAllByTestId("tag");
+            // The date should be formatted by formatDateToMonthDayYear
+            expect(
+                tags.some((tag) => tag.textContent.includes("January") || tag.textContent.includes("2024"))
+            ).toBe(true);
+        });
+
+        it("renders Notes in completed state", () => {
+            useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
+                data: mockTrackerWithCompletedStep,
+                isLoading: false,
+                isError: false
+            });
+
+            render(
+                <Provider store={setupStore()}>
+                    <AgreementProcurementTracker agreement={mockAgreement} />
+                </Provider>
+            );
+
             expect(screen.getByText("Notes")).toBeInTheDocument();
+            expect(screen.getByText("Pre-solicitation package sent successfully")).toBeInTheDocument();
+        });
+
+        it("does not render form elements in completed state", () => {
+            useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
+                data: mockTrackerWithCompletedStep,
+                isLoading: false,
+                isError: false
+            });
+
+            render(
+                <Provider store={setupStore()}>
+                    <AgreementProcurementTracker agreement={mockAgreement} />
+                </Provider>
+            );
+
+            expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
+            expect(screen.queryByTestId("users-combobox")).not.toBeInTheDocument();
+            expect(screen.queryByTestId("datepicker")).not.toBeInTheDocument();
+            expect(screen.queryByTestId("textarea")).not.toBeInTheDocument();
+            expect(screen.queryByText("Complete Step 1")).not.toBeInTheDocument();
+            expect(screen.queryByText("Cancel")).not.toBeInTheDocument();
+        });
+
+        it("renders tags with correct styling", () => {
+            useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
+                data: mockTrackerWithCompletedStep,
+                isLoading: false,
+                isError: false
+            });
+
+            render(
+                <Provider store={setupStore()}>
+                    <AgreementProcurementTracker agreement={mockAgreement} />
+                </Provider>
+            );
+
+            const tags = screen.getAllByTestId("tag");
+            tags.forEach((tag) => {
+                expect(tag).toHaveAttribute("data-tag-style", "primaryDarkTextLightBackground");
+            });
         });
     });
 });
