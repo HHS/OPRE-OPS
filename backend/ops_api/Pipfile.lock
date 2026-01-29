@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "9fae029263ca47e7e853d743ce98f2fc5e661a6e785257fafbad00bb37ba49b8"
+            "sha256": "091b5efd9152f46ed1425497283f766db813fd7a7cf3950f99448c2493704136"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -18,12 +18,12 @@
     "default": {
         "alembic": {
             "hashes": [
-                "sha256:18a5f6448af4864cc308aadf33eb37c0116da9a60fd9bb3f31ccb1b522b4a9b9",
-                "sha256:1c3ddb635f26efbc80b1b90c5652548202022d4e760f6a78d6d85959280e3684"
+                "sha256:1212aa3778626f2b0f0aa6dd4e99a5f99b94bd25a0c1ac0bba3be65e081e50b0",
+                "sha256:12a0359bfc068a4ecbb9b3b02cf77856033abfdb59e4a5aca08b7eacd7b74ddd"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.10'",
-            "version": "==1.18.2"
+            "version": "==1.18.3"
         },
         "alembic-postgresql-enum": {
             "hashes": [
@@ -3177,11 +3177,11 @@
         },
         "wcwidth": {
             "hashes": [
-                "sha256:1efe1361b83b0ff7877b81ba57c8562c99cf812158b778988ce17ec061095695",
-                "sha256:f89c103c949a693bf563377b2153082bf58e309919dfb7f27b04d862a0089333"
+                "sha256:46912178a64217749bf3426b21e36e849fbc46e05c949407b3e364d9f7ffcadf",
+                "sha256:c022c39a02a0134d1e10810da36d1f984c79648181efcc70a389f4569695f5ae"
             ],
             "markers": "python_version >= '3.8'",
-            "version": "==0.5.0"
+            "version": "==0.5.2"
         },
         "websocket-client": {
             "hashes": [
