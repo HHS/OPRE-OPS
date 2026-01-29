@@ -66,7 +66,8 @@ export const opsApi = createApi({
         "Divisions",
         "Documents",
         "Cans",
-        "ProcurementTrackers"
+        "ProcurementTrackers",
+        "Procurement Tracker Steps"
     ],
     baseQuery: getBaseQueryWithReauth(baseQuery),
     endpoints: (builder) => ({
@@ -861,6 +862,17 @@ export const opsApi = createApi({
         getProcurementTrackersByAgreementId: builder.query({
             query: (agreement_id) => `/procurement-trackers/?agreement_id=${agreement_id}`,
             providesTags: ["ProcurementTrackers"]
+        }),
+        updateProcurementTrackerStep: builder.mutation({
+            query: ({ stepId, data }) => {
+                return {
+                    url: `/procurement-tracker-steps/${stepId}`,
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: data
+                };
+            },
+            invalidatesTags: ["ProcurementTrackers", "Procurement Tracker Steps"]
         })
     })
 });
@@ -958,5 +970,6 @@ export const {
     useUpdateDocumentStatusMutation,
     useGetResearchMethodologiesQuery,
     useGetSpecialTopicsQuery,
-    useGetProcurementTrackersByAgreementIdQuery
+    useGetProcurementTrackersByAgreementIdQuery,
+    useUpdateProcurementTrackerStepMutation
 } = opsApi;
