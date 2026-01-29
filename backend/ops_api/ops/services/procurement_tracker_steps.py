@@ -1,5 +1,6 @@
 """Service for procurement tracker step operations."""
 
+from datetime import date
 from typing import Any, Dict, Optional, Tuple
 
 from flask import current_app
@@ -7,7 +8,15 @@ from loguru import logger
 from sqlalchemy import Select, func, select
 from sqlalchemy.orm import selectinload
 
-from models import ProcurementTrackerStep, User
+from models import (
+    AwardType,
+    ProcurementAction,
+    ProcurementActionStatus,
+    ProcurementTrackerStatus,
+    ProcurementTrackerStep,
+    ProcurementTrackerStepStatus,
+    User,
+)
 from ops_api.ops.services.ops_service import ResourceNotFoundError
 from ops_api.ops.validation.procurement_tracker_steps_validator import ProcurementTrackerStepsValidator
 
@@ -93,6 +102,9 @@ class ProcurementTrackerStepService:
             else:
                 logger.warning(f"Field {model_field} does not exist on ProcurementTrackerStep")
 
+        # Handle COMPLETED status
+        self._advance_active_step_if_needed(step.procurement_tracker, step, data)
+
         # Commit changes
         self.db_session.commit()
         self.db_session.refresh(step)
@@ -100,6 +112,41 @@ class ProcurementTrackerStepService:
         logger.debug(f"Successfully updated procurement tracker step {id}")
 
         return step, 200
+
+    def _advance_active_step_if_needed(self, procurement_tracker, step, data):
+        if data.get("status") == ProcurementTrackerStepStatus.COMPLETED or (
+            isinstance(data.get("status"), str) and data.get("status") == "COMPLETED"
+        ):
+            # Set step_completed_date to today
+            step.step_completed_date = date.today()
+            logger.debug(f"Set step_completed_date to {date.today()}")
+
+            # Get the procurement tracker and all its steps
+            procurement_tracker = step.procurement_tracker
+            all_steps = sorted(procurement_tracker.steps, key=lambda s: s.step_number)
+            total_steps = len(all_steps)
+
+            # Check if this is not the final step
+            if step.step_number < total_steps:
+                # Increment active_step_number in the procurement tracker
+                procurement_tracker.active_step_number = step.step_number + 1
+                logger.debug(f"Incremented active_step_number to {procurement_tracker.active_step_number}")
+
+                # Find the next step and set its step_start_date to today
+                next_step = next((s for s in all_steps if s.step_number == step.step_number + 1), None)
+                if next_step:
+                    next_step.step_start_date = date.today()
+                    logger.debug(f"Set next step (step {next_step.step_number}) step_start_date to {date.today()}")
+            else:
+                logger.debug("This is the final step; marking procurement tracker as completed.")
+                procurement_tracker.status = ProcurementTrackerStatus.COMPLETED
+
+                if procurement_tracker.procurement_action:
+                    procurement_action = self.db_session.get(ProcurementAction, procurement_tracker.procurement_action)
+                    if procurement_action and procurement_action.award_type == AwardType.NEW_AWARD:
+                        procurement_action.status = ProcurementActionStatus.AWARDED
+                        procurement_action.date_awarded_obligated = date.today()
+                        logger.debug(f"Set procurement action status to AWARDED and award_date to {date.today()}")
 
     def _apply_agreement_filter(self, stmt: Select[tuple[ProcurementTrackerStep]], agreement_id: list[int] | int):
         """Apply agreement_id filter to the query."""

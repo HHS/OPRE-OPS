@@ -9,7 +9,6 @@ from sqlalchemy import Date, ForeignKey, Integer, Numeric, String, Text, Index
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from models.agreements import ModType
 from models.base import BaseModel
 
 if TYPE_CHECKING:
