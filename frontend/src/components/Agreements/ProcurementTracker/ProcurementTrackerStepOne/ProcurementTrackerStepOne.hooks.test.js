@@ -321,8 +321,15 @@ describe("useProcurementTrackerStepOne", () => {
     });
 
     describe("Error Handling", () => {
+        let originalAlert;
+
         beforeEach(() => {
             vi.spyOn(console, "error").mockImplementation(() => {});
+            originalAlert = window.alert;
+        });
+
+        afterEach(() => {
+            window.alert = originalAlert;
         });
 
         it("handles API error with console.error and window.alert", async () => {
@@ -330,7 +337,7 @@ describe("useProcurementTrackerStepOne", () => {
             mockUnwrap.mockRejectedValue(mockError);
 
             const mockAlert = vi.fn();
-            global.window = { alert: mockAlert };
+            window.alert = mockAlert;
 
             const { result } = renderHook(() => useProcurementTrackerStepOne(mockStepOneData));
 
@@ -351,7 +358,7 @@ describe("useProcurementTrackerStepOne", () => {
             const mockError = new Error("API Error");
             mockUnwrap.mockRejectedValue(mockError);
 
-            global.window = {};
+            delete window.alert;
 
             const { result } = renderHook(() => useProcurementTrackerStepOne(mockStepOneData));
 
