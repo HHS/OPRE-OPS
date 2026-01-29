@@ -92,7 +92,6 @@ export const PortfolioFilterButton = ({ filters, setFilters, allPortfolios, fyBu
                 selectedPortfolios={portfolios}
                 setSelectedPortfolios={setPortfolios}
                 legendClassname={legendStyles}
-                defaultString={"All Portfolios"}
                 overrideStyles={{ width: "22.7rem" }}
             />
         </fieldset>,

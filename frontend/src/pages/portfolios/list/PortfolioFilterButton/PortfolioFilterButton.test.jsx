@@ -129,7 +129,6 @@ describe("PortfolioFilterButton", () => {
         await user.click(filterButton);
 
         await waitFor(() => {
-            expect(screen.getByText("All Portfolios")).toBeInTheDocument();
             expect(screen.getByText("FY Budget")).toBeInTheDocument();
             // "Available Budget" appears in both label and placeholder
             expect(screen.getAllByText("Available Budget")[0]).toBeInTheDocument();
