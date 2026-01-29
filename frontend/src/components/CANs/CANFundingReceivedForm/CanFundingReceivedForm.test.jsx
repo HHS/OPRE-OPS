@@ -44,8 +44,13 @@ describe("CANFundingReceivedForm", () => {
         render(<CANFundingReceivedForm {...defaultProps} />);
         const input = screen.getByLabelText(/Funding Received/i);
 
-        await user.type(input, "1000");
+        // Click the input first to focus it
+        await user.click(input);
+        // Paste the value to avoid character-by-character parsing issues
+        await user.paste("1000");
 
+        // Check that setReceivedFundingAmount was called with the pasted value
+        expect(defaultProps.setReceivedFundingAmount).toHaveBeenCalled();
         expect(defaultProps.setReceivedFundingAmount).toHaveBeenCalledWith(1000);
     });
 
