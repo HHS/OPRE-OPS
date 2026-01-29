@@ -79,7 +79,7 @@ const useReviewAgreement = (agreementId) => {
             return null;
         }
         return agreementSuite.get();
-    }, [selectedBudgetLines.length, agreement]);
+    }, [selectedBudgetLines.length]);
 
     const bliValidationResults = React.useMemo(() => {
         if (!selectedBudgetLines || selectedBudgetLines.length === 0) {
