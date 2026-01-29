@@ -5,7 +5,7 @@ import CanList from "./CanList";
 
 server.listen();
 // TODO: Fix this test
-describe.skip("opsApi", () => {
+describe.todo("opsApi", () => {
     test("should GET /cans using mocks", async () => {
         const { container } = renderWithProviders(<TestComponent />);
 
