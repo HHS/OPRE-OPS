@@ -93,7 +93,7 @@ const ProcurementTrackerStepOne = ({ stepStatus, stepOneData }) => {
                     <button
                         className="usa-button"
                         data-cy="continue-btn"
-                        onClick={() => handleStep1Complete(stepOneData.id)}
+                        onClick={() => handleStep1Complete(stepOneData?.id)}
                         disabled={disableStep1Continue}
                     >
                         Complete Step 1
