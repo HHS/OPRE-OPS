@@ -12,7 +12,7 @@ azure-storage-blob = "==12.28.0"
 flask = "==3.1.2"
 flask-cors = "==6.0.2"
 flask-jwt-extended = {extras = ["asymmetric_crypto"], version = "==4.7.1"}
-gunicorn = "==23.0.0"
+gunicorn = "==24.1.1"
 loguru = "==0.7.3"
 markupsafe = "==3.0.3"
 marshmallow-dataclass = "==8.7.1"
