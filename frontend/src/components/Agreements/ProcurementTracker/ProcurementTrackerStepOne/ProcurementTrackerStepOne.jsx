@@ -30,7 +30,9 @@ const ProcurementTrackerStepOne = ({ stepStatus, stepOneData }) => {
         disableStep1Continue,
         step1CompletedByUserName,
         step1DateCompletedLabel,
-        step1NotesLabel
+        step1NotesLabel,
+        runValidate,
+        validatorRes
     } = useProcurementTrackerStepOne(stepOneData);
 
     return (
@@ -62,7 +64,11 @@ const ProcurementTrackerStepOne = ({ stepStatus, stepOneData }) => {
                         label={"Task Completed By"}
                         selectedUser={selectedUser}
                         setSelectedUser={setSelectedUser}
+                        messages={validatorRes.getErrors("users_combobox")}
                         isDisabled={!isPreSolicitationPackageSent}
+                        onChange={(name, value) => {
+                            runValidate(name, value);
+                        }}
                     />
                     <MemoizedDatePicker
                         id="date-completed"
