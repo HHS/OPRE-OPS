@@ -1,23 +1,22 @@
 import React from "react";
-import { useUpdateProcurementTrackerStepMutation } from "../../../api/opsAPI";
-import DatePicker from "../../../components/UI/USWDS/DatePicker";
-import { formatDateForApi } from "../../../helpers/utils";
+import { useUpdateProcurementTrackerStepMutation } from "../../../../api/opsAPI";
+import { formatDateForApi, formatDateToMonthDayYear } from "../../../../helpers/utils";
+import DatePicker from "../../../UI/USWDS/DatePicker";
+import useGetUserFullNameFromId from "../../../../hooks/user.hooks";
 
-export default function useAgreementProcurementTracker() {
+export default function useProcurementTrackerStepOne(stepOneData) {
     const [isPreSolicitationPackageSent, setIsPreSolicitationPackageSent] = React.useState(false);
     const [selectedUser, setSelectedUser] = React.useState({});
     const [step1DateCompleted, setStep1DateCompleted] = React.useState("");
     const [step1Notes, setStep1Notes] = React.useState("");
     const [patchStepOne] = useUpdateProcurementTrackerStepMutation();
 
-    // TODO: add to TypeScript definitions
-    const STEP_STATUSES = {
-        PENDING: "PENDING",
-        COMPLETED: "COMPLETED"
-    };
+    const step1CompletedByUserName = useGetUserFullNameFromId(stepOneData?.task_completed_by);
+    const step1DateCompletedLabel = formatDateToMonthDayYear(stepOneData?.date_completed);
+    const step1NotesLabel = stepOneData?.notes;
 
     const MemoizedDatePicker = React.memo(DatePicker);
-    // STEP 1
+
     const handleStep1Complete = async (stepId) => {
         const payload = {
             status: "COMPLETED",
@@ -25,7 +24,7 @@ export default function useAgreementProcurementTracker() {
             date_completed: formatDateForApi(step1DateCompleted),
             notes: step1Notes.trim()
         };
-        //
+
         try {
             await patchStepOne({
                 stepId,
@@ -62,6 +61,8 @@ export default function useAgreementProcurementTracker() {
         handleStep1Complete,
         cancelStep1,
         disableStep1Continue,
-        STEP_STATUSES
+        step1CompletedByUserName,
+        step1DateCompletedLabel,
+        step1NotesLabel
     };
 }
