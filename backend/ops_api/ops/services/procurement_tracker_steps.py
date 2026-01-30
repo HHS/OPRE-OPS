@@ -103,7 +103,7 @@ class ProcurementTrackerStepService:
                 logger.warning(f"Field {model_field} does not exist on ProcurementTrackerStep")
 
         # Handle COMPLETED status
-        self._advance_active_step_if_needed(step.procurement_tracker, step, data)
+        self._advance_active_step_if_needed(step, data)
 
         # Commit changes
         self.db_session.commit()
@@ -113,7 +113,7 @@ class ProcurementTrackerStepService:
 
         return step, 200
 
-    def _advance_active_step_if_needed(self, procurement_tracker, step, data):
+    def _advance_active_step_if_needed(self, step, data):
         if data.get("status") == ProcurementTrackerStepStatus.COMPLETED or (
             isinstance(data.get("status"), str) and data.get("status") == "COMPLETED"
         ):
