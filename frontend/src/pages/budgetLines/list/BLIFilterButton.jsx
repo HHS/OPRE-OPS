@@ -31,6 +31,7 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
     const [canActivePeriods, setCanActivePeriods] = React.useState([]);
     const [searchParams] = useSearchParams();
     const isResetting = React.useRef(false);
+    const allFiscalYearsOption = React.useMemo(() => ({ id: "ALL", title: "All Fiscal Years" }), []);
 
     const myBudgetLineItemsUrl = searchParams.get("filter") === "my-budget-lines";
 
@@ -46,11 +47,11 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
         if (selectedFiscalYear && selectedFiscalYear !== "Multi") {
             const yearAsNumber = Number(selectedFiscalYear);
             if (!isNaN(yearAsNumber) && !options.includes(yearAsNumber)) {
-                return [...options, yearAsNumber].sort((a, b) => b - a);
+                return [allFiscalYearsOption, ...[...options, yearAsNumber].sort((a, b) => b - a)];
             }
         }
-        return options;
-    }, [filterOptions?.fiscal_years, selectedFiscalYear]);
+        return [allFiscalYearsOption, ...options];
+    }, [filterOptions?.fiscal_years, selectedFiscalYear, allFiscalYearsOption]);
 
     // The useEffect() hook calls below are used to set the state appropriately when the filter tags (X) are clicked.
     // Also pre-populates with the selected fiscal year when no filters are applied
@@ -59,6 +60,8 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
             // Don't pre-populate if user just reset the filters
             setFiscalYears(filters.fiscalYears ?? []);
             isResetting.current = false;
+        } else if (filters.fiscalYears === null) {
+            setFiscalYears([allFiscalYearsOption]);
         } else if ((filters.fiscalYears ?? []).length === 0 && selectedFiscalYear && selectedFiscalYear !== "Multi") {
             const yearAsNumber = Number(selectedFiscalYear);
             if (!isNaN(yearAsNumber)) {
@@ -103,10 +106,11 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
     }, [filterOptions]);
 
     const applyFilter = () => {
+        const hasAllFiscalYears = (fiscalYears ?? []).some((fiscalYear) => fiscalYear.id === "ALL");
         setFilters((prevState) => {
             return {
                 ...prevState,
-                fiscalYears: fiscalYears,
+                fiscalYears: hasAllFiscalYears ? null : fiscalYears,
                 portfolios: portfolios,
                 bliStatus: bliStatus,
                 budgetRange: budgetRange,

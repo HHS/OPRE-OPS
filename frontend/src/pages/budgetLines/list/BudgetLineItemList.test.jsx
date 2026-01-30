@@ -226,6 +226,37 @@ describe("BudgetLineItemList", () => {
         expect(screen.getByText("Budget Lines")).toBeInTheDocument();
     });
 
+    it("does not replace fiscalYears with selectedFiscalYear when fiscalYears is null", () => {
+        vi.spyOn(hooks, "useBudgetLinesList").mockReturnValue({
+            myBudgetLineItemsUrl: false,
+            filters: {
+                ...defaultFilters,
+                fiscalYears: null
+            },
+            setFilters: vi.fn()
+        });
+
+        useGetBudgetLineItemsQuery.mockReturnValue({
+            data: mockBudgetLineItems,
+            isLoading: false,
+            isError: false
+        });
+
+        render(
+            <Provider store={store}>
+                <BudgetLineItemList />
+            </Provider>
+        );
+
+        expect(useGetBudgetLineItemsQuery).toHaveBeenCalledWith(
+            expect.objectContaining({
+                filters: expect.objectContaining({
+                    fiscalYears: null
+                })
+            })
+        );
+    });
+
     it("handles undefined fiscalYears filter gracefully", () => {
         vi.spyOn(hooks, "useBudgetLinesList").mockReturnValue({
             myBudgetLineItemsUrl: false,

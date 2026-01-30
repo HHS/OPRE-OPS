@@ -60,6 +60,14 @@ const BudgetLineItemList = () => {
         setSelectedFiscalYear(newValue);
     };
 
+    /** @type {Array<{id: number | string, title: number | string}> | null | undefined} */
+    let resolvedFiscalYears = filters.fiscalYears;
+    if (filters.fiscalYears === null) {
+        resolvedFiscalYears = null;
+    } else if ((filters.fiscalYears ?? []).length === 0 && selectedFiscalYear !== "Multi") {
+        resolvedFiscalYears = [{ id: Number(selectedFiscalYear), title: Number(selectedFiscalYear) }];
+    }
+
     /** @type {{data?: import("../../../types/BudgetLineTypes").BudgetLine[] | undefined, isError: boolean, isLoading: boolean}} */
     const {
         data: budgetLineItems,
@@ -68,10 +76,7 @@ const BudgetLineItemList = () => {
     } = useGetBudgetLineItemsQuery({
         filters: {
             ...filters,
-            fiscalYears:
-                (filters.fiscalYears ?? []).length === 0 && selectedFiscalYear !== "Multi"
-                    ? [{ id: Number(selectedFiscalYear), title: Number(selectedFiscalYear) }]
-                    : filters.fiscalYears,
+            fiscalYears: resolvedFiscalYears,
             budgetLineTotalMin: filters.budgetRange ? filters.budgetRange[0] : undefined,
             budgetLineTotalMax: filters.budgetRange ? filters.budgetRange[1] : undefined
         },
