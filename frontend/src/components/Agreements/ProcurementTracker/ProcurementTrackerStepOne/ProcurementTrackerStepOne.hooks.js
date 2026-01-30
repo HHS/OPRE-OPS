@@ -50,9 +50,11 @@ export default function useProcurementTrackerStepOne(stepOneData) {
         setSelectedUser({});
         setStep1DateCompleted("");
         setStep1Notes("");
+        suite.reset();
     };
 
-    const disableStep1Continue = !isPreSolicitationPackageSent || !selectedUser?.id || !step1DateCompleted;
+    const disableStep1Continue =
+        !isPreSolicitationPackageSent || !selectedUser?.id || !step1DateCompleted || validatorRes.hasErrors();
 
     return {
         isPreSolicitationPackageSent,
