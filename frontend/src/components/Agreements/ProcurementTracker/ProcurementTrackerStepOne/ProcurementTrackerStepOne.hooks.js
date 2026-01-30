@@ -28,7 +28,6 @@ export default function useProcurementTrackerStepOne(stepOneData) {
     };
 
     let validatorRes = suite.get();
-    console.log({ validatorRes });
 
     const handleStep1Complete = async (stepId) => {
         const payload = {
