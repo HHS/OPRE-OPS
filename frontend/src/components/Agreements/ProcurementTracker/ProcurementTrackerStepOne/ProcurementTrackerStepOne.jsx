@@ -77,7 +77,7 @@ const ProcurementTrackerStepOne = ({ stepStatus, stepOneData }) => {
                         label="Date Completed"
                         hint="mm/dd/yyyy"
                         value={step1DateCompleted}
-                        messages={[...(validatorRes.getErrors("dateCompleted") || [])]}
+                        messages={validatorRes.getErrors("dateCompleted") || []}
                         onChange={(e) => {
                             runValidate("dateCompleted", e.target.value);
                             setStep1DateCompleted(e.target.value);

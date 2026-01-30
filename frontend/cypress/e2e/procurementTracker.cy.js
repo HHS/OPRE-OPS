@@ -56,7 +56,7 @@ describe("Procurement Tracker Step 1", () => {
         const futureDateString = `${month}/${day}/${year}`;
         cy.get("#date-completed").type(`${futureDateString}{enter}`);
         cy.get(".usa-error-message").should("have.text", "Date must be today or earlier");
-        // enter a date with in correct format to trigger validation
+        // enter a date with incorrect format to trigger validation
         cy.get("#date-completed").clear();
         cy.get("#date-completed").type("2040/01/01/{enter}");
         cy.get(".usa-error-message").should("have.text", "Date must be MM/DD/YYYY");
