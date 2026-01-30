@@ -10,7 +10,7 @@ Feature: Validate Procurement Tracker Steps
     When I have a valid completed procurement step
     And I submit a procurement step update
 
-    Then I should get a message that it was successful
+    Then I should get a message that it was successful and my procurement tracker has moved onto the next step
 
   Scenario: User belongs to Agreement
     Given I am logged in as an OPS user
@@ -42,6 +42,16 @@ Feature: Validate Procurement Tracker Steps
 
     Then I should get a validation error
 
+  Scenario: Validate no future completion date for acquisition planning
+    Given I am logged in as an OPS user
+    And I have a Contract Agreement with OPS user as a team member
+    And I have a procurement tracker with an empty step number 1
+
+    When I have a procurement step with a date completed in the future
+    And I submit a procurement step update
+
+    Then I should get a validation error
+
   Scenario: Valid status
     Given I am logged in as an OPS user
     And I have a Contract Agreement with OPS user as a team member
@@ -60,7 +70,7 @@ Scenario: When no presolicitation package is sent to proc shop, the request is v
   When I have a procurement step with no presolicitation package sent to procurement shop
   And I submit a procurement step update
 
-  Then I should get a message that it was successful
+  Then I should get a message that it was successful and my procurement tracker has moved onto the next step
 
 Scenario: Cannot update completed procurement tracker step
   Given I am logged in as an OPS user
@@ -81,3 +91,13 @@ Scenario: Validate Procurement Tracker Step exists
   And I submit a procurement step update
 
   Then I should get a resource not found error
+
+Scenario: Complete Procurement Tracker
+    Given I am logged in as an OPS user
+    And I have a Contract Agreement with OPS user as a team member and a new award procurement action
+    And I have a procurement tracker with an uncompleted final step and procurement action
+
+    When I have a valid completed final procurement step
+    And I submit a procurement step update
+
+    Then I should get a message that it was successful and my procurement tracker has completed. Also, the procurement action's status should be awarded

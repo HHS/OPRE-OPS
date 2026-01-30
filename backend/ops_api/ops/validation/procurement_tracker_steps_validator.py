@@ -35,6 +35,7 @@ class ProcurementTrackerStepsValidator:
         """
         from ops_api.ops.validation.rules.procurement_tracker_step import (
             CompletedByAuthorizationRule,
+            NoFutureCompletionDateForAcquisitionPlanningRule,
             NoUpdatingCompletedProcurementStepRule,
             RequiredFieldsRule,
             ResourceExistsRule,
@@ -47,6 +48,7 @@ class ProcurementTrackerStepsValidator:
             CompletedByAuthorizationRule(),
             NoUpdatingCompletedProcurementStepRule(),
             RequiredFieldsRule(),
+            NoFutureCompletionDateForAcquisitionPlanningRule(),
         ]
 
     def validate_step(

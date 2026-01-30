@@ -1,4 +1,11 @@
-from models import ProcurementTrackerStep, ProcurementTrackerStepStatus, User
+from datetime import date
+
+from models import (
+    ProcurementTrackerStep,
+    ProcurementTrackerStepStatus,
+    ProcurementTrackerStepType,
+    User,
+)
 from ops_api.ops.services.ops_service import AuthorizationError, ResourceNotFoundError, ValidationError
 from ops_api.ops.utils.agreements_helpers import check_user_association
 from ops_api.ops.validation.base import ValidationRule
@@ -114,15 +121,52 @@ class RequiredFieldsRule(ValidationRule):
 
     def validate(self, procurement_tracker_step: ProcurementTrackerStep, context: ValidationContext) -> None:
         updated_fields = context.updated_fields
-        acquisition_planning = ["notes", "task_completed_by", "date_completed"]
-        required_acquisition_planning_fields = ["task_completed_by", "date_completed"]
-        acquisition_planning_field_found = [field for field in acquisition_planning if field in updated_fields]
-        if acquisition_planning_field_found:
-            missing_fields = [field for field in required_acquisition_planning_fields if field not in updated_fields]
-            if missing_fields:
-                raise ValidationError(
-                    {
-                        field: f"{field} is required when updating procurement tracker step with acquisition planning package provided."
-                        for field in missing_fields
-                    }
-                )
+        if procurement_tracker_step.step_type == ProcurementTrackerStepType.ACQUISITION_PLANNING:
+            acquisition_planning = ["notes", "task_completed_by", "date_completed"]
+            required_acquisition_planning_fields = ["task_completed_by", "date_completed"]
+            acquisition_planning_field_found = [field for field in acquisition_planning if field in updated_fields]
+            if acquisition_planning_field_found:
+                missing_fields = [
+                    field for field in required_acquisition_planning_fields if field not in updated_fields
+                ]
+                if missing_fields:
+                    raise ValidationError(
+                        {
+                            field: f"{field} is required when updating procurement tracker step with acquisition planning package provided."
+                            for field in missing_fields
+                        }
+                    )
+        else:
+            return  # Not required fields yet for other step types
+
+
+class NoFutureCompletionDateForAcquisitionPlanningRule(ValidationRule):
+    """
+    Validates that the date_completed is not in the future for Acquisition Planning steps.
+    """
+
+    @property
+    def name(self) -> str:
+        return "No Future Completion Date for Acquisition Planning"
+
+    def validate(self, procurement_tracker_step: ProcurementTrackerStep, context: ValidationContext) -> None:
+        updated_fields = context.updated_fields
+
+        # Only validate if date_completed is being updated
+        if "date_completed" not in updated_fields:
+            return
+
+        # Only validate for Acquisition Planning steps
+        if procurement_tracker_step.step_type != ProcurementTrackerStepType.ACQUISITION_PLANNING:
+            return
+
+        date_completed = updated_fields.get("date_completed")
+        if not date_completed:
+            # Only matters if date_completed is provided
+            return
+
+        # Check if date_completed is in the future
+        if date_completed > date.today():
+            raise ValidationError(
+                {"date_completed": "Completion date cannot be in the future for Acquisition Planning steps."}
+            )

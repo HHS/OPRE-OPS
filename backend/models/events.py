@@ -60,6 +60,9 @@ class OpsEventType(Enum):
     UPDATE_PROCUREMENT_ACQUISITION_PLANNING = auto()
     DELETE_PROCUREMENT_ACQUISITION_PLANNING = auto()
 
+    # Procurement Tracker Related Events
+    UPDATE_PROCUREMENT_TRACKER_STEP = auto()
+
     # Document Related Events
     CREATE_DOCUMENT = auto()
     UPDATE_DOCUMENT = auto()
