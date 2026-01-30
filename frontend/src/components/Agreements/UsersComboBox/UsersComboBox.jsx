@@ -65,6 +65,7 @@ const UsersComboBox = ({
                 setSelectedData={handleChange}
                 optionText={(user) => user.full_name || user.email}
                 isDisabled={isDisabled}
+                messages={messages}
             />
         </fieldset>
     );
