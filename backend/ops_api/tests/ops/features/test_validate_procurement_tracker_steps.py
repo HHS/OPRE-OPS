@@ -274,14 +274,11 @@ def procurement_tracker_with_uncompleted_final_step(loaded_db, context):
         procurement_action=procurement_action.id,
     )
     procurement_tracker.steps[-1].status = ProcurementTrackerStepStatus.PENDING
-    final_step_number = procurement_tracker.steps[-1].step_number
+    final_step = procurement_tracker.steps[-1]
+    final_step_number = final_step.step_number
     procurement_tracker.active_step_number = final_step_number
     loaded_db.add(procurement_tracker)
     loaded_db.commit()
-
-    # Extract the final step from the procurement tracker
-    final_step_number = max(step.step_number for step in procurement_tracker.steps)
-    final_step = next((step for step in procurement_tracker.steps if step.step_number == final_step_number), None)
 
     context["procurement_tracker"] = procurement_tracker
     context["procurement_tracker_step"] = final_step
@@ -397,7 +394,7 @@ def check_successful_completion_response(context, loaded_db, setup_and_teardown)
     # Steps aren't 0 based so active step should equal length of step list
     assert procurement_tracker.active_step_number == len(procurement_tracker.steps)
 
-    # Check that step number 2 has step_start_date set to today
+    # Check that final step has step_completed_date set to today
     final_step = (
         loaded_db.query(ProcurementTrackerStep)
         .filter_by(procurement_tracker_id=procurement_tracker_id, step_number=procurement_tracker_step.step_number)
