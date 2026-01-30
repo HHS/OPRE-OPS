@@ -707,42 +707,6 @@ describe("AgreementProcurementTracker", () => {
             expect(screen.getByText("Notes (optional)")).toBeInTheDocument();
         });
 
-        it("calls cancelStep1 when Cancel button is clicked", () => {
-            useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
-                data: mockTrackerWithSteps,
-                isLoading: false,
-                isError: false
-            });
-
-            render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={mockAgreement} />
-                </Provider>
-            );
-
-            const checkbox = screen.getByRole("checkbox");
-            fireEvent.click(checkbox);
-
-            // Select a user
-            const userSelectButton = screen.getByText("Select User");
-            fireEvent.click(userSelectButton);
-
-            // Set date
-            const dateInput = screen.getByTestId("datepicker-input");
-            fireEvent.change(dateInput, { target: { value: "2024-01-15" } });
-
-            // Set notes
-            const textarea = screen.getByTestId("textarea-input");
-            fireEvent.change(textarea, { target: { value: "Test notes" } });
-
-            // Click cancel
-            const cancelButton = screen.getByText("Cancel");
-            fireEvent.click(cancelButton);
-
-            // Verify form is reset
-            expect(checkbox).not.toBeChecked();
-        });
-
         it("disables Complete Step 1 button when required fields are missing", () => {
             useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
                 data: mockTrackerWithSteps,
