@@ -105,12 +105,13 @@ describe("ProcurementTrackerStepOne", () => {
         setStep1Notes: mockSetStep1Notes,
         handleStep1Complete: mockHandleStep1Complete,
         cancelStep1: mockCancelStep1,
-        disableStep1Continue: true,
+        disableStep1Buttons: true,
         step1CompletedByUserName: "John Doe",
         step1DateCompletedLabel: "January 15, 2024",
         step1NotesLabel: "Test notes",
-        runValidate: mockRunValidate,
-        validatorRes: mockValidatorRes
+        showModal: false,
+        setShowModal: vi.fn(),
+        modalProps: {}
     };
 
     const mockStepOneData = { id: 1 };
@@ -223,10 +224,10 @@ describe("ProcurementTrackerStepOne", () => {
             expect(completeButton).toHaveAttribute("data-cy", "continue-btn");
         });
 
-        it("complete button disabled when disableStep1Continue is true", () => {
+        it("complete button disabled when disableStep1Buttons is true", () => {
             useProcurementTrackerStepOne.mockReturnValue({
                 ...defaultHookReturn,
-                disableStep1Continue: true
+                disableStep1Buttons: true
             });
 
             render(
@@ -240,10 +241,10 @@ describe("ProcurementTrackerStepOne", () => {
             expect(completeButton).toBeDisabled();
         });
 
-        it("complete button enabled when disableStep1Continue is false", () => {
+        it("complete button enabled when disableStep1Buttons is false", () => {
             useProcurementTrackerStepOne.mockReturnValue({
                 ...defaultHookReturn,
-                disableStep1Continue: false
+                disableStep1Buttons: false
             });
 
             render(
@@ -358,6 +359,13 @@ describe("ProcurementTrackerStepOne", () => {
         });
 
         it("cancel button calls cancelStep1 when clicked", () => {
+            const mockCancelStep1Fn = vi.fn();
+            useProcurementTrackerStepOne.mockReturnValue({
+                ...defaultHookReturn,
+                cancelStep1: mockCancelStep1Fn,
+                disableStep1Buttons: false
+            });
+
             render(
                 <ProcurementTrackerStepOne
                     stepStatus="PENDING"
@@ -368,13 +376,13 @@ describe("ProcurementTrackerStepOne", () => {
             const cancelButton = screen.getByRole("button", { name: /cancel/i });
             fireEvent.click(cancelButton);
 
-            expect(mockCancelStep1).toHaveBeenCalled();
+            expect(mockCancelStep1Fn).toHaveBeenCalled();
         });
 
         it("complete button calls handleStep1Complete with stepOneData.id", () => {
             useProcurementTrackerStepOne.mockReturnValue({
                 ...defaultHookReturn,
-                disableStep1Continue: false
+                disableStep1Buttons: false
             });
 
             render(
@@ -632,7 +640,7 @@ describe("ProcurementTrackerStepOne", () => {
         it("handles missing stepOneData.id", () => {
             useProcurementTrackerStepOne.mockReturnValue({
                 ...defaultHookReturn,
-                disableStep1Continue: false
+                disableStep1Buttons: false
             });
 
             render(

@@ -3,7 +3,6 @@ import ConfirmationModal from "../../../UI/Modals";
 import TermTag from "../../../UI/Term/TermTag";
 import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepOne from "./ProcurementTrackerStepOne.hooks";
-import { getLocalISODate } from "../../../../helpers/utils";
 
 /**
  * @typedef {Object} ProcurementTrackerStepOneProps
