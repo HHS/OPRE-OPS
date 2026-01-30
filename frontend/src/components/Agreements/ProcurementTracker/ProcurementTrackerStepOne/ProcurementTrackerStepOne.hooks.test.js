@@ -132,11 +132,11 @@ describe("useProcurementTrackerStepOne", () => {
         });
     });
 
-    describe("Validation Logic - disableStep1Continue", () => {
+    describe("Validation Logic - disableStep1Buttons", () => {
         it("is disabled when checkbox unchecked", () => {
             const { result } = renderHook(() => useProcurementTrackerStepOne(mockStepOneData));
 
-            expect(result.current.disableStep1Continue).toBe(true);
+            expect(result.current.disableStep1Buttons).toBe(true);
         });
 
         it("is disabled when checkbox checked but no user selected", () => {
@@ -147,7 +147,7 @@ describe("useProcurementTrackerStepOne", () => {
                 result.current.setStep1DateCompleted("2024-03-20");
             });
 
-            expect(result.current.disableStep1Continue).toBe(true);
+            expect(result.current.disableStep1Buttons).toBe(true);
         });
 
         it("is disabled when checkbox checked and user selected but no date", () => {
@@ -158,7 +158,7 @@ describe("useProcurementTrackerStepOne", () => {
                 result.current.setSelectedUser({ id: 456, full_name: "Jane Smith" });
             });
 
-            expect(result.current.disableStep1Continue).toBe(true);
+            expect(result.current.disableStep1Buttons).toBe(true);
         });
 
         it("is enabled when all required fields filled", () => {
@@ -170,7 +170,7 @@ describe("useProcurementTrackerStepOne", () => {
                 result.current.setStep1DateCompleted("2024-03-20");
             });
 
-            expect(result.current.disableStep1Continue).toBe(false);
+            expect(result.current.disableStep1Buttons).toBe(false);
         });
 
         it("handles user object without id", () => {
@@ -182,7 +182,7 @@ describe("useProcurementTrackerStepOne", () => {
                 result.current.setStep1DateCompleted("2024-03-20");
             });
 
-            expect(result.current.disableStep1Continue).toBe(true);
+            expect(result.current.disableStep1Buttons).toBe(true);
         });
 
         it("reverts to disabled when checkbox unchecked after being checked", () => {
@@ -194,13 +194,13 @@ describe("useProcurementTrackerStepOne", () => {
                 result.current.setStep1DateCompleted("2024-03-20");
             });
 
-            expect(result.current.disableStep1Continue).toBe(false);
+            expect(result.current.disableStep1Buttons).toBe(false);
 
             act(() => {
                 result.current.setIsPreSolicitationPackageSent(false);
             });
 
-            expect(result.current.disableStep1Continue).toBe(true);
+            expect(result.current.disableStep1Buttons).toBe(true);
         });
     });
 
@@ -376,7 +376,33 @@ describe("useProcurementTrackerStepOne", () => {
     });
 
     describe("Cancel Functionality", () => {
-        it("cancelStep1 resets all form state to initial values", () => {
+        it("cancelStep1 sets up modal with correct properties", () => {
+            const { result } = renderHook(() => useProcurementTrackerStepOne(mockStepOneData));
+
+            act(() => {
+                result.current.setIsPreSolicitationPackageSent(true);
+                result.current.setSelectedUser({ id: 456, full_name: "Jane Smith" });
+                result.current.setStep1DateCompleted("2024-03-20");
+                result.current.setStep1Notes("Test notes");
+            });
+
+            expect(result.current.showModal).toBe(false);
+
+            act(() => {
+                result.current.cancelStep1();
+            });
+
+            // After cancelStep1, modal should be shown
+            expect(result.current.showModal).toBe(true);
+
+            // Modal should have correct properties
+            expect(result.current.modalProps.heading).toContain("Are you sure you want to cancel");
+            expect(result.current.modalProps.actionButtonText).toBe("Cancel Task");
+            expect(result.current.modalProps.secondaryButtonText).toBe("Continue Editing");
+            expect(typeof result.current.modalProps.handleConfirm).toBe("function");
+        });
+
+        it("modal handleConfirm resets all form state to initial values", () => {
             const { result } = renderHook(() => useProcurementTrackerStepOne(mockStepOneData));
 
             act(() => {
@@ -392,13 +418,18 @@ describe("useProcurementTrackerStepOne", () => {
                 result.current.cancelStep1();
             });
 
+            // Call the handleConfirm function from the modal
+            act(() => {
+                result.current.modalProps.handleConfirm();
+            });
+
             expect(result.current.isPreSolicitationPackageSent).toBe(false);
             expect(result.current.selectedUser).toEqual({});
             expect(result.current.step1DateCompleted).toBe("");
             expect(result.current.step1Notes).toBe("");
         });
 
-        it("can be called multiple times", () => {
+        it("can call cancelStep1 multiple times", () => {
             const { result } = renderHook(() => useProcurementTrackerStepOne(mockStepOneData));
 
             act(() => {
@@ -407,7 +438,8 @@ describe("useProcurementTrackerStepOne", () => {
                 result.current.cancelStep1();
             });
 
-            expect(result.current.isPreSolicitationPackageSent).toBe(false);
+            // Modal should be shown after multiple calls
+            expect(result.current.showModal).toBe(true);
         });
     });
 

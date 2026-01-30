@@ -52,7 +52,7 @@ export default function useProcurementTrackerStepOne(stepOneData) {
                 setSelectedUser({});
                 setStep1DateCompleted("");
                 setStep1Notes("");
-            },
+            }
         });
     };
 

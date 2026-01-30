@@ -4,7 +4,6 @@ import TermTag from "../../../UI/Term/TermTag";
 import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepOne from "./ProcurementTrackerStepOne.hooks";
 
-
 /**
  * @typedef {Object} ProcurementTrackerStepOneProps
  * @property {string} stepStatus - The current status of the procurement tracker step
