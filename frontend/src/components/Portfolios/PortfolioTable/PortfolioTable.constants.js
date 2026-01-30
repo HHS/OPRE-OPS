@@ -7,4 +7,7 @@ export const PORTFOLIO_TABLE_HEADERS = {
     FY_AVAILABLE: "FY Available Budget"
 };
 
-export const PORTFOLIO_SORT_CODES = tableSortCodes.portfolioCodes;
+export const PORTFOLIO_SORT_CODES = {
+    ...tableSortCodes.portfolioCodes,
+    STATIC_ORDER: "STATIC_ORDER"
+};

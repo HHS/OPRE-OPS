@@ -7,7 +7,6 @@ import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
 import PortfolioTable from "../../../components/Portfolios/PortfolioTable";
 import PortfolioSummaryCards from "../../../components/Portfolios/PortfolioSummaryCards";
-import { tableSortCodes } from "../../../helpers/utils";
 import { exportTableToXlsx } from "../../../helpers/tableExport.helpers";
 import icons from "../../../uswds/img/sprite.svg";
 import PortfolioFiscalYearSelect from "./PortfolioFiscalYearSelect";
@@ -52,11 +51,8 @@ const PortfolioList = () => {
         isError
     } = usePortfolioList({ currentUserId, searchParams });
 
-    // Table sorting state
-    const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions(
-        tableSortCodes.portfolioCodes.DIVISION,
-        false
-    );
+    // Table sorting state - default to static order matching the legend
+    const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions("STATIC_ORDER", false);
 
     // Handle error navigation in useEffect to avoid setState during render
     React.useEffect(() => {
