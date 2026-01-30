@@ -1,4 +1,5 @@
 import { useGetUsersQuery } from "../../../api/opsAPI";
+import cx from "clsx";
 import ComboBox from "../../UI/Form/ComboBox";
 
 /**
@@ -32,16 +33,16 @@ const UsersComboBox = ({
 
     const handleChange = (user) => {
         setSelectedUser(user);
-        onChange("users_combobox", user?.id ?? "");
+        onChange("users_combobox", +user?.id);
     };
 
     return (
         <fieldset
-            className="usa-fieldset"
+            className={cx("usa-fieldset", messages.length && "usa-form-group--error")}
             disabled={isDisabled}
         >
             <label
-                className={`${messages.length ? "usa-label--error" : ""}`}
+                className={`${messages.length > 0 ? "usa-label--error" : ""}`}
                 htmlFor="users-combobox-input"
                 id="users-label"
             >
