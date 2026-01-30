@@ -15,6 +15,7 @@ vi.mock("./suite", () => {
         hasErrors: vi.fn(() => false),
         isValid: vi.fn(() => true)
     }));
+    mockSuite.reset = vi.fn();
     return { default: mockSuite };
 });
 
