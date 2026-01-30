@@ -33,7 +33,7 @@ const UsersComboBox = ({
 
     const handleChange = (user) => {
         setSelectedUser(user);
-        onChange("users_combobox", +user?.id);
+        onChange("users", user?.id ?? "");
     };
 
     return (
@@ -58,7 +58,7 @@ const UsersComboBox = ({
                 </span>
             )}
             <ComboBox
-                name="users_combobox"
+                name="users"
                 namespace="users-combobox"
                 data={users}
                 selectedData={selectedUser}
