@@ -1,14 +1,9 @@
 import { useGetProcurementTrackersByAgreementIdQuery } from "../../../api/opsAPI";
-import UsersComboBox from "../../../components/Agreements/UsersComboBox";
+import ProcurementTrackerStepOne from "../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepOne";
 import DebugCode from "../../../components/DebugCode";
 import Accordion from "../../../components/UI/Accordion";
-import TextArea from "../../../components/UI/Form/TextArea";
 import StepIndicator from "../../../components/UI/StepIndicator";
-import TermTag from "../../../components/UI/Term/TermTag";
 import { IS_PROCUREMENT_TRACKER_READY } from "../../../constants";
-import { formatDateToMonthDayYear } from "../../../helpers/utils";
-import useGetUserFullNameFromId from "../../../hooks/user.hooks";
-import useAgreementProcurementTracker from "./AgreementProcurementTracker.hooks";
 
 /**
  * @typedef {Object} AgreementProcurementTrackerProps
@@ -22,22 +17,15 @@ import useAgreementProcurementTracker from "./AgreementProcurementTracker.hooks"
  */
 
 const AgreementProcurementTracker = ({ agreement }) => {
+    const WIZARD_STEPS = [
+        "Acquisition Planning",
+        "Pre-Solicitation",
+        "Solicitation",
+        "Evaluation",
+        "Pre-Award",
+        "Award"
+    ];
     const agreementId = agreement?.id;
-    const {
-        isPreSolicitationPackageSent,
-        setIsPreSolicitationPackageSent,
-        selectedUser,
-        setSelectedUser,
-        step1DateCompleted,
-        setStep1DateCompleted,
-        MemoizedDatePicker,
-        setStep1Notes,
-        step1Notes,
-        handleStep1Complete,
-        cancelStep1,
-        disableStep1Continue,
-        STEP_STATUSES
-    } = useAgreementProcurementTracker();
 
     const { data, isLoading, isError } = useGetProcurementTrackersByAgreementIdQuery(agreementId, {
         skip: !agreementId || !IS_PROCUREMENT_TRACKER_READY,
@@ -47,22 +35,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
     // Extract tracker data
     const trackers = data?.data || [];
     const activeTracker = trackers.find((tracker) => tracker.status === "ACTIVE");
-    const step1CompletedByUserName = useGetUserFullNameFromId(
-        activeTracker?.steps.find((step) => step.step_number === 1)?.task_completed_by
-    );
-    const step1DateCompletedLabel = formatDateToMonthDayYear(
-        activeTracker?.steps.find((step) => step.step_number === 1)?.date_completed
-    );
-    const step1NotesLabel = activeTracker?.steps.find((step) => step.step_number === 1)?.notes;
-
-    const wizardSteps = [
-        "Acquisition Planning",
-        "Pre-Solicitation",
-        "Solicitation",
-        "Evaluation",
-        "Pre-Award",
-        "Award"
-    ];
+    const stepOneData = activeTracker?.steps.find((step) => step.step_number === 1);
 
     // Handle loading state
     if (isLoading) {
@@ -95,13 +68,11 @@ const AgreementProcurementTracker = ({ agreement }) => {
                 Follow the steps below to complete the procurement process for Budget Lines in Executing Status.
             </p>
             <StepIndicator
-                steps={wizardSteps}
+                steps={WIZARD_STEPS}
                 currentStep={currentStep}
             />
-            {/* Accordions */}
             {activeTracker?.steps.length > 0 &&
                 activeTracker?.steps?.map((step) => {
-                    // TODO : Create separate components for each step type
                     return (
                         <Accordion
                             heading={`Step ${step.step_number} of ${activeTracker?.steps.length} ${step.step_type}`}
@@ -109,95 +80,11 @@ const AgreementProcurementTracker = ({ agreement }) => {
                             level={3}
                             key={step.id}
                         >
-                            {step.step_number === 1 && step.status === STEP_STATUSES.PENDING && (
-                                <fieldset className="usa-fieldset">
-                                    <p>
-                                        Once the pre-solicitation package is sufficiently drafted and signed by all
-                                        parties, send it to the Procurement Shop and check this step as complete.
-                                    </p>
-                                    <div className="usa-checkbox">
-                                        <input
-                                            className="usa-checkbox__input"
-                                            id="step-1-checkbox"
-                                            type="checkbox"
-                                            name="step-1-checkbox"
-                                            value="step-1-checkbox"
-                                            checked={isPreSolicitationPackageSent}
-                                            onChange={() =>
-                                                setIsPreSolicitationPackageSent(!isPreSolicitationPackageSent)
-                                            }
-                                        />
-                                        <label
-                                            className="usa-checkbox__label"
-                                            htmlFor="step-1-checkbox"
-                                        >
-                                            The pre-solicitation package has been sent to the Procurement Shop for
-                                            review
-                                        </label>
-                                    </div>
-                                    <UsersComboBox
-                                        label={"Task Completed By"}
-                                        selectedUser={selectedUser}
-                                        setSelectedUser={setSelectedUser}
-                                        isDisabled={!isPreSolicitationPackageSent}
-                                    />
-                                    <MemoizedDatePicker
-                                        id="date-completed"
-                                        name="dateCompleted"
-                                        label="Date Completed"
-                                        hint="mm/dd/yyyy"
-                                        value={step1DateCompleted}
-                                        onChange={(e) => setStep1DateCompleted(e.target.value)}
-                                        isDisabled={!isPreSolicitationPackageSent}
-                                        maxDate={new Date()}
-                                    />
-                                    <TextArea
-                                        name="notes"
-                                        label="Notes (optional)"
-                                        className="margin-top-0"
-                                        maxLength={750}
-                                        value={step1Notes}
-                                        onChange={(_, value) => setStep1Notes(value)}
-                                        isDisabled={!isPreSolicitationPackageSent}
-                                    />
-                                    <button
-                                        className="usa-button usa-button--unstyled margin-right-2"
-                                        data-cy="cancel-button"
-                                        onClick={cancelStep1}
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        className="usa-button"
-                                        data-cy="continue-btn"
-                                        onClick={() => handleStep1Complete(step.id)}
-                                        disabled={disableStep1Continue}
-                                    >
-                                        Complete Step 1
-                                    </button>
-                                </fieldset>
-                            )}
-                            {step.step_number === 1 && step.status === STEP_STATUSES.COMPLETED && (
-                                <div>
-                                    <p>
-                                        When the pre-solicitation package has been sufficiently drafted and signed by
-                                        all parties, send it to the Procurement Shop and update the task below.
-                                    </p>
-                                    <p>The pre-solicitation package has been sent to the Procurement Shop for review</p>
-
-                                    <dl>
-                                        <TermTag
-                                            term="Completed By"
-                                            description={step1CompletedByUserName}
-                                        />
-                                        <TermTag
-                                            term="Date Completed"
-                                            description={step1DateCompletedLabel}
-                                        />
-                                        <dt className="margin-0 text-base-dark margin-top-3 font-12px">Notes</dt>
-                                        <dd className="margin-0 margin-top-1">{step1NotesLabel}</dd>
-                                    </dl>
-                                </div>
+                            {step.step_number === 1 && (
+                                <ProcurementTrackerStepOne
+                                    stepStatus={step.status}
+                                    stepOneData={stepOneData}
+                                />
                             )}
                         </Accordion>
                     );
