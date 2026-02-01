@@ -215,6 +215,16 @@ export const opsApi = createApi({
             },
             providesTags: ["Agreements"]
         }),
+        getAgreementsFilterOptions: builder.query({
+            query: ({ onlyMy }) => {
+                const queryParams = [];
+                if (onlyMy) {
+                    queryParams.push("only_my=true");
+                }
+                return `/agreements-filters/?${queryParams.join("&")}`;
+            },
+            providesTags: ["Agreements"]
+        }),
         getBudgetLineItemsFilterOptions: builder.query({
             query: ({ onlyMy, enableObe }) => {
                 const queryParams = [];
@@ -900,6 +910,7 @@ export const {
     useDeleteAgreementMutation,
     useGetAgreementAgenciesQuery,
     useGetAllAgreementAgenciesQuery,
+    useGetAgreementsFilterOptionsQuery,
     useAddBudgetLineItemMutation,
     useGetBudgetLineItemsFilterOptionsQuery,
     useGetBudgetLineItemsQuery,

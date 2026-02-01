@@ -6,7 +6,7 @@ from typing import Any, List, Optional, Sequence, Type
 from flask import current_app
 from flask_jwt_extended import get_current_user
 from loguru import logger
-from sqlalchemy import Select, func, or_, select
+from sqlalchemy import Select, distinct, func, or_, select, union_all
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -15,12 +15,17 @@ from models import (
     AaAgreement,
     Agreement,
     AgreementSortCondition,
+    AgreementTeamMembers,
     BudgetLineItem,
     BudgetLineItemStatus,
     ChangeRequestType,
     ContractAgreement,
+    Division,
     GrantAgreement,
     OpsEventType,
+    Portfolio,
+    PortfolioTeamLeaders,
+    Project,
     ResearchMethodology,
     ServicesComponent,
     SpecialTopic,
@@ -518,6 +523,189 @@ class AgreementsService(OpsService[Agreement]):
         )
         for bli in agreement.budget_line_items:
             bli.procurement_shop_fee = current_fee
+
+    def get_filter_options(self, data: dict | None) -> dict[str, Any]:
+        """
+        Get filter options for the Agreement list using optimized database queries.
+
+        PERFORMANCE: Uses database-level aggregation with DISTINCT queries instead of
+        loading all agreements into memory. This approach is efficient even with
+        thousands of agreements and budget line items.
+
+        Respects the only_my parameter to filter by user association.
+        """
+        only_my = data.get("only_my", [])
+
+        logger.debug("Beginning agreements filter queries")
+
+        # Step 1: Build base agreement IDs subquery with optional user filtering
+        base_agreement_query = select(Agreement.id)
+
+        if only_my and True in only_my:
+            user = get_current_user()
+            # Filter by user association - reuse existing service method
+            base_agreement_query = self._apply_user_association_filter(base_agreement_query, user)
+
+        agreement_ids_subquery = base_agreement_query.subquery()
+
+        # Step 2: Fiscal years - Query BLI fiscal_year with JOIN to agreements
+        fiscal_years_query = (
+            select(distinct(BudgetLineItem.fiscal_year))
+            .join(Agreement, BudgetLineItem.agreement_id == Agreement.id)
+            .where(Agreement.id.in_(select(agreement_ids_subquery)))
+            .where(BudgetLineItem.fiscal_year.isnot(None))
+        )
+        fiscal_years = sorted([fy for fy in self.db_session.scalars(fiscal_years_query).all()], reverse=True)
+
+        # Step 3: Portfolios - JOIN through BLI → CAN → Portfolio
+        portfolios_query = (
+            select(distinct(Portfolio.id), Portfolio.name)
+            .join(CAN, Portfolio.id == CAN.portfolio_id)
+            .join(BudgetLineItem, CAN.id == BudgetLineItem.can_id)
+            .join(Agreement, BudgetLineItem.agreement_id == Agreement.id)
+            .where(Agreement.id.in_(select(agreement_ids_subquery)))
+        )
+        portfolios = [{"id": p_id, "name": p_name} for p_id, p_name in self.db_session.execute(portfolios_query).all()]
+        portfolios = sorted(portfolios, key=lambda x: x["name"])
+
+        # Step 4: Project titles - Direct JOIN to Project table
+        projects_query = (
+            select(distinct(Project.id), Project.title)
+            .join(Agreement, Project.id == Agreement.project_id)
+            .where(Agreement.id.in_(select(agreement_ids_subquery)))
+            .where(Project.title.isnot(None))
+        )
+        project_titles = [
+            {"id": p_id, "name": p_title} for p_id, p_title in self.db_session.execute(projects_query).all()
+        ]
+        project_titles = sorted(project_titles, key=lambda x: x["name"])
+
+        # Step 5: Agreement types - Direct query on agreement_type column
+        agreement_types_query = (
+            select(distinct(Agreement.agreement_type))
+            .where(Agreement.id.in_(select(agreement_ids_subquery)))
+            .where(Agreement.agreement_type.isnot(None))
+        )
+        agreement_types = sorted([at.name for at in self.db_session.scalars(agreement_types_query).all()])
+
+        # Step 6: Agreement names - Query id and name from agreements
+        agreement_names_query = (
+            select(Agreement.id, Agreement.name)
+            .where(Agreement.id.in_(select(agreement_ids_subquery)))
+            .where(Agreement.name.isnot(None))
+        )
+        agreement_names = [
+            {"id": a_id, "name": a_name} for a_id, a_name in self.db_session.execute(agreement_names_query).all()
+        ]
+        agreement_names = sorted(agreement_names, key=lambda x: x["name"])
+
+        # Step 7: Contract numbers - UNION query on contract_agreement and aa_agreement
+        # These are stored in subclass tables, not the base agreement table
+        contract_numbers_query = union_all(
+            select(distinct(ContractAgreement.contract_number))
+            .where(ContractAgreement.id.in_(select(agreement_ids_subquery)))
+            .where(ContractAgreement.contract_number.isnot(None)),
+            select(distinct(AaAgreement.contract_number))
+            .where(AaAgreement.id.in_(select(agreement_ids_subquery)))
+            .where(AaAgreement.contract_number.isnot(None)),
+        )
+        contract_numbers = sorted([cn for cn in self.db_session.scalars(contract_numbers_query).all()])
+
+        # Step 8: Research methodologies - Return empty for now (business logic not defined)
+        # TODO: Implement research_types filter once business requirements are clarified
+        research_types = []
+
+        # Build response
+        from ops_api.ops.schemas.agreements import AgreementListFilterOptionResponseSchema
+
+        filters = {
+            "fiscal_years": fiscal_years,
+            "portfolios": portfolios,
+            "project_titles": project_titles,
+            "agreement_types": agreement_types,
+            "agreement_names": agreement_names,
+            "contract_numbers": contract_numbers,
+            "research_types": research_types,
+        }
+
+        filter_response_schema = AgreementListFilterOptionResponseSchema()
+        return filter_response_schema.dump(filters)
+
+    def _apply_user_association_filter(self, query, user):
+        """
+        Apply user association filter to agreement query.
+
+        Matches ALL association logic from check_user_association() in agreements_helpers.py.
+        Checks if user is associated through:
+        - Agreement creator
+        - Project officer or alternate project officer
+        - Agreement team member
+        - Portfolio team leader
+        - Division director or deputy division director
+        - User has BUDGET_TEAM or SYSTEM_OWNER role
+        - User is a super user
+        """
+        from ops_api.ops.utils.users import is_super_user
+
+        # Check for privileged roles first - these users see ALL agreements
+        user_role_names = [role.name for role in user.roles]
+        if "BUDGET_TEAM" in user_role_names or "SYSTEM_OWNER" in user_role_names or is_super_user(user, current_app):
+            # User has access to all agreements, no filtering needed
+            return query
+
+        # Build conditions for user association (any one of these grants access)
+        conditions = []
+
+        # 1. User created the agreement
+        conditions.append(Agreement.created_by == user.id)
+
+        # 2. User is project officer
+        conditions.append(Agreement.project_officer_id == user.id)
+
+        # 3. User is alternate project officer
+        conditions.append(Agreement.alternate_project_officer_id == user.id)
+
+        # 4. User is a direct team member
+        team_member_subquery = select(AgreementTeamMembers.agreement_id).where(AgreementTeamMembers.user_id == user.id)
+        conditions.append(Agreement.id.in_(team_member_subquery))
+
+        # 5. User is a portfolio team leader
+        portfolio_leader_subquery = (
+            select(Agreement.id)
+            .join(BudgetLineItem, Agreement.id == BudgetLineItem.agreement_id)
+            .join(CAN, BudgetLineItem.can_id == CAN.id)
+            .join(Portfolio, CAN.portfolio_id == Portfolio.id)
+            .join(PortfolioTeamLeaders, Portfolio.id == PortfolioTeamLeaders.portfolio_id)
+            .where(PortfolioTeamLeaders.user_id == user.id)
+        )
+        conditions.append(Agreement.id.in_(portfolio_leader_subquery))
+
+        # 6. User is a division director
+        division_director_subquery = (
+            select(Agreement.id)
+            .join(BudgetLineItem, Agreement.id == BudgetLineItem.agreement_id)
+            .join(CAN, BudgetLineItem.can_id == CAN.id)
+            .join(Portfolio, CAN.portfolio_id == Portfolio.id)
+            .join(Division, Portfolio.division_id == Division.id)
+            .where(Division.division_director_id == user.id)
+        )
+        conditions.append(Agreement.id.in_(division_director_subquery))
+
+        # 7. User is a deputy division director
+        deputy_division_director_subquery = (
+            select(Agreement.id)
+            .join(BudgetLineItem, Agreement.id == BudgetLineItem.agreement_id)
+            .join(CAN, BudgetLineItem.can_id == CAN.id)
+            .join(Portfolio, CAN.portfolio_id == Portfolio.id)
+            .join(Division, Portfolio.division_id == Division.id)
+            .where(Division.deputy_division_director_id == user.id)
+        )
+        conditions.append(Agreement.id.in_(deputy_division_director_subquery))
+
+        # Apply all conditions with OR (user needs to match ANY condition)
+        query = query.where(or_(*conditions))
+
+        return query
 
 
 def add_update_vendor(session: Session, vendor: str, agreement: Agreement, field_name: str = "vendor") -> None:

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import PacmanLoader from "react-spinners/PacmanLoader";
 import {
+    useGetAgreementsFilterOptionsQuery,
     useGetAgreementsQuery,
     useLazyGetAgreementByIdQuery,
     useLazyGetAgreementsQuery,
@@ -30,6 +31,7 @@ import icons from "../../../uswds/img/sprite.svg";
 import AgreementsFilterButton from "./AgreementsFilterButton/AgreementsFilterButton";
 import AgreementsFilterTags from "./AgreementsFilterTags/AgreementsFilterTags";
 import AgreementTabs from "./AgreementsTabs";
+import DebugCode from "../../../components/DebugCode/DebugCode.jsx";
 
 /**
  * @typedef {import('../../../types/AgreementTypes').Agreement} Agreement
@@ -86,6 +88,8 @@ const AgreementsList = () => {
     const [trigger] = useLazyGetUserQuery();
     const [agreementTrigger] = useLazyGetAgreementByIdQuery();
     const [getAllAgreementsTrigger] = useLazyGetAgreementsQuery();
+
+    const agreementFilters = useGetAgreementsFilterOptionsQuery({ onlyMy: false });
 
     if (isLoadingAgreement) {
         return (
@@ -319,6 +323,7 @@ const AgreementsList = () => {
                     <ChangeRequests />
                 </TablePageLayout>
             )}
+            <DebugCode data={agreementFilters} />
         </App>
     );
 };
