@@ -1,7 +1,7 @@
 """Tests for procurement tracker API endpoints."""
 
 import pytest
-from sqlalchemy import select
+from sqlalchemy import func, select
 
 from models import OpsEvent, OpsEventType, ProcurementTracker, ProcurementTrackerStepStatus
 from models.procurement_tracker import DefaultProcurementTrackerStep, ProcurementTrackerStepType
@@ -442,3 +442,57 @@ def test_update_procurement_tracker_step_multiple_fields(auth_client, test_step,
     step_data = event.event_details["procurement_tracker_step"]
     assert step_data["id"] == test_step.id
     assert step_data["status"] == "COMPLETED"
+
+
+def test_update_procurement_tracker_step_creates_update_tracker_event(auth_client, loaded_db):
+    """Test that completing a step creates both UPDATE_PROCUREMENT_TRACKER_STEP and UPDATE_PROCUREMENT_TRACKER events."""
+    # Get a tracker with its first step
+    tracker = loaded_db.get(ProcurementTracker, 1)
+    first_step = next((s for s in tracker.steps if s.step_number == 1), None)
+    assert first_step is not None, "Tracker must have a first step"
+
+    # Set tracker to active step 1
+    tracker.active_step_number = 1
+    first_step.status = ProcurementTrackerStepStatus.PENDING
+    loaded_db.commit()
+
+    # Count initial events
+    initial_step_events = loaded_db.scalar(
+        select(func.count()).select_from(OpsEvent).where(OpsEvent.event_type == OpsEventType.UPDATE_PROCUREMENT_TRACKER_STEP)
+    )
+    initial_tracker_events = loaded_db.scalar(
+        select(func.count()).select_from(OpsEvent).where(OpsEvent.event_type == OpsEventType.UPDATE_PROCUREMENT_TRACKER)
+    )
+
+    # Complete the first step
+    update_data = {"status": "COMPLETED"}
+    response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{first_step.id}", json=update_data)
+    assert response.status_code == 200
+
+    # Verify UPDATE_PROCUREMENT_TRACKER_STEP event was created
+    step_events = loaded_db.scalar(
+        select(func.count()).select_from(OpsEvent).where(OpsEvent.event_type == OpsEventType.UPDATE_PROCUREMENT_TRACKER_STEP)
+    )
+    assert step_events == initial_step_events + 1
+
+    # Verify UPDATE_PROCUREMENT_TRACKER event was created
+    tracker_events = loaded_db.scalar(
+        select(func.count()).select_from(OpsEvent).where(OpsEvent.event_type == OpsEventType.UPDATE_PROCUREMENT_TRACKER)
+    )
+    assert tracker_events == initial_tracker_events + 1
+
+    # Get the UPDATE_PROCUREMENT_TRACKER event
+    tracker_event = loaded_db.scalars(
+        select(OpsEvent)
+        .where(OpsEvent.event_type == OpsEventType.UPDATE_PROCUREMENT_TRACKER)
+        .order_by(OpsEvent.created_on.desc())
+    ).first()
+
+    assert tracker_event is not None
+    assert tracker_event.event_status.name == "SUCCESS"
+    assert "procurement_tracker_updates" in tracker_event.event_details
+    assert "procurement_tracker" in tracker_event.event_details
+
+    # Verify the tracker was advanced to step 2
+    tracker_data = tracker_event.event_details["procurement_tracker"]
+    assert tracker_data["active_step_number"] == 2

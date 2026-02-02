@@ -10,6 +10,9 @@ from sqlalchemy.orm import selectinload
 
 from models import (
     AwardType,
+    OpsEvent,
+    OpsEventStatus,
+    OpsEventType,
     ProcurementAction,
     ProcurementActionStatus,
     ProcurementTrackerStatus,
@@ -17,6 +20,7 @@ from models import (
     ProcurementTrackerStepStatus,
     User,
 )
+from models.utils import generate_events_update
 from ops_api.ops.services.ops_service import ResourceNotFoundError
 from ops_api.ops.validation.procurement_tracker_steps_validator import ProcurementTrackerStepsValidator
 
@@ -103,7 +107,7 @@ class ProcurementTrackerStepService:
                 logger.warning(f"Field {model_field} does not exist on ProcurementTrackerStep")
 
         # Handle COMPLETED status
-        self._advance_active_step_if_needed(step, data)
+        self._advance_active_step_if_needed(step, data, current_user)
 
         # Commit changes
         self.db_session.commit()
@@ -113,7 +117,7 @@ class ProcurementTrackerStepService:
 
         return step, 200
 
-    def _advance_active_step_if_needed(self, step, data):
+    def _advance_active_step_if_needed(self, step, data, current_user: User):
         if data.get("status") == ProcurementTrackerStepStatus.COMPLETED or (
             isinstance(data.get("status"), str) and data.get("status") == "COMPLETED"
         ):
@@ -123,6 +127,11 @@ class ProcurementTrackerStepService:
 
             # Get the procurement tracker and all its steps
             procurement_tracker = step.procurement_tracker
+
+            # Capture old state before making changes
+            old_tracker_dict = procurement_tracker.to_dict()
+            tracker_modified = False
+
             all_steps = sorted(procurement_tracker.steps, key=lambda s: s.step_number)
             total_steps = len(all_steps)
 
@@ -130,6 +139,7 @@ class ProcurementTrackerStepService:
             if step.step_number < total_steps:
                 # Increment active_step_number in the procurement tracker
                 procurement_tracker.active_step_number = step.step_number + 1
+                tracker_modified = True
                 logger.debug(f"Incremented active_step_number to {procurement_tracker.active_step_number}")
 
                 # Find the next step and set its step_start_date to today
@@ -140,6 +150,7 @@ class ProcurementTrackerStepService:
             else:
                 logger.debug("This is the final step; marking procurement tracker as completed.")
                 procurement_tracker.status = ProcurementTrackerStatus.COMPLETED
+                tracker_modified = True
 
                 if procurement_tracker.procurement_action:
                     procurement_action = self.db_session.get(ProcurementAction, procurement_tracker.procurement_action)
@@ -147,6 +158,47 @@ class ProcurementTrackerStepService:
                         procurement_action.status = ProcurementActionStatus.AWARDED
                         procurement_action.date_awarded_obligated = date.today()
                         logger.debug(f"Set procurement action status to AWARDED and award_date to {date.today()}")
+
+            # Create UPDATE_PROCUREMENT_TRACKER event if tracker was modified
+            if tracker_modified:
+                self._create_update_procurement_tracker_event(
+                    procurement_tracker, old_tracker_dict, current_user
+                )
+
+    def _create_update_procurement_tracker_event(
+        self, procurement_tracker, old_tracker_dict: dict, current_user: User
+    ) -> None:
+        """
+        Create an UPDATE_PROCUREMENT_TRACKER event for tracker changes.
+
+        Args:
+            procurement_tracker: The updated ProcurementTracker instance
+            old_tracker_dict: Dictionary of the tracker's state before update
+            current_user: User making the update
+        """
+        # Generate event updates comparing old and new state
+        events_update = generate_events_update(
+            old_tracker_dict,
+            procurement_tracker.to_dict(),
+            procurement_tracker.agreement_id,
+            current_user.id
+        )
+
+        # Create the event
+        event = OpsEvent(
+            event_type=OpsEventType.UPDATE_PROCUREMENT_TRACKER,
+            event_status=OpsEventStatus.SUCCESS,
+            created_by=current_user.id,
+            event_details={
+                "procurement_tracker_updates": events_update,
+                "procurement_tracker": procurement_tracker.to_dict(),
+            },
+        )
+        self.db_session.add(event)
+        logger.debug(
+            f"Created UPDATE_PROCUREMENT_TRACKER event for tracker {procurement_tracker.id} "
+            f"(agreement {procurement_tracker.agreement_id})"
+        )
 
     def _apply_agreement_filter(self, stmt: Select[tuple[ProcurementTrackerStep]], agreement_id: list[int] | int):
         """Apply agreement_id filter to the query."""
