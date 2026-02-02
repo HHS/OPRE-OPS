@@ -252,14 +252,13 @@ describe("agreement details", () => {
         cy.get("#editing").should("have.text", "Editing...");
 
         // Make a change to agreement details
-        cy.get("#contract-type").select("Time & Materials (T&M)");
-        cy.wait(500); // Wait for state to update
+        cy.selectAndWaitForChange("#contract-type", "TIME_AND_MATERIALS");
 
         // Try to navigate to Budget Lines tab
         cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
 
         // Verify modal appears
-        cy.get("#ops-modal", { timeout: 10000 }).should("exist");
+        cy.waitForModalToAppear();
         cy.get("#ops-modal-heading").should("contain", "You have unsaved changes");
         cy.get("#ops-modal-description").should(
             "contain",
@@ -273,19 +272,18 @@ describe("agreement details", () => {
 
         // Try again and test "Leave without saving"
         cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
-        cy.get("#ops-modal", { timeout: 10000 }).should("exist");
+        cy.waitForModalToAppear();
         cy.get("[data-cy='cancel-action']").click();
         cy.url().should("include", "/budget-lines");
 
         // Go back to Agreement Details and make changes again
         cy.get('[data-cy="details-tab-Agreement Details"]').click();
         cy.get("#edit").click();
-        cy.get("#contract-type").select("Time & Materials (T&M)");
-        cy.wait(500); // Wait for state to update
+        cy.selectAndWaitForChange("#contract-type", "TIME_AND_MATERIALS");
 
         // Try to navigate to Budget Lines and test "Save Changes"
         cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
-        cy.get("#ops-modal", { timeout: 10000 }).should("exist");
+        cy.waitForModalToAppear();
         cy.get("[data-cy='confirm-action']").click();
         cy.get(".usa-alert__heading").should("contain", "Agreement Updated");
         cy.url().should("include", "/budget-lines");
@@ -296,44 +294,43 @@ describe("agreement details", () => {
         cy.visit("/agreements/9");
 
         // Initially: no "Editing..." indicator
-        cy.get("#editing").should("not.exist");
+        cy.waitForEditingState(false);
 
         // After edit click: "Editing..." appears
         cy.get("#edit").click();
-        cy.get("#editing").should("have.text", "Editing...");
+        cy.waitForEditingState(true);
 
         // After making a change: "Editing..." still visible
-        cy.get("#contract-type").select("Firm Fixed Price (FFP)");
-        cy.wait(500); // Wait for state to update
-        cy.get("#editing").should("have.text", "Editing...");
+        cy.selectAndWaitForChange("#contract-type", "FIRM_FIXED_PRICE");
+        cy.waitForEditingState(true);
 
         // After save: indicator disappears
         cy.get('[data-cy="continue-btn"]').click();
         cy.get(".usa-alert__heading").should("contain", "Agreement Updated");
-        cy.get("#editing").should("not.exist");
+        cy.waitForEditingState(false);
 
         // Test the same workflow on Budget Lines tab
         cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
 
         // Initially: no indicators
-        cy.get("#editing").should("not.exist");
+        cy.waitForEditingState(false);
         cy.get('[data-cy="unsaved-changes"]').should("not.exist");
 
         // After edit click: "Editing..." appears, no badge
         cy.get("#edit").click();
-        cy.get("#editing").should("have.text", "Editing...");
+        cy.waitForEditingState(true);
         cy.get('[data-cy="unsaved-changes"]').should("not.exist");
 
         // After adding a budget line: both "Editing..." and badge appear
         cy.get("#add-budget-line").click();
-        cy.get("#editing").should("have.text", "Editing...");
+        cy.waitForEditingState(true);
         cy.get('[data-cy="unsaved-changes"]').should("exist");
 
         // Cancel and verify both indicators disappear
         cy.get('[data-cy="cancel-button"]').click();
         cy.get("#ops-modal-heading").should("contain", "Are you sure you want to cancel editing?");
         cy.get('[data-cy="confirm-action"]').click();
-        cy.get("#editing").should("not.exist");
+        cy.waitForEditingState(false);
         cy.get('[data-cy="unsaved-changes"]').should("not.exist");
     });
 
@@ -341,11 +338,12 @@ describe("agreement details", () => {
         // Start fresh - login as system-owner
         testLogin("system-owner");
         cy.visit("/agreements/9");
-        cy.wait(1000); // Wait for page to load
+        // Wait for page to load by checking for edit button
+        cy.get("#edit", { timeout: 10000 }).should("be.visible");
 
         // Click edit - "Editing..." appears
         cy.get("#edit").click();
-        cy.get("#editing").should("have.text", "Editing...");
+        cy.waitForEditingState(true);
 
         // Navigate to Budget Lines - no modal should appear (no changes made)
         cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
