@@ -1,7 +1,7 @@
 import { render } from "@testing-library/react";
 import TextClip from "./TextClip";
 
-it.skip("renders without crashing", () => {
+it.todo("renders without crashing", () => {
     render(
         <TextClip
             text="Lorem ipsum dolor sit amet, consectetur adipiscing elit sed do eiusmod tempor"

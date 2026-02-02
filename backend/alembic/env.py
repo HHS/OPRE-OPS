@@ -45,7 +45,7 @@ def get_connection_uri() -> str:
         return None
 
 
-def include_object(object, name, type_, reflected, compare_to):
+def include_object(obj, name, type_, reflected, compare_to):
     """
     Filter out objects that should be ignored during autogenerate.
     Excludes SQLAlchemy-Continuum version table indexes to prevent
@@ -69,9 +69,7 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = os.getenv("SQLALCHEMY_DATABASE_URI") or config.get_main_option(
-        "sqlalchemy.url"
-    )
+    url = os.getenv("SQLALCHEMY_DATABASE_URI") or config.get_main_option("sqlalchemy.url")
     context.configure(
         url=url,
         target_metadata=target_metadata,

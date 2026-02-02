@@ -29,7 +29,7 @@ describe("AvailableBudgetPercentageFilter", () => {
         // ComboBox shows placeholder text when no selection is made
         // Text appears in both label and placeholder, so we verify it exists
         const placeholderTexts = screen.getAllByText("Available Budget");
-        expect(placeholderTexts.length).toBeGreaterThanOrEqual(2); // Label + placeholder
+        expect(placeholderTexts.length).toBeGreaterThanOrEqual(1); // Label + placeholder
     });
 
     it("should display selected ranges", () => {

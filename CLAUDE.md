@@ -262,7 +262,7 @@ The frontend follows modern React patterns with **Redux Toolkit** for state mana
 #### Testing Frontend
 
 - Uses **Vitest** with React Testing Library
-- **MSW (Mock Service Worker)** for API mocking
+- **MSW (Mock Service Worker)** for API mocking in tests only
 - **90% code coverage requirement**
 - E2E tests use **Cypress** and require running Docker stack
 - Run `docker system prune --volumes` between E2E test runs for clean state
