@@ -3,6 +3,7 @@ import ConfirmationModal from "../../../UI/Modals";
 import TermTag from "../../../UI/Term/TermTag";
 import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepOne from "./ProcurementTrackerStepOne.hooks";
+import { getLocalISODate } from "../../../../helpers/utils";
 
 /**
  * @typedef {Object} ProcurementTrackerStepOneProps
@@ -34,7 +35,9 @@ const ProcurementTrackerStepOne = ({ stepStatus, stepOneData }) => {
         setShowModal,
         step1CompletedByUserName,
         step1DateCompletedLabel,
-        step1NotesLabel
+        step1NotesLabel,
+        runValidate,
+        validatorRes
     } = useProcurementTrackerStepOne(stepOneData);
 
     return (
@@ -75,7 +78,11 @@ const ProcurementTrackerStepOne = ({ stepStatus, stepOneData }) => {
                         label={"Task Completed By"}
                         selectedUser={selectedUser}
                         setSelectedUser={setSelectedUser}
+                        messages={validatorRes.getErrors("users") || []}
                         isDisabled={!isPreSolicitationPackageSent}
+                        onChange={(name, value) => {
+                            runValidate(name, value);
+                        }}
                     />
                     <MemoizedDatePicker
                         id="date-completed"
@@ -83,9 +90,13 @@ const ProcurementTrackerStepOne = ({ stepStatus, stepOneData }) => {
                         label="Date Completed"
                         hint="mm/dd/yyyy"
                         value={step1DateCompleted}
-                        onChange={(e) => setStep1DateCompleted(e.target.value)}
+                        messages={validatorRes.getErrors("dateCompleted") || []}
+                        onChange={(e) => {
+                            runValidate("dateCompleted", e.target.value);
+                            setStep1DateCompleted(e.target.value);
+                        }}
                         isDisabled={!isPreSolicitationPackageSent}
-                        maxDate={new Date()}
+                        maxDate={getLocalISODate()}
                     />
                     <TextArea
                         name="notes"

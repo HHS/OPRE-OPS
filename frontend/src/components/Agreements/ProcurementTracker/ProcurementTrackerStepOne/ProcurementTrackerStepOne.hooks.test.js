@@ -8,6 +8,16 @@ import { formatDateForApi, formatDateToMonthDayYear } from "../../../../helpers/
 vi.mock("../../../../api/opsAPI");
 vi.mock("../../../../hooks/user.hooks");
 vi.mock("../../../../helpers/utils");
+vi.mock("./suite", () => {
+    const mockSuite = vi.fn();
+    mockSuite.get = vi.fn(() => ({
+        getErrors: vi.fn(() => []),
+        hasErrors: vi.fn(() => false),
+        isValid: vi.fn(() => true)
+    }));
+    mockSuite.reset = vi.fn();
+    return { default: mockSuite };
+});
 
 describe("useProcurementTrackerStepOne", () => {
     const mockPatchStepOne = vi.fn();
@@ -99,6 +109,32 @@ describe("useProcurementTrackerStepOne", () => {
             });
 
             expect(result.current.step1Notes).toBe("New notes");
+        });
+    });
+
+    describe("Validation Functionality", () => {
+        it("provides validatorRes with getErrors method", () => {
+            const { result } = renderHook(() => useProcurementTrackerStepOne(mockStepOneData));
+
+            expect(result.current.validatorRes).toBeDefined();
+            expect(typeof result.current.validatorRes.getErrors).toBe("function");
+        });
+
+        it("provides runValidate function", () => {
+            const { result } = renderHook(() => useProcurementTrackerStepOne(mockStepOneData));
+
+            expect(typeof result.current.runValidate).toBe("function");
+        });
+
+        it("runValidate can be called with name and value", () => {
+            const { result } = renderHook(() => useProcurementTrackerStepOne(mockStepOneData));
+
+            act(() => {
+                result.current.runValidate("users_combobox", 123);
+            });
+
+            // The function should execute without error
+            expect(result.current.runValidate).toBeDefined();
         });
     });
 

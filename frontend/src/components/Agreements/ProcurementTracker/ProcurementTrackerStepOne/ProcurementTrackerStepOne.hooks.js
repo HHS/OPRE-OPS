@@ -3,6 +3,7 @@ import { useUpdateProcurementTrackerStepMutation } from "../../../../api/opsAPI"
 import { formatDateForApi, formatDateToMonthDayYear } from "../../../../helpers/utils";
 import DatePicker from "../../../UI/USWDS/DatePicker";
 import useGetUserFullNameFromId from "../../../../hooks/user.hooks";
+import suite from "./suite";
 
 export default function useProcurementTrackerStepOne(stepOneData) {
     const [isPreSolicitationPackageSent, setIsPreSolicitationPackageSent] = React.useState(false);
@@ -18,6 +19,11 @@ export default function useProcurementTrackerStepOne(stepOneData) {
     const step1NotesLabel = stepOneData?.notes;
 
     const MemoizedDatePicker = React.memo(DatePicker);
+    const runValidate = (name, value) => {
+        suite({ ...{ [name]: value } }, name);
+    };
+
+    let validatorRes = suite.get();
 
     const handleStep1Complete = async (stepId) => {
         const payload = {
@@ -76,6 +82,8 @@ export default function useProcurementTrackerStepOne(stepOneData) {
         step1NotesLabel,
         modalProps,
         showModal,
-        setShowModal
+        setShowModal,
+        runValidate,
+        validatorRes
     };
 }

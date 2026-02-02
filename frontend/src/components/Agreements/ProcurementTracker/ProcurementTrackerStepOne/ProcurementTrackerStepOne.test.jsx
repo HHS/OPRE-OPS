@@ -4,6 +4,9 @@ import ProcurementTrackerStepOne from "./ProcurementTrackerStepOne";
 import useProcurementTrackerStepOne from "./ProcurementTrackerStepOne.hooks";
 
 vi.mock("./ProcurementTrackerStepOne.hooks");
+vi.mock("../../../../helpers/utils", () => ({
+    getLocalISODate: vi.fn(() => "2024-01-30")
+}));
 vi.mock("../../../UI/Form/TextArea", () => ({
     default: ({ label, value, onChange, isDisabled, maxLength, name, className }) => (
         <div data-testid="text-area">
@@ -29,18 +32,28 @@ vi.mock("../../../UI/Term/TermTag", () => ({
     )
 }));
 vi.mock("../../UsersComboBox", () => ({
-    default: ({ label, selectedUser, setSelectedUser, isDisabled }) => (
+    default: ({ label, selectedUser, setSelectedUser, isDisabled, messages, onChange }) => (
         <div data-testid="users-combobox">
             <label>{label}</label>
             <select
                 disabled={isDisabled}
                 value={selectedUser?.id || ""}
-                onChange={(e) => setSelectedUser({ id: parseInt(e.target.value) })}
+                onChange={(e) => {
+                    setSelectedUser({ id: parseInt(e.target.value) });
+                    if (onChange) onChange("users", parseInt(e.target.value));
+                }}
             >
                 <option value="">Select user</option>
                 <option value="123">John Doe</option>
                 <option value="456">Jane Smith</option>
             </select>
+            {messages && messages.length > 0 && (
+                <div data-testid="validation-messages">
+                    {messages.map((msg, idx) => (
+                        <span key={idx}>{msg}</span>
+                    ))}
+                </div>
+            )}
         </div>
     )
 }));
@@ -52,8 +65,12 @@ describe("ProcurementTrackerStepOne", () => {
     const mockSetStep1Notes = vi.fn();
     const mockHandleStep1Complete = vi.fn();
     const mockCancelStep1 = vi.fn();
+    const mockRunValidate = vi.fn();
+    const mockValidatorRes = {
+        getErrors: vi.fn(() => [])
+    };
 
-    const MockDatePicker = ({ label, hint, value, onChange, isDisabled, maxDate, id, name }) => (
+    const MockDatePicker = ({ label, hint, value, onChange, isDisabled, maxDate, id, name, messages }) => (
         <div data-testid="date-picker">
             <label htmlFor={id}>{label}</label>
             <span>{hint}</span>
@@ -64,8 +81,15 @@ describe("ProcurementTrackerStepOne", () => {
                 value={value}
                 onChange={onChange}
                 disabled={isDisabled}
-                max={maxDate?.toISOString().split("T")[0]}
+                max={typeof maxDate === "string" ? maxDate : maxDate?.toISOString().split("T")[0]}
             />
+            {messages && messages.length > 0 && (
+                <div data-testid="date-validation-messages">
+                    {messages.map((msg, idx) => (
+                        <span key={idx}>{msg}</span>
+                    ))}
+                </div>
+            )}
         </div>
     );
 
@@ -87,7 +111,9 @@ describe("ProcurementTrackerStepOne", () => {
         step1NotesLabel: "Test notes",
         showModal: false,
         setShowModal: vi.fn(),
-        modalProps: {}
+        modalProps: {},
+        runValidate: mockRunValidate,
+        validatorRes: mockValidatorRes
     };
 
     const mockStepOneData = { id: 1 };

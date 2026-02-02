@@ -102,7 +102,8 @@ vi.mock("../../../helpers/utils", () => ({
             day: "numeric"
         });
     }),
-    formatDateForApi: vi.fn((date) => date)
+    formatDateForApi: vi.fn((date) => date),
+    getLocalISODate: vi.fn(() => "2024-01-30")
 }));
 
 // Mock Tag component
@@ -620,9 +621,9 @@ describe("AgreementProcurementTracker", () => {
             const userSelectButton = screen.getByText("Select User");
             fireEvent.click(userSelectButton);
 
-            // Set date
+            // Set date (MM/DD/YYYY format expected by validation)
             const dateInput = screen.getByTestId("datepicker-input");
-            fireEvent.change(dateInput, { target: { value: "2024-01-15" } });
+            fireEvent.change(dateInput, { target: { value: "01/15/2024" } });
 
             // Now click complete button
             const completeButton = screen.getByText("Complete Step 1");
@@ -705,6 +706,42 @@ describe("AgreementProcurementTracker", () => {
             );
 
             expect(screen.getByText("Notes (optional)")).toBeInTheDocument();
+        });
+
+        it("calls cancelStep1 when Cancel button is clicked", () => {
+            useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
+                data: mockTrackerWithSteps,
+                isLoading: false,
+                isError: false
+            });
+
+            render(
+                <Provider store={setupStore()}>
+                    <AgreementProcurementTracker agreement={mockAgreement} />
+                </Provider>
+            );
+
+            const checkbox = screen.getByRole("checkbox");
+            fireEvent.click(checkbox);
+
+            // Select a user
+            const userSelectButton = screen.getByText("Select User");
+            fireEvent.click(userSelectButton);
+
+            // Set date (MM/DD/YYYY format expected by validation)
+            const dateInput = screen.getByTestId("datepicker-input");
+            fireEvent.change(dateInput, { target: { value: "01/15/2024" } });
+
+            // Set notes
+            const textarea = screen.getByTestId("textarea-input");
+            fireEvent.change(textarea, { target: { value: "Test notes" } });
+
+            // Click cancel
+            const cancelButton = screen.getByText("Cancel");
+            fireEvent.click(cancelButton);
+
+            // Verify form is reset
+            expect(checkbox).not.toBeChecked();
         });
 
         it("disables Complete Step 1 button when required fields are missing", () => {
