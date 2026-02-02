@@ -49,6 +49,13 @@ describe("Procurement Tracker Step 1", () => {
         cy.get("#date-completed").should("be.disabled");
         cy.get("#notes").should("be.disabled");
         cy.get('[data-cy="continue-btn"]').should("be.disabled");
+        cy.get('[data-cy="cancel-button"]').should("be.disabled");
+    });
+
+    it("test validation", () => {
+        cy.visit("/agreements/13/procurement-tracker");
+        // check the checkbox to enable the form
+        // all form elements besides the checkbox should be disabled
         cy.get("#users-combobox-input").should("be.disabled");
         cy.get("#date-completed").should("be.disabled");
         cy.get("#notes").should("be.disabled");
