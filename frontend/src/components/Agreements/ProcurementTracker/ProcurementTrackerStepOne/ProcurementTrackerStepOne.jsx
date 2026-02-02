@@ -28,7 +28,7 @@ const ProcurementTrackerStepOne = ({ stepStatus, stepOneData }) => {
         setStep1Notes,
         step1Notes,
         handleStep1Complete,
-        cancelStep1,
+        cancelModalStep1,
         disableStep1Buttons,
         modalProps,
         showModal,
@@ -110,7 +110,7 @@ const ProcurementTrackerStepOne = ({ stepStatus, stepOneData }) => {
                     <button
                         className="usa-button usa-button--unstyled margin-right-2"
                         data-cy="cancel-button"
-                        onClick={cancelStep1}
+                        onClick={cancelModalStep1}
                         disabled={disableStep1Buttons}
                     >
                         Cancel

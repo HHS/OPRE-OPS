@@ -50,7 +50,8 @@ describe("Procurement Tracker Step 1", () => {
         cy.get("#notes").should("be.disabled");
         cy.get('[data-cy="continue-btn"]').should("be.disabled");
         cy.get('[data-cy="cancel-button"]').should("be.disabled");
-      
+    });
+
     it("test validation", () => {
         cy.visit("/agreements/13/procurement-tracker");
         // check the checkbox to enable the form

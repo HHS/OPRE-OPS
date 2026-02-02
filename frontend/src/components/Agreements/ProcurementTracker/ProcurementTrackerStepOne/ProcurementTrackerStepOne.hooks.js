@@ -46,18 +46,21 @@ export default function useProcurementTrackerStepOne(stepOneData) {
             }
         }
     };
-
     const cancelStep1 = () => {
+        setIsPreSolicitationPackageSent(false);
+        setSelectedUser({});
+        setStep1DateCompleted("");
+        setStep1Notes("");
+        suite.reset();
+    };
+    const cancelModalStep1 = () => {
         setShowModal(true);
         setModalProps({
-            heading: "Are you sure you want to cancel this task? Your input will be not be saved.",
+            heading: "Are you sure you want to cancel this task? Your input will not be saved.",
             actionButtonText: "Cancel Task",
             secondaryButtonText: "Continue Editing",
             handleConfirm: () => {
-                setIsPreSolicitationPackageSent(false);
-                setSelectedUser({});
-                setStep1DateCompleted("");
-                setStep1Notes("");
+                cancelStep1();
             }
         });
     };
@@ -75,7 +78,7 @@ export default function useProcurementTrackerStepOne(stepOneData) {
         step1Notes,
         setStep1Notes,
         handleStep1Complete,
-        cancelStep1,
+        cancelModalStep1,
         disableStep1Buttons,
         step1CompletedByUserName,
         step1DateCompletedLabel,
