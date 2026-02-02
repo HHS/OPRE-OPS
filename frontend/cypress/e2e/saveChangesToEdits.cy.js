@@ -158,8 +158,8 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
             });
 
         cy.then(() => {
-            cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).trigger("mouseover");
-            cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).get("[data-cy='edit-row']").click();
+            cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).first().trigger("mouseover");
+            cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).first().get("[data-cy='edit-row']").click();
             cy.get("#enteredAmount").clear();
             cy.get("#enteredAmount").type("999999");
             cy.get("[data-cy='update-budget-line']").click();
@@ -167,7 +167,7 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
                 "contain",
                 `Budget line ${budgetLineId} was updated.  When you’re done editing, click Save & Exit below.`
             );
-            cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).should("contain", "$999,999.00");
+            cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).first().should("contain", "$999,999.00");
             cy.contains("a", "Agreements").click();
             cy.get("#ops-modal-description").should(
                 "contain",
@@ -176,7 +176,7 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
             cy.get("[data-cy=cancel-action]").click();
             cy.get(".usa-alert__heading").should("not.exist", "Agreement Updated");
             cy.visit(`/agreements/${agreementId}/budget-lines`);
-            cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).should("contain", "$0");
+            cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).first().should("contain", "$0");
         });
     });
 
@@ -209,8 +209,8 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
             });
 
         cy.then(() => {
-            cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).trigger("mouseover");
-            cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).get("[data-cy='delete-row']").click();
+            cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).first().trigger("mouseover");
+            cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).first().get("[data-cy='delete-row']").click();
             cy.get(".usa-modal__heading").should(
                 "contain",
                 `Are you sure you want to delete budget line ${budgetLineId}?`
@@ -272,7 +272,7 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
             cy.get("[data-cy='update-budget-line']").click();
 
             // Check that the budget line was updated in the UI
-            cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).should("contain", "$999,999.00");
+            cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).first().should("contain", "$999,999.00");
             cy.contains("a", "Agreements").click();
             cy.get("#ops-modal-description").should(
                 "contain",
