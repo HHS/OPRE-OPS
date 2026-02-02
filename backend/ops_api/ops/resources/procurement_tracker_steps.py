@@ -37,16 +37,13 @@ class ProcurementTrackerStepItemAPI(BaseItemAPI):
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
     def get(self, id: int) -> Response:
         """Get a single procurement tracker step by ID."""
-        with OpsEventHandler(OpsEventType.GET_AGREEMENT) as event_meta:
-            service = ProcurementTrackerStepService(current_app.db_session)
-            step = service.get(id)
+        service = ProcurementTrackerStepService(current_app.db_session)
+        step = service.get(id)
 
-            # Serialize response
-            serialized_data = self._response_schema.dump(step)
+        # Serialize response
+        serialized_data = self._response_schema.dump(step)
 
-            event_meta.metadata.update({"procurement_tracker_step_id": id})
-
-            return make_response_with_headers(serialized_data)
+        return make_response_with_headers(serialized_data)
 
     @error_simulator
     @is_authorized(PermissionType.PATCH, Permission.AGREEMENT)
