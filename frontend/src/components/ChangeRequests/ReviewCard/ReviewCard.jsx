@@ -68,8 +68,7 @@ function ReviewCard({
                 <header className="display-flex flex-justify">
                     <div className="display-flex">
                         <h2 className="margin-0 font-sans-sm">
-                            {title}
-                            <br />
+                            {title} <br />
                             {bliToStatus}
                         </h2>
                         <dl className="font-12px margin-0 margin-left-4">
