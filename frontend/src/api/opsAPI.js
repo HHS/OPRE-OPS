@@ -111,7 +111,8 @@ export const opsApi = createApi({
                     queryParams.push(`limit=${limit}`);
                     queryParams.push(`offset=${page * limit}`);
                 }
-                return `/agreements/?${queryParams.join("&")}`;
+                const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
+                return `/agreements/${queryString}`;
             },
             transformResponse: (response) => {
                 // New wrapped format with type-neutral key

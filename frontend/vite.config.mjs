@@ -64,6 +64,11 @@ export default defineConfig(({ mode }) => {
         test: {
             globals: true,
             environment: "jsdom",
+            environmentOptions: {
+                jsdom: {
+                    url: "https://localhost:8000"
+                }
+            },
             setupFiles: ["./src/tests/setupTests.js"],
             files: ["**/*.test.{jsx,js,tsx,ts}", "**/*.spec.{jsx,js,tsx,ts}"],
             exclude: ["src/uswds/**", "node_modules/**"],

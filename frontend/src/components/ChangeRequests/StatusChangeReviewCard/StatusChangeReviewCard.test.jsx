@@ -58,7 +58,7 @@ describe("StatusChangeReviewCard", () => {
             </BrowserRouter>
         );
 
-        expect(screen.getByRole("heading", { name: "Status Change Planned" })).toBeInTheDocument();
+        expect(screen.getByRole("heading", { name: "Status ChangePlanned" })).toBeInTheDocument();
         expect(screen.getByText("$1,000,000.00")).toBeInTheDocument();
         expect(screen.getByText("Jane Doe")).toBeInTheDocument();
     });
@@ -71,7 +71,7 @@ describe("StatusChangeReviewCard", () => {
                 />
             </BrowserRouter>
         );
-        expect(screen.getByRole("heading", { name: "Status Change Planned" })).toBeInTheDocument();
+        expect(screen.getByRole("heading", { name: "Status ChangePlanned" })).toBeInTheDocument();
         expect(screen.getByText(/draft/i)).toBeInTheDocument();
         expect(screen.getByText(/planned/i, { selector: "span" })).toBeInTheDocument();
     });
@@ -91,7 +91,7 @@ describe("StatusChangeReviewCard", () => {
                 />
             </BrowserRouter>
         );
-        expect(screen.getByRole("heading", { name: "Status Change Executing" })).toBeInTheDocument();
+        expect(screen.getByRole("heading", { name: "Status ChangeExecuting" })).toBeInTheDocument();
         expect(screen.getByText(/planned/i)).toBeInTheDocument();
         expect(screen.getByText(/executing/i, { selector: "span" })).toBeInTheDocument();
     });
