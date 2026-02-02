@@ -194,7 +194,8 @@ export const opsApi = createApi({
                 if (simulatedError) {
                     queryParams.push(`simulatedError=${simulatedError}`);
                 }
-                return `/agreement-agencies/?${queryParams.join("&")}`;
+                const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
+                return `/agreement-agencies/${queryString}`;
             },
             providesTags: ["Agreements"]
         }),
@@ -213,7 +214,8 @@ export const opsApi = createApi({
                 }
                 queryParams.push(`limit=${MAX_RESULTS_LIMIT}`);
                 queryParams.push("offset=0");
-                return `/agreement-agencies/?${queryParams.join("&")}`;
+                const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
+                return `/agreement-agencies/${queryString}`;
             },
             providesTags: ["Agreements"]
         }),
@@ -226,7 +228,8 @@ export const opsApi = createApi({
                 if (enableObe) {
                     queryParams.push("enable_obe=true");
                 }
-                return `/budget-line-items-filters/?${queryParams.join("&")}`;
+                const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
+                return `/budget-line-items-filters/${queryString}`;
             },
             providesTags: ["BudgetLineItems"]
         }),
@@ -304,7 +307,8 @@ export const opsApi = createApi({
                 if (enableObe) {
                     queryParams.push(`enable_obe=${enableObe}`);
                 }
-                return `/budget-line-items/?${queryParams.join("&")}`;
+                const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
+                return `/budget-line-items/${queryString}`;
             },
             providesTags: ["BudgetLineItems"]
         }),
@@ -373,7 +377,8 @@ export const opsApi = createApi({
                 if (search) {
                     queryParams.push(`search=${search}`);
                 }
-                return `/projects/?${queryParams.join("&")}`;
+                const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
+                return `/projects/${queryString}`;
             },
             providesTags: ["ResearchProjects"]
         }),
@@ -389,7 +394,8 @@ export const opsApi = createApi({
                 if (search) {
                     queryParams.push(`search=${search}`);
                 }
-                return `/research-projects/?${queryParams.join("&")}`;
+                const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
+                return `/research-projects/${queryString}`;
             },
             providesTags: ["ResearchProjects"]
         }),
@@ -508,7 +514,8 @@ export const opsApi = createApi({
                 if (budgetMax !== undefined && budgetMax !== null) {
                     queryParams.push(`budget_max=${budgetMax}`);
                 }
-                return `/cans/?${queryParams.join("&")}`;
+                const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
+                return `/cans/${queryString}`;
             },
             transformResponse: (response) => {
                 // New wrapped format with data key
@@ -615,7 +622,8 @@ export const opsApi = createApi({
                     queryParams.push(`fy_budget=${fyBudgets[1]}`);
                 }
 
-                return `/can-funding-summary/?${queryParams.join("&")}`;
+                const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
+                return `/can-funding-summary/${queryString}`;
             },
             providesTags: ["Cans", "CanFunding"]
         }),
@@ -634,7 +642,8 @@ export const opsApi = createApi({
                 if (sort) {
                     queryParams.push(`sort_asc=${sort}`);
                 }
-                return `/can-history/?can_id=${canId}&${queryParams.join("&")}`;
+                const queryString = queryParams.length > 0 ? `&${queryParams.join("&")}` : "";
+                return `/can-history/?can_id=${canId}${queryString}`;
             },
             providesTags: ["Cans"]
         }),
@@ -690,7 +699,8 @@ export const opsApi = createApi({
                 if (includeInactive) {
                     queryParams.push(`includeInactive=${includeInactive}`);
                 }
-                return `/portfolios/${portfolioId}/cans/?${queryParams.join("&")}`;
+                const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
+                return `/portfolios/${portfolioId}/cans/${queryString}`;
             },
             providesTags: ["Portfolios"]
         }),
@@ -704,7 +714,8 @@ export const opsApi = createApi({
                 if (simulatedError) {
                     queryParams.push(`simulatedError`);
                 }
-                return `/portfolios/${portfolioId}/calcFunding/?${queryParams.join("&")}`;
+                const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
+                return `/portfolios/${portfolioId}/calcFunding/${queryString}`;
             },
             providesTags: ["Portfolios"]
         }),
@@ -717,7 +728,8 @@ export const opsApi = createApi({
                 if (simulatedError) {
                     queryParams.push(`simulatedError`);
                 }
-                return `/portfolio-funding-summary/${portfolioId}?${queryParams.join("&")}`;
+                const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
+                return `/portfolio-funding-summary/${portfolioId}${queryString}`;
             },
             providesTags: ["Portfolios"]
         }),
@@ -745,7 +757,8 @@ export const opsApi = createApi({
                         queryParams.push(`available_pct=${pct}`);
                     });
                 }
-                return `/portfolio-funding-summary/?${queryParams.join("&")}`;
+                const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
+                return `/portfolio-funding-summary/${queryString}`;
             },
             providesTags: ["Portfolios"]
         }),
