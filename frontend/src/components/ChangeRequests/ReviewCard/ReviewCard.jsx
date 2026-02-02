@@ -69,6 +69,7 @@ function ReviewCard({
                     <div className="display-flex">
                         <h2 className="margin-0 font-sans-sm">
                             {title}
+                            {" "} {/* Add explicit space for accessibility */}
                             <br />
                             {bliToStatus}
                         </h2>

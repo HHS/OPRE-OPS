@@ -111,6 +111,7 @@ export const opsApi = createApi({
                     queryParams.push(`limit=${limit}`);
                     queryParams.push(`offset=${page * limit}`);
                 }
+                // jsdom 28 has stricter URL parsing - avoid trailing ? when no query params
                 const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
                 return `/agreements/${queryString}`;
             },

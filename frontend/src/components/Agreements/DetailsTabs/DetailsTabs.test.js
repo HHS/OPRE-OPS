@@ -244,8 +244,7 @@ describe("DetailsTabs", () => {
         );
 
         expect(container.querySelector('[data-cy="details-tab-Agreement Details"]')).toBeInTheDocument();
-        // In jsdom 28, CSS selectors with & need to use a different approach or be escaped
-        // Using querySelectorAll with attribute matching instead
+        // jsdom 28's querySelector has issues with & in attribute values - use querySelectorAll + find instead
         const tabs = container.querySelectorAll('[data-cy^="details-tab-"]');
         expect(tabs.length).toBe(5); // Should have 5 tabs
         expect(

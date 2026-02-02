@@ -65,7 +65,7 @@ describe("AgreementCANReview", () => {
         );
 
         const headingCard = screen.getByRole("heading", { name: "G994426-1Y CAN Available Budget" });
-        const toggle = screen.getByRole("button", { name: "Off (Drafts excluded)After Approval" });
+        const toggle = screen.getByRole("button", { name: "Off (Drafts excluded) After Approval" });
         const totalSpendingCardBeforeApproval = screen.getByText("$3,000,000.00");
         const remainingBudgetCardBeforeApproval = screen.getByText("$ 37,000,000");
 
@@ -90,7 +90,7 @@ describe("AgreementCANReview", () => {
             </MemoryRouter>
         );
 
-        const toggleAfterApproval = screen.getByRole("button", { name: "On (Drafts included)After Approval" });
+        const toggleAfterApproval = screen.getByRole("button", { name: "On (Drafts included) After Approval" });
         const totalSpendingCardAfterApproval1 = screen.getByText("$5,000,000.00");
         const remainingBudgetCardAfterApproval1 = screen.getByText("$ 35,000,000");
 
@@ -118,7 +118,7 @@ describe("AgreementCANReview", () => {
             </MemoryRouter>
         );
 
-        const toggle = screen.getByRole("button", { name: "Off (Drafts excluded)After Approval" });
+        const toggle = screen.getByRole("button", { name: "Off (Drafts excluded) After Approval" });
         const headingCard1 = screen.getByRole("heading", { name: "G99SHARED-5Y CAN Available Budget" });
         const totalSpendingCard1 = screen.getByText(/221,614,865/i);
         const remainingBudgetCard1 = screen.getByText(/500,000/i);
@@ -149,7 +149,7 @@ describe("AgreementCANReview", () => {
                 </Provider>
             </MemoryRouter>
         );
-        const toggleAfterApproval = screen.getByRole("button", { name: "On (Drafts included)After Approval" });
+        const toggleAfterApproval = screen.getByRole("button", { name: "On (Drafts included) After Approval" });
         const totalSpendingCardAfterApproval1 = screen.getByText(/221,627,765/i);
         // Use getAllByText to handle multiple elements with same text pattern
         const remainingBudgetElements = screen.getAllByText(/500,000/i);
@@ -180,7 +180,7 @@ describe("AgreementCANReview", () => {
             </MemoryRouter>
         );
 
-        const toggle = screen.getByRole("button", { name: "Off (Drafts excluded)After Approval" });
+        const toggle = screen.getByRole("button", { name: "Off (Drafts excluded) After Approval" });
         const headingCard1 = screen.getByRole("heading", { name: "G99PHS9-1Y CAN Available Budget" });
         const headingCard2 = screen.getByRole("heading", { name: "G99XXX8-1Y CAN Available Budget" });
         const totalSpendingCard1 = screen.getByText(/9,700,000/i);
@@ -215,7 +215,7 @@ describe("AgreementCANReview", () => {
                 </Provider>
             </MemoryRouter>
         );
-        const toggleAfterApproval = screen.getByRole("button", { name: "On (Drafts included)After Approval" });
+        const toggleAfterApproval = screen.getByRole("button", { name: "On (Drafts included) After Approval" });
         const totalSpendingCardAfterApproval1 = screen.getByText(/9,800,500/i);
         const remainingBudgetCardAfterApproval1 = screen.getByText(/14,199,500/i);
         const totalSpendingCardAfterApproval2 = screen.getByText(/401,000/i);
@@ -248,7 +248,7 @@ describe("AgreementCANReview", () => {
             </MemoryRouter>
         );
 
-        const toggle = screen.getByRole("button", { name: "Off (Drafts excluded)After Approval" });
+        const toggle = screen.getByRole("button", { name: "Off (Drafts excluded) After Approval" });
         const headingCard1 = screen.getByRole("heading", { name: "G99PHS9-1Y CAN Available Budget" });
         const headingCard2 = screen.getByRole("heading", { name: "G99XXX8-1Y CAN Available Budget" });
         const totalSpendingCard1 = screen.getByText(/9,700,000/i);
@@ -283,7 +283,7 @@ describe("AgreementCANReview", () => {
                 </Provider>
             </MemoryRouter>
         );
-        const toggleAfterApproval = screen.getByRole("button", { name: "On (Drafts included)After Approval" });
+        const toggleAfterApproval = screen.getByRole("button", { name: "On (Drafts included) After Approval" });
         const totalSpendingCardAfterApproval1 = screen.getByText(/8,996,500/i);
         const remainingBudgetCardAfterApproval1 = screen.getByText(/15,003,500/i);
         const totalSpendingCardAfterApproval2 = screen.getByText(/1,004,000/i);
@@ -316,7 +316,7 @@ describe("AgreementCANReview", () => {
             </MemoryRouter>
         );
 
-        const toggle = screen.getByRole("button", { name: "Off (Drafts excluded)After Approval" });
+        const toggle = screen.getByRole("button", { name: "Off (Drafts excluded) After Approval" });
         const headingCard1 = screen.getByRole("heading", { name: "G99PHS9-1Y CAN Available Budget" });
         const headingCard2 = screen.getByRole("heading", { name: "G99XXX8-1Y CAN Available Budget" });
         const totalSpendingCard1 = screen.getByText(/9,700,000/i);
@@ -351,7 +351,7 @@ describe("AgreementCANReview", () => {
                 </Provider>
             </MemoryRouter>
         );
-        const toggleAfterApproval = screen.getByRole("button", { name: "On (Drafts included)After Approval" });
+        const toggleAfterApproval = screen.getByRole("button", { name: "On (Drafts included) After Approval" });
         const totalSpendingCardAfterApproval1 = screen.getByText(/8,996,500/i);
         const remainingBudgetCardAfterApproval1 = screen.getByText(/15,003,500/i);
         const totalSpendingCardAfterApproval2 = screen.getByText(/1,104,500/i);
@@ -384,7 +384,7 @@ describe("AgreementCANReview", () => {
         );
         const headingCard = screen.getByRole("heading", { name: "G994426-1Y CAN Available Budget" });
         const toggle = screen.getByRole("button", {
-            name: "Off (Drafts excluded)After Approval"
+            name: "Off (Drafts excluded) After Approval"
         });
         // const totalSpendingCardBeforeApproval = screen.getByText("$ 3,000,000");
         const remainingBudgetCardBeforeApproval = screen.getByText("$ 37,000,000");
@@ -412,7 +412,7 @@ describe("AgreementCANReview", () => {
             </MemoryRouter>
         );
 
-        const toggleAfterApproval = screen.getByRole("button", { name: "On (Drafts included)After Approval" });
+        const toggleAfterApproval = screen.getByRole("button", { name: "On (Drafts included) After Approval" });
         // const totalSpendingCardAfterApproval1 = screen.getByText("$ 5,000,000");
         const remainingBudgetCardAfterApproval1 = screen.getByText("$ 35,000,000");
 
@@ -448,7 +448,7 @@ describe("AgreementCANReview", () => {
         const totalSpendingCard2 = screen.getByText(/300,500/i);
         const remainingBudgetCard2 = screen.getByText(/1,979,500/i);
         const toggle = screen.getByRole("button", {
-            name: "Off (Drafts excluded)After Approval"
+            name: "Off (Drafts excluded) After Approval"
         });
 
         expect(headingCard1).toBeInTheDocument();
@@ -478,7 +478,7 @@ describe("AgreementCANReview", () => {
             </MemoryRouter>
         );
 
-        const toggleAfterApproval = screen.getByRole("button", { name: "On (Drafts included)After Approval" });
+        const toggleAfterApproval = screen.getByRole("button", { name: "On (Drafts included) After Approval" });
 
         //NOTE: The total spending and remaining budget values are the same as the initial render
         expect(toggleAfterApproval).toBeInTheDocument();
