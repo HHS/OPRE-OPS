@@ -221,6 +221,7 @@ def initialize_event_subscriptions():
     MessageBus.subscribe_globally(OpsEventType.CREATE_SERVICES_COMPONENT, agreement_history_trigger)
     MessageBus.subscribe_globally(OpsEventType.UPDATE_SERVICES_COMPONENT, agreement_history_trigger)
     MessageBus.subscribe_globally(OpsEventType.DELETE_SERVICES_COMPONENT, agreement_history_trigger)
+    MessageBus.subscribe_globally(OpsEventType.UPDATE_PROCUREMENT_TRACKER_STEP, agreement_history_trigger)
 
 
 def before_request_function(app: Flask, request: request):
