@@ -5,8 +5,7 @@ from ops_api.ops.services.ops_service import ResourceNotFoundError
 from ops_api.ops.services.special_topics import SpecialTopicsService
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_create_special_topic(loaded_db):
+def test_create_special_topic(loaded_db, app_ctx):
     service = SpecialTopicsService(loaded_db)
 
     create_request = {"name": "Special Topic (Special Population)"}
@@ -19,8 +18,7 @@ def test_create_special_topic(loaded_db):
     service.delete(new_special_topic.id)
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_update_special_topic(loaded_db):
+def test_update_special_topic(loaded_db, app_ctx):
     service = SpecialTopicsService(loaded_db)
 
     # First, create a SpecialTopic to update
@@ -37,8 +35,7 @@ def test_update_special_topic(loaded_db):
     service.delete(topic.id)
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_special_topics(loaded_db):
+def test_get_special_topics(loaded_db, app_ctx):
     service = SpecialTopicsService(loaded_db)
 
     # Retrieve the list of SpecialTopics
@@ -53,8 +50,7 @@ def test_get_special_topics(loaded_db):
     assert len(retrieved_topics_2) == 0
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_delete_special_topic(loaded_db):
+def test_delete_special_topic(loaded_db, app_ctx):
     service = SpecialTopicsService(loaded_db)
 
     # First, create a SpecialTopic to delete
@@ -69,8 +65,7 @@ def test_delete_special_topic(loaded_db):
         service.get(topic.id)
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_special_topic(loaded_db):
+def test_get_special_topic(loaded_db, app_ctx):
     service = SpecialTopicsService(loaded_db)
 
     # First, create a SpecialTopic to retrieve
@@ -84,8 +79,7 @@ def test_get_special_topic(loaded_db):
     assert retrieved_topic.name == "Topic to Retrieve"
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_special_topics_api(loaded_db, auth_client):
+def test_get_special_topics_api(loaded_db, auth_client, app_ctx):
     service = SpecialTopicsService(loaded_db)
 
     # First, create a SpecialTopic to retrieve via API
@@ -105,15 +99,13 @@ def test_get_special_topics_api(loaded_db, auth_client):
     service.delete(topic.id)
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_special_topic_404(auth_client):
+def test_get_special_topic_404(auth_client, app_ctx):
     url = url_for("api.special-topics-item", id=9999)
     response = auth_client.get(url)
     assert response.status_code == 404
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_special_topics_list_api(loaded_db, auth_client):
+def test_get_special_topics_list_api(loaded_db, auth_client, app_ctx):
 
     url = url_for("api.special-topics-list")
 

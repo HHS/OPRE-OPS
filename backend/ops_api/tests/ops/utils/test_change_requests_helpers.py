@@ -64,8 +64,7 @@ def test_build_approve_url_raises_on_unrecognized():
         cr_helpers.build_approve_url(cr, agreement_id=1, fe_url="http://localhost")
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_division_ids_user_can_review_for(loaded_db):
+def test_get_division_ids_user_can_review_for(loaded_db, app_ctx):
     director = User(
         first_name="Jane",
         last_name="Doe",
@@ -110,8 +109,7 @@ def test_get_division_ids_user_can_review_for(loaded_db):
 @patch("ops_api.ops.utils.change_requests_helpers.current_app", new_callable=Mock)
 @patch("ops_api.ops.utils.change_requests_helpers.get_division_ids_user_can_review_for")
 @patch("ops_api.ops.utils.change_requests_helpers.get_division_directors_for_agreement")
-@pytest.mark.usefixtures("app_ctx")
-def test_find_in_review_requests_by_user(mock_get_division_directors, mock_get_division_ids, mock_app):
+def test_find_in_review_requests_by_user(mock_get_division_directors, mock_get_division_ids, mock_app, app_ctx):
     # Mocks 3 change requests
     cr1 = Mock(spec=BudgetLineItemChangeRequest, managing_division_id=1)
     cr2 = Mock(spec=AgreementChangeRequest, agreement="AGREEMENT")

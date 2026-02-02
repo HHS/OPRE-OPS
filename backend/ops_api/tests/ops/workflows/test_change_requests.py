@@ -1,7 +1,6 @@
 import datetime
 from decimal import Decimal
 
-import pytest
 from flask import url_for
 
 from models import (
@@ -23,8 +22,7 @@ test_no_perms_user_id = 506
 # ---=== CHANGE REQUESTS ===---
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_change_request(app):
+def test_change_request(app, app_ctx):
     session = app.db_session
     change_request = ChangeRequest()
     change_request.created_by = 1
@@ -41,8 +39,7 @@ def test_change_request(app):
     session.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_agreement_change_request(app):
+def test_agreement_change_request(app, app_ctx):
     session = app.db_session
     change_request = AgreementChangeRequest()
     change_request.agreement_id = 1
@@ -60,8 +57,7 @@ def test_agreement_change_request(app):
     session.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_budget_line_item_change_request(app, test_bli):
+def test_budget_line_item_change_request(app, test_bli, app_ctx):
     session = app.db_session
     change_request = BudgetLineItemChangeRequest()
     change_request.budget_line_item_id = test_bli.id
@@ -80,7 +76,6 @@ def test_budget_line_item_change_request(app, test_bli):
     session.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
 def test_budget_line_item_patch_with_budgets_change_requests(
     budget_team_auth_client,
     division_director_auth_client,
@@ -88,6 +83,7 @@ def test_budget_line_item_patch_with_budgets_change_requests(
     loaded_db,
     test_division_director,
     test_can,
+    app_ctx,
 ):
     session = app.db_session
     agreement_id = 1
@@ -235,8 +231,7 @@ def test_budget_line_item_patch_with_budgets_change_requests(
     assert bli is None
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_change_request_list(auth_client, app, test_user, test_admin_user, test_bli):
+def test_change_request_list(auth_client, app, test_user, test_admin_user, test_bli, app_ctx):
     session = app.db_session
 
     # verify no change request in list to review for this user
@@ -315,13 +310,13 @@ def test_change_request_list(auth_client, app, test_user, test_admin_user, test_
     session.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
 def test_budget_line_item_patch_with_status_change_requests(
     budget_team_auth_client,
     division_director_auth_client,
     app,
     loaded_db,
     test_division_director,
+    app_ctx,
 ):
     session = app.db_session
     agreement_id = 1
@@ -466,12 +461,12 @@ def test_budget_line_item_patch_with_status_change_requests(
     assert bli is None
 
 
-@pytest.mark.usefixtures("app_ctx")
 def test_change_request_review_auth(
     no_perms_auth_client,
     division_director_auth_client,
     division_6_director_auth_client,
     test_change_request,
+    app_ctx,
 ):
 
     # verify access denied for use with no permissions (no roles) and not a DD or DDD

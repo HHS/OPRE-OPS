@@ -8,16 +8,15 @@ from ops_api.ops.validation.context import ValidationContext
 from ops_api.ops.validation.rules.agreement import AuthorizationRule
 
 
-@pytest.mark.usefixtures("app_ctx")
 class TestAuthorizationRule:
     """Test suite for AuthorizationRule."""
 
-    def test_name_property(self):
+    def test_name_property(self, app_ctx):
         """Test that the rule has the correct name."""
         rule = AuthorizationRule()
         assert rule.name == "Authorization Check"
 
-    def test_validate_passes_when_user_is_project_officer(self, test_user, loaded_db):
+    def test_validate_passes_when_user_is_project_officer(self, test_user, loaded_db, app_ctx):
         """Test that validation passes when user is the project officer."""
         agreement = ContractAgreement(
             name="Test Agreement - PO Auth", agreement_type=AgreementType.CONTRACT, project_officer_id=test_user.id
@@ -35,7 +34,7 @@ class TestAuthorizationRule:
         loaded_db.delete(agreement)
         loaded_db.commit()
 
-    def test_validate_passes_when_user_is_alternate_project_officer(self, test_user, loaded_db):
+    def test_validate_passes_when_user_is_alternate_project_officer(self, test_user, loaded_db, app_ctx):
         """Test that validation passes when user is the alternate project officer."""
         agreement = ContractAgreement(
             name="Test Agreement - APO Auth",
@@ -55,7 +54,7 @@ class TestAuthorizationRule:
         loaded_db.delete(agreement)
         loaded_db.commit()
 
-    def test_validate_passes_when_user_is_team_member(self, test_user, loaded_db):
+    def test_validate_passes_when_user_is_team_member(self, test_user, loaded_db, app_ctx):
         """Test that validation passes when user is a team member."""
         agreement = ContractAgreement(
             name="Test Agreement - Team Member Auth", agreement_type=AgreementType.CONTRACT, team_members=[test_user]
@@ -73,7 +72,7 @@ class TestAuthorizationRule:
         loaded_db.delete(agreement)
         loaded_db.commit()
 
-    def test_validate_raises_error_when_user_not_authorized(self, loaded_db):
+    def test_validate_raises_error_when_user_not_authorized(self, loaded_db, app_ctx):
         """Test that validation fails when user is not authorized."""
         # Create unauthorized user
         unauthorized_user = User(email="unauthorized@test.com", oidc_id="00000000-0000-0000-0000-000000000001")
@@ -101,7 +100,7 @@ class TestAuthorizationRule:
         loaded_db.delete(unauthorized_user)
         loaded_db.commit()
 
-    def test_validate_passes_when_user_has_admin_role(self, loaded_db):
+    def test_validate_passes_when_user_has_admin_role(self, loaded_db, app_ctx):
         """Test that validation passes when user has SYSTEM_OWNER role."""
         # Create admin user with SYSTEM_OWNER role
         admin_role = Role(name="SYSTEM_OWNER")

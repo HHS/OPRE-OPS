@@ -1,4 +1,3 @@
-import pytest
 from sqlalchemy import select
 
 from models.portfolios import PortfolioUrl
@@ -6,8 +5,7 @@ from ops_api.ops.services.portfolio_url import PortfolioUrlService
 from ops_api.tests.utils import DummyContextManager
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_portfolio_url_lookup(loaded_db):
+def test_portfolio_url_lookup(loaded_db, app_ctx):
     pUrl = loaded_db.get(PortfolioUrl, 1)
     assert pUrl is not None
     assert pUrl.url == "https://acf.gov/opre/topic/overview/abuse-neglect-adoption-foster-care"
@@ -19,21 +17,18 @@ def test_portfolio_url_creation():
     assert pUrl.to_dict()["url"] == "https://acf.gov/opre/topic/head-start"
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_portfolio_url_get_by_id(auth_client, loaded_db):
+def test_portfolio_url_get_by_id(auth_client, loaded_db, app_ctx):
     response = auth_client.get("/api/v1/portfolios-url/1")
     assert response.status_code == 200
     assert response.json["url"] == "https://acf.gov/opre/topic/overview/abuse-neglect-adoption-foster-care"
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_portfolio_url_get_by_id_404(auth_client, loaded_db):
+def test_portfolio_url_get_by_id_404(auth_client, loaded_db, app_ctx):
     response = auth_client.get("/api/v1/portfolios-url/10000000")
     assert response.status_code == 404
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_portfolio_url_get_all(auth_client, loaded_db):
+def test_portfolio_url_get_all(auth_client, loaded_db, app_ctx):
     portfolio_urls = loaded_db.query(PortfolioUrl).count()
 
     response = auth_client.get("/api/v1/portfolios-url/")
@@ -41,8 +36,7 @@ def test_portfolio_url_get_all(auth_client, loaded_db):
     assert len(response.json) == portfolio_urls
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_portfolio_url_post(budget_team_auth_client, mocker, loaded_db):
+def test_portfolio_url_post(budget_team_auth_client, mocker, loaded_db, app_ctx):
     input_data = {"portfolio_id": 10, "url": "https://acf.gov/opre/topic/overview/test"}
     mock_output_data = PortfolioUrl(portfolio_id=10, url="https://acf.gov/opre/topic/overview/test")
 
@@ -66,8 +60,7 @@ def test_portfolio_url_post(budget_team_auth_client, mocker, loaded_db):
     assert response.json["portfolio_id"] == mock_output_data.portfolio_id
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_basic_user_cannot_post_portfolio_url(basic_user_auth_client):
+def test_basic_user_cannot_post_portfolio_url(basic_user_auth_client, app_ctx):
     input_data = {"portfolio_id": 10, "url": "https://acf.gov/opre/topic/overview/test"}
     response = basic_user_auth_client.post("/api/v1/portfolios-url/", json=input_data)
 
@@ -90,8 +83,7 @@ def test_service_create_portfolio_url(loaded_db):
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_portfolio_url_patch(budget_team_auth_client, mocker):
+def test_portfolio_url_patch(budget_team_auth_client, mocker, app_ctx):
     test_portfolio_url_id = 10
     update_data = {
         "url": "https://acf.gov/opre/topic/overview/newtest",
@@ -121,8 +113,7 @@ def test_portfolio_url_patch(budget_team_auth_client, mocker):
     assert response.json["url"] == portfolio_url.url
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_portfolio_url_patch_404(budget_team_auth_client):
+def test_portfolio_url_patch_404(budget_team_auth_client, app_ctx):
     test_portfolio_url_id = 999
     update_data = {
         "url": "https://acf.gov/opre/topic/overview/newtest",
@@ -133,8 +124,7 @@ def test_portfolio_url_patch_404(budget_team_auth_client):
     assert response.status_code == 404
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_basic_user_cannot_patch_portfolio_url(basic_user_auth_client):
+def test_basic_user_cannot_patch_portfolio_url(basic_user_auth_client, app_ctx):
     data = {
         "url": "https://acf.gov/opre/topic/overview/newtest",
     }
@@ -165,8 +155,7 @@ def test_service_patch_portfolio_url(loaded_db):
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_portfolio_url_put(budget_team_auth_client, mocker):
+def test_portfolio_url_put(budget_team_auth_client, mocker, app_ctx):
     test_portfolio_url_id = 10
     update_data = {
         "portfolio_id": 11,
@@ -197,8 +186,7 @@ def test_portfolio_url_put(budget_team_auth_client, mocker):
     assert response.json["url"] == portfolio_url.url
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_basic_user_cannot_put_portfolio_url(basic_user_auth_client):
+def test_basic_user_cannot_put_portfolio_url(basic_user_auth_client, app_ctx):
     data = {
         "url": "https://acf.gov/opre/topic/overview/newtest",
     }
@@ -207,8 +195,7 @@ def test_basic_user_cannot_put_portfolio_url(basic_user_auth_client):
     assert response.status_code == 403
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_portfolio_url_put_404(budget_team_auth_client):
+def test_portfolio_url_put_404(budget_team_auth_client, app_ctx):
     test_funding_received_id = 600
     input_data = {"portfolio_id": 10, "url": "https://acf.gov/opre/topic/overview/test"}
 
@@ -217,8 +204,7 @@ def test_portfolio_url_put_404(budget_team_auth_client):
     assert response.status_code == 404
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_portfolio_url_delete(auth_client, mocker, test_budget_team_user):
+def test_portfolio_url_delete(auth_client, mocker, test_budget_team_user, app_ctx):
     test_portfolio_url_id = 2
 
     response = auth_client.delete(f"/api/v1/portfolios-url/{test_portfolio_url_id}")
@@ -226,16 +212,14 @@ def test_portfolio_url_delete(auth_client, mocker, test_budget_team_user):
     assert response.status_code == 200
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_portoflio_url_delete_404(budget_team_auth_client, mocker):
+def test_portoflio_url_delete_404(budget_team_auth_client, mocker, app_ctx):
     test_portfolio_url_id = 600
     response = budget_team_auth_client.delete(f"/api/v1/portfolios-url{test_portfolio_url_id}")
 
     assert response.status_code == 404
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_basic_user_cannot_delete_portfolio_url(basic_user_auth_client, mocker):
+def test_basic_user_cannot_delete_portfolio_url(basic_user_auth_client, mocker, app_ctx):
     response = basic_user_auth_client.delete("/api/v1/portfolios-url/1")
     context_manager = DummyContextManager()
     mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__enter__")

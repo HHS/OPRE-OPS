@@ -17631,6 +17631,7 @@
   default_procurement_tracker: [
     {
       agreement_id: 13,
+      procurement_action: 100,
       status: "ACTIVE",
       tracker_type: "DEFAULT",
       active_step_number: 1,
@@ -17638,6 +17639,7 @@
     },
     {
       agreement_id: 14,
+      procurement_action: 101,
       status: "ACTIVE",
       tracker_type: "DEFAULT",
       active_step_number: 1,

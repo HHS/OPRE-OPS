@@ -43,14 +43,12 @@ def new_user(app, loaded_db):
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_put_user_no_user_found(auth_client):
+def test_put_user_no_user_found(auth_client, app_ctx):
     response = auth_client.put(url_for("api.users-item", id=9999), json={"first_name": "New First Name"})
     assert response.status_code == 404
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_put_user_no_auth(client, test_user):
+def test_put_user_no_auth(client, test_user, app_ctx):
     response = client.put(
         url_for("api.users-item", id=test_user.id),
         json={"first_name": "New First Name"},
@@ -58,8 +56,7 @@ def test_put_user_no_auth(client, test_user):
     assert response.status_code == 401
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_put_user_unauthorized_different_user(client, loaded_db, test_non_admin_user, test_user):
+def test_put_user_unauthorized_different_user(client, loaded_db, test_non_admin_user, test_user, app_ctx):
     """
     Test that a regular user cannot update another user's details.
     """
@@ -76,8 +73,7 @@ def test_put_user_unauthorized_different_user(client, loaded_db, test_non_admin_
     assert response.status_code == 400
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_put_user_min_params(auth_client, new_user, loaded_db, test_admin_user):
+def test_put_user_min_params(auth_client, new_user, loaded_db, test_admin_user, app_ctx):
     original_user = new_user.to_dict()
 
     response = auth_client.put(
@@ -120,8 +116,7 @@ def test_put_user_min_params(auth_client, new_user, loaded_db, test_admin_user):
     assert updated_user.updated_on != original_user.get("updated_on"), "should be updated"
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_put_user_max_params(auth_client, new_user, loaded_db, test_admin_user):
+def test_put_user_max_params(auth_client, new_user, loaded_db, test_admin_user, app_ctx):
     original_user = new_user.to_dict()
 
     response = auth_client.put(
@@ -170,8 +165,7 @@ def test_put_user_max_params(auth_client, new_user, loaded_db, test_admin_user):
     assert updated_user.updated_on != original_user.get("updated_on"), "should be updated"
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_put_user_wrong_user(auth_client, new_user, loaded_db, test_admin_user):
+def test_put_user_wrong_user(auth_client, new_user, loaded_db, test_admin_user, app_ctx):
     response = auth_client.put(
         url_for("api.users-item", id=new_user.id),
         json={"id": 0, "email": "new_user@example.com"},
@@ -232,8 +226,7 @@ def test_put_user_changing_status_deactivates_user_session(auth_client, new_user
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_put_user__cannot_deactivate_yourself(auth_client, new_user, loaded_db, test_admin_user):
+def test_put_user__cannot_deactivate_yourself(auth_client, new_user, loaded_db, test_admin_user, app_ctx):
     response = auth_client.put(
         url_for("api.users-item", id=test_admin_user.id),
         json={"email": "new_user@example.com", "status": UserStatus.INACTIVE.name},

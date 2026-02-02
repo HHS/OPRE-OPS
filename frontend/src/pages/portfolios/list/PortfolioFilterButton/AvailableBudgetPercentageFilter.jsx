@@ -70,7 +70,6 @@ const AvailableBudgetPercentageFilter = ({
                         data={rangeOptions}
                         selectedData={selectedRangeObjects}
                         setSelectedData={handleRangeChange}
-                        defaultString="Available Budget"
                         overrideStyles={{ width: "22.7rem" }}
                         isMulti={true}
                     />

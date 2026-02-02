@@ -30,8 +30,7 @@ def test_convert_bli_status_name_to_pretty_string(input_status, expected):
     assert convert_BLI_status_name_to_pretty_string(input_status) == expected
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_division_for_budget_line_item_real_query(loaded_db):
+def test_get_division_for_budget_line_item_real_query(loaded_db, app_ctx):
     director = User(
         first_name="Jane",
         last_name="Doe",

@@ -5,8 +5,7 @@ from ops_api.ops.services.ops_service import ResourceNotFoundError
 from ops_api.ops.services.research_methodology import ResearchMethodologyService
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_create_research_methodology(loaded_db):
+def test_create_research_methodology(loaded_db, app_ctx):
     service = ResearchMethodologyService(loaded_db)
 
     create_request = {"name": "Qualitative Analysis", "detailed_name": "Qualitative Analysis"}
@@ -18,8 +17,7 @@ def test_create_research_methodology(loaded_db):
     service.delete(new_methodology.id)
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_update_research_methodology(loaded_db):
+def test_update_research_methodology(loaded_db, app_ctx):
     service = ResearchMethodologyService(loaded_db)
 
     # First, create a ResearchMethodology to update
@@ -35,8 +33,7 @@ def test_update_research_methodology(loaded_db):
     service.delete(methodology.id)
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_research_methodologies(loaded_db):
+def test_get_research_methodologies(loaded_db, app_ctx):
     service = ResearchMethodologyService(loaded_db)
 
     # Retrieve the list of ResearchMethodologies
@@ -51,8 +48,7 @@ def test_get_research_methodologies(loaded_db):
     assert len(retrieved_methodologies_2) == 0
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_delete_research_methodology(loaded_db):
+def test_delete_research_methodology(loaded_db, app_ctx):
     service = ResearchMethodologyService(loaded_db)
 
     # First, create a ResearchMethodology to delete
@@ -67,8 +63,7 @@ def test_delete_research_methodology(loaded_db):
         service.get(methodology.id)
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_research_methodology(loaded_db):
+def test_get_research_methodology(loaded_db, app_ctx):
     service = ResearchMethodologyService(loaded_db)
 
     # First, create a ResearchMethodology to retrieve
@@ -83,8 +78,7 @@ def test_get_research_methodology(loaded_db):
     service.delete(methodology.id)
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_research_methodology_api(loaded_db, auth_client):
+def test_get_research_methodology_api(loaded_db, auth_client, app_ctx):
     service = ResearchMethodologyService(loaded_db)
 
     # First, create a ResearchMethodology to retrieve via API
@@ -103,15 +97,13 @@ def test_get_research_methodology_api(loaded_db, auth_client):
     service.delete(methodology.id)
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_research_methodology_404(auth_client):
+def test_get_research_methodology_404(auth_client, app_ctx):
     url = url_for("api.research-methodology-item", id=9999)
     response = auth_client.get(url)
     assert response.status_code == 404
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_research_methodology_list_api(loaded_db, auth_client):
+def test_get_research_methodology_list_api(loaded_db, auth_client, app_ctx):
 
     url = url_for("api.research-methodology-list")
 

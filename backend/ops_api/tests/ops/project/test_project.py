@@ -1,14 +1,12 @@
 import uuid
 
-import pytest
 from flask import url_for
 
 from models import Project, ProjectType
 from models.projects import ResearchType
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_project_retrieve(loaded_db):
+def test_project_retrieve(loaded_db, app_ctx):
     project = (
         loaded_db.query(Project).filter(Project.title == "African American Child and Family Research Center").one()
     )
@@ -62,8 +60,7 @@ def test_projects_with_fiscal_year_not_found(auth_client, loaded_db):
     assert len(response.json) == 0
 
 
-@pytest.mark.usefixtures("loaded_db")
-def test_project_search(auth_client):
+def test_project_search(auth_client, loaded_db):
     response = auth_client.get(url_for("api.projects-group", search=""))
 
     assert response.status_code == 200
@@ -100,8 +97,7 @@ def test_projects_auth(client):
     assert response.status_code == 401
 
 
-@pytest.mark.usefixtures("loaded_db")
-def test_post_projects(auth_client):
+def test_post_projects(auth_client, loaded_db):
     data = {
         "project_type": ProjectType.RESEARCH.name,
         "title": "Research Project #1",
@@ -130,8 +126,7 @@ def test_post_projects(auth_client):
     assert [person in expected_team_leaders for person in response.json["team_leaders"]]
 
 
-@pytest.mark.usefixtures("loaded_db")
-def test_post_projects_minimum(auth_client):
+def test_post_projects_minimum(auth_client, loaded_db):
     data = {
         "project_type": ProjectType.RESEARCH.name,
         "title": "Research Project #1",
@@ -143,14 +138,12 @@ def test_post_projects_minimum(auth_client):
     assert response.json["team_leaders"] == []
 
 
-@pytest.mark.usefixtures("loaded_db")
-def test_post_projects_empty_post(auth_client):
+def test_post_projects_empty_post(auth_client, loaded_db):
     response = auth_client.post(url_for("api.projects-group"), json={})
     assert response.status_code == 400
 
 
-@pytest.mark.usefixtures("loaded_db")
-def test_post_projects_bad_team_leaders(auth_client):
+def test_post_projects_bad_team_leaders(auth_client, loaded_db):
     data = {
         "project_type": ProjectType.RESEARCH.name,
         "title": "Research Project #1",
@@ -166,8 +159,7 @@ def test_post_projects_bad_team_leaders(auth_client):
     assert response.status_code == 400
 
 
-@pytest.mark.usefixtures("loaded_db")
-def test_post_projects_missing_title(auth_client):
+def test_post_projects_missing_title(auth_client, loaded_db):
     data = {
         "project_type": ProjectType.RESEARCH.name,
         "short_title": "RP1" + uuid.uuid4().hex,
@@ -182,8 +174,7 @@ def test_post_projects_missing_title(auth_client):
     assert response.status_code == 400
 
 
-@pytest.mark.usefixtures("loaded_db")
-def test_post_projects_auth_required(client):
+def test_post_projects_auth_required(client, loaded_db):
     data = {
         "project_type": ProjectType.RESEARCH.name,
         "title": "Research Project #1",
@@ -199,8 +190,7 @@ def test_post_projects_auth_required(client):
     assert response.status_code == 401
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_research_types(auth_client):
+def test_get_research_types(auth_client, app_ctx):
     response = auth_client.get("/api/v1/research-types/")
     assert response.status_code == 200
     assert response.json == {e.name: e.value for e in ResearchType}

@@ -3,8 +3,7 @@ import pytest
 from models import BudgetLineItemStatus
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_budget_line_item_status_count(loaded_db):
+def test_budget_line_item_status_count(loaded_db, app_ctx):
     """Verify the enum contains exactly the expected number of statuses."""
     assert len(BudgetLineItemStatus) == 4
 

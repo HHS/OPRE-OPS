@@ -72,4 +72,4 @@ class OpsEventHandler:
 
         if hasattr(request, "message_bus"):
             logger.info(f"Publishing event {self.event_type.name}")
-            request.message_bus.publish(self.event_type.name, event)
+            request.message_bus.publish(self.event_type, event)

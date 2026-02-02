@@ -1,6 +1,5 @@
 import datetime
 
-import pytest
 from sqlalchemy import Integer, cast, func, select
 
 from models import CAN, BudgetLineItem, CANFundingSource, CANStatus
@@ -9,8 +8,7 @@ from ops.services.cans import CANService
 from ops_api.tests.utils import DummyContextManager
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_can_retrieve(loaded_db, mocker):
+def test_can_retrieve(loaded_db, mocker, app_ctx):
     date_mock = mocker.patch("models.cans.date")
     date_mock.today.return_value = datetime.date(2023, 8, 1)
     can = loaded_db.execute(select(CAN).where(CAN.number == "G99HRF2")).scalar_one()
@@ -33,8 +31,7 @@ def test_can_retrieve(loaded_db, mocker):
     )
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_can_is_expired_1_year_can(loaded_db, mocker):
+def test_can_is_expired_1_year_can(loaded_db, mocker, app_ctx):
     can = loaded_db.execute(select(CAN).where(CAN.number == "G99HRF2")).scalar_one()
     assert can is not None
 
@@ -51,8 +48,7 @@ def test_can_is_expired_1_year_can(loaded_db, mocker):
     assert can.is_expired is True, "can is not active in 2024 because it is appropriated in 2023 for 1 year"
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_can_is_expired_5_year_can(loaded_db, mocker):
+def test_can_is_expired_5_year_can(loaded_db, mocker, app_ctx):
     can = loaded_db.execute(select(CAN).where(CAN.number == "G99IA14")).scalar_one()
     assert can is not None
 
@@ -73,8 +69,7 @@ def test_can_is_expired_5_year_can(loaded_db, mocker):
     assert can.is_expired is True, "can is active in 2021-2025"
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_can_is_inactive(loaded_db, mocker):
+def test_can_is_inactive(loaded_db, mocker, app_ctx):
     date_mock = mocker.patch("models.cans.date")
     date_mock.today.return_value = datetime.date(2024, 10, 1)
     can = loaded_db.execute(select(CAN).where(CAN.number == "G99HRF2")).scalar_one()
@@ -83,8 +78,7 @@ def test_can_is_inactive(loaded_db, mocker):
     assert can.status == CANStatus.INACTIVE
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_can_get_all(auth_client, mocker, test_can):
+def test_can_get_all(auth_client, mocker, test_can, app_ctx):
     mocker_get_can = mocker.patch("ops_api.ops.services.cans.CANService.get_list")
     metadata = {"count": 1, "limit": 10, "offset": 0}
     mocker_get_can.return_value = ([test_can], metadata)
@@ -100,8 +94,7 @@ def test_can_get_all(auth_client, mocker, test_can):
     mocker_get_can.assert_called_once()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_can_get_list_by_fiscal_year(auth_client, mocker, test_can):
+def test_can_get_list_by_fiscal_year(auth_client, mocker, test_can, app_ctx):
     mocker_get_can = mocker.patch("ops_api.ops.services.cans.CANService.get_list")
     metadata = {"count": 1, "limit": 10, "offset": 0}
     mocker_get_can.return_value = ([test_can], metadata)
@@ -153,8 +146,7 @@ def test_service_can_get_list_by_fiscal_year(auth_client, loaded_db):
     assert metadata["count"] == count
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_can_get_by_id(auth_client, mocker, test_can):
+def test_can_get_by_id(auth_client, mocker, test_can, app_ctx):
     mocker_get_can = mocker.patch("ops_api.ops.services.cans.CANService.get")
     mocker_get_can.return_value = test_can
     response = auth_client.get(f"/api/v1/cans/{test_can.id}")
@@ -169,16 +161,14 @@ def test_can_service_get_by_id(test_can):
     assert test_can.number == can.number
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_can_get_portfolio_cans(auth_client, loaded_db):
+def test_can_get_portfolio_cans(auth_client, loaded_db, app_ctx):
     response = auth_client.get("/api/v1/cans/portfolio/1")
     assert response.status_code == 200
     assert len(response.json) == 3
     assert response.json[0]["id"] == 501
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_cans_search_filter(auth_client, loaded_db, test_can):
+def test_get_cans_search_filter(auth_client, loaded_db, test_can, app_ctx):
     response = auth_client.get("/api/v1/cans/?search=XXX8")
     assert response.status_code == 200
     assert "data" in response.json
@@ -214,8 +204,7 @@ def test_service_get_cans_search_filter(test_can):
 
 
 # Testing CAN Pagination
-@pytest.mark.usefixtures("app_ctx")
-def test_can_get_list_with_pagination(auth_client, loaded_db):
+def test_can_get_list_with_pagination(auth_client, loaded_db, app_ctx):
     """Test pagination with limit and offset parameters"""
     # Test with limit=5, offset=0
     response = auth_client.get("/api/v1/cans/?limit=5&offset=0")
@@ -230,8 +219,7 @@ def test_can_get_list_with_pagination(auth_client, loaded_db):
     assert response.json["count"] >= len(response.json["data"])
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_can_get_list_pagination_with_offset(auth_client, loaded_db):
+def test_can_get_list_pagination_with_offset(auth_client, loaded_db, app_ctx):
     """Test pagination with offset beyond first page"""
     # Get total count first
     response1 = auth_client.get("/api/v1/cans/")
@@ -246,8 +234,7 @@ def test_can_get_list_pagination_with_offset(auth_client, loaded_db):
     assert len(response2.json["data"]) <= 3
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_can_get_list_pagination_with_search(auth_client, loaded_db):
+def test_can_get_list_pagination_with_search(auth_client, loaded_db, app_ctx):
     """Test pagination works with search filter"""
     response = auth_client.get("/api/v1/cans/?search=G99&limit=2&offset=0")
     assert response.status_code == 200
@@ -257,8 +244,7 @@ def test_can_get_list_pagination_with_search(auth_client, loaded_db):
     assert len(response.json["data"]) <= 2
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_can_get_list_pagination_offset_beyond_total(auth_client, loaded_db):
+def test_can_get_list_pagination_offset_beyond_total(auth_client, loaded_db, app_ctx):
     """Test pagination when offset is beyond total count"""
     response = auth_client.get("/api/v1/cans/?limit=10&offset=1000")
     assert response.status_code == 200
@@ -296,8 +282,7 @@ def test_service_can_get_list_pagination_edge_cases(loaded_db):
 
 
 # Testing CAN Creation
-@pytest.mark.usefixtures("app_ctx")
-def test_can_post_creates_can(budget_team_auth_client, mocker, loaded_db):
+def test_can_post_creates_can(budget_team_auth_client, mocker, loaded_db, app_ctx):
     input_data = {
         "portfolio_id": 6,
         "number": "G998235",
@@ -334,8 +319,7 @@ def test_can_post_creates_can(budget_team_auth_client, mocker, loaded_db):
     assert response.json["nick_name"] == mock_output_data.nick_name
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_basic_user_cannot_post_creates_can(basic_user_auth_client):
+def test_basic_user_cannot_post_creates_can(basic_user_auth_client, app_ctx):
     data = {
         "portfolio_id": 6,
         "number": "G998235",
@@ -371,8 +355,7 @@ def test_service_create_can(loaded_db):
 
 
 # Testing updating CANs by PATCH
-@pytest.mark.usefixtures("app_ctx")
-def test_can_patch(budget_team_auth_client, mocker, unadded_can):
+def test_can_patch(budget_team_auth_client, mocker, unadded_can, app_ctx):
     test_can_id = 517
     update_data = {"description": "New Description", "nick_name": "My nick name"}
 
@@ -408,8 +391,7 @@ def test_can_patch(budget_team_auth_client, mocker, unadded_can):
     assert response.json["description"] == unadded_can.description
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_can_patch_404(budget_team_auth_client, mocker, loaded_db, unadded_can):
+def test_can_patch_404(budget_team_auth_client, mocker, loaded_db, unadded_can, app_ctx):
     test_can_id = 528
     update_data = {
         "description": "Test CAN Created by unit test",
@@ -420,8 +402,7 @@ def test_can_patch_404(budget_team_auth_client, mocker, loaded_db, unadded_can):
     assert response.status_code == 404
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_basic_user_cannot_patch_cans(basic_user_auth_client):
+def test_basic_user_cannot_patch_cans(basic_user_auth_client, app_ctx):
     data = {
         "description": "An updated can description",
     }
@@ -460,8 +441,7 @@ def test_service_patch_can(loaded_db):
 
 
 # Testing updating CANs by PUT
-@pytest.mark.usefixtures("app_ctx")
-def test_can_put(budget_team_auth_client, mocker, unadded_can):
+def test_can_put(budget_team_auth_client, mocker, unadded_can, app_ctx):
     test_can_id = 517
     update_data = {
         "number": "G998235",
@@ -510,8 +490,7 @@ def test_can_put(budget_team_auth_client, mocker, unadded_can):
     assert response.json["nick_name"] == unadded_can.nick_name
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_basic_user_cannot_put_cans(basic_user_auth_client):
+def test_basic_user_cannot_put_cans(basic_user_auth_client, app_ctx):
     data = {
         "description": "An updated can description",
     }
@@ -520,8 +499,7 @@ def test_basic_user_cannot_put_cans(basic_user_auth_client):
     assert response.status_code == 403
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_can_put_404(budget_team_auth_client):
+def test_can_put_404(budget_team_auth_client, app_ctx):
     test_can_id = 550
     update_data = {
         "number": "G123456",
@@ -578,8 +556,7 @@ def test_service_update_can_with_nones(loaded_db):
 
 
 # Testing deleting CANs
-@pytest.mark.usefixtures("app_ctx")
-def test_can_delete(budget_team_auth_client, mocker, unadded_can):
+def test_can_delete(budget_team_auth_client, mocker, unadded_can, app_ctx):
     test_can_id = 517
 
     mocker_delete_can = mocker.patch("ops_api.ops.services.cans.CANService.delete")
@@ -591,8 +568,7 @@ def test_can_delete(budget_team_auth_client, mocker, unadded_can):
     assert response.json["id"] == test_can_id
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_can_delete_404(budget_team_auth_client):
+def test_can_delete_404(budget_team_auth_client, app_ctx):
     test_can_id = 1
 
     response = budget_team_auth_client.delete(f"/api/v1/cans/{test_can_id}")
@@ -600,8 +576,7 @@ def test_can_delete_404(budget_team_auth_client):
     assert response.status_code == 404
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_basic_user_cannot_delete_cans(basic_user_auth_client):
+def test_basic_user_cannot_delete_cans(basic_user_auth_client, app_ctx):
     response = basic_user_auth_client.delete("/api/v1/cans/517")
 
     assert response.status_code == 403
@@ -689,8 +664,7 @@ def test_can_active_years_zero_year_can(loaded_db):
 
 
 # Testing Active Period Filter
-@pytest.mark.usefixtures("app_ctx")
-def test_can_get_list_filter_by_active_period(auth_client, loaded_db):
+def test_can_get_list_filter_by_active_period(auth_client, loaded_db, app_ctx):
     """Test filtering CANs by active period"""
     response = auth_client.get("/api/v1/cans/?active_period=1")
     assert response.status_code == 200
@@ -701,8 +675,7 @@ def test_can_get_list_filter_by_active_period(auth_client, loaded_db):
         assert can["active_period"] == 1
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_can_get_list_filter_by_multiple_active_periods(auth_client, loaded_db):
+def test_can_get_list_filter_by_multiple_active_periods(auth_client, loaded_db, app_ctx):
     """Test filtering CANs by multiple active period values"""
     response = auth_client.get("/api/v1/cans/?active_period=1&active_period=5")
     assert response.status_code == 200
@@ -731,8 +704,7 @@ def test_service_filter_by_active_period(loaded_db):
 
 
 # Testing Transfer Method Filter
-@pytest.mark.usefixtures("app_ctx")
-def test_can_get_list_filter_by_transfer_method(auth_client, loaded_db):
+def test_can_get_list_filter_by_transfer_method(auth_client, loaded_db, app_ctx):
     """Test filtering CANs by transfer method"""
     response = auth_client.get("/api/v1/cans/?transfer=DIRECT")
     assert response.status_code == 200
@@ -756,8 +728,7 @@ def test_service_filter_by_transfer_method(loaded_db):
 
 
 # Testing Portfolio Filter
-@pytest.mark.usefixtures("app_ctx")
-def test_can_get_list_filter_by_portfolio(auth_client, loaded_db):
+def test_can_get_list_filter_by_portfolio(auth_client, loaded_db, app_ctx):
     """Test filtering CANs by portfolio abbreviation"""
     response = auth_client.get("/api/v1/cans/?portfolio=HMRF")
     assert response.status_code == 200
@@ -787,8 +758,7 @@ def test_service_filter_by_portfolio(loaded_db):
 
 
 # Testing Budget Range Filter
-@pytest.mark.usefixtures("app_ctx")
-def test_can_get_list_filter_by_budget_min(auth_client, loaded_db):
+def test_can_get_list_filter_by_budget_min(auth_client, loaded_db, app_ctx):
     """Test filtering CANs by minimum budget"""
     min_budget = 100000.0
     response = auth_client.get(f"/api/v1/cans/?budget_min={min_budget}&fiscal_year=2023")
@@ -796,8 +766,7 @@ def test_can_get_list_filter_by_budget_min(auth_client, loaded_db):
     assert "data" in response.json
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_can_get_list_filter_by_budget_max(auth_client, loaded_db):
+def test_can_get_list_filter_by_budget_max(auth_client, loaded_db, app_ctx):
     """Test filtering CANs by maximum budget"""
     max_budget = 500000.0
     response = auth_client.get(f"/api/v1/cans/?budget_max={max_budget}&fiscal_year=2023")
@@ -805,8 +774,7 @@ def test_can_get_list_filter_by_budget_max(auth_client, loaded_db):
     assert "data" in response.json
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_can_get_list_filter_by_budget_range(auth_client, loaded_db):
+def test_can_get_list_filter_by_budget_range(auth_client, loaded_db, app_ctx):
     """Test filtering CANs by budget range"""
     min_budget = 100000.0
     max_budget = 500000.0
@@ -849,8 +817,7 @@ def test_service_filter_by_budget_no_fiscal_year_required(loaded_db):
 
 
 # Testing Combined Filters
-@pytest.mark.usefixtures("app_ctx")
-def test_can_get_list_combined_filters(auth_client, loaded_db):
+def test_can_get_list_combined_filters(auth_client, loaded_db, app_ctx):
     """Test combining multiple filters together"""
     response = auth_client.get("/api/v1/cans/?fiscal_year=2023&active_period=1&portfolio=HMRF")
     assert response.status_code == 200
@@ -875,8 +842,7 @@ def test_service_combined_filters(loaded_db):
 
 
 # Testing Filters with Pagination
-@pytest.mark.usefixtures("app_ctx")
-def test_can_get_list_filters_with_pagination(auth_client, loaded_db):
+def test_can_get_list_filters_with_pagination(auth_client, loaded_db, app_ctx):
     """Test that filters work correctly with pagination"""
     # Get filtered results with pagination
     response = auth_client.get("/api/v1/cans/?active_period=1&limit=5&offset=0")
@@ -907,8 +873,7 @@ def test_service_filters_with_pagination(loaded_db):
 
 
 # Testing Empty Filter Results
-@pytest.mark.usefixtures("app_ctx")
-def test_can_get_list_filter_no_results(auth_client, loaded_db):
+def test_can_get_list_filter_no_results(auth_client, loaded_db, app_ctx):
     """Test filters that return no results"""
     response = auth_client.get("/api/v1/cans/?budget_min=999999999&fiscal_year=2023")
     assert response.status_code == 200

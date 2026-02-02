@@ -45,6 +45,18 @@ def get_connection_uri() -> str:
         return None
 
 
+def include_object(obj, name, type_, reflected, compare_to):
+    """
+    Filter out objects that should be ignored during autogenerate.
+    Excludes SQLAlchemy-Continuum version table indexes to prevent
+    Alembic from trying to recreate them.
+    """
+    if type_ == "index" and name and "_version_pk_" in name:
+        # Ignore SQLAlchemy-Continuum version table indexes
+        return False
+    return True
+
+
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
 
@@ -57,14 +69,13 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = os.getenv("SQLALCHEMY_DATABASE_URI") or config.get_main_option(
-        "sqlalchemy.url"
-    )
+    url = os.getenv("SQLALCHEMY_DATABASE_URI") or config.get_main_option("sqlalchemy.url")
     context.configure(
         url=url,
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+        include_object=include_object,
     )
 
     with context.begin_transaction():
@@ -90,7 +101,11 @@ def run_migrations_online() -> None:
         connectable = create_engine(url, poolclass=pool.NullPool)
 
     with connectable.connect() as connection:
-        context.configure(connection=connection, target_metadata=target_metadata)
+        context.configure(
+            connection=connection,
+            target_metadata=target_metadata,
+            include_object=include_object,
+        )
 
         with context.begin_transaction():
             context.run_migrations()

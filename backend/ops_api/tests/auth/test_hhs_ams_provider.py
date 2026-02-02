@@ -1,15 +1,13 @@
 import json
 from unittest.mock import MagicMock
 
-import pytest
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 
 from ops_api.ops.auth.authentication_provider.hhs_ams_provider import HhsAmsProvider
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_create_provider(app):
+def test_create_provider(app, app_ctx):
     provider = HhsAmsProvider("hhsams", app.config)
     assert provider.provider_name == "hhsams"
     assert provider.config == app.config
@@ -23,8 +21,7 @@ def test_create_provider(app):
     assert provider.user_info_url == app.config["AUTHLIB_OAUTH_CLIENTS"]["hhsams"]["user_info_url"]
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_decode_user(app, mocker):
+def test_decode_user(app, mocker, app_ctx):
     # Generate a public/private key pair for testing
     private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
     public_key = (
@@ -76,8 +73,7 @@ def test_decode_user(app, mocker):
     assert claims["email"] == "john.doe@example.com"
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_authenticate(app, mocker):
+def test_authenticate(app, mocker, app_ctx):
     # mock member method fetch_token on the HhsAmsProvider class
     mock_fetch_token = mocker.patch(
         "ops_api.ops.auth.authentication_provider.hhs_ams_provider.HhsAmsProvider.fetch_token"

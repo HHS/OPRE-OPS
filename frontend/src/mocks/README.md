@@ -46,15 +46,17 @@ describe("MyComponent", () => {
 
 ## Usage in Development
 
-To use MSW during development, you need to initialize the service worker in your application's entry point:
+MSW is **disabled by default** in development environments as of January 2026. The application now connects directly to the backend API during development.
 
-```javascript
-// In your main.jsx or similar entry file
-if (import.meta.env.DEV) {
-    const { worker } = await import("./mocks/browser");
-    worker.start();
-}
+MSW remains enabled for automated testing (see "Usage in Tests" above).
+
+If you need to enable MSW temporarily for development purposes, you can set the environment variable:
+
 ```
+VITE_ENABLE_MSW=true
+```
+
+Note: This is not recommended for regular development workflows.
 
 ## Adding New Mock Handlers
 

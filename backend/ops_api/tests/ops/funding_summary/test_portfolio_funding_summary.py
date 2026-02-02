@@ -28,8 +28,7 @@ from ops_api.ops.utils.portfolios import (
 
 
 @pytest.fixture()
-@pytest.mark.usefixtures("app_ctx")
-def db_loaded_with_data_for_total_fiscal_year_funding(app, loaded_db):
+def db_loaded_with_data_for_total_fiscal_year_funding(app, loaded_db, app_ctx):
     portfolio = Portfolio(name="UNIT TEST PORTFOLIO", division_id=1)
     can = CAN(number="TEST_CAN")
     portfolio.cans.append(can)
@@ -103,8 +102,7 @@ def db_loaded_with_data_for_total_fiscal_year_funding(app, loaded_db):
     loaded_db.commit()
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_portfolio_funding_summary(auth_client, db_loaded_with_data_for_total_fiscal_year_funding):
+def test_get_portfolio_funding_summary(auth_client, db_loaded_with_data_for_total_fiscal_year_funding, app_ctx):
     response = auth_client.get(url_for("api.portfolio-funding-summary-item", id=1))
     assert response.status_code == 200
     assert response.json == {
@@ -119,8 +117,7 @@ def test_get_portfolio_funding_summary(auth_client, db_loaded_with_data_for_tota
     }
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_portfolio_funding_summary_2023(auth_client, db_loaded_with_data_for_total_fiscal_year_funding):
+def test_get_portfolio_funding_summary_2023(auth_client, db_loaded_with_data_for_total_fiscal_year_funding, app_ctx):
     portfolio = db_loaded_with_data_for_total_fiscal_year_funding.execute(
         select(Portfolio).where(Portfolio.name == "UNIT TEST PORTFOLIO")
     ).scalar()
@@ -370,8 +367,7 @@ def test_cans_for_child_care_fiscal_year_2027(auth_client):
 # Tests for Portfolio Funding Summary List API (Batch Endpoint)
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_portfolio_funding_summary_list_returns_all_portfolios(auth_client, loaded_db):
+def test_get_portfolio_funding_summary_list_returns_all_portfolios(auth_client, loaded_db, app_ctx):
     """Test GET /portfolio-funding-summary/ returns all portfolios with funding"""
     response = auth_client.get(url_for("api.portfolio-funding-summary-list"))
 
@@ -393,8 +389,7 @@ def test_get_portfolio_funding_summary_list_returns_all_portfolios(auth_client, 
     assert "in_execution_funding" in first_portfolio
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_portfolio_funding_summary_list_with_fiscal_year(auth_client, loaded_db):
+def test_get_portfolio_funding_summary_list_with_fiscal_year(auth_client, loaded_db, app_ctx):
     """Test fiscal_year parameter filters correctly"""
     response = auth_client.get(url_for("api.portfolio-funding-summary-list", fiscal_year=2023))
 
@@ -404,8 +399,7 @@ def test_get_portfolio_funding_summary_list_with_fiscal_year(auth_client, loaded
     assert len(response.json["portfolios"]) > 0
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_portfolio_funding_summary_list_filter_by_portfolio_ids(auth_client, loaded_db):
+def test_get_portfolio_funding_summary_list_filter_by_portfolio_ids(auth_client, loaded_db, app_ctx):
     """Test portfolio_ids filter returns only specified portfolios"""
     # Request specific portfolio IDs - pass as list for repeated query params
     response = auth_client.get(url_for("api.portfolio-funding-summary-list", portfolio_ids=[1, 3, 6]))
@@ -419,8 +413,7 @@ def test_get_portfolio_funding_summary_list_filter_by_portfolio_ids(auth_client,
     assert len(portfolios) <= 3
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_portfolio_funding_summary_list_filter_by_budget_min(auth_client, loaded_db):
+def test_get_portfolio_funding_summary_list_filter_by_budget_min(auth_client, loaded_db, app_ctx):
     """Test budget_min filter"""
     budget_min = 10000000  # 10M
     response = auth_client.get(url_for("api.portfolio-funding-summary-list", fiscal_year=2023, budget_min=budget_min))
@@ -434,8 +427,7 @@ def test_get_portfolio_funding_summary_list_filter_by_budget_min(auth_client, lo
         assert total_amount >= budget_min
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_portfolio_funding_summary_list_filter_by_budget_max(auth_client, loaded_db):
+def test_get_portfolio_funding_summary_list_filter_by_budget_max(auth_client, loaded_db, app_ctx):
     """Test budget_max filter"""
     budget_max = 50000000  # 50M
     response = auth_client.get(url_for("api.portfolio-funding-summary-list", fiscal_year=2023, budget_max=budget_max))
@@ -449,8 +441,7 @@ def test_get_portfolio_funding_summary_list_filter_by_budget_max(auth_client, lo
         assert total_amount <= budget_max
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_portfolio_funding_summary_list_filter_by_budget_range(auth_client, loaded_db):
+def test_get_portfolio_funding_summary_list_filter_by_budget_range(auth_client, loaded_db, app_ctx):
     """Test budget_min and budget_max together"""
     budget_min = 10000000  # 10M
     budget_max = 50000000  # 50M
@@ -472,8 +463,7 @@ def test_get_portfolio_funding_summary_list_filter_by_budget_range(auth_client, 
         assert budget_min <= total_amount <= budget_max
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_portfolio_funding_summary_list_filter_by_available_pct_over90(auth_client, loaded_db):
+def test_get_portfolio_funding_summary_list_filter_by_available_pct_over90(auth_client, loaded_db, app_ctx):
     """Test available_pct filter with 'over90' range"""
     response = auth_client.get(url_for("api.portfolio-funding-summary-list", fiscal_year=2023, available_pct="over90"))
 
@@ -489,8 +479,7 @@ def test_get_portfolio_funding_summary_list_filter_by_available_pct_over90(auth_
             assert available_pct >= 90
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_portfolio_funding_summary_list_filter_by_available_pct_75_90(auth_client, loaded_db):
+def test_get_portfolio_funding_summary_list_filter_by_available_pct_75_90(auth_client, loaded_db, app_ctx):
     """Test available_pct filter with '75-90' range"""
     response = auth_client.get(url_for("api.portfolio-funding-summary-list", fiscal_year=2023, available_pct="75-90"))
 
@@ -506,8 +495,7 @@ def test_get_portfolio_funding_summary_list_filter_by_available_pct_75_90(auth_c
             assert 75 <= available_pct < 90
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_portfolio_funding_summary_list_filter_by_available_pct_50_75(auth_client, loaded_db):
+def test_get_portfolio_funding_summary_list_filter_by_available_pct_50_75(auth_client, loaded_db, app_ctx):
     """Test available_pct filter with '50-75' range"""
     response = auth_client.get(url_for("api.portfolio-funding-summary-list", fiscal_year=2023, available_pct="50-75"))
 
@@ -523,8 +511,7 @@ def test_get_portfolio_funding_summary_list_filter_by_available_pct_50_75(auth_c
             assert 50 <= available_pct < 75
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_portfolio_funding_summary_list_filter_by_available_pct_25_50(auth_client, loaded_db):
+def test_get_portfolio_funding_summary_list_filter_by_available_pct_25_50(auth_client, loaded_db, app_ctx):
     """Test available_pct filter with '25-50' range"""
     response = auth_client.get(url_for("api.portfolio-funding-summary-list", fiscal_year=2023, available_pct="25-50"))
 
@@ -540,8 +527,7 @@ def test_get_portfolio_funding_summary_list_filter_by_available_pct_25_50(auth_c
             assert 25 <= available_pct < 50
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_portfolio_funding_summary_list_filter_by_available_pct_under25(auth_client, loaded_db):
+def test_get_portfolio_funding_summary_list_filter_by_available_pct_under25(auth_client, loaded_db, app_ctx):
     """Test available_pct filter with 'under25' range"""
     response = auth_client.get(url_for("api.portfolio-funding-summary-list", fiscal_year=2023, available_pct="under25"))
 
@@ -557,8 +543,7 @@ def test_get_portfolio_funding_summary_list_filter_by_available_pct_under25(auth
             assert available_pct < 25
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_portfolio_funding_summary_list_filter_by_multiple_available_pct(auth_client, loaded_db):
+def test_get_portfolio_funding_summary_list_filter_by_multiple_available_pct(auth_client, loaded_db, app_ctx):
     """Test available_pct filter with multiple ranges (OR logic)"""
     response = auth_client.get(
         url_for(
@@ -581,8 +566,7 @@ def test_get_portfolio_funding_summary_list_filter_by_multiple_available_pct(aut
             assert available_pct >= 75
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_portfolio_funding_summary_list_combined_filters(auth_client, loaded_db):
+def test_get_portfolio_funding_summary_list_combined_filters(auth_client, loaded_db, app_ctx):
     """Test combined filters (portfolio IDs + budget range + available %)"""
     response = auth_client.get(
         url_for(
@@ -615,15 +599,13 @@ def test_get_portfolio_funding_summary_list_combined_filters(auth_client, loaded
             assert available_pct >= 90
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_portfolio_funding_summary_list_unauthorized(client, loaded_db):
+def test_get_portfolio_funding_summary_list_unauthorized(client, loaded_db, app_ctx):
     """Test authorization requirement"""
     response = client.get(url_for("api.portfolio-funding-summary-list"))
     assert response.status_code == 401
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_portfolio_funding_summary_list_empty_result(auth_client, loaded_db):
+def test_get_portfolio_funding_summary_list_empty_result(auth_client, loaded_db, app_ctx):
     """Test returns empty list when no portfolios match filters"""
     # Use impossible budget range
     response = auth_client.get(
@@ -639,8 +621,7 @@ def test_get_portfolio_funding_summary_list_empty_result(auth_client, loaded_db)
     assert response.json["portfolios"] == []
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_portfolio_funding_summary_list_division_data(auth_client, loaded_db):
+def test_get_portfolio_funding_summary_list_division_data(auth_client, loaded_db, app_ctx):
     """Test division data is included in response"""
     response = auth_client.get(url_for("api.portfolio-funding-summary-list", fiscal_year=2023))
 
@@ -659,8 +640,7 @@ def test_get_portfolio_funding_summary_list_division_data(auth_client, loaded_db
         assert "deputy_division_director_id" in division
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_portfolio_funding_summary_list_invalid_available_pct(auth_client, loaded_db):
+def test_get_portfolio_funding_summary_list_invalid_available_pct(auth_client, loaded_db, app_ctx):
     """Test that invalid available_pct range codes are rejected"""
     response = auth_client.get(
         url_for("api.portfolio-funding-summary-list", fiscal_year=2023, available_pct=["invalid", "another-invalid"])
@@ -671,8 +651,7 @@ def test_get_portfolio_funding_summary_list_invalid_available_pct(auth_client, l
     assert "available_pct" in response.json or "errors" in response.json
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_portfolio_funding_summary_list_valid_available_pct(auth_client, loaded_db):
+def test_get_portfolio_funding_summary_list_valid_available_pct(auth_client, loaded_db, app_ctx):
     """Test that valid available_pct range codes are accepted"""
     response = auth_client.get(
         url_for(
@@ -687,8 +666,7 @@ def test_get_portfolio_funding_summary_list_valid_available_pct(auth_client, loa
     assert "portfolios" in response.json
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_get_portfolio_funding_summary_list_budget_min_zero(auth_client, loaded_db):
+def test_get_portfolio_funding_summary_list_budget_min_zero(auth_client, loaded_db, app_ctx):
     """Test that budget_min=0 is handled correctly (not treated as falsy)"""
     response = auth_client.get(
         url_for("api.portfolio-funding-summary-list", fiscal_year=2023, budget_min=0, budget_max=100000000)
