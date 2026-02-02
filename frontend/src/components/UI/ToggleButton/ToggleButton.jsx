@@ -17,8 +17,8 @@ const ToggleButton = ({ handleToggle = () => {}, isToggleOn = true, btnText = ""
                 size="2xl"
                 className={`margin-right-1 cursor-pointer ${isToggleOn ? "text-primary" : "text-base"}`}
                 title={isToggleOn ? "On (Drafts included)" : "Off (Drafts excluded)"}
-            />
-            {" "} {/* Add explicit space for accessibility */}
+            />{" "}
+            {/* Add explicit space for accessibility */}
             <span className="text-primary">{btnText}</span>
         </button>
     );
