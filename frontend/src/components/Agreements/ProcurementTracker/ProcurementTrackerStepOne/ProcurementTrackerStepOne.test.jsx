@@ -470,6 +470,49 @@ describe("ProcurementTrackerStepOne", () => {
         });
     });
 
+    describe("ACTIVE State Rendering", () => {
+        it("renders all form fields: checkbox, UsersComboBox, DatePicker, TextArea, buttons", () => {
+            render(
+                <ProcurementTrackerStepOne
+                    stepStatus="ACTIVE"
+                    stepOneData={mockStepOneData}
+                />
+            );
+
+            expect(screen.getByRole("checkbox")).toBeInTheDocument();
+            expect(screen.getByTestId("users-combobox")).toBeInTheDocument();
+            expect(screen.getByTestId("date-picker")).toBeInTheDocument();
+            expect(screen.getByTestId("text-area")).toBeInTheDocument();
+            expect(screen.getByRole("button", { name: /cancel/i })).toBeInTheDocument();
+            expect(screen.getByRole("button", { name: /complete step 1/i })).toBeInTheDocument();
+        });
+
+        it("form fields are interactive in ACTIVE state", () => {
+            useProcurementTrackerStepOne.mockReturnValue({
+                ...defaultHookReturn,
+                isPreSolicitationPackageSent: true
+            });
+
+            render(
+                <ProcurementTrackerStepOne
+                    stepStatus="ACTIVE"
+                    stepOneData={mockStepOneData}
+                />
+            );
+
+            // eslint-disable-next-line testing-library/no-node-access
+            const select = screen.getByTestId("users-combobox").querySelector("select");
+            // eslint-disable-next-line testing-library/no-node-access
+            const dateInput = screen.getByTestId("date-picker").querySelector("input");
+            // eslint-disable-next-line testing-library/no-node-access
+            const textarea = screen.getByTestId("text-area").querySelector("textarea");
+
+            expect(select).not.toBeDisabled();
+            expect(dateInput).not.toBeDisabled();
+            expect(textarea).not.toBeDisabled();
+        });
+    });
+
     describe("COMPLETED State Rendering", () => {
         it("renders read-only display with instructional paragraph", () => {
             render(
@@ -605,10 +648,10 @@ describe("ProcurementTrackerStepOne", () => {
             expect(mockHandleStep1Complete).toHaveBeenCalledWith(undefined);
         });
 
-        it("renders correctly when stepStatus is neither PENDING nor COMPLETED", () => {
+        it("renders correctly when stepStatus is neither PENDING, ACTIVE, nor COMPLETED", () => {
             render(
                 <ProcurementTrackerStepOne
-                    stepStatus="IN_PROGRESS"
+                    stepStatus="SKIPPED"
                     stepOneData={mockStepOneData}
                 />
             );
