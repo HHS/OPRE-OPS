@@ -332,7 +332,7 @@ describe("Budget Line Items and Services Component CRUD", () => {
             cy.get("h1").should("have.text", testAgreement.name);
             cy.get("#edit").click();
             // Wait for edit mode to fully render
-            cy.wait(500);
+            cy.waitForEditingState(true);
 
             /// Get the BLIs Id.
             let budgetLineId;
@@ -361,7 +361,7 @@ describe("Budget Line Items and Services Component CRUD", () => {
                 cy.get("h1").should("have.text", testAgreement.name);
                 cy.get("#edit").click();
                 // Wait for edit mode to fully render
-                cy.wait(500);
+                cy.waitForEditingState(true);
                 cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).trigger("mouseover");
                 cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).find("[data-cy='delete-row']").click();
                 cy.get("#ops-modal-heading").should(

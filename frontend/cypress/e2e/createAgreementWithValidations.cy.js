@@ -78,10 +78,8 @@ describe("create agreement and test validations", () => {
             // Visit page and wait for agreement to load
             cy.visit(`/agreements/review/${agreementId}?mode=review`);
             cy.wait("@getAgreement", { timeout: 30000 });
-            // Give React time to render after data loads
-            cy.wait(500);
-            //send-to-approval button should be disabled
-            cy.get('[data-cy="send-to-approval-btn"]').should("be.disabled");
+            // Wait for send-to-approval button to render
+            cy.get('[data-cy="send-to-approval-btn"]', { timeout: 10000 }).should("be.visible").and("be.disabled");
             //fix errors
             cy.get('[data-cy="edit-agreement-btn"]').click();
             cy.get("#continue").click();
@@ -172,20 +170,16 @@ describe("create agreement and test validations", () => {
             );
             // go back to review page
             cy.get('[data-cy="continue-btn"]').click();
-            // Wait a moment for the save to complete
-            cy.wait(1000);
             // Wait for navigation and agreement data to load
             cy.visit(`/agreements/review/${agreementId}`);
             cy.wait("@getAgreement", { timeout: 30000 });
-            // Give React time to render after data loads
-            cy.wait(500);
+            // Wait for page to be ready
             cy.url().should("include", `/agreements/review/${agreementId}`);
             cy.get('[data-cy="error-list"]').should("not.exist");
             // click option and check all budget lines
             cy.get('[type="radio"]').first().check({ force: true });
             cy.get('[data-cy="check-all"]').each(($el) => {
                 cy.wrap($el).check({ force: true });
-                cy.wait(1);
             });
             cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
 
@@ -207,11 +201,9 @@ describe("create agreement and test validations", () => {
             //check for new budget line errors
             cy.visit(`/agreements/review/${agreementId}?mode=review`);
             cy.wait("@getAgreement", { timeout: 30000 });
-            // Give React time to render after data loads
-            cy.wait(500);
 
             //send-to-approval button should be disabled
-            cy.get('[data-cy="send-to-approval-btn"]').should("be.disabled");
+            cy.get('[data-cy="send-to-approval-btn"]', { timeout: 10000 }).should("be.visible").and("be.disabled");
 
             // fix errors
             cy.get('[data-cy="edit-agreement-btn"]').click();
@@ -242,9 +234,8 @@ describe("create agreement and test validations", () => {
             //check review page
             cy.visit(`/agreements/review/${agreementId}?mode=review`);
             cy.wait("@getAgreement", { timeout: 30000 });
-            // Give React time to render after data loads
-            cy.wait(500);
-            cy.get("h1", { timeout: 20000 }).should("not.have.text", "Please resolve the errors outlined below");
+            // Wait for page to render
+            cy.get("h1", { timeout: 20000 }).should("be.visible").and("not.have.text", "Please resolve the errors outlined below");
             cy.get('[data-cy="error-list"]').should("not.exist");
 
             cy.request({

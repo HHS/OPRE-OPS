@@ -183,8 +183,8 @@ describe("CAN spending page", () => {
     it.skip("pagination on the bli table works as expected", () => {
         cy.visit("/cans/504/spending");
         cy.get("#fiscal-year-select").select("2043");
-        cy.wait(1000);
-        cy.get("ul").should("have.class", "usa-pagination__list");
+        // Wait for pagination to reload
+        cy.get("ul.usa-pagination__list", { timeout: 10000 }).should("be.visible");
         cy.get("li").should("have.class", "usa-pagination__item").contains("1");
         cy.get("button").should("have.class", "usa-current").contains("1");
         cy.get("li").should("have.class", "usa-pagination__item").contains("2");
@@ -462,7 +462,8 @@ describe("CAN funding page", () => {
         cy.get("[data-cy=add-funding-received-btn]").click();
         // save the changes
         cy.get("[data-cy=save-btn]").click();
-        cy.wait(500);
+        // Wait for save to complete by checking edit button is available
+        cy.get("#edit", { timeout: 10000 }).should("be.visible");
         // go back to editing mode and delete a funding received -- DELETE
         cy.get("#edit").click();
         cy.get("tbody").find("tr").first().trigger("mouseover");
@@ -471,11 +472,10 @@ describe("CAN funding page", () => {
         // save the changes
         cy.get("[data-cy=save-btn]").click();
 
-        cy.wait(1000); // wait for the history to be generated in the API
-
         // check can history for DELETING a funding received event
         cy.visit(`/cans/${can504.number}`);
-        cy.get('[data-cy="can-history-list"]').should("exist");
+        // Wait for history to be generated and loaded
+        cy.get('[data-cy="can-history-list"]', { timeout: 10000 }).should("exist");
         cy.get('[data-cy="can-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]')
             .should("exist")
             .contains("Funding Received Deleted");

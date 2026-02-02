@@ -84,13 +84,13 @@ describe("CAN List", () => {
 
         // switch fiscal year to 2025
         cy.get("#fiscal-year-select").select("2025");
-        cy.wait(500);
-        cy.get("tbody").find("tr").should("have.length.above", 0);
+        // Wait for data to reload
+        cy.get("tbody", { timeout: 10000 }).find("tr").should("have.length.above", 0);
 
         // switch fiscal year to 2023
         cy.get("#fiscal-year-select").select("2023");
-        cy.wait(500);
-        cy.get("li").should("have.class", "usa-pagination__item").contains("2").click();
+        // Wait for pagination to reload
+        cy.get("li.usa-pagination__item", { timeout: 10000 }).contains("2").should("be.visible").click();
 
         // go back to the first page
         cy.get("li").should("have.class", "usa-pagination__item").contains("1").click();

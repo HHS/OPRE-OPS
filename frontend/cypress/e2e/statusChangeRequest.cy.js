@@ -93,10 +93,10 @@ it("BLI Status Change", () => {
         .then(({ agreementId, bliId }) => {
             cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines`);
             cy.get('[data-cy="bli-continue-btn"]').click();
-            cy.wait(1000);
-            cy.get('input[id="Change Draft Budget Lines to Planned Status"]').check({ force: true });
-            cy.wait(500);
-            cy.get('[data-cy="check-all-label"]').click();
+            // Wait for the change request form to appear
+            cy.get('input[id="Change Draft Budget Lines to Planned Status"]', { timeout: 10000 }).should("be.visible").check({ force: true });
+            // Wait for checkbox state to update
+            cy.get('[data-cy="check-all-label"]', { timeout: 10000 }).should("be.visible").click();
             cy.get('[type="checkbox"]')
                 .should("have.length", 2)
                 .each((checkbox) => {

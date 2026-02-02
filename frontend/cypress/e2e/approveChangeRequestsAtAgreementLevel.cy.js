@@ -153,7 +153,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get("h1").contains(/approval for status change - planned/i);
                 // Wait for all data including CANs to load before proceeding with approval
                 // This ensures the alert message will be constructed correctly
-                cy.wait(3000);
+                cy.get("[data-cy='review-card']", { timeout: 10000 }).should("be.visible");
                 // get content in review-card to see if it exists and contains planned, status and amount
                 cy.get("[data-cy='review-card']").contains(/draft/i);
                 cy.get("[data-cy='review-card']").contains(/planned/i);
@@ -187,8 +187,6 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.wait("@approveChangeRequest").its("response.statusCode").should("eq", 200);
                 cy.wait("@getAgreements").its("response.statusCode").should("eq", 200);
                 cy.url().should("include", "/agreements?filter=change-requests");
-                // Add small wait for React to finish rendering after data loads
-                cy.wait(1000);
                 // Increase timeout for CI environments where page rendering can be slower
                 // Check for alert in a single assertion chain so Cypress retries the entire check
                 cy.get(".usa-alert__body", {timeout: 30000})
@@ -204,8 +202,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.intercept("GET", `/api/v1/agreements/${agreementId}`).as("getAgreementDetail");
                 cy.visit(`/agreements/${agreementId}`);
                 cy.wait("@getAgreementDetail");
-                // Wait for backend to finish creating history entries
-                cy.wait(1000);
+                // checkAgreementHistory has built-in timeout logic
                 checkAgreementHistory();
                 cy.get(
                     '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
@@ -337,7 +334,8 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get("[data-cy='approve-agreement']").click();
                 // get h1 to have content Approval for Status Change - Planned
                 cy.get("h1").contains(/approval for status change - executing/i);
-                cy.wait(3000);
+                // Wait for review-card to load
+                cy.get("[data-cy='review-card']", { timeout: 10000 }).should("be.visible");
                 // get content in review-card to see if it exists and contains planned, status and amount
                 cy.get("[data-cy='review-card']").contains(/planned/i);
                 cy.get("[data-cy='review-card']").contains(/executing/i);
@@ -365,9 +363,6 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.wait("@approveChangeRequest").its("response.statusCode").should("eq", 200);
                 cy.wait("@getAgreements").its("response.statusCode").should("eq", 200);
                 cy.url().should("include", "/agreements?filter=change-requests");
-                // Add wait for React to finish rendering after data loads and navigation completes
-                // Longer wait for CI environments where this test has been intermittently failing
-                cy.wait(500);
                 // Increase timeout for CI environments where page rendering can be slower
                 // First check if alert exists and log its content for debugging
                 cy.get(".usa-alert__body", {timeout: 30000}).should("exist");
@@ -385,8 +380,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.intercept("GET", `/api/v1/agreements/${agreementId}`).as("getAgreementDetail");
                 cy.visit(`/agreements/${agreementId}`);
                 cy.wait("@getAgreementDetail");
-                // Wait for backend to finish creating history entries
-                cy.wait(1000);
+                // checkAgreementHistory has built-in timeout logic
                 checkAgreementHistory();
                 cy.get(
                     '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
@@ -612,8 +606,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.intercept("GET", `/api/v1/agreements/${agreementId}`).as("getAgreementDetail");
                 cy.visit(`/agreements/${agreementId}`);
                 cy.wait("@getAgreementDetail");
-                // Wait for backend to finish creating history entries
-                cy.wait(1000);
+                // checkAgreementHistory has built-in timeout logic
                 checkAgreementHistory();
 
                 // In your test
