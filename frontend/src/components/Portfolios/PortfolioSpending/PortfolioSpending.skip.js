@@ -17,7 +17,7 @@ window.ResizeObserver =
 
 // TODO: Skipping test for now because this component contains many sub-components which currently do not have tests -
 // TODO: the sub-components will need to mock the backend calls (current ApplicationContext does not support this)
-it.skip("renders without crashing", () => {
+it.todo("renders without crashing", () => {
     render(
         <Provider store={store}>
             <PortfolioSpending
