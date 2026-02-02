@@ -244,8 +244,15 @@ describe("DetailsTabs", () => {
         );
 
         expect(container.querySelector('[data-cy="details-tab-Agreement Details"]')).toBeInTheDocument();
-        expect(container.querySelector('[data-cy="details-tab-SCs & Budget Lines"]')).toBeInTheDocument();
-        expect(container.querySelector('[data-cy="details-tab-Award & Modifications"]')).toBeInTheDocument();
+        // jsdom 28's querySelector has issues with & in attribute values - use querySelectorAll + find instead
+        const tabs = container.querySelectorAll('[data-cy^="details-tab-"]');
+        expect(tabs.length).toBe(5); // Should have 5 tabs
+        expect(
+            Array.from(tabs).find((tab) => tab.getAttribute("data-cy") === "details-tab-SCs & Budget Lines")
+        ).toBeInTheDocument();
+        expect(
+            Array.from(tabs).find((tab) => tab.getAttribute("data-cy") === "details-tab-Award & Modifications")
+        ).toBeInTheDocument();
         expect(container.querySelector('[data-cy="details-tab-Procurement Tracker"]')).toBeInTheDocument();
         expect(container.querySelector('[data-cy="details-tab-Documents"]')).toBeInTheDocument();
     });
