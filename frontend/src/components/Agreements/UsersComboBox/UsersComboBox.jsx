@@ -12,6 +12,7 @@ import ComboBox from "../../UI/Form/ComboBox";
  * @param {Function} [props.onChange] - Change handler function.
  * @param {string} [props.label] - The label for the input (optional).
  * @param {boolean} [props.isDisabled] - Whether the comboBox is disabled (optional).
+ * @param {import("../../../types/UserTypes").SafeUser[]} [props.users] - Optional array of users to display. If not provided, users will be fetched from the API (optional).
  * @returns {React.ReactElement} The UsersComboBox component.
  */
 const UsersComboBox = ({
@@ -21,15 +22,22 @@ const UsersComboBox = ({
     messages = [],
     onChange = () => {},
     label = "Choose a user",
-    isDisabled = false
+    isDisabled = false,
+    users = null
 }) => {
     // TODO: Consider querying for only team members or matching returned users and filter by team members
-    const { data: users, error: errorUsers, isLoading: isLoadingUsers } = useGetUsersQuery({});
+    const {
+        data: fetchedUsers,
+        error: errorUsers,
+        isLoading: isLoadingUsers
+    } = useGetUsersQuery({}, { skip: users !== null });
 
-    if (isLoadingUsers) {
+    const userData = users ?? fetchedUsers;
+
+    if (isLoadingUsers && users === null) {
         return <div>Loading...</div>;
     }
-    if (errorUsers) {
+    if (errorUsers && users === null) {
         return <div>Error loading users.</div>;
     }
 
@@ -62,7 +70,7 @@ const UsersComboBox = ({
             <ComboBox
                 name="users"
                 namespace="users-combobox"
-                data={users}
+                data={userData}
                 selectedData={selectedUser}
                 setSelectedData={handleChange}
                 optionText={(user) => user.full_name || user.email}

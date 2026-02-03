@@ -47,6 +47,7 @@ describe("UsersComboBox", () => {
             />
         );
 
+        expect(useGetUsersQuery).toHaveBeenCalledWith({}, { skip: false });
         expect(screen.getByText("Loading...")).toBeInTheDocument();
     });
 
@@ -188,5 +189,70 @@ describe("UsersComboBox", () => {
         // In the DOM, htmlFor becomes 'for'
         expect(label).toHaveAttribute("for", "users-combobox-input");
         expect(label).toHaveAttribute("id", "users-label");
+    });
+
+    it("renders ComboBox with provided users without API call", () => {
+        const providedUsers = [{ id: 10, email: "provided@example.com", full_name: "Provided User" }];
+
+        render(
+            <UsersComboBox
+                selectedUser={providedUsers[0]}
+                setSelectedUser={mockSetSelectedUser}
+                users={providedUsers}
+            />
+        );
+
+        // Should call the API with skip: true
+        expect(useGetUsersQuery).toHaveBeenCalledWith({}, { skip: true });
+
+        // Should render the combobox
+        expect(screen.getByText("Choose a user")).toBeInTheDocument();
+        expect(screen.getByTestId("combobox")).toBeInTheDocument();
+    });
+
+    it("fetches users from API when users prop not provided", () => {
+        useGetUsersQuery.mockReturnValue({
+            data: mockUsers,
+            error: undefined,
+            isLoading: false
+        });
+
+        render(
+            <UsersComboBox
+                selectedUser={mockSelectedUser}
+                setSelectedUser={mockSetSelectedUser}
+            />
+        );
+
+        // Should call the API with skip: false
+        expect(useGetUsersQuery).toHaveBeenCalledWith({}, { skip: false });
+
+        // Should render the combobox
+        expect(screen.getByText("Choose a user")).toBeInTheDocument();
+        expect(screen.getByTestId("combobox")).toBeInTheDocument();
+    });
+
+    it("does not show loading state when users are provided", () => {
+        const providedUsers = [{ id: 10, email: "provided@example.com", full_name: "Provided User" }];
+
+        // Mock the hook to return loading state
+        useGetUsersQuery.mockReturnValue({
+            data: undefined,
+            error: undefined,
+            isLoading: true // This should be ignored when users provided
+        });
+
+        render(
+            <UsersComboBox
+                selectedUser={providedUsers[0]}
+                setSelectedUser={mockSetSelectedUser}
+                users={providedUsers}
+            />
+        );
+
+        // Should NOT show loading state
+        expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
+        // Should render the combobox
+        expect(screen.getByTestId("combobox")).toBeInTheDocument();
     });
 });
