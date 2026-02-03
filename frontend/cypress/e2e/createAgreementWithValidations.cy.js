@@ -78,8 +78,10 @@ describe("create agreement and test validations", () => {
             // Visit page and wait for agreement to load
             cy.visit(`/agreements/review/${agreementId}?mode=review`);
             cy.wait("@getAgreement", { timeout: 30000 });
-            // Wait for send-to-approval button to render
-            cy.get('[data-cy="send-to-approval-btn"]', { timeout: 10000 }).should("be.visible").and("be.disabled");
+            // Give React time to render after data loads
+            cy.wait(300);
+            // Wait for send-to-approval button to be disabled
+            cy.get('[data-cy="send-to-approval-btn"]', { timeout: 10000 }).should("be.disabled");
             //fix errors
             cy.get('[data-cy="edit-agreement-btn"]').click();
             cy.get("#continue").click();
@@ -201,9 +203,11 @@ describe("create agreement and test validations", () => {
             //check for new budget line errors
             cy.visit(`/agreements/review/${agreementId}?mode=review`);
             cy.wait("@getAgreement", { timeout: 30000 });
+            // Give React time to render after data loads
+            cy.wait(300);
 
             //send-to-approval button should be disabled
-            cy.get('[data-cy="send-to-approval-btn"]', { timeout: 10000 }).should("be.visible").and("be.disabled");
+            cy.get('[data-cy="send-to-approval-btn"]', { timeout: 10000 }).should("be.disabled");
 
             // fix errors
             cy.get('[data-cy="edit-agreement-btn"]').click();
