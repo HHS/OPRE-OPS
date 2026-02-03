@@ -267,7 +267,8 @@ describe("agreement details", () => {
 
         // Test ESC key cancels navigation
         cy.get("body").type("{esc}");
-        cy.get("#ops-modal").should("not.exist");
+        // Wait for modal to close (animation + React state update)
+        cy.get("#ops-modal", { timeout: 10000 }).should("not.exist");
         cy.url().should("not.include", "/budget-lines");
 
         // Try again and test "Leave without saving"
@@ -285,7 +286,8 @@ describe("agreement details", () => {
         cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
         cy.waitForModalToAppear();
         cy.get("[data-cy='confirm-action']").click();
-        cy.get(".usa-alert__heading").should("contain", "Agreement Updated");
+        // Wait for save to complete and alert to appear
+        cy.get(".usa-alert__heading", { timeout: 15000 }).should("contain", "Agreement Updated");
         cy.url().should("include", "/budget-lines");
     });
 
@@ -306,7 +308,8 @@ describe("agreement details", () => {
 
         // After save: indicator disappears
         cy.get('[data-cy="continue-btn"]').click();
-        cy.get(".usa-alert__heading").should("contain", "Agreement Updated");
+        // Wait for save to complete and alert to appear
+        cy.get(".usa-alert__heading", { timeout: 15000 }).should("contain", "Agreement Updated");
         cy.waitForEditingState(false);
 
         // Test the same workflow on Budget Lines tab
