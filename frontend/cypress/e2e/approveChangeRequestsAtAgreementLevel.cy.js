@@ -139,9 +139,10 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.visit("/").wait(1000);
                 testLogin("division-director");
 
-                cy.visit("/agreements?filter=change-requests").wait(2000);
+                cy.visit("/agreements?filter=change-requests").wait(4000);  // Increased from 2000ms
                 // see if there are any review cards - React 19 needs more time to render
-                cy.get("[data-cy='review-card']", { timeout: 20000 }).should("exist").and("be.visible");
+                cy.get("[data-cy='review-card']", { timeout: 30000 }).should("exist").and("be.visible").and("not.be.empty");
+                cy.wait(1000);  // Extra buffer
                 cy.get("[data-cy='review-card']").contains("Status Change");
                 // nav element with the role navigation should contain text 1
                 cy.get('[role="navigation"]').contains("1");
@@ -326,9 +327,10 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.visit("/").wait(1000);
                 testLogin("division-director");
 
-                cy.visit("/agreements?filter=change-requests").wait(2000);
+                cy.visit("/agreements?filter=change-requests").wait(4000);  // Increased from 2000ms
                 // see if there are any review cards - React 19 needs more time to render
-                cy.get("[data-cy='review-card']", { timeout: 20000 }).should("exist").and("be.visible");
+                cy.get("[data-cy='review-card']", { timeout: 30000 }).should("exist").and("be.visible").and("not.be.empty");
+                cy.wait(1000);  // Extra buffer
                 cy.get("[data-cy='review-card']").contains("Status Change");
                 cy.get("[data-cy='review-card']").contains(/executing/i);
                 cy.get('[role="navigation"]').contains("1");

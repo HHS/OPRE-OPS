@@ -487,10 +487,17 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
 
         // Navigate to Agreement Details tab and make changes there
         cy.get('[data-cy="details-tab-Agreement Details"]').click();
-        cy.get("#ops-modal").should("exist");
+        cy.get("#ops-modal", { timeout: 15000 }).should("exist").and("be.visible");
         cy.get("body").type("{esc}");
+        // Wait for React 19 to process modal close
+        cy.wait(1500);
+        // Verify modal is completely gone
+        cy.get("#ops-modal").should("not.exist");
+        cy.get(".usa-modal-wrapper").should("not.exist");
+        cy.wait(500);  // Extra buffer
 
         // Navigate away and save all changes
+        cy.contains("a", "Agreements").should("be.visible");
         cy.contains("a", "Agreements").click();
         cy.get("#ops-modal").should("exist");
         cy.get("[data-cy='confirm-action']").click();

@@ -179,16 +179,18 @@ describe("create agreement and test validations", () => {
             cy.url().should("include", `/agreements/review/${agreementId}`);
             cy.get('[data-cy="error-list"]').should("not.exist");
             // click option and check all budget lines
-            cy.get('[type="radio"]', { timeout: 10000 }).first().should("be.visible");
+            cy.get('[type="radio"]', { timeout: 15000 }).first().should("be.visible").and("not.be.disabled");
             cy.get('[type="radio"]').first().check({ force: true });
             // Wait for React 19 to process the radio selection
-            cy.wait(1000);
+            cy.wait(2000);  // Increased from 1000ms
             // Verify radio is checked before proceeding
             cy.get('[type="radio"]').first().should("be.checked");
-            // Wait for React 19 to render checkboxes after radio selection - React 19 is significantly slower
-            cy.wait(4000);
+            // Wait for React 19 to render checkboxes after radio selection - React 19 is VERY slow in CI
+            cy.wait(8000);  // Increased from 4000ms to 8000ms
             // Wait for checkboxes to appear after radio selection with extended timeout
-            cy.get('[data-cy="check-all"]', { timeout: 60000 }).should("exist").and("be.visible");
+            cy.get('[data-cy="check-all"]', { timeout: 90000 }).should("exist").and("be.visible");
+            // Extra buffer after checkboxes appear
+            cy.wait(1000);
             cy.get('[data-cy="check-all"]').each(($el) => {
                 cy.wrap($el).check({ force: true });
             });
