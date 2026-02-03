@@ -51,7 +51,9 @@ describe("useProcurementTrackerStepOne", () => {
 
     describe("State Initialization", () => {
         it("initializes with correct default state", () => {
-            const { result } = renderHook(() => useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted));
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+            );
 
             expect(result.current.isPreSolicitationPackageSent).toBe(false);
             expect(result.current.selectedUser).toEqual({});
@@ -60,14 +62,18 @@ describe("useProcurementTrackerStepOne", () => {
         });
 
         it("provides MemoizedDatePicker component", () => {
-            const { result } = renderHook(() => useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted));
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+            );
 
             expect(result.current.MemoizedDatePicker).toBeDefined();
             expect(typeof result.current.MemoizedDatePicker).toBe("object");
         });
 
         it("returns all setter functions", () => {
-            const { result } = renderHook(() => useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted));
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+            );
 
             expect(typeof result.current.setIsPreSolicitationPackageSent).toBe("function");
             expect(typeof result.current.setSelectedUser).toBe("function");
@@ -78,7 +84,9 @@ describe("useProcurementTrackerStepOne", () => {
 
     describe("State Updates", () => {
         it("updates isPreSolicitationPackageSent when setter is called", () => {
-            const { result } = renderHook(() => useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted));
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+            );
 
             act(() => {
                 result.current.setIsPreSolicitationPackageSent(true);
@@ -88,7 +96,9 @@ describe("useProcurementTrackerStepOne", () => {
         });
 
         it("updates selectedUser when setter is called", () => {
-            const { result } = renderHook(() => useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted));
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+            );
             const mockUser = { id: 456, full_name: "Jane Smith" };
 
             act(() => {
@@ -99,7 +109,9 @@ describe("useProcurementTrackerStepOne", () => {
         });
 
         it("updates step1DateCompleted when setter is called", () => {
-            const { result } = renderHook(() => useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted));
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+            );
 
             act(() => {
                 result.current.setStep1DateCompleted("2024-03-20");
@@ -109,7 +121,9 @@ describe("useProcurementTrackerStepOne", () => {
         });
 
         it("updates step1Notes when setter is called", () => {
-            const { result } = renderHook(() => useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted));
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+            );
 
             act(() => {
                 result.current.setStep1Notes("New notes");
@@ -121,20 +135,26 @@ describe("useProcurementTrackerStepOne", () => {
 
     describe("Validation Functionality", () => {
         it("provides validatorRes with getErrors method", () => {
-            const { result } = renderHook(() => useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted));
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+            );
 
             expect(result.current.validatorRes).toBeDefined();
             expect(typeof result.current.validatorRes.getErrors).toBe("function");
         });
 
         it("provides runValidate function", () => {
-            const { result } = renderHook(() => useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted));
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+            );
 
             expect(typeof result.current.runValidate).toBe("function");
         });
 
         it("runValidate can be called with name and value", () => {
-            const { result } = renderHook(() => useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted));
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+            );
 
             act(() => {
                 result.current.runValidate("users_combobox", 123);
@@ -147,21 +167,27 @@ describe("useProcurementTrackerStepOne", () => {
 
     describe("Display Values", () => {
         it("step1CompletedByUserName fetches user name via hook", () => {
-            const { result } = renderHook(() => useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted));
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+            );
 
             expect(useGetUserFullNameFromId).toHaveBeenCalledWith(123);
             expect(result.current.step1CompletedByUserName).toBe("John Doe");
         });
 
         it("step1DateCompletedLabel formats date via helper", () => {
-            const { result } = renderHook(() => useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted));
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+            );
 
             expect(formatDateToMonthDayYear).toHaveBeenCalledWith("2024-01-15");
             expect(result.current.step1DateCompletedLabel).toBe("January 15, 2024");
         });
 
         it("step1NotesLabel displays raw notes from stepOneData", () => {
-            const { result } = renderHook(() => useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted));
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+            );
 
             expect(result.current.step1NotesLabel).toBe("Test notes");
         });
@@ -177,13 +203,17 @@ describe("useProcurementTrackerStepOne", () => {
 
     describe("Validation Logic - disableStep1Buttons", () => {
         it("is disabled when checkbox unchecked", () => {
-            const { result } = renderHook(() => useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted));
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+            );
 
             expect(result.current.disableStep1Buttons).toBe(true);
         });
 
         it("is disabled when checkbox checked but no user selected", () => {
-            const { result } = renderHook(() => useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted));
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+            );
 
             act(() => {
                 result.current.setIsPreSolicitationPackageSent(true);
@@ -194,7 +224,9 @@ describe("useProcurementTrackerStepOne", () => {
         });
 
         it("is disabled when checkbox checked and user selected but no date", () => {
-            const { result } = renderHook(() => useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted));
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+            );
 
             act(() => {
                 result.current.setIsPreSolicitationPackageSent(true);
@@ -205,7 +237,9 @@ describe("useProcurementTrackerStepOne", () => {
         });
 
         it("is enabled when all required fields filled", () => {
-            const { result } = renderHook(() => useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted));
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+            );
 
             act(() => {
                 result.current.setIsPreSolicitationPackageSent(true);
@@ -217,7 +251,9 @@ describe("useProcurementTrackerStepOne", () => {
         });
 
         it("handles user object without id", () => {
-            const { result } = renderHook(() => useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted));
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+            );
 
             act(() => {
                 result.current.setIsPreSolicitationPackageSent(true);
@@ -229,7 +265,9 @@ describe("useProcurementTrackerStepOne", () => {
         });
 
         it("reverts to disabled when checkbox unchecked after being checked", () => {
-            const { result } = renderHook(() => useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted));
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+            );
 
             act(() => {
                 result.current.setIsPreSolicitationPackageSent(true);
@@ -254,7 +292,9 @@ describe("useProcurementTrackerStepOne", () => {
         });
 
         it("calls API with correct payload", async () => {
-            const { result } = renderHook(() => useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted));
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+            );
 
             act(() => {
                 result.current.setSelectedUser({ id: 456, full_name: "Jane Smith" });
@@ -278,7 +318,9 @@ describe("useProcurementTrackerStepOne", () => {
         });
 
         it("logs success message to console", async () => {
-            const { result } = renderHook(() => useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted));
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+            );
 
             act(() => {
                 result.current.setSelectedUser({ id: 456, full_name: "Jane Smith" });
@@ -293,7 +335,9 @@ describe("useProcurementTrackerStepOne", () => {
         });
 
         it("calls handleSetIsFormSubmitted with true after successful submission", async () => {
-            const { result } = renderHook(() => useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted));
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+            );
 
             act(() => {
                 result.current.setSelectedUser({ id: 456, full_name: "Jane Smith" });
@@ -308,7 +352,9 @@ describe("useProcurementTrackerStepOne", () => {
         });
 
         it("trims whitespace from notes", async () => {
-            const { result } = renderHook(() => useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted));
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+            );
 
             act(() => {
                 result.current.setSelectedUser({ id: 456, full_name: "Jane Smith" });
@@ -332,7 +378,9 @@ describe("useProcurementTrackerStepOne", () => {
         });
 
         it("handles empty selectedUser gracefully", async () => {
-            const { result } = renderHook(() => useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted));
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+            );
 
             act(() => {
                 result.current.setStep1DateCompleted("2024-03-20");
@@ -354,7 +402,9 @@ describe("useProcurementTrackerStepOne", () => {
         });
 
         it("handles empty notes (whitespace only)", async () => {
-            const { result } = renderHook(() => useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted));
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+            );
 
             act(() => {
                 result.current.setSelectedUser({ id: 456, full_name: "Jane Smith" });
@@ -391,7 +441,9 @@ describe("useProcurementTrackerStepOne", () => {
             const mockError = new Error("API Error");
             mockUnwrap.mockRejectedValue(mockError);
 
-            const { result } = renderHook(() => useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted));
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+            );
 
             act(() => {
                 result.current.setSelectedUser({ id: 456, full_name: "Jane Smith" });
@@ -414,7 +466,9 @@ describe("useProcurementTrackerStepOne", () => {
             const mockError = new Error("API Error");
             mockUnwrap.mockRejectedValue(mockError);
 
-            const { result } = renderHook(() => useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted));
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+            );
 
             act(() => {
                 result.current.setSelectedUser({ id: 456, full_name: "Jane Smith" });
@@ -432,7 +486,9 @@ describe("useProcurementTrackerStepOne", () => {
 
     describe("Cancel Functionality", () => {
         it("cancelModalStep1 sets up modal with correct properties", () => {
-            const { result } = renderHook(() => useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted));
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+            );
 
             act(() => {
                 result.current.setIsPreSolicitationPackageSent(true);
@@ -458,7 +514,9 @@ describe("useProcurementTrackerStepOne", () => {
         });
 
         it("modal handleConfirm resets all form state to initial values", () => {
-            const { result } = renderHook(() => useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted));
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+            );
 
             act(() => {
                 result.current.setIsPreSolicitationPackageSent(true);
@@ -485,7 +543,9 @@ describe("useProcurementTrackerStepOne", () => {
         });
 
         it("can call cancelModalStep1 multiple times", () => {
-            const { result } = renderHook(() => useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted));
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+            );
 
             act(() => {
                 result.current.setIsPreSolicitationPackageSent(true);
@@ -500,8 +560,12 @@ describe("useProcurementTrackerStepOne", () => {
 
     describe("Edge Cases", () => {
         it("maintains state independence across hook instances", () => {
-            const { result: result1 } = renderHook(() => useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted));
-            const { result: result2 } = renderHook(() => useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted));
+            const { result: result1 } = renderHook(() =>
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+            );
+            const { result: result2 } = renderHook(() =>
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+            );
 
             act(() => {
                 result1.current.setIsPreSolicitationPackageSent(true);
@@ -515,7 +579,9 @@ describe("useProcurementTrackerStepOne", () => {
             mockUnwrap.mockResolvedValue({ success: true });
             vi.spyOn(console, "log").mockImplementation(() => {});
 
-            const { result } = renderHook(() => useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted));
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+            );
 
             act(() => {
                 result.current.setSelectedUser({ id: 456, full_name: "Jane Smith" });
