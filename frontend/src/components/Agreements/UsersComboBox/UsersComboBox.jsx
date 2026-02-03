@@ -25,7 +25,6 @@ const UsersComboBox = ({
     isDisabled = false,
     users = null
 }) => {
-    // TODO: Consider querying for only team members or matching returned users and filter by team members
     const {
         data: fetchedUsers,
         error: errorUsers,
