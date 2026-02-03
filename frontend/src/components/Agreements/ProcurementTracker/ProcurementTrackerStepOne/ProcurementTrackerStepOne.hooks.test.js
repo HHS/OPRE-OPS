@@ -4,10 +4,16 @@ import useProcurementTrackerStepOne from "./ProcurementTrackerStepOne.hooks";
 import { useUpdateProcurementTrackerStepMutation } from "../../../../api/opsAPI";
 import useGetUserFullNameFromId from "../../../../hooks/user.hooks";
 import { formatDateForApi, formatDateToMonthDayYear } from "../../../../helpers/utils";
+import useAlert from "../../../../hooks/use-alert.hooks";
 
 vi.mock("../../../../api/opsAPI");
 vi.mock("../../../../hooks/user.hooks");
 vi.mock("../../../../helpers/utils");
+vi.mock("../../../../hooks/use-alert.hooks", () => ({
+    default: vi.fn(() => ({
+        setAlert: vi.fn()
+    }))
+}));
 vi.mock("./suite", () => {
     const mockSuite = vi.fn();
     mockSuite.get = vi.fn(() => ({
@@ -357,23 +363,17 @@ describe("useProcurementTrackerStepOne", () => {
     });
 
     describe("Error Handling", () => {
-        let originalAlert;
+        let mockSetAlert;
 
         beforeEach(() => {
             vi.spyOn(console, "error").mockImplementation(() => {});
-            originalAlert = window.alert;
+            mockSetAlert = vi.fn();
+            useAlert.mockReturnValue({ setAlert: mockSetAlert });
         });
 
-        afterEach(() => {
-            window.alert = originalAlert;
-        });
-
-        it("handles API error with console.error and window.alert", async () => {
+        it("handles API error with console.error and setAlert", async () => {
             const mockError = new Error("API Error");
             mockUnwrap.mockRejectedValue(mockError);
-
-            const mockAlert = vi.fn();
-            window.alert = mockAlert;
 
             const { result } = renderHook(() => useProcurementTrackerStepOne(mockStepOneData));
 
@@ -387,14 +387,16 @@ describe("useProcurementTrackerStepOne", () => {
             });
 
             expect(console.error).toHaveBeenCalledWith("Failed to update Procurement Tracker Step 1", mockError);
-            expect(mockAlert).toHaveBeenCalledWith("Unable to update Procurement Tracker Step 1. Please try again.");
+            expect(mockSetAlert).toHaveBeenCalledWith({
+                type: "error",
+                heading: "Error",
+                message: "There was an error updating the procurement tracker step. Please try again."
+            });
         });
 
-        it("handles missing window.alert gracefully", async () => {
+        it("handles API error gracefully", async () => {
             const mockError = new Error("API Error");
             mockUnwrap.mockRejectedValue(mockError);
-
-            delete window.alert;
 
             const { result } = renderHook(() => useProcurementTrackerStepOne(mockStepOneData));
 
@@ -408,6 +410,7 @@ describe("useProcurementTrackerStepOne", () => {
             });
 
             expect(console.error).toHaveBeenCalledWith("Failed to update Procurement Tracker Step 1", mockError);
+            expect(mockSetAlert).toHaveBeenCalled();
         });
     });
 
