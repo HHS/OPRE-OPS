@@ -187,6 +187,8 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.wait("@approveChangeRequest").its("response.statusCode").should("eq", 200);
                 cy.wait("@getAgreements").its("response.statusCode").should("eq", 200);
                 cy.url().should("include", "/agreements?filter=change-requests");
+                // Wait for React 19 to render the page after navigation
+                cy.wait(1000);
                 // Increase timeout for CI environments where page rendering can be slower
                 // Check for alert in a single assertion chain so Cypress retries the entire check
                 cy.get(".usa-alert__body", {timeout: 30000})
@@ -363,6 +365,8 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.wait("@approveChangeRequest").its("response.statusCode").should("eq", 200);
                 cy.wait("@getAgreements").its("response.statusCode").should("eq", 200);
                 cy.url().should("include", "/agreements?filter=change-requests");
+                // Wait for React 19 to render the page after navigation
+                cy.wait(1000);
                 // Increase timeout for CI environments where page rendering can be slower
                 // First check if alert exists and log its content for debugging
                 cy.get(".usa-alert__body", {timeout: 30000}).should("exist");

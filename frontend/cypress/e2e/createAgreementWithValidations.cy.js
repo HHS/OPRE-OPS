@@ -180,12 +180,20 @@ describe("create agreement and test validations", () => {
             cy.get('[data-cy="error-list"]').should("not.exist");
             // click option and check all budget lines
             cy.get('[type="radio"]').first().check({ force: true });
+            // Wait for React 19 to process the radio selection and render checkboxes
+            cy.wait(1000);
             // Wait for checkboxes to appear after radio selection
             cy.get('[data-cy="check-all"]', { timeout: 15000 }).should("exist");
             cy.get('[data-cy="check-all"]').each(($el) => {
                 cy.wrap($el).check({ force: true });
             });
-            cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
+            // Verify all checkboxes are checked
+            cy.get('[data-cy="check-all"]').each(($el) => {
+                cy.wrap($el).should("be.checked");
+            });
+            // Wait for React 19 state updates to propagate before checking button state
+            cy.wait(2000);
+            cy.get('[data-cy="send-to-approval-btn"]', { timeout: 15000 }).should("not.be.disabled");
 
             // go back to edit mode and look for budget line errors
             cy.visit(`/agreements/edit/${agreementId}?mode=edit`);
