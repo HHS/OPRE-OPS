@@ -11,6 +11,8 @@ export default function useProcurementTrackerStepOne(stepOneData) {
     const [step1DateCompleted, setStep1DateCompleted] = React.useState("");
     const [step1Notes, setStep1Notes] = React.useState("");
     const [patchStepOne] = useUpdateProcurementTrackerStepMutation();
+    const [showModal, setShowModal] = React.useState(false);
+    const [modalProps, setModalProps] = React.useState({});
 
     const step1CompletedByUserName = useGetUserFullNameFromId(stepOneData?.task_completed_by);
     const step1DateCompletedLabel = formatDateToMonthDayYear(stepOneData?.date_completed);
@@ -44,7 +46,6 @@ export default function useProcurementTrackerStepOne(stepOneData) {
             }
         }
     };
-
     const cancelStep1 = () => {
         setIsPreSolicitationPackageSent(false);
         setSelectedUser({});
@@ -52,9 +53,19 @@ export default function useProcurementTrackerStepOne(stepOneData) {
         setStep1Notes("");
         suite.reset();
     };
+    const cancelModalStep1 = () => {
+        setShowModal(true);
+        setModalProps({
+            heading: "Are you sure you want to cancel this task? Your input will not be saved.",
+            actionButtonText: "Cancel Task",
+            secondaryButtonText: "Continue Editing",
+            handleConfirm: () => {
+                cancelStep1();
+            }
+        });
+    };
 
-    const disableStep1Continue =
-        !isPreSolicitationPackageSent || !selectedUser?.id || !step1DateCompleted || validatorRes.hasErrors();
+    const disableStep1Buttons = !isPreSolicitationPackageSent || !selectedUser?.id || !step1DateCompleted;
 
     return {
         isPreSolicitationPackageSent,
@@ -67,11 +78,14 @@ export default function useProcurementTrackerStepOne(stepOneData) {
         step1Notes,
         setStep1Notes,
         handleStep1Complete,
-        cancelStep1,
-        disableStep1Continue,
+        cancelModalStep1,
+        disableStep1Buttons,
         step1CompletedByUserName,
         step1DateCompletedLabel,
         step1NotesLabel,
+        modalProps,
+        showModal,
+        setShowModal,
         runValidate,
         validatorRes
     };
