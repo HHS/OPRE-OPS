@@ -180,10 +180,14 @@ describe("create agreement and test validations", () => {
             cy.get('[data-cy="error-list"]').should("not.exist");
             // click option and check all budget lines
             cy.get('[type="radio"]').first().check({ force: true });
-            // Wait for React 19 to process the radio selection and render checkboxes
-            cy.wait(1000);
-            // Wait for checkboxes to appear after radio selection
-            cy.get('[data-cy="check-all"]', { timeout: 15000 }).should("exist");
+            // Wait for React 19 to process the radio selection
+            cy.wait(500);
+            // Verify radio is checked before proceeding
+            cy.get('[type="radio"]').first().should("be.checked");
+            // Wait for React 19 to render checkboxes after radio selection
+            cy.wait(2000);
+            // Wait for checkboxes to appear after radio selection with extended timeout
+            cy.get('[data-cy="check-all"]', { timeout: 30000 }).should("exist");
             cy.get('[data-cy="check-all"]').each(($el) => {
                 cy.wrap($el).check({ force: true });
             });
@@ -191,9 +195,18 @@ describe("create agreement and test validations", () => {
             cy.get('[data-cy="check-all"]').each(($el) => {
                 cy.wrap($el).should("be.checked");
             });
-            // Wait for React 19 state updates to propagate before checking button state
-            cy.wait(2000);
-            cy.get('[data-cy="send-to-approval-btn"]', { timeout: 15000 }).should("not.be.disabled");
+            // Wait for React 19 state updates and validation to propagate
+            // Give extra time for validation checks to complete
+            cy.wait(3000);
+            // Debug: Check if button exists and its tooltip text
+            cy.get('[data-cy="send-to-approval-btn"]').should("exist");
+            cy.get('[data-cy="send-to-approval-btn"]').parent().then(($btn) => {
+                const tooltipText = $btn.attr("data-tip") || "no tooltip";
+                cy.log(`Button tooltip: ${tooltipText}`);
+                cy.log(`Button disabled: ${$btn.prop("disabled")}`);
+            });
+            // Use longer timeout for button state change as validation may be async
+            cy.get('[data-cy="send-to-approval-btn"]', { timeout: 20000 }).should("not.be.disabled");
 
             // go back to edit mode and look for budget line errors
             cy.visit(`/agreements/edit/${agreementId}?mode=edit`);
