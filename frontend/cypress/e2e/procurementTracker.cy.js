@@ -84,6 +84,7 @@ describe("Procurement Tracker Step 1", () => {
         cy.get(".usa-error-message").should("have.text", "Date must be MM/DD/YYYY");
         // cancel should reset the form and validation
         cy.get('[data-cy="cancel-button"]').click();
+        cy.get('[data-cy="confirm-action"]').click();
         cy.get("#users-combobox-input").should("have.value", "");
         cy.get("#date-completed").should("have.value", "");
         cy.get("#notes").should("have.value", "");

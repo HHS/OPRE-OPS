@@ -360,27 +360,6 @@ describe("ProcurementTrackerStepOne", () => {
             expect(mockSetStep1Notes).toHaveBeenCalledWith("New notes");
         });
 
-        it("cancel button calls cancelStep1 when clicked", () => {
-            const mockCancelStep1Fn = vi.fn();
-            useProcurementTrackerStepOne.mockReturnValue({
-                ...defaultHookReturn,
-                cancelStep1: mockCancelStep1Fn,
-                disableStep1Buttons: false
-            });
-
-            render(
-                <ProcurementTrackerStepOne
-                    stepStatus="PENDING"
-                    stepOneData={mockStepOneData}
-                />
-            );
-
-            const cancelButton = screen.getByRole("button", { name: /cancel/i });
-            fireEvent.click(cancelButton);
-
-            expect(mockCancelStep1Fn).toHaveBeenCalled();
-        });
-
         it("complete button calls handleStep1Complete with stepOneData.id", () => {
             useProcurementTrackerStepOne.mockReturnValue({
                 ...defaultHookReturn,

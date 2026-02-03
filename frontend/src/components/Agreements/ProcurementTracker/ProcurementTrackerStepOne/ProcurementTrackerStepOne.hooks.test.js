@@ -412,7 +412,7 @@ describe("useProcurementTrackerStepOne", () => {
     });
 
     describe("Cancel Functionality", () => {
-        it("cancelStep1 sets up modal with correct properties", () => {
+        it("cancelModalStep1 sets up modal with correct properties", () => {
             const { result } = renderHook(() => useProcurementTrackerStepOne(mockStepOneData));
 
             act(() => {
@@ -425,10 +425,10 @@ describe("useProcurementTrackerStepOne", () => {
             expect(result.current.showModal).toBe(false);
 
             act(() => {
-                result.current.cancelStep1();
+                result.current.cancelModalStep1();
             });
 
-            // After cancelStep1, modal should be shown
+            // After cancelModalStep1, modal should be shown
             expect(result.current.showModal).toBe(true);
 
             // Modal should have correct properties
@@ -451,7 +451,7 @@ describe("useProcurementTrackerStepOne", () => {
             expect(result.current.isPreSolicitationPackageSent).toBe(true);
 
             act(() => {
-                result.current.cancelStep1();
+                result.current.cancelModalStep1();
             });
 
             // Call the handleConfirm function from the modal
@@ -465,13 +465,13 @@ describe("useProcurementTrackerStepOne", () => {
             expect(result.current.step1Notes).toBe("");
         });
 
-        it("can call cancelStep1 multiple times", () => {
+        it("can call cancelModalStep1 multiple times", () => {
             const { result } = renderHook(() => useProcurementTrackerStepOne(mockStepOneData));
 
             act(() => {
                 result.current.setIsPreSolicitationPackageSent(true);
-                result.current.cancelStep1();
-                result.current.cancelStep1();
+                result.current.cancelModalStep1();
+                result.current.cancelModalStep1();
             });
 
             // Modal should be shown after multiple calls
