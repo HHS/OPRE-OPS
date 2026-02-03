@@ -8,6 +8,7 @@ import ComboBox from "../../UI/Form/ComboBox";
  * @param {import("../../../types/UserTypes").SafeUser} props.selectedUser - The currently selected user type.
  * @param {string[]} [props.messages] - An array of error messages to display (optional).
  * @param {Function} props.setSelectedUser - A function to call when the selected user changes.
+ * @param {string} [props.className] - Additional class names to apply to the component (optional).
  * @param {Function} [props.onChange] - Change handler function.
  * @param {string} [props.label] - The label for the input (optional).
  * @param {boolean} [props.isDisabled] - Whether the comboBox is disabled (optional).
@@ -16,6 +17,7 @@ import ComboBox from "../../UI/Form/ComboBox";
 const UsersComboBox = ({
     selectedUser,
     setSelectedUser,
+    className = "",
     messages = [],
     onChange = () => {},
     label = "Choose a user",
@@ -38,7 +40,7 @@ const UsersComboBox = ({
 
     return (
         <fieldset
-            className={cx("usa-fieldset", messages.length && "usa-form-group--error")}
+            className={cx("usa-fieldset", messages.length && "usa-form-group--error", className)}
             disabled={isDisabled}
         >
             <label
