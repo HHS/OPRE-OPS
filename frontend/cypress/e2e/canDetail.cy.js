@@ -277,8 +277,10 @@ describe("CAN funding page", () => {
             "Data from the previous fiscal year can no longer be edited, but can be viewed by changing the FY dropdown on the CAN details page."
         );
         cy.get("[data-cy=confirm-action]").click();
+        // Wait for React 19 to process modal close and update UI
+        cy.wait(500);
         // cy.get("#carry-forward-card").should("contain", "$ 578,023.00");
-        cy.get("#save-changes").should("be.disabled");
+        cy.get("#save-changes", { timeout: 10000 }).should("be.disabled");
         cy.get("#carry-forward-card").should("contain", "0");
         cy.get("[data-cy='can-budget-fy-card']").should("contain", "0");
         cy.get("#budget-amount").type(can527.budgetAmount);
@@ -318,6 +320,9 @@ describe("CAN funding page", () => {
         // update the budget amount
         cy.visit(`/cans/${can527.number}/funding`);
         cy.get("#edit").click();
+        // Wait for React 19 to enter edit mode
+        cy.wait(500);
+        cy.get("#budget-amount", { timeout: 10000 }).should("be.visible");
         cy.get("#budget-amount").clear();
         cy.get("#budget-amount").type(can527.updatedBudgetAmount);
         cy.get("#add-fy-budget").click();
