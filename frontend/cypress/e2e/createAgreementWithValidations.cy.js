@@ -180,6 +180,8 @@ describe("create agreement and test validations", () => {
             cy.get('[data-cy="error-list"]').should("not.exist");
             // click option and check all budget lines
             cy.get('[type="radio"]').first().check({ force: true });
+            // Wait for checkboxes to appear after radio selection
+            cy.get('[data-cy="check-all"]', { timeout: 15000 }).should("exist");
             cy.get('[data-cy="check-all"]').each(($el) => {
                 cy.wrap($el).check({ force: true });
             });
