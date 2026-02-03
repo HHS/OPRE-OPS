@@ -552,7 +552,7 @@ class AgreementsService(OpsService[Agreement]):
         fiscal_years_query = (
             select(distinct(BudgetLineItem.fiscal_year))
             .join(Agreement, BudgetLineItem.agreement_id == Agreement.id)
-            .where(Agreement.id.in_(select(agreement_ids_subquery)))
+            .where(Agreement.id.in_(agreement_ids_subquery))
             .where(BudgetLineItem.fiscal_year.isnot(None))
         )
         fiscal_years = sorted([fy for fy in self.db_session.scalars(fiscal_years_query).all()], reverse=True)
@@ -563,7 +563,7 @@ class AgreementsService(OpsService[Agreement]):
             .join(CAN, Portfolio.id == CAN.portfolio_id)
             .join(BudgetLineItem, CAN.id == BudgetLineItem.can_id)
             .join(Agreement, BudgetLineItem.agreement_id == Agreement.id)
-            .where(Agreement.id.in_(select(agreement_ids_subquery)))
+            .where(Agreement.id.in_(agreement_ids_subquery))
         )
         portfolios = [{"id": p_id, "name": p_name} for p_id, p_name in self.db_session.execute(portfolios_query).all()]
         portfolios = sorted(portfolios, key=lambda x: x["name"])
@@ -572,7 +572,7 @@ class AgreementsService(OpsService[Agreement]):
         projects_query = (
             select(distinct(Project.id), Project.title)
             .join(Agreement, Project.id == Agreement.project_id)
-            .where(Agreement.id.in_(select(agreement_ids_subquery)))
+            .where(Agreement.id.in_(agreement_ids_subquery))
             .where(Project.title.isnot(None))
         )
         project_titles = [
@@ -583,7 +583,7 @@ class AgreementsService(OpsService[Agreement]):
         # Step 5: Agreement types - Direct query on agreement_type column
         agreement_types_query = (
             select(distinct(Agreement.agreement_type))
-            .where(Agreement.id.in_(select(agreement_ids_subquery)))
+            .where(Agreement.id.in_(agreement_ids_subquery))
             .where(Agreement.agreement_type.isnot(None))
         )
         agreement_types = sorted([at.name for at in self.db_session.scalars(agreement_types_query).all()])
@@ -591,7 +591,7 @@ class AgreementsService(OpsService[Agreement]):
         # Step 6: Agreement names - Query id and name from agreements
         agreement_names_query = (
             select(Agreement.id, Agreement.name)
-            .where(Agreement.id.in_(select(agreement_ids_subquery)))
+            .where(Agreement.id.in_(agreement_ids_subquery))
             .where(Agreement.name.isnot(None))
         )
         agreement_names = [
@@ -603,10 +603,10 @@ class AgreementsService(OpsService[Agreement]):
         # These are stored in subclass tables, not the base agreement table
         contract_numbers_query = union_all(
             select(distinct(ContractAgreement.contract_number))
-            .where(ContractAgreement.id.in_(select(agreement_ids_subquery)))
+            .where(ContractAgreement.id.in_(agreement_ids_subquery))
             .where(ContractAgreement.contract_number.isnot(None)),
             select(distinct(AaAgreement.contract_number))
-            .where(AaAgreement.id.in_(select(agreement_ids_subquery)))
+            .where(AaAgreement.id.in_(agreement_ids_subquery))
             .where(AaAgreement.contract_number.isnot(None)),
         )
         contract_numbers = sorted([cn for cn in self.db_session.scalars(contract_numbers_query).all()])
@@ -676,7 +676,7 @@ class AgreementsService(OpsService[Agreement]):
             .join(CAN, BudgetLineItem.can_id == CAN.id)
             .join(Portfolio, CAN.portfolio_id == Portfolio.id)
             .join(PortfolioTeamLeaders, Portfolio.id == PortfolioTeamLeaders.portfolio_id)
-            .where(PortfolioTeamLeaders.user_id == user.id)
+            .where(PortfolioTeamLeaders.team_lead_id == user.id)
         )
         conditions.append(Agreement.id.in_(portfolio_leader_subquery))
 
