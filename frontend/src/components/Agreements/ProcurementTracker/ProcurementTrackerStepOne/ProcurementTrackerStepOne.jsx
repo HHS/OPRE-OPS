@@ -1,4 +1,5 @@
 import TextArea from "../../../UI/Form/TextArea";
+import ConfirmationModal from "../../../UI/Modals";
 import TermTag from "../../../UI/Term/TermTag";
 import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepOne from "./ProcurementTrackerStepOne.hooks";
@@ -27,8 +28,11 @@ const ProcurementTrackerStepOne = ({ stepStatus, stepOneData }) => {
         setStep1Notes,
         step1Notes,
         handleStep1Complete,
-        cancelStep1,
-        disableStep1Continue,
+        cancelModalStep1,
+        disableStep1Buttons,
+        modalProps,
+        showModal,
+        setShowModal,
         step1CompletedByUserName,
         step1DateCompletedLabel,
         step1NotesLabel,
@@ -38,6 +42,15 @@ const ProcurementTrackerStepOne = ({ stepStatus, stepOneData }) => {
 
     return (
         <>
+            {showModal && (
+                <ConfirmationModal
+                    heading={modalProps.heading}
+                    setShowModal={setShowModal}
+                    actionButtonText={modalProps.actionButtonText}
+                    secondaryButtonText={modalProps.secondaryButtonText}
+                    handleConfirm={modalProps.handleConfirm}
+                />
+            )}
             {stepStatus === "PENDING" && (
                 <fieldset className="usa-fieldset">
                     <p>
@@ -97,7 +110,8 @@ const ProcurementTrackerStepOne = ({ stepStatus, stepOneData }) => {
                     <button
                         className="usa-button usa-button--unstyled margin-right-2"
                         data-cy="cancel-button"
-                        onClick={cancelStep1}
+                        onClick={cancelModalStep1}
+                        disabled={disableStep1Buttons}
                     >
                         Cancel
                     </button>
@@ -105,7 +119,7 @@ const ProcurementTrackerStepOne = ({ stepStatus, stepOneData }) => {
                         className="usa-button"
                         data-cy="continue-btn"
                         onClick={() => handleStep1Complete(stepOneData?.id)}
-                        disabled={disableStep1Continue}
+                        disabled={disableStep1Buttons}
                     >
                         Complete Step 1
                     </button>
