@@ -101,6 +101,8 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
 
     it("should save and exit via modal when navigating away within the app", () => {
         cy.visit(`/agreements/${agreementId}/budget-lines`);
+        // Wait for page to load and edit button to be available
+        cy.get("#edit", { timeout: 10000 }).should("be.visible");
         cy.get("#edit").click();
         cy.get("#editing").should("have.text", "Editing...");
 
@@ -176,6 +178,8 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
             cy.get("[data-cy=cancel-action]").click();
             cy.get(".usa-alert__heading").should("not.exist", "Agreement Updated");
             cy.visit(`/agreements/${agreementId}/budget-lines`);
+            // Wait for budget line rows to load
+            cy.get('[data-testid^="budget-line-row-"]', { timeout: 10000 }).should("exist");
             cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).first().should("contain", "$0");
         });
     });
@@ -228,6 +232,8 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
             cy.get("[data-cy='confirm-action']").click();
             cy.get(".usa-alert__heading").should("contain", "Agreement Updated");
             cy.visit(`/agreements/${agreementId}/budget-lines`);
+            // Wait for page to fully load before checking for deleted row
+            cy.wait(300);
             cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).should("not.exist");
         });
     });
@@ -294,7 +300,8 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
         //Test DD and user workflow after approving sending the change request via the blocker modal
         testLogin("division-director");
         cy.visit(`/agreements?filter=change-requests`);
-        cy.get("[data-cy='review-card']").should("exist");
+        // Wait for review cards to load
+        cy.get("[data-cy='review-card']", { timeout: 15000 }).should("exist");
         cy.get("[data-cy='review-card']").trigger("mouseover");
         cy.get("#approve").click();
         cy.get("[data-cy='confirm-action']").click();
@@ -321,6 +328,8 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
         // Note: cy.go("back") with React Router blockers is tricky in Cypress
         // This test verifies blocker works with programmatic navigation instead
         cy.visit(`/agreements/${agreementId}/budget-lines`);
+        // Wait for page to load and edit button to be available
+        cy.get("#edit", { timeout: 10000 }).should("be.visible");
         cy.get("#edit").click();
         cy.get("#editing").should("have.text", "Editing...");
 
@@ -371,6 +380,8 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
 
     it("should block navigation to external pages with unsaved changes", () => {
         cy.visit(`/agreements/${agreementId}/budget-lines`);
+        // Wait for page to load and edit button to be available
+        cy.get("#edit", { timeout: 10000 }).should("be.visible");
         cy.get("#edit").click();
         cy.get("#editing").should("have.text", "Editing...");
 
