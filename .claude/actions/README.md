@@ -102,7 +102,7 @@ Claude will automatically:
 All scripts are executable and can be run directly:
 
 ```bash
-cd /Users/fpigeon/Code/OPRE-OPS
+cd /Code/OPRE-OPS
 
 # Check current status
 ./.claude/actions/quick-ci-status.sh
