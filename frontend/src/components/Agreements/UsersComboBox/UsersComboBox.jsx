@@ -25,6 +25,7 @@ const UsersComboBox = ({
     isDisabled = false,
     users = null
 }) => {
+    // TODO: Consider querying for only teaa members or matching returned users and filter by team members
     const {
         data: fetchedUsers,
         error: errorUsers,
@@ -51,7 +52,7 @@ const UsersComboBox = ({
             disabled={isDisabled}
         >
             <label
-                className={`${messages.length > 0 ? "usa-label--error" : ""}`}
+                className={`usa-label margin-0 ${messages.length > 0 ? "usa-label--error" : ""}`}
                 htmlFor="users-combobox-input"
                 id="users-label"
             >
