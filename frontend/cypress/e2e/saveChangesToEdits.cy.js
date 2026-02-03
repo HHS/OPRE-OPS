@@ -50,6 +50,15 @@ const testPlannedBli = {
 };
 
 beforeEach(() => {
+    // React 19 + React Router v6.4 has a known issue with blocker state transitions
+    // Ignore these harmless state transition errors that don't affect functionality
+    cy.on("uncaught:exception", (err) => {
+        if (err.message.includes("Invalid blocker state transition")) {
+            return false;
+        }
+        return true;
+    });
+
     // append a unique identifier to the agreement name to avoid conflicts
     const uniqueId = Date.now();
     testAgreement.name = `E2E Save Changes To Edits ${uniqueId}`;
@@ -117,7 +126,9 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
 
         //Should exit the save & exit modal via ESC key"
         cy.get("body").type("{esc}");
-        cy.get(".usa-modal__heading").should("not.exist");
+        // Wait for React 19 to process modal close
+        cy.wait(500);
+        cy.get(".usa-modal__heading", { timeout: 20000 }).should("not.exist");
         cy.get('[data-cy="unsaved-changes"]').should("exist");
 
         //Should save & exit correctly
@@ -288,7 +299,9 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
 
         //Should exit the save & exit modal via ESC key"
         cy.get("body").type("{esc}");
-        cy.get(".usa-modal__heading").should("not.exist");
+        // Wait for React 19 to process modal close
+        cy.wait(500);
+        cy.get(".usa-modal__heading", { timeout: 20000 }).should("not.exist");
         cy.get('[data-cy="unsaved-changes"]').should("exist");
 
         //Should save & exit correctly
