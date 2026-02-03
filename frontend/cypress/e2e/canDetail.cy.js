@@ -278,9 +278,11 @@ describe("CAN funding page", () => {
         );
         cy.get("[data-cy=confirm-action]").click();
         // Wait for React 19 to process modal close and update UI
-        cy.wait(500);
+        cy.wait(1000);
+        // Verify modal is closed before proceeding
+        cy.get("#ops-modal-heading").should("not.exist");
         // cy.get("#carry-forward-card").should("contain", "$ 578,023.00");
-        cy.get("#save-changes", { timeout: 10000 }).should("be.disabled");
+        cy.get("#save-changes", { timeout: 15000 }).should("be.disabled");
         cy.get("#carry-forward-card").should("contain", "0");
         cy.get("[data-cy='can-budget-fy-card']").should("contain", "0");
         cy.get("#budget-amount").type(can527.budgetAmount);
@@ -319,10 +321,18 @@ describe("CAN funding page", () => {
     it("shows history message when updating a budget", () => {
         // update the budget amount
         cy.visit(`/cans/${can527.number}/funding`);
+        cy.get("#edit", { timeout: 10000 }).should("be.visible");
         cy.get("#edit").click();
-        // Wait for React 19 to enter edit mode
-        cy.wait(500);
-        cy.get("#budget-amount", { timeout: 10000 }).should("be.visible");
+        // Wait for React 19 to enter edit mode and show welcome modal
+        cy.wait(1000);
+        // Close welcome modal if it appears
+        cy.get("body").then(($body) => {
+            if ($body.find("#ops-modal-heading").length > 0) {
+                cy.get("[data-cy=confirm-action]").click();
+                cy.wait(1000);
+            }
+        });
+        cy.get("#budget-amount", { timeout: 15000 }).should("be.visible").and("not.be.disabled");
         cy.get("#budget-amount").clear();
         cy.get("#budget-amount").type(can527.updatedBudgetAmount);
         cy.get("#add-fy-budget").click();
