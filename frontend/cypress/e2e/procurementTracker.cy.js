@@ -30,6 +30,28 @@ describe("Procurement Tracker page", () => {
 });
 
 describe("Procurement Tracker Step 1", () => {
+    it("Cancel the form", () => {
+        cy.visit("/agreements/13/procurement-tracker");
+
+        //Fill out the form and then cancel the task
+        cy.get(".usa-checkbox__label").click();
+        cy.get("#users-combobox-input").type("Amy Madigan {enter}");
+        cy.get("#date-completed").type("01/01/2026");
+        cy.get("#notes").type("notes for testing");
+        cy.get('[data-cy="cancel-button"]').click();
+        cy.get(".usa-modal__heading").should("exist");
+        cy.get('[data-cy="cancel-action"]').click();
+        cy.get(".usa-modal__heading").should("not.exist");
+        cy.get('[data-cy="cancel-button"]').click();
+        cy.get(".usa-modal__heading").should("exist");
+        cy.get('[data-cy="confirm-action"]').click();
+        cy.get("#users-combobox-input").should("be.disabled");
+        cy.get("#date-completed").should("be.disabled");
+        cy.get("#notes").should("be.disabled");
+        cy.get('[data-cy="continue-btn"]').should("be.disabled");
+        cy.get('[data-cy="cancel-button"]').should("be.disabled");
+    });
+
     it("test validation", () => {
         cy.visit("/agreements/13/procurement-tracker");
         // check the checkbox to enable the form
@@ -62,6 +84,7 @@ describe("Procurement Tracker Step 1", () => {
         cy.get(".usa-error-message").should("have.text", "Date must be MM/DD/YYYY");
         // cancel should reset the form and validation
         cy.get('[data-cy="cancel-button"]').click();
+        cy.get('[data-cy="confirm-action"]').click();
         cy.get("#users-combobox-input").should("have.value", "");
         cy.get("#date-completed").should("have.value", "");
         cy.get("#notes").should("have.value", "");
@@ -77,6 +100,7 @@ describe("Procurement Tracker Step 1", () => {
         cy.get("#date-completed").should("be.disabled");
         cy.get("#notes").should("be.disabled");
         cy.get('[data-cy="continue-btn"]').should("be.disabled");
+        cy.get('[data-cy="cancel-button"]').should("be.disabled");
         cy.get(".usa-checkbox__label").click();
         cy.get("#users-combobox-input").type("Amy Madigan {enter}");
         cy.get("#date-completed").type("01/01/2026");
