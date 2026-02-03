@@ -113,26 +113,11 @@ const ProcurementTrackerStepOne = ({ stepStatus, stepOneData, handleSetIsFormSub
                         isDisabled={!isPreSolicitationPackageSent}
                     />
                     <div className="margin-top-2 display-flex flex-justify-end">
-                        {/* <button
-                            className="usa-button usa-button--unstyled margin-right-2"
-                            data-cy="cancel-button"
-                            onClick={cancelStep1}
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            className="usa-button"
-                            data-cy="continue-btn"
-                            onClick={() => handleStep1Complete(stepOneData?.id)}
-                            disabled={disableStep1Continue}
-                        >
-                            Complete Step 1
-                        </button>*/}
                         <button
                             className="usa-button usa-button--unstyled margin-right-2"
                             data-cy="cancel-button"
                             onClick={cancelModalStep1}
-                            disabled={disableStep1Buttons}
+                            disabled={!isPreSolicitationPackageSent}
                         >
                             Cancel
                         </button>
