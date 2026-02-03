@@ -16,7 +16,7 @@ import { getLocalISODate } from "../../../../helpers/utils";
  * @param {ProcurementTrackerStepOneProps} props
  * @returns {React.ReactElement}
  */
-const ProcurementTrackerStepOne = ({ stepStatus, stepOneData }) => {
+const ProcurementTrackerStepOne = ({ stepStatus, stepOneData, handleSetIsFormSubmitted }) => {
     const {
         isPreSolicitationPackageSent,
         setIsPreSolicitationPackageSent,
@@ -38,7 +38,7 @@ const ProcurementTrackerStepOne = ({ stepStatus, stepOneData }) => {
         step1NotesLabel,
         runValidate,
         validatorRes
-    } = useProcurementTrackerStepOne(stepOneData);
+    } = useProcurementTrackerStepOne(stepOneData, handleSetIsFormSubmitted);
 
     return (
         <>

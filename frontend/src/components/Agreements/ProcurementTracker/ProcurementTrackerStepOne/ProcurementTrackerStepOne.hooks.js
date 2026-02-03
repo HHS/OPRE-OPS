@@ -6,7 +6,7 @@ import useGetUserFullNameFromId from "../../../../hooks/user.hooks";
 import suite from "./suite";
 import useAlert from "../../../../hooks/use-alert.hooks";
 
-export default function useProcurementTrackerStepOne(stepOneData) {
+export default function useProcurementTrackerStepOne(stepOneData, handleSetIsFormSubmitted) {
     const [isPreSolicitationPackageSent, setIsPreSolicitationPackageSent] = React.useState(false);
     const [selectedUser, setSelectedUser] = React.useState({});
     const [step1DateCompleted, setStep1DateCompleted] = React.useState("");
@@ -44,6 +44,7 @@ export default function useProcurementTrackerStepOne(stepOneData) {
                 stepId,
                 data: payload
             }).unwrap();
+            handleSetIsFormSubmitted(true);
             console.log("Procurement Tracker Step 1 Updated");
         } catch (error) {
             console.error("Failed to update Procurement Tracker Step 1", error);
