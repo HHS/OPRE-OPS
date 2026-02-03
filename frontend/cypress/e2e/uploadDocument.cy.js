@@ -16,7 +16,7 @@ it("should loads", () => {
 
 it("should create a document database record and upload to in memory storage", () => {
     // Set up intercept to wait for upload to complete
-    cy.intercept("POST", "**/api/v1/documents**").as("uploadDocument");
+    cy.intercept("POST", "**/api/v1/documents").as("uploadDocument");
 
     // Entering an Agreement ID in the Upload Document section
     cy.get("#agreement-id-upload").type("1");
@@ -28,7 +28,13 @@ it("should create a document database record and upload to in memory storage", (
     cy.get("button").contains("Upload").click();
 
     // Wait for upload to complete
-    cy.wait("@uploadDocument");
+    cy.wait("@uploadDocument", { timeout: 10000 }).then((interception) => {
+        // Verify the upload request succeeded
+        expect(interception.response.statusCode).to.be.oneOf([200, 201]);
+    });
+
+    // Give the backend a moment to write to database after upload completes
+    cy.wait(500);
 
     // Verifying the document database record exists
     expect(localStorage.getItem("access_token")).to.exist;
