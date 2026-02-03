@@ -9,6 +9,7 @@ import { getLocalISODate } from "../../../../helpers/utils";
  * @typedef {Object} ProcurementTrackerStepOneProps
  * @property {string} stepStatus - The current status of the procurement tracker step
  * @property {Object} stepOneData - The data for step one of the procurement tracker
+ * @property {Function} handleSetIsFormSubmitted - Function to set the form submission state
  */
 
 /**
