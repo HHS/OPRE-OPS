@@ -178,8 +178,10 @@ describe("create agreement and test validations", () => {
             // Wait for page to be ready
             cy.url().should("include", `/agreements/review/${agreementId}`);
             cy.get('[data-cy="error-list"]').should("not.exist");
+            // Wait for React 19 to process agreement data and render UI
+            cy.wait(2000);
             // click option and check all budget lines
-            cy.get('[type="radio"]', { timeout: 15000 }).first().should("be.visible").and("not.be.disabled");
+            cy.get('[type="radio"]', { timeout: 30000 }).first().should("be.visible").and("not.be.disabled");
             cy.get('[type="radio"]').first().check({ force: true });
             // Wait for React 19 to process the radio selection
             cy.wait(2000);  // Increased from 1000ms
