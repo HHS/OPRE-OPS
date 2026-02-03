@@ -161,9 +161,7 @@ class ProcurementTrackerStepService:
 
             # Create UPDATE_PROCUREMENT_TRACKER event if tracker was modified
             if tracker_modified:
-                self._create_update_procurement_tracker_event(
-                    procurement_tracker, old_tracker_dict, current_user
-                )
+                self._create_update_procurement_tracker_event(procurement_tracker, old_tracker_dict, current_user)
 
     def _create_update_procurement_tracker_event(
         self, procurement_tracker, old_tracker_dict: dict, current_user: User
@@ -178,10 +176,7 @@ class ProcurementTrackerStepService:
         """
         # Generate event updates comparing old and new state
         events_update = generate_events_update(
-            old_tracker_dict,
-            procurement_tracker.to_dict(),
-            procurement_tracker.agreement_id,
-            current_user.id
+            old_tracker_dict, procurement_tracker.to_dict(), procurement_tracker.agreement_id, current_user.id
         )
 
         # Create the event

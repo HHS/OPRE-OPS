@@ -256,10 +256,14 @@ def test_update_procurement_tracker_step_creates_event(auth_client, test_step, l
     initial_event_count = loaded_db.scalar(
         select(OpsEvent).where(OpsEvent.event_type == OpsEventType.UPDATE_PROCUREMENT_TRACKER_STEP)
     )
-    initial_count = 0 if initial_event_count is None else len(
-        loaded_db.scalars(
-            select(OpsEvent).where(OpsEvent.event_type == OpsEventType.UPDATE_PROCUREMENT_TRACKER_STEP)
-        ).all()
+    initial_count = (
+        0
+        if initial_event_count is None
+        else len(
+            loaded_db.scalars(
+                select(OpsEvent).where(OpsEvent.event_type == OpsEventType.UPDATE_PROCUREMENT_TRACKER_STEP)
+            ).all()
+        )
     )
 
     update_data = {
@@ -458,7 +462,9 @@ def test_update_procurement_tracker_step_creates_update_tracker_event(auth_clien
 
     # Count initial events
     initial_step_events = loaded_db.scalar(
-        select(func.count()).select_from(OpsEvent).where(OpsEvent.event_type == OpsEventType.UPDATE_PROCUREMENT_TRACKER_STEP)
+        select(func.count())
+        .select_from(OpsEvent)
+        .where(OpsEvent.event_type == OpsEventType.UPDATE_PROCUREMENT_TRACKER_STEP)
     )
     initial_tracker_events = loaded_db.scalar(
         select(func.count()).select_from(OpsEvent).where(OpsEvent.event_type == OpsEventType.UPDATE_PROCUREMENT_TRACKER)
@@ -471,7 +477,9 @@ def test_update_procurement_tracker_step_creates_update_tracker_event(auth_clien
 
     # Verify UPDATE_PROCUREMENT_TRACKER_STEP event was created
     step_events = loaded_db.scalar(
-        select(func.count()).select_from(OpsEvent).where(OpsEvent.event_type == OpsEventType.UPDATE_PROCUREMENT_TRACKER_STEP)
+        select(func.count())
+        .select_from(OpsEvent)
+        .where(OpsEvent.event_type == OpsEventType.UPDATE_PROCUREMENT_TRACKER_STEP)
     )
     assert step_events == initial_step_events + 1
 
