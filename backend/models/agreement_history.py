@@ -309,7 +309,7 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                 )
             )
         case OpsEventType.UPDATE_PROCUREMENT_TRACKER_STEP:
-            history_event = create_procurement_tracker_step_update_history_event(event, event_user)
+            history_event = create_procurement_tracker_step_update_history_event(event, event_user, session)
             if history_event:
                 history_events.append(history_event)
     # Filter out any history_events that have agreement_id as None or agreement_id_record as None
@@ -932,7 +932,7 @@ def create_procurement_tracker_step_update_history_event(
     procurement_tracker = session.get(ProcurementTracker, procurement_tracker_step["procurement_tracker_id"])
     new_value = updates["status"]["new_value"]
     step_type = procurement_tracker_step["step_type"]
-    if new_value is not str(ProcurementTrackerStepStatus.COMPLETED):
+    if new_value != str(ProcurementTrackerStepStatus.COMPLETED):
         return None  # Only create history event when step is marked as completed
 
     history_title = ""
