@@ -4,6 +4,7 @@ import { formatDateForApi, formatDateToMonthDayYear } from "../../../../helpers/
 import DatePicker from "../../../UI/USWDS/DatePicker";
 import useGetUserFullNameFromId from "../../../../hooks/user.hooks";
 import suite from "./suite";
+import useAlert from "../../../../hooks/use-alert.hooks";
 
 export default function useProcurementTrackerStepOne(stepOneData) {
     const [isPreSolicitationPackageSent, setIsPreSolicitationPackageSent] = React.useState(false);
@@ -22,7 +23,7 @@ export default function useProcurementTrackerStepOne(stepOneData) {
     const step1CompletedByUserName = useGetUserFullNameFromId(stepOneData?.task_completed_by);
     const step1DateCompletedLabel = formatDateToMonthDayYear(stepOneData?.date_completed);
     const step1NotesLabel = stepOneData?.notes;
-
+    const { setAlert } = useAlert();
     const MemoizedDatePicker = React.memo(DatePicker);
     const runValidate = (name, value) => {
         suite({ ...{ [name]: value } }, name);
@@ -46,9 +47,11 @@ export default function useProcurementTrackerStepOne(stepOneData) {
             console.log("Procurement Tracker Step 1 Updated");
         } catch (error) {
             console.error("Failed to update Procurement Tracker Step 1", error);
-            if (typeof window !== "undefined" && typeof window.alert === "function") {
-                window.alert("Unable to update Procurement Tracker Step 1. Please try again.");
-            }
+            setAlert({
+                type: "error",
+                heading: "Error",
+                message: "There was an error updating the procurement tracker step. Please try again."
+            });
         }
     };
     const cancelStep1 = () => {
