@@ -53,6 +53,13 @@ const extractReceivedSummary = (text) => {
     return match ? match[0].replace(/\s+/g, " ").trim() : "";
 };
 
+const normalizeText = (text) => {
+    if (!text) {
+        return "";
+    }
+    return text.replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
+};
+
 const parseCurrencyValue = (text) => {
     if (!text) {
         return 0;
@@ -69,15 +76,32 @@ const formatCurrencyValue = (value) => {
     return numberValue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
 
+const extractCurrencyValues = (text) => {
+    const normalized = normalizeText(text);
+    const matches = normalized.match(/(?:\d{1,3}(?:,\d{3})+|\d+)\.\d{2}/g) || [];
+    return matches.map((value) => Number(value.replace(/,/g, "")));
+};
+
 const extractReceivedTotals = (text) => {
-    const match = text.match(/Received\s*\$?\s*([\d,]+\.\d{2})\s*of\s*\$?\s*([\d,]+\.\d{2})/);
-    if (!match) {
+    const normalized = normalizeText(text);
+    const match = normalized.match(
+        /Received\s*\$?\s*([\d,]+(?:\.\d{2})?)\s*of\s*\$?\s*([\d,]+(?:\.\d{2})?)/i
+    );
+    if (match) {
+        return {
+            received: Number(match[1].replace(/,/g, "")),
+            total: Number(match[2].replace(/,/g, ""))
+        };
+    }
+    const values = extractCurrencyValues(normalized);
+    if (values.length === 0) {
         return { received: 0, total: 0 };
     }
-    return {
-        received: Number(match[1].replace(/,/g, "")),
-        total: Number(match[2].replace(/,/g, ""))
-    };
+    if (values.length === 1) {
+        return { received: 0, total: values[0] };
+    }
+    const sorted = [...values].sort((a, b) => a - b);
+    return { received: sorted[0], total: sorted[sorted.length - 1] };
 };
 
 const computeBudgetTarget = (received, total, increment = 1000000.01) => {
@@ -343,6 +367,7 @@ describe("CAN funding page", () => {
         cy.get("#save-changes", { timeout: 20000 }).should("be.disabled");
         cy.get("#carry-forward-card").should("exist");
         cy.get("[data-cy='can-budget-fy-card']").should("exist");
+        cy.get("[data-cy=budget-received-card]").should("contain", "Received");
         cy.get("[data-cy=budget-received-card]")
             .invoke("text")
             .then((text) => {
@@ -402,6 +427,7 @@ describe("CAN funding page", () => {
         cy.get("#edit").click();
         closeWelcomeModalIfPresent();
         cy.get("#budget-amount", { timeout: 20000 }).should("be.visible").and("not.be.disabled");
+        cy.get("[data-cy=budget-received-card]").should("contain", "Received");
         cy.get("[data-cy=budget-received-card]")
             .invoke("text")
             .then((text) => {
@@ -445,6 +471,7 @@ describe("CAN funding page", () => {
         cy.get("#fiscal-year-select").select(currentFiscalYear);
         cy.get("#edit").click();
         closeWelcomeModalIfPresent();
+        cy.get("[data-cy=budget-received-card]").should("contain", "Received");
         cy.get("[data-cy=budget-received-card]")
             .invoke("text")
             .then((text) => {
@@ -660,6 +687,7 @@ describe("CAN funding page", () => {
             .then((text) => {
                 cy.wrap(extractCurrency(text)).as("initialBudget");
             });
+        cy.get("[data-cy=budget-received-card]").should("contain", "Received");
         cy.get("[data-cy=budget-received-card]")
             .invoke("text")
             .then((text) => {
