@@ -74,7 +74,7 @@ export const TextArea = ({
             </div>
             <span
                 id={`${name}-with-hint-textarea-info`}
-                className="usa-character-count__message sr-only"
+                className="usa-character-count__message usa-sr-only"
             >
                 You can enter up to {maxLength} characters
             </span>
