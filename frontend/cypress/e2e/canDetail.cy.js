@@ -111,6 +111,15 @@ const computeBudgetTarget = (received, total, increment = 1000000.01) => {
 
 const currentFiscalYear = getCurrentFiscalYear();
 
+const setMoneyInputValue = (selector, value) => {
+    cy.get(selector)
+        .should("be.visible")
+        .and("not.be.disabled")
+        .clear({ force: true })
+        .type(`${value}`, { delay: 0 })
+        .blur();
+};
+
 describe("CAN detail page", () => {
     it("shows the CAN details page", () => {
         cy.visit("/cans/502/");
@@ -368,32 +377,15 @@ describe("CAN funding page", () => {
         cy.get("#carry-forward-card").should("exist");
         cy.get("[data-cy='can-budget-fy-card']").should("exist");
         cy.get("[data-cy=budget-received-card]").should("contain", "Received");
-        cy.get("[data-cy=budget-received-card]")
-            .invoke("text")
-            .then((text) => {
-                const { received, total } = extractReceivedTotals(text);
-                const targetBudget = computeBudgetTarget(received, total, 1000000.01);
-                cy.wrap(targetBudget).as("targetBudget");
-                cy.wrap(formatCurrencyValue(targetBudget)).as("budgetDisplay");
-            });
-        cy.get("@targetBudget").then((targetBudget) => {
-            const inputValue = Number(targetBudget).toFixed(2);
-            cy.get("#budget-amount").clear();
-            cy.get("#budget-amount").type(inputValue);
-            cy.get("#budget-amount").blur();
-        });
+        setMoneyInputValue("#budget-amount", can527.budgetAmount);
         cy.get(".usa-error-message").should("not.exist");
-        cy.get("#add-fy-budget").click();
-        cy.get("@budgetDisplay").then((budgetDisplay) => {
-            cy.get("[data-cy='can-budget-fy-card']").should("contain", budgetDisplay);
-        });
+        cy.get("#add-fy-budget").should("be.enabled").click();
+        cy.get("[data-cy='can-budget-fy-card']").should("contain", formatCurrencyValue(can527.budgetAmount));
         cy.get("#save-changes").should("be.enabled");
         cy.get("#save-changes").click();
         cy.wait("@canFundingBudget", { timeout: 30000 });
         cy.get(".usa-alert__body").should("contain", `The CAN ${can527.nickname} has been successfully updated.`);
-        cy.get("@budgetDisplay").then((budgetDisplay) => {
-            cy.get("[data-cy=budget-received-card]").should("exist").and("contain", budgetDisplay);
-        });
+        cy.get("[data-cy=budget-received-card]").should("exist").and("contain", formatCurrencyValue(can527.budgetAmount));
         cy.get("[data-cy=can-budget-fy-card]")
             .should("exist")
             .and("contain", "CAN Budget by FY")
@@ -428,24 +420,9 @@ describe("CAN funding page", () => {
         closeWelcomeModalIfPresent();
         cy.get("#budget-amount", { timeout: 20000 }).should("be.visible").and("not.be.disabled");
         cy.get("[data-cy=budget-received-card]").should("contain", "Received");
-        cy.get("[data-cy=budget-received-card]")
-            .invoke("text")
-            .then((text) => {
-                const { received, total } = extractReceivedTotals(text);
-                const targetBudget = computeBudgetTarget(received, total, 2000000.02);
-                cy.wrap(targetBudget).as("updatedBudget");
-                cy.wrap(formatCurrencyValue(targetBudget)).as("updatedBudgetDisplay");
-            });
-        cy.get("@updatedBudget").then((updatedBudget) => {
-            const inputValue = Number(updatedBudget).toFixed(2);
-            cy.get("#budget-amount").clear();
-            cy.get("#budget-amount").type(inputValue);
-            cy.get("#budget-amount").blur();
-        });
-        cy.get("#add-fy-budget").click();
-        cy.get("@updatedBudgetDisplay").then((budgetDisplay) => {
-            cy.get("[data-cy='can-budget-fy-card']").should("contain", budgetDisplay);
-        });
+        setMoneyInputValue("#budget-amount", can527.updatedBudgetAmount);
+        cy.get("#add-fy-budget").should("be.enabled").click();
+        cy.get("[data-cy='can-budget-fy-card']").should("contain", formatCurrencyValue(can527.updatedBudgetAmount));
         cy.get("#save-changes").click();
         cy.wait("@canFundingBudget", { timeout: 30000 });
 
@@ -455,15 +432,11 @@ describe("CAN funding page", () => {
             .should("exist")
             .contains(`FY ${currentFiscalYear} Budget Edited`);
 
-        cy.get("@updatedBudgetDisplay").then((budgetDisplay) => {
-            cy.get('[data-cy="log-item-message"]').then(($messages) => {
-                const historyText = $messages.text().replace(/\s+/g, " ").trim();
-                const budgetPattern = new RegExp(`Budget Team edited the FY ${currentFiscalYear} budget`);
-                expect(historyText).to.match(budgetPattern);
-                if (budgetDisplay) {
-                    expect(historyText).to.contain(budgetDisplay);
-                }
-            });
+        cy.get('[data-cy="log-item-message"]').then(($messages) => {
+            const historyText = $messages.text().replace(/\s+/g, " ").trim();
+            const budgetPattern = new RegExp(`Budget Team edited the FY ${currentFiscalYear} budget`);
+            expect(historyText).to.match(budgetPattern);
+            expect(historyText).to.contain(formatCurrencyValue(can527.updatedBudgetAmount));
         });
     });
     it("handle funding received form", () => {
