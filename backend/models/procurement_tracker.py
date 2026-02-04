@@ -305,6 +305,13 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
         - Maps acquisition_planning_date_completed → date_completed
         - Maps acquisition_planning_notes → notes
 
+        For PRE_SOLICITATION steps:
+        - Maps pre_solicitation_target_completion_date → target_completion_date
+        - Maps pre_solicitation_task_completed_by → task_completed_by
+        - Maps pre_solicitation_date_completed → date_completed
+        - Maps pre_solicitation_notes → notes
+        - Maps pre_solicitation_draft_solicitation_date → draft_solicitation_date
+
         For other step types, these fields are excluded from the output.
         """
         data = super().to_dict()
@@ -319,12 +326,47 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
             # Map the relationship
             if "acquisition_planning_completed_by_user" in data:
                 data["completed_by_user"] = data.pop("acquisition_planning_completed_by_user", None)
-        else:
-            # Remove ACQUISITION_PLANNING-specific fields for other step types
+
+            # Remove PRE_SOLICITATION-specific fields
+            data.pop("pre_solicitation_target_completion_date", None)
+            data.pop("pre_solicitation_task_completed_by", None)
+            data.pop("pre_solicitation_date_completed", None)
+            data.pop("pre_solicitation_notes", None)
+            data.pop("pre_solicitation_draft_solicitation_date", None)
+            data.pop("pre_solicitation_completed_by_user", None)
+
+        # Handle PRE_SOLICITATION-specific fields
+        elif self.step_type == ProcurementTrackerStepType.PRE_SOLICITATION:
+            # Map prefixed columns to API field names
+            data["target_completion_date"] = data.pop("pre_solicitation_target_completion_date", None)
+            data["task_completed_by"] = data.pop("pre_solicitation_task_completed_by", None)
+            data["date_completed"] = data.pop("pre_solicitation_date_completed", None)
+            data["notes"] = data.pop("pre_solicitation_notes", None)
+            data["draft_solicitation_date"] = data.pop("pre_solicitation_draft_solicitation_date", None)
+
+            # Map the relationship
+            if "pre_solicitation_completed_by_user" in data:
+                data["completed_by_user"] = data.pop("pre_solicitation_completed_by_user", None)
+
+            # Remove ACQUISITION_PLANNING-specific fields
             data.pop("acquisition_planning_task_completed_by", None)
             data.pop("acquisition_planning_date_completed", None)
             data.pop("acquisition_planning_notes", None)
             data.pop("acquisition_planning_completed_by_user", None)
+
+        else:
+            # Remove all step-specific fields for other step types
+            data.pop("acquisition_planning_task_completed_by", None)
+            data.pop("acquisition_planning_date_completed", None)
+            data.pop("acquisition_planning_notes", None)
+            data.pop("acquisition_planning_completed_by_user", None)
+
+            data.pop("pre_solicitation_target_completion_date", None)
+            data.pop("pre_solicitation_task_completed_by", None)
+            data.pop("pre_solicitation_date_completed", None)
+            data.pop("pre_solicitation_notes", None)
+            data.pop("pre_solicitation_draft_solicitation_date", None)
+            data.pop("pre_solicitation_completed_by_user", None)
 
         return data
 
@@ -340,7 +382,7 @@ class DefaultProcurementTracker(ProcurementTracker):
 
     Steps are stored as separate rows in procurement_tracker_step table:
     - Step 1: ACQUISITION_PLANNING (with extra fields: acquisition_planning_task_completed_by, acquisition_planning_date_completed, acquisition_planning_notes)
-    - Step 2: PRE_SOLICITATION
+    - Step 2: PRE_SOLICITATION (with extra fields: pre_solicitation_target_completion_date, pre_solicitation_task_completed_by, pre_solicitation_date_completed, pre_solicitation_notes, pre_solicitation_draft_solicitation_date)
     - Step 3: SOLICITATION
     - Step 4: EVALUATION
     - Step 5: PRE_AWARD
