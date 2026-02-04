@@ -23,6 +23,62 @@ const minAgreementWithoutProcShop = (uniqueSuffix) => ({
     // remove awarding entity id so no procurement shop selected
 });
 
+const waitForActionableBudgetLines = (agreementId, bearerToken, retries = 6) => {
+    return cy
+        .request({
+            method: "GET",
+            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+            headers: {
+                Authorization: bearerToken,
+                Accept: "application/json"
+            },
+            failOnStatusCode: false
+        })
+        .then((response) => {
+            const budgetLines = response.body?.budget_line_items ?? [];
+            const hasActionable = budgetLines.some(
+                (bli) => (bli.status === "DRAFT" || bli.status === "PLANNED") && !bli.in_review
+            );
+            if (hasActionable) {
+                return true;
+            }
+            if (retries <= 0) {
+                return false;
+            }
+            cy.wait(1000);
+            return waitForActionableBudgetLines(agreementId, bearerToken, retries - 1);
+        });
+};
+
+const selectEnabledStatusRadio = (attempt = 0) => {
+    const maxAttempts = 3;
+    cy.get('[data-cy="change-draft-to-planned"]', { timeout: 60000 }).should("exist");
+    cy.get('[data-cy="change-planned-to-executing"]', { timeout: 60000 }).should("exist");
+
+    cy.get('[data-cy="change-draft-to-planned"]').then(($draft) => {
+        const draftEnabled = !$draft.prop("disabled");
+        cy.get('[data-cy="change-planned-to-executing"]').then(($planned) => {
+            const plannedEnabled = !$planned.prop("disabled");
+            if (draftEnabled) {
+                cy.wrap($draft).check({ force: true });
+                return;
+            }
+            if (plannedEnabled) {
+                cy.wrap($planned).check({ force: true });
+                return;
+            }
+            if (attempt >= maxAttempts) {
+                throw new Error("No enabled status radios after retries.");
+            }
+            cy.log("No enabled radios yet; refreshing agreement.");
+            cy.reload();
+            cy.wait("@getAgreement", { timeout: 30000 });
+            cy.wait(500);
+            selectEnabledStatusRadio(attempt + 1);
+        });
+    });
+};
+
 beforeEach(() => {
     testLogin("system-owner");
 });
@@ -179,6 +235,8 @@ describe("create agreement and test validations", () => {
                 "contain",
                 "Budget line TBD was updated. When you're done editing, click Create Agreement below."
             );
+            // Ensure backend reflects actionable BLIs before reviewing (avoids stale agreement data).
+            waitForActionableBudgetLines(agreementId, bearer_token);
             // go back to review page
             cy.get('[data-cy="continue-btn"]').click();
             // Wait for navigation and agreement data to load
@@ -201,9 +259,8 @@ describe("create agreement and test validations", () => {
                     cy.log("Send-to-approval already enabled; skipping status selection.");
                     return;
                 }
-                cy.get('[type="radio"]:enabled', { timeout: 60000 }).first().as("statusRadio");
-                cy.get("@statusRadio").check({ force: true });
-                cy.get("@statusRadio").should("be.checked");
+                selectEnabledStatusRadio();
+                cy.get('[type="radio"]:checked', { timeout: 60000 }).should("exist");
                 // Wait for React 19 to render checkboxes after radio selection
                 cy.wait(5000);
                 cy.then(() => {
