@@ -664,16 +664,30 @@ describe("Approve Change Requests at the Agreement Level", () => {
     });
 });
 
+const waitForAgreementHistory = (attempts = 3) => {
+    cy.get('[data-cy="agreement-history-list"]', { timeout: 30000 }).then(($list) => {
+        if ($list.children().length > 0) {
+            return;
+        }
+        if (attempts <= 0) {
+            expect($list.children().length).to.be.at.least(1);
+            return;
+        }
+        cy.wait(1500);
+        cy.reload();
+        cy.get('[data-cy="agreement-history-container"]').should("exist");
+        waitForAgreementHistory(attempts - 1);
+    });
+};
+
 const checkAgreementHistory = () => {
     cy.get(".usa-breadcrumb__list > :nth-child(3)").should("have.text", testAgreement.name);
     cy.get('[data-cy="details-left-col"] > :nth-child(4)').should("have.text", "History");
     cy.get('[data-cy="agreement-history-container"]').should("exist");
     cy.get('[data-cy="agreement-history-container"]').scrollIntoView();
     cy.get('[data-cy="agreement-history-list"]').should("exist");
-    // Wait for history list to have children with proper retry logic
-    cy.get('[data-cy="agreement-history-list"]', { timeout: 30000 }).should(($list) => {
-        expect($list.children().length).to.be.at.least(1);
-    });
+    // Wait for history list to have children with reload retry logic
+    waitForAgreementHistory();
     cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]').should(
         "exist"
     );
