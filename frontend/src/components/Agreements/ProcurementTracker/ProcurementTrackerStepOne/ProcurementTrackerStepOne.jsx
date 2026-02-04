@@ -8,6 +8,7 @@ import { getLocalISODate } from "../../../../helpers/utils";
  * @typedef {Object} ProcurementTrackerStepOneProps
  * @property {string} stepStatus - The current status of the procurement tracker step
  * @property {Object} stepOneData - The data for step one of the procurement tracker
+ * @property {boolean} hasActiveTracker - Whether an active tracker exists
  */
 
 /**
@@ -15,7 +16,7 @@ import { getLocalISODate } from "../../../../helpers/utils";
  * @param {ProcurementTrackerStepOneProps} props
  * @returns {React.ReactElement}
  */
-const ProcurementTrackerStepOne = ({ stepStatus, stepOneData }) => {
+const ProcurementTrackerStepOne = ({ stepStatus, stepOneData, hasActiveTracker }) => {
     const {
         isPreSolicitationPackageSent,
         setIsPreSolicitationPackageSent,
@@ -53,6 +54,7 @@ const ProcurementTrackerStepOne = ({ stepStatus, stepOneData }) => {
                             value="step-1-checkbox"
                             checked={isPreSolicitationPackageSent}
                             onChange={() => setIsPreSolicitationPackageSent(!isPreSolicitationPackageSent)}
+                            disabled={!hasActiveTracker}
                         />
                         <label
                             className="usa-checkbox__label"
