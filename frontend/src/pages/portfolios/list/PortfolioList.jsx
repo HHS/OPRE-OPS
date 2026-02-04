@@ -16,6 +16,7 @@ import PortfolioFilterTags from "./PortfolioFilterTags";
 import { usePortfolioList } from "./PortfolioList.hooks";
 import { handlePortfolioExport } from "./PortfolioList.helpers";
 import useAlert from "../../../hooks/use-alert.hooks";
+import { tableSortCodes } from "../../../helpers/utils";
 
 /**
  * @typedef {import("../../../types/PortfolioTypes").Portfolio} Portfolio
@@ -52,7 +53,10 @@ const PortfolioList = () => {
     } = usePortfolioList({ currentUserId, searchParams });
 
     // Table sorting state - default to static order matching the legend
-    const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions("STATIC_ORDER", false);
+    const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions(
+        tableSortCodes.portfolioCodes.STATIC_ORDER,
+        false
+    );
 
     // Handle error navigation in useEffect to avoid setState during render
     React.useEffect(() => {

@@ -13,15 +13,16 @@ export const sortPortfolios = (portfoliosWithFunding, sortCondition, sortDescend
         return [];
     }
 
+    // Handle STATIC_ORDER early - no need to run generic sort
+    if (sortCondition === PORTFOLIO_SORT_CODES.STATIC_ORDER) {
+        const staticSorted = sortPortfoliosByStaticOrder(portfoliosWithFunding);
+        return sortDescending ? staticSorted.reverse() : staticSorted;
+    }
+
     const sorted = [...portfoliosWithFunding].sort((a, b) => {
         let aValue, bValue;
 
         switch (sortCondition) {
-            case PORTFOLIO_SORT_CODES.STATIC_ORDER:
-                // Use the same static order as PortfolioLegend
-                // This is handled outside the switch since it needs different logic
-                return 0;
-
             case PORTFOLIO_SORT_CODES.PORTFOLIO_NAME:
                 aValue = a.name || "";
                 bValue = b.name || "";
@@ -82,12 +83,6 @@ export const sortPortfolios = (portfoliosWithFunding, sortCondition, sortDescend
                 return 0;
         }
     });
-
-    // Handle STATIC_ORDER separately since it uses a different sorting function
-    if (sortCondition === PORTFOLIO_SORT_CODES.STATIC_ORDER) {
-        const staticSorted = sortPortfoliosByStaticOrder(portfoliosWithFunding);
-        return sortDescending ? staticSorted.reverse() : staticSorted;
-    }
 
     return sortDescending ? sorted.reverse() : sorted;
 };
