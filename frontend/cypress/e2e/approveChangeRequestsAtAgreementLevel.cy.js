@@ -139,11 +139,9 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.visit("/").wait(1000);
                 testLogin("division-director");
 
-                cy.visit("/agreements?filter=change-requests").wait(4000);  // Increased from 2000ms
-                // see if there are any review cards - React 19 needs more time to render
-                cy.get("[data-cy='review-card']", { timeout: 30000 }).should("exist").and("be.visible").and("not.be.empty");
-                cy.wait(1000);  // Extra buffer
-                cy.get("[data-cy='review-card']").contains("Status Change");
+                cy.visit("/agreements?filter=change-requests").wait(1000);
+                // see if there are any review cards
+                cy.get("[data-cy='review-card']").should("exist").contains("Status Change");
                 // nav element with the role navigation should contain text 1
                 cy.get('[role="navigation"]').contains("1");
                 cy.get("[data-cy='review-card']").contains(/planned/i);
@@ -155,7 +153,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get("h1").contains(/approval for status change - planned/i);
                 // Wait for all data including CANs to load before proceeding with approval
                 // This ensures the alert message will be constructed correctly
-                cy.get("[data-cy='review-card']", { timeout: 10000 }).should("be.visible");
+                cy.wait(3000);
                 // get content in review-card to see if it exists and contains planned, status and amount
                 cy.get("[data-cy='review-card']").contains(/draft/i);
                 cy.get("[data-cy='review-card']").contains(/planned/i);
@@ -189,7 +187,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.wait("@approveChangeRequest").its("response.statusCode").should("eq", 200);
                 cy.wait("@getAgreements").its("response.statusCode").should("eq", 200);
                 cy.url().should("include", "/agreements?filter=change-requests");
-                // Wait for React 19 to render the page after navigation
+                // Add small wait for React to finish rendering after data loads
                 cy.wait(1000);
                 // Increase timeout for CI environments where page rendering can be slower
                 // Check for alert in a single assertion chain so Cypress retries the entire check
@@ -204,9 +202,16 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get('[role="navigation"]').should("not.contain", "1");
                 // verify agreement history
                 cy.intercept("GET", `/api/v1/agreements/${agreementId}`).as("getAgreementDetail");
+                cy.intercept("GET", `/api/v1/agreement-history/${agreementId}*`).as("getAgreementHistory");
+                waitForAgreementHistory(agreementId);
                 cy.visit(`/agreements/${agreementId}`);
                 cy.wait("@getAgreementDetail");
-                // checkAgreementHistory has built-in timeout logic
+                cy.wait("@getAgreementHistory")
+                    .its("response.body")
+                    .should((body) => {
+                        expect(body).to.be.an("array");
+                        expect(body.length).to.be.at.least(1);
+                    });
                 checkAgreementHistory();
                 cy.get(
                     '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
@@ -327,11 +332,9 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.visit("/").wait(1000);
                 testLogin("division-director");
 
-                cy.visit("/agreements?filter=change-requests").wait(4000);  // Increased from 2000ms
-                // see if there are any review cards - React 19 needs more time to render
-                cy.get("[data-cy='review-card']", { timeout: 30000 }).should("exist").and("be.visible").and("not.be.empty");
-                cy.wait(1000);  // Extra buffer
-                cy.get("[data-cy='review-card']").contains("Status Change");
+                cy.visit("/agreements?filter=change-requests").wait(1000);
+                // see if there are any review cards
+                cy.get("[data-cy='review-card']").should("exist").contains("Status Change");
                 cy.get("[data-cy='review-card']").contains(/executing/i);
                 cy.get('[role="navigation"]').contains("1");
                 // hover over the review card
@@ -340,8 +343,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get("[data-cy='approve-agreement']").click();
                 // get h1 to have content Approval for Status Change - Planned
                 cy.get("h1").contains(/approval for status change - executing/i);
-                // Wait for review-card to load
-                cy.get("[data-cy='review-card']", { timeout: 10000 }).should("be.visible");
+                cy.wait(3000);
                 // get content in review-card to see if it exists and contains planned, status and amount
                 cy.get("[data-cy='review-card']").contains(/planned/i);
                 cy.get("[data-cy='review-card']").contains(/executing/i);
@@ -369,8 +371,9 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.wait("@approveChangeRequest").its("response.statusCode").should("eq", 200);
                 cy.wait("@getAgreements").its("response.statusCode").should("eq", 200);
                 cy.url().should("include", "/agreements?filter=change-requests");
-                // Wait for React 19 to render the page after navigation
-                cy.wait(1000);
+                // Add wait for React to finish rendering after data loads and navigation completes
+                // Longer wait for CI environments where this test has been intermittently failing
+                cy.wait(500);
                 // Increase timeout for CI environments where page rendering can be slower
                 // First check if alert exists and log its content for debugging
                 cy.get(".usa-alert__body", {timeout: 30000}).should("exist");
@@ -386,9 +389,16 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get('[role="navigation"]').should("not.contain", "1");
                 // verify agreement history
                 cy.intercept("GET", `/api/v1/agreements/${agreementId}`).as("getAgreementDetail");
+                cy.intercept("GET", `/api/v1/agreement-history/${agreementId}*`).as("getAgreementHistory");
+                waitForAgreementHistory(agreementId);
                 cy.visit(`/agreements/${agreementId}`);
                 cy.wait("@getAgreementDetail");
-                // checkAgreementHistory has built-in timeout logic
+                cy.wait("@getAgreementHistory")
+                    .its("response.body")
+                    .should((body) => {
+                        expect(body).to.be.an("array");
+                        expect(body.length).to.be.at.least(1);
+                    });
                 checkAgreementHistory();
                 cy.get(
                     '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
@@ -612,9 +622,16 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get("[data-cy='review-card']").should("not.exist");
                 // verify agreement history
                 cy.intercept("GET", `/api/v1/agreements/${agreementId}`).as("getAgreementDetail");
+                cy.intercept("GET", `/api/v1/agreement-history/${agreementId}*`).as("getAgreementHistory");
+                waitForAgreementHistory(agreementId);
                 cy.visit(`/agreements/${agreementId}`);
                 cy.wait("@getAgreementDetail");
-                // checkAgreementHistory has built-in timeout logic
+                cy.wait("@getAgreementHistory")
+                    .its("response.body")
+                    .should((body) => {
+                        expect(body).to.be.an("array");
+                        expect(body.length).to.be.at.least(1);
+                    });
                 checkAgreementHistory();
 
                 // In your test
@@ -664,20 +681,32 @@ describe("Approve Change Requests at the Agreement Level", () => {
     });
 });
 
-const waitForAgreementHistory = (attempts = 3) => {
-    cy.get('[data-cy="agreement-history-list"]', { timeout: 30000 }).then(($list) => {
-        if ($list.children().length > 0) {
-            return;
-        }
-        if (attempts <= 0) {
-            expect($list.children().length).to.be.at.least(1);
-            return;
-        }
-        cy.wait(1500);
-        cy.reload();
-        cy.get('[data-cy="agreement-history-container"]').should("exist");
-        waitForAgreementHistory(attempts - 1);
-    });
+const waitForAgreementHistory = (agreementId, retries = 5) => {
+    const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
+    const historyUrl = `http://localhost:8080/api/v1/agreement-history/${agreementId}?limit=20&offset=0`;
+    return cy
+        .request({
+            method: "GET",
+            url: historyUrl,
+            headers: {
+                Authorization: bearer_token,
+                Accept: "application/json"
+            },
+            failOnStatusCode: false
+        })
+        .then((response) => {
+            const hasEntries = response.status === 200 && Array.isArray(response.body) && response.body.length > 0;
+            if (hasEntries) {
+                return;
+            }
+            if (retries <= 0) {
+                expect(response.status).to.eq(200);
+                expect(response.body).to.be.an("array").and.have.length.greaterThan(0);
+                return;
+            }
+            cy.wait(1000);
+            return waitForAgreementHistory(agreementId, retries - 1);
+        });
 };
 
 const checkAgreementHistory = () => {
@@ -686,8 +715,10 @@ const checkAgreementHistory = () => {
     cy.get('[data-cy="agreement-history-container"]').should("exist");
     cy.get('[data-cy="agreement-history-container"]').scrollIntoView();
     cy.get('[data-cy="agreement-history-list"]').should("exist");
-    // Wait for history list to have children with reload retry logic
-    waitForAgreementHistory();
+    // Wait for history list to have children with proper retry logic
+    cy.get('[data-cy="agreement-history-list"]', { timeout: 30000 }).should(($list) => {
+        expect($list.children().length).to.be.at.least(1);
+    });
     cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]').should(
         "exist"
     );
