@@ -75,6 +75,15 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
     let agreementId;
     let bearer_token;
 
+    const closeUnsavedChangesModalViaEsc = () => {
+        // In CI, the modal can mount after the navigation click; ensure it's visible
+        // before sending ESC so the listener reliably receives the event.
+        cy.get("#ops-modal", { timeout: 10000 }).should("be.visible");
+        cy.get("#ops-modal-heading").should("be.visible");
+        cy.get("body").type("{esc}");
+        cy.get("#ops-modal", { timeout: 20000 }).should("not.exist");
+    };
+
     beforeEach(() => {
         expect(localStorage.getItem("access_token")).to.exist;
         bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
@@ -124,11 +133,8 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
         cy.get('[data-cy="unsaved-changes"]').should("exist");
         cy.contains("a", "Agreements").click();
 
-        //Should exit the save & exit modal via ESC key"
-        cy.get("body").type("{esc}");
-        // Wait for React 19 to process modal close
-        cy.wait(500);
-        cy.get(".usa-modal__heading", { timeout: 20000 }).should("not.exist");
+        // Should exit the save & exit modal via ESC key
+        closeUnsavedChangesModalViaEsc();
         cy.get('[data-cy="unsaved-changes"]').should("exist");
 
         //Should save & exit correctly
@@ -297,11 +303,8 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
             );
         });
 
-        //Should exit the save & exit modal via ESC key"
-        cy.get("body").type("{esc}");
-        // Wait for React 19 to process modal close
-        cy.wait(500);
-        cy.get(".usa-modal__heading", { timeout: 20000 }).should("not.exist");
+        // Should exit the save & exit modal via ESC key
+        closeUnsavedChangesModalViaEsc();
         cy.get('[data-cy="unsaved-changes"]').should("exist");
 
         //Should save & exit correctly
