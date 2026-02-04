@@ -27,7 +27,7 @@ const can527 = {
     updatedBudgetAmount: "8000000.88"
 };
 
-const closeWelcomeModalIfPresent = (attempts = 3) => {
+const closeWelcomeModalIfPresent = (attempts = 10) => {
     cy.get("body").then(($body) => {
         if ($body.find("#ops-modal-heading").length > 0) {
             cy.get("[data-cy=confirm-action]").click();
@@ -37,7 +37,7 @@ const closeWelcomeModalIfPresent = (attempts = 3) => {
         }
 
         if (attempts > 0) {
-            cy.wait(200);
+            cy.wait(300);
             closeWelcomeModalIfPresent(attempts - 1);
         }
     });
@@ -112,12 +112,23 @@ const computeBudgetTarget = (received, total, increment = 1000000.01) => {
 const currentFiscalYear = getCurrentFiscalYear();
 
 const setMoneyInputValue = (selector, value) => {
+    const expected = Number(value);
     cy.get(selector)
         .should("be.visible")
         .and("not.be.disabled")
         .clear({ force: true })
-        .type(`${value}`, { delay: 0 })
+        // In CI, react-currency-format can drop characters with very fast typing.
+        // A small key delay makes the input far more reliable in headless Electron.
+        .type(`${value}`, { delay: 25 })
         .blur();
+
+    cy.get(selector)
+        .invoke("val")
+        .then((val) => {
+            const parsed = parseCurrencyValue(String(val));
+            // Avoid strict float equality; currency inputs can round as they format.
+            expect(parsed).to.be.closeTo(expected, 0.01);
+        });
 };
 
 describe("CAN detail page", () => {
@@ -377,6 +388,7 @@ describe("CAN funding page", () => {
         cy.get("#carry-forward-card").should("exist");
         cy.get("[data-cy='can-budget-fy-card']").should("exist");
         cy.get("[data-cy=budget-received-card]").should("contain", "Received");
+        waitForCurrencyContent("[data-cy=budget-received-card]");
         setMoneyInputValue("#budget-amount", can527.budgetAmount);
         cy.get(".usa-error-message").should("not.exist");
         cy.get("#add-fy-budget").should("be.enabled").click();
@@ -420,6 +432,7 @@ describe("CAN funding page", () => {
         closeWelcomeModalIfPresent();
         cy.get("#budget-amount", { timeout: 20000 }).should("be.visible").and("not.be.disabled");
         cy.get("[data-cy=budget-received-card]").should("contain", "Received");
+        waitForCurrencyContent("[data-cy=budget-received-card]");
         setMoneyInputValue("#budget-amount", can527.updatedBudgetAmount);
         cy.get("#add-fy-budget").should("be.enabled").click();
         cy.get("[data-cy='can-budget-fy-card']").should("contain", formatCurrencyValue(can527.updatedBudgetAmount));
@@ -442,9 +455,10 @@ describe("CAN funding page", () => {
     it("handle funding received form", () => {
         cy.visit(`/cans/${can527.number}/funding`);
         cy.get("#fiscal-year-select").select(currentFiscalYear);
-        cy.get("#edit").click();
+        cy.get("#edit", { timeout: 20000 }).should("be.visible").and("not.be.disabled").click();
         closeWelcomeModalIfPresent();
         cy.get("[data-cy=budget-received-card]").should("contain", "Received");
+        waitForCurrencyContent("[data-cy=budget-received-card]");
         cy.get("[data-cy=budget-received-card]")
             .invoke("text")
             .then((text) => {
@@ -652,15 +666,17 @@ describe("CAN funding page", () => {
     it("handles cancelling from budget form", () => {
         cy.visit(`/cans/${can527.number}/funding`);
         cy.get("#fiscal-year-select").select(currentFiscalYear);
-        cy.get("#edit").click();
+        cy.get("#edit", { timeout: 20000 }).should("be.visible").and("not.be.disabled").click();
         closeWelcomeModalIfPresent();
         // cy.get("#carry-forward-card").should("contain", "$ 10,000,000.00");
+        waitForCurrencyContent("[data-cy='can-budget-fy-card']");
         cy.get("[data-cy='can-budget-fy-card']")
             .invoke("text")
             .then((text) => {
                 cy.wrap(extractCurrency(text)).as("initialBudget");
             });
         cy.get("[data-cy=budget-received-card]").should("contain", "Received");
+        waitForCurrencyContent("[data-cy=budget-received-card]");
         cy.get("[data-cy=budget-received-card]")
             .invoke("text")
             .then((text) => {
@@ -674,11 +690,9 @@ describe("CAN funding page", () => {
                 cy.wrap(cancelBudget).as("cancelBudget");
                 cy.wrap(formatCurrencyValue(cancelBudget)).as("cancelBudgetDisplay");
             });
-        cy.get("#budget-amount").clear();
         cy.get("@cancelBudget").then((cancelBudget) => {
             const inputValue = Number(cancelBudget).toFixed(2);
-            cy.get("#budget-amount").type(inputValue);
-            cy.get("#budget-amount").blur();
+            setMoneyInputValue("#budget-amount", inputValue);
         });
         cy.get("#add-fy-budget").click();
         cy.get("@cancelBudgetDisplay").then((budgetDisplay) => {
