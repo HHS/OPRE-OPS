@@ -341,6 +341,184 @@ def _associate_budget_line_with_action(
         logger.debug(f"BLI {budget_line_item_id} already associated with action for agreement {agreement_id}")
 
 
+def _handle_both_exist(
+    budget_line_item: BudgetLineItem,
+    existing_tracker: DefaultProcurementTracker,
+    existing_action: ProcurementAction,
+    agreement_id: int,
+    budget_line_item_id: int,
+) -> None:
+    """
+    Handle scenario where both tracker and action exist.
+
+    Associates budget line with action and ensures tracker is linked to action.
+
+    Args:
+        budget_line_item: BudgetLineItem instance
+        existing_tracker: Existing tracker
+        existing_action: Existing action
+        agreement_id: Agreement ID (for logging)
+        budget_line_item_id: Budget line item ID (for logging)
+    """
+    _associate_budget_line_with_action(budget_line_item, existing_action, budget_line_item_id, agreement_id)
+
+    # Ensure tracker is linked to action
+    if existing_tracker.procurement_action != existing_action.id:
+        existing_tracker.procurement_action = existing_action.id
+        logger.info(f"Linked tracker to action for agreement {agreement_id}")
+
+
+def _handle_neither_exist(
+    session: Session,
+    agreement_id: int,
+    budget_line_item_id: int,
+    budget_line_item: BudgetLineItem,
+    created_by: Optional[int],
+) -> None:
+    """
+    Handle scenario where neither tracker nor action exist.
+
+    Creates both tracker and action, links them together, and creates SUCCESS events.
+    On failure, creates FAILED events for both and re-raises the exception.
+
+    Args:
+        session: SQLAlchemy session
+        agreement_id: Agreement ID
+        budget_line_item_id: Budget line item ID (for logging)
+        budget_line_item: BudgetLineItem instance
+        created_by: User ID of the creator
+    """
+    logger.info(f"Creating tracker and action for agreement {agreement_id}")
+
+    try:
+        tracker = DefaultProcurementTracker.create_with_steps(
+            agreement_id=agreement_id, status=ProcurementTrackerStatus.ACTIVE, created_by=created_by
+        )
+        session.add(tracker)
+
+        action = _create_new_procurement_action(session, agreement_id, created_by=created_by)
+        session.flush()  # Ensure action.id and tracker.id are available
+
+        # Link tracker to action
+        tracker.procurement_action = action.id
+
+        # Associate budget line with action
+        budget_line_item.procurement_action_id = action.id
+
+        # Create SUCCESS events for tracker and action creation
+        _create_procurement_tracker_event(session, tracker, created_by=created_by)
+        _create_procurement_action_event(session, action, created_by=created_by)
+
+        logger.info(
+            f"Successfully created tracker and action for agreement {agreement_id}, "
+            f"associated BLI {budget_line_item_id}"
+        )
+    except Exception as e:
+        # Create FAILED events for both tracker and action
+        _create_procurement_tracker_event(
+            session, None, created_by=created_by, event_status=OpsEventStatus.FAILED, error_message=str(e)
+        )
+        _create_procurement_action_event(
+            session, None, created_by=created_by, event_status=OpsEventStatus.FAILED, error_message=str(e)
+        )
+        raise
+
+
+def _handle_tracker_exists_only(
+    session: Session,
+    agreement_id: int,
+    budget_line_item_id: int,
+    budget_line_item: BudgetLineItem,
+    existing_tracker: DefaultProcurementTracker,
+    created_by: Optional[int],
+) -> None:
+    """
+    Handle scenario where only tracker exists.
+
+    Creates action, links tracker to it, and creates SUCCESS event.
+    On failure, creates FAILED event and re-raises the exception.
+
+    Args:
+        session: SQLAlchemy session
+        agreement_id: Agreement ID
+        budget_line_item_id: Budget line item ID (for logging)
+        budget_line_item: BudgetLineItem instance
+        existing_tracker: Existing tracker
+        created_by: User ID of the creator
+    """
+    logger.warning(f"Tracker exists but action missing for agreement {agreement_id}, creating action")
+
+    try:
+        action = _create_new_procurement_action(session, agreement_id, created_by=created_by)
+        session.flush()  # Ensure action.id is available
+
+        # Link tracker to new action
+        existing_tracker.procurement_action = action.id
+
+        # Associate budget line with action
+        budget_line_item.procurement_action_id = action.id
+
+        # Create SUCCESS event for action creation
+        _create_procurement_action_event(session, action, created_by=created_by)
+
+        logger.info(f"Created missing action for agreement {agreement_id}, associated BLI {budget_line_item_id}")
+    except Exception as e:
+        # Create FAILED event for action creation
+        _create_procurement_action_event(
+            session, None, created_by=created_by, event_status=OpsEventStatus.FAILED, error_message=str(e)
+        )
+        raise
+
+
+def _handle_action_exists_only(
+    session: Session,
+    agreement_id: int,
+    budget_line_item_id: int,
+    budget_line_item: BudgetLineItem,
+    existing_action: ProcurementAction,
+    created_by: Optional[int],
+) -> None:
+    """
+    Handle scenario where only action exists.
+
+    Creates tracker, links it to action, and creates SUCCESS event.
+    On failure, creates FAILED event and re-raises the exception.
+
+    Args:
+        session: SQLAlchemy session
+        agreement_id: Agreement ID
+        budget_line_item_id: Budget line item ID (for logging)
+        budget_line_item: BudgetLineItem instance
+        existing_action: Existing action
+        created_by: User ID of the creator
+    """
+    logger.warning(f"Action exists but tracker missing for agreement {agreement_id}, creating tracker")
+
+    try:
+        tracker = DefaultProcurementTracker.create_with_steps(
+            agreement_id=agreement_id, status=ProcurementTrackerStatus.ACTIVE, created_by=created_by
+        )
+        session.add(tracker)
+        session.flush()  # Ensure tracker.id is available
+
+        # Link tracker to existing action
+        tracker.procurement_action = existing_action.id
+
+        # Associate budget line with action
+        _associate_budget_line_with_action(budget_line_item, existing_action, budget_line_item_id, agreement_id)
+
+        # Create SUCCESS event for tracker creation
+        _create_procurement_tracker_event(session, tracker, created_by=created_by)
+
+        logger.info(f"Created missing tracker for agreement {agreement_id}")
+    except Exception as e:
+        # Create FAILED event for tracker creation
+        _create_procurement_tracker_event(
+            session, None, created_by=created_by, event_status=OpsEventStatus.FAILED, error_message=str(e)
+        )
+        raise
+
+
 def _handle_tracker_action_creation(
     session: Session,
     agreement_id: int,
@@ -372,79 +550,14 @@ def _handle_tracker_action_creation(
     action_exists = existing_action is not None
 
     if tracker_exists and action_exists:
-        # Both exist - associate budget line and ensure tracker is linked to action
-        _associate_budget_line_with_action(budget_line_item, existing_action, budget_line_item_id, agreement_id)
-
-        # Ensure tracker is linked to action
-        if existing_tracker.procurement_action != existing_action.id:
-            existing_tracker.procurement_action = existing_action.id
-            logger.info(f"Linked tracker to action for agreement {agreement_id}")
-
-        return
-
-    if not tracker_exists and not action_exists:
-        # Neither exists - create both and link them
-        logger.info(f"Creating tracker and action for agreement {agreement_id}")
-
-        tracker = DefaultProcurementTracker.create_with_steps(
-            agreement_id=agreement_id, status=ProcurementTrackerStatus.ACTIVE, created_by=event.created_by
+        _handle_both_exist(budget_line_item, existing_tracker, existing_action, agreement_id, budget_line_item_id)
+    elif not tracker_exists and not action_exists:
+        _handle_neither_exist(session, agreement_id, budget_line_item_id, budget_line_item, event.created_by)
+    elif tracker_exists and not action_exists:
+        _handle_tracker_exists_only(
+            session, agreement_id, budget_line_item_id, budget_line_item, existing_tracker, event.created_by
         )
-        session.add(tracker)
-
-        action = _create_new_procurement_action(session, agreement_id, created_by=event.created_by)
-        session.flush()  # Ensure action.id and tracker.id are available
-
-        # Link tracker to action
-        tracker.procurement_action = action.id
-
-        # Associate budget line with action
-        budget_line_item.procurement_action_id = action.id
-
-        # Create SUCCESS events for tracker and action creation
-        _create_procurement_tracker_event(session, tracker, created_by=event.created_by)
-        _create_procurement_action_event(session, action, created_by=event.created_by)
-
-        logger.info(
-            f"Successfully created tracker and action for agreement {agreement_id}, "
-            f"associated BLI {budget_line_item_id}"
+    else:
+        _handle_action_exists_only(
+            session, agreement_id, budget_line_item_id, budget_line_item, existing_action, event.created_by
         )
-        return
-
-    if tracker_exists and not action_exists:
-        # Only tracker exists - create action and link tracker to it
-        logger.warning(f"Tracker exists but action missing for agreement {agreement_id}, creating action")
-
-        action = _create_new_procurement_action(session, agreement_id, created_by=event.created_by)
-        session.flush()  # Ensure action.id is available
-
-        # Link tracker to new action
-        existing_tracker.procurement_action = action.id
-
-        # Associate budget line with action
-        budget_line_item.procurement_action_id = action.id
-
-        # Create SUCCESS event for action creation
-        _create_procurement_action_event(session, action, created_by=event.created_by)
-
-        logger.info(f"Created missing action for agreement {agreement_id}, associated BLI {budget_line_item_id}")
-        return
-
-    # Only action exists - create tracker and link it to action
-    logger.warning(f"Action exists but tracker missing for agreement {agreement_id}, creating tracker")
-
-    tracker = DefaultProcurementTracker.create_with_steps(
-        agreement_id=agreement_id, status=ProcurementTrackerStatus.ACTIVE, created_by=event.created_by
-    )
-    session.add(tracker)
-    session.flush()  # Ensure tracker.id is available
-
-    # Link tracker to existing action
-    tracker.procurement_action = existing_action.id
-
-    # Associate budget line with action
-    _associate_budget_line_with_action(budget_line_item, existing_action, budget_line_item_id, agreement_id)
-
-    # Create SUCCESS event for tracker creation
-    _create_procurement_tracker_event(session, tracker, created_by=event.created_by)
-
-    logger.info(f"Created missing tracker for agreement {agreement_id}")
