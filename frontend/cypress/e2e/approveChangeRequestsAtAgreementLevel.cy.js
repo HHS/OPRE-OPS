@@ -202,16 +202,9 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get('[role="navigation"]').should("not.contain", "1");
                 // verify agreement history
                 cy.intercept("GET", `/api/v1/agreements/${agreementId}`).as("getAgreementDetail");
-                cy.intercept("GET", `/api/v1/agreement-history/${agreementId}*`).as("getAgreementHistory");
                 waitForAgreementHistory(agreementId);
                 cy.visit(`/agreements/${agreementId}`);
                 cy.wait("@getAgreementDetail");
-                cy.wait("@getAgreementHistory")
-                    .its("response.body")
-                    .should((body) => {
-                        expect(body).to.be.an("array");
-                        expect(body.length).to.be.at.least(1);
-                    });
                 checkAgreementHistory();
                 cy.get(
                     '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
@@ -389,16 +382,9 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get('[role="navigation"]').should("not.contain", "1");
                 // verify agreement history
                 cy.intercept("GET", `/api/v1/agreements/${agreementId}`).as("getAgreementDetail");
-                cy.intercept("GET", `/api/v1/agreement-history/${agreementId}*`).as("getAgreementHistory");
                 waitForAgreementHistory(agreementId);
                 cy.visit(`/agreements/${agreementId}`);
                 cy.wait("@getAgreementDetail");
-                cy.wait("@getAgreementHistory")
-                    .its("response.body")
-                    .should((body) => {
-                        expect(body).to.be.an("array");
-                        expect(body.length).to.be.at.least(1);
-                    });
                 checkAgreementHistory();
                 cy.get(
                     '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
@@ -622,16 +608,9 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get("[data-cy='review-card']").should("not.exist");
                 // verify agreement history
                 cy.intercept("GET", `/api/v1/agreements/${agreementId}`).as("getAgreementDetail");
-                cy.intercept("GET", `/api/v1/agreement-history/${agreementId}*`).as("getAgreementHistory");
                 waitForAgreementHistory(agreementId);
                 cy.visit(`/agreements/${agreementId}`);
                 cy.wait("@getAgreementDetail");
-                cy.wait("@getAgreementHistory")
-                    .its("response.body")
-                    .should((body) => {
-                        expect(body).to.be.an("array");
-                        expect(body.length).to.be.at.least(1);
-                    });
                 checkAgreementHistory();
 
                 // In your test
