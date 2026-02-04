@@ -202,10 +202,16 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get('[role="navigation"]').should("not.contain", "1");
                 // verify agreement history
                 cy.intercept("GET", `/api/v1/agreements/${agreementId}`).as("getAgreementDetail");
+                cy.intercept("GET", `/api/v1/agreement-history/${agreementId}*`).as("getAgreementHistory");
+                waitForAgreementHistory(agreementId);
                 cy.visit(`/agreements/${agreementId}`);
                 cy.wait("@getAgreementDetail");
-                // Wait for backend to finish creating history entries
-                cy.wait(1000);
+                cy.wait("@getAgreementHistory")
+                    .its("response.body")
+                    .should((body) => {
+                        expect(body).to.be.an("array");
+                        expect(body.length).to.be.at.least(1);
+                    });
                 checkAgreementHistory();
                 cy.get(
                     '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
@@ -383,10 +389,16 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get('[role="navigation"]').should("not.contain", "1");
                 // verify agreement history
                 cy.intercept("GET", `/api/v1/agreements/${agreementId}`).as("getAgreementDetail");
+                cy.intercept("GET", `/api/v1/agreement-history/${agreementId}*`).as("getAgreementHistory");
+                waitForAgreementHistory(agreementId);
                 cy.visit(`/agreements/${agreementId}`);
                 cy.wait("@getAgreementDetail");
-                // Wait for backend to finish creating history entries
-                cy.wait(1000);
+                cy.wait("@getAgreementHistory")
+                    .its("response.body")
+                    .should((body) => {
+                        expect(body).to.be.an("array");
+                        expect(body.length).to.be.at.least(1);
+                    });
                 checkAgreementHistory();
                 cy.get(
                     '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
@@ -610,10 +622,16 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get("[data-cy='review-card']").should("not.exist");
                 // verify agreement history
                 cy.intercept("GET", `/api/v1/agreements/${agreementId}`).as("getAgreementDetail");
+                cy.intercept("GET", `/api/v1/agreement-history/${agreementId}*`).as("getAgreementHistory");
+                waitForAgreementHistory(agreementId);
                 cy.visit(`/agreements/${agreementId}`);
                 cy.wait("@getAgreementDetail");
-                // Wait for backend to finish creating history entries
-                cy.wait(1000);
+                cy.wait("@getAgreementHistory")
+                    .its("response.body")
+                    .should((body) => {
+                        expect(body).to.be.an("array");
+                        expect(body.length).to.be.at.least(1);
+                    });
                 checkAgreementHistory();
 
                 // In your test
@@ -662,6 +680,34 @@ describe("Approve Change Requests at the Agreement Level", () => {
             });
     });
 });
+
+const waitForAgreementHistory = (agreementId, retries = 5) => {
+    const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
+    const historyUrl = `http://localhost:8080/api/v1/agreement-history/${agreementId}?limit=20&offset=0`;
+    return cy
+        .request({
+            method: "GET",
+            url: historyUrl,
+            headers: {
+                Authorization: bearer_token,
+                Accept: "application/json"
+            },
+            failOnStatusCode: false
+        })
+        .then((response) => {
+            const hasEntries = response.status === 200 && Array.isArray(response.body) && response.body.length > 0;
+            if (hasEntries) {
+                return;
+            }
+            if (retries <= 0) {
+                expect(response.status).to.eq(200);
+                expect(response.body).to.be.an("array").and.have.length.greaterThan(0);
+                return;
+            }
+            cy.wait(1000);
+            return waitForAgreementHistory(agreementId, retries - 1);
+        });
+};
 
 const checkAgreementHistory = () => {
     cy.get(".usa-breadcrumb__list > :nth-child(3)").should("have.text", testAgreement.name);
