@@ -367,6 +367,8 @@ class Agreement(BaseModel):
     def authorized_user_ids(self) -> List[int]:
         """Get list of user IDs authorized for this agreement."""
         authorized_user_ids = set()
+        if self.created_by:
+            authorized_user_ids.add(self.created_by)
         # Start with all team members on agreement
         authorized_user_ids.update(user.id for user in self.team_members)
         # Get Project officer and alt project officer
