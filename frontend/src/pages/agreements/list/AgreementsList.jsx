@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import PacmanLoader from "react-spinners/PacmanLoader";
 import {
@@ -21,12 +21,13 @@ import {
 import ChangeRequests from "../../../components/ChangeRequests";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import { setAlert } from "../../../components/UI/Alert/alertSlice";
+import FiscalYear from "../../../components/UI/FiscalYear";
 import PaginationNav from "../../../components/UI/PaginationNav/PaginationNav";
 import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
 import { ITEMS_PER_PAGE } from "../../../constants";
 import { getAgreementFeesFromBackend } from "../../../helpers/agreement.helpers";
 import { exportTableToXlsx } from "../../../helpers/tableExport.helpers";
-import { convertCodeForDisplay } from "../../../helpers/utils";
+import { convertCodeForDisplay, getCurrentFiscalYear } from "../../../helpers/utils";
 import icons from "../../../uswds/img/sprite.svg";
 import AgreementsFilterButton from "./AgreementsFilterButton/AgreementsFilterButton";
 import AgreementsFilterTags from "./AgreementsFilterTags/AgreementsFilterTags";
@@ -54,12 +55,36 @@ const AgreementsList = () => {
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
     const [currentPage, setCurrentPage] = useState(1); // 1-indexed for UI
     const [pageSize] = useState(ITEMS_PER_PAGE);
+    const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(getCurrentFiscalYear());
 
     const myAgreementsUrl = searchParams.get("filter") === "my-agreements";
     const changeRequestUrl = searchParams.get("filter") === "change-requests";
 
+    const { data: agreementFilterOptions } = useGetAgreementsFilterOptionsQuery({ onlyMy: false });
+    const fiscalYearOptions = useMemo(
+        () => agreementFilterOptions?.fiscal_years || [],
+        [agreementFilterOptions?.fiscal_years]
+    );
+
+    // Determine fiscal year filter based on selection
+    const getFiscalYearFilter = () => {
+        // If explicit filters are set via filter modal, use those
+        if ((filters.fiscalYear ?? []).length > 0) {
+            return filters.fiscalYear;
+        }
+        // If "All" is selected, include all available fiscal years
+        if (selectedFiscalYear === "All") {
+            return fiscalYearOptions.map((year) => ({ id: Number(year), title: Number(year) }));
+        }
+        // Otherwise, use the selected fiscal year
+        return [{ id: Number(selectedFiscalYear), title: Number(selectedFiscalYear) }];
+    };
+
     const queryParams = {
-        filters,
+        filters: {
+            ...filters,
+            fiscalYear: getFiscalYearFilter()
+        },
         onlyMy: myAgreementsUrl,
         sortConditions: sortCondition,
         sortDescending: sortDescending,
@@ -85,11 +110,34 @@ const AgreementsList = () => {
         setCurrentPage(1);
     }, [filters, myAgreementsUrl, sortCondition, sortDescending]);
 
+    // Ensure selected fiscal year is valid when fiscal year options are loaded
+    useEffect(() => {
+        if (fiscalYearOptions.length > 0) {
+            // Check if current selected fiscal year is in the available options
+            const isCurrentYearAvailable = fiscalYearOptions.includes(Number(selectedFiscalYear));
+
+            // If not available and not "All", set to first available option
+            if (!isCurrentYearAvailable && selectedFiscalYear !== "All") {
+                setSelectedFiscalYear(fiscalYearOptions[0]);
+            }
+        }
+    }, [fiscalYearOptions, selectedFiscalYear]);
+
+    // Handle fiscal year change - clear filters when changing fiscal year selection
+    const handleChangeFiscalYear = (newValue) => {
+        setFilters({
+            portfolio: [],
+            fiscalYear: [],
+            budgetLineStatus: [],
+            agreementName: [],
+            agreementType: []
+        });
+        setSelectedFiscalYear(newValue);
+    };
+
     const [trigger] = useLazyGetUserQuery();
     const [agreementTrigger] = useLazyGetAgreementByIdQuery();
     const [getAllAgreementsTrigger] = useLazyGetAgreementsQuery();
-
-    const agreementFilters = useGetAgreementsFilterOptionsQuery({ onlyMy: false });
 
     if (isLoadingAgreement) {
         return (
@@ -129,7 +177,10 @@ const AgreementsList = () => {
             for (let page = 0; page < totalPages; page++) {
                 fetchPromises.push(
                     getAllAgreementsTrigger({
-                        filters,
+                        filters: {
+                            ...filters,
+                            fiscalYear: getFiscalYearFilter()
+                        },
                         onlyMy: myAgreementsUrl,
                         sortConditions: sortCondition,
                         sortDescending: sortDescending,
@@ -290,6 +341,14 @@ const AgreementsList = () => {
                             </div>
                         </>
                     }
+                    FYSelect={
+                        <FiscalYear
+                            fiscalYear={selectedFiscalYear}
+                            handleChangeFiscalYear={handleChangeFiscalYear}
+                            fiscalYears={fiscalYearOptions}
+                            showAllOption={true}
+                        />
+                    }
                     TableSection={
                         <>
                             <AgreementsTable
@@ -323,7 +382,7 @@ const AgreementsList = () => {
                     <ChangeRequests />
                 </TablePageLayout>
             )}
-            <DebugCode data={agreementFilters} />
+            <DebugCode data={agreementFilterOptions} />
         </App>
     );
 };
