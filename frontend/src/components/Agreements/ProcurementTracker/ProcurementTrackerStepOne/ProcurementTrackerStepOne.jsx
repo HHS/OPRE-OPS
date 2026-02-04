@@ -52,7 +52,7 @@ const ProcurementTrackerStepOne = ({ stepStatus, stepOneData, handleSetIsFormSub
                     handleConfirm={modalProps.handleConfirm}
                 />
             )}
-            {stepStatus === "PENDING" && (
+            {(stepStatus === "PENDING" || stepStatus === "ACTIVE") && (
                 <fieldset className="usa-fieldset">
                     <p>
                         Once the pre-solicitation package is sufficiently drafted and signed by all parties, send it to
