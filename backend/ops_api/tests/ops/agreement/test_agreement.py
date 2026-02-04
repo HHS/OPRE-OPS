@@ -175,7 +175,7 @@ def test_agreements_get_by_id_404(auth_client, app_ctx):
     assert response.status_code == 404
 
 
-def test_agreements_serialization(auth_client, loaded_db, app_ctx):
+def test_agreements_serialization(auth_client, loaded_db, test_project, test_can, app_ctx):
     response = auth_client.get(url_for("api.agreements-item", id=1))
     assert response.status_code == 200
 
@@ -221,6 +221,80 @@ def test_agreements_serialization(auth_client, loaded_db, app_ctx):
     assert special_topics[0]["name"] == "Special Topic 1"
     assert special_topics[1]["id"] == 2
     assert special_topics[1]["name"] == "Special Topic 2"
+
+    # Agreement 1 has about 1000 budget lines, so construct a new agreement + BLI
+    # to be sure we know exactly what to expect for authorized_user_ids
+    response = auth_client.post(
+        url_for("api.agreements-group"),
+        json={
+            "agreement_type": "CONTRACT",
+            "agreement_reason": "NEW_REQ",
+            "name": "FRANK TEST",
+            "description": "test description",
+            "product_service_code_id": 1,
+            "project_officer_id": 500,
+            "alternate_project_officer_id": 501,
+            "team_members": [
+                {
+                    "id": 504,
+                    "full_name": "Tia Brown",
+                    "email": "Tia.Brown@example.com",
+                }
+            ],
+            "notes": "test notes",
+            "project_id": test_project.id,
+            "awarding_entity_id": 2,
+            "contract_type": "FIRM_FIXED_PRICE",
+            "service_requirement_type": "SEVERABLE",
+            "vendor": None,
+            "research_methodologies": [
+                {
+                    "id": 1,
+                    "name": "Knowledge Development",
+                    "detailed_name": "Knowledge Development (Lit Review, Expert Consultations)",
+                }
+            ],
+            "special_topics": [
+                {"id": 1, "name": "Special Topic 1"},
+                {"id": 2, "name": "Special Topic 2"},
+            ],
+        },
+    )
+    assert response.status_code == 201
+    contract_id = response.json["id"]
+
+    data = {
+        "line_description": "LI 1",
+        "comments": "blah blah",
+        "agreement_id": contract_id,
+        "can_id": test_can.id,
+        "amount": 100.12,
+        "status": "DRAFT",
+        "date_needed": "2043-01-01",
+        "proc_shop_fee_percentage": 1.23,
+        "services_component_id": 1,
+    }
+    response = auth_client.post("/api/v1/budget-line-items/", json=data)
+    assert response.status_code == 201
+    bli_id = response.json["id"]
+
+    response_2 = auth_client.get(url_for("api.agreements-item", id=contract_id))
+    assert response_2.status_code == 200
+    authorized_user_ids = response_2.json["authorized_user_ids"]
+    authorized_user_ids.sort()
+    # Created an Agreement with BLI where:
+    # COR is 500
+    # ACOR is 501
+    # Team Member is 504
+    # Team Leader for Portfolio is 505
+    # Division Director is 522
+    # Deputy Director is NONE
+    assert authorized_user_ids == [500, 501, 504, 505, 522]
+
+    delete_bli_response = auth_client.delete(url_for("api.budget-line-items-item", id=bli_id))
+    assert delete_bli_response.status_code == 200
+    delete_agreement_response = auth_client.delete(url_for("api.agreements-item", id=contract_id))
+    assert delete_agreement_response.status_code == 200
 
 
 def test_agreement_is_awarded_serialization_in_detail_endpoint(auth_client, loaded_db, app_ctx):

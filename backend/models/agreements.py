@@ -275,7 +275,6 @@ class Agreement(BaseModel):
     @property
     def division_directors(self) -> list[str]:
         full_names = set()
-
         for bli in self.budget_line_items:
             if (
                 bli.can
@@ -363,6 +362,33 @@ class Agreement(BaseModel):
 
     def get_required_fields_for_awarded_agreement(self) -> List[str]:
         raise NotImplementedError  # To be implemented in subclasses
+
+    @property
+    def authorized_user_ids(self) -> List[int]:
+        """Get list of user IDs authorized for this agreement."""
+        authorized_user_ids = set()
+        # Start with all team members on agreement
+        authorized_user_ids.update(user.id for user in self.team_members)
+        # Get Project officer and alt project officer
+        if self.project_officer_id:
+            authorized_user_ids.add(self.project_officer_id)
+        if self.alternate_project_officer_id:
+            authorized_user_ids.add(self.alternate_project_officer_id)
+        for bli in self.budget_line_items:
+            if bli.can and bli.can.portfolio:
+                # Add division directors
+                if hasattr(bli.can.portfolio, "division") and bli.can.portfolio.division:
+                    division = bli.can.portfolio.division
+                    if division.division_director_id:
+                        authorized_user_ids.add(division.division_director_id)
+                can = getattr(bli, "can", None)
+                portfolio = getattr(can, "portfolio", None)
+                # Add Team leaders
+                if portfolio and getattr(bli.can.portfolio, "team_leaders", None):
+                    authorized_user_ids.update(
+                        leader.id for leader in portfolio.team_leaders if hasattr(leader, "id") and leader.id
+                    )
+        return list(authorized_user_ids)
 
 
 contract_support_contacts = Table(
