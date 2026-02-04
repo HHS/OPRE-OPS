@@ -4,20 +4,31 @@ import { formatDateForApi, formatDateToMonthDayYear } from "../../../../helpers/
 import DatePicker from "../../../UI/USWDS/DatePicker";
 import useGetUserFullNameFromId from "../../../../hooks/user.hooks";
 import suite from "./suite";
+import useAlert from "../../../../hooks/use-alert.hooks";
 
-export default function useProcurementTrackerStepOne(stepOneData) {
+/**
+ * Custom hook to manage the state and logic for Procurement Tracker Step One.
+ * @param {Object} stepOneData - The data for step one of the procurement tracker.
+ * @param {Function} handleSetIsFormSubmitted - Function to set the form submission state.
+ */
+export default function useProcurementTrackerStepOne(stepOneData, handleSetIsFormSubmitted) {
     const [isPreSolicitationPackageSent, setIsPreSolicitationPackageSent] = React.useState(false);
     const [selectedUser, setSelectedUser] = React.useState({});
     const [step1DateCompleted, setStep1DateCompleted] = React.useState("");
     const [step1Notes, setStep1Notes] = React.useState("");
     const [patchStepOne] = useUpdateProcurementTrackerStepMutation();
     const [showModal, setShowModal] = React.useState(false);
-    const [modalProps, setModalProps] = React.useState({});
+    const [modalProps, setModalProps] = React.useState({
+        heading: "",
+        actionButtonText: "",
+        secondaryButtonText: "",
+        handleConfirm: () => {}
+    });
 
     const step1CompletedByUserName = useGetUserFullNameFromId(stepOneData?.task_completed_by);
     const step1DateCompletedLabel = formatDateToMonthDayYear(stepOneData?.date_completed);
     const step1NotesLabel = stepOneData?.notes;
-
+    const { setAlert } = useAlert();
     const MemoizedDatePicker = React.memo(DatePicker);
     const runValidate = (name, value) => {
         suite({ ...{ [name]: value } }, name);
@@ -38,12 +49,15 @@ export default function useProcurementTrackerStepOne(stepOneData) {
                 stepId,
                 data: payload
             }).unwrap();
+            handleSetIsFormSubmitted(true);
             console.log("Procurement Tracker Step 1 Updated");
         } catch (error) {
             console.error("Failed to update Procurement Tracker Step 1", error);
-            if (typeof window !== "undefined" && typeof window.alert === "function") {
-                window.alert("Unable to update Procurement Tracker Step 1. Please try again.");
-            }
+            setAlert({
+                type: "error",
+                heading: "Error",
+                message: "There was an error updating the procurement tracker step. Please try again."
+            });
         }
     };
     const cancelStep1 = () => {
