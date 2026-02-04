@@ -131,7 +131,7 @@ export default function useCanFunding(
     });
 
     /** @param {React.FormEvent<HTMLFormElement>} e */
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         const payload = {
@@ -203,9 +203,7 @@ export default function useCanFunding(
         };
 
         try {
-            handleFundingBudget();
-            handleFundingReceived();
-            handleDeleteFundingReceived();
+            await Promise.all([handleFundingBudget(), handleFundingReceived(), handleDeleteFundingReceived()]);
 
             setAlert({
                 type: "success",

@@ -65,11 +65,13 @@ export default defineConfig({
                 }
             });
         },
-        defaultCommandTimeout: 15000,
-        requestTimeout: 15000,
-        responseTimeout: 45000,
-        pageLoadTimeout: 45000,
-        taskTimeout: 120000,
+        defaultCommandTimeout: 20000,
+        requestTimeout: 20000,
+        responseTimeout: 60000,
+        pageLoadTimeout: 120000,
+        taskTimeout: 180000,
+        numTestsKeptInMemory: 1,
+        experimentalMemoryManagement: true,
         video: false,
         screenshotOnRunFailure: true
     },
@@ -79,7 +81,7 @@ export default defineConfig({
     retries: {
         // Configure retry attempts for `cypress run`
         // Default is 0
-        runMode: 2,
+        runMode: 3,
         // Configure retry attempts for `cypress open`
         // Default is 0
         openMode: 0

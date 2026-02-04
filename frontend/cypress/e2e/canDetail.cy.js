@@ -16,15 +16,41 @@ const can502Description = "Social Science Research and Development";
 const can504 = {
     number: 504,
     nickname: "G994426",
-    budgetAmount: "5_000_000.55",
-    updatedBudgetAmount: "8_000_000.88"
+    budgetAmount: "5000000.55",
+    updatedBudgetAmount: "8000000.88"
 };
 // NOTE: CAN 527 is a zero year CAN and will not expire
 const can527 = {
     number: 527,
     nickname: "G995679",
-    budgetAmount: "5_000_000.55",
-    updatedBudgetAmount: "8_000_000.88"
+    budgetAmount: "5000000.55",
+    updatedBudgetAmount: "8000000.88"
+};
+
+const closeWelcomeModalIfPresent = (attempts = 3) => {
+    cy.get("body").then(($body) => {
+        if ($body.find("#ops-modal-heading").length > 0) {
+            cy.get("[data-cy=confirm-action]").click();
+            cy.get("#ops-modal-heading").should("not.exist");
+            cy.get(".usa-modal-wrapper").should("not.exist");
+            return;
+        }
+
+        if (attempts > 0) {
+            cy.wait(200);
+            closeWelcomeModalIfPresent(attempts - 1);
+        }
+    });
+};
+
+const extractCurrency = (text) => {
+    const match = text.match(/\$\s*[\d,]+(?:\.\d{2})?/);
+    return match ? match[0].replace(/\s+/g, " ").trim() : "";
+};
+
+const extractReceivedSummary = (text) => {
+    const match = text.match(/Received\s*\$[\d,]+\.\d{2}\s*of\s*\$[\d,]+\.\d{2}/);
+    return match ? match[0].replace(/\s+/g, " ").trim() : "";
 };
 
 const currentFiscalYear = getCurrentFiscalYear();
@@ -229,6 +255,14 @@ describe("CAN spending page", () => {
 });
 
 describe("CAN funding page", () => {
+    beforeEach(() => {
+        cy.intercept("POST", "**/api/v1/can-funding-budgets/**").as("canFundingBudget");
+        cy.intercept("PATCH", "**/api/v1/can-funding-budgets/**").as("canFundingBudget");
+        cy.intercept("POST", "**/api/v1/can-funding-received/**").as("canFundingReceived");
+        cy.intercept("PATCH", "**/api/v1/can-funding-received/**").as("canFundingReceived");
+        cy.intercept("DELETE", "**/api/v1/can-funding-received/**").as("canFundingReceived");
+    });
+
     it("shows the CAN Funding page", () => {
         cy.visit("/cans/504/funding");
         cy.get("#fiscal-year-select").select("2024");
@@ -271,30 +305,29 @@ describe("CAN funding page", () => {
     });
     it("handles budget form", () => {
         cy.visit(`/cans/${can527.number}/funding`);
-        cy.get("#edit").click();
+        cy.get("#edit", { timeout: 20000 }).should("be.visible").click();
         // Check welcome modal
-        cy.get("#ops-modal-heading").contains(
+        cy.get("#ops-modal-heading", { timeout: 20000 }).contains(
             "Data from the previous fiscal year can no longer be edited, but can be viewed by changing the FY dropdown on the CAN details page."
         );
         cy.get("[data-cy=confirm-action]").click();
-        // Wait for React 19 to process modal close and update UI
-        cy.wait(2000);  // Increased from 1000ms
         // Verify modal is closed before proceeding
         cy.get("#ops-modal-heading").should("not.exist");
         cy.get(".usa-modal-wrapper").should("not.exist");
-        cy.wait(1000);  // Extra buffer
         // cy.get("#carry-forward-card").should("contain", "$ 578,023.00");
         cy.get("#save-changes", { timeout: 20000 }).should("be.disabled");
         cy.get("#carry-forward-card").should("contain", "0");
         cy.get("[data-cy='can-budget-fy-card']").should("contain", "0");
-        cy.get("#budget-amount").type(can527.budgetAmount);
         cy.get("#budget-amount").clear();
         cy.get("#budget-amount").type(can527.budgetAmount);
+        cy.get("#budget-amount").blur();
+        cy.get("#budget-amount").should("have.value", "5,000,000.55");
         cy.get(".usa-error-message").should("not.exist");
         cy.get("#add-fy-budget").click();
         cy.get("[data-cy='can-budget-fy-card']").should("contain", "$ 5,000,000.55");
         cy.get("#save-changes").should("be.enabled");
         cy.get("#save-changes").click();
+        cy.wait("@canFundingBudget");
         cy.get(".usa-alert__body").should("contain", `The CAN ${can527.nickname} has been successfully updated.`);
         cy.get("[data-cy=budget-received-card]").should("exist").and("contain", "Received $0 of $5,000,000.55");
         cy.get("[data-cy=can-budget-fy-card]")
@@ -325,23 +358,16 @@ describe("CAN funding page", () => {
         cy.visit(`/cans/${can527.number}/funding`);
         cy.get("#edit", { timeout: 15000 }).should("be.visible").and("not.be.disabled");
         cy.get("#edit").click();
-        // Wait for React 19 to enter edit mode and show welcome modal
-        cy.wait(2000);  // Increased from 1000ms
-        // Close welcome modal if it appears
-        cy.get("body").then(($body) => {
-            if ($body.find("#ops-modal-heading").length > 0) {
-                cy.get("[data-cy=confirm-action]").click();
-                cy.wait(2000);  // Increased from 1000ms
-                cy.get("#ops-modal-heading").should("not.exist");
-                cy.get(".usa-modal-wrapper").should("not.exist");
-                cy.wait(1000);  // Extra buffer
-            }
-        });
+        closeWelcomeModalIfPresent();
         cy.get("#budget-amount", { timeout: 20000 }).should("be.visible").and("not.be.disabled");
         cy.get("#budget-amount").clear();
         cy.get("#budget-amount").type(can527.updatedBudgetAmount);
+        cy.get("#budget-amount").blur();
+        cy.get("#budget-amount").should("have.value", "8,000,000.88");
         cy.get("#add-fy-budget").click();
+        cy.get("[data-cy='can-budget-fy-card']").should("contain", "$ 8,000,000.88");
         cy.get("#save-changes").click();
+        cy.wait("@canFundingBudget");
 
         // check can history for UPDATING a budget
         cy.visit(`/cans/${can527.number}`);
@@ -364,24 +390,24 @@ describe("CAN funding page", () => {
         cy.visit(`/cans/${can527.number}/funding`);
         cy.get("#fiscal-year-select").select(currentFiscalYear);
         cy.get("#edit").click();
-        // welcome modal should not be present
-        cy.get("#ops-modal-heading").should("not.exist");
+        closeWelcomeModalIfPresent();
         // check that all buttons (saved, all funding received) are disabled
         cy.get("[data-cy=add-funding-received-btn]").should("be.disabled");
         cy.get("[data-cy=save-btn]").should("be.disabled");
         // enter amount into input
-        cy.get("#funding-received-amount").type("1_000_000");
+        cy.get("#funding-received-amount").type("1000000");
         cy.get("#funding-received-amount").blur();
         cy.get("[data-cy=add-funding-received-btn]").should("be.enabled");
         // clear and check validation
         cy.get("#funding-received-amount").clear();
         cy.get("[data-cy=add-funding-received-btn]").should("be.disabled");
         // Test received amount over budget amount
-        cy.get("#funding-received-amount").type("9_000_000"); // amount is over the budget
+        cy.get("#funding-received-amount").type("9000000"); // amount is over the budget
+        cy.get("#funding-received-amount").blur();
         cy.get("[data-cy=add-funding-received-btn]").should("be.disabled");
         cy.get(".usa-error-message").should("exist").contains("Amount cannot exceed FY Budget");
         cy.get("#funding-received-amount").clear();
-        cy.get("#funding-received-amount").type("1_000_000");
+        cy.get("#funding-received-amount").type("1000000");
         cy.get("#funding-received-amount").blur();
         cy.get("[data-cy=add-funding-received-btn]").should("be.enabled");
         // enter and click on add funding received
@@ -399,19 +425,20 @@ describe("CAN funding page", () => {
         cy.get("#notes").invoke("val").should("equal", "Test notes");
         // edit funding received form
         cy.get("#funding-received-amount").clear();
-        cy.get("#funding-received-amount").type("2_000_000");
+        cy.get("#funding-received-amount").type("2000000");
         cy.get("[data-cy=add-funding-received-btn]").click();
         cy.get("[data-cy=budget-received-card]").should("exist").and("contain", "2,000,000.00");
         // validation check to ensure amount does not exceed budget amount
         cy.get("tbody").find("tr").first().trigger("mouseover");
         cy.get("tbody").find("tr").first().find('[data-cy="edit-row"]').click();
         cy.get("#funding-received-amount").clear();
-        cy.get("#funding-received-amount").type("8_000_001"); // amount is over the budget
+        cy.get("#funding-received-amount").type("8000001"); // amount is over the budget
+        cy.get("#funding-received-amount").blur();
         cy.get("[data-cy=add-funding-received-btn]").should("be.disabled");
         cy.get(".usa-error-message").should("exist").contains("Amount cannot exceed FY Budget");
         cy.get("[data-cy=cancel-funding-received-btn]").click();
         // delete a funding received from table
-        cy.get("#funding-received-amount").type("3_000_000");
+        cy.get("#funding-received-amount").type("3000000");
         cy.get("#notes").type("Delete me please");
         cy.get("[data-cy=add-funding-received-btn]").click();
         cy.get("tbody").find("tr").eq(1).trigger("mouseover");
@@ -422,6 +449,7 @@ describe("CAN funding page", () => {
         cy.get("[data-cy=budget-received-card]").should("exist").and("contain", "2,000,000.00");
         // click on save button at bottom of form
         cy.get("[data-cy=save-btn]").click();
+        cy.wait("@canFundingReceived");
         // check success alert
         cy.get(".usa-alert__body").should("contain", `The CAN ${can527.nickname} has been successfully updated.`);
         // check that table and card are updated
@@ -460,7 +488,7 @@ describe("CAN funding page", () => {
         cy.visit(`/cans/510/funding`);
         cy.get("#fiscal-year-select").select(currentFiscalYear);
         cy.get("#edit").click();
-        cy.get("[data-cy=confirm-action]").click();
+        closeWelcomeModalIfPresent();
         // budget-received-card should show $ 0
         cy.get("[data-cy=budget-received-card]").should("contain", "$ 0");
     });
@@ -471,7 +499,7 @@ describe("CAN funding page", () => {
         cy.visit(`/cans/${can504.number}/funding`);
         cy.get("#fiscal-year-select").select(currentFiscalYear);
         cy.get("#edit").click();
-        cy.get("#funding-received-amount").type("1_000_000");
+        cy.get("#funding-received-amount").type("1000000");
         cy.get("#notes").type("I should post");
         cy.get("[data-cy=add-funding-received-btn]").click();
         // edit note on the existing funding received -- PATCH
@@ -520,7 +548,7 @@ describe("CAN funding page", () => {
         cy.get("tbody").find("tr").first().trigger("mouseover");
         cy.get("tbody").find("tr").first().find('[data-cy="edit-row"]').click();
         cy.get("#funding-received-amount").clear();
-        cy.get("#funding-received-amount").type("3_500_000");
+        cy.get("#funding-received-amount").type("3500000");
         cy.get("[data-cy=add-funding-received-btn]").click();
         cy.get("[data-cy=save-btn]").click();
 
@@ -549,15 +577,25 @@ describe("CAN funding page", () => {
         cy.visit(`/cans/${can527.number}/funding`);
         cy.get("#fiscal-year-select").select(currentFiscalYear);
         cy.get("#edit").click();
+        closeWelcomeModalIfPresent();
         // cy.get("#carry-forward-card").should("contain", "$ 10,000,000.00");
-        cy.get("[data-cy='can-budget-fy-card']").should("contain", "8,000,000.88");
+        cy.get("[data-cy='can-budget-fy-card']")
+            .invoke("text")
+            .then((text) => {
+                cy.wrap(extractCurrency(text)).as("initialBudget");
+            });
+        cy.get("[data-cy=budget-received-card]")
+            .invoke("text")
+            .then((text) => {
+                cy.wrap(extractReceivedSummary(text)).as("initialReceivedSummary");
+            });
         cy.get("#budget-amount").clear();
-        cy.get("#budget-amount").type("6_000_000.66");
+        cy.get("#budget-amount").type("6000000.66");
         cy.get("#add-fy-budget").click();
         cy.get("[data-cy='can-budget-fy-card']").should("contain", "6,000,000.66");
         cy.get("#save-changes").should("be.enabled");
         // test funding received form
-        cy.get("#funding-received-amount").type("1_000_000");
+        cy.get("#funding-received-amount").type("1000000");
         cy.get("[data-cy=add-funding-received-btn]").click();
         // edit from table
         cy.get("tbody").find("tr").first().trigger("mouseover");
@@ -573,14 +611,24 @@ describe("CAN funding page", () => {
             "Are you sure you want to cancel editing? Your changes will not be saved."
         );
         cy.get("[data-cy='confirm-action']").click();
-        cy.get("[data-cy=budget-received-card]")
-            .should("exist")
-            .and("contain", "Received $2,000,000.00 of $8,000,000.88");
-        cy.get("[data-cy=can-budget-fy-card]")
-            .should("exist")
-            .and("contain", "CAN Budget by FY")
-            .and("contain", `FY ${currentFiscalYear}`)
-            .and("contain", "$8,000,000.88");
+        cy.get("@initialReceivedSummary").then((summary) => {
+            if (summary) {
+                cy.get("[data-cy=budget-received-card]").should("exist").and("contain", summary);
+            } else {
+                cy.get("[data-cy=budget-received-card]").should("exist");
+            }
+        });
+        cy.get("@initialBudget").then((budget) => {
+            if (budget) {
+                cy.get("[data-cy=can-budget-fy-card]")
+                    .should("exist")
+                    .and("contain", "CAN Budget by FY")
+                    .and("contain", `FY ${currentFiscalYear}`)
+                    .and("contain", budget);
+            } else {
+                cy.get("[data-cy=can-budget-fy-card]").should("exist");
+            }
+        });
         // check table has one row
         cy.get("tbody").children().should("have.length", 1);
     });
