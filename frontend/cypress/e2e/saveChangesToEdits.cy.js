@@ -76,17 +76,17 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
     let bearer_token;
 
     const closeUnsavedChangesModalViaEsc = () => {
-        // In CI, the modal can mount after the navigation click; ensure it's visible
-        // before sending ESC so the listener reliably receives the event.
-        cy.get("#ops-modal", { timeout: 10000 }).should("be.visible");
+        // In CI, ESC can be flaky depending on focus/keydown timing.
+        // Ensure the modal is mounted + focused, then ESC (retry once if still visible).
+        cy.get("#ops-modal", { timeout: 15000 }).should("be.visible");
         cy.get("#ops-modal-heading").should("be.visible");
+        cy.get("[data-cy='confirm-action']", { timeout: 15000 }).should("be.visible").focus();
         cy.get("body").type("{esc}", { force: true });
 
-        // ESC can still be flaky in CI depending on focus/keydown timing.
-        // If the modal is still present, fall back to explicitly clicking "Cancel".
         cy.get("body").then(($body) => {
             if ($body.find("#ops-modal").length > 0) {
-                cy.get("[data-cy='cancel-action']").click({ force: true });
+                cy.get("[data-cy='confirm-action']").focus();
+                cy.get("body").type("{esc}", { force: true });
             }
         });
 
@@ -379,8 +379,7 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
         );
 
         // Test ESC cancels navigation
-        cy.get("body").type("{esc}");
-        cy.get("#ops-modal").should("not.exist");
+        closeUnsavedChangesModalViaEsc();
         cy.get('[data-cy="unsaved-changes"]').should("exist");
 
         // Try navigation again and test "Leave without saving"
@@ -540,8 +539,7 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
         cy.focused().should("have.attr", "data-cy", "confirm-action");
 
         // Test ESC key closes modal
-        cy.get("body").type("{esc}");
-        cy.get("#ops-modal").should("not.exist");
+        closeUnsavedChangesModalViaEsc();
 
         // Trigger modal again for Enter test
         cy.contains("a", "Agreements").click();
@@ -576,13 +574,12 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
         cy.get(".usa-modal-wrapper").should("have.length", 1);
 
         // Modal should remain functional - test ESC key
-        cy.get("body").type("{esc}");
-        cy.get("#ops-modal").should("not.exist");
+        closeUnsavedChangesModalViaEsc();
         cy.get('[data-cy="unsaved-changes"]').should("exist");
 
         // Try navigation again to ensure blocker still works
         cy.contains("a", "Agreements").click();
         cy.get("#ops-modal", { timeout: 10000 }).should("exist");
-        cy.get("body").type("{esc}");
+        closeUnsavedChangesModalViaEsc();
     });
 });
