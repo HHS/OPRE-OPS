@@ -92,7 +92,26 @@ describe("Procurement Tracker Step 1", () => {
         cy.get(".usa-error-message").should("not.exist");
     });
 
-    it("Complete the form", () => {
+    it("Cancel button should be enabled/disabled based on checkbox state only", () => {
+        cy.visit("/agreements/13/procurement-tracker");
+
+        // Initially disabled (checkbox unchecked)
+        cy.get('[data-cy="cancel-button"]').should("be.disabled");
+
+        // Check checkbox - cancel button should be enabled even with empty form
+        cy.get(".usa-checkbox__label").click();
+        cy.get('[data-cy="cancel-button"]').should("not.be.disabled");
+
+        // Cancel button should remain enabled even with validation errors
+        cy.get("#date-completed").type("invalid-date");
+        cy.get('[data-cy="cancel-button"]').should("not.be.disabled");
+
+        // Uncheck checkbox - cancel button should be disabled again
+        cy.get(".usa-checkbox__label").click();
+        cy.get('[data-cy="cancel-button"]').should("be.disabled");
+    });
+
+    it("Complete the form and verify accordion behavior", () => {
         cy.visit("/agreements/13/procurement-tracker");
 
         // all form elements besides the checkbox should be disabled
@@ -113,5 +132,10 @@ describe("Procurement Tracker Step 1", () => {
             cy.get("dd").eq(1).should("have.text", "January 1, 2026");
             cy.get("dd").eq(2).should("have.text", "notes for testing");
         });
+
+        // Verify Step 1 accordion remains open after submission
+        cy.get("button")
+            .contains(/Step 1 of/)
+            .should("have.attr", "aria-expanded", "true");
     });
 });
