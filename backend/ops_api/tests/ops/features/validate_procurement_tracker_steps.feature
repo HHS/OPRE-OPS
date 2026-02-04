@@ -42,6 +42,16 @@ Feature: Validate Procurement Tracker Steps
 
     Then I should get a validation error
 
+  Scenario: Validate no future completion date for acquisition planning
+    Given I am logged in as an OPS user
+    And I have a Contract Agreement with OPS user as a team member
+    And I have a procurement tracker with an empty step number 1
+
+    When I have a procurement step with a date completed in the future
+    And I submit a procurement step update
+
+    Then I should get a validation error
+
   Scenario: Valid status
     Given I am logged in as an OPS user
     And I have a Contract Agreement with OPS user as a team member

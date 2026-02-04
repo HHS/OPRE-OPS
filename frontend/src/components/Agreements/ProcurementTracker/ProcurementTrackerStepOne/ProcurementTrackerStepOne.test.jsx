@@ -66,6 +66,7 @@ describe("ProcurementTrackerStepOne", () => {
     const mockHandleStep1Complete = vi.fn();
     const mockCancelStep1 = vi.fn();
     const mockRunValidate = vi.fn();
+    const mockHandleSetIsFormSubmitted = vi.fn();
     const mockValidatorRes = {
         getErrors: vi.fn(() => [])
     };
@@ -105,10 +106,13 @@ describe("ProcurementTrackerStepOne", () => {
         setStep1Notes: mockSetStep1Notes,
         handleStep1Complete: mockHandleStep1Complete,
         cancelStep1: mockCancelStep1,
-        disableStep1Continue: true,
+        disableStep1Buttons: true,
         step1CompletedByUserName: "John Doe",
         step1DateCompletedLabel: "January 15, 2024",
         step1NotesLabel: "Test notes",
+        showModal: false,
+        setShowModal: vi.fn(),
+        modalProps: {},
         runValidate: mockRunValidate,
         validatorRes: mockValidatorRes
     };
@@ -126,6 +130,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
+                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
                 />
             );
 
@@ -142,6 +147,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
+                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
                 />
             );
 
@@ -155,6 +161,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
+                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
                 />
             );
 
@@ -168,6 +175,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
+                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
                 />
             );
 
@@ -182,6 +190,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
+                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
                 />
             );
 
@@ -198,6 +207,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
+                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
                 />
             );
 
@@ -213,6 +223,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
+                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
                 />
             );
 
@@ -223,16 +234,17 @@ describe("ProcurementTrackerStepOne", () => {
             expect(completeButton).toHaveAttribute("data-cy", "continue-btn");
         });
 
-        it("complete button disabled when disableStep1Continue is true", () => {
+        it("complete button disabled when disableStep1Buttons is true", () => {
             useProcurementTrackerStepOne.mockReturnValue({
                 ...defaultHookReturn,
-                disableStep1Continue: true
+                disableStep1Buttons: true
             });
 
             render(
                 <ProcurementTrackerStepOne
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
+                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
                 />
             );
 
@@ -240,16 +252,17 @@ describe("ProcurementTrackerStepOne", () => {
             expect(completeButton).toBeDisabled();
         });
 
-        it("complete button enabled when disableStep1Continue is false", () => {
+        it("complete button enabled when disableStep1Buttons is false", () => {
             useProcurementTrackerStepOne.mockReturnValue({
                 ...defaultHookReturn,
-                disableStep1Continue: false
+                disableStep1Buttons: false
             });
 
             render(
                 <ProcurementTrackerStepOne
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
+                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
                 />
             );
 
@@ -269,6 +282,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
+                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
                 />
             );
 
@@ -288,6 +302,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
+                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
                 />
             );
 
@@ -307,6 +322,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
+                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
                 />
             );
 
@@ -327,6 +343,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
+                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
                 />
             );
 
@@ -347,6 +364,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
+                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
                 />
             );
 
@@ -357,30 +375,17 @@ describe("ProcurementTrackerStepOne", () => {
             expect(mockSetStep1Notes).toHaveBeenCalledWith("New notes");
         });
 
-        it("cancel button calls cancelStep1 when clicked", () => {
-            render(
-                <ProcurementTrackerStepOne
-                    stepStatus="PENDING"
-                    stepOneData={mockStepOneData}
-                />
-            );
-
-            const cancelButton = screen.getByRole("button", { name: /cancel/i });
-            fireEvent.click(cancelButton);
-
-            expect(mockCancelStep1).toHaveBeenCalled();
-        });
-
         it("complete button calls handleStep1Complete with stepOneData.id", () => {
             useProcurementTrackerStepOne.mockReturnValue({
                 ...defaultHookReturn,
-                disableStep1Continue: false
+                disableStep1Buttons: false
             });
 
             render(
                 <ProcurementTrackerStepOne
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
+                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
                 />
             );
 
@@ -400,6 +405,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
+                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
                 />
             );
 
@@ -425,6 +431,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
+                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
                 />
             );
 
@@ -450,6 +457,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
+                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
                 />
             );
 
@@ -470,12 +478,56 @@ describe("ProcurementTrackerStepOne", () => {
         });
     });
 
+    describe("ACTIVE State Rendering", () => {
+        it("renders all form fields: checkbox, UsersComboBox, DatePicker, TextArea, buttons", () => {
+            render(
+                <ProcurementTrackerStepOne
+                    stepStatus="ACTIVE"
+                    stepOneData={mockStepOneData}
+                />
+            );
+
+            expect(screen.getByRole("checkbox")).toBeInTheDocument();
+            expect(screen.getByTestId("users-combobox")).toBeInTheDocument();
+            expect(screen.getByTestId("date-picker")).toBeInTheDocument();
+            expect(screen.getByTestId("text-area")).toBeInTheDocument();
+            expect(screen.getByRole("button", { name: /cancel/i })).toBeInTheDocument();
+            expect(screen.getByRole("button", { name: /complete step 1/i })).toBeInTheDocument();
+        });
+
+        it("form fields are interactive in ACTIVE state", () => {
+            useProcurementTrackerStepOne.mockReturnValue({
+                ...defaultHookReturn,
+                isPreSolicitationPackageSent: true
+            });
+
+            render(
+                <ProcurementTrackerStepOne
+                    stepStatus="ACTIVE"
+                    stepOneData={mockStepOneData}
+                />
+            );
+
+            // eslint-disable-next-line testing-library/no-node-access
+            const select = screen.getByTestId("users-combobox").querySelector("select");
+            // eslint-disable-next-line testing-library/no-node-access
+            const dateInput = screen.getByTestId("date-picker").querySelector("input");
+            // eslint-disable-next-line testing-library/no-node-access
+            const textarea = screen.getByTestId("text-area").querySelector("textarea");
+
+            expect(select).not.toBeDisabled();
+            expect(dateInput).not.toBeDisabled();
+            expect(textarea).not.toBeDisabled();
+        });
+    });
+
     describe("COMPLETED State Rendering", () => {
         it("renders read-only display with instructional paragraph", () => {
             render(
                 <ProcurementTrackerStepOne
                     stepStatus="COMPLETED"
                     stepOneData={mockStepOneData}
+                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
                 />
             );
 
@@ -491,6 +543,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="COMPLETED"
                     stepOneData={mockStepOneData}
+                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
                 />
             );
 
@@ -504,6 +557,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="COMPLETED"
                     stepOneData={mockStepOneData}
+                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
                 />
             );
 
@@ -516,6 +570,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="COMPLETED"
                     stepOneData={mockStepOneData}
+                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
                 />
             );
 
@@ -528,6 +583,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="COMPLETED"
                     stepOneData={mockStepOneData}
+                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
                 />
             );
 
@@ -540,6 +596,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="COMPLETED"
                     stepOneData={mockStepOneData}
+                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
                 />
             );
 
@@ -562,6 +619,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="COMPLETED"
                     stepOneData={mockStepOneData}
+                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
                 />
             );
 
@@ -589,7 +647,7 @@ describe("ProcurementTrackerStepOne", () => {
         it("handles missing stepOneData.id", () => {
             useProcurementTrackerStepOne.mockReturnValue({
                 ...defaultHookReturn,
-                disableStep1Continue: false
+                disableStep1Buttons: false
             });
 
             render(
@@ -605,10 +663,10 @@ describe("ProcurementTrackerStepOne", () => {
             expect(mockHandleStep1Complete).toHaveBeenCalledWith(undefined);
         });
 
-        it("renders correctly when stepStatus is neither PENDING nor COMPLETED", () => {
+        it("renders correctly when stepStatus is neither PENDING, ACTIVE, nor COMPLETED", () => {
             render(
                 <ProcurementTrackerStepOne
-                    stepStatus="IN_PROGRESS"
+                    stepStatus="SKIPPED"
                     stepOneData={mockStepOneData}
                 />
             );
@@ -627,6 +685,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="COMPLETED"
                     stepOneData={mockStepOneData}
+                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
                 />
             );
 
@@ -643,6 +702,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
+                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
                 />
             );
 
@@ -660,6 +720,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
+                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
                 />
             );
 
@@ -675,6 +736,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
+                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
                 />
             );
 
@@ -688,6 +750,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="COMPLETED"
                     stepOneData={mockStepOneData}
+                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
                 />
             );
 

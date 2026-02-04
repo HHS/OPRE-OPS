@@ -1,3 +1,4 @@
+import React from "react";
 import { useGetProcurementTrackersByAgreementIdQuery } from "../../../api/opsAPI";
 import ProcurementTrackerStepOne from "../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepOne";
 import DebugCode from "../../../components/DebugCode";
@@ -25,6 +26,10 @@ const AgreementProcurementTracker = ({ agreement }) => {
         "Pre-Award",
         "Award"
     ];
+    const [isFormSubmitted, setIsFormSubmitted] = React.useState(false);
+    const handleSetIsFormSubmitted = (value) => {
+        setIsFormSubmitted(value);
+    };
     const agreementId = agreement?.id;
 
     const { data, isLoading, isError } = useGetProcurementTrackersByAgreementIdQuery(agreementId, {
@@ -90,6 +95,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 stepStatus={step.status}
                                 stepOneData={stepOneData}
                                 hasActiveTracker={activeTracker}
+                                handleSetIsFormSubmitted={handleSetIsFormSubmitted}
                             />
                         )}
                     </Accordion>

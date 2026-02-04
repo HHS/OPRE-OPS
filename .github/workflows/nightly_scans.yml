@@ -22,7 +22,7 @@ jobs:
     steps:
       # take note that currently the checkout action recursively deletes the contents of the directory where this is run
       - name: Check out the repository to the runner
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           sparse-checkout: ${{ env.SCRIPT_RELATIVE_PATH }}
           sparse-checkout-cone-mode: false
@@ -42,6 +42,6 @@ jobs:
           python3 ${{ env.SCRIPT_RELATIVE_PATH }} ./report_json.json ./report.sarif
 
       - name: Upload SARIF file
-        uses: github/codeql-action/upload-sarif@b20883b0cd1f46c72ae0ba6d1090936928f9fa30 # v4
+        uses: github/codeql-action/upload-sarif@6bc82e05fd0ea64601dd4b465378bbcf57de0314 # v4
         with:
           sarif_file: ./report.sarif

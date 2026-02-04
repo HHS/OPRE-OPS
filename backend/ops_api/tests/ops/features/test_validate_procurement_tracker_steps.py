@@ -93,6 +93,10 @@ def test_validate_updating_procurement_tracker_step_with_valid_task_completed_by
 def test_validate_updating_procurement_tracker_step_with_valid_completion_date(): ...
 
 
+@scenario("validate_procurement_tracker_steps.feature", "Validate no future completion date for acquisition planning")
+def test_validate_no_future_completion_date_for_acquisition_planning(): ...
+
+
 @scenario("validate_procurement_tracker_steps.feature", "Valid status")
 def test_validate_updating_procurement_tracker_step_with_valid_status(): ...
 
@@ -311,6 +315,18 @@ def have_procurement_step_with_invalid_completion_date(context):
     data = {
         "status": "COMPLETED",
         "date_completed": "2025-25-25",
+        "task_completed_by": context["user_id"],
+    }
+
+    context["request_body"] = data
+
+
+@when("I have a procurement step with a date completed in the future")
+def have_procurement_step_with_future_completion_date(context):
+    future_date = date.today().replace(year=date.today().year + 1).isoformat()
+    data = {
+        "status": "COMPLETED",
+        "date_completed": future_date,
         "task_completed_by": context["user_id"],
     }
 

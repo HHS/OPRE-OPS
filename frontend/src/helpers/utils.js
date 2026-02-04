@@ -278,7 +278,8 @@ export const tableSortCodes = {
         DIVISION: "DIVISION",
         FY_BUDGET: "FY_BUDGET",
         FY_SPENDING: "FY_SPENDING",
-        FY_AVAILABLE: "FY_AVAILABLE"
+        FY_AVAILABLE: "FY_AVAILABLE",
+        STATIC_ORDER: "STATIC_ORDER"
     }
 };
 
