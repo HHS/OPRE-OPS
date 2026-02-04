@@ -86,7 +86,11 @@ const AgreementProcurementTracker = ({ agreement }) => {
                 return (
                     <Accordion
                         heading={`Step ${step.step_number} of ${WIZARD_STEPS.length} ${step.step_type}`}
-                        isClosed={activeTracker ? activeTracker.active_step_number !== step.step_number : true}
+                        isClosed={
+                            isFormSubmitted
+                                ? !(step.step_number === 1 || step.step_number === currentStep)
+                                : step.step_number !== currentStep
+                        }
                         level={3}
                         key={step.id}
                     >
