@@ -1,4 +1,5 @@
 import { PORTFOLIO_SORT_CODES } from "./PortfolioTable.constants";
+import { sortPortfoliosByStaticOrder } from "../PortfolioSummaryCards/PortfolioSummaryCards.helpers";
 
 /**
  * Sorts portfolios with funding data based on the sort condition and direction
@@ -10,6 +11,12 @@ import { PORTFOLIO_SORT_CODES } from "./PortfolioTable.constants";
 export const sortPortfolios = (portfoliosWithFunding, sortCondition, sortDescending) => {
     if (!portfoliosWithFunding || portfoliosWithFunding.length === 0) {
         return [];
+    }
+
+    // Handle STATIC_ORDER early - no need to run generic sort
+    if (sortCondition === PORTFOLIO_SORT_CODES.STATIC_ORDER) {
+        const staticSorted = sortPortfoliosByStaticOrder(portfoliosWithFunding);
+        return sortDescending ? staticSorted.reverse() : staticSorted;
     }
 
     const sorted = [...portfoliosWithFunding].sort((a, b) => {
