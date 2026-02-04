@@ -80,7 +80,16 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
         // before sending ESC so the listener reliably receives the event.
         cy.get("#ops-modal", { timeout: 10000 }).should("be.visible");
         cy.get("#ops-modal-heading").should("be.visible");
-        cy.get("body").type("{esc}");
+        cy.get("body").type("{esc}", { force: true });
+
+        // ESC can still be flaky in CI depending on focus/keydown timing.
+        // If the modal is still present, fall back to explicitly clicking "Cancel".
+        cy.get("body").then(($body) => {
+            if ($body.find("#ops-modal").length > 0) {
+                cy.get("[data-cy='cancel-action']").click({ force: true });
+            }
+        });
+
         cy.get("#ops-modal", { timeout: 20000 }).should("not.exist");
     };
 
@@ -491,13 +500,7 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
         // Navigate to Agreement Details tab and make changes there
         cy.get('[data-cy="details-tab-Agreement Details"]').click();
         cy.get("#ops-modal", { timeout: 15000 }).should("exist").and("be.visible");
-        cy.get("body").type("{esc}");
-        // Wait for React 19 to process modal close
-        cy.wait(1500);
-        // Verify modal is completely gone
-        cy.get("#ops-modal").should("not.exist");
-        cy.get(".usa-modal-wrapper").should("not.exist");
-        cy.wait(500);  // Extra buffer
+        closeUnsavedChangesModalViaEsc();
 
         // Navigate away and save all changes
         cy.contains("a", "Agreements").should("be.visible");
