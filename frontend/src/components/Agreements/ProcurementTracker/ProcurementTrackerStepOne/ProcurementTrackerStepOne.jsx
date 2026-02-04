@@ -8,6 +8,7 @@ import useProcurementTrackerStepOne from "./ProcurementTrackerStepOne.hooks";
  * @typedef {Object} ProcurementTrackerStepOneProps
  * @property {string} stepStatus - The current status of the procurement tracker step
  * @property {Object} stepOneData - The data for step one of the procurement tracker
+ * @property {Function} handleSetIsFormSubmitted - Function to set the form submission state
  */
 
 /**
@@ -15,7 +16,7 @@ import useProcurementTrackerStepOne from "./ProcurementTrackerStepOne.hooks";
  * @param {ProcurementTrackerStepOneProps} props
  * @returns {React.ReactElement}
  */
-const ProcurementTrackerStepOne = ({ stepStatus, stepOneData }) => {
+const ProcurementTrackerStepOne = ({ stepStatus, stepOneData, handleSetIsFormSubmitted }) => {
     const {
         isPreSolicitationPackageSent,
         setIsPreSolicitationPackageSent,
@@ -37,7 +38,7 @@ const ProcurementTrackerStepOne = ({ stepStatus, stepOneData }) => {
         step1NotesLabel,
         runValidate,
         validatorRes
-    } = useProcurementTrackerStepOne(stepOneData);
+    } = useProcurementTrackerStepOne(stepOneData, handleSetIsFormSubmitted);
 
     return (
         <>
@@ -73,55 +74,61 @@ const ProcurementTrackerStepOne = ({ stepStatus, stepOneData }) => {
                             The pre-solicitation package has been sent to the Procurement Shop for review
                         </label>
                     </div>
-                    <UsersComboBox
-                        label={"Task Completed By"}
-                        selectedUser={selectedUser}
-                        setSelectedUser={setSelectedUser}
-                        messages={validatorRes.getErrors("users") || []}
-                        isDisabled={!isPreSolicitationPackageSent}
-                        onChange={(name, value) => {
-                            runValidate(name, value);
-                        }}
-                    />
-                    <MemoizedDatePicker
-                        id="date-completed"
-                        name="dateCompleted"
-                        label="Date Completed"
-                        hint="mm/dd/yyyy"
-                        value={step1DateCompleted}
-                        messages={validatorRes.getErrors("dateCompleted") || []}
-                        onChange={(e) => {
-                            runValidate("dateCompleted", e.target.value);
-                            setStep1DateCompleted(e.target.value);
-                        }}
-                        isDisabled={!isPreSolicitationPackageSent}
-                        maxDate={getLocalISODate()}
-                    />
+                    <div className="display-flex flex-align-center">
+                        <UsersComboBox
+                            className="width-card-lg margin-top-5"
+                            label={"Task Completed By"}
+                            selectedUser={selectedUser}
+                            setSelectedUser={setSelectedUser}
+                            messages={validatorRes.getErrors("users") || []}
+                            isDisabled={!isPreSolicitationPackageSent}
+                            onChange={(name, value) => {
+                                runValidate(name, value);
+                            }}
+                        />
+                        <MemoizedDatePicker
+                            id="date-completed"
+                            className="margin-left-4"
+                            name="dateCompleted"
+                            label="Date Completed"
+                            hint="mm/dd/yyyy"
+                            value={step1DateCompleted}
+                            messages={validatorRes.getErrors("dateCompleted") || []}
+                            onChange={(e) => {
+                                runValidate("dateCompleted", e.target.value);
+                                setStep1DateCompleted(e.target.value);
+                            }}
+                            isDisabled={!isPreSolicitationPackageSent}
+                            maxDate={getLocalISODate()}
+                        />
+                    </div>
                     <TextArea
                         name="notes"
                         label="Notes (optional)"
-                        className="margin-top-0"
+                        className="margin-top-2"
                         maxLength={750}
                         value={step1Notes}
                         onChange={(_, value) => setStep1Notes(value)}
                         isDisabled={!isPreSolicitationPackageSent}
                     />
-                    <button
-                        className="usa-button usa-button--unstyled margin-right-2"
-                        data-cy="cancel-button"
-                        onClick={cancelModalStep1}
-                        disabled={disableStep1Buttons}
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        className="usa-button"
-                        data-cy="continue-btn"
-                        onClick={() => handleStep1Complete(stepOneData?.id)}
-                        disabled={disableStep1Buttons}
-                    >
-                        Complete Step 1
-                    </button>
+                    <div className="margin-top-2 display-flex flex-justify-end">
+                        <button
+                            className="usa-button usa-button--unstyled margin-right-2"
+                            data-cy="cancel-button"
+                            onClick={cancelModalStep1}
+                            disabled={!isPreSolicitationPackageSent}
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            className="usa-button"
+                            data-cy="continue-btn"
+                            onClick={() => handleStep1Complete(stepOneData?.id)}
+                            disabled={disableStep1Buttons}
+                        >
+                            Complete Step 1
+                        </button>
+                    </div>
                 </fieldset>
             )}
 
