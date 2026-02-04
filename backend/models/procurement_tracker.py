@@ -229,7 +229,7 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
     Uses single-table inheritance - no separate table created.
     All step instances for default trackers use this class.
 
-    ACQUISITION_PLANNING-specific fields are prefixed for clarity since they're
+    Step specific fields are prefixed for clarity since they're
     stored in the shared procurement_tracker_step table.
     """
 
@@ -254,6 +254,40 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
     acquisition_planning_completed_by_user: Mapped[Optional["User"]] = relationship(
         "User",
         foreign_keys=[acquisition_planning_task_completed_by],
+        viewonly=True,
+    )
+
+    # PRE_SOLICITATION-specific fields can be added here with appropriate prefixes
+    pre_solicitation_target_completion_date: Mapped[Optional[date]] = mapped_column(
+        Date,
+        nullable=True,
+    )
+
+    pre_solicitation_task_completed_by: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        ForeignKey("ops_user.id"),
+        nullable=True,
+    )
+
+    pre_solicitation_date_completed: Mapped[Optional[date]] = mapped_column(
+        Date,
+        nullable=True,
+    )
+
+    pre_solicitation_notes: Mapped[Optional[str]] = mapped_column(
+        Text,
+        nullable=True,
+    )
+
+    pre_solicitation_draft_solicitation_date: Mapped[Optional[date]] = mapped_column(
+        Date,
+        nullable=True,
+    )
+
+    # Relationships
+    pre_solicitation_completed_by_user: Mapped[Optional["User"]] = relationship(
+        "User",
+        foreign_keys=[pre_solicitation_task_completed_by],
         viewonly=True,
     )
 
