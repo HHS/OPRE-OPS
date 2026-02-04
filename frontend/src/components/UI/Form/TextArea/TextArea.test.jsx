@@ -275,11 +275,11 @@ describe("TextArea Component", () => {
         expect(fieldset).toHaveClass("usa-fieldset");
     });
 
-    it("has sr-only class on character count message", () => {
+    it("has usa-sr-only class on character count message", () => {
         render(<TextArea {...defaultProps} />);
 
         const srOnlyMessage = screen.getByText(/You can enter up to \d+ characters/);
-        expect(srOnlyMessage).toHaveClass("sr-only");
+        expect(srOnlyMessage).toHaveClass("usa-sr-only");
         expect(srOnlyMessage).toHaveClass("usa-character-count__message");
     });
 });

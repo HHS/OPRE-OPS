@@ -45,6 +45,9 @@ SHARED_CACHE = {
     "can_funding_budget_ids": [],
     "can_funding_received_ids": [],
     "portfolio_url_ids": [],
+    "procurement_tracker_ids": [],
+    "procurement_tracker_step_ids": [],
+    "procurement_action_ids": [],
 }
 
 
@@ -535,10 +538,50 @@ class OPSAPIUser(HttpUser):
                 name="/api/v1/procurement-shops/[id]",
             )
 
+    @task(5)
+    def list_procurement_trackers(self):
+        """GET /api/v1/procurement-trackers/ - List procurement trackers."""
+        self.client.get("/api/v1/procurement-trackers/", name="/api/v1/procurement-trackers/")
+
     @task(3)
-    def list_procurement_steps(self):
-        """GET /api/v1/procurement-steps/ - List procurement steps."""
-        self.client.get("/api/v1/procurement-steps/", name="/api/v1/procurement-steps/")
+    def get_procurement_tracker_detail(self):
+        """GET /api/v1/procurement-trackers/{id} - Get specific procurement tracker."""
+        if SHARED_CACHE["procurement_tracker_ids"]:
+            tracker_id = random.choice(SHARED_CACHE["procurement_tracker_ids"])
+            self.client.get(
+                f"/api/v1/procurement-trackers/{tracker_id}",
+                name="/api/v1/procurement-trackers/[id]",
+            )
+
+    @task(4)
+    def list_procurement_tracker_steps(self):
+        """GET /api/v1/procurement-tracker-steps/ - List procurement tracker steps."""
+        self.client.get("/api/v1/procurement-tracker-steps/", name="/api/v1/procurement-tracker-steps/")
+
+    @task(2)
+    def get_procurement_tracker_step_detail(self):
+        """GET /api/v1/procurement-tracker-steps/{id} - Get specific procurement tracker step."""
+        if SHARED_CACHE["procurement_tracker_step_ids"]:
+            step_id = random.choice(SHARED_CACHE["procurement_tracker_step_ids"])
+            self.client.get(
+                f"/api/v1/procurement-tracker-steps/{step_id}",
+                name="/api/v1/procurement-tracker-steps/[id]",
+            )
+
+    @task(4)
+    def list_procurement_actions(self):
+        """GET /api/v1/procurement-actions/ - List procurement actions."""
+        self.client.get("/api/v1/procurement-actions/", name="/api/v1/procurement-actions/")
+
+    @task(2)
+    def get_procurement_action_detail(self):
+        """GET /api/v1/procurement-actions/{id} - Get specific procurement action."""
+        if SHARED_CACHE["procurement_action_ids"]:
+            action_id = random.choice(SHARED_CACHE["procurement_action_ids"])
+            self.client.get(
+                f"/api/v1/procurement-actions/{action_id}",
+                name="/api/v1/procurement-actions/[id]",
+            )
 
     # === Additional System Tasks ===
 
@@ -608,7 +651,12 @@ def _populate_shared_cache(environment):
             response = requests.get(f"{api_host}{endpoint}", headers=headers, timeout=120)
             if response.status_code == 200:
                 data = response.json()
-                ids = [item["id"] for item in data if "id" in item]
+                # Handle wrapped responses with "data" field (e.g., {"data": [...], "count": ...})
+                if isinstance(data, dict) and "data" in data:
+                    items = data["data"]
+                else:
+                    items = data
+                ids = [item["id"] for item in items if "id" in item]
                 SHARED_CACHE[cache_key] = ids
                 print(f"  ✓ {label}: {len(ids)} items")
             elif response.status_code == 504:
@@ -627,7 +675,7 @@ def _populate_shared_cache(environment):
         fetch_ids("/api/v1/projects/", "project_ids", "Projects")
         fetch_ids("/api/v1/portfolios/", "portfolio_ids", "Portfolios")
         fetch_ids(
-            "/api/v1/budget-line-items/?limit=100&offset=0",
+            "/api/v1/budget-line-items/?limit=50&offset=0",
             "bli_ids",
             "Budget Line Items",
         )
@@ -668,6 +716,21 @@ def _populate_shared_cache(environment):
             "CAN Funding Received",
         )
         fetch_ids("/api/v1/portfolios-url/", "portfolio_url_ids", "Portfolio URLs")
+        fetch_ids(
+            "/api/v1/procurement-trackers/",
+            "procurement_tracker_ids",
+            "Procurement Trackers",
+        )
+        fetch_ids(
+            "/api/v1/procurement-tracker-steps/",
+            "procurement_tracker_step_ids",
+            "Procurement Tracker Steps",
+        )
+        fetch_ids(
+            "/api/v1/procurement-actions/",
+            "procurement_action_ids",
+            "Procurement Actions",
+        )
 
         print("Shared cache population complete!")
     except Exception as e:
