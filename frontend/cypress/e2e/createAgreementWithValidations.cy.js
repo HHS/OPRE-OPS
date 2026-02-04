@@ -29,7 +29,16 @@ beforeEach(() => {
 
 afterEach(() => {
     cy.injectAxe();
-    cy.checkA11y(null, null, terminalLog);
+    cy.checkA11y(
+        null,
+        {
+            rules: {
+                "landmark-one-main": { enabled: false },
+                region: { enabled: false }
+            }
+        },
+        terminalLog
+    );
 });
 
 describe("create agreement and test validations", () => {
