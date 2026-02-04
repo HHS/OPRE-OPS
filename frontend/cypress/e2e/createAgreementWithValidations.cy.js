@@ -178,14 +178,15 @@ describe("create agreement and test validations", () => {
             // Wait for page to be ready
             cy.url().should("include", `/agreements/review/${agreementId}`);
             cy.get('[data-cy="error-list"]').should("not.exist");
-            // Wait for React 19 to process agreement data and render UI - significantly increased for CI
-            cy.wait(5000);
-            // Wait for radio buttons to be rendered and enabled
+            // Wait for React 19 to complete full state propagation chain:
+            // Render → useEffect → Parent state update → Re-render → DOM update
+            cy.wait(8000); // Increased from 5s to 8s for full propagation
+            // Wait for radio buttons to be rendered
             cy.get('[type="radio"]', { timeout: 60000 }).should("have.length.greaterThan", 0);
-            // Additional wait for React 19 to fully enable the radio buttons
-            cy.wait(3000);
-            // click option and check all budget lines
-            cy.get('[type="radio"]', { timeout: 30000 }).first().should("be.visible").and("not.be.disabled");
+            // Buffer wait for React 19 state propagation after render (recommended 200-300ms per research)
+            cy.wait(500); // Conservative buffer
+            // Retry-able check with extended timeout for CI environment
+            cy.get('[type="radio"]', { timeout: 45000 }).first().should("be.visible").and("not.be.disabled");
             cy.get('[type="radio"]').first().check({ force: true });
             // Wait for React 19 to process the radio selection
             cy.wait(2000);  // Increased from 1000ms
