@@ -82,6 +82,13 @@ const extractCurrencyValues = (text) => {
     return matches.map((value) => Number(value.replace(/,/g, "")));
 };
 
+const waitForCurrencyContent = (selector, timeout = 20000) => {
+    cy.get(selector, { timeout }).should(($el) => {
+        const text = normalizeText($el.text());
+        expect(extractCurrencyValues(text).length).to.be.at.least(1);
+    });
+};
+
 const extractReceivedTotals = (text) => {
     const normalized = normalizeText(text);
     const match = normalized.match(
