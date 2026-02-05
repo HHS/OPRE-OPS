@@ -68,6 +68,27 @@ const parseCurrencyValue = (text) => {
     return match ? Number(match[0].replace(/,/g, "")) : 0;
 };
 
+const parseMoneyInputValue = (value) => {
+    const raw = String(value || "").trim();
+    if (!raw) {
+        return 0;
+    }
+    // Some money inputs store their internal value as cents (e.g., "500000055")
+    // even when the UI displays "$5,000,000.55". Prefer decimal parsing when present.
+    const normalized = raw.replace(/[^0-9.]/g, "");
+    if (!normalized) {
+        return 0;
+    }
+    if (normalized.includes(".")) {
+        return Number(normalized);
+    }
+    const asNumber = Number(normalized);
+    if (Number.isNaN(asNumber)) {
+        return 0;
+    }
+    return asNumber / 100;
+};
+
 const formatCurrencyValue = (value) => {
     const numberValue = Number(value);
     if (Number.isNaN(numberValue)) {
@@ -133,7 +154,7 @@ const setMoneyInputValue = (selector, value) => {
     cy.get(selector)
         .invoke("val")
         .then((val) => {
-            const parsed = parseCurrencyValue(String(val));
+            const parsed = parseMoneyInputValue(val);
             // Avoid strict float equality; currency inputs can round as they format.
             expect(parsed).to.be.closeTo(expected, 0.01);
         });
