@@ -2,6 +2,33 @@
 
 import { terminalLog, testLogin } from "./utils";
 
+const waitForAgreementHistory = (agreementId, bearer_token, retries = 20) => {
+    const historyUrl = `http://localhost:8080/api/v1/agreement-history/${agreementId}?limit=20&offset=0`;
+    return cy
+        .request({
+            method: "GET",
+            url: historyUrl,
+            headers: {
+                Authorization: bearer_token,
+                Accept: "application/json"
+            },
+            failOnStatusCode: false
+        })
+        .then((response) => {
+            const hasEntries = response.status === 200 && Array.isArray(response.body) && response.body.length > 0;
+            if (hasEntries) {
+                return;
+            }
+            if (retries <= 0) {
+                expect(response.status).to.eq(200);
+                expect(response.body).to.be.an("array").and.have.length.greaterThan(0);
+                return;
+            }
+            cy.wait(1000);
+            return waitForAgreementHistory(agreementId, bearer_token, retries - 1);
+        });
+};
+
 let testAgreement = {
     agreement_type: "CONTRACT",
     agreement_reason: "NEW_REQ",
@@ -56,6 +83,7 @@ describe("Agreement Details Edit", () => {
             const agreementId = response.body.id;
             const editedTitle = `Test Edit Title ${Date.now()}`;
 
+            waitForAgreementHistory(agreementId, bearer_token);
             cy.intercept("PATCH", "**/agreements/**").as("patchAgreement");
             cy.visit(`/agreements/${agreementId}`);
             cy.get("h1").should("have.text", testAgreement.name);
