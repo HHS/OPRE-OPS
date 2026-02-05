@@ -19,13 +19,13 @@ describe("Procurement Tracker page", () => {
         cy.visit(`/agreements/3`);
         cy.get('[data-cy="details-tab-Procurement Tracker"]').should("not.exist");
     });
-    it("Procurement tracker tab should be disabled for agreements with budget lines not in executing status", () => {
-        cy.visit(`/agreements/6`);
-        cy.get('[data-cy="details-tab-Procurement Tracker"]').should("be.disabled");
-    });
-    it("should display message if user navigates through url to an agreement with budget lines not in executing status", () => {
+    it("should display message steps in a disabled/read-only state", () => {
         cy.visit(`/agreements/6/procurement-tracker`);
-        cy.get("div").contains("No active Procurement Tracker found.");
+        cy.get('[data-cy="step-indicator-0"]').should("not.have.class", "usa-step-indicator__segment--current");
+        cy.get("button")
+            .contains(/Step 1 of/)
+            .click();
+        cy.get(".usa-checkbox__input").should("be.disabled");
     });
 });
 
