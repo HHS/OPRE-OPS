@@ -467,8 +467,12 @@ def test_funding_budget_list_uses_lightweight_schema(auth_client, test_can_fundi
     # Verify expensive nested fields are NOT present (performance optimization)
     assert "can" not in funding_budget, "Nested 'can' object should not be in list response (causes N+1 queries)"
     assert "versions" not in funding_budget, "Version history should not be in list response (causes N+1 queries)"
-    assert "created_by_user" not in funding_budget, "Nested 'created_by_user' should not be in list response (causes N+1 queries)"
-    assert "updated_by_user" not in funding_budget, "Nested 'updated_by_user' should not be in list response (causes N+1 queries)"
+    assert (
+        "created_by_user" not in funding_budget
+    ), "Nested 'created_by_user' should not be in list response (causes N+1 queries)"
+    assert (
+        "updated_by_user" not in funding_budget
+    ), "Nested 'updated_by_user' should not be in list response (causes N+1 queries)"
     assert "display_name" not in funding_budget, "Unused 'display_name' field should not be in list response"
     assert "created_by" not in funding_budget, "Unused 'created_by' field should not be in list response"
     assert "updated_by" not in funding_budget, "Unused 'updated_by' field should not be in list response"

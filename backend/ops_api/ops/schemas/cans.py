@@ -131,6 +131,7 @@ class FundingBudgetListSchema(Schema):
     Excludes expensive nested relationships (can, versions, created_by_user, updated_by_user)
     to eliminate N+1 query problems. Preserves audit timestamps for debugging.
     """
+
     id = fields.Integer()
     can_id = fields.Integer(required=True)
     fiscal_year = fields.Integer(required=True)
