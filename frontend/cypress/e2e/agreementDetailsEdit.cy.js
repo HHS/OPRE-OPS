@@ -54,6 +54,7 @@ describe("Agreement Details Edit", () => {
             expect(response.status).to.eq(201);
             expect(response.body.id).to.exist;
             const agreementId = response.body.id;
+            const editedTitle = `Test Edit Title ${Date.now()}`;
 
             cy.intercept("PATCH", "**/agreements/**").as("patchAgreement");
             cy.visit(`/agreements/${agreementId}`);
@@ -86,7 +87,7 @@ describe("Agreement Details Edit", () => {
             cy.get("#name").blur();
             cy.get(".usa-error-message").should("contain", "This is required information");
             cy.get("[data-cy='continue-btn']").should("be.disabled");
-            cy.get("#name").type("Test Edit Title");
+            cy.get("#name").type(editedTitle);
             cy.get(".usa-error-message").should("not.exist");
             cy.get("[data-cy='continue-btn']").should("not.be.disabled");
             cy.get("#description").type(" more text");
@@ -100,9 +101,12 @@ describe("Agreement Details Edit", () => {
                     expect(body.message).to.equal("Agreement updated");
                 })
                 .then(cy.log);
-            cy.get(".usa-alert__body").should("contain", "The agreement Test Edit Title has been successfully updated");
+            cy.get(".usa-alert__body").should(
+                "contain",
+                `The agreement ${editedTitle} has been successfully updated`
+            );
             cy.get("[data-cy='close-alert']").click();
-            cy.get("h1").should("have.text", "Test Edit Title");
+            cy.get("h1").should("have.text", editedTitle);
             cy.get("[data-cy='details-notes']").should("exist");
             cy.get("[data-cy='details-notes']").should("have.text", "Test Notes test edit notes");
             cy.get("#edit").should("exist");
