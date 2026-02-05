@@ -3,19 +3,6 @@
 import { testLogin } from "./utils";
 import { BLI_STATUS } from "../../src/helpers/budgetLines.helpers";
 
-// React 19 + React Router v6.4 has a known issue with blocker state transitions
-// Ignore these harmless state transition errors that don't affect functionality
-Cypress.on("uncaught:exception", (err) => {
-    // See: https://github.com/remix-run/react-router/issues/11579
-    const message = err && typeof err.message === "string" ? err.message.trim() : "";
-    if (message.startsWith("Invalid blocker state transition")) {
-        // eslint-disable-next-line no-console
-        console.warn("Ignored known React Router blocker exception:", message);
-        return false;
-    }
-    return true;
-});
-
 let testAgreement = {
     agreement_type: "CONTRACT",
     agreement_reason: "NEW_REQ",
