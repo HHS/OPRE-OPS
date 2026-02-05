@@ -48,9 +48,10 @@ const AgreementsList = () => {
     const [filters, setFilters] = useState({
         portfolio: [],
         fiscalYear: [],
-        budgetLineStatus: [],
+        projectTitle: [],
+        agreementType: [],
         agreementName: [],
-        agreementType: []
+        contractNumber: []
     });
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
     const [currentPage, setCurrentPage] = useState(1); // 1-indexed for UI
@@ -123,14 +124,27 @@ const AgreementsList = () => {
         }
     }, [fiscalYearOptions, selectedFiscalYear]);
 
+    // Sync fiscal year filter modal with page-level dropdown
+    // When "All FYs" is selected in the filter modal, change page dropdown to "All"
+    useEffect(() => {
+        if (filters.fiscalYear && filters.fiscalYear.length > 0) {
+            const hasAllFYs = filters.fiscalYear.some((fy) => fy.id === "all");
+
+            if (hasAllFYs && selectedFiscalYear !== "All") {
+                setSelectedFiscalYear("All");
+            }
+        }
+    }, [filters.fiscalYear, selectedFiscalYear]);
+
     // Handle fiscal year change - clear filters when changing fiscal year selection
     const handleChangeFiscalYear = (newValue) => {
         setFilters({
             portfolio: [],
             fiscalYear: [],
-            budgetLineStatus: [],
+            projectTitle: [],
+            agreementType: [],
             agreementName: [],
-            agreementType: []
+            contractNumber: []
         });
         setSelectedFiscalYear(newValue);
     };
@@ -336,6 +350,7 @@ const AgreementsList = () => {
                                     <AgreementsFilterButton
                                         filters={filters}
                                         setFilters={setFilters}
+                                        agreementFilterOptions={agreementFilterOptions}
                                     />
                                 </div>
                             </div>
