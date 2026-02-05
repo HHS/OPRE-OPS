@@ -1,3 +1,4 @@
+import React from "react";
 import { useGetProcurementTrackersByAgreementIdQuery } from "../../../api/opsAPI";
 import ProcurementTrackerStepOne from "../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepOne";
 import DebugCode from "../../../components/DebugCode";
@@ -25,6 +26,10 @@ const AgreementProcurementTracker = ({ agreement }) => {
         "Pre-Award",
         "Award"
     ];
+    const [isFormSubmitted, setIsFormSubmitted] = React.useState(false);
+    const handleSetIsFormSubmitted = (value) => {
+        setIsFormSubmitted(value);
+    };
     const agreementId = agreement?.id;
 
     const { data, isLoading, isError } = useGetProcurementTrackersByAgreementIdQuery(agreementId, {
@@ -76,7 +81,12 @@ const AgreementProcurementTracker = ({ agreement }) => {
                     return (
                         <Accordion
                             heading={`Step ${step.step_number} of ${activeTracker?.steps.length} ${step.step_type}`}
-                            isClosed={activeTracker.active_step_number !== step.step_number}
+                            // Keep step 1 and the active step open after form submission, all others closed
+                            isClosed={
+                                isFormSubmitted
+                                    ? !(step.step_number === 1 || step.step_number === currentStep)
+                                    : step.step_number !== currentStep
+                            }
                             level={3}
                             key={step.id}
                         >
@@ -84,6 +94,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 <ProcurementTrackerStepOne
                                     stepStatus={step.status}
                                     stepOneData={stepOneData}
+                                    handleSetIsFormSubmitted={handleSetIsFormSubmitted}
                                 />
                             )}
                         </Accordion>

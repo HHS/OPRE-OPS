@@ -7,7 +7,6 @@ import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
 import PortfolioTable from "../../../components/Portfolios/PortfolioTable";
 import PortfolioSummaryCards from "../../../components/Portfolios/PortfolioSummaryCards";
-import { tableSortCodes } from "../../../helpers/utils";
 import { exportTableToXlsx } from "../../../helpers/tableExport.helpers";
 import icons from "../../../uswds/img/sprite.svg";
 import PortfolioFiscalYearSelect from "./PortfolioFiscalYearSelect";
@@ -17,6 +16,7 @@ import PortfolioFilterTags from "./PortfolioFilterTags";
 import { usePortfolioList } from "./PortfolioList.hooks";
 import { handlePortfolioExport } from "./PortfolioList.helpers";
 import useAlert from "../../../hooks/use-alert.hooks";
+import { tableSortCodes } from "../../../helpers/utils";
 
 /**
  * @typedef {import("../../../types/PortfolioTypes").Portfolio} Portfolio
@@ -52,9 +52,9 @@ const PortfolioList = () => {
         isError
     } = usePortfolioList({ currentUserId, searchParams });
 
-    // Table sorting state
+    // Table sorting state - default to static order matching the legend
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions(
-        tableSortCodes.portfolioCodes.DIVISION,
+        tableSortCodes.portfolioCodes.STATIC_ORDER,
         false
     );
 
