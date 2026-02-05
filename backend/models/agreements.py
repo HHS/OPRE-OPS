@@ -398,8 +398,8 @@ class Agreement(BaseModel):
         for bli in self.budget_line_items:
             if bli.can and bli.can.portfolio:
                 # Add division directors
-                if hasattr(bli.can.portfolio, "division") and bli.can.portfolio.division:
-                    division = bli.can.portfolio.division
+                division = getattr(bli.can.portfolio, "division", None)
+                if division:
                     if division.division_director_id:
                         authorized_user_ids.add(division.division_director_id)
                     if division.deputy_division_director_id:
@@ -408,9 +408,7 @@ class Agreement(BaseModel):
                 portfolio = getattr(can, "portfolio", None)
                 # Add Team leaders
                 if portfolio and getattr(bli.can.portfolio, "team_leaders", None):
-                    authorized_user_ids.update(
-                        leader.id for leader in portfolio.team_leaders if hasattr(leader, "id") and leader.id
-                    )
+                    authorized_user_ids.update(leader.id for leader in portfolio.team_leaders if leader.id)
         return list(authorized_user_ids)
 
 
