@@ -26,6 +26,7 @@ const FiscalYear = ({ fiscalYear, handleChangeFiscalYear }) => {
                 onChange={(e) => handleChangeFiscalYear(e.target.value)}
                 value={fiscalYear}
             >
+                {fiscalYear === "All" && <option value="All">All</option>}
                 {fiscalYear === "Multi" && <option value="Multi">Multi</option>}
                 {constants.fiscalYears.map((year) => {
                     return (

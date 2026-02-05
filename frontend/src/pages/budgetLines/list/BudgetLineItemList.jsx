@@ -38,9 +38,11 @@ const BudgetLineItemList = () => {
     // Set dropdown to "Multi" when fiscal year filters are applied with more than one year
     // Reset to current FY when all filters are cleared
     useEffect(() => {
-        if ((filters.fiscalYears ?? []).length > 1) {
+        if (filters.fiscalYears === null) {
+            setSelectedFiscalYear("All");
+        } else if ((filters.fiscalYears ?? []).length > 1) {
             setSelectedFiscalYear("Multi");
-        } else if (selectedFiscalYear === "Multi") {
+        } else if (selectedFiscalYear === "Multi" || selectedFiscalYear === "All") {
             // Reset to current fiscal year when filters are cleared
             setSelectedFiscalYear(getCurrentFiscalYear());
         }
@@ -49,7 +51,7 @@ const BudgetLineItemList = () => {
     // Handle fiscal year change - clear filters if changing from "Multi" to a specific year
     const handleChangeFiscalYear = (newValue) => {
         setFilters({
-            fiscalYears: [],
+            fiscalYears: newValue === "All" ? null : [],
             portfolios: [],
             bliStatus: [],
             budgetRange: null,
@@ -60,6 +62,14 @@ const BudgetLineItemList = () => {
         setSelectedFiscalYear(newValue);
     };
 
+    /** @type {Array<{id: number | string, title: number | string}> | null | undefined} */
+    let resolvedFiscalYears = filters.fiscalYears;
+    if (filters.fiscalYears === null) {
+        resolvedFiscalYears = null;
+    } else if ((filters.fiscalYears ?? []).length === 0 && selectedFiscalYear !== "Multi") {
+        resolvedFiscalYears = [{ id: Number(selectedFiscalYear), title: Number(selectedFiscalYear) }];
+    }
+
     /** @type {{data?: import("../../../types/BudgetLineTypes").BudgetLine[] | undefined, isError: boolean, isLoading: boolean}} */
     const {
         data: budgetLineItems,
@@ -68,10 +78,7 @@ const BudgetLineItemList = () => {
     } = useGetBudgetLineItemsQuery({
         filters: {
             ...filters,
-            fiscalYears:
-                (filters.fiscalYears ?? []).length === 0 && selectedFiscalYear !== "Multi"
-                    ? [{ id: Number(selectedFiscalYear), title: Number(selectedFiscalYear) }]
-                    : filters.fiscalYears,
+            fiscalYears: resolvedFiscalYears,
             budgetLineTotalMin: filters.budgetRange ? filters.budgetRange[0] : undefined,
             budgetLineTotalMax: filters.budgetRange ? filters.budgetRange[1] : undefined
         },
