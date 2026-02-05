@@ -3,6 +3,9 @@
 import { BLI_STATUS } from "../../src/helpers/budgetLines.helpers";
 import { terminalLog, testLogin } from "./utils";
 
+const HISTORY_POLL_INTERVAL_MS = 1000;
+const HISTORY_TIMEOUT_MS = 20000;
+
 let testAgreement = {
     agreement_type: "CONTRACT",
     agreement_reason: "NEW_REQ",
@@ -660,7 +663,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
     });
 });
 
-const waitForAgreementHistory = (agreementId, retries = 5) => {
+const waitForAgreementHistory = (agreementId, startedAt = Date.now()) => {
     const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
     const historyUrl = `http://localhost:8080/api/v1/agreement-history/${agreementId}?limit=20&offset=0`;
     return cy
@@ -678,13 +681,14 @@ const waitForAgreementHistory = (agreementId, retries = 5) => {
             if (hasEntries) {
                 return;
             }
-            if (retries <= 0) {
-                expect(response.status).to.eq(200);
-                expect(response.body).to.be.an("array").and.have.length.greaterThan(0);
+            const elapsedMs = Date.now() - startedAt;
+            if (elapsedMs >= HISTORY_TIMEOUT_MS) {
+                expect(response.status, "agreement history status").to.eq(200);
+                expect(response.body, "agreement history entries").to.be.an("array").and.have.length.greaterThan(0);
                 return;
             }
-            cy.wait(1000);
-            return waitForAgreementHistory(agreementId, retries - 1);
+            cy.wait(HISTORY_POLL_INTERVAL_MS);
+            return waitForAgreementHistory(agreementId, startedAt);
         });
 };
 

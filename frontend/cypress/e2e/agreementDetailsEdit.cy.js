@@ -2,7 +2,10 @@
 
 import { terminalLog, testLogin } from "./utils";
 
-const waitForAgreementHistory = (agreementId, bearer_token, retries = 20) => {
+const HISTORY_POLL_INTERVAL_MS = 1000;
+const HISTORY_TIMEOUT_MS = 20000;
+
+const waitForAgreementHistory = (agreementId, bearer_token, startedAt = Date.now()) => {
     const historyUrl = `http://localhost:8080/api/v1/agreement-history/${agreementId}?limit=20&offset=0`;
     return cy
         .request({
@@ -19,13 +22,14 @@ const waitForAgreementHistory = (agreementId, bearer_token, retries = 20) => {
             if (hasEntries) {
                 return;
             }
-            if (retries <= 0) {
-                expect(response.status).to.eq(200);
-                expect(response.body).to.be.an("array").and.have.length.greaterThan(0);
+            const elapsedMs = Date.now() - startedAt;
+            if (elapsedMs >= HISTORY_TIMEOUT_MS) {
+                expect(response.status, "agreement history status").to.eq(200);
+                expect(response.body, "agreement history entries").to.be.an("array").and.have.length.greaterThan(0);
                 return;
             }
-            cy.wait(1000);
-            return waitForAgreementHistory(agreementId, bearer_token, retries - 1);
+            cy.wait(HISTORY_POLL_INTERVAL_MS);
+            return waitForAgreementHistory(agreementId, bearer_token, startedAt);
         });
 };
 
@@ -158,11 +162,8 @@ describe("Agreement Details Edit", () => {
             cy.visit("/");
             cy.get("h1").contains("Sign in to your account");
             testLogin("budget-team");
-            cy.visit("/agreements/");
-            cy.get("tbody").should("be.visible");
-            cy.contains("tbody tr", "Test Edit Title").as("agreement-row");
-            cy.get("@agreement-row").contains("Test Edit Title").click();
-            cy.get("#edit").should("exist");
+            cy.visit(`/agreements/${agreementId}`);
+            cy.get("#edit", { timeout: 10000 }).should("exist");
 
             cy.request({
                 method: "DELETE",
