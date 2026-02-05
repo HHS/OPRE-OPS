@@ -66,23 +66,12 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
     let agreementId;
     let bearer_token;
 
-    const closeUnsavedChangesModalViaEsc = () => {
-        // In CI, ESC can be flaky depending on focus/keydown timing.
-        // Ensure the modal is mounted + focused, then ESC (retry once if still visible).
-        cy.get("#ops-modal", { timeout: 15000 }).should("be.visible");
-        cy.get("#ops-modal-heading").should("be.visible");
-        cy.get("[data-cy='confirm-action']", { timeout: 15000 }).should("be.visible").focus();
-        cy.get("body").type("{esc}", { force: true });
-
-        cy.get("body").then(($body) => {
-            if ($body.find("#ops-modal").length > 0) {
-                cy.get("[data-cy='confirm-action']").focus();
-                cy.get("body").type("{esc}", { force: true });
-            }
-        });
-
-        cy.get("#ops-modal", { timeout: 20000 }).should("not.exist");
-    };
+const closeUnsavedChangesModalViaEsc = () => {
+    cy.get("#ops-modal", { timeout: 15000 }).should("be.visible");
+    cy.get("[data-cy='confirm-action']", { timeout: 15000 }).should("be.visible").focus();
+    cy.get("body").type("{esc}", { force: true });
+    cy.get("#ops-modal", { timeout: 20000 }).should("not.exist");
+};
 
     beforeEach(() => {
         expect(localStorage.getItem("access_token")).to.exist;
