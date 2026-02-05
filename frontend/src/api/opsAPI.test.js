@@ -41,7 +41,7 @@ describe("opsAPI - Agreements Pagination", () => {
                     page: 0,
                     limit: 10
                 })
-            );
+            ).unwrap();
 
             expect(capturedUrl).toContain("limit=10");
             expect(capturedUrl).toContain("offset=0");
@@ -71,7 +71,7 @@ describe("opsAPI - Agreements Pagination", () => {
                     page: 2, // page 2 with limit 10 should be offset 20
                     limit: 10
                 })
-            );
+            ).unwrap();
 
             expect(capturedUrl).toContain("limit=10");
             expect(capturedUrl).toContain("offset=20");
@@ -101,7 +101,7 @@ describe("opsAPI - Agreements Pagination", () => {
                     page: 0
                     // limit not specified, should default to 10
                 })
-            );
+            ).unwrap();
 
             expect(capturedUrl).toContain("limit=10");
         });
@@ -127,7 +127,7 @@ describe("opsAPI - Agreements Pagination", () => {
                     sortDescending: false
                     // page not provided
                 })
-            );
+            ).unwrap();
 
             expect(capturedUrl).not.toContain("limit=");
             expect(capturedUrl).not.toContain("offset=");
@@ -160,9 +160,9 @@ describe("opsAPI - Agreements Pagination", () => {
                     page: 0,
                     limit: 10
                 })
-            );
+            ).unwrap();
 
-            expect(result.data).toEqual({
+            expect(result).toEqual({
                 agreements: [
                     { id: 1, name: "Agreement 1" },
                     { id: 2, name: "Agreement 2" }
@@ -198,9 +198,9 @@ describe("opsAPI - Agreements Pagination", () => {
                     page: 0,
                     limit: 10
                 })
-            );
+            ).unwrap();
 
-            expect(result.data).toEqual({
+            expect(result).toEqual({
                 agreements: [
                     { id: 1, name: "Agreement 1" },
                     { id: 2, name: "Agreement 2" }
@@ -229,9 +229,9 @@ describe("opsAPI - Agreements Pagination", () => {
                     sortConditions: null,
                     sortDescending: false
                 })
-            );
+            ).unwrap();
 
-            expect(result.data).toEqual({
+            expect(result).toEqual({
                 agreements: [
                     { id: 1, name: "Agreement 1" },
                     { id: 2, name: "Agreement 2" }
@@ -264,9 +264,9 @@ describe("opsAPI - Agreements Pagination", () => {
                     page: 0,
                     limit: 10
                 })
-            );
+            ).unwrap();
 
-            expect(result.data).toEqual({
+            expect(result).toEqual({
                 agreements: [],
                 count: 0,
                 limit: 10,
@@ -296,11 +296,11 @@ describe("opsAPI - Agreements Pagination", () => {
                     page: 2,
                     limit: 25
                 })
-            );
+            ).unwrap();
 
-            expect(result.data.count).toBe(100);
-            expect(result.data.limit).toBe(25);
-            expect(result.data.offset).toBe(50);
+            expect(result.count).toBe(100);
+            expect(result.limit).toBe(25);
+            expect(result.offset).toBe(50);
         });
     });
 
@@ -333,7 +333,7 @@ describe("opsAPI - Agreements Pagination", () => {
                     page: 0,
                     limit: 10
                 })
-            );
+            ).unwrap();
 
             expect(capturedUrl).toContain("fiscal_year=2024");
             expect(capturedUrl).toContain("limit=10");
@@ -364,7 +364,7 @@ describe("opsAPI - Agreements Pagination", () => {
                     page: 0,
                     limit: 10
                 })
-            );
+            ).unwrap();
 
             expect(capturedUrl).toContain("only_my=true");
             expect(capturedUrl).toContain("limit=10");
@@ -397,7 +397,7 @@ describe("opsAPI - Agreements Pagination", () => {
                     page: 1,
                     limit: 10
                 })
-            );
+            ).unwrap();
 
             expect(capturedUrl).toContain("sort_conditions=name");
             expect(capturedUrl).toContain("sort_descending=false");

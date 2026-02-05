@@ -119,7 +119,7 @@ const useAgreementEditForm = (
     } = agreement;
 
     const {
-        data: productServiceCodes,
+        data: productServiceCodes = [],
         error: errorProductServiceCodes,
         isLoading: isLoadingProductServiceCodes
     } = useGetProductServiceCodesQuery({});
