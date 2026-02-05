@@ -33,16 +33,18 @@ describe("opsAPI - Agreements Pagination", () => {
             );
 
             const storeRef = setupApiStore(opsApi);
-            await storeRef.store.dispatch(
-                opsApi.endpoints.getAgreements.initiate({
-                    filters: { fiscalYear: [], budgetLineStatus: [], portfolio: [] },
-                    onlyMy: false,
-                    sortConditions: null,
-                    sortDescending: false,
-                    page: 0,
-                    limit: 10
-                })
-            ).unwrap();
+            await storeRef.store
+                .dispatch(
+                    opsApi.endpoints.getAgreements.initiate({
+                        filters: { fiscalYear: [], budgetLineStatus: [], portfolio: [] },
+                        onlyMy: false,
+                        sortConditions: null,
+                        sortDescending: false,
+                        page: 0,
+                        limit: 10
+                    })
+                )
+                .unwrap();
 
             expect(capturedUrl).toContain("limit=10");
             expect(capturedUrl).toContain("offset=0");
@@ -63,16 +65,18 @@ describe("opsAPI - Agreements Pagination", () => {
             );
 
             const storeRef = setupApiStore(opsApi);
-            await storeRef.store.dispatch(
-                opsApi.endpoints.getAgreements.initiate({
-                    filters: { fiscalYear: [], budgetLineStatus: [], portfolio: [] },
-                    onlyMy: false,
-                    sortConditions: null,
-                    sortDescending: false,
-                    page: 2, // page 2 with limit 10 should be offset 20
-                    limit: 10
-                })
-            ).unwrap();
+            await storeRef.store
+                .dispatch(
+                    opsApi.endpoints.getAgreements.initiate({
+                        filters: { fiscalYear: [], budgetLineStatus: [], portfolio: [] },
+                        onlyMy: false,
+                        sortConditions: null,
+                        sortDescending: false,
+                        page: 2, // page 2 with limit 10 should be offset 20
+                        limit: 10
+                    })
+                )
+                .unwrap();
 
             expect(capturedUrl).toContain("limit=10");
             expect(capturedUrl).toContain("offset=20");
@@ -93,16 +97,18 @@ describe("opsAPI - Agreements Pagination", () => {
             );
 
             const storeRef = setupApiStore(opsApi);
-            await storeRef.store.dispatch(
-                opsApi.endpoints.getAgreements.initiate({
-                    filters: { fiscalYear: [], budgetLineStatus: [], portfolio: [] },
-                    onlyMy: false,
-                    sortConditions: null,
-                    sortDescending: false,
-                    page: 0
-                    // limit not specified, should default to 10
-                })
-            ).unwrap();
+            await storeRef.store
+                .dispatch(
+                    opsApi.endpoints.getAgreements.initiate({
+                        filters: { fiscalYear: [], budgetLineStatus: [], portfolio: [] },
+                        onlyMy: false,
+                        sortConditions: null,
+                        sortDescending: false,
+                        page: 0
+                        // limit not specified, should default to 10
+                    })
+                )
+                .unwrap();
 
             expect(capturedUrl).toContain("limit=10");
         });
@@ -120,15 +126,17 @@ describe("opsAPI - Agreements Pagination", () => {
             );
 
             const storeRef = setupApiStore(opsApi);
-            await storeRef.store.dispatch(
-                opsApi.endpoints.getAgreements.initiate({
-                    filters: { fiscalYear: [], budgetLineStatus: [], portfolio: [] },
-                    onlyMy: false,
-                    sortConditions: null,
-                    sortDescending: false
-                    // page not provided
-                })
-            ).unwrap();
+            await storeRef.store
+                .dispatch(
+                    opsApi.endpoints.getAgreements.initiate({
+                        filters: { fiscalYear: [], budgetLineStatus: [], portfolio: [] },
+                        onlyMy: false,
+                        sortConditions: null,
+                        sortDescending: false
+                        // page not provided
+                    })
+                )
+                .unwrap();
 
             expect(capturedUrl).not.toContain("limit=");
             expect(capturedUrl).not.toContain("offset=");
@@ -152,16 +160,18 @@ describe("opsAPI - Agreements Pagination", () => {
             );
 
             const storeRef = setupApiStore(opsApi);
-            const result = await storeRef.store.dispatch(
-                opsApi.endpoints.getAgreements.initiate({
-                    filters: { fiscalYear: [], budgetLineStatus: [], portfolio: [] },
-                    onlyMy: false,
-                    sortConditions: null,
-                    sortDescending: false,
-                    page: 0,
-                    limit: 10
-                })
-            ).unwrap();
+            const result = await storeRef.store
+                .dispatch(
+                    opsApi.endpoints.getAgreements.initiate({
+                        filters: { fiscalYear: [], budgetLineStatus: [], portfolio: [] },
+                        onlyMy: false,
+                        sortConditions: null,
+                        sortDescending: false,
+                        page: 0,
+                        limit: 10
+                    })
+                )
+                .unwrap();
 
             expect(result).toEqual({
                 agreements: [
@@ -190,16 +200,18 @@ describe("opsAPI - Agreements Pagination", () => {
             );
 
             const storeRef = setupApiStore(opsApi);
-            const result = await storeRef.store.dispatch(
-                opsApi.endpoints.getAgreements.initiate({
-                    filters: { fiscalYear: [], budgetLineStatus: [], portfolio: [] },
-                    onlyMy: false,
-                    sortConditions: null,
-                    sortDescending: false,
-                    page: 0,
-                    limit: 10
-                })
-            ).unwrap();
+            const result = await storeRef.store
+                .dispatch(
+                    opsApi.endpoints.getAgreements.initiate({
+                        filters: { fiscalYear: [], budgetLineStatus: [], portfolio: [] },
+                        onlyMy: false,
+                        sortConditions: null,
+                        sortDescending: false,
+                        page: 0,
+                        limit: 10
+                    })
+                )
+                .unwrap();
 
             expect(result).toEqual({
                 agreements: [
@@ -223,14 +235,16 @@ describe("opsAPI - Agreements Pagination", () => {
             );
 
             const storeRef = setupApiStore(opsApi);
-            const result = await storeRef.store.dispatch(
-                opsApi.endpoints.getAgreements.initiate({
-                    filters: { fiscalYear: [], budgetLineStatus: [], portfolio: [] },
-                    onlyMy: false,
-                    sortConditions: null,
-                    sortDescending: false
-                })
-            ).unwrap();
+            const result = await storeRef.store
+                .dispatch(
+                    opsApi.endpoints.getAgreements.initiate({
+                        filters: { fiscalYear: [], budgetLineStatus: [], portfolio: [] },
+                        onlyMy: false,
+                        sortConditions: null,
+                        sortDescending: false
+                    })
+                )
+                .unwrap();
 
             expect(result).toEqual({
                 agreements: [
@@ -256,16 +270,18 @@ describe("opsAPI - Agreements Pagination", () => {
             );
 
             const storeRef = setupApiStore(opsApi);
-            const result = await storeRef.store.dispatch(
-                opsApi.endpoints.getAgreements.initiate({
-                    filters: { fiscalYear: [], budgetLineStatus: [], portfolio: [] },
-                    onlyMy: false,
-                    sortConditions: null,
-                    sortDescending: false,
-                    page: 0,
-                    limit: 10
-                })
-            ).unwrap();
+            const result = await storeRef.store
+                .dispatch(
+                    opsApi.endpoints.getAgreements.initiate({
+                        filters: { fiscalYear: [], budgetLineStatus: [], portfolio: [] },
+                        onlyMy: false,
+                        sortConditions: null,
+                        sortDescending: false,
+                        page: 0,
+                        limit: 10
+                    })
+                )
+                .unwrap();
 
             expect(result).toEqual({
                 agreements: [],
@@ -288,16 +304,18 @@ describe("opsAPI - Agreements Pagination", () => {
             );
 
             const storeRef = setupApiStore(opsApi);
-            const result = await storeRef.store.dispatch(
-                opsApi.endpoints.getAgreements.initiate({
-                    filters: { fiscalYear: [], budgetLineStatus: [], portfolio: [] },
-                    onlyMy: false,
-                    sortConditions: null,
-                    sortDescending: false,
-                    page: 2,
-                    limit: 25
-                })
-            ).unwrap();
+            const result = await storeRef.store
+                .dispatch(
+                    opsApi.endpoints.getAgreements.initiate({
+                        filters: { fiscalYear: [], budgetLineStatus: [], portfolio: [] },
+                        onlyMy: false,
+                        sortConditions: null,
+                        sortDescending: false,
+                        page: 2,
+                        limit: 25
+                    })
+                )
+                .unwrap();
 
             expect(result.count).toBe(100);
             expect(result.limit).toBe(25);
@@ -321,20 +339,22 @@ describe("opsAPI - Agreements Pagination", () => {
             );
 
             const storeRef = setupApiStore(opsApi);
-            await storeRef.store.dispatch(
-                opsApi.endpoints.getAgreements.initiate({
-                    filters: {
-                        fiscalYear: [{ title: "2024" }],
-                        budgetLineStatus: [],
-                        portfolio: []
-                    },
-                    onlyMy: false,
-                    sortConditions: null,
-                    sortDescending: false,
-                    page: 0,
-                    limit: 10
-                })
-            ).unwrap();
+            await storeRef.store
+                .dispatch(
+                    opsApi.endpoints.getAgreements.initiate({
+                        filters: {
+                            fiscalYear: [{ title: "2024" }],
+                            budgetLineStatus: [],
+                            portfolio: []
+                        },
+                        onlyMy: false,
+                        sortConditions: null,
+                        sortDescending: false,
+                        page: 0,
+                        limit: 10
+                    })
+                )
+                .unwrap();
 
             expect(capturedUrl).toContain("fiscal_year=2024");
             expect(capturedUrl).toContain("limit=10");
@@ -356,16 +376,18 @@ describe("opsAPI - Agreements Pagination", () => {
             );
 
             const storeRef = setupApiStore(opsApi);
-            await storeRef.store.dispatch(
-                opsApi.endpoints.getAgreements.initiate({
-                    filters: { fiscalYear: [], budgetLineStatus: [], portfolio: [] },
-                    onlyMy: true,
-                    sortConditions: null,
-                    sortDescending: false,
-                    page: 0,
-                    limit: 10
-                })
-            ).unwrap();
+            await storeRef.store
+                .dispatch(
+                    opsApi.endpoints.getAgreements.initiate({
+                        filters: { fiscalYear: [], budgetLineStatus: [], portfolio: [] },
+                        onlyMy: true,
+                        sortConditions: null,
+                        sortDescending: false,
+                        page: 0,
+                        limit: 10
+                    })
+                )
+                .unwrap();
 
             expect(capturedUrl).toContain("only_my=true");
             expect(capturedUrl).toContain("limit=10");
@@ -389,16 +411,18 @@ describe("opsAPI - Agreements Pagination", () => {
             );
 
             const storeRef = setupApiStore(opsApi);
-            await storeRef.store.dispatch(
-                opsApi.endpoints.getAgreements.initiate({
-                    filters: { fiscalYear: [], budgetLineStatus: [], portfolio: [] },
-                    onlyMy: false,
-                    sortConditions: "name",
-                    sortDescending: false,
-                    page: 1,
-                    limit: 10
-                })
-            ).unwrap();
+            await storeRef.store
+                .dispatch(
+                    opsApi.endpoints.getAgreements.initiate({
+                        filters: { fiscalYear: [], budgetLineStatus: [], portfolio: [] },
+                        onlyMy: false,
+                        sortConditions: "name",
+                        sortDescending: false,
+                        page: 1,
+                        limit: 10
+                    })
+                )
+                .unwrap();
 
             expect(capturedUrl).toContain("sort_conditions=name");
             expect(capturedUrl).toContain("sort_descending=false");
