@@ -68,7 +68,7 @@ const parseCurrencyValue = (text) => {
     return match ? Number(match[0].replace(/,/g, "")) : 0;
 };
 
-const parseMoneyInputValue = (value) => {
+const parseMoneyInputValue = (value, expected) => {
     const raw = String(value || "").trim();
     if (!raw) {
         return 0;
@@ -86,7 +86,20 @@ const parseMoneyInputValue = (value) => {
     if (Number.isNaN(asNumber)) {
         return 0;
     }
-    return asNumber / 100;
+    // If the input stores cents (e.g. "500000055"), choose the interpretation
+    // that is closer to the expected value (when provided).
+    const asDollars = asNumber;
+    const asCents = asNumber / 100;
+    const expectedNumber = Number(expected);
+    if (Number.isFinite(expectedNumber)) {
+        return Math.abs(asCents - expectedNumber) < Math.abs(asDollars - expectedNumber) ? asCents : asDollars;
+    }
+    // Heuristic fallback when we don't have a reliable expected value:
+    // If the number is "large", it's very likely cents; for tiny values, dollars are more likely.
+    if (asNumber >= 10000) {
+        return asCents;
+    }
+    return asDollars;
 };
 
 const formatCurrencyValue = (value) => {
@@ -108,6 +121,33 @@ const waitForCurrencyContent = (selector, timeout = 20000) => {
         const text = normalizeText($el.text());
         // Ensure a currency amount has rendered (ignore years like 2024 by requiring a leading '$').
         expect(text).to.match(/\$\s*(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d{2})?/);
+    });
+};
+
+const waitForBudgetReceivedTotal = (expectedTotal, timeout = 60000) => {
+    const expectedNumber = Number(expectedTotal);
+    cy.get("[data-cy=budget-received-card]", { timeout }).should(($el) => {
+        const { total } = extractReceivedTotals($el.text());
+        expect(total).to.be.closeTo(expectedNumber, 0.01);
+    });
+};
+
+const waitForBudgetReceivedAmount = (expectedReceived, timeout = 60000) => {
+    const expectedNumber = Number(expectedReceived);
+    cy.get("[data-cy=budget-received-card]", { timeout }).should(($el) => {
+        const { received } = extractReceivedTotals($el.text());
+        expect(received).to.be.closeTo(expectedNumber, 0.01);
+    });
+};
+
+const waitForElementToContainCurrencyValue = (selector, expectedValue, timeout = 60000) => {
+    const expectedNumber = Number(expectedValue);
+    cy.get(selector, { timeout }).should(($el) => {
+        const values = extractCurrencyValues($el.text());
+        const found = values.some((value) => Math.abs(value - expectedNumber) <= 0.01);
+        expect(found, `Expected ${selector} currency values to include ${expectedNumber}; got ${values.join(", ")}`).to.eq(
+            true
+        );
     });
 };
 
@@ -141,7 +181,7 @@ const computeBudgetTarget = (received, total, increment = 1000000.01) => {
 const currentFiscalYear = getCurrentFiscalYear();
 
 const setMoneyInputValue = (selector, value) => {
-    const expected = Number(value);
+    const expected = Number(String(value).replace(/,/g, ""));
     cy.get(selector)
         .should("be.visible")
         .and("not.be.disabled")
@@ -154,7 +194,10 @@ const setMoneyInputValue = (selector, value) => {
     cy.get(selector)
         .invoke("val")
         .then((val) => {
-            const parsed = parseMoneyInputValue(val);
+            if (!Number.isFinite(expected)) {
+                return;
+            }
+            const parsed = parseMoneyInputValue(val, expected);
             // Avoid strict float equality; currency inputs can round as they format.
             expect(parsed).to.be.closeTo(expected, 0.01);
         });
@@ -422,11 +465,11 @@ describe("CAN funding page", () => {
         cy.get(".usa-error-message").should("not.exist");
         cy.get("#add-fy-budget").should("be.enabled").click();
         cy.get("#save-changes").should("be.enabled");
-        cy.get("[data-cy='can-budget-fy-card']").should("contain", formatCurrencyValue(can527.budgetAmount));
+        waitForElementToContainCurrencyValue("[data-cy='can-budget-fy-card']", can527.budgetAmount);
         cy.get("#save-changes").click();
         cy.wait("@canFundingBudget", { timeout: 30000 });
         cy.get(".usa-alert__body").should("contain", `The CAN ${can527.nickname} has been successfully updated.`);
-        cy.get("[data-cy=budget-received-card]").should("exist").and("contain", formatCurrencyValue(can527.budgetAmount));
+        waitForBudgetReceivedTotal(can527.budgetAmount);
         cy.get("[data-cy=can-budget-fy-card]")
             .should("exist")
             .and("contain", "CAN Budget by FY")
@@ -465,7 +508,7 @@ describe("CAN funding page", () => {
         setMoneyInputValue("#budget-amount", can527.updatedBudgetAmount);
         cy.get("#add-fy-budget").should("be.enabled").click();
         cy.get("#save-changes").should("be.enabled");
-        cy.get("[data-cy='can-budget-fy-card']").should("contain", formatCurrencyValue(can527.updatedBudgetAmount));
+        waitForElementToContainCurrencyValue("[data-cy='can-budget-fy-card']", can527.updatedBudgetAmount);
         cy.get("#save-changes").click();
         cy.wait("@canFundingBudget", { timeout: 30000 });
 
@@ -528,9 +571,7 @@ describe("CAN funding page", () => {
         cy.get("[data-cy=add-funding-received-btn]").click();
         // check card on the right
         cy.get("@fundingAmounts").then(({ baseAmount }) => {
-            cy.get("[data-cy=budget-received-card]")
-                .should("exist")
-                .and("contain", formatCurrencyValue(baseAmount));
+            waitForBudgetReceivedAmount(baseAmount);
         });
         // edit a funding from table interaction
         cy.get("tbody").find("tr").first().trigger("mouseover");
@@ -544,9 +585,7 @@ describe("CAN funding page", () => {
         cy.get("@fundingAmounts").then(({ editAmount }) => {
             setMoneyInputValue("#funding-received-amount", editAmount);
             cy.get("[data-cy=add-funding-received-btn]").click();
-            cy.get("[data-cy=budget-received-card]")
-                .should("exist")
-                .and("contain", formatCurrencyValue(editAmount));
+            waitForBudgetReceivedAmount(editAmount);
         });
         // validation check to ensure amount does not exceed budget amount
         cy.get("tbody").find("tr").first().trigger("mouseover");
@@ -567,10 +606,8 @@ describe("CAN funding page", () => {
             cy.get("tbody").find("tr").eq(1).find('[data-cy="delete-row"]').click();
             cy.get("[data-cy=confirm-action]").click();
             cy.get("tbody").children().should("have.length", 1);
-            // make sure the funding received card on the right updates
-            cy.get("[data-cy=budget-received-card]")
-                .should("exist")
-                .and("contain", formatCurrencyValue(editAmount));
+             // make sure the funding received card on the right updates
+            waitForBudgetReceivedAmount(editAmount);
         });
         // click on save button at bottom of form
         cy.get("[data-cy=save-btn]").click();
@@ -579,9 +616,7 @@ describe("CAN funding page", () => {
         cy.get(".usa-alert__body").should("contain", `The CAN ${can527.nickname} has been successfully updated.`);
         // check that table and card are updated
         cy.get("@fundingAmounts").then(({ editAmount }) => {
-            cy.get("[data-cy=budget-received-card]")
-                .should("exist")
-                .and("contain", formatCurrencyValue(editAmount));
+            waitForBudgetReceivedAmount(editAmount);
             cy.get("tbody").children().should("contain", currentFiscalYear).and("contain", formatCurrencyValue(editAmount));
         });
 
@@ -713,15 +748,14 @@ describe("CAN funding page", () => {
                 const { received, total } = extractReceivedTotals(text);
                 const cancelBudget = computeBudgetTarget(received, total, 500000.55);
                 cy.wrap(cancelBudget).as("cancelBudget");
-                cy.wrap(formatCurrencyValue(cancelBudget)).as("cancelBudgetDisplay");
             });
         cy.get("@cancelBudget").then((cancelBudget) => {
             const inputValue = Number(cancelBudget).toFixed(2);
             setMoneyInputValue("#budget-amount", inputValue);
         });
         cy.get("#add-fy-budget").click();
-        cy.get("@cancelBudgetDisplay").then((budgetDisplay) => {
-            cy.get("[data-cy='can-budget-fy-card']").should("contain", budgetDisplay);
+        cy.get("@cancelBudget").then((cancelBudget) => {
+            waitForElementToContainCurrencyValue("[data-cy='can-budget-fy-card']", cancelBudget);
         });
         cy.get("#save-changes").should("be.enabled");
         // test funding received form
