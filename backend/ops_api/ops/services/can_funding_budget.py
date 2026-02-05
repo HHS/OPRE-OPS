@@ -1,7 +1,7 @@
 from typing import Any
 
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from models import CAN, CANFundingBudget
 from ops_api.ops.services.ops_service import ResourceNotFoundError, ValidationError
@@ -63,8 +63,16 @@ class CANFundingBudgetService:
         """
         Get an individual CAN Funding Budget by id.
         """
-        stmt = select(CANFundingBudget).where(CANFundingBudget.id == obj_id).order_by(CANFundingBudget.id)
-        funding_budget = self.session.scalar(stmt)
+        funding_budget = self.session.get(
+            CANFundingBudget,
+            obj_id,
+            options=[
+                selectinload(CANFundingBudget.can).selectinload(CAN.funding_details),
+                selectinload(CANFundingBudget.can).selectinload(CAN.budget_line_items),
+                selectinload(CANFundingBudget.can).selectinload(CAN.funding_budgets),
+                selectinload(CANFundingBudget.can).selectinload(CAN.portfolio),
+            ],
+        )
 
         if not funding_budget:
             raise ResourceNotFoundError("CANFundingBudget", obj_id)

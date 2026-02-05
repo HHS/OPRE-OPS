@@ -442,3 +442,37 @@ def test_funding_budget_post_validate_can_expired(budget_team_auth_client, mocke
     # Clean up
     loaded_db.delete(active_can)
     loaded_db.commit()
+
+
+def test_funding_budget_list_uses_lightweight_schema(auth_client, test_can_funding_budget, app_ctx):
+    """
+    Test that the list endpoint returns lightweight schema without expensive nested relationships.
+    This verifies the performance optimization that excludes: can, versions, created_by_user, updated_by_user.
+    """
+    response = auth_client.get(url_for("api.can-funding-budget-group"))
+    assert response.status_code == 200
+    assert len(response.json) > 0
+
+    funding_budget = response.json[0]
+
+    # Verify required fields are present
+    assert "id" in funding_budget
+    assert "can_id" in funding_budget
+    assert "fiscal_year" in funding_budget
+    assert "budget" in funding_budget
+    assert "notes" in funding_budget
+    assert "created_on" in funding_budget
+    assert "updated_on" in funding_budget
+
+    # Verify expensive nested fields are NOT present (performance optimization)
+    assert "can" not in funding_budget, "Nested 'can' object should not be in list response (causes N+1 queries)"
+    assert "versions" not in funding_budget, "Version history should not be in list response (causes N+1 queries)"
+    assert (
+        "created_by_user" not in funding_budget
+    ), "Nested 'created_by_user' should not be in list response (causes N+1 queries)"
+    assert (
+        "updated_by_user" not in funding_budget
+    ), "Nested 'updated_by_user' should not be in list response (causes N+1 queries)"
+    assert "display_name" not in funding_budget, "Unused 'display_name' field should not be in list response"
+    assert "created_by" not in funding_budget, "Unused 'created_by' field should not be in list response"
+    assert "updated_by" not in funding_budget, "Unused 'updated_by' field should not be in list response"
