@@ -184,17 +184,21 @@ const currentFiscalYear = getCurrentFiscalYear();
 
 const setMoneyInputValue = (selector, value) => {
     const expected = Number(String(value).replace(/,/g, ""));
-    cy.get(selector)
-        .should("be.visible")
-        .and("not.be.disabled")
-        .click({ force: true })
-        .type("{selectall}{backspace}", { force: true })
-        // In CI, react-currency-format can drop characters with very fast typing.
-        // A small key delay makes the input far more reliable in headless Electron.
-        .type(`${value}`, { delay: 25, force: true })
-        .blur();
+    const typeValue = (delayMs) => {
+        cy.get(selector)
+            .should("be.visible")
+            .and("not.be.disabled")
+            .click({ force: true })
+            .type("{selectall}{backspace}", { force: true })
+            .type(`${value}`, { delay: delayMs, force: true })
+            .blur();
 
-    cy.get(selector).trigger("change", { force: true });
+        cy.get(selector).trigger("change", { force: true });
+    };
+
+    // React 19 + react-currency-format can occasionally drop characters in CI.
+    // Try a fast pass first; retry with a small delay only if needed.
+    typeValue(0);
 
     cy.get(selector)
         .invoke("val")
@@ -203,8 +207,19 @@ const setMoneyInputValue = (selector, value) => {
                 return;
             }
             const parsed = parseMoneyInputValue(val, expected);
-            // Avoid strict float equality; currency inputs can round as they format.
-            expect(parsed).to.be.closeTo(expected, 0.01);
+            if (Math.abs(parsed - expected) <= 0.01) {
+                // Avoid strict float equality; currency inputs can round as they format.
+                expect(parsed).to.be.closeTo(expected, 0.01);
+                return;
+            }
+
+            typeValue(25);
+            cy.get(selector)
+                .invoke("val")
+                .then((retryVal) => {
+                    const parsedRetry = parseMoneyInputValue(retryVal, expected);
+                    expect(parsedRetry).to.be.closeTo(expected, 0.01);
+                });
         });
 };
 
