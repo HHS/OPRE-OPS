@@ -212,9 +212,7 @@ export default function useCanFunding(
             const results = await Promise.allSettled(operations.map((operation) => operation.fn()));
             const failures = results
                 .map((result, index) =>
-                    result.status === "rejected"
-                        ? { operation: operations[index].name, reason: result.reason }
-                        : null
+                    result.status === "rejected" ? { operation: operations[index].name, reason: result.reason } : null
                 )
                 .filter(Boolean);
 
