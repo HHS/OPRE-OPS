@@ -149,7 +149,6 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
                 selectedFiscalYears={fiscalYears}
                 setSelectedFiscalYears={setFiscalYears}
                 legendClassname={legendStyles}
-                defaultString={"All Fiscal Years"}
                 overrideStyles={{ width: "22.7rem" }}
                 budgetLinesFiscalYears={fiscalYearOptions}
             />
@@ -163,7 +162,6 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
                 selectedPortfolios={portfolios}
                 setSelectedPortfolios={setPortfolios}
                 legendClassname={legendStyles}
-                defaultString={"All Portfolios"}
                 overrideStyles={{ width: "22.7rem" }}
             />
         </fieldset>,
@@ -176,7 +174,7 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
                 selectedBLIStatus={bliStatus}
                 setSelectedBLIStatus={setBLIStatus}
                 legendClassname={legendStyles}
-                defaultString={"All Budget Line Statuses"}
+                defaultString={""}
                 overrideStyles={{ width: "22.7rem" }}
             />
         </fieldset>,
@@ -200,7 +198,6 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
                 selectedAgreementTypes={agreementTypes}
                 setSelectedAgreementTypes={setAgreementTypes}
                 legendClassname={legendStyles}
-                defaultString={"All Agreement Types"}
                 overrideStyles={{ width: "22.7rem" }}
                 agreementTypeOptions={filterOptions?.agreement_types ?? []}
             />
@@ -213,7 +210,6 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
                 selectedAgreementNames={agreementTitles}
                 setSelectedAgreementNames={setAgreementTitles}
                 legendClassname={legendStyles}
-                defaultString={"All Agreement Names"}
                 overrideStyles={{ width: "22.7rem" }}
                 agreementNameOptions={filterOptions?.agreement_names ?? null}
                 filterLabel="Agreement Title"
@@ -227,7 +223,6 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
                 activePeriod={canActivePeriods}
                 setActivePeriod={setCanActivePeriods}
                 legendClassname={legendStyles}
-                defaultString={"All Active Periods"}
                 overrideStyles={{ width: "22.7rem" }}
                 canActivePeriodOptions={filterOptions?.can_active_periods ?? null}
                 filterLabel="CAN Active Period"
