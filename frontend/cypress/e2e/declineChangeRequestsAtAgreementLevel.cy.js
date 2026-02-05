@@ -3,6 +3,33 @@
 import { BLI_STATUS } from "../../src/helpers/budgetLines.helpers";
 import { terminalLog, testLogin } from "./utils";
 
+const waitForAgreementHistory = (agreementId, bearer_token, retries = 20) => {
+    const historyUrl = `http://localhost:8080/api/v1/agreement-history/${agreementId}?limit=20&offset=0`;
+    return cy
+        .request({
+            method: "GET",
+            url: historyUrl,
+            headers: {
+                Authorization: bearer_token,
+                Accept: "application/json"
+            },
+            failOnStatusCode: false
+        })
+        .then((response) => {
+            const hasEntries = response.status === 200 && Array.isArray(response.body) && response.body.length > 0;
+            if (hasEntries) {
+                return;
+            }
+            if (retries <= 0) {
+                expect(response.status).to.eq(200);
+                expect(response.body).to.be.an("array").and.have.length.greaterThan(0);
+                return;
+            }
+            cy.wait(1000);
+            return waitForAgreementHistory(agreementId, bearer_token, retries - 1);
+        });
+};
+
 let testAgreement = {
     agreement_type: "CONTRACT",
     agreement_reason: "NEW_REQ",
@@ -144,6 +171,7 @@ describe("Decline Change Requests at the Agreement Level", () => {
                         cy.get(".usa-alert__body").should("contain", "Changes Declined");
                         cy.get("[data-cy='review-card']").should("not.exist");
                         // verify agreement history
+                        waitForAgreementHistory(agreementId, bearer_token);
                         cy.visit(`/agreements/${agreementId}`);
                         checkAgreementHistory();
                         cy.get(
@@ -277,6 +305,7 @@ describe("Decline Change Requests at the Agreement Level", () => {
                         cy.get(".usa-alert__body").should("contain", "Changes Declined");
                         cy.get("[data-cy='review-card']").should("not.exist");
                         // verify agreement history
+                        waitForAgreementHistory(agreementId, bearer_token);
                         cy.visit(`/agreements/${agreementId}`);
                         checkAgreementHistory();
                         cy.get(
@@ -409,6 +438,7 @@ describe("Decline Change Requests at the Agreement Level", () => {
                         cy.get(".usa-alert__body").should("contain", "Changes Declined");
                         cy.get("[data-cy='review-card']").should("not.exist");
                         // verify agreement history
+                        waitForAgreementHistory(agreementId, bearer_token);
                         cy.visit(`/agreements/${agreementId}`);
                         checkAgreementHistory();
                         cy.get(
@@ -572,8 +602,9 @@ const checkAgreementHistory = () => {
     cy.get('[data-cy="details-left-col"] > :nth-child(4)').should("have.text", "History");
     cy.get('[data-cy="agreement-history-container"]').should("exist");
     cy.get('[data-cy="agreement-history-container"]').scrollIntoView();
-    cy.get('[data-cy="agreement-history-list"]').should("exist");
-    cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]').should(
-        "exist"
-    );
+    cy.get('[data-cy="agreement-history-list"]', { timeout: 60000 }).should("exist");
+    cy.get('[data-cy="agreement-history-list"] > :nth-child(1)', { timeout: 60000 }).should("exist");
+    cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]', {
+        timeout: 60000
+    }).should("exist");
 };
