@@ -16,15 +16,15 @@ const can502Description = "Social Science Research and Development";
 const can504 = {
     number: 504,
     nickname: "G994426",
-    budgetAmount: "5000000.55",
-    updatedBudgetAmount: "8000000.88"
+    budgetAmount: "5000000",
+    updatedBudgetAmount: "8000000"
 };
 // NOTE: CAN 527 is a zero year CAN and will not expire
 const can527 = {
     number: 527,
     nickname: "G995679",
-    budgetAmount: "5000000.55",
-    updatedBudgetAmount: "8000000.88"
+    budgetAmount: "5000000",
+    updatedBudgetAmount: "8000000"
 };
 
 const closeWelcomeModalIfPresent = (attempts = 10) => {
@@ -755,7 +755,7 @@ describe("CAN funding page", () => {
             .invoke("text")
             .then((text) => {
                 const { received, total } = extractReceivedTotals(text);
-                const cancelBudget = computeBudgetTarget(received, total, 500000.55);
+                const cancelBudget = computeBudgetTarget(received, total, 500000);
                 cy.wrap(cancelBudget).as("cancelBudget");
             });
         cy.get("@cancelBudget").then((cancelBudget) => {
