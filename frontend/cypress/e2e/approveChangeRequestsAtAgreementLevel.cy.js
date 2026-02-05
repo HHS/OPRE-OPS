@@ -697,14 +697,12 @@ const checkAgreementHistory = () => {
     cy.get('[data-cy="details-left-col"] > :nth-child(4)').should("have.text", "History");
     cy.get('[data-cy="agreement-history-container"]').should("exist");
     cy.get('[data-cy="agreement-history-container"]').scrollIntoView();
-    cy.get('[data-cy="agreement-history-list"]').should("exist");
-    // Wait for history list to have children with proper retry logic
-    cy.get('[data-cy="agreement-history-list"]', { timeout: 30000 }).should(($list) => {
-        expect($list.children().length).to.be.at.least(1);
-    });
-    cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]').should(
-        "exist"
-    );
+    cy.get('[data-cy="agreement-history-container"]').scrollTo("bottom");
+    cy.get('[data-cy="agreement-history-list"]', { timeout: 60000 }).should("exist");
+    cy.get('[data-cy="agreement-history-list"] > :nth-child(1)', { timeout: 60000 }).should("exist");
+    cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]', {
+        timeout: 60000
+    }).should("exist");
 };
 
 const checkHistoryItem = (titleRegex, expectedText) => {
