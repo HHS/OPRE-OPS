@@ -94,11 +94,7 @@ const parseMoneyInputValue = (value, expected) => {
     if (Number.isFinite(expectedNumber)) {
         return Math.abs(asCents - expectedNumber) < Math.abs(asDollars - expectedNumber) ? asCents : asDollars;
     }
-    // Heuristic fallback when we don't have a reliable expected value:
-    // If the number is "large", it's very likely cents; for tiny values, dollars are more likely.
-    if (asNumber >= 10000) {
-        return asCents;
-    }
+    // When we don't have a reliable expected value, default to dollars.
     return asDollars;
 };
 

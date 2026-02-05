@@ -111,6 +111,4 @@ Cypress.Commands.add("selectAndWaitForChange", (selector, value, timeout = 10000
     cy.get(selector).select(value);
     // Wait for React to process the change through state propagation
     cy.get(selector, { timeout }).should("have.value", value);
-    // Additional wait for dependent state updates (useEffect chains)
-    cy.wait(100); // Minimal wait for useEffect to fire
 });

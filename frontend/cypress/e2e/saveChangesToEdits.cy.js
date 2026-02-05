@@ -53,7 +53,11 @@ beforeEach(() => {
     // React 19 + React Router v6.4 has a known issue with blocker state transitions
     // Ignore these harmless state transition errors that don't affect functionality
     cy.on("uncaught:exception", (err) => {
-        if (err.message.includes("Invalid blocker state transition")) {
+        // See: https://github.com/remix-run/react-router/issues/11579
+        const message = err && typeof err.message === "string" ? err.message.trim() : "";
+        if (message === "Invalid blocker state transition") {
+            // eslint-disable-next-line no-console
+            console.warn("Ignored known React Router blocker exception:", message);
             return false;
         }
         return true;

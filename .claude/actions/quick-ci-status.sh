@@ -33,9 +33,14 @@ if [ "$status" = "completed" ]; then
         echo "❌ Some checks failed"
         echo ""
         echo "E2E Test Results:"
-        gh pr checks 4941 2>&1 | \
-            grep -E "(createAgreementWithValidations|approveChangeRequestsAtAgreementLevel|canDetail|saveChangesToEdits)" | \
-            grep -E "(pass|fail)" || echo "No E2E results found"
+        PR_NUM=$(gh pr list --head "$BRANCH" --json number --jq '.[0].number' 2>/dev/null || echo "")
+        if [ -n "$PR_NUM" ]; then
+            gh pr checks "$PR_NUM" 2>&1 | \
+                grep -E "(createAgreementWithValidations|approveChangeRequestsAtAgreementLevel|canDetail|saveChangesToEdits)" | \
+                grep -E "(pass|fail)" || echo "No E2E results found"
+        else
+            echo "No PR found for branch"
+        fi
     fi
 else
     echo "⏳ Run still in progress..."
