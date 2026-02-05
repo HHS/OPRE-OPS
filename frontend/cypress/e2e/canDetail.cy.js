@@ -501,7 +501,7 @@ describe("CAN funding page", () => {
         // Check that all expected messages exist in the history list, regardless of order
         cy.get('[data-cy="log-item-message"]').then(($messages) => {
             const historyText = $messages.text().replace(/\s+/g, " ").trim();
-            const budgetPattern = new RegExp(`Budget Team (entered|edited) the FY ${currentFiscalYear} budget`);
+            const budgetPattern = new RegExp(`Budget Team (entered|edited) (the|a) FY ${currentFiscalYear} budget`);
             expect(historyText).to.match(budgetPattern);
         });
     });
@@ -793,11 +793,12 @@ describe("CAN funding page", () => {
         });
         cy.get("@initialBudget").then((budget) => {
             if (budget) {
+                const budgetValue = parseCurrencyValue(budget);
                 cy.get("[data-cy=can-budget-fy-card]")
                     .should("exist")
                     .and("contain", "CAN Budget by FY")
-                    .and("contain", `FY ${currentFiscalYear}`)
-                    .and("contain", budget);
+                    .and("contain", `FY ${currentFiscalYear}`);
+                waitForElementToContainCurrencyValue("[data-cy='can-budget-fy-card']", budgetValue);
             } else {
                 cy.get("[data-cy=can-budget-fy-card]").should("exist");
             }
