@@ -330,12 +330,19 @@ const useAgreementEditForm = (
         saveAgreementRef.current = saveAgreement;
     }, [saveAgreement]);
 
+    const blockerRef = React.useRef(blocker);
+
+    React.useEffect(() => {
+        blockerRef.current = blocker;
+    }, [blocker]);
+
     // Setup blocker modal when navigation is blocked
     React.useEffect(() => {
         if (blocker.state === "blocked") {
             const proceedIfBlocked = () => {
-                if (blocker.state === "blocked") {
-                    blocker.proceed();
+                const currentBlocker = blockerRef.current;
+                if (currentBlocker?.state === "blocked") {
+                    currentBlocker.proceed();
                 }
             };
             setShowBlockerModal(true);

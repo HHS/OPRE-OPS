@@ -964,11 +964,18 @@ const useCreateBLIsAndSCs = (
         handleSaveRef.current = handleSave;
     }, [handleSave]);
 
+    const blockerRef = React.useRef(blocker);
+
+    React.useEffect(() => {
+        blockerRef.current = blocker;
+    }, [blocker]);
+
     React.useEffect(() => {
         if (blocker.state === "blocked") {
             const proceedIfBlocked = () => {
-                if (blocker.state === "blocked") {
-                    blocker.proceed();
+                const currentBlocker = blockerRef.current;
+                if (currentBlocker?.state === "blocked") {
+                    currentBlocker.proceed();
                 }
             };
             const modalContent = hasFinancialSnapshotChanges
