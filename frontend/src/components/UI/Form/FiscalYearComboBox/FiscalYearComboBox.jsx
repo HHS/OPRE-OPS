@@ -19,9 +19,14 @@ export const FiscalYearComboBox = ({
     overrideStyles = {},
     budgetLinesFiscalYears = []
 }) => {
-    const fiscalYears = budgetLinesFiscalYears.map((fiscalYear) => {
-        return { id: fiscalYear, title: fiscalYear };
-    });
+    const fiscalYears = budgetLinesFiscalYears
+        .filter((fiscalYear) => fiscalYear != null)
+        .map((fiscalYear) => {
+            if (typeof fiscalYear === "object") {
+                return fiscalYear;
+            }
+            return { id: fiscalYear, title: fiscalYear };
+        });
 
     return (
         <div className="display-flex flex-justify">
