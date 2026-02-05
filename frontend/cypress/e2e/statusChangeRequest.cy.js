@@ -50,6 +50,33 @@ afterEach(() => {
     cy.checkA11y(null, null, terminalLog);
 });
 
+const waitForAgreementHistory = (agreementId, bearer_token, retries = 10) => {
+    const historyUrl = `http://localhost:8080/api/v1/agreement-history/${agreementId}?limit=20&offset=0`;
+    return cy
+        .request({
+            method: "GET",
+            url: historyUrl,
+            headers: {
+                Authorization: bearer_token,
+                Accept: "application/json"
+            },
+            failOnStatusCode: false
+        })
+        .then((response) => {
+            const hasEntries = response.status === 200 && Array.isArray(response.body) && response.body.length > 0;
+            if (hasEntries) {
+                return;
+            }
+            if (retries <= 0) {
+                expect(response.status).to.eq(200);
+                expect(response.body).to.be.an("array").and.have.length.greaterThan(0);
+                return;
+            }
+            cy.wait(1000);
+            return waitForAgreementHistory(agreementId, bearer_token, retries - 1);
+        });
+};
+
 it("BLI Status Change", () => {
     expect(localStorage.getItem("access_token")).to.exist;
 
@@ -118,12 +145,16 @@ it("BLI Status Change", () => {
                 .should("contain", "Changes Sent to Approval")
                 .and("contain", `BL ${bliId} Status: Draft to Planned`)
                 .and("contain", "pls approve");
+            waitForAgreementHistory(agreementId, bearer_token);
             cy.visit(`/agreements/${agreementId}`);
             cy.get(".usa-breadcrumb__list > :nth-child(3)").should("have.text", testAgreement.name);
             cy.get('[data-cy="details-left-col"] > :nth-child(4)').should("have.text", "History");
             cy.get('[data-cy="agreement-history-container"]').should("exist");
             cy.get('[data-cy="agreement-history-container"]').scrollIntoView();
             cy.get('[data-cy="agreement-history-list"]').should("exist");
+            cy.get('[data-cy="agreement-history-list"]', { timeout: 30000 }).should(($list) => {
+                expect($list.children().length).to.be.at.least(1);
+            });
             cy.get(
                 '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
             ).should("exist");
