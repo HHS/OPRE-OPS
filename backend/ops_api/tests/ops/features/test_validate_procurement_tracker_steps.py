@@ -124,6 +124,25 @@ def test_validate_procurement_tracker_step_exists(): ...
 
 @scenario(
     "validate_procurement_tracker_steps.feature",
+    "Validate Procurement Tracker Step 2 Complete Update",
+)
+def test_validate_updating_procurement_tracker_step_2_complete_update(): ...
+
+
+@scenario("validate_procurement_tracker_steps.feature", "Valid Task Completed By Step 2")
+def test_validate_updating_procurement_tracker_step_2_with_valid_task_completed_by(): ...
+
+
+@scenario("validate_procurement_tracker_steps.feature", "Valid Completion Date Step 2")
+def test_validate_updating_procurement_tracker_step_2_with_valid_completion_date(): ...
+
+
+@scenario("validate_procurement_tracker_steps.feature", "Validate no future completion date for pre-solicitation")
+def test_validate_no_future_completion_date_for_pre_solicitation(): ...
+
+
+@scenario(
+    "validate_procurement_tracker_steps.feature",
     "Complete Procurement Tracker",
 )
 def test_complete_procurement_tracker(): ...
@@ -212,7 +231,7 @@ def agreement_without_ops_user(bdd_client, test_non_admin_user, loaded_db, conte
     context["user_id"] = test_non_admin_user.id
 
 
-@given("I have a procurement tracker with an empty step number 1")
+@given("I have a procurement tracker")
 def procurement_tracker_with_empty_step(loaded_db, context):
     agreement = context["agreement"]
     procurement_tracker = DefaultProcurementTracker.create_with_steps(
@@ -221,11 +240,7 @@ def procurement_tracker_with_empty_step(loaded_db, context):
     loaded_db.add(procurement_tracker)
     loaded_db.commit()
 
-    # Extract step 1 from the procurement tracker
-    step1 = next((step for step in procurement_tracker.steps if step.step_number == 1), None)
-
     context["procurement_tracker"] = procurement_tracker
-    context["procurement_tracker_step"] = step1
 
 
 @given("I have a procurement tracker with a completed step 1")
@@ -246,7 +261,6 @@ def procurement_tracker_with_completed_step(loaded_db, context):
     loaded_db.commit()
 
     context["procurement_tracker"] = procurement_tracker
-    context["procurement_tracker_step"] = step1
 
 
 @given("I have a procurement tracker with no steps")
@@ -277,18 +291,46 @@ def procurement_tracker_with_uncompleted_final_step(loaded_db, context):
         created_by=agreement.created_by,
         procurement_action=procurement_action.id,
     )
-    procurement_tracker.steps[-1].status = ProcurementTrackerStepStatus.PENDING
-    final_step = procurement_tracker.steps[-1]
-    final_step_number = final_step.step_number
-    procurement_tracker.active_step_number = final_step_number
+
     loaded_db.add(procurement_tracker)
     loaded_db.commit()
 
     context["procurement_tracker"] = procurement_tracker
+
+
+@given("I am working with the final procurement tracker step")
+def working_with_final_step(loaded_db, context):
+    """Set the context's procurement_tracker_step to the final step."""
+    procurement_tracker = context["procurement_tracker"]
+    procurement_tracker.steps[-1].status = ProcurementTrackerStepStatus.PENDING
+    final_step_number = procurement_tracker.steps[-1].step_number
+    procurement_tracker.active_step_number = final_step_number
+    final_step = procurement_tracker.steps[-1]
     context["procurement_tracker_step"] = final_step
+    loaded_db.commit()
+    loaded_db.refresh(procurement_tracker)
 
 
-@when("I have a valid completed procurement step")
+@given("I am working with acquisition planning procurement tracker step")
+def working_with_acquisition_planning_step(context):
+    """Set the context's procurement_tracker_step to step 1 (acquisition planning)."""
+    procurement_tracker = context["procurement_tracker"]
+    step_1 = next((step for step in procurement_tracker.steps if step.step_number == 1), None)
+    context["procurement_tracker_step"] = step_1
+
+
+@given("I am working with a pre-solicitation procurement tracker step")
+def working_with_pre_solicitation_step(loaded_db, context):
+    """Set the context's procurement_tracker_step to step 2 (pre-solicitation)."""
+    procurement_tracker = context["procurement_tracker"]
+    procurement_tracker.active_step_number = 2
+    step_2 = next((step for step in procurement_tracker.steps if step.step_number == 2), None)
+    context["procurement_tracker_step"] = step_2
+    loaded_db.commit()
+    loaded_db.refresh(procurement_tracker)
+
+
+@when("I have a valid completed procurement step 1")
 def have_valid_completed_procurement_step(context):
     data = {
         "status": "COMPLETED",
@@ -383,18 +425,19 @@ def check_successful_response(context, loaded_db, setup_and_teardown):
     response = context["response_patch"]
     assert response.status_code == 200
     procurement_tracker_id = response.get_json().get("procurement_tracker_id")
+    step_number = response.get_json().get("step_number")
 
     procurement_tracker = loaded_db.query(ProcurementTracker).filter_by(id=procurement_tracker_id).first()
-    assert procurement_tracker.active_step_number == 2
+    assert procurement_tracker.active_step_number == step_number + 1
 
     # Check that step number 2 has step_start_date set to today
-    step_2 = (
+    next_step = (
         loaded_db.query(ProcurementTrackerStep)
-        .filter_by(procurement_tracker_id=procurement_tracker_id, step_number=2)
+        .filter_by(procurement_tracker_id=procurement_tracker_id, step_number=step_number + 1)
         .first()
     )
-    assert step_2 is not None, "Step number 2 should exist"
-    assert step_2.step_start_date == date.today(), "Step 2 should have step_start_date set to today"
+    assert next_step is not None, "Next step should exist"
+    assert next_step.step_start_date == date.today(), "Next step should have step_start_date set to today"
 
 
 @then(
