@@ -921,7 +921,7 @@ def create_procurement_tracker_step_update_history_event(
     event: OpsEvent,
     event_user: User,
     session: Session,
-) -> AgreementHistory:
+) -> AgreementHistory | None:
     from models import ProcurementTracker, ProcurementTrackerStepStatus, ProcurementTrackerStepType
 
     """A method that generates an AgreementHistory event for an updated procurement tracker step."""
