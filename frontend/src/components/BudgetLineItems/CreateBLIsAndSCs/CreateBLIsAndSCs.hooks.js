@@ -966,6 +966,11 @@ const useCreateBLIsAndSCs = (
 
     React.useEffect(() => {
         if (blocker.state === "blocked") {
+            const proceedIfBlocked = () => {
+                if (blocker.state === "blocked") {
+                    blocker.proceed();
+                }
+            };
             const modalContent = hasFinancialSnapshotChanges
                 ? {
                       heading: "Save changes before leaving?",
@@ -986,13 +991,13 @@ const useCreateBLIsAndSCs = (
                 handleConfirm: async () => {
                     await handleSaveRef.current(true);
                     setShowSaveChangesModal(false);
-                    blocker.proceed();
+                    proceedIfBlocked();
                 },
                 handleSecondary: () => {
                     setHasUnsavedChanges(false);
                     setShowSaveChangesModal(false);
                     setIsEditMode(false);
-                    blocker.proceed();
+                    proceedIfBlocked();
                 },
                 closeModal: () => {
                     blocker.reset();

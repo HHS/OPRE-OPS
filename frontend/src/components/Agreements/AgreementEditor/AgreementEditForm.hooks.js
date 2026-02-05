@@ -333,6 +333,11 @@ const useAgreementEditForm = (
     // Setup blocker modal when navigation is blocked
     React.useEffect(() => {
         if (blocker.state === "blocked") {
+            const proceedIfBlocked = () => {
+                if (blocker.state === "blocked") {
+                    blocker.proceed();
+                }
+            };
             setShowBlockerModal(true);
             setBlockerModalProps({
                 heading: "You have unsaved changes",
@@ -345,7 +350,7 @@ const useAgreementEditForm = (
                         setHasAgreementChanged(false);
                         if (isEditMode && setIsEditMode) setIsEditMode(false);
                         setShowBlockerModal(false);
-                        blocker.proceed();
+                        proceedIfBlocked();
                     } catch (error) {
                         // Error already handled in saveAgreement
                         console.error(error);
@@ -356,7 +361,7 @@ const useAgreementEditForm = (
                     setHasAgreementChanged(false);
                     setShowBlockerModal(false);
                     if (isEditMode && setIsEditMode) setIsEditMode(false);
-                    blocker.proceed();
+                    proceedIfBlocked();
                 },
                 closeModal: () => {
                     setShowBlockerModal(false);
