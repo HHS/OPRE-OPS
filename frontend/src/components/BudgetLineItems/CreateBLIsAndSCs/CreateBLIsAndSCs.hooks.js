@@ -970,14 +970,25 @@ const useCreateBLIsAndSCs = (
         blockerRef.current = blocker;
     }, [blocker]);
 
+    const proceedIfBlocked = async () => {
+        const currentBlocker = blockerRef.current;
+        if (!currentBlocker || currentBlocker.state !== "blocked") {
+            return;
+        }
+        try {
+            await currentBlocker.proceed();
+        } catch (error) {
+            const message = error && typeof error.message === "string" ? error.message.trim() : "";
+            if (message.startsWith("Invalid blocker state transition")) {
+                console.warn("Ignored known React Router blocker exception:", message);
+                return;
+            }
+            throw error;
+        }
+    };
+
     React.useEffect(() => {
         if (blocker.state === "blocked") {
-            const proceedIfBlocked = () => {
-                const currentBlocker = blockerRef.current;
-                if (currentBlocker?.state === "blocked") {
-                    currentBlocker.proceed();
-                }
-            };
             const modalContent = hasFinancialSnapshotChanges
                 ? {
                       heading: "Save changes before leaving?",
@@ -998,13 +1009,13 @@ const useCreateBLIsAndSCs = (
                 handleConfirm: async () => {
                     await handleSaveRef.current(true);
                     setShowSaveChangesModal(false);
-                    proceedIfBlocked();
+                    await proceedIfBlocked();
                 },
-                handleSecondary: () => {
+                handleSecondary: async () => {
                     setHasUnsavedChanges(false);
                     setShowSaveChangesModal(false);
                     setIsEditMode(false);
-                    proceedIfBlocked();
+                    await proceedIfBlocked();
                 },
                 closeModal: () => {
                     blocker.reset();
