@@ -42,6 +42,8 @@ const BudgetLineItemList = () => {
             setSelectedFiscalYear("All");
         } else if ((filters.fiscalYears ?? []).length > 1) {
             setSelectedFiscalYear("Multi");
+        } else if ((filters.fiscalYears ?? []).length === 1) {
+            setSelectedFiscalYear(filters.fiscalYears[0].title);
         } else if (selectedFiscalYear === "Multi" || selectedFiscalYear === "All") {
             // Reset to current fiscal year when filters are cleared
             setSelectedFiscalYear(getCurrentFiscalYear());
