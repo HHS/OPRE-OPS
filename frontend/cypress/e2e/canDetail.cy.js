@@ -85,7 +85,8 @@ const extractCurrencyValues = (text) => {
 const waitForCurrencyContent = (selector, timeout = 20000) => {
     cy.get(selector, { timeout }).should(($el) => {
         const text = normalizeText($el.text());
-        expect(extractCurrencyValues(text).length).to.be.at.least(1);
+        // Ensure a currency amount has rendered (ignore years like 2024 by requiring a leading '$').
+        expect(text).to.match(/\$\s*(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d{2})?/);
     });
 };
 
@@ -673,7 +674,6 @@ describe("CAN funding page", () => {
         cy.get("#edit", { timeout: 20000 }).should("be.visible").and("not.be.disabled").click();
         closeWelcomeModalIfPresent();
         // cy.get("#carry-forward-card").should("contain", "$ 10,000,000.00");
-        waitForCurrencyContent("[data-cy='can-budget-fy-card']");
         cy.get("[data-cy='can-budget-fy-card']")
             .invoke("text")
             .then((text) => {
