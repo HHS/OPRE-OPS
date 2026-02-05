@@ -55,7 +55,7 @@ beforeEach(() => {
     cy.on("uncaught:exception", (err) => {
         // See: https://github.com/remix-run/react-router/issues/11579
         const message = err && typeof err.message === "string" ? err.message.trim() : "";
-        if (message === "Invalid blocker state transition") {
+        if (message.startsWith("Invalid blocker state transition")) {
             // eslint-disable-next-line no-console
             console.warn("Ignored known React Router blocker exception:", message);
             return false;
