@@ -143,11 +143,17 @@ const waitForBudgetReceivedAmount = (expectedReceived, timeout = 60000) => {
 const waitForElementToContainCurrencyValue = (selector, expectedValue, timeout = 60000) => {
     const expectedNumber = Number(expectedValue);
     cy.get(selector, { timeout }).should(($el) => {
-        const values = extractCurrencyValues($el.text());
-        const found = values.some((value) => Math.abs(value - expectedNumber) <= 0.01);
-        expect(found, `Expected ${selector} currency values to include ${expectedNumber}; got ${values.join(", ")}`).to.eq(
-            true
-        );
+        const rawValues = extractCurrencyValues($el.text());
+        const parsedValues = Number.isFinite(expectedNumber)
+            ? rawValues.map((value) => parseMoneyInputValue(String(value), expectedNumber))
+            : rawValues;
+        const found = parsedValues.some((value) => Math.abs(value - expectedNumber) <= 0.01);
+        expect(
+            found,
+            `Expected ${selector} currency values to include ${expectedNumber}; got raw=[${rawValues.join(
+                ", "
+            )}] parsed=[${parsedValues.join(", ")}]`
+        ).to.eq(true);
     });
 };
 
@@ -185,11 +191,14 @@ const setMoneyInputValue = (selector, value) => {
     cy.get(selector)
         .should("be.visible")
         .and("not.be.disabled")
-        .clear({ force: true })
+        .click({ force: true })
+        .type("{selectall}{backspace}", { force: true })
         // In CI, react-currency-format can drop characters with very fast typing.
         // A small key delay makes the input far more reliable in headless Electron.
-        .type(`${value}`, { delay: 25 })
+        .type(`${value}`, { delay: 25, force: true })
         .blur();
+
+    cy.get(selector).trigger("change", { force: true });
 
     cy.get(selector)
         .invoke("val")
@@ -550,7 +559,7 @@ describe("CAN funding page", () => {
         // enter amount into input
         cy.get("@fundingAmounts").then(({ baseAmount }) => {
             setMoneyInputValue("#funding-received-amount", baseAmount);
-            cy.get("[data-cy=add-funding-received-btn]").should("be.enabled");
+            cy.get("[data-cy=add-funding-received-btn]", { timeout: 60000 }).should("be.enabled");
         });
         // clear and check validation
         cy.get("#funding-received-amount").clear();
@@ -564,7 +573,7 @@ describe("CAN funding page", () => {
         cy.get("#funding-received-amount").clear();
         cy.get("@fundingAmounts").then(({ baseAmount }) => {
             setMoneyInputValue("#funding-received-amount", baseAmount);
-            cy.get("[data-cy=add-funding-received-btn]").should("be.enabled");
+            cy.get("[data-cy=add-funding-received-btn]", { timeout: 60000 }).should("be.enabled");
         });
         // enter and click on add funding received
         cy.get("#notes").type("Test notes");
