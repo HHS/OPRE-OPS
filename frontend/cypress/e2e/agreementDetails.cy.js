@@ -121,38 +121,43 @@ describe("agreement details", () => {
         cy.get('[data-cy="back-button"]').should("not.exist");
     });
 
-    // SKIPPED: React 19 + Cypress + USWDS Tooltip Compatibility Issue
-    //
-    // These tests are skipped due to a known interaction issue between:
-    // - React 19's updated event handling and Strict Mode
-    // - Cypress's event triggering (trigger(), dispatchEvent)
-    // - USWDS tooltip library's event listeners
-    //
-    // The tooltip elements exist in the DOM but Cypress cannot trigger the USWDS library
-    // to populate and display them, even with native MouseEvents.
-    //
-    // Manual browser testing confirms:
-    // ✓ Tooltips display correctly on hover
-    // ✓ Correct messages appear for OBLIGATED and EXECUTING budget lines
-    // ✓ Tooltip functionality works as expected in production
-    //
-    // This is a test infrastructure limitation, not a product defect.
-    // The underlying functionality (disabled edit buttons, correct status checks) is
-    // tested elsewhere in the suite.
-    it.skip("should not allow editing OBLIGATED BLIs", () => {
+    it("should not allow editing OBLIGATED BLIs", () => {
         cy.visit("/agreements/10/budget-lines");
         cy.get("#edit").click();
-        cy.get("[data-testid='budget-line-row-15005']").first().trigger("mouseover");
-        cy.get(".usa-tooltip__body").first().should("contain", "Obligated budget lines cannot be edited");
+        // Wait for edit mode to render the editable table
+        cy.get("[data-cy='continue-btn']", { timeout: 10000 }).should("be.visible");
+        cy.get("tbody").children().should("exist");
+        cy.get("[data-testid='budget-line-row-15005']").as("obligatedRow");
+        cy.get("@obligatedRow").find("[data-cy='expand-row']").click();
+        cy.get("@obligatedRow")
+            .next("[data-testid='expanded-data']")
+            .find("[data-cy='edit-row']")
+            .should("be.disabled")
+            .and("have.attr", "aria-describedby")
+            .then((descId) => {
+                cy.get(`#${descId}`).should("contain", "Obligated budget lines cannot be edited");
+            });
     });
 
-    it.skip("should not allow editing EXECUTING BLIs", () => {
+    it("should not allow editing EXECUTING BLIs", () => {
         cy.visit("/agreements/10/budget-lines");
         cy.get("#edit").click();
-        cy.get("[data-testid='budget-line-row-15004']").first().trigger("mouseover");
-        cy.get(".usa-tooltip__body")
-            .first()
-            .should("contain", "If you need to edit a budget line in Executing Status, please contact the budget team");
+        // Wait for edit mode to render the editable table
+        cy.get("[data-cy='continue-btn']", { timeout: 10000 }).should("be.visible");
+        cy.get("tbody").children().should("exist");
+        cy.get("[data-testid='budget-line-row-15004']").as("executingRow");
+        cy.get("@executingRow").find("[data-cy='expand-row']").click();
+        cy.get("@executingRow")
+            .next("[data-testid='expanded-data']")
+            .find("[data-cy='edit-row']")
+            .should("be.disabled")
+            .and("have.attr", "aria-describedby")
+            .then((descId) => {
+                cy.get(`#${descId}`).should(
+                    "contain",
+                    "If you need to edit a budget line in Executing Status, please contact the budget team"
+                );
+            });
     });
 
     it("Should allow the user to export BLIs for an agreement", () => {
