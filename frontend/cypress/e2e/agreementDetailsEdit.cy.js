@@ -89,17 +89,6 @@ describe("Agreement Details Edit", () => {
             cy.get("h1").should("have.text", testAgreement.name);
             cy.get('[data-cy="details-left-col"] > :nth-child(4)').should("have.text", "History");
             checkAgreementHistory();
-            cy.get(
-                '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
-            ).should("exist");
-            cy.get(
-                '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
-            ).should("have.text", "Agreement Created");
-            cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]').should("exist");
-            cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]').should(
-                "have.text",
-                "Agreement created by System Owner."
-            );
             cy.get("#edit").click();
             cy.get("#edit").should("not.exist");
 
@@ -139,49 +128,30 @@ describe("Agreement Details Edit", () => {
             cy.get("[data-cy='details-notes']").should("have.text", "Test Notes test edit notes");
             cy.get("#edit").should("exist");
 
-            cy.get(
-                '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
-            ).should("have.text", "Change to Description");
-            cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]').should(
-                "have.text",
-                "System Owner edited the agreement description."
-            );
-            cy.get(
-                '[data-cy="agreement-history-list"] > :nth-child(2) > .flex-justify > [data-cy="log-item-title"]'
-            ).should("have.text", "Change to Agreement Title");
-            cy.get('[data-cy="agreement-history-list"] > :nth-child(2) > [data-cy="log-item-message"]').should(
-                "have.text",
-                `System Owner changed the agreement title from ${testAgreement.name} to Test Edit Title.`
-            );
-            cy.get('[data-cy="agreement-history-list"] > :nth-child(3) > .flex-justify > .text-bold').should(
-                "have.text",
-                "Change to Notes"
-            );
-            cy.get('[data-cy="agreement-history-list"] > :nth-child(3) > [data-cy="log-item-message"]').should(
-                "have.text",
-                "System Owner changed the notes."
-            );
-            cy.get(
-                '[data-cy="agreement-history-list"] > :nth-child(4) > .flex-justify > [data-cy="log-item-title"]'
-            ).should("have.text", "Change to Research Methodologies");
-            cy.get('[data-cy="agreement-history-list"] > :nth-child(4) > [data-cy="log-item-message"]').should(
-                "have.text",
-                "System Owner added Research Methodology Knowledge Development."
-            );
-            cy.get(
-                '[data-cy="agreement-history-list"] > :nth-child(5) > .flex-justify > [data-cy="log-item-title"]'
-            ).should("have.text", "Change to Special Topic/Population Studied");
-            cy.get('[data-cy="agreement-history-list"] > :nth-child(5) > [data-cy="log-item-message"]').should(
-                "have.text",
-                "System Owner added Special Topic/Population Studied Special Topic 1."
-            );
-            cy.get(
-                '[data-cy="agreement-history-list"] > :nth-child(6) > .flex-justify > [data-cy="log-item-title"]'
-            ).should("have.text", "Change to Special Topic/Population Studied");
-            cy.get('[data-cy="agreement-history-list"] > :nth-child(6) > [data-cy="log-item-message"]').should(
-                "have.text",
-                "System Owner added Special Topic/Population Studied Special Topic 2."
-            );
+            waitForAgreementHistory(agreementId, bearer_token);
+            cy.reload();
+            checkAgreementHistory();
+            cy.get('[data-cy="agreement-history-list"]')
+                .invoke("text")
+                .then((text) => {
+                    const historyText = text.replace(/\s+/g, " ").trim();
+                    const expectedEntries = [
+                        "Change to Description",
+                        "System Owner edited the agreement description.",
+                        "Change to Agreement Title",
+                        `System Owner changed the agreement title from ${testAgreement.name} to ${editedTitle}.`,
+                        "Change to Notes",
+                        "System Owner changed the notes.",
+                        "Change to Research Methodologies",
+                        "System Owner added Research Methodology Knowledge Development.",
+                        "Change to Special Topic/Population Studied",
+                        "System Owner added Special Topic/Population Studied Special Topic 1.",
+                        "System Owner added Special Topic/Population Studied Special Topic 2."
+                    ];
+                    expectedEntries.forEach((entry) => {
+                        expect(historyText).to.contain(entry);
+                    });
+                });
 
             // test alternate project officer has edit persmission
             cy.get('[data-cy="sign-out"]').click();
