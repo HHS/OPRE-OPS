@@ -289,7 +289,28 @@ def test_agreements_serialization(auth_client, loaded_db, test_project, test_can
     # Team Leader for Portfolio is 505
     # Division Director is 522
     # Deputy Director is NONE
-    assert authorized_user_ids == [500, 501, 504, 505, 522]
+    # Budget Team Members add 68, 523
+    assert authorized_user_ids == [
+        68,
+        500,
+        501,
+        503,
+        504,
+        505,
+        511,
+        512,
+        513,
+        514,
+        515,
+        516,
+        517,
+        518,
+        519,
+        520,
+        522,
+        523,
+        528,
+    ]
 
     delete_bli_response = auth_client.delete(url_for("api.budget-line-items-item", id=bli_id))
     assert delete_bli_response.status_code == 200

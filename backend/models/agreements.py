@@ -3,7 +3,7 @@
 import decimal
 from datetime import date
 from enum import Enum, auto
-from typing import TYPE_CHECKING, Any, List, Optional, override
+from typing import Any, List, Optional, override
 
 from sqlalchemy import (
     Boolean,
@@ -363,12 +363,31 @@ class Agreement(BaseModel):
     def get_required_fields_for_awarded_agreement(self) -> List[str]:
         raise NotImplementedError  # To be implemented in subclasses
 
+    def _get_role_based_authorized_user_ids(self) -> List[int]:
+        """Get list of user IDs authorized based on their roles."""
+        from models import Role
+
+        results = []
+        if object_session(self) is None:
+            return results
+        else:
+            results = (
+                object_session(self)
+                .execute(
+                    select(User.id).where(User.roles.any(Role.name.in_(["BUDGET_TEAM", "SYSTEM_OWNER", "SUPER_USER"])))
+                )
+                .scalars()
+                .all()
+            )
+        return results
+
     @property
     def authorized_user_ids(self) -> List[int]:
         """Get list of user IDs authorized for this agreement."""
         authorized_user_ids = set()
         if self.created_by:
             authorized_user_ids.add(self.created_by)
+        authorized_user_ids.update(self._get_role_based_authorized_user_ids())
         # Start with all team members on agreement
         authorized_user_ids.update(user.id for user in self.team_members)
         # Get Project officer and alt project officer
@@ -383,6 +402,8 @@ class Agreement(BaseModel):
                     division = bli.can.portfolio.division
                     if division.division_director_id:
                         authorized_user_ids.add(division.division_director_id)
+                    if division.deputy_division_director_id:
+                        authorized_user_ids.add(division.deputy_division_director_id)
                 can = getattr(bli, "can", None)
                 portfolio = getattr(can, "portfolio", None)
                 # Add Team leaders
