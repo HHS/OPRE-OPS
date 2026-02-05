@@ -6,7 +6,7 @@
 
 set -euo pipefail
 
-BRANCH="${1:-react-19-upgrade}"
+BRANCH="${1:-main}"
 
 echo "=== CI Status for branch: $BRANCH ==="
 echo "Time: $(date)"
