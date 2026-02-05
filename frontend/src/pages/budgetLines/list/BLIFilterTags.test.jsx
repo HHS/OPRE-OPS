@@ -71,7 +71,7 @@ describe("BLIFilterTags", () => {
         expect(screen.getByTestId("remove-tag-FY 2025")).toBeInTheDocument();
     });
 
-    it("does not render fiscal year tags when All Fiscal Years is selected", () => {
+    it("renders All FYs tag when All Fiscal Years is selected", () => {
         const filters = {
             ...defaultFilters,
             fiscalYears: [{ id: "ALL", title: "All Fiscal Years" }]
@@ -84,7 +84,23 @@ describe("BLIFilterTags", () => {
             />
         );
 
-        expect(screen.queryByTestId("filter-tags-wrapper")).not.toBeInTheDocument();
+        expect(screen.getByTestId("remove-tag-All FYs")).toBeInTheDocument();
+    });
+
+    it("renders All FYs tag when fiscalYears is null", () => {
+        const filters = {
+            ...defaultFilters,
+            fiscalYears: null
+        };
+
+        render(
+            <BLIFilterTags
+                filters={filters}
+                setFilters={mockSetFilters}
+            />
+        );
+
+        expect(screen.getByTestId("remove-tag-All FYs")).toBeInTheDocument();
     });
 
     it.each([

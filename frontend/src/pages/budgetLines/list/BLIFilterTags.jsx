@@ -81,15 +81,15 @@ export const BLIFilterTags = ({ filters, setFilters }) => {
     };
 
     useEffect(() => {
+        const selectedFiscalYears = [];
         if (filters.fiscalYears === null) {
-            setTagsList((prevState) => prevState.filter((t) => t.filter !== "fiscalYears"));
-            return;
+            selectedFiscalYears.push({ tagText: "All FYs", filter: "fiscalYears" });
         }
 
-        const selectedFiscalYears = [];
         Array.isArray(filters.fiscalYears) &&
             filters.fiscalYears.forEach((fiscalYear) => {
                 if (fiscalYear?.id === "ALL") {
+                    selectedFiscalYears.push({ tagText: "All FYs", filter: "fiscalYears" });
                     return;
                 }
                 const tag = `FY ${fiscalYear.title}`;
