@@ -16,7 +16,11 @@ describe("FiscalYearComboBox", () => {
             />
         );
         expect(screen.getByRole("combobox")).toBeInTheDocument();
-        expect(screen.getByText("Fiscal Year")).toBeInTheDocument();
+        expect(
+            screen.getByText((content, element) => {
+                return element?.tagName?.toLowerCase() === "label" && content.includes("Fiscal Year");
+            })
+        ).toBeInTheDocument();
     });
 
     it("renders the component with the correct options", () => {

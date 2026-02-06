@@ -284,6 +284,37 @@ describe("BudgetLineItemList", () => {
         expect(screen.getByText("Budget Lines")).toBeInTheDocument();
     });
 
+    it("uses current fiscal year when fiscalYears is undefined", () => {
+        vi.spyOn(hooks, "useBudgetLinesList").mockReturnValue({
+            myBudgetLineItemsUrl: false,
+            filters: {
+                ...defaultFilters,
+                fiscalYears: undefined
+            },
+            setFilters: vi.fn()
+        });
+
+        useGetBudgetLineItemsQuery.mockReturnValue({
+            data: mockBudgetLineItems,
+            isLoading: false,
+            isError: false
+        });
+
+        render(
+            <Provider store={store}>
+                <BudgetLineItemList />
+            </Provider>
+        );
+
+        expect(useGetBudgetLineItemsQuery).toHaveBeenCalledWith(
+            expect.objectContaining({
+                filters: expect.objectContaining({
+                    fiscalYears: [{ id: 2024, title: 2024 }]
+                })
+            })
+        );
+    });
+
     it("does not render summary cards when no budget line items", () => {
         useGetBudgetLineItemsQuery.mockReturnValue({
             data: [],

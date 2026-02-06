@@ -237,6 +237,26 @@ describe("BLIFilterButton", () => {
         expect(result.fiscalYears).toBeNull();
     });
 
+    it("sets fiscalYears to undefined when Compare Fiscal Years is cleared", async () => {
+        render(
+            <BLIFilterButton
+                filters={defaultFilters}
+                setFilters={mockSetFilters}
+                selectedFiscalYear={2024}
+            />
+        );
+
+        fireEvent.click(screen.getByTestId("apply-filter-btn"));
+
+        await waitFor(() => {
+            expect(mockSetFilters).toHaveBeenCalled();
+        });
+
+        const setFiltersCallback = mockSetFilters.mock.calls[0][0];
+        const result = setFiltersCallback(defaultFilters);
+        expect(result.fiscalYears).toBeUndefined();
+    });
+
     it("resets filters correctly", async () => {
         render(
             <BLIFilterButton
