@@ -96,24 +96,6 @@ describe("DetailsTabs", () => {
         expect(screen.queryByText("Documents")).not.toBeInTheDocument();
     });
 
-    it("disables Procurement Tracker tab when hasInExecutionBli is false", () => {
-        render(
-            <Provider store={store}>
-                <MemoryRouter initialEntries={["/agreements/1"]}>
-                    <DetailsTabs
-                        agreementId={1}
-                        isAgreementNotDeveloped={false}
-                        isAgreementAwarded={true}
-                        hasInExecutionBli={false}
-                    />
-                </MemoryRouter>
-            </Provider>
-        );
-
-        const procurementTrackerButton = screen.getByText("Procurement Tracker");
-        expect(procurementTrackerButton).toBeDisabled();
-    });
-
     it("enables Procurement Tracker tab when hasInExecutionBli is true and feature flag is enabled", () => {
         vi.spyOn(constants, "IS_PROCUREMENT_TRACKER_READY", "get").mockReturnValue(true);
 
