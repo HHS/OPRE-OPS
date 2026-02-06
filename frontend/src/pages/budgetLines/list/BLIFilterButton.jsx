@@ -124,10 +124,12 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
     const applyFilter = () => {
         const normalizedFiscalYears = Array.isArray(fiscalYears) ? fiscalYears : [];
         const hasAllFiscalYears = normalizedFiscalYears.some((fiscalYear) => fiscalYear.id === "ALL");
+        const nextFiscalYears =
+            hasAllFiscalYears ? null : normalizedFiscalYears.length > 0 ? normalizedFiscalYears : undefined;
         setFilters((prevState) => {
             return {
                 ...prevState,
-                fiscalYears: hasAllFiscalYears ? null : normalizedFiscalYears,
+                fiscalYears: nextFiscalYears,
                 portfolios: portfolios,
                 bliStatus: bliStatus,
                 budgetRange: budgetRange,

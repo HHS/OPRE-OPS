@@ -38,17 +38,25 @@ const BudgetLineItemList = () => {
     const previousFiscalYearsRef = React.useRef(filters.fiscalYears);
 
     useEffect(() => {
-        if (filters.fiscalYears === null) {
+        if (filters.fiscalYears === undefined) {
+            setIsFiscalYearShortcutActive(false);
+            setFiscalYearShortcut(getCurrentFiscalYear());
+        } else if (filters.fiscalYears === null) {
+            setIsFiscalYearShortcutActive(false);
             setFiscalYearShortcut("All");
         } else if ((filters.fiscalYears ?? []).length > 1) {
+            setIsFiscalYearShortcutActive(false);
             setFiscalYearShortcut("Multi");
         } else if ((filters.fiscalYears ?? []).length === 1) {
+            setIsFiscalYearShortcutActive(false);
             setFiscalYearShortcut(filters.fiscalYears[0].title);
+        } else if ((filters.fiscalYears ?? []).length === 0 && !isFiscalYearShortcutActive) {
+            setFiscalYearShortcut(getCurrentFiscalYear());
         } else if (fiscalYearShortcut === "Multi" || fiscalYearShortcut === "All") {
             // Reset to current fiscal year when filters are cleared
             setFiscalYearShortcut(getCurrentFiscalYear());
         }
-    }, [filters.fiscalYears, fiscalYearShortcut]);
+    }, [filters.fiscalYears, fiscalYearShortcut, isFiscalYearShortcutActive]);
 
     useEffect(() => {
         const previousFiscalYears = previousFiscalYearsRef.current;
@@ -83,6 +91,8 @@ const BudgetLineItemList = () => {
     const currentFiscalYear = getCurrentFiscalYear();
     if (filters.fiscalYears === null) {
         resolvedFiscalYears = null;
+    } else if (filters.fiscalYears === undefined) {
+        resolvedFiscalYears = [{ id: currentFiscalYear, title: currentFiscalYear }];
     } else if ((filters.fiscalYears ?? []).length === 0) {
         const fallbackFiscalYear = isFiscalYearShortcutActive ? fiscalYearShortcut : currentFiscalYear;
         resolvedFiscalYears = [{ id: Number(fallbackFiscalYear), title: Number(fallbackFiscalYear) }];
