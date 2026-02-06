@@ -69,8 +69,6 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
     }, [filters.fiscalYears, selectedFiscalYear, allFiscalYearsOption]);
 
     const handleFiscalYearsChange = (nextFiscalYears) => {
-        console.log(nextFiscalYears);
-
         if (!Array.isArray(nextFiscalYears)) {
             setFiscalYears([]);
             return;
@@ -124,8 +122,12 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
     const applyFilter = () => {
         const normalizedFiscalYears = Array.isArray(fiscalYears) ? fiscalYears : [];
         const hasAllFiscalYears = normalizedFiscalYears.some((fiscalYear) => fiscalYear.id === "ALL");
-        const nextFiscalYears =
-            hasAllFiscalYears ? null : normalizedFiscalYears.length > 0 ? normalizedFiscalYears : undefined;
+        let nextFiscalYears = normalizedFiscalYears;
+        if (hasAllFiscalYears) {
+            nextFiscalYears = null;
+        } else if (normalizedFiscalYears.length === 0) {
+            nextFiscalYears = undefined;
+        }
         setFilters((prevState) => {
             return {
                 ...prevState,
