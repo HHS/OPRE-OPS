@@ -31,24 +31,37 @@ import { getCurrentFiscalYear } from "../../../helpers/utils";
 const BudgetLineItemList = () => {
     const [isExporting, setIsExporting] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
-    const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(getCurrentFiscalYear());
+    const [fiscalYearShortcut, setFiscalYearShortcut] = React.useState(getCurrentFiscalYear());
+    const [isFiscalYearShortcutActive, setIsFiscalYearShortcutActive] = React.useState(false);
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
     const { myBudgetLineItemsUrl, filters, setFilters } = useBudgetLinesList();
+    const previousFiscalYearsRef = React.useRef(filters.fiscalYears);
 
-    // Set dropdown to "Multi" when fiscal year filters are applied with more than one year
-    // Reset to current FY when all filters are cleared
     useEffect(() => {
         if (filters.fiscalYears === null) {
-            setSelectedFiscalYear("All");
+            setFiscalYearShortcut("All");
         } else if ((filters.fiscalYears ?? []).length > 1) {
-            setSelectedFiscalYear("Multi");
+            setFiscalYearShortcut("Multi");
         } else if ((filters.fiscalYears ?? []).length === 1) {
-            setSelectedFiscalYear(filters.fiscalYears[0].title);
-        } else if (selectedFiscalYear === "Multi" || selectedFiscalYear === "All") {
+            setFiscalYearShortcut(filters.fiscalYears[0].title);
+        } else if (fiscalYearShortcut === "Multi" || fiscalYearShortcut === "All") {
             // Reset to current fiscal year when filters are cleared
-            setSelectedFiscalYear(getCurrentFiscalYear());
+            setFiscalYearShortcut(getCurrentFiscalYear());
         }
-    }, [filters.fiscalYears, selectedFiscalYear]);
+    }, [filters.fiscalYears, fiscalYearShortcut]);
+
+    useEffect(() => {
+        const previousFiscalYears = previousFiscalYearsRef.current;
+        previousFiscalYearsRef.current = filters.fiscalYears;
+
+        const hadSelections = Array.isArray(previousFiscalYears) && previousFiscalYears.length > 0;
+        const isCleared = Array.isArray(filters.fiscalYears) && filters.fiscalYears.length === 0;
+
+        if (hadSelections && isCleared) {
+            setIsFiscalYearShortcutActive(false);
+            setFiscalYearShortcut(getCurrentFiscalYear());
+        }
+    }, [filters.fiscalYears]);
 
     // Handle fiscal year change - clear filters if changing from "Multi" to a specific year
     const handleChangeFiscalYear = (newValue) => {
@@ -61,15 +74,18 @@ const BudgetLineItemList = () => {
             agreementTitles: [],
             canActivePeriods: []
         });
-        setSelectedFiscalYear(newValue);
+        setIsFiscalYearShortcutActive(true);
+        setFiscalYearShortcut(newValue);
     };
 
     /** @type {Array<{id: number | string, title: number | string}> | null | undefined} */
     let resolvedFiscalYears = filters.fiscalYears;
+    const currentFiscalYear = getCurrentFiscalYear();
     if (filters.fiscalYears === null) {
         resolvedFiscalYears = null;
-    } else if ((filters.fiscalYears ?? []).length === 0 && selectedFiscalYear !== "Multi") {
-        resolvedFiscalYears = [{ id: Number(selectedFiscalYear), title: Number(selectedFiscalYear) }];
+    } else if ((filters.fiscalYears ?? []).length === 0) {
+        const fallbackFiscalYear = isFiscalYearShortcutActive ? fiscalYearShortcut : currentFiscalYear;
+        resolvedFiscalYears = [{ id: Number(fallbackFiscalYear), title: Number(fallbackFiscalYear) }];
     }
 
     /** @type {{data?: import("../../../types/BudgetLineTypes").BudgetLine[] | undefined, isError: boolean, isLoading: boolean}} */
@@ -194,7 +210,7 @@ const BudgetLineItemList = () => {
                                 <BLIFilterButton
                                     filters={filters}
                                     setFilters={setFilters}
-                                    selectedFiscalYear={selectedFiscalYear}
+                                    selectedFiscalYear={fiscalYearShortcut}
                                 />
                             </div>
                         </div>
@@ -202,7 +218,7 @@ const BudgetLineItemList = () => {
                 }
                 FYSelect={
                     <FiscalYear
-                        fiscalYear={selectedFiscalYear}
+                        fiscalYear={fiscalYearShortcut}
                         handleChangeFiscalYear={handleChangeFiscalYear}
                     />
                 }
@@ -215,7 +231,7 @@ const BudgetLineItemList = () => {
                             totalPlannedAmount={budgetLineItems?.[0]?._meta?.total_planned_amount ?? 0}
                             totalExecutingAmount={budgetLineItems?.[0]?._meta?.total_in_execution_amount ?? 0}
                             totalObligatedAmount={budgetLineItems?.[0]?._meta?.total_obligated_amount ?? 0}
-                            fiscalYear={selectedFiscalYear}
+                            fiscalYear={fiscalYearShortcut}
                         />
                     )
                 }
