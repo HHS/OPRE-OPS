@@ -19,7 +19,7 @@ describe("Procurement Tracker page", () => {
         cy.visit(`/agreements/3`);
         cy.get('[data-cy="details-tab-Procurement Tracker"]').should("not.exist");
     });
-    it("should display message steps in a disabled/read-only state", () => {
+    it("Agreements without executing budget lines should display the procurement tracker in a disabled/read-only state", () => {
         cy.visit(`/agreements/6/procurement-tracker`);
         cy.get('[data-cy="step-indicator-0"]').should("not.have.class", "usa-step-indicator__segment--current");
         cy.get("button")

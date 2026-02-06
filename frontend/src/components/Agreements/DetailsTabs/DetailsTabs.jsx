@@ -12,10 +12,9 @@ import { IS_AWARDED_TAB_READY, IS_DOCUMENTS_TAB_READY, IS_PROCUREMENT_TRACKER_RE
  * @param {number} props.agreementId - The ID of the agreement.
  * @param {boolean} props.isAgreementNotDeveloped - Indicates whether the agreement is not developed.
  * @param {boolean} props.isAgreementAwarded - Indicates whether the agreement is awarded.
- * @param {boolean} props.hasInExecutionBli - Indicates whether the agreement has budget lines in execution.
  * @returns {JSX.Element} The rendered JSX element.
  */
-const DetailsTabs = ({ agreementId, isAgreementNotDeveloped, isAgreementAwarded, hasInExecutionBli }) => {
+const DetailsTabs = ({ agreementId, isAgreementNotDeveloped, isAgreementAwarded }) => {
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -44,7 +43,7 @@ const DetailsTabs = ({ agreementId, isAgreementNotDeveloped, isAgreementAwarded,
               {
                   name: "/procurement-tracker",
                   label: "Procurement Tracker",
-                  disabled: !IS_PROCUREMENT_TRACKER_READY || !hasInExecutionBli
+                  disabled: !IS_PROCUREMENT_TRACKER_READY
               },
               {
                   name: "/documents",
