@@ -1,4 +1,5 @@
 import Accordion from "../../../UI/Accordion";
+import { fromUpperCaseToTitleCase } from "../../../../helpers/utils";
 import "./StepBuilderAccordion.css";
 
 const STEP_STATUS_MAP = {
@@ -24,14 +25,6 @@ const getStepState = (step, activeStepNumber) => {
 
     return "not-started";
 };
-
-const formatStepType = (stepType = "") =>
-    stepType
-        .toLowerCase()
-        .split(/[_\s-]+/g)
-        .filter(Boolean)
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(" ");
 
 /**
  * @typedef {Object} ProcurementStep
@@ -67,7 +60,7 @@ const StepBuilderAccordion = ({ step, totalSteps, activeStepNumber, children, is
                 <span className="step-builder-accordion__step-number">{step?.step_number}</span>{" "}
                 <span className="step-builder-accordion__step-total">of {totalSteps}</span>
             </span>{" "}
-            <span className="step-builder-accordion__step-label">{formatStepType(step?.step_type)}</span>
+            <span className="step-builder-accordion__step-label">{fromUpperCaseToTitleCase(step?.step_type)}</span>
         </div>
     );
 
