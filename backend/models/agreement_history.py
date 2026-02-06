@@ -489,7 +489,7 @@ def create_agreement_update_history_event(
                     ops_event_id=ops_event_id,
                     history_title="Change to Description",
                     history_message=(
-                        f"Changes made to the OPRE budget spreadsheet changed the agreement description."
+                        f"Changes made to the OPRE budget spreadsheet changed the Agreement Description."
                         if updated_by_system_user
                         else f"{updated_by_user.full_name} changed the Agreement Description."
                     ),

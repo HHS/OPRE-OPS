@@ -32,7 +32,7 @@ def test_update_agreement_agreement_history_trigger(loaded_db, app_ctx):
     assert new_agreement_history_item.history_title == "Change to Description"
     assert (
         new_agreement_history_item.history_message
-        == "Changes made to the OPRE budget spreadsheet changed the agreement description."
+        == "Changes made to the OPRE budget spreadsheet changed the Agreement Description."
     )
     assert new_agreement_history_item_2.history_type == AgreementHistoryType.AGREEMENT_UPDATED
     assert new_agreement_history_item_2.history_title == "Change to Agreement Title"
