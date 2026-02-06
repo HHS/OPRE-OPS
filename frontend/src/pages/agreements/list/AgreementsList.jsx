@@ -32,7 +32,6 @@ import icons from "../../../uswds/img/sprite.svg";
 import AgreementsFilterButton from "./AgreementsFilterButton/AgreementsFilterButton";
 import AgreementsFilterTags from "./AgreementsFilterTags/AgreementsFilterTags";
 import AgreementTabs from "./AgreementsTabs";
-import DebugCode from "../../../components/DebugCode/DebugCode.jsx";
 
 /**
  * @typedef {import('../../../types/AgreementTypes').Agreement} Agreement
@@ -68,14 +67,29 @@ const AgreementsList = () => {
     );
 
     // Determine fiscal year filter based on selection
+    const hasOtherFilters =
+        filters.portfolio.length > 0 ||
+        filters.projectTitle.length > 0 ||
+        filters.agreementType.length > 0 ||
+        filters.agreementName.length > 0 ||
+        filters.contractNumber.length > 0;
+
     const getFiscalYearFilter = () => {
         // If explicit filters are set via filter modal, use those
         if ((filters.fiscalYear ?? []).length > 0) {
+            // "All FYs" means no fiscal year filter
+            if (filters.fiscalYear.some((fy) => fy.id === "all")) {
+                return [];
+            }
             return filters.fiscalYear;
         }
-        // If "All" is selected, include all available fiscal years
+        // If other filters are active but no fiscal year was selected, don't default
+        if (hasOtherFilters) {
+            return [];
+        }
+        // If "All" is selected from the page dropdown, no fiscal year filter
         if (selectedFiscalYear === "All") {
-            return fiscalYearOptions.map((year) => ({ id: Number(year), title: Number(year) }));
+            return [];
         }
         // Otherwise, use the selected fiscal year
         return [{ id: Number(selectedFiscalYear), title: Number(selectedFiscalYear) }];
@@ -397,7 +411,6 @@ const AgreementsList = () => {
                     <ChangeRequests />
                 </TablePageLayout>
             )}
-            <DebugCode data={agreementFilterOptions} />
         </App>
     );
 };

@@ -738,6 +738,40 @@ describe("AgreementsList - Fiscal Year Filtering", () => {
         );
     });
 
+    it("should send empty fiscalYear filter when 'All' is selected from dropdown", async () => {
+        const mockQuery = vi.fn();
+        useGetAgreementsQuery.mockImplementation((params) => {
+            mockQuery(params);
+            return {
+                data: mockAgreementsResponse,
+                error: undefined,
+                isLoading: false
+            };
+        });
+
+        render(
+            <Provider store={store}>
+                <BrowserRouter>
+                    <AgreementsList />
+                </BrowserRouter>
+            </Provider>
+        );
+
+        await waitFor(() => {
+            expect(screen.getByTestId("fiscal-year-select")).toBeInTheDocument();
+        });
+
+        // Select "All" from the fiscal year dropdown
+        const dropdown = screen.getByTestId("fiscal-year-dropdown");
+        dropdown.value = "All";
+        dropdown.dispatchEvent(new Event("change", { bubbles: true }));
+
+        await waitFor(() => {
+            const lastCall = mockQuery.mock.calls[mockQuery.mock.calls.length - 1];
+            expect(lastCall[0].filters.fiscalYear).toEqual([]);
+        });
+    });
+
     it("should keep selected fiscal year when it exists in options list", async () => {
         // Mock fiscal year options that include a typical current year
         useGetAgreementsFilterOptionsQuery.mockReturnValue({

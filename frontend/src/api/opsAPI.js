@@ -73,7 +73,7 @@ export const opsApi = createApi({
     endpoints: (builder) => ({
         getAgreements: builder.query({
             query: ({
-                filters: { fiscalYear, budgetLineStatus, portfolio, agreementName, agreementType },
+                filters: { fiscalYear, budgetLineStatus, portfolio, agreementName, agreementType, projectTitle, contractNumber },
                 onlyMy,
                 sortConditions,
                 sortDescending,
@@ -96,6 +96,14 @@ export const opsApi = createApi({
                 if (agreementType) {
                     agreementType.forEach((type) =>
                         queryParams.push(`agreement_type=${encodeURIComponent(type.type)}`)
+                    );
+                }
+                if (projectTitle) {
+                    projectTitle.forEach((project) => queryParams.push(`project_id=${project.id}`));
+                }
+                if (contractNumber) {
+                    contractNumber.forEach((contract) =>
+                        queryParams.push(`contract_number=${encodeURIComponent(contract.id)}`)
                     );
                 }
                 if (onlyMy) {

@@ -304,6 +304,78 @@ describe("opsAPI - Agreements Pagination", () => {
         });
     });
 
+    describe("Filter Query Parameters", () => {
+        it("should include project_id params for projectTitle filter", async () => {
+            let capturedUrl = "";
+            server.use(
+                http.get("*/api/v1/agreements/", ({ request }) => {
+                    capturedUrl = request.url;
+                    return HttpResponse.json({ data: [], count: 0, limit: 10, offset: 0 });
+                })
+            );
+
+            const storeRef = setupApiStore(opsApi);
+            await storeRef.store.dispatch(
+                opsApi.endpoints.getAgreements.initiate({
+                    filters: {
+                        fiscalYear: [],
+                        portfolio: [],
+                        projectTitle: [
+                            { id: 1, title: "Project A" },
+                            { id: 2, title: "Project B" }
+                        ],
+                        agreementType: [],
+                        agreementName: [],
+                        contractNumber: []
+                    },
+                    onlyMy: false,
+                    sortConditions: null,
+                    sortDescending: false,
+                    page: 0,
+                    limit: 10
+                })
+            );
+
+            expect(capturedUrl).toContain("project_id=1");
+            expect(capturedUrl).toContain("project_id=2");
+        });
+
+        it("should include contract_number params for contractNumber filter", async () => {
+            let capturedUrl = "";
+            server.use(
+                http.get("*/api/v1/agreements/", ({ request }) => {
+                    capturedUrl = request.url;
+                    return HttpResponse.json({ data: [], count: 0, limit: 10, offset: 0 });
+                })
+            );
+
+            const storeRef = setupApiStore(opsApi);
+            await storeRef.store.dispatch(
+                opsApi.endpoints.getAgreements.initiate({
+                    filters: {
+                        fiscalYear: [],
+                        portfolio: [],
+                        projectTitle: [],
+                        agreementType: [],
+                        agreementName: [],
+                        contractNumber: [
+                            { id: "CT-001", title: "CT-001" },
+                            { id: "CT-002", title: "CT-002" }
+                        ]
+                    },
+                    onlyMy: false,
+                    sortConditions: null,
+                    sortDescending: false,
+                    page: 0,
+                    limit: 10
+                })
+            );
+
+            expect(capturedUrl).toContain("contract_number=CT-001");
+            expect(capturedUrl).toContain("contract_number=CT-002");
+        });
+    });
+
     describe("Pagination with Filters", () => {
         it("should include pagination params with fiscal year filter", async () => {
             let capturedUrl = "";
