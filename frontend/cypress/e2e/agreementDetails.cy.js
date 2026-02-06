@@ -18,7 +18,7 @@ describe("agreement details", () => {
         cy.get("h2").first().contains("Mother and Infant Home Visiting Program Evaluation 2");
         cy.get("span").contains("Awarded");
         cy.get('[data-cy="details-tab-Award & Modifications"]').should("be.disabled");
-        cy.get('[data-cy="details-tab-Procurement Tracker"]').should("be.disabled");
+        cy.get('[data-cy="details-tab-Procurement Tracker"]').should("be.enabled");
         cy.get('[data-cy="details-tab-Documents"]').should("be.disabled");
         cy.get("h2").eq(1).contains("Agreement Details");
         cy.get('[data-cy="agreement-description"]').contains("Test description");
