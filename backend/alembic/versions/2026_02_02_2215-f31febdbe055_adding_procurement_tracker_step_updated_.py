@@ -1,7 +1,7 @@
 """Adding procurement tracker step updated event
 
 Revision ID: f31febdbe055
-Revises: 55277b050af7
+Revises: 33fad4b15baa
 Create Date: 2026-02-02 22:15:08.745178+00:00
 
 """
@@ -14,7 +14,7 @@ from alembic_postgresql_enum import TableReference
 
 # revision identifiers, used by Alembic.
 revision: str = "f31febdbe055"
-down_revision: Union[str, None] = "55277b050af7"
+down_revision: Union[str, None] = "33fad4b15baa"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

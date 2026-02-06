@@ -1,7 +1,7 @@
 """add step two model for procurement tracker
 
 Revision ID: 33fad4b15baa
-Revises: f31febdbe055
+Revises: 55277b050af7
 Create Date: 2026-02-04 18:47:28.692681+00:00
 
 """
@@ -14,7 +14,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision: str = "33fad4b15baa"
-down_revision: Union[str, None] = "f31febdbe055"
+down_revision: Union[str, None] = "55277b050af7"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
