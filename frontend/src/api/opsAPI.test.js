@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, it, expect, beforeAll, afterEach, afterAll } from "vitest";
 import { server } from "../tests/mocks";
 import { http, HttpResponse } from "msw";

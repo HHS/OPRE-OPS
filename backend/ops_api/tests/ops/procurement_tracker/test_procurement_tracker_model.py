@@ -127,20 +127,68 @@ def test_step_to_dict_maps_acquisition_planning_fields(loaded_db, test_user):
     assert "acquisition_planning_notes" not in step_1_dict
 
 
-def test_step_to_dict_excludes_acquisition_fields_for_other_steps(loaded_db):
-    """Test that to_dict() excludes ACQUISITION_PLANNING fields for non-ACQUISITION_PLANNING steps."""
+def test_step_to_dict_maps_pre_solicitation_fields(loaded_db, test_user):
+    """Test that to_dict() maps prefixed columns to API field names for PRE_SOLICITATION."""
     tracker = DefaultProcurementTracker.create_with_steps(agreement_id=1)
     loaded_db.add(tracker)
     loaded_db.commit()
 
-    # Step 2 (PRE_SOLICITATION) should NOT include acquisition planning fields
+    # Update step 2 with pre-solicitation data
+    step_2 = tracker.steps[1]
+    step_2.pre_solicitation_target_completion_date = date(2026, 2, 15)
+    step_2.pre_solicitation_task_completed_by = test_user.id
+    step_2.pre_solicitation_date_completed = date(2026, 2, 10)
+    step_2.pre_solicitation_notes = "Pre-solicitation complete"
+    step_2.pre_solicitation_draft_solicitation_date = date(2026, 2, 8)
+    loaded_db.commit()
+
+    # Step 2 (PRE_SOLICITATION) should map to unprefixed names
     step_2_dict = tracker.steps[1].to_dict()
-    assert "task_completed_by" not in step_2_dict
-    assert "date_completed" not in step_2_dict
-    assert "notes" not in step_2_dict
+    assert "target_completion_date" in step_2_dict
+    assert "task_completed_by" in step_2_dict
+    assert "date_completed" in step_2_dict
+    assert "notes" in step_2_dict
+    assert "draft_solicitation_date" in step_2_dict
+    assert step_2_dict["notes"] == "Pre-solicitation complete"
+
+    # Prefixed versions should be removed
+    assert "pre_solicitation_target_completion_date" not in step_2_dict
+    assert "pre_solicitation_task_completed_by" not in step_2_dict
+    assert "pre_solicitation_date_completed" not in step_2_dict
+    assert "pre_solicitation_notes" not in step_2_dict
+    assert "pre_solicitation_draft_solicitation_date" not in step_2_dict
+
+    # ACQUISITION_PLANNING fields should be excluded from PRE_SOLICITATION steps
     assert "acquisition_planning_task_completed_by" not in step_2_dict
     assert "acquisition_planning_date_completed" not in step_2_dict
     assert "acquisition_planning_notes" not in step_2_dict
+
+
+def test_step_to_dict_excludes_step_specific_fields_for_other_steps(loaded_db):
+    """Test that to_dict() excludes step-specific fields for steps without those fields."""
+    tracker = DefaultProcurementTracker.create_with_steps(agreement_id=1)
+    loaded_db.add(tracker)
+    loaded_db.commit()
+
+    # Step 3 (SOLICITATION) should NOT include acquisition planning or pre-solicitation fields
+    step_3_dict = tracker.steps[2].to_dict()
+
+    # Should not have unprefixed step-specific fields
+    assert "task_completed_by" not in step_3_dict
+    assert "date_completed" not in step_3_dict
+    assert "notes" not in step_3_dict
+    assert "target_completion_date" not in step_3_dict
+    assert "draft_solicitation_date" not in step_3_dict
+
+    # Should not have prefixed fields either
+    assert "acquisition_planning_task_completed_by" not in step_3_dict
+    assert "acquisition_planning_date_completed" not in step_3_dict
+    assert "acquisition_planning_notes" not in step_3_dict
+    assert "pre_solicitation_target_completion_date" not in step_3_dict
+    assert "pre_solicitation_task_completed_by" not in step_3_dict
+    assert "pre_solicitation_date_completed" not in step_3_dict
+    assert "pre_solicitation_notes" not in step_3_dict
+    assert "pre_solicitation_draft_solicitation_date" not in step_3_dict
 
 
 def test_cascade_delete_steps(loaded_db):

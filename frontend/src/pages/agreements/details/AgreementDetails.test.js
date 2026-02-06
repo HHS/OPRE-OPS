@@ -41,6 +41,11 @@ vi.mock("react", async () => {
     };
 });
 
+vi.mock("./AgreementDetailsEdit", () => ({
+    __esModule: true,
+    default: () => <div data-testid="agreement-details-edit" />
+}));
+
 const agreementHistoryData = [
     {
         changes: {

@@ -6612,5 +6612,104 @@
             created_by: 516,
             created_on: "2025-01-30T14:43:53.928887Z",
         },
+        { // 68 Set a procurement tracker acquisition planning step to completed
+            event_type: "UPDATE_PROCUREMENT_TRACKER_STEP",
+            event_status: "SUCCESS",
+            event_details: {
+                "request.json": {
+                    "status": "COMPLETED",
+                    "date_completed": "2025-12-25",
+                    "task_completed_by": 521,
+                },
+                "request.values": {},
+                "request.headers": {
+                    "Host": "localhost",
+                    "User-Agent": "Werkzeug/3.1.5",
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer Token",
+                    "Content-Length": "81",
+                },
+                "request.remote_addr": "127.0.0.1",
+                "request.remote_user": null,
+                "procurement_tracker_step": {
+                    "id": 1,
+                    "notes": null,
+                    "status": "COMPLETED",
+                    "versions": [
+                        {
+                            "id": 1,
+                            "transaction_id": 1568,
+                        },
+                        {
+                            "id": 1,
+                            "transaction_id": 1569,
+                        },
+                    ],
+                    "step_type": "ACQUISITION_PLANNING",
+                    "created_by": null,
+                    "created_on": "2026-02-02T20:00:16.860919Z",
+                    "step_class": "default_step",
+                    "updated_by": 521,
+                    "updated_on": "2026-02-02T20:00:17.190337Z",
+                    "step_number": 1,
+                    "display_name": "Step 1: ACQUISITION_PLANNING",
+                    "date_completed": "2025-12-25",
+                    "created_by_user": null,
+                    "step_start_date": "2026-02-02",
+                    "updated_by_user": {
+                        "id": 521,
+                        "full_name": "User Demo",
+                    },
+                    "completed_by_user": 521,
+                    "task_completed_by": 521,
+                    "procurement_tracker": 1,
+                    "step_completed_date": "2026-02-02",
+                    "procurement_tracker_id": 1,
+                },
+                "procurement_tracker_step_updates": {
+                    "changes": {
+                        "status": {
+                            "new_value": "COMPLETED",
+                            "old_value": "ACTIVE",
+                        },
+                        "updated_by": {
+                            "new_value": 521,
+                            "old_value": null,
+                        },
+                        "updated_on": {
+                            "new_value": "2026-02-02T20:00:17.190337Z",
+                            "old_value": "2026-02-02T20:00:16.860919Z",
+                        },
+                        "date_completed": {
+                            "new_value": "2025-12-25",
+                            "old_value": null,
+                        },
+                        "updated_by_user": {
+                            "new_value": {
+                                "id": 521,
+                                "full_name": "User Demo",
+                            },
+                            "old_value": null,
+                        },
+                        "completed_by_user": {
+                            "new_value": 521,
+                            "old_value": null,
+                        },
+                        "task_completed_by": {
+                            "new_value": 521,
+                            "old_value": null,
+                        },
+                        "step_completed_date": {
+                            "new_value": "2026-02-02",
+                            "old_value": null,
+                        },
+                    },
+                    "owner_id": 1,
+                    "updated_by": 521,
+                },
+            },
+            created_by: 521,
+            created_on: "2026-02-02T20:00:17.190337Z",
+        },
     ],
 }

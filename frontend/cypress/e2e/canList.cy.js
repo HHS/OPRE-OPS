@@ -127,21 +127,18 @@ describe("CAN List Filtering", () => {
     it("the filter button works as expected", () => {
         cy.get("button").contains("Filter").click();
         // set a number of filters
-        // eslint-disable-next-line cypress/unsafe-to-chain-command
         cy.get(".can-active-period-combobox__control")
             .click()
             .get(".can-active-period-combobox__menu")
             .find(".can-active-period-combobox__option")
             .first()
             .click();
-        // eslint-disable-next-line cypress/unsafe-to-chain-command
         cy.get(".can-transfer-combobox__control")
             .click()
             .get(".can-transfer-combobox__menu")
             .find(".can-transfer-combobox__option")
             .first()
             .click();
-        // eslint-disable-next-line cypress/unsafe-to-chain-command
         cy.get(".can-portfolio-combobox__control")
             .click()
             .get(".can-portfolio-combobox__menu")
@@ -271,7 +268,6 @@ describe("CAN List Filtering", () => {
 
     it("multi-delete should not break the app", () => {
         cy.get("button").contains("Filter").click();
-        // eslint-disable-next-line cypress/unsafe-to-chain-command
         cy.get(".can-active-period-combobox__control")
             .click()
             .get(".can-active-period-combobox__menu")
@@ -293,7 +289,6 @@ describe("CAN List Filtering", () => {
 
         // now do the same for the second filter
         cy.get("button").contains("Filter").click();
-        // eslint-disable-next-line cypress/unsafe-to-chain-command
         cy.get(".can-transfer-combobox__control")
             .click()
             .get(".can-transfer-combobox__menu")
@@ -312,7 +307,6 @@ describe("CAN List Filtering", () => {
 
         // now do the same for the third filter
         cy.get("button").contains("Filter").click();
-        // eslint-disable-next-line cypress/unsafe-to-chain-command
         cy.get(".can-portfolio-combobox__control")
             .click()
             .get(".can-portfolio-combobox__menu")
@@ -336,7 +330,6 @@ describe("CAN List Filtering", () => {
         cy.get("tbody").find("tr").should("have.length.greaterThan", 3);
         cy.get("button").contains("Filter").click();
         // set a number of filters
-        // eslint-disable-next-line cypress/unsafe-to-chain-command
         cy.get(".can-active-period-combobox__control")
             .click()
             .get(".can-active-period-combobox__menu")
