@@ -290,9 +290,7 @@ const rootElement = document.getElementById("root");
 
 const logReactError = (label, error, errorInfo) => {
     const context = { url: window.location.href, timestamp: new Date().toISOString() };
-    console.error(`${label}:`, error);
-    console.error("Error Info:", errorInfo);
-    console.error("Context:", context);
+    console.error("React error:", { label, error, errorInfo, context });
 };
 
 const startApp = async () => {
