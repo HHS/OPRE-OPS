@@ -134,8 +134,7 @@ describe("Procurement Tracker Step 1", () => {
         });
 
         // Verify Step 1 accordion remains open after submission
-        cy.get("button")
-            .contains(/Step 1 of/)
+        cy.contains("button", /^1\s+of\s+\d+\s+Acquisition Planning$/)
             .should("have.attr", "aria-expanded", "true");
     });
 });

@@ -64,11 +64,9 @@ const StepBuilderAccordion = ({ step, totalSteps, activeStepNumber, children, is
             data-testid={`step-builder-heading-${step?.id}`}
         >
             <span className="step-builder-accordion__step-count">
-                <span className="step-builder-accordion__step-number">{step?.step_number}</span>
-                {" "}
+                <span className="step-builder-accordion__step-number">{step?.step_number}</span>{" "}
                 <span className="step-builder-accordion__step-total">of {totalSteps}</span>
-            </span>
-            {" "}
+            </span>{" "}
             <span className="step-builder-accordion__step-label">{formatStepType(step?.step_type)}</span>
         </div>
     );

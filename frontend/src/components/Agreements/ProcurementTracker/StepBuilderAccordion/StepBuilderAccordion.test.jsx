@@ -55,7 +55,9 @@ describe("StepBuilderAccordion", () => {
             />
         );
 
-        expect(screen.getByTestId("step-builder-heading-1")).toHaveClass("step-builder-accordion__heading--not-started");
+        expect(screen.getByTestId("step-builder-heading-1")).toHaveClass(
+            "step-builder-accordion__heading--not-started"
+        );
     });
 
     it("falls back to activeStepNumber when status is not mapped", () => {
