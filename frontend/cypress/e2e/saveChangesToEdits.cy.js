@@ -69,7 +69,12 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
 const closeUnsavedChangesModalViaEsc = () => {
     cy.get("#ops-modal", { timeout: 15000 }).should("be.visible");
     cy.get("[data-cy='confirm-action']", { timeout: 15000 }).should("be.visible").focus();
-    cy.get("body").type("{esc}", { force: true });
+    cy.get("#ops-modal").trigger("keydown", { key: "Escape", keyCode: 27, which: 27, force: true });
+    cy.get("#ops-modal").then(($modal) => {
+        if ($modal.is(":visible")) {
+            cy.get("body").type("{esc}", { force: true });
+        }
+    });
     cy.get("#ops-modal", { timeout: 20000 }).should("not.exist");
 };
 
