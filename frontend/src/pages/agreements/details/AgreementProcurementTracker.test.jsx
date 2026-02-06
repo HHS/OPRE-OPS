@@ -93,18 +93,22 @@ vi.mock("../../../hooks/user.hooks", () => ({
 }));
 
 // Mock formatDateToMonthDayYear helper
-vi.mock("../../../helpers/utils", () => ({
-    formatDateToMonthDayYear: vi.fn((date) => {
-        if (!date) return "";
-        return new Date(date).toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "long",
-            day: "numeric"
-        });
-    }),
-    formatDateForApi: vi.fn((date) => date),
-    getLocalISODate: vi.fn(() => "2024-01-30")
-}));
+vi.mock("../../../helpers/utils", async (importOriginal) => {
+    const actual = await importOriginal();
+    return {
+        ...actual,
+        formatDateToMonthDayYear: vi.fn((date) => {
+            if (!date) return "";
+            return new Date(date).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric"
+            });
+        }),
+        formatDateForApi: vi.fn((date) => date),
+        getLocalISODate: vi.fn(() => "2024-01-30")
+    };
+});
 
 // Mock Tag component
 vi.mock("../../../components/UI/Tag", () => ({

@@ -159,7 +159,7 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
 
         cy.then(() => {
             cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).trigger("mouseover");
-            cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).get("[data-cy='edit-row']").click();
+            cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).find("[data-cy='edit-row']").click();
             cy.get("#enteredAmount").clear();
             cy.get("#enteredAmount").type("999999");
             cy.get("[data-cy='update-budget-line']").click();
@@ -210,7 +210,7 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
 
         cy.then(() => {
             cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).trigger("mouseover");
-            cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).get("[data-cy='delete-row']").click();
+            cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).find("[data-cy='delete-row']").click();
             cy.get(".usa-modal__heading").should(
                 "contain",
                 `Are you sure you want to delete budget line ${budgetLineId}?`
@@ -265,7 +265,7 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
             // Don't wait for the services component alert - just proceed
 
             cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).trigger("mouseover");
-            cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).get("[data-cy='edit-row']").click();
+            cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).find("[data-cy='edit-row']").click();
             cy.get("#enteredAmount").clear();
             cy.get("#enteredAmount").type("999999");
             cy.get("#allServicesComponentSelect").select("SC1");
@@ -294,8 +294,8 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
         //Test DD and user workflow after approving sending the change request via the blocker modal
         testLogin("division-director");
         cy.visit(`/agreements?filter=change-requests`);
-        cy.get("[data-cy='review-card']").should("exist");
-        cy.get("[data-cy='review-card']").trigger("mouseover");
+        cy.contains("[data-cy='review-card']", testAgreement.name).should("exist").as("reviewCard");
+        cy.get("@reviewCard").trigger("mouseover");
         cy.get("#approve").click();
         cy.get("[data-cy='confirm-action']").click();
         testLogin("system-owner");
