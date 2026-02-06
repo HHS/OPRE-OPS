@@ -12,6 +12,8 @@ if (typeof window !== "undefined") {
     Object.defineProperty(window, "scrollTo", { value: noop, writable: true });
 }
 
+// jsdom 28 has native fetch support, so we don't need to use undici anymore
+// The previous undici setup was causing issues with MSW in jsdom 28
 // Ensure fetch + AbortController/AbortSignal come from the same realm (jsdom)
 if (typeof window !== "undefined") {
     if (window.fetch) {
