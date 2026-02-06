@@ -173,6 +173,7 @@ class AgreementResponse(AgreementData):
         dump_default=None,
         allow_none=True,
     )
+    authorized_user_ids = fields.List(fields.Integer(), required=True)
     special_topic = fields.Nested(SpecialTopicsSchema)
     is_awarded = fields.Bool(load_default=None, dump_default=None, required=False)
     created_by = fields.Integer(allow_none=True)

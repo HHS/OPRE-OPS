@@ -6098,6 +6098,10 @@ components:
                 type: string
             in_review:
               type: boolean
+            authorized_user_ids:
+              type: array
+              items:
+                type: integer
             change_requests_in_review:
               type: array
               nullable: true
