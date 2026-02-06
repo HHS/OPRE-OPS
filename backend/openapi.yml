@@ -5670,7 +5670,7 @@ components:
               nullable: true
               description: >-
                 Date when this step was completed. Must be current date
-                or future date.
+                or past date.
             notes:
               type: string
               nullable: true
@@ -5698,7 +5698,7 @@ components:
               nullable: true
               description: >-
                 Date when this step was completed. Must be current date
-                or future date.
+                or past date.
             notes:
               type: string
               nullable: true
@@ -5729,7 +5729,7 @@ components:
           description: >-
             Date when this step was completed (ACQUISITION_PLANNING
             and PRE_SOLICITATION steps only). Must be current date or
-            future date.
+            past date.
         notes:
           type: string
           nullable: true
@@ -7031,7 +7031,7 @@ components:
         Example PATCH request body for updating an acquisition planning
         step to COMPLETED status with all additional fields. All fields
         are optional. Date field (date_completed) must be current date
-        or future date.
+        or past date.
       value:
         status: "COMPLETED"
         task_completed_by: 521
@@ -7065,7 +7065,7 @@ components:
       description: >-
         Example PATCH request body for updating a pre-solicitation
         step to COMPLETED status with all additional fields. All fields
-        are optional. Date fields (target_completion_date, date_completed,
+        are optional. Date fields (target_completion_date,
         draft_solicitation_date) must be current date or future date.
       value:
         status: "COMPLETED"
