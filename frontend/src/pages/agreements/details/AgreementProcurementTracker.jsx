@@ -1,8 +1,8 @@
 import React from "react";
 import { useGetProcurementTrackersByAgreementIdQuery } from "../../../api/opsAPI";
 import ProcurementTrackerStepOne from "../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepOne";
+import StepBuilderAccordion from "../../../components/Agreements/ProcurementTracker/StepBuilderAccordion";
 import DebugCode from "../../../components/DebugCode";
-import Accordion from "../../../components/UI/Accordion";
 import StepIndicator from "../../../components/UI/StepIndicator";
 import { IS_PROCUREMENT_TRACKER_READY } from "../../../constants";
 
@@ -63,6 +63,9 @@ const AgreementProcurementTracker = ({ agreement }) => {
 
     // Use active_step_number from tracker if available, otherwise default to 0
     const currentStep = activeTracker?.active_step_number ? activeTracker.active_step_number : 0;
+    const sortedSteps = [...(activeTracker?.steps || [])].sort(
+        (a, b) => (a?.step_number ?? Number.MAX_SAFE_INTEGER) - (b?.step_number ?? Number.MAX_SAFE_INTEGER)
+    );
 
     return (
         <>
@@ -76,11 +79,13 @@ const AgreementProcurementTracker = ({ agreement }) => {
                 steps={WIZARD_STEPS}
                 currentStep={currentStep}
             />
-            {activeTracker?.steps.length > 0 &&
-                activeTracker?.steps?.map((step) => {
+            {sortedSteps.length > 0 &&
+                sortedSteps.map((step) => {
                     return (
-                        <Accordion
-                            heading={`Step ${step.step_number} of ${activeTracker?.steps.length} ${step.step_type}`}
+                        <StepBuilderAccordion
+                            step={step}
+                            totalSteps={sortedSteps.length}
+                            activeStepNumber={currentStep}
                             // Keep step 1 and the active step open after form submission, all others closed
                             isClosed={
                                 isFormSubmitted
@@ -97,7 +102,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                     handleSetIsFormSubmitted={handleSetIsFormSubmitted}
                                 />
                             )}
-                        </Accordion>
+                        </StepBuilderAccordion>
                     );
                 })}
             {activeTracker && <DebugCode data={activeTracker}></DebugCode>}

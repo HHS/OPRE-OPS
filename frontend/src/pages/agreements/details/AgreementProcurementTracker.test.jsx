@@ -425,8 +425,52 @@ describe("AgreementProcurementTracker", () => {
                 </Provider>
             );
 
-            const heading = screen.getByText(/Step 1 of 2 Pre-Solicitation/);
+            const heading = screen.getByTestId("step-builder-heading-101");
             expect(heading).toBeInTheDocument();
+            expect(heading).toHaveTextContent(/1\s+of\s+2\s+Pre Solicitation/);
+        });
+
+        it("renders steps sorted ascending by step_number", () => {
+            const outOfOrderSteps = {
+                data: [
+                    {
+                        id: 4,
+                        agreement_id: 13,
+                        status: "ACTIVE",
+                        active_step_number: 2,
+                        steps: [
+                            {
+                                id: 102,
+                                step_number: 2,
+                                step_type: "SOLICITATION",
+                                status: "ACTIVE"
+                            },
+                            {
+                                id: 101,
+                                step_number: 1,
+                                step_type: "PRE_SOLICITATION",
+                                status: "COMPLETED"
+                            }
+                        ]
+                    }
+                ]
+            };
+
+            useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
+                data: outOfOrderSteps,
+                isLoading: false,
+                isError: false
+            });
+
+            render(
+                <Provider store={setupStore()}>
+                    <AgreementProcurementTracker agreement={mockAgreement} />
+                </Provider>
+            );
+
+            const headings = screen.getAllByTestId("accordion-heading");
+            expect(headings[0]).toHaveTextContent(/1\s+of\s+2\s+Pre Solicitation/);
+            expect(headings[1]).toHaveTextContent(/2\s+of\s+2\s+Solicitation/);
         });
 
         it("renders step 1 content when accordion is open", () => {
@@ -657,7 +701,7 @@ describe("AgreementProcurementTracker", () => {
             expect(screen.getByTestId("users-combobox")).toBeInTheDocument();
 
             // Step 2 accordion heading should exist but content should be closed
-            expect(screen.getByText(/Step 2 of 2 Solicitation/)).toBeInTheDocument();
+            expect(screen.getByTestId("step-builder-heading-102")).toBeInTheDocument();
         });
 
         it("renders UsersComboBox with correct label", () => {
