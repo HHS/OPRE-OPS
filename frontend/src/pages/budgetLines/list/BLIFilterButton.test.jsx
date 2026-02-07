@@ -33,8 +33,10 @@ vi.mock("../../../components/UI/FilterButton/FilterButton", () => ({
 vi.mock("../../../components/UI/Form/FiscalYearComboBox", () => ({
     default: ({ selectedFiscalYears, setSelectedFiscalYears }) => (
         <div data-testid="fiscal-year-combo">
-            <button onClick={() => setSelectedFiscalYears([{ id: 2024, title: 2024 }])}>Set Fiscal Years</button>
-            <button onClick={() => setSelectedFiscalYears([{ id: "ALL", title: "All Fiscal Years" }])}>
+            <button onClick={() => setSelectedFiscalYears([{ id: 2024, title: "FY 2024" }])}>
+                Set Fiscal Years
+            </button>
+            <button onClick={() => setSelectedFiscalYears([{ id: "ALL", title: "All FYs" }])}>
                 Set All Fiscal Years
             </button>
             <div>{selectedFiscalYears?.length || 0} selected</div>

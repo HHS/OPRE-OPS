@@ -74,7 +74,7 @@ describe("BLIFilterTags", () => {
     it("renders All FYs tag when All Fiscal Years is selected", () => {
         const filters = {
             ...defaultFilters,
-            fiscalYears: [{ id: "ALL", title: "All Fiscal Years" }]
+            fiscalYears: [{ id: "ALL", title: "All FYs" }]
         };
 
         render(

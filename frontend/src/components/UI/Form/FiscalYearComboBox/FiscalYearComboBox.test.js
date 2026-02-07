@@ -35,8 +35,8 @@ describe("FiscalYearComboBox", () => {
         // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
         fireEvent.keyDown(container.querySelector("input"), { key: "ArrowDown", code: 40 });
 
-        expect(screen.getByText("2043")).toBeInTheDocument();
-        expect(screen.getByText("2044")).toBeInTheDocument();
+        expect(screen.getByText("FY 2043")).toBeInTheDocument();
+        expect(screen.getByText("FY 2044")).toBeInTheDocument();
     });
 
     it("updates the input value when the user types in the input field", () => {
@@ -67,12 +67,12 @@ describe("FiscalYearComboBox", () => {
         fireEvent.keyDown(container.querySelector("input"), { key: "ArrowDown", code: 40 });
 
         // eslint-disable-next-line testing-library/prefer-screen-queries
-        fireEvent.click(getByText("2043"));
+        fireEvent.click(getByText("FY 2043"));
         // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
         fireEvent.keyDown(container.querySelector("input"), { key: "ArrowDown", code: 40 });
 
         // eslint-disable-next-line testing-library/prefer-screen-queries
-        fireEvent.click(getByText("2044"));
-        expect(setSelectedFiscalYears).toHaveBeenLastCalledWith([{ id: 2044, title: 2044 }]);
+        fireEvent.click(getByText("FY 2044"));
+        expect(setSelectedFiscalYears).toHaveBeenLastCalledWith([{ id: 2044, title: "FY 2044" }]);
     });
 });

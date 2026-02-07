@@ -19,11 +19,22 @@ export const BLIFilterTags = ({ filters, setFilters }) => {
         switch (tag.filter) {
             case "fiscalYears":
                 setFilters((prevState) => {
+                    if (tag.tagText === "All FYs") {
+                        return {
+                            ...prevState,
+                            fiscalYears: []
+                        };
+                    }
+                    const yearValue = Number(tag.tagText.replace("FY ", ""));
                     return {
                         ...prevState,
-                        fiscalYears: (prevState.fiscalYears ?? []).filter(
-                            (fy) => fy.title.toString() !== tag.tagText.replace("FY ", "")
-                        )
+                        fiscalYears: (prevState.fiscalYears ?? []).filter((fy) => {
+                            const fyId = typeof fy.id === "number" ? fy.id : Number(fy.id);
+                            if (!Number.isNaN(yearValue) && !Number.isNaN(fyId)) {
+                                return fyId !== yearValue;
+                            }
+                            return fy.title.toString() !== tag.tagText.replace("FY ", "");
+                        })
                     };
                 });
                 break;
@@ -92,7 +103,7 @@ export const BLIFilterTags = ({ filters, setFilters }) => {
                     selectedFiscalYears.push({ tagText: "All FYs", filter: "fiscalYears" });
                     return;
                 }
-                const tag = `FY ${fiscalYear.title}`;
+                const tag = fiscalYear.title.toString().startsWith("FY ") ? fiscalYear.title : `FY ${fiscalYear.title}`;
                 selectedFiscalYears.push({ tagText: tag, filter: "fiscalYears" });
             });
         setTagsList((prevState) => prevState.filter((t) => t.filter !== "fiscalYears"));
