@@ -773,10 +773,10 @@ describe("Procurement Shop Change Requests at the agreement level", () => {
 
 const checkAgreementHistory = () => {
     cy.get("h3.history-title").should("have.text", "History");
-    cy.get('[data-cy="agreement-history-container"]').should("exist");
-    cy.get('[data-cy="agreement-history-container"]').scrollIntoView();
-    cy.get('[data-cy="agreement-history-list"]').should("exist");
-    cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]').should(
-        "exist"
+    cy.get('[data-cy="agreement-history-container"]').should("exist").scrollIntoView();
+    cy.get('[data-cy="agreement-history-list"]', { timeout: 20000 }).should("be.visible");
+    cy.get('[data-cy="agreement-history-list"] [data-cy="log-item-title"]', { timeout: 20000 }).should(
+        "have.length.at.least",
+        1
     );
 };

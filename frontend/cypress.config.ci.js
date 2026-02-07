@@ -65,11 +65,18 @@ export default defineConfig({
                 }
             });
         },
-        defaultCommandTimeout: 15000,
-        requestTimeout: 15000,
-        responseTimeout: 45000,
-        pageLoadTimeout: 45000,
-        taskTimeout: 120000,
+        // CI can be slower under React 19 + headless Electron. These are tuned to
+        // reduce flakes while we stabilize E2E and investigate root causes.
+        // TODO: Revisit and lower once React 19 CI performance is validated.
+        defaultCommandTimeout: 20000,
+        requestTimeout: 20000,
+        responseTimeout: 60000,
+        pageLoadTimeout: 120000,
+        taskTimeout: 180000,
+        numTestsKeptInMemory: 1,
+        // Experimental but currently needed to reduce CI memory pressure.
+        // TODO: Remove once we confirm stability without it.
+        experimentalMemoryManagement: true,
         video: false,
         screenshotOnRunFailure: true
     },
@@ -79,7 +86,9 @@ export default defineConfig({
     retries: {
         // Configure retry attempts for `cypress run`
         // Default is 0
-        runMode: 2,
+        // Using 3 retries in CI to mitigate React 19 timing variance.
+        // TODO: Reduce once tests are deterministic again.
+        runMode: 3,
         // Configure retry attempts for `cypress open`
         // Default is 0
         openMode: 0

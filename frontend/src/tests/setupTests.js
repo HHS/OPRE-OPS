@@ -6,12 +6,28 @@ import TestApplicationContext from "../applicationContext/TestApplicationContext
 import { setupStore } from "../store";
 import { server } from "./mocks";
 import { opsApi } from "../api/opsAPI";
-// jsdom 28 has native fetch support, so we don't need to use undici anymore
-// The previous undici setup was causing issues with MSW in jsdom 28
 
 const noop = () => {};
 if (typeof window !== "undefined") {
     Object.defineProperty(window, "scrollTo", { value: noop, writable: true });
+}
+
+// jsdom 28 has native fetch support, so we don't need to use undici anymore
+// The previous undici setup was causing issues with MSW in jsdom 28
+// Ensure fetch + AbortController/AbortSignal come from the same realm (jsdom)
+if (typeof window !== "undefined") {
+    if (window.fetch) {
+        global.fetch = window.fetch.bind(window);
+        global.Headers = window.Headers;
+        global.Request = window.Request;
+        global.Response = window.Response;
+    }
+    if (window.AbortController) {
+        global.AbortController = window.AbortController;
+    }
+    if (window.AbortSignal) {
+        global.AbortSignal = window.AbortSignal;
+    }
 }
 
 // Mock localStorage

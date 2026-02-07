@@ -2,6 +2,26 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Claude Actions
+
+This repository includes reusable automation scripts in `.claude/actions/` for common development tasks:
+
+- **`monitor-ci.sh`**: Monitor GitHub Actions CI runs until completion
+- **`quick-ci-status.sh`**: Instantly check the latest CI run status
+
+See [`.claude/actions/README.md`](.claude/actions/README.md) for usage details.
+
+**Example usage**:
+```bash
+# Check current CI status
+./.claude/actions/quick-ci-status.sh
+
+# Monitor a specific CI run
+./.claude/actions/monitor-ci.sh 21634663420 90
+```
+
+These scripts can be invoked by Claude Code automatically or run manually.
+
 ## Project Overview
 
 OPRE OPS is the Portfolio Management System for OPRE (Office of Planning, Research and Evaluation), replacing the legacy MAPS system. It's a full-stack web application with a Flask/SQLAlchemy backend API and a React/Redux frontend, containerized with Docker.

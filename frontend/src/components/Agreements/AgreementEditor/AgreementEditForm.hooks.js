@@ -119,7 +119,7 @@ const useAgreementEditForm = (
     } = agreement;
 
     const {
-        data: productServiceCodes,
+        data: productServiceCodes = [],
         error: errorProductServiceCodes,
         isLoading: isLoadingProductServiceCodes
     } = useGetProductServiceCodesQuery({});
@@ -330,6 +330,29 @@ const useAgreementEditForm = (
         saveAgreementRef.current = saveAgreement;
     }, [saveAgreement]);
 
+    const blockerRef = React.useRef(blocker);
+
+    React.useEffect(() => {
+        blockerRef.current = blocker;
+    }, [blocker]);
+
+    const proceedIfBlocked = async () => {
+        const currentBlocker = blockerRef.current;
+        if (!currentBlocker || currentBlocker.state !== "blocked") {
+            return;
+        }
+        try {
+            await currentBlocker.proceed();
+        } catch (error) {
+            const message = error && typeof error.message === "string" ? error.message.trim() : "";
+            if (message.startsWith("Invalid blocker state transition")) {
+                console.warn("Ignored known React Router blocker exception:", message);
+                return;
+            }
+            throw error;
+        }
+    };
+
     // Setup blocker modal when navigation is blocked
     React.useEffect(() => {
         if (blocker.state === "blocked") {
@@ -345,18 +368,18 @@ const useAgreementEditForm = (
                         setHasAgreementChanged(false);
                         if (isEditMode && setIsEditMode) setIsEditMode(false);
                         setShowBlockerModal(false);
-                        blocker.proceed();
+                        await proceedIfBlocked();
                     } catch (error) {
                         // Error already handled in saveAgreement
                         console.error(error);
                         blocker.reset();
                     }
                 },
-                handleSecondary: () => {
+                handleSecondary: async () => {
                     setHasAgreementChanged(false);
                     setShowBlockerModal(false);
                     if (isEditMode && setIsEditMode) setIsEditMode(false);
-                    blocker.proceed();
+                    await proceedIfBlocked();
                 },
                 closeModal: () => {
                     setShowBlockerModal(false);
