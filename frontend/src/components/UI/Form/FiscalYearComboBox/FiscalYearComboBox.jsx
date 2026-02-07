@@ -23,10 +23,23 @@ export const FiscalYearComboBox = ({
         .filter((fiscalYear) => fiscalYear != null)
         .map((fiscalYear) => {
             if (typeof fiscalYear === "object") {
-                return fiscalYear;
+                const isAll = fiscalYear.id === "ALL";
+                const rawId = fiscalYear.id;
+                const isNumericString = typeof rawId === "string" && /^\d+$/.test(rawId);
+                const parsedId = !isAll && isNumericString ? Number(rawId) : rawId;
+                const shouldPrefixFY = !isAll && typeof parsedId === "number";
+                let title = fiscalYear.title;
+                if (shouldPrefixFY) {
+                    const titleValue = String(fiscalYear.title);
+                    title = titleValue.startsWith("FY ") ? fiscalYear.title : `FY ${parsedId}`;
+                }
+                return { ...fiscalYear, id: parsedId, title };
             }
-            return { id: fiscalYear, title: fiscalYear };
-        });
+            const parsedId =
+                typeof fiscalYear === "string" && /^\d+$/.test(fiscalYear) ? Number(fiscalYear) : fiscalYear;
+            return { id: parsedId, title: `FY ${parsedId}` };
+        })
+        .filter((fiscalYear, index, list) => list.findIndex((item) => item.id === fiscalYear.id) === index);
 
     return (
         <div className="display-flex flex-justify">

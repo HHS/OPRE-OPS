@@ -32,7 +32,7 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
     const [canActivePeriods, setCanActivePeriods] = React.useState([]);
     const [searchParams] = useSearchParams();
     const isResetting = React.useRef(false);
-    const allFiscalYearsOption = React.useMemo(() => ({ id: "ALL", title: "All Fiscal Years" }), []);
+    const allFiscalYearsOption = React.useMemo(() => ({ id: "ALL", title: "All FYs" }), []);
 
     const myBudgetLineItemsUrl = searchParams.get("filter") === "my-budget-lines";
 
@@ -42,17 +42,28 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
         { refetchOnMountOrArgChange: true }
     );
 
-    // Ensure selectedFiscalYear is included in the fiscal year options
+    // Ensure current fiscal year and selected filter years are included in the fiscal year options
     const fiscalYearOptions = React.useMemo(() => {
-        const options = filterOptions?.fiscal_years ?? [];
-        if (selectedFiscalYear && selectedFiscalYear !== "Multi") {
+        let options = (filterOptions?.fiscal_years ?? [])
+            .map((year) => Number(year))
+            .filter((year) => !Number.isNaN(year));
+        const selectedFilterYears = Array.isArray(filters.fiscalYears)
+            ? filters.fiscalYears
+                  .map((fiscalYear) => (typeof fiscalYear?.id === "number" ? fiscalYear.id : Number(fiscalYear?.id)))
+                  .filter((year) => !Number.isNaN(year))
+            : [];
+
+        const currentFiscalYear = getCurrentFiscalYear();
+        options = Array.from(new Set([...options, currentFiscalYear, ...selectedFilterYears]));
+
+        if (selectedFiscalYear && selectedFiscalYear !== "Multi" && selectedFiscalYear !== "All") {
             const yearAsNumber = Number(selectedFiscalYear);
             if (!isNaN(yearAsNumber) && !options.includes(yearAsNumber)) {
                 return [allFiscalYearsOption, ...[...options, yearAsNumber].sort((a, b) => b - a)];
             }
         }
         return [allFiscalYearsOption, ...options];
-    }, [filterOptions?.fiscal_years, selectedFiscalYear, allFiscalYearsOption]);
+    }, [filterOptions?.fiscal_years, filters.fiscalYears, selectedFiscalYear, allFiscalYearsOption]);
 
     // The useEffect() hook calls below are used to set the state appropriately when the filter tags (X) are clicked.
     // Also pre-populates with the selected fiscal year when no filters are applied
