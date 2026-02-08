@@ -449,6 +449,140 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/AgreementHistory"
+  /agreements-filters/:
+    get:
+      tags:
+        - Agreements
+      operationId: getAgreementsFilterOptions
+      summary: Get filter options for agreements
+      description: |
+        Returns available filter options from all agreements in the database.
+        This endpoint provides distinct values for filtering agreements, including
+        fiscal years, portfolios, project titles, agreement types, agreement names,
+        contract numbers, and research types.
+
+        The endpoint supports the `only_my` parameter to limit results to agreements
+        associated with the current user (as team member, project officer, portfolio leader, etc.).
+      parameters:
+        - in: query
+          name: only_my
+          description: |
+            When true, only returns filter options from agreements associated with the current user.
+            User association includes: team member, project officer, portfolio team leader,
+            division director, or users with BUDGET_TEAM/SYSTEM_OWNER roles.
+          schema:
+            type: boolean
+            default: false
+          style: form
+      responses:
+        "200":
+          description: Successfully retrieved agreement filter options
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - fiscal_years
+                  - portfolios
+                  - project_titles
+                  - agreement_types
+                  - agreement_names
+                  - contract_numbers
+                  - research_types
+                properties:
+                  fiscal_years:
+                    type: array
+                    items:
+                      type: integer
+                    description: List of fiscal years from budget line items (sorted descending)
+                    example: [2025, 2024, 2023]
+                  portfolios:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - id
+                        - name
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                    description: List of portfolios (sorted by name)
+                    example:
+                      - id: 1
+                        name: "Child Care"
+                      - id: 2
+                        name: "Child Welfare"
+                  project_titles:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - id
+                        - name
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                    description: List of project titles (sorted by name)
+                    example:
+                      - id: 100
+                        name: "Project Alpha"
+                      - id: 101
+                        name: "Project Beta"
+                  agreement_types:
+                    type: array
+                    items:
+                      type: string
+                      enum: [CONTRACT, GRANT, IAA, AA, DIRECT_OBLIGATION]
+                    description: List of agreement types (sorted alphabetically)
+                    example: ["AA", "CONTRACT", "GRANT"]
+                  agreement_names:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - id
+                        - name
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                    description: List of agreement names (sorted by name)
+                    example:
+                      - id: 1
+                        name: "Agreement 001"
+                      - id: 2
+                        name: "Agreement 002"
+                  contract_numbers:
+                    type: array
+                    items:
+                      type: string
+                    description: List of contract numbers (only from CONTRACT and AA agreements, sorted alphabetically)
+                    example: ["12345", "67890"]
+                  research_types:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - id
+                        - name
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                    description: List of research methodologies (currently returns empty array - business logic TBD)
+                    example: []
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized - authentication required
+        "500":
+          description: Internal Server Error
   /procurement-actions/:
     get:
       tags:

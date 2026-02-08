@@ -8,6 +8,7 @@ from ops_api.ops.views import (
     AGREEMENT_HISTORY_LIST_API_VIEW_FUNC,
     AGREEMENT_ITEM_API_VIEW_FUNC,
     AGREEMENT_LIST_API_VIEW_FUNC,
+    AGREEMENT_LIST_FILTER_OPTION_API_VIEW_FUNC,
     AGREEMENT_REASON_LIST_API_VIEW_FUNC,
     AGREEMENT_TYPE_LIST_API_VIEW_FUNC,
     AZURE_SAS_TOKEN_VIEW_FUNC,
@@ -272,6 +273,10 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/agreement-types/",
         view_func=AGREEMENT_TYPE_LIST_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/agreements-filters/",
+        view_func=AGREEMENT_LIST_FILTER_OPTION_API_VIEW_FUNC,
     )
 
     api_bp.add_url_rule(

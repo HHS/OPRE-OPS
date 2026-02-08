@@ -7,10 +7,11 @@ import React from "react";
  */
 export const useAgreementsFilterButton = (filters, setFilters) => {
     const [fiscalYear, setFiscalYear] = React.useState([]);
-    const [budgetLineStatus, setBudgetLineStatus] = React.useState([]);
     const [portfolio, setPortfolio] = React.useState([]);
-    const [agreementName, setAgreementName] = React.useState([]);
+    const [projectTitle, setProjectTitle] = React.useState([]);
     const [agreementType, setAgreementType] = React.useState([]);
+    const [agreementName, setAgreementName] = React.useState([]);
+    const [contractNumber, setContractNumber] = React.useState([]);
 
     // The useEffect() hook calls below are used to set the state appropriately when the filter tags (X) are clicked.
     React.useEffect(() => {
@@ -20,16 +21,22 @@ export const useAgreementsFilterButton = (filters, setFilters) => {
     }, [filters.fiscalYear]);
 
     React.useEffect(() => {
-        if (filters.budgetLineStatus) {
-            setBudgetLineStatus(filters.budgetLineStatus);
-        }
-    }, [filters.budgetLineStatus]);
-
-    React.useEffect(() => {
         if (filters.portfolio) {
             setPortfolio(filters.portfolio);
         }
     }, [filters.portfolio]);
+
+    React.useEffect(() => {
+        if (filters.projectTitle) {
+            setProjectTitle(filters.projectTitle);
+        }
+    }, [filters.projectTitle]);
+
+    React.useEffect(() => {
+        if (filters.agreementType) {
+            setAgreementType(filters.agreementType);
+        }
+    }, [filters.agreementType]);
 
     React.useEffect(() => {
         if (filters.agreementName) {
@@ -38,30 +45,32 @@ export const useAgreementsFilterButton = (filters, setFilters) => {
     }, [filters.agreementName]);
 
     React.useEffect(() => {
-        if (filters.agreementType) {
-            setAgreementType(filters.agreementType);
+        if (filters.contractNumber) {
+            setContractNumber(filters.contractNumber);
         }
-    }, [filters.agreementType]);
+    }, [filters.contractNumber]);
 
     const applyFilter = () => {
         setFilters((prevState) => {
             return {
                 ...prevState,
                 fiscalYear: fiscalYear,
-                budgetLineStatus: budgetLineStatus,
                 portfolio: portfolio,
+                projectTitle: projectTitle,
+                agreementType: agreementType,
                 agreementName: agreementName,
-                agreementType: agreementType
+                contractNumber: contractNumber
             };
         });
     };
     const resetFilter = () => {
         setFilters({
             fiscalYear: [],
-            budgetLineStatus: [],
             portfolio: [],
+            projectTitle: [],
+            agreementType: [],
             agreementName: [],
-            agreementType: []
+            contractNumber: []
         });
     };
 
@@ -70,12 +79,14 @@ export const useAgreementsFilterButton = (filters, setFilters) => {
         setFiscalYear,
         portfolio,
         setPortfolio,
-        budgetLineStatus,
-        setBudgetLineStatus,
-        agreementName,
-        setAgreementName,
+        projectTitle,
+        setProjectTitle,
         agreementType,
         setAgreementType,
+        agreementName,
+        setAgreementName,
+        contractNumber,
+        setContractNumber,
         applyFilter,
         resetFilter
     };

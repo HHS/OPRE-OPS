@@ -762,6 +762,7 @@ describe("Power User tests", () => {
 
     it("can access editing from the agreements list page", () => {
         cy.visit("http://localhost:3000/agreements");
+        cy.get("#fiscal-year-select").select("2044");
 
         // Wait until at least one fully loaded row is visible
         cy.get("tbody tr").should(($rows) => {

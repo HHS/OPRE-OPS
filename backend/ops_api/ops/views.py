@@ -43,6 +43,7 @@ from ops_api.ops.resources.agreement_history import AgreementHistoryListAPI
 from ops_api.ops.resources.agreements import (
     AgreementItemAPI,
     AgreementListAPI,
+    AgreementListFilterOptionAPI,
     AgreementReasonListAPI,
     AgreementTypeListAPI,
 )
@@ -142,6 +143,9 @@ AGREEMENT_HISTORY_LIST_API_VIEW_FUNC = AgreementHistoryListAPI.as_view("agreemen
 
 # AGREEMENT-TYPE ENDPOINTS
 AGREEMENT_TYPE_LIST_API_VIEW_FUNC = AgreementTypeListAPI.as_view("agreement-type-list")
+
+# AGREEMENT FILTER OPTIONS ENDPOINT
+AGREEMENT_LIST_FILTER_OPTION_API_VIEW_FUNC = AgreementListFilterOptionAPI.as_view("agreements-filters", Agreement)
 
 # AGREEMENT AGENCY ENDPOINTS
 AGREEMENT_AGENCY_ITEM_API_VIEW_FUNC = AgreementAgencyItemAPI.as_view("agreement-agency-item", AgreementAgency)
