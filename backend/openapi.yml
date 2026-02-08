@@ -901,15 +901,21 @@ paths:
                 anyOf:
                   - $ref: "#/components/schemas/ProcurementTrackerStep"
                   - $ref: "#/components/schemas/ProcurementTrackerAcquisitionPlanningStep"
+                  - $ref: "#/components/schemas/ProcurementTrackerPreSolicitationStep"
                 description: >-
                   Procurement tracker step. ACQUISITION_PLANNING steps
                   include additional fields (task_completed_by,
-                  date_completed, notes).
+                  date_completed, notes). PRE_SOLICITATION steps include
+                  additional fields (target_completion_date,
+                  task_completed_by, date_completed, notes,
+                  draft_solicitation_date).
               examples:
                 "0":
                   $ref: "#/components/examples/ProcurementTrackerStepExample"
                 "1":
                   $ref: "#/components/examples/ProcurementTrackerAcquisitionPlanningStepExample"
+                "2":
+                  $ref: "#/components/examples/ProcurementTrackerPreSolicitationStepExample"
         "404":
           description: Not Found
         "500":
@@ -922,7 +928,10 @@ paths:
       description: >-
         Update specific fields of a procurement tracker step. All fields
         are optional. For ACQUISITION_PLANNING steps, additional fields
-        (task_completed_by, date_completed, notes) can be updated.
+        (task_completed_by, date_completed, notes) can be updated. For
+        PRE_SOLICITATION steps, additional fields
+        (target_completion_date, task_completed_by, date_completed,
+        notes, draft_solicitation_date) can be updated.
       parameters:
         - in: path
           name: id
@@ -942,6 +951,8 @@ paths:
                   status: "COMPLETED"
               "1":
                 $ref: "#/components/examples/UpdateProcurementTrackerStepAcquisitionPlanningRequest"
+              "2":
+                $ref: "#/components/examples/UpdateProcurementTrackerStepPreSolicitationRequest"
       responses:
         "200":
           description: Procurement tracker step updated successfully
@@ -951,15 +962,21 @@ paths:
                 anyOf:
                   - $ref: "#/components/schemas/ProcurementTrackerStep"
                   - $ref: "#/components/schemas/ProcurementTrackerAcquisitionPlanningStep"
+                  - $ref: "#/components/schemas/ProcurementTrackerPreSolicitationStep"
                 description: >-
                   Updated procurement tracker step. ACQUISITION_PLANNING
                   steps include additional fields (task_completed_by,
-                  date_completed, notes).
+                  date_completed, notes). PRE_SOLICITATION steps include
+                  additional fields (target_completion_date,
+                  task_completed_by, date_completed, notes,
+                  draft_solicitation_date).
               examples:
                 "0":
                   $ref: "#/components/examples/ProcurementTrackerStepExample"
                 "1":
                   $ref: "#/components/examples/ProcurementTrackerAcquisitionPlanningStepExample"
+                "2":
+                  $ref: "#/components/examples/ProcurementTrackerPreSolicitationStepExample"
         "400":
           description: Bad Request
         "404":
@@ -5785,11 +5802,48 @@ components:
               type: string
               format: date
               nullable: true
-              description: Date when this step was completed
+              description: >-
+                Date when this step was completed. Must be current date
+                or past date.
             notes:
               type: string
               nullable: true
               description: Additional notes about this step
+    ProcurementTrackerPreSolicitationStep:
+      allOf:
+        - $ref: "#/components/schemas/ProcurementTrackerStep"
+        - type: object
+          description: Pre-Solicitation step with additional fields
+          properties:
+            target_completion_date:
+              type: string
+              format: date
+              nullable: true
+              description: >-
+                Target date for completing pre-solicitation activities.
+                Must be current date or future date.
+            task_completed_by:
+              type: integer
+              nullable: true
+              description: User ID of the person who completed this step
+            date_completed:
+              type: string
+              format: date
+              nullable: true
+              description: >-
+                Date when this step was completed. Must be current date
+                or past date.
+            notes:
+              type: string
+              nullable: true
+              description: Additional notes about this step
+            draft_solicitation_date:
+              type: string
+              format: date
+              nullable: true
+              description: >-
+                Date when the draft solicitation was completed. Must be
+                current date or future date.
     UpdateProcurementTrackerStepRequest:
       type: object
       description: Request schema for updating a procurement tracker step. All fields are optional for PATCH operations.
@@ -5799,16 +5853,39 @@ components:
         task_completed_by:
           type: integer
           nullable: true
-          description: User ID of the person who completed this step (ACQUISITION_PLANNING steps only)
+          description: >-
+            User ID of the person who completed this step
+            (ACQUISITION_PLANNING and PRE_SOLICITATION steps only)
         date_completed:
           type: string
           format: date
           nullable: true
-          description: Date when this step was completed (ACQUISITION_PLANNING steps only)
+          description: >-
+            Date when this step was completed (ACQUISITION_PLANNING
+            and PRE_SOLICITATION steps only). Must be current date or
+            past date.
         notes:
           type: string
           nullable: true
-          description: Additional notes about this step (ACQUISITION_PLANNING steps only)
+          description: >-
+            Additional notes about this step (ACQUISITION_PLANNING and
+            PRE_SOLICITATION steps only)
+        target_completion_date:
+          type: string
+          format: date
+          nullable: true
+          description: >-
+            Target date for completing pre-solicitation activities
+            (PRE_SOLICITATION steps only). Must be current date or
+            future date.
+        draft_solicitation_date:
+          type: string
+          format: date
+          nullable: true
+          description: >-
+            Date when the draft solicitation was completed
+            (PRE_SOLICITATION steps only). Must be current date or
+            future date.
     ProcurementTrackerResponse:
       type: object
       description: Procurement tracker tracking workflow progress. New trackers are initialized with active_step_number set to 1, step 1 in ACTIVE status, and step 1's step_start_date set to the current date.
@@ -7086,7 +7163,9 @@ components:
       summary: PATCH request to complete acquisition planning step
       description: >-
         Example PATCH request body for updating an acquisition planning
-        step to COMPLETED status with all additional fields
+        step to COMPLETED status with all additional fields. All fields
+        are optional. Date field (date_completed) must be current date
+        or past date.
       value:
         status: "COMPLETED"
         task_completed_by: 521
@@ -7094,6 +7173,43 @@ components:
         notes: >-
           Acquisition planning completed on schedule. All requirements
           reviewed and approved.
+
+    ProcurementTrackerPreSolicitationStepExample:
+      summary: Pre-solicitation tracker step
+      description: >-
+        Example showing a pre-solicitation step with additional fields
+        (target_completion_date, task_completed_by, date_completed,
+        notes, draft_solicitation_date)
+      value:
+        id: 2
+        procurement_tracker_id: 1
+        step_number: 2
+        step_type: "PRE_SOLICITATION"
+        status: "ACTIVE"
+        target_completion_date: "2026-02-15"
+        task_completed_by: null
+        date_completed: null
+        notes: "Working on draft solicitation document."
+        draft_solicitation_date: null
+        step_start_date: "2026-01-02"
+        step_completed_date: null
+
+    UpdateProcurementTrackerStepPreSolicitationRequest:
+      summary: PATCH request to complete pre-solicitation step
+      description: >-
+        Example PATCH request body for updating a pre-solicitation
+        step to COMPLETED status with all additional fields. All fields
+        are optional. Date fields (target_completion_date,
+        draft_solicitation_date) must be current date or future date.
+      value:
+        status: "COMPLETED"
+        target_completion_date: "2026-02-15"
+        task_completed_by: 521
+        date_completed: "2026-02-10"
+        draft_solicitation_date: "2026-02-08"
+        notes: >-
+          Pre-solicitation phase completed. Draft solicitation reviewed
+          and approved by all stakeholders.
 
     ProcurementTracker:
       summary: Single procurement tracker with mixed step types

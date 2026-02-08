@@ -249,3 +249,5 @@ data/
 
 # Claude Code
 .claude/settings.local.json
+
+/frontend/frontend/public/mockServiceWorker.js

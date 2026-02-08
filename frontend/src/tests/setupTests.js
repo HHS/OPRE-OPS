@@ -6,21 +6,13 @@ import TestApplicationContext from "../applicationContext/TestApplicationContext
 import { setupStore } from "../store";
 import { server } from "./mocks";
 import { opsApi } from "../api/opsAPI";
-import {
-    fetch as undiciFetch,
-    Request as UndiciRequest,
-    Response as UndiciResponse,
-    Headers as UndiciHeaders
-} from "undici";
-
-// Use undici's fetch implementation to avoid AbortSignal compatibility issues with MSW
-globalThis.fetch = undiciFetch;
-globalThis.Request = UndiciRequest;
-globalThis.Response = UndiciResponse;
-globalThis.Headers = UndiciHeaders;
+// jsdom 28 has native fetch support, so we don't need to use undici anymore
+// The previous undici setup was causing issues with MSW in jsdom 28
 
 const noop = () => {};
-Object.defineProperty(window, "scrollTo", { value: noop, writable: true });
+if (typeof window !== "undefined") {
+    Object.defineProperty(window, "scrollTo", { value: noop, writable: true });
+}
 
 // Mock localStorage
 const localStorageMock = {
@@ -52,15 +44,19 @@ vi.mock("@fortawesome/react-fontawesome", () => ({
 }));
 
 // Setup root element for react-modal
-const root = document.createElement("div");
-root.setAttribute("id", "root");
-document.body.appendChild(root);
+if (typeof document !== "undefined") {
+    const root = document.createElement("div");
+    root.setAttribute("id", "root");
+    document.body.appendChild(root);
+}
 
 const observe = vi.fn();
 
-window.IntersectionObserver = vi.fn(function () {
-    this.observe = observe;
-});
+if (typeof window !== "undefined") {
+    window.IntersectionObserver = vi.fn(function () {
+        this.observe = observe;
+    });
+}
 
 ApplicationContext.registerApplicationContext(TestApplicationContext);
 

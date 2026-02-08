@@ -23,9 +23,8 @@ import IsRequiredHelper from "../../Form/IsRequiredHelper";
  * @param {boolean} [props.isRequired=false] - If true, indicates that the date picker is required.
  * @param {boolean} [props.isRequiredNoShow=false] - If true, indicates that the date picker is required but does not visually show it.
  * @param {boolean} [props.isDisabled]
- * @returns {JSX.Element} The rendered DatePicker component.
+ * @returns {React.ReactElement} The rendered DatePicker component.
  */
-
 function DatePicker({
     id,
     name,
@@ -78,7 +77,15 @@ function DatePicker({
     };
 
     return (
-        <div className={cx("usa-form-group", pending && "pending", className)}>
+        <fieldset
+            className={cx(
+                "usa-fieldset",
+                pending && "pending",
+                messages.length ? "usa-form-group--error" : "",
+                className
+            )}
+            disabled={isDisabled}
+        >
             <label
                 htmlFor={id}
                 className={`usa-label ${messages.length ? "usa-label--error" : ""} `}
@@ -123,7 +130,7 @@ function DatePicker({
                     // Removed value and onChange to handle as uncontrolled
                 />
             </div>
-        </div>
+        </fieldset>
     );
 }
 
