@@ -186,7 +186,7 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                             agreement_id_record=event.event_details["agreement_updates"]["owner_id"],
                             ops_event_id=event.id,
                             history_title="Change to Team Members",
-                            history_message=f"Team Member {added_user_id.full_name} added by {event_user.full_name}.",
+                            history_message=f"{event_user.full_name} added team member {added_user_id.full_name}.",
                             timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                             history_type=AgreementHistoryType.AGREEMENT_UPDATED,
                         )
@@ -199,7 +199,7 @@ def agreement_history_trigger_func(event: OpsEvent, session: Session, system_use
                             agreement_id_record=event.event_details["agreement_updates"]["owner_id"],
                             ops_event_id=event.id,
                             history_title="Change to Team Members",
-                            history_message=f"Team Member {removed_user_id.full_name} removed by {event_user.full_name}.",
+                            history_message=f"{event_user.full_name} removed team member {removed_user_id.full_name}.",
                             timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                             history_type=AgreementHistoryType.AGREEMENT_UPDATED,
                         )
@@ -504,9 +504,9 @@ def create_agreement_update_history_event(
                     ops_event_id=ops_event_id,
                     history_title="Change to Description",
                     history_message=(
-                        f"Changes made to the OPRE budget spreadsheet changed the agreement description."
+                        f"Changes made to the OPRE budget spreadsheet changed the Agreement Description."
                         if updated_by_system_user
-                        else f"{updated_by_user.full_name} edited the agreement description."
+                        else f"{updated_by_user.full_name} changed the Agreement Description."
                     ),
                     timestamp=updated_on,
                     history_type=AgreementHistoryType.AGREEMENT_UPDATED,

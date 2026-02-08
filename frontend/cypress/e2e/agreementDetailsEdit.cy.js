@@ -112,7 +112,7 @@ describe("Agreement Details Edit", () => {
             ).should("have.text", "Change to Description");
             cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]').should(
                 "have.text",
-                "System Owner edited the agreement description."
+                "System Owner changed the Agreement Description."
             );
             cy.get(
                 '[data-cy="agreement-history-list"] > :nth-child(2) > .flex-justify > [data-cy="log-item-title"]'
