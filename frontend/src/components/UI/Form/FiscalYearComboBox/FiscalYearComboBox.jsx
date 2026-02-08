@@ -19,9 +19,27 @@ export const FiscalYearComboBox = ({
     overrideStyles = {},
     budgetLinesFiscalYears = []
 }) => {
-    const fiscalYears = budgetLinesFiscalYears.map((fiscalYear) => {
-        return { id: fiscalYear, title: fiscalYear };
-    });
+    const fiscalYears = budgetLinesFiscalYears
+        .filter((fiscalYear) => fiscalYear != null)
+        .map((fiscalYear) => {
+            if (typeof fiscalYear === "object") {
+                const isAll = fiscalYear.id === "ALL";
+                const rawId = fiscalYear.id;
+                const isNumericString = typeof rawId === "string" && /^\d+$/.test(rawId);
+                const parsedId = !isAll && isNumericString ? Number(rawId) : rawId;
+                const shouldPrefixFY = !isAll && typeof parsedId === "number";
+                let title = fiscalYear.title;
+                if (shouldPrefixFY) {
+                    const titleValue = String(fiscalYear.title);
+                    title = titleValue.startsWith("FY ") ? fiscalYear.title : `FY ${parsedId}`;
+                }
+                return { ...fiscalYear, id: parsedId, title };
+            }
+            const parsedId =
+                typeof fiscalYear === "string" && /^\d+$/.test(fiscalYear) ? Number(fiscalYear) : fiscalYear;
+            return { id: parsedId, title: `FY ${parsedId}` };
+        })
+        .filter((fiscalYear, index, list) => list.findIndex((item) => item.id === fiscalYear.id) === index);
 
     return (
         <div className="display-flex flex-justify">
@@ -30,7 +48,7 @@ export const FiscalYearComboBox = ({
                     className={legendClassname}
                     htmlFor="project-combobox-input"
                 >
-                    Fiscal Year
+                    Compare Fiscal Years
                 </label>
                 <div>
                     <ComboBox

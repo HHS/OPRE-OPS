@@ -25,6 +25,7 @@ vi.mock("../../../components/UI/FilterButton/FilterButton", () => ({
                 Reset
             </button>
             <div data-testid="fieldset-list">{fieldsetList.length} fields</div>
+            <div data-testid="fieldset-content">{fieldsetList}</div>
         </div>
     )
 }));
@@ -32,7 +33,12 @@ vi.mock("../../../components/UI/FilterButton/FilterButton", () => ({
 vi.mock("../../../components/UI/Form/FiscalYearComboBox", () => ({
     default: ({ selectedFiscalYears, setSelectedFiscalYears }) => (
         <div data-testid="fiscal-year-combo">
-            <button onClick={() => setSelectedFiscalYears([{ id: 2024, title: 2024 }])}>Set Fiscal Years</button>
+            <button onClick={() => setSelectedFiscalYears([{ id: 2024, title: "FY 2024" }])}>
+                Set Fiscal Years
+            </button>
+            <button onClick={() => setSelectedFiscalYears([{ id: "ALL", title: "All FYs" }])}>
+                Set All Fiscal Years
+            </button>
             <div>{selectedFiscalYears?.length || 0} selected</div>
         </div>
     )
@@ -210,6 +216,47 @@ describe("BLIFilterButton", () => {
         await waitFor(() => {
             expect(mockSetFilters).toHaveBeenCalled();
         });
+    });
+
+    it("sets fiscalYears to null when All Fiscal Years is selected", async () => {
+        render(
+            <BLIFilterButton
+                filters={defaultFilters}
+                setFilters={mockSetFilters}
+                selectedFiscalYear={2024}
+            />
+        );
+
+        fireEvent.click(screen.getByText("Set All Fiscal Years"));
+        fireEvent.click(screen.getByTestId("apply-filter-btn"));
+
+        await waitFor(() => {
+            expect(mockSetFilters).toHaveBeenCalled();
+        });
+
+        const setFiltersCallback = mockSetFilters.mock.calls[0][0];
+        const result = setFiltersCallback(defaultFilters);
+        expect(result.fiscalYears).toBeNull();
+    });
+
+    it("sets fiscalYears to undefined when Compare Fiscal Years is cleared", async () => {
+        render(
+            <BLIFilterButton
+                filters={defaultFilters}
+                setFilters={mockSetFilters}
+                selectedFiscalYear={2024}
+            />
+        );
+
+        fireEvent.click(screen.getByTestId("apply-filter-btn"));
+
+        await waitFor(() => {
+            expect(mockSetFilters).toHaveBeenCalled();
+        });
+
+        const setFiltersCallback = mockSetFilters.mock.calls[0][0];
+        const result = setFiltersCallback(defaultFilters);
+        expect(result.fiscalYears).toBeUndefined();
     });
 
     it("resets filters correctly", async () => {
