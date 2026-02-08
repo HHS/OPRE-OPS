@@ -93,6 +93,9 @@ test("renders uppercase to titlecase", () => {
     expect(fromUpperCaseToTitleCase("STATUS-CHANGE")).toEqual("Status Change");
     expect(fromUpperCaseToTitleCase("BUDGET-CHANGE-REQUEST")).toEqual("Budget Change Request");
     expect(fromUpperCaseToTitleCase("STATUS-CHANGE-REQUEST")).toEqual("Status Change Request");
+    expect(fromUpperCaseToTitleCase("ACQUISITION_PLANNING")).toEqual("Acquisition Planning");
+    expect(fromUpperCaseToTitleCase("PRE_SOLICITATION")).toEqual("Pre Solicitation");
+    expect(fromUpperCaseToTitleCase("SOLICITATION   PHASE")).toEqual("Solicitation Phase");
     expect(fromUpperCaseToTitleCase("")).toEqual("");
     expect(fromUpperCaseToTitleCase(null)).toEqual("");
     expect(fromUpperCaseToTitleCase(undefined)).toEqual("");

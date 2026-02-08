@@ -49,7 +49,7 @@ repos:
         pass_filenames: false
       - id: prettier
         name: prettier
-        entry: bash -c 'cd ./frontend/ && bunx prettier --check --ignore-unknown'
+        entry: bash -c 'bun --cwd ./frontend run prettier --check --ignore-unknown "$@"' --
         language: system
         files: ^frontend/.*\.(js|jsx|ts|tsx|json|css|scss|html|md)$
         pass_filenames: true

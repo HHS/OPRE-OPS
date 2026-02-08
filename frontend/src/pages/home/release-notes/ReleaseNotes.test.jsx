@@ -39,9 +39,13 @@ vi.mock("./data", () => ({
 }));
 
 // Mock the formatDateToMonthDayYear function
-vi.mock("../../../helpers/utils", () => ({
-    formatDateToMonthDayYear: vi.fn((date) => `Formatted ${date}`)
-}));
+vi.mock("../../../helpers/utils", async (importOriginal) => {
+    const actual = await importOriginal();
+    return {
+        ...actual,
+        formatDateToMonthDayYear: vi.fn((date) => `Formatted ${date}`)
+    };
+});
 
 describe("ReleaseNotes Component", () => {
     beforeEach(() => {

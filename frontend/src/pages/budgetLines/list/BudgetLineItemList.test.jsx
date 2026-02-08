@@ -29,9 +29,13 @@ vi.mock("../../../helpers/budgetLines.helpers", () => ({
 vi.mock("../../../helpers/tableExport.helpers.js", () => ({
     exportTableToXlsx: vi.fn()
 }));
-vi.mock("../../../helpers/utils", () => ({
-    getCurrentFiscalYear: vi.fn(() => 2024)
-}));
+vi.mock("../../../helpers/utils", async (importOriginal) => {
+    const actual = await importOriginal();
+    return {
+        ...actual,
+        getCurrentFiscalYear: vi.fn(() => 2024)
+    };
+});
 
 // Mock the App component to avoid router complexity
 vi.mock("../../../App", () => ({

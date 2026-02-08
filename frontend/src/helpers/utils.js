@@ -526,7 +526,8 @@ export function fromUpperCaseToTitleCase(string) {
         return "";
     }
     return string
-        .split(/[-\s]/) // Split by hyphens and spaces
+        .split(/[-_\s]/) // Split by hyphens, underscores, and spaces
+        .filter(Boolean)
         .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
         .join(" ");
 }
