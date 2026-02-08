@@ -35,7 +35,7 @@
         "rehype-raw": "7.0.0",
         "remark-gfm": "4.0.1",
         "sass": "1.97.3",
-        "styled-components": "6.3.8",
+        "styled-components": "6.3.9",
         "vest": "5.4.6",
         "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
     },
