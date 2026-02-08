@@ -34,7 +34,14 @@ describe("opsAPI - Agreements Pagination", () => {
             const storeRef = setupApiStore(opsApi);
             await storeRef.store.dispatch(
                 opsApi.endpoints.getAgreements.initiate({
-                    filters: { fiscalYear: [], portfolio: [], projectTitle: [], agreementType: [], agreementName: [], contractNumber: [] },
+                    filters: {
+                        fiscalYear: [],
+                        portfolio: [],
+                        projectTitle: [],
+                        agreementType: [],
+                        agreementName: [],
+                        contractNumber: []
+                    },
                     onlyMy: false,
                     sortConditions: null,
                     sortDescending: false,
@@ -64,7 +71,14 @@ describe("opsAPI - Agreements Pagination", () => {
             const storeRef = setupApiStore(opsApi);
             await storeRef.store.dispatch(
                 opsApi.endpoints.getAgreements.initiate({
-                    filters: { fiscalYear: [], portfolio: [], projectTitle: [], agreementType: [], agreementName: [], contractNumber: [] },
+                    filters: {
+                        fiscalYear: [],
+                        portfolio: [],
+                        projectTitle: [],
+                        agreementType: [],
+                        agreementName: [],
+                        contractNumber: []
+                    },
                     onlyMy: false,
                     sortConditions: null,
                     sortDescending: false,
@@ -94,7 +108,14 @@ describe("opsAPI - Agreements Pagination", () => {
             const storeRef = setupApiStore(opsApi);
             await storeRef.store.dispatch(
                 opsApi.endpoints.getAgreements.initiate({
-                    filters: { fiscalYear: [], portfolio: [], projectTitle: [], agreementType: [], agreementName: [], contractNumber: [] },
+                    filters: {
+                        fiscalYear: [],
+                        portfolio: [],
+                        projectTitle: [],
+                        agreementType: [],
+                        agreementName: [],
+                        contractNumber: []
+                    },
                     onlyMy: false,
                     sortConditions: null,
                     sortDescending: false,
@@ -121,7 +142,14 @@ describe("opsAPI - Agreements Pagination", () => {
             const storeRef = setupApiStore(opsApi);
             await storeRef.store.dispatch(
                 opsApi.endpoints.getAgreements.initiate({
-                    filters: { fiscalYear: [], portfolio: [], projectTitle: [], agreementType: [], agreementName: [], contractNumber: [] },
+                    filters: {
+                        fiscalYear: [],
+                        portfolio: [],
+                        projectTitle: [],
+                        agreementType: [],
+                        agreementName: [],
+                        contractNumber: []
+                    },
                     onlyMy: false,
                     sortConditions: null,
                     sortDescending: false
@@ -153,7 +181,14 @@ describe("opsAPI - Agreements Pagination", () => {
             const storeRef = setupApiStore(opsApi);
             const result = await storeRef.store.dispatch(
                 opsApi.endpoints.getAgreements.initiate({
-                    filters: { fiscalYear: [], portfolio: [], projectTitle: [], agreementType: [], agreementName: [], contractNumber: [] },
+                    filters: {
+                        fiscalYear: [],
+                        portfolio: [],
+                        projectTitle: [],
+                        agreementType: [],
+                        agreementName: [],
+                        contractNumber: []
+                    },
                     onlyMy: false,
                     sortConditions: null,
                     sortDescending: false,
@@ -191,7 +226,14 @@ describe("opsAPI - Agreements Pagination", () => {
             const storeRef = setupApiStore(opsApi);
             const result = await storeRef.store.dispatch(
                 opsApi.endpoints.getAgreements.initiate({
-                    filters: { fiscalYear: [], portfolio: [], projectTitle: [], agreementType: [], agreementName: [], contractNumber: [] },
+                    filters: {
+                        fiscalYear: [],
+                        portfolio: [],
+                        projectTitle: [],
+                        agreementType: [],
+                        agreementName: [],
+                        contractNumber: []
+                    },
                     onlyMy: false,
                     sortConditions: null,
                     sortDescending: false,
@@ -224,7 +266,14 @@ describe("opsAPI - Agreements Pagination", () => {
             const storeRef = setupApiStore(opsApi);
             const result = await storeRef.store.dispatch(
                 opsApi.endpoints.getAgreements.initiate({
-                    filters: { fiscalYear: [], portfolio: [], projectTitle: [], agreementType: [], agreementName: [], contractNumber: [] },
+                    filters: {
+                        fiscalYear: [],
+                        portfolio: [],
+                        projectTitle: [],
+                        agreementType: [],
+                        agreementName: [],
+                        contractNumber: []
+                    },
                     onlyMy: false,
                     sortConditions: null,
                     sortDescending: false
@@ -257,7 +306,14 @@ describe("opsAPI - Agreements Pagination", () => {
             const storeRef = setupApiStore(opsApi);
             const result = await storeRef.store.dispatch(
                 opsApi.endpoints.getAgreements.initiate({
-                    filters: { fiscalYear: [], portfolio: [], projectTitle: [], agreementType: [], agreementName: [], contractNumber: [] },
+                    filters: {
+                        fiscalYear: [],
+                        portfolio: [],
+                        projectTitle: [],
+                        agreementType: [],
+                        agreementName: [],
+                        contractNumber: []
+                    },
                     onlyMy: false,
                     sortConditions: null,
                     sortDescending: false,
@@ -289,7 +345,14 @@ describe("opsAPI - Agreements Pagination", () => {
             const storeRef = setupApiStore(opsApi);
             const result = await storeRef.store.dispatch(
                 opsApi.endpoints.getAgreements.initiate({
-                    filters: { fiscalYear: [], portfolio: [], projectTitle: [], agreementType: [], agreementName: [], contractNumber: [] },
+                    filters: {
+                        fiscalYear: [],
+                        portfolio: [],
+                        projectTitle: [],
+                        agreementType: [],
+                        agreementName: [],
+                        contractNumber: []
+                    },
                     onlyMy: false,
                     sortConditions: null,
                     sortDescending: false,
@@ -429,7 +492,14 @@ describe("opsAPI - Agreements Pagination", () => {
             const storeRef = setupApiStore(opsApi);
             await storeRef.store.dispatch(
                 opsApi.endpoints.getAgreements.initiate({
-                    filters: { fiscalYear: [], portfolio: [], projectTitle: [], agreementType: [], agreementName: [], contractNumber: [] },
+                    filters: {
+                        fiscalYear: [],
+                        portfolio: [],
+                        projectTitle: [],
+                        agreementType: [],
+                        agreementName: [],
+                        contractNumber: []
+                    },
                     onlyMy: true,
                     sortConditions: null,
                     sortDescending: false,
@@ -462,7 +532,14 @@ describe("opsAPI - Agreements Pagination", () => {
             const storeRef = setupApiStore(opsApi);
             await storeRef.store.dispatch(
                 opsApi.endpoints.getAgreements.initiate({
-                    filters: { fiscalYear: [], portfolio: [], projectTitle: [], agreementType: [], agreementName: [], contractNumber: [] },
+                    filters: {
+                        fiscalYear: [],
+                        portfolio: [],
+                        projectTitle: [],
+                        agreementType: [],
+                        agreementName: [],
+                        contractNumber: []
+                    },
                     onlyMy: false,
                     sortConditions: "name",
                     sortDescending: false,

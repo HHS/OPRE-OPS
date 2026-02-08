@@ -73,7 +73,15 @@ export const opsApi = createApi({
     endpoints: (builder) => ({
         getAgreements: builder.query({
             query: ({
-                filters: { fiscalYear, budgetLineStatus, portfolio, agreementName, agreementType, projectTitle, contractNumber },
+                filters: {
+                    fiscalYear,
+                    budgetLineStatus,
+                    portfolio,
+                    agreementName,
+                    agreementType,
+                    projectTitle,
+                    contractNumber
+                },
                 onlyMy,
                 sortConditions,
                 sortDescending,
