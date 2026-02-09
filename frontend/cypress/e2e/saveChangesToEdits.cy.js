@@ -66,17 +66,13 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
     let agreementId;
     let bearer_token;
 
-const closeUnsavedChangesModalViaEsc = () => {
-    cy.get("#ops-modal", { timeout: 15000 }).should("be.visible");
-    cy.get("[data-cy='confirm-action']", { timeout: 15000 }).should("be.visible").focus();
-    cy.get("#ops-modal").trigger("keydown", { key: "Escape", keyCode: 27, which: 27, force: true });
-    cy.get("#ops-modal").then(($modal) => {
-        if ($modal.is(":visible")) {
-            cy.get("body").type("{esc}", { force: true });
-        }
-    });
-    cy.get("#ops-modal", { timeout: 20000 }).should("not.exist");
-};
+    const closeUnsavedChangesModalViaEsc = () => {
+        cy.waitForModalToAppear("#ops-modal", 15000);
+        cy.get("[data-cy='confirm-action']", { timeout: 15000 }).should("be.visible").focus();
+        cy.get("#ops-modal").trigger("keydown", { key: "Escape", keyCode: 27, which: 27, force: true });
+        cy.get("body").type("{esc}", { force: true });
+        cy.waitForModalToClose("#ops-modal", 20000);
+    };
 
     beforeEach(() => {
         expect(localStorage.getItem("access_token")).to.exist;
