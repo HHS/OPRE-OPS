@@ -14,7 +14,6 @@
 // ***********************************************************
 
 import "cypress-axe";
-import "cypress-localstorage-commands";
 import "./commands";
 
 Cypress.Commands.overwrite("injectAxe", (originalFn, ...args) => {

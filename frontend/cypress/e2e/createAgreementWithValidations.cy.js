@@ -2,8 +2,9 @@
 import { terminalLog, testLogin } from "./utils";
 
 // Use a suffix that is extremely unlikely to collide across CI runs/retries
-const runId = Cypress.env("GITHUB_RUN_ID") || Cypress.env("CI_PIPELINE_ID") || "local";
-const runAttempt = Cypress.env("GITHUB_RUN_ATTEMPT") || "1";
+const cypressEnv = Cypress.config("env") || {};
+const runId = cypressEnv.GITHUB_RUN_ID || cypressEnv.CI_PIPELINE_ID || "local";
+const runAttempt = cypressEnv.GITHUB_RUN_ATTEMPT || "1";
 const buildUniqueSuffix = () => `${runId}-${runAttempt}-${Date.now()}-${Cypress._.random(0, 1_000_000_000)}`;
 
 const blData = [
@@ -102,7 +103,7 @@ describe("create agreement and test validations", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 
         // CI databases often differ; prefer an explicit PROJECT_ID when available
-        const projectId = Number(Cypress.env("PROJECT_ID") ?? 1000);
+        const projectId = Number(cypressEnv.PROJECT_ID ?? 1000);
         expect(projectId, "PROJECT_ID must be a valid number").to.be.a("number").and.not.satisfy(Number.isNaN);
 
         const createAgreementPayload = {
