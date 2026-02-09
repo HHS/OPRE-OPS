@@ -37,6 +37,9 @@ const testBli = {
     services_component_id: testAgreement["awarding_entity_id"]
 };
 
+const HISTORY_POLL_INTERVAL_MS = 1000;
+const HISTORY_TIMEOUT_MS = 20000;
+
 beforeEach(() => {
     // append a unique identifier to the agreement name to avoid conflicts
     const uniqueId = Date.now();
@@ -49,6 +52,34 @@ afterEach(() => {
     cy.injectAxe();
     cy.checkA11y(null, null, terminalLog);
 });
+
+const waitForAgreementHistory = (agreementId, bearer_token, startedAt = Date.now()) => {
+    const historyUrl = `http://localhost:8080/api/v1/agreement-history/${agreementId}?limit=20&offset=0`;
+    return cy
+        .request({
+            method: "GET",
+            url: historyUrl,
+            headers: {
+                Authorization: bearer_token,
+                Accept: "application/json"
+            },
+            failOnStatusCode: false
+        })
+        .then((response) => {
+            const hasEntries = response.status === 200 && Array.isArray(response.body) && response.body.length > 0;
+            if (hasEntries) {
+                return;
+            }
+            const elapsedMs = Date.now() - startedAt;
+            if (elapsedMs >= HISTORY_TIMEOUT_MS) {
+                expect(response.status, "agreement history status").to.eq(200);
+                expect(response.body, "agreement history entries").to.be.an("array").and.have.length.greaterThan(0);
+                return;
+            }
+            cy.wait(HISTORY_POLL_INTERVAL_MS);
+            return waitForAgreementHistory(agreementId, bearer_token, startedAt);
+        });
+};
 
 it("BLI Status Change", () => {
     expect(localStorage.getItem("access_token")).to.exist;
@@ -93,11 +124,14 @@ it("BLI Status Change", () => {
         .then(({ agreementId, bliId }) => {
             cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines`);
             cy.get('[data-cy="bli-continue-btn"]').click();
-            cy.wait(1000);
-            cy.get('input[id="Change Draft Budget Lines to Planned Status"]').check({ force: true });
-            cy.wait(500);
-            cy.get('[data-cy="check-all-label"]').click();
-            cy.get('[type="checkbox"]')
+            // Wait for the change request form to appear
+            cy.get('input[id="Change Draft Budget Lines to Planned Status"]', { timeout: 10000 })
+                .should("be.visible")
+                .check({ force: true });
+            // Ensure the "check all" box is actually checked in CI
+            cy.get("#check-all-0", { timeout: 10000 }).should("be.visible").check({ force: true });
+            cy.get("#check-all-0", { timeout: 10000 }).should("be.checked");
+            cy.get('[type="checkbox"]', { timeout: 10000 })
                 .should("have.length", 2)
                 .each((checkbox) => {
                     cy.wrap(checkbox).should("be.checked");
@@ -118,12 +152,16 @@ it("BLI Status Change", () => {
                 .should("contain", "Changes Sent to Approval")
                 .and("contain", `BL ${bliId} Status: Draft to Planned`)
                 .and("contain", "pls approve");
+            waitForAgreementHistory(agreementId, bearer_token);
             cy.visit(`/agreements/${agreementId}`);
             cy.get(".usa-breadcrumb__list > :nth-child(3)").should("have.text", testAgreement.name);
             cy.get('[data-cy="details-left-col"] > :nth-child(4)').should("have.text", "History");
             cy.get('[data-cy="agreement-history-container"]').should("exist");
             cy.get('[data-cy="agreement-history-container"]').scrollIntoView();
             cy.get('[data-cy="agreement-history-list"]').should("exist");
+            cy.get('[data-cy="agreement-history-list"]', { timeout: 30000 }).should(($list) => {
+                expect($list.children().length).to.be.at.least(1);
+            });
             cy.get(
                 '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
             ).should("exist");
