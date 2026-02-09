@@ -40,6 +40,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
     // Extract tracker data
     const trackers = data?.data || [];
     const activeTracker = trackers.find((tracker) => tracker.status === "ACTIVE");
+    const hasActiveTracker = !!activeTracker;
     const stepOneData = activeTracker?.steps.find((step) => step.step_number === 1);
 
     // Handle loading state
@@ -98,7 +99,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                             <ProcurementTrackerStepOne
                                 stepStatus={step.status}
                                 stepOneData={stepOneData}
-                                hasActiveTracker={activeTracker}
+                                hasActiveTracker={hasActiveTracker}
                                 handleSetIsFormSubmitted={handleSetIsFormSubmitted}
                             />
                         )}
