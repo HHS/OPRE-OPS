@@ -6,7 +6,7 @@ from typing import Any, List, Optional, Sequence, Type
 from flask import current_app
 from flask_jwt_extended import get_current_user
 from loguru import logger
-from sqlalchemy import Select, distinct, func, or_, select, union_all
+from sqlalchemy import Select, distinct, func, or_, select, union
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -32,6 +32,7 @@ from models import (
     User,
     Vendor,
 )
+from ops_api.ops.schemas.agreements import AgreementListFilterOptionResponseSchema
 from ops_api.ops.services.change_requests import ChangeRequestService
 from ops_api.ops.services.ops_service import (
     AuthorizationError,
@@ -601,7 +602,7 @@ class AgreementsService(OpsService[Agreement]):
 
         # Step 7: Contract numbers - UNION query on contract_agreement and aa_agreement
         # These are stored in subclass tables, not the base agreement table
-        contract_numbers_query = union_all(
+        contract_numbers_query = union(
             select(distinct(ContractAgreement.contract_number))
             .where(ContractAgreement.id.in_(agreement_ids_subquery))
             .where(ContractAgreement.contract_number.isnot(None)),
@@ -616,8 +617,6 @@ class AgreementsService(OpsService[Agreement]):
         research_types = []
 
         # Build response
-        from ops_api.ops.schemas.agreements import AgreementListFilterOptionResponseSchema
-
         filters = {
             "fiscal_years": fiscal_years,
             "portfolios": portfolios,
@@ -645,7 +644,7 @@ class AgreementsService(OpsService[Agreement]):
         - User has BUDGET_TEAM or SYSTEM_OWNER role
         - User is a super user
         """
-        from ops_api.ops.utils.users import is_super_user
+        from ops_api.ops.utils.users import is_super_user  # late import to avoid circular dependency
 
         # Check for privileged roles first - these users see ALL agreements
         user_role_names = [role.name for role in user.roles]

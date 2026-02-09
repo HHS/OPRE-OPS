@@ -329,9 +329,8 @@ class AgreementListFilterOptionAPI(BaseItemAPI):
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
     def get(self) -> Response:
         """Get filter options for agreements."""
-        request_schema = AgreementFiltersQueryParametersSchema()
-        data = request_schema.load(request.args.to_dict(flat=False))
-        logger.debug(f"Agreement filter query parameters: {request_schema.dump(data)}")
+        data = self._get_schema.load(request.args.to_dict(flat=False))
+        logger.debug(f"Agreement filter query parameters: {self._get_schema.dump(data)}")
 
         service: OpsService[Agreement] = AgreementsService(current_app.db_session)
         filter_options = service.get_filter_options(data)
