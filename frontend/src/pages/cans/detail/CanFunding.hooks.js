@@ -131,7 +131,7 @@ export default function useCanFunding(
     });
 
     /** @param {React.FormEvent<HTMLFormElement>} e */
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         const payload = {
@@ -203,9 +203,23 @@ export default function useCanFunding(
         };
 
         try {
-            handleFundingBudget();
-            handleFundingReceived();
-            handleDeleteFundingReceived();
+            const operations = [
+                { name: "handleFundingBudget", fn: handleFundingBudget },
+                { name: "handleFundingReceived", fn: handleFundingReceived },
+                { name: "handleDeleteFundingReceived", fn: handleDeleteFundingReceived }
+            ];
+
+            const results = await Promise.allSettled(operations.map((operation) => operation.fn()));
+            const failures = results
+                .map((result, index) =>
+                    result.status === "rejected" ? { operation: operations[index].name, reason: result.reason } : null
+                )
+                .filter(Boolean);
+
+            if (failures.length > 0) {
+                console.error("Failed CAN funding operations:", failures);
+                throw failures[0].reason || new Error("CAN funding update failed");
+            }
 
             setAlert({
                 type: "success",
