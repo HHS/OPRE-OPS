@@ -159,11 +159,12 @@ describe("Not awarded Agreement", () => {
 
     it("can edit a budget line if it is in DRAFT", () => {
         cy.visit(`/agreements/10/budget-lines`);
-        cy.wait(2000);
-        cy.get("h1").should("have.text", "Contract Workflow Test");
+        // Wait for page to load
+        cy.get("h1", { timeout: 10000 }).should("have.text", "Contract Workflow Test");
         cy.get("#edit").should("exist");
         cy.get("#edit").click();
-        cy.wait(2000);
+        // Wait for edit mode
+        cy.waitForEditingState(true);
         cy.get("tbody").children().as("table-rows").should("exist");
         // get the first row which is in DRAFT
         cy.get("@table-rows").eq(0).find('[data-cy="expand-row"]').click();
