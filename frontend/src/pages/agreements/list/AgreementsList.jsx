@@ -131,9 +131,9 @@ const AgreementsList = () => {
             // Check if current selected fiscal year is in the available options
             const isCurrentYearAvailable = fiscalYearOptions.includes(Number(selectedFiscalYear));
 
-            // If not available and not "All", set to first available option
+            // If not available and not "All", default to "All"
             if (!isCurrentYearAvailable && selectedFiscalYear !== "All") {
-                setSelectedFiscalYear(fiscalYearOptions[0]);
+                setSelectedFiscalYear("All");
             }
         }
     }, [fiscalYearOptions, selectedFiscalYear]);

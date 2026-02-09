@@ -11,6 +11,7 @@ import {
     useGetChangeRequestsListQuery
 } from "../../../api/opsAPI";
 import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
+import { getCurrentFiscalYear } from "../../../helpers/utils";
 import store from "../../../store";
 import AgreementsList from "./AgreementsList";
 
@@ -55,16 +56,21 @@ vi.mock("../../../components/UI/PaginationNav/PaginationNav", () => ({
 }));
 
 vi.mock("../../../components/UI/FiscalYear", () => ({
-    default: ({ fiscalYear, handleChangeFiscalYear, showAllOption }) => (
+    default: ({ fiscalYear, handleChangeFiscalYear, fiscalYears = [], showAllOption }) => (
         <div data-testid="fiscal-year-select">
             <select
                 data-testid="fiscal-year-dropdown"
                 value={fiscalYear}
                 onChange={(e) => handleChangeFiscalYear(e.target.value)}
             >
-                <option value="2023">2023</option>
-                <option value="2024">2024</option>
-                <option value="2025">2025</option>
+                {fiscalYears.map((fy) => (
+                    <option
+                        key={fy}
+                        value={fy}
+                    >
+                        {fy}
+                    </option>
+                ))}
                 {showAllOption && <option value="All">All</option>}
             </select>
         </div>
@@ -687,9 +693,8 @@ describe("AgreementsList - Fiscal Year Filtering", () => {
         expect(screen.getByTestId("agreement-tabs")).toBeInTheDocument();
     });
 
-    it("should use first fiscal year option when current fiscal year is not in options list", async () => {
+    it("should default to 'All' when current fiscal year is not in options list", async () => {
         // Mock fiscal year options that don't include the current year
-        // Assuming current fiscal year is 2025, provide options [2020, 2021, 2022]
         useGetAgreementsFilterOptionsQuery.mockReturnValue({
             data: {
                 fiscal_years: [2020, 2021, 2022],
@@ -726,13 +731,12 @@ describe("AgreementsList - Fiscal Year Filtering", () => {
             expect(screen.getByTestId("fiscal-year-select")).toBeInTheDocument();
         });
 
-        // Verify the query uses the first fiscal year option (2020) instead of current year
+        // Verify the query sends empty fiscalYear (All = no filter)
         await waitFor(
             () => {
                 expect(mockQuery).toHaveBeenCalled();
                 const lastCall = mockQuery.mock.calls[mockQuery.mock.calls.length - 1];
-                // Should query with first available fiscal year (2020), not current year
-                expect(lastCall[0].filters.fiscalYear).toEqual([{ id: 2020, title: 2020 }]);
+                expect(lastCall[0].filters.fiscalYear).toEqual([]);
             },
             { timeout: 3000 }
         );
@@ -773,10 +777,11 @@ describe("AgreementsList - Fiscal Year Filtering", () => {
     });
 
     it("should keep selected fiscal year when it exists in options list", async () => {
-        // Mock fiscal year options that include a typical current year
+        // Include the current fiscal year in the options so it stays selected
+        const currentFY = Number(getCurrentFiscalYear());
         useGetAgreementsFilterOptionsQuery.mockReturnValue({
             data: {
-                fiscal_years: [2023, 2024, 2025],
+                fiscal_years: [currentFY - 1, currentFY, currentFY + 1],
                 portfolios: [],
                 project_titles: [],
                 agreement_types: [],
@@ -810,9 +815,9 @@ describe("AgreementsList - Fiscal Year Filtering", () => {
             expect(screen.getByTestId("fiscal-year-select")).toBeInTheDocument();
         });
 
-        // The dropdown should maintain a fiscal year from the options
+        // The dropdown should maintain the current fiscal year
         const dropdown = screen.getByTestId("fiscal-year-dropdown");
         const selectedYear = Number(dropdown.value);
-        expect([2023, 2024, 2025]).toContain(selectedYear);
+        expect([currentFY - 1, currentFY, currentFY + 1]).toContain(selectedYear);
     });
 });

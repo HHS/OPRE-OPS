@@ -157,7 +157,11 @@ describe("Agreement Details Edit", () => {
             cy.get("h1").contains("Sign in to your account");
             testLogin("budget-team");
             cy.visit("/agreements/");
+            cy.contains("h1", "Loading...", { timeout: 30000 }).should("not.exist");
             cy.get("tbody").should("be.visible");
+            cy.get("button").contains("Filters").click();
+            cy.get(".agreement-name-combobox__input").type("Test Edit Title{enter}");
+            cy.get("button").contains("Apply").click();
             cy.contains("tbody tr", "Test Edit Title").as("agreement-row");
             cy.get("@agreement-row").contains("Test Edit Title").click();
             cy.get("#edit").should("exist");

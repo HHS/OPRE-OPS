@@ -153,6 +153,7 @@ describe("Sytem-owner tests", () => {
 
         cy.intercept("GET", "/api/v1/agreements/*").as("getAgreements");
         cy.wait("@getAgreements");
+
         deleteAgreementByName(testAgreement.name);
     });
 
@@ -162,6 +163,7 @@ describe("Sytem-owner tests", () => {
 
         cy.intercept("GET", "/api/v1/agreements/*").as("getAgreements");
         cy.wait("@getAgreements");
+
         deleteAgreementByName(testAgreement.name);
     });
 });
@@ -178,6 +180,8 @@ describe("Budget-team tests", () => {
 
         cy.intercept("GET", "/api/v1/agreements/*").as("getAgreements");
         cy.wait("@getAgreements");
+        cy.contains("h1", "Loading...", { timeout: 30000 }).should("not.exist");
+
         deleteAgreementByName(testAgreementToDelete.name);
     });
 
@@ -189,6 +193,8 @@ describe("Budget-team tests", () => {
         cy.intercept("GET", "/api/v1/agreements/*").as("getAgreements");
         cy.visit("/agreements/");
         cy.wait("@getAgreements");
+        cy.contains("h1", "Loading...", { timeout: 30000 }).should("not.exist");
+
         deleteAgreementByRowAndFail(3);
     });
 
@@ -196,6 +202,8 @@ describe("Budget-team tests", () => {
         cy.intercept("GET", "/api/v1/agreements/*").as("getAgreements");
         cy.visit("/agreements/");
         cy.wait("@getAgreements");
+        cy.contains("h1", "Loading...", { timeout: 30000 }).should("not.exist");
+
         deleteAgreementByRowAndFail(9); // almost all agreements have non-draft BLIs
     });
 });
