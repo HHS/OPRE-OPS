@@ -57,35 +57,30 @@ it("filter button works as expected", () => {
 
     // set a number of filters
 
-    // eslint-disable-next-line cypress/unsafe-to-chain-command
     cy.get(".fiscal-year-combobox__control")
         .click()
         .get(".fiscal-year-combobox__menu")
         .find(".fiscal-year-combobox__option")
         .contains("2043")
         .click();
-    // eslint-disable-next-line cypress/unsafe-to-chain-command
     cy.get(".portfolios-combobox__control")
         .click()
         .get(".portfolios-combobox__menu")
         .find(".portfolios-combobox__option")
         .contains("Child Welfare Research")
         .click();
-    // eslint-disable-next-line cypress/unsafe-to-chain-command
     cy.get(".agreement-type-combobox__control")
         .click()
         .get(".agreement-type-combobox__menu")
         .find(".agreement-type-combobox__option")
         .contains("Contract")
         .click();
-    // eslint-disable-next-line cypress/unsafe-to-chain-command
     cy.get(".agreement-name-combobox__control")
         .click()
         .get(".agreement-name-combobox__menu")
         .find(".agreement-name-combobox__option")
         .eq(1) // select the second option
         .click();
-    // eslint-disable-next-line cypress/unsafe-to-chain-command
     cy.get(".can-active-period-combobox__control")
         .click()
         .get(".can-active-period-combobox__menu")
