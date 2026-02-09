@@ -46,7 +46,7 @@ export const FiscalYearComboBox = ({
             <div>
                 <label
                     className={legendClassname}
-                    htmlFor="project-combobox-input"
+                    htmlFor="fiscal-year-combobox-input"
                 >
                     Compare Fiscal Years
                 </label>

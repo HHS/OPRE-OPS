@@ -55,7 +55,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                 selectedFiscalYears={fiscalYear}
                 setSelectedFiscalYears={setFiscalYear}
                 legendClassname={legendStyles}
-                defaultString={"All Fiscal Years"}
+                defaultString={"All FYs"}
                 overrideStyles={{ width: "22.7rem" }}
                 budgetLinesFiscalYears={constants.fiscalYears}
             />
