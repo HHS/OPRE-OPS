@@ -456,20 +456,22 @@ describe("opsAPI - Agreements Pagination", () => {
             );
 
             const storeRef = setupApiStore(opsApi);
-            await storeRef.store.dispatch(
-                opsApi.endpoints.getAgreements.initiate({
-                    filters: {
-                        fiscalYear: [{ title: "2024" }],
-                        budgetLineStatus: [],
-                        portfolio: []
-                    },
-                    onlyMy: false,
-                    sortConditions: null,
-                    sortDescending: false,
-                    page: 0,
-                    limit: 10
-                })
-            );
+            await storeRef.store
+                .dispatch(
+                    opsApi.endpoints.getAgreements.initiate({
+                        filters: {
+                            fiscalYear: [{ title: "2024" }],
+                            budgetLineStatus: [],
+                            portfolio: []
+                        },
+                        onlyMy: false,
+                        sortConditions: null,
+                        sortDescending: false,
+                        page: 0,
+                        limit: 10
+                    })
+                )
+                .unwrap();
 
             expect(capturedUrl).toContain("fiscal_year=2024");
             expect(capturedUrl).toContain("limit=10");

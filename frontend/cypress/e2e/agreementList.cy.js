@@ -343,18 +343,16 @@ describe("Agreement List", () => {
     });
 
     it.skip("Should sort the table by clicking on the header", () => {
-        // Long long wait so there is time to populate every element of the table
-        cy.wait(1000);
         // Sort table by agreement name
         cy.get(`[data-cy=${TABLE_HEADINGS_LIST[0].value}]`).click();
-        cy.wait(1000);
-        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']").should("contain", "Support Contract #1");
+        // Wait for table to sort by checking first row
+        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']", { timeout: 10000 }).should("contain", "Support Contract #1");
         cy.get("tbody > :nth-child(2) > [data-cy='agreement-name']").should("contain", "MIHOPE Long-Term");
         cy.get("tbody > :nth-child(3) > [data-cy='agreement-name']").should("contain", "MIHOPE Check-In");
         // Sort by agreement name ascending
         cy.get(`[data-cy=${TABLE_HEADINGS_LIST[0].value}]`).click();
-        cy.wait(1000);
-        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']").should(
+        // Wait for table to sort
+        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']", { timeout: 10000 }).should(
             "contain",
             "CONTRACT #2: Fathers and Continuous Learning (FCL)"
         );
@@ -366,8 +364,8 @@ describe("Agreement List", () => {
 
         // Sort table by project name descending
         cy.get(`[data-cy=${TABLE_HEADINGS_LIST[1].value}]`).click();
-        cy.wait(1000);
-        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']").should(
+        // Wait for table to sort
+        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']", { timeout: 10000 }).should(
             "contain",
             "Grant #1: Early Care and Education Leadership Study (ExCELS)"
         );
@@ -378,8 +376,8 @@ describe("Agreement List", () => {
         cy.get("tbody > :nth-child(3) > [data-cy='agreement-name']").should("contain", "Support Contract #1");
         // Sort by project name ascending
         cy.get(`[data-cy=${TABLE_HEADINGS_LIST[1].value}]`).click();
-        cy.wait(1000);
-        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']").should(
+        // Wait for table to sort
+        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']", { timeout: 10000 }).should(
             "contain",
             "CONTRACT #2: Fathers and Continuous Learning (FCL)"
         );
@@ -405,8 +403,8 @@ describe("Agreement List", () => {
         );
         // Sort by project name ascending
         cy.get(`[data-cy=${TABLE_HEADINGS_LIST[2].value}]`).click();
-        cy.wait(1000);
-        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']").should(
+        // Wait for table to sort
+        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']", { timeout: 10000 }).should(
             "contain",
             "CONTRACT #2: Fathers and Continuous Learning (FCL)"
         );
@@ -415,8 +413,8 @@ describe("Agreement List", () => {
 
         // Sort table by agreement total descending
         cy.get(`[data-cy=${TABLE_HEADINGS_LIST[3].value}]`).click();
-        cy.wait(1000);
-        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']").should(
+        // Wait for table to sort
+        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']", { timeout: 10000 }).should(
             "contain",
             "Contract #1: African American Child and Family Research Center"
         );
@@ -430,8 +428,8 @@ describe("Agreement List", () => {
         );
         // Sort by agreement total ascending
         cy.get(`[data-cy=${TABLE_HEADINGS_LIST[3].value}]`).click();
-        cy.wait(1000);
-        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']").should(
+        // Wait for table to sort
+        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']", { timeout: 10000 }).should(
             "contain",
             "Grant #1: Early Care and Education Leadership Study (ExCELS)"
         );
@@ -446,8 +444,8 @@ describe("Agreement List", () => {
 
         // Sort table by next budget line descending
         cy.get(`[data-cy=${TABLE_HEADINGS_LIST[4].value}]`).click();
-        cy.wait(1000);
-        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']").should(
+        // Wait for table to sort
+        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']", { timeout: 10000 }).should(
             "contain",
             "Contract #1: African American Child and Family Research Center"
         );
@@ -458,8 +456,8 @@ describe("Agreement List", () => {
         );
         // Sort by next budget line ascending
         cy.get(`[data-cy=${TABLE_HEADINGS_LIST[4].value}]`).click();
-        cy.wait(1000);
-        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']").should(
+        // Wait for table to sort
+        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']", { timeout: 10000 }).should(
             "contain",
             "CONTRACT #2: Fathers and Continuous Learning (FCL)"
         );
@@ -474,14 +472,14 @@ describe("Agreement List", () => {
 
         // Sort table by next obligate by descending
         cy.get(`[data-cy=${TABLE_HEADINGS_LIST[5].value}]`).click();
-        cy.wait(1000);
-        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']").should("contain", "Support Contract #1");
+        // Wait for table to sort
+        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']", { timeout: 10000 }).should("contain", "Support Contract #1");
         cy.get("tbody > :nth-child(2) > [data-cy='agreement-name']").should("contain", "MIHOPE Check-In");
         cy.get("tbody > :nth-child(3) > [data-cy='agreement-name']").should("contain", "MIHOPE Long-Term");
         // Sort by next obligate by ascending
         cy.get(`[data-cy=${TABLE_HEADINGS_LIST[5].value}]`).click();
-        cy.wait(1000);
-        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']").should(
+        // Wait for table to sort
+        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']", { timeout: 10000 }).should(
             "contain",
             "CONTRACT #2: Fathers and Continuous Learning (FCL)"
         );
