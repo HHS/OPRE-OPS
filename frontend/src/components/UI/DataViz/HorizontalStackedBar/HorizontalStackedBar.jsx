@@ -20,7 +20,9 @@ import styles from "./HorizontalStackedBar.module.scss";
  * @returns {JSX.Element}
  */
 const HorizontalStackedBar = ({ data, setActiveId = () => {} }) => {
-    if (!data || data.length === 0) {
+    const segments = data?.filter((item) => !item.isPlaceholder) ?? [];
+
+    if (segments.length === 0) {
         return null;
     }
 
@@ -41,7 +43,7 @@ const HorizontalStackedBar = ({ data, setActiveId = () => {} }) => {
 
     return (
         <div className={styles.stackedBarContainer}>
-            {data.map((segment) => {
+            {segments.map((segment) => {
                 // Ensure minimum width for tiny percentages
                 const minWidth = segment.percent > 0 && segment.percent < 1 ? 1 : segment.percent;
 
