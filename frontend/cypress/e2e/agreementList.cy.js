@@ -100,7 +100,9 @@ describe("Agreement List", () => {
 
         // Split the chain to avoid unsafe subject usage
         cy.get(".fiscal-year-combobox__control").click();
-        cy.get(".fiscal-year-combobox__menu").find(".fiscal-year-combobox__option").eq(1).click();
+        cy.get(".fiscal-year-combobox__menu")
+            .contains(".fiscal-year-combobox__option", "FY 2044")
+            .click();
 
         cy.get(".portfolios-combobox__control").click();
         cy.get(".portfolios-combobox__menu").find(".portfolios-combobox__option").first().click();
@@ -112,7 +114,7 @@ describe("Agreement List", () => {
         cy.get("button").contains("Apply").click();
 
         // check that the correct tags are displayed
-        cy.get("div").contains("FY 2044").should("exist");
+        cy.contains("FY 2044").should("exist");
         cy.get("div").contains("Adolescent Development Research").should("exist");
         cy.get("div").contains("Draft").should("exist");
 
