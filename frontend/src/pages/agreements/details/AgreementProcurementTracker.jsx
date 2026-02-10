@@ -40,6 +40,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
     // Extract tracker data
     const trackers = data?.data || [];
     const activeTracker = trackers.find((tracker) => tracker.status === "ACTIVE");
+    const hasActiveTracker = !!activeTracker;
     const stepOneData = activeTracker?.steps.find((step) => step.step_number === 1);
 
     // Handle loading state
@@ -56,16 +57,22 @@ const AgreementProcurementTracker = ({ agreement }) => {
         return <div>The Procurement Tracker feature is coming soon.</div>;
     }
 
-    if (!activeTracker) {
-        // TODO: add inactive procurement tracker
-        return <div>No active Procurement Tracker found.</div>;
-    }
-
     // Use active_step_number from tracker if available, otherwise default to 0
     const currentStep = activeTracker?.active_step_number ? activeTracker.active_step_number : 0;
     const sortedSteps = [...(activeTracker?.steps || [])].sort(
         (a, b) => (a?.step_number ?? Number.MAX_SAFE_INTEGER) - (b?.step_number ?? Number.MAX_SAFE_INTEGER)
     );
+
+    // Create default steps structure when there's no active tracker
+    const defaultSteps = WIZARD_STEPS.map((stepName, index) => ({
+        id: `default-step-${index + 1}`,
+        step_number: index + 1,
+        step_type: stepName,
+        status: "PENDING"
+    }));
+
+    // Use active tracker steps if available, otherwise use default structure
+    const stepsToRender = activeTracker?.steps || defaultSteps;
 
     return (
         <>
