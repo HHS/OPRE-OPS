@@ -9,6 +9,7 @@ import styles from "./HorizontalStackedBar.module.scss";
  * @property {string} label - Portfolio name for accessibility
  * @property {string} abbreviation - Portfolio abbreviation
  * @property {number} value - Dollar amount for this segment
+ * @property {boolean} [isPlaceholder] - Whether this is a layout placeholder (filtered out before rendering)
  */
 
 /**
