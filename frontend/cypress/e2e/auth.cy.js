@@ -14,7 +14,7 @@ it("redirect to /login when ther is no jwt", () => {
 
 it("access_token is present within localstorage after login", () => {
     testLogin("system-owner");
-    cy.window().its("localStorage").invoke("getItem", "access_token").should("exist");
+    cy.getLocalStorage("access_token").should("exist");
 });
 
 it("clicking logout removes the jwt and displays redirects to /login", () => {

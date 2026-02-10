@@ -49,8 +49,6 @@ afterEach(() => {
     cy.checkA11y(null, null, terminalLog);
 });
 describe("Review Change Requests at Card Level", () => {
-    const getReviewCardForAgreement = () => cy.contains("[data-cy='review-card']", testAgreement.name);
-
     it("review Status Change DRAFT TO PLANNED", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 
@@ -123,11 +121,10 @@ describe("Review Change Requests at Card Level", () => {
                     .then(() => {
                         cy.visit("/agreements?filter=change-requests").wait(1000);
                         // see if there are any review cards
-                        getReviewCardForAgreement().should("exist").as("reviewCard");
-                        cy.get("@reviewCard").contains("Status Change");
-                        cy.get("@reviewCard").contains(/planned/i);
+                        cy.get("[data-cy='review-card']").should("exist").contains("Status Change");
+                        cy.get("[data-cy='review-card']").contains(/planned/i);
                         // hover over first card
-                        cy.get("@reviewCard").trigger("mouseover");
+                        cy.get("[data-cy='review-card']").first().trigger("mouseover");
                         // click on button id approve
                         cy.get("#approve").click();
                         // usa-modal__content class should exist
@@ -138,7 +135,7 @@ describe("Review Change Requests at Card Level", () => {
                         cy.get("[data-cy='confirm-action']").click();
                         cy.get(".usa-alert__body").contains(/changes approved/i);
                         cy.get("[data-cy='close-alert']").click();
-                        getReviewCardForAgreement().should("not.exist");
+                        cy.get("[data-cy='review-card']").should("not.exist");
                         // verify agreement history
                         cy.visit(`/agreements/${agreementId}`);
                         cy.get(".usa-breadcrumb__list > :nth-child(3)").should("have.text", testAgreement.name);
@@ -263,11 +260,10 @@ describe("Review Change Requests at Card Level", () => {
                     .then(() => {
                         cy.visit("/agreements?filter=change-requests").wait(1000);
                         // see if there are any review cards
-                        getReviewCardForAgreement().should("exist").as("reviewCard");
-                        cy.get("@reviewCard").contains("Status Change");
-                        cy.get("@reviewCard").contains(/executing/i);
+                        cy.get("[data-cy='review-card']").should("exist").contains("Status Change");
+                        cy.get("[data-cy='review-card']").contains(/executing/i);
                         // hover over first card
-                        cy.get("@reviewCard").trigger("mouseover");
+                        cy.get("[data-cy='review-card']").first().trigger("mouseover");
                         // click on button id approve
                         cy.get("#approve").click();
                         // usa-modal__content class should exist
@@ -278,7 +274,7 @@ describe("Review Change Requests at Card Level", () => {
                         cy.get("[data-cy='confirm-action']").click();
                         cy.get(".usa-alert__body").contains(/changes approved/i);
                         cy.get("[data-cy='close-alert']").click();
-                        getReviewCardForAgreement()
+                        cy.get("[data-cy='review-card']")
                             .should("not.exist")
                             .then(() => {
                                 cy.request({
@@ -384,12 +380,11 @@ describe("Review Change Requests at Card Level", () => {
                     .then(() => {
                         cy.visit("/agreements?filter=change-requests").wait(1000);
                         // see if there are any review cards
-                        getReviewCardForAgreement().should("exist").as("reviewCard");
-                        cy.get("@reviewCard").contains("Budget Change");
-                        cy.get("@reviewCard").contains(/amount/i);
-                        cy.get("@reviewCard").contains("$2,000,000.00");
+                        cy.get("[data-cy='review-card']").should("exist").contains("Budget Change");
+                        cy.get("[data-cy='review-card']").contains(/amount/i);
+                        cy.get("[data-cy='review-card']").contains("$2,000,000.00");
                         // hover over first card
-                        cy.get("@reviewCard").trigger("mouseover");
+                        cy.get("[data-cy='review-card']").first().trigger("mouseover");
                         // click on button id approve
                         cy.get("#approve").click();
                         // usa-modal__content class should exist
@@ -400,7 +395,7 @@ describe("Review Change Requests at Card Level", () => {
                         cy.get("[data-cy='confirm-action']").click();
                         cy.get(".usa-alert__body").contains(/changes approved/i);
                         cy.get("[data-cy='close-alert']").click();
-                        getReviewCardForAgreement().should("not.exist");
+                        cy.get("[data-cy='review-card']").should("not.exist");
                         // verify agreement history
                         cy.visit(`/agreements/${agreementId}`);
                         cy.get(".usa-breadcrumb__list > :nth-child(3)").should("have.text", testAgreement.name);
@@ -525,12 +520,11 @@ describe("Review Change Requests at Card Level", () => {
                     .then(() => {
                         cy.visit("/agreements?filter=change-requests").wait(1000);
                         // see if there are any review cards
-                        getReviewCardForAgreement().should("exist").as("reviewCard");
-                        cy.get("@reviewCard").contains("Budget Change");
-                        cy.get("@reviewCard").contains(/can/i);
-                        cy.get("@reviewCard").contains("G99PHS9");
+                        cy.get("[data-cy='review-card']").should("exist").contains("Budget Change");
+                        cy.get("[data-cy='review-card']").contains(/can/i);
+                        cy.get("[data-cy='review-card']").contains("G99PHS9");
                         // hover over first card
-                        cy.get("@reviewCard").trigger("mouseover");
+                        cy.get("[data-cy='review-card']").first().trigger("mouseover");
                         // click on button id approve
                         cy.get("#approve").click();
                         // usa-modal__content class should exist
@@ -541,7 +535,7 @@ describe("Review Change Requests at Card Level", () => {
                         cy.get("[data-cy='confirm-action']").click();
                         cy.get(".usa-alert__body").contains(/changes approved/i);
                         cy.get("[data-cy='close-alert']").click();
-                        getReviewCardForAgreement().should("not.exist");
+                        cy.get("[data-cy='review-card']").should("not.exist");
                         // verify agreement history
                         cy.visit(`/agreements/${agreementId}`);
                         cy.get(".usa-breadcrumb__list > :nth-child(3)").should("have.text", testAgreement.name);
@@ -666,12 +660,11 @@ describe("Review Change Requests at Card Level", () => {
                     .then(() => {
                         cy.visit("/agreements?filter=change-requests").wait(1000);
                         // see if there are any review cards
-                        getReviewCardForAgreement().should("exist").as("reviewCard");
-                        cy.get("@reviewCard").contains("Budget Change");
-                        cy.get("@reviewCard").contains(/obligate by date/i);
-                        cy.get("@reviewCard").contains("11/15/2048");
+                        cy.get("[data-cy='review-card']").should("exist").contains("Budget Change");
+                        cy.get("[data-cy='review-card']").contains(/obligate by date/i);
+                        cy.get("[data-cy='review-card']").contains("11/15/2048");
                         // hover over first card
-                        cy.get("@reviewCard").trigger("mouseover");
+                        cy.get("[data-cy='review-card']").first().trigger("mouseover");
                         // click on button id approve
                         cy.get("#approve").click();
                         // usa-modal__content class should exist
@@ -682,7 +675,7 @@ describe("Review Change Requests at Card Level", () => {
                         cy.get("[data-cy='confirm-action']").click();
                         cy.get(".usa-alert__body").contains(/changes approved/i);
                         cy.get("[data-cy='close-alert']").click();
-                        getReviewCardForAgreement().should("not.exist");
+                        cy.get("[data-cy='review-card']").should("not.exist");
                         // verify agreement history
                         cy.visit(`/agreements/${agreementId}`);
                         cy.get(".usa-breadcrumb__list > :nth-child(3)").should("have.text", testAgreement.name);

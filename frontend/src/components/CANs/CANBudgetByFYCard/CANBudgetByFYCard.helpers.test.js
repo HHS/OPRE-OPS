@@ -2,13 +2,9 @@ import { describe, expect, it, vi } from "vitest";
 import { summaryCard } from "./CANBudgetByFYCard.helpers";
 
 // Mock getCurrentFiscalYear using Vitest's vi
-vi.mock("../../../helpers/utils", async (importOriginal) => {
-    const actual = await importOriginal();
-    return {
-        ...actual,
-        getCurrentFiscalYear: vi.fn(() => 2025)
-    };
-});
+vi.mock("../../../helpers/utils", () => ({
+    getCurrentFiscalYear: vi.fn(() => 2025)
+}));
 
 describe("CANBudgetByFYCard helpers", () => {
     const mockFundingBudgets = [

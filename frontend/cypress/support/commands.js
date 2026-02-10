@@ -91,25 +91,6 @@ Cypress.Commands.add("waitForModalToAppear", (modalSelector = "#ops-modal", time
 });
 
 /**
- * Waits for a modal to close (either removed from DOM or hidden)
- * @param {string} modalSelector - CSS selector for the modal (default: "#ops-modal")
- * @param {number} timeout - Timeout in milliseconds (default: 20000)
- */
-Cypress.Commands.add("waitForModalToClose", (modalSelector = "#ops-modal", timeout = 20000) => {
-    cy.get("body", { timeout }).then(($body) => {
-        if ($body.find(modalSelector).length === 0) {
-            return;
-        }
-
-        cy.get(modalSelector, { timeout }).should(($modal) => {
-            const isHidden =
-                !$modal.is(":visible") || !$modal.hasClass("is-visible") || $modal.attr("aria-hidden") === "true";
-            expect(isHidden).to.eq(true);
-        });
-    });
-});
-
-/**
  * Generic command to wait for a state change based on element text
  * @param {string} selector - CSS selector for the element
  * @param {string} expectedText - Expected text content

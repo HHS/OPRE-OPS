@@ -4,13 +4,9 @@ import ProcurementTrackerStepOne from "./ProcurementTrackerStepOne";
 import useProcurementTrackerStepOne from "./ProcurementTrackerStepOne.hooks";
 
 vi.mock("./ProcurementTrackerStepOne.hooks");
-vi.mock("../../../../helpers/utils", async (importOriginal) => {
-    const actual = await importOriginal();
-    return {
-        ...actual,
-        getLocalISODate: vi.fn(() => "2024-01-30")
-    };
-});
+vi.mock("../../../../helpers/utils", () => ({
+    getLocalISODate: vi.fn(() => "2024-01-30")
+}));
 vi.mock("../../../UI/Form/TextArea", () => ({
     default: ({ label, value, onChange, isDisabled, maxLength, name, className }) => (
         <div data-testid="text-area">

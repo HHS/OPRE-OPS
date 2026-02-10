@@ -48,8 +48,6 @@ const testBLIOutsideDivision = {
     services_component_id: testAgreement["awarding_entity_id"]
 };
 
-const DIVISION_DIRECTOR_OIDC_ID = "00000000-0000-1111-a111-000000000020";
-
 beforeEach(() => {
     // append a unique identifier to the agreement name to avoid conflicts
     const uniqueId = Date.now();
@@ -64,62 +62,6 @@ afterEach(() => {
 });
 
 describe("Approve Cross Division Change Requests", () => {
-    const clearPendingChangeRequestsForDivisionDirector = (preserveChangeRequestIds = []) => {
-        const divisionDirectorToken = `Bearer ${window.localStorage.getItem("access_token")}`;
-
-        return cy
-            .request({
-                method: "GET",
-                url: `http://localhost:8080/api/v1/users/?oidc_id=${DIVISION_DIRECTOR_OIDC_ID}`,
-                headers: {
-                    Authorization: divisionDirectorToken,
-                    Accept: "application/json"
-                }
-            })
-            .then((userResponse) => {
-                const divisionDirectorUserId = userResponse.body?.[0]?.id;
-                if (!divisionDirectorUserId) {
-                    return;
-                }
-
-                return cy
-                    .request({
-                        method: "GET",
-                        url: `http://localhost:8080/api/v1/change-requests/?userId=${divisionDirectorUserId}`,
-                        headers: {
-                            Authorization: divisionDirectorToken,
-                            Accept: "application/json"
-                        }
-                    })
-                    .then((changeRequestsResponse) => {
-                        const pendingChangeRequestIds = (changeRequestsResponse.body || [])
-                            .filter((changeRequest) => changeRequest.status === "IN_REVIEW")
-                            .filter((changeRequest) => !preserveChangeRequestIds.includes(changeRequest.id))
-                            .map((changeRequest) => changeRequest.id);
-
-                        if (!pendingChangeRequestIds.length) {
-                            return;
-                        }
-
-                        return cy.wrap(pendingChangeRequestIds).each((changeRequestId) =>
-                            cy.request({
-                                method: "PATCH",
-                                url: "http://localhost:8080/api/v1/change-requests/",
-                                body: {
-                                    change_request_id: changeRequestId,
-                                    action: "REJECT",
-                                    reviewer_notes: "E2E cleanup"
-                                },
-                                headers: {
-                                    Authorization: divisionDirectorToken,
-                                    Accept: "application/json"
-                                }
-                            })
-                        );
-                    });
-            });
-    };
-
     it("should handle change requests outside division", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 
@@ -144,7 +86,7 @@ describe("Approve Cross Division Change Requests", () => {
             // create BLI WITHIN division
             .then((agreementId) => {
                 const bliData = { ...testBLIWithinDivision, agreement_id: agreementId };
-                return cy.request({
+                cy.request({
                     method: "POST",
                     url: "http://localhost:8080/api/v1/budget-line-items/",
                     body: bliData,
@@ -159,7 +101,7 @@ describe("Approve Cross Division Change Requests", () => {
 
                     // Create the second BLI (outside division)
                     const bliData2 = { ...testBLIOutsideDivision, agreement_id: agreementId };
-                    return cy.request({
+                    cy.request({
                         method: "POST",
                         url: "http://localhost:8080/api/v1/budget-line-items/",
                         body: bliData2,
@@ -177,9 +119,8 @@ describe("Approve Cross Division Change Requests", () => {
             })
             // submit PATCH CR for approval via REST
             .then(({ agreementId, bliId1, bliId2 }) => {
-                let crId1;
                 // Submit PATCH for first BLI
-                return cy.request({
+                cy.request({
                     method: "PATCH",
                     url: `http://localhost:8080/api/v1/budget-line-items/${bliId1}`,
                     body: {
@@ -195,8 +136,6 @@ describe("Approve Cross Division Change Requests", () => {
                     .then((response) => {
                         expect(response.status).to.eq(202);
                         expect(response.body.id).to.exist;
-                        expect(response.body.change_requests_in_review).to.exist;
-                        crId1 = response.body.change_requests_in_review[0]?.id;
 
                         // Submit PATCH for second BLI
                         return cy.request({
@@ -216,41 +155,75 @@ describe("Approve Cross Division Change Requests", () => {
                     .then((response) => {
                         expect(response.status).to.eq(202);
                         expect(response.body.id).to.exist;
-                        expect(response.body.change_requests_in_review).to.exist;
-                        const crId2 = response.body.change_requests_in_review[0]?.id;
-                        return { agreementId, bliId1, bliId2, crId1, crId2 };
+                        return { agreementId, bliId1, bliId2 };
                     });
             })
 
             // test interactions
-            .then(({ agreementId, bliId1, bliId2, crId1, crId2 }) => {
-                return cy
-                    .contains("Sign-Out")
+            .then(({ agreementId, bliId1, bliId2 }) => {
+                cy.contains("Sign-Out")
                     .click()
                     .then(() => {
                         localStorage.clear();
                         expect(localStorage.getItem("access_token")).to.not.exist;
                         testLogin("division-director");
                     })
-                    .then(() => clearPendingChangeRequestsForDivisionDirector([crId1, crId2]))
                     .then(() => {
-                        const divisionDirectorBearerToken = `Bearer ${window.localStorage.getItem("access_token")}`;
-                        return cy.request({
-                            method: "PATCH",
-                            url: "http://localhost:8080/api/v1/change-requests/",
-                            body: {
-                                change_request_id: crId1,
-                                action: "APPROVE",
-                                reviewer_notes: "approved looks good"
-                            },
-                            headers: {
-                                Authorization: divisionDirectorBearerToken,
-                                Accept: "application/json"
-                            }
-                        });
-                    })
-                    .then((response) => {
-                        expect(response.status).to.eq(200);
+                        cy.visit("/agreements?filter=change-requests").wait(1000);
+                        // see if there are any review cards
+                        cy.get("[data-cy='review-card']").should("exist").contains("Status Change");
+                        // nav element with the role navigation should contain text 1
+                        cy.get('[role="navigation"]').contains("1");
+                        cy.get("[data-cy='review-card']").contains(/planned/i);
+                        // hover over the review card
+                        cy.get("[data-cy='review-card']").trigger("mouseover");
+                        // click on button data-cy approve-agreement
+                        cy.get("[data-cy='approve-agreement']").click();
+                        // get h1 to have content Approval for Status Change - Planned
+                        cy.get("h1").contains(/approval for status change - planned/i);
+                        // get content in review-card to see if it exists and contains planned, status and amount
+                        // get content in review-card to see if it exists and contains planned, status and amount
+                        cy.get("[data-cy='review-card']").should("exist");
+                        // Add this new check to ensure there is exactly one review card
+                        cy.get("[data-cy='review-card']").should("have.length", 1);
+                        cy.get("[data-cy='review-card']").contains(/draft/i);
+                        cy.get("[data-cy='review-card']").contains(/planned/i);
+                        cy.get("[data-cy='review-card']").contains(/status/i);
+                        cy.get("[data-cy='review-card']").contains(/total/i);
+                        cy.get("[data-cy='review-card']").contains("$1,000,000.00");
+                        // check summary cards
+                        // get summary card with data-cy currency-summary-card
+                        cy.get("[data-cy='currency-summary-card']").should("exist");
+                        cy.get("[data-cy='currency-summary-card']").contains("$ 1,000,000.00");
+                        cy.get('[data-cy="button-toggle-After Approval"]').first().click();
+                        cy.get("[data-cy='currency-summary-card']").contains("$ 0");
+                        cy.get('[data-cy="button-toggle-After Approval"]').first().click();
+                        //class accordion__content contains a paragraph that contains the text planned status change
+                        cy.get(".usa-accordion__content").contains("planned status changes");
+                        // section BLs not associated with a Services Component should have a table
+                        cy.get(".usa-table").should("exist");
+                        // table should contains a table item  with text PLANNED and css class table-item-diff
+                        cy.get(".usa-table").contains("In Review");
+                        cy.get(".table-item-diff").contains("Planned");
+                        cy.get('[data-cy="button-toggle-After Approval"]').first().click();
+                        cy.get(".table-item-diff").contains("Draft");
+                        // click on checkbox with id approve-confirmation
+                        cy.get(".usa-checkbox__label").click();
+                        cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
+                        cy.get('[data-cy="send-to-approval-btn"]').click();
+                        cy.get("#ops-modal-heading").contains(/approve this status change to planned status?/i);
+                        // Intercept the change request approval API call
+                        cy.intercept("PATCH", "/api/v1/change-requests/").as("approveChangeRequest");
+                        cy.get('[data-cy="confirm-action"]').click();
+                        // Wait for the API request to complete before checking the alert
+                        cy.wait("@approveChangeRequest");
+                        cy.get(".usa-alert__body").should("contain", "Changes Approved");
+                        cy.get(".usa-alert__body").should("contain", testAgreement.name);
+                        cy.get(".usa-alert__body").should("contain", `BL ${bliId1} Status: Draft to Planned`);
+                        cy.get("[data-cy='close-alert']").click();
+                        cy.get("[data-cy='review-card']").should("not.exist");
+                        // nav element should not contain the text 1
+                        cy.get('[role="navigation"]').should("not.contain", "1");
                         // verify agreement history
                         cy.visit(`/agreements/${agreementId}`);
                         checkAgreementHistory();

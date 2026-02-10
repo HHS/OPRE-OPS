@@ -14,6 +14,7 @@
 // ***********************************************************
 
 import "cypress-axe";
+import "cypress-localstorage-commands";
 import "./commands";
 
 // Reduce test flakiness by disabling CSS animations/transitions in all runs.
