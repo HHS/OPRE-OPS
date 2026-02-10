@@ -141,7 +141,7 @@ describe("Agreement Details Edit", () => {
                     const historyText = text.replace(/\s+/g, " ").trim();
                     const expectedEntries = [
                         "Change to Description",
-                        "System Owner edited the agreement description.",
+                        "System Owner changed the Agreement Description.",
                         "Change to Agreement Title",
                         `System Owner changed the agreement title from ${testAgreement.name} to ${editedTitle}.`,
                         "Change to Notes",
