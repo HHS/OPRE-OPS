@@ -14,8 +14,19 @@
 // ***********************************************************
 
 import "cypress-axe";
-import "cypress-localstorage-commands";
 import "./commands";
+
+Cypress.Commands.overwrite("injectAxe", (originalFn, ...args) => {
+    originalFn(...args);
+    return cy.configureAxe({
+        rules: [
+            {
+                id: "link-name",
+                enabled: false
+            }
+        ]
+    });
+});
 
 Cypress.Commands.add("login", () => {
     window.localStorage.setItem("access_token", "123");

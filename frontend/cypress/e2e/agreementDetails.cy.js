@@ -2,6 +2,16 @@
 import { terminalLog, testLogin } from "./utils";
 import { NO_DATA } from "../../src/constants";
 
+const selectDifferentContractType = (selector = "#contract-type") => {
+    cy.get(selector)
+        .find(":selected")
+        .invoke("val")
+        .then((currentValue) => {
+            const nextValue = currentValue === "TIME_AND_MATERIALS" ? "FIRM_FIXED_PRICE" : "TIME_AND_MATERIALS";
+            cy.selectAndWaitForChange(selector, nextValue);
+        });
+};
+
 beforeEach(() => {
     testLogin("system-owner");
 });
@@ -124,21 +134,40 @@ describe("agreement details", () => {
     it("should not allow editing OBLIGATED BLIs", () => {
         cy.visit("/agreements/10/budget-lines");
         cy.get("#edit").click();
-        cy.get("[data-testid='budget-line-row-15005']").trigger("mouseover");
-        cy.get("[data-testid='budget-line-row-15005'] .usa-tooltip .usa-tooltip__body").should(
-            "contain",
-            "Obligated budget lines cannot be edited"
-        );
+        // Wait for edit mode to render the editable table
+        cy.get("[data-cy='continue-btn']", { timeout: 10000 }).should("be.visible");
+        cy.get("tbody").children().should("exist");
+        cy.get("[data-testid='budget-line-row-15005']").as("obligatedRow");
+        cy.get("@obligatedRow").find("[data-cy='expand-row']").click();
+        cy.get("@obligatedRow")
+            .next("[data-testid='expanded-data']")
+            .find("[data-cy='edit-row']")
+            .should("be.disabled")
+            .and("have.attr", "aria-describedby")
+            .then((descId) => {
+                cy.get(`#${descId}`).should("contain", "Obligated budget lines cannot be edited");
+            });
     });
 
     it("should not allow editing EXECUTING BLIs", () => {
         cy.visit("/agreements/10/budget-lines");
         cy.get("#edit").click();
-        cy.get("[data-testid='budget-line-row-15004']").trigger("mouseover");
-        cy.get("[data-testid='budget-line-row-15004'] .usa-tooltip .usa-tooltip__body").should(
-            "contain",
-            "If you need to edit a budget line in Executing Status, please contact the budget team"
-        );
+        // Wait for edit mode to render the editable table
+        cy.get("[data-cy='continue-btn']", { timeout: 10000 }).should("be.visible");
+        cy.get("tbody").children().should("exist");
+        cy.get("[data-testid='budget-line-row-15004']").as("executingRow");
+        cy.get("@executingRow").find("[data-cy='expand-row']").click();
+        cy.get("@executingRow")
+            .next("[data-testid='expanded-data']")
+            .find("[data-cy='edit-row']")
+            .should("be.disabled")
+            .and("have.attr", "aria-describedby")
+            .then((descId) => {
+                cy.get(`#${descId}`).should(
+                    "contain",
+                    "If you need to edit a budget line in Executing Status, please contact the budget team"
+                );
+            });
     });
 
     it("Should allow the user to export BLIs for an agreement", () => {
@@ -238,14 +267,13 @@ describe("agreement details", () => {
         cy.get("#editing").should("have.text", "Editing...");
 
         // Make a change to agreement details
-        cy.get("#contract-type").select("Time & Materials (T&M)");
-        cy.wait(500); // Wait for state to update
+        selectDifferentContractType();
 
         // Try to navigate to Budget Lines tab
         cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
 
         // Verify modal appears
-        cy.get("#ops-modal", { timeout: 10000 }).should("exist");
+        cy.waitForModalToAppear();
         cy.get("#ops-modal-heading").should("contain", "You have unsaved changes");
         cy.get("#ops-modal-description").should(
             "contain",
@@ -253,27 +281,30 @@ describe("agreement details", () => {
         );
 
         // Test ESC key cancels navigation
-        cy.get("body").type("{esc}");
-        cy.get("#ops-modal").should("not.exist");
+        cy.get("body").type("{esc}", { force: true });
+        cy.waitForModalToClose();
         cy.url().should("not.include", "/budget-lines");
 
         // Try again and test "Leave without saving"
         cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
-        cy.get("#ops-modal", { timeout: 10000 }).should("exist");
+        cy.waitForModalToAppear();
         cy.get("[data-cy='cancel-action']").click();
         cy.url().should("include", "/budget-lines");
 
         // Go back to Agreement Details and make changes again
         cy.get('[data-cy="details-tab-Agreement Details"]').click();
         cy.get("#edit").click();
-        cy.get("#contract-type").select("Time & Materials (T&M)");
-        cy.wait(500); // Wait for state to update
+        selectDifferentContractType();
 
         // Try to navigate to Budget Lines and test "Save Changes"
+        cy.intercept("PATCH", "**/agreements/9**").as("saveAgreementDetails");
         cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
-        cy.get("#ops-modal", { timeout: 10000 }).should("exist");
+        cy.waitForModalToAppear();
         cy.get("[data-cy='confirm-action']").click();
-        cy.get(".usa-alert__heading").should("contain", "Agreement Updated");
+        cy.wait("@saveAgreementDetails", { timeout: 30000 })
+            .its("response.statusCode")
+            .should("be.oneOf", [200, 201]);
+        cy.get('[data-cy="alert"]', { timeout: 30000 }).should("contain", "Agreement Updated");
         cy.url().should("include", "/budget-lines");
     });
 
@@ -282,44 +313,43 @@ describe("agreement details", () => {
         cy.visit("/agreements/9");
 
         // Initially: no "Editing..." indicator
-        cy.get("#editing").should("not.exist");
+        cy.waitForEditingState(false);
 
         // After edit click: "Editing..." appears
         cy.get("#edit").click();
-        cy.get("#editing").should("have.text", "Editing...");
+        cy.waitForEditingState(true);
 
         // After making a change: "Editing..." still visible
-        cy.get("#contract-type").select("Firm Fixed Price (FFP)");
-        cy.wait(500); // Wait for state to update
-        cy.get("#editing").should("have.text", "Editing...");
+        selectDifferentContractType();
+        cy.waitForEditingState(true);
 
         // After save: indicator disappears
         cy.get('[data-cy="continue-btn"]').click();
-        cy.get(".usa-alert__heading").should("contain", "Agreement Updated");
-        cy.get("#editing").should("not.exist");
+        cy.get('[data-cy="alert"]', { timeout: 30000 }).should("contain", "Agreement Updated");
+        cy.waitForEditingState(false);
 
         // Test the same workflow on Budget Lines tab
         cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
 
         // Initially: no indicators
-        cy.get("#editing").should("not.exist");
+        cy.waitForEditingState(false);
         cy.get('[data-cy="unsaved-changes"]').should("not.exist");
 
         // After edit click: "Editing..." appears, no badge
         cy.get("#edit").click();
-        cy.get("#editing").should("have.text", "Editing...");
+        cy.waitForEditingState(true);
         cy.get('[data-cy="unsaved-changes"]').should("not.exist");
 
         // After adding a budget line: both "Editing..." and badge appear
         cy.get("#add-budget-line").click();
-        cy.get("#editing").should("have.text", "Editing...");
+        cy.waitForEditingState(true);
         cy.get('[data-cy="unsaved-changes"]').should("exist");
 
         // Cancel and verify both indicators disappear
         cy.get('[data-cy="cancel-button"]').click();
         cy.get("#ops-modal-heading").should("contain", "Are you sure you want to cancel editing?");
         cy.get('[data-cy="confirm-action"]').click();
-        cy.get("#editing").should("not.exist");
+        cy.waitForEditingState(false);
         cy.get('[data-cy="unsaved-changes"]').should("not.exist");
     });
 
@@ -327,11 +357,12 @@ describe("agreement details", () => {
         // Start fresh - login as system-owner
         testLogin("system-owner");
         cy.visit("/agreements/9");
-        cy.wait(1000); // Wait for page to load
+        // Wait for page to load by checking for edit button
+        cy.get("#edit", { timeout: 10000 }).should("be.visible");
 
         // Click edit - "Editing..." appears
         cy.get("#edit").click();
-        cy.get("#editing").should("have.text", "Editing...");
+        cy.waitForEditingState(true);
 
         // Navigate to Budget Lines - no modal should appear (no changes made)
         cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
