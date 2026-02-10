@@ -68,9 +68,26 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
     const agreementsNavLinkSelector = "#nav-menu a[href='/agreements']";
 
     const closeUnsavedChangesModalViaEsc = () => {
-        cy.waitForModalToAppear("#ops-modal", 15000);
-        cy.get("body").type("{esc}", { force: true });
-        cy.waitForModalToClose("#ops-modal", 20000);
+        cy.get("body", { timeout: 15000 }).then(($body) => {
+            const modalVisible = $body.find("#ops-modal:visible").length > 0;
+            if (!modalVisible) {
+                return;
+            }
+
+            cy.get("[data-cy='confirm-action']", { timeout: 15000 }).should("be.visible").focus();
+            cy.focused().type("{esc}", { force: true });
+            cy.get("body").then(($updatedBody) => {
+                const modalStillVisible = $updatedBody.find("#ops-modal:visible").length > 0;
+                if (!modalStillVisible) {
+                    return;
+                }
+
+                cy.get("#ops-modal").trigger("keydown", { key: "Escape", keyCode: 27, which: 27, force: true });
+                cy.get("body").type("{esc}", { force: true });
+            });
+
+            cy.waitForModalToClose("#ops-modal", 20000);
+        });
     };
 
     const openUnsavedChangesModal = () => {

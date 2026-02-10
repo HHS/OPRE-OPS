@@ -97,15 +97,8 @@ Cypress.Commands.add("waitForModalToAppear", (modalSelector = "#ops-modal", time
  */
 Cypress.Commands.add("waitForModalToClose", (modalSelector = "#ops-modal", timeout = 20000) => {
     cy.get("body", { timeout }).should(($body) => {
-        const $modal = $body.find(modalSelector);
-
-        if ($modal.length === 0) {
-            return;
-        }
-
-        const isHidden =
-            !$modal.is(":visible") || !$modal.hasClass("is-visible") || $modal.attr("aria-hidden") === "true";
-        expect(isHidden).to.eq(true);
+        const visibleModalCount = $body.find(`${modalSelector}:visible`).length;
+        expect(visibleModalCount).to.eq(0);
     });
 });
 
