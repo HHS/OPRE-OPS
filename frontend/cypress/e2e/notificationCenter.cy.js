@@ -7,9 +7,10 @@ beforeEach(() => {
 });
 
 it("Notification Center appears when you click the bell icon and has 1 item in list", () => {
-    cy.get("use")
-        .should("have.attr", "href")
-        .and("match", /notifications_(active|none)/);
+    cy.get("#notification-center-bell use").should(($iconUse) => {
+        const href = $iconUse.attr("href") || $iconUse.attr("xlink:href");
+        expect(href).to.match(/notifications_(active|none)/);
+    });
     cy.get("#notification-center-bell").click();
     cy.contains("Notifications");
     cy.get("body").then(($body) => {
@@ -20,5 +21,8 @@ it("Notification Center appears when you click the bell icon and has 1 item in l
             cy.get("[data-cy='notification-center-list']").its("length").should("eq", 0);
         }
     });
-    cy.get("use").should("have.attr", "href").and("contain", "notifications_none");
+    cy.get("#notification-center-bell use").should(($iconUse) => {
+        const href = $iconUse.attr("href") || $iconUse.attr("xlink:href");
+        expect(href).to.contain("notifications_none");
+    });
 });
