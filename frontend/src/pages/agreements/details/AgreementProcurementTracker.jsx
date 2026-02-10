@@ -57,8 +57,8 @@ const AgreementProcurementTracker = ({ agreement }) => {
         return <div>The Procurement Tracker feature is coming soon.</div>;
     }
 
-    // Use active_step_number from tracker if available, otherwise default to 0
-    const currentStep = activeTracker?.active_step_number ? activeTracker.active_step_number : 0;
+    // Use active_step_number from tracker if available, otherwise default to 1 for read-only display
+    const currentStep = activeTracker?.active_step_number ? activeTracker.active_step_number : 1;
     const sortedActiveSteps = [...(activeTracker?.steps || [])].sort(
         (a, b) => (a?.step_number ?? Number.MAX_SAFE_INTEGER) - (b?.step_number ?? Number.MAX_SAFE_INTEGER)
     );

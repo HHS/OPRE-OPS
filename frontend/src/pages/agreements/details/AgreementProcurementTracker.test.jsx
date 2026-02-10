@@ -323,7 +323,7 @@ describe("AgreementProcurementTracker", () => {
         expect(screen.getByText("Step 4 of 6")).toBeInTheDocument();
     });
 
-    it("defaults to step 0 when active_step_number is not provided", () => {
+    it("defaults to step 1 when active_step_number is not provided", () => {
         const trackerWithoutStep = {
             data: [
                 {
@@ -348,7 +348,7 @@ describe("AgreementProcurementTracker", () => {
             </Provider>
         );
 
-        expect(screen.getByText("Step 0 of 6")).toBeInTheDocument();
+        expect(screen.getByText("Step 1 of 6")).toBeInTheDocument();
     });
 
     it("skips API query when agreement ID is not provided", () => {
@@ -397,7 +397,7 @@ describe("AgreementProcurementTracker", () => {
         expect(accordions).toHaveLength(6); // All 6 wizard steps
     });
 
-    it("renders with default step 0 when there is no active tracker", () => {
+    it("renders with default step 1 when there is no active tracker", () => {
         const inactiveTrackerData = {
             data: [
                 {
@@ -422,8 +422,8 @@ describe("AgreementProcurementTracker", () => {
             </Provider>
         );
 
-        // Should default to step 0 when there's no active tracker
-        expect(screen.getByText("Step 0 of 6")).toBeInTheDocument();
+        // Should default to step 1 when there's no active tracker
+        expect(screen.getByText("Step 1 of 6")).toBeInTheDocument();
 
         // All accordions should render with default steps
         const accordions = screen.getAllByTestId("accordion");
