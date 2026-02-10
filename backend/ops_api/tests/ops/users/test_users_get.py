@@ -245,12 +245,9 @@ def test_get_all_users_by_last_name(auth_client, loaded_db, app_ctx):
     assert response.json[0]["last_name"] == expected_user.last_name
 
 
-def test_get_all_users_safe_user(client, loaded_db, test_non_admin_user, app_ctx):
-    access_token = create_access_token(identity=test_non_admin_user)
-    response = client.get(
-        url_for("api.users-group"),
-        headers={"Authorization": f"Bearer {str(access_token)}"},
-    )
+def test_get_all_users_safe_user(basic_user_auth_client, loaded_db, app_ctx):
+    """Non-admin (basic user) gets safe schema; auth client ensures valid session."""
+    response = basic_user_auth_client.get(url_for("api.users-group"))
     assert response.status_code == 200
     assert len(response.json) > 1
     expected_user = loaded_db.get(User, 68)
@@ -265,7 +262,8 @@ def test_get_all_users_safe_user(client, loaded_db, test_non_admin_user, app_ctx
 
 
 def test_get_all_users_by_multiple_filters(auth_client, loaded_db, app_ctx):
-    expected_user = loaded_db.get(User, 500)
+    # Use a user that has non-null first_name, last_name, division (500 may have nulls)
+    expected_user = loaded_db.get(User, 503)
     response = auth_client.get(
         url_for(
             "api.users-group",
