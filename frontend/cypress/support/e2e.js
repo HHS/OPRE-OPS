@@ -18,7 +18,7 @@ import "./commands";
 
 Cypress.Commands.overwrite("injectAxe", (originalFn, ...args) => {
     originalFn(...args);
-    cy.configureAxe({
+    return cy.configureAxe({
         rules: [
             {
                 id: "link-name",
