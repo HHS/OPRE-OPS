@@ -20,9 +20,13 @@ while IFS= read -r spec; do
 done < <(find cypress/e2e -maxdepth 1 -type f -name "*.cy.js" | sort)
 
 if [[ "${SPEC_GLOB}" != "cypress/e2e/*.cy.js" ]]; then
+    if [[ "${SPEC_GLOB}" != *"/"* ]]; then
+        SPEC_GLOB="*${SPEC_GLOB}*"
+    fi
+
     FILTERED_SPECS=()
     for spec in "${SPECS[@]}"; do
-        if [[ "${spec}" =~ ${SPEC_GLOB} ]]; then
+        if [[ "${spec}" == ${SPEC_GLOB} ]]; then
             FILTERED_SPECS+=("${spec}")
         fi
     done
@@ -41,5 +45,5 @@ export CYPRESS_CONFIG_FILE
 printf "%s\n" "${SPECS[@]}" | xargs -I{} -P "${PARALLEL_JOBS}" -n 1 bash -lc '
     spec="$1"
     echo "[$(date +%H:%M:%S)] START ${spec}"
-    bunx cypress run --config-file "${CYPRESS_CONFIG_FILE}" --headless --spec "${spec}"
+    cypress run --config-file "${CYPRESS_CONFIG_FILE}" --headless --spec "${spec}"
 ' _ {}
