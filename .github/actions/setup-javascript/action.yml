@@ -14,4 +14,24 @@ runs:
     - name: Install bun dependencies
       shell: bash
       working-directory: ./frontend
-      run: bun install
+      run: |
+        set -euo pipefail
+
+        max_attempts=3
+        attempt=1
+
+        while [ "$attempt" -le "$max_attempts" ]; do
+          echo "bun install attempt ${attempt}/${max_attempts}"
+          if bun install --frozen-lockfile; then
+            exit 0
+          fi
+
+          if [ "$attempt" -eq "$max_attempts" ]; then
+            echo "bun install failed after ${max_attempts} attempts"
+            exit 1
+          fi
+
+          attempt=$((attempt + 1))
+          echo "Retrying bun install in 5s..."
+          sleep 5
+        done
