@@ -1,3 +1,4 @@
+import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { Provider } from "react-redux";
@@ -27,12 +28,23 @@ vi.mock("../../../components/UI/StepIndicator", () => ({
 
 // Mock Accordion component
 vi.mock("../../../components/UI/Accordion", () => ({
-    default: ({ heading, children, isClosed }) => (
-        <div data-testid="accordion">
-            <div data-testid="accordion-heading">{heading}</div>
-            {!isClosed && <div data-testid="accordion-content">{children}</div>}
-        </div>
-    )
+    default: function MockAccordion({ heading, children, isClosed }) {
+        const [isOpen, setIsOpen] = React.useState(!isClosed);
+
+        return (
+            <div data-testid="accordion">
+                <button
+                    type="button"
+                    data-testid="accordion-heading"
+                    aria-expanded={isOpen}
+                    onClick={() => setIsOpen((previous) => !previous)}
+                >
+                    {heading}
+                </button>
+                {isOpen && <div data-testid="accordion-content">{children}</div>}
+            </div>
+        );
+    }
 }));
 
 // Mock UsersComboBox component
@@ -247,7 +259,45 @@ describe("AgreementProcurementTracker", () => {
         expect(accordions).toHaveLength(6); // All 6 wizard steps
 
         // Should render step 1 heading
-        expect(screen.getByText(/Step 1 of 6 Acquisition Planning/)).toBeInTheDocument();
+        const stepOneHeading = screen.getByTestId("step-builder-heading-default-step-1");
+        expect(stepOneHeading).toHaveTextContent(/1\s+of\s+6\s+Acquisition Planning/);
+        expect(stepOneHeading).toHaveClass("step-builder-accordion__heading--read-only");
+    });
+
+    it("disables step 1 form controls for inactive tracker after expanding accordion", () => {
+        const inactiveTrackerData = {
+            data: [
+                {
+                    id: 4,
+                    agreement_id: 13,
+                    status: "INACTIVE",
+                    active_step_number: 1,
+                    steps: []
+                }
+            ]
+        };
+
+        useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
+            data: inactiveTrackerData,
+            isLoading: false,
+            isError: false
+        });
+
+        render(
+            <Provider store={setupStore()}>
+                <AgreementProcurementTracker agreement={mockAgreement} />
+            </Provider>
+        );
+
+        const firstAccordionHeading = screen.getAllByTestId("accordion-heading")[0];
+        if (firstAccordionHeading.getAttribute("aria-expanded") === "false") {
+            fireEvent.click(firstAccordionHeading);
+        }
+
+        expect(screen.getByRole("checkbox")).toBeDisabled();
+        expect(screen.getByText("Select User")).toBeDisabled();
+        expect(screen.getByTestId("datepicker-input")).toBeDisabled();
+        expect(screen.getByTestId("textarea-input")).toBeDisabled();
     });
 
     it("renders procurement tracker with step indicator when data is available", () => {

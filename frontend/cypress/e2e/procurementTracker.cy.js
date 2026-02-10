@@ -23,7 +23,7 @@ describe("Procurement Tracker page", () => {
         cy.visit(`/agreements/6/procurement-tracker`);
         cy.get('[data-cy="step-indicator-0"]').should("not.have.class", "usa-step-indicator__segment--current");
         cy.get("button")
-            .contains(/Step 1 of/)
+            .contains(/1 of 6/)
             .click();
         cy.get(".usa-checkbox__input").should("be.disabled");
     });
@@ -113,6 +113,11 @@ describe("Procurement Tracker Step 1", () => {
 
     it("Complete the form and verify accordion behavior", () => {
         cy.visit("/agreements/13/procurement-tracker");
+        cy.contains("button", /1 of 6/i).then(($stepOneButton) => {
+            if ($stepOneButton.attr("aria-expanded") === "false") {
+                cy.wrap($stepOneButton).click();
+            }
+        });
 
         // all form elements besides the checkbox should be disabled
         cy.get("#users-combobox-input").should("be.disabled");
@@ -135,7 +140,7 @@ describe("Procurement Tracker Step 1", () => {
 
         // Verify Step 1 accordion remains open after submission
         cy.get("button")
-            .contains(/Step 1 of/)
+            .contains(/1 of 6/)
             .should("have.attr", "aria-expanded", "true");
     });
 });

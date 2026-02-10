@@ -60,6 +60,18 @@ describe("StepBuilderAccordion", () => {
         );
     });
 
+    it("applies read-only heading class when isReadOnly is true", () => {
+        render(
+            <StepBuilderAccordion
+                step={baseStep}
+                totalSteps={6}
+                isReadOnly={true}
+            />
+        );
+
+        expect(screen.getByTestId("step-builder-heading-1")).toHaveClass("step-builder-accordion__heading--read-only");
+    });
+
     it("falls back to activeStepNumber when status is not mapped", () => {
         const { rerender } = render(
             <StepBuilderAccordion
@@ -100,5 +112,23 @@ describe("StepBuilderAccordion", () => {
 
         await userEvent.click(button);
         expect(button).toHaveAttribute("aria-expanded", "true");
+    });
+
+    it("allows expand/collapse when read-only", async () => {
+        render(
+            <StepBuilderAccordion
+                step={baseStep}
+                totalSteps={6}
+                isReadOnly={true}
+            >
+                <div>Step content</div>
+            </StepBuilderAccordion>
+        );
+
+        const button = screen.getByRole("button", { name: /1\s+of\s+6\s+acquisition planning/i });
+        expect(button).toHaveAttribute("aria-expanded", "true");
+
+        await userEvent.click(button);
+        expect(button).toHaveAttribute("aria-expanded", "false");
     });
 });

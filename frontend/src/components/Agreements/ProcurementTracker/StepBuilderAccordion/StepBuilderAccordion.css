@@ -72,3 +72,17 @@
 .step-builder-accordion__heading--not-started .step-builder-accordion__step-label {
     color: var(--neutral-dark);
 }
+
+.step-builder-accordion__heading--read-only .step-builder-accordion__step-number {
+    background-color: #e6e6e6;
+    border: 1px solid #dfe1e2;
+    color: #71767a;
+}
+
+.step-builder-accordion__heading--read-only .step-builder-accordion__step-total {
+    color: #5c5f62;
+}
+
+.step-builder-accordion__heading--read-only .step-builder-accordion__step-label {
+    color: #5c5f62;
+}

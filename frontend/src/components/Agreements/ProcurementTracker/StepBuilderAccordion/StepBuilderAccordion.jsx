@@ -41,6 +41,7 @@ const getStepState = (step, activeStepNumber) => {
  * @property {number} [activeStepNumber]
  * @property {import("react").ReactNode} [children]
  * @property {boolean} [isClosed=false]
+ * @property {boolean} [isReadOnly=false]
  * @property {number} [level=3]
  */
 
@@ -48,12 +49,21 @@ const getStepState = (step, activeStepNumber) => {
  * @param {StepBuilderAccordionProps} props
  * @returns {import("react").ReactElement}
  */
-const StepBuilderAccordion = ({ step, totalSteps, activeStepNumber, children, isClosed = false, level = 3 }) => {
+const StepBuilderAccordion = ({
+    step,
+    totalSteps,
+    activeStepNumber,
+    children,
+    isClosed = false,
+    isReadOnly = false,
+    level = 3
+}) => {
     const stepState = getStepState(step, activeStepNumber);
+    const readOnlyClassName = isReadOnly ? "step-builder-accordion__heading--read-only" : "";
 
     const heading = (
         <div
-            className={`step-builder-accordion__heading step-builder-accordion__heading--${stepState}`}
+            className={`step-builder-accordion__heading step-builder-accordion__heading--${stepState} ${readOnlyClassName}`}
             data-testid={`step-builder-heading-${step?.id}`}
         >
             <span className="step-builder-accordion__step-count">
