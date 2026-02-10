@@ -43,7 +43,7 @@ const baseQuery = fetchBaseQuery({
 });
 
 const getFiscalYearQueryValue = (year) => {
-    const value = typeof year === "object" ? year?.id ?? year?.title : year;
+    const value = typeof year === "object" ? (year?.id ?? year?.title) : year;
     if (typeof value === "string" && value.startsWith("FY ")) {
         return value.replace("FY ", "");
     }
