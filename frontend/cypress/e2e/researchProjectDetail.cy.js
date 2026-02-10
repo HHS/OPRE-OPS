@@ -4,7 +4,8 @@ import { testLogin } from "./utils";
 beforeEach(() => {
     testLogin("system-owner");
     cy.visit("/research-projects/1000");
-    cy.wait(1000);
+    // Wait for page to load by checking for the h1 element
+    cy.get("h1", { timeout: 10000 }).should("be.visible");
 });
 
 afterEach(() => {

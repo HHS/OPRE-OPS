@@ -27,7 +27,7 @@ python-dotenv = "==1.2.1"
 ipython = "==9.10.0"
 
 [dev-packages]
-nox = "==2025.11.12"
+nox = "==2026.2.9"
 flake8 = "==7.3.0"
 flake8-import-order = "==0.19.2"
 flake8-bugbear = "==25.11.29"

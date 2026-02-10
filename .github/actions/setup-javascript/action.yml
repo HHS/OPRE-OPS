@@ -3,6 +3,10 @@ description: Installs Bun.js and dependencies defined in package.json
 runs:
   using: composite
   steps:
+    - name: Set up Node
+      uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
+      with:
+        node-version-file: "frontend/.nvmrc"
     - name: Set up Bun
       uses: oven-sh/setup-bun@3d267786b128fe76c2f16a390aa2448b815359f3 # v2.1.2
       with:

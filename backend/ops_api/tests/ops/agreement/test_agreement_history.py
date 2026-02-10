@@ -32,7 +32,7 @@ def test_update_agreement_agreement_history_trigger(loaded_db, app_ctx):
     assert new_agreement_history_item.history_title == "Change to Description"
     assert (
         new_agreement_history_item.history_message
-        == "Changes made to the OPRE budget spreadsheet changed the agreement description."
+        == "Changes made to the OPRE budget spreadsheet changed the Agreement Description."
     )
     assert new_agreement_history_item_2.history_type == AgreementHistoryType.AGREEMENT_UPDATED
     assert new_agreement_history_item_2.history_title == "Change to Agreement Title"
@@ -120,13 +120,13 @@ def test_update_add_remove_team_member_history_trigger(loaded_db, app_ctx):
 
     assert new_agreement_history_item.history_type == AgreementHistoryType.AGREEMENT_UPDATED
     assert new_agreement_history_item.history_title == "Change to Team Members"
-    assert new_agreement_history_item.history_message == "Team Member Niki Denmark removed by System Admin."
+    assert new_agreement_history_item.history_message == "System Admin removed team member Niki Denmark."
     assert new_agreement_history_item_2.history_type == AgreementHistoryType.AGREEMENT_UPDATED
     assert new_agreement_history_item_2.history_title == "Change to Team Members"
-    assert new_agreement_history_item_2.history_message == "Team Member Amare Beza added by System Admin."
+    assert new_agreement_history_item_2.history_message == "System Admin added team member Amare Beza."
     assert new_agreement_history_item_3.history_type == AgreementHistoryType.AGREEMENT_UPDATED
     assert new_agreement_history_item_3.history_title == "Change to Team Members"
-    assert new_agreement_history_item_3.history_message == "Team Member Dave Director added by System Admin."
+    assert new_agreement_history_item_3.history_message == "System Admin added team member Dave Director."
 
 
 def test_update_bli_status_change_history_trigger(loaded_db, app_ctx):

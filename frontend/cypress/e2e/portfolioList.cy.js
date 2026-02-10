@@ -43,8 +43,8 @@ describe("Portfolio List Page", () => {
 
     it("changes fiscal year and navigates to detail page with FY parameter", () => {
         cy.get("select").first().select("2023");
-        cy.wait(1000); // Allow data to reload
-        cy.get("table tbody tr").should("exist");
+        // Wait for data to reload by checking for table rows
+        cy.get("table tbody tr", { timeout: 10000 }).should("exist");
 
         // Click first portfolio link
         cy.get("table tbody tr").first().find("a").first().click();
