@@ -176,6 +176,18 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
     const fieldStyles = "usa-fieldset margin-bottom-205";
     const legendStyles = `usa-legend font-sans-3xs margin-top-0 padding-bottom-1 ${customStyles.legendColor}`;
 
+    // Calculate default string based on selectedFiscalYear from the shortcut dropdown
+    const getDefaultFiscalYearString = () => {
+        if (!selectedFiscalYear || selectedFiscalYear === "Multi") {
+            return `Fiscal Year ${getCurrentFiscalYear()}`;
+        }
+        if (selectedFiscalYear === "All") {
+            return "All Fiscal Years";
+        }
+        // It's a specific year number
+        return `Fiscal Year ${selectedFiscalYear}`;
+    };
+
     const fieldsetList = [
         <fieldset
             key="field1"
@@ -185,7 +197,7 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
                 selectedFiscalYears={fiscalYears}
                 setSelectedFiscalYears={handleFiscalYearsChange}
                 legendClassname={legendStyles}
-                defaultString={`Fiscal Year ${getCurrentFiscalYear()}`}
+                defaultString={getDefaultFiscalYearString()}
                 overrideStyles={{ width: "22.7rem" }}
                 budgetLinesFiscalYears={fiscalYearOptions}
             />
