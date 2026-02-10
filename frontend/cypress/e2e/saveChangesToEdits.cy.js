@@ -65,14 +65,27 @@ beforeEach(() => {
 describe("Save Changes/Edits in Agreement BLIs", () => {
     let agreementId;
     let bearer_token;
+    const agreementsNavLinkSelector = "#nav-menu a[href='/agreements']";
 
     const closeUnsavedChangesModalViaEsc = () => {
         cy.waitForModalToAppear("#ops-modal", 15000);
-        cy.get("[data-cy='confirm-action']", { timeout: 15000 }).should("be.visible").focus();
-        cy.get("#ops-modal").trigger("keydown", { key: "Escape", keyCode: 27, which: 27, force: true });
         cy.get("body").type("{esc}", { force: true });
         cy.waitForModalToClose("#ops-modal", 20000);
     };
+
+    const openUnsavedChangesModal = () => {
+        cy.get(agreementsNavLinkSelector, { timeout: 10000 }).should("be.visible").click();
+        cy.waitForModalToAppear("#ops-modal", 15000);
+    };
+
+    const getFirstBudgetLineId = () =>
+        cy
+            .get('[data-testid^="budget-line-row-"]', { timeout: 10000 })
+            .should("have.length.greaterThan", 0)
+            .first()
+            .invoke("attr", "data-testid")
+            .should("match", /^budget-line-row-/)
+            .then((testId) => testId.split("row-")[1]);
 
     beforeEach(() => {
         expect(localStorage.getItem("access_token")).to.exist;
@@ -121,14 +134,14 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
         );
 
         cy.get('[data-cy="unsaved-changes"]').should("exist");
-        cy.contains("a", "Agreements").click();
+        openUnsavedChangesModal();
 
         // Should exit the save & exit modal via ESC key
         closeUnsavedChangesModalViaEsc();
         cy.get('[data-cy="unsaved-changes"]').should("exist");
 
         //Should save & exit correctly
-        cy.contains("a", "Agreements").click();
+        openUnsavedChangesModal();
         cy.get("#ops-modal-description").should(
             "contain",
             "You have unsaved changes. If you leave without saving, these changes will be lost."
@@ -158,15 +171,7 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
         cy.visit(`/agreements/${agreementId}/budget-lines`);
         cy.get("#edit").click();
 
-        let budgetLineId;
-        cy.get('[data-testid^="budget-line-row-"]')
-            .first()
-            .invoke("attr", "data-testid")
-            .then((testId) => {
-                budgetLineId = testId.split("row-")[1];
-            });
-
-        cy.then(() => {
+        getFirstBudgetLineId().then((budgetLineId) => {
             cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).trigger("mouseover");
             cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).find("[data-cy='edit-row']").click();
             cy.get("#enteredAmount").clear();
@@ -177,7 +182,7 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
                 `Budget line ${budgetLineId} was updated.  When you’re done editing, click Save & Exit below.`
             );
             cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).first().should("contain", "$999,999.00");
-            cy.contains("a", "Agreements").click();
+            openUnsavedChangesModal();
             cy.get("#ops-modal-description").should(
                 "contain",
                 "You have unsaved changes. If you leave without saving, these changes will be lost."
@@ -211,15 +216,7 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
         cy.visit(`/agreements/${agreementId}/budget-lines`);
         cy.get("#edit").click();
 
-        let budgetLineId;
-        cy.get('[data-testid^="budget-line-row-"]')
-            .first()
-            .invoke("attr", "data-testid")
-            .then((testId) => {
-                budgetLineId = testId.split("row-")[1];
-            });
-
-        cy.then(() => {
+        getFirstBudgetLineId().then((budgetLineId) => {
             cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).trigger("mouseover");
             cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).find("[data-cy='delete-row']").click();
             cy.get(".usa-modal__heading").should(
@@ -231,7 +228,7 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
                 "contain",
                 `The budget line ${budgetLineId} has been successfully deleted.`
             );
-            cy.contains("a", "Agreements").click();
+            openUnsavedChangesModal();
             cy.get("#ops-modal-description").should(
                 "contain",
                 "You have unsaved changes. If you leave without saving, these changes will be lost."
@@ -239,9 +236,7 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
             cy.get("[data-cy='confirm-action']").click();
             cy.get(".usa-alert__heading").should("contain", "Agreement Updated");
             cy.visit(`/agreements/${agreementId}/budget-lines`);
-            // Wait for page to fully load before checking for deleted row
-            cy.wait(300);
-            cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).should("not.exist");
+            cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`, { timeout: 10000 }).should("not.exist");
         });
     });
     it("should trigger save and exit modal that requires division director approval", () => {
@@ -264,14 +259,8 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
         cy.get("#edit").click();
 
         let budgetLineId;
-        cy.get('[data-testid^="budget-line-row-"]')
-            .first()
-            .invoke("attr", "data-testid")
-            .then((testId) => {
-                budgetLineId = testId.split("row-")[1];
-            });
-
-        cy.then(() => {
+        getFirstBudgetLineId().then((currentBudgetLineId) => {
+            budgetLineId = currentBudgetLineId;
             cy.get("#servicesComponentSelect").select("1");
             cy.get("[data-cy='add-services-component-btn']").click();
 
@@ -286,7 +275,7 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
 
             // Check that the budget line was updated in the UI
             cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).first().should("contain", "$999,999.00");
-            cy.contains("a", "Agreements").click();
+            openUnsavedChangesModal();
             cy.get("#ops-modal-description").should(
                 "contain",
                 "You have unsaved changes and some will require approval from your Division Director if you save. If you leave without saving, these changes will be lost."
@@ -298,7 +287,7 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
         cy.get('[data-cy="unsaved-changes"]').should("exist");
 
         //Should save & exit correctly
-        cy.contains("a", "Agreements").click();
+        openUnsavedChangesModal();
         cy.get("[data-cy='confirm-action']").click();
         cy.get(".usa-modal__heading").should("not.exist");
         cy.get(".usa-alert__heading").should("contain", "Changes Sent to Approval");
@@ -348,10 +337,9 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
 
         // Try to navigate using browser history simulation
         // Use the Agreements link which triggers the blocker
-        cy.contains("a", "Agreements").click();
+        openUnsavedChangesModal();
 
         // Verify modal appears
-        cy.get("#ops-modal", { timeout: 10000 }).should("exist");
         cy.get("#ops-modal-heading").should("exist");
         cy.get("#ops-modal-description").should(
             "contain",
@@ -363,8 +351,7 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
         cy.get('[data-cy="unsaved-changes"]').should("exist");
 
         // Try navigation again and test "Leave without saving"
-        cy.contains("a", "Agreements").click();
-        cy.get("#ops-modal", { timeout: 10000 }).should("exist");
+        openUnsavedChangesModal();
         cy.get("[data-cy='cancel-action']").click();
         cy.url().should("include", "/agreements");
         cy.url().should("not.include", "/budget-lines");
@@ -376,8 +363,7 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
         cy.get('[data-cy="unsaved-changes"]').should("exist");
 
         // Test "Save Changes" option
-        cy.contains("a", "Agreements").click();
-        cy.get("#ops-modal", { timeout: 10000 }).should("exist");
+        openUnsavedChangesModal();
         cy.get("[data-cy='confirm-action']").click();
         cy.get(".usa-alert__heading").should("contain", "Agreement Updated");
     });
@@ -398,10 +384,9 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
         cy.get('[data-cy="unsaved-changes"]').should("exist");
 
         // Try to navigate to Agreements page (external from budget lines)
-        cy.contains("a", "Agreements").click();
+        openUnsavedChangesModal();
 
         // Verify modal appears
-        cy.get("#ops-modal", { timeout: 10000 }).should("exist");
         cy.get("#ops-modal-description").should(
             "contain",
             "You have unsaved changes. If you leave without saving, these changes will be lost."
@@ -419,9 +404,8 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
         cy.get('[data-cy="unsaved-changes"]').should("exist");
 
         // Try to navigate again
-        cy.contains("a", "Agreements").click();
+        openUnsavedChangesModal();
 
-        cy.get("#ops-modal", { timeout: 10000 }).should("exist");
         cy.get("[data-cy='confirm-action']").click();
         cy.get(".usa-alert__heading").should("contain", "Agreement Updated");
         cy.url().should("include", "/agreements");
@@ -482,9 +466,7 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
         closeUnsavedChangesModalViaEsc();
 
         // Navigate away and save all changes
-        cy.contains("a", "Agreements").should("be.visible");
-        cy.contains("a", "Agreements").click();
-        cy.get("#ops-modal").should("exist");
+        openUnsavedChangesModal();
         cy.get("[data-cy='confirm-action']").click();
 
         // Verify changes were saved
@@ -504,8 +486,7 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
         cy.get('[data-cy="unsaved-changes"]').should("exist");
 
         // Trigger modal
-        cy.contains("a", "Agreements").click();
-        cy.get("#ops-modal", { timeout: 10000 }).should("exist");
+        openUnsavedChangesModal();
 
         // Test that focus is on first button (Save Changes)
         cy.focused().should("have.attr", "data-cy", "confirm-action");
@@ -522,8 +503,7 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
         closeUnsavedChangesModalViaEsc();
 
         // Trigger modal again for Enter test
-        cy.contains("a", "Agreements").click();
-        cy.get("#ops-modal", { timeout: 10000 }).should("exist");
+        openUnsavedChangesModal();
 
         // Verify focus is on Save button, then click it
         // (Note: Cypress has limitations with Enter key on buttons, so we use click instead)
@@ -544,10 +524,10 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
         cy.get('[data-cy="unsaved-changes"]').should("exist");
 
         // Try to click Agreements link rapidly (only first click will register due to blocker)
-        cy.contains("a", "Agreements").click({ multiple: true });
+        cy.get(agreementsNavLinkSelector, { timeout: 10000 }).click({ multiple: true });
 
         // Verify modal appears
-        cy.get("#ops-modal", { timeout: 10000 }).should("exist");
+        cy.waitForModalToAppear("#ops-modal", 10000);
         cy.get("#ops-modal-heading").should("exist");
 
         // Verify only one modal exists (not duplicated)
@@ -558,8 +538,7 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
         cy.get('[data-cy="unsaved-changes"]').should("exist");
 
         // Try navigation again to ensure blocker still works
-        cy.contains("a", "Agreements").click();
-        cy.get("#ops-modal", { timeout: 10000 }).should("exist");
+        openUnsavedChangesModal();
         closeUnsavedChangesModalViaEsc();
     });
 });
