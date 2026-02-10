@@ -213,14 +213,15 @@ describe("AgreementProcurementTracker", () => {
     // Note: The feature flag test (IS_PROCUREMENT_TRACKER_READY) is tested via E2E tests
     // since it's a module-level constant that's difficult to mock properly in unit tests
 
-    it("renders no active tracker message when no active tracker found", () => {
+    it("renders procurement tracker with default steps when no active tracker found", () => {
         const inactiveTrackerData = {
             data: [
                 {
                     id: 4,
                     agreement_id: 13,
                     status: "INACTIVE",
-                    active_step_number: 1
+                    active_step_number: 1,
+                    steps: []
                 }
             ]
         };
@@ -237,7 +238,16 @@ describe("AgreementProcurementTracker", () => {
             </Provider>
         );
 
-        expect(screen.getByText("No active Procurement Tracker found.")).toBeInTheDocument();
+        // Should render the tracker UI
+        expect(screen.getByText("Procurement Tracker")).toBeInTheDocument();
+        expect(screen.getByTestId("step-indicator")).toBeInTheDocument();
+
+        // Should render accordions with default steps
+        const accordions = screen.getAllByTestId("accordion");
+        expect(accordions).toHaveLength(6); // All 6 wizard steps
+
+        // Should render step 1 heading
+        expect(screen.getByText(/Step 1 of 6 Acquisition Planning/)).toBeInTheDocument();
     });
 
     it("renders procurement tracker with step indicator when data is available", () => {
@@ -311,7 +321,7 @@ describe("AgreementProcurementTracker", () => {
         });
     });
 
-    it("renders empty tracker array message", () => {
+    it("renders procurement tracker with default steps when tracker array is empty", () => {
         const emptyTrackerData = {
             data: []
         };
@@ -328,7 +338,46 @@ describe("AgreementProcurementTracker", () => {
             </Provider>
         );
 
-        expect(screen.getByText("No active Procurement Tracker found.")).toBeInTheDocument();
+        // Should render the tracker UI
+        expect(screen.getByText("Procurement Tracker")).toBeInTheDocument();
+        expect(screen.getByTestId("step-indicator")).toBeInTheDocument();
+
+        // Should render accordions with default steps
+        const accordions = screen.getAllByTestId("accordion");
+        expect(accordions).toHaveLength(6); // All 6 wizard steps
+    });
+
+    it("renders with default step 0 when there is no active tracker", () => {
+        const inactiveTrackerData = {
+            data: [
+                {
+                    id: 4,
+                    agreement_id: 13,
+                    status: "INACTIVE",
+                    active_step_number: 1,
+                    steps: []
+                }
+            ]
+        };
+
+        useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
+            data: inactiveTrackerData,
+            isLoading: false,
+            isError: false
+        });
+
+        render(
+            <Provider store={setupStore()}>
+                <AgreementProcurementTracker agreement={mockAgreement} />
+            </Provider>
+        );
+
+        // Should default to step 0 when there's no active tracker
+        expect(screen.getByText("Step 0 of 6")).toBeInTheDocument();
+
+        // All accordions should render with default steps
+        const accordions = screen.getAllByTestId("accordion");
+        expect(accordions).toHaveLength(6);
     });
 
     it("renders debug code component when active tracker exists", () => {
@@ -429,7 +478,8 @@ describe("AgreementProcurementTracker", () => {
                 </Provider>
             );
 
-            const heading = screen.getByText(/Step 1 of 2 Pre-Solicitation/);
+            // Heading uses WIZARD_STEPS length (6) and step_type from tracker data
+            const heading = screen.getByText(/Step 1 of 6 Pre-Solicitation/);
             expect(heading).toBeInTheDocument();
         });
 
@@ -661,7 +711,7 @@ describe("AgreementProcurementTracker", () => {
             expect(screen.getByTestId("users-combobox")).toBeInTheDocument();
 
             // Step 2 accordion heading should exist but content should be closed
-            expect(screen.getByText(/Step 2 of 2 Solicitation/)).toBeInTheDocument();
+            expect(screen.getByText(/Step 2 of 6 Solicitation/)).toBeInTheDocument();
         });
 
         it("renders UsersComboBox with correct label", () => {
