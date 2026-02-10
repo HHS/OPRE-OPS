@@ -1,10 +1,7 @@
-FROM alpine:3.23.3 AS deps
+FROM python:3.14-alpine AS deps
 
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH=/home/app
-
-# hadolint ignore=DL3018
-RUN apk update && apk add --no-cache python3 py3-pip
 
 # Copy the Pipfile(s) only, so that we can cache dependencies
 # in the next step
