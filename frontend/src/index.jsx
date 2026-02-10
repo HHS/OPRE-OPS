@@ -288,6 +288,11 @@ const router = createBrowserRouter(
 
 const rootElement = document.getElementById("root");
 
+const logReactError = (label, error, errorInfo) => {
+    const context = { url: window.location.href, timestamp: new Date().toISOString() };
+    console.error("React error:", { label, error, errorInfo, context });
+};
+
 const startApp = async () => {
     if (import.meta.env.DEV && import.meta.env.VITE_ENABLE_MSW === "true" && !window.Cypress) {
         const { worker } = await import("./mocks/browser");
@@ -295,7 +300,10 @@ const startApp = async () => {
     }
 
     if (rootElement) {
-        ReactDOM.createRoot(rootElement).render(
+        ReactDOM.createRoot(rootElement, {
+            onUncaughtError: (error, errorInfo) => logReactError("Uncaught error", error, errorInfo),
+            onCaughtError: (error, errorInfo) => logReactError("Caught error", error, errorInfo)
+        }).render(
             <React.StrictMode>
                 <ErrorBoundary>
                     <Provider store={store}>

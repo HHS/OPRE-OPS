@@ -1494,6 +1494,12 @@ paths:
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FundingBudgetList"
     post:
       tags:
         - CAN Funding Budgets
@@ -4295,6 +4301,28 @@ components:
         - id
         - can_id
         - fiscal_year
+    FundingBudgetList:
+      description: Lightweight Funding Budget Object for list endpoints (excludes expensive nested relationships)
+      type: object
+      properties:
+        id:
+          type: integer
+        can_id:
+          type: integer
+        fiscal_year:
+          type: integer
+        budget:
+          type: number
+        notes:
+          type: string
+        created_on:
+          $ref: "#/components/parameters/created_on"
+        updated_on:
+          $ref: "#/components/parameters/updated_on"
+      required:
+        - id
+        - can_id
+        - fiscal_year
     FundingBudgetVersion:
       description: SQLAlchemy Continuum Version for Funding Budget
       type: object
@@ -6098,6 +6126,10 @@ components:
                 type: string
             in_review:
               type: boolean
+            authorized_user_ids:
+              type: array
+              items:
+                type: integer
             change_requests_in_review:
               type: array
               nullable: true
