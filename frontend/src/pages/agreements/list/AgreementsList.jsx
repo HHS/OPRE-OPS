@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import PacmanLoader from "react-spinners/PacmanLoader";
 import {
@@ -61,10 +61,6 @@ const AgreementsList = () => {
     const changeRequestUrl = searchParams.get("filter") === "change-requests";
 
     const { data: agreementFilterOptions } = useGetAgreementsFilterOptionsQuery({ onlyMy: false });
-    const fiscalYearOptions = useMemo(
-        () => agreementFilterOptions?.fiscal_years || [],
-        [agreementFilterOptions?.fiscal_years]
-    );
 
     // Determine fiscal year filter based on selection
     const hasOtherFilters =
@@ -124,19 +120,6 @@ const AgreementsList = () => {
     useEffect(() => {
         setCurrentPage(1);
     }, [filters, myAgreementsUrl, sortCondition, sortDescending]);
-
-    // Ensure selected fiscal year is valid when fiscal year options are loaded
-    useEffect(() => {
-        if (fiscalYearOptions.length > 0) {
-            // Check if current selected fiscal year is in the available options
-            const isCurrentYearAvailable = fiscalYearOptions.includes(Number(selectedFiscalYear));
-
-            // If not available and not "All", default to "All"
-            if (!isCurrentYearAvailable && selectedFiscalYear !== "All") {
-                setSelectedFiscalYear("All");
-            }
-        }
-    }, [fiscalYearOptions, selectedFiscalYear]);
 
     // Sync fiscal year filter modal with page-level dropdown
     // When "All FYs" is selected in the filter modal, change page dropdown to "All"
@@ -374,7 +357,6 @@ const AgreementsList = () => {
                         <FiscalYear
                             fiscalYear={selectedFiscalYear}
                             handleChangeFiscalYear={handleChangeFiscalYear}
-                            fiscalYears={fiscalYearOptions}
                             showAllOption={true}
                         />
                     }

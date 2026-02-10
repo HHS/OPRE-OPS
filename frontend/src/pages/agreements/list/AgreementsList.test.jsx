@@ -56,25 +56,33 @@ vi.mock("../../../components/UI/PaginationNav/PaginationNav", () => ({
 }));
 
 vi.mock("../../../components/UI/FiscalYear", () => ({
-    default: ({ fiscalYear, handleChangeFiscalYear, fiscalYears = [], showAllOption }) => (
-        <div data-testid="fiscal-year-select">
-            <select
-                data-testid="fiscal-year-dropdown"
-                value={fiscalYear}
-                onChange={(e) => handleChangeFiscalYear(e.target.value)}
-            >
-                {fiscalYears.map((fy) => (
-                    <option
-                        key={fy}
-                        value={fy}
-                    >
-                        {fy}
-                    </option>
-                ))}
-                {showAllOption && <option value="All">All</option>}
-            </select>
-        </div>
-    )
+    default: ({ fiscalYear, handleChangeFiscalYear, fiscalYears = [], showAllOption }) => {
+        // Simulate real component fallback: use generated fiscal years when no fiscalYears provided
+        const now = new Date();
+        const currentFY = now.getMonth() >= 9 ? now.getFullYear() + 1 : now.getFullYear();
+        const fallbackYears = Array.from({ length: 11 }, (_, i) => currentFY + 5 - i);
+        const years = fiscalYears.length > 0 ? fiscalYears : fallbackYears;
+
+        return (
+            <div data-testid="fiscal-year-select">
+                <select
+                    data-testid="fiscal-year-dropdown"
+                    value={fiscalYear}
+                    onChange={(e) => handleChangeFiscalYear(e.target.value)}
+                >
+                    {years.map((fy) => (
+                        <option
+                            key={fy}
+                            value={fy}
+                        >
+                            {fy}
+                        </option>
+                    ))}
+                    {showAllOption && <option value="All">All</option>}
+                </select>
+            </div>
+        );
+    }
 }));
 
 // Mock react-router-dom
@@ -693,7 +701,7 @@ describe("AgreementsList - Fiscal Year Filtering", () => {
         expect(screen.getByTestId("agreement-tabs")).toBeInTheDocument();
     });
 
-    it("should default to 'All' when current fiscal year is not in options list", async () => {
+    it("should use current fiscal year as default filter regardless of API options", async () => {
         // Mock fiscal year options that don't include the current year
         useGetAgreementsFilterOptionsQuery.mockReturnValue({
             data: {
@@ -731,12 +739,13 @@ describe("AgreementsList - Fiscal Year Filtering", () => {
             expect(screen.getByTestId("fiscal-year-select")).toBeInTheDocument();
         });
 
-        // Verify the query sends empty fiscalYear (All = no filter)
+        // The component always defaults to the current fiscal year from the dropdown
+        const currentFY = Number(getCurrentFiscalYear());
         await waitFor(
             () => {
                 expect(mockQuery).toHaveBeenCalled();
                 const lastCall = mockQuery.mock.calls[mockQuery.mock.calls.length - 1];
-                expect(lastCall[0].filters.fiscalYear).toEqual([]);
+                expect(lastCall[0].filters.fiscalYear).toEqual([{ id: currentFY, title: currentFY }]);
             },
             { timeout: 3000 }
         );

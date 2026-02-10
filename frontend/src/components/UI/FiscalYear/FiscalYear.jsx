@@ -9,7 +9,7 @@ import constants from "../../../constants";
  * @param {boolean} [props.showAllOption] - Optional flag to show "All" option at the bottom (defaults to false)
  * @returns {React.ReactElement} FiscalYear component
  */
-const FiscalYear = ({ fiscalYear, handleChangeFiscalYear, fiscalYears, showAllOption = false }) => {
+const FiscalYear = ({ fiscalYear, handleChangeFiscalYear, fiscalYears = [], showAllOption = false }) => {
     const years = fiscalYears && fiscalYears.length > 0 ? fiscalYears : constants.fiscalYears;
 
     return (
