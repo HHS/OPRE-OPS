@@ -40,6 +40,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
     // Extract tracker data
     const trackers = data?.data || [];
     const activeTracker = trackers.find((tracker) => tracker.status === "ACTIVE");
+    const hasActiveTracker = !!activeTracker;
     const stepOneData = activeTracker?.steps.find((step) => step.step_number === 1);
 
     // Handle loading state
@@ -56,13 +57,19 @@ const AgreementProcurementTracker = ({ agreement }) => {
         return <div>The Procurement Tracker feature is coming soon.</div>;
     }
 
-    if (!activeTracker) {
-        // TODO: add inactive procurement tracker
-        return <div>No active Procurement Tracker found.</div>;
-    }
-
     // Use active_step_number from tracker if available, otherwise default to 0
     const currentStep = activeTracker?.active_step_number ? activeTracker.active_step_number : 0;
+
+    // Create default steps structure when there's no active tracker
+    const defaultSteps = WIZARD_STEPS.map((stepName, index) => ({
+        id: `default-step-${index + 1}`,
+        step_number: index + 1,
+        step_type: stepName,
+        status: "PENDING"
+    }));
+
+    // Use active tracker steps if available, otherwise use default structure
+    const stepsToRender = activeTracker?.steps || defaultSteps;
 
     return (
         <>
@@ -76,30 +83,29 @@ const AgreementProcurementTracker = ({ agreement }) => {
                 steps={WIZARD_STEPS}
                 currentStep={currentStep}
             />
-            {activeTracker?.steps.length > 0 &&
-                activeTracker?.steps?.map((step) => {
-                    return (
-                        <Accordion
-                            heading={`Step ${step.step_number} of ${activeTracker?.steps.length} ${step.step_type}`}
-                            // Keep step 1 and the active step open after form submission, all others closed
-                            isClosed={
-                                isFormSubmitted
-                                    ? !(step.step_number === 1 || step.step_number === currentStep)
-                                    : step.step_number !== currentStep
-                            }
-                            level={3}
-                            key={step.id}
-                        >
-                            {step.step_number === 1 && (
-                                <ProcurementTrackerStepOne
-                                    stepStatus={step.status}
-                                    stepOneData={stepOneData}
-                                    handleSetIsFormSubmitted={handleSetIsFormSubmitted}
-                                />
-                            )}
-                        </Accordion>
-                    );
-                })}
+            {stepsToRender.map((step) => {
+                return (
+                    <Accordion
+                        heading={`Step ${step.step_number} of ${WIZARD_STEPS.length} ${step.step_type}`}
+                        isClosed={
+                            isFormSubmitted
+                                ? !(step.step_number === 1 || step.step_number === currentStep)
+                                : step.step_number !== currentStep
+                        }
+                        level={3}
+                        key={step.id}
+                    >
+                        {step.step_number === 1 && (
+                            <ProcurementTrackerStepOne
+                                stepStatus={step.status}
+                                stepOneData={stepOneData}
+                                hasActiveTracker={hasActiveTracker}
+                                handleSetIsFormSubmitted={handleSetIsFormSubmitted}
+                            />
+                        )}
+                    </Accordion>
+                );
+            })}
             {activeTracker && <DebugCode data={activeTracker}></DebugCode>}
         </>
     );

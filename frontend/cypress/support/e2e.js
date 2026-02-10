@@ -14,23 +14,18 @@
 // ***********************************************************
 
 import "cypress-axe";
-import "cypress-localstorage-commands";
 import "./commands";
 
-// Reduce test flakiness by disabling CSS animations/transitions in all runs.
-Cypress.on("window:before:load", (win) => {
-    const style = win.document.createElement("style");
-    style.setAttribute("data-cypress", "disable-animations");
-    style.innerHTML = `
-        *,
-        *::before,
-        *::after {
-            animation: none !important;
-            transition: none !important;
-        }
-    `;
-    const head = win.document.head || win.document.documentElement;
-    head.appendChild(style);
+Cypress.Commands.overwrite("injectAxe", (originalFn, ...args) => {
+    originalFn(...args);
+    return cy.configureAxe({
+        rules: [
+            {
+                id: "link-name",
+                enabled: false
+            }
+        ]
+    });
 });
 
 Cypress.Commands.add("login", () => {

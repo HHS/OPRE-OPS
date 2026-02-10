@@ -2,6 +2,16 @@
 import { terminalLog, testLogin } from "./utils";
 import { NO_DATA } from "../../src/constants";
 
+const selectDifferentContractType = (selector = "#contract-type") => {
+    cy.get(selector)
+        .find(":selected")
+        .invoke("val")
+        .then((currentValue) => {
+            const nextValue = currentValue === "TIME_AND_MATERIALS" ? "FIRM_FIXED_PRICE" : "TIME_AND_MATERIALS";
+            cy.selectAndWaitForChange(selector, nextValue);
+        });
+};
+
 beforeEach(() => {
     testLogin("system-owner");
 });
@@ -18,7 +28,7 @@ describe("agreement details", () => {
         cy.get("h2").first().contains("Mother and Infant Home Visiting Program Evaluation 2");
         cy.get("span").contains("Awarded");
         cy.get('[data-cy="details-tab-Award & Modifications"]').should("be.disabled");
-        cy.get('[data-cy="details-tab-Procurement Tracker"]').should("be.disabled");
+        cy.get('[data-cy="details-tab-Procurement Tracker"]').should("be.enabled");
         cy.get('[data-cy="details-tab-Documents"]').should("be.disabled");
         cy.get("h2").eq(1).contains("Agreement Details");
         cy.get('[data-cy="agreement-description"]').contains("Test description");
@@ -257,7 +267,7 @@ describe("agreement details", () => {
         cy.get("#editing").should("have.text", "Editing...");
 
         // Make a change to agreement details
-        cy.selectAndWaitForChange("#contract-type", "TIME_AND_MATERIALS");
+        selectDifferentContractType();
 
         // Try to navigate to Budget Lines tab
         cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
@@ -271,10 +281,8 @@ describe("agreement details", () => {
         );
 
         // Test ESC key cancels navigation
-        cy.get("body").type("{esc}");
-        // Wait for modal to close (animation + React state update) - increased for React 19 CI timing
-        cy.wait(2000); // Extra wait for React 19 to process ESC key
-        cy.get("#ops-modal", { timeout: 20000 }).should("not.exist");
+        cy.get("body").type("{esc}", { force: true });
+        cy.waitForModalToClose();
         cy.url().should("not.include", "/budget-lines");
 
         // Try again and test "Leave without saving"
@@ -286,15 +294,17 @@ describe("agreement details", () => {
         // Go back to Agreement Details and make changes again
         cy.get('[data-cy="details-tab-Agreement Details"]').click();
         cy.get("#edit").click();
-        cy.selectAndWaitForChange("#contract-type", "TIME_AND_MATERIALS");
+        selectDifferentContractType();
 
         // Try to navigate to Budget Lines and test "Save Changes"
+        cy.intercept("PATCH", "**/agreements/9**").as("saveAgreementDetails");
         cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
         cy.waitForModalToAppear();
         cy.get("[data-cy='confirm-action']").click();
-        // Wait for save to complete and alert to appear - increased for React 19 CI timing
-        cy.wait(3000); // Extra wait for React 19 to process save and update state
-        cy.get(".usa-alert__heading", { timeout: 30000 }).should("contain", "Agreement Updated");
+        cy.wait("@saveAgreementDetails", { timeout: 30000 })
+            .its("response.statusCode")
+            .should("be.oneOf", [200, 201]);
+        cy.get('[data-cy="alert"]', { timeout: 30000 }).should("contain", "Agreement Updated");
         cy.url().should("include", "/budget-lines");
     });
 
@@ -310,14 +320,12 @@ describe("agreement details", () => {
         cy.waitForEditingState(true);
 
         // After making a change: "Editing..." still visible
-        cy.selectAndWaitForChange("#contract-type", "FIRM_FIXED_PRICE");
+        selectDifferentContractType();
         cy.waitForEditingState(true);
 
         // After save: indicator disappears
         cy.get('[data-cy="continue-btn"]').click();
-        // Wait for save to complete and alert to appear - increased for React 19 CI timing
-        cy.wait(3000); // Extra wait for React 19 to process save and update state
-        cy.get(".usa-alert__heading", { timeout: 30000 }).should("contain", "Agreement Updated");
+        cy.get('[data-cy="alert"]', { timeout: 30000 }).should("contain", "Agreement Updated");
         cy.waitForEditingState(false);
 
         // Test the same workflow on Budget Lines tab

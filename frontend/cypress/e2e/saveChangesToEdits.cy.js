@@ -66,17 +66,13 @@ describe("Save Changes/Edits in Agreement BLIs", () => {
     let agreementId;
     let bearer_token;
 
-const closeUnsavedChangesModalViaEsc = () => {
-    cy.get("#ops-modal", { timeout: 15000 }).should("be.visible");
-    cy.get("[data-cy='confirm-action']", { timeout: 15000 }).should("be.visible").focus();
-    cy.get("#ops-modal").trigger("keydown", { key: "Escape", keyCode: 27, which: 27, force: true });
-    cy.get("#ops-modal").then(($modal) => {
-        if ($modal.is(":visible")) {
-            cy.get("body").type("{esc}", { force: true });
-        }
-    });
-    cy.get("#ops-modal", { timeout: 20000 }).should("not.exist");
-};
+    const closeUnsavedChangesModalViaEsc = () => {
+        cy.waitForModalToAppear("#ops-modal", 15000);
+        cy.get("[data-cy='confirm-action']", { timeout: 15000 }).should("be.visible").focus();
+        cy.get("#ops-modal").trigger("keydown", { key: "Escape", keyCode: 27, which: 27, force: true });
+        cy.get("body").type("{esc}", { force: true });
+        cy.waitForModalToClose("#ops-modal", 20000);
+    };
 
     beforeEach(() => {
         expect(localStorage.getItem("access_token")).to.exist;
@@ -171,8 +167,8 @@ const closeUnsavedChangesModalViaEsc = () => {
             });
 
         cy.then(() => {
-            cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).first().trigger("mouseover");
-            cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).first().get("[data-cy='edit-row']").click();
+            cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).trigger("mouseover");
+            cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).find("[data-cy='edit-row']").click();
             cy.get("#enteredAmount").clear();
             cy.get("#enteredAmount").type("999999");
             cy.get("[data-cy='update-budget-line']").click();
@@ -224,8 +220,8 @@ const closeUnsavedChangesModalViaEsc = () => {
             });
 
         cy.then(() => {
-            cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).first().trigger("mouseover");
-            cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).first().get("[data-cy='delete-row']").click();
+            cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).trigger("mouseover");
+            cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).find("[data-cy='delete-row']").click();
             cy.get(".usa-modal__heading").should(
                 "contain",
                 `Are you sure you want to delete budget line ${budgetLineId}?`
@@ -281,8 +277,8 @@ const closeUnsavedChangesModalViaEsc = () => {
 
             // Don't wait for the services component alert - just proceed
 
-            cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).first().trigger("mouseover");
-            cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).first().get("[data-cy='edit-row']").click();
+            cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).trigger("mouseover");
+            cy.get(`[data-testid="budget-line-row-${budgetLineId}"]`).find("[data-cy='edit-row']").click();
             cy.get("#enteredAmount").clear();
             cy.get("#enteredAmount").type("999999");
             cy.get("#allServicesComponentSelect").select("SC1");
@@ -310,9 +306,8 @@ const closeUnsavedChangesModalViaEsc = () => {
         //Test DD and user workflow after approving sending the change request via the blocker modal
         testLogin("division-director");
         cy.visit(`/agreements?filter=change-requests`);
-        // Wait for review cards to load
-        cy.get("[data-cy='review-card']", { timeout: 15000 }).should("exist");
-        cy.get("[data-cy='review-card']").trigger("mouseover");
+        cy.contains("[data-cy='review-card']", testAgreement.name).should("exist").as("reviewCard");
+        cy.get("@reviewCard").trigger("mouseover");
         cy.get("#approve").click();
         cy.get("[data-cy='confirm-action']").click();
         testLogin("system-owner");
