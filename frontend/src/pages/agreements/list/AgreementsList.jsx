@@ -60,7 +60,7 @@ const AgreementsList = () => {
     const myAgreementsUrl = searchParams.get("filter") === "my-agreements";
     const changeRequestUrl = searchParams.get("filter") === "change-requests";
 
-    const { data: agreementFilterOptions } = useGetAgreementsFilterOptionsQuery({ onlyMy: false });
+    const { data: agreementFilterOptions } = useGetAgreementsFilterOptionsQuery({ onlyMy: myAgreementsUrl });
 
     // Determine fiscal year filter based on selection
     const hasOtherFilters =

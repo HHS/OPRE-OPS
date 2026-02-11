@@ -241,7 +241,8 @@ export const opsApi = createApi({
                 if (onlyMy) {
                     queryParams.push("only_my=true");
                 }
-                return `/agreements-filters/?${queryParams.join("&")}`;
+                const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
+                return `/agreements-filters/${queryString}`;
             },
             providesTags: ["Agreements"]
         }),
