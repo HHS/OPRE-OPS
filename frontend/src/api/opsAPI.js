@@ -73,7 +73,15 @@ export const opsApi = createApi({
     endpoints: (builder) => ({
         getAgreements: builder.query({
             query: ({
-                filters: { fiscalYear, budgetLineStatus, portfolio, agreementName, agreementType },
+                filters: {
+                    fiscalYear,
+                    budgetLineStatus,
+                    portfolio,
+                    agreementName,
+                    agreementType,
+                    projectTitle,
+                    contractNumber
+                },
                 onlyMy,
                 sortConditions,
                 sortDescending,
@@ -96,6 +104,14 @@ export const opsApi = createApi({
                 if (agreementType) {
                     agreementType.forEach((type) =>
                         queryParams.push(`agreement_type=${encodeURIComponent(type.type)}`)
+                    );
+                }
+                if (projectTitle) {
+                    projectTitle.forEach((project) => queryParams.push(`project_id=${project.id}`));
+                }
+                if (contractNumber) {
+                    contractNumber.forEach((contract) =>
+                        queryParams.push(`contract_number=${encodeURIComponent(contract.id)}`)
                     );
                 }
                 if (onlyMy) {
@@ -216,6 +232,17 @@ export const opsApi = createApi({
                 queryParams.push("offset=0");
                 const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
                 return `/agreement-agencies/${queryString}`;
+            },
+            providesTags: ["Agreements"]
+        }),
+        getAgreementsFilterOptions: builder.query({
+            query: ({ onlyMy }) => {
+                const queryParams = [];
+                if (onlyMy) {
+                    queryParams.push("only_my=true");
+                }
+                const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
+                return `/agreements-filters/${queryString}`;
             },
             providesTags: ["Agreements"]
         }),
@@ -915,6 +942,7 @@ export const {
     useDeleteAgreementMutation,
     useGetAgreementAgenciesQuery,
     useGetAllAgreementAgenciesQuery,
+    useGetAgreementsFilterOptionsQuery,
     useAddBudgetLineItemMutation,
     useGetBudgetLineItemsFilterOptionsQuery,
     useGetBudgetLineItemsQuery,

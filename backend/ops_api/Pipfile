@@ -4,10 +4,10 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-alembic = "==1.18.3"
+alembic = "==1.18.4"
 alembic-postgresql-enum = "==1.9.0"
 authlib = "==1.6.7"
-azure-identity = "==1.25.1"
+azure-identity = "==1.25.2"
 azure-storage-blob = "==12.28.0"
 flask = "==3.1.2"
 flask-cors = "==6.0.2"
@@ -42,4 +42,4 @@ ipython = "==9.10.0"
 locust = "==2.43.2"
 
 [requires]
-python_version = "3.12"
+python_version = "3.14"

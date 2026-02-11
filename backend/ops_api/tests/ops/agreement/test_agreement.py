@@ -3423,3 +3423,152 @@ class TestAwardedAgreementPatch:
         loaded_db.query(ProcurementAction).filter(ProcurementAction.agreement_id == grant.id).delete()
         loaded_db.delete(grant)
         loaded_db.commit()
+
+
+class TestAgreementFilterOptions:
+    """Tests for GET /agreements-filters/ endpoint."""
+
+    def test_get_agreement_filter_options(self, auth_client, loaded_db, app_ctx):
+        """GET /agreements-filters/ returns all expected filter option fields."""
+        response = auth_client.get(url_for("api.agreements-filters"))
+        assert response.status_code == 200
+
+        data = response.json
+        assert "fiscal_years" in data
+        assert "portfolios" in data
+        assert "project_titles" in data
+        assert "agreement_types" in data
+        assert "agreement_names" in data
+        assert "contract_numbers" in data
+        assert "research_types" in data
+
+    def test_filter_options_fiscal_years_sorted_descending(self, auth_client, loaded_db, app_ctx):
+        """Fiscal years should be sorted in descending order."""
+        response = auth_client.get(url_for("api.agreements-filters"))
+        assert response.status_code == 200
+
+        fiscal_years = response.json["fiscal_years"]
+        assert len(fiscal_years) > 0
+        assert fiscal_years == sorted(fiscal_years, reverse=True)
+
+    def test_filter_options_portfolios_have_id_and_name(self, auth_client, loaded_db, app_ctx):
+        """Portfolios should be returned as list of dicts with id and name."""
+        response = auth_client.get(url_for("api.agreements-filters"))
+        assert response.status_code == 200
+
+        portfolios = response.json["portfolios"]
+        assert len(portfolios) > 0
+        for portfolio in portfolios:
+            assert "id" in portfolio
+            assert "name" in portfolio
+
+    def test_filter_options_portfolios_sorted_by_name(self, auth_client, loaded_db, app_ctx):
+        """Portfolios should be sorted alphabetically by name."""
+        response = auth_client.get(url_for("api.agreements-filters"))
+        assert response.status_code == 200
+
+        portfolios = response.json["portfolios"]
+        names = [p["name"] for p in portfolios]
+        assert names == sorted(names)
+
+    def test_filter_options_project_titles_have_id_and_name(self, auth_client, loaded_db, app_ctx):
+        """Project titles should be returned as list of dicts with id and name."""
+        response = auth_client.get(url_for("api.agreements-filters"))
+        assert response.status_code == 200
+
+        project_titles = response.json["project_titles"]
+        assert len(project_titles) > 0
+        for project in project_titles:
+            assert "id" in project
+            assert "name" in project
+
+    def test_filter_options_project_titles_sorted_by_name(self, auth_client, loaded_db, app_ctx):
+        """Project titles should be sorted alphabetically by name."""
+        response = auth_client.get(url_for("api.agreements-filters"))
+        assert response.status_code == 200
+
+        project_titles = response.json["project_titles"]
+        names = [p["name"] for p in project_titles]
+        assert names == sorted(names)
+
+    def test_filter_options_agreement_types_sorted(self, auth_client, loaded_db, app_ctx):
+        """Agreement types should be sorted alphabetically."""
+        response = auth_client.get(url_for("api.agreements-filters"))
+        assert response.status_code == 200
+
+        agreement_types = response.json["agreement_types"]
+        assert len(agreement_types) > 0
+        assert agreement_types == sorted(agreement_types)
+
+    def test_filter_options_agreement_names_have_id_and_name(self, auth_client, loaded_db, app_ctx):
+        """Agreement names should be returned as list of dicts with id and name."""
+        response = auth_client.get(url_for("api.agreements-filters"))
+        assert response.status_code == 200
+
+        agreement_names = response.json["agreement_names"]
+        assert len(agreement_names) > 0
+        for name_entry in agreement_names:
+            assert "id" in name_entry
+            assert "name" in name_entry
+
+    def test_filter_options_agreement_names_sorted_by_name(self, auth_client, loaded_db, app_ctx):
+        """Agreement names should be sorted alphabetically by name."""
+        response = auth_client.get(url_for("api.agreements-filters"))
+        assert response.status_code == 200
+
+        agreement_names = response.json["agreement_names"]
+        names = [a["name"] for a in agreement_names]
+        assert names == sorted(names)
+
+    def test_filter_options_contract_numbers_sorted(self, auth_client, loaded_db, app_ctx):
+        """Contract numbers should be sorted alphabetically."""
+        response = auth_client.get(url_for("api.agreements-filters"))
+        assert response.status_code == 200
+
+        contract_numbers = response.json["contract_numbers"]
+        assert len(contract_numbers) > 0
+        assert contract_numbers == sorted(contract_numbers)
+
+    def test_filter_options_research_types_empty(self, auth_client, loaded_db, app_ctx):
+        """Research types should be an empty list (placeholder for future logic)."""
+        response = auth_client.get(url_for("api.agreements-filters"))
+        assert response.status_code == 200
+
+        assert response.json["research_types"] == []
+
+    def test_filter_options_with_only_my(self, division_director_auth_client, loaded_db, app_ctx):
+        """GET /agreements-filters/?only_my=true returns filter options scoped to user's agreements."""
+        response = division_director_auth_client.get(
+            url_for("api.agreements-filters"),
+            query_string={"only_my": "true"},
+        )
+        assert response.status_code == 200
+
+        data = response.json
+        assert "fiscal_years" in data
+        assert "portfolios" in data
+        assert "project_titles" in data
+        assert "agreement_types" in data
+        assert "agreement_names" in data
+        assert "contract_numbers" in data
+
+    def test_filter_options_only_my_returns_subset(self, basic_user_auth_client, auth_client, loaded_db, app_ctx):
+        """Filter options with only_my should return a subset of the unfiltered options."""
+        # Get all filter options (auth_client has SYSTEM_OWNER privileges)
+        all_response = auth_client.get(url_for("api.agreements-filters"))
+        assert all_response.status_code == 200
+
+        # Get only_my filter options (basic_user has limited associations)
+        my_response = basic_user_auth_client.get(
+            url_for("api.agreements-filters"),
+            query_string={"only_my": "true"},
+        )
+        assert my_response.status_code == 200
+
+        # The user-scoped options should be a subset (or equal) of all options
+        assert len(my_response.json["agreement_names"]) <= len(all_response.json["agreement_names"])
+
+    def test_filter_options_no_permission(self, no_perms_auth_client):
+        """GET /agreements-filters/ should return 403 for unauthorized users."""
+        response = no_perms_auth_client.get("/api/v1/agreements-filters/")
+        assert response.status_code == 403

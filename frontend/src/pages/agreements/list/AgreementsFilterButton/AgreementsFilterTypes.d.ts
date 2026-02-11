@@ -1,10 +1,13 @@
 export type FilterOption = {
-    id: number;
+    id: number | string;
     title: string;
 };
 
 export type Filters = {
     fiscalYear?: FilterOption[];
-    budgetLineStatus?: FilterOption[];
     portfolio?: FilterOption[];
+    projectTitle?: FilterOption[];
+    agreementType?: FilterOption[];
+    agreementName?: FilterOption[];
+    contractNumber?: FilterOption[];
 };
