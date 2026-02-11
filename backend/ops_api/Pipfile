@@ -42,4 +42,4 @@ ipython = "==9.10.0"
 locust = "==2.43.2"
 
 [requires]
-python_version = "3.12"
+python_version = "3.14"
