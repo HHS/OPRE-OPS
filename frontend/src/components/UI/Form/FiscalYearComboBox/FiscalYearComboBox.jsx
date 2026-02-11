@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import ComboBox from "../ComboBox";
 
 /**
@@ -9,6 +10,8 @@ import ComboBox from "../ComboBox";
  * @param {string} [props.defaultString] - Initial text to display in select (optional).
  * @param {Object} [props.overrideStyles] - Some CSS styles to override the default (optional).
  * @param {number[]} props.budgetLinesFiscalYears - An array of fiscal years to display
+ * @param {string} [props.label] - Custom label text (optional, defaults to "Fiscal Year").
+ * @param {boolean} [props.includeAllOption] - Whether to include "All FYs" as an option (optional, defaults to false).
  * @returns {React.ReactElement} - The rendered component.
  */
 export const FiscalYearComboBox = ({
@@ -17,7 +20,9 @@ export const FiscalYearComboBox = ({
     legendClassname = "usa-label margin-top-0",
     defaultString = "",
     overrideStyles = {},
-    budgetLinesFiscalYears = []
+    budgetLinesFiscalYears = [],
+    label = "Fiscal Year",
+    includeAllOption = false
 }) => {
     const fiscalYears = budgetLinesFiscalYears
         .filter((fiscalYear) => fiscalYear != null)

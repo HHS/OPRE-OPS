@@ -6,6 +6,7 @@ describe("Agreement List", () => {
     beforeEach(() => {
         testLogin("system-owner");
         cy.visit("/agreements");
+        cy.get("#fiscal-year-select").select("All");
         // Wait for the page to be ready (not loading state)
         cy.get("body").should("exist"); // Ensure page is loaded
         // Wait for loading to complete - "Loading..." heading should not exist
@@ -33,6 +34,7 @@ describe("Agreement List", () => {
         cy.get("thead > tr > :nth-child(5)").should("have.text", "Next Budget Line");
         cy.get("thead > tr > :nth-child(6)").should("have.text", "Next Obligate By");
 
+        cy.get("#fiscal-year-select").select("2044");
         // select the row with data-testid="agreement-table-row-9"
         cy.get("[data-testid='agreement-table-row-9']", { timeout: 10000 }).should("exist");
 
@@ -70,6 +72,7 @@ describe("Agreement List", () => {
         // Wait for table to load with data
         cy.get(".usa-table", { timeout: 20000 }).should("exist");
         cy.get("tbody tr", { timeout: 20000 }).should("have.length.at.least", 1);
+        cy.get("#fiscal-year-select").select("2044");
         cy.get("[data-testid='agreement-table-row-9']", { timeout: 10000 }).should("exist");
         cy.get("[data-testid='agreement-table-row-9']").trigger("mouseover");
         cy.get("button[id^='submit-for-approval-']").first().should("exist");
@@ -85,6 +88,8 @@ describe("Agreement List", () => {
         cy.get("tbody").children().should("have.length", 10);
 
         cy.visit("/agreements?filter=my-agreements");
+        cy.get("#fiscal-year-select").select("All");
+
         // Wait for loading to complete and data to load
         cy.contains("h1", "Loading...", { timeout: 30000 }).should("not.exist");
         cy.get("tbody tr", { timeout: 30000 }).should("have.length.at.least", 1);
@@ -303,6 +308,7 @@ describe("Agreement List", () => {
     it("Should allow user to edit an obligated agreement", () => {
         // Test with agreement-9 which is on page 1 and should be editable
         // Increased timeout for CI environments where large agreements take longer to load
+        cy.get("#fiscal-year-select").select("2044");
         cy.get("[data-testid='agreement-table-row-9']", { timeout: 30000 }).should("exist");
         cy.get("[data-testid='agreement-table-row-9']").trigger("mouseover");
         cy.get("[data-testid='agreement-table-row-9']")
@@ -314,7 +320,10 @@ describe("Agreement List", () => {
         // Sort table by agreement name
         cy.get(`[data-cy=${TABLE_HEADINGS_LIST[0].value}]`).click();
         // Wait for table to sort by checking first row
-        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']", { timeout: 10000 }).should("contain", "Support Contract #1");
+        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']", { timeout: 10000 }).should(
+            "contain",
+            "Support Contract #1"
+        );
         cy.get("tbody > :nth-child(2) > [data-cy='agreement-name']").should("contain", "MIHOPE Long-Term");
         cy.get("tbody > :nth-child(3) > [data-cy='agreement-name']").should("contain", "MIHOPE Check-In");
         // Sort by agreement name ascending
@@ -441,7 +450,10 @@ describe("Agreement List", () => {
         // Sort table by next obligate by descending
         cy.get(`[data-cy=${TABLE_HEADINGS_LIST[5].value}]`).click();
         // Wait for table to sort
-        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']", { timeout: 10000 }).should("contain", "Support Contract #1");
+        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']", { timeout: 10000 }).should(
+            "contain",
+            "Support Contract #1"
+        );
         cy.get("tbody > :nth-child(2) > [data-cy='agreement-name']").should("contain", "MIHOPE Check-In");
         cy.get("tbody > :nth-child(3) > [data-cy='agreement-name']").should("contain", "MIHOPE Long-Term");
         // Sort by next obligate by ascending

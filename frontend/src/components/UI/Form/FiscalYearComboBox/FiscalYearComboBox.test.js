@@ -75,4 +75,74 @@ describe("FiscalYearComboBox", () => {
         fireEvent.click(getByText("FY 2044"));
         expect(setSelectedFiscalYears).toHaveBeenLastCalledWith([{ id: 2044, title: "FY 2044" }]);
     });
+
+    it("renders with custom label when label prop is provided", () => {
+        render(
+            <FiscalYearComboBox
+                selectedFiscalYears={null}
+                setSelectedFiscalYears={mockSetSelectedFiscalYears}
+                budgetLinesFiscalYears={[2043, 2044]}
+                label="Compare Fiscal Years"
+            />
+        );
+        expect(screen.getByText("Compare Fiscal Years")).toBeInTheDocument();
+        expect(screen.queryByText("Fiscal Year")).not.toBeInTheDocument();
+    });
+
+    it("renders with 'All FYs' option when includeAllOption is true", () => {
+        const { container } = render(
+            <FiscalYearComboBox
+                selectedFiscalYears={null}
+                setSelectedFiscalYears={mockSetSelectedFiscalYears}
+                budgetLinesFiscalYears={[2043, 2044]}
+                includeAllOption={true}
+            />
+        );
+
+        // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
+        fireEvent.keyDown(container.querySelector("input"), { key: "ArrowDown", code: 40 });
+
+        expect(screen.getByText("All FYs")).toBeInTheDocument();
+        expect(screen.getByText("2043")).toBeInTheDocument();
+        expect(screen.getByText("2044")).toBeInTheDocument();
+    });
+
+    it("does not render 'All FYs' option when includeAllOption is false", () => {
+        const { container } = render(
+            <FiscalYearComboBox
+                selectedFiscalYears={null}
+                setSelectedFiscalYears={mockSetSelectedFiscalYears}
+                budgetLinesFiscalYears={[2043, 2044]}
+                includeAllOption={false}
+            />
+        );
+
+        // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
+        fireEvent.keyDown(container.querySelector("input"), { key: "ArrowDown", code: 40 });
+
+        expect(screen.queryByText("All FYs")).not.toBeInTheDocument();
+        expect(screen.getByText("2043")).toBeInTheDocument();
+        expect(screen.getByText("2044")).toBeInTheDocument();
+    });
+
+    it("allows selection of 'All FYs' option", () => {
+        const setSelectedFiscalYears = mockFn;
+        const { getByText, container } = render(
+            <FiscalYearComboBox
+                selectedFiscalYears={[]}
+                setSelectedFiscalYears={setSelectedFiscalYears}
+                budgetLinesFiscalYears={[2043, 2044]}
+                includeAllOption={true}
+            />
+        );
+
+        // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
+        fireEvent.focus(container.querySelector("input"));
+        // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
+        fireEvent.keyDown(container.querySelector("input"), { key: "ArrowDown", code: 40 });
+
+        // eslint-disable-next-line testing-library/prefer-screen-queries
+        fireEvent.click(getByText("All FYs"));
+        expect(setSelectedFiscalYears).toHaveBeenCalledWith([{ id: "all", title: "All FYs" }]);
+    });
 });

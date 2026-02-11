@@ -4,12 +4,14 @@ import { BrowserRouter } from "react-router-dom";
 import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from "vitest";
 import {
     useGetAgreementsQuery,
+    useGetAgreementsFilterOptionsQuery,
     useLazyGetUserQuery,
     useLazyGetAgreementByIdQuery,
     useLazyGetAgreementsQuery,
     useGetChangeRequestsListQuery
 } from "../../../api/opsAPI";
 import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
+import { getCurrentFiscalYear } from "../../../helpers/utils";
 import store from "../../../store";
 import AgreementsList from "./AgreementsList";
 
@@ -51,6 +53,36 @@ vi.mock("../../../components/UI/PaginationNav/PaginationNav", () => ({
             Page {currentPage} of {totalPages}
         </nav>
     )
+}));
+
+vi.mock("../../../components/UI/FiscalYear", () => ({
+    default: ({ fiscalYear, handleChangeFiscalYear, fiscalYears = [], showAllOption }) => {
+        // Simulate real component fallback: use generated fiscal years when no fiscalYears provided
+        const now = new Date();
+        const currentFY = now.getMonth() >= 9 ? now.getFullYear() + 1 : now.getFullYear();
+        const fallbackYears = Array.from({ length: 11 }, (_, i) => currentFY + 5 - i);
+        const years = fiscalYears.length > 0 ? fiscalYears : fallbackYears;
+
+        return (
+            <div data-testid="fiscal-year-select">
+                <select
+                    data-testid="fiscal-year-dropdown"
+                    value={fiscalYear}
+                    onChange={(e) => handleChangeFiscalYear(e.target.value)}
+                >
+                    {years.map((fy) => (
+                        <option
+                            key={fy}
+                            value={fy}
+                        >
+                            {fy}
+                        </option>
+                    ))}
+                    {showAllOption && <option value="All">All</option>}
+                </select>
+            </div>
+        );
+    }
 }));
 
 // Mock react-router-dom
@@ -129,6 +161,21 @@ describe("AgreementsList - Pagination", () => {
         // Mock the change requests query (used by AgreementTabs)
         useGetChangeRequestsListQuery.mockReturnValue({
             data: [],
+            error: undefined,
+            isLoading: false
+        });
+
+        // Mock the agreements filter options query
+        useGetAgreementsFilterOptionsQuery.mockReturnValue({
+            data: {
+                fiscal_years: [2023, 2024, 2025],
+                portfolios: [],
+                project_titles: [],
+                agreement_types: [],
+                agreement_names: [],
+                contract_numbers: [],
+                research_types: []
+            },
             error: undefined,
             isLoading: false
         });
@@ -470,5 +517,316 @@ describe("AgreementsList - Pagination", () => {
                 expect(paginationNav).toBeInTheDocument();
             });
         });
+    });
+});
+
+describe("AgreementsList - Fiscal Year Filtering", () => {
+    beforeEach(() => {
+        // Mock the lazy query hooks
+        useLazyGetUserQuery.mockReturnValue([vi.fn(), {}]);
+        useLazyGetAgreementByIdQuery.mockReturnValue([vi.fn(), {}]);
+        useLazyGetAgreementsQuery.mockReturnValue([vi.fn(), {}]);
+
+        // Mock the change requests query
+        useGetChangeRequestsListQuery.mockReturnValue({
+            data: [],
+            error: undefined,
+            isLoading: false
+        });
+
+        // Mock the agreements filter options query with fiscal years
+        useGetAgreementsFilterOptionsQuery.mockReturnValue({
+            data: {
+                fiscal_years: [2023, 2024, 2025],
+                portfolios: [],
+                project_titles: [],
+                agreement_types: [],
+                agreement_names: [],
+                contract_numbers: [],
+                research_types: []
+            },
+            error: undefined,
+            isLoading: false
+        });
+
+        // Mock the sort conditions hook
+        useSetSortConditions.mockReturnValue({
+            sortDescending: false,
+            sortCondition: null,
+            setSortConditions: vi.fn()
+        });
+
+        // Mock agreements query
+        useGetAgreementsQuery.mockReturnValue({
+            data: mockAgreementsResponse,
+            error: undefined,
+            isLoading: false
+        });
+    });
+
+    it("should display fiscal year dropdown with 'All' option", async () => {
+        render(
+            <Provider store={store}>
+                <BrowserRouter>
+                    <AgreementsList />
+                </BrowserRouter>
+            </Provider>
+        );
+
+        await waitFor(() => {
+            expect(screen.getByTestId("fiscal-year-select")).toBeInTheDocument();
+        });
+
+        const allOption = screen.getByRole("option", { name: "All" });
+        expect(allOption).toBeInTheDocument();
+    });
+
+    it("should populate fiscal year options from API", async () => {
+        render(
+            <Provider store={store}>
+                <BrowserRouter>
+                    <AgreementsList />
+                </BrowserRouter>
+            </Provider>
+        );
+
+        await waitFor(() => {
+            expect(screen.getByTestId("fiscal-year-select")).toBeInTheDocument();
+        });
+
+        // Verify fiscal years from API are available
+        expect(screen.getByRole("option", { name: "2023" })).toBeInTheDocument();
+        expect(screen.getByRole("option", { name: "2024" })).toBeInTheDocument();
+        expect(screen.getByRole("option", { name: "2025" })).toBeInTheDocument();
+    });
+
+    it("should default to current fiscal year", async () => {
+        render(
+            <Provider store={store}>
+                <BrowserRouter>
+                    <AgreementsList />
+                </BrowserRouter>
+            </Provider>
+        );
+
+        await waitFor(() => {
+            expect(screen.getByTestId("fiscal-year-select")).toBeInTheDocument();
+        });
+
+        const dropdown = screen.getByTestId("fiscal-year-dropdown");
+        // Should have a value (current fiscal year from getCurrentFiscalYear())
+        expect(dropdown.value).toBeTruthy();
+    });
+
+    it("should pass fiscal years from API to query params when no filters applied", async () => {
+        const mockQuery = vi.fn();
+        useGetAgreementsQuery.mockImplementation((params) => {
+            mockQuery(params);
+            return {
+                data: mockAgreementsResponse,
+                error: undefined,
+                isLoading: false
+            };
+        });
+
+        render(
+            <Provider store={store}>
+                <BrowserRouter>
+                    <AgreementsList />
+                </BrowserRouter>
+            </Provider>
+        );
+
+        await waitFor(() => {
+            expect(mockQuery).toHaveBeenCalled();
+        });
+
+        // Verify that fiscalYear filter is included in query params
+        const lastCall = mockQuery.mock.calls[mockQuery.mock.calls.length - 1];
+        expect(lastCall[0].filters.fiscalYear).toBeDefined();
+        expect(Array.isArray(lastCall[0].filters.fiscalYear)).toBe(true);
+    });
+
+    it("should handle empty fiscal years from API gracefully", async () => {
+        useGetAgreementsFilterOptionsQuery.mockReturnValue({
+            data: {
+                fiscal_years: [],
+                portfolios: [],
+                project_titles: [],
+                agreement_types: [],
+                agreement_names: [],
+                contract_numbers: [],
+                research_types: []
+            },
+            error: undefined,
+            isLoading: false
+        });
+
+        render(
+            <Provider store={store}>
+                <BrowserRouter>
+                    <AgreementsList />
+                </BrowserRouter>
+            </Provider>
+        );
+
+        await waitFor(() => {
+            expect(screen.getByTestId("fiscal-year-select")).toBeInTheDocument();
+        });
+
+        // Should still render without crashing
+        expect(screen.getByTestId("agreement-tabs")).toBeInTheDocument();
+    });
+
+    it("should handle undefined filter options from API", async () => {
+        useGetAgreementsFilterOptionsQuery.mockReturnValue({
+            data: undefined,
+            error: undefined,
+            isLoading: false
+        });
+
+        render(
+            <Provider store={store}>
+                <BrowserRouter>
+                    <AgreementsList />
+                </BrowserRouter>
+            </Provider>
+        );
+
+        await waitFor(() => {
+            expect(screen.getByTestId("fiscal-year-select")).toBeInTheDocument();
+        });
+
+        // Should still render without crashing
+        expect(screen.getByTestId("agreement-tabs")).toBeInTheDocument();
+    });
+
+    it("should use current fiscal year as default filter regardless of API options", async () => {
+        // Mock fiscal year options that don't include the current year
+        useGetAgreementsFilterOptionsQuery.mockReturnValue({
+            data: {
+                fiscal_years: [2020, 2021, 2022],
+                portfolios: [],
+                project_titles: [],
+                agreement_types: [],
+                agreement_names: [],
+                contract_numbers: [],
+                research_types: []
+            },
+            error: undefined,
+            isLoading: false
+        });
+
+        const mockQuery = vi.fn();
+        useGetAgreementsQuery.mockImplementation((params) => {
+            mockQuery(params);
+            return {
+                data: mockAgreementsResponse,
+                error: undefined,
+                isLoading: false
+            };
+        });
+
+        render(
+            <Provider store={store}>
+                <BrowserRouter>
+                    <AgreementsList />
+                </BrowserRouter>
+            </Provider>
+        );
+
+        await waitFor(() => {
+            expect(screen.getByTestId("fiscal-year-select")).toBeInTheDocument();
+        });
+
+        // The component always defaults to the current fiscal year from the dropdown
+        const currentFY = Number(getCurrentFiscalYear());
+        await waitFor(
+            () => {
+                expect(mockQuery).toHaveBeenCalled();
+                const lastCall = mockQuery.mock.calls[mockQuery.mock.calls.length - 1];
+                expect(lastCall[0].filters.fiscalYear).toEqual([{ id: currentFY, title: currentFY }]);
+            },
+            { timeout: 3000 }
+        );
+    });
+
+    it("should send empty fiscalYear filter when 'All' is selected from dropdown", async () => {
+        const mockQuery = vi.fn();
+        useGetAgreementsQuery.mockImplementation((params) => {
+            mockQuery(params);
+            return {
+                data: mockAgreementsResponse,
+                error: undefined,
+                isLoading: false
+            };
+        });
+
+        render(
+            <Provider store={store}>
+                <BrowserRouter>
+                    <AgreementsList />
+                </BrowserRouter>
+            </Provider>
+        );
+
+        await waitFor(() => {
+            expect(screen.getByTestId("fiscal-year-select")).toBeInTheDocument();
+        });
+
+        // Select "All" from the fiscal year dropdown
+        const dropdown = screen.getByTestId("fiscal-year-dropdown");
+        dropdown.value = "All";
+        dropdown.dispatchEvent(new Event("change", { bubbles: true }));
+
+        await waitFor(() => {
+            const lastCall = mockQuery.mock.calls[mockQuery.mock.calls.length - 1];
+            expect(lastCall[0].filters.fiscalYear).toEqual([]);
+        });
+    });
+
+    it("should keep selected fiscal year when it exists in options list", async () => {
+        // Include the current fiscal year in the options so it stays selected
+        const currentFY = Number(getCurrentFiscalYear());
+        useGetAgreementsFilterOptionsQuery.mockReturnValue({
+            data: {
+                fiscal_years: [currentFY - 1, currentFY, currentFY + 1],
+                portfolios: [],
+                project_titles: [],
+                agreement_types: [],
+                agreement_names: [],
+                contract_numbers: [],
+                research_types: []
+            },
+            error: undefined,
+            isLoading: false
+        });
+
+        const mockQuery = vi.fn();
+        useGetAgreementsQuery.mockImplementation((params) => {
+            mockQuery(params);
+            return {
+                data: mockAgreementsResponse,
+                error: undefined,
+                isLoading: false
+            };
+        });
+
+        render(
+            <Provider store={store}>
+                <BrowserRouter>
+                    <AgreementsList />
+                </BrowserRouter>
+            </Provider>
+        );
+
+        await waitFor(() => {
+            expect(screen.getByTestId("fiscal-year-select")).toBeInTheDocument();
+        });
+
+        // The dropdown should maintain the current fiscal year
+        const dropdown = screen.getByTestId("fiscal-year-dropdown");
+        const selectedYear = Number(dropdown.value);
+        expect([currentFY - 1, currentFY, currentFY + 1]).toContain(selectedYear);
     });
 });
