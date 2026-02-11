@@ -6,6 +6,7 @@ describe("Agreement List", () => {
     beforeEach(() => {
         testLogin("system-owner");
         cy.visit("/agreements");
+        cy.get("#fiscal-year-select").select("All");
         // Wait for the page to be ready (not loading state)
         cy.get("body").should("exist"); // Ensure page is loaded
         // Wait for loading to complete - "Loading..." heading should not exist
@@ -83,11 +84,12 @@ describe("Agreement List", () => {
     });
 
     it("Agreements Table is correctly filtered on all-agreements or my-agreements", () => {
-        cy.get("#fiscal-year-select").select("All");
         // With pagination, we show 10 items per page
         cy.get("tbody").children().should("have.length", 10);
 
         cy.visit("/agreements?filter=my-agreements");
+        cy.get("#fiscal-year-select").select("All");
+
         // Wait for loading to complete and data to load
         cy.contains("h1", "Loading...", { timeout: 30000 }).should("not.exist");
         cy.get("tbody tr", { timeout: 30000 }).should("have.length.at.least", 1);
@@ -346,7 +348,10 @@ describe("Agreement List", () => {
         // Sort table by agreement name
         cy.get(`[data-cy=${TABLE_HEADINGS_LIST[0].value}]`).click();
         // Wait for table to sort by checking first row
-        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']", { timeout: 10000 }).should("contain", "Support Contract #1");
+        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']", { timeout: 10000 }).should(
+            "contain",
+            "Support Contract #1"
+        );
         cy.get("tbody > :nth-child(2) > [data-cy='agreement-name']").should("contain", "MIHOPE Long-Term");
         cy.get("tbody > :nth-child(3) > [data-cy='agreement-name']").should("contain", "MIHOPE Check-In");
         // Sort by agreement name ascending
@@ -473,7 +478,10 @@ describe("Agreement List", () => {
         // Sort table by next obligate by descending
         cy.get(`[data-cy=${TABLE_HEADINGS_LIST[5].value}]`).click();
         // Wait for table to sort
-        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']", { timeout: 10000 }).should("contain", "Support Contract #1");
+        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']", { timeout: 10000 }).should(
+            "contain",
+            "Support Contract #1"
+        );
         cy.get("tbody > :nth-child(2) > [data-cy='agreement-name']").should("contain", "MIHOPE Check-In");
         cy.get("tbody > :nth-child(3) > [data-cy='agreement-name']").should("contain", "MIHOPE Long-Term");
         // Sort by next obligate by ascending
