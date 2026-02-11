@@ -162,6 +162,16 @@ afterEach(() => {
     vi.resetAllMocks();
 });
 
+const mockIntersectionObserver = () => {
+    window.IntersectionObserver = vi.fn(function () {
+        return {
+            observe: vi.fn(),
+            unobserve: vi.fn(),
+            disconnect: vi.fn()
+        };
+    });
+};
+
 describe("AgreementDetails", () => {
     const agreement = {
         _meta: {
@@ -218,15 +228,7 @@ describe("AgreementDetails", () => {
         TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
             return agreementHistoryData;
         });
-
-        // IntersectionObserver isn't available in test environment
-        const mockIntersectionObserver = mockFn;
-        mockIntersectionObserver.mockReturnValue({
-            observe: () => null,
-            unobserve: () => null,
-            disconnect: () => null
-        });
-        window.IntersectionObserver = mockIntersectionObserver;
+        mockIntersectionObserver();
 
         render(
             <Provider store={store}>
@@ -262,15 +264,7 @@ describe("AgreementDetails", () => {
         TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
             return agreementHistoryData;
         });
-
-        // IntersectionObserver isn't available in test environment
-        const mockIntersectionObserver = mockFn;
-        mockIntersectionObserver.mockReturnValue({
-            observe: () => null,
-            unobserve: () => null,
-            disconnect: () => null
-        });
-        window.IntersectionObserver = mockIntersectionObserver;
+        mockIntersectionObserver();
 
         render(
             <Provider store={store}>
@@ -340,15 +334,7 @@ describe("AgreementDetails", () => {
                 })
             }
         });
-
-        // IntersectionObserver isn't available in test environment
-        const mockIntersectionObserver = mockFn;
-        mockIntersectionObserver.mockReturnValue({
-            observe: () => null,
-            unobserve: () => null,
-            disconnect: () => null
-        });
-        window.IntersectionObserver = mockIntersectionObserver;
+        mockIntersectionObserver();
 
         render(
             <Provider store={testStore}>
@@ -394,15 +380,7 @@ describe("AgreementDetails", () => {
                 })
             }
         });
-
-        // IntersectionObserver isn't available in test environment
-        const mockIntersectionObserver = mockFn;
-        mockIntersectionObserver.mockReturnValue({
-            observe: () => null,
-            unobserve: () => null,
-            disconnect: () => null
-        });
-        window.IntersectionObserver = mockIntersectionObserver;
+        mockIntersectionObserver();
 
         render(
             <Provider store={testStore}>
@@ -450,15 +428,7 @@ describe("AgreementDetails", () => {
                 })
             }
         });
-
-        // IntersectionObserver isn't available in test environment
-        const mockIntersectionObserver = mockFn;
-        mockIntersectionObserver.mockReturnValue({
-            observe: () => null,
-            unobserve: () => null,
-            disconnect: () => null
-        });
-        window.IntersectionObserver = mockIntersectionObserver;
+        mockIntersectionObserver();
 
         render(
             <Provider store={testStore}>
@@ -489,15 +459,7 @@ describe("AgreementDetails", () => {
         TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
             return agreementHistoryData;
         });
-
-        // IntersectionObserver isn't available in test environment
-        const mockIntersectionObserver = mockFn;
-        mockIntersectionObserver.mockReturnValue({
-            observe: () => null,
-            unobserve: () => null,
-            disconnect: () => null
-        });
-        window.IntersectionObserver = mockIntersectionObserver;
+        mockIntersectionObserver();
 
         const awardedAgreement = {
             ...agreement,
@@ -532,15 +494,7 @@ describe("AgreementDetails", () => {
         TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
             return agreementHistoryData;
         });
-
-        // IntersectionObserver isn't available in test environment
-        const mockIntersectionObserver = mockFn;
-        mockIntersectionObserver.mockReturnValue({
-            observe: () => null,
-            unobserve: () => null,
-            disconnect: () => null
-        });
-        window.IntersectionObserver = mockIntersectionObserver;
+        mockIntersectionObserver();
 
         render(
             <Provider store={store}>
@@ -569,14 +523,7 @@ describe("AgreementDetails", () => {
         TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
             return agreementHistoryData;
         });
-
-        const mockIntersectionObserver = mockFn;
-        mockIntersectionObserver.mockReturnValue({
-            observe: () => null,
-            unobserve: () => null,
-            disconnect: () => null
-        });
-        window.IntersectionObserver = mockIntersectionObserver;
+            mockIntersectionObserver();
 
         const awardedAgreement = {
             ...agreement,
@@ -613,14 +560,7 @@ describe("AgreementDetails", () => {
             TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
                 return agreementHistoryData;
             });
-
-            const mockIntersectionObserver = mockFn;
-            mockIntersectionObserver.mockReturnValue({
-                observe: () => null,
-                unobserve: () => null,
-                disconnect: () => null
-            });
-            window.IntersectionObserver = mockIntersectionObserver;
+            mockIntersectionObserver();
 
             render(
                 <Provider store={store}>
@@ -651,14 +591,7 @@ describe("AgreementDetails", () => {
             TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
                 return agreementHistoryData;
             });
-
-            const mockIntersectionObserver = mockFn;
-            mockIntersectionObserver.mockReturnValue({
-                observe: () => null,
-                unobserve: () => null,
-                disconnect: () => null
-            });
-            window.IntersectionObserver = mockIntersectionObserver;
+            mockIntersectionObserver();
 
             render(
                 <Provider store={store}>
@@ -689,14 +622,7 @@ describe("AgreementDetails", () => {
             TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
                 return agreementHistoryData;
             });
-
-            const mockIntersectionObserver = mockFn;
-            mockIntersectionObserver.mockReturnValue({
-                observe: () => null,
-                unobserve: () => null,
-                disconnect: () => null
-            });
-            window.IntersectionObserver = mockIntersectionObserver;
+            mockIntersectionObserver();
 
             render(
                 <Provider store={store}>
@@ -727,14 +653,7 @@ describe("AgreementDetails", () => {
             TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
                 return agreementHistoryData;
             });
-
-            const mockIntersectionObserver = mockFn;
-            mockIntersectionObserver.mockReturnValue({
-                observe: () => null,
-                unobserve: () => null,
-                disconnect: () => null
-            });
-            window.IntersectionObserver = mockIntersectionObserver;
+            mockIntersectionObserver();
 
             render(
                 <Provider store={store}>
