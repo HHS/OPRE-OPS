@@ -255,5 +255,4 @@ describe("UsersComboBox", () => {
         // Should render the combobox
         expect(screen.getByTestId("combobox")).toBeInTheDocument();
     });
-
 });
