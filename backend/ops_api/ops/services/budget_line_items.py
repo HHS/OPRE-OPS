@@ -735,9 +735,10 @@ class BudgetLineItemService:
             .distinct()
             .options(
                 selectinload(BudgetLineItem.agreement).selectinload(Agreement.team_members),
-                selectinload(BudgetLineItem.agreement).selectinload(Agreement.budget_line_items).selectinload(
-                    BudgetLineItem.can
-                ).selectinload(CAN.portfolio),
+                selectinload(BudgetLineItem.agreement)
+                .selectinload(Agreement.budget_line_items)
+                .selectinload(BudgetLineItem.can)
+                .selectinload(CAN.portfolio),
                 selectinload(BudgetLineItem.can).selectinload(CAN.portfolio),
             )
         )

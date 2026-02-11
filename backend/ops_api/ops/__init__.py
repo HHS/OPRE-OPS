@@ -169,8 +169,16 @@ def log_response(response):
         req_id = request_id.get()
         with logger.contextualize(request_id=req_id):
             body = response.get_data(as_text=True)
-            max_body = current_app.config.get("AZURE_BODY_LOG_MAX_BYTES") if current_app.config.get("RUNNING_IN_AZURE") else None
-            max_field = current_app.config.get("AZURE_LOG_FIELD_MAX_BYTES") if current_app.config.get("RUNNING_IN_AZURE") else None
+            max_body = (
+                current_app.config.get("AZURE_BODY_LOG_MAX_BYTES")
+                if current_app.config.get("RUNNING_IN_AZURE")
+                else None
+            )
+            max_field = (
+                current_app.config.get("AZURE_LOG_FIELD_MAX_BYTES")
+                if current_app.config.get("RUNNING_IN_AZURE")
+                else None
+            )
             response_data = {
                 "method": request.method,
                 "url": request.url,
@@ -185,8 +193,12 @@ def log_response(response):
 def log_request():
     body = request.get_json(silent=True)
     body_str = str(body) if body is not None else ""
-    max_body = current_app.config.get("AZURE_BODY_LOG_MAX_BYTES") if current_app.config.get("RUNNING_IN_AZURE") else None
-    max_field = current_app.config.get("AZURE_LOG_FIELD_MAX_BYTES") if current_app.config.get("RUNNING_IN_AZURE") else None
+    max_body = (
+        current_app.config.get("AZURE_BODY_LOG_MAX_BYTES") if current_app.config.get("RUNNING_IN_AZURE") else None
+    )
+    max_field = (
+        current_app.config.get("AZURE_LOG_FIELD_MAX_BYTES") if current_app.config.get("RUNNING_IN_AZURE") else None
+    )
     request_data = {
         "method": request.method,
         "url": request.url,
