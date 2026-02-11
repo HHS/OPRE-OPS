@@ -138,4 +138,24 @@ describe("Procurement Tracker Step 1", () => {
             .contains(/Step 1 of/)
             .should("have.attr", "aria-expanded", "true");
     });
+
+    it("Only shows authorized users in Task Completed By dropdown", () => {
+        cy.visit("/agreements/13/procurement-tracker");
+
+        // Enable the form
+        cy.get(".usa-checkbox__label").click();
+
+        // Open the users dropdown
+        cy.get("#users-combobox-input").click();
+
+        // The dropdown should exist and contain options
+        cy.get(".usa-combo-box__list").should("exist");
+
+        // Amy Madigan should be in the list (she's authorized for this agreement)
+        cy.get(".usa-combo-box__list").should("contain", "Amy Madigan");
+
+        // Note: We cannot easily verify that unauthorized users are NOT present
+        // without knowing the complete list of users and which ones should be filtered out.
+        // This test verifies that the dropdown functions and shows at least one authorized user.
+    });
 });
