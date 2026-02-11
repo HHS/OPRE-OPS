@@ -4,13 +4,14 @@ import accordion from "@uswds/uswds/js/usa-accordion";
  * Renders an accordion component with a heading and content.
  * @component
  * @param {Object} props - The component props.
- * @param {string} props.heading - The heading text for the accordion.
+ * @param {React.ReactNode} props.heading - The heading content for the accordion.
  * @param {React.ReactNode} props.children - The content to display in the accordion.
  * @param {number} [props.level=4] - The heading level for the accordion. Defaults to 4.
  * @param {boolean} [props.isClosed]
+ * @param {string} [props.dataCy]
  * @returns {JSX.Element} - The rendered accordion component.
  */
-const Accordion = ({ heading, children, level = 4, isClosed = false }) => {
+const Accordion = ({ heading, children, level = 4, isClosed = false, dataCy }) => {
     const accordionId = React.useId();
     const AccordionHeading = `h${level}`;
     const [isOpen, setIsOpen] = React.useState(!isClosed);
@@ -46,7 +47,7 @@ const Accordion = ({ heading, children, level = 4, isClosed = false }) => {
             className={`usa-accordion ${!isOpen ? "" : "padding-bottom-6"}`}
             style={{ lineHeight: "inherit" }}
             ref={accordionRef}
-            data-cy={heading}
+            data-cy={dataCy}
         >
             <AccordionHeading className="usa-accordion__heading">
                 <button

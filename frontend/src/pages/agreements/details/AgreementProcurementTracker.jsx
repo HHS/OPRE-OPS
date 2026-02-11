@@ -93,7 +93,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                 return (
                     <StepBuilderAccordion
                         step={step}
-                        totalSteps={stepsToRender.length}
+                        totalSteps={WIZARD_STEPS.length}
                         activeStepNumber={hasActiveTracker ? currentStep : undefined}
                         isReadOnly={!hasActiveTracker}
                         // Keep step 1 and the active step open after form submission, all others closed

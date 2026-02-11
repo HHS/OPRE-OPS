@@ -25,6 +25,17 @@ describe("StepBuilderAccordion", () => {
         expect(screen.getByText("Acquisition Planning")).toBeInTheDocument();
     });
 
+    it("uses provided totalSteps for heading count when step_number is partial", () => {
+        render(
+            <StepBuilderAccordion
+                step={{ ...baseStep, id: 3, step_number: 3, step_type: "SOLICITATION" }}
+                totalSteps={6}
+            />
+        );
+
+        expect(screen.getByTestId("step-builder-heading-3")).toHaveTextContent(/3\s+of\s+6\s+Solicitation/);
+    });
+
     it("maps COMPLETED status to completed heading class", () => {
         render(
             <StepBuilderAccordion
@@ -83,6 +94,17 @@ describe("StepBuilderAccordion", () => {
         expect(screen.getByTestId("step-builder-heading-1")).toHaveClass(
             "step-builder-accordion__heading--not-started"
         );
+    });
+
+    it("preserves human-readable hyphenated labels", () => {
+        render(
+            <StepBuilderAccordion
+                step={{ ...baseStep, id: 5, step_type: "Pre-Solicitation" }}
+                totalSteps={6}
+            />
+        );
+
+        expect(screen.getByTestId("step-builder-heading-5")).toHaveTextContent(/Pre-Solicitation/);
     });
 
     it("falls back to activeStepNumber when status is not mapped", () => {

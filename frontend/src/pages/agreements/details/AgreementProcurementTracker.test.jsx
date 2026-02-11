@@ -530,7 +530,7 @@ describe("AgreementProcurementTracker", () => {
 
             const heading = screen.getByTestId("step-builder-heading-101");
             expect(heading).toBeInTheDocument();
-            expect(heading).toHaveTextContent(/1\s+of\s+2\s+Pre Solicitation/);
+            expect(heading).toHaveTextContent(/1\s+of\s+6\s+Pre-Solicitation/);
         });
 
         it("renders steps sorted ascending by step_number", () => {
@@ -572,8 +572,8 @@ describe("AgreementProcurementTracker", () => {
             );
 
             const headings = screen.getAllByTestId("accordion-heading");
-            expect(headings[0]).toHaveTextContent(/1\s+of\s+2\s+Pre Solicitation/);
-            expect(headings[1]).toHaveTextContent(/2\s+of\s+2\s+Solicitation/);
+            expect(headings[0]).toHaveTextContent(/1\s+of\s+6\s+Pre Solicitation/);
+            expect(headings[1]).toHaveTextContent(/2\s+of\s+6\s+Solicitation/);
         });
 
         it("renders step 1 content when accordion is open", () => {

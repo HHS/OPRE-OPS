@@ -7,6 +7,21 @@ const STEP_STATUS_MAP = {
     ACTIVE: "active"
 };
 
+const formatStepLabel = (stepType) => {
+    if (typeof stepType !== "string") {
+        return "";
+    }
+
+    const trimmedStepType = stepType.trim();
+    if (!trimmedStepType) {
+        return "";
+    }
+
+    return trimmedStepType.includes("_") || trimmedStepType === trimmedStepType.toUpperCase()
+        ? fromUpperCaseToTitleCase(trimmedStepType)
+        : trimmedStepType;
+};
+
 const getStepState = (step, activeStepNumber) => {
     const mappedState = STEP_STATUS_MAP[step?.status];
     if (mappedState) {
@@ -28,7 +43,7 @@ const getStepState = (step, activeStepNumber) => {
 
 /**
  * @typedef {Object} ProcurementStep
- * @property {number} id
+ * @property {number | string} id
  * @property {number} step_number
  * @property {string} step_type
  * @property {string} [status]
@@ -70,13 +85,14 @@ const StepBuilderAccordion = ({
                 <span className="step-builder-accordion__step-number">{step?.step_number}</span>{" "}
                 <span className="step-builder-accordion__step-total">of {totalSteps}</span>
             </span>{" "}
-            <span className="step-builder-accordion__step-label">{fromUpperCaseToTitleCase(step?.step_type)}</span>
+            <span className="step-builder-accordion__step-label">{formatStepLabel(step?.step_type)}</span>
         </div>
     );
 
     return (
         <Accordion
             heading={heading}
+            dataCy={`step-builder-accordion-${step?.id}`}
             isClosed={isClosed}
             level={level}
         >
