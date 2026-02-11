@@ -200,6 +200,7 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
                 defaultString={getDefaultFiscalYearString()}
                 overrideStyles={{ width: "22.7rem" }}
                 budgetLinesFiscalYears={fiscalYearOptions}
+                label="Compare Fiscal Years"
             />
         </fieldset>,
         <fieldset

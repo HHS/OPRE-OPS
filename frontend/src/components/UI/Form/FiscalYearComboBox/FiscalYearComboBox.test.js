@@ -103,8 +103,8 @@ describe("FiscalYearComboBox", () => {
         fireEvent.keyDown(container.querySelector("input"), { key: "ArrowDown", code: 40 });
 
         expect(screen.getByText("All FYs")).toBeInTheDocument();
-        expect(screen.getByText("2043")).toBeInTheDocument();
-        expect(screen.getByText("2044")).toBeInTheDocument();
+        expect(screen.getByText("FY 2043")).toBeInTheDocument();
+        expect(screen.getByText("FY 2044")).toBeInTheDocument();
     });
 
     it("does not render 'All FYs' option when includeAllOption is false", () => {
@@ -121,8 +121,8 @@ describe("FiscalYearComboBox", () => {
         fireEvent.keyDown(container.querySelector("input"), { key: "ArrowDown", code: 40 });
 
         expect(screen.queryByText("All FYs")).not.toBeInTheDocument();
-        expect(screen.getByText("2043")).toBeInTheDocument();
-        expect(screen.getByText("2044")).toBeInTheDocument();
+        expect(screen.getByText("FY 2043")).toBeInTheDocument();
+        expect(screen.getByText("FY 2044")).toBeInTheDocument();
     });
 
     it("allows selection of 'All FYs' option", () => {
