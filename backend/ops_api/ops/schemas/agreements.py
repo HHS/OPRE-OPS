@@ -153,6 +153,15 @@ class AgreementRequestSchema(PaginationListSchema):
     exact_match = fields.List(fields.Boolean(), required=False, load_default=[True])
 
 
+class AgreementFiltersQueryParametersSchema(Schema):
+    """Schema for query parameters on the agreements filter options endpoint."""
+
+    class Meta:
+        unknown = EXCLUDE
+
+    only_my = fields.List(fields.Boolean(), required=False, load_default=[])
+
+
 class AgreementResponse(AgreementData):
     """
     Base Schema used in GET /agreements/{id} endpoint to return detailed agreement information.
@@ -274,3 +283,15 @@ class AaListAgreementResponse(ContractListAgreementResponse):
 
 class IaaListAgreementResponse(AgreementListResponse):
     iaa = fields.String(required=True)
+
+
+class AgreementListFilterOptionResponseSchema(Schema):
+    """Schema for the response from the agreements filter options endpoint."""
+
+    fiscal_years = fields.List(fields.Int(), required=True)
+    portfolios = fields.List(fields.Dict(keys=fields.String(), values=fields.Raw()), required=True)
+    project_titles = fields.List(fields.Dict(keys=fields.String(), values=fields.Raw()), required=True)
+    agreement_types = fields.List(fields.String(), required=True)
+    agreement_names = fields.List(fields.Dict(keys=fields.String(), values=fields.Raw()), required=True)
+    contract_numbers = fields.List(fields.String(), required=True)
+    research_types = fields.List(fields.Dict(keys=fields.String(), values=fields.Raw()), required=True)

@@ -6,6 +6,7 @@ describe("Agreement List", () => {
     beforeEach(() => {
         testLogin("system-owner");
         cy.visit("/agreements");
+        cy.get("#fiscal-year-select").select("All");
         // Wait for the page to be ready (not loading state)
         cy.get("body").should("exist"); // Ensure page is loaded
         // Wait for loading to complete - "Loading..." heading should not exist
@@ -33,6 +34,7 @@ describe("Agreement List", () => {
         cy.get("thead > tr > :nth-child(5)").should("have.text", "Next Budget Line");
         cy.get("thead > tr > :nth-child(6)").should("have.text", "Next Obligate By");
 
+        cy.get("#fiscal-year-select").select("2044");
         // select the row with data-testid="agreement-table-row-9"
         cy.get("[data-testid='agreement-table-row-9']", { timeout: 10000 }).should("exist");
 
@@ -70,6 +72,7 @@ describe("Agreement List", () => {
         // Wait for table to load with data
         cy.get(".usa-table", { timeout: 20000 }).should("exist");
         cy.get("tbody tr", { timeout: 20000 }).should("have.length.at.least", 1);
+        cy.get("#fiscal-year-select").select("2044");
         cy.get("[data-testid='agreement-table-row-9']", { timeout: 10000 }).should("exist");
         cy.get("[data-testid='agreement-table-row-9']").trigger("mouseover");
         cy.get("button[id^='submit-for-approval-']").first().should("exist");
@@ -85,6 +88,8 @@ describe("Agreement List", () => {
         cy.get("tbody").children().should("have.length", 10);
 
         cy.visit("/agreements?filter=my-agreements");
+        cy.get("#fiscal-year-select").select("All");
+
         // Wait for loading to complete and data to load
         cy.contains("h1", "Loading...", { timeout: 30000 }).should("not.exist");
         cy.get("tbody tr", { timeout: 30000 }).should("have.length.at.least", 1);
@@ -93,44 +98,74 @@ describe("Agreement List", () => {
     });
 
     it("the filter button works as expected", () => {
-        cy.get("button").contains("Filter").click();
+        const filterFields = [
+            {
+                control: ".fiscal-year-combobox__control",
+                menu: ".fiscal-year-combobox__menu",
+                option: ".fiscal-year-combobox__option"
+            },
+            {
+                control: ".portfolios-combobox__control",
+                menu: ".portfolios-combobox__menu",
+                option: ".portfolios-combobox__option"
+            },
+            {
+                control: ".project-title-combobox__control",
+                menu: ".project-title-combobox__menu",
+                option: ".project-title-combobox__option"
+            },
+            {
+                control: ".agreement-type-combobox__control",
+                menu: ".agreement-type-combobox__menu",
+                option: ".agreement-type-combobox__option"
+            },
+            {
+                control: ".agreement-name-combobox__control",
+                menu: ".agreement-name-combobox__menu",
+                option: ".agreement-name-combobox__option"
+            },
+            {
+                control: ".contract-number-combobox__control",
+                menu: ".contract-number-combobox__menu",
+                option: ".contract-number-combobox__option"
+            }
+        ];
 
-        // set a number of filters
-        // get select element by name "project-react-select"
+        filterFields.forEach((field) => {
+            // Open filter modal
+            cy.get("button").contains("Filter").click();
 
-        // Split the chain to avoid unsafe subject usage
-        cy.get(".fiscal-year-combobox__control").click();
-        cy.get(".fiscal-year-combobox__menu").find(".fiscal-year-combobox__option").eq(1).click();
+            // Select the first option
+            cy.get(field.control).click();
+            cy.get(field.menu).should("be.visible");
+            cy.get(field.menu)
+                .find(field.option)
+                .first()
+                .invoke("text")
+                .then((optionText) => {
+                    cy.get(field.menu).find(field.option).first().click();
 
-        cy.get(".portfolios-combobox__control").click();
-        cy.get(".portfolios-combobox__menu").find(".portfolios-combobox__option").first().click();
+                    // Apply the filter
+                    cy.get("button").contains("Apply").click();
 
-        cy.get(".bli-status-combobox__control").click();
-        cy.get(".bli-status-combobox__menu").find(".bli-status-combobox__option").first().click();
+                    // Verify the filter tag is displayed
+                    cy.get("span.bg-brand-primary-light.text-brand-primary-dark", { timeout: 10000 })
+                        .contains(optionText)
+                        .should("exist");
 
-        // click the button that has text Apply
-        cy.get("button").contains("Apply").click();
+                    // Verify the table is not empty
+                    cy.get("tbody tr", { timeout: 30000 }).should("have.length.at.least", 1);
+                });
 
-        // check that the correct tags are displayed
-        cy.get("div").contains("FY 2044").should("exist");
-        cy.get("div").contains("Adolescent Development Research").should("exist");
-        cy.get("div").contains("Draft").should("exist");
+            // Reset the filter
+            cy.get("button").contains("Filter").click();
+            cy.get("button").contains("Reset").click();
+            cy.get("button").contains("Apply").click();
 
-        // check that the table is filtered correctly
-        cy.get("div[id='agreements-table-zero-results']").should("exist");
-
-        // reset
-        cy.get("button").contains("Filter").click();
-        cy.get("button").contains("Reset").click();
-        cy.get("button").contains("Apply").click();
-
-        // Wait for the zero results message to disappear (data is restored)
-        cy.get("div[id='agreements-table-zero-results']").should("not.exist");
-
-        // check that no tags are displayed
-        cy.get("div").contains("FY 2044").should("not.exist");
-        cy.get("div").contains("Child Welfare Research").should("not.exist");
-        cy.get("div").contains("Planned").should("not.exist");
+            // Verify filter tags are cleared
+            cy.get("span.bg-brand-primary-light.text-brand-primary-dark").should("not.exist");
+            cy.get("tbody tr", { timeout: 30000 }).should("have.length.at.least", 1);
+        });
     });
 
     it("filters agreements by agreement name", () => {
@@ -301,6 +336,7 @@ describe("Agreement List", () => {
     it("Should allow user to edit an obligated agreement", () => {
         // Test with agreement-9 which is on page 1 and should be editable
         // Increased timeout for CI environments where large agreements take longer to load
+        cy.get("#fiscal-year-select").select("2044");
         cy.get("[data-testid='agreement-table-row-9']", { timeout: 30000 }).should("exist");
         cy.get("[data-testid='agreement-table-row-9']").trigger("mouseover");
         cy.get("[data-testid='agreement-table-row-9']")
@@ -312,7 +348,10 @@ describe("Agreement List", () => {
         // Sort table by agreement name
         cy.get(`[data-cy=${TABLE_HEADINGS_LIST[0].value}]`).click();
         // Wait for table to sort by checking first row
-        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']", { timeout: 10000 }).should("contain", "Support Contract #1");
+        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']", { timeout: 10000 }).should(
+            "contain",
+            "Support Contract #1"
+        );
         cy.get("tbody > :nth-child(2) > [data-cy='agreement-name']").should("contain", "MIHOPE Long-Term");
         cy.get("tbody > :nth-child(3) > [data-cy='agreement-name']").should("contain", "MIHOPE Check-In");
         // Sort by agreement name ascending
@@ -439,7 +478,10 @@ describe("Agreement List", () => {
         // Sort table by next obligate by descending
         cy.get(`[data-cy=${TABLE_HEADINGS_LIST[5].value}]`).click();
         // Wait for table to sort
-        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']", { timeout: 10000 }).should("contain", "Support Contract #1");
+        cy.get("tbody > :nth-child(1) > [data-cy='agreement-name']", { timeout: 10000 }).should(
+            "contain",
+            "Support Contract #1"
+        );
         cy.get("tbody > :nth-child(2) > [data-cy='agreement-name']").should("contain", "MIHOPE Check-In");
         cy.get("tbody > :nth-child(3) > [data-cy='agreement-name']").should("contain", "MIHOPE Long-Term");
         // Sort by next obligate by ascending

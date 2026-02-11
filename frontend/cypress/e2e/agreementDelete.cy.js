@@ -103,7 +103,7 @@ afterEach(() => {
 
 const deleteAgreementByName = (name) => {
     // get the created agreement
-    cy.contains("tbody tr", name).as("agreement-row");
+    cy.contains("tbody tr", name, { timeout: 30000 }).as("agreement-row");
     cy.get("@agreement-row").find('[data-cy="expand-row"]').click();
     // get the first delete button and click
     cy.get(".padding-right-9").find('[data-cy="delete-row"]').click().wait(1);
@@ -115,7 +115,7 @@ const deleteAgreementByName = (name) => {
 };
 
 const deleteAgreementByRowAndFail = (row) => {
-    cy.get("tbody").children().as("table-rows").should("exist");
+    cy.get("tbody tr", { timeout: 30000 }).as("table-rows");
     // get the created agreement
     cy.get("@table-rows").eq(row).find('[data-cy="expand-row"]').click();
     // get the first delete button and click
@@ -153,6 +153,8 @@ describe("Sytem-owner tests", () => {
 
         cy.intercept("GET", "/api/v1/agreements/*").as("getAgreements");
         cy.wait("@getAgreements");
+        cy.get("#fiscal-year-select").select("All");
+
         deleteAgreementByName(testAgreement.name);
     });
 
@@ -162,6 +164,8 @@ describe("Sytem-owner tests", () => {
 
         cy.intercept("GET", "/api/v1/agreements/*").as("getAgreements");
         cy.wait("@getAgreements");
+        cy.get("#fiscal-year-select").select("All");
+
         deleteAgreementByName(testAgreement.name);
     });
 });
@@ -169,7 +173,6 @@ describe("Sytem-owner tests", () => {
 describe("Budget-team tests", () => {
     beforeEach(() => {
         testLogin("budget-team");
-        cy.visit("/agreements/");
     });
 
     it("should allow to delete an agreement if user is alternate project officer", () => {
@@ -178,6 +181,9 @@ describe("Budget-team tests", () => {
 
         cy.intercept("GET", "/api/v1/agreements/*").as("getAgreements");
         cy.wait("@getAgreements");
+        cy.contains("h1", "Loading...", { timeout: 30000 }).should("not.exist");
+        cy.get("#fiscal-year-select").select("All");
+
         deleteAgreementByName(testAgreementToDelete.name);
     });
 
@@ -189,6 +195,9 @@ describe("Budget-team tests", () => {
         cy.intercept("GET", "/api/v1/agreements/*").as("getAgreements");
         cy.visit("/agreements/");
         cy.wait("@getAgreements");
+        cy.contains("h1", "Loading...", { timeout: 30000 }).should("not.exist");
+        cy.get("#fiscal-year-select").select("All");
+
         deleteAgreementByRowAndFail(3);
     });
 
@@ -196,6 +205,9 @@ describe("Budget-team tests", () => {
         cy.intercept("GET", "/api/v1/agreements/*").as("getAgreements");
         cy.visit("/agreements/");
         cy.wait("@getAgreements");
+        cy.contains("h1", "Loading...", { timeout: 30000 }).should("not.exist");
+        cy.get("#fiscal-year-select").select("All");
+
         deleteAgreementByRowAndFail(9); // almost all agreements have non-draft BLIs
     });
 });
