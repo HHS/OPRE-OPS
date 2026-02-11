@@ -1,10 +1,11 @@
 /// <reference types="cypress" />
-import {terminalLog, testLogin} from "./utils";
+import { terminalLog, testLogin } from "./utils";
 
 describe("Agreements List - Pagination Accessibility", () => {
     beforeEach(() => {
         testLogin("system-owner");
         cy.visit("/agreements");
+        cy.get("#fiscal-year-select").select("All");
     });
 
     afterEach(() => {
@@ -22,7 +23,6 @@ describe("Agreements List - Pagination Accessibility", () => {
         // Should navigate to next page
         cy.get("button.usa-current").should("contain", "2");
     });
-
 
     it("should have proper ARIA labels", () => {
         // Check for navigation aria-label

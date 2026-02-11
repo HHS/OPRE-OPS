@@ -2,6 +2,21 @@
 
 # flake8: noqa: S404,S607,S602
 import subprocess
+import sys
+
+# Raise soft limit for open files to avoid OSError: [Errno 24] Too many open files
+# when running the full suite (many app/session/connection instances per test).
+if sys.platform != "win32":
+    try:
+        import resource
+
+        soft, hard = resource.getrlimit(resource.RLIMIT_NOFILE)
+        if soft != resource.RLIM_INFINITY and soft < 4096:
+            resource.setrlimit(resource.RLIMIT_NOFILE, (min(4096, hard), hard))
+    except (ImportError, OSError, ValueError):
+        # resource is Unix-only; setrlimit can fail (permissions, limits). Continue with default.
+        pass
+
 from collections.abc import Generator
 from datetime import datetime, timezone
 from typing import Type
@@ -52,7 +67,7 @@ def app(db_service) -> Generator[Flask, None, None]:
 
 
 @pytest.fixture()
-def client(app: Flask, loaded_db) -> FlaskClient:  # type: ignore [type-arg]
+def client(app: Flask) -> FlaskClient:  # type: ignore [type-arg]
     """Get a test client for flask."""
     app.testing = True
     app.test_client_class = FlaskClient
@@ -194,7 +209,7 @@ def docker_compose_command() -> str:
 
 
 @pytest.fixture()
-def loaded_db(app: Flask, app_ctx: None, auth_client: FlaskClient) -> Session:
+def loaded_db(app: Flask, app_ctx: None) -> Session:
     """Get SQLAlchemy Session."""
 
     session = app.db_session

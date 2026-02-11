@@ -52,9 +52,9 @@
         "@types/testing-library__jest-dom": "6.0.0",
         "@types/testing-library__react": "10.2.0",
         "@uswds/compile": "1.3.1",
-        "@vitejs/plugin-react": "5.1.3",
+        "@vitejs/plugin-react": "5.1.4",
         "@vitest/coverage-istanbul": "3.2.4",
-        "@vitest/eslint-plugin": "1.6.6",
+        "@vitest/eslint-plugin": "1.6.7",
         "@vitest/ui": "3.2.4",
         "axe-core": "4.11.1",
         "cypress": "15.10.0",
@@ -101,7 +101,8 @@
         "lint:src": "eslint './src/**'",
         "lint:cypress": "eslint './cypress/**'",
         "cypress:open": "cypress open",
-        "uswds:update": "bunx gulp compile"
+        "uswds:update": "bunx gulp compile",
+        "test:e2e:ci:parallel-local": "./scripts/run-e2e-ci-matrix-local.sh"
     },
     "browserslist": {
         "production": [

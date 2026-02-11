@@ -14,6 +14,7 @@ afterEach(() => {
 describe("basic user cannot edit agreements they're not associated with", () => {
     it("disables pencil icon from agreements list", () => {
         cy.visit(`/agreements`);
+        cy.get("#fiscal-year-select").select("All");
         // Wait for agreements list to load
         cy.get("tbody tr", { timeout: 10000 }).should("exist");
         cy.get("tbody").find("tr").first().trigger("mouseover");

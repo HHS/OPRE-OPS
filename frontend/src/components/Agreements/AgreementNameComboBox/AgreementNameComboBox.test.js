@@ -41,7 +41,7 @@ describe("AgreementNameComboBox", () => {
             </MemoryRouter>
         );
         expect(screen.getByRole("combobox")).toBeInTheDocument();
-        expect(screen.getByText("Agreement Name")).toBeInTheDocument();
+        expect(screen.getByText("Agreement Title")).toBeInTheDocument();
     });
 
     it("renders the component with the correct options", () => {
@@ -213,7 +213,7 @@ describe("AgreementNameComboBox", () => {
             </MemoryRouter>
         );
 
-        const label = screen.getByText("Agreement Name");
+        const label = screen.getByText("Agreement Title");
         expect(label).toHaveClass("custom-legend-class");
     });
 
@@ -321,7 +321,7 @@ describe("AgreementNameComboBox", () => {
             </MemoryRouter>
         );
 
-        expect(screen.getByText("Agreement Name")).toBeInTheDocument();
+        expect(screen.getByText("Agreement Title")).toBeInTheDocument();
         expect(screen.getByRole("combobox")).toBeInTheDocument();
     });
 
@@ -342,7 +342,7 @@ describe("AgreementNameComboBox", () => {
             </MemoryRouter>
         );
 
-        expect(screen.getByText("Agreement Name")).toBeInTheDocument();
+        expect(screen.getByText("Agreement Title")).toBeInTheDocument();
         expect(screen.getByRole("combobox")).toBeInTheDocument();
     });
 });
