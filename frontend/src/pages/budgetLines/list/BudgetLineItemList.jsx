@@ -162,7 +162,25 @@ const BudgetLineItemList = () => {
                                             handleExport(
                                                 exportTableToXlsx,
                                                 setIsExporting,
-                                                filters,
+                                                {
+                                                    ...filters,
+                                                    fiscalYears:
+                                                        (filters.fiscalYears ?? []).length === 0 &&
+                                                        selectedFiscalYear !== "Multi"
+                                                            ? [
+                                                                  {
+                                                                      id: Number(selectedFiscalYear),
+                                                                      title: Number(selectedFiscalYear)
+                                                                  }
+                                                              ]
+                                                            : filters.fiscalYears,
+                                                    budgetLineTotalMin: filters.budgetRange
+                                                        ? filters.budgetRange[0]
+                                                        : undefined,
+                                                    budgetLineTotalMax: filters.budgetRange
+                                                        ? filters.budgetRange[1]
+                                                        : undefined
+                                                },
                                                 budgetLineItems,
                                                 budgetLineTrigger,
                                                 procShopTrigger,
