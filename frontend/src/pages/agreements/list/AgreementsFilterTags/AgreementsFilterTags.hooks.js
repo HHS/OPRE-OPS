@@ -77,16 +77,20 @@ export const useTagsList = (filters) => {
     }, [filters.portfolio, updateTags]);
 
     useEffect(() => {
-        updateTags("budgetLineStatus", "budgetLineStatus");
-    }, [filters.budgetLineStatus, updateTags]);
+        updateTags("projectTitle", "projectTitle");
+    }, [filters.projectTitle, updateTags]);
+
+    useEffect(() => {
+        updateTags("agreementType", "agreementType");
+    }, [filters.agreementType, updateTags]);
 
     useEffect(() => {
         updateTags("agreementName", "agreementName");
     }, [filters.agreementName, updateTags]);
 
     useEffect(() => {
-        updateTags("agreementType", "agreementType");
-    }, [filters.agreementType, updateTags]);
+        updateTags("contractNumber", "contractNumber");
+    }, [filters.contractNumber, updateTags]);
 
     return tagsList;
 };
@@ -110,12 +114,16 @@ export const removeFilter = (tag, setFilters) => {
                 portfolio: prevState.portfolio.filter((portfolio) => portfolio.name !== tag.tagText)
             }));
             break;
-        case "budgetLineStatus":
+        case "projectTitle":
             setFilters((prevState) => ({
                 ...prevState,
-                budgetLineStatus: prevState.budgetLineStatus.filter(
-                    (budgetLineStatus) => budgetLineStatus.title !== tag.tagText
-                )
+                projectTitle: prevState.projectTitle.filter((project) => project.title !== tag.tagText)
+            }));
+            break;
+        case "agreementType":
+            setFilters((prevState) => ({
+                ...prevState,
+                agreementType: prevState.agreementType.filter((type) => type.title !== tag.tagText)
             }));
             break;
         case "agreementName":
@@ -124,10 +132,10 @@ export const removeFilter = (tag, setFilters) => {
                 agreementName: prevState.agreementName.filter((name) => name.title !== tag.tagText)
             }));
             break;
-        case "agreementType":
+        case "contractNumber":
             setFilters((prevState) => ({
                 ...prevState,
-                agreementType: prevState.agreementType.filter((type) => type.title !== tag.tagText)
+                contractNumber: prevState.contractNumber.filter((contract) => contract.title !== tag.tagText)
             }));
             break;
         default:

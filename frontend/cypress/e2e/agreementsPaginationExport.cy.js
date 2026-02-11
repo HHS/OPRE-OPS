@@ -1,10 +1,11 @@
 /// <reference types="cypress" />
-import {terminalLog, testLogin} from "./utils";
+import { terminalLog, testLogin } from "./utils";
 
 describe("Agreements List - Pagination Export", () => {
     beforeEach(() => {
         testLogin("system-owner");
         cy.visit("/agreements");
+        cy.get("#fiscal-year-select").select("All");
     });
 
     afterEach(() => {

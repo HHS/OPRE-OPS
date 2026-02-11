@@ -30,7 +30,12 @@ from ops_api.ops.resources.agreements_constants import (
     AGREEMENTS_REQUEST_SCHEMAS,
     ENDPOINT_STRING,
 )
-from ops_api.ops.schemas.agreements import AgreementRequestSchema, MetaSchema
+from ops_api.ops.schemas.agreements import (
+    AgreementFiltersQueryParametersSchema,
+    AgreementListFilterOptionResponseSchema,
+    AgreementRequestSchema,
+    MetaSchema,
+)
 from ops_api.ops.services.agreements import AgreementsService
 from ops_api.ops.services.budget_line_items import (
     get_bli_is_editable_meta_data_for_agreements,
@@ -311,6 +316,26 @@ class AgreementTypeListAPI(MethodView):
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
     def get(self) -> Response:
         return make_response_with_headers([e.name for e in AgreementType])
+
+
+class AgreementListFilterOptionAPI(BaseItemAPI):
+    """API endpoint for retrieving agreement filter options."""
+
+    def __init__(self, model: BaseModel):
+        super().__init__(model)
+        self._get_schema = AgreementFiltersQueryParametersSchema()
+        self._response_schema = AgreementListFilterOptionResponseSchema()
+
+    @is_authorized(PermissionType.GET, Permission.AGREEMENT)
+    def get(self) -> Response:
+        """Get filter options for agreements."""
+        data = self._get_schema.load(request.args.to_dict(flat=False))
+        logger.debug(f"Agreement filter query parameters: {self._get_schema.dump(data)}")
+
+        service: OpsService[Agreement] = AgreementsService(current_app.db_session)
+        filter_options = service.get_filter_options(data)
+
+        return make_response_with_headers(filter_options)
 
 
 def __get_search_clause(agreement_cls, query, search):

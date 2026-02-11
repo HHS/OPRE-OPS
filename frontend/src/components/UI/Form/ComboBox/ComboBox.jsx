@@ -40,13 +40,14 @@ const ComboBox = ({
     isDisabled = false,
     tooltipMsg = ""
 }) => {
-    const { selectedOption, options, customStyles, handleChange, defaultOption } = useComboBox(
+    const { selectedOption, options, customStyles, handleChange, defaultOption, shiftHeld } = useComboBox(
         data,
         selectedData,
         setSelectedData,
         optionText,
         overrideStyles,
-        clearWhenSet
+        clearWhenSet,
+        isMulti
     );
 
     return (
@@ -84,6 +85,7 @@ const ComboBox = ({
                     isSearchable={true}
                     isClearable={true}
                     isMulti={isMulti}
+                    closeMenuOnSelect={isMulti ? !shiftHeld : true}
                     isDisabled={isDisabled}
                 />
             )}
