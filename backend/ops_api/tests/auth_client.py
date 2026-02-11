@@ -6,20 +6,28 @@ from models.users import User
 from ops_api.ops.auth.service import _get_or_create_user_session
 
 
+def _get_user_for_auth(user_id: int, **defaults) -> tuple[User, dict]:
+    """Load user from session when possible to avoid detached instance / recursion issues."""
+    session = getattr(current_app, "db_session", None)
+    if session is not None:
+        user = session.get(User, user_id)
+        if user is not None:
+            claims = {"roles": [r.name for r in user.roles]} if user.roles else {}
+            return user, claims
+    user = User(id=user_id, **defaults)
+    return user, {}
+
+
 class AuthClient(FlaskClient):
     def open(self, *args, **kwargs):
-        user = User(
-            id="503",
+        user, additional_claims = _get_user_for_auth(
+            503,
             oidc_id="00000000-0000-1111-a111-000000000004",
             email="unit-test@ops-api.gov",
             first_name="Unit",
             last_name="Test",
             division=1,
         )
-        additional_claims = {}
-        if user.roles:
-            additional_claims["roles"] = [role.name for role in user.roles]
-
         access_token = create_access_token(identity=user, additional_claims=additional_claims)
         refresh_token = create_refresh_token(identity=user)
         kwargs.setdefault("headers", {"Authorization": f"Bearer {access_token}"})
@@ -44,8 +52,8 @@ class NoPermsAuthClient(FlaskClient):
     """
 
     def open(self, *args, **kwargs):
-        user = User(
-            id="506",
+        user, _ = _get_user_for_auth(
+            506,
             oidc_id="00000000-0000-1111-a111-000000000007",
             email="unit-test-no-perms@ops-api.gov",
             first_name="Unit",
@@ -71,19 +79,14 @@ class BasicUserAuthClient(FlaskClient):
     """
 
     def open(self, *args, **kwargs):
-        user = User(
-            id="521",
+        user, additional_claims = _get_user_for_auth(
+            521,
             oidc_id="00000000-0000-1111-a111-000000000019",
             email="user.demo@email.com",
             first_name="User",
             last_name="Demo",
             division=3,
         )
-
-        additional_claims = {}
-        if user.roles:
-            additional_claims["roles"] = [role.name for role in user.roles]
-
         access_token = create_access_token(identity=user, additional_claims=additional_claims)
         refresh_token = create_refresh_token(identity=user)
         kwargs.setdefault("headers", {"Authorization": f"Bearer {access_token}"})
@@ -103,19 +106,14 @@ class BudgetTeamAuthClient(FlaskClient):
     """
 
     def open(self, *args, **kwargs):
-        user = User(
-            id="523",
+        user, additional_claims = _get_user_for_auth(
+            523,
             oidc_id="00000000-0000-1111-a111-000000000021",
             email="budget.team@email.com",
             first_name="Budget",
             last_name="Team",
             division=1,
         )
-
-        additional_claims = {}
-        if user.roles:
-            additional_claims["roles"] = [role.name for role in user.roles]
-
         access_token = create_access_token(identity=user, additional_claims=additional_claims)
         refresh_token = create_refresh_token(identity=user)
         kwargs.setdefault("headers", {"Authorization": f"Bearer {access_token}"})
@@ -135,19 +133,14 @@ class DivisionDirectorAuthClient(FlaskClient):
     """
 
     def open(self, *args, **kwargs):
-        user = User(
-            id="522",
+        user, additional_claims = _get_user_for_auth(
+            522,
             oidc_id="00000000-0000-1111-a111-000000000020",
             email="dave.director@email.com",
             first_name="Dave",
             last_name="Director",
             division=1,
         )
-
-        additional_claims = {}
-        if user.roles:
-            additional_claims["roles"] = [role.name for role in user.roles]
-
         access_token = create_access_token(identity=user, additional_claims=additional_claims)
         refresh_token = create_refresh_token(identity=user)
         kwargs.setdefault("headers", {"Authorization": f"Bearer {access_token}"})
@@ -167,19 +160,14 @@ class Division6DirectorAuthClient(FlaskClient):
     """
 
     def open(self, *args, **kwargs):
-        user = User(
-            id="525",
+        user, additional_claims = _get_user_for_auth(
+            525,
             oidc_id="00000000-0000-1111-a111-000000000022",
             email="director.derrek@email.com",
             first_name="Director",
             last_name="Derrek",
             division=6,
         )
-
-        additional_claims = {}
-        if user.roles:
-            additional_claims["roles"] = [role.name for role in user.roles]
-
         access_token = create_access_token(identity=user, additional_claims=additional_claims)
         refresh_token = create_refresh_token(identity=user)
         kwargs.setdefault("headers", {"Authorization": f"Bearer {access_token}"})
@@ -195,19 +183,14 @@ class Division6DirectorAuthClient(FlaskClient):
 
 class SystemOwnerAuthClient(FlaskClient):
     def open(self, *args, **kwargs):
-        user = User(
-            id="520",
+        user, additional_claims = _get_user_for_auth(
+            520,
             oidc_id="00000000-0000-1111-a111-000000000018",
             email="system.owner@email.com",
             first_name="System",
             last_name="Owner",
             division=6,
         )
-
-        additional_claims = {}
-        if user.roles:
-            additional_claims["roles"] = [role.name for role in user.roles]
-
         access_token = create_access_token(identity=user, additional_claims=additional_claims)
         refresh_token = create_refresh_token(identity=user)
         kwargs.setdefault("headers", {"Authorization": f"Bearer {access_token}"})
@@ -223,19 +206,14 @@ class SystemOwnerAuthClient(FlaskClient):
 
 class PowerUserAuthClient(FlaskClient):
     def open(self, *args, **kwargs):
-        user = User(
-            id="528",
+        user, additional_claims = _get_user_for_auth(
+            528,
             oidc_id="00000000-0000-1111-a111-000000000028",
             email="power.user@email.com",
             first_name="Power",
             last_name="Owner",
             division=1,
         )
-
-        additional_claims = {}
-        if user.roles:
-            additional_claims["roles"] = [role.name for role in user.roles]
-
         access_token = create_access_token(identity=user, additional_claims=additional_claims)
         refresh_token = create_refresh_token(identity=user)
         kwargs.setdefault("headers", {"Authorization": f"Bearer {access_token}"})

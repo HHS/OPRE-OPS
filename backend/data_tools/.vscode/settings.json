@@ -1,0 +1,34 @@
+{
+    "python.testing.pytestArgs": [
+        "tests"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/..",
+        "${workspaceFolder}"
+    ],
+    "python.autoComplete.extraPaths": [
+        "${workspaceFolder}/..",
+        "${workspaceFolder}"
+    ],
+    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+    "python.terminal.activateEnvironment": false,
+    "python.languageServer": "None",
+    "python.analysis.typeCheckingMode": "basic",
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.formatOnSave": true,
+    "black-formatter.args": [
+        "--config",
+        "pyproject.toml"
+    ],
+    "flake8.args": [
+        "--config",
+        ".flake8"
+    ],
+    "cursorpyright.analysis.extraPaths": [
+        "${workspaceFolder}/..",
+        "${workspaceFolder}"
+    ],
+    "cursorpyright.analysis.typeCheckingMode": "basic"
+}
