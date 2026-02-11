@@ -101,7 +101,8 @@
         "lint:src": "eslint './src/**'",
         "lint:cypress": "eslint './cypress/**'",
         "cypress:open": "cypress open",
-        "uswds:update": "bunx gulp compile"
+        "uswds:update": "bunx gulp compile",
+        "test:e2e:ci:parallel-local": "./scripts/run-e2e-ci-matrix-local.sh"
     },
     "browserslist": {
         "production": [
