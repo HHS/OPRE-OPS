@@ -57,8 +57,11 @@ const AgreementProcurementTracker = ({ agreement }) => {
         return <div>The Procurement Tracker feature is coming soon.</div>;
     }
 
-    // Use active_step_number from tracker if available, otherwise default to 1 for read-only display
+    // Active trackers default to step 1 when no active_step_number exists.
     const currentStep = activeTracker?.active_step_number ? activeTracker.active_step_number : 1;
+    // Keep step 1 open for read-only/no-active-tracker mode, but don't show any active segment in the step indicator.
+    const accordionOpenStep = hasActiveTracker ? currentStep : 1;
+    const indicatorCurrentStep = hasActiveTracker ? currentStep : 0;
     const sortedActiveSteps = [...(activeTracker?.steps || [])].sort(
         (a, b) => (a?.step_number ?? Number.MAX_SAFE_INTEGER) - (b?.step_number ?? Number.MAX_SAFE_INTEGER)
     );
@@ -84,20 +87,20 @@ const AgreementProcurementTracker = ({ agreement }) => {
             </p>
             <StepIndicator
                 steps={WIZARD_STEPS}
-                currentStep={currentStep}
+                currentStep={indicatorCurrentStep}
             />
             {stepsToRender.map((step) => {
                 return (
                     <StepBuilderAccordion
                         step={step}
                         totalSteps={stepsToRender.length}
-                        activeStepNumber={currentStep}
+                        activeStepNumber={hasActiveTracker ? currentStep : undefined}
                         isReadOnly={!hasActiveTracker}
                         // Keep step 1 and the active step open after form submission, all others closed
                         isClosed={
                             isFormSubmitted
-                                ? !(step.step_number === 1 || step.step_number === currentStep)
-                                : step.step_number !== currentStep
+                                ? !(step.step_number === 1 || step.step_number === accordionOpenStep)
+                                : step.step_number !== accordionOpenStep
                         }
                         level={3}
                         key={step.id}

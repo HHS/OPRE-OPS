@@ -72,6 +72,19 @@ describe("StepBuilderAccordion", () => {
         expect(screen.getByTestId("step-builder-heading-1")).toHaveClass("step-builder-accordion__heading--read-only");
     });
 
+    it("maps pending status to not-started heading class without activeStepNumber", () => {
+        render(
+            <StepBuilderAccordion
+                step={{ ...baseStep, status: "PENDING", step_number: 4 }}
+                totalSteps={6}
+            />
+        );
+
+        expect(screen.getByTestId("step-builder-heading-1")).toHaveClass(
+            "step-builder-accordion__heading--not-started"
+        );
+    });
+
     it("falls back to activeStepNumber when status is not mapped", () => {
         const { rerender } = render(
             <StepBuilderAccordion

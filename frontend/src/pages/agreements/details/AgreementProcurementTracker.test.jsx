@@ -397,7 +397,7 @@ describe("AgreementProcurementTracker", () => {
         expect(accordions).toHaveLength(6); // All 6 wizard steps
     });
 
-    it("renders with default step 1 when there is no active tracker", () => {
+    it("renders with default step 0 in indicator when there is no active tracker", () => {
         const inactiveTrackerData = {
             data: [
                 {
@@ -422,8 +422,8 @@ describe("AgreementProcurementTracker", () => {
             </Provider>
         );
 
-        // Should default to step 1 when there's no active tracker
-        expect(screen.getByText("Step 1 of 6")).toBeInTheDocument();
+        // StepIndicator should not show an active/current step for read-only no-active-tracker mode
+        expect(screen.getByText("Step 0 of 6")).toBeInTheDocument();
 
         // All accordions should render with default steps
         const accordions = screen.getAllByTestId("accordion");

@@ -24,7 +24,7 @@ describe("Procurement Tracker page", () => {
     });
     it("Agreements without executing budget lines should display the procurement tracker in a disabled/read-only state", () => {
         cy.visit(`/agreements/6/procurement-tracker`);
-        cy.get('[data-cy="step-indicator-0"]').should("have.class", "usa-step-indicator__segment--current");
+        cy.get(".usa-step-indicator__segment--current").should("have.length", 0);
         cy.get("button")
             .contains(/1 of 6/)
             .click();
