@@ -44,7 +44,6 @@ describe("UsersComboBox", () => {
             <UsersComboBox
                 selectedUser={{}}
                 setSelectedUser={mockSetSelectedUser}
-                authorizedUserIds={[1, 2, 3]}
             />
         );
 
@@ -63,7 +62,6 @@ describe("UsersComboBox", () => {
             <UsersComboBox
                 selectedUser={{}}
                 setSelectedUser={mockSetSelectedUser}
-                authorizedUserIds={[1, 2, 3]}
             />
         );
 
@@ -81,7 +79,6 @@ describe("UsersComboBox", () => {
             <UsersComboBox
                 selectedUser={mockSelectedUser}
                 setSelectedUser={mockSetSelectedUser}
-                authorizedUserIds={[1, 2, 3]}
             />
         );
 
@@ -101,7 +98,6 @@ describe("UsersComboBox", () => {
                 selectedUser={mockSelectedUser}
                 setSelectedUser={mockSetSelectedUser}
                 label="Task Completed By"
-                authorizedUserIds={[1, 2, 3]}
             />
         );
 
@@ -120,7 +116,6 @@ describe("UsersComboBox", () => {
                 selectedUser={mockSelectedUser}
                 setSelectedUser={mockSetSelectedUser}
                 isDisabled={true}
-                authorizedUserIds={[1, 2, 3]}
             />
         );
 
@@ -142,7 +137,6 @@ describe("UsersComboBox", () => {
             <UsersComboBox
                 selectedUser={mockSelectedUser}
                 setSelectedUser={mockSetSelectedUser}
-                authorizedUserIds={[1, 2, 3]}
             />
         );
 
@@ -161,7 +155,6 @@ describe("UsersComboBox", () => {
             <UsersComboBox
                 selectedUser={mockSelectedUser}
                 setSelectedUser={mockSetSelectedUser}
-                authorizedUserIds={[1, 2, 3]}
             />
         );
 
@@ -189,7 +182,6 @@ describe("UsersComboBox", () => {
             <UsersComboBox
                 selectedUser={mockSelectedUser}
                 setSelectedUser={mockSetSelectedUser}
-                authorizedUserIds={[1, 2, 3]}
             />
         );
 
@@ -207,7 +199,6 @@ describe("UsersComboBox", () => {
                 selectedUser={providedUsers[0]}
                 setSelectedUser={mockSetSelectedUser}
                 users={providedUsers}
-                authorizedUserIds={[10]}
             />
         );
 
@@ -230,7 +221,6 @@ describe("UsersComboBox", () => {
             <UsersComboBox
                 selectedUser={mockSelectedUser}
                 setSelectedUser={mockSetSelectedUser}
-                authorizedUserIds={[1, 2, 3]}
             />
         );
 
@@ -257,7 +247,6 @@ describe("UsersComboBox", () => {
                 selectedUser={providedUsers[0]}
                 setSelectedUser={mockSetSelectedUser}
                 users={providedUsers}
-                authorizedUserIds={[10]}
             />
         );
 
@@ -267,85 +256,4 @@ describe("UsersComboBox", () => {
         expect(screen.getByTestId("combobox")).toBeInTheDocument();
     });
 
-    it("filters users by authorizedUserIds when provided", () => {
-        const allUsers = [
-            { id: 1, email: "user1@example.com", full_name: "User One" },
-            { id: 2, email: "user2@example.com", full_name: "User Two" },
-            { id: 3, email: "user3@example.com", full_name: "User Three" }
-        ];
-
-        // Should render successfully with authorizedUserIds prop
-        expect(() => {
-            render(
-                <UsersComboBox
-                    users={allUsers}
-                    authorizedUserIds={[1, 3]}
-                    selectedUser={null}
-                    setSelectedUser={mockSetSelectedUser}
-                />
-            );
-        }).not.toThrow();
-
-        expect(screen.getByTestId("combobox")).toBeInTheDocument();
-    });
-
-    it("shows 'No Authorized Users Configured' when authorizedUserIds is empty array", () => {
-        const allUsers = [
-            { id: 1, email: "user1@example.com", full_name: "User One" },
-            { id: 2, email: "user2@example.com", full_name: "User Two" }
-        ];
-
-        render(
-            <UsersComboBox
-                users={allUsers}
-                authorizedUserIds={[]}
-                selectedUser={null}
-                setSelectedUser={mockSetSelectedUser}
-            />
-        );
-
-        const input = screen.getByDisplayValue("No Authorized Users");
-        expect(input).toBeInTheDocument();
-        expect(input).toBeDisabled();
-    });
-
-    it("shows 'No Authorized Users' when authorizedUserIds is null", () => {
-        const allUsers = [
-            { id: 1, email: "user1@example.com", full_name: "User One" },
-            { id: 2, email: "user2@example.com", full_name: "User Two" }
-        ];
-
-        render(
-            <UsersComboBox
-                users={allUsers}
-                authorizedUserIds={null}
-                selectedUser={mockSelectedUser}
-                setSelectedUser={mockSetSelectedUser}
-            />
-        );
-
-        const input = screen.getByDisplayValue("No Authorized Users");
-        expect(input).toBeInTheDocument();
-        expect(input).toBeDisabled();
-    });
-
-    it("shows 'No Authorized Users' when authorizedUserIds is undefined", () => {
-        const allUsers = [
-            { id: 1, email: "user1@example.com", full_name: "User One" },
-            { id: 2, email: "user2@example.com", full_name: "User Two" }
-        ];
-
-        render(
-            <UsersComboBox
-                users={allUsers}
-                authorizedUserIds={undefined}
-                selectedUser={mockSelectedUser}
-                setSelectedUser={mockSetSelectedUser}
-            />
-        );
-
-        const input = screen.getByDisplayValue("No Authorized Users");
-        expect(input).toBeInTheDocument();
-        expect(input).toBeDisabled();
-    });
 });

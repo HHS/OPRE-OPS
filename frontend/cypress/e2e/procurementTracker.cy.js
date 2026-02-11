@@ -154,8 +154,20 @@ describe("Procurement Tracker Step 1", () => {
         // Amy Madigan should be in the list (she's authorized for this agreement)
         cy.get(".usa-combo-box__list").should("contain", "Amy Madigan");
 
-        // Note: We cannot easily verify that unauthorized users are NOT present
-        // without knowing the complete list of users and which ones should be filtered out.
-        // This test verifies that the dropdown functions and shows at least one authorized user.
+        // Get all dropdown options
+        cy.get(".usa-combo-box__list li").then(($options) => {
+            const userCount = $options.length;
+
+            // The dropdown should have a limited number of users (not all users in the system)
+            // If all 50+ users were shown, this would indicate filtering is not working
+            expect(userCount).to.be.lessThan(30);
+
+            // Verify that a known unauthorized user is NOT in the list
+            // User with ID 500 is a standard user not associated with agreement 13
+            const optionTexts = [...$options].map((el) => el.textContent);
+
+            // Admin Demo should not be authorized for agreement 13
+            expect(optionTexts).to.not.include("Admin Demo");
+        });
     });
 });
