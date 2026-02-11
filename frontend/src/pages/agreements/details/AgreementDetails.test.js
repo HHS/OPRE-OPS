@@ -523,7 +523,7 @@ describe("AgreementDetails", () => {
         TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
             return agreementHistoryData;
         });
-            mockIntersectionObserver();
+        mockIntersectionObserver();
 
         const awardedAgreement = {
             ...agreement,
