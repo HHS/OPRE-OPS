@@ -14,6 +14,7 @@ if sys.platform != "win32":
         if soft != resource.RLIM_INFINITY and soft < 4096:
             resource.setrlimit(resource.RLIMIT_NOFILE, (min(4096, hard), hard))
     except (ImportError, OSError, ValueError):
+        # resource is Unix-only; setrlimit can fail (permissions, limits). Continue with default.
         pass
 
 from collections.abc import Generator

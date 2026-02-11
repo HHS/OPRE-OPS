@@ -262,7 +262,7 @@ def test_get_all_users_safe_user(basic_user_auth_client, loaded_db, app_ctx):
 
 
 def test_get_all_users_by_multiple_filters(auth_client, loaded_db, app_ctx):
-    # Use a user that has non-null first_name, last_name, division (500 may have nulls)
+    # Use a user that has non-null first_name, last_name, and division
     expected_user = loaded_db.get(User, 503)
     response = auth_client.get(
         url_for(

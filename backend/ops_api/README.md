@@ -28,8 +28,8 @@ openssl genrsa -out ~/ops-keys/keypair.pem 2048
 openssl rsa -in ~/ops-keys/keypair.pem -pubout -out ~/ops-keys/public.pem
 openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt -in ~/ops-keys/keypair.pem -out ~/ops-keys/private.pem
 
-export JWT_PRIVATE_KEY=$(cat ~/ops-keys/private.pem)
-export JWT_PUBLIC_KEY=$(cat ~/ops-keys/public.pem)
+export JWT_PRIVATE_KEY="$(cat ~/ops-keys/private.pem)"
+export JWT_PUBLIC_KEY="$(cat ~/ops-keys/public.pem)"
 
 cat ~/ops-keys/public.pem > ../../public.pub
 cat ~/ops-keys/public.pem > ./ops/static/public.pem
@@ -65,7 +65,7 @@ Or run directly with pipenv:
 
 ```bash
 cd backend/ops_api
-pipenv run flask run
+pipenv run flask run --host=0.0.0.0 --port=8080
 ```
 
 The API will be available at http://localhost:8080
@@ -133,15 +133,15 @@ ops_api/
 ├── ops/                    # Main application package
 │   ├── __init__.py        # Flask application factory
 │   ├── auth/              # Authentication & authorization
-|   ├── document           # Document Management System (DMS)
-|   ├── environment        # Environment Config (local, docker, Azure)
-|   ├── events             # Event-driven architecture
-|   ├── home_page          # Home page views
+│   ├── document/          # Document Management System (DMS)
+│   ├── environment/       # Environment Config (local, docker, Azure)
+│   ├── events/            # Event-driven architecture
+│   ├── home_page/         # Home page views
 │   ├── resources/         # REST API endpoints (Flask MethodViews)
 │   ├── services/          # Business logic layer
 │   ├── schemas/           # Marshmallow schemas for serialization
 │   ├── utils/             # Utility functions
-│   └── validation         # Validation rules and orchestrators
+│   └── validation/        # Validation rules and orchestrators
 ├── tests/                 # Test suite (mirrors source structure)
 ```
 
