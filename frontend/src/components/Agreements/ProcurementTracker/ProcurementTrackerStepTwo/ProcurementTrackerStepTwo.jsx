@@ -1,3 +1,4 @@
+import { getLocalISODate } from "../../../../helpers/utils";
 import DebugCode from "../../../DebugCode";
 import useProcurementTrackerStepTwo from "./ProcurementTrackerStepTwo.hooks";
 
@@ -13,7 +14,9 @@ import useProcurementTrackerStepTwo from "./ProcurementTrackerStepTwo.hooks";
  * @returns {React.ReactElement}
  */
 const ProcurementTrackerStepTwo = ({ stepStatus, stepData }) => {
-    const { MemoizedDatePicker } = useProcurementTrackerStepTwo(stepData);
+    const { MemoizedDatePicker, setTargetCompletionDate, targetCompletionDate } =
+        useProcurementTrackerStepTwo(stepData);
+
     return (
         <>
             {(stepStatus === "PENDING" || stepStatus === "ACTIVE") && (
@@ -27,7 +30,14 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepData }) => {
                     <div className="display-flex flex-align-end">
                         <MemoizedDatePicker
                             id="target-completion-date"
+                            name="targetCompletionDate"
                             label="Target Completion Date"
+                            hint="mm/dd/yyyy"
+                            value={targetCompletionDate}
+                            onChange={(e) => {
+                                setTargetCompletionDate(e.target.value);
+                            }}
+                            maxDate={getLocalISODate()}
                         />
                         <button
                             className="usa-button usa-button--unstyled margin-bottom-1 margin-left-2"
