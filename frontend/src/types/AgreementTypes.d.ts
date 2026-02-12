@@ -11,6 +11,7 @@ export type Agreement = {
     agreement_reason?: string;
     agreement_type: AgreementType;
     alternate_project_officer_id?: number;
+    authorized_user_ids?: number[];
     awarding_entity_id?: number;
     budget_line_items?: BudgetLine[];
     contract_type?: string;
