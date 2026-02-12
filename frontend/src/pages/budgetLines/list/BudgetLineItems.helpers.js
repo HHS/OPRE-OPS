@@ -61,7 +61,6 @@ export const sortBLIs = (budgetLines) => {
 };
 
 export const handleFilterByUrl = (myBudgetLineItemsUrl, filteredBudgetLineItems, agreements, activeUser) => {
-    let sortedBLIs = [];
     if (myBudgetLineItemsUrl) {
         const myBLIs = filteredBudgetLineItems.filter((budgetLine) => {
             const teamMembers = budgetLine.team_members;
@@ -72,12 +71,10 @@ export const handleFilterByUrl = (myBudgetLineItemsUrl, filteredBudgetLineItems,
                 return teamMember.id === activeUser.id || projectOfficerId === activeUser.id;
             });
         });
-        sortedBLIs = sortBLIs(myBLIs);
-    } else {
-        // all-budget-line-items
-        sortedBLIs = sortBLIs(filteredBudgetLineItems);
+        return sortBLIs(myBLIs);
     }
-    return sortedBLIs;
+    // all-budget-line-items
+    return sortBLIs(filteredBudgetLineItems);
 };
 
 export const addCanAndAgreementNameToBudgetLines = (sortedBLIs, cans, agreements) => {

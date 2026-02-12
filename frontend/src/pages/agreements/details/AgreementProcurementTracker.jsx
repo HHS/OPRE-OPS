@@ -113,6 +113,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 stepOneData={stepOneData}
                                 hasActiveTracker={hasActiveTracker}
                                 handleSetIsFormSubmitted={handleSetIsFormSubmitted}
+                                agreement={agreement}
                             />
                         )}
                         {step.step_number === 2 && (
