@@ -24,27 +24,15 @@ export const PortfoliosComboBox = ({
     const navigate = useNavigate();
     const { data, error, isSuccess, isLoading } = useGetPortfoliosQuery({});
 
-    let newPortfolioOptions = [];
-
-    if (portfolioOptions.length === 0 && isSuccess) {
-        newPortfolioOptions = data?.map((portfolio) => {
-            const portfolioOption = {
-                id: portfolio.id,
-                title: portfolio.name,
-                name: portfolio.name
-            };
-            return portfolioOption;
-        });
-    } else {
-        newPortfolioOptions = portfolioOptions.map((portfolio) => {
-            const portfolioOption = {
-                id: portfolio.id,
-                title: portfolio.name,
-                name: portfolio.name
-            };
-            return portfolioOption;
-        });
-    }
+    const sourcePortfolioOptions = portfolioOptions.length === 0 && isSuccess ? data || [] : portfolioOptions;
+    const newPortfolioOptions = sourcePortfolioOptions.map((portfolio) => {
+        const portfolioOption = {
+            id: portfolio.id,
+            title: portfolio.name,
+            name: portfolio.name
+        };
+        return portfolioOption;
+    });
 
     if (isLoading) {
         return <h1>Loading...</h1>;
