@@ -25,15 +25,20 @@ vi.mock("../../../components/UI/FilterButton/FilterButton", () => ({
                 Reset
             </button>
             <div data-testid="fieldset-list">{fieldsetList.length} fields</div>
+            <div data-testid="fieldset-content">{fieldsetList}</div>
         </div>
     )
 }));
 
 vi.mock("../../../components/UI/Form/FiscalYearComboBox", () => ({
-    default: ({ selectedFiscalYears, setSelectedFiscalYears }) => (
+    default: ({ selectedFiscalYears, setSelectedFiscalYears, defaultString }) => (
         <div data-testid="fiscal-year-combo">
-            <button onClick={() => setSelectedFiscalYears([{ id: 2024, title: 2024 }])}>Set Fiscal Years</button>
+            <button onClick={() => setSelectedFiscalYears([{ id: 2024, title: "FY 2024" }])}>Set Fiscal Years</button>
+            <button onClick={() => setSelectedFiscalYears([{ id: "ALL", title: "All FYs" }])}>
+                Set All Fiscal Years
+            </button>
             <div>{selectedFiscalYears?.length || 0} selected</div>
+            <div data-testid="default-string">{defaultString}</div>
         </div>
     )
 }));
@@ -212,6 +217,47 @@ describe("BLIFilterButton", () => {
         });
     });
 
+    it("sets fiscalYears to null when All Fiscal Years is selected", async () => {
+        render(
+            <BLIFilterButton
+                filters={defaultFilters}
+                setFilters={mockSetFilters}
+                selectedFiscalYear={2024}
+            />
+        );
+
+        fireEvent.click(screen.getByText("Set All Fiscal Years"));
+        fireEvent.click(screen.getByTestId("apply-filter-btn"));
+
+        await waitFor(() => {
+            expect(mockSetFilters).toHaveBeenCalled();
+        });
+
+        const setFiltersCallback = mockSetFilters.mock.calls[0][0];
+        const result = setFiltersCallback(defaultFilters);
+        expect(result.fiscalYears).toBeNull();
+    });
+
+    it("sets fiscalYears to undefined when Compare Fiscal Years is cleared", async () => {
+        render(
+            <BLIFilterButton
+                filters={defaultFilters}
+                setFilters={mockSetFilters}
+                selectedFiscalYear={2024}
+            />
+        );
+
+        fireEvent.click(screen.getByTestId("apply-filter-btn"));
+
+        await waitFor(() => {
+            expect(mockSetFilters).toHaveBeenCalled();
+        });
+
+        const setFiltersCallback = mockSetFilters.mock.calls[0][0];
+        const result = setFiltersCallback(defaultFilters);
+        expect(result.fiscalYears).toBeUndefined();
+    });
+
     it("resets filters correctly", async () => {
         render(
             <BLIFilterButton
@@ -282,5 +328,58 @@ describe("BLIFilterButton", () => {
         );
 
         expect(screen.getByTestId("filter-button")).toBeInTheDocument();
+    });
+
+    describe("defaultString based on selectedFiscalYear", () => {
+        it("shows specific year when a fiscal year is selected", () => {
+            render(
+                <BLIFilterButton
+                    filters={defaultFilters}
+                    setFilters={mockSetFilters}
+                    selectedFiscalYear={2025}
+                />
+            );
+
+            expect(screen.getByTestId("default-string")).toHaveTextContent("Fiscal Year 2025");
+        });
+
+        it("shows 'All Fiscal Years' when 'All' is selected", () => {
+            render(
+                <BLIFilterButton
+                    filters={defaultFilters}
+                    setFilters={mockSetFilters}
+                    selectedFiscalYear="All"
+                />
+            );
+
+            expect(screen.getByTestId("default-string")).toHaveTextContent("All Fiscal Years");
+        });
+
+        it("shows current fiscal year when 'Multi' is selected", () => {
+            render(
+                <BLIFilterButton
+                    filters={defaultFilters}
+                    setFilters={mockSetFilters}
+                    selectedFiscalYear="Multi"
+                />
+            );
+
+            // Should fall back to current fiscal year
+            const defaultString = screen.getByTestId("default-string").textContent;
+            expect(defaultString).toMatch(/Fiscal Year \d{4}/);
+        });
+
+        it("shows current fiscal year when selectedFiscalYear is not provided", () => {
+            render(
+                <BLIFilterButton
+                    filters={defaultFilters}
+                    setFilters={mockSetFilters}
+                />
+            );
+
+            // Should fall back to current fiscal year
+            const defaultString = screen.getByTestId("default-string").textContent;
+            expect(defaultString).toMatch(/Fiscal Year \d{4}/);
+        });
     });
 });

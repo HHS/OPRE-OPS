@@ -162,6 +162,42 @@ pre-commit install
 pre-commit install --hook-type commit-msg
 ```
 
+### Commit Message Standards
+
+This repository uses **Conventional Commits** format enforced by commitlint.
+
+**Format:**
+```
+<type>: <description>
+
+[optional body]
+
+Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
+```
+
+**Common Types:**
+- **feat**: New feature
+- **fix**: Bug fix
+- **refactor**: Code refactoring
+- **test**: Adding or updating tests
+- **docs**: Documentation changes
+- **chore**: Maintenance tasks (deps, config)
+- **style**: Code style changes (formatting, no logic change)
+
+**Examples:**
+```bash
+feat: add includeAllOption to FiscalYearComboBox
+fix: correct fiscal year formatting in dropdown
+refactor: simplify budget calculation logic
+test: add coverage for filter component
+chore(deps): update patch dependencies
+```
+
+**Important:**
+- Always use conventional commit format (commitlint will reject non-conforming commits)
+- Check recent commits with `git log --oneline -5` to match repository style
+- Include ticket numbers in branch names (e.g., `OPS-4927/feature-name`), not in commit messages
+
 ### Editor Setup
 
 For consistent code formatting across the team, configure your editor properly.
