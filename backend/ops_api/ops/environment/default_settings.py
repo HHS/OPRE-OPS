@@ -84,6 +84,14 @@ DOCUMENT_PROVIDERS = {
     "azure",
 }
 
+# Azure log truncation (Container App / Log Analytics Log field limit 32766 bytes)
+# Only applied when OPS_CONFIG contains "environment/azure" (e.g. Azure deployment).
+AZURE_LOG_FIELD_MAX_BYTES = 32766
+AZURE_BODY_LOG_MAX_BYTES = 20000
+
+# True when OPS_CONFIG points at Azure environment config; enables log truncation.
+RUNNING_IN_AZURE = "environment/azure" in (os.getenv("OPS_CONFIG") or "")
+
 # CSRF Protection
 # This is the prefix for the Host header in the cloud environment.
 HOST_HEADER_PREFIX = "localhost"

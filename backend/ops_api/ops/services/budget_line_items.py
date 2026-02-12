@@ -8,6 +8,7 @@ from flask import current_app
 from flask_jwt_extended import current_user, get_current_user
 from loguru import logger
 from sqlalchemy import Select, String, case, cast, func, select
+from sqlalchemy.orm import selectinload
 
 from models import (
     CAN,
@@ -729,7 +730,18 @@ class BudgetLineItemService:
         only_my = data.get("only_my", [])
         enable_obe = data.get("enable_obe", [])
 
-        query = select(BudgetLineItem).distinct()
+        query = (
+            select(BudgetLineItem)
+            .distinct()
+            .options(
+                selectinload(BudgetLineItem.agreement).selectinload(Agreement.team_members),
+                selectinload(BudgetLineItem.agreement)
+                .selectinload(Agreement.budget_line_items)
+                .selectinload(BudgetLineItem.can)
+                .selectinload(CAN.portfolio),
+                selectinload(BudgetLineItem.can).selectinload(CAN.portfolio),
+            )
+        )
         logger.debug("Beginning bli queries")
         all_results = self.db_session.scalars(query).all()
 
