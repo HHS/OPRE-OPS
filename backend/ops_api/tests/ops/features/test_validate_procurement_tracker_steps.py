@@ -137,8 +137,53 @@ def test_validate_updating_procurement_tracker_step_2_with_valid_task_completed_
 def test_validate_updating_procurement_tracker_step_2_with_valid_completion_date(): ...
 
 
-@scenario("validate_procurement_tracker_steps.feature", "Validate no future completion date for pre-solicitation")
+@scenario(
+    "validate_procurement_tracker_steps.feature",
+    "Validate no future completion date for pre-solicitation",
+)
 def test_validate_no_future_completion_date_for_pre_solicitation(): ...
+
+
+@scenario(
+    "validate_procurement_tracker_steps.feature",
+    "Validate pre solicitation target completion date must be today or future date",
+)
+def test_validate_pre_solicitation_target_completion_date(): ...
+
+
+@scenario(
+    "validate_procurement_tracker_steps.feature",
+    "Validate pre solicitation target completion date must be today or future date on model",
+)
+def test_validate_pre_solicitation_target_completion_date_on_model(): ...
+
+
+@scenario(
+    "validate_procurement_tracker_steps.feature",
+    "Validate pre solicitation step can have required fields spread between model and update",
+)
+def test_validate_pre_solicitation_step_required_fields(): ...
+
+
+@scenario(
+    "validate_procurement_tracker_steps.feature",
+    "Validate pre solicitation must have required fields between model and update",
+)
+def test_validate_pre_solicitation_step_missing_required_fields(): ...
+
+
+@scenario(
+    "validate_procurement_tracker_steps.feature",
+    "Validate pre solicitation step draft solicitation date in update cannot be in the past",
+)
+def test_validate_pre_solicitation_step_draft_solicitation_date_update(): ...
+
+
+@scenario(
+    "validate_procurement_tracker_steps.feature",
+    "Validate pre solicitation step draft solicitation date in the model cannot be in the past",
+)
+def test_validate_pre_solicitation_step_draft_solicitation_date_model(): ...
 
 
 @scenario(
@@ -146,6 +191,20 @@ def test_validate_no_future_completion_date_for_pre_solicitation(): ...
     "Complete Procurement Tracker",
 )
 def test_complete_procurement_tracker(): ...
+
+
+@scenario(
+    "validate_procurement_tracker_steps.feature",
+    "Validate acquisition planning notes cannot exceed 750 characters",
+)
+def test_validate_acquisition_planning_notes_max_length(): ...
+
+
+@scenario(
+    "validate_procurement_tracker_steps.feature",
+    "Validate pre-solicitation notes cannot exceed 750 characters",
+)
+def test_validate_pre_solicitation_notes_max_length(): ...
 
 
 @pytest.fixture()
@@ -330,6 +389,40 @@ def working_with_pre_solicitation_step(loaded_db, context):
     loaded_db.refresh(procurement_tracker)
 
 
+@given("I am working with a pre-solicitation procurement tracker step with a past target completion date")
+def working_with_pre_solicitation_step_with_past_target_date(loaded_db, context):
+    """Set the context's procurement_tracker_step to step 2 (pre-solicitation) and set a past target completion date."""
+    procurement_tracker = context["procurement_tracker"]
+    procurement_tracker.active_step_number = 2
+    step_2 = next((step for step in procurement_tracker.steps if step.step_number == 2), None)
+    step_2.pre_solicitation_target_completion_date = date.today().replace(year=date.today().year - 1)
+    context["procurement_tracker_step"] = step_2
+    loaded_db.commit()
+    loaded_db.refresh(procurement_tracker)
+
+
+@given("I am working with a pre-solicitation procurement tracker step with a valid date completed")
+def validate_pre_solicitation_step_required_fields(context):
+    """Set the context's procurement_tracker_step to step 2 (pre-solicitation) with no target completion date and attempt to update to completed."""
+    procurement_tracker = context["procurement_tracker"]
+    procurement_tracker.active_step_number = 2
+    step_2 = next((step for step in procurement_tracker.steps if step.step_number == 2), None)
+    step_2.pre_solicitation_date_completed = date.today()
+    context["procurement_tracker_step"] = step_2
+
+
+@given("I am working with a pre-solicitation procurement tracker step with a past draft solicitation date")
+def validate_pre_solicitation_draft_solicitation_date(context):
+    """Set the context's procurement_tracker_step to step 2 (pre-solicitation) with no target completion date and attempt to update to completed."""
+    procurement_tracker = context["procurement_tracker"]
+    procurement_tracker.active_step_number = 2
+    past_date = date.today().replace(year=date.today().year - 1)
+
+    step_2 = next((step for step in procurement_tracker.steps if step.step_number == 2), None)
+    step_2.pre_solicitation_draft_solicitation_date = past_date
+    context["procurement_tracker_step"] = step_2
+
+
 @when("I have a valid completed procurement step 1")
 def have_valid_completed_procurement_step(context):
     data = {
@@ -375,6 +468,62 @@ def have_procurement_step_with_future_completion_date(context):
     context["request_body"] = data
 
 
+@when("I have a procurement step 2 with a date completed in the future")
+def have_procurement_step_2_with_future_completion_date(context):
+    future_date = date.today().replace(year=date.today().year + 1).isoformat()
+    data = {
+        "status": "COMPLETED",
+        "date_completed": future_date,
+        "task_completed_by": context["user_id"],
+        "target_completion_date": date.today().isoformat(),
+    }
+
+    context["request_body"] = data
+
+
+@when("I have a procurement step 2 with a target date in the past")
+def have_procurement_step_2_with_past_target_completion_date(context):
+    past_date = date.today().replace(year=date.today().year - 1).isoformat()
+    data = {
+        "status": "COMPLETED",
+        "date_completed": date.today().isoformat(),
+        "task_completed_by": context["user_id"],
+        "target_completion_date": past_date,
+    }
+
+    context["request_body"] = data
+
+
+@when("I have a procurement step 2 with no target completion date")
+def have_procurement_step_2_with_no_target_completion_date(context):
+    data = {
+        "status": "COMPLETED",
+        "date_completed": date.today().isoformat(),
+        "task_completed_by": context["user_id"],
+    }
+
+    context["request_body"] = data
+
+
+@when("I have a procurement step 2 with an invalid target completion date")
+def have_procurement_step_2_with_invalid_target_completion_date(context):
+    data = {
+        "status": "COMPLETED",
+        "date_completed": date.today().isoformat(),
+        "task_completed_by": context["user_id"],
+        "target_completion_date": "2025-25-25",
+    }
+
+    context["request_body"] = data
+
+
+@when("I have a procurement step 2 with a valid target completion date and complete status")
+def have_procurement_step_2_with_valid_completion_date_and_status(context):
+    data = {"status": "COMPLETED", "target_completion_date": date.today().isoformat()}
+
+    context["request_body"] = data
+
+
 @when("I have a procurement step with an invalid status")
 def have_procurement_step_with_invalid_status(context):
     data = {
@@ -399,6 +548,95 @@ def have_procurement_step_with_no_presolicitation_package(context):
 def have_valid_completed_final_procurement_step(context):
     data = {
         "status": "COMPLETED",
+    }
+
+    context["request_body"] = data
+
+
+@when("I have a valid completed procurement step 2")
+def have_valid_completed_procurement_step_2(context):
+    data = {
+        "status": "COMPLETED",
+        "date_completed": "2025-12-25",
+        "task_completed_by": context["user_id"],
+        "target_completion_date": date.today().isoformat(),
+    }
+
+    context["request_body"] = data
+
+
+@when("I have a procurement step 2 with a non-existent user in the task_completed_by step")
+def have_procurement_step_2_with_nonexistent_user(context):
+    data = {
+        "status": "COMPLETED",
+        "date_completed": "2025-12-25",
+        "task_completed_by": 999,
+        "target_completion_date": "2025-12-25",
+    }
+
+    context["request_body"] = data
+
+
+@when("I have a procurement step 2 with an invalid completion date")
+def have_procurement_step_2_with_invalid_completion_date(context):
+    data = {
+        "status": "COMPLETED",
+        "date_completed": "2025-25-25",
+        "task_completed_by": context["user_id"],
+        "target_completion_date": "2025-12-25",
+    }
+
+    context["request_body"] = data
+
+
+@when("I have a procurement step 2 with a valid task_completed_by")
+def have_procurement_step_2_with_valid_task_completed_by(context):
+    data = {
+        "status": "COMPLETED",
+        "task_completed_by": context["user_id"],
+    }
+
+    context["request_body"] = data
+
+
+@when("I have a procurement step 2 with a past draft solicitation date")
+def have_procurement_step_2_with_past_draft_solicitation_date(context):
+    past_date = date.today().replace(year=date.today().year - 1).isoformat()
+    data = {
+        "status": "COMPLETED",
+        "date_completed": "2025-25-25",
+        "task_completed_by": context["user_id"],
+        "target_completion_date": "2025-12-25",
+        "draft_solicitation_date": past_date,
+    }
+
+    context["request_body"] = data
+
+
+@when("I have a procurement step with notes exceeding 750 characters")
+def have_procurement_step_with_notes_exceeding_max_length(context):
+    # Create notes that are 751 characters long
+    long_notes = "a" * 751
+    data = {
+        "status": "COMPLETED",
+        "date_completed": date.today().isoformat(),
+        "task_completed_by": context["user_id"],
+        "notes": long_notes,
+    }
+
+    context["request_body"] = data
+
+
+@when("I have a procurement step 2 with notes exceeding 750 characters")
+def have_procurement_step_2_with_notes_exceeding_max_length(context):
+    # Create notes that are 751 characters long
+    long_notes = "a" * 751
+    data = {
+        "status": "COMPLETED",
+        "date_completed": date.today().isoformat(),
+        "task_completed_by": context["user_id"],
+        "target_completion_date": date.today().isoformat(),
+        "notes": long_notes,
     }
 
     context["request_body"] = data
@@ -465,7 +703,7 @@ def check_successful_completion_response(context, loaded_db, setup_and_teardown)
     procurement_action = loaded_db.get(ProcurementAction, procurement_tracker.procurement_action)
     assert procurement_action is not None, "Procurement action should exist"
     assert procurement_action.status == ProcurementActionStatus.AWARDED
-    assert procurement_action.award_date == date.today()
+    assert procurement_action.date_awarded_obligated == date.today()
 
 
 @then("I should get an error message that users must be associated with an agreement")
