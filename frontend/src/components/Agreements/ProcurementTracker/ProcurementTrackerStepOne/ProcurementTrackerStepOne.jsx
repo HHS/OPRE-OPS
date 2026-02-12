@@ -11,6 +11,7 @@ import { getLocalISODate } from "../../../../helpers/utils";
  * @property {Object} stepOneData - The data for step one of the procurement tracker
  * @property {boolean} hasActiveTracker - Whether an active tracker exists
  * @property {Function} handleSetIsFormSubmitted - Function to set the form submission state
+ * @property {Array} authorizedUsers - List of users authorized for this agreement
  */
 
 /**
@@ -18,7 +19,13 @@ import { getLocalISODate } from "../../../../helpers/utils";
  * @param {ProcurementTrackerStepOneProps} props
  * @returns {React.ReactElement}
  */
-const ProcurementTrackerStepOne = ({ stepStatus, stepOneData, hasActiveTracker, handleSetIsFormSubmitted }) => {
+const ProcurementTrackerStepOne = ({
+    stepStatus,
+    stepOneData,
+    hasActiveTracker,
+    handleSetIsFormSubmitted,
+    authorizedUsers
+}) => {
     const {
         isPreSolicitationPackageSent,
         setIsPreSolicitationPackageSent,
@@ -84,10 +91,11 @@ const ProcurementTrackerStepOne = ({ stepStatus, stepOneData, hasActiveTracker, 
                             selectedUser={selectedUser}
                             setSelectedUser={setSelectedUser}
                             messages={validatorRes.getErrors("users") || []}
-                            isDisabled={!isPreSolicitationPackageSent}
+                            isDisabled={!isPreSolicitationPackageSent || authorizedUsers.length === 0}
                             onChange={(name, value) => {
                                 runValidate(name, value);
                             }}
+                            users={authorizedUsers}
                         />
                         <MemoizedDatePicker
                             id="date-completed"

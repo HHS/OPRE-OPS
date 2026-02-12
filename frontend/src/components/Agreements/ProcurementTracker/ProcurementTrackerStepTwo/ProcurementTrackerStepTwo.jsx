@@ -1,10 +1,12 @@
-import DebugCode from "../../../DebugCode";
+import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepTwo from "./ProcurementTrackerStepTwo.hooks";
+import TermTag from "../../../UI/Term/TermTag";
 
 /**
  * @typedef {Object} ProcurementTrackerStepTwoProps
  * @property {string} stepStatus - The current status of the procurement tracker step
  * @property {Object} stepData - The data for step of the procurement tracker
+ * @property {Array} authorizedUsers - List of users authorized for this agreement
  */
 
 /**
@@ -12,8 +14,10 @@ import useProcurementTrackerStepTwo from "./ProcurementTrackerStepTwo.hooks";
  * @param {ProcurementTrackerStepTwoProps} props
  * @returns {React.ReactElement}
  */
-const ProcurementTrackerStepTwo = ({ stepStatus, stepData }) => {
-    const { MemoizedDatePicker } = useProcurementTrackerStepTwo(stepData);
+const ProcurementTrackerStepTwo = ({ stepStatus, stepData, authorizedUsers }) => {
+    const { selectedUser, setSelectedUser, MemoizedDatePicker, step2CompletedByUserName } =
+        useProcurementTrackerStepTwo(stepData);
+
     return (
         <>
             {(stepStatus === "PENDING" || stepStatus === "ACTIVE") && (
@@ -39,13 +43,29 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepData }) => {
                             Save
                         </button>
                     </div>
-                    <DebugCode data={stepData} />
+                    <UsersComboBox
+                        className="width-card-lg margin-top-2"
+                        label={"Task Completed By"}
+                        selectedUser={selectedUser}
+                        setSelectedUser={setSelectedUser}
+                        users={authorizedUsers}
+                    />
                 </fieldset>
             )}
 
             {stepStatus === "COMPLETED" && (
                 <div>
-                    <p>Step Two Completed</p>
+                    <p>
+                        Edit the pre-solicitation package in collaboration with the Procurement Shop. Once the documents
+                        are finalized, go to the Documents Tab, upload the final and signed versions, and update the
+                        task below.
+                    </p>
+                    <dl>
+                        <TermTag
+                            term="Completed By"
+                            description={step2CompletedByUserName}
+                        />
+                    </dl>
                 </div>
             )}
         </>

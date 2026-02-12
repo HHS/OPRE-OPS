@@ -2,7 +2,6 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { vi, expect, describe, it, beforeEach } from "vitest";
 import ProcurementTrackerStepOne from "./ProcurementTrackerStepOne";
 import useProcurementTrackerStepOne from "./ProcurementTrackerStepOne.hooks";
-
 vi.mock("./ProcurementTrackerStepOne.hooks");
 vi.mock("../../../../helpers/utils", async (importOriginal) => {
     const actual = await importOriginal();
@@ -36,7 +35,7 @@ vi.mock("../../../UI/Term/TermTag", () => ({
     )
 }));
 vi.mock("../../UsersComboBox", () => ({
-    default: ({ label, selectedUser, setSelectedUser, isDisabled, messages, onChange }) => (
+    default: ({ label, selectedUser, setSelectedUser, isDisabled, messages, onChange, users }) => (
         <div data-testid="users-combobox">
             <label>{label}</label>
             <select
@@ -46,10 +45,17 @@ vi.mock("../../UsersComboBox", () => ({
                     setSelectedUser({ id: parseInt(e.target.value) });
                     if (onChange) onChange("users", parseInt(e.target.value));
                 }}
+                data-user-count={users?.length || 0}
             >
                 <option value="">Select user</option>
-                <option value="123">John Doe</option>
-                <option value="456">Jane Smith</option>
+                {users?.map((user) => (
+                    <option
+                        key={user.id}
+                        value={user.id}
+                    >
+                        {user.full_name}
+                    </option>
+                ))}
             </select>
             {messages && messages.length > 0 && (
                 <div data-testid="validation-messages">
@@ -123,6 +129,11 @@ describe("ProcurementTrackerStepOne", () => {
 
     const mockStepOneData = { id: 1 };
 
+    const mockAllUsers = [
+        { id: 123, full_name: "John Doe", email: "john@example.com" },
+        { id: 456, full_name: "Jane Smith", email: "jane@example.com" }
+    ];
+
     beforeEach(() => {
         vi.clearAllMocks();
         useProcurementTrackerStepOne.mockReturnValue(defaultHookReturn);
@@ -135,6 +146,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -152,6 +164,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -166,6 +179,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -180,6 +194,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -195,6 +210,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -212,6 +228,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -228,6 +245,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -249,6 +267,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -267,6 +286,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -287,6 +307,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -307,6 +328,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -327,6 +349,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -348,6 +371,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -369,6 +393,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -390,6 +415,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -410,6 +436,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -436,6 +463,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -462,6 +490,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -509,6 +538,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="ACTIVE"
                     stepOneData={mockStepOneData}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -532,6 +562,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="COMPLETED"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -548,6 +579,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="COMPLETED"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -562,6 +594,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="COMPLETED"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -575,6 +608,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="COMPLETED"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -588,6 +622,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="COMPLETED"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -601,6 +636,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="COMPLETED"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -624,6 +660,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="COMPLETED"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -690,6 +727,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="COMPLETED"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -707,6 +745,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -725,6 +764,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -741,6 +781,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -755,6 +796,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="COMPLETED"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 

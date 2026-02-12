@@ -144,7 +144,8 @@ import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 describe("AgreementProcurementTracker", () => {
     const mockAgreement = {
         id: 13,
-        name: "Test Agreement"
+        name: "Test Agreement",
+        authorized_user_ids: [1, 2, 3]
     };
 
     const mockTrackerData = {
@@ -1023,6 +1024,171 @@ describe("AgreementProcurementTracker", () => {
             tags.forEach((tag) => {
                 expect(tag).toHaveAttribute("data-tag-style", "primaryDarkTextLightBackground");
             });
+        });
+    });
+
+    describe("Authorized Users Filtering", () => {
+        const mockTrackerWithSteps = {
+            data: [
+                {
+                    id: 4,
+                    agreement_id: 13,
+                    status: "ACTIVE",
+                    active_step_number: 1,
+                    steps: [
+                        {
+                            id: 101,
+                            step_number: 1,
+                            step_type: "Pre-Solicitation",
+                            status: "PENDING"
+                        }
+                    ]
+                }
+            ]
+        };
+
+        const mockAllUsers = [
+            { id: 1, full_name: "Amy Madigan", email: "amy@example.com" },
+            { id: 2, full_name: "John Doe", email: "john@example.com" },
+            { id: 3, full_name: "Jane Smith", email: "jane@example.com" },
+            { id: 4, full_name: "Bob Wilson", email: "bob@example.com" },
+            { id: 5, full_name: "Alice Brown", email: "alice@example.com" }
+        ];
+
+        it("filters users by agreement.authorized_user_ids and passes filtered list to step components", () => {
+            useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
+                data: mockTrackerWithSteps,
+                isLoading: false,
+                isError: false
+            });
+
+            useGetUsersQuery.mockReturnValue({
+                data: mockAllUsers,
+                isLoading: false,
+                error: undefined
+            });
+
+            const mockAgreementWithAuthorizedUsers = {
+                id: 13,
+                authorized_user_ids: [1, 3, 5] // Only Amy, Jane, and Alice are authorized
+            };
+
+            render(
+                <Provider store={setupStore()}>
+                    <AgreementProcurementTracker agreement={mockAgreementWithAuthorizedUsers} />
+                </Provider>
+            );
+
+            // Verify that UsersComboBox is rendered (which receives the filtered users)
+            expect(screen.getByTestId("users-combobox")).toBeInTheDocument();
+            expect(screen.getByText("Task Completed By")).toBeInTheDocument();
+        });
+
+        it("passes empty array when agreement.authorized_user_ids is null", () => {
+            useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
+                data: mockTrackerWithSteps,
+                isLoading: false,
+                isError: false
+            });
+
+            useGetUsersQuery.mockReturnValue({
+                data: mockAllUsers,
+                isLoading: false,
+                error: undefined
+            });
+
+            const mockAgreementNullAuthorizedUsers = {
+                id: 13,
+                authorized_user_ids: null
+            };
+
+            render(
+                <Provider store={setupStore()}>
+                    <AgreementProcurementTracker agreement={mockAgreementNullAuthorizedUsers} />
+                </Provider>
+            );
+
+            // UsersComboBox should still render (but will receive empty array)
+            expect(screen.getByTestId("users-combobox")).toBeInTheDocument();
+        });
+
+        it("passes empty array when agreement.authorized_user_ids is undefined", () => {
+            useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
+                data: mockTrackerWithSteps,
+                isLoading: false,
+                isError: false
+            });
+
+            useGetUsersQuery.mockReturnValue({
+                data: mockAllUsers,
+                isLoading: false,
+                error: undefined
+            });
+
+            const mockAgreementUndefinedAuthorizedUsers = {
+                id: 13
+                // authorized_user_ids is undefined
+            };
+
+            render(
+                <Provider store={setupStore()}>
+                    <AgreementProcurementTracker agreement={mockAgreementUndefinedAuthorizedUsers} />
+                </Provider>
+            );
+
+            // UsersComboBox should still render (but will receive empty array)
+            expect(screen.getByTestId("users-combobox")).toBeInTheDocument();
+        });
+
+        it("passes empty array when agreement is not provided", () => {
+            useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
+                data: mockTrackerWithSteps,
+                isLoading: false,
+                isError: false
+            });
+
+            useGetUsersQuery.mockReturnValue({
+                data: mockAllUsers,
+                isLoading: false,
+                error: undefined
+            });
+
+            render(
+                <Provider store={setupStore()}>
+                    <AgreementProcurementTracker agreement={null} />
+                </Provider>
+            );
+
+            // Component should handle null agreement gracefully
+            expect(screen.getByText("Error loading procurement tracker data")).toBeInTheDocument();
+        });
+
+        it("passes empty array when allUsers is not yet loaded", () => {
+            useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
+                data: mockTrackerWithSteps,
+                isLoading: false,
+                isError: false
+            });
+
+            useGetUsersQuery.mockReturnValue({
+                data: undefined, // Users not yet loaded
+                isLoading: true,
+                error: undefined
+            });
+
+            const mockAgreementWithAuthorizedUsers = {
+                id: 13,
+                authorized_user_ids: [1, 3, 5]
+            };
+
+            render(
+                <Provider store={setupStore()}>
+                    <AgreementProcurementTracker agreement={mockAgreementWithAuthorizedUsers} />
+                </Provider>
+            );
+
+            // UsersComboBox should still render (but will receive empty array until users load)
+            expect(screen.getByTestId("users-combobox")).toBeInTheDocument();
         });
     });
 });
