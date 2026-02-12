@@ -5,6 +5,7 @@ import StepBuilderAccordion from "../../../components/Agreements/ProcurementTrac
 import DebugCode from "../../../components/DebugCode";
 import StepIndicator from "../../../components/UI/StepIndicator";
 import { IS_PROCUREMENT_TRACKER_READY_MAP } from "../../../constants";
+import ProcurementTrackerStepTwo from "../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepTwo";
 
 /**
  * @typedef {Object} AgreementProcurementTrackerProps
@@ -42,6 +43,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
     const activeTracker = trackers.find((tracker) => tracker.status === "ACTIVE");
     const hasActiveTracker = !!activeTracker;
     const stepOneData = activeTracker?.steps.find((step) => step.step_number === 1);
+    const stepTwoData = activeTracker?.steps.find((step) => step.step_number === 2);
 
     // Handle loading state
     if (isLoading) {
@@ -110,7 +112,13 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 agreement={agreement}
                             />
                         )}
-                        {step.step_number === 2 && (
+                        {IS_PROCUREMENT_TRACKER_READY_MAP.STEP_2 && step.step_number === 2 && (
+                            <ProcurementTrackerStepTwo
+                                stepStatus={step.status}
+                                stepData={stepTwoData}
+                            />
+                        )}
+                        {!IS_PROCUREMENT_TRACKER_READY_MAP.STEP_2 && step.step_number === 2 && (
                             <div className="usa-fieldset">
                                 <p>
                                     Edit the pre-solicitation package in collaboration with the Procurement Shop. Once
@@ -123,7 +131,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                         {step.step_number === 3 && (
                             <div className="usa-fieldset">
                                 <p>
-                                    Once the Procurement Shop has posted the Solicitation and it’s “on the street”,
+                                    Once the Procurement Shop has posted the Solicitation and it's "on the street",
                                     enter the Solicitation Start and End Dates. After all proposals are received, vendor
                                     questions have been answered, and evaluations are starting, check this step as
                                     complete.
