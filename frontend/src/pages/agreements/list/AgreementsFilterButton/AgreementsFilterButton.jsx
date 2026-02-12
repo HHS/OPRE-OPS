@@ -74,7 +74,7 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
                 setSelectedProjects={setProjectTitle}
                 agreementFilterOptions={agreementFilterOptions}
                 legendClassname={legendStyles}
-                defaultString={""}
+                defaultString={"All FYs"}
                 overrideStyles={{ width: "22.7rem" }}
             />
         </fieldset>,

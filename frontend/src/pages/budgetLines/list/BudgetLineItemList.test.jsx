@@ -230,6 +230,37 @@ describe("BudgetLineItemList", () => {
         expect(screen.getByText("Budget Lines")).toBeInTheDocument();
     });
 
+    it("does not replace fiscalYears with selectedFiscalYear when fiscalYears is null", () => {
+        vi.spyOn(hooks, "useBudgetLinesList").mockReturnValue({
+            myBudgetLineItemsUrl: false,
+            filters: {
+                ...defaultFilters,
+                fiscalYears: null
+            },
+            setFilters: vi.fn()
+        });
+
+        useGetBudgetLineItemsQuery.mockReturnValue({
+            data: mockBudgetLineItems,
+            isLoading: false,
+            isError: false
+        });
+
+        render(
+            <Provider store={store}>
+                <BudgetLineItemList />
+            </Provider>
+        );
+
+        expect(useGetBudgetLineItemsQuery).toHaveBeenCalledWith(
+            expect.objectContaining({
+                filters: expect.objectContaining({
+                    fiscalYears: null
+                })
+            })
+        );
+    });
+
     it("handles undefined fiscalYears filter gracefully", () => {
         vi.spyOn(hooks, "useBudgetLinesList").mockReturnValue({
             myBudgetLineItemsUrl: false,
@@ -255,6 +286,37 @@ describe("BudgetLineItemList", () => {
         }).not.toThrow();
 
         expect(screen.getByText("Budget Lines")).toBeInTheDocument();
+    });
+
+    it("uses current fiscal year when fiscalYears is undefined", () => {
+        vi.spyOn(hooks, "useBudgetLinesList").mockReturnValue({
+            myBudgetLineItemsUrl: false,
+            filters: {
+                ...defaultFilters,
+                fiscalYears: undefined
+            },
+            setFilters: vi.fn()
+        });
+
+        useGetBudgetLineItemsQuery.mockReturnValue({
+            data: mockBudgetLineItems,
+            isLoading: false,
+            isError: false
+        });
+
+        render(
+            <Provider store={store}>
+                <BudgetLineItemList />
+            </Provider>
+        );
+
+        expect(useGetBudgetLineItemsQuery).toHaveBeenCalledWith(
+            expect.objectContaining({
+                filters: expect.objectContaining({
+                    fiscalYears: [{ id: 2024, title: 2024 }]
+                })
+            })
+        );
     });
 
     it("does not render summary cards when no budget line items", () => {
@@ -365,5 +427,111 @@ describe("BudgetLineItemList", () => {
         }).not.toThrow();
 
         expect(screen.getByText("Budget Lines")).toBeInTheDocument();
+    });
+
+    it("calls handleExport with resolved fiscal year when filters.fiscalYears is empty", async () => {
+        const { handleExport } = await import("../../../helpers/budgetLines.helpers");
+
+        vi.spyOn(hooks, "useBudgetLinesList").mockReturnValue({
+            myBudgetLineItemsUrl: false,
+            filters: {
+                ...defaultFilters,
+                fiscalYears: [] // Empty array should resolve to current FY
+            },
+            setFilters: vi.fn()
+        });
+
+        useGetBudgetLineItemsQuery.mockReturnValue({
+            data: mockBudgetLineItems,
+            isLoading: false,
+            isError: false
+        });
+
+        render(
+            <Provider store={store}>
+                <BudgetLineItemList />
+            </Provider>
+        );
+
+        const exportButton = screen.getByText("Export");
+        exportButton.click();
+
+        expect(handleExport).toHaveBeenCalledWith(
+            expect.any(Function), // exportTableToXlsx
+            expect.any(Function), // setIsExporting
+            expect.objectContaining({
+                fiscalYears: [{ id: 2024, title: 2024 }], // Should be resolved to current FY
+                budgetLineTotalMin: undefined,
+                budgetLineTotalMax: undefined
+            }),
+            mockBudgetLineItems,
+            expect.any(Function), // budgetLineTrigger
+            expect.any(Function), // procShopTrigger
+            expect.any(Function), // serviceComponentTrigger
+            expect.any(Function) // portfolioTrigger
+        );
+    });
+
+    it("calls handleExport with empty fiscalYears when selectedFiscalYear is Multi", async () => {
+        const { handleExport } = await import("../../../helpers/budgetLines.helpers");
+
+        vi.spyOn(hooks, "useBudgetLinesList").mockReturnValue({
+            myBudgetLineItemsUrl: false,
+            filters: {
+                ...defaultFilters,
+                fiscalYears: [] // Empty array with Multi should remain empty
+            },
+            setFilters: vi.fn()
+        });
+
+        useGetBudgetLineItemsQuery.mockReturnValue({
+            data: mockBudgetLineItems,
+            isLoading: false,
+            isError: false
+        });
+
+        const { rerender } = render(
+            <Provider store={store}>
+                <BudgetLineItemList />
+            </Provider>
+        );
+
+        // Simulate setting selectedFiscalYear to "Multi" by providing filters with multiple years
+        vi.spyOn(hooks, "useBudgetLinesList").mockReturnValue({
+            myBudgetLineItemsUrl: false,
+            filters: {
+                ...defaultFilters,
+                fiscalYears: [
+                    { id: 2023, title: 2023 },
+                    { id: 2024, title: 2024 }
+                ]
+            },
+            setFilters: vi.fn()
+        });
+
+        rerender(
+            <Provider store={store}>
+                <BudgetLineItemList />
+            </Provider>
+        );
+
+        const exportButton = screen.getByText("Export");
+        exportButton.click();
+
+        expect(handleExport).toHaveBeenCalledWith(
+            expect.any(Function),
+            expect.any(Function),
+            expect.objectContaining({
+                fiscalYears: [
+                    { id: 2023, title: 2023 },
+                    { id: 2024, title: 2024 }
+                ] // Should keep the array as-is
+            }),
+            mockBudgetLineItems,
+            expect.any(Function),
+            expect.any(Function),
+            expect.any(Function),
+            expect.any(Function)
+        );
     });
 });

@@ -11,7 +11,6 @@ import ComboBox from "../../UI/Form/ComboBox";
  * @param {DataProps[]} props.activePeriod - The current active period.
  * @param {Function} props.setActivePeriod - A function to call to set the active period.
  * @param {string} [props.legendClassname] - The class name for the legend (optional).
- * @param {string} [props.defaultString] - The default string to display (optional).
  * @param {Object} [props.overrideStyles] - The CSS styles to override the default (optional).
  * @param {number[]} [props.canActivePeriodOptions] - Optional pre-fetched active period options from API (optional).
  * @param {string} [props.filterLabel] - Label for the filter (optional, defaults to "Active Period").
@@ -21,7 +20,6 @@ const CANActivePeriodComboBox = ({
     activePeriod,
     setActivePeriod,
     legendClassname = "usa-label margin-top-0",
-    defaultString = "All Periods",
     overrideStyles = {},
     canActivePeriodOptions = null,
     filterLabel = "Active Period"
@@ -58,7 +56,6 @@ const CANActivePeriodComboBox = ({
                         data={periods}
                         selectedData={activePeriod}
                         setSelectedData={setActivePeriod}
-                        defaultString={defaultString}
                         overrideStyles={overrideStyles}
                         isMulti={true}
                     />
