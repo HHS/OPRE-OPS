@@ -52,7 +52,7 @@ const ProcurementTrackerStepOne = ({
     } = useProcurementTrackerStepOne(stepOneData, handleSetIsFormSubmitted);
 
     // Fetch all users
-    const { data: allUsers } = useGetUsersQuery();
+    const { data: allUsers } = useGetUsersQuery({});
 
     // Filter users by authorized_user_ids from the agreement
     const authorizedUsers = useMemo(() => {
