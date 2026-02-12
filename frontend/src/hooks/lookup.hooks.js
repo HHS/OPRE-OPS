@@ -1,6 +1,5 @@
 import React from "react";
 import {
-    useGetProcurementShopsQuery,
     useGetProductServiceCodesQuery,
     useGetResearchProjectsQuery,
     useGetAgreementByIdQuery,
@@ -24,46 +23,6 @@ export const useGetNameForProductServiceCodeId = (id) => {
         if (isSuccess) {
             const item = data.find((element) => element.id === id);
             if (item) setDisplayName(`${item.display_name}`);
-        }
-    }, [id, data, isSuccess]);
-
-    return displayName;
-};
-
-/**
- * This hook returns the display name of a Procurement Shop given the id.
- * @param {number} id - The id of the Procurement Shop.
- * @returns {string} - The display name of the Procurement Shop.
- */
-export const useGetNameForProcurementShopId = (id) => {
-    const [displayName, setDisplayName] = React.useState("unknown");
-
-    const { data, isSuccess } = useGetProcurementShopsQuery();
-
-    React.useEffect(() => {
-        if (isSuccess) {
-            const item = data.find((element) => element.id === id);
-            if (item) setDisplayName(`${item.display_name}`);
-        }
-    }, [id, data, isSuccess]);
-
-    return displayName;
-};
-
-/**
- * This hook returns the abbreviation of a Procurement Shop given the id.
- * @param {number} id - The id of the Procurement Shop.
- * @returns {string} - The abbreviation of the Procurement Shop.
- */
-export const useGetAbbreviationForProcurementShopId = (id) => {
-    const [displayName, setDisplayName] = React.useState("unknown");
-
-    const { data, isSuccess } = useGetProcurementShopsQuery();
-
-    React.useEffect(() => {
-        if (isSuccess) {
-            const item = data.find((element) => element.id === id);
-            if (item) setDisplayName(`${item.abbr}`);
         }
     }, [id, data, isSuccess]);
 

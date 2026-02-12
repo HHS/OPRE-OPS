@@ -3,7 +3,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import CurrencyFormat from "react-currency-format";
 import { Link } from "react-router-dom";
 import { formatDateToMonthDayYear } from "../../../helpers/utils";
-import { useGetAbbreviationForProcurementShopId } from "../../../hooks/lookup.hooks";
 import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import TableRowExpandable from "../../UI/TableRowExpandable";
@@ -35,7 +34,6 @@ import { calculateProcShopFeePercentage } from "../../../helpers/budgetLines.hel
  * @property {boolean} inReview
  * @property {number} creatorId
  * @property {string} creationDate
- * @property {number} procShopId
  * @property {string} description
  */
 
@@ -56,7 +54,6 @@ const CANBudgetLineTableRow = ({
     inReview,
     creatorId,
     creationDate,
-    procShopId,
     description
 }) => {
     const lockedMessage = useChangeRequestsForTooltip(budgetLine);
@@ -66,7 +63,7 @@ const CANBudgetLineTableRow = ({
     const budgetLineCreatorName = useGetUserFullNameFromId(creatorId);
     const feeTotal = budgetLine.fees;
     const displayCreatedDate = formatDateToMonthDayYear(creationDate);
-    const procShopName = useGetAbbreviationForProcurementShopId(procShopId);
+    const procShopName = budgetLine.agreement?.procurement_shop?.abbr ?? "TBD";
     const procShopFeePercentageToDisplay = calculateProcShopFeePercentage(budgetLine);
 
     const TableRowData = (

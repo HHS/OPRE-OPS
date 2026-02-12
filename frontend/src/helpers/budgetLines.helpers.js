@@ -310,7 +310,7 @@ export const getProcurementShopLabel = (budgetLine) => {
     if (budgetLine?.procurement_shop_fee != null) {
         return `${procShopCode} - ${feeRateDescription(budgetLine)} : ${budgetLine.procurement_shop_fee?.fee ?? 0}%`;
     } else {
-        return `${procShopCode} - ${feeRateDescription(budgetLine)} :  ${budgetLine.agreement?.procurement_shop?.current_fee?.fee ?? 0}%`;
+        return `${procShopCode} - ${feeRateDescription(budgetLine)} : ${budgetLine.agreement?.procurement_shop?.current_fee?.fee ?? 0}%`;
     }
 };
 
