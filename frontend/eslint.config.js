@@ -33,7 +33,8 @@ export default [
             "react-hooks": fixupPluginRules(pluginReactHooks)
         },
         rules: {
-            ...pluginReactHooks.configs.recommended.rules
+            "react-hooks/rules-of-hooks": "error",
+            "react-hooks/exhaustive-deps": "warn"
         }
     },
     // Add JSX A11y flat config

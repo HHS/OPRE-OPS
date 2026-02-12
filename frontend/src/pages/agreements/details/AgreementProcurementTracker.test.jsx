@@ -144,7 +144,8 @@ import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 describe("AgreementProcurementTracker", () => {
     const mockAgreement = {
         id: 13,
-        name: "Test Agreement"
+        name: "Test Agreement",
+        authorized_user_ids: [1, 2, 3]
     };
 
     const mockTrackerData = {
