@@ -15,6 +15,7 @@ import {
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import TableTag from "../../UI/TableTag";
 import TextClip from "../../UI/Text/TextClip";
+import { calculateProcShopFeePercentage } from "../../../helpers/budgetLines.helpers";
 
 /**
  * @typedef {import("../../../types/BudgetLineTypes").BudgetLine} BudgetLine
@@ -35,7 +36,6 @@ import TextClip from "../../UI/Text/TextClip";
  * @property {number} creatorId
  * @property {string} creationDate
  * @property {number} procShopId
- * @property {number} procShopFeePercentage
  * @property {string} description
  */
 
@@ -57,7 +57,6 @@ const CANBudgetLineTableRow = ({
     creatorId,
     creationDate,
     procShopId,
-    procShopFeePercentage,
     description
 }) => {
     const lockedMessage = useChangeRequestsForTooltip(budgetLine);
@@ -68,7 +67,7 @@ const CANBudgetLineTableRow = ({
     const feeTotal = budgetLine.fees;
     const displayCreatedDate = formatDateToMonthDayYear(creationDate);
     const procShopName = useGetAbbreviationForProcurementShopId(procShopId);
-    const procShopFeePercentageToDisplay = procShopFeePercentage === 0 ? 0 : (procShopFeePercentage * 100).toFixed(2);
+    const procShopFeePercentageToDisplay = calculateProcShopFeePercentage(budgetLine);
 
     const TableRowData = (
         <>

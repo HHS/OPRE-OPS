@@ -2082,7 +2082,7 @@ export const agreementWithPlannedBudgetLineChanges = {
     notes: "",
     procurement_shop: {
         abbr: "PSC",
-        fee: 0.005,
+        fee_percentage: 0.5,
         id: 1,
         name: "Product Service Center"
     },
@@ -2328,7 +2328,7 @@ export const agreementWithBudgetLineFromPlannedToExecution = {
     notes: "",
     procurement_shop: {
         abbr: "PSC",
-        fee: 0.005,
+        fee_percentage: 0.5,
         id: 1,
         name: "Product Service Center"
     },
