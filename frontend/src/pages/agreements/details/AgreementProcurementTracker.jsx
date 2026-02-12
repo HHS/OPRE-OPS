@@ -1,5 +1,5 @@
 import React from "react";
-import { useGetProcurementTrackersByAgreementIdQuery } from "../../../api/opsAPI";
+import { useGetProcurementTrackersByAgreementIdQuery, useGetUsersQuery } from "../../../api/opsAPI";
 import ProcurementTrackerStepOne from "../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepOne";
 import StepBuilderAccordion from "../../../components/Agreements/ProcurementTracker/StepBuilderAccordion";
 import DebugCode from "../../../components/DebugCode";
@@ -37,6 +37,17 @@ const AgreementProcurementTracker = ({ agreement }) => {
         skip: !agreementId,
         refetchOnMountOrArgChange: true
     });
+
+    // Fetch all users for filtering
+    const { data: allUsers } = useGetUsersQuery();
+
+    // Filter users by authorized_user_ids from the agreement (shared across all steps)
+    const authorizedUsers = React.useMemo(() => {
+        if (!allUsers || !agreement?.authorized_user_ids) {
+            return [];
+        }
+        return allUsers.filter((user) => agreement.authorized_user_ids.includes(user.id));
+    }, [allUsers, agreement?.authorized_user_ids]);
 
     // Extract tracker data
     const trackers = data?.data || [];
@@ -109,13 +120,14 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 stepOneData={stepOneData}
                                 hasActiveTracker={hasActiveTracker}
                                 handleSetIsFormSubmitted={handleSetIsFormSubmitted}
-                                agreement={agreement}
+                                authorizedUsers={authorizedUsers}
                             />
                         )}
                         {IS_PROCUREMENT_TRACKER_READY_MAP.STEP_2 && step.step_number === 2 && (
                             <ProcurementTrackerStepTwo
                                 stepStatus={step.status}
                                 stepData={stepTwoData}
+                                authorizedUsers={authorizedUsers}
                             />
                         )}
                         {!IS_PROCUREMENT_TRACKER_READY_MAP.STEP_2 && step.step_number === 2 && (
