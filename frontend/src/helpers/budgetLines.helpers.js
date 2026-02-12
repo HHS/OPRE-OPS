@@ -263,7 +263,7 @@ export const getTooltipLabel = (budgetLine) => {
  */
 export const calculateProcShopFeePercentage = (budgetLine, currentProcShopFeePercentage = 0) => {
     handleBLIProp(budgetLine);
-    if (budgetLine.procurement_shop_fee !== null) {
+    if (budgetLine.procurement_shop_fee != null) {
         return budgetLine.procurement_shop_fee?.fee ?? 0;
     } else {
         return budgetLine.agreement?.procurement_shop?.current_fee?.fee ?? currentProcShopFeePercentage;
@@ -288,8 +288,8 @@ const feeRateDescription = (budgetLine) => {
 export const getProcurementShopFeeTooltip = (budgetLine) => {
     handleBLIProp(budgetLine);
 
-    if (budgetLine?.procurement_shop_fee !== null) {
-        const abbr = budgetLine.procurement_shop_fee?.procurement_shop.abbr ?? "";
+    if (budgetLine?.procurement_shop_fee != null) {
+        const abbr = budgetLine.procurement_shop_fee?.procurement_shop?.abbr ?? "";
         return `${feeRateDescription(budgetLine)}: ${abbr} ${budgetLine.procurement_shop_fee?.fee ?? 0}%`;
     } else {
         const abbr = budgetLine?.agreement?.procurement_shop?.abbr ?? "";
@@ -307,7 +307,7 @@ export const getProcurementShopLabel = (budgetLine) => {
 
     const procShopCode = budgetLine.agreement?.procurement_shop?.abbr ?? NO_DATA;
 
-    if (budgetLine?.status === BLI_STATUS.OBLIGATED && budgetLine?.procurement_shop_fee !== null) {
+    if (budgetLine?.procurement_shop_fee != null) {
         return `${procShopCode} - ${feeRateDescription(budgetLine)} : ${budgetLine.procurement_shop_fee?.fee ?? 0}%`;
     } else {
         return `${procShopCode} - ${feeRateDescription(budgetLine)} :  ${budgetLine.agreement?.procurement_shop?.current_fee?.fee ?? 0}%`;
@@ -315,7 +315,7 @@ export const getProcurementShopLabel = (budgetLine) => {
 };
 
 /** Handles the export of budget line items to an Excel file.
- * Fetches all necessary data, including procurement shops, service components, and portfolios,
+ * Fetches all necessary data, including service components and portfolios,
  * and maps them to the corresponding budget lines before exporting.
  *
  * @param {function} exportTableToXlsx - Function to export data to an Excel file.
@@ -323,7 +323,6 @@ export const getProcurementShopLabel = (budgetLine) => {
  * @param {object} filters - Filters to apply when fetching budget lines.
  * @param {BudgetLine[]} budgetLineItems - The initial list of budget line items.
  * @param {function} budgetLineTrigger - Function to fetch budget lines with pagination.
- * @param {function} procShopTrigger - Function to fetch procurement shops.
  * @param {function} serviceComponentTrigger - Function to fetch service component details by ID.
  * @param {function} portfolioTrigger - Function to fetch portfolio details by ID.
  */
@@ -333,7 +332,6 @@ export const handleExport = async (
     filters,
     budgetLineItems,
     budgetLineTrigger,
-    procShopTrigger,
     serviceComponentTrigger,
     portfolioTrigger,
     bliCount = 0
@@ -355,12 +353,6 @@ export const handleExport = async (
                 page
             })
         );
-        let procShopResponses = [];
-        try {
-            procShopResponses = await procShopTrigger({}).unwrap();
-        } catch (procShopError) {
-            console.error("Failed to fetch procurement shops, using fallback values", procShopError);
-        }
         const budgetLineResponses = await Promise.all(budgetLinePromises);
         const flattenedBudgetLineResponses = budgetLineResponses.flatMap((page) => page.data);
         // Get the service component name for each budget line individually
@@ -377,20 +369,9 @@ export const handleExport = async (
 
         const portfolioResponses = await Promise.all(portfolioPromises);
 
-        /** @type {Record<number, {service_component_name: string, portfolio_name: string, procurement_shop_abbr: string}>>} */
+        /** @type {Record<number, {service_component_name: string, portfolio_name: string}>} */
         const budgetLinesDataMap = {};
-        /** @type {Record<number, number>} */
-        const procShopFeeMap = {};
         flattenedBudgetLineResponses.forEach((budgetLine) => {
-            let procShopAbbr = "None";
-            const agreementAwardingEntityId = budgetLine.agreement?.awarding_entity_id;
-            if (agreementAwardingEntityId) {
-                const procShop = procShopResponses.find((shop) => shop.id === agreementAwardingEntityId);
-                if (procShop) {
-                    procShopFeeMap[budgetLine.id] = procShop.fee_percentage;
-                    procShopAbbr = procShop.abbr || "None";
-                }
-            }
             const serviceComponentResponse = serviceComponentResponses.find(
                 (resp) => resp && resp.id === budgetLine?.services_component_id
             );
@@ -399,8 +380,7 @@ export const handleExport = async (
 
             budgetLinesDataMap[budgetLine.id] = {
                 service_component_name: serviceComponentResponse?.display_name || "TBD", // Use optional chaining and fallback
-                portfolio_name: portfolioResponse?.name || NO_DATA,
-                procurement_shop_abbr: procShopAbbr
+                portfolio_name: portfolioResponse?.name || NO_DATA
             };
         });
 
@@ -430,11 +410,10 @@ export const handleExport = async (
                 /** @param {import("../../../types/BudgetLineTypes").BudgetLine} budgetLine */
                 (budgetLine) => {
                     const feeRate = calculateProcShopFeePercentage(budgetLine);
-                    // Use locked-in shop from procurement_shop_fee if available, otherwise use agreement's shop;
-                    // fall back to "None" if neither source provides a procurement shop
+                    // Use locked-in shop from procurement_shop_fee if available, otherwise use agreement's shop
                     const procShopAbbr =
                         budgetLine.procurement_shop_fee?.procurement_shop?.abbr ??
-                        budgetLinesDataMap[budgetLine.id]?.procurement_shop_abbr ??
+                        budgetLine.agreement?.procurement_shop?.abbr ??
                         "None";
                     return [
                         budgetLine.id,

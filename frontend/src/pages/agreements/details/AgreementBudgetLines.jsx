@@ -4,7 +4,6 @@ import {
     useGetServicesComponentsListQuery,
     useLazyGetBudgetLineItemsQuery,
     useLazyGetPortfolioByIdQuery,
-    useLazyGetProcurementShopsQuery,
     useLazyGetServicesComponentByIdQuery
 } from "../../../api/opsAPI";
 import AgreementBudgetLinesHeader from "../../../components/Agreements/AgreementBudgetLinesHeader";
@@ -143,7 +142,6 @@ const AgreementBudgetLines = ({
     const groupedBudgetLinesByServicesComponent = groupByServicesComponent(budgetLines, servicesComponents);
     const [serviceComponentTrigger] = useLazyGetServicesComponentByIdQuery();
     const [budgetLineTrigger] = useLazyGetBudgetLineItemsQuery();
-    const [procShopTrigger] = useLazyGetProcurementShopsQuery();
     const [portfolioTrigger] = useLazyGetPortfolioByIdQuery();
 
     if (isExporting) {
@@ -198,7 +196,6 @@ const AgreementBudgetLines = ({
                                             filters,
                                             blis,
                                             budgetLineTrigger,
-                                            procShopTrigger,
                                             serviceComponentTrigger,
                                             portfolioTrigger,
                                             blis.length
