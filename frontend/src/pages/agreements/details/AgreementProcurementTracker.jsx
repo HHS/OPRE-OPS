@@ -5,6 +5,7 @@ import StepBuilderAccordion from "../../../components/Agreements/ProcurementTrac
 import DebugCode from "../../../components/DebugCode";
 import StepIndicator from "../../../components/UI/StepIndicator";
 import { IS_PROCUREMENT_TRACKER_READY } from "../../../constants";
+import ProcurementTrackerStepTwo from "../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepTwo";
 
 /**
  * @typedef {Object} AgreementProcurementTrackerProps
@@ -42,6 +43,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
     const activeTracker = trackers.find((tracker) => tracker.status === "ACTIVE");
     const hasActiveTracker = !!activeTracker;
     const stepOneData = activeTracker?.steps.find((step) => step.step_number === 1);
+    const stepTwoData = activeTracker?.steps.find((step) => step.step_number === 2);
 
     // Handle loading state
     if (isLoading) {
@@ -112,6 +114,12 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 hasActiveTracker={hasActiveTracker}
                                 handleSetIsFormSubmitted={handleSetIsFormSubmitted}
                                 agreement={agreement}
+                            />
+                        )}
+                        {step.step_number === 2 && (
+                            <ProcurementTrackerStepTwo
+                                stepStatus={step.status}
+                                stepData={stepTwoData}
                             />
                         )}
                     </StepBuilderAccordion>
