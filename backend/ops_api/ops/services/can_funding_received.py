@@ -87,5 +87,4 @@ class CANFundingReceivedService:
         Get a list of CANFundingReceived objects.
         """
         stmt = select(CANFundingReceived).order_by(CANFundingReceived.id)
-        results = current_app.db_session.execute(stmt).all()
-        return [can for result in results for can in result]
+        return current_app.db_session.scalars(stmt).all()

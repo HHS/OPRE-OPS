@@ -194,3 +194,26 @@ def test_get_research_types(auth_client, app_ctx):
     response = auth_client.get("/api/v1/research-types/")
     assert response.status_code == 200
     assert response.json == {e.name: e.value for e in ResearchType}
+
+
+def test_projects_list_uses_lightweight_schema(auth_client, loaded_db, app_ctx):
+    """
+    Test that the list endpoint returns lightweight schema without expensive nested relationships.
+    This verifies the performance optimization that excludes: team_leaders.
+    """
+    response = auth_client.get(url_for("api.projects-group"))
+    assert response.status_code == 200
+    assert len(response.json) > 0
+
+    project = response.json[0]
+
+    # Verify required fields are present
+    assert "id" in project
+    assert "title" in project
+    assert "short_title" in project
+    assert "description" in project
+    assert "project_type" in project
+
+    # Verify expensive nested fields are NOT present (performance optimization)
+    assert "team_leaders" not in project, "Nested 'team_leaders' should not be in list response (causes N+1 queries)"
+    assert "created_by" not in project, "Unused 'created_by' field should not be in list response"
