@@ -3,6 +3,9 @@ import { describe, it, expect } from "vitest";
 import userEvent from "@testing-library/user-event";
 import Accordion from "./Accordion";
 
+/* eslint-disable testing-library/no-container */
+/* eslint-disable testing-library/no-node-access */
+
 describe("Accordion component", () => {
     const defaultProps = {
         heading: "Test Heading",
@@ -16,6 +19,37 @@ describe("Accordion component", () => {
         expect(screen.getByRole("heading", { level: 3 })).toBeInTheDocument();
         expect(screen.getByText("Test Heading")).toBeInTheDocument();
         expect(screen.getByText("Test Content")).toBeInTheDocument();
+    });
+    it("supports ReactNode headings", () => {
+        render(
+            <Accordion
+                heading={<span>Rich Heading</span>}
+                level={3}
+            >
+                <div>Test Content</div>
+            </Accordion>
+        );
+
+        expect(screen.getByRole("heading", { level: 3 })).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /rich heading/i })).toBeInTheDocument();
+    });
+    it("sets data-cy when provided", () => {
+        const { container } = render(
+            <Accordion
+                heading="Test Heading"
+                level={3}
+                dataCy="custom-accordion"
+            >
+                <div>Test Content</div>
+            </Accordion>
+        );
+
+        expect(container.querySelector('[data-cy="custom-accordion"]')).toBeInTheDocument();
+    });
+    it("does not set data-cy when dataCy is not provided", () => {
+        const { container } = render(<Accordion {...defaultProps} />);
+
+        expect(container.querySelector(".usa-accordion")).not.toHaveAttribute("data-cy");
     });
     it("sets the heading level correctly", () => {
         render(<Accordion {...defaultProps} />);

@@ -16,7 +16,9 @@ describe("agreement change accordion", () => {
         cy.visit("/agreements/review/10");
         cy.get("h1").contains("Request BL Status Change");
 
-        cy.get('[data-cy="Review Agreement Details"]').within(() => {
+        cy.contains(".usa-accordion__button", "Review Agreement Details")
+            .closest(".usa-accordion")
+            .within(() => {
             cy.contains("Agreement Type").should("exist");
             cy.get('[data-cy="agreement-meta-description"]').contains("Test description");
             cy.get('[data-cy="agreement-meta-nickname"]').contains("TBD");
@@ -37,7 +39,7 @@ describe("agreement change accordion", () => {
             cy.get('[data-cy="agreement-meta-Special Topic 2"]').contains("Special Topic 2");
             cy.get('[data-cy="agreement-meta-project-officer"]').contains("Chris Fortunato");
             cy.get('[data-cy="agreement-meta-alternate-project-officer"]').contains(NO_DATA);
-        });
+            });
     });
 
     it("handles interactions on agreement 10 from DRAFT to PLANNED", () => {

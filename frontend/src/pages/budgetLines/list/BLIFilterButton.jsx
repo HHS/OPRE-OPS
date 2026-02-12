@@ -11,13 +11,14 @@ import CANActivePeriodComboBox from "../../../components/CANs/CANActivePeriodCom
 import BLIStatusComboBox from "../../../components/BudgetLineItems/BLIStatusComboBox";
 import { useSearchParams } from "react-router-dom";
 import { useGetBudgetLineItemsFilterOptionsQuery } from "../../../api/opsAPI";
+import { getCurrentFiscalYear } from "../../../helpers/utils";
 
 /**
  * A filter for agreements.
  * @param {Object} props - The component props.
  * @param {Object} props.filters - The current filters.
  * @param {Function} props.setFilters - A function to call to set the filters.
- * @param {string|number} props.selectedFiscalYear - The currently selected fiscal year from the dropdown.
+ * @param {string|number} props.selectedFiscalYear - The current fiscal year shortcut value from the dropdown.
  * @returns {React.ReactElement} - The procurement shop select element.
  */
 export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => {
@@ -31,6 +32,7 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
     const [canActivePeriods, setCanActivePeriods] = React.useState([]);
     const [searchParams] = useSearchParams();
     const isResetting = React.useRef(false);
+    const allFiscalYearsOption = React.useMemo(() => ({ id: "ALL", title: "All FYs" }), []);
 
     const myBudgetLineItemsUrl = searchParams.get("filter") === "my-budget-lines";
 
@@ -40,17 +42,28 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
         { refetchOnMountOrArgChange: true }
     );
 
-    // Ensure selectedFiscalYear is included in the fiscal year options
+    // Ensure current fiscal year and selected filter years are included in the fiscal year options
     const fiscalYearOptions = React.useMemo(() => {
-        const options = filterOptions?.fiscal_years ?? [];
-        if (selectedFiscalYear && selectedFiscalYear !== "Multi") {
+        let options = (filterOptions?.fiscal_years ?? [])
+            .map((year) => Number(year))
+            .filter((year) => !Number.isNaN(year));
+        const selectedFilterYears = Array.isArray(filters.fiscalYears)
+            ? filters.fiscalYears
+                  .map((fiscalYear) => (typeof fiscalYear?.id === "number" ? fiscalYear.id : Number(fiscalYear?.id)))
+                  .filter((year) => !Number.isNaN(year))
+            : [];
+
+        const currentFiscalYear = getCurrentFiscalYear();
+        options = Array.from(new Set([...options, currentFiscalYear, ...selectedFilterYears]));
+
+        if (selectedFiscalYear && selectedFiscalYear !== "Multi" && selectedFiscalYear !== "All") {
             const yearAsNumber = Number(selectedFiscalYear);
             if (!isNaN(yearAsNumber) && !options.includes(yearAsNumber)) {
-                return [...options, yearAsNumber].sort((a, b) => b - a);
+                return [allFiscalYearsOption, ...[...options, yearAsNumber].sort((a, b) => b - a)];
             }
         }
-        return options;
-    }, [filterOptions?.fiscal_years, selectedFiscalYear]);
+        return [allFiscalYearsOption, ...options];
+    }, [filterOptions?.fiscal_years, filters.fiscalYears, selectedFiscalYear, allFiscalYearsOption]);
 
     // The useEffect() hook calls below are used to set the state appropriately when the filter tags (X) are clicked.
     // Also pre-populates with the selected fiscal year when no filters are applied
@@ -59,15 +72,30 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
             // Don't pre-populate if user just reset the filters
             setFiscalYears(filters.fiscalYears ?? []);
             isResetting.current = false;
-        } else if ((filters.fiscalYears ?? []).length === 0 && selectedFiscalYear && selectedFiscalYear !== "Multi") {
-            const yearAsNumber = Number(selectedFiscalYear);
-            if (!isNaN(yearAsNumber)) {
-                setFiscalYears([{ id: yearAsNumber, title: yearAsNumber }]);
-            }
+        } else if (filters.fiscalYears === null) {
+            setFiscalYears([allFiscalYearsOption]);
         } else {
             setFiscalYears(filters.fiscalYears ?? []);
         }
-    }, [filters.fiscalYears, selectedFiscalYear]);
+    }, [filters.fiscalYears, selectedFiscalYear, allFiscalYearsOption]);
+
+    const handleFiscalYearsChange = (nextFiscalYears) => {
+        if (!Array.isArray(nextFiscalYears)) {
+            setFiscalYears([]);
+            return;
+        }
+        const hasAllFiscalYears = nextFiscalYears.some((fiscalYear) => fiscalYear?.id === "ALL");
+        if (hasAllFiscalYears) {
+            if ((fiscalYears ?? []).some((fiscalYear) => fiscalYear?.id === "ALL")) {
+                const selectedYears = nextFiscalYears.filter((fiscalYear) => fiscalYear?.id !== "ALL");
+                setFiscalYears(selectedYears);
+                return;
+            }
+            setFiscalYears([allFiscalYearsOption]);
+            return;
+        }
+        setFiscalYears(nextFiscalYears.filter((fiscalYear) => fiscalYear?.id !== "ALL"));
+    };
 
     React.useEffect(() => {
         setPortfolios(filters.portfolios ?? []);
@@ -103,10 +131,18 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
     }, [filterOptions]);
 
     const applyFilter = () => {
+        const normalizedFiscalYears = Array.isArray(fiscalYears) ? fiscalYears : [];
+        const hasAllFiscalYears = normalizedFiscalYears.some((fiscalYear) => fiscalYear.id === "ALL");
+        let nextFiscalYears = normalizedFiscalYears;
+        if (hasAllFiscalYears) {
+            nextFiscalYears = null;
+        } else if (normalizedFiscalYears.length === 0) {
+            nextFiscalYears = undefined;
+        }
         setFilters((prevState) => {
             return {
                 ...prevState,
-                fiscalYears: fiscalYears,
+                fiscalYears: nextFiscalYears,
                 portfolios: portfolios,
                 bliStatus: bliStatus,
                 budgetRange: budgetRange,
@@ -140,6 +176,18 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
     const fieldStyles = "usa-fieldset margin-bottom-205";
     const legendStyles = `usa-legend font-sans-3xs margin-top-0 padding-bottom-1 ${customStyles.legendColor}`;
 
+    // Calculate default string based on selectedFiscalYear from the shortcut dropdown
+    const getDefaultFiscalYearString = () => {
+        if (!selectedFiscalYear || selectedFiscalYear === "Multi") {
+            return `Fiscal Year ${getCurrentFiscalYear()}`;
+        }
+        if (selectedFiscalYear === "All") {
+            return "All Fiscal Years";
+        }
+        // It's a specific year number
+        return `Fiscal Year ${selectedFiscalYear}`;
+    };
+
     const fieldsetList = [
         <fieldset
             key="field1"
@@ -147,11 +195,12 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
         >
             <FiscalYearComboBox
                 selectedFiscalYears={fiscalYears}
-                setSelectedFiscalYears={setFiscalYears}
+                setSelectedFiscalYears={handleFiscalYearsChange}
                 legendClassname={legendStyles}
-                defaultString={"All Fiscal Years"}
+                defaultString={getDefaultFiscalYearString()}
                 overrideStyles={{ width: "22.7rem" }}
                 budgetLinesFiscalYears={fiscalYearOptions}
+                label="Compare Fiscal Years"
             />
         </fieldset>,
         <fieldset
@@ -163,7 +212,6 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
                 selectedPortfolios={portfolios}
                 setSelectedPortfolios={setPortfolios}
                 legendClassname={legendStyles}
-                defaultString={"All Portfolios"}
                 overrideStyles={{ width: "22.7rem" }}
             />
         </fieldset>,
@@ -176,7 +224,7 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
                 selectedBLIStatus={bliStatus}
                 setSelectedBLIStatus={setBLIStatus}
                 legendClassname={legendStyles}
-                defaultString={"All Budget Line Statuses"}
+                defaultString={""}
                 overrideStyles={{ width: "22.7rem" }}
             />
         </fieldset>,
@@ -200,7 +248,6 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
                 selectedAgreementTypes={agreementTypes}
                 setSelectedAgreementTypes={setAgreementTypes}
                 legendClassname={legendStyles}
-                defaultString={"All Agreement Types"}
                 overrideStyles={{ width: "22.7rem" }}
                 agreementTypeOptions={filterOptions?.agreement_types ?? []}
             />
@@ -213,7 +260,6 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
                 selectedAgreementNames={agreementTitles}
                 setSelectedAgreementNames={setAgreementTitles}
                 legendClassname={legendStyles}
-                defaultString={"All Agreement Names"}
                 overrideStyles={{ width: "22.7rem" }}
                 agreementNameOptions={filterOptions?.agreement_names ?? null}
                 filterLabel="Agreement Title"
@@ -227,7 +273,6 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
                 activePeriod={canActivePeriods}
                 setActivePeriod={setCanActivePeriods}
                 legendClassname={legendStyles}
-                defaultString={"All Active Periods"}
                 overrideStyles={{ width: "22.7rem" }}
                 canActivePeriodOptions={filterOptions?.can_active_periods ?? null}
                 filterLabel="CAN Active Period"

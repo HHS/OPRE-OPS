@@ -282,7 +282,8 @@ describe("agreement details", () => {
 
         // Test ESC key cancels navigation
         cy.get("body").type("{esc}", { force: true });
-        cy.waitForModalToClose();
+        // Wait for modal to disappear by checking for modal heading
+        cy.get("#ops-modal-heading", { timeout: 20000 }).should("not.exist");
         cy.url().should("not.include", "/budget-lines");
 
         // Try again and test "Leave without saving"

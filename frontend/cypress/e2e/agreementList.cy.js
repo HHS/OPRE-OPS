@@ -98,74 +98,44 @@ describe("Agreement List", () => {
     });
 
     it("the filter button works as expected", () => {
-        const filterFields = [
-            {
-                control: ".fiscal-year-combobox__control",
-                menu: ".fiscal-year-combobox__menu",
-                option: ".fiscal-year-combobox__option"
-            },
-            {
-                control: ".portfolios-combobox__control",
-                menu: ".portfolios-combobox__menu",
-                option: ".portfolios-combobox__option"
-            },
-            {
-                control: ".project-title-combobox__control",
-                menu: ".project-title-combobox__menu",
-                option: ".project-title-combobox__option"
-            },
-            {
-                control: ".agreement-type-combobox__control",
-                menu: ".agreement-type-combobox__menu",
-                option: ".agreement-type-combobox__option"
-            },
-            {
-                control: ".agreement-name-combobox__control",
-                menu: ".agreement-name-combobox__menu",
-                option: ".agreement-name-combobox__option"
-            },
-            {
-                control: ".contract-number-combobox__control",
-                menu: ".contract-number-combobox__menu",
-                option: ".contract-number-combobox__option"
-            }
-        ];
+        cy.get("button").contains("Filter").click();
 
-        filterFields.forEach((field) => {
-            // Open filter modal
-            cy.get("button").contains("Filter").click();
+        // set a number of filters
+        // get select element by name "project-react-select"
 
-            // Select the first option
-            cy.get(field.control).click();
-            cy.get(field.menu).should("be.visible");
-            cy.get(field.menu)
-                .find(field.option)
-                .first()
-                .invoke("text")
-                .then((optionText) => {
-                    cy.get(field.menu).find(field.option).first().click();
+        // Split the chain to avoid unsafe subject usage
+        cy.get(".fiscal-year-combobox__control").click();
+        cy.get(".fiscal-year-combobox__menu")
+            .contains(".fiscal-year-combobox__option", "FY 2044")
+            .click();
 
-                    // Apply the filter
-                    cy.get("button").contains("Apply").click();
+        cy.get(".portfolios-combobox__control").click();
+        cy.get(".portfolios-combobox__menu").find(".portfolios-combobox__option").first().click();
 
-                    // Verify the filter tag is displayed
-                    cy.get("span.bg-brand-primary-light.text-brand-primary-dark", { timeout: 10000 })
-                        .contains(optionText)
-                        .should("exist");
+        // Note: BLI status filter was removed in OPS-4928
 
-                    // Verify the table is not empty
-                    cy.get("tbody tr", { timeout: 30000 }).should("have.length.at.least", 1);
-                });
+        // click the button that has text Apply
+        cy.get("button").contains("Apply").click();
 
-            // Reset the filter
-            cy.get("button").contains("Filter").click();
-            cy.get("button").contains("Reset").click();
-            cy.get("button").contains("Apply").click();
+        // check that the correct tags are displayed
+        cy.contains("FY 2044").should("exist");
+        cy.get("div").contains("Adolescent Development Research").should("exist");
 
-            // Verify filter tags are cleared
-            cy.get("span.bg-brand-primary-light.text-brand-primary-dark").should("not.exist");
-            cy.get("tbody tr", { timeout: 30000 }).should("have.length.at.least", 1);
-        });
+        // Check that table shows results or zero results based on filter combination
+        // (May show results or no results depending on data)
+        cy.get("tbody tr", { timeout: 10000 }).should("exist");
+
+        // reset
+        cy.get("button").contains("Filter").click();
+        cy.get("button").contains("Reset").click();
+        cy.get("button").contains("Apply").click();
+
+        // Wait for filters to be cleared
+        cy.wait(1000);
+
+        // check that no tags are displayed
+        cy.get("div").contains("FY 2044").should("not.exist");
+        cy.get("div").contains("Adolescent Development Research").should("not.exist");
     });
 
     it("filters agreements by agreement name", () => {

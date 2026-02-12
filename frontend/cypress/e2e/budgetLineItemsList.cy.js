@@ -136,7 +136,6 @@ it("filter button works as expected", () => {
     // reset
     cy.get("button").contains("Filter").click();
     cy.get("button").contains("Reset").click();
-    cy.get(".fiscal-year-combobox__multi-value__remove").click();
     cy.get("button").contains("Apply").click();
 
     // check that the correct tags are displayed
