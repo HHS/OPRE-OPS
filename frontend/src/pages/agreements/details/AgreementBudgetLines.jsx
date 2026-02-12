@@ -277,7 +277,6 @@ const AgreementBudgetLines = ({
                                     isAgreementAwarded={isAgreementAwarded}
                                     readOnly={true}
                                     isEditable={agreement?._meta.isEditable}
-                                    agreementProcShopFeePercentage={agreement?.procurement_shop?.fee_percentage}
                                 />
                             ) : (
                                 <p className="text-center margin-y-7">
