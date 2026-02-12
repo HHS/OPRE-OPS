@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import PacmanLoader from "react-spinners/PacmanLoader";
 import App from "../../../App";
 import {
@@ -60,13 +60,9 @@ const BudgetLineItemList = () => {
         setSelectedFiscalYear(newValue);
     };
 
-    /** @type {{data?: import("../../../types/BudgetLineTypes").BudgetLine[] | undefined, isError: boolean, isLoading: boolean}} */
-    const {
-        data: budgetLineItems,
-        isError: budgetLineItemsError,
-        isLoading: budgetLineItemsIsLoading
-    } = useGetBudgetLineItemsQuery({
-        filters: {
+    // Resolve filters for both UI query and export - single source of truth
+    const resolvedFilters = useMemo(
+        () => ({
             ...filters,
             fiscalYears:
                 (filters.fiscalYears ?? []).length === 0 && selectedFiscalYear !== "Multi"
@@ -74,7 +70,17 @@ const BudgetLineItemList = () => {
                     : filters.fiscalYears,
             budgetLineTotalMin: filters.budgetRange ? filters.budgetRange[0] : undefined,
             budgetLineTotalMax: filters.budgetRange ? filters.budgetRange[1] : undefined
-        },
+        }),
+        [filters, selectedFiscalYear]
+    );
+
+    /** @type {{data?: import("../../../types/BudgetLineTypes").BudgetLine[] | undefined, isError: boolean, isLoading: boolean}} */
+    const {
+        data: budgetLineItems,
+        isError: budgetLineItemsError,
+        isLoading: budgetLineItemsIsLoading
+    } = useGetBudgetLineItemsQuery({
+        filters: resolvedFilters,
         page: currentPage - 1,
         onlyMy: myBudgetLineItemsUrl,
         includeFees: true,
@@ -162,7 +168,7 @@ const BudgetLineItemList = () => {
                                             handleExport(
                                                 exportTableToXlsx,
                                                 setIsExporting,
-                                                filters,
+                                                resolvedFilters,
                                                 budgetLineItems,
                                                 budgetLineTrigger,
                                                 procShopTrigger,
