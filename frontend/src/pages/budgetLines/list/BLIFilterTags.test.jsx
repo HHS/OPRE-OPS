@@ -71,6 +71,63 @@ describe("BLIFilterTags", () => {
         expect(screen.getByTestId("remove-tag-FY 2025")).toBeInTheDocument();
     });
 
+    it("renders All FYs tag when All Fiscal Years is selected", () => {
+        const filters = {
+            ...defaultFilters,
+            fiscalYears: [{ id: "ALL", title: "All FYs" }]
+        };
+
+        render(
+            <BLIFilterTags
+                filters={filters}
+                setFilters={mockSetFilters}
+            />
+        );
+
+        expect(screen.getByTestId("remove-tag-All FYs")).toBeInTheDocument();
+    });
+
+    it("renders All FYs tag when fiscalYears is null", () => {
+        const filters = {
+            ...defaultFilters,
+            fiscalYears: null
+        };
+
+        render(
+            <BLIFilterTags
+                filters={filters}
+                setFilters={mockSetFilters}
+            />
+        );
+
+        expect(screen.getByTestId("remove-tag-All FYs")).toBeInTheDocument();
+    });
+
+    it("clears fiscalYears when removing All FYs tag", async () => {
+        const filters = {
+            ...defaultFilters,
+            fiscalYears: [{ id: "ALL", title: "All FYs" }]
+        };
+
+        render(
+            <BLIFilterTags
+                filters={filters}
+                setFilters={mockSetFilters}
+            />
+        );
+
+        const removeButton = screen.getByTestId("remove-tag-All FYs");
+        fireEvent.click(removeButton);
+
+        await waitFor(() => {
+            expect(mockSetFilters).toHaveBeenCalledWith(expect.any(Function));
+        });
+
+        const setFiltersCallback = mockSetFilters.mock.calls[0][0];
+        const result = setFiltersCallback({ fiscalYears: [{ id: "ALL", title: "All FYs" }] });
+        expect(result.fiscalYears).toEqual([]);
+    });
+
     it.each([
         ["fiscalYears", null],
         ["fiscalYears", undefined],

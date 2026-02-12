@@ -203,6 +203,7 @@ yarn-error.log*
 *.crt
 *.drawio.bkp
 *.db
+claude.sh
 
 # Local .terraform directories
 **/.terraform/*

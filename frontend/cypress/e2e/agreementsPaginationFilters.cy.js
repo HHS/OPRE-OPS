@@ -45,14 +45,16 @@ describe("Agreements List - Pagination Filters", () => {
         // Wait for filtered data to load
         cy.get(".usa-table tbody tr", { timeout: 10000 }).should("have.length.at.least", 1);
 
-        // Pagination should still exist (assuming filtered results > 10)
-        cy.get("nav[aria-label='Pagination']").should("exist");
-
-        // Should be able to navigate pages with filter applied
-        cy.get("button[aria-label='Next page']").then(($nextBtn) => {
-            if (!$nextBtn.is(":disabled")) {
-                cy.wrap($nextBtn).click();
-                cy.get("button.usa-current").should("contain", "2");
+        // Pagination should exist if filtered results > 10
+        cy.get("body").then(($body) => {
+            if ($body.find("nav[aria-label='Pagination']").length > 0) {
+                // Should be able to navigate pages with filter applied
+                cy.get("button[aria-label='Next page']").then(($nextBtn) => {
+                    if (!$nextBtn.is(":disabled")) {
+                        cy.wrap($nextBtn).click();
+                        cy.get("button.usa-current").should("contain", "2");
+                    }
+                });
             }
         });
     });

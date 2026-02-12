@@ -42,6 +42,14 @@ const baseQuery = fetchBaseQuery({
     }
 });
 
+const getFiscalYearQueryValue = (year) => {
+    const value = typeof year === "object" ? (year?.id ?? year?.title) : year;
+    if (typeof value === "string" && value.startsWith("FY ")) {
+        return value.replace("FY ", "");
+    }
+    return value;
+};
+
 const MAX_RESULTS_LIMIT = 50;
 
 export const opsApi = createApi({
@@ -90,7 +98,7 @@ export const opsApi = createApi({
             }) => {
                 const queryParams = [];
                 if (fiscalYear) {
-                    fiscalYear.forEach((year) => queryParams.push(`fiscal_year=${year.title}`));
+                    fiscalYear.forEach((year) => queryParams.push(`fiscal_year=${getFiscalYearQueryValue(year)}`));
                 }
                 if (budgetLineStatus) {
                     budgetLineStatus.forEach((status) => queryParams.push(`budget_line_status=${status.status}`));
@@ -284,7 +292,7 @@ export const opsApi = createApi({
                 const queryParams = [];
 
                 if (fiscalYears) {
-                    fiscalYears.forEach((year) => queryParams.push(`fiscal_year=${year.title}`));
+                    fiscalYears.forEach((year) => queryParams.push(`fiscal_year=${getFiscalYearQueryValue(year)}`));
                 }
                 if (bliStatus) {
                     bliStatus.forEach((status) => queryParams.push(`budget_line_status=${status.status}`));

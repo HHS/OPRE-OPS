@@ -4,12 +4,12 @@ import ComboBox from "../ComboBox";
 /**
  *  A comboBox for choosing a project.
  * @param {Object} props - The component props.
- * @param {number[]} props.selectedFiscalYears - The currently selected fiscal years.
+ * @param {{id: string|number, title: string}[]} props.selectedFiscalYears - The currently selected fiscal years.
  * @param {Function} props.setSelectedFiscalYears - A function to call when the selected fiscal year changes.
  * @param {string} [props.legendClassname] - Additional CSS classes to apply to the label/legend (optional).
  * @param {string} [props.defaultString] - Initial text to display in select (optional).
  * @param {Object} [props.overrideStyles] - Some CSS styles to override the default (optional).
- * @param {number[]} props.budgetLinesFiscalYears - An array of fiscal years to display
+ * @param {(number|{id: string|number, title: string})[]} props.budgetLinesFiscalYears - An array of fiscal years to display (can be numbers or objects with id and title)
  * @param {string} [props.label] - Custom label text (optional, defaults to "Fiscal Year").
  * @param {boolean} [props.includeAllOption] - Whether to include "All FYs" as an option (optional, defaults to false).
  * @returns {React.ReactElement} - The rendered component.
@@ -25,10 +25,29 @@ export const FiscalYearComboBox = ({
     includeAllOption = false
 }) => {
     const fiscalYears = useMemo(() => {
-        const years = budgetLinesFiscalYears.map((fiscalYear) => {
-            return { id: fiscalYear, title: fiscalYear };
-        });
+        const years = budgetLinesFiscalYears
+            .filter((fiscalYear) => fiscalYear != null)
+            .map((fiscalYear) => {
+                if (typeof fiscalYear === "object") {
+                    const isAll = fiscalYear.id === "ALL";
+                    const rawId = fiscalYear.id;
+                    const isNumericString = typeof rawId === "string" && /^\d+$/.test(rawId);
+                    const parsedId = !isAll && isNumericString ? Number(rawId) : rawId;
+                    const shouldPrefixFY = !isAll && typeof parsedId === "number";
+                    let title = fiscalYear.title;
+                    if (shouldPrefixFY) {
+                        const titleValue = String(fiscalYear.title);
+                        title = titleValue.startsWith("FY ") ? fiscalYear.title : `FY ${parsedId}`;
+                    }
+                    return { ...fiscalYear, id: parsedId, title };
+                }
+                const parsedId =
+                    typeof fiscalYear === "string" && /^\d+$/.test(fiscalYear) ? Number(fiscalYear) : fiscalYear;
+                return { id: parsedId, title: `FY ${parsedId}` };
+            })
+            .filter((fiscalYear, index, list) => list.findIndex((item) => item.id === fiscalYear.id) === index);
 
+        // Prepend "All FYs" option if includeAllOption is true
         if (includeAllOption) {
             return [{ id: "all", title: "All FYs" }, ...years];
         }
@@ -41,7 +60,7 @@ export const FiscalYearComboBox = ({
             <div>
                 <label
                     className={legendClassname}
-                    htmlFor="project-combobox-input"
+                    htmlFor="fiscal-year-combobox-input"
                 >
                     {label}
                 </label>

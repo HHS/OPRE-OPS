@@ -16,7 +16,11 @@ describe("FiscalYearComboBox", () => {
             />
         );
         expect(screen.getByRole("combobox")).toBeInTheDocument();
-        expect(screen.getByText("Fiscal Year")).toBeInTheDocument();
+        expect(
+            screen.getByText((content, element) => {
+                return element?.tagName?.toLowerCase() === "label" && content.includes("Fiscal Year");
+            })
+        ).toBeInTheDocument();
     });
 
     it("renders the component with the correct options", () => {
@@ -31,8 +35,8 @@ describe("FiscalYearComboBox", () => {
         // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
         fireEvent.keyDown(container.querySelector("input"), { key: "ArrowDown", code: 40 });
 
-        expect(screen.getByText("2043")).toBeInTheDocument();
-        expect(screen.getByText("2044")).toBeInTheDocument();
+        expect(screen.getByText("FY 2043")).toBeInTheDocument();
+        expect(screen.getByText("FY 2044")).toBeInTheDocument();
     });
 
     it("updates the input value when the user types in the input field", () => {
@@ -63,13 +67,13 @@ describe("FiscalYearComboBox", () => {
         fireEvent.keyDown(container.querySelector("input"), { key: "ArrowDown", code: 40 });
 
         // eslint-disable-next-line testing-library/prefer-screen-queries
-        fireEvent.click(getByText("2043"));
+        fireEvent.click(getByText("FY 2043"));
         // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
         fireEvent.keyDown(container.querySelector("input"), { key: "ArrowDown", code: 40 });
 
         // eslint-disable-next-line testing-library/prefer-screen-queries
-        fireEvent.click(getByText("2044"));
-        expect(setSelectedFiscalYears).toHaveBeenLastCalledWith([{ id: 2044, title: 2044 }]);
+        fireEvent.click(getByText("FY 2044"));
+        expect(setSelectedFiscalYears).toHaveBeenLastCalledWith([{ id: 2044, title: "FY 2044" }]);
     });
 
     it("renders with custom label when label prop is provided", () => {
@@ -99,8 +103,8 @@ describe("FiscalYearComboBox", () => {
         fireEvent.keyDown(container.querySelector("input"), { key: "ArrowDown", code: 40 });
 
         expect(screen.getByText("All FYs")).toBeInTheDocument();
-        expect(screen.getByText("2043")).toBeInTheDocument();
-        expect(screen.getByText("2044")).toBeInTheDocument();
+        expect(screen.getByText("FY 2043")).toBeInTheDocument();
+        expect(screen.getByText("FY 2044")).toBeInTheDocument();
     });
 
     it("does not render 'All FYs' option when includeAllOption is false", () => {
@@ -117,8 +121,8 @@ describe("FiscalYearComboBox", () => {
         fireEvent.keyDown(container.querySelector("input"), { key: "ArrowDown", code: 40 });
 
         expect(screen.queryByText("All FYs")).not.toBeInTheDocument();
-        expect(screen.getByText("2043")).toBeInTheDocument();
-        expect(screen.getByText("2044")).toBeInTheDocument();
+        expect(screen.getByText("FY 2043")).toBeInTheDocument();
+        expect(screen.getByText("FY 2044")).toBeInTheDocument();
     });
 
     it("allows selection of 'All FYs' option", () => {
