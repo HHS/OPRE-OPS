@@ -1,3 +1,4 @@
+import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { Provider } from "react-redux";
@@ -27,12 +28,23 @@ vi.mock("../../../components/UI/StepIndicator", () => ({
 
 // Mock Accordion component
 vi.mock("../../../components/UI/Accordion", () => ({
-    default: ({ heading, children, isClosed }) => (
-        <div data-testid="accordion">
-            <div data-testid="accordion-heading">{heading}</div>
-            {!isClosed && <div data-testid="accordion-content">{children}</div>}
-        </div>
-    )
+    default: function MockAccordion({ heading, children, isClosed }) {
+        const [isOpen, setIsOpen] = React.useState(!isClosed);
+
+        return (
+            <div data-testid="accordion">
+                <button
+                    type="button"
+                    data-testid="accordion-heading"
+                    aria-expanded={isOpen}
+                    onClick={() => setIsOpen((previous) => !previous)}
+                >
+                    {heading}
+                </button>
+                {isOpen && <div data-testid="accordion-content">{children}</div>}
+            </div>
+        );
+    }
 }));
 
 // Mock UsersComboBox component
@@ -248,7 +260,45 @@ describe("AgreementProcurementTracker", () => {
         expect(accordions).toHaveLength(6); // All 6 wizard steps
 
         // Should render step 1 heading
-        expect(screen.getByText(/Step 1 of 6 Acquisition Planning/)).toBeInTheDocument();
+        const stepOneHeading = screen.getByTestId("step-builder-heading-default-step-1");
+        expect(stepOneHeading).toHaveTextContent(/1\s+of\s+6\s+Acquisition Planning/);
+        expect(stepOneHeading).toHaveClass("step-builder-accordion__heading--read-only");
+    });
+
+    it("disables step 1 form controls for inactive tracker after expanding accordion", () => {
+        const inactiveTrackerData = {
+            data: [
+                {
+                    id: 4,
+                    agreement_id: 13,
+                    status: "INACTIVE",
+                    active_step_number: 1,
+                    steps: []
+                }
+            ]
+        };
+
+        useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
+            data: inactiveTrackerData,
+            isLoading: false,
+            isError: false
+        });
+
+        render(
+            <Provider store={setupStore()}>
+                <AgreementProcurementTracker agreement={mockAgreement} />
+            </Provider>
+        );
+
+        const firstAccordionHeading = screen.getAllByTestId("accordion-heading")[0];
+        if (firstAccordionHeading.getAttribute("aria-expanded") === "false") {
+            fireEvent.click(firstAccordionHeading);
+        }
+
+        expect(screen.getByRole("checkbox")).toBeDisabled();
+        expect(screen.getByText("Select User")).toBeDisabled();
+        expect(screen.getByTestId("datepicker-input")).toBeDisabled();
+        expect(screen.getByTestId("textarea-input")).toBeDisabled();
     });
 
     it("renders procurement tracker with step indicator when data is available", () => {
@@ -274,7 +324,7 @@ describe("AgreementProcurementTracker", () => {
         expect(screen.getByText("Step 4 of 6")).toBeInTheDocument();
     });
 
-    it("defaults to step 0 when active_step_number is not provided", () => {
+    it("defaults to step 1 when active_step_number is not provided", () => {
         const trackerWithoutStep = {
             data: [
                 {
@@ -299,7 +349,7 @@ describe("AgreementProcurementTracker", () => {
             </Provider>
         );
 
-        expect(screen.getByText("Step 0 of 6")).toBeInTheDocument();
+        expect(screen.getByText("Step 1 of 6")).toBeInTheDocument();
     });
 
     it("skips API query when agreement ID is not provided", () => {
@@ -348,7 +398,7 @@ describe("AgreementProcurementTracker", () => {
         expect(accordions).toHaveLength(6); // All 6 wizard steps
     });
 
-    it("renders with default step 0 when there is no active tracker", () => {
+    it("renders with default step 0 in indicator when there is no active tracker", () => {
         const inactiveTrackerData = {
             data: [
                 {
@@ -373,7 +423,7 @@ describe("AgreementProcurementTracker", () => {
             </Provider>
         );
 
-        // Should default to step 0 when there's no active tracker
+        // StepIndicator should not show an active/current step for read-only no-active-tracker mode
         expect(screen.getByText("Step 0 of 6")).toBeInTheDocument();
 
         // All accordions should render with default steps
@@ -479,9 +529,52 @@ describe("AgreementProcurementTracker", () => {
                 </Provider>
             );
 
-            // Heading uses WIZARD_STEPS length (6) and step_type from tracker data
-            const heading = screen.getByText(/Step 1 of 6 Pre-Solicitation/);
+            const heading = screen.getByTestId("step-builder-heading-101");
             expect(heading).toBeInTheDocument();
+            expect(heading).toHaveTextContent(/1\s+of\s+6\s+Pre-Solicitation/);
+        });
+
+        it("renders steps sorted ascending by step_number", () => {
+            const outOfOrderSteps = {
+                data: [
+                    {
+                        id: 4,
+                        agreement_id: 13,
+                        status: "ACTIVE",
+                        active_step_number: 2,
+                        steps: [
+                            {
+                                id: 102,
+                                step_number: 2,
+                                step_type: "SOLICITATION",
+                                status: "ACTIVE"
+                            },
+                            {
+                                id: 101,
+                                step_number: 1,
+                                step_type: "PRE_SOLICITATION",
+                                status: "COMPLETED"
+                            }
+                        ]
+                    }
+                ]
+            };
+
+            useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
+                data: outOfOrderSteps,
+                isLoading: false,
+                isError: false
+            });
+
+            render(
+                <Provider store={setupStore()}>
+                    <AgreementProcurementTracker agreement={mockAgreement} />
+                </Provider>
+            );
+
+            const headings = screen.getAllByTestId("accordion-heading");
+            expect(headings[0]).toHaveTextContent(/1\s+of\s+6\s+Pre Solicitation/);
+            expect(headings[1]).toHaveTextContent(/2\s+of\s+6\s+Solicitation/);
         });
 
         it("renders step 1 content when accordion is open", () => {
@@ -712,7 +805,7 @@ describe("AgreementProcurementTracker", () => {
             expect(screen.getByTestId("users-combobox")).toBeInTheDocument();
 
             // Step 2 accordion heading should exist but content should be closed
-            expect(screen.getByText(/Step 2 of 6 Solicitation/)).toBeInTheDocument();
+            expect(screen.getByTestId("step-builder-heading-102")).toBeInTheDocument();
         });
 
         it("renders UsersComboBox with correct label", () => {
