@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import PacmanLoader from "react-spinners/PacmanLoader";
 import App from "../../../App";
 import {
@@ -87,16 +87,29 @@ const BudgetLineItemList = () => {
     };
 
     /** @type {Array<{id: number | string, title: number | string}> | null | undefined} */
-    let resolvedFiscalYears = filters.fiscalYears;
-    const currentFiscalYear = getCurrentFiscalYear();
-    if (filters.fiscalYears === null) {
-        resolvedFiscalYears = null;
-    } else if (filters.fiscalYears === undefined) {
-        resolvedFiscalYears = [{ id: currentFiscalYear, title: currentFiscalYear }];
-    } else if ((filters.fiscalYears ?? []).length === 0) {
-        const fallbackFiscalYear = isFiscalYearShortcutActive ? fiscalYearShortcut : currentFiscalYear;
-        resolvedFiscalYears = [{ id: Number(fallbackFiscalYear), title: Number(fallbackFiscalYear) }];
-    }
+    const resolvedFiscalYears = useMemo(() => {
+        const currentFiscalYear = getCurrentFiscalYear();
+        if (filters.fiscalYears === null) {
+            return null;
+        } else if (filters.fiscalYears === undefined) {
+            return [{ id: currentFiscalYear, title: currentFiscalYear }];
+        } else if ((filters.fiscalYears ?? []).length === 0) {
+            const fallbackFiscalYear = isFiscalYearShortcutActive ? fiscalYearShortcut : currentFiscalYear;
+            return [{ id: Number(fallbackFiscalYear), title: Number(fallbackFiscalYear) }];
+        }
+        return filters.fiscalYears;
+    }, [filters.fiscalYears, isFiscalYearShortcutActive, fiscalYearShortcut]);
+
+    // Resolve filters for both UI query and export - single source of truth
+    const resolvedFilters = useMemo(
+        () => ({
+            ...filters,
+            fiscalYears: resolvedFiscalYears,
+            budgetLineTotalMin: filters.budgetRange ? filters.budgetRange[0] : undefined,
+            budgetLineTotalMax: filters.budgetRange ? filters.budgetRange[1] : undefined
+        }),
+        [filters, resolvedFiscalYears]
+    );
 
     /** @type {{data?: import("../../../types/BudgetLineTypes").BudgetLine[] | undefined, isError: boolean, isLoading: boolean}} */
     const {
@@ -104,12 +117,7 @@ const BudgetLineItemList = () => {
         isError: budgetLineItemsError,
         isLoading: budgetLineItemsIsLoading
     } = useGetBudgetLineItemsQuery({
-        filters: {
-            ...filters,
-            fiscalYears: resolvedFiscalYears,
-            budgetLineTotalMin: filters.budgetRange ? filters.budgetRange[0] : undefined,
-            budgetLineTotalMax: filters.budgetRange ? filters.budgetRange[1] : undefined
-        },
+        filters: resolvedFilters,
         page: currentPage - 1,
         onlyMy: myBudgetLineItemsUrl,
         includeFees: true,
@@ -197,7 +205,7 @@ const BudgetLineItemList = () => {
                                             handleExport(
                                                 exportTableToXlsx,
                                                 setIsExporting,
-                                                filters,
+                                                resolvedFilters,
                                                 budgetLineItems,
                                                 budgetLineTrigger,
                                                 procShopTrigger,
