@@ -22,7 +22,12 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepData, authorizedUsers }) =>
         MemoizedDatePicker,
         setTargetCompletionDate,
         targetCompletionDate,
-        step2CompletedByUserName
+        step2CompletedByUserName,
+        step2DateCompleted,
+        setStep2DateCompleted,
+        runValidate,
+        validatorRes,
+        step2DateCompletedLabel
     } = useProcurementTrackerStepTwo(stepData);
 
     return (
@@ -57,13 +62,30 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepData, authorizedUsers }) =>
                             Save
                         </button>
                     </div>
-                    <UsersComboBox
-                        className="width-card-lg margin-top-2"
-                        label={"Task Completed By"}
-                        selectedUser={selectedUser}
-                        setSelectedUser={setSelectedUser}
-                        users={authorizedUsers}
-                    />
+                    <div className="display-flex flex-align-center">
+                        <UsersComboBox
+                            className="width-card-lg margin-top-5"
+                            label={"Task Completed By"}
+                            selectedUser={selectedUser}
+                            setSelectedUser={setSelectedUser}
+                            users={authorizedUsers}
+                        />
+
+                        <MemoizedDatePicker
+                            id="step-2-date-completed"
+                            name="dateCompleted"
+                            className="margin-left-4"
+                            label="Date Completed"
+                            hint="mm/dd/yyyy"
+                            value={step2DateCompleted}
+                            messages={validatorRes.getErrors("dateCompleted") || []}
+                            onChange={(e) => {
+                                runValidate("dateCompleted", e.target.value);
+                                setStep2DateCompleted(e.target.value);
+                            }}
+                            maxDate={getLocalISODate()}
+                        />
+                    </div>
                 </fieldset>
             )}
 
@@ -78,6 +100,10 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepData, authorizedUsers }) =>
                         <TermTag
                             term="Completed By"
                             description={step2CompletedByUserName}
+                        />
+                        <TermTag
+                            term="Date Completed"
+                            description={step2DateCompletedLabel}
                         />
                     </dl>
                 </div>

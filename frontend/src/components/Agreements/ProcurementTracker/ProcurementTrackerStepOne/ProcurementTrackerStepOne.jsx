@@ -98,7 +98,7 @@ const ProcurementTrackerStepOne = ({
                             users={authorizedUsers}
                         />
                         <MemoizedDatePicker
-                            id="date-completed"
+                            id="step-1-date-completed"
                             className="margin-left-4"
                             name="dateCompleted"
                             label="Date Completed"
