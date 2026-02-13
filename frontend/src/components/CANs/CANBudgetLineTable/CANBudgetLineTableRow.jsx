@@ -14,7 +14,7 @@ import {
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import TableTag from "../../UI/TableTag";
 import TextClip from "../../UI/Text/TextClip";
-import { calculateProcShopFeePercentage } from "../../../helpers/budgetLines.helpers";
+import { getProcurementShopLabel } from "../../../helpers/budgetLines.helpers";
 
 /**
  * @typedef {import("../../../types/BudgetLineTypes").BudgetLine} BudgetLine
@@ -63,8 +63,7 @@ const CANBudgetLineTableRow = ({
     const budgetLineCreatorName = useGetUserFullNameFromId(creatorId);
     const feeTotal = budgetLine.fees;
     const displayCreatedDate = formatDateToMonthDayYear(creationDate);
-    const procShopName = budgetLine.agreement?.procurement_shop?.abbr ?? "TBD";
-    const procShopFeePercentageToDisplay = calculateProcShopFeePercentage(budgetLine);
+    const procShopLabel = getProcurementShopLabel(budgetLine);
 
     const TableRowData = (
         <>
@@ -182,7 +181,7 @@ const CANBudgetLineTableRow = ({
                             className="margin-0"
                             style={{ maxWidth: "25rem" }}
                         >
-                            {`${procShopName}-Fee Rate: ${procShopFeePercentageToDisplay}%`}
+                            {`${procShopLabel}`}
                         </dd>
                     </dl>
                     <div className="font-12px display-flex margin-top-1">

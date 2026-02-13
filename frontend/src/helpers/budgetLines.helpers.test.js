@@ -387,7 +387,7 @@ describe("getProcurementShopLabel", () => {
             fiscal_year: 2024,
             agreement: {}
         };
-        expect(getProcurementShopLabel(bli)).toBe("TBD - FY 2024 Fee Rate : 5%");
+        expect(getProcurementShopLabel(bli)).toBe("ABC - FY 2024 Fee Rate : 5%");
     });
     it("returns correct label for planned with no agreement procurement_shop", () => {
         const bli = {
@@ -515,14 +515,14 @@ describe("calculateProcShopFeePercentage", () => {
         expect(calculateProcShopFeePercentage(bli)).toBe(7);
     });
 
-    it("falls back to currentProcShopFeePercentage parameter when agreement has no current_fee", () => {
+    it("returns 0 when agreement has no current_fee", () => {
         const bli = { agreement: { procurement_shop: {} } };
-        expect(calculateProcShopFeePercentage(bli, 4)).toBe(4);
+        expect(calculateProcShopFeePercentage(bli)).toBe(0);
     });
 
-    it("falls back to currentProcShopFeePercentage parameter when agreement.procurement_shop.current_fee is null", () => {
+    it("returns 0 when agreement.procurement_shop.current_fee is null", () => {
         const bli = { agreement: { procurement_shop: { current_fee: null } } };
-        expect(calculateProcShopFeePercentage(bli, 2.5)).toBe(2.5);
+        expect(calculateProcShopFeePercentage(bli)).toBe(0);
     });
 
     it("returns 0 when no procurement_shop_fee, no agreement, and no fallback", () => {
