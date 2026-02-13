@@ -6,6 +6,47 @@ NOTE: types of changes are 'New Feature', 'Improvements', 'Fixes'
 */
 export const data = [
     {
+        releaseDate: "2026-2-13",
+        version: "1.289.3",
+        changes: [
+            {
+                id: "0001",
+                subject: "Exporting Budget Lines From an Agreement",
+                type: "New Feature",
+                description:
+                    "Now you can export the budget lines of a single agreement to a spreadsheet so you can manipulate the data and take external action on those budget lines."
+            },
+            {
+                id: "0002",
+                subject: "Sub-Services Components",
+                type: "Improvements",
+                description:
+                    "A new tooltip will display on the edit and delete actions for sub-services components, reminding you that this is legacy data from MAPS that cannot be changed in the OPS user interface. If you need to edit or delete these services components, please submit a Budget Support Request through ORBIT. For more information, please check out the FAQ on “Is there a way to create sub services components, such as SC2-A, SC2-B, SC2-C?”"
+            },
+            {
+                id: "0003",
+                subject: "Compare Fiscal Years Filter",
+                type: "Improvements",
+                description:
+                    "Based on your feedback, we made some improvements to the fiscal year filtering on the Agreements List and Budget Lines List. The Fiscal Year dropdown defaults to the current FY and lets you quickly move between individual FYs one at a time. For deeper analysis, the Filters tool allows you to compare multiple fiscal years or combine all fiscal years into one view."
+            },
+            {
+                id: "0004",
+                subject: "Portfolios List",
+                type: "Improvements",
+                description:
+                    "Based on your feedback, the Portfolios List now includes a graph that shows a breakdown of the OPRE budget across portfolios. The table below includes a snapshot of each portfolio's FY budget, spending and available/remaining budget. Filters enable you to adjust your view by portfolio, FY budget or % budget available."
+            },
+            {
+                id: "0005",
+                subject: "Awarded Agreements",
+                type: "Improvements",
+                description:
+                    "Awarded agreements will now display with an “Awarded” tag above the agreement title so you can quickly distinguish between new and awarded agreements."
+            }
+        ]
+    },
+    {
         releaseDate: "2025-12-5",
         version: "1.235.0",
         changes: [
