@@ -76,7 +76,17 @@ jobs:
           JWT_PUBLIC_KEY: ${{ secrets.JWT_PUBLIC_KEY }}
         run: |
           echo "Spec: ${{ steps.rel-spec.outputs.REL_SPEC }}"
-          dbus-run-session -- npx cypress run --config-file ./cypress.config.ci.js --headless --spec "${{ steps.rel-spec.outputs.REL_SPEC }}"
+          dbus-run-session -- npx cypress run --config-file ./cypress.config.ci.js --headless --spec "${{ steps.rel-spec.outputs.REL_SPEC }}" 2>&1 | tee cypress-output-${{ steps.get-filename.outputs.TEST_FILE }}.log
+
+      # Detect flaky tests by analyzing retry patterns
+      - name: Detect Flaky Tests
+        if: always()
+        run: |
+          if [ -f frontend/cypress-output-${{ steps.get-filename.outputs.TEST_FILE }}.log ]; then
+            ./.github/scripts/detect-flaky-tests.sh frontend/cypress-output-${{ steps.get-filename.outputs.TEST_FILE }}.log "$GITHUB_STEP_SUMMARY"
+          else
+            echo "⚠️  Cypress output log not found, skipping flaky test detection"
+          fi
 
       # Upload Cypress screenshots as artifact if a test fails
       - name: Upload screenshots if failure
@@ -100,3 +110,11 @@ jobs:
         with:
           path: full-stack-logs-${{ steps.get-filename.outputs.TEST_FILE }}.log
           name: full-stack-logs-${{ github.run_id }}-${{ github.sha }}-${{ steps.get-filename.outputs.TEST_FILE }}.log
+
+      # Upload Cypress output for flaky test analysis
+      - name: Upload Cypress output log
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          path: frontend/cypress-output-${{ steps.get-filename.outputs.TEST_FILE }}.log
+          name: cypress-output-${{ github.run_id }}-${{ github.sha }}-${{ steps.get-filename.outputs.TEST_FILE }}.log

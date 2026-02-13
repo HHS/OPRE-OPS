@@ -22,6 +22,34 @@ See [`.claude/actions/README.md`](.claude/actions/README.md) for usage details.
 
 These scripts can be invoked by Claude Code automatically or run manually.
 
+## Flaky Test Detection
+
+The CI pipeline automatically detects flaky E2E tests by analyzing Cypress retry patterns. Spec files that require retries are flagged in the GitHub Actions job summary.
+
+**How it works**:
+
+- Cypress is configured in CI via `frontend/cypress.config.ci.js` with `retries.runMode: 3` (3 retries, up to 4 attempts total)
+- A detection script (`.github/scripts/detect-flaky-tests.sh`) parses Cypress output logs
+- Spec files with retries are reported in the job summary with recommended actions
+- Cypress output logs are uploaded as artifacts for manual review
+
+**Viewing flaky test reports**:
+1. Navigate to the GitHub Actions run for your PR
+2. Click on any E2E test job
+3. Scroll to the job summary to see the flaky test detection report
+
+**Local usage**:
+```bash
+# Run E2E tests locally and capture output
+cd frontend
+bun run test:e2e 2>&1 | tee cypress-output.log
+
+# Analyze for flaky tests
+../.github/scripts/detect-flaky-tests.sh cypress-output.log
+```
+
+See [`.github/scripts/README.md`](.github/scripts/README.md) for detailed documentation.
+
 ## Project Overview
 
 OPRE OPS is the Portfolio Management System for OPRE (Office of Planning, Research and Evaluation), replacing the legacy MAPS system. It's a full-stack web application with a Flask/SQLAlchemy backend API and a React/Redux frontend, containerized with Docker.
