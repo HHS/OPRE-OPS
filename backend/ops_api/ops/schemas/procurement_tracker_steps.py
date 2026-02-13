@@ -94,14 +94,25 @@ class ProcurementTrackerStepResponseSchema(Schema):
         """
         step_type = data.get("step_type")
 
+        # Base fields that should always be present even if None
+        base_fields = {
+            "id",
+            "procurement_tracker_id",
+            "step_number",
+            "step_type",
+            "status",
+            "step_start_date",
+            "step_completed_date",
+        }
+
         # Determine which fields to preserve even if None, and remove inappropriate fields
         if step_type in ("ACQUISITION_PLANNING", ProcurementTrackerStepType.ACQUISITION_PLANNING):
-            preserve_keys = {"task_completed_by", "date_completed", "notes"}
+            preserve_keys = base_fields | {"task_completed_by", "date_completed", "notes"}
             # Remove PRE_SOLICITATION-only fields
             data.pop("target_completion_date", None)
             data.pop("draft_solicitation_date", None)
         elif step_type in ("PRE_SOLICITATION", ProcurementTrackerStepType.PRE_SOLICITATION):
-            preserve_keys = {
+            preserve_keys = base_fields | {
                 "target_completion_date",
                 "task_completed_by",
                 "date_completed",
@@ -109,7 +120,7 @@ class ProcurementTrackerStepResponseSchema(Schema):
                 "draft_solicitation_date",
             }
         else:
-            preserve_keys = set()
+            preserve_keys = base_fields
             # Remove all step-specific fields for other step types
             for field in [
                 "task_completed_by",
@@ -145,8 +156,6 @@ class ProcurementTrackerStepSchema(Schema):
         unknown = EXCLUDE
 
     # Base fields common to all steps
-
-    # Base fields common to all steps
     id = fields.Integer(required=True)
     procurement_tracker_id = fields.Integer(required=True)
     step_number = fields.Integer(required=True)
@@ -155,31 +164,52 @@ class ProcurementTrackerStepSchema(Schema):
     step_start_date = fields.Date(allow_none=True)
     step_completed_date = fields.Date(allow_none=True)
 
-    # ACQUISITION_PLANNING-specific fields (use prefixed names from model, rename in output)
-    acquisition_planning_task_completed_by = fields.Integer(
-        allow_none=True, data_key="task_completed_by", attribute="acquisition_planning_task_completed_by"
-    )
-    acquisition_planning_date_completed = fields.Date(
-        allow_none=True, data_key="date_completed", attribute="acquisition_planning_date_completed"
-    )
-    acquisition_planning_notes = fields.String(
-        allow_none=True, data_key="notes", attribute="acquisition_planning_notes"
-    )
+    # Generic field names that will be mapped from step-specific fields
+    task_completed_by = fields.Integer(allow_none=True)
+    date_completed = fields.Date(allow_none=True)
+    notes = fields.String(allow_none=True)
+    target_completion_date = fields.Date(allow_none=True)
+    draft_solicitation_date = fields.Date(allow_none=True)
 
-    # PRE_SOLICITATION-specific fields (use prefixed names from model, rename in output)
-    pre_solicitation_target_completion_date = fields.Date(
-        allow_none=True, data_key="target_completion_date", attribute="pre_solicitation_target_completion_date"
-    )
-    pre_solicitation_task_completed_by = fields.Integer(
-        allow_none=True, data_key="task_completed_by", attribute="pre_solicitation_task_completed_by"
-    )
-    pre_solicitation_date_completed = fields.Date(
-        allow_none=True, data_key="date_completed", attribute="pre_solicitation_date_completed"
-    )
-    pre_solicitation_notes = fields.String(allow_none=True, data_key="notes", attribute="pre_solicitation_notes")
-    pre_solicitation_draft_solicitation_date = fields.Date(
-        allow_none=True, data_key="draft_solicitation_date", attribute="pre_solicitation_draft_solicitation_date"
-    )
+    @pre_dump
+    def map_step_specific_fields(self, obj, **_kwargs):
+        """
+        Map step-specific prefixed fields to generic API field names.
+
+        Returns a dict with properly mapped fields while preserving enum types.
+        """
+        # If it's already a dict, return as-is
+        if isinstance(obj, dict):
+            return obj
+
+        # Import here to avoid circular imports
+        from models.procurement_tracker import ProcurementTrackerStepType
+
+        # Create a dict with all base fields
+        data = {
+            "id": obj.id,
+            "procurement_tracker_id": obj.procurement_tracker_id,
+            "step_number": obj.step_number,
+            "step_type": obj.step_type,  # Keep as enum
+            "status": obj.status,  # Keep as enum
+            "step_start_date": obj.step_start_date,
+            "step_completed_date": obj.step_completed_date,
+        }
+
+        # Map step-specific fields based on step type
+        if obj.step_type == ProcurementTrackerStepType.ACQUISITION_PLANNING:
+            data["task_completed_by"] = obj.acquisition_planning_task_completed_by
+            data["date_completed"] = obj.acquisition_planning_date_completed
+            data["notes"] = obj.acquisition_planning_notes
+
+        elif obj.step_type == ProcurementTrackerStepType.PRE_SOLICITATION:
+            data["task_completed_by"] = obj.pre_solicitation_task_completed_by
+            data["date_completed"] = obj.pre_solicitation_date_completed
+            data["notes"] = obj.pre_solicitation_notes
+            data["target_completion_date"] = obj.pre_solicitation_target_completion_date
+            data["draft_solicitation_date"] = obj.pre_solicitation_draft_solicitation_date
+
+        return data
 
     @post_dump
     def remove_none_step_specific_fields(self, data, **_kwargs):
@@ -191,28 +221,48 @@ class ProcurementTrackerStepSchema(Schema):
         For other step types, remove all step-specific fields entirely.
         """
         step_type = data.get("step_type")
-        acquisition_fields = ["task_completed_by", "date_completed", "notes"]
-        pre_solicitation_fields = [
+        acquisition_fields = {"task_completed_by", "date_completed", "notes"}
+        pre_solicitation_fields = {
             "target_completion_date",
             "task_completed_by",
             "date_completed",
             "notes",
             "draft_solicitation_date",
-        ]
+        }
 
-        if step_type == "ACQUISITION_PLANNING":
-            # Remove pre-solicitation fields, keep acquisition fields
-            for field in ["target_completion_date", "draft_solicitation_date"]:
-                data.pop(field, None)
-        elif step_type == "PRE_SOLICITATION":
-            # Keep pre-solicitation fields, they're already there with correct keys
-            pass
+        # Base fields that should always be present even if None
+        base_fields = {
+            "id",
+            "procurement_tracker_id",
+            "step_number",
+            "step_type",
+            "status",
+            "step_start_date",
+            "step_completed_date",
+        }
+
+        # Determine which fields to preserve even if None, and remove inappropriate fields
+        if step_type in ("ACQUISITION_PLANNING", ProcurementTrackerStepType.ACQUISITION_PLANNING):
+            preserve_keys = base_fields | acquisition_fields
+            # Remove PRE_SOLICITATION-only fields
+            data.pop("target_completion_date", None)
+            data.pop("draft_solicitation_date", None)
+        elif step_type in ("PRE_SOLICITATION", ProcurementTrackerStepType.PRE_SOLICITATION):
+            preserve_keys = base_fields | pre_solicitation_fields
         else:
+            preserve_keys = base_fields
             # Remove all step-specific fields for other step types
-            for field in set(acquisition_fields + pre_solicitation_fields):
+            for field in [
+                "task_completed_by",
+                "date_completed",
+                "notes",
+                "target_completion_date",
+                "draft_solicitation_date",
+            ]:
                 data.pop(field, None)
 
-        return data
+        # Remove None values except for preserved fields
+        return {key: value for key, value in data.items() if value is not None or key in preserve_keys}
 
 
 class ProcurementTrackerStepsQueryParametersSchema(PaginationListSchema):
