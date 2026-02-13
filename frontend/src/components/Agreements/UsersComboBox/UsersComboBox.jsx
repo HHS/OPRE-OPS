@@ -12,7 +12,7 @@ import ComboBox from "../../UI/Form/ComboBox";
  * @param {Function} [props.onChange] - Change handler function.
  * @param {string} [props.label] - The label for the input (optional).
  * @param {boolean} [props.isDisabled] - Whether the comboBox is disabled (optional).
- * @param {import("../../../types/UserTypes").SafeUser[]} [props.users] - Optional array of users to display. If not provided, users will be fetched from the API (optional).
+ * @param {import("../../../types/UserTypes").SafeUser[] | null} [props.users] - Optional array of users to display. If not provided, users will be fetched from the API (optional).
  * @returns {React.ReactElement} The UsersComboBox component.
  */
 const UsersComboBox = ({

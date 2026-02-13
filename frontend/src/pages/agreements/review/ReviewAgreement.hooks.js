@@ -95,22 +95,20 @@ const useReviewAgreement = (agreementId) => {
         return bliValidationResults.some(({ isValid }) => !isValid);
     }, [bliValidationResults]);
 
-    let changeTo = {};
-    if (action === actionOptions.CHANGE_DRAFT_TO_PLANNED) {
-        changeTo = {
-            status: {
-                new: BLI_STATUS.PLANNED,
-                old: BLI_STATUS.DRAFT
-            }
-        };
-    } else {
-        changeTo = {
-            status: {
-                new: BLI_STATUS.EXECUTING,
-                old: BLI_STATUS.PLANNED
-            }
-        };
-    }
+    const changeTo =
+        action === actionOptions.CHANGE_DRAFT_TO_PLANNED
+            ? {
+                  status: {
+                      new: BLI_STATUS.PLANNED,
+                      old: BLI_STATUS.DRAFT
+                  }
+              }
+            : {
+                  status: {
+                      new: BLI_STATUS.EXECUTING,
+                      old: BLI_STATUS.PLANNED
+                  }
+              };
 
     const isAgreementAwarded = agreement?.is_awarded;
 
