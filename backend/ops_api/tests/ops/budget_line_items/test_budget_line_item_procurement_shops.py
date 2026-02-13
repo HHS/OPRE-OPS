@@ -137,6 +137,17 @@ def test_bli_response_schema_includes_procurement_shop_fee():
     assert schema.fields["procurement_shop_fee"].allow_none is True
 
 
+def test_bli_response_schema_agreement_includes_procurement_shop():
+    """Test that BudgetLineItemResponseSchema's nested agreement field contains procurement_shop."""
+    from ops_api.ops.schemas.budget_line_items import BudgetLineItemResponseSchema
+
+    schema = BudgetLineItemResponseSchema()
+    agreement_field = schema.fields["agreement"]
+    nested_schema = agreement_field.nested()
+    assert "procurement_shop" in nested_schema.fields
+    assert nested_schema.fields["procurement_shop"].allow_none is True
+
+
 def test_serialization_with_procurement_shop_fee(mock_procurement_shop_fee):
     """Test that the BLI serializes with procurement_shop_fee correctly"""
     bli = DirectObligationBudgetLineItem(
