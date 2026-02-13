@@ -70,8 +70,6 @@ const CANBudgetLineTable = ({ budgetLines, totalFunding, fiscalYear, tableType =
                         inReview={budgetLine.in_review}
                         creatorId={budgetLine.created_by}
                         creationDate={budgetLine.created_on}
-                        procShopId={budgetLine.agreement?.awarding_entity_id ?? -1}
-                        procShopFeePercentage={budgetLine.proc_shop_fee_percentage}
                         description={budgetLine?.line_description ?? ""}
                     />
                 ))}

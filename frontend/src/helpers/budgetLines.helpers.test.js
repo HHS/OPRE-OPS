@@ -13,7 +13,8 @@ import {
     areAllBudgetLinesInReview,
     getTooltipLabel,
     getProcurementShopFeeTooltip,
-    getProcurementShopLabel
+    getProcurementShopLabel,
+    calculateProcShopFeePercentage
 } from "./budgetLines.helpers";
 import { budgetLine, agreement } from "../tests/data";
 
@@ -337,30 +338,27 @@ describe("getProcurementShopFeeTooltip", () => {
     };
     const plannedBLI = {
         status: BLI_STATUS.PLANNED,
-        agreement: { awarding_entity_id: 2 }
+        agreement: { procurement_shop: { abbr: "DEF", current_fee: { fee: 3 } } }
     };
-    const currentProcShopFeePercentage = 3;
 
     it("returns correct tooltip for obligated with procurement_shop_fee", () => {
-        expect(getProcurementShopFeeTooltip(obligatedBLI, currentProcShopFeePercentage)).toBe(
-            "FY 2024 Fee Rate: ABC 5%"
-        );
+        expect(getProcurementShopFeeTooltip(obligatedBLI)).toBe("FY 2024 Fee Rate: ABC 5%");
     });
     it("returns correct tooltip for planned with agreement", () => {
-        expect(getProcurementShopFeeTooltip(plannedBLI, currentProcShopFeePercentage)).toBe("Current Fee Rate:  3%");
+        expect(getProcurementShopFeeTooltip(plannedBLI)).toBe("Current Fee Rate: DEF 3%");
     });
     it("returns correct tooltip for obligated with null procurement_shop_fee", () => {
         const bli = {
             status: BLI_STATUS.OBLIGATED,
             procurement_shop_fee: null,
-            agreement: { procurement_shop: { abbr: "XYZ", fee_percentage: 3 } },
+            agreement: { procurement_shop: { abbr: "XYZ", current_fee: { fee: 3 } } },
             fiscal_year: 2023
         };
-        expect(getProcurementShopFeeTooltip(bli, currentProcShopFeePercentage)).toBe("FY 2023 Fee Rate: XYZ 3%");
+        expect(getProcurementShopFeeTooltip(bli)).toBe("FY 2023 Fee Rate: XYZ 3%");
     });
     it("returns correct tooltip for missing agreement and procurement_shop_fee", () => {
         const bli = { status: BLI_STATUS.PLANNED };
-        expect(getProcurementShopFeeTooltip(bli, currentProcShopFeePercentage)).toBe("Current Fee Rate:  3%");
+        expect(getProcurementShopFeeTooltip(bli)).toBe("Current Fee Rate:  0%");
     });
 });
 
@@ -369,38 +367,37 @@ describe("getProcurementShopLabel", () => {
         status: BLI_STATUS.OBLIGATED,
         procurement_shop_fee: { fee: 5, procurement_shop: { abbr: "ABC" } },
         fiscal_year: 2024,
-        agreement: { procurement_shop: { abbr: "ABC", fee_percentage: 5 } }
+        agreement: { procurement_shop: { abbr: "ABC", current_fee: { fee: 5 } } }
     };
     const plannedBLI = {
         status: BLI_STATUS.PLANNED,
-        agreement: { procurement_shop: { abbr: "DEF", fee_percentage: 7 } }
+        agreement: { procurement_shop: { abbr: "DEF", current_fee: { fee: 7 } } }
     };
-    const currentProcShopFeePercentage = 3;
 
-    it("returns correct label for obligated with explicit code", () => {
-        expect(getProcurementShopLabel(obligatedBLI, "ZZZ", currentProcShopFeePercentage)).toBe(
-            "ZZZ - FY 2024 Fee Rate : 5%"
-        );
+    it("returns correct label for obligated BLI", () => {
+        expect(getProcurementShopLabel(obligatedBLI)).toBe("ABC - FY 2024 Fee Rate : 5%");
     });
-    it("returns correct label for planned with explicit code", () => {
-        expect(getProcurementShopLabel(plannedBLI, "YYY", currentProcShopFeePercentage)).toBe(
-            "YYY - Current Fee Rate :  3%"
-        );
+    it("returns correct label for planned BLI", () => {
+        expect(getProcurementShopLabel(plannedBLI)).toBe("DEF - Current Fee Rate : 7%");
     });
-    it("returns correct label for obligated with no code", () => {
-        expect(getProcurementShopLabel(obligatedBLI, undefined, currentProcShopFeePercentage)).toBe(
-            "TBD - FY 2024 Fee Rate : 5%"
-        );
+    it("returns correct label for obligated with no agreement procurement_shop", () => {
+        const bli = {
+            status: BLI_STATUS.OBLIGATED,
+            procurement_shop_fee: { fee: 5, procurement_shop: { abbr: "ABC" } },
+            fiscal_year: 2024,
+            agreement: {}
+        };
+        expect(getProcurementShopLabel(bli)).toBe("ABC - FY 2024 Fee Rate : 5%");
     });
-    it("returns correct label for planned with no code", () => {
-        expect(getProcurementShopLabel(plannedBLI, undefined, currentProcShopFeePercentage)).toBe(
-            "TBD - Current Fee Rate :  3%"
-        );
+    it("returns correct label for planned with no agreement procurement_shop", () => {
+        const bli = {
+            status: BLI_STATUS.PLANNED,
+            agreement: {}
+        };
+        expect(getProcurementShopLabel(bli)).toBe("TBD - Current Fee Rate : 0%");
     });
-    it("returns N/A if no code or agreement", () => {
-        expect(getProcurementShopLabel({}, undefined, currentProcShopFeePercentage)).toBe(
-            "TBD - Current Fee Rate :  3%"
-        );
+    it("returns TBD if no agreement", () => {
+        expect(getProcurementShopLabel({})).toBe("TBD - Current Fee Rate : 0%");
     });
 });
 
@@ -484,5 +481,56 @@ describe("hasAnyBliInSelectedStatus", () => {
 
         // The key difference is that agreement.is_awarded is calculated by the backend
         // and considers more than just BLI status (e.g., contract execution, etc.)
+    });
+});
+
+describe("calculateProcShopFeePercentage", () => {
+    it("returns fee from procurement_shop_fee when present", () => {
+        const bli = { procurement_shop_fee: { fee: 5 } };
+        expect(calculateProcShopFeePercentage(bli)).toBe(5);
+    });
+
+    it("returns 0 when procurement_shop_fee is present but fee is null", () => {
+        const bli = { procurement_shop_fee: { fee: null } };
+        expect(calculateProcShopFeePercentage(bli)).toBe(0);
+    });
+
+    it("returns 0 when procurement_shop_fee has fee of 0", () => {
+        const bli = { procurement_shop_fee: { fee: 0 } };
+        expect(calculateProcShopFeePercentage(bli)).toBe(0);
+    });
+
+    it("falls back to agreement.procurement_shop.current_fee.fee when procurement_shop_fee is null", () => {
+        const bli = {
+            procurement_shop_fee: null,
+            agreement: { procurement_shop: { current_fee: { fee: 3 } } }
+        };
+        expect(calculateProcShopFeePercentage(bli)).toBe(3);
+    });
+
+    it("falls back to agreement.procurement_shop.current_fee.fee when procurement_shop_fee is undefined", () => {
+        const bli = {
+            agreement: { procurement_shop: { current_fee: { fee: 7 } } }
+        };
+        expect(calculateProcShopFeePercentage(bli)).toBe(7);
+    });
+
+    it("returns 0 when agreement has no current_fee", () => {
+        const bli = { agreement: { procurement_shop: {} } };
+        expect(calculateProcShopFeePercentage(bli)).toBe(0);
+    });
+
+    it("returns 0 when agreement.procurement_shop.current_fee is null", () => {
+        const bli = { agreement: { procurement_shop: { current_fee: null } } };
+        expect(calculateProcShopFeePercentage(bli)).toBe(0);
+    });
+
+    it("returns 0 when no procurement_shop_fee, no agreement, and no fallback", () => {
+        expect(calculateProcShopFeePercentage({})).toBe(0);
+    });
+
+    it("returns 0 when agreement is null", () => {
+        const bli = { procurement_shop_fee: null, agreement: null };
+        expect(calculateProcShopFeePercentage(bli)).toBe(0);
     });
 });

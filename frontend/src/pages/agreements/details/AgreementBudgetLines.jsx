@@ -4,7 +4,6 @@ import {
     useGetServicesComponentsListQuery,
     useLazyGetBudgetLineItemsQuery,
     useLazyGetPortfolioByIdQuery,
-    useLazyGetProcurementShopsQuery,
     useLazyGetServicesComponentByIdQuery
 } from "../../../api/opsAPI";
 import AgreementBudgetLinesHeader from "../../../components/Agreements/AgreementBudgetLinesHeader";
@@ -94,7 +93,7 @@ const AgreementBudgetLines = ({
         let year = date_needed.getFullYear();
         let fiscalYear = month > 8 ? year + 1 : year;
         let amount = bl?.amount ?? 0;
-        let feePercentage = calculateProcShopFeePercentage(bl, agreement?.procurement_shop?.fee_percentage) / 100;
+        let feePercentage = calculateProcShopFeePercentage(bl) / 100;
         let fee = amount * feePercentage;
         let total = amount + fee;
         let status = bl?.status?.charAt(0).toUpperCase() + bl?.status?.slice(1).toLowerCase();
@@ -143,7 +142,6 @@ const AgreementBudgetLines = ({
     const groupedBudgetLinesByServicesComponent = groupByServicesComponent(budgetLines, servicesComponents);
     const [serviceComponentTrigger] = useLazyGetServicesComponentByIdQuery();
     const [budgetLineTrigger] = useLazyGetBudgetLineItemsQuery();
-    const [procShopTrigger] = useLazyGetProcurementShopsQuery();
     const [portfolioTrigger] = useLazyGetPortfolioByIdQuery();
 
     if (isExporting) {
@@ -198,7 +196,6 @@ const AgreementBudgetLines = ({
                                             filters,
                                             blis,
                                             budgetLineTrigger,
-                                            procShopTrigger,
                                             serviceComponentTrigger,
                                             portfolioTrigger,
                                             blis.length
@@ -277,7 +274,6 @@ const AgreementBudgetLines = ({
                                     isAgreementAwarded={isAgreementAwarded}
                                     readOnly={true}
                                     isEditable={agreement?._meta.isEditable}
-                                    agreementProcShopFeePercentage={agreement?.procurement_shop?.fee_percentage}
                                 />
                             ) : (
                                 <p className="text-center margin-y-7">

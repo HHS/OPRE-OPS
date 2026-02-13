@@ -4,7 +4,6 @@ import Table from "../../UI/Table";
 import AllBLIRow from "./AllBLIRow";
 import { All_BUDGET_LINES_TABLE_HEADINGS_LIST } from "./AllBudgetLinesTable.constants";
 import useAllBudgetLinesTable from "./AllBudgetLinesTable.hooks";
-import { useGetProcurementShopsQuery } from "../../../api/opsAPI";
 
 import { ITEMS_PER_PAGE } from "../../../constants";
 /**
@@ -30,10 +29,9 @@ const AllBudgetLinesTable = ({
     sortDescending,
     setSortConditions
 }) => {
-    const { data: procurementShops, isLoading: procurementShopsIsLoading } = useGetProcurementShopsQuery({});
     const { showModal, setShowModal, modalProps } = useAllBudgetLinesTable(budgetLineItems || []);
 
-    if (budgetLineItemsIsLoading || procurementShopsIsLoading) {
+    if (budgetLineItemsIsLoading) {
         return <h1>Loading...</h1>;
     }
 
@@ -65,7 +63,6 @@ const AllBudgetLinesTable = ({
                         <AllBLIRow
                             key={budgetLine?.id}
                             budgetLine={budgetLine}
-                            procurementShops={procurementShops}
                         />
                     ))}
             </Table>

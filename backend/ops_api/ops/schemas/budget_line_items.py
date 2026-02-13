@@ -229,6 +229,11 @@ class SimpleAgreementSchema(Schema):
     name = fields.String(allow_none=False)
     awarding_entity_id = fields.Integer(allow_none=True)
     project = fields.Nested(SimpleProjectSchema, required=True)
+    procurement_shop = fields.Nested(
+        "ops_api.ops.schemas.procurement_shops.ProcurementShopSchema",
+        only=("id", "name", "abbr", "current_fee"),
+        allow_none=True,
+    )
 
 
 class BudgetLineItemResponseSchema(Schema):

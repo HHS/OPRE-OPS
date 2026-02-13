@@ -22,13 +22,9 @@ import { useGetPortfolioByIdQuery } from "../../../api/opsAPI";
  * @component
  * @param {Object} props - The props for the BLIRow component.
  * @param {import("../../../types/BudgetLineTypes").BudgetLine} props.budgetLine - The budget line object.
- * @param {import("../../../types/AgreementTypes").ProcurementShop[]} props.procurementShops - The procurement shops data.
  * @returns {React.ReactElement} The BLIRow component.
  **/
-const AllBLIRow = ({ budgetLine, procurementShops }) => {
-    const currentProcurementShop = procurementShops?.find(
-        (shop) => shop.id === budgetLine?.agreement?.awarding_entity_id
-    ) || { abbr: NO_DATA, fee_percentage: 0 };
+const AllBLIRow = ({ budgetLine }) => {
     const isBudgetLineInReview = budgetLine?.in_review;
     const feeTotal = budgetLine?.fees;
     const budgetLineTotalPlusFees = budgetLine?.total ?? 0;
@@ -156,11 +152,7 @@ const AllBLIRow = ({ budgetLine, procurementShops }) => {
                         className="margin-0"
                         style={{ maxWidth: "25rem" }}
                     >
-                        {getProcurementShopLabel(
-                            budgetLine,
-                            currentProcurementShop.abbr,
-                            currentProcurementShop.fee_percentage
-                        )}
+                        {getProcurementShopLabel(budgetLine)}
                     </dd>
                 </dl>
                 <dl className="font-12px margin-left-2">

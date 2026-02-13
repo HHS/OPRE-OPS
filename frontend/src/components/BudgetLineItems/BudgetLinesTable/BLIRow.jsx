@@ -35,7 +35,6 @@ import { addErrorClassIfNotFound, futureDateErrorClass } from "./BLIRow.helpers"
  * @property {boolean} [readOnly] - Whether the user is in read only mode.
  * @property {boolean} [isBLIInCurrentWorkflow] - Whether the budget line item is in the current workflow.
  * @property {boolean} [isAgreementAwarded] - Whether the agreement is awarded.
- * @property {number} [agreementProcShopFeePercentage] - The agreement's procurement shop fee percentage.
  */
 
 /**
@@ -50,8 +49,7 @@ const BLIRow = ({
     handleDeleteBudgetLine = () => {},
     handleDuplicateBudgetLine = () => {},
     readOnly = false,
-    isBLIInCurrentWorkflow = false,
-    agreementProcShopFeePercentage = 0
+    isBLIInCurrentWorkflow = false
 }) => {
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
@@ -137,7 +135,7 @@ const BLIRow = ({
                 style={bgExpandedStyles}
             >
                 <Tooltip
-                    label={getProcurementShopFeeTooltip(budgetLine, agreementProcShopFeePercentage)}
+                    label={getProcurementShopFeeTooltip(budgetLine)}
                     position="left"
                 >
                     <span>

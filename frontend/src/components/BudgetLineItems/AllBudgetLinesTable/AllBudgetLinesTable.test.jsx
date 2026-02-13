@@ -21,10 +21,6 @@ vi.mock("../../../hooks/useChangeRequests.hooks", () => ({
 }));
 
 vi.mock("../../../api/opsAPI", () => ({
-    useGetProcurementShopsQuery: () => ({
-        data: [{ id: 1, abbr: "TEST", fee_percentage: 0.1 }],
-        isLoading: false
-    }),
     useGetUserByIdQuery: () => ({
         data: { full_name: "Test User" },
         isSuccess: true,

@@ -972,7 +972,6 @@ export const {
     useGetAgreementTypesQuery,
     useGetProductServiceCodesQuery,
     useGetProcurementShopsQuery,
-    useLazyGetProcurementShopsQuery,
     useGetProcurementShopByIdQuery,
     useGetAgreementReasonsQuery,
     useGetUsersQuery,

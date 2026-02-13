@@ -2082,9 +2082,16 @@ export const agreementWithPlannedBudgetLineChanges = {
     notes: "",
     procurement_shop: {
         abbr: "PSC",
-        fee: 0.005,
+        fee_percentage: 0.5,
         id: 1,
-        name: "Product Service Center"
+        name: "Product Service Center",
+        current_fee: {
+            id: 3,
+            procurement_shop_id: 1,
+            fee: 0.5,
+            start_date: null,
+            end_date: null
+        }
     },
     awarding_entity_id: 1,
     procurement_tracker_id: null,
@@ -2328,9 +2335,16 @@ export const agreementWithBudgetLineFromPlannedToExecution = {
     notes: "",
     procurement_shop: {
         abbr: "PSC",
-        fee: 0.005,
+        fee_percentage: 0.5,
         id: 1,
-        name: "Product Service Center"
+        name: "Product Service Center",
+        current_fee: {
+            id: 3,
+            procurement_shop_id: 1,
+            fee: 0.5,
+            start_date: null,
+            end_date: null
+        }
     },
     awarding_entity_id: 1,
     procurement_tracker_id: null,

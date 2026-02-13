@@ -4,6 +4,8 @@ Tests verify that schemas properly validate agreement data, nested budget line i
 and nested services components for atomic creation.
 """
 
+import types
+
 import pytest
 from marshmallow import ValidationError
 
@@ -12,7 +14,7 @@ from ops_api.ops.schemas.agreements import (
     ContractAgreementData,
     GrantAgreementData,
 )
-from ops_api.ops.schemas.budget_line_items import NestedBudgetLineItemRequestSchema
+from ops_api.ops.schemas.budget_line_items import NestedBudgetLineItemRequestSchema, SimpleAgreementSchema
 from ops_api.ops.schemas.services_component import NestedServicesComponentRequestSchema
 
 
@@ -360,3 +362,76 @@ class TestAgreementDataNestedFields:
         # Should default to empty arrays
         assert result.get("budget_line_items", []) == []
         assert result.get("services_components", []) == []
+
+
+class TestSimpleAgreementSchema:
+    """Test SimpleAgreementSchema used as a nested field in BudgetLineItemResponseSchema."""
+
+    def test_simple_agreement_schema_has_all_expected_fields(self):
+        """Test the schema contains exactly the expected fields."""
+        schema = SimpleAgreementSchema()
+        expected_fields = {"id", "agreement_type", "name", "awarding_entity_id", "project", "procurement_shop"}
+        assert set(schema.fields.keys()) == expected_fields
+
+    def test_simple_agreement_schema_procurement_shop_allows_none(self):
+        """Test that procurement_shop field has allow_none=True."""
+        schema = SimpleAgreementSchema()
+        assert schema.fields["procurement_shop"].allow_none is True
+
+    def test_simple_agreement_schema_procurement_shop_only_fields(self):
+        """Test the nested procurement_shop field restricts to only {id, name, abbr, current_fee}."""
+        schema = SimpleAgreementSchema()
+        assert set(schema.fields["procurement_shop"].only) == {"id", "name", "abbr", "current_fee"}
+
+    def test_simple_agreement_schema_dumps_with_procurement_shop(self):
+        """Test serialization of an agreement with procurement_shop data."""
+        schema = SimpleAgreementSchema()
+        current_fee = types.SimpleNamespace(id=1, fee=0.05, start_date=None, end_date=None)
+        procurement_shop = types.SimpleNamespace(
+            id=10,
+            name="GCS",
+            abbr="GCS",
+            current_fee=current_fee,
+            fee_percentage=5.0,
+            procurement_shop_fees=[],
+        )
+        project = types.SimpleNamespace(id=1, title="Test Project")
+        agreement = types.SimpleNamespace(
+            id=100,
+            agreement_type="CONTRACT",
+            name="Test Agreement",
+            awarding_entity_id=42,
+            project=project,
+            procurement_shop=procurement_shop,
+        )
+
+        result = schema.dump(agreement)
+
+        assert result["id"] == 100
+        assert result["agreement_type"] == "CONTRACT"
+        assert result["name"] == "Test Agreement"
+        assert result["procurement_shop"]["id"] == 10
+        assert result["procurement_shop"]["name"] == "GCS"
+        assert result["procurement_shop"]["abbr"] == "GCS"
+        assert result["procurement_shop"]["current_fee"] is not None
+        # Fields not in 'only' should be excluded
+        assert "fee_percentage" not in result["procurement_shop"]
+        assert "procurement_shop_fees" not in result["procurement_shop"]
+
+    def test_simple_agreement_schema_dumps_with_null_procurement_shop(self):
+        """Test serialization of an agreement where procurement_shop is None."""
+        schema = SimpleAgreementSchema()
+        project = types.SimpleNamespace(id=1, title="Test Project")
+        agreement = types.SimpleNamespace(
+            id=200,
+            agreement_type="GRANT",
+            name="Grant Agreement",
+            awarding_entity_id=None,
+            project=project,
+            procurement_shop=None,
+        )
+
+        result = schema.dump(agreement)
+
+        assert result["id"] == 200
+        assert result["procurement_shop"] is None

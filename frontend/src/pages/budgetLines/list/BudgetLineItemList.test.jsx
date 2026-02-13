@@ -6,7 +6,6 @@ import {
     useGetBudgetLineItemsQuery,
     useLazyGetBudgetLineItemsQuery,
     useLazyGetPortfolioByIdQuery,
-    useLazyGetProcurementShopsQuery,
     useLazyGetServicesComponentByIdQuery
 } from "../../../api/opsAPI";
 import BudgetLineItemList from "./BudgetLineItemList";
@@ -142,7 +141,6 @@ describe("BudgetLineItemList", () => {
         // Mock lazy query hooks
         useLazyGetBudgetLineItemsQuery.mockReturnValue([vi.fn(), { isLoading: false }]);
         useLazyGetPortfolioByIdQuery.mockReturnValue([vi.fn(), { isLoading: false }]);
-        useLazyGetProcurementShopsQuery.mockReturnValue([vi.fn(), { isLoading: false }]);
         useLazyGetServicesComponentByIdQuery.mockReturnValue([vi.fn(), { isLoading: false }]);
 
         // Default mock for useBudgetLinesList hook
@@ -466,7 +464,6 @@ describe("BudgetLineItemList", () => {
             }),
             mockBudgetLineItems,
             expect.any(Function), // budgetLineTrigger
-            expect.any(Function), // procShopTrigger
             expect.any(Function), // serviceComponentTrigger
             expect.any(Function) // portfolioTrigger
         );
@@ -528,7 +525,6 @@ describe("BudgetLineItemList", () => {
                 ] // Should keep the array as-is
             }),
             mockBudgetLineItems,
-            expect.any(Function),
             expect.any(Function),
             expect.any(Function),
             expect.any(Function)
