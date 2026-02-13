@@ -4,7 +4,7 @@ import ProcurementTrackerStepOne from "../../../components/Agreements/Procuremen
 import StepBuilderAccordion from "../../../components/Agreements/ProcurementTracker/StepBuilderAccordion";
 import DebugCode from "../../../components/DebugCode";
 import StepIndicator from "../../../components/UI/StepIndicator";
-import { IS_PROCUREMENT_TRACKER_READY } from "../../../constants";
+import { IS_PROCUREMENT_TRACKER_READY_MAP } from "../../../constants";
 
 /**
  * @typedef {Object} AgreementProcurementTrackerProps
@@ -33,7 +33,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
     const agreementId = agreement?.id;
 
     const { data, isLoading, isError } = useGetProcurementTrackersByAgreementIdQuery(agreementId, {
-        skip: !agreementId || !IS_PROCUREMENT_TRACKER_READY,
+        skip: !agreementId,
         refetchOnMountOrArgChange: true
     });
 
@@ -51,10 +51,6 @@ const AgreementProcurementTracker = ({ agreement }) => {
     // Handle error state
     if (isError || !agreementId) {
         return <div>Error loading procurement tracker data</div>;
-    }
-
-    if (!IS_PROCUREMENT_TRACKER_READY) {
-        return <div>The Procurement Tracker feature is coming soon.</div>;
     }
 
     // Active trackers default to step 1 when no active_step_number exists.
@@ -105,7 +101,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                         level={3}
                         key={step.id}
                     >
-                        {step.step_number === 1 && (
+                        {IS_PROCUREMENT_TRACKER_READY_MAP.STEP_1 && step.step_number === 1 && (
                             <ProcurementTrackerStepOne
                                 stepStatus={step.status}
                                 stepOneData={stepOneData}

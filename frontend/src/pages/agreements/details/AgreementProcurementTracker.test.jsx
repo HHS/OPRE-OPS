@@ -96,7 +96,14 @@ vi.mock("../../../components/UI/USWDS/DatePicker", () => ({
 
 // Mock constants module
 vi.mock("../../../constants", () => ({
-    IS_PROCUREMENT_TRACKER_READY: true
+    IS_PROCUREMENT_TRACKER_READY_MAP: {
+        STEP_1: true,
+        STEP_2: false,
+        STEP_3: false,
+        STEP_4: false,
+        STEP_5: false,
+        STEP_6: false
+    }
 }));
 
 // Mock user hooks
@@ -223,7 +230,7 @@ describe("AgreementProcurementTracker", () => {
         expect(screen.getByText("Error loading procurement tracker data")).toBeInTheDocument();
     });
 
-    // Note: The feature flag test (IS_PROCUREMENT_TRACKER_READY) is tested via E2E tests
+    // Note: step availability flags are validated in E2E tests.
     // since it's a module-level constant that's difficult to mock properly in unit tests
 
     it("renders procurement tracker with default steps when no active tracker found", () => {

@@ -124,6 +124,7 @@ describe("Procurement Tracker Step 1", () => {
         // Wait for page load
         cy.get('[data-cy="details-tab-Procurement Tracker"]').should("exist");
         cy.get('[data-cy="details-tab-Procurement Tracker"]').click();
+        openStepOne();
 
         // Check if Step 1 is already completed (from previous test)
         cy.get("body").then(($body) => {
@@ -136,13 +137,13 @@ describe("Procurement Tracker Step 1", () => {
                 cy.get("#users-combobox-input").click();
 
                 // The dropdown should exist and contain options
-                cy.get(".usa-combo-box__list").should("exist");
+                cy.get(".users-combobox__menu").should("exist");
 
                 // Amy Madigan should be in the list (she's authorized for this agreement)
-                cy.get(".usa-combo-box__list").should("contain", "Amy Madigan");
+                cy.get(".users-combobox__menu").should("contain", "Amy Madigan");
             } else {
-                // Step 1 is already completed - verify the completed data shows authorized user
-                cy.get("dl dd").first().should("exist"); // Completed by field exists
+                // Step 1 is already completed - verify completed state is visible
+                cy.contains("Completed By").should("exist");
                 cy.log("Step 1 already completed - skipping user dropdown test");
             }
         });
