@@ -18,7 +18,6 @@ import "./BudgetLinesTable.scss";
  * @param {Boolean} [props.isAgreementAwarded] - A flag to indicate if the agreement is awarded.
  * @param {Boolean} [props.isEditable] - A flag to indicate that the user can edit the agreement.
  * @param {Array<number>} [props.budgetLineIdsInReview] - an array of budget line IDs that are in review.
- * @param {number} [props.agreementProcShopFeePercentage] - The agreement's procurement shop fee percentage.
  * @returns {React.ReactElement} - The rendered table component.
  */
 const BudgetLinesTable = ({
@@ -30,8 +29,7 @@ const BudgetLinesTable = ({
     isReviewMode = false,
     isAgreementAwarded = false,
     budgetLineIdsInReview = [],
-    isEditable = false,
-    agreementProcShopFeePercentage = 0
+    isEditable = false
 }) => {
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
 
@@ -62,7 +60,6 @@ const BudgetLinesTable = ({
                     isBLIInCurrentWorkflow={budgetLineIdsInReview && budgetLineIdsInReview.includes(budgetLine.id)}
                     isAgreementAwarded={isAgreementAwarded}
                     isEditable={isEditable}
-                    agreementProcShopFeePercentage={agreementProcShopFeePercentage}
                 />
             ))}
         </Table>
