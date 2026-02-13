@@ -95,8 +95,15 @@ class ServicesComponent(BaseModel):
 
     @BaseModel.display_name.getter
     def display_name(self):
+        from sqlalchemy import inspect
+
+        # Check if agreement is loaded to avoid recursion during flush
+        insp = inspect(self)
+        agreement_loaded = "agreement" in insp.dict and self.agreement is not None
+
+        is_severable = self.severable() if agreement_loaded else False
         return ServicesComponent.get_display_name(
-            self.number, self.optional, self.severable()
+            self.number, self.optional, is_severable
         )
 
     @staticmethod
