@@ -14,7 +14,7 @@ import useProcurementTrackerStepTwo from "./ProcurementTrackerStepTwo.hooks";
  * @returns {React.ReactElement}
  */
 const ProcurementTrackerStepTwo = ({ stepStatus, stepData }) => {
-    const { MemoizedDatePicker, setTargetCompletionDate, targetCompletionDate } =
+    const { MemoizedDatePicker, setTargetCompletionDate, targetCompletionDate, runValidate, validatorRes } =
         useProcurementTrackerStepTwo(stepData);
 
     return (
@@ -32,16 +32,19 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepData }) => {
                             id="target-completion-date"
                             name="targetCompletionDate"
                             label="Target Completion Date"
+                            messages={validatorRes.getErrors("targetCompletionDate") || []}
                             hint="mm/dd/yyyy"
                             value={targetCompletionDate}
                             onChange={(e) => {
+                                runValidate("targetCompletionDate", e.target.value);
                                 setTargetCompletionDate(e.target.value);
                             }}
-                            maxDate={getLocalISODate()}
+                            minDate={getLocalISODate()}
                         />
                         <button
                             className="usa-button usa-button--unstyled margin-bottom-1 margin-left-2"
                             data-cy="target-completion-save-btn"
+                            disabled={validatorRes.hasErrors("targetCompletionDate")}
                             onClick={() => {
                                 alert("Save target completion date functionality coming soon!");
                             }}
