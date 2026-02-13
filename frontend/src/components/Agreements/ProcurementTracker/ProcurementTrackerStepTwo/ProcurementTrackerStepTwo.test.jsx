@@ -161,7 +161,9 @@ describe("ProcurementTrackerStepTwo", () => {
             );
 
             const datePickers = screen.getAllByTestId("date-picker");
-            const targetDatePicker = datePickers.find((picker) => picker.getAttribute("data-picker-id") === "target-completion-date");
+            const targetDatePicker = datePickers.find(
+                (picker) => picker.getAttribute("data-picker-id") === "target-completion-date"
+            );
 
             expect(targetDatePicker).toBeInTheDocument();
             expect(screen.getByText("Target Completion Date")).toBeInTheDocument();
@@ -177,7 +179,9 @@ describe("ProcurementTrackerStepTwo", () => {
             );
 
             const datePickers = screen.getAllByTestId("date-picker");
-            const dateCompletedPicker = datePickers.find((picker) => picker.getAttribute("data-picker-id") === "step-2-date-completed");
+            const dateCompletedPicker = datePickers.find(
+                (picker) => picker.getAttribute("data-picker-id") === "step-2-date-completed"
+            );
 
             expect(dateCompletedPicker).toBeInTheDocument();
             expect(screen.getByText("Date Completed")).toBeInTheDocument();
@@ -214,7 +218,9 @@ describe("ProcurementTrackerStepTwo", () => {
             );
 
             const datePickers = screen.getAllByTestId("date-picker");
-            const targetDatePicker = datePickers.find((picker) => picker.getAttribute("data-picker-id") === "target-completion-date");
+            const targetDatePicker = datePickers.find(
+                (picker) => picker.getAttribute("data-picker-id") === "target-completion-date"
+            );
             // eslint-disable-next-line testing-library/no-node-access
             const dateInput = targetDatePicker.querySelector("input");
 
@@ -233,7 +239,9 @@ describe("ProcurementTrackerStepTwo", () => {
             );
 
             const datePickers = screen.getAllByTestId("date-picker");
-            const dateCompletedPicker = datePickers.find((picker) => picker.getAttribute("data-picker-id") === "step-2-date-completed");
+            const dateCompletedPicker = datePickers.find(
+                (picker) => picker.getAttribute("data-picker-id") === "step-2-date-completed"
+            );
             // eslint-disable-next-line testing-library/no-node-access
             const dateInput = dateCompletedPicker.querySelector("input");
 
