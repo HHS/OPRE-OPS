@@ -290,54 +290,70 @@ const useApproveAgreement = () => {
         });
     }
 
-    let beforeApprovalBudgetLines = [];
-    let groupedBeforeApprovalBudgetLinesByServicesComponent = [];
-    let approvedBudgetLinesPreview = [];
-    let groupedUpdatedBudgetLinesByServicesComponent = [];
+    const {
+        groupedBeforeApprovalBudgetLinesByServicesComponent,
+        approvedBudgetLinesPreview,
+        groupedUpdatedBudgetLinesByServicesComponent
+    } =
+        isSuccessAgreement && cans
+            ? (() => {
+                  // For "Before Approval" view - show current state with correct procurement shop fees
+                  const beforeApprovalBudgetLines = applyPendingChangesToBudgetLines(
+                      agreement?.budget_line_items,
+                      cans,
+                      newAwardingEntity,
+                      agreement?.procurement_shop, // current procurement shop
+                      false // isAfterApproval = false
+                  );
+                  beforeApprovalBudgetLines.forEach((bli) => {
+                      const budgetLineServicesComponent = servicesComponents?.find(
+                          (sc) => sc.id === bli.services_component_id
+                      );
+                      const budgetLineScNumber = budgetLineServicesComponent?.number;
+                      const serviceComponentGroupingLabel = budgetLineServicesComponent?.sub_component
+                          ? `${budgetLineScNumber}-${budgetLineServicesComponent?.sub_component}`
+                          : `${budgetLineScNumber}`;
+                      bli.services_component_number = budgetLineScNumber ?? 0;
+                      bli.serviceComponentGroupingLabel = serviceComponentGroupingLabel;
+                  });
+                  const groupedBeforeApprovalBudgetLinesByServicesComponent = beforeApprovalBudgetLines
+                      ? groupByServicesComponent(beforeApprovalBudgetLines, servicesComponents)
+                      : [];
 
-    if (isSuccessAgreement && cans) {
-        // For "Before Approval" view - show current state with correct procurement shop fees
-        beforeApprovalBudgetLines = applyPendingChangesToBudgetLines(
-            agreement?.budget_line_items,
-            cans,
-            newAwardingEntity,
-            agreement?.procurement_shop, // current procurement shop
-            false // isAfterApproval = false
-        );
-        beforeApprovalBudgetLines.forEach((bli) => {
-            const budgetLineServicesComponent = servicesComponents?.find((sc) => sc.id === bli.services_component_id);
-            const budgetLineScNumber = budgetLineServicesComponent?.number;
-            const serviceComponentGroupingLabel = budgetLineServicesComponent?.sub_component
-                ? `${budgetLineScNumber}-${budgetLineServicesComponent?.sub_component}`
-                : `${budgetLineScNumber}`;
-            bli.services_component_number = budgetLineScNumber ?? 0;
-            bli.serviceComponentGroupingLabel = serviceComponentGroupingLabel;
-        });
-        groupedBeforeApprovalBudgetLinesByServicesComponent = beforeApprovalBudgetLines
-            ? groupByServicesComponent(beforeApprovalBudgetLines, servicesComponents)
-            : [];
+                  // For "After Approval" view - show updated state
+                  const approvedBudgetLinesPreview = applyPendingChangesToBudgetLines(
+                      agreement?.budget_line_items,
+                      cans,
+                      newAwardingEntity,
+                      agreement?.procurement_shop, // current procurement shop
+                      true // isAfterApproval = true
+                  );
+                  approvedBudgetLinesPreview.forEach((bli) => {
+                      const budgetLineServicesComponent = servicesComponents?.find(
+                          (sc) => sc.id === bli.services_component_id
+                      );
+                      const budgetLineScNumber = budgetLineServicesComponent?.number;
+                      const serviceComponentGroupingLabel = budgetLineServicesComponent?.sub_component
+                          ? `${budgetLineScNumber}-${budgetLineServicesComponent?.sub_component}`
+                          : `${budgetLineScNumber}`;
+                      bli.services_component_number = budgetLineScNumber ?? 0;
+                      bli.serviceComponentGroupingLabel = serviceComponentGroupingLabel;
+                  });
+                  const groupedUpdatedBudgetLinesByServicesComponent = approvedBudgetLinesPreview
+                      ? groupByServicesComponent(approvedBudgetLinesPreview, servicesComponents)
+                      : [];
 
-        // For "After Approval" view - show updated state
-        approvedBudgetLinesPreview = applyPendingChangesToBudgetLines(
-            agreement?.budget_line_items,
-            cans,
-            newAwardingEntity,
-            agreement?.procurement_shop, // current procurement shop
-            true // isAfterApproval = true
-        );
-        approvedBudgetLinesPreview.forEach((bli) => {
-            const budgetLineServicesComponent = servicesComponents?.find((sc) => sc.id === bli.services_component_id);
-            const budgetLineScNumber = budgetLineServicesComponent?.number;
-            const serviceComponentGroupingLabel = budgetLineServicesComponent?.sub_component
-                ? `${budgetLineScNumber}-${budgetLineServicesComponent?.sub_component}`
-                : `${budgetLineScNumber}`;
-            bli.services_component_number = budgetLineScNumber ?? 0;
-            bli.serviceComponentGroupingLabel = serviceComponentGroupingLabel;
-        });
-        groupedUpdatedBudgetLinesByServicesComponent = approvedBudgetLinesPreview
-            ? groupByServicesComponent(approvedBudgetLinesPreview, servicesComponents)
-            : [];
-    }
+                  return {
+                      groupedBeforeApprovalBudgetLinesByServicesComponent,
+                      approvedBudgetLinesPreview,
+                      groupedUpdatedBudgetLinesByServicesComponent
+                  };
+              })()
+            : {
+                  groupedBeforeApprovalBudgetLinesByServicesComponent: [],
+                  approvedBudgetLinesPreview: [],
+                  groupedUpdatedBudgetLinesByServicesComponent: []
+              };
 
     const handleCancel = () => {
         setShowModal(true);

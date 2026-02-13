@@ -6,7 +6,7 @@ from contextvars import ContextVar
 from urllib.parse import urlparse
 
 from authlib.integrations.flask_client import OAuth
-from flask import Blueprint, Flask, Request, request
+from flask import Blueprint, Flask, Request, current_app, request
 from flask_cors import CORS
 from flask_jwt_extended import current_user, verify_jwt_in_request
 from loguru import logger
@@ -168,26 +168,45 @@ def log_response(response):
     if request.url != request.url_root:
         req_id = request_id.get()
         with logger.contextualize(request_id=req_id):
+            body = response.get_data(as_text=True)
+            max_body = (
+                current_app.config.get("AZURE_BODY_LOG_MAX_BYTES")
+                if current_app.config.get("RUNNING_IN_AZURE")
+                else None
+            )
+            max_field = (
+                current_app.config.get("AZURE_LOG_FIELD_MAX_BYTES")
+                if current_app.config.get("RUNNING_IN_AZURE")
+                else None
+            )
             response_data = {
                 "method": request.method,
                 "url": request.url,
                 "request_headers": request.headers,
                 "status_code": response.status_code,
-                "json": response.get_data(as_text=True),
+                "json": _truncate_for_log(body, max_body),
                 "response_headers": response.headers,
             }
-            logger.info(f"Response: {response_data}")
+            _log_safe(f"Response: {response_data}", max_field)
 
 
 def log_request():
+    body = request.get_json(silent=True)
+    body_str = str(body) if body is not None else ""
+    max_body = (
+        current_app.config.get("AZURE_BODY_LOG_MAX_BYTES") if current_app.config.get("RUNNING_IN_AZURE") else None
+    )
+    max_field = (
+        current_app.config.get("AZURE_LOG_FIELD_MAX_BYTES") if current_app.config.get("RUNNING_IN_AZURE") else None
+    )
     request_data = {
         "method": request.method,
         "url": request.url,
-        "json": request.get_json(silent=True),
+        "json": _truncate_for_log(body_str, max_body),
         "args": request.args,
         "headers": request.headers,
     }
-    logger.info(f"Request: {request_data}")
+    _log_safe(f"Request: {request_data}", max_field)
 
 
 def initialize_event_subscriptions():
@@ -221,6 +240,7 @@ def initialize_event_subscriptions():
     MessageBus.subscribe_globally(OpsEventType.CREATE_SERVICES_COMPONENT, agreement_history_trigger)
     MessageBus.subscribe_globally(OpsEventType.UPDATE_SERVICES_COMPONENT, agreement_history_trigger)
     MessageBus.subscribe_globally(OpsEventType.DELETE_SERVICES_COMPONENT, agreement_history_trigger)
+    MessageBus.subscribe_globally(OpsEventType.UPDATE_PROCUREMENT_TRACKER_STEP, agreement_history_trigger)
 
 
 def before_request_function(app: Flask, request: request):
@@ -302,3 +322,23 @@ def check_csrf(app: Flask, flask_request: Request) -> None:
 
     if urlparse(referer).scheme != "https":
         raise NoAuthorizationError("Referer header protocol must be https when running in Azure.")
+
+
+def _truncate_for_log(value: str | None, max_bytes: int | None) -> str:
+    """Return value as string, truncating to max_bytes when max_bytes is set (e.g. for Azure)."""
+    if value is None:
+        return ""
+    s = value if isinstance(value, str) else str(value)
+    if max_bytes is None or len(s) <= max_bytes:
+        return s
+    suffix = f"... [truncated, total {len(s)} bytes]"
+    return s[: max_bytes - len(suffix)] + suffix
+
+
+def _log_safe(msg: str, max_bytes: int | None) -> None:
+    """Log a message, truncating to max_bytes when set (e.g. Azure Log Analytics limit)."""
+    if max_bytes is None or len(msg) <= max_bytes:
+        logger.info(msg)
+        return
+    suffix = f"... [log truncated, total {len(msg)} bytes]"
+    logger.info(msg[: max_bytes - len(suffix)] + suffix)

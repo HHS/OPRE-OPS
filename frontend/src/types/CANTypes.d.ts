@@ -52,19 +52,13 @@ export type URL = {
 };
 
 export type FundingBudget = {
-    budget?: number;
-    can?: BasicCAN;
-    can_id: number;
-    display_name?: string;
-    fiscal_year: number;
     id: number;
+    can_id: number;
+    fiscal_year: number;
+    budget?: number;
     notes?: string;
-    created_by?: any;
-    created_by_user?: any;
-    created_on?: any;
-    updated_by?: any;
-    updated_by_user?: any;
-    updated_on?: any;
+    created_on?: string;
+    updated_on?: string;
 };
 
 export type FundingDetails = {

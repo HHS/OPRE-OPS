@@ -1,8 +1,8 @@
 import React from "react";
 import { useGetProcurementTrackersByAgreementIdQuery } from "../../../api/opsAPI";
 import ProcurementTrackerStepOne from "../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepOne";
+import StepBuilderAccordion from "../../../components/Agreements/ProcurementTracker/StepBuilderAccordion";
 import DebugCode from "../../../components/DebugCode";
-import Accordion from "../../../components/UI/Accordion";
 import StepIndicator from "../../../components/UI/StepIndicator";
 import { IS_PROCUREMENT_TRACKER_READY } from "../../../constants";
 
@@ -40,6 +40,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
     // Extract tracker data
     const trackers = data?.data || [];
     const activeTracker = trackers.find((tracker) => tracker.status === "ACTIVE");
+    const hasActiveTracker = !!activeTracker;
     const stepOneData = activeTracker?.steps.find((step) => step.step_number === 1);
 
     // Handle loading state
@@ -56,13 +57,25 @@ const AgreementProcurementTracker = ({ agreement }) => {
         return <div>The Procurement Tracker feature is coming soon.</div>;
     }
 
-    if (!activeTracker) {
-        // TODO: add inactive procurement tracker
-        return <div>No active Procurement Tracker found.</div>;
-    }
+    // Active trackers default to step 1 when no active_step_number exists.
+    const currentStep = activeTracker?.active_step_number ? activeTracker.active_step_number : 1;
+    // Keep step 1 open for read-only/no-active-tracker mode, but don't show any active segment in the step indicator.
+    const accordionOpenStep = hasActiveTracker ? currentStep : 1;
+    const indicatorCurrentStep = hasActiveTracker ? currentStep : 0;
+    const sortedActiveSteps = [...(activeTracker?.steps || [])].sort(
+        (a, b) => (a?.step_number ?? Number.MAX_SAFE_INTEGER) - (b?.step_number ?? Number.MAX_SAFE_INTEGER)
+    );
 
-    // Use active_step_number from tracker if available, otherwise default to 0
-    const currentStep = activeTracker?.active_step_number ? activeTracker.active_step_number : 0;
+    // Create default steps structure when there's no active tracker
+    const defaultSteps = WIZARD_STEPS.map((stepName, index) => ({
+        id: `default-step-${index + 1}`,
+        step_number: index + 1,
+        step_type: stepName,
+        status: "PENDING"
+    }));
+
+    // Use sorted active tracker steps when present, otherwise use default read-only structure.
+    const stepsToRender = hasActiveTracker ? sortedActiveSteps : defaultSteps;
 
     return (
         <>
@@ -74,32 +87,36 @@ const AgreementProcurementTracker = ({ agreement }) => {
             </p>
             <StepIndicator
                 steps={WIZARD_STEPS}
-                currentStep={currentStep}
+                currentStep={indicatorCurrentStep}
             />
-            {activeTracker?.steps.length > 0 &&
-                activeTracker?.steps?.map((step) => {
-                    return (
-                        <Accordion
-                            heading={`Step ${step.step_number} of ${activeTracker?.steps.length} ${step.step_type}`}
-                            // Keep step 1 and the active step open after form submission, all others closed
-                            isClosed={
-                                isFormSubmitted
-                                    ? !(step.step_number === 1 || step.step_number === currentStep)
-                                    : step.step_number !== currentStep
-                            }
-                            level={3}
-                            key={step.id}
-                        >
-                            {step.step_number === 1 && (
-                                <ProcurementTrackerStepOne
-                                    stepStatus={step.status}
-                                    stepOneData={stepOneData}
-                                    handleSetIsFormSubmitted={handleSetIsFormSubmitted}
-                                />
-                            )}
-                        </Accordion>
-                    );
-                })}
+            {stepsToRender.map((step) => {
+                return (
+                    <StepBuilderAccordion
+                        step={step}
+                        totalSteps={WIZARD_STEPS.length}
+                        activeStepNumber={hasActiveTracker ? currentStep : undefined}
+                        isReadOnly={!hasActiveTracker}
+                        // Keep step 1 and the active step open after form submission, all others closed
+                        isClosed={
+                            isFormSubmitted
+                                ? !(step.step_number === 1 || step.step_number === accordionOpenStep)
+                                : step.step_number !== accordionOpenStep
+                        }
+                        level={3}
+                        key={step.id}
+                    >
+                        {step.step_number === 1 && (
+                            <ProcurementTrackerStepOne
+                                stepStatus={step.status}
+                                stepOneData={stepOneData}
+                                hasActiveTracker={hasActiveTracker}
+                                handleSetIsFormSubmitted={handleSetIsFormSubmitted}
+                                agreement={agreement}
+                            />
+                        )}
+                    </StepBuilderAccordion>
+                );
+            })}
             {activeTracker && <DebugCode data={activeTracker}></DebugCode>}
         </>
     );

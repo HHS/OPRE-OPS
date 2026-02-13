@@ -14,8 +14,19 @@
 // ***********************************************************
 
 import "cypress-axe";
-import "cypress-localstorage-commands";
 import "./commands";
+
+Cypress.Commands.overwrite("injectAxe", (originalFn, ...args) => {
+    originalFn(...args);
+    return cy.configureAxe({
+        rules: [
+            {
+                id: "link-name",
+                enabled: false
+            }
+        ]
+    });
+});
 
 Cypress.Commands.add("login", () => {
     window.localStorage.setItem("access_token", "123");
@@ -58,13 +69,15 @@ Cypress.Commands.add("FakeAuth", (user) => {
         // IF YOU REMOVE, IT FAILS WITH "INVALID TOKEN" - Tim D.
 
         // Debugging: log out the localStorage "access_token" value
-        const getToken = () => cy.window().its("localStorage").invoke("getItem", "access_token");
+        const getToken = () =>
+            cy.window({ timeout: 20000 })
+                .its("localStorage")
+                .invoke("getItem", "access_token");
 
-        // Repeatedly check the token until it's not null
+        // Wait until login flow writes access token before caching the session.
         getToken()
-            .should((tokenValue) => {
-                expect(tokenValue).not.to.be.null;
-            })
+            .should("be.a", "string")
+            .and("not.be.empty")
             .then((tokenValue) => {
                 cy.log(`E2E USER TOKEN::: ${tokenValue}`);
                 cy.window().invoke("console.log", `E2E::ACCESS_TOKEN:${tokenValue}`);

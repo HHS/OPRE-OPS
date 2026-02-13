@@ -3,6 +3,10 @@ description: Installs Bun.js and dependencies defined in package.json
 runs:
   using: composite
   steps:
+    - name: Set up Node
+      uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
+      with:
+        node-version-file: "frontend/.nvmrc"
     - name: Set up Bun
       uses: oven-sh/setup-bun@3d267786b128fe76c2f16a390aa2448b815359f3 # v2.1.2
       with:
@@ -10,4 +14,24 @@ runs:
     - name: Install bun dependencies
       shell: bash
       working-directory: ./frontend
-      run: bun install
+      run: |
+        set -euo pipefail
+
+        max_attempts=3
+        attempt=1
+
+        while [ "$attempt" -le "$max_attempts" ]; do
+          echo "bun install attempt ${attempt}/${max_attempts}"
+          if bun install --frozen-lockfile; then
+            exit 0
+          fi
+
+          if [ "$attempt" -eq "$max_attempts" ]; then
+            echo "bun install failed after ${max_attempts} attempts"
+            exit 1
+          fi
+
+          attempt=$((attempt + 1))
+          echo "Retrying bun install in 5s..."
+          sleep 5
+        done

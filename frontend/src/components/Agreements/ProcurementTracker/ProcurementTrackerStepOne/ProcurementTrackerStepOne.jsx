@@ -4,12 +4,16 @@ import TermTag from "../../../UI/Term/TermTag";
 import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepOne from "./ProcurementTrackerStepOne.hooks";
 import { getLocalISODate } from "../../../../helpers/utils";
+import { useGetUsersQuery } from "../../../../api/opsAPI";
+import { useMemo } from "react";
 
 /**
  * @typedef {Object} ProcurementTrackerStepOneProps
  * @property {string} stepStatus - The current status of the procurement tracker step
  * @property {Object} stepOneData - The data for step one of the procurement tracker
+ * @property {boolean} hasActiveTracker - Whether an active tracker exists
  * @property {Function} handleSetIsFormSubmitted - Function to set the form submission state
+ * @property {import("../../../../types/AgreementTypes").Agreement} [agreement] - Agreement object with authorized_user_ids
  */
 
 /**
@@ -17,7 +21,13 @@ import { getLocalISODate } from "../../../../helpers/utils";
  * @param {ProcurementTrackerStepOneProps} props
  * @returns {React.ReactElement}
  */
-const ProcurementTrackerStepOne = ({ stepStatus, stepOneData, handleSetIsFormSubmitted }) => {
+const ProcurementTrackerStepOne = ({
+    stepStatus,
+    stepOneData,
+    hasActiveTracker,
+    handleSetIsFormSubmitted,
+    agreement
+}) => {
     const {
         isPreSolicitationPackageSent,
         setIsPreSolicitationPackageSent,
@@ -40,6 +50,17 @@ const ProcurementTrackerStepOne = ({ stepStatus, stepOneData, handleSetIsFormSub
         runValidate,
         validatorRes
     } = useProcurementTrackerStepOne(stepOneData, handleSetIsFormSubmitted);
+
+    // Fetch all users
+    const { data: allUsers } = useGetUsersQuery();
+
+    // Filter users by authorized_user_ids from the agreement
+    const authorizedUsers = useMemo(() => {
+        if (!allUsers || !agreement?.authorized_user_ids) {
+            return [];
+        }
+        return allUsers.filter((user) => agreement.authorized_user_ids.includes(user.id));
+    }, [allUsers, agreement?.authorized_user_ids]);
 
     return (
         <>
@@ -67,6 +88,7 @@ const ProcurementTrackerStepOne = ({ stepStatus, stepOneData, handleSetIsFormSub
                             value="step-1-checkbox"
                             checked={isPreSolicitationPackageSent}
                             onChange={() => setIsPreSolicitationPackageSent(!isPreSolicitationPackageSent)}
+                            disabled={!hasActiveTracker}
                         />
                         <label
                             className="usa-checkbox__label"
@@ -82,10 +104,11 @@ const ProcurementTrackerStepOne = ({ stepStatus, stepOneData, handleSetIsFormSub
                             selectedUser={selectedUser}
                             setSelectedUser={setSelectedUser}
                             messages={validatorRes.getErrors("users") || []}
-                            isDisabled={!isPreSolicitationPackageSent}
+                            isDisabled={!isPreSolicitationPackageSent || authorizedUsers.length === 0}
                             onChange={(name, value) => {
                                 runValidate(name, value);
                             }}
+                            users={authorizedUsers}
                         />
                         <MemoizedDatePicker
                             id="date-completed"

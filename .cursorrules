@@ -1,0 +1,14 @@
+# Cursor AI Rules
+
+## Commit Messages
+
+When generating commit messages:
+- Keep entire commit message to a maximum of 100 characters
+- Use imperative mood (e.g., "Add feature" not "Added feature")
+- Be concise and descriptive
+- Follow conventional commits format (feat:, fix:, chore:, etc.)
+
+Example:
+```
+feat: add user authentication to API
+```

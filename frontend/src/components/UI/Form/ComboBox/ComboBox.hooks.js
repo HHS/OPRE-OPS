@@ -9,8 +9,31 @@ import { useEffect, useState, useMemo } from "react";
  * @param {Object} overrideStyles - Custom styles to override default combobox styles
  * @param {boolean} clearWhenSet - Whether to clear the selection after setting data
  */
-const useComboBox = (data, selectedData, setSelectedData, optionText, overrideStyles, clearWhenSet) => {
+const useComboBox = (data, selectedData, setSelectedData, optionText, overrideStyles, clearWhenSet, isMulti) => {
     const [selectedOption, setSelectedOption] = useState({ value: "", label: "" });
+    const [shiftHeld, setShiftHeld] = useState(false);
+
+    useEffect(() => {
+        if (!isMulti) return;
+
+        const handleKeyDown = (e) => {
+            if (e.key === "Shift") setShiftHeld(true);
+        };
+        const handleKeyUp = (e) => {
+            if (e.key === "Shift") setShiftHeld(false);
+        };
+        const handleBlur = () => setShiftHeld(false);
+
+        document.addEventListener("keydown", handleKeyDown);
+        document.addEventListener("keyup", handleKeyUp);
+        window.addEventListener("blur", handleBlur);
+
+        return () => {
+            document.removeEventListener("keydown", handleKeyDown);
+            document.removeEventListener("keyup", handleKeyUp);
+            window.removeEventListener("blur", handleBlur);
+        };
+    }, [isMulti]);
 
     const options = useMemo(() => {
         if (!data || !Array.isArray(data)) {
@@ -188,7 +211,8 @@ const useComboBox = (data, selectedData, setSelectedData, optionText, overrideSt
         clearWhenSetFunc,
         handleChangeDefault,
         handleChange,
-        defaultOption
+        defaultOption,
+        shiftHeld
     };
 };
 export default useComboBox;

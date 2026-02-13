@@ -5,9 +5,13 @@ import constants from "../../../constants";
  * @param {Object} props - Component props
  * @param {number | string} props.fiscalYear - Current fiscal year selected
  * @param {(e: string) => void} props.handleChangeFiscalYear - Function to handle fiscal year change
+ * @param {number[]} [props.fiscalYears] - Optional array of fiscal year options (defaults to constants.fiscalYears)
+ * @param {boolean} [props.showAllOption] - Optional flag to show "All" option at the bottom (defaults to false)
  * @returns {React.ReactElement} FiscalYear component
  */
-const FiscalYear = ({ fiscalYear, handleChangeFiscalYear }) => {
+const FiscalYear = ({ fiscalYear, handleChangeFiscalYear, fiscalYears = [], showAllOption = false }) => {
+    const years = fiscalYears && fiscalYears.length > 0 ? fiscalYears : constants.fiscalYears;
+
     return (
         <div
             className="display-flex flex-justify flex-align-center"
@@ -26,8 +30,9 @@ const FiscalYear = ({ fiscalYear, handleChangeFiscalYear }) => {
                 onChange={(e) => handleChangeFiscalYear(e.target.value)}
                 value={fiscalYear}
             >
+                {fiscalYear === "All" && <option value="All">All</option>}
                 {fiscalYear === "Multi" && <option value="Multi">Multi</option>}
-                {constants.fiscalYears.map((year) => {
+                {years.map((year) => {
                     return (
                         <option
                             key={year}
@@ -37,6 +42,7 @@ const FiscalYear = ({ fiscalYear, handleChangeFiscalYear }) => {
                         </option>
                     );
                 })}
+                {showAllOption && <option value="All">All</option>}
             </select>
         </div>
     );

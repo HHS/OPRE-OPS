@@ -42,6 +42,14 @@ const baseQuery = fetchBaseQuery({
     }
 });
 
+const getFiscalYearQueryValue = (year) => {
+    const value = typeof year === "object" ? (year?.id ?? year?.title) : year;
+    if (typeof value === "string" && value.startsWith("FY ")) {
+        return value.replace("FY ", "");
+    }
+    return value;
+};
+
 const MAX_RESULTS_LIMIT = 50;
 
 export const opsApi = createApi({
@@ -73,7 +81,15 @@ export const opsApi = createApi({
     endpoints: (builder) => ({
         getAgreements: builder.query({
             query: ({
-                filters: { fiscalYear, budgetLineStatus, portfolio, agreementName, agreementType },
+                filters: {
+                    fiscalYear,
+                    budgetLineStatus,
+                    portfolio,
+                    agreementName,
+                    agreementType,
+                    projectTitle,
+                    contractNumber
+                },
                 onlyMy,
                 sortConditions,
                 sortDescending,
@@ -82,7 +98,7 @@ export const opsApi = createApi({
             }) => {
                 const queryParams = [];
                 if (fiscalYear) {
-                    fiscalYear.forEach((year) => queryParams.push(`fiscal_year=${year.title}`));
+                    fiscalYear.forEach((year) => queryParams.push(`fiscal_year=${getFiscalYearQueryValue(year)}`));
                 }
                 if (budgetLineStatus) {
                     budgetLineStatus.forEach((status) => queryParams.push(`budget_line_status=${status.status}`));
@@ -96,6 +112,14 @@ export const opsApi = createApi({
                 if (agreementType) {
                     agreementType.forEach((type) =>
                         queryParams.push(`agreement_type=${encodeURIComponent(type.type)}`)
+                    );
+                }
+                if (projectTitle) {
+                    projectTitle.forEach((project) => queryParams.push(`project_id=${project.id}`));
+                }
+                if (contractNumber) {
+                    contractNumber.forEach((contract) =>
+                        queryParams.push(`contract_number=${encodeURIComponent(contract.id)}`)
                     );
                 }
                 if (onlyMy) {
@@ -219,6 +243,17 @@ export const opsApi = createApi({
             },
             providesTags: ["Agreements"]
         }),
+        getAgreementsFilterOptions: builder.query({
+            query: ({ onlyMy }) => {
+                const queryParams = [];
+                if (onlyMy) {
+                    queryParams.push("only_my=true");
+                }
+                const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
+                return `/agreements-filters/${queryString}`;
+            },
+            providesTags: ["Agreements"]
+        }),
         getBudgetLineItemsFilterOptions: builder.query({
             query: ({ onlyMy, enableObe }) => {
                 const queryParams = [];
@@ -257,7 +292,7 @@ export const opsApi = createApi({
                 const queryParams = [];
 
                 if (fiscalYears) {
-                    fiscalYears.forEach((year) => queryParams.push(`fiscal_year=${year.title}`));
+                    fiscalYears.forEach((year) => queryParams.push(`fiscal_year=${getFiscalYearQueryValue(year)}`));
                 }
                 if (bliStatus) {
                     bliStatus.forEach((status) => queryParams.push(`budget_line_status=${status.status}`));
@@ -915,6 +950,7 @@ export const {
     useDeleteAgreementMutation,
     useGetAgreementAgenciesQuery,
     useGetAllAgreementAgenciesQuery,
+    useGetAgreementsFilterOptionsQuery,
     useAddBudgetLineItemMutation,
     useGetBudgetLineItemsFilterOptionsQuery,
     useGetBudgetLineItemsQuery,

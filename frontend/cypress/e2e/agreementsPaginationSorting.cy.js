@@ -5,6 +5,7 @@ describe("Agreements List - Pagination Sorting", () => {
     beforeEach(() => {
         testLogin("system-owner");
         cy.visit("/agreements");
+        cy.get("#fiscal-year-select").select("All");
     });
 
     afterEach(() => {
