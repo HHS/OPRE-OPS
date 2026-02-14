@@ -5,6 +5,7 @@ import StepBuilderAccordion from "../../../components/Agreements/ProcurementTrac
 import DebugCode from "../../../components/DebugCode";
 import StepIndicator from "../../../components/UI/StepIndicator";
 import { IS_PROCUREMENT_TRACKER_READY } from "../../../constants";
+import ProcurementTrackerStepTwo from "../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepTwo";
 
 /**
  * @typedef {Object} AgreementProcurementTrackerProps
@@ -112,6 +113,14 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 hasActiveTracker={hasActiveTracker}
                                 handleSetIsFormSubmitted={handleSetIsFormSubmitted}
                                 agreement={agreement}
+                            />
+                        )}
+                        {step.step_number === 2 && (
+                            <ProcurementTrackerStepTwo
+                                stepStatus={step.status}
+                                // stepOneData={stepOneData}
+                                isCurrentStep={currentStep === 2}
+                                // handleSetIsFormSubmitted={handleSetIsFormSubmitted}
                             />
                         )}
                     </StepBuilderAccordion>
