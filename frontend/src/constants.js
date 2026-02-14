@@ -53,6 +53,13 @@ export const DEFAULT_PORTFOLIO_BUDGET_RANGE = [0, 100_000_000];
 // FEATURE FLAGS
 export const IS_AWARDED_TAB_READY = false;
 export const IS_DOCUMENTS_TAB_READY = false;
-export const IS_PROCUREMENT_TRACKER_READY = process.env.NODE_ENV !== "production";
+export const IS_PROCUREMENT_TRACKER_READY_MAP = {
+    STEP_1: true,
+    STEP_2: process.env.NODE_ENV !== "production",
+    STEP_3: process.env.NODE_ENV !== "production",
+    STEP_4: process.env.NODE_ENV !== "production",
+    STEP_5: process.env.NODE_ENV !== "production",
+    STEP_6: process.env.NODE_ENV !== "production"
+};
 
 export default constants;
