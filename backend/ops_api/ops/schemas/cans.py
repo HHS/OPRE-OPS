@@ -200,6 +200,22 @@ class FundingReceivedSchema(Schema):
     updated_by_user = fields.Nested(SafeUserSchema(), allow_none=True)
 
 
+class FundingReceivedListSchema(Schema):
+    """Lightweight schema for list endpoint with only fields used by frontend.
+
+    Excludes expensive nested relationships (can, created_by_user, updated_by_user)
+    to eliminate N+1 query problems. Preserves audit timestamps for debugging.
+    """
+
+    id = fields.Integer(required=True)
+    can_id = fields.Integer(required=True)
+    fiscal_year = fields.Integer(required=True)
+    funding = fields.Float(allow_none=True)
+    notes = fields.String(allow_none=True)
+    created_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
+    updated_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
+
+
 class CreateUpdateFundingReceivedSchema(Schema):
     fiscal_year = fields.Integer(required=True)
     can_id = fields.Integer(required=True)

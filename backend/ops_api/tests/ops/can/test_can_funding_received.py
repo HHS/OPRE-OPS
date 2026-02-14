@@ -350,3 +350,36 @@ def test_service_delete_can(loaded_db):
     can = loaded_db.scalar(stmt)
 
     assert can is None
+
+
+def test_funding_received_list_uses_lightweight_schema(auth_client, app_ctx):
+    """
+    Test that the list endpoint returns lightweight schema without expensive nested relationships.
+    This verifies the performance optimization that excludes: can, created_by_user, updated_by_user.
+    """
+    response = auth_client.get("/api/v1/can-funding-received/")
+    assert response.status_code == 200
+    assert len(response.json) > 0
+
+    funding_received = response.json[0]
+
+    # Verify required fields are present
+    assert "id" in funding_received
+    assert "can_id" in funding_received
+    assert "fiscal_year" in funding_received
+    assert "funding" in funding_received
+    assert "notes" in funding_received
+    assert "created_on" in funding_received
+    assert "updated_on" in funding_received
+
+    # Verify expensive nested fields are NOT present (performance optimization)
+    assert "can" not in funding_received, "Nested 'can' object should not be in list response (causes N+1 queries)"
+    assert (
+        "created_by_user" not in funding_received
+    ), "Nested 'created_by_user' should not be in list response (causes N+1 queries)"
+    assert (
+        "updated_by_user" not in funding_received
+    ), "Nested 'updated_by_user' should not be in list response (causes N+1 queries)"
+    assert "display_name" not in funding_received, "Unused 'display_name' field should not be in list response"
+    assert "created_by" not in funding_received, "Unused 'created_by' field should not be in list response"
+    assert "updated_by" not in funding_received, "Unused 'updated_by' field should not be in list response"

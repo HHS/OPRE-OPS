@@ -87,20 +87,15 @@ export type FundingDetails = {
 };
 
 export type FundingReceived = {
-    can?: number;
+    id: number | string;
     can_id: number;
-    display_name?: string;
     fiscal_year: number;
     funding?: number;
-    id: number | string;
-    tempId?: string;
     notes?: string;
-    created_by?: any;
+    tempId?: string;
     created_by_user?: any;
-    created_on?: any;
-    updated_by?: any;
-    updated_by_user?: any;
-    updated_on?: any;
+    created_on?: string;
+    updated_on?: string;
 };
 
 export type FundingSummary = {

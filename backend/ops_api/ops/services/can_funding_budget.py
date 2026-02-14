@@ -84,8 +84,7 @@ class CANFundingBudgetService:
         Get a list of CAN funding budgets, optionally filtered by a search parameter.
         """
         stmt = select(CANFundingBudget).order_by(CANFundingBudget.id)
-        results = self.session.execute(stmt).all()
-        return [can for result in results for can in result]
+        return self.session.scalars(stmt).all()
 
 
 def _update_fields(old_funding_budget: CANFundingBudget, budget_update: dict[str, Any]) -> bool:
