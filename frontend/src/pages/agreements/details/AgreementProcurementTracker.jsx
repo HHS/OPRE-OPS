@@ -1,10 +1,11 @@
 import React from "react";
-import { useGetProcurementTrackersByAgreementIdQuery } from "../../../api/opsAPI";
+import { useGetProcurementTrackersByAgreementIdQuery, useGetUsersQuery } from "../../../api/opsAPI";
 import ProcurementTrackerStepOne from "../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepOne";
 import StepBuilderAccordion from "../../../components/Agreements/ProcurementTracker/StepBuilderAccordion";
 import DebugCode from "../../../components/DebugCode";
 import StepIndicator from "../../../components/UI/StepIndicator";
 import { IS_PROCUREMENT_TRACKER_READY } from "../../../constants";
+import ProcurementTrackerStepTwo from "../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepTwo";
 
 /**
  * @typedef {Object} AgreementProcurementTrackerProps
@@ -37,11 +38,23 @@ const AgreementProcurementTracker = ({ agreement }) => {
         refetchOnMountOrArgChange: true
     });
 
+    // Fetch all users for filtering
+    const { data: allUsers } = useGetUsersQuery();
+
+    // Filter users by authorized_user_ids from the agreement (shared across all steps)
+    const authorizedUsers = React.useMemo(() => {
+        if (!allUsers || !agreement?.authorized_user_ids) {
+            return [];
+        }
+        return allUsers.filter((user) => agreement.authorized_user_ids.includes(user.id));
+    }, [allUsers, agreement?.authorized_user_ids]);
+
     // Extract tracker data
     const trackers = data?.data || [];
     const activeTracker = trackers.find((tracker) => tracker.status === "ACTIVE");
     const hasActiveTracker = !!activeTracker;
     const stepOneData = activeTracker?.steps.find((step) => step.step_number === 1);
+    const stepTwoData = activeTracker?.steps.find((step) => step.step_number === 2);
 
     // Handle loading state
     if (isLoading) {
@@ -111,7 +124,14 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 stepOneData={stepOneData}
                                 hasActiveTracker={hasActiveTracker}
                                 handleSetIsFormSubmitted={handleSetIsFormSubmitted}
-                                agreement={agreement}
+                                authorizedUsers={authorizedUsers}
+                            />
+                        )}
+                        {step.step_number === 2 && (
+                            <ProcurementTrackerStepTwo
+                                stepStatus={step.status}
+                                stepData={stepTwoData}
+                                authorizedUsers={authorizedUsers}
                             />
                         )}
                     </StepBuilderAccordion>
