@@ -284,6 +284,46 @@ describe("HorizontalStackedBar", () => {
         expect(screen.queryByRole("button")).not.toBeInTheDocument();
     });
 
+    it("filters out zero-percent segments so CSS border-radius applies correctly", () => {
+        const dataWithZeroPercent = [
+            {
+                id: 1,
+                label: "Child Care",
+                abbreviation: "CC",
+                value: 7500000,
+                color: "var(--portfolio-budget-1)",
+                percent: 45
+            },
+            {
+                id: 2,
+                label: "Child Welfare",
+                abbreviation: "CW",
+                value: 0,
+                color: "var(--portfolio-budget-2)",
+                percent: 0
+            },
+            {
+                id: 3,
+                label: "Office Director",
+                abbreviation: "OD",
+                value: 0,
+                color: "var(--portfolio-budget-9)",
+                percent: 0
+            }
+        ];
+
+        render(
+            <HorizontalStackedBar
+                data={dataWithZeroPercent}
+                setActiveId={vi.fn()}
+            />
+        );
+
+        const segments = screen.getAllByRole("button");
+        expect(segments).toHaveLength(1);
+        expect(segments[0]).toHaveStyle({ flexBasis: "45%", backgroundColor: "var(--portfolio-budget-1)" });
+    });
+
     it("uses default setActiveId if not provided", () => {
         const dataWithoutSetActiveId = {
             data: mockData
