@@ -1,13 +1,15 @@
-from typing import Optional
+from typing import Any, Optional
 
 from flask import current_app
 from loguru import logger
-from sqlalchemy import Integer, cast, func, select
+from sqlalchemy import Integer, cast, distinct, func, select, union_all
 from sqlalchemy.exc import NoResultFound
 from werkzeug.exceptions import NotFound
 
 from models import CAN, CANSortCondition
-from models.cans import CANFundingDetails
+from models.cans import CANFundingBudget, CANFundingDetails
+from models.portfolios import Portfolio
+from ops_api.ops.schemas.cans import CANListFilterOptionResponseSchema
 from ops_api.ops.utils.cans import get_can_funding_summary
 from ops_api.ops.utils.query_helpers import QueryHelper
 
@@ -221,6 +223,80 @@ class CANService:
             stmt = query_helper.get_stmt()
 
         return self.db_session.execute(stmt).scalars().all()
+
+    def get_filter_options(self, data: dict | None) -> dict[str, Any]:
+        """
+        Get filter options for the CAN list.
+
+        Returns distinct portfolios, nick_names, and FY budget range
+        for CANs matching the optional fiscal_year filter.
+
+        Uses database-level aggregation to avoid loading full ORM objects.
+        """
+        fiscal_year = data.get("fiscal_year", []) if data else []
+        fiscal_year_value = fiscal_year[0] if fiscal_year and len(fiscal_year) > 0 else None
+
+        # Build a CAN IDs subquery instead of loading full ORM objects
+        if fiscal_year_value is None:
+            can_ids_subquery = select(CAN.id)
+        else:
+            active_period_expr = cast(func.substr(CANFundingDetails.fund_code, 11, 1), Integer)
+            base_id_stmt = select(CAN.id).join(CANFundingDetails, CAN.funding_details_id == CANFundingDetails.id)
+
+            one_year_ids = base_id_stmt.where(
+                active_period_expr == 1,
+                CANFundingDetails.fiscal_year == fiscal_year_value,
+            )
+            multiple_year_ids = base_id_stmt.where(
+                active_period_expr > 1,
+                CANFundingDetails.fiscal_year <= fiscal_year_value,
+                CANFundingDetails.fiscal_year + active_period_expr > fiscal_year_value,
+            )
+            zero_year_ids = base_id_stmt.where(
+                active_period_expr == 0,
+                CANFundingDetails.fiscal_year >= fiscal_year_value,
+            )
+            can_ids_subquery = union_all(one_year_ids, multiple_year_ids, zero_year_ids)
+
+        # Extract distinct portfolios via SQL
+        portfolios_query = (
+            select(distinct(Portfolio.id), Portfolio.name, Portfolio.abbreviation)
+            .join(CAN, Portfolio.id == CAN.portfolio_id)
+            .where(CAN.id.in_(can_ids_subquery))
+        )
+        portfolio_rows = self.db_session.execute(portfolios_query).all()
+        portfolios = sorted(
+            [{"id": row[0], "name": row[1], "abbreviation": row[2]} for row in portfolio_rows],
+            key=lambda x: x["name"],
+        )
+
+        # Extract distinct nick_names via SQL
+        nick_names_query = select(CAN.id, CAN.nick_name).where(CAN.id.in_(can_ids_subquery), CAN.nick_name.isnot(None))
+        nick_name_rows = self.db_session.execute(nick_names_query).all()
+        nick_names = sorted(
+            [{"id": row[0], "nick_name": row[1]} for row in nick_name_rows],
+            key=lambda x: x["nick_name"],
+        )
+
+        # Compute FY budget range via SQL MIN/MAX aggregation
+        budget_query = select(func.min(CANFundingBudget.budget), func.max(CANFundingBudget.budget)).where(
+            CANFundingBudget.can_id.in_(can_ids_subquery),
+            CANFundingBudget.budget.isnot(None),
+        )
+        if fiscal_year_value is not None:
+            budget_query = budget_query.where(CANFundingBudget.fiscal_year == fiscal_year_value)
+        budget_row = self.db_session.execute(budget_query).one()
+        fy_budget_min = float(budget_row[0]) if budget_row[0] is not None else 0.0
+        fy_budget_max = float(budget_row[1]) if budget_row[1] is not None else 0.0
+
+        filters = {
+            "portfolios": portfolios,
+            "nick_names": nick_names,
+            "fy_budget_range": {"min": fy_budget_min, "max": fy_budget_max},
+        }
+
+        filter_response_schema = CANListFilterOptionResponseSchema()
+        return filter_response_schema.dump(filters)
 
     @staticmethod
     def _sort_results(results, fiscal_year, sort_condition, sort_descending):

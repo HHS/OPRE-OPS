@@ -890,3 +890,92 @@ def test_service_filter_no_results(loaded_db):
 
     assert len(cans) == 0
     assert metadata["count"] == 0
+
+
+# ============================================================================
+# Testing CAN Filter Options Endpoint
+# ============================================================================
+
+
+def test_get_can_filter_options(auth_client, loaded_db, app_ctx):
+    """GET /cans-filters/ returns all expected filter option fields."""
+    response = auth_client.get("/api/v1/cans-filters/")
+    assert response.status_code == 200
+
+    data = response.json
+    assert "portfolios" in data
+    assert "nick_names" in data
+    assert "fy_budget_range" in data
+
+
+def test_can_filter_options_portfolios_have_expected_fields(auth_client, loaded_db, app_ctx):
+    """Portfolios should have id, name, and abbreviation."""
+    response = auth_client.get("/api/v1/cans-filters/")
+    assert response.status_code == 200
+
+    portfolios = response.json["portfolios"]
+    assert len(portfolios) > 0
+    for portfolio in portfolios:
+        assert "id" in portfolio
+        assert "name" in portfolio
+        assert "abbreviation" in portfolio
+
+
+def test_can_filter_options_portfolios_sorted_by_name(auth_client, loaded_db, app_ctx):
+    """Portfolios should be sorted alphabetically by name."""
+    response = auth_client.get("/api/v1/cans-filters/")
+    assert response.status_code == 200
+
+    portfolios = response.json["portfolios"]
+    names = [p["name"] for p in portfolios]
+    assert names == sorted(names)
+
+
+def test_can_filter_options_nick_names_have_expected_fields(auth_client, loaded_db, app_ctx):
+    """Nick names should have id and nick_name."""
+    response = auth_client.get("/api/v1/cans-filters/")
+    assert response.status_code == 200
+
+    nick_names = response.json["nick_names"]
+    assert len(nick_names) > 0
+    for entry in nick_names:
+        assert "id" in entry
+        assert "nick_name" in entry
+
+
+def test_can_filter_options_nick_names_sorted(auth_client, loaded_db, app_ctx):
+    """Nick names should be sorted alphabetically."""
+    response = auth_client.get("/api/v1/cans-filters/")
+    assert response.status_code == 200
+
+    nick_names = response.json["nick_names"]
+    names = [n["nick_name"] for n in nick_names]
+    assert names == sorted(names)
+
+
+def test_can_filter_options_fy_budget_range_has_min_max(auth_client, loaded_db, app_ctx):
+    """FY budget range should have min and max keys."""
+    response = auth_client.get("/api/v1/cans-filters/")
+    assert response.status_code == 200
+
+    fy_budget_range = response.json["fy_budget_range"]
+    assert "min" in fy_budget_range
+    assert "max" in fy_budget_range
+    assert fy_budget_range["min"] <= fy_budget_range["max"]
+
+
+def test_can_filter_options_with_fiscal_year(auth_client, loaded_db, app_ctx):
+    """GET /cans-filters/?fiscal_year=2023 returns filtered results."""
+    response = auth_client.get("/api/v1/cans-filters/?fiscal_year=2023")
+    assert response.status_code == 200
+
+    data = response.json
+    assert "portfolios" in data
+    assert "nick_names" in data
+    assert "fy_budget_range" in data
+
+
+def test_can_filter_options_no_permission(no_perms_auth_client):
+    """GET /cans-filters/ should return 403 for unauthorized users."""
+    response = no_perms_auth_client.get("/api/v1/cans-filters/")
+    assert response.status_code == 403

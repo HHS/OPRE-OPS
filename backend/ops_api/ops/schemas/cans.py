@@ -12,6 +12,16 @@ from ops_api.ops.schemas.projects import ProjectSchema
 from ops_api.ops.schemas.users import SafeUserSchema
 
 
+class CANFiltersQueryParametersSchema(Schema):
+    fiscal_year = fields.List(fields.Integer(), required=False)
+
+
+class CANListFilterOptionResponseSchema(Schema):
+    portfolios = fields.List(fields.Dict(keys=fields.String(), values=fields.Raw()), required=True)
+    nick_names = fields.List(fields.Dict(keys=fields.String(), values=fields.Raw()), required=True)
+    fy_budget_range = fields.Dict(keys=fields.String(), values=fields.Float(), required=True)
+
+
 class GetCANListRequestSchema(PaginationListSchema):
     search = fields.List(fields.String(), required=False)
     fiscal_year = fields.List(fields.Integer(), required=False)
