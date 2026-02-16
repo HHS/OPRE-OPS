@@ -1090,11 +1090,11 @@
         },
         "typeguard": {
             "hashes": [
-                "sha256:3a7fd2dffb705d4d0efaed4306a704c89b9dee850b688f060a8b1615a79e5f74",
-                "sha256:b5f562281b6bfa1f5492470464730ef001646128b180769880468bd84b68b09e"
+                "sha256:749bea21cdb2553e12831bc29f1eae980b22c7de8331ab67ae7db9e85470b5a7",
+                "sha256:cfda388fc88a9ce42a41890900d6f31ee124bea9b73bb84701a32438e92165c3"
             ],
             "markers": "python_version >= '3.9'",
-            "version": "==4.4.4"
+            "version": "==4.5.0"
         },
         "typing-extensions": {
             "hashes": [
@@ -1751,11 +1751,11 @@
         },
         "filelock": {
             "hashes": [
-                "sha256:0f90eee4c62101243df3007db3cf8fc3ebf1bb13541d3e72c687d6e0f3f7d531",
-                "sha256:48c739c73c6fcacd381ed532226991150947c4a76dcd674f84d6807fd55dbaf2"
+                "sha256:3440181dd03f8904c108c8e9f5b11d1663e9fc960f1c837586a11f1c5c041e54",
+                "sha256:7c59f595e3cf4887dc95b403a896849da49ed183d7c9d7ee855646ca99f10698"
             ],
             "markers": "python_version >= '3.10'",
-            "version": "==3.21.0"
+            "version": "==3.24.1"
         },
         "flake8": {
             "hashes": [
@@ -2703,11 +2703,11 @@
         },
         "platformdirs": {
             "hashes": [
-                "sha256:4a13c2db1071e5846c3b3e04e5b095c0de36b2a24be9a3bc0145ca66fce4e328",
-                "sha256:dd7f808d828e1764a22ebff09e60f175ee3c41876606a6132a688d809c7c9c73"
+                "sha256:61d8b967d34791c162d30d60737369cbbd77debad5b981c4bfda1842e71e0d66",
+                "sha256:f310f16e89c4e29117805d8328f7c10876eeff36c94eac879532812110f7d39f"
             ],
             "markers": "python_version >= '3.10'",
-            "version": "==4.6.0"
+            "version": "==4.9.1"
         },
         "pluggy": {
             "hashes": [
