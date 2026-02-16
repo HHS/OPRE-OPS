@@ -1,6 +1,5 @@
 import { fiscalYearFromDate } from "../../../../helpers/utils";
 import constants from "../../../../constants";
-import { calculateProcShopFeePercentage } from "../../../../helpers/budgetLines.helpers";
 
 const { blisByFYChartColors } = constants;
 
@@ -8,9 +7,15 @@ const addFiscalYearToBudgetLineItems = (budgetLineItems) => {
     return budgetLineItems.map((bli) => ({ ...bli, fiscalYear: fiscalYearFromDate(bli.date_needed) }));
 };
 
+const getProcShopFeePercentage = (budgetLine, currentProcShopFeePercentage = 0) => {
+    return budgetLine?.procurement_shop_fee
+        ? (budgetLine?.procurement_shop_fee?.fee ?? 0)
+        : currentProcShopFeePercentage;
+};
+
 const calculateBLITotal = (budgetLineItem, currentProcShopFeePercentage) => {
     if (!budgetLineItem.fiscalYear || budgetLineItem.amount == null) return 0;
-    const procShopFeePercentage = calculateProcShopFeePercentage(budgetLineItem, currentProcShopFeePercentage);
+    const procShopFeePercentage = getProcShopFeePercentage(budgetLineItem, currentProcShopFeePercentage);
     let fee = (budgetLineItem.amount * procShopFeePercentage) / 100;
     let total = budgetLineItem.amount + fee;
     return total;
