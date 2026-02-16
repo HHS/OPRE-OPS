@@ -46,6 +46,39 @@ vi.mock("../../UsersComboBox", () => ({
         </div>
     )
 }));
+vi.mock("../../../UI/USWDS/DatePicker", () => ({
+    default: ({ label, hint, value, onChange, maxDate, minDate, id, name, messages, className }) => (
+        <div
+            data-testid="date-picker"
+            data-picker-id={id}
+            className={className}
+        >
+            <label htmlFor={id}>{label}</label>
+            {hint && <div className="hint">{hint}</div>}
+            <input
+                type="text"
+                id={id}
+                name={name}
+                value={value}
+                onChange={onChange}
+                data-max-date={maxDate}
+                data-min-date={minDate}
+            />
+            {messages && messages.length > 0 && (
+                <div className="error-messages">
+                    {messages.map((msg, idx) => (
+                        <div
+                            key={idx}
+                            className="error-message"
+                        >
+                            {msg}
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    )
+}));
 
 describe("ProcurementTrackerStepTwo", () => {
     const mockSetSelectedUser = vi.fn();
@@ -56,36 +89,9 @@ describe("ProcurementTrackerStepTwo", () => {
         getErrors: vi.fn(() => [])
     };
 
-    const MockDatePicker = ({ label, hint, value, onChange, maxDate, id, name, messages, className }) => (
-        <div
-            data-testid="date-picker"
-            data-picker-id={id}
-            className={className}
-        >
-            <label htmlFor={id}>{label}</label>
-            <span>{hint}</span>
-            <input
-                type="date"
-                id={id}
-                name={name}
-                value={value}
-                onChange={onChange}
-                max={typeof maxDate === "string" ? maxDate : maxDate?.toISOString().split("T")[0]}
-            />
-            {messages && messages.length > 0 && (
-                <div data-testid="date-validation-messages">
-                    {messages.map((msg, idx) => (
-                        <span key={idx}>{msg}</span>
-                    ))}
-                </div>
-            )}
-        </div>
-    );
-
     const defaultHookReturn = {
         selectedUser: {},
         setSelectedUser: mockSetSelectedUser,
-        MemoizedDatePicker: MockDatePicker,
         targetCompletionDate: "",
         setTargetCompletionDate: mockSetTargetCompletionDate,
         step2CompletedByUserName: "John Doe",
@@ -137,20 +143,6 @@ describe("ProcurementTrackerStepTwo", () => {
             ).toBeInTheDocument();
         });
 
-        it("renders Save button for Target Completion Date", () => {
-            render(
-                <ProcurementTrackerStepTwo
-                    stepStatus="PENDING"
-                    stepData={mockStepData}
-                    authorizedUsers={mockAllUsers}
-                />
-            );
-
-            const saveButton = screen.getByRole("button", { name: /save/i });
-            expect(saveButton).toBeInTheDocument();
-            expect(saveButton).toHaveAttribute("data-cy", "target-completion-save-btn");
-        });
-
         it("Target Completion Date has correct props", () => {
             render(
                 <ProcurementTrackerStepTwo
@@ -189,7 +181,7 @@ describe("ProcurementTrackerStepTwo", () => {
 
             // eslint-disable-next-line testing-library/no-node-access
             const dateInput = dateCompletedPicker.querySelector("input");
-            expect(dateInput).toHaveAttribute("max");
+            expect(dateInput).toHaveAttribute("data-max-date");
         });
 
         it("UsersComboBox has correct props", () => {
@@ -265,24 +257,6 @@ describe("ProcurementTrackerStepTwo", () => {
             fireEvent.change(select, { target: { value: "123" } });
 
             expect(mockSetSelectedUser).toHaveBeenCalledWith({ id: 123 });
-        });
-
-        it("Save button shows alert (placeholder functionality)", () => {
-            const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
-
-            render(
-                <ProcurementTrackerStepTwo
-                    stepStatus="PENDING"
-                    stepData={mockStepData}
-                    authorizedUsers={mockAllUsers}
-                />
-            );
-
-            const saveButton = screen.getByRole("button", { name: /save/i });
-            fireEvent.click(saveButton);
-
-            expect(alertSpy).toHaveBeenCalledWith("Save target completion date functionality coming soon!");
-            alertSpy.mockRestore();
         });
     });
 
@@ -472,19 +446,6 @@ describe("ProcurementTrackerStepTwo", () => {
             const fieldset = screen.getByRole("group");
             expect(fieldset).toBeInTheDocument();
             expect(fieldset.tagName).toBe("FIELDSET");
-        });
-
-        it("buttons have accessible labels", () => {
-            render(
-                <ProcurementTrackerStepTwo
-                    stepStatus="PENDING"
-                    stepData={mockStepData}
-                    authorizedUsers={mockAllUsers}
-                />
-            );
-
-            const saveButton = screen.getByRole("button", { name: /save/i });
-            expect(saveButton).toHaveAccessibleName();
         });
 
         it("definition list structure correct in COMPLETED state", () => {

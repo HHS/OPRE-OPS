@@ -40,13 +40,6 @@ describe("useProcurementTrackerStepTwo", () => {
             expect(result.current.step2DateCompleted).toBe("");
         });
 
-        it("provides MemoizedDatePicker component", () => {
-            const { result } = renderHook(() => useProcurementTrackerStepTwo(mockStepTwoData));
-
-            expect(result.current.MemoizedDatePicker).toBeDefined();
-            expect(typeof result.current.MemoizedDatePicker).toBe("object");
-        });
-
         it("returns all setter functions", () => {
             const { result } = renderHook(() => useProcurementTrackerStepTwo(mockStepTwoData));
 

@@ -2,6 +2,7 @@ import { getLocalISODate } from "../../../../helpers/utils";
 import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepTwo from "./ProcurementTrackerStepTwo.hooks";
 import TermTag from "../../../UI/Term/TermTag";
+import DatePicker from "../../../UI/USWDS/DatePicker";
 
 /**
  * @typedef {Object} ProcurementTrackerStepTwoProps
@@ -19,7 +20,6 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepData, authorizedUsers }) =>
     const {
         selectedUser,
         setSelectedUser,
-        MemoizedDatePicker,
         setTargetCompletionDate,
         targetCompletionDate,
         step2CompletedByUserName,
@@ -40,28 +40,18 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepData, authorizedUsers }) =>
                         step as complete. If you have a target completion date for when the package will be finalized,
                         enter it below.
                     </p>
-                    <div className="display-flex flex-align-end">
-                        <MemoizedDatePicker
-                            id="target-completion-date"
-                            name="targetCompletionDate"
-                            label="Target Completion Date"
-                            hint="mm/dd/yyyy"
-                            value={targetCompletionDate}
-                            onChange={(e) => {
-                                setTargetCompletionDate(e.target.value);
-                            }}
-                            maxDate={getLocalISODate()}
-                        />
-                        <button
-                            className="usa-button usa-button--unstyled margin-bottom-1 margin-left-2"
-                            data-cy="target-completion-save-btn"
-                            onClick={() => {
-                                alert("Save target completion date functionality coming soon!");
-                            }}
-                        >
-                            Save
-                        </button>
-                    </div>
+                    {/* TODO: Add save functionality for target completion date */}
+                    <DatePicker
+                        id="target-completion-date"
+                        name="targetCompletionDate"
+                        label="Target Completion Date"
+                        hint="mm/dd/yyyy"
+                        value={targetCompletionDate}
+                        onChange={(e) => {
+                            setTargetCompletionDate(e.target.value);
+                        }}
+                        maxDate={getLocalISODate()}
+                    />
                     <div className="display-flex flex-align-center">
                         <UsersComboBox
                             className="width-card-lg margin-top-5"
@@ -71,7 +61,7 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepData, authorizedUsers }) =>
                             users={authorizedUsers}
                         />
 
-                        <MemoizedDatePicker
+                        <DatePicker
                             id="step-2-date-completed"
                             name="dateCompleted"
                             className="margin-left-4"
