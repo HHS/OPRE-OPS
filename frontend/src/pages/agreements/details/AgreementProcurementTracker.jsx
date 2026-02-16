@@ -132,6 +132,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 stepStatus={step.status}
                                 stepData={stepTwoData}
                                 authorizedUsers={authorizedUsers}
+                                hasActiveTracker={hasActiveTracker}
                             />
                         )}
                     </StepBuilderAccordion>

@@ -2,12 +2,14 @@ import { getLocalISODate } from "../../../../helpers/utils";
 import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepTwo from "./ProcurementTrackerStepTwo.hooks";
 import TermTag from "../../../UI/Term/TermTag";
+import DatePicker from "../../../UI/USWDS/DatePicker";
 
 /**
  * @typedef {Object} ProcurementTrackerStepTwoProps
  * @property {string} stepStatus - The current status of the procurement tracker step
  * @property {Object} stepData - The data for step of the procurement tracker
  * @property {Array} authorizedUsers - List of users authorized for this agreement
+ * @property {boolean} hasActiveTracker - Whether an active tracker exists
  */
 
 /**
@@ -15,11 +17,10 @@ import TermTag from "../../../UI/Term/TermTag";
  * @param {ProcurementTrackerStepTwoProps} props
  * @returns {React.ReactElement}
  */
-const ProcurementTrackerStepTwo = ({ stepStatus, stepData, authorizedUsers }) => {
+const ProcurementTrackerStepTwo = ({ stepStatus, stepData, authorizedUsers, hasActiveTracker }) => {
     const {
         selectedUser,
         setSelectedUser,
-        MemoizedDatePicker,
         setTargetCompletionDate,
         targetCompletionDate,
         step2CompletedByUserName
@@ -36,7 +37,7 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepData, authorizedUsers }) =>
                         enter it below.
                     </p>
                     <div className="display-flex flex-align-end">
-                        <MemoizedDatePicker
+                        <DatePicker
                             id="target-completion-date"
                             name="targetCompletionDate"
                             label="Target Completion Date"
@@ -45,14 +46,17 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepData, authorizedUsers }) =>
                             onChange={(e) => {
                                 setTargetCompletionDate(e.target.value);
                             }}
-                            maxDate={getLocalISODate()}
+                            minDate={getLocalISODate()}
+                            isDisabled={!hasActiveTracker}
                         />
                         <button
+                            type="button"
                             className="usa-button usa-button--unstyled margin-bottom-1 margin-left-2"
                             data-cy="target-completion-save-btn"
                             onClick={() => {
                                 alert("Save target completion date functionality coming soon!");
                             }}
+                            disabled={!hasActiveTracker}
                         >
                             Save
                         </button>
@@ -63,6 +67,7 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepData, authorizedUsers }) =>
                         selectedUser={selectedUser}
                         setSelectedUser={setSelectedUser}
                         users={authorizedUsers}
+                        isDisabled={!hasActiveTracker}
                     />
                 </fieldset>
             )}

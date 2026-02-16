@@ -49,8 +49,11 @@ vi.mock("../../../components/UI/Accordion", () => ({
 
 // Mock UsersComboBox component
 vi.mock("../../../components/Agreements/UsersComboBox", () => ({
-    default: ({ label, setSelectedUser, isDisabled }) => (
-        <div data-testid="users-combobox">
+    default: ({ label, setSelectedUser, isDisabled, users }) => (
+        <div
+            data-testid="users-combobox"
+            data-users-count={users?.length || 0}
+        >
             <label>{label}</label>
             <button
                 disabled={isDisabled}
@@ -58,6 +61,14 @@ vi.mock("../../../components/Agreements/UsersComboBox", () => ({
             >
                 Select User
             </button>
+            {users?.map((user) => (
+                <div
+                    key={user.id}
+                    data-testid={`user-option-${user.id}`}
+                >
+                    {user.full_name}
+                </div>
+            ))}
         </div>
     )
 }));
@@ -1082,6 +1093,19 @@ describe("AgreementProcurementTracker", () => {
             // Verify that UsersComboBox is rendered (which receives the filtered users)
             expect(screen.getByTestId("users-combobox")).toBeInTheDocument();
             expect(screen.getByText("Task Completed By")).toBeInTheDocument();
+
+            // Verify that only the 3 authorized users are passed to the component
+            const comboBox = screen.getByTestId("users-combobox");
+            expect(comboBox).toHaveAttribute("data-users-count", "3");
+
+            // Verify the specific authorized users are present
+            expect(screen.getByTestId("user-option-1")).toHaveTextContent("Amy Madigan");
+            expect(screen.getByTestId("user-option-3")).toHaveTextContent("Jane Smith");
+            expect(screen.getByTestId("user-option-5")).toHaveTextContent("Alice Brown");
+
+            // Verify unauthorized users are NOT present
+            expect(screen.queryByTestId("user-option-2")).not.toBeInTheDocument();
+            expect(screen.queryByTestId("user-option-4")).not.toBeInTheDocument();
         });
 
         it("passes empty array when agreement.authorized_user_ids is null", () => {
@@ -1110,6 +1134,10 @@ describe("AgreementProcurementTracker", () => {
 
             // UsersComboBox should still render (but will receive empty array)
             expect(screen.getByTestId("users-combobox")).toBeInTheDocument();
+
+            // Verify that 0 users are passed to the component
+            const comboBox = screen.getByTestId("users-combobox");
+            expect(comboBox).toHaveAttribute("data-users-count", "0");
         });
 
         it("passes empty array when agreement.authorized_user_ids is undefined", () => {
@@ -1138,6 +1166,10 @@ describe("AgreementProcurementTracker", () => {
 
             // UsersComboBox should still render (but will receive empty array)
             expect(screen.getByTestId("users-combobox")).toBeInTheDocument();
+
+            // Verify that 0 users are passed to the component
+            const comboBox = screen.getByTestId("users-combobox");
+            expect(comboBox).toHaveAttribute("data-users-count", "0");
         });
 
         it("passes empty array when agreement is not provided", () => {
@@ -1189,6 +1221,10 @@ describe("AgreementProcurementTracker", () => {
 
             // UsersComboBox should still render (but will receive empty array until users load)
             expect(screen.getByTestId("users-combobox")).toBeInTheDocument();
+
+            // Verify that 0 users are passed to the component
+            const comboBox = screen.getByTestId("users-combobox");
+            expect(comboBox).toHaveAttribute("data-users-count", "0");
         });
     });
 });
