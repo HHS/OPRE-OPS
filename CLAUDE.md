@@ -22,6 +22,28 @@ See [`.claude/actions/README.md`](.claude/actions/README.md) for usage details.
 
 These scripts can be invoked by Claude Code automatically or run manually.
 
+## Claude Story Templates
+
+This repository includes reusable story templates in `.claude/templates/` for consistent planning and implementation with Claude Code.
+
+Available templates:
+- **`feature-story.md`**: For implementing new features
+- **`bug-story.md`**: For fixing bugs and defects
+- **`refactor-story.md`**: For code refactoring and technical improvements
+
+See [`.claude/templates/README.md`](.claude/templates/README.md) for detailed usage instructions.
+
+**Example usage**:
+```bash
+# Copy template to gitignored stories directory
+cp .claude/templates/feature-story.md .claude/stories/OPS-1234.md
+
+# Edit with your specific story details
+# Use with Claude Code for implementation
+```
+
+Personal story files in `.claude/stories/` are gitignored to keep work-in-progress private.
+
 ## Project Overview
 
 OPRE OPS is the Portfolio Management System for OPRE (Office of Planning, Research and Evaluation), replacing the legacy MAPS system. It's a full-stack web application with a Flask/SQLAlchemy backend API and a React/Redux frontend, containerized with Docker.
