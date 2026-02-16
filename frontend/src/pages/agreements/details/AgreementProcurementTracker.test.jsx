@@ -914,9 +914,7 @@ describe("AgreementProcurementTracker", () => {
             );
 
             expect(
-                screen.getByText(
-                    /Edit the pre-solicitation package in collaboration with the Procurement Shop/
-                )
+                screen.getByText(/Edit the pre-solicitation package in collaboration with the Procurement Shop/)
             ).toBeInTheDocument();
             expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
         });
