@@ -18,13 +18,8 @@ import DatePicker from "../../../UI/USWDS/DatePicker";
  * @returns {React.ReactElement}
  */
 const ProcurementTrackerStepTwo = ({ stepStatus, stepData, authorizedUsers, hasActiveTracker }) => {
-    const {
-        selectedUser,
-        setSelectedUser,
-        setTargetCompletionDate,
-        targetCompletionDate,
-        step2CompletedByUserName
-    } = useProcurementTrackerStepTwo(stepData);
+    const { selectedUser, setSelectedUser, setTargetCompletionDate, targetCompletionDate, step2CompletedByUserName } =
+        useProcurementTrackerStepTwo(stepData);
 
     return (
         <>
