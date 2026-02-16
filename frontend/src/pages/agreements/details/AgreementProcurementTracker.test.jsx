@@ -887,13 +887,13 @@ describe("AgreementProcurementTracker", () => {
                             {
                                 id: 101,
                                 step_number: 1,
-                                step_type: "PRE_SOLICITATION",
+                                step_type: "ACQUISITION_PLANNING",
                                 status: "COMPLETED"
                             },
                             {
                                 id: 102,
                                 step_number: 2,
-                                step_type: "SOLICITATION",
+                                step_type: "PRE_SOLICITATION",
                                 status: "ACTIVE"
                             }
                         ]
@@ -918,6 +918,58 @@ describe("AgreementProcurementTracker", () => {
             ).toBeInTheDocument();
             expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
         });
+
+        it.each([
+            [3, "SOLICITATION", /Once the Procurement Shop has posted the Solicitation and it’s “on the street”/],
+            [4, "EVALUATION", /Complete the technical evaluations and any potential negotiations/],
+            [5, "PRE_AWARD", /All agreements need Pre-Award Approval before the Final Consensus Memo/],
+            [6, "AWARD", /Once you receive the signed award, click Request Award Approval below/]
+        ])(
+            "renders step %i instructional content when that step is active",
+            (activeStepNumber, activeStepType, expectedInstructionalText) => {
+                const mockTrackerWithActiveInstructionalStep = {
+                    data: [
+                        {
+                            id: 4,
+                            agreement_id: 13,
+                            display_name: "ProcurementTracker#4",
+                            status: "ACTIVE",
+                            tracker_type: "DEFAULT",
+                            active_step_number: activeStepNumber,
+                            steps: [
+                                {
+                                    id: 101,
+                                    step_number: 1,
+                                    step_type: "ACQUISITION_PLANNING",
+                                    status: "COMPLETED"
+                                },
+                                {
+                                    id: 100 + activeStepNumber,
+                                    step_number: activeStepNumber,
+                                    step_type: activeStepType,
+                                    status: "ACTIVE"
+                                }
+                            ]
+                        }
+                    ]
+                };
+
+                useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
+                    data: mockTrackerWithActiveInstructionalStep,
+                    isLoading: false,
+                    isError: false
+                });
+
+                render(
+                    <Provider store={setupStore()}>
+                        <AgreementProcurementTracker agreement={mockAgreement} />
+                    </Provider>
+                );
+
+                expect(screen.getByText(expectedInstructionalText)).toBeInTheDocument();
+                expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
+            }
+        );
     });
 
     describe("Step 1 Completed State", () => {
