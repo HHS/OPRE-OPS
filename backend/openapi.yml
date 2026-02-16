@@ -4735,82 +4735,103 @@ components:
           $ref: "#/components/parameters/created_by_user"
         updated_by_user:
           $ref: "#/components/parameters/updated_by_user"
-    ResearchProject:
+    ResearchProjectListItem:
       type: object
+      description: Lightweight schema for list endpoint
       properties:
         id:
           type: integer
           example: 1
-        description:
-          type: string
-        methodologies:
-          type: array
-          items:
-            type: string
-            example:
-              - SURVEY
-              - FIELD_RESEARCH
-              - PARTICIPANT_OBSERVATION
-        populations:
-          type: array
-          items:
-            type: string
-            example:
-              - POPULATION_1
-              - POPULATION_2
-        team_leaders:
-          type: array
-          items:
-            type: object
-            example:
-              [
-                {
-                  "created_by": null,
-                  "created_on": "2023-04-17T14:43:15.216759",
-                  "date_joined": "2023-04-17T14:43:15.216759",
-                  "division": 1,
-                  "email": "chris.fortunato@example.com",
-                  "first_name": "Chris",
-                  "full_name": "Chris Fortunato",
-                  "id": 1,
-                  "last_name": "Fortunato",
-                  "oidc_id": "00000000-0000-1111-a111-000000000001",
-                  "updated": null,
-                  "updated_on": "2023-04-17T14:43:15.216759",
-                },
-              ]
-        origination_date:
-          type: string
-          example: "2022-01-01"
-        short_title:
-          type: string
         title:
           type: string
           example: African American Child and Family Research Center
+        short_title:
+          type: string
+        description:
+          type: string
         url:
           type: string
           example: >-
             https://acf.gov/opre/project/african-american-child-and-family-research-center
+        origination_date:
+          type: string
+          format: date
+          example: "2022-01-01"
         created_on:
-          $ref: "#/components/parameters/created_on"
+          type: string
+          format: date-time
+          example: "2023-04-06T20:33:38.292475Z"
         updated_on:
-          $ref: "#/components/parameters/updated_on"
+          type: string
+          format: date-time
+          example: "2023-04-06T20:33:38.292475Z"
+        project_type:
+          type: string
+          enum: [RESEARCH, ADMINISTRATIVE_AND_SUPPORT]
+          example: RESEARCH
+      required:
+        - title
+    ResearchProject:
+      type: object
+      description: Full schema for detail endpoint - includes all relationships
+      properties:
+        id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: African American Child and Family Research Center
+        short_title:
+          type: string
+        description:
+          type: string
+        url:
+          type: string
+          example: >-
+            https://acf.gov/opre/project/african-american-child-and-family-research-center
+        origination_date:
+          type: string
+          format: date
+          example: "2022-01-01"
+        team_leaders:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              full_name:
+                type: string
+              email:
+                type: string
+            example:
+              {
+                "id": 1,
+                "full_name": "Chris Fortunato",
+                "email": "chris.fortunato@example.com"
+              }
+        created_on:
+          type: string
+          format: date-time
+          example: "2023-04-06T20:33:38.292475Z"
+        updated_on:
+          type: string
+          format: date-time
+          example: "2023-04-06T20:33:38.292475Z"
         created_by:
-          $ref: "#/components/parameters/created_by"
-        updated_by:
-          $ref: "#/components/parameters/updated_by"
-        created_by_user:
-          $ref: "#/components/parameters/created_by_user"
-        updated_by_user:
-          $ref: "#/components/parameters/updated_by_user"
+          type: integer
+          example: 1
+        project_type:
+          type: string
+          enum: [RESEARCH, ADMINISTRATIVE_AND_SUPPORT]
+          example: RESEARCH
       required:
         - title
     ResearchProjects:
-      description: OPS List of Research Projects
+      description: OPS List of Research Projects (lightweight schema)
       type: array
       items:
-        anyOf:
-          - $ref: "#/components/schemas/ResearchProject"
+        $ref: "#/components/schemas/ResearchProjectListItem"
     AgreementHistory:
       description: List of Agreement History records
       type: array
@@ -5242,6 +5263,10 @@ components:
     ResearchProjectRequest:
       type: object
       properties:
+        project_type:
+          type: string
+          enum: [RESEARCH, ADMINISTRATIVE_AND_SUPPORT]
+          example: RESEARCH
         title:
           type: string
           example: "Research Project #1"
@@ -5256,28 +5281,23 @@ components:
           example: https://example.com
         origination_date:
           type: string
+          format: date
           example: "2023-05-06"
-        methodologies:
-          type: array
-          items:
-            type: string
-            example:
-              - SURVEY
-              - FIELD_RESEARCH
-              - PARTICIPANT_OBSERVATION
-        populations:
-          type: array
-          items:
-            type: string
-            example:
-              - POPULATION_1
-              - POPULATION_2
         team_leaders:
           type: array
           items:
             type: object
-            example: [{"id": 1}, {"id": 2}, {"id": 3}]
-
+            properties:
+              id:
+                type: integer
+              full_name:
+                type: string
+              email:
+                type: string
+          example:
+            - id: 1
+              full_name: "Chris Fortunato"
+              email: "chris.fortunato@example.com"
       required:
         - title
     Notifications:
@@ -6747,44 +6767,15 @@ components:
       value: |
         [
           {
-            "created_on": "2023-04-06T20:33:38.292475",
-            "updated_on": "2023-04-06T20:33:38.292475",
-            "created_by": 1,
-            "updated_by": 1,
-            "description": "The National African American Child and Family Research Center, supported by a five-year OPRE grant (2021-2026), will provide national leadership and excellence by investigating the assets, needs, and experiences of the diverse population of African American families and children served (or potentially served) by ACF programs, as well as promising approaches to address economic and social inequities and, ultimately, promote social and economic well-being. The primary focus of this Center will be on childcare assistance, TANF, and Head Start and Early Head Start programs and the populations they serve. The work of the Center will draw on interdisciplinary approaches to accomplish the three goals listed below.\n\n1. Advance Research: The Center will plan, initiate, and maintain a community-engaged, focused, and high-caliber research program. The Center's program of research will build on the existing literature related to African American children and families and should be directly relevant to the needs and interests of ACF areas of programmatic concern.\n\n2. Build Research Capacity: The Center will build research capacity and infrastructure to conduct research relevant to ACF program and policy goals that is culturally rigorous and informed by an understanding of current and historical circumstances that shape the experiences of African Americans. In addition, the Center will contribute to the development and expansion of the pool of researchers reflective of the communities being studied by the Center.\n\n3. Communicate Research: The Center will develop and implement a dissemination strategy that broadly and efficiently communicates findings from research conducted within and outside of the Center and increases the use of research, data, and relevant resources for a wide audience including researchers, federal and state policymakers, ACF grantees, program administrators, and communities participating in the research.\n\nThe Center is led by the Morehouse School of Medicine.\n\nThe OPRE point of contact is Megan Reid.",
             "id": 1,
-            "methodologies": [
-                "SURVEY",
-                "FIELD_RESEARCH",
-                "PARTICIPANT_OBSERVATION",
-                "ETHNOGRAPHY",
-                "EXPERIMENT",
-                "SECONDARY_DATA_ANALYSIS",
-                "CASE_STUDY"
-            ],
-            "origination_date": "2022-01-01",
-            "populations": [
-                "POPULATION_1"
-            ],
-            "short_title": "",
-            "team_leaders": [
-                {
-                    "created_by": null,
-                    "created_on": "2023-04-17T14:43:15.216759",
-                    "date_joined": "2023-04-17T14:43:15.216759",
-                    "division": 1,
-                    "email": "chris.fortunato@example.com",
-                    "first_name": "Chris",
-                    "full_name": "Chris Fortunato",
-                    "id": 1,
-                    "last_name": "Fortunato",
-                    "oidc_id": "00000000-0000-1111-a111-000000000001",
-                    "updated": null,
-                    "updated_on": "2023-04-17T14:43:15.216759"
-                }
-            ],
             "title": "African American Child and Family Research Center",
-            "url": "https://acf.gov/opre/project/african-american-child-and-family-research-center"
+            "short_title": "AACFRC",
+            "description": "The National African American Child and Family Research Center, supported by a five-year OPRE grant (2021-2026), will provide national leadership and excellence by investigating the assets, needs, and experiences of the diverse population of African American families and children served (or potentially served) by ACF programs, as well as promising approaches to address economic and social inequities and, ultimately, promote social and economic well-being. The primary focus of this Center will be on childcare assistance, TANF, and Head Start and Early Head Start programs and the populations they serve. The work of the Center will draw on interdisciplinary approaches to accomplish the three goals listed below.\n\n1. Advance Research: The Center will plan, initiate, and maintain a community-engaged, focused, and high-caliber research program. The Center's program of research will build on the existing literature related to African American children and families and should be directly relevant to the needs and interests of ACF areas of programmatic concern.\n\n2. Build Research Capacity: The Center will build research capacity and infrastructure to conduct research relevant to ACF program and policy goals that is culturally rigorous and informed by an understanding of current and historical circumstances that shape the experiences of African Americans. In addition, the Center will contribute to the development and expansion of the pool of researchers reflective of the communities being studied by the Center.\n\n3. Communicate Research: The Center will develop and implement a dissemination strategy that broadly and efficiently communicates findings from research conducted within and outside of the Center and increases the use of research, data, and relevant resources for a wide audience including researchers, federal and state policymakers, ACF grantees, program administrators, and communities participating in the research.\n\nThe Center is led by the Morehouse School of Medicine.\n\nThe OPRE point of contact is Megan Reid.",
+            "url": "https://acf.gov/opre/project/african-american-child-and-family-research-center",
+            "origination_date": "2022-01-01",
+            "created_on": "2023-04-06T20:33:38.292475Z",
+            "updated_on": "2023-04-06T20:33:38.292475Z",
+            "project_type": "RESEARCH"
           }
         ]
     AGREEMENTS:
