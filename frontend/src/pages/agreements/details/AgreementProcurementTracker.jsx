@@ -111,6 +111,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 stepOneData={stepOneData}
                                 hasActiveTracker={hasActiveTracker}
                                 handleSetIsFormSubmitted={handleSetIsFormSubmitted}
+                                agreement={agreement}
                             />
                         )}
                     </StepBuilderAccordion>

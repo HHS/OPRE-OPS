@@ -203,6 +203,63 @@ describe("HorizontalStackedBar", () => {
         expect(segments[1]).toHaveStyle({ flexBasis: "1%" });
     });
 
+    it("filters out placeholder items from data", () => {
+        const dataWithPlaceholders = [
+            ...mockData,
+            {
+                id: "placeholder-col0-0",
+                label: "",
+                abbreviation: "",
+                value: 0,
+                color: "",
+                percent: 0,
+                isPlaceholder: true
+            },
+            {
+                id: "placeholder-col0-1",
+                label: "",
+                abbreviation: "",
+                value: 0,
+                color: "",
+                percent: 0,
+                isPlaceholder: true
+            }
+        ];
+
+        render(
+            <HorizontalStackedBar
+                data={dataWithPlaceholders}
+                setActiveId={vi.fn()}
+            />
+        );
+
+        const segments = screen.getAllByRole("button");
+        expect(segments).toHaveLength(3);
+    });
+
+    it("renders null when data contains only placeholders", () => {
+        const onlyPlaceholders = [
+            {
+                id: "placeholder-0",
+                label: "",
+                abbreviation: "",
+                value: 0,
+                color: "",
+                percent: 0,
+                isPlaceholder: true
+            }
+        ];
+
+        render(
+            <HorizontalStackedBar
+                data={onlyPlaceholders}
+                setActiveId={vi.fn()}
+            />
+        );
+
+        expect(screen.queryByRole("button")).not.toBeInTheDocument();
+    });
+
     it("renders null for empty data array", () => {
         render(
             <HorizontalStackedBar
@@ -225,6 +282,46 @@ describe("HorizontalStackedBar", () => {
 
         // Component returns null, so no buttons should be rendered
         expect(screen.queryByRole("button")).not.toBeInTheDocument();
+    });
+
+    it("filters out zero-percent segments so CSS border-radius applies correctly", () => {
+        const dataWithZeroPercent = [
+            {
+                id: 1,
+                label: "Child Care",
+                abbreviation: "CC",
+                value: 7500000,
+                color: "var(--portfolio-budget-1)",
+                percent: 45
+            },
+            {
+                id: 2,
+                label: "Child Welfare",
+                abbreviation: "CW",
+                value: 0,
+                color: "var(--portfolio-budget-2)",
+                percent: 0
+            },
+            {
+                id: 3,
+                label: "Office Director",
+                abbreviation: "OD",
+                value: 0,
+                color: "var(--portfolio-budget-9)",
+                percent: 0
+            }
+        ];
+
+        render(
+            <HorizontalStackedBar
+                data={dataWithZeroPercent}
+                setActiveId={vi.fn()}
+            />
+        );
+
+        const segments = screen.getAllByRole("button");
+        expect(segments).toHaveLength(1);
+        expect(segments[0]).toHaveStyle({ flexBasis: "45%", backgroundColor: "var(--portfolio-budget-1)" });
     });
 
     it("uses default setActiveId if not provided", () => {
