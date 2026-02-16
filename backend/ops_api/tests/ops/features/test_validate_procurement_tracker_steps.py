@@ -1,5 +1,5 @@
 import uuid
-from datetime import date
+from datetime import date, timedelta
 
 import pytest
 from pytest_bdd import given, scenario, then, when
@@ -395,7 +395,7 @@ def working_with_pre_solicitation_step_with_past_target_date(loaded_db, context)
     procurement_tracker = context["procurement_tracker"]
     procurement_tracker.active_step_number = 2
     step_2 = next((step for step in procurement_tracker.steps if step.step_number == 2), None)
-    step_2.pre_solicitation_target_completion_date = date.today().replace(year=date.today().year - 1)
+    step_2.pre_solicitation_target_completion_date = date.today() - timedelta(days=365)
     context["procurement_tracker_step"] = step_2
     loaded_db.commit()
     loaded_db.refresh(procurement_tracker)
@@ -416,7 +416,7 @@ def validate_pre_solicitation_draft_solicitation_date(context):
     """Set the context's procurement_tracker_step to step 2 (pre-solicitation) with no target completion date and attempt to update to completed."""
     procurement_tracker = context["procurement_tracker"]
     procurement_tracker.active_step_number = 2
-    past_date = date.today().replace(year=date.today().year - 1)
+    past_date = date.today() - timedelta(days=365)
 
     step_2 = next((step for step in procurement_tracker.steps if step.step_number == 2), None)
     step_2.pre_solicitation_draft_solicitation_date = past_date
@@ -458,7 +458,7 @@ def have_procurement_step_with_invalid_completion_date(context):
 
 @when("I have a procurement step with a date completed in the future")
 def have_procurement_step_with_future_completion_date(context):
-    future_date = date.today().replace(year=date.today().year + 1).isoformat()
+    future_date = (date.today() + timedelta(days=365)).isoformat()
     data = {
         "status": "COMPLETED",
         "date_completed": future_date,
@@ -470,7 +470,7 @@ def have_procurement_step_with_future_completion_date(context):
 
 @when("I have a procurement step 2 with a date completed in the future")
 def have_procurement_step_2_with_future_completion_date(context):
-    future_date = date.today().replace(year=date.today().year + 1).isoformat()
+    future_date = (date.today() + timedelta(days=365)).isoformat()
     data = {
         "status": "COMPLETED",
         "date_completed": future_date,
@@ -483,7 +483,7 @@ def have_procurement_step_2_with_future_completion_date(context):
 
 @when("I have a procurement step 2 with a target date in the past")
 def have_procurement_step_2_with_past_target_completion_date(context):
-    past_date = date.today().replace(year=date.today().year - 1).isoformat()
+    past_date = (date.today() - timedelta(days=365)).isoformat()
     data = {
         "status": "COMPLETED",
         "date_completed": date.today().isoformat(),
@@ -601,7 +601,7 @@ def have_procurement_step_2_with_valid_task_completed_by(context):
 
 @when("I have a procurement step 2 with a past draft solicitation date")
 def have_procurement_step_2_with_past_draft_solicitation_date(context):
-    past_date = date.today().replace(year=date.today().year - 1).isoformat()
+    past_date = (date.today() - timedelta(days=365)).isoformat()
     data = {
         "status": "COMPLETED",
         "date_completed": "2025-25-25",
