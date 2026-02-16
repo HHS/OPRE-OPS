@@ -872,6 +872,54 @@ describe("AgreementProcurementTracker", () => {
             const completeButton = screen.getByText("Complete Step 1");
             expect(completeButton).toBeDisabled();
         });
+
+        it("renders step 2 instructional content when step 2 is active", () => {
+            const mockTrackerWithActiveStepTwo = {
+                data: [
+                    {
+                        id: 4,
+                        agreement_id: 13,
+                        display_name: "ProcurementTracker#4",
+                        status: "ACTIVE",
+                        tracker_type: "DEFAULT",
+                        active_step_number: 2,
+                        steps: [
+                            {
+                                id: 101,
+                                step_number: 1,
+                                step_type: "PRE_SOLICITATION",
+                                status: "COMPLETED"
+                            },
+                            {
+                                id: 102,
+                                step_number: 2,
+                                step_type: "SOLICITATION",
+                                status: "ACTIVE"
+                            }
+                        ]
+                    }
+                ]
+            };
+
+            useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
+                data: mockTrackerWithActiveStepTwo,
+                isLoading: false,
+                isError: false
+            });
+
+            render(
+                <Provider store={setupStore()}>
+                    <AgreementProcurementTracker agreement={mockAgreement} />
+                </Provider>
+            );
+
+            expect(
+                screen.getByText(
+                    /Edit the pre-solicitation package in collaboration with the Procurement Shop/
+                )
+            ).toBeInTheDocument();
+            expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
+        });
     });
 
     describe("Step 1 Completed State", () => {
