@@ -62,9 +62,7 @@ class ServicesComponent(BaseModel):
 
     sub_component: Mapped[Optional[str]] = mapped_column(String)
 
-    agreement_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("agreement.id", ondelete="CASCADE")
-    )
+    agreement_id: Mapped[int] = mapped_column(Integer, ForeignKey("agreement.id", ondelete="CASCADE"))
     agreement: Mapped["Agreement"] = relationship(
         "Agreement",
         passive_deletes=True,
@@ -73,11 +71,7 @@ class ServicesComponent(BaseModel):
     display_name_for_sort: Mapped[Optional[str]] = mapped_column(String)
 
     def severable(self):
-        return (
-            self.agreement
-            and self.agreement.service_requirement_type
-            == ServiceRequirementType.SEVERABLE
-        )
+        return self.agreement and self.agreement.service_requirement_type == ServiceRequirementType.SEVERABLE
 
     @property
     def display_title(self):
@@ -95,16 +89,7 @@ class ServicesComponent(BaseModel):
 
     @BaseModel.display_name.getter
     def display_name(self):
-        from sqlalchemy import inspect
-
-        # Check if agreement is loaded to avoid recursion during flush
-        insp = inspect(self)
-        agreement_loaded = "agreement" in insp.dict and self.agreement is not None
-
-        is_severable = self.severable() if agreement_loaded else False
-        return ServicesComponent.get_display_name(
-            self.number, self.optional, is_severable
-        )
+        return ServicesComponent.get_display_name(self.number, self.optional, self.severable())
 
     @staticmethod
     def get_display_name(number, optional, is_severable):
@@ -120,9 +105,7 @@ class ServicesComponent(BaseModel):
 def update_sc_before_upsert(mapper, connection, target):
     if target.agreement_id:
         requirement_type = connection.scalar(
-            select(ContractAgreement.service_requirement_type).where(
-                ContractAgreement.id == target.agreement_id
-            )
+            select(ContractAgreement.service_requirement_type).where(ContractAgreement.id == target.agreement_id)
         )
         display_name = ServicesComponent.get_display_name(
             target.number,
@@ -140,17 +123,13 @@ class CLIN(BaseModel):
     __tablename__ = "clin"
     __table_args__ = (UniqueConstraint("number", "agreement_id"),)
 
-    id: Mapped[int] = BaseModel.get_pk_column(
-        sequence=Sequence("clin_id_seq", start=5000, increment=1)
-    )
+    id: Mapped[int] = BaseModel.get_pk_column(sequence=Sequence("clin_id_seq", start=5000, increment=1))
     number: Mapped[Optional[int]] = mapped_column(Integer)
     name: Mapped[Optional[str]] = mapped_column(String)
     pop_start_date: Mapped[Optional[date]] = mapped_column(Date)
     pop_end_date: Mapped[Optional[date]] = mapped_column(Date)
 
-    agreement_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("agreement.id", ondelete="CASCADE"), nullable=False
-    )
+    agreement_id: Mapped[int] = mapped_column(Integer, ForeignKey("agreement.id", ondelete="CASCADE"), nullable=False)
     agreement: Mapped["Agreement"] = relationship(
         "Agreement",
         passive_deletes=True,
