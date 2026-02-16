@@ -66,7 +66,7 @@ def app(db_service) -> Generator[Flask, None, None]:
     yield app
 
     # Cleanup: dispose of the database engine to free connections
-    if hasattr(app, 'engine'):
+    if hasattr(app, "engine"):
         app.engine.dispose()
 
 
