@@ -65,6 +65,10 @@ def app(db_service) -> Generator[Flask, None, None]:
     app = create_app()
     yield app
 
+    # Cleanup: dispose of the database engine to free connections
+    if hasattr(app, 'engine'):
+        app.engine.dispose()
+
 
 @pytest.fixture()
 def client(app: Flask) -> FlaskClient:  # type: ignore [type-arg]
