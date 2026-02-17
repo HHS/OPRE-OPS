@@ -206,7 +206,7 @@ Scenario: Valid Task Completed By Step 2
     And I have a procurement tracker
     And I am working with a pre-solicitation procurement tracker step with a past draft solicitation date
 
-    When I have a valid completed procurement step 2
+    When I have a valid completed procurement step 2 with no draft solicitation date
     And I submit a procurement step update
 
     Then I should get a validation error

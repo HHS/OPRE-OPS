@@ -566,6 +566,18 @@ def have_valid_completed_procurement_step_2(context):
     context["request_body"] = data
 
 
+@when("I have a valid completed procurement step 2 with no draft solicitation date")
+def have_valid_completed_procurement_step_2_no_draft_solicitation_date(context):
+    data = {
+        "status": "COMPLETED",
+        "date_completed": "2025-12-25",
+        "task_completed_by": context["user_id"],
+        "target_completion_date": date.today().isoformat(),
+    }
+
+    context["request_body"] = data
+
+
 @when("I have a procurement step 2 with a non-existent user in the task_completed_by step")
 def have_procurement_step_2_with_nonexistent_user(context):
     data = {
