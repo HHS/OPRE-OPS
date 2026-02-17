@@ -27,14 +27,14 @@ def test_get_procurement_tracker_by_id(auth_client, app_ctx):
     assert "date_completed" in step_1
     assert "notes" in step_1
 
-    # Verify step 2 is PRE_SOLICITATION without extra fields
+    # Verify step 2 is PRE_SOLICITATION with extra fields
     step_2 = data["steps"][1]
     assert step_2["step_number"] == 2
     assert step_2["step_type"] == "PRE_SOLICITATION"
     assert step_2["status"] == "PENDING"
-    assert "task_completed_by" not in step_2
-    assert "date_completed" not in step_2
-    assert "notes" not in step_2
+    assert "task_completed_by" in step_2
+    assert "date_completed" in step_2
+    assert "notes" in step_2
 
 
 def test_get_procurement_tracker_by_id_not_found(auth_client, app_ctx):
@@ -211,12 +211,25 @@ def test_get_procurement_tracker_all_step_fields(auth_client, app_ctx):
     assert "task_completed_by" in acquisition_step
     assert "date_completed" in acquisition_step
     assert "notes" in acquisition_step
+    assert "draft_solicitation_date" not in acquisition_step
+    assert "target_completion_date" not in acquisition_step
+
+    # PRE_SOLICITATION step should have extra fields
+    pre_solicitation_step = steps[1]
+    assert pre_solicitation_step["step_type"] == "PRE_SOLICITATION"
+    assert "task_completed_by" in pre_solicitation_step
+    assert "date_completed" in pre_solicitation_step
+    assert "notes" in pre_solicitation_step
+    assert "draft_solicitation_date" in pre_solicitation_step
+    assert "target_completion_date" in pre_solicitation_step
 
     # Other steps should NOT have extra fields
-    for step in steps[1:]:
+    for step in steps[2:]:
         assert "task_completed_by" not in step
         assert "date_completed" not in step
         assert "notes" not in step
+        assert "draft_solicitation_date" not in step
+        assert "target_completion_date" not in step
 
 
 def test_get_procurement_tracker_response_structure(auth_client, app_ctx):
