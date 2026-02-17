@@ -51,7 +51,7 @@ class PortfolioListAPI(BaseListAPI):
             selectinload(Portfolio.urls),  # One-to-many: portfolio -> urls
             selectinload(Portfolio.division).selectinload(Division.division_director),  # Many-to-one with nested
         )
-        result = current_app.db_session.execute(stmt).scalars().all()
+        result = current_app.db_session.scalars(stmt).all()
 
         portfolio_response: List[dict] = []
         for portfolio in result:
