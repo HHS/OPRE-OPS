@@ -46,13 +46,10 @@ class PortfolioListAPI(BaseListAPI):
     @is_authorized(PermissionType.GET, Permission.PORTFOLIO)
     def get(self) -> Response:
         # Eager load all relationships to prevent N+1 queries
-        stmt = (
-            select(Portfolio)
-            .options(
-                selectinload(Portfolio.team_leaders),  # Many-to-many: portfolio -> users
-                selectinload(Portfolio.urls),  # One-to-many: portfolio -> urls
-                selectinload(Portfolio.division).selectinload(Division.division_director),  # Many-to-one with nested
-            )
+        stmt = select(Portfolio).options(
+            selectinload(Portfolio.team_leaders),  # Many-to-many: portfolio -> users
+            selectinload(Portfolio.urls),  # One-to-many: portfolio -> urls
+            selectinload(Portfolio.division).selectinload(Division.division_director),  # Many-to-one with nested
         )
         result = current_app.db_session.execute(stmt).scalars().all()
 
