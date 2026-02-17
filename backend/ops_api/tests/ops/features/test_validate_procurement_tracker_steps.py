@@ -153,13 +153,6 @@ def test_validate_pre_solicitation_target_completion_date(): ...
 
 @scenario(
     "validate_procurement_tracker_steps.feature",
-    "Validate pre solicitation target completion date must be today or future date on model",
-)
-def test_validate_pre_solicitation_target_completion_date_on_model(): ...
-
-
-@scenario(
-    "validate_procurement_tracker_steps.feature",
     "Validate pre solicitation step can have required fields spread between model and update",
 )
 def test_validate_pre_solicitation_step_required_fields(): ...
@@ -177,6 +170,13 @@ def test_validate_pre_solicitation_step_missing_required_fields(): ...
     "Validate pre solicitation step draft solicitation date in update cannot be in the past",
 )
 def test_validate_pre_solicitation_step_draft_solicitation_date_update(): ...
+
+
+@scenario(
+    "validate_procurement_tracker_steps.feature",
+    "Validate solicitation draft date on model is invalid but update is valid",
+)
+def test_validate_pre_solicitation_step_draft_solicitation_date_on_model_invalid_but_update_valid(): ...
 
 
 @scenario(
@@ -389,13 +389,13 @@ def working_with_pre_solicitation_step(loaded_db, context):
     loaded_db.refresh(procurement_tracker)
 
 
-@given("I am working with a pre-solicitation procurement tracker step with a past target completion date")
-def working_with_pre_solicitation_step_with_past_target_date(loaded_db, context):
-    """Set the context's procurement_tracker_step to step 2 (pre-solicitation) and set a past target completion date."""
+@given("I am working with a pre-solicitation procurement tracker step with a past draft solicitation date")
+def working_with_pre_solicitation_step_with_past_draft_solicitation_date(loaded_db, context):
+    """Set the context's procurement_tracker_step to step 2 (pre-solicitation) and set a past draft solicitation date."""
     procurement_tracker = context["procurement_tracker"]
     procurement_tracker.active_step_number = 2
     step_2 = next((step for step in procurement_tracker.steps if step.step_number == 2), None)
-    step_2.pre_solicitation_target_completion_date = date.today() - timedelta(days=365)
+    step_2.pre_solicitation_draft_solicitation_date = date.today() - timedelta(days=365)
     context["procurement_tracker_step"] = step_2
     loaded_db.commit()
     loaded_db.refresh(procurement_tracker)
@@ -560,6 +560,7 @@ def have_valid_completed_procurement_step_2(context):
         "date_completed": "2025-12-25",
         "task_completed_by": context["user_id"],
         "target_completion_date": date.today().isoformat(),
+        "draft_solicitation_date": date.today().isoformat(),
     }
 
     context["request_body"] = data
@@ -569,9 +570,8 @@ def have_valid_completed_procurement_step_2(context):
 def have_procurement_step_2_with_nonexistent_user(context):
     data = {
         "status": "COMPLETED",
-        "date_completed": "2025-12-25",
+        "date_completed": date.today().isoformat(),
         "task_completed_by": 999,
-        "target_completion_date": "2025-12-25",
     }
 
     context["request_body"] = data
@@ -583,7 +583,7 @@ def have_procurement_step_2_with_invalid_completion_date(context):
         "status": "COMPLETED",
         "date_completed": "2025-25-25",
         "task_completed_by": context["user_id"],
-        "target_completion_date": "2025-12-25",
+        "target_completion_date": date.today().isoformat(),
     }
 
     context["request_body"] = data
@@ -604,9 +604,9 @@ def have_procurement_step_2_with_past_draft_solicitation_date(context):
     past_date = (date.today() - timedelta(days=365)).isoformat()
     data = {
         "status": "COMPLETED",
-        "date_completed": "2025-25-25",
+        "date_completed": date.today().isoformat(),
         "task_completed_by": context["user_id"],
-        "target_completion_date": "2025-12-25",
+        "target_completion_date": date.today().isoformat(),
         "draft_solicitation_date": past_date,
     }
 

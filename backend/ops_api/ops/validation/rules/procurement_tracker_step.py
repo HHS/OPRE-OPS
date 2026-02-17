@@ -294,6 +294,8 @@ class NoPastDraftSolicitationDateUpdateRule(ValidationRule):
                 {"draft_solicitation_date": "Draft solicitation date cannot be in the past for Pre-Solicitation steps."}
             )
 
+        context.metadata["draft_solicitation_date_validated_on_update"] = True
+
 
 class NoPastDraftSolicitationDateOnModelRule(ValidationRule):
     """
@@ -308,6 +310,11 @@ class NoPastDraftSolicitationDateOnModelRule(ValidationRule):
     def validate(self, procurement_tracker_step: ProcurementTrackerStep, context: ValidationContext) -> None:
         # Only validate if step type is PRE_SOLICITATION
         if procurement_tracker_step.step_type != ProcurementTrackerStepType.PRE_SOLICITATION:
+            return
+
+        validated_on_update = context.metadata.get("draft_solicitation_date_validated_on_update", False)
+        if validated_on_update:
+            # If we've already validated the draft solicitation date on update, we can skip validating it again on the model to avoid duplicate errors
             return
 
         draft_solicitation_date = procurement_tracker_step.pre_solicitation_draft_solicitation_date

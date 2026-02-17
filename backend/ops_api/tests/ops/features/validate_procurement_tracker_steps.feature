@@ -156,16 +156,16 @@ Scenario: Valid Task Completed By Step 2
 
     Then I should get a validation error
 
-  Scenario: Validate pre solicitation target completion date must be today or future date on model
+  Scenario: Validate solicitation draft date on model is invalid but update is valid
     Given I am logged in as an OPS user
     And I have a Contract Agreement with OPS user as a team member
     And I have a procurement tracker
-    And I am working with a pre-solicitation procurement tracker step with a past target completion date
+    And I am working with a pre-solicitation procurement tracker step with a past draft solicitation date
 
-    When I have a procurement step 2 with no target completion date
+    When I have a valid completed procurement step 2
     And I submit a procurement step update
 
-    Then I should get a validation error
+    Then I should get a message that it was successful and my procurement tracker has moved onto the next step
 
   Scenario: Validate pre solicitation step can have required fields spread between model and update
     Given I am logged in as an OPS user
