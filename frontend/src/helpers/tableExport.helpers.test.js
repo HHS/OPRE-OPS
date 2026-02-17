@@ -20,25 +20,25 @@ vi.mock("xlsx", () => ({
 }));
 
 describe("exportTableToXlsx", () => {
+    const originalCreateElement = document.createElement.bind(document);
+
     beforeEach(() => {
         vi.clearAllMocks();
 
-        // Set up DOM mocks
-        global.URL = {
-            createObjectURL: vi.fn(() => "blob:test-url"),
-            revokeObjectURL: vi.fn()
-        };
+        vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:test-url");
+        vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
 
-        global.document = {
-            ...global.document,
-            createElement: vi.fn(() => ({
-                href: "",
-                download: "",
-                click: vi.fn()
-            }))
-        };
+        vi.spyOn(document, "createElement").mockImplementation((tagName, options) => {
+            if (tagName === "a") {
+                return {
+                    href: "",
+                    download: "",
+                    click: vi.fn()
+                };
+            }
 
-        global.Blob = vi.fn();
+            return originalCreateElement(tagName, options);
+        });
     });
 
     it("should export table data to XLSX successfully", async () => {
