@@ -5,7 +5,7 @@ from decimal import Decimal
 from enum import Enum, auto
 from typing import Any, List, Optional, override
 
-from sqlalchemy import ForeignKey, Integer, Sequence, UniqueConstraint, case, func
+from sqlalchemy import ForeignKey, Index, Integer, Sequence, UniqueConstraint, case, func
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -83,6 +83,11 @@ class CAN(BaseModel):
     funding_received: Mapped[List["CANFundingReceived"]] = relationship("CANFundingReceived", back_populates="can")
 
     budget_line_items: Mapped[List["BudgetLineItem"]] = relationship("BudgetLineItem", back_populates="can")
+
+    __table_args__ = (
+        Index("ix_can_portfolio_id", "portfolio_id"),
+        Index("ix_can_funding_details_id", "funding_details_id"),
+    )
 
     @property
     def active_years(self):
