@@ -21,7 +21,7 @@ import styles from "./HorizontalStackedBar.module.scss";
  * @returns {JSX.Element}
  */
 const HorizontalStackedBar = ({ data, setActiveId = () => {} }) => {
-    const segments = data?.filter((item) => !item.isPlaceholder) ?? [];
+    const segments = data?.filter((item) => !item.isPlaceholder && item.percent > 0) ?? [];
 
     if (segments.length === 0) {
         return null;
