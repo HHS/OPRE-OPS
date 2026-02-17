@@ -2,8 +2,8 @@
 # Detects flaky E2E tests by parsing Cypress output for retry patterns
 # Usage: detect-flaky-tests.sh <cypress_output_file> [github_summary_file]
 #
-# This script identifies spec files that had retry attempts, which may indicate
-# flakiness. Results are formatted for GitHub Actions job summaries.
+# This script identifies spec files that failed initially but passed on retry,
+# indicating true flakiness. Results are formatted for GitHub Actions job summaries.
 
 set -euo pipefail
 
@@ -24,27 +24,135 @@ if [ ! -f "$CYPRESS_LOG" ]; then
     exit 1
 fi
 
-# Temporary file for results
+# Temporary files for results
 FLAKY_TESTS=$(mktemp)
-trap 'rm -f "$FLAKY_TESTS"' EXIT
+SPEC_RESULTS=$(mktemp)
+trap 'rm -f "$FLAKY_TESTS" "$SPEC_RESULTS"' EXIT
 
-# Parse Cypress output for retry patterns
-# Look for lines with "Attempt X of Y" which indicate retries
-# These lines also contain the spec file name
-grep -E "Attempt [2-9] of [0-9]" "$CYPRESS_LOG" | \
-    awk '{
-        # Find the field containing .cy.js (the spec filename)
-        for(i=1; i<=NF; i++) {
-            if($i ~ /\.cy\.js/) {
-                # Extract just the filename without directory path
-                spec = $i
-                sub(/.*\//, "", spec)
-                print spec
-                break
-            }
+# Parse Cypress output to track spec runs and their results
+# This awk script:
+# 1. Identifies when a spec starts running (with or without retry indicator)
+# 2. Tracks whether that run had failures
+# 3. Records specs that had retry attempts and ultimately passed
+awk '
+BEGIN {
+    current_spec = ""
+    has_failures = 0
+}
+
+# Match "Running: path/to/spec.cy.js" or "Running: path/to/spec.cy.js (Attempt X of Y)"
+/^Running:.*\.cy\.js/ {
+    # Save previous spec results if we were tracking one
+    if (current_spec != "") {
+        # Record: spec_name final_result
+        print current_spec, has_failures
+    }
+
+    # Extract spec filename
+    for(i=1; i<=NF; i++) {
+        if($i ~ /\.cy\.js/) {
+            spec = $i
+            sub(/.*\//, "", spec)  # Remove path
+            current_spec = spec
+            break
         }
-    }' | \
-    sort -u > "$FLAKY_TESTS" 2>/dev/null || true
+    }
+
+    # Check if this is a retry attempt and mark it for this spec
+    if ($0 ~ /\(Attempt [2-9] of [0-9]\)/) {
+        spec_had_retry[current_spec] = 1
+    }
+
+    # Reset failure flag for this run
+    has_failures = 0
+}
+
+# Match lines with "X failing" to detect failures
+/[0-9]+ failing/ {
+    has_failures = 1
+}
+
+END {
+    # Save the last spec
+    if (current_spec != "") {
+        print current_spec, has_failures
+    }
+}
+' "$CYPRESS_LOG" > "$SPEC_RESULTS"
+
+# Process the results to find truly flaky tests:
+# Specs that had retry attempts and ultimately passed (no failures in final run)
+awk '
+{
+    spec = $1
+    has_failures = $2
+
+    # Track the final result for each spec (last occurrence wins)
+    spec_final_result[spec] = has_failures
+}
+
+END {
+    # Read spec_had_retry array from the previous awk output
+    # We need to check both conditions in a single pass
+}
+' "$SPEC_RESULTS" > /dev/null
+
+# Simpler approach: combine both parsing steps into one
+awk '
+BEGIN {
+    current_spec = ""
+    has_failures = 0
+}
+
+# Match "Running: path/to/spec.cy.js" or "Running: path/to/spec.cy.js (Attempt X of Y)"
+/^Running:.*\.cy\.js/ {
+    # Extract spec filename
+    for(i=1; i<=NF; i++) {
+        if($i ~ /\.cy\.js/) {
+            spec = $i
+            sub(/.*\//, "", spec)  # Remove path
+            current_spec = spec
+            break
+        }
+    }
+
+    # Check if this is a retry attempt and mark it for this spec
+    if ($0 ~ /\(Attempt [2-9] of [0-9]\)/) {
+        spec_had_retry[current_spec] = 1
+    }
+
+    # Reset failure flag for this run
+    has_failures = 0
+}
+
+# Match lines with "X failing" to detect failures
+/[0-9]+ failing/ {
+    has_failures = 1
+    # Record the failure status for the current spec
+    if (current_spec != "") {
+        spec_final_result[current_spec] = has_failures
+    }
+}
+
+# Match lines with "X passing" - indicates end of spec run
+/[0-9]+ passing/ {
+    # If we have only passing (no failures), record success
+    if (current_spec != "" && has_failures == 0) {
+        spec_final_result[current_spec] = 0
+    }
+}
+
+END {
+    for (spec in spec_had_retry) {
+        # Only report specs that:
+        # 1. Had a retry attempt (failed initially)
+        # 2. Ultimately passed (final result = 0 or not recorded as failure)
+        if (spec_had_retry[spec] == 1 && spec_final_result[spec] == 0) {
+            print spec
+        }
+    }
+}
+' "$CYPRESS_LOG" | sort -u > "$FLAKY_TESTS"
 
 # Count flaky tests
 FLAKY_COUNT=$(wc -l < "$FLAKY_TESTS" | tr -d ' ')
@@ -59,9 +167,9 @@ generate_report() {
         echo ""
         echo "All tests passed on first attempt."
     else
-        echo "⚠️ **$FLAKY_COUNT spec file(s) with retries detected**"
+        echo "⚠️ **$FLAKY_COUNT flaky test(s) detected**"
         echo ""
-        echo "The following spec files had retry attempts (indicating potential flakiness):"
+        echo "The following tests failed initially but passed on retry (indicating flakiness):"
         echo ""
         echo "| Spec File |"
         echo "|-----------|"
@@ -73,7 +181,7 @@ generate_report() {
         echo ""
         echo "### What does this mean?"
         echo ""
-        echo "These spec files were retried during the test run. This may indicate:"
+        echo "These tests failed on first attempt but passed on a subsequent retry. This behavior indicates:"
         echo "- **Test flakiness**: Non-deterministic test behavior"
         echo "- **Possible causes**: Timing issues, race conditions, external dependencies, or test pollution"
         echo ""

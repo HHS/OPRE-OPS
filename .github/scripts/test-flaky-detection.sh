@@ -41,7 +41,7 @@ echo ""
 echo ""
 
 # Test 2: Flaky tests detected (passed on retry)
-echo "Test 2: Flaky tests detected"
+echo "Test 2: Flaky tests detected (passed after retry)"
 echo "-----------------------------------"
 cat > "$TEST_DIR/flaky.log" <<'EOF'
 Running:  cypress/e2e/agreementDetails.cy.js                                                (1 of 5)
@@ -105,8 +105,54 @@ echo "Result:"
 echo ""
 echo ""
 
-# Test 3: File doesn't exist
-echo "Test 3: Missing file handling"
+# Test 3: Consistently failing tests (should NOT be flagged as flaky)
+echo "Test 3: Consistently failing tests (NOT flaky)"
+echo "-----------------------------------"
+cat > "$TEST_DIR/broken.log" <<'EOF'
+Running:  cypress/e2e/brokenTest.cy.js                                                      (1 of 3)
+
+  Broken Test
+    1) should work but is broken
+
+  0 passing (1s)
+  1 failing
+
+  1) Broken Test
+       should work but is broken:
+     Error: Something is fundamentally broken
+
+Running:  cypress/e2e/brokenTest.cy.js (Attempt 2 of 3)                                     (1 of 3)
+
+  Broken Test
+    1) should work but is broken
+
+  0 passing (1s)
+  1 failing
+
+Running:  cypress/e2e/brokenTest.cy.js (Attempt 3 of 3)                                     (1 of 3)
+
+  Broken Test
+    1) should work but is broken
+
+  0 passing (1s)
+  1 failing
+
+Running:  cypress/e2e/loginPage.cy.js                                                       (2 of 3)
+
+  Login Page
+    ✓ should load the login page (1234ms)
+
+  1 passing (2s)
+EOF
+
+echo "Expected: ✅ No flaky tests (brokenTest.cy.js failed all attempts)"
+echo "Result:"
+"$DETECT_SCRIPT" "$TEST_DIR/broken.log"
+echo ""
+echo ""
+
+# Test 4: File doesn't exist
+echo "Test 4: Missing file handling"
 echo "-----------------------------------"
 echo "Expected: Error message about missing file"
 echo "Result:"
