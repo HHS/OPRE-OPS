@@ -253,7 +253,10 @@ class Agreement(BaseModel):
         "polymorphic_on": "agreement_type",
     }
 
-    __table_args__ = (Index("ix_agreement_name_type_lower", func.lower(name), agreement_type, unique=True),)
+    __table_args__ = (
+        Index("ix_agreement_name_type_lower", func.lower(name), agreement_type, unique=True),
+        Index("ix_agreement_project_id", "project_id"),
+    )
 
     @property
     def team_leaders(self):
