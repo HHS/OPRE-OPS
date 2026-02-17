@@ -148,3 +148,84 @@ describe("Procurement Tracker Step 1", () => {
         });
     });
 });
+
+describe("Procurement Tracker Step 2", () => {
+    const openStepTwo = () => {
+        cy.contains("button", /2 of 6/i).then(($stepTwoButton) => {
+            if ($stepTwoButton.attr("aria-expanded") === "false") {
+                cy.wrap($stepTwoButton).click();
+            }
+        });
+    };
+
+    it("renders the step 2 view that matches API status", () => {
+        cy.visit(`/agreements/${ACTIVE_TRACKER_AGREEMENT_ID}/procurement-tracker`);
+        openStepTwo();
+
+        cy.get("body").then(($body) => {
+            const completedViewVisible = $body.text().includes("Step Completed");
+            if (completedViewVisible) {
+                cy.contains("Step Completed").should("exist");
+                cy.get(".usa-checkbox__input").should("not.exist");
+                cy.get('[data-cy="cancel-button"]').should("not.exist");
+                cy.get('[data-cy="continue-btn"]').should("not.exist");
+            } else {
+                cy.contains(/Edit the pre-solicitation package in collaboration with the Procurement Shop/i).should(
+                    "exist"
+                );
+                cy.get(".usa-checkbox__input").should("exist");
+                cy.get('[data-cy="cancel-button"]').should("exist");
+                cy.get('[data-cy="continue-btn"]').should("exist");
+            }
+        });
+    });
+
+    it("shows or hides editable controls based on step 2 status", () => {
+        cy.visit(`/agreements/${ACTIVE_TRACKER_AGREEMENT_ID}/procurement-tracker`);
+        openStepTwo();
+
+        cy.get("body").then(($body) => {
+            const completedViewVisible = $body.text().includes("Step Completed");
+            if (completedViewVisible) {
+                cy.get(".usa-checkbox__input").should("not.exist");
+                cy.get('[data-cy="cancel-button"]').should("not.exist");
+                cy.get('[data-cy="continue-btn"]').should("not.exist");
+                return;
+            }
+
+            cy.get(".usa-checkbox__input").should("exist");
+            cy.get('[data-cy="cancel-button"]').should("exist");
+            cy.get('[data-cy="continue-btn"]').should("exist");
+        });
+    });
+
+    it("toggles step 2 accordion open/close", () => {
+        cy.visit(`/agreements/${ISOLATED_ACTIVE_TRACKER_AGREEMENT_ID}/procurement-tracker`);
+        openStepTwo();
+
+        cy.contains("button", /2 of 6/i).as("stepTwoButton");
+
+        cy.get("@stepTwoButton").should("have.attr", "aria-expanded", "true");
+        cy.get("@stepTwoButton").click();
+        cy.get("@stepTwoButton").should("have.attr", "aria-expanded", "false");
+        cy.get("@stepTwoButton").click();
+        cy.get("@stepTwoButton").should("have.attr", "aria-expanded", "true");
+    });
+
+    it("renders instructional text in non-completed state", () => {
+        cy.visit(`/agreements/${ISOLATED_ACTIVE_TRACKER_AGREEMENT_ID}/procurement-tracker`);
+        openStepTwo();
+
+        cy.get("body").then(($body) => {
+            const completedViewVisible = $body.text().includes("Step Completed");
+            if (!completedViewVisible) {
+                cy.contains(
+                    /Edit the pre-solicitation package in collaboration with the Procurement Shop/i
+                ).should("exist");
+                cy.contains(
+                    /Once the documents are finalized, go to the Documents Tab, upload the final and signed versions/i
+                ).should("exist");
+            }
+        });
+    });
+});
