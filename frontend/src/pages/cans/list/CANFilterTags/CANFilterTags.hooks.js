@@ -55,7 +55,7 @@ export const useTagsList = (filters) => {
             } else {
                 if (Array.isArray(filters[filterKey])) {
                     const selectedTags = filters[filterKey].map((item) => ({
-                        tagText: item.title,
+                        tagText: filterKey === "activePeriod" ? `${item.title} CAN` : item.title,
                         filter: filterName
                     }));
                     setTagsList((prevState) => [...prevState.filter((t) => t.filter !== filterName), ...selectedTags]);
@@ -100,7 +100,7 @@ export const removeFilter = (tag, setFilters) => {
         case "activePeriod":
             setFilters((prevState) => ({
                 ...prevState,
-                activePeriod: prevState.activePeriod.filter((period) => period.title !== tag.tagText)
+                activePeriod: prevState.activePeriod.filter((period) => `${period.title} CAN` !== tag.tagText)
             }));
             break;
         case "portfolio":
