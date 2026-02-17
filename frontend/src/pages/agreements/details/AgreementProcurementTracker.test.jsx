@@ -110,7 +110,7 @@ vi.mock("../../../components/Agreements/ProcurementTracker/ProcurementTrackerSte
 vi.mock("../../../constants", () => ({
     IS_PROCUREMENT_TRACKER_READY_MAP: {
         STEP_1: true,
-        STEP_2: false,
+        STEP_2: true,
         STEP_3: false,
         STEP_4: false,
         STEP_5: false,
@@ -892,7 +892,7 @@ describe("AgreementProcurementTracker", () => {
             expect(completeButton).toBeDisabled();
         });
 
-        it("renders step 2 instructional content when step 2 is active", () => {
+        it("renders step 2 content when step 2 is active", () => {
             const mockTrackerWithActiveStepTwo = {
                 data: [
                     {
@@ -932,9 +932,7 @@ describe("AgreementProcurementTracker", () => {
                 </Provider>
             );
 
-            expect(
-                screen.getByText(/Edit the pre-solicitation package in collaboration with the Procurement Shop/)
-            ).toBeInTheDocument();
+            expect(screen.getByTestId("procurement-step-two")).toHaveTextContent("Step Two Form");
             expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
         });
 
