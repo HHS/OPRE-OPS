@@ -219,9 +219,9 @@ describe("Procurement Tracker Step 2", () => {
         cy.get("body").then(($body) => {
             const completedViewVisible = $body.text().includes("Step Completed");
             if (!completedViewVisible) {
-                cy.contains(
-                    /Edit the pre-solicitation package in collaboration with the Procurement Shop/i
-                ).should("exist");
+                cy.contains(/Edit the pre-solicitation package in collaboration with the Procurement Shop/i).should(
+                    "exist"
+                );
                 cy.contains(
                     /Once the documents are finalized, go to the Documents Tab, upload the final and signed versions/i
                 ).should("exist");

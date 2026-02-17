@@ -13,9 +13,7 @@ describe("ProcurementTrackerStepTwo", () => {
             );
 
             expect(
-                screen.getByText(
-                    /Edit the pre-solicitation package in collaboration with the Procurement Shop/i
-                )
+                screen.getByText(/Edit the pre-solicitation package in collaboration with the Procurement Shop/i)
             ).toBeInTheDocument();
         });
 
@@ -131,9 +129,7 @@ describe("ProcurementTrackerStepTwo", () => {
             );
 
             expect(
-                screen.getByText(
-                    /Edit the pre-solicitation package in collaboration with the Procurement Shop/i
-                )
+                screen.getByText(/Edit the pre-solicitation package in collaboration with the Procurement Shop/i)
             ).toBeInTheDocument();
         });
     });
@@ -172,9 +168,7 @@ describe("ProcurementTrackerStepTwo", () => {
             );
 
             expect(
-                screen.queryByText(
-                    /Edit the pre-solicitation package in collaboration with the Procurement Shop/i
-                )
+                screen.queryByText(/Edit the pre-solicitation package in collaboration with the Procurement Shop/i)
             ).not.toBeInTheDocument();
         });
 
