@@ -18,6 +18,7 @@ from models import (
     ProcurementTrackerStatus,
     ProcurementTrackerStep,
     ProcurementTrackerStepStatus,
+    ProcurementTrackerStepType,
     User,
 )
 from models.utils import generate_events_update
@@ -82,6 +83,7 @@ class ProcurementTrackerStepService:
 
         step = self.get(id)
         validator = ProcurementTrackerStepsValidator()
+        validator.update_validators_for_step(step, data)
         validator.validate_step(
             procurement_tracker_step=step,
             user=current_user,
@@ -90,19 +92,38 @@ class ProcurementTrackerStepService:
         )
         # Map API field names to model field names for step-specific fields
         field_mapping = {
-            "task_completed_by": "acquisition_planning_task_completed_by",
-            "date_completed": "acquisition_planning_date_completed",
-            "notes": "acquisition_planning_notes",
+            "acquisition_planning": {
+                "task_completed_by": "acquisition_planning_task_completed_by",
+                "date_completed": "acquisition_planning_date_completed",
+                "notes": "acquisition_planning_notes",
+            },
+            "pre_solicitation": {
+                "task_completed_by": "pre_solicitation_task_completed_by",
+                "date_completed": "pre_solicitation_date_completed",
+                "notes": "pre_solicitation_notes",
+                "target_completion_date": "pre_solicitation_target_completion_date",
+                "draft_solicitation_date": "pre_solicitation_draft_solicitation_date",
+            },
         }
+
+        if step.step_type == ProcurementTrackerStepType.ACQUISITION_PLANNING:
+            active_mapping = field_mapping["acquisition_planning"]
+        elif step.step_type == ProcurementTrackerStepType.PRE_SOLICITATION:
+            active_mapping = field_mapping["pre_solicitation"]
+        else:
+            active_mapping = {}
 
         # Update fields
         for key, value in data.items():
             # Use mapped field name if it exists, otherwise use the original key
-            model_field = field_mapping.get(key, key)
+            model_field = active_mapping.get(key, None)
 
-            if hasattr(step, model_field):
+            if model_field and hasattr(step, model_field):
                 setattr(step, model_field, value)
                 logger.debug(f"Set {model_field} = {value}")
+            elif hasattr(step, key):
+                # For fields that do not need to be mapped
+                setattr(step, key, value)
             else:
                 logger.warning(f"Field {model_field} does not exist on ProcurementTrackerStep")
 
