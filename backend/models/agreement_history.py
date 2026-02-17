@@ -944,7 +944,7 @@ def create_procurement_tracker_step_update_history_event(
         history_title = "Pre-Solicitation Completed"
         history_message = f"{event_user.full_name} completed step 2 of the Procurement Tracker. The pre-solicitation package has been finalized with the Procurement Shop and uploaded on the Documents Tab."
     else:
-        return None  # Only Acquisition Planning step is supported right now
+        return None  # Only Acquisition Planning and Pre-Solicitation steps are supported right now
 
     return AgreementHistory(
         agreement_id=procurement_tracker.agreement_id,
