@@ -979,3 +979,44 @@ def test_can_filter_options_no_permission(no_perms_auth_client):
     """GET /cans-filters/ should return 403 for unauthorized users."""
     response = no_perms_auth_client.get("/api/v1/cans-filters/")
     assert response.status_code == 403
+
+
+# ============================================================================
+# Testing CAN IDs Filter
+# ============================================================================
+
+
+def test_can_get_list_filter_by_can_ids(auth_client, loaded_db, app_ctx):
+    """Test filtering CANs by CAN IDs"""
+    response = auth_client.get("/api/v1/cans/?can_ids=500&can_ids=501")
+    assert response.status_code == 200
+    assert "data" in response.json
+
+    for can in response.json["data"]:
+        assert can["id"] in [500, 501]
+
+
+def test_service_filter_by_can_ids(loaded_db):
+    """Test service layer filtering by CAN IDs"""
+    can_service = CANService()
+
+    # Get some CANs first to get valid IDs
+    all_cans, _ = can_service.get_list()
+    assert len(all_cans) > 0
+
+    target_ids = [all_cans[0].id]
+    cans, metadata = can_service.get_list(can_ids=target_ids)
+
+    assert len(cans) == 1
+    assert cans[0].id == target_ids[0]
+
+
+def test_service_filter_by_can_ids_empty_list(loaded_db):
+    """Test service layer with empty can_ids list returns all CANs"""
+    can_service = CANService()
+
+    all_cans, all_metadata = can_service.get_list()
+    filtered_cans, filtered_metadata = can_service.get_list(can_ids=[])
+
+    assert len(filtered_cans) == len(all_cans)
+    assert filtered_metadata["count"] == all_metadata["count"]

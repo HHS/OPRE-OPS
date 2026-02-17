@@ -80,6 +80,10 @@ export const useTagsList = (filters) => {
     }, [filters.transfer, updateTags]);
 
     useEffect(() => {
+        updateTags("can", "can");
+    }, [filters.can, updateTags]);
+
+    useEffect(() => {
         updateTags("budget", "budget");
     }, [filters.budget, updateTags]);
 
@@ -109,6 +113,12 @@ export const removeFilter = (tag, setFilters) => {
             setFilters((prevState) => ({
                 ...prevState,
                 transfer: prevState.transfer.filter((transfer) => transfer.title !== tag.tagText)
+            }));
+            break;
+        case "can":
+            setFilters((prevState) => ({
+                ...prevState,
+                can: prevState.can.filter((c) => c.title !== tag.tagText)
             }));
             break;
         case "budget":

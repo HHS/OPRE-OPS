@@ -1,5 +1,6 @@
 import Modal from "react-modal";
 import CANActivePeriodComboBox from "../../../../components/CANs/CANActivePeriodComboBox";
+import CanNameComboBox from "../../../../components/CANs/CanNameComboBox";
 import CANPortfolioComboBox from "../../../../components/CANs/CANPortfolioComboBox";
 import CANTransferComboBox from "../../../../components/CANs/CANTransferComboBox";
 import FilterButton from "../../../../components/UI/FilterButton";
@@ -15,11 +16,12 @@ import CANFYBudgetRangeSlider from "../../../../components/CANs/CANFYBudgetRange
  * @param {import ('./CANFilterTypes').Filters} props.filters - The current filters.
  * @param {Function} props.setFilters - A function to call to set the filters.
  * @param {FilterOption[]} props.portfolioOptions - The portfolio options.
+ * @param {FilterOption[]} props.canOptions - The CAN options.
  * @param {[number, number]} props.fyBudgetRange - The fiscal year budget range.
  * @param {boolean} props.disabled - Whether the button is disabled.
  * @returns {JSX.Element} - The CAN filter button.
  */
-export const CANFilterButton = ({ filters, setFilters, portfolioOptions, fyBudgetRange, disabled }) => {
+export const CANFilterButton = ({ filters, setFilters, portfolioOptions, canOptions, fyBudgetRange, disabled }) => {
     const {
         activePeriod,
         setActivePeriod,
@@ -27,6 +29,8 @@ export const CANFilterButton = ({ filters, setFilters, portfolioOptions, fyBudge
         setTransfer,
         portfolio,
         setPortfolio,
+        can,
+        setCan,
         budget,
         setBudget,
         applyFilter,
@@ -34,32 +38,33 @@ export const CANFilterButton = ({ filters, setFilters, portfolioOptions, fyBudge
     } = useCANFilterButton(filters, setFilters, fyBudgetRange);
     const fieldStyles = "usa-fieldset margin-bottom-205";
     const legendStyles = "usa-legend font-sans-3xs margin-top-0 padding-bottom-1 text-base-dark";
+    const halfWidth = { width: "12rem" };
+    const fullWidth = { width: "22.7rem" };
 
     const fieldsetList = [
-        <fieldset
-            key="field-1"
-            className={fieldStyles}
+        <div
+            key="row-1"
+            className="display-flex flex-justify gap-2"
         >
-            <CANActivePeriodComboBox
-                activePeriod={activePeriod}
-                setActivePeriod={setActivePeriod}
-                legendClassname={legendStyles}
-                overrideStyles={{ width: "22.7rem" }}
-            />
-        </fieldset>,
+            <fieldset className={fieldStyles + " flex-1"}>
+                <CANActivePeriodComboBox
+                    activePeriod={activePeriod}
+                    setActivePeriod={setActivePeriod}
+                    legendClassname={legendStyles}
+                    overrideStyles={halfWidth}
+                />
+            </fieldset>
+            <fieldset className={fieldStyles + " flex-1"}>
+                <CANTransferComboBox
+                    transfer={transfer}
+                    setTransfer={setTransfer}
+                    legendClassname={legendStyles}
+                    overrideStyles={halfWidth}
+                />
+            </fieldset>
+        </div>,
         <fieldset
-            key="field-2"
-            className={fieldStyles}
-        >
-            <CANTransferComboBox
-                transfer={transfer}
-                setTransfer={setTransfer}
-                legendClassname={legendStyles}
-                overrideStyles={{ width: "22.7rem" }}
-            />
-        </fieldset>,
-        <fieldset
-            key="field-3"
+            key="field-portfolio"
             className={fieldStyles}
         >
             <CANPortfolioComboBox
@@ -67,11 +72,23 @@ export const CANFilterButton = ({ filters, setFilters, portfolioOptions, fyBudge
                 setPortfolio={setPortfolio}
                 portfolioOptions={portfolioOptions}
                 legendClassname={legendStyles}
-                overrideStyles={{ width: "22.7rem" }}
+                overrideStyles={fullWidth}
             />
         </fieldset>,
         <fieldset
-            key="field-4"
+            key="field-can"
+            className={fieldStyles}
+        >
+            <CanNameComboBox
+                can={can}
+                setCan={setCan}
+                canOptions={canOptions}
+                legendClassname={legendStyles}
+                overrideStyles={fullWidth}
+            />
+        </fieldset>,
+        <fieldset
+            key="field-budget"
             className={fieldStyles}
         >
             <CANFYBudgetRangeSlider

@@ -100,6 +100,7 @@ class CANService:
         active_period=None,
         transfer=None,
         portfolio=None,
+        can_ids=None,
         budget_min=None,
         budget_max=None,
     ) -> tuple[list[CAN], dict[str, int]]:
@@ -127,6 +128,7 @@ class CANService:
         active_period_values = active_period if active_period is not None else []
         transfer_values = transfer if transfer is not None else []
         portfolio_values = portfolio if portfolio is not None else []
+        can_ids_values = can_ids if can_ids is not None else []
         # budget_min, budget_max are semantically single values but wrapped in lists
         budget_min_value = budget_min[0] if budget_min and len(budget_min) > 0 else None
         budget_max_value = budget_max[0] if budget_max and len(budget_max) > 0 else None
@@ -153,6 +155,7 @@ class CANService:
             active_period_values,
             transfer_values,
             portfolio_values,
+            can_ids_values,
             budget_min_value,
             budget_max_value,
         )
@@ -391,6 +394,7 @@ class CANService:
         active_period_values: list[int],
         transfer_values: list[str],
         portfolio_values: list[str],
+        can_ids_values: list[int],
         budget_min_value: float,
         budget_max_value: float,
     ) -> list[CAN]:
@@ -403,6 +407,7 @@ class CANService:
             active_period_values: List of active period IDs to filter by
             transfer_values: List of transfer method strings to filter by
             portfolio_values: List of portfolio abbreviations to filter by
+            can_ids_values: List of CAN IDs to filter by
             budget_min_value: Minimum budget filter
             budget_max_value: Maximum budget filter
 
@@ -410,6 +415,11 @@ class CANService:
             Filtered list of CANs
         """
         filtered_cans = cans
+
+        # Filter by CAN IDs
+        if can_ids_values and len(can_ids_values) > 0:
+            can_ids_set = set(can_ids_values)
+            filtered_cans = [can for can in filtered_cans if can.id in can_ids_set]
 
         # Filter by active period
         if active_period_values and len(active_period_values) > 0:
