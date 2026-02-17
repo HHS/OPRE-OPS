@@ -29,12 +29,6 @@ def test_version_format():
     pass
 
 
-@scenario("api_version.feature", "Verify version endpoint performance with caching")
-def test_version_caching_performance():
-    """Test that version endpoint uses caching for performance."""
-    pass
-
-
 # Given steps
 
 
