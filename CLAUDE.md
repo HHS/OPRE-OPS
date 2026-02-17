@@ -22,6 +22,30 @@ See [`.claude/actions/README.md`](.claude/actions/README.md) for usage details.
 
 These scripts can be invoked by Claude Code automatically or run manually.
 
+## Claude Story Templates
+
+This repository includes reusable story templates in `.claude/templates/` for consistent planning and implementation with Claude Code.
+
+Available templates:
+
+- **`feature-story.md`**: For implementing new features
+- **`bug-story.md`**: For fixing bugs and defects
+- **`refactor-story.md`**: For code refactoring and technical improvements
+
+See [`.claude/templates/README.md`](.claude/templates/README.md) for detailed usage instructions.
+
+**Example usage**:
+
+```bash
+# Copy template to gitignored stories directory
+cp .claude/templates/feature-story.md .claude/stories/OPS-1234.md
+
+# Edit with your specific story details
+# Use with Claude Code for implementation
+```
+
+Personal story files in `.claude/stories/` are gitignored to keep work-in-progress private.
+
 ## Flaky Test Detection
 
 The CI pipeline automatically detects flaky E2E tests by analyzing Cypress retry patterns. Spec files that require retries are flagged in the GitHub Actions job summary.
@@ -34,11 +58,13 @@ The CI pipeline automatically detects flaky E2E tests by analyzing Cypress retry
 - Cypress output logs are uploaded as artifacts for manual review
 
 **Viewing flaky test reports**:
+
 1. Navigate to the GitHub Actions run for your PR
 2. Click on any E2E test job
 3. Scroll to the job summary to see the flaky test detection report
 
 **Local usage**:
+
 ```bash
 # Run E2E tests locally and capture output
 cd frontend

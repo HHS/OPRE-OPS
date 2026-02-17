@@ -3,7 +3,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import CurrencyFormat from "react-currency-format";
 import { Link } from "react-router-dom";
 import { formatDateToMonthDayYear } from "../../../helpers/utils";
-import { useGetAbbreviationForProcurementShopId } from "../../../hooks/lookup.hooks";
 import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import TableRowExpandable from "../../UI/TableRowExpandable";
@@ -15,6 +14,7 @@ import {
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import TableTag from "../../UI/TableTag";
 import TextClip from "../../UI/Text/TextClip";
+import { getProcurementShopLabel } from "../../../helpers/budgetLines.helpers";
 
 /**
  * @typedef {import("../../../types/BudgetLineTypes").BudgetLine} BudgetLine
@@ -34,8 +34,6 @@ import TextClip from "../../UI/Text/TextClip";
  * @property {boolean} inReview
  * @property {number} creatorId
  * @property {string} creationDate
- * @property {number} procShopId
- * @property {number} procShopFeePercentage
  * @property {string} description
  */
 
@@ -56,8 +54,6 @@ const CANBudgetLineTableRow = ({
     inReview,
     creatorId,
     creationDate,
-    procShopId,
-    procShopFeePercentage,
     description
 }) => {
     const lockedMessage = useChangeRequestsForTooltip(budgetLine);
@@ -67,8 +63,7 @@ const CANBudgetLineTableRow = ({
     const budgetLineCreatorName = useGetUserFullNameFromId(creatorId);
     const feeTotal = budgetLine.fees;
     const displayCreatedDate = formatDateToMonthDayYear(creationDate);
-    const procShopName = useGetAbbreviationForProcurementShopId(procShopId);
-    const procShopFeePercentageToDisplay = procShopFeePercentage === 0 ? 0 : (procShopFeePercentage * 100).toFixed(2);
+    const procShopLabel = getProcurementShopLabel(budgetLine);
 
     const TableRowData = (
         <>
@@ -186,7 +181,7 @@ const CANBudgetLineTableRow = ({
                             className="margin-0"
                             style={{ maxWidth: "25rem" }}
                         >
-                            {`${procShopName}-Fee Rate: ${procShopFeePercentageToDisplay}%`}
+                            {`${procShopLabel}`}
                         </dd>
                     </dl>
                     <div className="font-12px display-flex margin-top-1">

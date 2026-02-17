@@ -20,7 +20,15 @@ const mockBudgetLine = {
     in_review: true,
     created_by: 1,
     created_on: "2023-09-01",
-    line_description: "Test Description"
+    line_description: "Test Description",
+    agreement: {
+        ...budgetLine.agreement,
+        procurement_shop: {
+            id: 1,
+            abbr: "TBD",
+            current_fee: { fee: 5.0 }
+        }
+    }
 };
 
 describe("CANBudgetLineTableRow", () => {
@@ -44,7 +52,6 @@ describe("CANBudgetLineTableRow", () => {
                         creatorId={mockBudgetLine.created_by}
                         creationDate={mockBudgetLine.created_on}
                         procShopCode="TBD"
-                        procShopFeePercentage={mockBudgetLine.proc_shop_fee_percentage}
                     />
                 </BrowserRouter>
             </Provider>
@@ -77,7 +84,6 @@ describe("CANBudgetLineTableRow", () => {
                         creatorId={mockBudgetLine.created_by}
                         creationDate={mockBudgetLine.created_on}
                         procShopCode="TBD"
-                        procShopFeePercentage={mockBudgetLine.proc_shop_fee_percentage}
                         description={mockBudgetLine.line_description}
                     />
                 </BrowserRouter>

@@ -35,8 +35,6 @@ vi.mock("../../../helpers/changeRequests.helpers", () => ({
     hasProcurementShopChange: () => false
 }));
 
-const mockProcurementShops = [{ id: 1, abbr: "TEST", fee_percentage: 0.1 }];
-
 const mockBudgetLine = {
     id: 123,
     agreement: {
@@ -46,6 +44,11 @@ const mockBudgetLine = {
         project: {
             id: 1,
             title: "Test Project"
+        },
+        procurement_shop: {
+            id: 1,
+            abbr: "TEST",
+            current_fee: { fee: 0.1 }
         }
     },
     line_description: "Test Description",
@@ -108,10 +111,7 @@ describe("AllBLIRow", () => {
         render(
             <Provider store={store}>
                 <BrowserRouter>
-                    <AllBLIRow
-                        budgetLine={mockBudgetLine}
-                        procurementShops={mockProcurementShops}
-                    />
+                    <AllBLIRow budgetLine={mockBudgetLine} />
                 </BrowserRouter>
             </Provider>
         );
@@ -130,10 +130,7 @@ describe("AllBLIRow", () => {
         render(
             <Provider store={store}>
                 <BrowserRouter>
-                    <AllBLIRow
-                        budgetLine={mockBudgetLine}
-                        procurementShops={mockProcurementShops}
-                    />
+                    <AllBLIRow budgetLine={mockBudgetLine} />
                 </BrowserRouter>
             </Provider>
         );
