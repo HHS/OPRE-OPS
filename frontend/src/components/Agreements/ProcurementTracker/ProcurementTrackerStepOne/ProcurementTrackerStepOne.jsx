@@ -4,8 +4,6 @@ import TermTag from "../../../UI/Term/TermTag";
 import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepOne from "./ProcurementTrackerStepOne.hooks";
 import { getLocalISODate } from "../../../../helpers/utils";
-import { useGetUsersQuery } from "../../../../api/opsAPI";
-import { useMemo } from "react";
 
 /**
  * @typedef {Object} ProcurementTrackerStepOneProps
@@ -13,7 +11,7 @@ import { useMemo } from "react";
  * @property {Object} stepOneData - The data for step one of the procurement tracker
  * @property {boolean} hasActiveTracker - Whether an active tracker exists
  * @property {Function} handleSetIsFormSubmitted - Function to set the form submission state
- * @property {import("../../../../types/AgreementTypes").Agreement} [agreement] - Agreement object with authorized_user_ids
+ * @property {Array} authorizedUsers - List of users authorized for this agreement
  */
 
 /**
@@ -26,7 +24,7 @@ const ProcurementTrackerStepOne = ({
     stepOneData,
     hasActiveTracker,
     handleSetIsFormSubmitted,
-    agreement
+    authorizedUsers
 }) => {
     const {
         isPreSolicitationPackageSent,
@@ -50,17 +48,6 @@ const ProcurementTrackerStepOne = ({
         runValidate,
         validatorRes
     } = useProcurementTrackerStepOne(stepOneData, handleSetIsFormSubmitted);
-
-    // Fetch all users
-    const { data: allUsers } = useGetUsersQuery({});
-
-    // Filter users by authorized_user_ids from the agreement
-    const authorizedUsers = useMemo(() => {
-        if (!allUsers || !agreement?.authorized_user_ids) {
-            return [];
-        }
-        return allUsers.filter((user) => agreement.authorized_user_ids.includes(user.id));
-    }, [allUsers, agreement?.authorized_user_ids]);
 
     return (
         <>

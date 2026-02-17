@@ -1,11 +1,14 @@
 import { getLocalISODate } from "../../../../helpers/utils";
-import DebugCode from "../../../DebugCode";
+import TermTag from "../../../UI/Term/TermTag";
+import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepTwo from "./ProcurementTrackerStepTwo.hooks";
 
 /**
  * @typedef {Object} ProcurementTrackerStepTwoProps
  * @property {string} stepStatus - The current status of the procurement tracker step
  * @property {Object} stepTwoData - The data for step 2 of the procurement tracker
+ * @property {Array} authorizedUsers - List of users authorized for this agreement
+ * @property {boolean} hasActiveTracker - Whether an active tracker exists
  */
 
 /**
@@ -13,9 +16,17 @@ import useProcurementTrackerStepTwo from "./ProcurementTrackerStepTwo.hooks";
  * @param {ProcurementTrackerStepTwoProps} props
  * @returns {React.ReactElement}
  */
-const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData }) => {
-    const { MemoizedDatePicker, setTargetCompletionDate, targetCompletionDate, runValidate, validatorRes } =
-        useProcurementTrackerStepTwo(stepTwoData);
+const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, hasActiveTracker }) => {
+    const {
+        selectedUser,
+        setSelectedUser,
+        step2CompletedByUserName,
+        MemoizedDatePicker,
+        setTargetCompletionDate,
+        targetCompletionDate,
+        runValidate,
+        validatorRes
+    } = useProcurementTrackerStepTwo(stepTwoData);
 
     return (
         <>
@@ -42,6 +53,7 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData }) => {
                             minDate={getLocalISODate()}
                         />
                         <button
+                            type="button"
                             className="usa-button usa-button--unstyled margin-bottom-1 margin-left-2"
                             data-cy="target-completion-save-btn"
                             disabled={validatorRes.hasErrors("targetCompletionDate")}
@@ -52,13 +64,30 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData }) => {
                             Save
                         </button>
                     </div>
-                    <DebugCode data={stepTwoData} />
+                    <UsersComboBox
+                        className="width-card-lg margin-top-2"
+                        label={"Task Completed By"}
+                        selectedUser={selectedUser}
+                        setSelectedUser={setSelectedUser}
+                        users={authorizedUsers}
+                        isDisabled={!hasActiveTracker}
+                    />
                 </fieldset>
             )}
 
             {stepStatus === "COMPLETED" && (
                 <div>
-                    <p>Step Two Completed</p>
+                    <p>
+                        Edit the pre-solicitation package in collaboration with the Procurement Shop. Once the documents
+                        are finalized, go to the Documents Tab, upload the final and signed versions, and update the
+                        task below.
+                    </p>
+                    <dl>
+                        <TermTag
+                            term="Completed By"
+                            description={step2CompletedByUserName}
+                        />
+                    </dl>
                 </div>
             )}
         </>
