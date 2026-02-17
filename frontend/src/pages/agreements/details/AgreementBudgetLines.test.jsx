@@ -18,7 +18,6 @@ vi.mock("../../../api/opsAPI", () => ({
     }),
     useLazyGetServicesComponentByIdQuery: () => [vi.fn(), { data: [], isLoading: false }],
     useLazyGetBudgetLineItemsQuery: () => [vi.fn(), { data: [], isLoading: false }],
-    useLazyGetProcurementShopsQuery: () => [vi.fn(), { data: [], isLoading: false }],
     useLazyGetPortfolioByIdQuery: () => [vi.fn(), { data: null, isLoading: false }],
     useLazyGetCansQuery: () => [
         vi.fn().mockResolvedValue({ unwrap: () => Promise.resolve({ cans: [], count: 0 }) }),
