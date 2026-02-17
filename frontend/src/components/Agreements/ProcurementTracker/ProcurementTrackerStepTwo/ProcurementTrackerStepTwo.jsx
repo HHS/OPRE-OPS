@@ -5,7 +5,7 @@ import useProcurementTrackerStepTwo from "./ProcurementTrackerStepTwo.hooks";
 /**
  * @typedef {Object} ProcurementTrackerStepTwoProps
  * @property {string} stepStatus - The current status of the procurement tracker step
- * @property {Object} stepData - The data for step of the procurement tracker
+ * @property {Object} stepTwoData - The data for step 2 of the procurement tracker
  */
 
 /**
@@ -13,9 +13,9 @@ import useProcurementTrackerStepTwo from "./ProcurementTrackerStepTwo.hooks";
  * @param {ProcurementTrackerStepTwoProps} props
  * @returns {React.ReactElement}
  */
-const ProcurementTrackerStepTwo = ({ stepStatus, stepData }) => {
+const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData }) => {
     const { MemoizedDatePicker, setTargetCompletionDate, targetCompletionDate, runValidate, validatorRes } =
-        useProcurementTrackerStepTwo(stepData);
+        useProcurementTrackerStepTwo(stepTwoData);
 
     return (
         <>
@@ -52,7 +52,7 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepData }) => {
                             Save
                         </button>
                     </div>
-                    <DebugCode data={stepData} />
+                    <DebugCode data={stepTwoData} />
                 </fieldset>
             )}
 

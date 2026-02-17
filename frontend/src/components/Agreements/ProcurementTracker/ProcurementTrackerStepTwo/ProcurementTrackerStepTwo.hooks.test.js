@@ -28,6 +28,16 @@ describe("useProcurementTrackerStepTwo", () => {
         expect(result.current.MemoizedDatePicker).toBeDefined();
     });
 
+    it("initializes targetCompletionDate from backend target_completion_date", () => {
+        const stepTwoDataWithDate = {
+            ...mockStepTwoData,
+            target_completion_date: "01/31/2024"
+        };
+        const { result } = renderHook(() => useProcurementTrackerStepTwo(stepTwoDataWithDate));
+
+        expect(result.current.targetCompletionDate).toBe("01/31/2024");
+    });
+
     it("updates targetCompletionDate via setter", () => {
         const { result } = renderHook(() => useProcurementTrackerStepTwo(mockStepTwoData));
 

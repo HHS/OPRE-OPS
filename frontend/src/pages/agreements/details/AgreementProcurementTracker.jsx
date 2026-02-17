@@ -119,7 +119,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                         {step.step_number === 2 && (
                             <ProcurementTrackerStepTwo
                                 stepStatus={step.status}
-                                stepData={stepTwoData}
+                                stepTwoData={stepTwoData}
                             />
                         )}
                     </StepBuilderAccordion>

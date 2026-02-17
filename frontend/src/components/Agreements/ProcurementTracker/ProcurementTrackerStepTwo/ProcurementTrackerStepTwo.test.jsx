@@ -37,7 +37,7 @@ vi.mock("../../../UI/USWDS/DatePicker", () => ({
 }));
 
 describe("ProcurementTrackerStepTwo", () => {
-    const mockStepData = {
+    const mockStepTwoData = {
         id: 102,
         step_number: 2,
         status: "PENDING"
@@ -59,7 +59,7 @@ describe("ProcurementTrackerStepTwo", () => {
         render(
             <ProcurementTrackerStepTwo
                 stepStatus="PENDING"
-                stepData={mockStepData}
+                stepTwoData={mockStepTwoData}
             />
         );
 
@@ -74,7 +74,7 @@ describe("ProcurementTrackerStepTwo", () => {
         render(
             <ProcurementTrackerStepTwo
                 stepStatus="ACTIVE"
-                stepData={mockStepData}
+                stepTwoData={mockStepTwoData}
             />
         );
 
@@ -86,7 +86,7 @@ describe("ProcurementTrackerStepTwo", () => {
         render(
             <ProcurementTrackerStepTwo
                 stepStatus="COMPLETED"
-                stepData={mockStepData}
+                stepTwoData={mockStepTwoData}
             />
         );
 
@@ -99,7 +99,7 @@ describe("ProcurementTrackerStepTwo", () => {
         render(
             <ProcurementTrackerStepTwo
                 stepStatus="PENDING"
-                stepData={mockStepData}
+                stepTwoData={mockStepTwoData}
             />
         );
 
@@ -115,7 +115,7 @@ describe("ProcurementTrackerStepTwo", () => {
         render(
             <ProcurementTrackerStepTwo
                 stepStatus="PENDING"
-                stepData={mockStepData}
+                stepTwoData={mockStepTwoData}
             />
         );
 
@@ -131,12 +131,34 @@ describe("ProcurementTrackerStepTwo", () => {
         render(
             <ProcurementTrackerStepTwo
                 stepStatus="PENDING"
-                stepData={mockStepData}
+                stepTwoData={mockStepTwoData}
             />
         );
 
         fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
         expect(window.alert).toHaveBeenCalledWith("Save target completion date functionality coming soon!");
+    });
+
+    it("initializes target completion date from step data", () => {
+        render(
+            <ProcurementTrackerStepTwo
+                stepStatus="PENDING"
+                stepTwoData={{ ...mockStepTwoData, target_completion_date: "01/30/2024" }}
+            />
+        );
+
+        expect(screen.getByLabelText("Target Completion Date")).toHaveValue("01/30/2024");
+    });
+
+    it("passes minDate from getLocalISODate to DatePicker", () => {
+        render(
+            <ProcurementTrackerStepTwo
+                stepStatus="PENDING"
+                stepTwoData={mockStepTwoData}
+            />
+        );
+
+        expect(screen.getByTestId("date-picker")).toHaveAttribute("data-min-date", "2024-01-30");
     });
 });
