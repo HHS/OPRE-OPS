@@ -5,7 +5,6 @@ import {
     useGetBudgetLineItemsQuery,
     useLazyGetBudgetLineItemsQuery,
     useLazyGetPortfolioByIdQuery,
-    useLazyGetProcurementShopsQuery,
     useLazyGetServicesComponentByIdQuery
 } from "../../../api/opsAPI";
 import AllBudgetLinesTable from "../../../components/BudgetLineItems/AllBudgetLinesTable";
@@ -130,7 +129,6 @@ const BudgetLineItemList = () => {
 
     const [serviceComponentTrigger] = useLazyGetServicesComponentByIdQuery();
     const [budgetLineTrigger] = useLazyGetBudgetLineItemsQuery();
-    const [procShopTrigger] = useLazyGetProcurementShopsQuery();
     const [portfolioTrigger] = useLazyGetPortfolioByIdQuery();
 
     useEffect(() => {
@@ -208,7 +206,6 @@ const BudgetLineItemList = () => {
                                                 resolvedFilters,
                                                 budgetLineItems,
                                                 budgetLineTrigger,
-                                                procShopTrigger,
                                                 serviceComponentTrigger,
                                                 portfolioTrigger
                                             )
