@@ -1,13 +1,12 @@
 import { getLocalISODate } from "../../../../helpers/utils";
+import TermTag from "../../../UI/Term/TermTag";
 import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepTwo from "./ProcurementTrackerStepTwo.hooks";
-import TermTag from "../../../UI/Term/TermTag";
-import DatePicker from "../../../UI/USWDS/DatePicker";
 
 /**
  * @typedef {Object} ProcurementTrackerStepTwoProps
  * @property {string} stepStatus - The current status of the procurement tracker step
- * @property {Object} stepData - The data for step of the procurement tracker
+ * @property {Object} stepTwoData - The data for step 2 of the procurement tracker
  * @property {Array} authorizedUsers - List of users authorized for this agreement
  * @property {boolean} hasActiveTracker - Whether an active tracker exists
  */
@@ -17,9 +16,17 @@ import DatePicker from "../../../UI/USWDS/DatePicker";
  * @param {ProcurementTrackerStepTwoProps} props
  * @returns {React.ReactElement}
  */
-const ProcurementTrackerStepTwo = ({ stepStatus, stepData, authorizedUsers, hasActiveTracker }) => {
-    const { selectedUser, setSelectedUser, setTargetCompletionDate, targetCompletionDate, step2CompletedByUserName } =
-        useProcurementTrackerStepTwo(stepData);
+const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, hasActiveTracker }) => {
+    const {
+        selectedUser,
+        setSelectedUser,
+        step2CompletedByUserName,
+        MemoizedDatePicker,
+        setTargetCompletionDate,
+        targetCompletionDate,
+        runValidate,
+        validatorRes
+    } = useProcurementTrackerStepTwo(stepTwoData);
 
     return (
         <>
@@ -32,26 +39,27 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepData, authorizedUsers, hasA
                         enter it below.
                     </p>
                     <div className="display-flex flex-align-end">
-                        <DatePicker
+                        <MemoizedDatePicker
                             id="target-completion-date"
                             name="targetCompletionDate"
                             label="Target Completion Date"
+                            messages={validatorRes.getErrors("targetCompletionDate") || []}
                             hint="mm/dd/yyyy"
                             value={targetCompletionDate}
                             onChange={(e) => {
+                                runValidate("targetCompletionDate", e.target.value);
                                 setTargetCompletionDate(e.target.value);
                             }}
                             minDate={getLocalISODate()}
-                            isDisabled={!hasActiveTracker}
                         />
                         <button
                             type="button"
                             className="usa-button usa-button--unstyled margin-bottom-1 margin-left-2"
                             data-cy="target-completion-save-btn"
+                            disabled={validatorRes.hasErrors("targetCompletionDate")}
                             onClick={() => {
                                 alert("Save target completion date functionality coming soon!");
                             }}
-                            disabled={!hasActiveTracker}
                         >
                             Save
                         </button>
