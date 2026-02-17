@@ -25,6 +25,20 @@ describe("exportTableToXlsx", () => {
     beforeEach(() => {
         vi.clearAllMocks();
 
+        if (!URL.createObjectURL) {
+            Object.defineProperty(URL, "createObjectURL", {
+                writable: true,
+                value: vi.fn()
+            });
+        }
+
+        if (!URL.revokeObjectURL) {
+            Object.defineProperty(URL, "revokeObjectURL", {
+                writable: true,
+                value: vi.fn()
+            });
+        }
+
         vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:test-url");
         vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
 

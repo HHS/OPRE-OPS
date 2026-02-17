@@ -1,6 +1,7 @@
 import React from "react";
 import { useGetProcurementTrackersByAgreementIdQuery } from "../../../api/opsAPI";
 import ProcurementTrackerStepOne from "../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepOne";
+import ProcurementTrackerStepTwo from "../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepTwo";
 import StepBuilderAccordion from "../../../components/Agreements/ProcurementTracker/StepBuilderAccordion";
 import DebugCode from "../../../components/DebugCode";
 import StepIndicator from "../../../components/UI/StepIndicator";
@@ -42,6 +43,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
     const activeTracker = trackers.find((tracker) => tracker.status === "ACTIVE");
     const hasActiveTracker = !!activeTracker;
     const stepOneData = activeTracker?.steps.find((step) => step.step_number === 1);
+    const stepTwoData = activeTracker?.steps.find((step) => step.step_number === 2);
 
     // Handle loading state
     if (isLoading) {
@@ -110,15 +112,11 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 agreement={agreement}
                             />
                         )}
-                        {step.step_number === 2 && (
-                            <div className="usa-fieldset">
-                                <p>
-                                    Edit the pre-solicitation package in collaboration with the Procurement Shop. Once
-                                    the documents are finalized, go to the Documents Tab, upload the final and signed
-                                    versions, and check this step as complete. If you have a target completion date for
-                                    when the package will be finalized, enter it below.
-                                </p>
-                            </div>
+                        {IS_PROCUREMENT_TRACKER_READY_MAP.STEP_2 && step.step_number === 2 && (
+                            <ProcurementTrackerStepTwo
+                                stepStatus={step.status}
+                                stepTwoData={stepTwoData}
+                            />
                         )}
                         {step.step_number === 3 && (
                             <div className="usa-fieldset">
