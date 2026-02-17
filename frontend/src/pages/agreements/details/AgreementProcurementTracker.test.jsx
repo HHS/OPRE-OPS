@@ -94,11 +94,23 @@ vi.mock("../../../components/UI/USWDS/DatePicker", () => ({
     )
 }));
 
+vi.mock("../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepTwo", () => ({
+    default: ({ stepStatus, stepTwoData }) => (
+        <div
+            data-testid="procurement-step-two"
+            data-step-status={stepStatus}
+            data-step-data-id={stepTwoData?.id}
+        >
+            {stepStatus === "COMPLETED" ? "Step Two Completed" : "Step Two Form"}
+        </div>
+    )
+}));
+
 // Mock constants module
 vi.mock("../../../constants", () => ({
     IS_PROCUREMENT_TRACKER_READY_MAP: {
         STEP_1: true,
-        STEP_2: false,
+        STEP_2: true,
         STEP_3: false,
         STEP_4: false,
         STEP_5: false,
@@ -880,7 +892,7 @@ describe("AgreementProcurementTracker", () => {
             expect(completeButton).toBeDisabled();
         });
 
-        it("renders step 2 instructional content when step 2 is active", () => {
+        it("renders step 2 content when step 2 is active", () => {
             const mockTrackerWithActiveStepTwo = {
                 data: [
                     {
@@ -920,9 +932,7 @@ describe("AgreementProcurementTracker", () => {
                 </Provider>
             );
 
-            expect(
-                screen.getByText(/Edit the pre-solicitation package in collaboration with the Procurement Shop/)
-            ).toBeInTheDocument();
+            expect(screen.getByTestId("procurement-step-two")).toHaveTextContent("Step Two Form");
             expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
         });
 
@@ -1129,6 +1139,135 @@ describe("AgreementProcurementTracker", () => {
             tags.forEach((tag) => {
                 expect(tag).toHaveAttribute("data-tag-style", "primaryDarkTextLightBackground");
             });
+        });
+    });
+
+    describe("Step 2 Wiring", () => {
+        it("renders step 2 content when active step is 2", () => {
+            const trackerWithActiveStepTwo = {
+                data: [
+                    {
+                        id: 4,
+                        agreement_id: 13,
+                        status: "ACTIVE",
+                        active_step_number: 2,
+                        steps: [
+                            {
+                                id: 101,
+                                step_number: 1,
+                                step_type: "PRE_SOLICITATION",
+                                status: "COMPLETED"
+                            },
+                            {
+                                id: 102,
+                                step_number: 2,
+                                step_type: "SOLICITATION",
+                                status: "ACTIVE"
+                            }
+                        ]
+                    }
+                ]
+            };
+
+            useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
+                data: trackerWithActiveStepTwo,
+                isLoading: false,
+                isError: false
+            });
+
+            render(
+                <Provider store={setupStore()}>
+                    <AgreementProcurementTracker agreement={mockAgreement} />
+                </Provider>
+            );
+
+            expect(screen.getByText("Step 2 of 6")).toBeInTheDocument();
+            expect(screen.getByTestId("procurement-step-two")).toHaveTextContent("Step Two Form");
+        });
+
+        it("passes step 2 data into ProcurementTrackerStepTwo", () => {
+            const trackerWithStepTwoData = {
+                data: [
+                    {
+                        id: 4,
+                        agreement_id: 13,
+                        status: "ACTIVE",
+                        active_step_number: 2,
+                        steps: [
+                            {
+                                id: 101,
+                                step_number: 1,
+                                step_type: "PRE_SOLICITATION",
+                                status: "COMPLETED"
+                            },
+                            {
+                                id: 102,
+                                step_number: 2,
+                                step_type: "SOLICITATION",
+                                status: "PENDING",
+                                target_completion_date: "01/30/2024"
+                            }
+                        ]
+                    }
+                ]
+            };
+
+            useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
+                data: trackerWithStepTwoData,
+                isLoading: false,
+                isError: false
+            });
+
+            render(
+                <Provider store={setupStore()}>
+                    <AgreementProcurementTracker agreement={mockAgreement} />
+                </Provider>
+            );
+
+            expect(screen.getByTestId("procurement-step-two")).toHaveAttribute("data-step-data-id", "102");
+            expect(screen.getByTestId("procurement-step-two")).toHaveAttribute("data-step-status", "PENDING");
+        });
+
+        it("renders completed state for step 2 when status is COMPLETED", () => {
+            const trackerWithCompletedStepTwo = {
+                data: [
+                    {
+                        id: 4,
+                        agreement_id: 13,
+                        status: "ACTIVE",
+                        active_step_number: 2,
+                        steps: [
+                            {
+                                id: 101,
+                                step_number: 1,
+                                step_type: "PRE_SOLICITATION",
+                                status: "COMPLETED"
+                            },
+                            {
+                                id: 102,
+                                step_number: 2,
+                                step_type: "SOLICITATION",
+                                status: "COMPLETED"
+                            }
+                        ]
+                    }
+                ]
+            };
+
+            useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
+                data: trackerWithCompletedStepTwo,
+                isLoading: false,
+                isError: false
+            });
+
+            render(
+                <Provider store={setupStore()}>
+                    <AgreementProcurementTracker agreement={mockAgreement} />
+                </Provider>
+            );
+
+            expect(screen.getByTestId("procurement-step-two")).toHaveTextContent("Step Two Completed");
+            expect(screen.getByTestId("procurement-step-two")).toHaveAttribute("data-step-status", "COMPLETED");
         });
     });
 });
