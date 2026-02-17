@@ -140,18 +140,6 @@ describe("ProcurementTrackerStepOne", () => {
     });
 
     describe("PENDING State Rendering", () => {
-        it("calls useGetUsersQuery with an empty params object", () => {
-            render(
-                <ProcurementTrackerStepOne
-                    stepStatus="PENDING"
-                    stepOneData={mockStepOneData}
-                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
-                />
-            );
-
-            expect(useGetUsersQuery).toHaveBeenCalledWith({});
-        });
-
         it("renders all form fields: checkbox, UsersComboBox, DatePicker, TextArea, buttons", () => {
             render(
                 <ProcurementTrackerStepOne

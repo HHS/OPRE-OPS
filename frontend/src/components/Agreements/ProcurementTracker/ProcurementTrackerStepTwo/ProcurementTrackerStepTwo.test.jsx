@@ -1,7 +1,10 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import ProcurementTrackerStepTwo from "./ProcurementTrackerStepTwo";
+import useGetUserFullNameFromId from "../../../../hooks/user.hooks";
 import suite from "./suite";
+
+vi.mock("../../../../hooks/user.hooks");
 
 vi.mock("../../../../helpers/utils", async (importOriginal) => {
     const actual = await importOriginal();
@@ -36,6 +39,39 @@ vi.mock("../../../UI/USWDS/DatePicker", () => ({
     )
 }));
 
+vi.mock("../../UsersComboBox", () => ({
+    default: ({ label, selectedUser, setSelectedUser, isDisabled, users }) => (
+        <div data-testid="users-combobox">
+            <label>{label}</label>
+            <select
+                disabled={isDisabled}
+                value={selectedUser?.id || ""}
+                onChange={(e) => setSelectedUser({ id: parseInt(e.target.value) })}
+                data-user-count={users?.length || 0}
+            >
+                <option value="">Select user</option>
+                {users?.map((user) => (
+                    <option
+                        key={user.id}
+                        value={user.id}
+                    >
+                        {user.full_name}
+                    </option>
+                ))}
+            </select>
+        </div>
+    )
+}));
+
+vi.mock("../../../UI/Term/TermTag", () => ({
+    default: ({ term, description }) => (
+        <div data-testid="term-tag">
+            <dt>{term}</dt>
+            <dd>{description}</dd>
+        </div>
+    )
+}));
+
 describe("ProcurementTrackerStepTwo", () => {
     const mockStepTwoData = {
         id: 102,
@@ -43,11 +79,17 @@ describe("ProcurementTrackerStepTwo", () => {
         status: "PENDING"
     };
 
+    const mockAuthorizedUsers = [
+        { id: 1, full_name: "John Doe", email: "john@example.com" },
+        { id: 2, full_name: "Jane Smith", email: "jane@example.com" }
+    ];
+
     beforeEach(() => {
         suite.reset();
         vi.useFakeTimers();
         vi.setSystemTime(new Date("2024-01-30T12:00:00.000Z"));
         vi.spyOn(window, "alert").mockImplementation(() => {});
+        useGetUserFullNameFromId.mockReturnValue("John Doe");
     });
 
     afterEach(() => {
@@ -60,6 +102,8 @@ describe("ProcurementTrackerStepTwo", () => {
             <ProcurementTrackerStepTwo
                 stepStatus="PENDING"
                 stepTwoData={mockStepTwoData}
+                authorizedUsers={mockAuthorizedUsers}
+                hasActiveTracker={true}
             />
         );
 
@@ -75,6 +119,8 @@ describe("ProcurementTrackerStepTwo", () => {
             <ProcurementTrackerStepTwo
                 stepStatus="ACTIVE"
                 stepTwoData={mockStepTwoData}
+                authorizedUsers={mockAuthorizedUsers}
+                hasActiveTracker={true}
             />
         );
 
@@ -87,11 +133,14 @@ describe("ProcurementTrackerStepTwo", () => {
             <ProcurementTrackerStepTwo
                 stepStatus="COMPLETED"
                 stepTwoData={mockStepTwoData}
+                authorizedUsers={mockAuthorizedUsers}
+                hasActiveTracker={true}
             />
         );
 
-        expect(screen.getByText("Step Two Completed")).toBeInTheDocument();
-        expect(screen.queryByText("Target Completion Date")).not.toBeInTheDocument();
+        expect(screen.getByText("Completed By")).toBeInTheDocument();
+        expect(screen.getByText("John Doe")).toBeInTheDocument();
+        expect(screen.queryByLabelText("Target Completion Date")).not.toBeInTheDocument();
         expect(screen.queryByRole("button", { name: "Save" })).not.toBeInTheDocument();
     });
 
@@ -100,6 +149,8 @@ describe("ProcurementTrackerStepTwo", () => {
             <ProcurementTrackerStepTwo
                 stepStatus="PENDING"
                 stepTwoData={mockStepTwoData}
+                authorizedUsers={mockAuthorizedUsers}
+                hasActiveTracker={true}
             />
         );
 
@@ -116,6 +167,8 @@ describe("ProcurementTrackerStepTwo", () => {
             <ProcurementTrackerStepTwo
                 stepStatus="PENDING"
                 stepTwoData={mockStepTwoData}
+                authorizedUsers={mockAuthorizedUsers}
+                hasActiveTracker={true}
             />
         );
 
@@ -132,6 +185,8 @@ describe("ProcurementTrackerStepTwo", () => {
             <ProcurementTrackerStepTwo
                 stepStatus="PENDING"
                 stepTwoData={mockStepTwoData}
+                authorizedUsers={mockAuthorizedUsers}
+                hasActiveTracker={true}
             />
         );
 
@@ -145,6 +200,8 @@ describe("ProcurementTrackerStepTwo", () => {
             <ProcurementTrackerStepTwo
                 stepStatus="PENDING"
                 stepTwoData={{ ...mockStepTwoData, target_completion_date: "01/30/2024" }}
+                authorizedUsers={mockAuthorizedUsers}
+                hasActiveTracker={true}
             />
         );
 
@@ -156,6 +213,8 @@ describe("ProcurementTrackerStepTwo", () => {
             <ProcurementTrackerStepTwo
                 stepStatus="PENDING"
                 stepTwoData={mockStepTwoData}
+                authorizedUsers={mockAuthorizedUsers}
+                hasActiveTracker={true}
             />
         );
 

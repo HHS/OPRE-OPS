@@ -1,7 +1,10 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import useProcurementTrackerStepTwo from "./ProcurementTrackerStepTwo.hooks";
+import useGetUserFullNameFromId from "../../../../hooks/user.hooks";
 import suite from "./suite";
+
+vi.mock("../../../../hooks/user.hooks");
 
 describe("useProcurementTrackerStepTwo", () => {
     const mockStepTwoData = {
@@ -14,6 +17,7 @@ describe("useProcurementTrackerStepTwo", () => {
         suite.reset();
         vi.useFakeTimers();
         vi.setSystemTime(new Date("2024-01-30T12:00:00.000Z"));
+        useGetUserFullNameFromId.mockReturnValue("John Doe");
     });
 
     afterEach(() => {
