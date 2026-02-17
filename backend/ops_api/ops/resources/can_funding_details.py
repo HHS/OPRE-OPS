@@ -7,6 +7,7 @@ from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.schemas.cans import (
     CreateUpdateFundingDetailsSchema,
+    FundingDetailsListSchema,
     FundingDetailsSchema,
 )
 from ops_api.ops.services.can_funding_details import CANFundingDetailsService
@@ -77,7 +78,7 @@ class CANFundingDetailsListAPI(BaseListAPI):
     @error_simulator
     def get(self) -> Response:
         result = self.service.get_list()
-        funding_details_schema = FundingDetailsSchema()
+        funding_details_schema = FundingDetailsListSchema()
         return make_response_with_headers([funding_details_schema.dump(funding_details) for funding_details in result])
 
     @is_authorized(PermissionType.POST, Permission.CAN)
