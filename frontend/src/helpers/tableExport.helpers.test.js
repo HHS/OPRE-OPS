@@ -20,25 +20,39 @@ vi.mock("xlsx", () => ({
 }));
 
 describe("exportTableToXlsx", () => {
+    const originalCreateElement = document.createElement.bind(document);
+
     beforeEach(() => {
         vi.clearAllMocks();
 
-        // Set up DOM mocks
-        global.URL = {
-            createObjectURL: vi.fn(() => "blob:test-url"),
-            revokeObjectURL: vi.fn()
-        };
+        if (!URL.createObjectURL) {
+            Object.defineProperty(URL, "createObjectURL", {
+                writable: true,
+                value: vi.fn()
+            });
+        }
 
-        global.document = {
-            ...global.document,
-            createElement: vi.fn(() => ({
-                href: "",
-                download: "",
-                click: vi.fn()
-            }))
-        };
+        if (!URL.revokeObjectURL) {
+            Object.defineProperty(URL, "revokeObjectURL", {
+                writable: true,
+                value: vi.fn()
+            });
+        }
 
-        global.Blob = vi.fn();
+        vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:test-url");
+        vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
+
+        vi.spyOn(document, "createElement").mockImplementation((tagName, options) => {
+            if (tagName === "a") {
+                return {
+                    href: "",
+                    download: "",
+                    click: vi.fn()
+                };
+            }
+
+            return originalCreateElement(tagName, options);
+        });
     });
 
     it("should export table data to XLSX successfully", async () => {
