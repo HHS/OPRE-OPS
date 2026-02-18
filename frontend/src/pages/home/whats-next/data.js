@@ -10,30 +10,31 @@ export const data = [
     {
         id: 1,
         priority: 1,
-        title: "Data clean-up",
+        title: "Updating FY26 Spend Plans",
         levelOfEffort: "Medium",
         status: "In-Progress-Development",
         expandedHeading: "Description",
         expandedDescription:
-            "The budget team has been working with each division to update data as needed. The OPS team is regularly importing these updates from the budget spreadsheet into OPS."
+            "The budget team is working with each OPRE Division to update their FY26 spend plans in OPS."
     },
     {
         id: 2,
         priority: 2,
-        title: "Create an assisted acquisition",
-        levelOfEffort: "Medium",
-        status: "In Progress-Development",
-        expandedHeading: "Description",
-        expandedDescription: "This will enable users to create/enter assisted acquisitions into OPS."
-    },
-    {
-        id: 3,
-        priority: 3,
-        title: "Edit an assisted acquisition",
+        title: "Procurement Tracker",
         levelOfEffort: "Large",
         status: "In Progress-Development",
         expandedHeading: "Description",
         expandedDescription:
-            "This will enable users to edit assisted acquisitions into OPS (and see all edits recorded in the agreement history)."
+            "This will enable users to track/update the procurement process within OPS instead of using the Procurement Tracker Spreadsheet"
+    },
+    {
+        id: 3,
+        priority: 3,
+        title: "Procurement Dashboard",
+        levelOfEffort: "Medium",
+        status: "In Progress-Design",
+        expandedHeading: "Description",
+        expandedDescription:
+            "This will enable the Procurement Team to view a procurement overview or summary across all agreements."
     }
 ];
