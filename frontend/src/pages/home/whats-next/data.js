@@ -24,7 +24,8 @@ export const data = [
         levelOfEffort: "Large",
         status: "In Progress-Development",
         expandedHeading: "Description",
-        expandedDescription: "This will enable users to track/update the procurement process within OPS instead of using the Procurement Tracker Spreadsheet"
+        expandedDescription:
+            "This will enable users to track/update the procurement process within OPS instead of using the Procurement Tracker Spreadsheet"
     },
     {
         id: 3,
