@@ -938,10 +938,13 @@ def create_procurement_tracker_step_update_history_event(
     history_title = ""
     history_message = ""
     if step_type == str(ProcurementTrackerStepType.ACQUISITION_PLANNING):
-        history_title = "Acquisition Planning Complete"
-        history_message = f"{event_user.full_name} completed Step 1: Acquisition Planning and the pre-solicitation package has been sent to the Procurement Shop for review."
+        history_title = "Acquisition Planning Completed"
+        history_message = f"{event_user.full_name} completed step 1 of the Procurement Tracker. The pre-solicitation package has been drafted and sent to the Procurement Shop for review."
+    elif step_type == str(ProcurementTrackerStepType.PRE_SOLICITATION):
+        history_title = "Pre-Solicitation Completed"
+        history_message = f"{event_user.full_name} completed step 2 of the Procurement Tracker. The pre-solicitation package has been finalized with the Procurement Shop and uploaded on the Documents Tab."
     else:
-        return None  # Only Acquisition Planning step is supported right now
+        return None  # Only Acquisition Planning and Pre-Solicitation steps are supported right now
 
     return AgreementHistory(
         agreement_id=procurement_tracker.agreement_id,
