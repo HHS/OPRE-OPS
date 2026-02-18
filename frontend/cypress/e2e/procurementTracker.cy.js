@@ -90,7 +90,7 @@ describe("Procurement Tracker Step 1", () => {
             if (completedViewVisible) {
                 cy.get(".usa-checkbox__label").should("not.exist");
                 cy.get("#users-combobox-input").should("not.exist");
-                cy.get("#date-completed").should("not.exist");
+                cy.get("#step-1-date-completed").should("not.exist");
                 cy.get("#notes").should("not.exist");
                 cy.get('[data-cy="cancel-button"]').should("not.exist");
                 cy.get('[data-cy="continue-btn"]').should("not.exist");
