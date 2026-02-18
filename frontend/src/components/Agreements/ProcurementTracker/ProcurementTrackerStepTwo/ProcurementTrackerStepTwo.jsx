@@ -50,18 +50,32 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, h
                         enter it below.
                     </p>
                     {/* TODO: Add save functionality for target completion date */}
-                    <MemoizedDatePicker
-                        id="target-completion-date"
-                        name="targetCompletionDate"
-                        label="Target Completion Date"
-                        hint="mm/dd/yyyy"
-                        value={targetCompletionDate}
-                        onChange={(e) => {
-                            setTargetCompletionDate(e.target.value);
-                        }}
-                        minDate={getLocalISODate()}
-                        isDisabled={!hasActiveTracker}
-                    />
+                    <div className="display-flex flex-align-end">
+                        <MemoizedDatePicker
+                            id="target-completion-date"
+                            name="targetCompletionDate"
+                            label="Target Completion Date"
+                            messages={validatorRes.getErrors("targetCompletionDate") || []}
+                            hint="mm/dd/yyyy"
+                            value={targetCompletionDate}
+                            onChange={(e) => {
+                                runValidate("targetCompletionDate", e.target.value);
+                                setTargetCompletionDate(e.target.value);
+                            }}
+                            minDate={getLocalISODate()}
+                            isDisabled={!hasActiveTracker}
+                        />
+                        <button
+                            className="usa-button usa-button--unstyled margin-bottom-1 margin-left-2"
+                            data-cy="target-completion-save-btn"
+                            disabled={validatorRes.hasErrors("targetCompletionDate") || !hasActiveTracker}
+                            onClick={() => {
+                                alert("Save target completion date functionality coming soon!");
+                            }}
+                        >
+                            Save
+                        </button>
+                    </div>
                     <div className="display-flex flex-align-center">
                         <UsersComboBox
                             className="width-card-lg margin-top-5"
