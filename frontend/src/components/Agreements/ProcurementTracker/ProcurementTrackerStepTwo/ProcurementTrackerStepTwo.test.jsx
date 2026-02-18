@@ -72,6 +72,23 @@ vi.mock("../../../UI/Term/TermTag", () => ({
     )
 }));
 
+vi.mock("../../../UI/Form/TextArea", () => ({
+    default: ({ label, value, onChange, isDisabled, maxLength, name, className }) => (
+        <div data-testid="text-area">
+            <label htmlFor={name}>{label}</label>
+            <textarea
+                id={name}
+                name={name}
+                value={value}
+                onChange={(e) => onChange(e, e.target.value)}
+                disabled={isDisabled}
+                maxLength={maxLength}
+                className={className}
+            />
+        </div>
+    )
+}));
+
 describe("ProcurementTrackerStepTwo", () => {
     const mockStepTwoData = {
         id: 102,
@@ -219,5 +236,82 @@ describe("ProcurementTrackerStepTwo", () => {
         );
 
         expect(screen.getByTestId("date-picker")).toHaveAttribute("data-min-date", "2024-01-30");
+    });
+
+    it("renders TextArea for notes in PENDING state", () => {
+        render(
+            <ProcurementTrackerStepTwo
+                stepStatus="PENDING"
+                stepTwoData={mockStepTwoData}
+                authorizedUsers={mockAuthorizedUsers}
+                hasActiveTracker={true}
+            />
+        );
+
+        expect(screen.getByTestId("text-area")).toBeInTheDocument();
+        expect(screen.getByText("Notes (optional)")).toBeInTheDocument();
+    });
+
+    it("TextArea has correct maxLength of 750", () => {
+        render(
+            <ProcurementTrackerStepTwo
+                stepStatus="PENDING"
+                stepTwoData={mockStepTwoData}
+                authorizedUsers={mockAuthorizedUsers}
+                hasActiveTracker={true}
+            />
+        );
+
+        // eslint-disable-next-line testing-library/no-node-access
+        const textarea = screen.getByTestId("text-area").querySelector("textarea");
+        expect(textarea).toHaveAttribute("maxLength", "750");
+    });
+
+    it("displays notes in COMPLETED state with correct styling", () => {
+        const mockCompletedStepTwoData = {
+            ...mockStepTwoData,
+            notes: "Test notes for step two"
+        };
+
+        render(
+            <ProcurementTrackerStepTwo
+                stepStatus="COMPLETED"
+                stepTwoData={mockCompletedStepTwoData}
+                authorizedUsers={mockAuthorizedUsers}
+                hasActiveTracker={true}
+            />
+        );
+
+        expect(screen.getByText("Notes")).toBeInTheDocument();
+        expect(screen.getByText("Test notes for step two")).toBeInTheDocument();
+
+        const dt = screen.getByText("Notes");
+        expect(dt.tagName).toBe("DT");
+        expect(dt).toHaveClass("margin-0", "text-base-dark", "margin-top-3", "font-12px");
+
+        const dd = screen.getByText("Test notes for step two");
+        expect(dd.tagName).toBe("DD");
+        expect(dd).toHaveClass("margin-0", "margin-top-1");
+    });
+
+    it("handles empty notes in COMPLETED state", () => {
+        const mockCompletedStepTwoData = {
+            ...mockStepTwoData,
+            notes: ""
+        };
+
+        render(
+            <ProcurementTrackerStepTwo
+                stepStatus="COMPLETED"
+                stepTwoData={mockCompletedStepTwoData}
+                authorizedUsers={mockAuthorizedUsers}
+                hasActiveTracker={true}
+            />
+        );
+
+        expect(screen.getByText("Notes")).toBeInTheDocument();
+        // eslint-disable-next-line testing-library/no-node-access
+        const dd = screen.getByText("Notes").nextElementSibling;
+        expect(dd.textContent).toBe("");
     });
 });

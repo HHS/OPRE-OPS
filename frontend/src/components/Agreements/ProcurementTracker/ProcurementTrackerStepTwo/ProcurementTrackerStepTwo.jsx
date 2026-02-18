@@ -1,5 +1,6 @@
 import { getLocalISODate } from "../../../../helpers/utils";
 import TermTag from "../../../UI/Term/TermTag";
+import TextArea from "../../../UI/Form/TextArea";
 import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepTwo from "./ProcurementTrackerStepTwo.hooks";
 
@@ -24,6 +25,9 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, h
         MemoizedDatePicker,
         setTargetCompletionDate,
         targetCompletionDate,
+        step2Notes,
+        setStep2Notes,
+        step2NotesLabel,
         runValidate,
         validatorRes
     } = useProcurementTrackerStepTwo(stepTwoData);
@@ -72,6 +76,14 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, h
                         users={authorizedUsers}
                         isDisabled={!hasActiveTracker}
                     />
+                    <TextArea
+                        name="notes"
+                        label="Notes (optional)"
+                        className="margin-top-2"
+                        maxLength={750}
+                        value={step2Notes}
+                        onChange={(_, value) => setStep2Notes(value)}
+                    />
                 </fieldset>
             )}
 
@@ -87,6 +99,8 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, h
                             term="Completed By"
                             description={step2CompletedByUserName}
                         />
+                        <dt className="margin-0 text-base-dark margin-top-3 font-12px">Notes</dt>
+                        <dd className="margin-0 margin-top-1">{step2NotesLabel}</dd>
                     </dl>
                 </div>
             )}
