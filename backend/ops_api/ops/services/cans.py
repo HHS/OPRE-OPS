@@ -2,7 +2,7 @@ from typing import Any, Optional
 
 from flask import current_app
 from loguru import logger
-from sqlalchemy import Integer, cast, distinct, func, select, union_all
+from sqlalchemy import Integer, cast, func, select, union_all
 from sqlalchemy.exc import NoResultFound
 from werkzeug.exceptions import NotFound
 
@@ -263,9 +263,10 @@ class CANService:
 
         # Extract distinct portfolios via SQL
         portfolios_query = (
-            select(distinct(Portfolio.id), Portfolio.name, Portfolio.abbreviation)
+            select(Portfolio.id, Portfolio.name, Portfolio.abbreviation)
             .join(CAN, Portfolio.id == CAN.portfolio_id)
             .where(CAN.id.in_(can_ids_subquery))
+            .distinct()
         )
         portfolio_rows = self.db_session.execute(portfolios_query).all()
         portfolios = sorted(

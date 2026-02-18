@@ -184,6 +184,7 @@ describe("CAN List Filtering", () => {
         cy.get("svg[id='filter-tag-activePeriod']").should("exist");
         cy.get("svg[id='filter-tag-transfer']").should("exist");
         cy.get("svg[id='filter-tag-portfolio']").should("exist");
+        cy.get("svg[id='filter-tag-can']").should("exist");
         cy.get("svg[id='filter-tag-budget']").should("exist");
 
         cy.get("span").contains("1 Year CAN").should("exist");
@@ -271,63 +272,6 @@ describe("CAN List Filtering", () => {
 
         cy.get("tbody").find("tr").should("have.length.above", 0);
         cy.get("[data-cy='line-graph-with-legend-card']").contains("$ 8,200,000.00");
-    });
-
-    it.skip("multi-delete should not break the app", () => {
-        cy.get("button").contains("Filter").click();
-        cy.get(".can-active-period-combobox__control")
-            .click()
-            .get(".can-active-period-combobox__menu")
-            .find(".can-active-period-combobox__option")
-            .first()
-            .click();
-        // click the button that has text Apply
-        cy.get("button").contains("Apply").click();
-        //table should have 8 rows
-        cy.get("tbody").find("tr").should("have.length.above", 0);
-        cy.get("button").contains("Filter").click();
-        // click on the can-active-period-combobox__clear-indicator
-
-        cy.get(".can-active-period-combobox__control").click();
-        cy.get(".can-active-period-combobox__clear-indicator").click();
-        // click the button that has text Apply
-        cy.get("button").contains("Apply").click();
-        cy.get("tbody").find("tr").should("have.length.above", 0);
-
-        // now do the same for the second filter
-        cy.get("button").contains("Filter").click();
-        cy.get(".can-transfer-combobox__control")
-            .click()
-            .get(".can-transfer-combobox__menu")
-            .find(".can-transfer-combobox__option")
-            .first()
-            .click();
-        cy.get("button").contains("Apply").click();
-        // transfer filter should work and return results (DIRECT has 3 CANs in test data)
-        cy.get("tbody").find("tr").should("have.length.above", 0);
-        cy.get("button").contains("Filter").click();
-        cy.get(".can-transfer-combobox__control").click();
-        cy.get(".can-transfer-combobox__clear-indicator").click();
-        // click the button that has text Apply
-        cy.get("button").contains("Apply").click();
-        cy.get("tbody").find("tr").should("have.length.above", 0);
-
-        // now do the same for the third filter
-        cy.get("button").contains("Filter").click();
-        cy.get(".can-portfolio-combobox__control")
-            .click()
-            .get(".can-portfolio-combobox__menu")
-            .find(".can-portfolio-combobox__option")
-            .first()
-            .click();
-        cy.get("button").contains("Apply").click();
-        cy.get("tbody").find("tr").should("have.length.above", 0);
-        cy.get("button").contains("Filter").click();
-        cy.get(".can-portfolio-combobox__control");
-        cy.get(".can-portfolio-combobox__clear-indicator").click();
-        // click the button that has text Apply
-        cy.get("button").contains("Apply").click();
-        cy.get("tbody").find("tr").should("have.length", 10);
     });
 
     it("pagination should work when filtering on page 2", () => {

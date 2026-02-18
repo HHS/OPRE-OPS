@@ -10,6 +10,7 @@ import { useState, useEffect, useCallback } from "react";
  * @property {FilterItem[]} portfolio
  * @property {FilterItem[]} transfer
  * @property {[number, number]} budget
+ * @property {FilterItem[]} can
  */
 
 /**
