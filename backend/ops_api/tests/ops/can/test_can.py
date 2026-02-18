@@ -890,3 +890,133 @@ def test_service_filter_no_results(loaded_db):
 
     assert len(cans) == 0
     assert metadata["count"] == 0
+
+
+# ============================================================================
+# Testing CAN Filter Options Endpoint
+# ============================================================================
+
+
+def test_get_can_filter_options(auth_client, loaded_db, app_ctx):
+    """GET /cans-filters/ returns all expected filter option fields."""
+    response = auth_client.get("/api/v1/cans-filters/")
+    assert response.status_code == 200
+
+    data = response.json
+    assert "portfolios" in data
+    assert "can_numbers" in data
+    assert "fy_budget_range" in data
+
+
+def test_can_filter_options_portfolios_have_expected_fields(auth_client, loaded_db, app_ctx):
+    """Portfolios should have id, name, and abbreviation."""
+    response = auth_client.get("/api/v1/cans-filters/")
+    assert response.status_code == 200
+
+    portfolios = response.json["portfolios"]
+    assert len(portfolios) > 0
+    for portfolio in portfolios:
+        assert "id" in portfolio
+        assert "name" in portfolio
+        assert "abbreviation" in portfolio
+
+
+def test_can_filter_options_portfolios_sorted_by_name(auth_client, loaded_db, app_ctx):
+    """Portfolios should be sorted alphabetically by name."""
+    response = auth_client.get("/api/v1/cans-filters/")
+    assert response.status_code == 200
+
+    portfolios = response.json["portfolios"]
+    names = [p["name"] for p in portfolios]
+    assert names == sorted(names)
+
+
+def test_can_filter_options_can_numbers_have_expected_fields(auth_client, loaded_db, app_ctx):
+    """CAN numbers should have id and number."""
+    response = auth_client.get("/api/v1/cans-filters/")
+    assert response.status_code == 200
+
+    can_numbers = response.json["can_numbers"]
+    assert len(can_numbers) > 0
+    for entry in can_numbers:
+        assert "id" in entry
+        assert "number" in entry
+
+
+def test_can_filter_options_can_numbers_sorted(auth_client, loaded_db, app_ctx):
+    """CAN numbers should be sorted alphabetically."""
+    response = auth_client.get("/api/v1/cans-filters/")
+    assert response.status_code == 200
+
+    can_numbers = response.json["can_numbers"]
+    numbers = [n["number"] for n in can_numbers]
+    assert numbers == sorted(numbers)
+
+
+def test_can_filter_options_fy_budget_range_has_min_max(auth_client, loaded_db, app_ctx):
+    """FY budget range should have min and max keys."""
+    response = auth_client.get("/api/v1/cans-filters/")
+    assert response.status_code == 200
+
+    fy_budget_range = response.json["fy_budget_range"]
+    assert "min" in fy_budget_range
+    assert "max" in fy_budget_range
+    assert fy_budget_range["min"] <= fy_budget_range["max"]
+
+
+def test_can_filter_options_with_fiscal_year(auth_client, loaded_db, app_ctx):
+    """GET /cans-filters/?fiscal_year=2023 returns filtered results."""
+    response = auth_client.get("/api/v1/cans-filters/?fiscal_year=2023")
+    assert response.status_code == 200
+
+    data = response.json
+    assert "portfolios" in data
+    assert "can_numbers" in data
+    assert "fy_budget_range" in data
+
+
+def test_can_filter_options_no_permission(no_perms_auth_client):
+    """GET /cans-filters/ should return 403 for unauthorized users."""
+    response = no_perms_auth_client.get("/api/v1/cans-filters/")
+    assert response.status_code == 403
+
+
+# ============================================================================
+# Testing CAN IDs Filter
+# ============================================================================
+
+
+def test_can_get_list_filter_by_can_ids(auth_client, loaded_db, app_ctx):
+    """Test filtering CANs by CAN IDs"""
+    response = auth_client.get("/api/v1/cans/?can_ids=500&can_ids=501")
+    assert response.status_code == 200
+    assert "data" in response.json
+
+    for can in response.json["data"]:
+        assert can["id"] in [500, 501]
+
+
+def test_service_filter_by_can_ids(loaded_db):
+    """Test service layer filtering by CAN IDs"""
+    can_service = CANService()
+
+    # Get some CANs first to get valid IDs
+    all_cans, _ = can_service.get_list()
+    assert len(all_cans) > 0
+
+    target_ids = [all_cans[0].id]
+    cans, metadata = can_service.get_list(can_ids=target_ids)
+
+    assert len(cans) == 1
+    assert cans[0].id == target_ids[0]
+
+
+def test_service_filter_by_can_ids_empty_list(loaded_db):
+    """Test service layer with empty can_ids list returns all CANs"""
+    can_service = CANService()
+
+    all_cans, all_metadata = can_service.get_list()
+    filtered_cans, filtered_metadata = can_service.get_list(can_ids=[])
+
+    assert len(filtered_cans) == len(all_cans)
+    assert filtered_metadata["count"] == all_metadata["count"]
