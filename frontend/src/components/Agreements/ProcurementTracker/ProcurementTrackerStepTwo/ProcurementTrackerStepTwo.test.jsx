@@ -21,7 +21,7 @@ vi.mock("../../../UI/Term/TermTag", () => ({
     )
 }));
 vi.mock("../../UsersComboBox", () => ({
-    default: ({ label, selectedUser, setSelectedUser, users, className }) => (
+    default: ({ label, selectedUser, setSelectedUser, users, className, isDisabled, messages, onChange }) => (
         <div
             data-testid="users-combobox"
             className={className}
@@ -30,9 +30,12 @@ vi.mock("../../UsersComboBox", () => ({
             <select
                 value={selectedUser?.id || ""}
                 onChange={(e) => {
-                    setSelectedUser({ id: parseInt(e.target.value) });
+                    const selectedId = parseInt(e.target.value);
+                    setSelectedUser({ id: selectedId });
+                    onChange?.("users", selectedId);
                 }}
                 data-user-count={users?.length || 0}
+                disabled={isDisabled}
             >
                 <option value="">Select user</option>
                 {users?.map((user) => (
@@ -44,11 +47,14 @@ vi.mock("../../UsersComboBox", () => ({
                     </option>
                 ))}
             </select>
+            {messages?.map((msg) => (
+                <div key={msg}>{msg}</div>
+            ))}
         </div>
     )
 }));
 vi.mock("../../../UI/USWDS/DatePicker", () => ({
-    default: ({ label, hint, value, onChange, maxDate, minDate, id, name, messages, className }) => (
+    default: ({ label, hint, value, onChange, maxDate, minDate, id, name, messages, className, isDisabled }) => (
         <div
             data-testid="date-picker"
             data-picker-id={id}
@@ -64,6 +70,7 @@ vi.mock("../../../UI/USWDS/DatePicker", () => ({
                 onChange={onChange}
                 data-max-date={maxDate}
                 data-min-date={minDate}
+                disabled={isDisabled}
             />
             {messages && messages.length > 0 && (
                 <div className="error-messages">
@@ -290,6 +297,23 @@ describe("ProcurementTrackerStepTwo", () => {
 
             expect(mockSetSelectedUser).toHaveBeenCalledWith({ id: 123 });
         });
+
+        it("UsersComboBox calls runValidate when user selected", () => {
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="PENDING"
+                    stepTwoData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
+                />
+            );
+
+            // eslint-disable-next-line testing-library/no-node-access
+            const select = screen.getByTestId("users-combobox").querySelector("select");
+            fireEvent.change(select, { target: { value: "456" } });
+
+            expect(mockRunValidate).toHaveBeenCalledWith("users", 456);
+        });
     });
 
     describe("ACTIVE State Rendering", () => {
@@ -429,6 +453,67 @@ describe("ProcurementTrackerStepTwo", () => {
             );
 
             expect(screen.getByText("Date must be MM/DD/YYYY")).toBeInTheDocument();
+        });
+
+        it("displays validation errors for users", () => {
+            const mockValidatorResWithErrors = {
+                getErrors: vi.fn((field) => {
+                    if (field === "users") {
+                        return ["This is required information"];
+                    }
+                    return [];
+                })
+            };
+
+            useProcurementTrackerStepTwo.mockReturnValue({
+                ...defaultHookReturn,
+                validatorRes: mockValidatorResWithErrors
+            });
+
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="PENDING"
+                    stepTwoData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
+                />
+            );
+
+            expect(screen.getByText("This is required information")).toBeInTheDocument();
+        });
+    });
+
+    describe("Inactive Tracker", () => {
+        it("disables pending form controls when there is no active tracker", () => {
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="PENDING"
+                    stepTwoData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={false}
+                />
+            );
+
+            // eslint-disable-next-line testing-library/no-node-access
+            const usersSelect = screen.getByTestId("users-combobox").querySelector("select");
+            const datePickers = screen.getAllByTestId("date-picker");
+            const targetDatePicker = datePickers.find(
+                (picker) => picker.getAttribute("data-picker-id") === "target-completion-date"
+            );
+            const completedDatePicker = datePickers.find(
+                (picker) => picker.getAttribute("data-picker-id") === "step-2-date-completed"
+            );
+            // eslint-disable-next-line testing-library/no-node-access
+            const targetInput = targetDatePicker.querySelector("input");
+            // eslint-disable-next-line testing-library/no-node-access
+            const completedInput = completedDatePicker.querySelector("input");
+            // eslint-disable-next-line testing-library/no-node-access
+            const notesInput = screen.getByTestId("text-area").querySelector("textarea");
+
+            expect(usersSelect).toBeDisabled();
+            expect(targetInput).toBeDisabled();
+            expect(completedInput).toBeDisabled();
+            expect(notesInput).toBeDisabled();
         });
     });
 
