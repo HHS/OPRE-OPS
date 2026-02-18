@@ -7,8 +7,9 @@ import DatePicker from "../../../UI/USWDS/DatePicker";
 /**
  * @typedef {Object} ProcurementTrackerStepTwoProps
  * @property {string} stepStatus - The current status of the procurement tracker step
- * @property {Object} stepData - The data for step of the procurement tracker
+ * @property {Object} stepTwoData - The data for step 2 of the procurement tracker
  * @property {Array} authorizedUsers - List of users authorized for this agreement
+ * @property {boolean} hasActiveTracker - Whether an active tracker exists
  */
 
 /**
@@ -16,7 +17,8 @@ import DatePicker from "../../../UI/USWDS/DatePicker";
  * @param {ProcurementTrackerStepTwoProps} props
  * @returns {React.ReactElement}
  */
-const ProcurementTrackerStepTwo = ({ stepStatus, stepData, authorizedUsers }) => {
+// eslint-disable-next-line no-unused-vars
+const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, hasActiveTracker }) => {
     const {
         selectedUser,
         setSelectedUser,
@@ -28,7 +30,7 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepData, authorizedUsers }) =>
         runValidate,
         validatorRes,
         step2DateCompletedLabel
-    } = useProcurementTrackerStepTwo(stepData);
+    } = useProcurementTrackerStepTwo(stepTwoData);
 
     return (
         <>

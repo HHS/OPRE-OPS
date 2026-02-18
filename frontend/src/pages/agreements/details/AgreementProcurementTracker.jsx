@@ -1,11 +1,11 @@
 import React from "react";
 import { useGetProcurementTrackersByAgreementIdQuery, useGetUsersQuery } from "../../../api/opsAPI";
 import ProcurementTrackerStepOne from "../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepOne";
+import ProcurementTrackerStepTwo from "../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepTwo";
 import StepBuilderAccordion from "../../../components/Agreements/ProcurementTracker/StepBuilderAccordion";
 import DebugCode from "../../../components/DebugCode";
 import StepIndicator from "../../../components/UI/StepIndicator";
 import { IS_PROCUREMENT_TRACKER_READY_MAP } from "../../../constants";
-import ProcurementTrackerStepTwo from "../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepTwo";
 
 /**
  * @typedef {Object} AgreementProcurementTrackerProps
@@ -39,7 +39,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
     });
 
     // Fetch all users for filtering
-    const { data: allUsers } = useGetUsersQuery();
+    const { data: allUsers } = useGetUsersQuery({});
 
     // Filter users by authorized_user_ids from the agreement (shared across all steps)
     const authorizedUsers = React.useMemo(() => {
@@ -126,8 +126,9 @@ const AgreementProcurementTracker = ({ agreement }) => {
                         {IS_PROCUREMENT_TRACKER_READY_MAP.STEP_2 && step.step_number === 2 && (
                             <ProcurementTrackerStepTwo
                                 stepStatus={step.status}
-                                stepData={stepTwoData}
                                 authorizedUsers={authorizedUsers}
+                                stepTwoData={stepTwoData}
+                                hasActiveTracker={hasActiveTracker}
                             />
                         )}
                         {!IS_PROCUREMENT_TRACKER_READY_MAP.STEP_2 && step.step_number === 2 && (
@@ -143,7 +144,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                         {step.step_number === 3 && (
                             <div className="usa-fieldset">
                                 <p>
-                                    Once the Procurement Shop has posted the Solicitation and it's "on the street",
+                                    Once the Procurement Shop has posted the Solicitation and it’s “on the street”,
                                     enter the Solicitation Start and End Dates. After all proposals are received, vendor
                                     questions have been answered, and evaluations are starting, check this step as
                                     complete.

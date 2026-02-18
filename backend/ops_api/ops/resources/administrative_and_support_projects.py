@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Optional, override
+from typing import Optional, override
 
 from flask import Response, current_app, request
 from loguru import logger
@@ -61,6 +61,22 @@ class ProjectResponse(Schema):
     project_type: ProjectType = fields.Enum(ProjectType)
 
 
+class ProjectListResponse(Schema):
+    """Lightweight schema for list endpoint with only fields used by frontend.
+
+    Excludes expensive nested relationships (team_leaders) to eliminate N+1 query problems.
+    """
+
+    id: int = fields.Int()
+    title: str = fields.String()
+    short_title: str = fields.String()
+    description: Optional[str] = fields.String(allow_none=True)
+    url: Optional[str] = fields.String(allow_none=True)
+    created_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ")
+    updated_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ")
+    project_type: ProjectType = fields.Enum(ProjectType)
+
+
 class AdministrativeAndSupportProjectItemAPI(BaseItemAPI):
     _response_schema = ProjectResponse()
 
@@ -79,6 +95,7 @@ class AdministrativeAndSupportProjectItemAPI(BaseItemAPI):
 class AdministrativeAndSupportProjectListAPI(BaseListAPI):
     _post_schema = RequestBody()
     _response_schema = ProjectResponse()
+    _list_response_schema = ProjectListResponse()
 
     def __init__(self, model: BaseModel = ResearchProject):
         super().__init__(model)
@@ -129,12 +146,11 @@ class AdministrativeAndSupportProjectListAPI(BaseListAPI):
 
         stmt = AdministrativeAndSupportProjectListAPI._get_query(fiscal_year, portfolio_id, search)
 
-        result = current_app.db_session.execute(stmt).all()
+        result = current_app.db_session.scalars(stmt).all()
 
-        project_response: List[dict] = []
-        for item in result:
-            for project in item:
-                project_response.append(AdministrativeAndSupportProjectListAPI._response_schema.dump(project))
+        project_response = [
+            AdministrativeAndSupportProjectListAPI._list_response_schema.dump(project) for project in result
+        ]
 
         return make_response_with_headers(project_response)
 

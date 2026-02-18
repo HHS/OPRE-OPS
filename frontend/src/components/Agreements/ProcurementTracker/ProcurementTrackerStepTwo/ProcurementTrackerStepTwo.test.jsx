@@ -119,8 +119,9 @@ describe("ProcurementTrackerStepTwo", () => {
             render(
                 <ProcurementTrackerStepTwo
                     stepStatus="PENDING"
-                    stepData={mockStepData}
+                    stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
                 />
             );
 
@@ -133,8 +134,9 @@ describe("ProcurementTrackerStepTwo", () => {
             render(
                 <ProcurementTrackerStepTwo
                     stepStatus="PENDING"
-                    stepData={mockStepData}
+                    stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
                 />
             );
 
@@ -147,8 +149,9 @@ describe("ProcurementTrackerStepTwo", () => {
             render(
                 <ProcurementTrackerStepTwo
                     stepStatus="PENDING"
-                    stepData={mockStepData}
+                    stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
                 />
             );
 
@@ -165,8 +168,9 @@ describe("ProcurementTrackerStepTwo", () => {
             render(
                 <ProcurementTrackerStepTwo
                     stepStatus="PENDING"
-                    stepData={mockStepData}
+                    stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
                 />
             );
 
@@ -188,8 +192,9 @@ describe("ProcurementTrackerStepTwo", () => {
             render(
                 <ProcurementTrackerStepTwo
                     stepStatus="PENDING"
-                    stepData={mockStepData}
+                    stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
                 />
             );
 
@@ -204,8 +209,9 @@ describe("ProcurementTrackerStepTwo", () => {
             render(
                 <ProcurementTrackerStepTwo
                     stepStatus="PENDING"
-                    stepData={mockStepData}
+                    stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
                 />
             );
 
@@ -225,8 +231,9 @@ describe("ProcurementTrackerStepTwo", () => {
             render(
                 <ProcurementTrackerStepTwo
                     stepStatus="PENDING"
-                    stepData={mockStepData}
+                    stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
                 />
             );
 
@@ -247,8 +254,9 @@ describe("ProcurementTrackerStepTwo", () => {
             render(
                 <ProcurementTrackerStepTwo
                     stepStatus="PENDING"
-                    stepData={mockStepData}
+                    stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
                 />
             );
 
@@ -265,8 +273,9 @@ describe("ProcurementTrackerStepTwo", () => {
             render(
                 <ProcurementTrackerStepTwo
                     stepStatus="ACTIVE"
-                    stepData={mockStepData}
+                    stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
                 />
             );
 
@@ -279,8 +288,9 @@ describe("ProcurementTrackerStepTwo", () => {
             render(
                 <ProcurementTrackerStepTwo
                     stepStatus="ACTIVE"
-                    stepData={mockStepData}
+                    stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
                 />
             );
 
@@ -298,8 +308,9 @@ describe("ProcurementTrackerStepTwo", () => {
             render(
                 <ProcurementTrackerStepTwo
                     stepStatus="COMPLETED"
-                    stepData={mockStepData}
+                    stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
                 />
             );
 
@@ -312,8 +323,9 @@ describe("ProcurementTrackerStepTwo", () => {
             render(
                 <ProcurementTrackerStepTwo
                     stepStatus="COMPLETED"
-                    stepData={mockStepData}
+                    stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
                 />
             );
 
@@ -325,8 +337,9 @@ describe("ProcurementTrackerStepTwo", () => {
             render(
                 <ProcurementTrackerStepTwo
                     stepStatus="COMPLETED"
-                    stepData={mockStepData}
+                    stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
                 />
             );
 
@@ -338,8 +351,9 @@ describe("ProcurementTrackerStepTwo", () => {
             render(
                 <ProcurementTrackerStepTwo
                     stepStatus="COMPLETED"
-                    stepData={mockStepData}
+                    stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
                 />
             );
 
@@ -353,8 +367,9 @@ describe("ProcurementTrackerStepTwo", () => {
             render(
                 <ProcurementTrackerStepTwo
                     stepStatus="COMPLETED"
-                    stepData={mockStepData}
+                    stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
                 />
             );
 
@@ -383,8 +398,9 @@ describe("ProcurementTrackerStepTwo", () => {
             render(
                 <ProcurementTrackerStepTwo
                     stepStatus="PENDING"
-                    stepData={mockStepData}
+                    stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
                 />
             );
 
@@ -397,8 +413,9 @@ describe("ProcurementTrackerStepTwo", () => {
             render(
                 <ProcurementTrackerStepTwo
                     stepStatus="PENDING"
-                    stepData={undefined}
+                    stepTwoData={undefined}
                     authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
                 />
             );
 
@@ -409,8 +426,9 @@ describe("ProcurementTrackerStepTwo", () => {
             render(
                 <ProcurementTrackerStepTwo
                     stepStatus="SKIPPED"
-                    stepData={mockStepData}
+                    stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
                 />
             );
 
@@ -422,8 +440,9 @@ describe("ProcurementTrackerStepTwo", () => {
             render(
                 <ProcurementTrackerStepTwo
                     stepStatus="PENDING"
-                    stepData={mockStepData}
+                    stepTwoData={mockStepData}
                     authorizedUsers={[]}
+                    hasActiveTracker={true}
                 />
             );
 
@@ -438,8 +457,9 @@ describe("ProcurementTrackerStepTwo", () => {
             render(
                 <ProcurementTrackerStepTwo
                     stepStatus="PENDING"
-                    stepData={mockStepData}
+                    stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
                 />
             );
 
@@ -452,8 +472,9 @@ describe("ProcurementTrackerStepTwo", () => {
             const { container } = render(
                 <ProcurementTrackerStepTwo
                     stepStatus="COMPLETED"
-                    stepData={mockStepData}
+                    stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
                 />
             );
 

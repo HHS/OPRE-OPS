@@ -21,8 +21,7 @@ describe("useProcurementTrackerStepTwo", () => {
     const mockStepTwoData = {
         id: 1,
         task_completed_by: 123,
-        date_completed: "2024-01-15",
-        target_completion_date: "2024-02-01"
+        date_completed: "2024-01-15"
     };
 
     beforeEach(() => {

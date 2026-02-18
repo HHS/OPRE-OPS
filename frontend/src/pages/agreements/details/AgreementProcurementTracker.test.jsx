@@ -49,8 +49,11 @@ vi.mock("../../../components/UI/Accordion", () => ({
 
 // Mock UsersComboBox component
 vi.mock("../../../components/Agreements/UsersComboBox", () => ({
-    default: ({ label, setSelectedUser, isDisabled }) => (
-        <div data-testid="users-combobox">
+    default: ({ label, setSelectedUser, isDisabled, users }) => (
+        <div
+            data-testid="users-combobox"
+            data-users-count={users?.length || 0}
+        >
             <label>{label}</label>
             <button
                 disabled={isDisabled}
@@ -58,6 +61,14 @@ vi.mock("../../../components/Agreements/UsersComboBox", () => ({
             >
                 Select User
             </button>
+            {users?.map((user) => (
+                <div
+                    key={user.id}
+                    data-testid={`user-option-${user.id}`}
+                >
+                    {user.full_name}
+                </div>
+            ))}
         </div>
     )
 }));
@@ -94,11 +105,23 @@ vi.mock("../../../components/UI/USWDS/DatePicker", () => ({
     )
 }));
 
+vi.mock("../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepTwo", () => ({
+    default: ({ stepStatus, stepTwoData }) => (
+        <div
+            data-testid="procurement-step-two"
+            data-step-status={stepStatus}
+            data-step-data-id={stepTwoData?.id}
+        >
+            {stepStatus === "COMPLETED" ? "Step Two Completed" : "Step Two Form"}
+        </div>
+    )
+}));
+
 // Mock constants module
 vi.mock("../../../constants", () => ({
     IS_PROCUREMENT_TRACKER_READY_MAP: {
         STEP_1: true,
-        STEP_2: false,
+        STEP_2: true,
         STEP_3: false,
         STEP_4: false,
         STEP_5: false,
@@ -880,7 +903,7 @@ describe("AgreementProcurementTracker", () => {
             expect(completeButton).toBeDisabled();
         });
 
-        it("renders step 2 instructional content when step 2 is active", () => {
+        it("renders step 2 content when step 2 is active", () => {
             const mockTrackerWithActiveStepTwo = {
                 data: [
                     {
@@ -920,9 +943,7 @@ describe("AgreementProcurementTracker", () => {
                 </Provider>
             );
 
-            expect(
-                screen.getByText(/Edit the pre-solicitation package in collaboration with the Procurement Shop/)
-            ).toBeInTheDocument();
+            expect(screen.getByTestId("procurement-step-two")).toHaveTextContent("Step Two Form");
             expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
         });
 
@@ -1132,6 +1153,135 @@ describe("AgreementProcurementTracker", () => {
         });
     });
 
+    describe("Step 2 Wiring", () => {
+        it("renders step 2 content when active step is 2", () => {
+            const trackerWithActiveStepTwo = {
+                data: [
+                    {
+                        id: 4,
+                        agreement_id: 13,
+                        status: "ACTIVE",
+                        active_step_number: 2,
+                        steps: [
+                            {
+                                id: 101,
+                                step_number: 1,
+                                step_type: "PRE_SOLICITATION",
+                                status: "COMPLETED"
+                            },
+                            {
+                                id: 102,
+                                step_number: 2,
+                                step_type: "SOLICITATION",
+                                status: "ACTIVE"
+                            }
+                        ]
+                    }
+                ]
+            };
+
+            useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
+                data: trackerWithActiveStepTwo,
+                isLoading: false,
+                isError: false
+            });
+
+            render(
+                <Provider store={setupStore()}>
+                    <AgreementProcurementTracker agreement={mockAgreement} />
+                </Provider>
+            );
+
+            expect(screen.getByText("Step 2 of 6")).toBeInTheDocument();
+            expect(screen.getByTestId("procurement-step-two")).toHaveTextContent("Step Two Form");
+        });
+
+        it("passes step 2 data into ProcurementTrackerStepTwo", () => {
+            const trackerWithStepTwoData = {
+                data: [
+                    {
+                        id: 4,
+                        agreement_id: 13,
+                        status: "ACTIVE",
+                        active_step_number: 2,
+                        steps: [
+                            {
+                                id: 101,
+                                step_number: 1,
+                                step_type: "PRE_SOLICITATION",
+                                status: "COMPLETED"
+                            },
+                            {
+                                id: 102,
+                                step_number: 2,
+                                step_type: "SOLICITATION",
+                                status: "PENDING",
+                                target_completion_date: "01/30/2024"
+                            }
+                        ]
+                    }
+                ]
+            };
+
+            useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
+                data: trackerWithStepTwoData,
+                isLoading: false,
+                isError: false
+            });
+
+            render(
+                <Provider store={setupStore()}>
+                    <AgreementProcurementTracker agreement={mockAgreement} />
+                </Provider>
+            );
+
+            expect(screen.getByTestId("procurement-step-two")).toHaveAttribute("data-step-data-id", "102");
+            expect(screen.getByTestId("procurement-step-two")).toHaveAttribute("data-step-status", "PENDING");
+        });
+
+        it("renders completed state for step 2 when status is COMPLETED", () => {
+            const trackerWithCompletedStepTwo = {
+                data: [
+                    {
+                        id: 4,
+                        agreement_id: 13,
+                        status: "ACTIVE",
+                        active_step_number: 2,
+                        steps: [
+                            {
+                                id: 101,
+                                step_number: 1,
+                                step_type: "PRE_SOLICITATION",
+                                status: "COMPLETED"
+                            },
+                            {
+                                id: 102,
+                                step_number: 2,
+                                step_type: "SOLICITATION",
+                                status: "COMPLETED"
+                            }
+                        ]
+                    }
+                ]
+            };
+
+            useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
+                data: trackerWithCompletedStepTwo,
+                isLoading: false,
+                isError: false
+            });
+
+            render(
+                <Provider store={setupStore()}>
+                    <AgreementProcurementTracker agreement={mockAgreement} />
+                </Provider>
+            );
+
+            expect(screen.getByTestId("procurement-step-two")).toHaveTextContent("Step Two Completed");
+            expect(screen.getByTestId("procurement-step-two")).toHaveAttribute("data-step-status", "COMPLETED");
+        });
+    });
+
     describe("Authorized Users Filtering", () => {
         const mockTrackerWithSteps = {
             data: [
@@ -1187,6 +1337,19 @@ describe("AgreementProcurementTracker", () => {
             // Verify that UsersComboBox is rendered (which receives the filtered users)
             expect(screen.getByTestId("users-combobox")).toBeInTheDocument();
             expect(screen.getByText("Task Completed By")).toBeInTheDocument();
+
+            // Verify that only the 3 authorized users are passed to the component
+            const comboBox = screen.getByTestId("users-combobox");
+            expect(comboBox).toHaveAttribute("data-users-count", "3");
+
+            // Verify the specific authorized users are present
+            expect(screen.getByTestId("user-option-1")).toHaveTextContent("Amy Madigan");
+            expect(screen.getByTestId("user-option-3")).toHaveTextContent("Jane Smith");
+            expect(screen.getByTestId("user-option-5")).toHaveTextContent("Alice Brown");
+
+            // Verify unauthorized users are NOT present
+            expect(screen.queryByTestId("user-option-2")).not.toBeInTheDocument();
+            expect(screen.queryByTestId("user-option-4")).not.toBeInTheDocument();
         });
 
         it("passes empty array when agreement.authorized_user_ids is null", () => {
@@ -1215,6 +1378,10 @@ describe("AgreementProcurementTracker", () => {
 
             // UsersComboBox should still render (but will receive empty array)
             expect(screen.getByTestId("users-combobox")).toBeInTheDocument();
+
+            // Verify that 0 users are passed to the component
+            const comboBox = screen.getByTestId("users-combobox");
+            expect(comboBox).toHaveAttribute("data-users-count", "0");
         });
 
         it("passes empty array when agreement.authorized_user_ids is undefined", () => {
@@ -1243,6 +1410,10 @@ describe("AgreementProcurementTracker", () => {
 
             // UsersComboBox should still render (but will receive empty array)
             expect(screen.getByTestId("users-combobox")).toBeInTheDocument();
+
+            // Verify that 0 users are passed to the component
+            const comboBox = screen.getByTestId("users-combobox");
+            expect(comboBox).toHaveAttribute("data-users-count", "0");
         });
 
         it("passes empty array when agreement is not provided", () => {
@@ -1294,6 +1465,10 @@ describe("AgreementProcurementTracker", () => {
 
             // UsersComboBox should still render (but will receive empty array until users load)
             expect(screen.getByTestId("users-combobox")).toBeInTheDocument();
+
+            // Verify that 0 users are passed to the component
+            const comboBox = screen.getByTestId("users-combobox");
+            expect(comboBox).toHaveAttribute("data-users-count", "0");
         });
     });
 });
