@@ -107,6 +107,8 @@ describe("ProcurementTrackerStepTwo", () => {
         getErrors: vi.fn(() => [])
     };
 
+    const mockSetStep2Notes = vi.fn();
+
     const defaultHookReturn = {
         selectedUser: {},
         setSelectedUser: mockSetSelectedUser,
@@ -115,6 +117,9 @@ describe("ProcurementTrackerStepTwo", () => {
         step2CompletedByUserName: "John Doe",
         step2DateCompleted: "",
         setStep2DateCompleted: mockSetStep2DateCompleted,
+        step2Notes: "",
+        setStep2Notes: mockSetStep2Notes,
+        step2NotesLabel: "Test notes",
         runValidate: mockRunValidate,
         validatorRes: mockValidatorRes,
         step2DateCompletedLabel: "January 15, 2024",
@@ -508,8 +513,8 @@ describe("ProcurementTrackerStepTwo", () => {
         render(
             <ProcurementTrackerStepTwo
                 stepStatus="PENDING"
-                stepTwoData={mockStepTwoData}
-                authorizedUsers={mockAuthorizedUsers}
+                stepTwoData={mockStepData}
+                authorizedUsers={mockAllUsers}
                 hasActiveTracker={true}
             />
         );
@@ -522,8 +527,8 @@ describe("ProcurementTrackerStepTwo", () => {
         render(
             <ProcurementTrackerStepTwo
                 stepStatus="PENDING"
-                stepTwoData={mockStepTwoData}
-                authorizedUsers={mockAuthorizedUsers}
+                stepTwoData={mockStepData}
+                authorizedUsers={mockAllUsers}
                 hasActiveTracker={true}
             />
         );
@@ -534,16 +539,21 @@ describe("ProcurementTrackerStepTwo", () => {
     });
 
     it("displays notes in COMPLETED state with correct styling", () => {
-        const mockCompletedStepTwoData = {
-            ...mockStepTwoData,
+        const mockCompletedStepData = {
+            ...mockStepData,
             notes: "Test notes for step two"
         };
+
+        useProcurementTrackerStepTwo.mockReturnValue({
+            ...defaultHookReturn,
+            step2NotesLabel: "Test notes for step two"
+        });
 
         render(
             <ProcurementTrackerStepTwo
                 stepStatus="COMPLETED"
-                stepTwoData={mockCompletedStepTwoData}
-                authorizedUsers={mockAuthorizedUsers}
+                stepTwoData={mockCompletedStepData}
+                authorizedUsers={mockAllUsers}
                 hasActiveTracker={true}
             />
         );
@@ -561,16 +571,21 @@ describe("ProcurementTrackerStepTwo", () => {
     });
 
     it("handles empty notes in COMPLETED state", () => {
-        const mockCompletedStepTwoData = {
-            ...mockStepTwoData,
+        const mockCompletedStepData = {
+            ...mockStepData,
             notes: ""
         };
+
+        useProcurementTrackerStepTwo.mockReturnValue({
+            ...defaultHookReturn,
+            step2NotesLabel: ""
+        });
 
         render(
             <ProcurementTrackerStepTwo
                 stepStatus="COMPLETED"
-                stepTwoData={mockCompletedStepTwoData}
-                authorizedUsers={mockAuthorizedUsers}
+                stepTwoData={mockCompletedStepData}
+                authorizedUsers={mockAllUsers}
                 hasActiveTracker={true}
             />
         );

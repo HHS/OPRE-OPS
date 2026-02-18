@@ -21,7 +21,6 @@ import useProcurementTrackerStepTwo from "./ProcurementTrackerStepTwo.hooks";
  * @param {ProcurementTrackerStepTwoProps} props
  * @returns {React.ReactElement}
  */
-// eslint-disable-next-line no-unused-vars
 const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, hasActiveTracker }) => {
     const {
         selectedUser,
