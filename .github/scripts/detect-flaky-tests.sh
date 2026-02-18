@@ -41,7 +41,8 @@ BEGIN {
 }
 
 # Match "Running: path/to/spec.cy.js" or "Running: path/to/spec.cy.js (Attempt X of Y)"
-/^Running:.*\.cy\.js/ {
+# Allow leading whitespace to handle indented CI output
+/^[[:space:]]*Running:.*\.cy\.js/ {
     # Save previous spec results if we were tracking one
     if (current_spec != "") {
         # Record: spec_name final_result
@@ -105,7 +106,8 @@ BEGIN {
 }
 
 # Match "Running: path/to/spec.cy.js" or "Running: path/to/spec.cy.js (Attempt X of Y)"
-/^Running:.*\.cy\.js/ {
+# Allow leading whitespace to handle indented CI output
+/^[[:space:]]*Running:.*\.cy\.js/ {
     # Extract spec filename
     for(i=1; i<=NF; i++) {
         if($i ~ /\.cy\.js/) {
@@ -165,7 +167,7 @@ generate_report() {
     if [ "$FLAKY_COUNT" -eq 0 ]; then
         echo "✅ **No flaky tests detected!**"
         echo ""
-        echo "All tests passed on first attempt."
+        echo "No tests exhibited flaky behavior (failed initially but passed on retry)."
     else
         echo "⚠️ **$FLAKY_COUNT flaky test(s) detected**"
         echo ""

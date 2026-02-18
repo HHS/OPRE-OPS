@@ -28,10 +28,11 @@ This script parses Cypress output logs to identify tests that initially failed b
 ```
 
 **How it works**:
-1. Parses the Cypress output log file
+1. Parses the Cypress output log file (handles both local and CI output with indentation)
 2. Searches for patterns indicating test retries: `(Attempt 2 of 3)`, `(Attempt 3 of 3)`, etc.
-3. Identifies spec files where retries occurred
-4. Generates a formatted report with:
+3. Identifies spec files where retries occurred AND ultimately passed (truly flaky)
+4. Filters out consistently failing tests (failed all retry attempts)
+5. Generates a formatted report with:
    - List of flaky test files
    - Explanation of what flakiness means
    - Recommended actions for fixing flaky tests
@@ -79,7 +80,7 @@ A: Ensure Cypress output is being captured to a file using `tee` or output redir
 A: Check that the Cypress output includes retry information (configured via `retries` in cypress config).
 
 *Q: False positives - tests marked as flaky but they're not*
-A: The script looks for any retry attempts. Review the actual Cypress output to confirm the test behavior.
+A: The script only flags tests that failed initially but passed on retry. Consistently failing tests are not flagged. Review the actual Cypress output to confirm the test behavior.
 
 ---
 

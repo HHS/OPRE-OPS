@@ -151,8 +151,61 @@ echo "Result:"
 echo ""
 echo ""
 
-# Test 4: File doesn't exist
-echo "Test 4: Missing file handling"
+# Test 4: Indented output (CI-style with leading whitespace)
+echo "Test 4: Indented CI-style output (regression test)"
+echo "-----------------------------------"
+cat > "$TEST_DIR/indented.log" <<'EOF'
+  Running:  cypress/e2e/flakyTest.cy.js                                                    (1 of 3)
+
+  Flaky Test
+    1) fails due to timing
+
+  0 passing (2s)
+  1 failing
+
+  1) Flaky Test
+       fails due to timing:
+     Timed out retrying after 4000ms
+
+  Running:  cypress/e2e/flakyTest.cy.js (Attempt 2 of 3)                                   (1 of 3)
+
+  Flaky Test
+    ✓ fails due to timing (1234ms)
+
+  1 passing (2s)
+
+  Running:  cypress/e2e/passingTest.cy.js                                                  (2 of 3)
+
+  Passing Test
+    ✓ always works (890ms)
+
+  1 passing (1s)
+
+  Running:  cypress/e2e/brokenTest.cy.js                                                   (3 of 3)
+
+  Broken Test
+    1) never works
+
+  0 passing (1s)
+  1 failing
+
+  Running:  cypress/e2e/brokenTest.cy.js (Attempt 2 of 3)                                  (3 of 3)
+
+  Broken Test
+    1) never works
+
+  0 passing (1s)
+  1 failing
+EOF
+
+echo "Expected: ⚠️  1 flaky test (flakyTest.cy.js), ignoring brokenTest.cy.js that failed all attempts"
+echo "Result:"
+"$DETECT_SCRIPT" "$TEST_DIR/indented.log"
+echo ""
+echo ""
+
+# Test 5: File doesn't exist
+echo "Test 5: Missing file handling"
 echo "-----------------------------------"
 echo "Expected: Error message about missing file"
 echo "Result:"
