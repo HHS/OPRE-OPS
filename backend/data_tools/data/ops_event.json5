@@ -6926,7 +6926,7 @@
                     "Connection": "keep-alive",
                     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
                     "Content-Type": "application/json",
-                    "Authorization": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6dHJ1ZSwiaWF0IjoxNzcxNDM1NjQzLCJqdGkiOiI0MGNhYjFiZi0xZTJkLTQ0ZGEtYjQ0NS1jZGJhMGFjMWE5ZGYiLCJ0eXBlIjoiYWNjZXNzIiwic3ViIjoiMDAwMDAwMDAtMDAwMC0xMTExLWExMTEtMDAwMDAwMDAwMDE4IiwibmJmIjoxNzcxNDM1NjQzLCJjc3JmIjoiZDE1ZGFjNzctMWZhMS00NTk4LWFhODItYjlkOTgxMDdhNjRlIiwiYXVkIjoiaHR0cHM6Ly9vcHJlLW9wcy1mcm9udGVuZC1kZXYiLCJpc3MiOiJodHRwczovL29wcmUtb3BzLWJhY2tlbmQtZGV2IiwiZXhwIjoxNzcxNDM3NDQzLCJyb2xlcyI6WyJTWVNURU1fT1dORVIiXX0.KYHCD8EtKG8aw5FgIprBQfp6XBKIIGRkaRwIiA9Z88YPFt3HnOkPWGpUejjY8NUWPfdJ8R6n2NbSCiK3aVWnxyRjvy3Dy6Q1FF0Ax7bQgq8wjw2o5OwXIi9zH3fRXqhyBLFFrnonN3kroyRo5t2tcAtBNuT1M4SbtiY1_ED8bTnenfPBuS05BnS5othTpMfOkrtBvREIbr1qXo6gYk70L4KF8H6zQ_Bgusp22i0u8_28ybsWn4IdwM3AhBJXkf4D_Q7H5wyiWZjlcNFjgHlAwrgr3Z-2LCS-ZBGGI78I3tybqKXXtcLemKBQ24mMWVvuV_WKv9ew-8Qj5Z1qPCwz5A",
+                    "Authorization": "Bearer Token",
                     "Content-Length": "1474",
                     "Sec-Fetch-Dest": "empty",
                     "Sec-Fetch-Mode": "cors",
