@@ -3225,12 +3225,11 @@ paths:
               schema:
                 type: array
                 items:
-                  allOf:
-                    - $ref: "#/components/schemas/BudgetLineItem"
-                    - type: object
-                      properties:
-                        _meta:
-                          $ref: "#/components/schemas/BudgetLineItemMeta"
+                  $ref: "#/components/schemas/BudgetLineItemListItem"
+                description: |
+                  Optimized list response. Excludes team_members and portfolio_team_leaders
+                  (not used in list views). CAN object is minimal (id, display_name, number, portfolio_id only).
+                  Use GET /budget-line-items/{id} for full details.
         "400":
           description: Bad Request
         "401":
@@ -5004,9 +5003,118 @@ components:
       type: array
       items:
         anyOf:
-          - $ref: "#/components/schemas/BudgetLineItem"
+          - $ref: "#/components/schemas/BudgetLineItemListItem"
+
+    BudgetLineItemCANList:
+      description: Minimal CAN schema for list responses - only fields used by UI
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        display_name:
+          type: string
+        number:
+          type: string
+        portfolio_id:
+          type: integer
+          example: 1
+      required:
+        - id
+        - display_name
+        - number
+        - portfolio_id
+
+    BudgetLineItemListItem:
+      description: Optimized BudgetLineItem schema for list responses (excludes unused fields)
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        budget_line_item_type:
+          type: string
+          example: "CONTRACT"
+        agreement_id:
+          type: integer
+          example: 1
+        can_id:
+          type: integer
+          example: 1
+        can:
+          $ref: "#/components/schemas/BudgetLineItemCANList"
+        services_component_id:
+          type: integer
+          nullable: true
+          description: ID of the associated services component
+        amount:
+          type: number
+          format: float
+          example: 1000000
+          description: BLI amount represented as a floating-point number
+        total:
+          type: number
+          format: float
+          description: Total BLI amount including fees (amount + fees)
+        comments:
+          type: string
+        date_needed:
+          type: string
+          example: "2023-05-06"
+        line_description:
+          type: string
+        proc_shop_fee_percentage:
+          type: number
+          example: 100.2
+        procurement_shop_fee_id:
+          type: integer
+          description: ID reference to the procurement shop fee
+        procurement_shop_fee:
+          $ref: "#/components/schemas/ProcurementShopFee"
+          description: The associated procurement shop fee object
+        status:
+          type: string
+          example: PLANNED
+        is_obe:
+          type: boolean
+          example: false
+        portfolio_id:
+          type: integer
+          example: 1
+        fiscal_year:
+          type: integer
+          example: 1
+        in_review:
+          type: boolean
+          description: Whether this budget line item has change requests in review
+        change_requests_in_review:
+          type: array
+          nullable: true
+          items:
+            anyOf:
+              - $ref: "#/components/schemas/GenericChangeRequest"
+        created_on:
+          $ref: "#/components/parameters/created_on"
+        updated_on:
+          $ref: "#/components/parameters/updated_on"
+        created_by:
+          $ref: "#/components/parameters/created_by"
+        updated_by:
+          $ref: "#/components/parameters/updated_by"
+        agreement:
+          $ref: "#/components/schemas/SimpleAgreementSchema"
+        fees:
+          type: number
+          format: float
+          description: BLI fee amount represented as a floating-point number
+        _meta:
+          $ref: "#/components/schemas/BudgetLineItemMeta"
 
     BudgetLineItem:
+      description: |
+        Full BudgetLineItem schema used for single-item responses (GET /budget-line-items/{id}).
+        Includes all fields including team_members, portfolio_team_leaders, and full CAN details.
+        For list responses, see BudgetLineItemListItem which excludes unused fields for performance.
       type: object
       properties:
         id:
