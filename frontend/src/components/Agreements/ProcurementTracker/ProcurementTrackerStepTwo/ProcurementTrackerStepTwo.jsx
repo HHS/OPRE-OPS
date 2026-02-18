@@ -60,6 +60,7 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, h
                             setTargetCompletionDate(e.target.value);
                         }}
                         minDate={getLocalISODate()}
+                        isDisabled={!hasActiveTracker}
                     />
                     <div className="display-flex flex-align-center">
                         <UsersComboBox
@@ -68,6 +69,7 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, h
                             selectedUser={selectedUser}
                             setSelectedUser={setSelectedUser}
                             users={authorizedUsers}
+                            isDisabled={!hasActiveTracker}
                         />
 
                         <MemoizedDatePicker
@@ -83,6 +85,7 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, h
                                 setStep2DateCompleted(e.target.value);
                             }}
                             maxDate={getLocalISODate()}
+                            isDisabled={!hasActiveTracker}
                         />
                     </div>
                     <TextArea
