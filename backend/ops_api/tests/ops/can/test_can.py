@@ -904,7 +904,7 @@ def test_get_can_filter_options(auth_client, loaded_db, app_ctx):
 
     data = response.json
     assert "portfolios" in data
-    assert "nick_names" in data
+    assert "can_numbers" in data
     assert "fy_budget_range" in data
 
 
@@ -931,26 +931,26 @@ def test_can_filter_options_portfolios_sorted_by_name(auth_client, loaded_db, ap
     assert names == sorted(names)
 
 
-def test_can_filter_options_nick_names_have_expected_fields(auth_client, loaded_db, app_ctx):
-    """Nick names should have id and nick_name."""
+def test_can_filter_options_can_numbers_have_expected_fields(auth_client, loaded_db, app_ctx):
+    """CAN numbers should have id and number."""
     response = auth_client.get("/api/v1/cans-filters/")
     assert response.status_code == 200
 
-    nick_names = response.json["nick_names"]
-    assert len(nick_names) > 0
-    for entry in nick_names:
+    can_numbers = response.json["can_numbers"]
+    assert len(can_numbers) > 0
+    for entry in can_numbers:
         assert "id" in entry
-        assert "nick_name" in entry
+        assert "number" in entry
 
 
-def test_can_filter_options_nick_names_sorted(auth_client, loaded_db, app_ctx):
-    """Nick names should be sorted alphabetically."""
+def test_can_filter_options_can_numbers_sorted(auth_client, loaded_db, app_ctx):
+    """CAN numbers should be sorted alphabetically."""
     response = auth_client.get("/api/v1/cans-filters/")
     assert response.status_code == 200
 
-    nick_names = response.json["nick_names"]
-    names = [n["nick_name"] for n in nick_names]
-    assert names == sorted(names)
+    can_numbers = response.json["can_numbers"]
+    numbers = [n["number"] for n in can_numbers]
+    assert numbers == sorted(numbers)
 
 
 def test_can_filter_options_fy_budget_range_has_min_max(auth_client, loaded_db, app_ctx):
@@ -971,7 +971,7 @@ def test_can_filter_options_with_fiscal_year(auth_client, loaded_db, app_ctx):
 
     data = response.json
     assert "portfolios" in data
-    assert "nick_names" in data
+    assert "can_numbers" in data
     assert "fy_budget_range" in data
 
 

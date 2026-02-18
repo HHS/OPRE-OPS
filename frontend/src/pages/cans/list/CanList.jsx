@@ -102,12 +102,12 @@ const CanList = () => {
     }, [filterOptionsData?.portfolios]);
 
     const canOptions = React.useMemo(() => {
-        if (!filterOptionsData?.nick_names) return [];
-        return filterOptionsData.nick_names.map((n) => ({
+        if (!filterOptionsData?.can_numbers) return [];
+        return filterOptionsData.can_numbers.map((n) => ({
             id: n.id,
-            title: n.nick_name
+            title: n.number
         }));
-    }, [filterOptionsData?.nick_names]);
+    }, [filterOptionsData?.can_numbers]);
 
     const fyBudgetRange = React.useMemo(() => {
         if (!filterOptionsData?.fy_budget_range) return [0, 0];

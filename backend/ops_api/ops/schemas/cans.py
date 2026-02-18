@@ -18,7 +18,7 @@ class CANFiltersQueryParametersSchema(Schema):
 
 class CANListFilterOptionResponseSchema(Schema):
     portfolios = fields.List(fields.Dict(keys=fields.String(), values=fields.Raw()), required=True)
-    nick_names = fields.List(fields.Dict(keys=fields.String(), values=fields.Raw()), required=True)
+    can_numbers = fields.List(fields.Dict(keys=fields.String(), values=fields.Raw()), required=True)
     fy_budget_range = fields.Dict(keys=fields.String(), values=fields.Float(), required=True)
 
 

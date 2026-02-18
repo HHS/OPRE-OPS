@@ -231,7 +231,7 @@ class CANService:
         """
         Get filter options for the CAN list.
 
-        Returns distinct portfolios, nick_names, and FY budget range
+        Returns distinct portfolios, CAN numbers, and FY budget range
         for CANs matching the optional fiscal_year filter.
 
         Uses database-level aggregation to avoid loading full ORM objects.
@@ -273,12 +273,12 @@ class CANService:
             key=lambda x: x["name"],
         )
 
-        # Extract distinct nick_names via SQL
-        nick_names_query = select(CAN.id, CAN.nick_name).where(CAN.id.in_(can_ids_subquery), CAN.nick_name.isnot(None))
-        nick_name_rows = self.db_session.execute(nick_names_query).all()
-        nick_names = sorted(
-            [{"id": row[0], "nick_name": row[1]} for row in nick_name_rows],
-            key=lambda x: x["nick_name"],
+        # Extract distinct CAN numbers via SQL
+        can_numbers_query = select(CAN.id, CAN.number).where(CAN.id.in_(can_ids_subquery))
+        can_number_rows = self.db_session.execute(can_numbers_query).all()
+        can_numbers = sorted(
+            [{"id": row[0], "number": row[1]} for row in can_number_rows],
+            key=lambda x: x["number"],
         )
 
         # Compute FY budget range via SQL MIN/MAX aggregation
@@ -294,7 +294,7 @@ class CANService:
 
         filters = {
             "portfolios": portfolios,
-            "nick_names": nick_names,
+            "can_numbers": can_numbers,
             "fy_budget_range": {"min": fy_budget_min, "max": fy_budget_max},
         }
 

@@ -145,10 +145,10 @@ describe("CAN List Filtering", () => {
             .find(".can-portfolio-combobox__option")
             .first()
             .click();
-        cy.get(".can-name-combobox__control")
+        cy.get(".can-number-combobox__control")
             .click()
-            .get(".can-name-combobox__menu")
-            .find(".can-name-combobox__option")
+            .get(".can-number-combobox__menu")
+            .find(".can-number-combobox__option")
             .first()
             .click();
         // move range slider via mouse event
@@ -189,7 +189,7 @@ describe("CAN List Filtering", () => {
         cy.get("span").contains("1 Year CAN").should("exist");
         cy.get("span").contains("Cost Share").should("exist");
         cy.get("span").contains("Adolescent Development Research (ADR)").should("exist");
-        cy.get("span").contains("ASPE SRCD-IDDA").should("exist");
+        cy.get("span").contains("G1183CE").should("exist");
         cy.get("span").contains("$690,000 to $9,810,000").should("exist");
 
         // No CANs found

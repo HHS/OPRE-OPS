@@ -1296,7 +1296,7 @@ paths:
       summary: Get filter options for the CAN list
       description: |
         Returns available filter options for the CAN list page, computed via SQL aggregation.
-        Includes distinct portfolios, CAN nick_names, and FY budget min/max range.
+        Includes distinct portfolios, CAN numbers, and FY budget min/max range.
         This is more efficient than fetching all CANs and computing options client-side.
       parameters:
         - in: query
@@ -1314,7 +1314,7 @@ paths:
                 type: object
                 required:
                   - portfolios
-                  - nick_names
+                  - can_numbers
                   - fy_budget_range
                 properties:
                   portfolios:
@@ -1340,24 +1340,24 @@ paths:
                       - id: 2
                         name: "Child Welfare"
                         abbreviation: "CW"
-                  nick_names:
+                  can_numbers:
                     type: array
                     items:
                       type: object
                       required:
                         - id
-                        - nick_name
+                        - number
                       properties:
                         id:
                           type: integer
-                        nick_name:
+                        number:
                           type: string
-                    description: List of CAN nick_names (sorted alphabetically)
+                    description: List of CAN numbers (sorted alphabetically)
                     example:
                       - id: 500
-                        nick_name: "G99HRF2"
+                        number: "G99HRF2"
                       - id: 501
-                        nick_name: "G99IA14"
+                        number: "G99IA14"
                   fy_budget_range:
                     type: object
                     required:

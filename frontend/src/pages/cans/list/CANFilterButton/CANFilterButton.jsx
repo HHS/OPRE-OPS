@@ -1,6 +1,6 @@
 import Modal from "react-modal";
 import CANActivePeriodComboBox from "../../../../components/CANs/CANActivePeriodComboBox";
-import CanNameComboBox from "../../../../components/CANs/CanNameComboBox";
+import CanNumberComboBox from "../../../../components/CANs/CanNumberComboBox";
 import CANPortfolioComboBox from "../../../../components/CANs/CANPortfolioComboBox";
 import CANTransferComboBox from "../../../../components/CANs/CANTransferComboBox";
 import FilterButton from "../../../../components/UI/FilterButton";
@@ -79,7 +79,7 @@ export const CANFilterButton = ({ filters, setFilters, portfolioOptions, canOpti
             key="field-can"
             className={fieldStyles}
         >
-            <CanNameComboBox
+            <CanNumberComboBox
                 can={can}
                 setCan={setCan}
                 canOptions={canOptions}

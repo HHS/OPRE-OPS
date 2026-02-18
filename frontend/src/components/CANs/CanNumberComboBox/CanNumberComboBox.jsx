@@ -15,9 +15,9 @@ import ComboBox from "../../UI/Form/ComboBox";
  * @param {string} [props.legendClassname] - The class name for the legend (optional).
  * @param {string} [props.defaultString] - The default string to display (optional).
  * @param {Object} [props.overrideStyles] - The CSS styles to override the default (optional).
- * @returns {JSX.Element} - The rendered CAN Name ComboBox component.
+ * @returns {JSX.Element} - The rendered CAN Number ComboBox component.
  */
-const CanNameComboBox = ({
+const CanNumberComboBox = ({
     canOptions,
     can,
     setCan,
@@ -30,13 +30,13 @@ const CanNameComboBox = ({
             <div>
                 <label
                     className={legendClassname}
-                    htmlFor="can-name-combobox-input"
+                    htmlFor="can-number-combobox-input"
                 >
                     CAN
                 </label>
                 <div>
                     <ComboBox
-                        namespace="can-name-combobox"
+                        namespace="can-number-combobox"
                         data={canOptions}
                         selectedData={can}
                         setSelectedData={setCan}
@@ -50,4 +50,4 @@ const CanNameComboBox = ({
     );
 };
 
-export default CanNameComboBox;
+export default CanNumberComboBox;
