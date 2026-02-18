@@ -4,10 +4,14 @@ import useProcurementTrackerStepTwo from "./ProcurementTrackerStepTwo.hooks";
 import TermTag from "../../../UI/Term/TermTag";
 
 /**
+ * @typedef {import("../../../../types/UserTypes").SafeUser} SafeUser
+ */
+
+/**
  * @typedef {Object} ProcurementTrackerStepTwoProps
  * @property {string} stepStatus - The current status of the procurement tracker step
  * @property {Object} stepTwoData - The data for step 2 of the procurement tracker
- * @property {Array} authorizedUsers - List of users authorized for this agreement
+ * @property {SafeUser[]} authorizedUsers - List of users authorized for this agreement
  * @property {boolean} hasActiveTracker - Whether an active tracker exists
  */
 
