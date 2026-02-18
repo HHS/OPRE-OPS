@@ -2,9 +2,9 @@
 
 from enum import Enum
 
-from sqlalchemy import Column, ForeignKey, Integer, String, Text
+from sqlalchemy import Column, ForeignKey, Index, Integer, String, Text
 from sqlalchemy.dialects.postgresql import ENUM
-from sqlalchemy.orm import Mapped, mapped_column, object_session, relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from models.base import BaseModel
 
@@ -28,6 +28,11 @@ class Division(BaseModel):
     deputy_division_director_id = Column(Integer, ForeignKey("ops_user.id"))
     division_director = relationship("User", foreign_keys=[division_director_id], viewonly=True)
 
+    __table_args__ = (
+        Index("ix_division_division_director_id", "division_director_id"),
+        Index("ix_division_deputy_division_director_id", "deputy_division_director_id"),
+    )
+
     @BaseModel.display_name.getter
     def display_name(self):
         return self.name
@@ -50,6 +55,8 @@ class PortfolioUrl(BaseModel):
     portfolio_id: Mapped[int] = mapped_column(Integer, ForeignKey("portfolio.id"))
     portfolio: Mapped["Portfolio"] = relationship("Portfolio", back_populates="urls")
     url: Mapped[str]
+
+    __table_args__ = (Index("ix_portfolio_url_portfolio_id", "portfolio_id"),)
 
 
 class SharedPortfolioCANs(BaseModel):
@@ -94,6 +101,7 @@ class Portfolio(BaseModel):
     )
 
     division_id = Column(Integer, ForeignKey("division.id"), nullable=False)
+    division = relationship("Division", foreign_keys=[division_id])
     urls = relationship("PortfolioUrl")
     description = Column(Text)
     team_leaders = relationship(
@@ -104,10 +112,8 @@ class Portfolio(BaseModel):
         secondaryjoin="User.id == PortfolioTeamLeaders.team_lead_id",
     )
 
+    __table_args__ = (Index("ix_portfolio_division_id", "division_id"),)
+
     @BaseModel.display_name.getter
     def display_name(self):
         return self.name
-
-    @property
-    def division(self):
-        return object_session(self).get(Division, self.division_id)
