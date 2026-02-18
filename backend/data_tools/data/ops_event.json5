@@ -6816,6 +6816,156 @@
             },
             created_by: 521,
             created_on: "2026-02-03T20:00:17.190337Z",
+        },
+        { // 70 Update Agreement nick_name
+            event_type: "UPDATE_AGREEMENT",
+            event_status: "SUCCESS",
+            event_details: {
+                "agreement_id": 9,
+                "request.json": {
+                    "name": "Interoperability Initiatives",
+                    "notes": "",
+                    "vendor": "Vendor 3",
+                    "cotr_id": null,
+                    "end_date": null,
+                    "nick_name": "Inter Init",
+                    "po_number": null,
+                    "vendor_id": 102,
+                    "is_awarded": false,
+                    "project_id": 1002,
+                    "start_date": null,
+                    "description": "Test description",
+                    "maps_sys_id": null,
+                    "display_name": "Interoperability Initiatives",
+                    "team_leaders": [
+                        "Ivelisse Martinez-Beck",
+                        "Sheila Celentano"
+                    ],
+                    "team_members": [
+                        {
+                            "id": 511,
+                            "email": "Niki.Denmark@example.com",
+                            "full_name": "Niki Denmark"
+                        },
+                        {
+                            "id": 520,
+                            "email": "system.owner@email.com",
+                            "full_name": "System Owner"
+                        }
+                    ],
+                    "contract_type": "FIRM_FIXED_PRICE",
+                    "agreement_type": "CONTRACT",
+                    "special_topics": [
+                        {
+                            "id": 3,
+                            "name": "Special Topic 3"
+                        }
+                    ],
+                    "contract_number": null,
+                    "acquisition_type": null,
+                    "agreement_reason": "NEW_REQ",
+                    "delivered_status": false,
+                    "support_contacts": [],
+                    "contract_category": "RESEARCH",
+                    "task_order_number": null,
+                    "awarding_entity_id": 2,
+                    "division_directors": [
+                        "Dave Director",
+                        "Director Derrek"
+                    ],
+                    "project_officer_id": 503,
+                    "authorized_user_ids": [
+                        512,
+                        513,
+                        514,
+                        515,
+                        516,
+                        517,
+                        518,
+                        519,
+                        520,
+                        522,
+                        523,
+                        525,
+                        528,
+                        68,
+                        500,
+                        501,
+                        502,
+                        503,
+                        504,
+                        505,
+                        511
+                    ],
+                    "servicing_agency_id": null,
+                    "requesting_agency_id": null,
+                    "research_methodologies": [
+                        {
+                            "id": 3,
+                            "name": "Descriptive Study",
+                            "detailed_name": "Descriptive Study (Foundational Research, Process and Implementation Studies, Cost Analyses, etc.)"
+                        },
+                        {
+                            "id": 4,
+                            "name": "Impact Study",
+                            "detailed_name": "Impact Study"
+                        }
+                    ],
+                    "product_service_code_id": 1,
+                    "psc_contract_specialist": "",
+                    "service_requirement_type": "NON_SEVERABLE",
+                    "alternate_project_officer_id": null
+                },
+                "request.values": {},
+                "request.headers": {
+                    "Host": "localhost:8080",
+                    "Accept": "application/json",
+                    "Origin": "http://localhost:3000",
+                    "Referer": "http://localhost:3000/",
+                    "Sec-Ch-Ua": "\"Not:A-Brand\";v=\"99\", \"Google Chrome\";v=\"145\", \"Chromium\";v=\"145\"",
+                    "Connection": "keep-alive",
+                    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6dHJ1ZSwiaWF0IjoxNzcxNDM1NjQzLCJqdGkiOiI0MGNhYjFiZi0xZTJkLTQ0ZGEtYjQ0NS1jZGJhMGFjMWE5ZGYiLCJ0eXBlIjoiYWNjZXNzIiwic3ViIjoiMDAwMDAwMDAtMDAwMC0xMTExLWExMTEtMDAwMDAwMDAwMDE4IiwibmJmIjoxNzcxNDM1NjQzLCJjc3JmIjoiZDE1ZGFjNzctMWZhMS00NTk4LWFhODItYjlkOTgxMDdhNjRlIiwiYXVkIjoiaHR0cHM6Ly9vcHJlLW9wcy1mcm9udGVuZC1kZXYiLCJpc3MiOiJodHRwczovL29wcmUtb3BzLWJhY2tlbmQtZGV2IiwiZXhwIjoxNzcxNDM3NDQzLCJyb2xlcyI6WyJTWVNURU1fT1dORVIiXX0.KYHCD8EtKG8aw5FgIprBQfp6XBKIIGRkaRwIiA9Z88YPFt3HnOkPWGpUejjY8NUWPfdJ8R6n2NbSCiK3aVWnxyRjvy3Dy6Q1FF0Ax7bQgq8wjw2o5OwXIi9zH3fRXqhyBLFFrnonN3kroyRo5t2tcAtBNuT1M4SbtiY1_ED8bTnenfPBuS05BnS5othTpMfOkrtBvREIbr1qXo6gYk70L4KF8H6zQ_Bgusp22i0u8_28ybsWn4IdwM3AhBJXkf4D_Q7H5wyiWZjlcNFjgHlAwrgr3Z-2LCS-ZBGGI78I3tybqKXXtcLemKBQ24mMWVvuV_WKv9ew-8Qj5Z1qPCwz5A",
+                    "Content-Length": "1474",
+                    "Sec-Fetch-Dest": "empty",
+                    "Sec-Fetch-Mode": "cors",
+                    "Sec-Fetch-Site": "same-site",
+                    "Accept-Encoding": "gzip, deflate, br, zstd",
+                    "Accept-Language": "en-US,en;q=0.9",
+                    "Sec-Ch-Ua-Mobile": "?0",
+                    "Sec-Ch-Ua-Platform": "\"macOS\""
+                },
+                "agreement_updates": {
+                    "changes": {
+                        "nick_name": {
+                            "new_value": "Inter Init",
+                            "old_value": null
+                        },
+                        "updated_by": {
+                            "new_value": 520,
+                            "old_value": null
+                        },
+                        "updated_on": {
+                            "new_value": "2026-02-18T17:28:12.946910Z",
+                            "old_value": "2026-02-18T17:26:41.170012Z"
+                        },
+                        "updated_by_user": {
+                            "new_value": {
+                                "id": 520,
+                                "full_name": "System Owner"
+                            },
+                            "old_value": null
+                        }
+                    },
+                    "owner_id": 9,
+                    "updated_by": 520
+                },
+                "request.remote_addr": "10.89.0.13",
+                "request.remote_user": null
+            },
+            created_by: 521,
+            created_on: "2026-02-03T20:00:17.190337Z",
         }
     ],
 }
