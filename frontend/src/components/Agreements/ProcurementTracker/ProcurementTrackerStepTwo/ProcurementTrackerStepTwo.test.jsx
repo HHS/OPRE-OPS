@@ -2,6 +2,7 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { vi, expect, describe, it, beforeEach } from "vitest";
 import ProcurementTrackerStepTwo from "./ProcurementTrackerStepTwo";
 import useProcurementTrackerStepTwo from "./ProcurementTrackerStepTwo.hooks";
+import DatePicker from "../../../UI/USWDS/DatePicker";
 
 vi.mock("./ProcurementTrackerStepTwo.hooks");
 vi.mock("../../../../helpers/utils", async (importOriginal) => {
@@ -99,7 +100,8 @@ describe("ProcurementTrackerStepTwo", () => {
         setStep2DateCompleted: mockSetStep2DateCompleted,
         runValidate: mockRunValidate,
         validatorRes: mockValidatorRes,
-        step2DateCompletedLabel: "January 15, 2024"
+        step2DateCompletedLabel: "January 15, 2024",
+        MemoizedDatePicker: DatePicker
     };
 
     const mockStepData = { id: 1 };

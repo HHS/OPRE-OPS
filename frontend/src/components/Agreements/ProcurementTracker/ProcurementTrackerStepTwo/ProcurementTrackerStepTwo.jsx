@@ -2,7 +2,6 @@ import { getLocalISODate } from "../../../../helpers/utils";
 import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepTwo from "./ProcurementTrackerStepTwo.hooks";
 import TermTag from "../../../UI/Term/TermTag";
-import DatePicker from "../../../UI/USWDS/DatePicker";
 
 /**
  * @typedef {Object} ProcurementTrackerStepTwoProps
@@ -29,7 +28,8 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, h
         setStep2DateCompleted,
         runValidate,
         validatorRes,
-        step2DateCompletedLabel
+        step2DateCompletedLabel,
+        MemoizedDatePicker
     } = useProcurementTrackerStepTwo(stepTwoData);
 
     return (
@@ -43,7 +43,7 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, h
                         enter it below.
                     </p>
                     {/* TODO: Add save functionality for target completion date */}
-                    <DatePicker
+                    <MemoizedDatePicker
                         id="target-completion-date"
                         name="targetCompletionDate"
                         label="Target Completion Date"
@@ -63,7 +63,7 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, h
                             users={authorizedUsers}
                         />
 
-                        <DatePicker
+                        <MemoizedDatePicker
                             id="step-2-date-completed"
                             name="dateCompleted"
                             className="margin-left-4"
