@@ -1,13 +1,15 @@
-from typing import Optional
+from typing import Any, Optional
 
 from flask import current_app
 from loguru import logger
-from sqlalchemy import Integer, cast, func, select
+from sqlalchemy import Integer, cast, func, select, union_all
 from sqlalchemy.exc import NoResultFound
 from werkzeug.exceptions import NotFound
 
 from models import CAN, CANSortCondition
-from models.cans import CANFundingDetails
+from models.cans import CANFundingBudget, CANFundingDetails
+from models.portfolios import Portfolio
+from ops_api.ops.schemas.cans import CANListFilterOptionResponseSchema
 from ops_api.ops.utils.cans import get_can_funding_summary
 from ops_api.ops.utils.query_helpers import QueryHelper
 
@@ -98,6 +100,7 @@ class CANService:
         active_period=None,
         transfer=None,
         portfolio=None,
+        can_ids=None,
         budget_min=None,
         budget_max=None,
     ) -> tuple[list[CAN], dict[str, int]]:
@@ -125,6 +128,7 @@ class CANService:
         active_period_values = active_period if active_period is not None else []
         transfer_values = transfer if transfer is not None else []
         portfolio_values = portfolio if portfolio is not None else []
+        can_ids_values = can_ids if can_ids is not None else []
         # budget_min, budget_max are semantically single values but wrapped in lists
         budget_min_value = budget_min[0] if budget_min and len(budget_min) > 0 else None
         budget_max_value = budget_max[0] if budget_max and len(budget_max) > 0 else None
@@ -151,6 +155,7 @@ class CANService:
             active_period_values,
             transfer_values,
             portfolio_values,
+            can_ids_values,
             budget_min_value,
             budget_max_value,
         )
@@ -221,6 +226,81 @@ class CANService:
             stmt = query_helper.get_stmt()
 
         return self.db_session.execute(stmt).scalars().all()
+
+    def get_filter_options(self, data: dict | None) -> dict[str, Any]:
+        """
+        Get filter options for the CAN list.
+
+        Returns distinct portfolios, CAN numbers, and FY budget range
+        for CANs matching the optional fiscal_year filter.
+
+        Uses database-level aggregation to avoid loading full ORM objects.
+        """
+        fiscal_year = data.get("fiscal_year", []) if data else []
+        fiscal_year_value = fiscal_year[0] if fiscal_year and len(fiscal_year) > 0 else None
+
+        # Build a CAN IDs subquery instead of loading full ORM objects
+        if fiscal_year_value is None:
+            can_ids_subquery = select(CAN.id)
+        else:
+            active_period_expr = cast(func.substr(CANFundingDetails.fund_code, 11, 1), Integer)
+            base_id_stmt = select(CAN.id).join(CANFundingDetails, CAN.funding_details_id == CANFundingDetails.id)
+
+            one_year_ids = base_id_stmt.where(
+                active_period_expr == 1,
+                CANFundingDetails.fiscal_year == fiscal_year_value,
+            )
+            multiple_year_ids = base_id_stmt.where(
+                active_period_expr > 1,
+                CANFundingDetails.fiscal_year <= fiscal_year_value,
+                CANFundingDetails.fiscal_year + active_period_expr > fiscal_year_value,
+            )
+            zero_year_ids = base_id_stmt.where(
+                active_period_expr == 0,
+                CANFundingDetails.fiscal_year >= fiscal_year_value,
+            )
+            can_ids_subquery = union_all(one_year_ids, multiple_year_ids, zero_year_ids)
+
+        # Extract distinct portfolios via SQL
+        portfolios_query = (
+            select(Portfolio.id, Portfolio.name, Portfolio.abbreviation)
+            .join(CAN, Portfolio.id == CAN.portfolio_id)
+            .where(CAN.id.in_(can_ids_subquery))
+            .distinct()
+        )
+        portfolio_rows = self.db_session.execute(portfolios_query).all()
+        portfolios = sorted(
+            [{"id": row[0], "name": row[1], "abbreviation": row[2]} for row in portfolio_rows],
+            key=lambda x: x["name"],
+        )
+
+        # Extract distinct CAN numbers via SQL
+        can_numbers_query = select(CAN.id, CAN.number).where(CAN.id.in_(can_ids_subquery))
+        can_number_rows = self.db_session.execute(can_numbers_query).all()
+        can_numbers = sorted(
+            [{"id": row[0], "number": row[1]} for row in can_number_rows],
+            key=lambda x: x["number"],
+        )
+
+        # Compute FY budget range via SQL MIN/MAX aggregation
+        budget_query = select(func.min(CANFundingBudget.budget), func.max(CANFundingBudget.budget)).where(
+            CANFundingBudget.can_id.in_(can_ids_subquery),
+            CANFundingBudget.budget.isnot(None),
+        )
+        if fiscal_year_value is not None:
+            budget_query = budget_query.where(CANFundingBudget.fiscal_year == fiscal_year_value)
+        budget_row = self.db_session.execute(budget_query).one()
+        fy_budget_min = float(budget_row[0]) if budget_row[0] is not None else 0.0
+        fy_budget_max = float(budget_row[1]) if budget_row[1] is not None else 0.0
+
+        filters = {
+            "portfolios": portfolios,
+            "can_numbers": can_numbers,
+            "fy_budget_range": {"min": fy_budget_min, "max": fy_budget_max},
+        }
+
+        filter_response_schema = CANListFilterOptionResponseSchema()
+        return filter_response_schema.dump(filters)
 
     @staticmethod
     def _sort_results(results, fiscal_year, sort_condition, sort_descending):
@@ -315,6 +395,7 @@ class CANService:
         active_period_values: list[int],
         transfer_values: list[str],
         portfolio_values: list[str],
+        can_ids_values: list[int],
         budget_min_value: float,
         budget_max_value: float,
     ) -> list[CAN]:
@@ -327,6 +408,7 @@ class CANService:
             active_period_values: List of active period IDs to filter by
             transfer_values: List of transfer method strings to filter by
             portfolio_values: List of portfolio abbreviations to filter by
+            can_ids_values: List of CAN IDs to filter by
             budget_min_value: Minimum budget filter
             budget_max_value: Maximum budget filter
 
@@ -334,6 +416,11 @@ class CANService:
             Filtered list of CANs
         """
         filtered_cans = cans
+
+        # Filter by CAN IDs
+        if can_ids_values and len(can_ids_values) > 0:
+            can_ids_set = set(can_ids_values)
+            filtered_cans = [can for can in filtered_cans if can.id in can_ids_set]
 
         # Filter by active period
         if active_period_values and len(active_period_values) > 0:
