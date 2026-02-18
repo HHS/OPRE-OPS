@@ -23,6 +23,8 @@ import useProcurementTrackerStepTwo from "./ProcurementTrackerStepTwo.hooks";
  */
 const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, hasActiveTracker }) => {
     const {
+        isPreSolicitationPackageFinalized,
+        setIsPreSolicitationPackageFinalized,
         selectedUser,
         setSelectedUser,
         setTargetCompletionDate,
@@ -49,6 +51,24 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, h
                         step as complete. If you have a target completion date for when the package will be finalized,
                         enter it below.
                     </p>
+                    <div className="usa-checkbox">
+                        <input
+                            className="usa-checkbox__input"
+                            id="step-2-checkbox"
+                            type="checkbox"
+                            name="step-2-checkbox"
+                            value="step-2-checkbox"
+                            checked={isPreSolicitationPackageFinalized}
+                            onChange={() => setIsPreSolicitationPackageFinalized(!isPreSolicitationPackageFinalized)}
+                            disabled={!hasActiveTracker}
+                        />
+                        <label
+                            className="usa-checkbox__label"
+                            htmlFor="step-2-checkbox"
+                        >
+                            The pre-solicitation package has been sent to the Procurement Shop for review
+                        </label>
+                    </div>
                     {/* TODO: Add save functionality for target completion date */}
                     <div className="display-flex flex-align-end">
                         <MemoizedDatePicker
@@ -63,12 +83,16 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, h
                                 setTargetCompletionDate(e.target.value);
                             }}
                             minDate={getLocalISODate()}
-                            isDisabled={!hasActiveTracker}
+                            isDisabled={!isPreSolicitationPackageFinalized}
                         />
                         <button
                             className="usa-button usa-button--unstyled margin-bottom-1 margin-left-2"
                             data-cy="target-completion-save-btn"
-                            disabled={validatorRes.hasErrors("targetCompletionDate") || !hasActiveTracker}
+                            disabled={
+                                !isPreSolicitationPackageFinalized ||
+                                validatorRes.hasErrors("targetCompletionDate") ||
+                                !hasActiveTracker
+                            }
                             onClick={() => {
                                 alert("Save target completion date functionality coming soon!");
                             }}
@@ -83,7 +107,7 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, h
                             selectedUser={selectedUser}
                             setSelectedUser={setSelectedUser}
                             users={authorizedUsers}
-                            isDisabled={!hasActiveTracker}
+                            isDisabled={!isPreSolicitationPackageFinalized || authorizedUsers.length === 0}
                             messages={validatorRes.getErrors("users") || []}
                             onChange={(name, value) => {
                                 runValidate(name, value);
@@ -103,7 +127,7 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, h
                                 setStep2DateCompleted(e.target.value);
                             }}
                             maxDate={getLocalISODate()}
-                            isDisabled={!hasActiveTracker}
+                            isDisabled={!isPreSolicitationPackageFinalized}
                         />
                     </div>
                     <TextArea
@@ -113,7 +137,7 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, h
                         maxLength={750}
                         value={step2Notes}
                         onChange={(_, value) => setStep2Notes(value)}
-                        isDisabled={!hasActiveTracker}
+                        isDisabled={!isPreSolicitationPackageFinalized}
                     />
                 </fieldset>
             )}

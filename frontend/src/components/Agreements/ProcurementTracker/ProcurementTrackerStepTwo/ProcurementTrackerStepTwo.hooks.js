@@ -9,6 +9,7 @@ import suite from "./suite";
  * @param {Object} stepTwoData - The data for step two of the procurement tracker.
  */
 export default function useProcurementTrackerStepTwo(stepTwoData) {
+    const [isPreSolicitationPackageFinalized, setIsPreSolicitationPackageFinalized] = React.useState(false);
     const [selectedUser, setSelectedUser] = React.useState({});
     const [targetCompletionDate, setTargetCompletionDate] = React.useState(stepTwoData?.target_completion_date || "");
     const [step2DateCompleted, setStep2DateCompleted] = React.useState("");
@@ -26,6 +27,8 @@ export default function useProcurementTrackerStepTwo(stepTwoData) {
     let validatorRes = suite.get();
 
     return {
+        isPreSolicitationPackageFinalized,
+        setIsPreSolicitationPackageFinalized,
         selectedUser,
         setSelectedUser,
         stepTwoData,
