@@ -25,6 +25,8 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, h
     const {
         isPreSolicitationPackageFinalized,
         setIsPreSolicitationPackageFinalized,
+        draftSolicitationDate,
+        setDraftSolicitationDate,
         selectedUser,
         setSelectedUser,
         setTargetCompletionDate,
@@ -38,7 +40,8 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, h
         runValidate,
         validatorRes,
         step2DateCompletedLabel,
-        MemoizedDatePicker
+        MemoizedDatePicker,
+        handleTargetCompletionDateSubmit
     } = useProcurementTrackerStepTwo(stepTwoData);
 
     return (
@@ -51,6 +54,42 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, h
                         step as complete. If you have a target completion date for when the package will be finalized,
                         enter it below.
                     </p>
+
+                    {/* TODO: Add save functionality for target completion date */}
+                    <div className="display-flex flex-align-end">
+                        {stepTwoData?.target_completion_date ? (
+                            <TermTag
+                                term="Target Completion Date"
+                                description={targetCompletionDate}
+                            />
+                        ) : (
+                            <>
+                                <MemoizedDatePicker
+                                    id="target-completion-date"
+                                    name="targetCompletionDate"
+                                    label="Target Completion Date"
+                                    messages={validatorRes.getErrors("targetCompletionDate") || []}
+                                    hint="mm/dd/yyyy"
+                                    value={targetCompletionDate}
+                                    onChange={(e) => {
+                                        runValidate("targetCompletionDate", e.target.value);
+                                        setTargetCompletionDate(e.target.value);
+                                    }}
+                                    minDate={getLocalISODate()}
+                                />
+                                <button
+                                    className="usa-button usa-button--unstyled margin-bottom-1 margin-left-2"
+                                    data-cy="target-completion-save-btn"
+                                    disabled={validatorRes.hasErrors("targetCompletionDate") || !hasActiveTracker}
+                                    onClick={() => {
+                                        handleTargetCompletionDateSubmit(stepTwoData?.id);
+                                    }}
+                                >
+                                    Save
+                                </button>
+                            </>
+                        )}
+                    </div>
                     <div className="usa-checkbox">
                         <input
                             className="usa-checkbox__input"
@@ -68,37 +107,6 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, h
                         >
                             The pre-solicitation package has been sent to the Procurement Shop for review
                         </label>
-                    </div>
-                    {/* TODO: Add save functionality for target completion date */}
-                    <div className="display-flex flex-align-end">
-                        <MemoizedDatePicker
-                            id="target-completion-date"
-                            name="targetCompletionDate"
-                            label="Target Completion Date"
-                            messages={validatorRes.getErrors("targetCompletionDate") || []}
-                            hint="mm/dd/yyyy"
-                            value={targetCompletionDate}
-                            onChange={(e) => {
-                                runValidate("targetCompletionDate", e.target.value);
-                                setTargetCompletionDate(e.target.value);
-                            }}
-                            minDate={getLocalISODate()}
-                            isDisabled={!isPreSolicitationPackageFinalized}
-                        />
-                        <button
-                            className="usa-button usa-button--unstyled margin-bottom-1 margin-left-2"
-                            data-cy="target-completion-save-btn"
-                            disabled={
-                                !isPreSolicitationPackageFinalized ||
-                                validatorRes.hasErrors("targetCompletionDate") ||
-                                !hasActiveTracker
-                            }
-                            onClick={() => {
-                                alert("Save target completion date functionality coming soon!");
-                            }}
-                        >
-                            Save
-                        </button>
                     </div>
                     <div className="display-flex flex-align-center">
                         <UsersComboBox
@@ -137,6 +145,21 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, h
                         maxLength={750}
                         value={step2Notes}
                         onChange={(_, value) => setStep2Notes(value)}
+                        isDisabled={!isPreSolicitationPackageFinalized}
+                    />
+                    <p>After the package is finalized, enter the Draft Solicitation date below (if applicable).</p>
+                    <MemoizedDatePicker
+                        id="step-2-draft-solicitation-date"
+                        name="draftSolicitationDate"
+                        className=""
+                        label="Draft Solicitation Date (optional)"
+                        hint="mm/dd/yyyy"
+                        value={draftSolicitationDate}
+                        messages={validatorRes.getErrors("draftSolicitationDate") || []}
+                        onChange={(e) => {
+                            runValidate("draftSolicitationDate", e.target.value);
+                            setDraftSolicitationDate(e.target.value);
+                        }}
                         isDisabled={!isPreSolicitationPackageFinalized}
                     />
                 </fieldset>

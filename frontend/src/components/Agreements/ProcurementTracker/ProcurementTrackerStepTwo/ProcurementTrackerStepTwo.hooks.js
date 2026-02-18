@@ -1,8 +1,10 @@
 import React from "react";
 import useGetUserFullNameFromId from "../../../../hooks/user.hooks";
-import { formatDateToMonthDayYear } from "../../../../helpers/utils";
+import { formatDateForApi, formatDateToMonthDayYear } from "../../../../helpers/utils";
 import DatePicker from "../../../UI/USWDS/DatePicker";
 import suite from "./suite";
+import { useUpdateProcurementTrackerStepMutation } from "../../../../api/opsAPI";
+import useAlert from "../../../../hooks/use-alert.hooks";
 
 /**
  * Custom hook to manage the state and logic for Procurement Tracker Step Two.
@@ -10,10 +12,14 @@ import suite from "./suite";
  */
 export default function useProcurementTrackerStepTwo(stepTwoData) {
     const [isPreSolicitationPackageFinalized, setIsPreSolicitationPackageFinalized] = React.useState(false);
+    const [draftSolicitationDate, setDraftSolicitationDate] = React.useState("");
     const [selectedUser, setSelectedUser] = React.useState({});
     const [targetCompletionDate, setTargetCompletionDate] = React.useState(stepTwoData?.target_completion_date || "");
     const [step2DateCompleted, setStep2DateCompleted] = React.useState("");
     const [step2Notes, setStep2Notes] = React.useState("");
+
+    const [patchStepTwo] = useUpdateProcurementTrackerStepMutation();
+    const { setAlert } = useAlert();
 
     const step2CompletedByUserName = useGetUserFullNameFromId(stepTwoData?.task_completed_by);
     const step2DateCompletedLabel = formatDateToMonthDayYear(stepTwoData?.date_completed);
@@ -26,9 +32,32 @@ export default function useProcurementTrackerStepTwo(stepTwoData) {
 
     let validatorRes = suite.get();
 
+    const handleTargetCompletionDateSubmit = async (stepId) => {
+        const payload = {
+            target_completion_date: formatDateForApi(targetCompletionDate)
+        };
+        try {
+            await patchStepTwo({
+                stepId,
+                data: payload
+            }).unwrap();
+            // handleSetIsFormSubmitted(true);
+            console.log("Procurement Tracker Step 1 Updated");
+        } catch (error) {
+            console.error("Failed to update Procurement Tracker Step 1", error);
+            setAlert({
+                type: "error",
+                heading: "Error",
+                message: "There was an error updating the procurement tracker step. Please try again."
+            });
+        }
+    };
+
     return {
         isPreSolicitationPackageFinalized,
         setIsPreSolicitationPackageFinalized,
+        draftSolicitationDate,
+        setDraftSolicitationDate,
         selectedUser,
         setSelectedUser,
         stepTwoData,
@@ -43,6 +72,7 @@ export default function useProcurementTrackerStepTwo(stepTwoData) {
         runValidate,
         validatorRes,
         step2DateCompletedLabel,
-        MemoizedDatePicker
+        MemoizedDatePicker,
+        handleTargetCompletionDateSubmit
     };
 }

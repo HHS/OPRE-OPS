@@ -106,17 +106,21 @@ vi.mock("../../../UI/Form/TextArea", () => ({
 }));
 
 describe("ProcurementTrackerStepTwo", () => {
+    const mockSetIsPreSolicitationPackageFinalized = vi.fn();
     const mockSetSelectedUser = vi.fn();
     const mockSetTargetCompletionDate = vi.fn();
     const mockSetStep2DateCompleted = vi.fn();
     const mockRunValidate = vi.fn();
     const mockValidatorRes = {
-        getErrors: vi.fn(() => [])
+        getErrors: vi.fn(() => []),
+        hasErrors: vi.fn(() => false)
     };
 
     const mockSetStep2Notes = vi.fn();
 
     const defaultHookReturn = {
+        isPreSolicitationPackageFinalized: false,
+        setIsPreSolicitationPackageFinalized: mockSetIsPreSolicitationPackageFinalized,
         selectedUser: {},
         setSelectedUser: mockSetSelectedUser,
         targetCompletionDate: "",
@@ -332,7 +336,7 @@ describe("ProcurementTrackerStepTwo", () => {
             expect(screen.getByText("Date Completed")).toBeInTheDocument();
         });
 
-        it("form fields are interactive in ACTIVE state", () => {
+        it("form fields are disabled until package is finalized in ACTIVE state", () => {
             render(
                 <ProcurementTrackerStepTwo
                     stepStatus="ACTIVE"
@@ -343,11 +347,72 @@ describe("ProcurementTrackerStepTwo", () => {
             );
 
             const datePickers = screen.getAllByTestId("date-picker");
-            expect(datePickers.length).toBeGreaterThan(0);
+            const targetDatePicker = datePickers.find(
+                (picker) => picker.getAttribute("data-picker-id") === "target-completion-date"
+            );
+            const completedDatePicker = datePickers.find(
+                (picker) => picker.getAttribute("data-picker-id") === "step-2-date-completed"
+            );
 
             // eslint-disable-next-line testing-library/no-node-access
             const select = screen.getByTestId("users-combobox").querySelector("select");
+            // eslint-disable-next-line testing-library/no-node-access
+            const targetInput = targetDatePicker.querySelector("input");
+            // eslint-disable-next-line testing-library/no-node-access
+            const completedInput = completedDatePicker.querySelector("input");
+            // eslint-disable-next-line testing-library/no-node-access
+            const notesInput = screen.getByTestId("text-area").querySelector("textarea");
+            const checkbox = screen.getByRole("checkbox");
+            const saveButton = screen.getByRole("button", { name: /save/i });
+
+            expect(checkbox).not.toBeDisabled();
+            expect(select).toBeDisabled();
+            expect(targetInput).toBeDisabled();
+            expect(completedInput).toBeDisabled();
+            expect(notesInput).toBeDisabled();
+            expect(saveButton).toBeDisabled();
+        });
+
+        it("form fields are interactive when package is finalized in ACTIVE state", () => {
+            useProcurementTrackerStepTwo.mockReturnValue({
+                ...defaultHookReturn,
+                isPreSolicitationPackageFinalized: true
+            });
+
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="ACTIVE"
+                    stepTwoData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
+                />
+            );
+
+            const datePickers = screen.getAllByTestId("date-picker");
+            const targetDatePicker = datePickers.find(
+                (picker) => picker.getAttribute("data-picker-id") === "target-completion-date"
+            );
+            const completedDatePicker = datePickers.find(
+                (picker) => picker.getAttribute("data-picker-id") === "step-2-date-completed"
+            );
+
+            // eslint-disable-next-line testing-library/no-node-access
+            const select = screen.getByTestId("users-combobox").querySelector("select");
+            // eslint-disable-next-line testing-library/no-node-access
+            const targetInput = targetDatePicker.querySelector("input");
+            // eslint-disable-next-line testing-library/no-node-access
+            const completedInput = completedDatePicker.querySelector("input");
+            // eslint-disable-next-line testing-library/no-node-access
+            const notesInput = screen.getByTestId("text-area").querySelector("textarea");
+            const checkbox = screen.getByRole("checkbox");
+            const saveButton = screen.getByRole("button", { name: /save/i });
+
+            expect(checkbox).not.toBeDisabled();
             expect(select).not.toBeDisabled();
+            expect(targetInput).not.toBeDisabled();
+            expect(completedInput).not.toBeDisabled();
+            expect(notesInput).not.toBeDisabled();
+            expect(saveButton).not.toBeDisabled();
         });
     });
 
@@ -509,11 +574,15 @@ describe("ProcurementTrackerStepTwo", () => {
             const completedInput = completedDatePicker.querySelector("input");
             // eslint-disable-next-line testing-library/no-node-access
             const notesInput = screen.getByTestId("text-area").querySelector("textarea");
+            const checkbox = screen.getByRole("checkbox");
+            const saveButton = screen.getByRole("button", { name: /save/i });
 
+            expect(checkbox).toBeDisabled();
             expect(usersSelect).toBeDisabled();
             expect(targetInput).toBeDisabled();
             expect(completedInput).toBeDisabled();
             expect(notesInput).toBeDisabled();
+            expect(saveButton).toBeDisabled();
         });
     });
 
