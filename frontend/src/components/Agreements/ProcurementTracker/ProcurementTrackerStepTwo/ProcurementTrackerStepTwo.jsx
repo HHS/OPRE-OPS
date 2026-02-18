@@ -70,6 +70,10 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, h
                             setSelectedUser={setSelectedUser}
                             users={authorizedUsers}
                             isDisabled={!hasActiveTracker}
+                            messages={validatorRes.getErrors("users") || []}
+                            onChange={(name, value) => {
+                                runValidate(name, value);
+                            }}
                         />
 
                         <MemoizedDatePicker
