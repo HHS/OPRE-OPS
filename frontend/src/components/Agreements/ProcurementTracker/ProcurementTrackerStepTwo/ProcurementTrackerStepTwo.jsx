@@ -5,10 +5,14 @@ import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepTwo from "./ProcurementTrackerStepTwo.hooks";
 
 /**
+ * @typedef {import("../../../../types/UserTypes").SafeUser} SafeUser
+ */
+
+/**
  * @typedef {Object} ProcurementTrackerStepTwoProps
  * @property {string} stepStatus - The current status of the procurement tracker step
  * @property {Object} stepTwoData - The data for step 2 of the procurement tracker
- * @property {Array} authorizedUsers - List of users authorized for this agreement
+ * @property {SafeUser[]} authorizedUsers - List of users authorized for this agreement
  * @property {boolean} hasActiveTracker - Whether an active tracker exists
  */
 
@@ -17,19 +21,23 @@ import useProcurementTrackerStepTwo from "./ProcurementTrackerStepTwo.hooks";
  * @param {ProcurementTrackerStepTwoProps} props
  * @returns {React.ReactElement}
  */
+// eslint-disable-next-line no-unused-vars
 const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, hasActiveTracker }) => {
     const {
         selectedUser,
         setSelectedUser,
-        step2CompletedByUserName,
-        MemoizedDatePicker,
         setTargetCompletionDate,
         targetCompletionDate,
+        step2CompletedByUserName,
+        step2DateCompleted,
+        setStep2DateCompleted,
         step2Notes,
         setStep2Notes,
         step2NotesLabel,
         runValidate,
-        validatorRes
+        validatorRes,
+        step2DateCompletedLabel,
+        MemoizedDatePicker
     } = useProcurementTrackerStepTwo(stepTwoData);
 
     return (
@@ -42,40 +50,42 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, h
                         step as complete. If you have a target completion date for when the package will be finalized,
                         enter it below.
                     </p>
-                    <div className="display-flex flex-align-end">
-                        <MemoizedDatePicker
-                            id="target-completion-date"
-                            name="targetCompletionDate"
-                            label="Target Completion Date"
-                            messages={validatorRes.getErrors("targetCompletionDate") || []}
-                            hint="mm/dd/yyyy"
-                            value={targetCompletionDate}
-                            onChange={(e) => {
-                                runValidate("targetCompletionDate", e.target.value);
-                                setTargetCompletionDate(e.target.value);
-                            }}
-                            minDate={getLocalISODate()}
-                        />
-                        <button
-                            type="button"
-                            className="usa-button usa-button--unstyled margin-bottom-1 margin-left-2"
-                            data-cy="target-completion-save-btn"
-                            disabled={validatorRes.hasErrors("targetCompletionDate")}
-                            onClick={() => {
-                                alert("Save target completion date functionality coming soon!");
-                            }}
-                        >
-                            Save
-                        </button>
-                    </div>
-                    <UsersComboBox
-                        className="width-card-lg margin-top-2"
-                        label={"Task Completed By"}
-                        selectedUser={selectedUser}
-                        setSelectedUser={setSelectedUser}
-                        users={authorizedUsers}
-                        isDisabled={!hasActiveTracker}
+                    {/* TODO: Add save functionality for target completion date */}
+                    <MemoizedDatePicker
+                        id="target-completion-date"
+                        name="targetCompletionDate"
+                        label="Target Completion Date"
+                        hint="mm/dd/yyyy"
+                        value={targetCompletionDate}
+                        onChange={(e) => {
+                            setTargetCompletionDate(e.target.value);
+                        }}
+                        minDate={getLocalISODate()}
                     />
+                    <div className="display-flex flex-align-center">
+                        <UsersComboBox
+                            className="width-card-lg margin-top-5"
+                            label={"Task Completed By"}
+                            selectedUser={selectedUser}
+                            setSelectedUser={setSelectedUser}
+                            users={authorizedUsers}
+                        />
+
+                        <MemoizedDatePicker
+                            id="step-2-date-completed"
+                            name="dateCompleted"
+                            className="margin-left-4"
+                            label="Date Completed"
+                            hint="mm/dd/yyyy"
+                            value={step2DateCompleted}
+                            messages={validatorRes.getErrors("dateCompleted") || []}
+                            onChange={(e) => {
+                                runValidate("dateCompleted", e.target.value);
+                                setStep2DateCompleted(e.target.value);
+                            }}
+                            maxDate={getLocalISODate()}
+                        />
+                    </div>
                     <TextArea
                         name="notes"
                         label="Notes (optional)"
@@ -83,6 +93,7 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, h
                         maxLength={750}
                         value={step2Notes}
                         onChange={(_, value) => setStep2Notes(value)}
+                        isDisabled={!hasActiveTracker}
                     />
                 </fieldset>
             )}
@@ -98,6 +109,10 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, h
                         <TermTag
                             term="Completed By"
                             description={step2CompletedByUserName}
+                        />
+                        <TermTag
+                            term="Date Completed"
+                            description={step2DateCompletedLabel}
                         />
                         <dt className="margin-0 text-base-dark margin-top-3 font-12px">Notes</dt>
                         <dd className="margin-0 margin-top-1">{step2NotesLabel}</dd>
