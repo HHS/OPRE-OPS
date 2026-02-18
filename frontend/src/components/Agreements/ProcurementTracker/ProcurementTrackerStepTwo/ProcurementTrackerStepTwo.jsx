@@ -1,7 +1,8 @@
 import { getLocalISODate } from "../../../../helpers/utils";
+import TermTag from "../../../UI/Term/TermTag";
+import TextArea from "../../../UI/Form/TextArea";
 import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepTwo from "./ProcurementTrackerStepTwo.hooks";
-import TermTag from "../../../UI/Term/TermTag";
 
 /**
  * @typedef {import("../../../../types/UserTypes").SafeUser} SafeUser
@@ -20,7 +21,6 @@ import TermTag from "../../../UI/Term/TermTag";
  * @param {ProcurementTrackerStepTwoProps} props
  * @returns {React.ReactElement}
  */
-// eslint-disable-next-line no-unused-vars
 const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, hasActiveTracker }) => {
     const {
         selectedUser,
@@ -30,6 +30,9 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, h
         step2CompletedByUserName,
         step2DateCompleted,
         setStep2DateCompleted,
+        step2Notes,
+        setStep2Notes,
+        step2NotesLabel,
         runValidate,
         validatorRes,
         step2DateCompletedLabel,
@@ -57,6 +60,7 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, h
                             setTargetCompletionDate(e.target.value);
                         }}
                         minDate={getLocalISODate()}
+                        isDisabled={!hasActiveTracker}
                     />
                     <div className="display-flex flex-align-center">
                         <UsersComboBox
@@ -65,6 +69,11 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, h
                             selectedUser={selectedUser}
                             setSelectedUser={setSelectedUser}
                             users={authorizedUsers}
+                            isDisabled={!hasActiveTracker}
+                            messages={validatorRes.getErrors("users") || []}
+                            onChange={(name, value) => {
+                                runValidate(name, value);
+                            }}
                         />
 
                         <MemoizedDatePicker
@@ -80,8 +89,18 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, h
                                 setStep2DateCompleted(e.target.value);
                             }}
                             maxDate={getLocalISODate()}
+                            isDisabled={!hasActiveTracker}
                         />
                     </div>
+                    <TextArea
+                        name="notes"
+                        label="Notes (optional)"
+                        className="margin-top-2"
+                        maxLength={750}
+                        value={step2Notes}
+                        onChange={(_, value) => setStep2Notes(value)}
+                        isDisabled={!hasActiveTracker}
+                    />
                 </fieldset>
             )}
 
@@ -101,6 +120,8 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, h
                             term="Date Completed"
                             description={step2DateCompletedLabel}
                         />
+                        <dt className="margin-0 text-base-dark margin-top-3 font-12px">Notes</dt>
+                        <dd className="margin-0 margin-top-1">{step2NotesLabel}</dd>
                     </dl>
                 </div>
             )}
