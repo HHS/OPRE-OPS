@@ -298,18 +298,36 @@ class BudgetLineItemResponseSchema(Schema):
     _meta = fields.Nested(MetaSchema, required=True)
 
 
+class BudgetLineItemCANListSchema(Schema):
+    """Minimal CAN schema for list responses - only fields actually used by UI."""
+
+    id = fields.Int(required=True)
+    display_name = fields.Str(required=True)
+    number = fields.Str(required=True)
+    portfolio_id = fields.Int(required=True)
+
+
 class BudgetLineItemListResponseSchema(BudgetLineItemResponseSchema):
     """
-    Schema for list responses that excludes expensive computed properties.
+    Schema for list responses optimized for performance.
 
-    The `in_review` and `change_requests_in_review` fields are excluded from
-    automatic serialization to avoid N+1 queries. They are batch-loaded and
-    injected by the API layer after serialization.
+    Differences from BudgetLineItemResponseSchema:
+    - `in_review` and `change_requests_in_review` are batch-loaded and injected after
+    - `team_members` excluded (only used for server-side "my items" filter)
+    - `portfolio_team_leaders` excluded (never used in UI)
+    - `can` uses minimal schema (UI only needs id, display_name, number, portfolio_id)
     """
 
-    # Override these fields to not serialize from model properties
+    # Override these fields to not serialize from model properties (batch-loaded instead)
     in_review = fields.Bool(load_only=True, dump_default=False)
     change_requests_in_review = fields.List(fields.Dict(), load_only=True, dump_default=None)
+
+    # Exclude unused fields
+    team_members = fields.List(fields.Dict(), load_only=True, dump_default=None)
+    portfolio_team_leaders = fields.List(fields.Dict(), load_only=True, dump_default=None)
+
+    # Use minimal CAN schema
+    can = fields.Nested(BudgetLineItemCANListSchema(), required=True)
 
 
 class BudgetLineItemListFilterOptionResponseSchema(Schema):
