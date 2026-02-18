@@ -56,7 +56,7 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, h
                         onChange={(e) => {
                             setTargetCompletionDate(e.target.value);
                         }}
-                        maxDate={getLocalISODate()}
+                        minDate={getLocalISODate()}
                     />
                     <div className="display-flex flex-align-center">
                         <UsersComboBox
