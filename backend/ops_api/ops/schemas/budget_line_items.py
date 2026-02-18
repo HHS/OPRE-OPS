@@ -298,6 +298,20 @@ class BudgetLineItemResponseSchema(Schema):
     _meta = fields.Nested(MetaSchema, required=True)
 
 
+class BudgetLineItemListResponseSchema(BudgetLineItemResponseSchema):
+    """
+    Schema for list responses that excludes expensive computed properties.
+
+    The `in_review` and `change_requests_in_review` fields are excluded from
+    automatic serialization to avoid N+1 queries. They are batch-loaded and
+    injected by the API layer after serialization.
+    """
+
+    # Override these fields to not serialize from model properties
+    in_review = fields.Bool(load_only=True, dump_default=False)
+    change_requests_in_review = fields.List(fields.Dict(), load_only=True, dump_default=None)
+
+
 class BudgetLineItemListFilterOptionResponseSchema(Schema):
     fiscal_years = fields.List(fields.Int(), required=True)
     statuses = fields.List(fields.String(), required=True)

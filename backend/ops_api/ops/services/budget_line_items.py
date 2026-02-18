@@ -8,18 +8,22 @@ from flask import current_app
 from flask_jwt_extended import current_user, get_current_user
 from loguru import logger
 from sqlalchemy import Select, String, case, cast, func, select
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import joinedload, selectinload
 
 from models import (
     CAN,
     Agreement,
+    AgreementChangeRequest,
     AgreementReason,
     AgreementType,
     BudgetLineItem,
     BudgetLineItemChangeRequest,
     BudgetLineItemStatus,
     BudgetLineSortCondition,
+    ChangeRequestStatus,
+    ChangeRequestType,
     Portfolio,
+    ProcurementShop,
     ServicesComponent,
 )
 from ops_api.ops.schemas.agreements import MetaSchema
@@ -163,8 +167,28 @@ class BudgetLineItemService:
         # Create filters object from request data
         filters = BudgetLineItemFilters.parse_filters(data or {})
 
-        # Start with explicit select_from
-        query = select(BudgetLineItem).select_from(BudgetLineItem)
+        # Start with explicit select_from and eager load all relationships needed for serialization
+        query = (
+            select(BudgetLineItem)
+            .select_from(BudgetLineItem)
+            .options(
+                # Eager load agreement and its nested relationships
+                selectinload(BudgetLineItem.agreement).options(
+                    selectinload(Agreement.team_members),
+                    joinedload(Agreement.project),
+                    joinedload(Agreement.procurement_shop).selectinload(ProcurementShop.procurement_shop_fees),
+                ),
+                # Eager load CAN and its portfolio/division
+                selectinload(BudgetLineItem.can).options(
+                    joinedload(CAN.portfolio).joinedload(Portfolio.division),
+                    joinedload(CAN.portfolio).selectinload(Portfolio.team_leaders),
+                ),
+                # Eager load procurement shop fee (for fees calculation)
+                joinedload(BudgetLineItem.procurement_shop_fee),
+                # Eager load services component
+                joinedload(BudgetLineItem.services_component),
+            )
+        )
         agreement_already_joined = False
 
         # Determine which joins are needed upfront
@@ -955,3 +979,79 @@ def get_bli_is_editable_meta_data_for_agreements(serialized_agreement):
             is_editable = False
 
         bli["_meta"] = {"isEditable": is_editable}
+
+
+def batch_load_change_requests_in_review(db_session, bli_ids: list[int], agreement_ids: list[int]) -> dict:
+    """
+    Batch load all change requests in review for a list of BLI IDs and agreement IDs.
+
+    Returns a dict with:
+        - 'bli_change_requests': {bli_id: [change_requests]}
+        - 'agreement_change_requests': {agreement_id: [change_requests]}
+    """
+    if not bli_ids and not agreement_ids:
+        return {"bli_change_requests": {}, "agreement_change_requests": {}}
+
+    # Query BLI-level change requests
+    bli_change_requests_map = {}
+    if bli_ids:
+        bli_crs = db_session.scalars(
+            select(BudgetLineItemChangeRequest).where(
+                BudgetLineItemChangeRequest.status == ChangeRequestStatus.IN_REVIEW,
+                BudgetLineItemChangeRequest.change_request_type == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST,
+                BudgetLineItemChangeRequest.budget_line_item_id.in_(bli_ids),
+            )
+        ).all()
+        for cr in bli_crs:
+            bli_change_requests_map.setdefault(cr.budget_line_item_id, []).append(cr)
+
+    # Query Agreement-level change requests
+    agreement_change_requests_map = {}
+    if agreement_ids:
+        unique_agreement_ids = list(set(aid for aid in agreement_ids if aid is not None))
+        if unique_agreement_ids:
+            agreement_crs = db_session.scalars(
+                select(AgreementChangeRequest).where(
+                    AgreementChangeRequest.status == ChangeRequestStatus.IN_REVIEW,
+                    AgreementChangeRequest.change_request_type == ChangeRequestType.AGREEMENT_CHANGE_REQUEST,
+                    AgreementChangeRequest.agreement_id.in_(unique_agreement_ids),
+                )
+            ).all()
+            for cr in agreement_crs:
+                agreement_change_requests_map.setdefault(cr.agreement_id, []).append(cr)
+
+    return {
+        "bli_change_requests": bli_change_requests_map,
+        "agreement_change_requests": agreement_change_requests_map,
+    }
+
+
+def compute_bli_in_review(bli_id: int, agreement_id: int | None, change_requests_data: dict) -> bool:
+    """
+    Determine if a BLI is in review based on pre-loaded change request data.
+    """
+    bli_crs = change_requests_data["bli_change_requests"].get(bli_id, [])
+    if bli_crs:
+        return True
+
+    if agreement_id:
+        agreement_crs = change_requests_data["agreement_change_requests"].get(agreement_id, [])
+        if agreement_crs:
+            return True
+
+    return False
+
+
+def get_change_requests_for_bli(bli_id: int, agreement_id: int | None, change_requests_data: dict) -> list:
+    """
+    Get all change requests in review for a BLI based on pre-loaded change request data.
+    """
+    result = []
+    bli_crs = change_requests_data["bli_change_requests"].get(bli_id, [])
+    result.extend(bli_crs)
+
+    if agreement_id:
+        agreement_crs = change_requests_data["agreement_change_requests"].get(agreement_id, [])
+        result.extend(agreement_crs)
+
+    return result if result else None
