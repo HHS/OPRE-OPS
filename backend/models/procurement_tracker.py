@@ -258,6 +258,7 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
     )
 
     # PRE_SOLICITATION-specific fields can be added here with appropriate prefixes
+    # target_completion_date is strongly recommended but not required, per OPRE first week of Feb 2026
     pre_solicitation_target_completion_date: Mapped[Optional[date]] = mapped_column(
         Date,
         nullable=True,

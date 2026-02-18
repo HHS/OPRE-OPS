@@ -1,7 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import styles from "./DetailsTabs.module.scss";
 import Tooltip from "../../UI/USWDS/Tooltip";
-import { IS_AWARDED_TAB_READY, IS_DOCUMENTS_TAB_READY, IS_PROCUREMENT_TRACKER_READY } from "../../../constants";
+import { IS_AWARDED_TAB_READY, IS_DOCUMENTS_TAB_READY } from "../../../constants";
 
 /**
  * `DetailsTabs` is a React component that renders a set of navigation tabs for agreement details and budget lines.
@@ -42,8 +42,7 @@ const DetailsTabs = ({ agreementId, isAgreementNotDeveloped, isAgreementAwarded 
               },
               {
                   name: "/procurement-tracker",
-                  label: "Procurement Tracker",
-                  disabled: !IS_PROCUREMENT_TRACKER_READY
+                  label: "Procurement Tracker"
               },
               {
                   name: "/documents",
@@ -78,16 +77,6 @@ const DetailsTabs = ({ agreementId, isAgreementNotDeveloped, isAgreementAwarded 
                 <Tooltip
                     key={pathName}
                     label={`${path.label} tab is coming soon`}
-                    position="bottom"
-                >
-                    {button}
-                </Tooltip>
-            );
-        } else if (["Procurement Tracker"].includes(path.label) && path.disabled) {
-            return (
-                <Tooltip
-                    key={pathName}
-                    label={`This page is coming soon. For now please track procurement progress \nor any budget lines in Executing Status via the OPRE spreadsheet`}
                     position="bottom"
                 >
                     {button}

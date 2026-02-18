@@ -2,10 +2,7 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { vi, expect, describe, it, beforeEach } from "vitest";
 import ProcurementTrackerStepOne from "./ProcurementTrackerStepOne";
 import useProcurementTrackerStepOne from "./ProcurementTrackerStepOne.hooks";
-import { useGetUsersQuery } from "../../../../api/opsAPI";
-
 vi.mock("./ProcurementTrackerStepOne.hooks");
-vi.mock("../../../../api/opsAPI");
 vi.mock("../../../../helpers/utils", async (importOriginal) => {
     const actual = await importOriginal();
     return {
@@ -137,19 +134,9 @@ describe("ProcurementTrackerStepOne", () => {
         { id: 456, full_name: "Jane Smith", email: "jane@example.com" }
     ];
 
-    const mockAgreementWithUsers = {
-        id: 13,
-        authorized_user_ids: [123, 456]
-    };
-
     beforeEach(() => {
         vi.clearAllMocks();
         useProcurementTrackerStepOne.mockReturnValue(defaultHookReturn);
-        useGetUsersQuery.mockReturnValue({
-            data: mockAllUsers,
-            error: undefined,
-            isLoading: false
-        });
     });
 
     describe("PENDING State Rendering", () => {
@@ -159,6 +146,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -176,6 +164,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -190,6 +179,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -204,6 +194,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -219,6 +210,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -236,6 +228,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -252,6 +245,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -273,6 +267,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -291,6 +286,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -311,6 +307,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -331,6 +328,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -351,7 +349,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
-                    agreement={mockAgreementWithUsers}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -373,6 +371,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -394,6 +393,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -415,6 +415,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -435,6 +436,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -461,7 +463,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
-                    agreement={mockAgreementWithUsers}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -488,7 +490,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
-                    agreement={mockAgreementWithUsers}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -536,7 +538,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="ACTIVE"
                     stepOneData={mockStepOneData}
-                    agreement={mockAgreementWithUsers}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -560,6 +562,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="COMPLETED"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -576,6 +579,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="COMPLETED"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -590,6 +594,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="COMPLETED"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -603,6 +608,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="COMPLETED"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -616,6 +622,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="COMPLETED"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -629,6 +636,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="COMPLETED"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -652,6 +660,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="COMPLETED"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -718,6 +727,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="COMPLETED"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -735,6 +745,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -753,6 +764,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -769,6 +781,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -783,6 +796,7 @@ describe("ProcurementTrackerStepOne", () => {
                     stepStatus="COMPLETED"
                     stepOneData={mockStepOneData}
                     handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -790,225 +804,6 @@ describe("ProcurementTrackerStepOne", () => {
             const dl = container.querySelector("dl");
             expect(dl).toBeInTheDocument();
             expect(dl.tagName).toBe("DL");
-        });
-    });
-
-    describe("Authorized Users Filtering", () => {
-        const mockAllUsers = [
-            { id: 1, full_name: "Amy Madigan", email: "amy@example.com" },
-            { id: 2, full_name: "John Doe", email: "john@example.com" },
-            { id: 3, full_name: "Jane Smith", email: "jane@example.com" },
-            { id: 4, full_name: "Bob Wilson", email: "bob@example.com" },
-            { id: 5, full_name: "Alice Brown", email: "alice@example.com" }
-        ];
-
-        it("filters users by agreement.authorized_user_ids and passes filtered list to UsersComboBox", () => {
-            useGetUsersQuery.mockReturnValue({
-                data: mockAllUsers,
-                error: undefined,
-                isLoading: false
-            });
-
-            const mockAgreement = {
-                id: 13,
-                authorized_user_ids: [1, 3, 5] // Only Amy, Jane, and Alice are authorized
-            };
-
-            render(
-                <ProcurementTrackerStepOne
-                    stepStatus="PENDING"
-                    stepOneData={mockStepOneData}
-                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
-                    agreement={mockAgreement}
-                />
-            );
-
-            // eslint-disable-next-line testing-library/no-node-access
-            const select = screen.getByTestId("users-combobox").querySelector("select");
-
-            // Verify that only 3 authorized users are passed to the component
-            expect(select).toHaveAttribute("data-user-count", "3");
-
-            // Verify authorized users are present
-            expect(screen.getByText("Amy Madigan")).toBeInTheDocument();
-            expect(screen.getByText("Jane Smith")).toBeInTheDocument();
-            expect(screen.getByText("Alice Brown")).toBeInTheDocument();
-
-            // Verify unauthorized users are NOT present
-            expect(screen.queryByText("John Doe")).not.toBeInTheDocument();
-            expect(screen.queryByText("Bob Wilson")).not.toBeInTheDocument();
-        });
-
-        it("passes empty array when agreement.authorized_user_ids is null", () => {
-            useGetUsersQuery.mockReturnValue({
-                data: mockAllUsers,
-                error: undefined,
-                isLoading: false
-            });
-
-            const mockAgreement = {
-                id: 13,
-                authorized_user_ids: null
-            };
-
-            render(
-                <ProcurementTrackerStepOne
-                    stepStatus="PENDING"
-                    stepOneData={mockStepOneData}
-                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
-                    agreement={mockAgreement}
-                />
-            );
-
-            // eslint-disable-next-line testing-library/no-node-access
-            const select = screen.getByTestId("users-combobox").querySelector("select");
-
-            // Should pass empty array
-            expect(select).toHaveAttribute("data-user-count", "0");
-        });
-
-        it("passes empty array when agreement.authorized_user_ids is undefined", () => {
-            useGetUsersQuery.mockReturnValue({
-                data: mockAllUsers,
-                error: undefined,
-                isLoading: false
-            });
-
-            const mockAgreement = {
-                id: 13
-                // authorized_user_ids is undefined
-            };
-
-            render(
-                <ProcurementTrackerStepOne
-                    stepStatus="PENDING"
-                    stepOneData={mockStepOneData}
-                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
-                    agreement={mockAgreement}
-                />
-            );
-
-            // eslint-disable-next-line testing-library/no-node-access
-            const select = screen.getByTestId("users-combobox").querySelector("select");
-
-            // Should pass empty array
-            expect(select).toHaveAttribute("data-user-count", "0");
-        });
-
-        it("passes empty array when agreement is not provided", () => {
-            useGetUsersQuery.mockReturnValue({
-                data: mockAllUsers,
-                error: undefined,
-                isLoading: false
-            });
-
-            render(
-                <ProcurementTrackerStepOne
-                    stepStatus="PENDING"
-                    stepOneData={mockStepOneData}
-                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
-                />
-            );
-
-            // eslint-disable-next-line testing-library/no-node-access
-            const select = screen.getByTestId("users-combobox").querySelector("select");
-
-            // Should pass empty array
-            expect(select).toHaveAttribute("data-user-count", "0");
-        });
-
-        it("passes empty array when allUsers is not yet loaded", () => {
-            useGetUsersQuery.mockReturnValue({
-                data: undefined,
-                error: undefined,
-                isLoading: true
-            });
-
-            const mockAgreement = {
-                id: 13,
-                authorized_user_ids: [1, 3, 5]
-            };
-
-            render(
-                <ProcurementTrackerStepOne
-                    stepStatus="PENDING"
-                    stepOneData={mockStepOneData}
-                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
-                    agreement={mockAgreement}
-                />
-            );
-
-            // eslint-disable-next-line testing-library/no-node-access
-            const select = screen.getByTestId("users-combobox").querySelector("select");
-
-            // Should pass empty array when data isn't loaded yet
-            expect(select).toHaveAttribute("data-user-count", "0");
-        });
-
-        it("disables UsersComboBox when there are no authorized users", () => {
-            useGetUsersQuery.mockReturnValue({
-                data: mockAllUsers,
-                error: undefined,
-                isLoading: false
-            });
-
-            useProcurementTrackerStepOne.mockReturnValue({
-                ...defaultHookReturn,
-                isPreSolicitationPackageSent: true // Checkbox is checked
-            });
-
-            const mockAgreement = {
-                id: 13,
-                authorized_user_ids: [] // No authorized users
-            };
-
-            render(
-                <ProcurementTrackerStepOne
-                    stepStatus="PENDING"
-                    stepOneData={mockStepOneData}
-                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
-                    agreement={mockAgreement}
-                />
-            );
-
-            // eslint-disable-next-line testing-library/no-node-access
-            const select = screen.getByTestId("users-combobox").querySelector("select");
-
-            // Should be disabled even though checkbox is checked
-            expect(select).toBeDisabled();
-        });
-
-        it("enables UsersComboBox when checkbox is checked and there are authorized users", () => {
-            useGetUsersQuery.mockReturnValue({
-                data: mockAllUsers,
-                error: undefined,
-                isLoading: false
-            });
-
-            useProcurementTrackerStepOne.mockReturnValue({
-                ...defaultHookReturn,
-                isPreSolicitationPackageSent: true // Checkbox is checked
-            });
-
-            const mockAgreement = {
-                id: 13,
-                authorized_user_ids: [1, 3] // Has authorized users
-            };
-
-            render(
-                <ProcurementTrackerStepOne
-                    stepStatus="PENDING"
-                    stepOneData={mockStepOneData}
-                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
-                    agreement={mockAgreement}
-                />
-            );
-
-            // eslint-disable-next-line testing-library/no-node-access
-            const select = screen.getByTestId("users-combobox").querySelector("select");
-
-            // Should be enabled
-            expect(select).not.toBeDisabled();
         });
     });
 });
