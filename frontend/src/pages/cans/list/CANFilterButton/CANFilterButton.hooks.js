@@ -10,6 +10,7 @@ export const useCANFilterButton = (filters, setFilters, fyBudgetRange) => {
     const [activePeriod, setActivePeriod] = React.useState([]);
     const [transfer, setTransfer] = React.useState([]);
     const [portfolio, setPortfolio] = React.useState([]);
+    const [can, setCan] = React.useState([]);
     const [budget, setBudget] = React.useState([]);
 
     // The useEffect() hook calls below are used to set the state appropriately when the filter tags (X) are clicked.
@@ -32,6 +33,12 @@ export const useCANFilterButton = (filters, setFilters, fyBudgetRange) => {
     }, [filters.portfolio]);
 
     React.useEffect(() => {
+        if (filters.can) {
+            setCan(filters.can);
+        }
+    }, [filters.can]);
+
+    React.useEffect(() => {
         if (fyBudgetRange !== undefined) {
             setBudget(fyBudgetRange);
         }
@@ -47,7 +54,8 @@ export const useCANFilterButton = (filters, setFilters, fyBudgetRange) => {
                     ...prevState,
                     activePeriod: activePeriod,
                     transfer: transfer,
-                    portfolio: portfolio
+                    portfolio: portfolio,
+                    can: can
                 };
             });
         } else {
@@ -57,6 +65,7 @@ export const useCANFilterButton = (filters, setFilters, fyBudgetRange) => {
                     activePeriod: activePeriod,
                     transfer: transfer,
                     portfolio: portfolio,
+                    can: can,
                     budget: budget
                 };
             });
@@ -67,6 +76,7 @@ export const useCANFilterButton = (filters, setFilters, fyBudgetRange) => {
             activePeriod: [],
             transfer: [],
             portfolio: [],
+            can: [],
             budget: []
         });
     };
@@ -78,6 +88,8 @@ export const useCANFilterButton = (filters, setFilters, fyBudgetRange) => {
         setTransfer,
         portfolio,
         setPortfolio,
+        can,
+        setCan,
         budget,
         setBudget,
         applyFilter,

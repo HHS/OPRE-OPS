@@ -21,7 +21,7 @@ vi.mock("../../../UI/Term/TermTag", () => ({
     )
 }));
 vi.mock("../../UsersComboBox", () => ({
-    default: ({ label, selectedUser, setSelectedUser, users, className }) => (
+    default: ({ label, selectedUser, setSelectedUser, users, className, isDisabled, messages, onChange }) => (
         <div
             data-testid="users-combobox"
             className={className}
@@ -30,9 +30,12 @@ vi.mock("../../UsersComboBox", () => ({
             <select
                 value={selectedUser?.id || ""}
                 onChange={(e) => {
-                    setSelectedUser({ id: parseInt(e.target.value) });
+                    const selectedId = parseInt(e.target.value);
+                    setSelectedUser({ id: selectedId });
+                    onChange?.("users", selectedId);
                 }}
                 data-user-count={users?.length || 0}
+                disabled={isDisabled}
             >
                 <option value="">Select user</option>
                 {users?.map((user) => (
@@ -44,11 +47,14 @@ vi.mock("../../UsersComboBox", () => ({
                     </option>
                 ))}
             </select>
+            {messages?.map((msg) => (
+                <div key={msg}>{msg}</div>
+            ))}
         </div>
     )
 }));
 vi.mock("../../../UI/USWDS/DatePicker", () => ({
-    default: ({ label, hint, value, onChange, maxDate, minDate, id, name, messages, className }) => (
+    default: ({ label, hint, value, onChange, maxDate, minDate, id, name, messages, className, isDisabled }) => (
         <div
             data-testid="date-picker"
             data-picker-id={id}
@@ -64,6 +70,7 @@ vi.mock("../../../UI/USWDS/DatePicker", () => ({
                 onChange={onChange}
                 data-max-date={maxDate}
                 data-min-date={minDate}
+                disabled={isDisabled}
             />
             {messages && messages.length > 0 && (
                 <div className="error-messages">
@@ -81,6 +88,23 @@ vi.mock("../../../UI/USWDS/DatePicker", () => ({
     )
 }));
 
+vi.mock("../../../UI/Form/TextArea", () => ({
+    default: ({ label, value, onChange, isDisabled, maxLength, name, className }) => (
+        <div data-testid="text-area">
+            <label htmlFor={name}>{label}</label>
+            <textarea
+                id={name}
+                name={name}
+                value={value}
+                onChange={(e) => onChange(e, e.target.value)}
+                disabled={isDisabled}
+                maxLength={maxLength}
+                className={className}
+            />
+        </div>
+    )
+}));
+
 describe("ProcurementTrackerStepTwo", () => {
     const mockSetSelectedUser = vi.fn();
     const mockSetTargetCompletionDate = vi.fn();
@@ -90,6 +114,8 @@ describe("ProcurementTrackerStepTwo", () => {
         getErrors: vi.fn(() => [])
     };
 
+    const mockSetStep2Notes = vi.fn();
+
     const defaultHookReturn = {
         selectedUser: {},
         setSelectedUser: mockSetSelectedUser,
@@ -98,6 +124,9 @@ describe("ProcurementTrackerStepTwo", () => {
         step2CompletedByUserName: "John Doe",
         step2DateCompleted: "",
         setStep2DateCompleted: mockSetStep2DateCompleted,
+        step2Notes: "",
+        setStep2Notes: mockSetStep2Notes,
+        step2NotesLabel: "Test notes",
         runValidate: mockRunValidate,
         validatorRes: mockValidatorRes,
         step2DateCompletedLabel: "January 15, 2024",
@@ -268,6 +297,23 @@ describe("ProcurementTrackerStepTwo", () => {
 
             expect(mockSetSelectedUser).toHaveBeenCalledWith({ id: 123 });
         });
+
+        it("UsersComboBox calls runValidate when user selected", () => {
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="PENDING"
+                    stepTwoData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
+                />
+            );
+
+            // eslint-disable-next-line testing-library/no-node-access
+            const select = screen.getByTestId("users-combobox").querySelector("select");
+            fireEvent.change(select, { target: { value: "456" } });
+
+            expect(mockRunValidate).toHaveBeenCalledWith("users", 456);
+        });
     });
 
     describe("ACTIVE State Rendering", () => {
@@ -408,6 +454,67 @@ describe("ProcurementTrackerStepTwo", () => {
 
             expect(screen.getByText("Date must be MM/DD/YYYY")).toBeInTheDocument();
         });
+
+        it("displays validation errors for users", () => {
+            const mockValidatorResWithErrors = {
+                getErrors: vi.fn((field) => {
+                    if (field === "users") {
+                        return ["This is required information"];
+                    }
+                    return [];
+                })
+            };
+
+            useProcurementTrackerStepTwo.mockReturnValue({
+                ...defaultHookReturn,
+                validatorRes: mockValidatorResWithErrors
+            });
+
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="PENDING"
+                    stepTwoData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
+                />
+            );
+
+            expect(screen.getByText("This is required information")).toBeInTheDocument();
+        });
+    });
+
+    describe("Inactive Tracker", () => {
+        it("disables pending form controls when there is no active tracker", () => {
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="PENDING"
+                    stepTwoData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={false}
+                />
+            );
+
+            // eslint-disable-next-line testing-library/no-node-access
+            const usersSelect = screen.getByTestId("users-combobox").querySelector("select");
+            const datePickers = screen.getAllByTestId("date-picker");
+            const targetDatePicker = datePickers.find(
+                (picker) => picker.getAttribute("data-picker-id") === "target-completion-date"
+            );
+            const completedDatePicker = datePickers.find(
+                (picker) => picker.getAttribute("data-picker-id") === "step-2-date-completed"
+            );
+            // eslint-disable-next-line testing-library/no-node-access
+            const targetInput = targetDatePicker.querySelector("input");
+            // eslint-disable-next-line testing-library/no-node-access
+            const completedInput = completedDatePicker.querySelector("input");
+            // eslint-disable-next-line testing-library/no-node-access
+            const notesInput = screen.getByTestId("text-area").querySelector("textarea");
+
+            expect(usersSelect).toBeDisabled();
+            expect(targetInput).toBeDisabled();
+            expect(completedInput).toBeDisabled();
+            expect(notesInput).toBeDisabled();
+        });
     });
 
     describe("Edge Cases", () => {
@@ -485,5 +592,92 @@ describe("ProcurementTrackerStepTwo", () => {
             expect(dl).toBeInTheDocument();
             expect(dl.tagName).toBe("DL");
         });
+    });
+
+    it("renders TextArea for notes in PENDING state", () => {
+        render(
+            <ProcurementTrackerStepTwo
+                stepStatus="PENDING"
+                stepTwoData={mockStepData}
+                authorizedUsers={mockAllUsers}
+                hasActiveTracker={true}
+            />
+        );
+
+        expect(screen.getByTestId("text-area")).toBeInTheDocument();
+        expect(screen.getByText("Notes (optional)")).toBeInTheDocument();
+    });
+
+    it("TextArea has correct maxLength of 750", () => {
+        render(
+            <ProcurementTrackerStepTwo
+                stepStatus="PENDING"
+                stepTwoData={mockStepData}
+                authorizedUsers={mockAllUsers}
+                hasActiveTracker={true}
+            />
+        );
+
+        // eslint-disable-next-line testing-library/no-node-access
+        const textarea = screen.getByTestId("text-area").querySelector("textarea");
+        expect(textarea).toHaveAttribute("maxLength", "750");
+    });
+
+    it("displays notes in COMPLETED state with correct styling", () => {
+        const mockCompletedStepData = {
+            ...mockStepData,
+            notes: "Test notes for step two"
+        };
+
+        useProcurementTrackerStepTwo.mockReturnValue({
+            ...defaultHookReturn,
+            step2NotesLabel: "Test notes for step two"
+        });
+
+        render(
+            <ProcurementTrackerStepTwo
+                stepStatus="COMPLETED"
+                stepTwoData={mockCompletedStepData}
+                authorizedUsers={mockAllUsers}
+                hasActiveTracker={true}
+            />
+        );
+
+        expect(screen.getByText("Notes")).toBeInTheDocument();
+        expect(screen.getByText("Test notes for step two")).toBeInTheDocument();
+
+        const dt = screen.getByText("Notes");
+        expect(dt.tagName).toBe("DT");
+        expect(dt).toHaveClass("margin-0", "text-base-dark", "margin-top-3", "font-12px");
+
+        const dd = screen.getByText("Test notes for step two");
+        expect(dd.tagName).toBe("DD");
+        expect(dd).toHaveClass("margin-0", "margin-top-1");
+    });
+
+    it("handles empty notes in COMPLETED state", () => {
+        const mockCompletedStepData = {
+            ...mockStepData,
+            notes: ""
+        };
+
+        useProcurementTrackerStepTwo.mockReturnValue({
+            ...defaultHookReturn,
+            step2NotesLabel: ""
+        });
+
+        render(
+            <ProcurementTrackerStepTwo
+                stepStatus="COMPLETED"
+                stepTwoData={mockCompletedStepData}
+                authorizedUsers={mockAllUsers}
+                hasActiveTracker={true}
+            />
+        );
+
+        expect(screen.getByText("Notes")).toBeInTheDocument();
+        // eslint-disable-next-line testing-library/no-node-access
+        const dd = screen.getByText("Notes").nextElementSibling;
+        expect(dd.textContent).toBe("");
     });
 });

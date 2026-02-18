@@ -22,6 +22,10 @@ const suite = create((data = {}, fieldName) => {
         const todayDateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
         enforce(enteredDateOnly.getTime()).lessThanOrEquals(todayDateOnly.getTime());
     });
+
+    test("users", "This is required information", () => {
+        enforce(data.users).isNotEmpty();
+    });
 });
 
 export default suite;

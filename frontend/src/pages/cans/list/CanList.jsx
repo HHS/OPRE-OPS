@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { useGetCanFundingSummaryQuery, useGetCansQuery } from "../../../api/opsAPI";
+import { useGetCanFilterOptionsQuery, useGetCanFundingSummaryQuery, useGetCansQuery } from "../../../api/opsAPI";
 import App from "../../../App";
 import CANSummaryCards from "../../../components/CANs/CANSummaryCards";
 import CANTable from "../../../components/CANs/CANTable";
@@ -8,11 +8,9 @@ import CANTags from "../../../components/CANs/CanTabs";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import PaginationNav from "../../../components/UI/PaginationNav/PaginationNav";
 import { getCurrentFiscalYear, codesToDisplayText } from "../../../helpers/utils";
-import { useGetAllCans } from "../../../hooks/useGetAllCans";
 import CANFilterButton from "./CANFilterButton";
 import CANFilterTags from "./CANFilterTags";
 import CANFiscalYearSelect from "./CANFiscalYearSelect";
-import { getPortfolioOptions, getSortedFYBudgets } from "./CanList.helpers";
 import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
 
 import { ITEMS_PER_PAGE } from "../../../constants";
@@ -34,6 +32,7 @@ const CanList = () => {
         activePeriod: [],
         transfer: [],
         portfolio: [],
+        can: [],
         budget: []
     });
 
@@ -44,6 +43,7 @@ const CanList = () => {
     );
     const transferTitles = filters.transfer?.map((t) => TRANSFER_METHOD_MAP[t.title] || t.title) || [];
     const portfolioAbbreviations = filters.portfolio?.map((p) => p.abbr) || [];
+    const canIds = filters.can?.map((c) => c.id) || [];
     const budgetMin = filters.budget && filters.budget.length > 0 ? filters.budget[0] : undefined;
     const budgetMax = filters.budget && filters.budget.length > 1 ? filters.budget[1] : undefined;
 
@@ -62,14 +62,14 @@ const CanList = () => {
         activePeriod: activePeriodIds,
         transfer: transferTitles,
         portfolio: portfolioAbbreviations,
+        canIds,
         budgetMin,
         budgetMax
     });
 
-    // Fetch ALL CANs (without pagination) for filter options calculation
-    const { cans: allCansList } = useGetAllCans({
+    // Fetch filter options from dedicated endpoint
+    const { data: filterOptionsData, isLoading: filterOptionsLoading } = useGetCanFilterOptionsQuery({
         fiscalYear: selectedFiscalYear
-        // Don't apply other filters - we need the full range for filter options
     });
 
     // Extract cans array and metadata from wrapped response
@@ -91,13 +91,34 @@ const CanList = () => {
         fyBudgets: filters.budget
     });
 
-    // Note: Filtering and sorting are now done server-side in the useGetCansQuery call above
-    // Use allCansList for filter options to get the full range
-    const portfolioOptions = getPortfolioOptions(allCansList);
-    const sortedFYBudgets = getSortedFYBudgets(allCansList, fiscalYear);
-    const [minFYBudget, maxFYBudget] = [sortedFYBudgets[0], sortedFYBudgets[sortedFYBudgets.length - 1]];
+    // Derive filter options from the backend filter options endpoint
+    const portfolioOptions = React.useMemo(() => {
+        if (!filterOptionsData?.portfolios) return [];
+        return filterOptionsData.portfolios.map((p) => ({
+            id: p.id,
+            title: `${p.name} (${p.abbreviation})`,
+            abbr: p.abbreviation
+        }));
+    }, [filterOptionsData?.portfolios]);
 
-    if (isLoading || fundingSummaryIsLoading) {
+    const canOptions = React.useMemo(() => {
+        if (!filterOptionsData?.can_numbers) return [];
+        return filterOptionsData.can_numbers.map((n) => ({
+            id: n.id,
+            title: n.number
+        }));
+    }, [filterOptionsData?.can_numbers]);
+
+    const fyBudgetRange = React.useMemo(() => {
+        if (!filterOptionsData?.fy_budget_range) return [0, 0];
+        const { min, max } = filterOptionsData.fy_budget_range;
+        if (min === max) {
+            return [min * 0.9, max * 1.1];
+        }
+        return [min, max];
+    }, [filterOptionsData?.fy_budget_range]);
+
+    if (isLoading || fundingSummaryIsLoading || filterOptionsLoading) {
         return (
             <App>
                 <h1>Loading...</h1>
@@ -141,8 +162,9 @@ const CanList = () => {
                         filters={filters}
                         setFilters={setFilters}
                         portfolioOptions={portfolioOptions}
-                        fyBudgetRange={[minFYBudget, maxFYBudget]}
-                        disabled={allCansList.length === 0}
+                        canOptions={canOptions}
+                        fyBudgetRange={fyBudgetRange}
+                        disabled={!filterOptionsData}
                     />
                 }
                 FYSelect={
@@ -155,7 +177,7 @@ const CanList = () => {
                     <CANFilterTags
                         filters={filters}
                         setFilters={setFilters}
-                        fyBudgetRange={[minFYBudget, maxFYBudget]}
+                        fyBudgetRange={fyBudgetRange}
                     />
                 }
                 SummaryCardsSection={

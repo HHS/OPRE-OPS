@@ -37,7 +37,8 @@ describe("ProcurementTrackerStepTwo Validation Suite", () => {
     };
 
     const validData = {
-        dateCompleted: getTodayDate()
+        dateCompleted: getTodayDate(),
+        users: { id: 123, full_name: "John Doe" }
     };
 
     describe("Valid Data", () => {
@@ -234,6 +235,32 @@ describe("ProcurementTrackerStepTwo Validation Suite", () => {
 
             expect(result.hasErrors("dateCompleted")).toBe(true);
             expect(result.getErrors("dateCompleted")).toContain("Date must be today or earlier");
+        });
+    });
+
+    describe("Users Field - Required Validation", () => {
+        it("should fail when users is empty", () => {
+            const data = { users: "" };
+            const result = suite(data, "users");
+
+            expect(result.hasErrors("users")).toBe(true);
+            expect(result.getErrors("users")).toContain("This is required information");
+        });
+
+        it("should fail when users is null", () => {
+            const data = { users: null };
+            const result = suite(data, "users");
+
+            expect(result.hasErrors("users")).toBe(true);
+            expect(result.getErrors("users")).toContain("This is required information");
+        });
+
+        it("should pass when users is present", () => {
+            const data = { users: { id: 456, full_name: "Jane Smith" } };
+            const result = suite(data, "users");
+
+            expect(result.hasErrors("users")).toBe(false);
+            expect(result.getErrors("users")).toHaveLength(0);
         });
     });
 

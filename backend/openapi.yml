@@ -1074,6 +1074,15 @@ paths:
           style: form
           explode: true
         - in: query
+          name: can_ids
+          description: Filter by specific CAN IDs
+          schema:
+            type: array
+            items:
+              type: integer
+          style: form
+          explode: true
+        - in: query
           name: budget_min
           description: Filter CANs with budget greater than or equal to this amount
           schema:
@@ -1278,6 +1287,103 @@ paths:
           description: Bad Request
         "401":
           description: Unauthorized
+
+  /cans-filters/:
+    get:
+      tags:
+        - CANs
+      operationId: getCanFilterOptions
+      summary: Get filter options for the CAN list
+      description: |
+        Returns available filter options for the CAN list page, computed via SQL aggregation.
+        Includes distinct portfolios, CAN numbers, and FY budget min/max range.
+        This is more efficient than fetching all CANs and computing options client-side.
+      parameters:
+        - in: query
+          name: fiscal_year
+          description: Filter budget range by fiscal year
+          schema:
+            type: integer
+          style: form
+      responses:
+        "200":
+          description: Successfully retrieved CAN filter options
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - portfolios
+                  - can_numbers
+                  - fy_budget_range
+                properties:
+                  portfolios:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - id
+                        - name
+                        - abbreviation
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                        abbreviation:
+                          type: string
+                    description: List of portfolios associated with CANs (sorted by name)
+                    example:
+                      - id: 1
+                        name: "Child Care"
+                        abbreviation: "CC"
+                      - id: 2
+                        name: "Child Welfare"
+                        abbreviation: "CW"
+                  can_numbers:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - id
+                        - number
+                      properties:
+                        id:
+                          type: integer
+                        number:
+                          type: string
+                    description: List of CAN numbers (sorted alphabetically)
+                    example:
+                      - id: 500
+                        number: "G99HRF2"
+                      - id: 501
+                        number: "G99IA14"
+                  fy_budget_range:
+                    type: object
+                    required:
+                      - min
+                      - max
+                    properties:
+                      min:
+                        type: number
+                        format: float
+                        description: Minimum FY budget across all CANs
+                      max:
+                        type: number
+                        format: float
+                        description: Maximum FY budget across all CANs
+                    description: Min and max FY budget values for range slider
+                    example:
+                      min: 0
+                      max: 1000000
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized - authentication required
+        "403":
+          description: Forbidden - insufficient permissions
+        "500":
+          description: Internal Server Error
 
   /can-funding-received/:
     get:

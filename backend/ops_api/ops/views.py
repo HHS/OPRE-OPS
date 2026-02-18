@@ -67,7 +67,7 @@ from ops_api.ops.resources.can_funding_received import (
 )
 from ops_api.ops.resources.can_funding_summary import CANFundingSummaryListAPI
 from ops_api.ops.resources.can_history import CANHistoryListAPI
-from ops_api.ops.resources.cans import CANItemAPI, CANListAPI, CANsByPortfolioAPI
+from ops_api.ops.resources.cans import CANItemAPI, CANListAPI, CANListFilterOptionAPI, CANsByPortfolioAPI
 from ops_api.ops.resources.change_requests import ChangeRequestListAPI
 from ops_api.ops.resources.divisions import DivisionsItemAPI, DivisionsListAPI
 from ops_api.ops.resources.health_check import HealthCheckAPI
@@ -165,6 +165,7 @@ PORTFOLIO_URL_LIST_API_VIEW_FUNC = PortfolioUrlListAPI.as_view("portfolio-url-gr
 # CAN ENDPOINTS
 CAN_ITEM_API_VIEW_FUNC = CANItemAPI.as_view("can-item", CAN)
 CAN_LIST_API_VIEW_FUNC = CANListAPI.as_view("can-group", CAN)
+CAN_LIST_FILTER_OPTION_API_VIEW_FUNC = CANListFilterOptionAPI.as_view("cans-filters", CAN)
 CANS_BY_PORTFOLIO_API_VIEW_FUNC = CANsByPortfolioAPI.as_view("can-portfolio", BaseModel)
 CAN_FUNDING_RECEIVED_LIST_API_VIEW_FUNC = CANFundingReceivedListAPI.as_view(
     "can-funding-received-group", CANFundingReceived

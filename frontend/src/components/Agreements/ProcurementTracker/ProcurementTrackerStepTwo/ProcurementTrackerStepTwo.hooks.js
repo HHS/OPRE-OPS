@@ -12,9 +12,11 @@ export default function useProcurementTrackerStepTwo(stepTwoData) {
     const [selectedUser, setSelectedUser] = React.useState({});
     const [targetCompletionDate, setTargetCompletionDate] = React.useState(stepTwoData?.target_completion_date || "");
     const [step2DateCompleted, setStep2DateCompleted] = React.useState("");
+    const [step2Notes, setStep2Notes] = React.useState("");
 
     const step2CompletedByUserName = useGetUserFullNameFromId(stepTwoData?.task_completed_by);
     const step2DateCompletedLabel = formatDateToMonthDayYear(stepTwoData?.date_completed);
+    const step2NotesLabel = stepTwoData?.notes;
     const MemoizedDatePicker = React.memo(DatePicker);
 
     const runValidate = (name, value) => {
@@ -32,6 +34,9 @@ export default function useProcurementTrackerStepTwo(stepTwoData) {
         step2CompletedByUserName,
         step2DateCompleted,
         setStep2DateCompleted,
+        step2Notes,
+        setStep2Notes,
+        step2NotesLabel,
         runValidate,
         validatorRes,
         step2DateCompletedLabel,

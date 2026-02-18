@@ -21,7 +21,7 @@ const CANTransferComboBox = ({
     transfer,
     setTransfer,
     legendClassname = "usa-label margin-top-0",
-    defaultString = "All Transfers",
+    defaultString = "",
     overrideStyles = {}
 }) => {
     const options = [

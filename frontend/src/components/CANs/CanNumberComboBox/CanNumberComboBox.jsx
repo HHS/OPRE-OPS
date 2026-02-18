@@ -9,18 +9,18 @@ import ComboBox from "../../UI/Form/ComboBox";
 /**
  * @component
  * @param {Object} props - The component props.
- * @param {DataProps[]} props.portfolioOptions - All the portfolio options.
- * @param {DataProps[]} props.portfolio - The current portfolio.
- * @param {Function} props.setPortfolio - A function to call to set the portfolio.
+ * @param {DataProps[]} props.canOptions - All the CAN options.
+ * @param {DataProps[]} props.can - The current CAN selection.
+ * @param {Function} props.setCan - A function to call to set the CAN selection.
  * @param {string} [props.legendClassname] - The class name for the legend (optional).
  * @param {string} [props.defaultString] - The default string to display (optional).
  * @param {Object} [props.overrideStyles] - The CSS styles to override the default (optional).
- * @returns {JSX.Element} - The rendered CAN Portfolio ComboBox component.
+ * @returns {JSX.Element} - The rendered CAN Number ComboBox component.
  */
-const CANPortfolioComboBox = ({
-    portfolioOptions,
-    portfolio,
-    setPortfolio,
+const CanNumberComboBox = ({
+    canOptions,
+    can,
+    setCan,
     legendClassname = "usa-label margin-top-0",
     defaultString = "",
     overrideStyles = {}
@@ -30,16 +30,16 @@ const CANPortfolioComboBox = ({
             <div>
                 <label
                     className={legendClassname}
-                    htmlFor="can-portfolio-combobox-input"
+                    htmlFor="can-number-combobox-input"
                 >
-                    Portfolio
+                    CAN
                 </label>
                 <div>
                     <ComboBox
-                        namespace="can-portfolio-combobox"
-                        data={portfolioOptions}
-                        selectedData={portfolio}
-                        setSelectedData={setPortfolio}
+                        namespace="can-number-combobox"
+                        data={canOptions}
+                        selectedData={can}
+                        setSelectedData={setCan}
                         defaultString={defaultString}
                         overrideStyles={overrideStyles}
                         isMulti={true}
@@ -50,4 +50,4 @@ const CANPortfolioComboBox = ({
     );
 };
 
-export default CANPortfolioComboBox;
+export default CanNumberComboBox;

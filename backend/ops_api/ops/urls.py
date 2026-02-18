@@ -25,6 +25,7 @@ from ops_api.ops.views import (
     CAN_HISTORY_LIST_API_VIEW_FUNC,
     CAN_ITEM_API_VIEW_FUNC,
     CAN_LIST_API_VIEW_FUNC,
+    CAN_LIST_FILTER_OPTION_API_VIEW_FUNC,
     CANS_BY_PORTFOLIO_API_VIEW_FUNC,
     CHANGE_REQUEST_LIST_API_VIEW_FUNC,
     DIVISIONS_ITEM_API_VIEW_FUNC,
@@ -114,6 +115,10 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/cans/",
         view_func=CAN_LIST_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/cans-filters/",
+        view_func=CAN_LIST_FILTER_OPTION_API_VIEW_FUNC,
     )
 
     api_bp.add_url_rule("/can-funding-budgets/<int:id>", view_func=CAN_FUNDING_BUDGET_ITEM_API_VIEW_FUNC)

@@ -12,6 +12,16 @@ from ops_api.ops.schemas.projects import ProjectSchema
 from ops_api.ops.schemas.users import SafeUserSchema
 
 
+class CANFiltersQueryParametersSchema(Schema):
+    fiscal_year = fields.List(fields.Integer(), required=False)
+
+
+class CANListFilterOptionResponseSchema(Schema):
+    portfolios = fields.List(fields.Dict(keys=fields.String(), values=fields.Raw()), required=True)
+    can_numbers = fields.List(fields.Dict(keys=fields.String(), values=fields.Raw()), required=True)
+    fy_budget_range = fields.Dict(keys=fields.String(), values=fields.Float(), required=True)
+
+
 class GetCANListRequestSchema(PaginationListSchema):
     search = fields.List(fields.String(), required=False)
     fiscal_year = fields.List(fields.Integer(), required=False)
@@ -21,6 +31,7 @@ class GetCANListRequestSchema(PaginationListSchema):
     active_period = fields.List(fields.Integer(), required=False)
     transfer = fields.List(fields.String(), required=False)
     portfolio = fields.List(fields.String(), required=False)
+    can_ids = fields.List(fields.Integer(), required=False)
     # Single-value filters (wrapped in List due to Flask query param parsing with flat=False)
     budget_min = fields.List(fields.Float(), required=False)
     budget_max = fields.List(fields.Float(), required=False)
