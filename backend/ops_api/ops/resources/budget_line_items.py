@@ -138,9 +138,7 @@ class BudgetLineItemsListAPI(BaseListAPI):
         bli_dict = {bli.id: bli for bli in budget_line_items}
         bli_ids = list(bli_dict.keys())
         agreement_ids = [bli.agreement_id for bli in budget_line_items]
-        change_requests_data = batch_load_change_requests_in_review(
-            current_app.db_session, bli_ids, agreement_ids
-        )
+        change_requests_data = batch_load_change_requests_in_review(current_app.db_session, bli_ids, agreement_ids)
 
         list_schema = BudgetLineItemListResponseSchema(many=True)
         cr_schema = BudgetLineItemChangeRequestResponseSchema(many=True)
@@ -169,9 +167,7 @@ class BudgetLineItemsListAPI(BaseListAPI):
             change_requests = get_change_requests_for_bli(bli_id, agreement_id, change_requests_data)
             in_review = change_requests is not None
             serialized_bli["in_review"] = in_review
-            serialized_bli["change_requests_in_review"] = (
-                cr_schema.dump(change_requests) if change_requests else None
-            )
+            serialized_bli["change_requests_in_review"] = cr_schema.dump(change_requests) if change_requests else None
             serialized_bli["_meta"] = _list_item_meta(
                 serialized_bli,
                 bli_dict.get(bli_id),
@@ -216,17 +212,13 @@ def _list_item_meta(
         if agreement_id not in user_agreement_associations:
             user_agreement_associations[agreement_id] = associated_with_agreement(agreement_id)
         is_associated = user_agreement_associations[agreement_id]
-        meta["isEditable"] = is_associated and _is_bli_editable_optimized(
-            budget_line_item, in_review, is_super
-        )
+        meta["isEditable"] = is_associated and _is_bli_editable_optimized(budget_line_item, in_review, is_super)
     else:
         meta["isEditable"] = False
     return meta
 
 
-def _is_bli_editable_optimized(
-    budget_line_item: BudgetLineItem | None, in_review: bool, is_super: bool
-) -> bool:
+def _is_bli_editable_optimized(budget_line_item: BudgetLineItem | None, in_review: bool, is_super: bool) -> bool:
     """
     Optimized version of is_bli_editable that uses pre-computed in_review value
     instead of querying the database.
