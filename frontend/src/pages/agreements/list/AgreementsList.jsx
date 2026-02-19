@@ -9,6 +9,7 @@ import {
     useLazyGetUserQuery
 } from "../../../api/opsAPI.js";
 import App from "../../../App";
+import AgreementSummaryCardsSection from "../../../components/Agreements/AgreementSummaryCardsSection";
 import AgreementsTable from "../../../components/Agreements/AgreementsTable";
 import {
     findNextBudgetLine,
@@ -163,7 +164,8 @@ const AgreementsList = () => {
     }
 
     let subtitle = "All Agreements";
-    let details = "This is a list of all agreements across OPRE. Draft budget lines are not included in the Totals.";
+    let details =
+        "This is a list of all agreements across OPRE for the selected fiscal year. Draft budget lines are not included in the Totals.";
     if (myAgreementsUrl) {
         subtitle = "My Agreements";
         details =
@@ -313,8 +315,6 @@ const AgreementsList = () => {
                     title="Agreements"
                     subtitle={subtitle}
                     details={details}
-                    buttonText="Add Agreement"
-                    buttonLink="/agreements/create"
                     TabsSection={<AgreementTabs />}
                     FilterTags={
                         <AgreementsFilterTags
@@ -360,6 +360,14 @@ const AgreementsList = () => {
                             showAllOption={true}
                         />
                     }
+                    SummaryCardsSection={
+                        agreements &&
+                        agreements?.length > 0 && (
+                            <AgreementSummaryCardsSection
+                                fiscalYear={selectedFiscalYear === "All" ? "All FYs" : `FY ${selectedFiscalYear}`}
+                            />
+                        )
+                    }
                     TableSection={
                         <>
                             <AgreementsTable
@@ -386,8 +394,6 @@ const AgreementsList = () => {
                     title="Agreements"
                     subtitle={subtitle}
                     details={details}
-                    buttonText="Add Agreement"
-                    buttonLink="/agreements/create"
                     TabsSection={<AgreementTabs />}
                 >
                     <ChangeRequests />
