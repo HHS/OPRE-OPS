@@ -201,6 +201,12 @@ class CANFundingDetails(BaseModel):
     funding_source: Mapped[CANFundingSource] = mapped_column(ENUM(CANFundingSource), nullable=True)
     funding_partner: Mapped[Optional[str]]
 
+    __table_args__ = (
+        Index("ix_can_funding_details_fiscal_year", "fiscal_year"),
+        Index("ix_can_funding_details_created_by", "created_by"),
+        Index("ix_can_funding_details_updated_by", "updated_by"),
+    )
+
     @property
     def active_period(self) -> Optional[int]:
         """The number of years the funds are active for"""
