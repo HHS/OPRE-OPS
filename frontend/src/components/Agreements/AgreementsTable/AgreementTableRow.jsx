@@ -1,16 +1,12 @@
-import { faClock } from "@fortawesome/free-regular-svg-icons";
-import { faCircle } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { useState } from "react";
 import CurrencyFormat from "react-currency-format";
 import { Link, useSearchParams } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { useGetAgreementByIdQuery, useLazyGetUserByIdQuery } from "../../../api/opsAPI";
+import { useGetAgreementByIdQuery } from "../../../api/opsAPI";
 import { NO_DATA } from "../../../constants";
 import { calculateAgreementTotal, getAgreementType, isNotDevelopedYet } from "../../../helpers/agreement.helpers";
 import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
-import { convertCodeForDisplay, statusToClassName } from "../../../helpers/utils";
+import { getCurrentFiscalYear } from "../../../helpers/utils";
 import ChangeIcons from "../../BudgetLineItems/ChangeIcons";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 import TableRowExpandable from "../../UI/TableRowExpandable";
@@ -20,61 +16,53 @@ import {
     removeBorderBottomIfExpanded
 } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
-import Tag from "../../UI/Tag";
 import TextClip from "../../UI/Text/TextClip";
 import {
     areAllBudgetLinesInStatus,
-    findNextBudgetLine,
-    findNextNeedBy,
-    getAgreementCreatedDate,
-    getAgreementDescription,
+    getAgreementContractNumber,
+    getAgreementEndDate,
     getAgreementName,
-    getBudgetLineCountsByStatus,
+    getAgreementStartDate,
+    getAgreementSubTotal,
+    getFYObligatedAmount,
+    getLifetimeObligatedAmount,
+    getProcurementShopDisplay,
     getResearchProjectName,
     isThereAnyBudgetLines
 } from "./AgreementsTable.helpers";
 import { TABLE_HEADINGS_LIST } from "./AgreementsTable.constants";
 import { useHandleDeleteAgreement, useHandleEditAgreement, useNavigateAgreementReview } from "./AgreementsTable.hooks";
+import { getAgreementFeesFromBackend } from "../../../helpers/agreement.helpers";
 
 /**
  * Renders a row in the agreements table.
  * @component
  * @param {Object} props - The component props.
  * @param {number} props.agreementId - The agreement object to display.
+ * @param {string} props.selectedFiscalYear - The selected fiscal year.
  * @returns {JSX.Element} - The rendered component.
  */
-export const AgreementTableRow = ({ agreementId }) => {
+export const AgreementTableRow = ({ agreementId, selectedFiscalYear }) => {
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     /** @type {{data?: import("../../../types/AgreementTypes").Agreement | undefined, isLoading: boolean, isSuccess: boolean}} */
     const { data: agreement, isLoading, isSuccess } = useGetAgreementByIdQuery(agreementId, { skip: !agreementId });
     const agreementName = isSuccess ? getAgreementName(agreement) : NO_DATA;
-    const researchProjectName = isSuccess ? getResearchProjectName(agreement) : NO_DATA;
     const agreementType = isSuccess ? getAgreementType(agreement?.agreement_type) : NO_DATA;
     const agreementTotal = calculateAgreementTotal(agreement?.budget_line_items ?? []);
-    const nextBudgetLine = isSuccess ? findNextBudgetLine(agreement) : null;
-    const nextNeedBy = isSuccess ? findNextNeedBy(agreement) : NO_DATA;
-    const budgetLineCountsByStatus = isSuccess ? getBudgetLineCountsByStatus(agreement) : 0;
-    const nextBudgetLineAmount = nextBudgetLine?.total ?? 0;
+    const agreementStartDate = isSuccess ? getAgreementStartDate(agreement) : NO_DATA;
+    const agreementEndDate = isSuccess ? getAgreementEndDate(agreement) : NO_DATA;
 
-    const [agreementCreatedByName, setAgreementCreatedByName] = useState(NO_DATA);
-    const [trigger] = useLazyGetUserByIdQuery();
+    const effectiveFiscalYear =
+        selectedFiscalYear === "All" ? Number(getCurrentFiscalYear()) : Number(selectedFiscalYear);
+    const fyObligatedAmount = isSuccess ? getFYObligatedAmount(agreement, effectiveFiscalYear) : 0;
 
-    React.useEffect(() => {
-        if (isExpanded) {
-            trigger(agreement?.created_by)
-                .then((response) => {
-                    if (response?.data) {
-                        setAgreementCreatedByName(response.data.full_name || NO_DATA);
-                    }
-                })
-                .catch(() => {
-                    setAgreementCreatedByName(NO_DATA);
-                });
-        }
-    }, [isExpanded, agreement?.created_by, trigger]);
-
-    const agreementDescription = isSuccess ? getAgreementDescription(agreement) : NO_DATA;
-    const agreementCreatedOn = isSuccess ? getAgreementCreatedDate(agreement) : NO_DATA;
+    // Expanded row values
+    const researchProjectName = isSuccess ? getResearchProjectName(agreement) : NO_DATA;
+    const procurementShopDisplay = isSuccess ? getProcurementShopDisplay(agreement) : NO_DATA;
+    const agreementSubTotal = isSuccess ? getAgreementSubTotal(agreement) : 0;
+    const agreementFees = isSuccess ? getAgreementFeesFromBackend(agreement) : 0;
+    const lifetimeObligated = isSuccess ? getLifetimeObligatedAmount(agreement) : 0;
+    const contractNumber = isSuccess ? getAgreementContractNumber(agreement) : NO_DATA;
 
     // styles for the table row
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
@@ -166,20 +154,23 @@ export const AgreementTableRow = ({ agreementId }) => {
             <td
                 className={borderExpandedStyles}
                 style={bgExpandedStyles}
-                data-cy="research-project-name"
+                data-cy="agreement-type"
             >
-                <TextClip
-                    text={researchProjectName}
-                    tooltipThreshold={30}
-                    maxLines={2}
-                />
+                {agreementType || ""}
             </td>
             <td
                 className={borderExpandedStyles}
                 style={bgExpandedStyles}
-                data-cy="agreement-type"
+                data-cy="agreement-start-date"
             >
-                {agreementType || ""}
+                {agreementStartDate}
+            </td>
+            <td
+                className={borderExpandedStyles}
+                style={bgExpandedStyles}
+                data-cy="agreement-end-date"
+            >
+                {agreementEndDate}
             </td>
             <td
                 className={borderExpandedStyles}
@@ -199,114 +190,101 @@ export const AgreementTableRow = ({ agreementId }) => {
             <td
                 className={borderExpandedStyles}
                 style={bgExpandedStyles}
-                data-cy="next-bli-amount"
+                data-cy="fy-obligated-amount"
             >
-                <CurrencyFormat
-                    value={nextBudgetLineAmount}
-                    displayType={"text"}
-                    thousandSeparator={true}
-                    prefix={"$"}
-                    decimalScale={getDecimalScale(nextBudgetLineAmount)}
-                    fixedDecimalScale={true}
-                    renderText={(value) => value}
-                />
-            </td>
-            <td
-                className={borderExpandedStyles}
-                style={bgExpandedStyles}
-                data-cy="next-need-by"
-            >
-                {isRowActive && !isExpanded ? <div>{changeIcons}</div> : <div>{nextNeedBy}</div>}
+                {isRowActive && !isExpanded ? (
+                    <div>{changeIcons}</div>
+                ) : (
+                    <CurrencyFormat
+                        value={fyObligatedAmount}
+                        displayType={"text"}
+                        thousandSeparator={true}
+                        prefix={"$"}
+                        decimalScale={getDecimalScale(fyObligatedAmount)}
+                        fixedDecimalScale={true}
+                        renderText={(value) => value}
+                    />
+                )}
             </td>
         </>
     );
 
-    /**
-     * A component that displays the status with its counts
-     *
-     * @component
-     * @param {object} props - The props object containing the following properties:
-     * @param {string} props.status - The BLI status.
-     * @param {number} props.count - The count of BLI with the status.
-     * @returns {JSX.Element} A React component that displays a legend item.
-     */
-    const StatusCountItem = ({ status, count }) => {
-        const label = convertCodeForDisplay("budgetLineStatus", status);
-        return (
-            <div className="display-flex flex-justify margin-top-1">
-                <div className="">
-                    <div className="display-flex flex-align-center">
-                        <FontAwesomeIcon
-                            icon={faCircle}
-                            className={`${statusToClassName(status)} height-1 width-1 margin-right-05`}
-                        />
-
-                        <span>{label}</span>
-                    </div>
-                </div>
-                <div>
-                    <Tag
-                        tagStyle="darkTextWhiteBackground"
-                        text={`${count}`}
-                        label={label}
-                        className="margin-left-1"
-                    />
-                </div>
-            </div>
-        );
-    };
-
     const ExpandedData = (
         <td
-            colSpan={9}
+            colSpan={TABLE_HEADINGS_LIST.length + 1}
             className="border-top-none"
             style={expandedRowBGColor}
         >
             <div className="display-flex padding-right-9">
                 <dl className="font-12px">
-                    <dt className="margin-0 text-base-dark">Created By</dt>
-                    <dd className="margin-0">{agreementCreatedByName}</dd>
-                    <dt className="margin-0 text-base-dark display-flex flex-align-center margin-top-2">
-                        <FontAwesomeIcon
-                            icon={faClock}
-                            className="height-2 width-2 margin-right-1"
-                        />
-                        {agreementCreatedOn}
-                    </dt>
+                    <dt className="margin-0 text-base-dark">Project</dt>
+                    <dd className="margin-0">{researchProjectName || NO_DATA}</dd>
                 </dl>
                 <dl
-                    className="font-12px width-mobile"
+                    className="font-12px"
                     style={{ marginLeft: "2.5rem" }}
                 >
-                    <dt className="margin-0 text-base-dark">Description</dt>
-                    <dd
-                        className="margin-0 wrap-text"
-                        style={{ maxWidth: "400px" }}
-                    >
-                        {agreementDescription ? agreementDescription : "No description created."}
+                    <dt className="margin-0 text-base-dark">Procurement Shop</dt>
+                    <dd className="margin-0">{procurementShopDisplay}</dd>
+                </dl>
+                <dl
+                    className="font-12px"
+                    style={{ marginLeft: "2.5rem" }}
+                >
+                    <dt className="margin-0 text-base-dark">Subtotal</dt>
+                    <dd className="margin-0">
+                        <CurrencyFormat
+                            value={agreementSubTotal}
+                            displayType={"text"}
+                            thousandSeparator={true}
+                            prefix={"$"}
+                            decimalScale={getDecimalScale(agreementSubTotal)}
+                            fixedDecimalScale={true}
+                            renderText={(value) => value}
+                        />
                     </dd>
                 </dl>
                 <dl
                     className="font-12px"
-                    style={{ marginLeft: "3.125rem" }}
+                    style={{ marginLeft: "2.5rem" }}
                 >
-                    <dt className="margin-0 text-base-dark">Budget Lines</dt>
-                    <dd
-                        className="margin-0"
-                        style={{ maxWidth: "400px" }}
-                    >
-                        <div className="font-12px margin-top-1">
-                            {Object.entries(budgetLineCountsByStatus).map(([status, count]) => (
-                                <StatusCountItem
-                                    key={status}
-                                    status={status}
-                                    count={count}
-                                />
-                            ))}
-                        </div>
+                    <dt className="margin-0 text-base-dark">Fees</dt>
+                    <dd className="margin-0">
+                        <CurrencyFormat
+                            value={agreementFees}
+                            displayType={"text"}
+                            thousandSeparator={true}
+                            prefix={"$"}
+                            decimalScale={getDecimalScale(agreementFees)}
+                            fixedDecimalScale={true}
+                            renderText={(value) => value}
+                        />
+                    </dd>
+                </dl>
+                <dl
+                    className="font-12px"
+                    style={{ marginLeft: "2.5rem" }}
+                >
+                    <dt className="margin-0 text-base-dark">Lifetime Obligated</dt>
+                    <dd className="margin-0">
+                        <CurrencyFormat
+                            value={lifetimeObligated}
+                            displayType={"text"}
+                            thousandSeparator={true}
+                            prefix={"$"}
+                            decimalScale={getDecimalScale(lifetimeObligated)}
+                            fixedDecimalScale={true}
+                            renderText={(value) => value}
+                        />
                     </dd>
                 </dl>
                 <div className="flex-align-self-end margin-left-auto margin-bottom-1">{changeIcons}</div>
+            </div>
+            <div className="display-flex">
+                <dl className="font-12px">
+                    <dt className="margin-0 text-base-dark">Contract #</dt>
+                    <dd className="margin-0">{contractNumber || NO_DATA}</dd>
+                </dl>
             </div>
         </td>
     );
