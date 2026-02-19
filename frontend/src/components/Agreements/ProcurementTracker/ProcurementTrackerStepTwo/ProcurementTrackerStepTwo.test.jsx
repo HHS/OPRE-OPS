@@ -110,7 +110,9 @@ describe("ProcurementTrackerStepTwo", () => {
     const mockSetSelectedUser = vi.fn();
     const mockSetTargetCompletionDate = vi.fn();
     const mockSetStep2DateCompleted = vi.fn();
+    const mockSetDraftSolicitationDate = vi.fn();
     const mockRunValidate = vi.fn();
+    const mockHandleTargetCompletionDateSubmit = vi.fn();
     const mockValidatorRes = {
         getErrors: vi.fn(() => []),
         hasErrors: vi.fn(() => false)
@@ -125,6 +127,8 @@ describe("ProcurementTrackerStepTwo", () => {
         setSelectedUser: mockSetSelectedUser,
         targetCompletionDate: "",
         setTargetCompletionDate: mockSetTargetCompletionDate,
+        draftSolicitationDate: "",
+        setDraftSolicitationDate: mockSetDraftSolicitationDate,
         step2CompletedByUserName: "John Doe",
         step2DateCompleted: "",
         setStep2DateCompleted: mockSetStep2DateCompleted,
@@ -134,7 +138,8 @@ describe("ProcurementTrackerStepTwo", () => {
         runValidate: mockRunValidate,
         validatorRes: mockValidatorRes,
         step2DateCompletedLabel: "January 15, 2024",
-        MemoizedDatePicker: DatePicker
+        MemoizedDatePicker: DatePicker,
+        handleTargetCompletionDateSubmit: mockHandleTargetCompletionDateSubmit
     };
 
     const mockStepData = { id: 1 };
@@ -367,10 +372,10 @@ describe("ProcurementTrackerStepTwo", () => {
 
             expect(checkbox).not.toBeDisabled();
             expect(select).toBeDisabled();
-            expect(targetInput).toBeDisabled();
+            expect(targetInput).not.toBeDisabled();
             expect(completedInput).toBeDisabled();
             expect(notesInput).toBeDisabled();
-            expect(saveButton).toBeDisabled();
+            expect(saveButton).not.toBeDisabled();
         });
 
         it("form fields are interactive when package is finalized in ACTIVE state", () => {
@@ -500,7 +505,8 @@ describe("ProcurementTrackerStepTwo", () => {
                         return ["Date must be MM/DD/YYYY"];
                     }
                     return [];
-                })
+                }),
+                hasErrors: vi.fn(() => false)
             };
 
             useProcurementTrackerStepTwo.mockReturnValue({
@@ -527,7 +533,8 @@ describe("ProcurementTrackerStepTwo", () => {
                         return ["This is required information"];
                     }
                     return [];
-                })
+                }),
+                hasErrors: vi.fn(() => false)
             };
 
             useProcurementTrackerStepTwo.mockReturnValue({
@@ -579,7 +586,7 @@ describe("ProcurementTrackerStepTwo", () => {
 
             expect(checkbox).toBeDisabled();
             expect(usersSelect).toBeDisabled();
-            expect(targetInput).toBeDisabled();
+            expect(targetInput).not.toBeDisabled();
             expect(completedInput).toBeDisabled();
             expect(notesInput).toBeDisabled();
             expect(saveButton).toBeDisabled();

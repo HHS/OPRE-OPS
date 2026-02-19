@@ -3,9 +3,17 @@ import { vi, expect, describe, it, beforeEach } from "vitest";
 import useProcurementTrackerStepTwo from "./ProcurementTrackerStepTwo.hooks";
 import useGetUserFullNameFromId from "../../../../hooks/user.hooks";
 import { formatDateToMonthDayYear } from "../../../../helpers/utils";
+import { useUpdateProcurementTrackerStepMutation } from "../../../../api/opsAPI";
+import useAlert from "../../../../hooks/use-alert.hooks";
 
 vi.mock("../../../../hooks/user.hooks");
 vi.mock("../../../../helpers/utils");
+vi.mock("../../../../api/opsAPI", () => ({
+    useUpdateProcurementTrackerStepMutation: vi.fn()
+}));
+vi.mock("../../../../hooks/use-alert.hooks", () => ({
+    default: vi.fn()
+}));
 vi.mock("./suite", () => {
     const mockSuite = vi.fn();
     mockSuite.get = vi.fn(() => ({
@@ -18,6 +26,8 @@ vi.mock("./suite", () => {
 });
 
 describe("useProcurementTrackerStepTwo", () => {
+    const mockPatchStepTwo = vi.fn();
+    const mockSetAlert = vi.fn();
     const mockStepTwoData = {
         id: 1,
         task_completed_by: 123,
@@ -28,6 +38,8 @@ describe("useProcurementTrackerStepTwo", () => {
         vi.clearAllMocks();
         useGetUserFullNameFromId.mockReturnValue("John Doe");
         formatDateToMonthDayYear.mockReturnValue("January 15, 2024");
+        useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepTwo]);
+        useAlert.mockReturnValue({ setAlert: mockSetAlert });
     });
 
     describe("State Initialization", () => {
