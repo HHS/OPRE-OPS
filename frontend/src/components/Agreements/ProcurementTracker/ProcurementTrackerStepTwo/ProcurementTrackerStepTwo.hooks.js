@@ -14,7 +14,7 @@ export default function useProcurementTrackerStepTwo(stepTwoData) {
     const [isPreSolicitationPackageFinalized, setIsPreSolicitationPackageFinalized] = React.useState(false);
     const [draftSolicitationDate, setDraftSolicitationDate] = React.useState("");
     const [selectedUser, setSelectedUser] = React.useState({});
-    const [targetCompletionDate, setTargetCompletionDate] = React.useState(stepTwoData?.target_completion_date || "");
+    const [targetCompletionDate, setTargetCompletionDate] = React.useState("");
     const [step2DateCompleted, setStep2DateCompleted] = React.useState("");
     const [step2Notes, setStep2Notes] = React.useState("");
 
@@ -53,7 +53,17 @@ export default function useProcurementTrackerStepTwo(stepTwoData) {
         }
     };
 
+    const cancelStepTwo = () => {
+        setIsPreSolicitationPackageFinalized(false);
+        setDraftSolicitationDate("");
+        setSelectedUser({});
+        setTargetCompletionDate("");
+        setStep2DateCompleted("");
+        setStep2Notes("");
+    };
+
     return {
+        cancelStepTwo,
         isPreSolicitationPackageFinalized,
         setIsPreSolicitationPackageFinalized,
         draftSolicitationDate,

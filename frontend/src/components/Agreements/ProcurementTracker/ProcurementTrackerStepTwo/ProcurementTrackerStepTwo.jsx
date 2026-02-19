@@ -23,6 +23,7 @@ import useProcurementTrackerStepTwo from "./ProcurementTrackerStepTwo.hooks";
  */
 const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, hasActiveTracker }) => {
     const {
+        cancelStepTwo,
         isPreSolicitationPackageFinalized,
         setIsPreSolicitationPackageFinalized,
         draftSolicitationDate,
@@ -162,6 +163,24 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, h
                         }}
                         isDisabled={!isPreSolicitationPackageFinalized}
                     />
+                    <div className="margin-top-2 display-flex flex-justify-end">
+                        <button
+                            className="usa-button usa-button--unstyled margin-right-2"
+                            data-cy="cancel-button"
+                            onClick={cancelStepTwo}
+                            disabled={!isPreSolicitationPackageFinalized}
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            className="usa-button"
+                            data-cy="continue-btn"
+                            onClick={() => {}}
+                            disabled={!isPreSolicitationPackageFinalized}
+                        >
+                            Complete Step 2
+                        </button>
+                    </div>
                 </fieldset>
             )}
 
