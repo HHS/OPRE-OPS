@@ -371,7 +371,7 @@ describe("ProcurementTrackerStepTwo", () => {
             const notesInput = screen.getByTestId("text-area").querySelector("textarea");
             const checkbox = screen.getByRole("checkbox");
             const saveButton = screen.getByRole("button", { name: /save/i });
-            const cancelButton = screen.getByRole("button", { name: /cancel/i });
+            // const cancelButton = screen.getByRole("button", { name: /cancel/i });
 
             expect(checkbox).not.toBeDisabled();
             expect(select).toBeDisabled();

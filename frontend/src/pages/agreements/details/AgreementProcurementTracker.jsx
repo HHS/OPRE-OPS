@@ -118,7 +118,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                             <ProcurementTrackerStepOne
                                 stepStatus={step.status}
                                 stepOneData={stepOneData}
-                                hasActiveTracker={hasActiveTracker}
+                                isActiveStep={activeTracker?.active_step_number === step.step_number}
                                 handleSetIsFormSubmitted={handleSetIsFormSubmitted}
                                 authorizedUsers={authorizedUsers}
                             />
@@ -128,7 +128,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 stepStatus={step.status}
                                 authorizedUsers={authorizedUsers}
                                 stepTwoData={stepTwoData}
-                                hasActiveTracker={hasActiveTracker}
+                                isActiveStep={activeTracker?.active_step_number === step.step_number}
                             />
                         )}
                         {!IS_PROCUREMENT_TRACKER_READY_MAP.STEP_2 && step.step_number === 2 && (

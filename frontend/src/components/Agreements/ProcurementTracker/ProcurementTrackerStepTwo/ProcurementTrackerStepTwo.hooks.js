@@ -69,7 +69,8 @@ export default function useProcurementTrackerStepTwo(stepTwoData) {
             status: "COMPLETED",
             task_completed_by: selectedUser.id,
             date_completed: formatDateForApi(step2DateCompleted),
-            notes: step2Notes.trim()
+            notes: step2Notes.trim(),
+            draft_solicitation_date: formatDateForApi(draftSolicitationDate)
         };
 
         try {

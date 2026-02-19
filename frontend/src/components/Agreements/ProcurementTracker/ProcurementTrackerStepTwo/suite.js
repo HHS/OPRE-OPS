@@ -44,6 +44,10 @@ const suite = create((data = {}, fieldName) => {
         compareDateToToday(data.targetCompletionDate, "greaterThanOrEquals");
     });
 
+    test("draftSolicitationDate", "Date must be today or later", () => {
+        compareDateToToday(data.draftSolicitationDate, "greaterThanOrEquals");
+    });
+
     test("dateCompleted", "Date must be today or earlier", () => {
         compareDateToToday(data.dateCompleted, "lessThanOrEquals");
     });

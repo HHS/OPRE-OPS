@@ -12,6 +12,7 @@ import useProcurementTrackerStepTwo from "./ProcurementTrackerStepTwo.hooks";
  * @typedef {Object} ProcurementTrackerStepTwoProps
  * @property {string} stepStatus - The current status of the procurement tracker step
  * @property {Object} stepTwoData - The data for step 2 of the procurement tracker
+ * @property {boolean} isActiveStep - Whether step is the active step
  * @property {SafeUser[]} authorizedUsers - List of users authorized for this agreement
  * @property {boolean} hasActiveTracker - Whether an active tracker exists
  */
@@ -21,7 +22,7 @@ import useProcurementTrackerStepTwo from "./ProcurementTrackerStepTwo.hooks";
  * @param {ProcurementTrackerStepTwoProps} props
  * @returns {React.ReactElement}
  */
-const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, hasActiveTracker }) => {
+const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, isActiveStep, authorizedUsers }) => {
     const {
         cancelStepTwo,
         isPreSolicitationPackageFinalized,
@@ -43,12 +44,13 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, h
         step2DateCompletedLabel,
         MemoizedDatePicker,
         handleTargetCompletionDateSubmit,
-        step2TargetCompletionDateLabel
+        step2TargetCompletionDateLabel,
+        handleStepTwoComplete
     } = useProcurementTrackerStepTwo(stepTwoData);
 
     return (
         <>
-            {(stepStatus === "PENDING" || stepStatus === "ACTIVE") && (
+            {stepStatus === "PENDING" && (
                 <fieldset className="usa-fieldset">
                     <p>
                         Edit the pre-solicitation package in collaboration with the Procurement Shop. Once the documents
@@ -78,12 +80,16 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, h
                                         setTargetCompletionDate(e.target.value);
                                     }}
                                     minDate={getLocalISODate()}
-                                    isDisabled={stepStatus !== "ACTIVE" || !hasActiveTracker}
+                                    isDisabled={!isActiveStep}
                                 />
                                 <button
                                     className="usa-button usa-button--unstyled margin-bottom-1 margin-left-2"
                                     data-cy="target-completion-save-btn"
-                                    disabled={validatorRes.hasErrors("targetCompletionDate")}
+                                    disabled={
+                                        validatorRes.hasErrors("targetCompletionDate") ||
+                                        !isActiveStep ||
+                                        !targetCompletionDate
+                                    }
                                     onClick={() => {
                                         handleTargetCompletionDateSubmit(stepTwoData?.id);
                                     }}
@@ -102,7 +108,7 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, h
                             value="step-2-checkbox"
                             checked={isPreSolicitationPackageFinalized}
                             onChange={() => setIsPreSolicitationPackageFinalized(!isPreSolicitationPackageFinalized)}
-                            disabled={!hasActiveTracker}
+                            disabled={!isActiveStep}
                         />
                         <label
                             className="usa-checkbox__label"
@@ -163,6 +169,7 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, h
                             runValidate("draftSolicitationDate", e.target.value);
                             setDraftSolicitationDate(e.target.value);
                         }}
+                        minDate={getLocalISODate()}
                         isDisabled={!isPreSolicitationPackageFinalized}
                     />
                     <div className="margin-top-2 display-flex flex-justify-end">
@@ -177,7 +184,9 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, h
                         <button
                             className="usa-button"
                             data-cy="continue-btn"
-                            onClick={() => {}}
+                            onClick={() => {
+                                handleStepTwoComplete(stepTwoData?.id);
+                            }}
                             disabled={!isPreSolicitationPackageFinalized}
                         >
                             Complete Step 2

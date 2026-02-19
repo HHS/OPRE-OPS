@@ -10,6 +10,7 @@ import { getLocalISODate } from "../../../../helpers/utils";
  * @typedef {Object} ProcurementTrackerStepOneProps
  * @property {string} stepStatus - The current status of the procurement tracker step
  * @property {Object} stepOneData - The data for step one of the procurement tracker
+ * @property {boolean} isActiveStep - Whether step is the active step
  * @property {boolean} hasActiveTracker - Whether an active tracker exists
  * @property {Function} handleSetIsFormSubmitted - Function to set the form submission state
  * @property {SafeUser[]} authorizedUsers - List of users authorized for this agreement
@@ -23,7 +24,7 @@ import { getLocalISODate } from "../../../../helpers/utils";
 const ProcurementTrackerStepOne = ({
     stepStatus,
     stepOneData,
-    hasActiveTracker,
+    isActiveStep,
     handleSetIsFormSubmitted,
     authorizedUsers
 }) => {
@@ -61,7 +62,7 @@ const ProcurementTrackerStepOne = ({
                     handleConfirm={modalProps.handleConfirm}
                 />
             )}
-            {(stepStatus === "PENDING" || stepStatus === "ACTIVE") && (
+            {stepStatus === "PENDING" && (
                 <fieldset className="usa-fieldset">
                     <p>
                         Once the pre-solicitation package is sufficiently drafted and signed by all parties, send it to
@@ -76,7 +77,7 @@ const ProcurementTrackerStepOne = ({
                             value="step-1-checkbox"
                             checked={isPreSolicitationPackageSent}
                             onChange={() => setIsPreSolicitationPackageSent(!isPreSolicitationPackageSent)}
-                            disabled={!hasActiveTracker}
+                            disabled={!isActiveStep}
                         />
                         <label
                             className="usa-checkbox__label"
