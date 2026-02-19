@@ -13,6 +13,8 @@ from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.schemas.cans import (
+    CANFiltersQueryParametersSchema,
+    CANListFilterOptionResponseSchema,
     CANListSchema,
     CANSchema,
     CreateUpdateCANRequestSchema,
@@ -159,3 +161,17 @@ class CANsByPortfolioAPI(BaseItemAPI):
     def get(self, id: int) -> Response:
         cans = self._get_item(id)
         return make_response_with_headers([can.to_dict() for can in cans])
+
+
+class CANListFilterOptionAPI(BaseItemAPI):
+    def __init__(self, model):
+        super().__init__(model)
+        self._get_schema = CANFiltersQueryParametersSchema()
+        self._response_schema = CANListFilterOptionResponseSchema()
+
+    @is_authorized(PermissionType.GET, Permission.CAN)
+    def get(self) -> Response:
+        data = self._get_schema.load(request.args.to_dict(flat=False))
+        service = CANService(current_app.db_session)
+        filter_options = service.get_filter_options(data)
+        return make_response_with_headers(filter_options)
