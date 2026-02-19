@@ -106,6 +106,7 @@ vi.mock("../../../UI/Form/TextArea", () => ({
 }));
 
 describe("ProcurementTrackerStepTwo", () => {
+    const mockCancelStepTwo = vi.fn();
     const mockSetIsPreSolicitationPackageFinalized = vi.fn();
     const mockSetSelectedUser = vi.fn();
     const mockSetTargetCompletionDate = vi.fn();
@@ -121,6 +122,7 @@ describe("ProcurementTrackerStepTwo", () => {
     const mockSetStep2Notes = vi.fn();
 
     const defaultHookReturn = {
+        cancelStepTwo: mockCancelStepTwo,
         isPreSolicitationPackageFinalized: false,
         setIsPreSolicitationPackageFinalized: mockSetIsPreSolicitationPackageFinalized,
         selectedUser: {},
@@ -369,6 +371,7 @@ describe("ProcurementTrackerStepTwo", () => {
             const notesInput = screen.getByTestId("text-area").querySelector("textarea");
             const checkbox = screen.getByRole("checkbox");
             const saveButton = screen.getByRole("button", { name: /save/i });
+            const cancelButton = screen.getByRole("button", { name: /cancel/i });
 
             expect(checkbox).not.toBeDisabled();
             expect(select).toBeDisabled();
@@ -376,6 +379,7 @@ describe("ProcurementTrackerStepTwo", () => {
             expect(completedInput).toBeDisabled();
             expect(notesInput).toBeDisabled();
             expect(saveButton).not.toBeDisabled();
+            expect(cancelButton).toBeDisabled();
         });
 
         it("form fields are interactive when package is finalized in ACTIVE state", () => {
@@ -411,6 +415,7 @@ describe("ProcurementTrackerStepTwo", () => {
             const notesInput = screen.getByTestId("text-area").querySelector("textarea");
             const checkbox = screen.getByRole("checkbox");
             const saveButton = screen.getByRole("button", { name: /save/i });
+            const cancelButton = screen.getByRole("button", { name: /cancel/i });
 
             expect(checkbox).not.toBeDisabled();
             expect(select).not.toBeDisabled();
@@ -418,6 +423,26 @@ describe("ProcurementTrackerStepTwo", () => {
             expect(completedInput).not.toBeDisabled();
             expect(notesInput).not.toBeDisabled();
             expect(saveButton).not.toBeDisabled();
+            expect(cancelButton).not.toBeDisabled();
+        });
+
+        it("calls cancelStepTwo when cancel button is clicked", () => {
+            useProcurementTrackerStepTwo.mockReturnValue({
+                ...defaultHookReturn,
+                isPreSolicitationPackageFinalized: true
+            });
+
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="ACTIVE"
+                    stepTwoData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
+                />
+            );
+
+            fireEvent.click(screen.getByRole("button", { name: /cancel/i }));
+            expect(mockCancelStepTwo).toHaveBeenCalledTimes(1);
         });
     });
 

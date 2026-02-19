@@ -185,5 +185,29 @@ describe("useProcurementTrackerStepTwo", () => {
             expect(result.current.targetCompletionDate).toBe("2024-03-20");
             expect(result.current.step2DateCompleted).toBe("2024-03-15");
         });
+
+        it("cancelStepTwo resets step two state values", () => {
+            const { result } = renderHook(() => useProcurementTrackerStepTwo(mockStepTwoData));
+
+            act(() => {
+                result.current.setIsPreSolicitationPackageFinalized(true);
+                result.current.setDraftSolicitationDate("2024-05-01");
+                result.current.setSelectedUser({ id: 456, full_name: "Jane Smith" });
+                result.current.setTargetCompletionDate("2024-03-20");
+                result.current.setStep2DateCompleted("2024-03-15");
+                result.current.setStep2Notes("Some notes");
+            });
+
+            act(() => {
+                result.current.cancelStepTwo();
+            });
+
+            expect(result.current.isPreSolicitationPackageFinalized).toBe(false);
+            expect(result.current.draftSolicitationDate).toBe("");
+            expect(result.current.selectedUser).toEqual({});
+            expect(result.current.targetCompletionDate).toBe("");
+            expect(result.current.step2DateCompleted).toBe("");
+            expect(result.current.step2Notes).toBe("");
+        });
     });
 });
