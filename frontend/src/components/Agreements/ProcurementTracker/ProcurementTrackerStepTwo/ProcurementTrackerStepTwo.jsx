@@ -78,11 +78,16 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, h
                                         setTargetCompletionDate(e.target.value);
                                     }}
                                     minDate={getLocalISODate()}
+                                    isDisabled={stepStatus !== "ACTIVE" || !hasActiveTracker}
                                 />
                                 <button
                                     className="usa-button usa-button--unstyled margin-bottom-1 margin-left-2"
                                     data-cy="target-completion-save-btn"
-                                    disabled={validatorRes.hasErrors("targetCompletionDate") || !hasActiveTracker}
+                                    disabled={
+                                        validatorRes.hasErrors("targetCompletionDate") ||
+                                        !hasActiveTracker ||
+                                        stepStatus !== "ACTIVE"
+                                    }
                                     onClick={() => {
                                         handleTargetCompletionDateSubmit(stepTwoData?.id);
                                     }}
