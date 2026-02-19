@@ -13,7 +13,7 @@ const AgreementTypeSummaryCard = ({ titlePrefix }) => {
             dataCy="agreement-type-summary-card"
             style={{ padding: "20px 0 20px 30px" }}
         >
-            <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">{`${titlePrefix} Agreements By Type`}</h3>
+            <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">{`${titlePrefix} Spending by Agreement Type`}</h3>
 
             <div className="display-flex flex-justify">
                 <div

@@ -9,15 +9,15 @@ import AgreementTypeSummaryCard from "../AgreementTypeSummaryCard";
  * @returns {React.ReactElement} - The rendered component
  */
 const AgreementSummaryCardsSection = ({ fiscalYear }) => {
-    const titlePrefix = fiscalYear === "Multi" ? "Multiple Years" : `FY ${fiscalYear}`;
+    const titlePrefix = fiscalYear === "Multi" ? "Multiple Years" : `${fiscalYear}`;
 
     return (
         <div className="display-flex flex-justify">
-            <AgreementTypeSummaryCard titlePrefix={titlePrefix} />
             <AgreementFYSpendingSummaryCard
                 title={`${titlePrefix} Agreements Total`}
                 totalAmount={0}
             />
+            <AgreementTypeSummaryCard titlePrefix={titlePrefix} />
         </div>
     );
 };
