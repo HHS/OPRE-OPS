@@ -33,6 +33,11 @@ export default function useProcurementTrackerStepTwo(stepTwoData) {
 
     let validatorRes = suite.get();
 
+    /**
+     * Handles the submission of the target completion date for step two, updating the procurement tracker step with the new date.
+     * @param {number} stepId - The ID of the procurement tracker step being updated.
+     * @returns {Promise<void>}
+     */
     const handleTargetCompletionDateSubmit = async (stepId) => {
         const payload = {
             target_completion_date: formatDateForApi(targetCompletionDate)
@@ -43,9 +48,39 @@ export default function useProcurementTrackerStepTwo(stepTwoData) {
                 data: payload
             }).unwrap();
             // handleSetIsFormSubmitted(true);
-            console.log("Procurement Tracker Step 1 Updated");
+            console.log("Procurement Tracker Step 2 Updated");
         } catch (error) {
-            console.error("Failed to update Procurement Tracker Step 1", error);
+            console.error("Failed to update Procurement Tracker Step 2", error);
+            setAlert({
+                type: "error",
+                heading: "Error",
+                message: "There was an error updating the procurement tracker step. Please try again."
+            });
+        }
+    };
+
+    /**
+     * Handles the submission of the target completion date for step two, updating the procurement tracker step with the new date.
+     * @param {number} stepId - The ID of the procurement tracker step being updated.
+     * @returns {Promise<void>}
+     */
+    const handleStepTwoComplete = async (stepId) => {
+        const payload = {
+            status: "COMPLETED",
+            task_completed_by: selectedUser.id,
+            date_completed: formatDateForApi(step2DateCompleted),
+            notes: step2Notes.trim()
+        };
+
+        try {
+            await patchStepTwo({
+                stepId,
+                data: payload
+            }).unwrap();
+
+            console.log("Procurement Tracker Step 2 Updated");
+        } catch (error) {
+            console.error("Failed to update Procurement Tracker Step 2", error);
             setAlert({
                 type: "error",
                 heading: "Error",
@@ -85,6 +120,7 @@ export default function useProcurementTrackerStepTwo(stepTwoData) {
         validatorRes,
         step2DateCompletedLabel,
         MemoizedDatePicker,
-        handleTargetCompletionDateSubmit
+        handleTargetCompletionDateSubmit,
+        handleStepTwoComplete
     };
 }
