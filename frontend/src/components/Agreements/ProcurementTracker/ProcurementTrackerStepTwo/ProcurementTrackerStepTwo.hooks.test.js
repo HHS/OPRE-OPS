@@ -24,6 +24,12 @@ vi.mock("./suite", () => {
     mockSuite.reset = vi.fn();
     return { default: mockSuite };
 });
+vi.mock("../../../../api/opsAPI", () => ({
+    useUpdateProcurementTrackerStepMutation: vi.fn(() => [vi.fn(), {}])
+}));
+vi.mock("../../../../hooks/use-alert.hooks", () => ({
+    default: vi.fn(() => ({ setAlert: vi.fn() }))
+}));
 
 describe("useProcurementTrackerStepTwo", () => {
     const mockPatchStepTwo = vi.fn();

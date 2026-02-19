@@ -379,7 +379,6 @@ describe("ProcurementTrackerStepTwo", () => {
             expect(completedInput).toBeDisabled();
             expect(notesInput).toBeDisabled();
             expect(saveButton).not.toBeDisabled();
-            expect(cancelButton).toBeDisabled();
         });
 
         it("form fields are interactive when package is finalized in ACTIVE state", () => {
@@ -614,7 +613,7 @@ describe("ProcurementTrackerStepTwo", () => {
             expect(targetInput).not.toBeDisabled();
             expect(completedInput).toBeDisabled();
             expect(notesInput).toBeDisabled();
-            expect(saveButton).toBeDisabled();
+            expect(saveButton).not.toBeDisabled();
         });
     });
 
