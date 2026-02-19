@@ -42,7 +42,8 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, h
         validatorRes,
         step2DateCompletedLabel,
         MemoizedDatePicker,
-        handleTargetCompletionDateSubmit
+        handleTargetCompletionDateSubmit,
+        step2TargetCompletionDateLabel
     } = useProcurementTrackerStepTwo(stepTwoData);
 
     return (
@@ -61,7 +62,7 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, h
                         {stepTwoData?.target_completion_date ? (
                             <TermTag
                                 term="Target Completion Date"
-                                description={targetCompletionDate}
+                                description={step2TargetCompletionDateLabel}
                             />
                         ) : (
                             <>
