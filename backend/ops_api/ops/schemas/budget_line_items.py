@@ -6,9 +6,7 @@ from marshmallow import EXCLUDE, Schema, ValidationError, fields, validates_sche
 from marshmallow.experimental.context import Context
 
 from models import AgreementType, BudgetLineItemStatus, BudgetLineSortCondition
-from ops_api.ops.schemas.change_requests import (
-    BudgetLineItemChangeRequestResponseSchema,
-)
+from ops_api.ops.schemas.change_requests import GenericChangeRequestResponseSchema
 from ops_api.ops.schemas.pagination import PaginationListSchema
 
 
@@ -276,7 +274,7 @@ class BudgetLineItemResponseSchema(Schema):
     )
     in_review = fields.Bool(required=True)
     change_requests_in_review = fields.Nested(
-        BudgetLineItemChangeRequestResponseSchema,
+        GenericChangeRequestResponseSchema,
         many=True,
         load_default=None,
         dump_default=None,

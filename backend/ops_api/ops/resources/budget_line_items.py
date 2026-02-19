@@ -24,7 +24,7 @@ from ops_api.ops.schemas.budget_line_items import (
     PUTRequestBodySchema,
     QueryParametersSchema,
 )
-from ops_api.ops.schemas.change_requests import BudgetLineItemChangeRequestResponseSchema
+from ops_api.ops.schemas.change_requests import GenericChangeRequestResponseSchema
 from ops_api.ops.services.budget_line_items import (
     BudgetLineItemService,
     batch_load_change_requests_in_review,
@@ -141,7 +141,7 @@ class BudgetLineItemsListAPI(BaseListAPI):
         change_requests_data = batch_load_change_requests_in_review(current_app.db_session, bli_ids, agreement_ids)
 
         list_schema = BudgetLineItemListResponseSchema(many=True)
-        cr_schema = BudgetLineItemChangeRequestResponseSchema(many=True)
+        cr_schema = GenericChangeRequestResponseSchema(many=True)
         meta_schema = MetaSchema()
         data_for_meta = {
             "total_count": count,
