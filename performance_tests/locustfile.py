@@ -331,12 +331,12 @@ class OPSAPIUser(HttpUser):
 
     @task(2)
     def get_cans_by_portfolio(self):
-        """GET /api/v1/cans/portfolio/{id} - Get CANs by portfolio."""
+        """GET /api/v1/cans/?portfolio_id={id} - Get CANs filtered by portfolio ID."""
         if SHARED_CACHE["portfolio_ids"]:
             portfolio_id = random.choice(SHARED_CACHE["portfolio_ids"])
             self.client.get(
-                f"/api/v1/cans/portfolio/{portfolio_id}",
-                name="/api/v1/cans/portfolio/[id]",
+                f"/api/v1/cans/?portfolio_id={portfolio_id}",
+                name="/api/v1/cans/?portfolio_id=[id]",
             )
 
     # === Portfolio Extended Tasks ===

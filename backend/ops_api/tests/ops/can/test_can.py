@@ -161,13 +161,6 @@ def test_can_service_get_by_id(test_can):
     assert test_can.number == can.number
 
 
-def test_can_get_portfolio_cans(auth_client, loaded_db, app_ctx):
-    response = auth_client.get("/api/v1/cans/portfolio/1")
-    assert response.status_code == 200
-    assert len(response.json) == 3
-    assert response.json[0]["id"] == 501
-
-
 def test_get_cans_search_filter(auth_client, loaded_db, test_can, app_ctx):
     response = auth_client.get("/api/v1/cans/?search=XXX8")
     assert response.status_code == 200
@@ -755,6 +748,45 @@ def test_service_filter_by_portfolio(loaded_db):
     for can in cans:
         if can.portfolio:
             assert can.portfolio.abbreviation in ["HMRF", "IA"]
+
+
+# Testing Portfolio ID Filter
+def test_can_get_list_filter_by_portfolio_id(auth_client, loaded_db, app_ctx):
+    """Test filtering CANs by portfolio_id"""
+    # Portfolio ID 1 is used in test data
+    response = auth_client.get("/api/v1/cans/?portfolio_id=1")
+    assert response.status_code == 200
+    assert "data" in response.json
+
+    # Verify all returned CANs belong to portfolio ID 1
+    for can in response.json["data"]:
+        assert can["portfolio_id"] == 1
+
+
+def test_can_get_list_filter_by_multiple_portfolio_ids(auth_client, loaded_db, app_ctx):
+    """Test filtering CANs by multiple portfolio_ids"""
+    response = auth_client.get("/api/v1/cans/?portfolio_id=1&portfolio_id=2")
+    assert response.status_code == 200
+    assert "data" in response.json
+
+    # Verify all returned CANs belong to portfolio ID 1 or 2
+    for can in response.json["data"]:
+        assert can["portfolio_id"] in [1, 2]
+
+
+def test_service_filter_by_portfolio_id(loaded_db):
+    """Test CANService filtering by portfolio_id"""
+    can_service = CANService(loaded_db)
+
+    # Filter by single portfolio ID
+    cans, metadata = can_service.get_list(portfolio_id=[1])
+    for can in cans:
+        assert can.portfolio_id == 1
+
+    # Filter by multiple portfolio IDs
+    cans, metadata = can_service.get_list(portfolio_id=[1, 2])
+    for can in cans:
+        assert can.portfolio_id in [1, 2]
 
 
 # Testing Budget Range Filter

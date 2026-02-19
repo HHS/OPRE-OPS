@@ -1066,11 +1066,20 @@ paths:
           explode: true
         - in: query
           name: portfolio
-          description: Filter by portfolio abbreviation or name
+          description: Filter by portfolio abbreviation
           schema:
             type: array
             items:
               type: string
+          style: form
+          explode: true
+        - in: query
+          name: portfolio_id
+          description: Filter by portfolio ID
+          schema:
+            type: array
+            items:
+              type: integer
           style: form
           explode: true
         - in: query
