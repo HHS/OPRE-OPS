@@ -5196,9 +5196,9 @@ components:
         change_requests_in_review:
           type: array
           nullable: true
+          description: BLI-level and agreement-level change requests in review (GenericChangeRequest supports both)
           items:
-            anyOf:
-              - $ref: "#/components/schemas/GenericChangeRequest"
+            $ref: "#/components/schemas/GenericChangeRequest"
         created_on:
           $ref: "#/components/parameters/created_on"
         updated_on:
@@ -5320,9 +5320,10 @@ components:
           description: Whether this budget line item has change requests in review
         change_requests_in_review:
           type: array
+          nullable: true
+          description: BLI-level and agreement-level change requests in review (GenericChangeRequest supports both)
           items:
-            anyOf:
-              - $ref: "#/components/schemas/GenericChangeRequest"
+            $ref: "#/components/schemas/GenericChangeRequest"
         clin_id:
           type: integer
           example: 1
@@ -5522,6 +5523,8 @@ components:
           example: 1
         budget_line_item_id:
           type: integer
+          nullable: true
+          description: Present for BUDGET_LINE_ITEM_CHANGE_REQUEST; null for AGREEMENT_CHANGE_REQUEST
           example: 1
         has_budget_change:
           type: boolean
@@ -5529,6 +5532,10 @@ components:
         has_status_change:
           type: boolean
           example: false
+        has_proc_shop_change:
+          type: boolean
+          example: false
+          description: Present for AGREEMENT_CHANGE_REQUEST; false for BLI-only change requests
 
     AgreementChangeRequest:
       allOf:
