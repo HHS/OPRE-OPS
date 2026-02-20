@@ -11,7 +11,6 @@ import { getLocalISODate } from "../../../../helpers/utils";
  * @property {string} stepStatus - The current status of the procurement tracker step
  * @property {Object} stepOneData - The data for step one of the procurement tracker
  * @property {boolean} isActiveStep - Whether step is the active step
- * @property {boolean} hasActiveTracker - Whether an active tracker exists
  * @property {Function} handleSetCompletedStepNumber - Function to set the completed step number
  * @property {SafeUser[]} authorizedUsers - List of users authorized for this agreement
  */

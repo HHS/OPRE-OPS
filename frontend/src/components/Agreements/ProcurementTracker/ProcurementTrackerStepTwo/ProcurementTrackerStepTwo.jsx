@@ -14,7 +14,6 @@ import useProcurementTrackerStepTwo from "./ProcurementTrackerStepTwo.hooks";
  * @property {Object} stepTwoData - The data for step 2 of the procurement tracker
  * @property {boolean} isActiveStep - Whether step is the active step
  * @property {SafeUser[]} authorizedUsers - List of users authorized for this agreement
- * @property {boolean} hasActiveTracker - Whether an active tracker exists
  * @property {Function} [handleSetCompletedStepNumber] - Optional callback to set completed step number
  */
 
