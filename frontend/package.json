@@ -60,7 +60,7 @@
         "cypress": "15.10.0",
         "cypress-axe": "1.7.0",
         "cypress-localstorage-commands": "2.2.8",
-        "eslint": "10.0.0",
+        "eslint": "10.0.1",
         "eslint-config-prettier": "10.1.8",
         "eslint-plugin-cypress": "6.0.0",
         "eslint-plugin-import": "2.32.0",
