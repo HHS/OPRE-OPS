@@ -228,7 +228,7 @@ const ProcurementTrackerStepTwo = ({
                     <dl>
                         <TermTag
                             term="Target Completion Date"
-                            description={step2TargetCompletionDateLabel}
+                            description={step2TargetCompletionDateLabel || "None"}
                         />
                         <TermTag
                             term="Completed By"
@@ -240,10 +240,10 @@ const ProcurementTrackerStepTwo = ({
                         />
                         <TermTag
                             term="Draft Solicitation Date"
-                            description={step2DraftSolicitationDateLabel}
+                            description={step2DraftSolicitationDateLabel || "None"}
                         />
                         <dt className="margin-0 text-base-dark margin-top-3 font-12px">Notes</dt>
-                        <dd className="margin-0 margin-top-1">{step2NotesLabel}</dd>
+                        <dd className="margin-0 margin-top-1">{step2NotesLabel || "None"}</dd>
                     </dl>
                 </div>
             )}
