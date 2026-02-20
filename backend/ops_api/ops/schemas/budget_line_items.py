@@ -6,9 +6,7 @@ from marshmallow import EXCLUDE, Schema, ValidationError, fields, validates_sche
 from marshmallow.experimental.context import Context
 
 from models import AgreementType, BudgetLineItemStatus, BudgetLineSortCondition
-from ops_api.ops.schemas.change_requests import (
-    BudgetLineItemChangeRequestResponseSchema,
-)
+from ops_api.ops.schemas.change_requests import GenericChangeRequestResponseSchema
 from ops_api.ops.schemas.pagination import PaginationListSchema
 
 
@@ -276,7 +274,7 @@ class BudgetLineItemResponseSchema(Schema):
     )
     in_review = fields.Bool(required=True)
     change_requests_in_review = fields.Nested(
-        BudgetLineItemChangeRequestResponseSchema,
+        GenericChangeRequestResponseSchema,
         many=True,
         load_default=None,
         dump_default=None,
@@ -296,6 +294,38 @@ class BudgetLineItemResponseSchema(Schema):
     updated_on = fields.DateTime(required=True)
 
     _meta = fields.Nested(MetaSchema, required=True)
+
+
+class BudgetLineItemCANListSchema(Schema):
+    """Minimal CAN schema for list responses - only fields actually used by UI."""
+
+    id = fields.Int(required=True)
+    display_name = fields.Str(required=True)
+    number = fields.Str(required=True)
+    portfolio_id = fields.Int(required=True)
+
+
+class BudgetLineItemListResponseSchema(BudgetLineItemResponseSchema):
+    """
+    Schema for list responses optimized for performance.
+
+    Differences from BudgetLineItemResponseSchema:
+    - `in_review` and `change_requests_in_review` are batch-loaded and injected after
+    - `team_members` excluded (only used for server-side "my items" filter)
+    - `portfolio_team_leaders` excluded (never used in UI)
+    - `can` uses minimal schema (UI only needs id, display_name, number, portfolio_id)
+    """
+
+    # Override these fields to not serialize from model properties (batch-loaded instead)
+    in_review = fields.Bool(load_only=True, dump_default=False)
+    change_requests_in_review = fields.List(fields.Dict(), load_only=True, dump_default=None)
+
+    # Exclude unused fields
+    team_members = fields.List(fields.Dict(), load_only=True, dump_default=None)
+    portfolio_team_leaders = fields.List(fields.Dict(), load_only=True, dump_default=None)
+
+    # Use minimal CAN schema
+    can = fields.Nested(BudgetLineItemCANListSchema(), required=True)
 
 
 class BudgetLineItemListFilterOptionResponseSchema(Schema):

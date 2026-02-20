@@ -150,6 +150,8 @@ class BudgetLineItem(BaseModel):
     __table_args__ = (
         Index("ix_budget_line_item_agreement_id", "agreement_id"),
         Index("ix_budget_line_item_can_id", "can_id"),
+        Index("ix_budget_line_item_status", "status"),
+        Index("ix_budget_line_item_date_needed", "date_needed"),
     )
 
     @BaseModel.display_name.getter

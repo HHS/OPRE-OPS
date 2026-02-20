@@ -3,7 +3,7 @@
 from enum import Enum, auto
 from typing import Optional
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, event
+from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, event
 from sqlalchemy.dialects.postgresql import ENUM, JSONB
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -32,7 +32,7 @@ class ChangeRequest(BaseModel):
 
     # agreement_type: Mapped[AgreementType] = mapped_column(ENUM(AgreementType))
     status: Mapped[ChangeRequestStatus] = mapped_column(
-        ENUM(ChangeRequestStatus), nullable=False, default=ChangeRequestStatus.IN_REVIEW
+        ENUM(ChangeRequestStatus), nullable=False, default=ChangeRequestStatus.IN_REVIEW, index=True
     )
     requested_change_data: Mapped[JSONB] = mapped_column(JSONB)
     requested_change_diff: Mapped[Optional[JSONB]] = mapped_column(JSONB)
@@ -83,7 +83,9 @@ class AgreementChangeRequest(ChangeRequest):
 
 
 class BudgetLineItemChangeRequest(AgreementChangeRequest):
-    budget_line_item_id: Mapped[Optional[int]] = mapped_column(ForeignKey("budget_line_item.id", ondelete="CASCADE"))
+    budget_line_item_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("budget_line_item.id", ondelete="CASCADE"), index=True
+    )
     budget_line_item = relationship(
         "BudgetLineItem",
         passive_deletes=True,

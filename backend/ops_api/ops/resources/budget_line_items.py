@@ -16,6 +16,7 @@ from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.schemas.budget_line_items import (
     BLIFiltersQueryParametersSchema,
     BudgetLineItemListFilterOptionResponseSchema,
+    BudgetLineItemListResponseSchema,
     BudgetLineItemResponseSchema,
     MetaSchema,
     PATCHRequestBodySchema,
@@ -23,17 +24,18 @@ from ops_api.ops.schemas.budget_line_items import (
     PUTRequestBodySchema,
     QueryParametersSchema,
 )
+from ops_api.ops.schemas.change_requests import GenericChangeRequestResponseSchema
 from ops_api.ops.services.budget_line_items import (
     BudgetLineItemService,
+    batch_load_change_requests_in_review,
+    get_change_requests_for_bli,
     get_is_editable_meta_data,
 )
 from ops_api.ops.services.ops_service import OpsService
-from ops_api.ops.utils.budget_line_items_helpers import (
-    bli_associated_with_agreement,
-    is_bli_editable,
-)
+from ops_api.ops.utils.agreements_helpers import associated_with_agreement
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
+from ops_api.ops.utils.users import is_super_user
 
 
 class BudgetLineItemsItemAPI(BaseItemAPI):
@@ -133,15 +135,13 @@ class BudgetLineItemsListAPI(BaseListAPI):
         limit = data.get("limit", None)[0]
         offset = data.get("offset", None)[0]
 
-        serialized_blis = self._response_schema.dump(budget_line_items, many=True)
+        bli_dict = {bli.id: bli for bli in budget_line_items}
+        bli_ids = list(bli_dict.keys())
+        agreement_ids = [bli.agreement_id for bli in budget_line_items]
+        change_requests_data = batch_load_change_requests_in_review(current_app.db_session, bli_ids, agreement_ids)
 
-        # Batch fetch all budget line items
-        bli_ids = [bli["id"] for bli in serialized_blis if bli.get("id")]
-        bli_dict = {}
-        if bli_ids:
-            fetched_blis = current_app.db_session.query(BudgetLineItem).filter(BudgetLineItem.id.in_(bli_ids)).all()
-            bli_dict = {bli.id: bli for bli in fetched_blis}
-
+        list_schema = BudgetLineItemListResponseSchema(many=True)
+        cr_schema = GenericChangeRequestResponseSchema(many=True)
         meta_schema = MetaSchema()
         data_for_meta = {
             "total_count": count,
@@ -156,27 +156,29 @@ class BudgetLineItemsListAPI(BaseListAPI):
             "total_obligated_amount": totals["total_obligated_amount"],
             "total_overcome_by_events_amount": totals["total_overcome_by_events_amount"],
         }
-
         is_budget_team = "BUDGET_TEAM" in (role.name for role in current_user.roles)
+        is_super = is_super_user(current_user, current_app)
+        user_agreement_associations = {}
 
+        serialized_blis = list_schema.dump(budget_line_items)
         for serialized_bli in serialized_blis:
-            meta = meta_schema.dump(data_for_meta)
-
             bli_id = serialized_bli.get("id")
-            budget_line_item = bli_dict.get(bli_id)
-
-            if is_budget_team:
-                # if the user has the BUDGET_TEAM role, they can edit all budget line items
-                meta["isEditable"] = is_bli_editable(budget_line_item)
-            elif serialized_bli.get("agreement_id"):
-                meta["isEditable"] = bli_associated_with_agreement(bli_id) and is_bli_editable(budget_line_item)
-            else:
-                meta["isEditable"] = False
-
-            serialized_bli["_meta"] = meta
+            agreement_id = serialized_bli.get("agreement_id")
+            change_requests = get_change_requests_for_bli(bli_id, agreement_id, change_requests_data)
+            in_review = change_requests is not None
+            serialized_bli["in_review"] = in_review
+            serialized_bli["change_requests_in_review"] = cr_schema.dump(change_requests) if change_requests else None
+            serialized_bli["_meta"] = _list_item_meta(
+                serialized_bli,
+                bli_dict.get(bli_id),
+                data_for_meta,
+                meta_schema,
+                is_budget_team,
+                is_super,
+                user_agreement_associations,
+            )
 
         logger.debug("Serialization complete")
-
         return make_response_with_headers(serialized_blis)
 
     @is_authorized(PermissionType.POST, Permission.BUDGET_LINE_ITEM)
@@ -189,6 +191,56 @@ class BudgetLineItemsListAPI(BaseListAPI):
                 new_bli_dict = self._response_schema.dump(budget_line_item)
                 meta.metadata.update({"new_bli": new_bli_dict})
                 return make_response_with_headers(new_bli_dict, 201)
+
+
+def _list_item_meta(
+    serialized_bli: dict,
+    budget_line_item: BudgetLineItem | None,
+    data_for_meta: dict,
+    meta_schema: MetaSchema,
+    is_budget_team: bool,
+    is_super: bool,
+    user_agreement_associations: dict,
+) -> dict:
+    """Build _meta for a single BLI in the list response (pagination + isEditable)."""
+    meta = meta_schema.dump(data_for_meta)
+    in_review = serialized_bli.get("in_review", False)
+    if is_budget_team:
+        meta["isEditable"] = _is_bli_editable_optimized(budget_line_item, in_review, is_super)
+    elif serialized_bli.get("agreement_id"):
+        agreement_id = serialized_bli["agreement_id"]
+        if agreement_id not in user_agreement_associations:
+            user_agreement_associations[agreement_id] = associated_with_agreement(agreement_id)
+        is_associated = user_agreement_associations[agreement_id]
+        meta["isEditable"] = is_associated and _is_bli_editable_optimized(budget_line_item, in_review, is_super)
+    else:
+        meta["isEditable"] = False
+    return meta
+
+
+def _is_bli_editable_optimized(budget_line_item: BudgetLineItem | None, in_review: bool, is_super: bool) -> bool:
+    """
+    Optimized version of is_bli_editable that uses pre-computed in_review value
+    instead of querying the database.
+    """
+    from models import BudgetLineItemStatus
+
+    if budget_line_item is None:
+        return False
+    # Check if status is editable
+    editable = is_super or budget_line_item.status in [
+        BudgetLineItemStatus.DRAFT,
+        BudgetLineItemStatus.PLANNED,
+    ]
+
+    # Use pre-computed in_review instead of querying
+    if in_review:
+        editable = False
+
+    if not is_super and budget_line_item.is_obe:
+        editable = False
+
+    return editable
 
 
 class BudgetLineItemsListFilterOptionAPI(BaseItemAPI):
