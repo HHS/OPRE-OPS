@@ -31,6 +31,7 @@ export default function useProcurementTrackerStepTwo(stepTwoData, handleSetCompl
     const step2CompletedByUserName = useGetUserFullNameFromId(stepTwoData?.task_completed_by);
     const step2DateCompletedLabel = formatDateToMonthDayYear(stepTwoData?.date_completed);
     const step2TargetCompletionDateLabel = formatDateToMonthDayYear(stepTwoData?.target_completion_date);
+    const step2DraftSolicitationDateLabel = formatDateToMonthDayYear(stepTwoData?.draft_solicitation_date);
     const step2NotesLabel = stepTwoData?.notes;
     const MemoizedDatePicker = React.memo(DatePicker);
 
@@ -136,6 +137,7 @@ export default function useProcurementTrackerStepTwo(stepTwoData, handleSetCompl
         step2CompletedByUserName,
         step2DateCompleted,
         setStep2DateCompleted,
+        step2DraftSolicitationDateLabel,
         step2TargetCompletionDateLabel,
         step2Notes,
         setStep2Notes,

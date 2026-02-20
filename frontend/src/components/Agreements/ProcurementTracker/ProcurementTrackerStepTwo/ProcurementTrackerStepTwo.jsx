@@ -55,7 +55,8 @@ const ProcurementTrackerStepTwo = ({
         setShowModal,
         modalProps,
         cancelModalStep2,
-        handleStepTwoComplete
+        handleStepTwoComplete,
+        step2DraftSolicitationDateLabel
     } = useProcurementTrackerStepTwo(stepTwoData, handleSetCompletedStepNumber);
 
     return (
@@ -223,12 +224,20 @@ const ProcurementTrackerStepTwo = ({
                     </p>
                     <dl>
                         <TermTag
+                            term="Target Completion Date"
+                            description={step2TargetCompletionDateLabel}
+                        />
+                        <TermTag
                             term="Completed By"
                             description={step2CompletedByUserName}
                         />
                         <TermTag
                             term="Date Completed"
                             description={step2DateCompletedLabel}
+                        />
+                        <TermTag
+                            term="Draft Solicitation Date"
+                            description={step2DraftSolicitationDateLabel}
                         />
                         <dt className="margin-0 text-base-dark margin-top-3 font-12px">Notes</dt>
                         <dd className="margin-0 margin-top-1">{step2NotesLabel}</dd>
