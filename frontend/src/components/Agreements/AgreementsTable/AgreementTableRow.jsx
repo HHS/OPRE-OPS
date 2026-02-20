@@ -60,6 +60,7 @@ export const AgreementTableRow = ({ agreementId, selectedFiscalYear }) => {
     const agreementFees = isSuccess ? (agreement?.total_agreement_fees ?? 0) : 0;
     const lifetimeObligated = isSuccess ? (agreement?.lifetime_obligated ?? 0) : 0;
     const contractNumber = isSuccess ? getAgreementContractNumber(agreement) : NO_DATA;
+    const vendor = isSuccess ? (agreement?.vendor ?? NO_DATA) : NO_DATA;
 
     // styles for the table row
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
@@ -281,6 +282,13 @@ export const AgreementTableRow = ({ agreementId, selectedFiscalYear }) => {
                 <dl className="font-12px">
                     <dt className="margin-0 text-base-dark">Contract #</dt>
                     <dd className="margin-0">{contractNumber || NO_DATA}</dd>
+                </dl>
+                <dl
+                    className="font-12px"
+                    style={{ marginLeft: "2.5rem" }}
+                >
+                    <dt className="margin-0 text-base-dark">Vendor</dt>
+                    <dd className="margin-0">{vendor}</dd>
                 </dl>
             </div>
         </td>

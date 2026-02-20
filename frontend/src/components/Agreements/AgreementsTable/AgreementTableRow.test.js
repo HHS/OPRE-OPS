@@ -100,6 +100,7 @@ const baseAgreement = {
     agreement_total: 315,
     lifetime_obligated: 0,
     contract_number: "CT-001",
+    vendor: "Vendor Co",
     created_by: 1,
     notes: "Test notes",
     created_on: "2021-10-21T03:24:00",
