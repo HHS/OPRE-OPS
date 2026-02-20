@@ -18,7 +18,13 @@ export default function useProcurementTrackerStepTwo(stepTwoData, handleSetCompl
     const [targetCompletionDate, setTargetCompletionDate] = React.useState("");
     const [step2DateCompleted, setStep2DateCompleted] = React.useState("");
     const [step2Notes, setStep2Notes] = React.useState("");
-
+    const [showModal, setShowModal] = React.useState(false);
+    const [modalProps, setModalProps] = React.useState({
+        heading: "",
+        actionButtonText: "",
+        secondaryButtonText: "",
+        handleConfirm: () => {}
+    });
     const [patchStepTwo] = useUpdateProcurementTrackerStepMutation();
     const { setAlert } = useAlert();
 
@@ -104,6 +110,18 @@ export default function useProcurementTrackerStepTwo(stepTwoData, handleSetCompl
         setStep2Notes("");
     };
 
+    const cancelModalStep2 = () => {
+        setShowModal(true);
+        setModalProps({
+            heading: "Are you sure you want to cancel this task? Your input will not be saved.",
+            actionButtonText: "Cancel Task",
+            secondaryButtonText: "Continue Editing",
+            handleConfirm: () => {
+                cancelStepTwo();
+            }
+        });
+    };
+
     return {
         cancelStepTwo,
         isPreSolicitationPackageFinalized,
@@ -127,6 +145,10 @@ export default function useProcurementTrackerStepTwo(stepTwoData, handleSetCompl
         step2DateCompletedLabel,
         MemoizedDatePicker,
         handleTargetCompletionDateSubmit,
-        handleStepTwoComplete
+        handleStepTwoComplete,
+        showModal,
+        modalProps,
+        setShowModal,
+        cancelModalStep2
     };
 }

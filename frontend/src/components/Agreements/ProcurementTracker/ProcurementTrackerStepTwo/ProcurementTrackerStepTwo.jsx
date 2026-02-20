@@ -1,6 +1,7 @@
 import { getLocalISODate } from "../../../../helpers/utils";
-import TermTag from "../../../UI/Term/TermTag";
 import TextArea from "../../../UI/Form/TextArea";
+import ConfirmationModal from "../../../UI/Modals/ConfirmationModal";
+import TermTag from "../../../UI/Term/TermTag";
 import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepTwo from "./ProcurementTrackerStepTwo.hooks";
 
@@ -30,7 +31,6 @@ const ProcurementTrackerStepTwo = ({
     handleSetCompletedStepNumber
 }) => {
     const {
-        cancelStepTwo,
         isPreSolicitationPackageFinalized,
         setIsPreSolicitationPackageFinalized,
         draftSolicitationDate,
@@ -51,11 +51,24 @@ const ProcurementTrackerStepTwo = ({
         MemoizedDatePicker,
         handleTargetCompletionDateSubmit,
         step2TargetCompletionDateLabel,
+        showModal,
+        setShowModal,
+        modalProps,
+        cancelModalStep2,
         handleStepTwoComplete
     } = useProcurementTrackerStepTwo(stepTwoData, handleSetCompletedStepNumber);
 
     return (
         <>
+            {showModal && (
+                <ConfirmationModal
+                    heading={modalProps.heading}
+                    setShowModal={setShowModal}
+                    actionButtonText={modalProps.actionButtonText}
+                    secondaryButtonText={modalProps.secondaryButtonText}
+                    handleConfirm={modalProps.handleConfirm}
+                />
+            )}
             {stepStatus === "PENDING" && (
                 <fieldset className="usa-fieldset">
                     <p>
@@ -182,7 +195,7 @@ const ProcurementTrackerStepTwo = ({
                         <button
                             className="usa-button usa-button--unstyled margin-right-2"
                             data-cy="cancel-button"
-                            onClick={cancelStepTwo}
+                            onClick={cancelModalStep2}
                             disabled={!isPreSolicitationPackageFinalized}
                         >
                             Cancel
