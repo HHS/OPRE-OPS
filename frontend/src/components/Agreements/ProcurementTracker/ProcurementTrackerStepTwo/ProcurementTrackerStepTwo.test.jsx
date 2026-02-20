@@ -166,7 +166,7 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
@@ -182,7 +182,7 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
@@ -198,7 +198,7 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
@@ -218,7 +218,7 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
@@ -243,7 +243,7 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
@@ -261,7 +261,7 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
@@ -284,7 +284,7 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
@@ -308,7 +308,7 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
@@ -326,7 +326,7 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
@@ -346,7 +346,7 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
@@ -363,7 +363,7 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
@@ -409,7 +409,7 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
@@ -456,7 +456,7 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
@@ -474,7 +474,7 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="COMPLETED"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
@@ -490,7 +490,7 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="COMPLETED"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
@@ -505,7 +505,7 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="COMPLETED"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
@@ -520,7 +520,7 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="COMPLETED"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
@@ -537,7 +537,7 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="COMPLETED"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
@@ -570,7 +570,7 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
@@ -599,7 +599,7 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
@@ -615,7 +615,7 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={false}
+                    isDisabled={true}
                     isActiveStep={false}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
@@ -655,7 +655,7 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={undefined}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
@@ -669,7 +669,7 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="SKIPPED"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
@@ -684,7 +684,7 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={[]}
-                    hasActiveTracker={true}
+                    isDisabled={false}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
@@ -702,7 +702,7 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
@@ -718,7 +718,7 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="COMPLETED"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
@@ -736,7 +736,7 @@ describe("ProcurementTrackerStepTwo", () => {
                 stepStatus="PENDING"
                 stepTwoData={mockStepData}
                 authorizedUsers={mockAllUsers}
-                hasActiveTracker={true}
+                isDisabled={false}
             />
         );
 
@@ -750,7 +750,7 @@ describe("ProcurementTrackerStepTwo", () => {
                 stepStatus="PENDING"
                 stepTwoData={mockStepData}
                 authorizedUsers={mockAllUsers}
-                hasActiveTracker={true}
+                isDisabled={false}
             />
         );
 
@@ -775,7 +775,7 @@ describe("ProcurementTrackerStepTwo", () => {
                 stepStatus="COMPLETED"
                 stepTwoData={mockCompletedStepData}
                 authorizedUsers={mockAllUsers}
-                hasActiveTracker={true}
+                isDisabled={false}
             />
         );
 
@@ -807,7 +807,7 @@ describe("ProcurementTrackerStepTwo", () => {
                 stepStatus="COMPLETED"
                 stepTwoData={mockCompletedStepData}
                 authorizedUsers={mockAllUsers}
-                hasActiveTracker={true}
+                isDisabled={false}
             />
         );
 

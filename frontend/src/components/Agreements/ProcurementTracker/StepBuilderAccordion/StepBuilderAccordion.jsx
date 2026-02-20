@@ -1,3 +1,5 @@
+import { faCheck } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Accordion from "../../../UI/Accordion";
 import { fromUpperCaseToTitleCase } from "../../../../helpers/utils";
 import "./StepBuilderAccordion.css";
@@ -82,7 +84,16 @@ const StepBuilderAccordion = ({
             data-testid={`step-builder-heading-${step?.id}`}
         >
             <span className="step-builder-accordion__step-count">
-                <span className="step-builder-accordion__step-number">{step?.step_number}</span>{" "}
+                <span className="step-builder-accordion__step-number">
+                    {stepState === "completed" ? (
+                        <FontAwesomeIcon
+                            icon={faCheck}
+                            aria-label="Completed"
+                        />
+                    ) : (
+                        step?.step_number
+                    )}
+                </span>{" "}
                 <span className="step-builder-accordion__step-total">of {totalSteps}</span>
             </span>{" "}
             <span className="step-builder-accordion__step-label">{formatStepLabel(step?.step_type)}</span>

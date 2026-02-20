@@ -167,27 +167,6 @@ def test_validate_pre_solicitation_step_missing_required_fields(): ...
 
 @scenario(
     "validate_procurement_tracker_steps.feature",
-    "Validate pre solicitation step draft solicitation date in update cannot be in the past",
-)
-def test_validate_pre_solicitation_step_draft_solicitation_date_update(): ...
-
-
-@scenario(
-    "validate_procurement_tracker_steps.feature",
-    "Validate solicitation draft date on model is invalid but update is valid",
-)
-def test_validate_pre_solicitation_step_draft_solicitation_date_on_model_invalid_but_update_valid(): ...
-
-
-@scenario(
-    "validate_procurement_tracker_steps.feature",
-    "Validate pre solicitation step draft solicitation date in the model cannot be in the past",
-)
-def test_validate_pre_solicitation_step_draft_solicitation_date_model(): ...
-
-
-@scenario(
-    "validate_procurement_tracker_steps.feature",
     "Complete Procurement Tracker",
 )
 def test_complete_procurement_tracker(): ...

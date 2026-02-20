@@ -102,14 +102,13 @@ const ProcurementTrackerStepTwo = ({
                                         setTargetCompletionDate(e.target.value);
                                     }}
                                     minDate={getLocalISODate()}
-                                    isDisabled={isDisabled || !isActiveStep}
+                                    isDisabled={isDisabled}
                                 />
                                 <button
                                     className="usa-button usa-button--unstyled margin-bottom-1 margin-left-2"
                                     data-cy="target-completion-save-btn"
                                     disabled={
                                         isDisabled ||
-                                        !isActiveStep ||
                                         validatorRes.hasErrors("targetCompletionDate") ||
                                         !targetCompletionDate
                                     }
@@ -194,7 +193,6 @@ const ProcurementTrackerStepTwo = ({
                             runValidate("draftSolicitationDate", e.target.value);
                             setDraftSolicitationDate(e.target.value);
                         }}
-                        minDate={getLocalISODate()}
                         isDisabled={isDisabled || !isPreSolicitationPackageFinalized}
                     />
                     <div className="margin-top-2 display-flex flex-justify-end">
