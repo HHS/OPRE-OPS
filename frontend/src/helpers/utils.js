@@ -63,10 +63,11 @@ export const formatDateNeeded = (dateNeeded, isObe = false) => {
 /**
  * Formats a date string into a date string in the format MMM DD, YYYY ie May 19, 2023.
  * @param {string} date - The date string to format. This parameter is required.
- * @returns {string} The formatted date string.
+ * @returns {string|null} The formatted date string or null if date is null/undefined.
  * @example formatDateToMonthDayYear("2023-05-19")
  */
 export const formatDateToMonthDayYear = (date) => {
+    if (!date) return null;
     return new Date(date).toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" });
 };
 
