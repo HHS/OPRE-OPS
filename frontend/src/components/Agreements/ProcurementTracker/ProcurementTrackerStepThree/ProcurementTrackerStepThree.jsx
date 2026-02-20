@@ -13,9 +13,7 @@
  * @param {ProcurementTrackerStepThreeProps} props
  * @returns {React.ReactElement}
  */
-const ProcurementTrackerStepThree = ({
-    stepStatus
-}) => {
+const ProcurementTrackerStepThree = ({ stepStatus }) => {
     const inProgressStatuses = ["PENDING", "ACTIVE"];
 
     return (
