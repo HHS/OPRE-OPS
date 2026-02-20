@@ -604,7 +604,8 @@ describe("AgreementProcurementTracker", () => {
             );
 
             const headings = screen.getAllByTestId("accordion-heading");
-            expect(headings[0]).toHaveTextContent(/1\s+of\s+6\s+Pre Solicitation/);
+            // Step 1 is COMPLETED so it shows a check icon instead of "1"
+            expect(headings[0]).toHaveTextContent(/of\s+6\s+Pre Solicitation/);
             expect(headings[1]).toHaveTextContent(/2\s+of\s+6\s+Solicitation/);
         });
 

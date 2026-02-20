@@ -82,8 +82,6 @@ class ProcurementTrackerStepsValidator:
             AcquisitionPlanningRequiredFieldsRule,
             CompletedByUpdateAuthorizationRule,
             NoFutureCompletionDateUpdateValidationRule,
-            NoPastDraftSolicitationDateOnModelRule,
-            NoPastDraftSolicitationDateUpdateRule,
             NoPastTargetCompletionDateUpdateRule,
             NotesMaxLengthUpdateRule,
             NoUpdatingCompletedProcurementStepRule,
@@ -113,8 +111,6 @@ class ProcurementTrackerStepsValidator:
                     NoUpdatingCompletedProcurementStepRule(),
                     NoFutureCompletionDateUpdateValidationRule(),
                     NoPastTargetCompletionDateUpdateRule(),
-                    NoPastDraftSolicitationDateUpdateRule(),
-                    NoPastDraftSolicitationDateOnModelRule(),
                     NotesMaxLengthUpdateRule(),
                 ]
             else:
@@ -126,7 +122,6 @@ class ProcurementTrackerStepsValidator:
                     NoUpdatingCompletedProcurementStepRule(),
                     NoFutureCompletionDateUpdateValidationRule(),
                     NoPastTargetCompletionDateUpdateRule(),
-                    NoPastDraftSolicitationDateUpdateRule(),
                     NotesMaxLengthUpdateRule(),
                 ]
 
