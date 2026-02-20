@@ -3,8 +3,7 @@ import {
     getAgreementStartDate,
     getAgreementEndDate,
     getProcurementShopDisplay,
-    getFYObligatedAmount,
-    getLifetimeObligatedAmount
+    getFYObligatedAmount
 } from "./AgreementsTable.helpers";
 
 describe("AgreementsTable helpers", () => {
@@ -92,31 +91,6 @@ describe("AgreementsTable helpers", () => {
         it("returns 0 when no budget line items", () => {
             const agreement = { budget_line_items: [] };
             expect(getFYObligatedAmount(agreement, 2025)).toBe(0);
-        });
-    });
-
-    describe("getLifetimeObligatedAmount", () => {
-        it("returns sum of amount + fees for all obligated BLIs", () => {
-            const agreement = {
-                budget_line_items: [
-                    { amount: 1000, fees: 50, status: "OBLIGATED", fiscal_year: 2025 },
-                    { amount: 500, fees: 25, status: "OBLIGATED", fiscal_year: 2024 },
-                    { amount: 300, fees: 15, status: "PLANNED", fiscal_year: 2025 }
-                ]
-            };
-            expect(getLifetimeObligatedAmount(agreement)).toBe(1575); // (1000+50) + (500+25)
-        });
-
-        it("returns 0 when no obligated BLIs", () => {
-            const agreement = {
-                budget_line_items: [{ amount: 300, fees: 15, status: "PLANNED", fiscal_year: 2025 }]
-            };
-            expect(getLifetimeObligatedAmount(agreement)).toBe(0);
-        });
-
-        it("returns 0 when no budget line items", () => {
-            const agreement = { budget_line_items: [] };
-            expect(getLifetimeObligatedAmount(agreement)).toBe(0);
         });
     });
 });
