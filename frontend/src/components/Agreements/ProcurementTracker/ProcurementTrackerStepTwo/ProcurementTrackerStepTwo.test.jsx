@@ -814,6 +814,6 @@ describe("ProcurementTrackerStepTwo", () => {
         expect(screen.getByText("Notes")).toBeInTheDocument();
         // eslint-disable-next-line testing-library/no-node-access
         const dd = screen.getByText("Notes").nextElementSibling;
-        expect(dd.textContent).toBe("");
+        expect(dd.textContent).toBe("None");
     });
 });
