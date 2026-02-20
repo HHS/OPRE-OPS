@@ -93,8 +93,12 @@ const baseAgreement = {
             fiscal_year: 2025
         }
     ],
-    start_date: "2025-01-15T00:00:00",
-    end_date: "2025-12-31T00:00:00",
+    sc_start_date: "2025-01-15",
+    sc_end_date: "2025-12-31",
+    agreement_subtotal: 300,
+    total_agreement_fees: 15,
+    agreement_total: 315,
+    lifetime_obligated: 0,
     contract_number: "CT-001",
     created_by: 1,
     notes: "Test notes",

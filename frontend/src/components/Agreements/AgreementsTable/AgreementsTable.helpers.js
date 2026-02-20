@@ -102,12 +102,12 @@ export const getAgreementContractNumber = (agreement) => {
 
 export const getAgreementStartDate = (agreement) => {
     handleAgreementProp(agreement);
-    return agreement.start_date ? formatDate(new Date(agreement.start_date)) : "TBD";
+    return agreement.sc_start_date ? formatDate(new Date(agreement.sc_start_date)) : "TBD";
 };
 
 export const getAgreementEndDate = (agreement) => {
     handleAgreementProp(agreement);
-    return agreement.end_date ? formatDate(new Date(agreement.end_date)) : "TBD";
+    return agreement.sc_end_date ? formatDate(new Date(agreement.sc_end_date)) : "TBD";
 };
 
 export const getProcurementShopDisplay = (agreement) => {

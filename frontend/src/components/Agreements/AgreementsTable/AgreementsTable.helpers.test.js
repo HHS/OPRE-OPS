@@ -9,34 +9,34 @@ import {
 
 describe("AgreementsTable helpers", () => {
     describe("getAgreementStartDate", () => {
-        it("returns formatted date when start_date exists", () => {
-            const agreement = { start_date: "2025-01-15T00:00:00" };
+        it("returns formatted date when sc_start_date exists", () => {
+            const agreement = { sc_start_date: "2025-01-15" };
             expect(getAgreementStartDate(agreement)).toBe("1/15/2025");
         });
 
-        it("returns TBD when start_date is null", () => {
-            const agreement = { start_date: null };
+        it("returns TBD when sc_start_date is null", () => {
+            const agreement = { sc_start_date: null };
             expect(getAgreementStartDate(agreement)).toBe("TBD");
         });
 
-        it("returns TBD when start_date is undefined", () => {
+        it("returns TBD when sc_start_date is undefined", () => {
             const agreement = {};
             expect(getAgreementStartDate(agreement)).toBe("TBD");
         });
     });
 
     describe("getAgreementEndDate", () => {
-        it("returns formatted date when end_date exists", () => {
-            const agreement = { end_date: "2025-12-31T00:00:00" };
+        it("returns formatted date when sc_end_date exists", () => {
+            const agreement = { sc_end_date: "2025-12-31" };
             expect(getAgreementEndDate(agreement)).toBe("12/31/2025");
         });
 
-        it("returns TBD when end_date is null", () => {
-            const agreement = { end_date: null };
+        it("returns TBD when sc_end_date is null", () => {
+            const agreement = { sc_end_date: null };
             expect(getAgreementEndDate(agreement)).toBe("TBD");
         });
 
-        it("returns TBD when end_date is undefined", () => {
+        it("returns TBD when sc_end_date is undefined", () => {
             const agreement = {};
             expect(getAgreementEndDate(agreement)).toBe("TBD");
         });

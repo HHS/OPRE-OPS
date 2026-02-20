@@ -65,6 +65,7 @@ class ServicesComponent(BaseModel):
     agreement_id: Mapped[int] = mapped_column(Integer, ForeignKey("agreement.id", ondelete="CASCADE"))
     agreement: Mapped["Agreement"] = relationship(
         "Agreement",
+        back_populates="services_components",
         passive_deletes=True,
     )
 

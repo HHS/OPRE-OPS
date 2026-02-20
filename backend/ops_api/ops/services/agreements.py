@@ -965,6 +965,10 @@ def _sort_agreements(results, sort_condition, sort_descending):
             return sorted(results, key=next_budget_line_sort, reverse=sort_descending)
         case AgreementSortCondition.NEXT_OBLIGATE_BY:
             return sorted(results, key=next_obligate_by_sort, reverse=sort_descending)
+        case AgreementSortCondition.START:
+            return sorted(results, key=start_date_sort, reverse=sort_descending)
+        case AgreementSortCondition.END:
+            return sorted(results, key=end_date_sort, reverse=sort_descending)
         case _:
             return results
 
@@ -974,21 +978,7 @@ def project_sort(agreement):
 
 
 def agreement_total_sort(agreement):
-    # Filter out DRAFT budget line items
-    filtered_blis = list(
-        filter(
-            lambda bli: bli.status != BudgetLineItemStatus.DRAFT,
-            agreement.budget_line_items,
-        )
-    )
-
-    # Calculate sum of amounts, skipping None values by using 0 instead
-    bli_totals = Decimal("0")
-    for bli in filtered_blis:
-        if bli.amount is not None:
-            bli_totals += bli.amount + bli.fees
-
-    return bli_totals
+    return agreement.agreement_total
 
 
 def next_budget_line_sort(agreement):
@@ -1006,6 +996,14 @@ def next_obligate_by_sort(agreement):
     next_bli = _get_next_obligated_bli(agreement.budget_line_items)
 
     return next_bli.date_needed if next_bli else date.today()
+
+
+def start_date_sort(agreement):
+    return agreement.sc_start_date or date.max
+
+
+def end_date_sort(agreement):
+    return agreement.sc_end_date or date.max
 
 
 def _get_next_obligated_bli(budget_line_items):

@@ -59,8 +59,12 @@ const agreements = [
                 fiscal_year: 2025
             }
         ],
-        start_date: "2025-01-01T00:00:00",
-        end_date: "2025-12-31T00:00:00",
+        sc_start_date: "2025-01-01",
+        sc_end_date: "2025-12-31",
+        agreement_subtotal: 300,
+        total_agreement_fees: 15,
+        agreement_total: 315,
+        lifetime_obligated: 0,
         created_by: 1,
         notes: "Test notes",
         created_on: "2021-10-21T03:24:00",

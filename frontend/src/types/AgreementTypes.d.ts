@@ -45,6 +45,12 @@ export type Agreement = {
     servicing_agency?: string;
     research_methodologies?: ResearchMethodology[];
     special_topics?: SpecialTopic[];
+    sc_start_date?: string | null;
+    sc_end_date?: string | null;
+    agreement_subtotal?: number | null;
+    total_agreement_fees?: number | null;
+    agreement_total?: number | null;
+    lifetime_obligated?: number | null;
 };
 
 type ProductServiceCode = {

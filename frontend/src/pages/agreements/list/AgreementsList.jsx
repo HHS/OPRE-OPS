@@ -13,9 +13,7 @@ import AgreementsTable from "../../../components/Agreements/AgreementsTable";
 import {
     getAgreementContractNumber,
     getAgreementName,
-    getAgreementSubTotal,
     getFYObligatedAmount,
-    getLifetimeObligatedAmount,
     getProcurementShopDisplay,
     getResearchProjectName
 } from "../../../components/Agreements/AgreementsTable/AgreementsTable.helpers";
@@ -26,7 +24,6 @@ import FiscalYear from "../../../components/UI/FiscalYear";
 import PaginationNav from "../../../components/UI/PaginationNav/PaginationNav";
 import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
 import { ITEMS_PER_PAGE } from "../../../constants";
-import { getAgreementFeesFromBackend } from "../../../helpers/agreement.helpers";
 import { exportTableToXlsx } from "../../../helpers/tableExport.helpers";
 import { convertCodeForDisplay, formatDate, getCurrentFiscalYear } from "../../../helpers/utils";
 import icons from "../../../uswds/img/sprite.svg";
@@ -256,15 +253,15 @@ const AgreementsList = () => {
                 rowMapper: (agreement) => {
                     const agreementName = getAgreementName(agreement);
                     const agreementType = convertCodeForDisplay("agreementType", agreement?.agreement_type);
-                    const startDate = agreement.start_date ? formatDate(new Date(agreement.start_date)) : "TBD";
-                    const endDate = agreement.end_date ? formatDate(new Date(agreement.end_date)) : "TBD";
-                    const agreementSubTotal = getAgreementSubTotal(agreement);
-                    const agreementFees = getAgreementFeesFromBackend(agreement);
-                    const total = (agreementSubTotal ?? 0) + (agreementFees ?? 0);
+                    const startDate = agreement.sc_start_date ? formatDate(new Date(agreement.sc_start_date)) : "TBD";
+                    const endDate = agreement.sc_end_date ? formatDate(new Date(agreement.sc_end_date)) : "TBD";
+                    const agreementSubTotal = agreement.agreement_subtotal ?? 0;
+                    const agreementFees = agreement.total_agreement_fees ?? 0;
+                    const total = agreement.agreement_total ?? 0;
                     const fyObligated = getFYObligatedAmount(agreement, effectiveFY);
                     const project = getResearchProjectName(agreement);
                     const procurementShop = getProcurementShopDisplay(agreement);
-                    const lifetimeObligated = getLifetimeObligatedAmount(agreement);
+                    const lifetimeObligated = agreement.lifetime_obligated ?? 0;
                     const contractNumber = getAgreementContractNumber(agreement);
 
                     return [

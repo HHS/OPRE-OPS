@@ -3,7 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useGetAgreementByIdQuery } from "../../../api/opsAPI";
 import { NO_DATA } from "../../../constants";
-import { calculateAgreementTotal, getAgreementType, isNotDevelopedYet } from "../../../helpers/agreement.helpers";
+import { getAgreementType, isNotDevelopedYet } from "../../../helpers/agreement.helpers";
 import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import { getCurrentFiscalYear } from "../../../helpers/utils";
@@ -23,16 +23,13 @@ import {
     getAgreementEndDate,
     getAgreementName,
     getAgreementStartDate,
-    getAgreementSubTotal,
     getFYObligatedAmount,
-    getLifetimeObligatedAmount,
     getProcurementShopDisplay,
     getResearchProjectName,
     isThereAnyBudgetLines
 } from "./AgreementsTable.helpers";
 import { TABLE_HEADINGS_LIST } from "./AgreementsTable.constants";
 import { useHandleDeleteAgreement, useHandleEditAgreement, useNavigateAgreementReview } from "./AgreementsTable.hooks";
-import { getAgreementFeesFromBackend } from "../../../helpers/agreement.helpers";
 
 /**
  * Renders a row in the agreements table.
@@ -48,7 +45,7 @@ export const AgreementTableRow = ({ agreementId, selectedFiscalYear }) => {
     const { data: agreement, isLoading, isSuccess } = useGetAgreementByIdQuery(agreementId, { skip: !agreementId });
     const agreementName = isSuccess ? getAgreementName(agreement) : NO_DATA;
     const agreementType = isSuccess ? getAgreementType(agreement?.agreement_type) : NO_DATA;
-    const agreementTotal = calculateAgreementTotal(agreement?.budget_line_items ?? []);
+    const agreementTotal = agreement?.agreement_total ?? 0;
     const agreementStartDate = isSuccess ? getAgreementStartDate(agreement) : NO_DATA;
     const agreementEndDate = isSuccess ? getAgreementEndDate(agreement) : NO_DATA;
 
@@ -59,9 +56,9 @@ export const AgreementTableRow = ({ agreementId, selectedFiscalYear }) => {
     // Expanded row values
     const researchProjectName = isSuccess ? getResearchProjectName(agreement) : NO_DATA;
     const procurementShopDisplay = isSuccess ? getProcurementShopDisplay(agreement) : NO_DATA;
-    const agreementSubTotal = isSuccess ? getAgreementSubTotal(agreement) : 0;
-    const agreementFees = isSuccess ? getAgreementFeesFromBackend(agreement) : 0;
-    const lifetimeObligated = isSuccess ? getLifetimeObligatedAmount(agreement) : 0;
+    const agreementSubTotal = isSuccess ? (agreement?.agreement_subtotal ?? 0) : 0;
+    const agreementFees = isSuccess ? (agreement?.total_agreement_fees ?? 0) : 0;
+    const lifetimeObligated = isSuccess ? (agreement?.lifetime_obligated ?? 0) : 0;
     const contractNumber = isSuccess ? getAgreementContractNumber(agreement) : NO_DATA;
 
     // styles for the table row
