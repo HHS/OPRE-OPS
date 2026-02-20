@@ -7,7 +7,18 @@ import { useUpdateProcurementTrackerStepMutation } from "../../../../api/opsAPI"
 import useAlert from "../../../../hooks/use-alert.hooks";
 
 vi.mock("../../../../hooks/user.hooks");
-vi.mock("../../../../helpers/utils");
+vi.mock("../../../../helpers/utils", () => ({
+    formatDateToMonthDayYear: vi.fn((date) => date),
+    formatDateForApi: vi.fn((date) => {
+        if (!date) return undefined;
+        // Convert MM/DD/YYYY to YYYY-MM-DD
+        const parts = date.split("/");
+        if (parts.length === 3) {
+            return `${parts[2]}-${parts[0].padStart(2, "0")}-${parts[1].padStart(2, "0")}`;
+        }
+        return date;
+    })
+}));
 vi.mock("../../../../api/opsAPI", () => ({
     useUpdateProcurementTrackerStepMutation: vi.fn()
 }));
@@ -212,6 +223,41 @@ describe("useProcurementTrackerStepTwo", () => {
 
             // Should not throw an error
             expect(result.current).toBeDefined();
+        });
+
+        it("includes target_completion_date in payload when completing step", async () => {
+            const mockUnwrap = vi.fn().mockResolvedValue({ success: true });
+            mockPatchStepTwo.mockReturnValue({ unwrap: mockUnwrap });
+            useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepTwo]);
+
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber)
+            );
+
+            act(() => {
+                result.current.setIsPreSolicitationPackageFinalized(true);
+                result.current.setSelectedUser({ id: 456, full_name: "Jane Smith" });
+                result.current.setStep2DateCompleted("03/20/2024");
+                result.current.setTargetCompletionDate("04/15/2024");
+                result.current.setDraftSolicitationDate("05/01/2024");
+                result.current.setStep2Notes("Test notes");
+            });
+
+            await act(async () => {
+                await result.current.handleStepTwoComplete(1);
+            });
+
+            expect(mockPatchStepTwo).toHaveBeenCalledWith({
+                stepId: 1,
+                data: {
+                    status: "COMPLETED",
+                    task_completed_by: 456,
+                    date_completed: "2024-03-20",
+                    notes: "Test notes",
+                    target_completion_date: "2024-04-15",
+                    draft_solicitation_date: "2024-05-01"
+                }
+            });
         });
     });
 
