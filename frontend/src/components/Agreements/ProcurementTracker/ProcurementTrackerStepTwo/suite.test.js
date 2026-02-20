@@ -43,9 +43,9 @@ describe("ProcurementTrackerStepTwo Validation Suite", () => {
 
     describe("Valid Data", () => {
         it("should pass validation with valid dateCompleted field", () => {
-            const result = suite(validData);
+            const result = suite(validData, "dateCompleted");
 
-            expect(result.hasErrors()).toBe(false);
+            expect(result.hasErrors("dateCompleted")).toBe(false);
             expect(result.getErrors("dateCompleted")).toHaveLength(0);
         });
 

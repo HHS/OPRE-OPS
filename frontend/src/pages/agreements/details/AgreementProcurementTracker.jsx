@@ -27,9 +27,9 @@ const AgreementProcurementTracker = ({ agreement }) => {
         "Pre-Award",
         "Award"
     ];
-    const [isFormSubmitted, setIsFormSubmitted] = React.useState(false);
-    const handleSetIsFormSubmitted = (value) => {
-        setIsFormSubmitted(value);
+    const [completedStepNumber, setCompletedStepNumber] = React.useState(null);
+    const handleSetCompletedStepNumber = (stepNumber) => {
+        setCompletedStepNumber(stepNumber);
     };
     const agreementId = agreement?.id;
 
@@ -105,10 +105,10 @@ const AgreementProcurementTracker = ({ agreement }) => {
                         totalSteps={WIZARD_STEPS.length}
                         activeStepNumber={hasActiveTracker ? currentStep : undefined}
                         isReadOnly={!hasActiveTracker}
-                        // Keep step 1 and the active step open after form submission, all others closed
+                        // Keep the completed step and active step open after form submission, all others closed
                         isClosed={
-                            isFormSubmitted
-                                ? !(step.step_number === 1 || step.step_number === accordionOpenStep)
+                            completedStepNumber !== null
+                                ? !(step.step_number === completedStepNumber || step.step_number === accordionOpenStep)
                                 : step.step_number !== accordionOpenStep
                         }
                         level={3}
@@ -118,8 +118,8 @@ const AgreementProcurementTracker = ({ agreement }) => {
                             <ProcurementTrackerStepOne
                                 stepStatus={step.status}
                                 stepOneData={stepOneData}
-                                hasActiveTracker={hasActiveTracker}
-                                handleSetIsFormSubmitted={handleSetIsFormSubmitted}
+                                isActiveStep={activeTracker?.active_step_number === step.step_number}
+                                handleSetCompletedStepNumber={handleSetCompletedStepNumber}
                                 authorizedUsers={authorizedUsers}
                             />
                         )}
@@ -128,7 +128,9 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 stepStatus={step.status}
                                 authorizedUsers={authorizedUsers}
                                 stepTwoData={stepTwoData}
-                                hasActiveTracker={hasActiveTracker}
+                                isActiveStep={activeTracker?.active_step_number === step.step_number}
+                                handleSetCompletedStepNumber={handleSetCompletedStepNumber}
+                                isDisabled={!hasActiveTracker}
                             />
                         )}
                         {!IS_PROCUREMENT_TRACKER_READY_MAP.STEP_2 && step.step_number === 2 && (

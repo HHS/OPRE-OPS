@@ -1,6 +1,7 @@
 import { getLocalISODate } from "../../../../helpers/utils";
-import TermTag from "../../../UI/Term/TermTag";
 import TextArea from "../../../UI/Form/TextArea";
+import ConfirmationModal from "../../../UI/Modals/ConfirmationModal";
+import TermTag from "../../../UI/Term/TermTag";
 import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepTwo from "./ProcurementTrackerStepTwo.hooks";
 
@@ -11,9 +12,11 @@ import useProcurementTrackerStepTwo from "./ProcurementTrackerStepTwo.hooks";
 /**
  * @typedef {Object} ProcurementTrackerStepTwoProps
  * @property {string} stepStatus - The current status of the procurement tracker step
+ * @property {boolean} isDisabled - The complete step form is disabled
  * @property {Object} stepTwoData - The data for step 2 of the procurement tracker
+ * @property {boolean} isActiveStep - Whether step is the active step
  * @property {SafeUser[]} authorizedUsers - List of users authorized for this agreement
- * @property {boolean} hasActiveTracker - Whether an active tracker exists
+ * @property {Function} [handleSetCompletedStepNumber] - Optional callback to set completed step number
  */
 
 /**
@@ -21,8 +24,19 @@ import useProcurementTrackerStepTwo from "./ProcurementTrackerStepTwo.hooks";
  * @param {ProcurementTrackerStepTwoProps} props
  * @returns {React.ReactElement}
  */
-const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, hasActiveTracker }) => {
+const ProcurementTrackerStepTwo = ({
+    stepStatus,
+    isDisabled,
+    stepTwoData,
+    isActiveStep,
+    authorizedUsers,
+    handleSetCompletedStepNumber
+}) => {
     const {
+        isPreSolicitationPackageFinalized,
+        setIsPreSolicitationPackageFinalized,
+        draftSolicitationDate,
+        setDraftSolicitationDate,
         selectedUser,
         setSelectedUser,
         setTargetCompletionDate,
@@ -36,12 +50,29 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, h
         runValidate,
         validatorRes,
         step2DateCompletedLabel,
-        MemoizedDatePicker
-    } = useProcurementTrackerStepTwo(stepTwoData);
+        MemoizedDatePicker,
+        handleTargetCompletionDateSubmit,
+        step2TargetCompletionDateLabel,
+        showModal,
+        setShowModal,
+        modalProps,
+        cancelModalStep2,
+        handleStepTwoComplete,
+        step2DraftSolicitationDateLabel
+    } = useProcurementTrackerStepTwo(stepTwoData, handleSetCompletedStepNumber);
 
     return (
         <>
-            {(stepStatus === "PENDING" || stepStatus === "ACTIVE") && (
+            {showModal && (
+                <ConfirmationModal
+                    heading={modalProps.heading}
+                    setShowModal={setShowModal}
+                    actionButtonText={modalProps.actionButtonText}
+                    secondaryButtonText={modalProps.secondaryButtonText}
+                    handleConfirm={modalProps.handleConfirm}
+                />
+            )}
+            {stepStatus === "PENDING" && (
                 <fieldset className="usa-fieldset">
                     <p>
                         Edit the pre-solicitation package in collaboration with the Procurement Shop. Once the documents
@@ -49,19 +80,65 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, h
                         step as complete. If you have a target completion date for when the package will be finalized,
                         enter it below.
                     </p>
+
                     {/* TODO: Add save functionality for target completion date */}
-                    <MemoizedDatePicker
-                        id="target-completion-date"
-                        name="targetCompletionDate"
-                        label="Target Completion Date"
-                        hint="mm/dd/yyyy"
-                        value={targetCompletionDate}
-                        onChange={(e) => {
-                            setTargetCompletionDate(e.target.value);
-                        }}
-                        minDate={getLocalISODate()}
-                        isDisabled={!hasActiveTracker}
-                    />
+                    <div className="display-flex flex-align-end">
+                        {stepTwoData?.target_completion_date ? (
+                            <TermTag
+                                term="Target Completion Date"
+                                description={step2TargetCompletionDateLabel}
+                            />
+                        ) : (
+                            <>
+                                <MemoizedDatePicker
+                                    id="target-completion-date"
+                                    name="targetCompletionDate"
+                                    label="Target Completion Date"
+                                    messages={validatorRes.getErrors("targetCompletionDate") || []}
+                                    hint="mm/dd/yyyy"
+                                    value={targetCompletionDate}
+                                    onChange={(e) => {
+                                        runValidate("targetCompletionDate", e.target.value);
+                                        setTargetCompletionDate(e.target.value);
+                                    }}
+                                    minDate={getLocalISODate()}
+                                    isDisabled={isDisabled}
+                                />
+                                <button
+                                    className="usa-button usa-button--unstyled margin-bottom-1 margin-left-2"
+                                    data-cy="target-completion-save-btn"
+                                    disabled={
+                                        isDisabled ||
+                                        validatorRes.hasErrors("targetCompletionDate") ||
+                                        !targetCompletionDate
+                                    }
+                                    onClick={() => {
+                                        handleTargetCompletionDateSubmit(stepTwoData?.id);
+                                    }}
+                                >
+                                    Save
+                                </button>
+                            </>
+                        )}
+                    </div>
+                    <div className="usa-checkbox">
+                        <input
+                            className="usa-checkbox__input"
+                            id="step-2-checkbox"
+                            type="checkbox"
+                            name="step-2-checkbox"
+                            value="step-2-checkbox"
+                            checked={isPreSolicitationPackageFinalized}
+                            onChange={() => setIsPreSolicitationPackageFinalized(!isPreSolicitationPackageFinalized)}
+                            disabled={isDisabled || !isActiveStep}
+                        />
+                        <label
+                            className="usa-checkbox__label"
+                            htmlFor="step-2-checkbox"
+                        >
+                            The pre-solicitation package has been sent to the Procurement Shop for review
+                        </label>
+                    </div>
                     <div className="display-flex flex-align-center">
                         <UsersComboBox
                             className="width-card-lg margin-top-5"
@@ -69,7 +146,9 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, h
                             selectedUser={selectedUser}
                             setSelectedUser={setSelectedUser}
                             users={authorizedUsers}
-                            isDisabled={!hasActiveTracker}
+                            isDisabled={
+                                isDisabled || !isPreSolicitationPackageFinalized || authorizedUsers.length === 0
+                            }
                             messages={validatorRes.getErrors("users") || []}
                             onChange={(name, value) => {
                                 runValidate(name, value);
@@ -89,7 +168,7 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, h
                                 setStep2DateCompleted(e.target.value);
                             }}
                             maxDate={getLocalISODate()}
-                            isDisabled={!hasActiveTracker}
+                            isDisabled={isDisabled || !isPreSolicitationPackageFinalized}
                         />
                     </div>
                     <TextArea
@@ -99,8 +178,43 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, h
                         maxLength={750}
                         value={step2Notes}
                         onChange={(_, value) => setStep2Notes(value)}
-                        isDisabled={!hasActiveTracker}
+                        isDisabled={isDisabled || !isPreSolicitationPackageFinalized}
                     />
+                    <p>After the package is finalized, enter the Draft Solicitation date below (if applicable).</p>
+                    <MemoizedDatePicker
+                        id="step-2-draft-solicitation-date"
+                        name="draftSolicitationDate"
+                        className=""
+                        label="Draft Solicitation Date (optional)"
+                        hint="mm/dd/yyyy"
+                        value={draftSolicitationDate}
+                        messages={validatorRes.getErrors("draftSolicitationDate") || []}
+                        onChange={(e) => {
+                            runValidate("draftSolicitationDate", e.target.value);
+                            setDraftSolicitationDate(e.target.value);
+                        }}
+                        isDisabled={isDisabled || !isPreSolicitationPackageFinalized}
+                    />
+                    <div className="margin-top-2 display-flex flex-justify-end">
+                        <button
+                            className="usa-button usa-button--unstyled margin-right-2"
+                            data-cy="cancel-button"
+                            onClick={cancelModalStep2}
+                            disabled={isDisabled || !isPreSolicitationPackageFinalized}
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            className="usa-button"
+                            data-cy="continue-btn"
+                            onClick={() => {
+                                handleStepTwoComplete(stepTwoData?.id);
+                            }}
+                            disabled={isDisabled || !isPreSolicitationPackageFinalized}
+                        >
+                            Complete Step 2
+                        </button>
+                    </div>
                 </fieldset>
             )}
 
@@ -113,6 +227,10 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, h
                     </p>
                     <dl>
                         <TermTag
+                            term="Target Completion Date"
+                            description={step2TargetCompletionDateLabel || "None"}
+                        />
+                        <TermTag
                             term="Completed By"
                             description={step2CompletedByUserName}
                         />
@@ -120,8 +238,12 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, authorizedUsers, h
                             term="Date Completed"
                             description={step2DateCompletedLabel}
                         />
+                        <TermTag
+                            term="Draft Solicitation Date"
+                            description={step2DraftSolicitationDateLabel || "None"}
+                        />
                         <dt className="margin-0 text-base-dark margin-top-3 font-12px">Notes</dt>
-                        <dd className="margin-0 margin-top-1">{step2NotesLabel}</dd>
+                        <dd className="margin-0 margin-top-1">{step2NotesLabel || "None"}</dd>
                     </dl>
                 </div>
             )}

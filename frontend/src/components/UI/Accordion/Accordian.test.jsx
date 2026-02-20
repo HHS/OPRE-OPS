@@ -88,6 +88,19 @@ describe("Accordion component", () => {
         await userEvent.keyboard("{Enter}");
         expect(button).toHaveAttribute("aria-expanded", "true");
     });
+    it("removes bottom padding when accordion is closed via prop", () => {
+        const { container, rerender } = render(<Accordion {...defaultProps} />);
+        expect(container.querySelector(".usa-accordion")).toHaveClass("padding-bottom-6");
+
+        rerender(
+            <Accordion
+                {...defaultProps}
+                isClosed
+            />
+        );
+
+        expect(container.querySelector(".usa-accordion")).not.toHaveClass("padding-bottom-6");
+    });
     it("throws an error for invalid heading level", () => {
         const invalidProps = { ...defaultProps, level: 7 };
 

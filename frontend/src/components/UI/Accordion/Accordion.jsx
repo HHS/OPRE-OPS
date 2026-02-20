@@ -44,7 +44,7 @@ const Accordion = ({ heading, children, level = 4, isClosed = false, dataCy }) =
 
     return (
         <div
-            className={`usa-accordion ${!isOpen ? "" : "padding-bottom-6"}`}
+            className={`usa-accordion ${!isOpen || isClosed ? "" : "padding-bottom-6"}`}
             style={{ lineHeight: "inherit" }}
             ref={accordionRef}
             data-cy={dataCy}
