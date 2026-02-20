@@ -77,9 +77,13 @@ export default function useProcurementTrackerStepTwo(stepTwoData, handleSetCompl
             task_completed_by: selectedUser.id,
             date_completed: formatDateForApi(step2DateCompleted),
             notes: step2Notes.trim(),
-            target_completion_date: formatDateForApi(targetCompletionDate),
             draft_solicitation_date: formatDateForApi(draftSolicitationDate)
         };
+
+        // Only include target_completion_date if it hasn't been set yet
+        if (!stepTwoData?.target_completion_date) {
+            payload.target_completion_date = formatDateForApi(targetCompletionDate);
+        }
 
         try {
             await patchStepTwo({
