@@ -9,9 +9,9 @@ import useAlert from "../../../../hooks/use-alert.hooks";
 /**
  * Custom hook to manage the state and logic for Procurement Tracker Step One.
  * @param {Object} stepOneData - The data for step one of the procurement tracker.
- * @param {Function} handleSetIsFormSubmitted - Function to set the form submission state.
+ * @param {Function} handleSetCompletedStepNumber - Function to set the completed step number.
  */
-export default function useProcurementTrackerStepOne(stepOneData, handleSetIsFormSubmitted) {
+export default function useProcurementTrackerStepOne(stepOneData, handleSetCompletedStepNumber) {
     const [isPreSolicitationPackageSent, setIsPreSolicitationPackageSent] = React.useState(false);
     const [selectedUser, setSelectedUser] = React.useState({});
     const [step1DateCompleted, setStep1DateCompleted] = React.useState("");
@@ -49,7 +49,7 @@ export default function useProcurementTrackerStepOne(stepOneData, handleSetIsFor
                 stepId,
                 data: payload
             }).unwrap();
-            handleSetIsFormSubmitted(true);
+            handleSetCompletedStepNumber(1);
             console.log("Procurement Tracker Step 1 Updated");
         } catch (error) {
             console.error("Failed to update Procurement Tracker Step 1", error);

@@ -9,8 +9,9 @@ import useAlert from "../../../../hooks/use-alert.hooks";
 /**
  * Custom hook to manage the state and logic for Procurement Tracker Step Two.
  * @param {Object} stepTwoData - The data for step two of the procurement tracker.
+ * @param {Function} handleSetCompletedStepNumber - Function to set the completed step number.
  */
-export default function useProcurementTrackerStepTwo(stepTwoData) {
+export default function useProcurementTrackerStepTwo(stepTwoData, handleSetCompletedStepNumber) {
     const [isPreSolicitationPackageFinalized, setIsPreSolicitationPackageFinalized] = React.useState(false);
     const [draftSolicitationDate, setDraftSolicitationDate] = React.useState("");
     const [selectedUser, setSelectedUser] = React.useState({});
@@ -47,7 +48,6 @@ export default function useProcurementTrackerStepTwo(stepTwoData) {
                 stepId,
                 data: payload
             }).unwrap();
-            // handleSetIsFormSubmitted(true);
             console.log("Procurement Tracker Step 2 Updated");
         } catch (error) {
             console.error("Failed to update Procurement Tracker Step 2", error);
@@ -78,6 +78,11 @@ export default function useProcurementTrackerStepTwo(stepTwoData) {
                 stepId,
                 data: payload
             }).unwrap();
+
+            // Trigger accordion behavior to keep steps 2 and 3 open
+            if (handleSetCompletedStepNumber) {
+                handleSetCompletedStepNumber(2);
+            }
 
             console.log("Procurement Tracker Step 2 Updated");
         } catch (error) {

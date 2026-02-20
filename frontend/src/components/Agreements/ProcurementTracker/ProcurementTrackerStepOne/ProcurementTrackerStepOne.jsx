@@ -12,7 +12,7 @@ import { getLocalISODate } from "../../../../helpers/utils";
  * @property {Object} stepOneData - The data for step one of the procurement tracker
  * @property {boolean} isActiveStep - Whether step is the active step
  * @property {boolean} hasActiveTracker - Whether an active tracker exists
- * @property {Function} handleSetIsFormSubmitted - Function to set the form submission state
+ * @property {Function} handleSetCompletedStepNumber - Function to set the completed step number
  * @property {SafeUser[]} authorizedUsers - List of users authorized for this agreement
  */
 
@@ -25,7 +25,7 @@ const ProcurementTrackerStepOne = ({
     stepStatus,
     stepOneData,
     isActiveStep,
-    handleSetIsFormSubmitted,
+    handleSetCompletedStepNumber,
     authorizedUsers
 }) => {
     const {
@@ -49,7 +49,7 @@ const ProcurementTrackerStepOne = ({
         step1NotesLabel,
         runValidate,
         validatorRes
-    } = useProcurementTrackerStepOne(stepOneData, handleSetIsFormSubmitted);
+    } = useProcurementTrackerStepOne(stepOneData, handleSetCompletedStepNumber);
 
     return (
         <>

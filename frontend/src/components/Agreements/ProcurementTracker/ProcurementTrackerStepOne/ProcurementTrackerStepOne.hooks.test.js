@@ -28,7 +28,7 @@ vi.mock("./suite", () => {
 describe("useProcurementTrackerStepOne", () => {
     const mockPatchStepOne = vi.fn();
     const mockUnwrap = vi.fn();
-    const mockHandleSetIsFormSubmitted = vi.fn();
+    const mockHandleSetCompletedStepNumber = vi.fn();
     const mockStepOneData = {
         id: 1,
         task_completed_by: 123,
@@ -52,7 +52,7 @@ describe("useProcurementTrackerStepOne", () => {
     describe("State Initialization", () => {
         it("initializes with correct default state", () => {
             const { result } = renderHook(() =>
-                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber)
             );
 
             expect(result.current.isPreSolicitationPackageSent).toBe(false);
@@ -63,7 +63,7 @@ describe("useProcurementTrackerStepOne", () => {
 
         it("provides MemoizedDatePicker component", () => {
             const { result } = renderHook(() =>
-                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber)
             );
 
             expect(result.current.MemoizedDatePicker).toBeDefined();
@@ -72,7 +72,7 @@ describe("useProcurementTrackerStepOne", () => {
 
         it("returns all setter functions", () => {
             const { result } = renderHook(() =>
-                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber)
             );
 
             expect(typeof result.current.setIsPreSolicitationPackageSent).toBe("function");
@@ -85,7 +85,7 @@ describe("useProcurementTrackerStepOne", () => {
     describe("State Updates", () => {
         it("updates isPreSolicitationPackageSent when setter is called", () => {
             const { result } = renderHook(() =>
-                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber)
             );
 
             act(() => {
@@ -97,7 +97,7 @@ describe("useProcurementTrackerStepOne", () => {
 
         it("updates selectedUser when setter is called", () => {
             const { result } = renderHook(() =>
-                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber)
             );
             const mockUser = { id: 456, full_name: "Jane Smith" };
 
@@ -110,7 +110,7 @@ describe("useProcurementTrackerStepOne", () => {
 
         it("updates step1DateCompleted when setter is called", () => {
             const { result } = renderHook(() =>
-                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber)
             );
 
             act(() => {
@@ -122,7 +122,7 @@ describe("useProcurementTrackerStepOne", () => {
 
         it("updates step1Notes when setter is called", () => {
             const { result } = renderHook(() =>
-                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber)
             );
 
             act(() => {
@@ -136,7 +136,7 @@ describe("useProcurementTrackerStepOne", () => {
     describe("Validation Functionality", () => {
         it("provides validatorRes with getErrors method", () => {
             const { result } = renderHook(() =>
-                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber)
             );
 
             expect(result.current.validatorRes).toBeDefined();
@@ -145,7 +145,7 @@ describe("useProcurementTrackerStepOne", () => {
 
         it("provides runValidate function", () => {
             const { result } = renderHook(() =>
-                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber)
             );
 
             expect(typeof result.current.runValidate).toBe("function");
@@ -153,7 +153,7 @@ describe("useProcurementTrackerStepOne", () => {
 
         it("runValidate can be called with name and value", () => {
             const { result } = renderHook(() =>
-                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber)
             );
 
             act(() => {
@@ -168,7 +168,7 @@ describe("useProcurementTrackerStepOne", () => {
     describe("Display Values", () => {
         it("step1CompletedByUserName fetches user name via hook", () => {
             const { result } = renderHook(() =>
-                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber)
             );
 
             expect(useGetUserFullNameFromId).toHaveBeenCalledWith(123);
@@ -177,7 +177,7 @@ describe("useProcurementTrackerStepOne", () => {
 
         it("step1DateCompletedLabel formats date via helper", () => {
             const { result } = renderHook(() =>
-                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber)
             );
 
             expect(formatDateToMonthDayYear).toHaveBeenCalledWith("2024-01-15");
@@ -186,7 +186,7 @@ describe("useProcurementTrackerStepOne", () => {
 
         it("step1NotesLabel displays raw notes from stepOneData", () => {
             const { result } = renderHook(() =>
-                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber)
             );
 
             expect(result.current.step1NotesLabel).toBe("Test notes");
@@ -204,7 +204,7 @@ describe("useProcurementTrackerStepOne", () => {
     describe("Validation Logic - disableStep1Buttons", () => {
         it("is disabled when checkbox unchecked", () => {
             const { result } = renderHook(() =>
-                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber)
             );
 
             expect(result.current.disableStep1Buttons).toBe(true);
@@ -212,7 +212,7 @@ describe("useProcurementTrackerStepOne", () => {
 
         it("is disabled when checkbox checked but no user selected", () => {
             const { result } = renderHook(() =>
-                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber)
             );
 
             act(() => {
@@ -225,7 +225,7 @@ describe("useProcurementTrackerStepOne", () => {
 
         it("is disabled when checkbox checked and user selected but no date", () => {
             const { result } = renderHook(() =>
-                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber)
             );
 
             act(() => {
@@ -238,7 +238,7 @@ describe("useProcurementTrackerStepOne", () => {
 
         it("is enabled when all required fields filled", () => {
             const { result } = renderHook(() =>
-                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber)
             );
 
             act(() => {
@@ -252,7 +252,7 @@ describe("useProcurementTrackerStepOne", () => {
 
         it("handles user object without id", () => {
             const { result } = renderHook(() =>
-                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber)
             );
 
             act(() => {
@@ -266,7 +266,7 @@ describe("useProcurementTrackerStepOne", () => {
 
         it("reverts to disabled when checkbox unchecked after being checked", () => {
             const { result } = renderHook(() =>
-                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber)
             );
 
             act(() => {
@@ -293,7 +293,7 @@ describe("useProcurementTrackerStepOne", () => {
 
         it("calls API with correct payload", async () => {
             const { result } = renderHook(() =>
-                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber)
             );
 
             act(() => {
@@ -319,7 +319,7 @@ describe("useProcurementTrackerStepOne", () => {
 
         it("logs success message to console", async () => {
             const { result } = renderHook(() =>
-                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber)
             );
 
             act(() => {
@@ -336,7 +336,7 @@ describe("useProcurementTrackerStepOne", () => {
 
         it("calls handleSetIsFormSubmitted with true after successful submission", async () => {
             const { result } = renderHook(() =>
-                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber)
             );
 
             act(() => {
@@ -348,12 +348,12 @@ describe("useProcurementTrackerStepOne", () => {
                 await result.current.handleStep1Complete(1);
             });
 
-            expect(mockHandleSetIsFormSubmitted).toHaveBeenCalledWith(true);
+            expect(mockHandleSetCompletedStepNumber).toHaveBeenCalledWith(1);
         });
 
         it("trims whitespace from notes", async () => {
             const { result } = renderHook(() =>
-                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber)
             );
 
             act(() => {
@@ -379,7 +379,7 @@ describe("useProcurementTrackerStepOne", () => {
 
         it("handles empty selectedUser gracefully", async () => {
             const { result } = renderHook(() =>
-                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber)
             );
 
             act(() => {
@@ -403,7 +403,7 @@ describe("useProcurementTrackerStepOne", () => {
 
         it("handles empty notes (whitespace only)", async () => {
             const { result } = renderHook(() =>
-                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber)
             );
 
             act(() => {
@@ -442,7 +442,7 @@ describe("useProcurementTrackerStepOne", () => {
             mockUnwrap.mockRejectedValue(mockError);
 
             const { result } = renderHook(() =>
-                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber)
             );
 
             act(() => {
@@ -467,7 +467,7 @@ describe("useProcurementTrackerStepOne", () => {
             mockUnwrap.mockRejectedValue(mockError);
 
             const { result } = renderHook(() =>
-                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber)
             );
 
             act(() => {
@@ -487,7 +487,7 @@ describe("useProcurementTrackerStepOne", () => {
     describe("Cancel Functionality", () => {
         it("cancelModalStep1 sets up modal with correct properties", () => {
             const { result } = renderHook(() =>
-                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber)
             );
 
             act(() => {
@@ -515,7 +515,7 @@ describe("useProcurementTrackerStepOne", () => {
 
         it("modal handleConfirm resets all form state to initial values", () => {
             const { result } = renderHook(() =>
-                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber)
             );
 
             act(() => {
@@ -544,7 +544,7 @@ describe("useProcurementTrackerStepOne", () => {
 
         it("can call cancelModalStep1 multiple times", () => {
             const { result } = renderHook(() =>
-                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber)
             );
 
             act(() => {
@@ -561,10 +561,10 @@ describe("useProcurementTrackerStepOne", () => {
     describe("Edge Cases", () => {
         it("maintains state independence across hook instances", () => {
             const { result: result1 } = renderHook(() =>
-                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber)
             );
             const { result: result2 } = renderHook(() =>
-                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber)
             );
 
             act(() => {
@@ -580,7 +580,7 @@ describe("useProcurementTrackerStepOne", () => {
             vi.spyOn(console, "log").mockImplementation(() => {});
 
             const { result } = renderHook(() =>
-                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetIsFormSubmitted)
+                useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber)
             );
 
             act(() => {

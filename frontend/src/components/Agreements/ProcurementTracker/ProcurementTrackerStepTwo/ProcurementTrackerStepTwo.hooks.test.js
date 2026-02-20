@@ -34,6 +34,7 @@ vi.mock("../../../../hooks/use-alert.hooks", () => ({
 describe("useProcurementTrackerStepTwo", () => {
     const mockPatchStepTwo = vi.fn();
     const mockSetAlert = vi.fn();
+    const mockHandleSetCompletedStepNumber = vi.fn();
     const mockStepTwoData = {
         id: 1,
         task_completed_by: 123,
@@ -50,7 +51,7 @@ describe("useProcurementTrackerStepTwo", () => {
 
     describe("State Initialization", () => {
         it("initializes with correct default state", () => {
-            const { result } = renderHook(() => useProcurementTrackerStepTwo(mockStepTwoData));
+            const { result } = renderHook(() => useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber));
 
             expect(result.current.selectedUser).toEqual({});
             expect(result.current.targetCompletionDate).toBe("");
@@ -58,7 +59,7 @@ describe("useProcurementTrackerStepTwo", () => {
         });
 
         it("returns all setter functions", () => {
-            const { result } = renderHook(() => useProcurementTrackerStepTwo(mockStepTwoData));
+            const { result } = renderHook(() => useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber));
 
             expect(typeof result.current.setSelectedUser).toBe("function");
             expect(typeof result.current.setTargetCompletionDate).toBe("function");
@@ -66,7 +67,7 @@ describe("useProcurementTrackerStepTwo", () => {
         });
 
         it("returns stepTwoData", () => {
-            const { result } = renderHook(() => useProcurementTrackerStepTwo(mockStepTwoData));
+            const { result } = renderHook(() => useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber));
 
             expect(result.current.stepTwoData).toEqual(mockStepTwoData);
         });
@@ -74,7 +75,7 @@ describe("useProcurementTrackerStepTwo", () => {
 
     describe("State Updates", () => {
         it("updates selectedUser when setter is called", () => {
-            const { result } = renderHook(() => useProcurementTrackerStepTwo(mockStepTwoData));
+            const { result } = renderHook(() => useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber));
             const mockUser = { id: 456, full_name: "Jane Smith" };
 
             act(() => {
@@ -85,7 +86,7 @@ describe("useProcurementTrackerStepTwo", () => {
         });
 
         it("updates targetCompletionDate when setter is called", () => {
-            const { result } = renderHook(() => useProcurementTrackerStepTwo(mockStepTwoData));
+            const { result } = renderHook(() => useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber));
 
             act(() => {
                 result.current.setTargetCompletionDate("2024-03-20");
@@ -95,7 +96,7 @@ describe("useProcurementTrackerStepTwo", () => {
         });
 
         it("updates step2DateCompleted when setter is called", () => {
-            const { result } = renderHook(() => useProcurementTrackerStepTwo(mockStepTwoData));
+            const { result } = renderHook(() => useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber));
 
             act(() => {
                 result.current.setStep2DateCompleted("2024-03-20");
@@ -107,20 +108,20 @@ describe("useProcurementTrackerStepTwo", () => {
 
     describe("Validation Functionality", () => {
         it("provides validatorRes with getErrors method", () => {
-            const { result } = renderHook(() => useProcurementTrackerStepTwo(mockStepTwoData));
+            const { result } = renderHook(() => useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber));
 
             expect(result.current.validatorRes).toBeDefined();
             expect(typeof result.current.validatorRes.getErrors).toBe("function");
         });
 
         it("provides runValidate function", () => {
-            const { result } = renderHook(() => useProcurementTrackerStepTwo(mockStepTwoData));
+            const { result } = renderHook(() => useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber));
 
             expect(typeof result.current.runValidate).toBe("function");
         });
 
         it("runValidate can be called with name and value", () => {
-            const { result } = renderHook(() => useProcurementTrackerStepTwo(mockStepTwoData));
+            const { result } = renderHook(() => useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber));
 
             expect(() => {
                 act(() => {
@@ -132,13 +133,13 @@ describe("useProcurementTrackerStepTwo", () => {
 
     describe("Display Values", () => {
         it("step2CompletedByUserName fetches user name via hook", () => {
-            renderHook(() => useProcurementTrackerStepTwo(mockStepTwoData));
+            renderHook(() => useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber));
 
             expect(useGetUserFullNameFromId).toHaveBeenCalledWith(123);
         });
 
         it("step2DateCompletedLabel formats date via helper", () => {
-            renderHook(() => useProcurementTrackerStepTwo(mockStepTwoData));
+            renderHook(() => useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber));
 
             expect(formatDateToMonthDayYear).toHaveBeenCalledWith("2024-01-15");
         });
@@ -151,10 +152,53 @@ describe("useProcurementTrackerStepTwo", () => {
         });
     });
 
+    describe("Async Operations", () => {
+        it("calls handleSetCompletedStepNumber with 2 after successful step completion", async () => {
+            const mockUnwrap = vi.fn().mockResolvedValue({ success: true });
+            mockPatchStepTwo.mockReturnValue({ unwrap: mockUnwrap });
+            useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepTwo]);
+
+            const { result } = renderHook(() => useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber));
+
+            act(() => {
+                result.current.setIsPreSolicitationPackageFinalized(true);
+                result.current.setSelectedUser({ id: 456, full_name: "Jane Smith" });
+                result.current.setStep2DateCompleted("2024-03-20");
+            });
+
+            await act(async () => {
+                await result.current.handleStepTwoComplete(1);
+            });
+
+            expect(mockHandleSetCompletedStepNumber).toHaveBeenCalledWith(2);
+        });
+
+        it("does not call handleSetCompletedStepNumber if function not provided", async () => {
+            const mockUnwrap = vi.fn().mockResolvedValue({ success: true });
+            mockPatchStepTwo.mockReturnValue({ unwrap: mockUnwrap });
+            useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepTwo]);
+
+            const { result } = renderHook(() => useProcurementTrackerStepTwo(mockStepTwoData, undefined));
+
+            act(() => {
+                result.current.setIsPreSolicitationPackageFinalized(true);
+                result.current.setSelectedUser({ id: 456, full_name: "Jane Smith" });
+                result.current.setStep2DateCompleted("2024-03-20");
+            });
+
+            await act(async () => {
+                await result.current.handleStepTwoComplete(1);
+            });
+
+            // Should not throw an error
+            expect(result.current).toBeDefined();
+        });
+    });
+
     describe("Edge Cases", () => {
         it("maintains state independence across hook instances", () => {
-            const { result: result1 } = renderHook(() => useProcurementTrackerStepTwo(mockStepTwoData));
-            const { result: result2 } = renderHook(() => useProcurementTrackerStepTwo(mockStepTwoData));
+            const { result: result1 } = renderHook(() => useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber));
+            const { result: result2 } = renderHook(() => useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber));
 
             act(() => {
                 result1.current.setTargetCompletionDate("2024-04-01");
@@ -179,7 +223,7 @@ describe("useProcurementTrackerStepTwo", () => {
         });
 
         it("updates multiple fields in sequence", () => {
-            const { result } = renderHook(() => useProcurementTrackerStepTwo(mockStepTwoData));
+            const { result } = renderHook(() => useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber));
 
             act(() => {
                 result.current.setSelectedUser({ id: 456, full_name: "Jane Smith" });
@@ -193,7 +237,7 @@ describe("useProcurementTrackerStepTwo", () => {
         });
 
         it("cancelStepTwo resets step two state values", () => {
-            const { result } = renderHook(() => useProcurementTrackerStepTwo(mockStepTwoData));
+            const { result } = renderHook(() => useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber));
 
             act(() => {
                 result.current.setIsPreSolicitationPackageFinalized(true);

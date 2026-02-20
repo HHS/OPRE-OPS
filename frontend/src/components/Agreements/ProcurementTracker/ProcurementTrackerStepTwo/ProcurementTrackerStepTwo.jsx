@@ -15,6 +15,7 @@ import useProcurementTrackerStepTwo from "./ProcurementTrackerStepTwo.hooks";
  * @property {boolean} isActiveStep - Whether step is the active step
  * @property {SafeUser[]} authorizedUsers - List of users authorized for this agreement
  * @property {boolean} hasActiveTracker - Whether an active tracker exists
+ * @property {Function} [handleSetCompletedStepNumber] - Optional callback to set completed step number
  */
 
 /**
@@ -22,7 +23,13 @@ import useProcurementTrackerStepTwo from "./ProcurementTrackerStepTwo.hooks";
  * @param {ProcurementTrackerStepTwoProps} props
  * @returns {React.ReactElement}
  */
-const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, isActiveStep, authorizedUsers }) => {
+const ProcurementTrackerStepTwo = ({
+    stepStatus,
+    stepTwoData,
+    isActiveStep,
+    authorizedUsers,
+    handleSetCompletedStepNumber
+}) => {
     const {
         cancelStepTwo,
         isPreSolicitationPackageFinalized,
@@ -46,7 +53,7 @@ const ProcurementTrackerStepTwo = ({ stepStatus, stepTwoData, isActiveStep, auth
         handleTargetCompletionDateSubmit,
         step2TargetCompletionDateLabel,
         handleStepTwoComplete
-    } = useProcurementTrackerStepTwo(stepTwoData);
+    } = useProcurementTrackerStepTwo(stepTwoData, handleSetCompletedStepNumber);
 
     return (
         <>
