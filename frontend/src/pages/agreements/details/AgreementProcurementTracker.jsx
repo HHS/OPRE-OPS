@@ -130,6 +130,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 stepTwoData={stepTwoData}
                                 isActiveStep={activeTracker?.active_step_number === step.step_number}
                                 handleSetCompletedStepNumber={handleSetCompletedStepNumber}
+                                isDisabled={!hasActiveTracker}
                             />
                         )}
                         {!IS_PROCUREMENT_TRACKER_READY_MAP.STEP_2 && step.step_number === 2 && (

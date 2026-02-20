@@ -106,7 +106,7 @@ vi.mock("../../../UI/Form/TextArea", () => ({
 }));
 
 describe("ProcurementTrackerStepTwo", () => {
-    const mockCancelStepTwo = vi.fn();
+    const mockCancelModalStep2 = vi.fn();
     const mockSetIsPreSolicitationPackageFinalized = vi.fn();
     const mockSetSelectedUser = vi.fn();
     const mockSetTargetCompletionDate = vi.fn();
@@ -123,7 +123,7 @@ describe("ProcurementTrackerStepTwo", () => {
     const mockHandleSetCompletedStepNumber = vi.fn();
 
     const defaultHookReturn = {
-        cancelStepTwo: mockCancelStepTwo,
+        cancelModalStep2: mockCancelModalStep2,
         isPreSolicitationPackageFinalized: false,
         setIsPreSolicitationPackageFinalized: mockSetIsPreSolicitationPackageFinalized,
         selectedUser: {},
@@ -141,6 +141,8 @@ describe("ProcurementTrackerStepTwo", () => {
         runValidate: mockRunValidate,
         validatorRes: mockValidatorRes,
         step2DateCompletedLabel: "January 15, 2024",
+        step2TargetCompletionDateLabel: "January 30, 2024",
+        step2DraftSolicitationDateLabel: "February 1, 2024",
         MemoizedDatePicker: DatePicker,
         handleTargetCompletionDateSubmit: mockHandleTargetCompletionDateSubmit
     };
@@ -461,7 +463,7 @@ describe("ProcurementTrackerStepTwo", () => {
             );
 
             fireEvent.click(screen.getByRole("button", { name: /cancel/i }));
-            expect(mockCancelStepTwo).toHaveBeenCalledTimes(1);
+            expect(mockCancelModalStep2).toHaveBeenCalledTimes(1);
         });
     });
 
@@ -482,7 +484,7 @@ describe("ProcurementTrackerStepTwo", () => {
             ).toBeInTheDocument();
         });
 
-        it("shows TermTag components (Completed By, Date Completed)", () => {
+        it("shows TermTag components (Target Completion Date, Completed By, Date Completed, Draft Solicitation Date)", () => {
             render(
                 <ProcurementTrackerStepTwo
                     stepStatus="COMPLETED"
@@ -494,7 +496,7 @@ describe("ProcurementTrackerStepTwo", () => {
             );
 
             const termTags = screen.getAllByTestId("term-tag");
-            expect(termTags).toHaveLength(2);
+            expect(termTags).toHaveLength(4);
         });
 
         it("displays formatted user name from step2CompletedByUserName", () => {

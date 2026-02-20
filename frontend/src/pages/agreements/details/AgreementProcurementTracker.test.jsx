@@ -106,11 +106,12 @@ vi.mock("../../../components/UI/USWDS/DatePicker", () => ({
 }));
 
 vi.mock("../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepTwo", () => ({
-    default: ({ stepStatus, stepTwoData }) => (
+    default: ({ stepStatus, stepTwoData, isDisabled }) => (
         <div
             data-testid="procurement-step-two"
             data-step-status={stepStatus}
             data-step-data-id={stepTwoData?.id}
+            data-is-disabled={isDisabled}
         >
             {stepStatus === "COMPLETED" ? "Step Two Completed" : "Step Two Form"}
         </div>
