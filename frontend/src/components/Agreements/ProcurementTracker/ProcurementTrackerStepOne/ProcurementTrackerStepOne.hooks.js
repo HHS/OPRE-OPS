@@ -7,9 +7,13 @@ import suite from "./suite";
 import useAlert from "../../../../hooks/use-alert.hooks";
 
 /**
+ * @typedef {import("../../../../types/ProcurementTrackerTypes").ProcurementTrackerAcquisitionPlanningStep} ProcurementTrackerAcquisitionPlanningStep
+ */
+
+/**
  * Custom hook to manage the state and logic for Procurement Tracker Step One.
- * @param {Object} stepOneData - The data for step one of the procurement tracker.
- * @param {Function} handleSetIsFormSubmitted - Function to set the form submission state.
+ * @param {ProcurementTrackerAcquisitionPlanningStep | undefined} stepOneData - The data for step one of the procurement tracker.
+ * @param {(isSubmitted: boolean) => void} handleSetIsFormSubmitted - Function to set the form submission state.
  */
 export default function useProcurementTrackerStepOne(stepOneData, handleSetIsFormSubmitted) {
     const [isPreSolicitationPackageSent, setIsPreSolicitationPackageSent] = React.useState(false);
