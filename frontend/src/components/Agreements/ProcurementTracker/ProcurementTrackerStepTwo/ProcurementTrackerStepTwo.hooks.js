@@ -5,8 +5,12 @@ import DatePicker from "../../../UI/USWDS/DatePicker";
 import suite from "./suite";
 
 /**
+ * @typedef {import("../../../../types/ProcurementTrackerTypes").ProcurementTrackerPreSolicitationStep} ProcurementTrackerPreSolicitationStep
+ */
+
+/**
  * Custom hook to manage the state and logic for Procurement Tracker Step Two.
- * @param {Object} stepTwoData - The data for step two of the procurement tracker.
+ * @param {ProcurementTrackerPreSolicitationStep | undefined} stepTwoData - The data for step two of the procurement tracker.
  */
 export default function useProcurementTrackerStepTwo(stepTwoData) {
     const [selectedUser, setSelectedUser] = React.useState({});
