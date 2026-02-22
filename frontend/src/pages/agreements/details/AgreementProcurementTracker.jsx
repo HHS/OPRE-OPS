@@ -6,6 +6,7 @@ import StepBuilderAccordion from "../../../components/Agreements/ProcurementTrac
 import DebugCode from "../../../components/DebugCode";
 import StepIndicator from "../../../components/UI/StepIndicator";
 import { IS_PROCUREMENT_TRACKER_READY_MAP } from "../../../constants";
+import ProcurementTrackerStepThree from "../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepThree";
 
 /**
  * @typedef {Object} AgreementProcurementTrackerProps
@@ -55,6 +56,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
     const hasActiveTracker = !!activeTracker;
     const stepOneData = activeTracker?.steps.find((step) => step.step_number === 1);
     const stepTwoData = activeTracker?.steps.find((step) => step.step_number === 2);
+    const stepThreeData = activeTracker?.steps.find((step) => step.step_number === 3);
 
     // Handle loading state
     if (isLoading) {
@@ -141,15 +143,25 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 </p>
                             </div>
                         )}
-                        {step.step_number === 3 && (
-                            <div className="usa-fieldset">
-                                <p>
-                                    Once the Procurement Shop has posted the Solicitation and it’s “on the street”,
-                                    enter the Solicitation Start and End Dates. After all proposals are received, vendor
-                                    questions have been answered, and evaluations are starting, check this step as
-                                    complete.
-                                </p>
-                            </div>
+                        {IS_PROCUREMENT_TRACKER_READY_MAP.STEP_3 && step.step_number === 3 ? (
+                            <ProcurementTrackerStepThree
+                                stepStatus={step.status}
+                                authorizedUsers={authorizedUsers}
+                                stepThreeData={stepThreeData}
+                                isActiveStep={currentStep === step.step_number}
+                                handleSetCompletedStepNumber={() => {}}
+                            />
+                        ) : (
+                            step.step_number === 3 && (
+                                <div className="usa-fieldset">
+                                    <p>
+                                        Once the Procurement Shop has posted the Solicitation and it’s “on the street”,
+                                        enter the Solicitation Start and End Dates. After all proposals are received,
+                                        vendor questions have been answered, and evaluations are starting, check this
+                                        step as complete.
+                                    </p>
+                                </div>
+                            )
                         )}
                         {step.step_number === 4 && (
                             <div className="usa-fieldset">
