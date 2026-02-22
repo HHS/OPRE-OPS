@@ -252,11 +252,11 @@ export const tableSortCodes = {
     },
     agreementCodes: {
         AGREEMENT: "AGREEMENT",
-        PROJECT: "PROJECT",
         TYPE: "TYPE",
-        AGREEMENT_TOTAL: "AGREEMENT_TOTAL",
-        NEXT_BUDGET_LINE: "NEXT_BUDGET_LINE",
-        NEXT_OBLIGATE_BY: "NEXT_OBLIGATE_BY"
+        START: "START",
+        END: "END",
+        TOTAL: "TOTAL",
+        FY_OBLIGATED: "FY_OBLIGATED"
     },
     canFundingReceivedCodes: {
         FUNDING_ID: "FUNDING_ID",

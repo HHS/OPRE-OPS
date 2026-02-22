@@ -1,22 +1,31 @@
 import Table from "../../UI/Table";
-import { TABLE_HEADINGS_LIST } from "./AgreementsTable.constants";
+import { getTableHeadingsWithFY } from "./AgreementsTable.constants";
+import { getCurrentFiscalYear } from "../../../helpers/utils";
 import AgreementTableRow from "./AgreementTableRow";
 
 /**
  * Agreement table.
  * @param {Object} props - The component props.
-
  * @param {import("../../../types/AgreementTypes").Agreement[]} props.agreements - Array of Agreement to display in the table.
  * @param {string} props.sortConditions - The conditions chosen to sort the table
  * @param {boolean} props.sortDescending - Whether or not the sort condition should be used to sort the table in descending order
  * @param {function} props.setSortConditions - The function that the base table uses to set the sort condition
+ * @param {string} props.selectedFiscalYear - The selected fiscal year for the FY Obligated column
  * @returns {React.JSX.Element} - The rendered component.
  */
-export const AgreementsTable = ({ agreements = [], sortDescending, sortConditions, setSortConditions }) => {
+export const AgreementsTable = ({
+    agreements = [],
+    sortDescending,
+    sortConditions,
+    setSortConditions,
+    selectedFiscalYear
+}) => {
+    const tableHeadings = getTableHeadingsWithFY(selectedFiscalYear, getCurrentFiscalYear());
+
     return (
         <>
             <Table
-                tableHeadings={TABLE_HEADINGS_LIST}
+                tableHeadings={tableHeadings}
                 selectedHeader={sortConditions}
                 onClickHeader={setSortConditions}
                 sortDescending={sortDescending}
@@ -26,6 +35,7 @@ export const AgreementsTable = ({ agreements = [], sortDescending, sortCondition
                         <AgreementTableRow
                             key={agreement?.id}
                             agreementId={agreement.id}
+                            selectedFiscalYear={selectedFiscalYear}
                         />
                     ))}
             </Table>

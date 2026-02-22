@@ -28,8 +28,11 @@ vi.mock("../../../App", () => ({
 
 // Mock complex child components to avoid cascading API dependencies
 vi.mock("../../../components/Agreements/AgreementsTable", () => ({
-    default: ({ agreements }) => (
-        <div data-testid="agreements-table">
+    default: ({ agreements, selectedFiscalYear }) => (
+        <div
+            data-testid="agreements-table"
+            data-fiscal-year={selectedFiscalYear}
+        >
             {agreements && agreements.map((agreement) => <div key={agreement.id}>{agreement.name}</div>)}
         </div>
     )

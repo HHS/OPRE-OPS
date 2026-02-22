@@ -2,6 +2,7 @@
 
 import decimal
 from datetime import date
+from decimal import Decimal
 from enum import Enum, auto
 from typing import Any, List, Optional, override
 
@@ -58,6 +59,8 @@ class AgreementSortCondition(Enum):
     AGREEMENT_TOTAL = "AGREEMENT_TOTAL"
     NEXT_BUDGET_LINE = "NEXT_BUDGET_LINE"
     NEXT_OBLIGATE_BY = "NEXT_OBLIGATE_BY"
+    START = "START"
+    END = "END"
 
 
 class AgreementType(Enum):
@@ -220,6 +223,14 @@ class Agreement(BaseModel):
     )
 
     procurement_shop = relationship("ProcurementShop", back_populates="agreements")
+
+    services_components: Mapped[list["ServicesComponent"]] = relationship(
+        "ServicesComponent",
+        back_populates="agreement",
+        lazy=True,
+        cascade="all, delete",
+    )
+
     notes: Mapped[str] = mapped_column(Text, default="")
 
     start_date: Mapped[Optional[date]] = mapped_column(Date)
@@ -247,6 +258,66 @@ class Agreement(BaseModel):
     @BaseModel.display_name.getter
     def display_name(self):
         return self.name
+
+    @property
+    def sc_start_date(self) -> Optional[date]:
+        """Earliest period_start across all Service Components."""
+        if not self.services_components:
+            return None
+        dates = [sc.period_start for sc in self.services_components if sc.period_start]
+        return min(dates) if dates else None
+
+    @property
+    def sc_end_date(self) -> Optional[date]:
+        """Latest period_end across all Service Components."""
+        if not self.services_components:
+            return None
+        dates = [sc.period_end for sc in self.services_components if sc.period_end]
+        return max(dates) if dates else None
+
+    @property
+    def agreement_subtotal(self) -> Decimal:
+        """Sum of amounts for non-DRAFT (or OBE) budget line items."""
+        from models.budget_line_items import BudgetLineItemStatus
+
+        if not self.budget_line_items:
+            return Decimal("0")
+        return sum(
+            (bli.amount or Decimal("0"))
+            for bli in self.budget_line_items
+            if bli.is_obe or bli.status != BudgetLineItemStatus.DRAFT
+        )
+
+    @property
+    def total_agreement_fees(self) -> Decimal:
+        """Sum of fees for non-DRAFT (or OBE) budget line items."""
+        from models.budget_line_items import BudgetLineItemStatus
+
+        if not self.budget_line_items:
+            return Decimal("0")
+        return sum(
+            (bli.fees or Decimal("0"))
+            for bli in self.budget_line_items
+            if bli.is_obe or bli.status != BudgetLineItemStatus.DRAFT
+        )
+
+    @property
+    def agreement_total(self) -> Decimal:
+        """Total (amounts + fees) for non-DRAFT (or OBE) budget line items."""
+        return self.agreement_subtotal + self.total_agreement_fees
+
+    @property
+    def lifetime_obligated(self) -> Decimal:
+        """Sum of (amount + fees) for all OBLIGATED budget line items."""
+        from models.budget_line_items import BudgetLineItemStatus
+
+        if not self.budget_line_items:
+            return Decimal("0")
+        return sum(
+            (bli.amount or Decimal("0")) + (bli.fees or Decimal("0"))
+            for bli in self.budget_line_items
+            if bli.status == BudgetLineItemStatus.OBLIGATED
+        )
 
     __mapper_args__: dict[str, str | AgreementType] = {
         "polymorphic_identity": "agreement",
