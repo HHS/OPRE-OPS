@@ -106,21 +106,32 @@ vi.mock("../../../UI/Form/TextArea", () => ({
 }));
 
 describe("ProcurementTrackerStepTwo", () => {
+    const mockCancelModalStep2 = vi.fn();
+    const mockSetIsPreSolicitationPackageFinalized = vi.fn();
     const mockSetSelectedUser = vi.fn();
     const mockSetTargetCompletionDate = vi.fn();
     const mockSetStep2DateCompleted = vi.fn();
+    const mockSetDraftSolicitationDate = vi.fn();
     const mockRunValidate = vi.fn();
+    const mockHandleTargetCompletionDateSubmit = vi.fn();
     const mockValidatorRes = {
-        getErrors: vi.fn(() => [])
+        getErrors: vi.fn(() => []),
+        hasErrors: vi.fn(() => false)
     };
 
     const mockSetStep2Notes = vi.fn();
+    const mockHandleSetCompletedStepNumber = vi.fn();
 
     const defaultHookReturn = {
+        cancelModalStep2: mockCancelModalStep2,
+        isPreSolicitationPackageFinalized: false,
+        setIsPreSolicitationPackageFinalized: mockSetIsPreSolicitationPackageFinalized,
         selectedUser: {},
         setSelectedUser: mockSetSelectedUser,
         targetCompletionDate: "",
         setTargetCompletionDate: mockSetTargetCompletionDate,
+        draftSolicitationDate: "",
+        setDraftSolicitationDate: mockSetDraftSolicitationDate,
         step2CompletedByUserName: "John Doe",
         step2DateCompleted: "",
         setStep2DateCompleted: mockSetStep2DateCompleted,
@@ -130,7 +141,10 @@ describe("ProcurementTrackerStepTwo", () => {
         runValidate: mockRunValidate,
         validatorRes: mockValidatorRes,
         step2DateCompletedLabel: "January 15, 2024",
-        MemoizedDatePicker: DatePicker
+        step2TargetCompletionDateLabel: "January 30, 2024",
+        step2DraftSolicitationDateLabel: "February 1, 2024",
+        MemoizedDatePicker: DatePicker,
+        handleTargetCompletionDateSubmit: mockHandleTargetCompletionDateSubmit
     };
 
     const mockStepData = { id: 1 };
@@ -152,7 +166,8 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
@@ -167,7 +182,8 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
@@ -182,7 +198,8 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
@@ -201,7 +218,8 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
@@ -225,7 +243,8 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
@@ -242,7 +261,8 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
@@ -264,7 +284,8 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
@@ -287,7 +308,8 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
@@ -304,7 +326,8 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
@@ -320,10 +343,12 @@ describe("ProcurementTrackerStepTwo", () => {
         it("renders all form fields in ACTIVE state", () => {
             render(
                 <ProcurementTrackerStepTwo
-                    stepStatus="ACTIVE"
+                    stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
+                    isActiveStep={true}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
@@ -332,22 +357,113 @@ describe("ProcurementTrackerStepTwo", () => {
             expect(screen.getByText("Date Completed")).toBeInTheDocument();
         });
 
-        it("form fields are interactive in ACTIVE state", () => {
+        it("form fields are disabled until package is finalized in ACTIVE state", () => {
             render(
                 <ProcurementTrackerStepTwo
-                    stepStatus="ACTIVE"
+                    stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
+                    isActiveStep={true}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
             const datePickers = screen.getAllByTestId("date-picker");
-            expect(datePickers.length).toBeGreaterThan(0);
+            const targetDatePicker = datePickers.find(
+                (picker) => picker.getAttribute("data-picker-id") === "target-completion-date"
+            );
+            const completedDatePicker = datePickers.find(
+                (picker) => picker.getAttribute("data-picker-id") === "step-2-date-completed"
+            );
 
             // eslint-disable-next-line testing-library/no-node-access
             const select = screen.getByTestId("users-combobox").querySelector("select");
+            // eslint-disable-next-line testing-library/no-node-access
+            const targetInput = targetDatePicker.querySelector("input");
+            // eslint-disable-next-line testing-library/no-node-access
+            const completedInput = completedDatePicker.querySelector("input");
+            // eslint-disable-next-line testing-library/no-node-access
+            const notesInput = screen.getByTestId("text-area").querySelector("textarea");
+            const checkbox = screen.getByRole("checkbox");
+            const saveButton = screen.getByRole("button", { name: /save/i });
+            // const cancelButton = screen.getByRole("button", { name: /cancel/i });
+
+            expect(checkbox).not.toBeDisabled();
+            expect(select).toBeDisabled();
+            expect(targetInput).not.toBeDisabled();
+            expect(completedInput).toBeDisabled();
+            expect(notesInput).toBeDisabled();
+            expect(saveButton).toBeDisabled(); // Save button disabled when no target date entered
+        });
+
+        it("form fields are interactive when package is finalized in ACTIVE state", () => {
+            useProcurementTrackerStepTwo.mockReturnValue({
+                ...defaultHookReturn,
+                isPreSolicitationPackageFinalized: true,
+                targetCompletionDate: "2024-03-20"
+            });
+
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="PENDING"
+                    stepTwoData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    isActiveStep={true}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                />
+            );
+
+            const datePickers = screen.getAllByTestId("date-picker");
+            const targetDatePicker = datePickers.find(
+                (picker) => picker.getAttribute("data-picker-id") === "target-completion-date"
+            );
+            const completedDatePicker = datePickers.find(
+                (picker) => picker.getAttribute("data-picker-id") === "step-2-date-completed"
+            );
+
+            // eslint-disable-next-line testing-library/no-node-access
+            const select = screen.getByTestId("users-combobox").querySelector("select");
+            // eslint-disable-next-line testing-library/no-node-access
+            const targetInput = targetDatePicker.querySelector("input");
+            // eslint-disable-next-line testing-library/no-node-access
+            const completedInput = completedDatePicker.querySelector("input");
+            // eslint-disable-next-line testing-library/no-node-access
+            const notesInput = screen.getByTestId("text-area").querySelector("textarea");
+            const checkbox = screen.getByRole("checkbox");
+            const saveButton = screen.getByRole("button", { name: /save/i });
+            const cancelButton = screen.getByRole("button", { name: /cancel/i });
+
+            expect(checkbox).not.toBeDisabled();
             expect(select).not.toBeDisabled();
+            expect(targetInput).not.toBeDisabled();
+            expect(completedInput).not.toBeDisabled();
+            expect(notesInput).not.toBeDisabled();
+            expect(saveButton).not.toBeDisabled();
+            expect(cancelButton).not.toBeDisabled();
+        });
+
+        it("calls cancelStepTwo when cancel button is clicked", () => {
+            useProcurementTrackerStepTwo.mockReturnValue({
+                ...defaultHookReturn,
+                isPreSolicitationPackageFinalized: true,
+                targetCompletionDate: "2024-03-20"
+            });
+
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="PENDING"
+                    stepTwoData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    isActiveStep={true}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                />
+            );
+
+            fireEvent.click(screen.getByRole("button", { name: /cancel/i }));
+            expect(mockCancelModalStep2).toHaveBeenCalledTimes(1);
         });
     });
 
@@ -358,7 +474,8 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="COMPLETED"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
@@ -367,18 +484,19 @@ describe("ProcurementTrackerStepTwo", () => {
             ).toBeInTheDocument();
         });
 
-        it("shows TermTag components (Completed By, Date Completed)", () => {
+        it("shows TermTag components (Target Completion Date, Completed By, Date Completed, Draft Solicitation Date)", () => {
             render(
                 <ProcurementTrackerStepTwo
                     stepStatus="COMPLETED"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
             const termTags = screen.getAllByTestId("term-tag");
-            expect(termTags).toHaveLength(2);
+            expect(termTags).toHaveLength(4);
         });
 
         it("displays formatted user name from step2CompletedByUserName", () => {
@@ -387,7 +505,8 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="COMPLETED"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
@@ -401,7 +520,8 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="COMPLETED"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
@@ -417,7 +537,8 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="COMPLETED"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
@@ -435,7 +556,8 @@ describe("ProcurementTrackerStepTwo", () => {
                         return ["Date must be MM/DD/YYYY"];
                     }
                     return [];
-                })
+                }),
+                hasErrors: vi.fn(() => false)
             };
 
             useProcurementTrackerStepTwo.mockReturnValue({
@@ -448,7 +570,8 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
@@ -462,7 +585,8 @@ describe("ProcurementTrackerStepTwo", () => {
                         return ["This is required information"];
                     }
                     return [];
-                })
+                }),
+                hasErrors: vi.fn(() => false)
             };
 
             useProcurementTrackerStepTwo.mockReturnValue({
@@ -475,7 +599,8 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
@@ -490,7 +615,9 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={false}
+                    isDisabled={true}
+                    isActiveStep={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
@@ -509,11 +636,15 @@ describe("ProcurementTrackerStepTwo", () => {
             const completedInput = completedDatePicker.querySelector("input");
             // eslint-disable-next-line testing-library/no-node-access
             const notesInput = screen.getByTestId("text-area").querySelector("textarea");
+            const checkbox = screen.getByRole("checkbox");
+            const saveButton = screen.getByRole("button", { name: /save/i });
 
+            expect(checkbox).toBeDisabled();
             expect(usersSelect).toBeDisabled();
             expect(targetInput).toBeDisabled();
             expect(completedInput).toBeDisabled();
             expect(notesInput).toBeDisabled();
+            expect(saveButton).toBeDisabled();
         });
     });
 
@@ -524,7 +655,8 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={undefined}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
@@ -537,7 +669,8 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="SKIPPED"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
@@ -551,7 +684,8 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={[]}
-                    hasActiveTracker={true}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
@@ -568,7 +702,8 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
@@ -583,7 +718,8 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="COMPLETED"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
@@ -600,7 +736,7 @@ describe("ProcurementTrackerStepTwo", () => {
                 stepStatus="PENDING"
                 stepTwoData={mockStepData}
                 authorizedUsers={mockAllUsers}
-                hasActiveTracker={true}
+                isDisabled={false}
             />
         );
 
@@ -614,7 +750,7 @@ describe("ProcurementTrackerStepTwo", () => {
                 stepStatus="PENDING"
                 stepTwoData={mockStepData}
                 authorizedUsers={mockAllUsers}
-                hasActiveTracker={true}
+                isDisabled={false}
             />
         );
 
@@ -639,7 +775,7 @@ describe("ProcurementTrackerStepTwo", () => {
                 stepStatus="COMPLETED"
                 stepTwoData={mockCompletedStepData}
                 authorizedUsers={mockAllUsers}
-                hasActiveTracker={true}
+                isDisabled={false}
             />
         );
 
@@ -671,13 +807,13 @@ describe("ProcurementTrackerStepTwo", () => {
                 stepStatus="COMPLETED"
                 stepTwoData={mockCompletedStepData}
                 authorizedUsers={mockAllUsers}
-                hasActiveTracker={true}
+                isDisabled={false}
             />
         );
 
         expect(screen.getByText("Notes")).toBeInTheDocument();
         // eslint-disable-next-line testing-library/no-node-access
         const dd = screen.getByText("Notes").nextElementSibling;
-        expect(dd.textContent).toBe("");
+        expect(dd.textContent).toBe("None");
     });
 });

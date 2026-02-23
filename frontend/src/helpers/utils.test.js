@@ -8,7 +8,8 @@ import {
     toTitleCaseFromSlug,
     toLowerCaseFromSlug,
     fromUpperCaseToTitleCase,
-    timeAgo
+    timeAgo,
+    formatDateToMonthDayYear
 } from "./utils";
 
 test("current federal fiscal year is calculated correctly", () => {
@@ -154,5 +155,22 @@ describe("timeAgo", () => {
 
     test("handles ISO string dates without timezone", () => {
         expect(timeAgo("2023-01-01T11:30:00")).toBe("30 minutes ago");
+    });
+});
+
+describe("formatDateToMonthDayYear", () => {
+    test("formats valid date strings correctly", () => {
+        expect(formatDateToMonthDayYear("2023-05-19")).toBe("May 19, 2023");
+        expect(formatDateToMonthDayYear("2024-01-15")).toBe("January 15, 2024");
+        expect(formatDateToMonthDayYear("2022-12-31")).toBe("December 31, 2022");
+    });
+
+    test("handles null and undefined values", () => {
+        expect(formatDateToMonthDayYear(null)).toBeNull();
+        expect(formatDateToMonthDayYear(undefined)).toBeNull();
+    });
+
+    test("handles empty string", () => {
+        expect(formatDateToMonthDayYear("")).toBeNull();
     });
 });
