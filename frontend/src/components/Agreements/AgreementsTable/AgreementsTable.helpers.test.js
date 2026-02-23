@@ -59,5 +59,4 @@ describe("AgreementsTable helpers", () => {
             expect(getProcurementShopDisplay(agreement)).toBe("TBD");
         });
     });
-
 });
