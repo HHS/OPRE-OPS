@@ -29,8 +29,8 @@ export default function useProcurementTrackerStepOne(stepOneData, handleSetCompl
         handleConfirm: () => {}
     });
 
-    const step1CompletedByUserName = useGetUserFullNameFromId(stepOneData?.task_completed_by);
-    const step1DateCompletedLabel = formatDateToMonthDayYear(stepOneData?.date_completed);
+    const step1CompletedByUserName = useGetUserFullNameFromId(stepOneData?.task_completed_by ?? -1);
+    const step1DateCompletedLabel = formatDateToMonthDayYear(stepOneData?.date_completed ?? "");
     const step1NotesLabel = stepOneData?.notes;
     const { setAlert } = useAlert();
     const MemoizedDatePicker = React.memo(DatePicker);
