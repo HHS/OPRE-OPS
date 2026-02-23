@@ -221,25 +221,3 @@ Scenario: Valid Task Completed By Step 2
       And I submit a procurement step update
 
       Then I should get a message that it was successful and my procurement tracker has completed. Also, the procurement action's status should be awarded
-
-  Scenario: Validate acquisition planning notes cannot exceed 750 characters
-    Given I am logged in as an OPS user
-    And I have a Contract Agreement with OPS user as a team member
-    And I have a procurement tracker
-    And I am working with acquisition planning procurement tracker step
-
-    When I have a procurement step with notes exceeding 750 characters
-    And I submit a procurement step update
-
-    Then I should get a validation error
-
-  Scenario: Validate pre-solicitation notes cannot exceed 750 characters
-    Given I am logged in as an OPS user
-    And I have a Contract Agreement with OPS user as a team member
-    And I have a procurement tracker
-    And I am working with a pre-solicitation procurement tracker step
-
-    When I have a procurement step 2 with notes exceeding 750 characters
-    And I submit a procurement step update
-
-    Then I should get a validation error

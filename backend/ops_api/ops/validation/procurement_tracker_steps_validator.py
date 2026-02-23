@@ -85,7 +85,6 @@ class ProcurementTrackerStepsValidator:
             NoPastDraftSolicitationDateOnModelRule,
             NoPastDraftSolicitationDateUpdateRule,
             NoPastTargetCompletionDateUpdateRule,
-            NotesMaxLengthUpdateRule,
             NoUpdatingCompletedProcurementStepRule,
             PreSolicitationCompletionRequiredFieldsRule,
             ResourceExistsRule,
@@ -100,7 +99,6 @@ class ProcurementTrackerStepsValidator:
                 NoUpdatingCompletedProcurementStepRule(),
                 AcquisitionPlanningRequiredFieldsRule(),
                 NoFutureCompletionDateUpdateValidationRule(),
-                NotesMaxLengthUpdateRule(),
             ]
         elif procurement_tracker_step.step_type == ProcurementTrackerStepType.PRE_SOLICITATION:
             if ProcurementTrackerStepsValidator._is_data_completed_step(data):
@@ -115,7 +113,6 @@ class ProcurementTrackerStepsValidator:
                     NoPastTargetCompletionDateUpdateRule(),
                     NoPastDraftSolicitationDateUpdateRule(),
                     NoPastDraftSolicitationDateOnModelRule(),
-                    NotesMaxLengthUpdateRule(),
                 ]
             else:
                 # Non-final updates to presolicitation steps require smaller rule set
@@ -127,9 +124,18 @@ class ProcurementTrackerStepsValidator:
                     NoFutureCompletionDateUpdateValidationRule(),
                     NoPastTargetCompletionDateUpdateRule(),
                     NoPastDraftSolicitationDateUpdateRule(),
-                    NotesMaxLengthUpdateRule(),
                 ]
 
+        elif procurement_tracker_step.step_type == ProcurementTrackerStepType.SOLICITATION:
+            if ProcurementTrackerStepsValidator._is_data_completed_step(data):
+                # For solicitation steps being marked as completed, we require additional validation
+                return [
+                    ResourceExistsRule(),
+                    UserAssociationRule(),
+                    CompletedByUpdateAuthorizationRule(),
+                    NoUpdatingCompletedProcurementStepRule(),
+                    NoFutureCompletionDateUpdateValidationRule(),
+                ]
         else:
             return self._get_default_validators()
 

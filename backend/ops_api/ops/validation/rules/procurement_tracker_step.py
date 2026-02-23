@@ -355,34 +355,3 @@ class CompletionAuthorizationRule(ValidationRule):
 
         # Validate the user association
         validate_task_completed_by_user_association(task_completed_by_id, context, procurement_tracker_step)
-
-
-class NotesMaxLengthUpdateRule(ValidationRule):
-    """
-    Validates that the notes field does not exceed 750 characters when being updated.
-    """
-
-    MAX_NOTES_LENGTH = 750
-
-    @property
-    def name(self) -> str:
-        return "Notes Max Length Check"
-
-    def validate(self, procurement_tracker_step: ProcurementTrackerStep, context: ValidationContext) -> None:
-        updated_fields = context.updated_fields
-
-        # Only validate if notes is being updated
-        if "notes" not in updated_fields:
-            return
-
-        notes = updated_fields.get("notes")
-
-        # Skip validation if notes is None or empty
-        if not notes:
-            return
-
-        # Check if notes exceeds maximum length
-        if len(notes) > self.MAX_NOTES_LENGTH:
-            raise ValidationError(
-                {"notes": f"Notes cannot exceed {self.MAX_NOTES_LENGTH} characters. Current length: {len(notes)}."}
-            )

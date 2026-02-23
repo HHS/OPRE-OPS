@@ -193,20 +193,6 @@ def test_validate_pre_solicitation_step_draft_solicitation_date_model(): ...
 def test_complete_procurement_tracker(): ...
 
 
-@scenario(
-    "validate_procurement_tracker_steps.feature",
-    "Validate acquisition planning notes cannot exceed 750 characters",
-)
-def test_validate_acquisition_planning_notes_max_length(): ...
-
-
-@scenario(
-    "validate_procurement_tracker_steps.feature",
-    "Validate pre-solicitation notes cannot exceed 750 characters",
-)
-def test_validate_pre_solicitation_notes_max_length(): ...
-
-
 @pytest.fixture()
 def setup_and_teardown(loaded_db, context):
     ...
@@ -620,35 +606,6 @@ def have_procurement_step_2_with_past_draft_solicitation_date(context):
         "task_completed_by": context["user_id"],
         "target_completion_date": date.today().isoformat(),
         "draft_solicitation_date": past_date,
-    }
-
-    context["request_body"] = data
-
-
-@when("I have a procurement step with notes exceeding 750 characters")
-def have_procurement_step_with_notes_exceeding_max_length(context):
-    # Create notes that are 751 characters long
-    long_notes = "a" * 751
-    data = {
-        "status": "COMPLETED",
-        "date_completed": date.today().isoformat(),
-        "task_completed_by": context["user_id"],
-        "notes": long_notes,
-    }
-
-    context["request_body"] = data
-
-
-@when("I have a procurement step 2 with notes exceeding 750 characters")
-def have_procurement_step_2_with_notes_exceeding_max_length(context):
-    # Create notes that are 751 characters long
-    long_notes = "a" * 751
-    data = {
-        "status": "COMPLETED",
-        "date_completed": date.today().isoformat(),
-        "task_completed_by": context["user_id"],
-        "target_completion_date": date.today().isoformat(),
-        "notes": long_notes,
     }
 
     context["request_body"] = data
