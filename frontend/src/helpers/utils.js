@@ -255,7 +255,7 @@ export const tableSortCodes = {
         TYPE: "TYPE",
         START: "START",
         END: "END",
-        TOTAL: "TOTAL",
+        TOTAL: "AGREEMENT_TOTAL",
         FY_OBLIGATED: "FY_OBLIGATED"
     },
     canFundingReceivedCodes: {

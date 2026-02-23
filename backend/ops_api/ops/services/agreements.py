@@ -437,7 +437,7 @@ class AgreementsService(OpsService[Agreement]):
             sort_descending = (
                 filters.sort_descending[0] if filters.sort_descending and len(filters.sort_descending) > 0 else False
             )
-            all_results = _sort_agreements(all_results, sort_condition, sort_descending)
+            all_results = _sort_agreements(all_results, sort_condition, sort_descending, filters.fiscal_year)
 
         # Calculate count before slicing
         total_count = len(all_results)
@@ -951,7 +951,7 @@ def _filter_by_ownership(results, only_my):
     return results
 
 
-def _sort_agreements(results, sort_condition, sort_descending):
+def _sort_agreements(results, sort_condition, sort_descending, fiscal_years=None):
     match (sort_condition):
         case AgreementSortCondition.AGREEMENT:
             return sorted(results, key=lambda agreement: agreement.name, reverse=sort_descending)
@@ -969,6 +969,9 @@ def _sort_agreements(results, sort_condition, sort_descending):
             return sorted(results, key=start_date_sort, reverse=sort_descending)
         case AgreementSortCondition.END:
             return sorted(results, key=end_date_sort, reverse=sort_descending)
+        case AgreementSortCondition.FY_OBLIGATED:
+            fy = _resolve_fiscal_year(fiscal_years)
+            return sorted(results, key=lambda a: fy_obligated_sort(a, fy), reverse=sort_descending)
         case _:
             return results
 
@@ -1004,6 +1007,25 @@ def start_date_sort(agreement):
 
 def end_date_sort(agreement):
     return agreement.sc_end_date or date.max
+
+
+def _resolve_fiscal_year(fiscal_years):
+    """Get the effective fiscal year from filter list, defaulting to current FY."""
+    if fiscal_years and len(fiscal_years) == 1:
+        return int(fiscal_years[0])
+    today = date.today()
+    return today.year + 1 if today.month >= 10 else today.year
+
+
+def fy_obligated_sort(agreement, fiscal_year):
+    """Sum of (amount + fees) for OBLIGATED BLIs in the given fiscal year."""
+    if not agreement.budget_line_items:
+        return Decimal("0")
+    return sum(
+        (bli.amount or Decimal("0")) + (bli.fees or Decimal("0"))
+        for bli in agreement.budget_line_items
+        if bli.status == BudgetLineItemStatus.OBLIGATED and bli.fiscal_year == fiscal_year
+    )
 
 
 def _get_next_obligated_bli(budget_line_items):

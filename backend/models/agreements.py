@@ -61,6 +61,7 @@ class AgreementSortCondition(Enum):
     NEXT_OBLIGATE_BY = "NEXT_OBLIGATE_BY"
     START = "START"
     END = "END"
+    FY_OBLIGATED = "FY_OBLIGATED"
 
 
 class AgreementType(Enum):

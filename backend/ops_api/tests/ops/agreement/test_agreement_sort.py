@@ -4,7 +4,12 @@ from unittest.mock import MagicMock
 
 from models import BudgetLineItemStatus
 from models.agreements import Agreement
-from ops_api.ops.services.agreements import agreement_total_sort, next_budget_line_sort
+from ops_api.ops.services.agreements import (
+    _resolve_fiscal_year,
+    agreement_total_sort,
+    fy_obligated_sort,
+    next_budget_line_sort,
+)
 
 
 def _make_agreement_mock_with_total(budget_line_items):
@@ -205,3 +210,90 @@ def test_agreement_total_sort_with_all_none_amounts():
 
     expected = Decimal("0")
     assert result == expected
+
+
+# --- FY Obligated sort tests ---
+
+
+def test_fy_obligated_sort_no_budget_lines():
+    agreement = MagicMock(budget_line_items=[])
+    result = fy_obligated_sort(agreement, 2026)
+    assert result == Decimal("0")
+
+
+def test_fy_obligated_sort_matching_fiscal_year():
+    bli1 = MagicMock(
+        status=BudgetLineItemStatus.OBLIGATED, amount=Decimal("100000.00"), fees=Decimal("5000.00"), fiscal_year=2026
+    )
+    bli2 = MagicMock(
+        status=BudgetLineItemStatus.OBLIGATED, amount=Decimal("200000.00"), fees=Decimal("10000.00"), fiscal_year=2026
+    )
+    agreement = MagicMock(budget_line_items=[bli1, bli2])
+
+    result = fy_obligated_sort(agreement, 2026)
+
+    expected = Decimal("315000.00")
+    assert result == expected
+
+
+def test_fy_obligated_sort_non_matching_fiscal_year():
+    bli1 = MagicMock(
+        status=BudgetLineItemStatus.OBLIGATED, amount=Decimal("100000.00"), fees=Decimal("5000.00"), fiscal_year=2025
+    )
+    agreement = MagicMock(budget_line_items=[bli1])
+
+    result = fy_obligated_sort(agreement, 2026)
+
+    assert result == Decimal("0")
+
+
+def test_fy_obligated_sort_only_obligated_status():
+    bli1 = MagicMock(
+        status=BudgetLineItemStatus.OBLIGATED, amount=Decimal("100000.00"), fees=Decimal("5000.00"), fiscal_year=2026
+    )
+    bli2 = MagicMock(
+        status=BudgetLineItemStatus.PLANNED, amount=Decimal("200000.00"), fees=Decimal("10000.00"), fiscal_year=2026
+    )
+    bli3 = MagicMock(
+        status=BudgetLineItemStatus.DRAFT, amount=Decimal("50000.00"), fees=Decimal("2500.00"), fiscal_year=2026
+    )
+    agreement = MagicMock(budget_line_items=[bli1, bli2, bli3])
+
+    result = fy_obligated_sort(agreement, 2026)
+
+    expected = Decimal("105000.00")
+    assert result == expected
+
+
+def test_fy_obligated_sort_with_none_amount():
+    bli1 = MagicMock(status=BudgetLineItemStatus.OBLIGATED, amount=None, fees=Decimal("5000.00"), fiscal_year=2026)
+    agreement = MagicMock(budget_line_items=[bli1])
+
+    result = fy_obligated_sort(agreement, 2026)
+
+    assert result == Decimal("5000.00")
+
+
+# --- _resolve_fiscal_year tests ---
+
+
+def test_resolve_fiscal_year_single_value():
+    assert _resolve_fiscal_year(["2025"]) == 2025
+
+
+def test_resolve_fiscal_year_none_defaults_to_current():
+    today = date.today()
+    expected = today.year + 1 if today.month >= 10 else today.year
+    assert _resolve_fiscal_year(None) == expected
+
+
+def test_resolve_fiscal_year_empty_defaults_to_current():
+    today = date.today()
+    expected = today.year + 1 if today.month >= 10 else today.year
+    assert _resolve_fiscal_year([]) == expected
+
+
+def test_resolve_fiscal_year_multiple_defaults_to_current():
+    today = date.today()
+    expected = today.year + 1 if today.month >= 10 else today.year
+    assert _resolve_fiscal_year(["2025", "2026"]) == expected
