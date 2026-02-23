@@ -38,7 +38,22 @@ export const testLogin = (name) => {
  * @param {number} stepNumber - The step number (1-6)
  */
 export const openTrackerStep = (stepNumber) => {
-    cy.contains("button", new RegExp(`${stepNumber} of 6`, "i")).then(($button) => {
+    // Validate input to prevent potential ReDoS attacks
+    if (!Number.isInteger(stepNumber) || stepNumber < 1 || stepNumber > 6) {
+        throw new Error(`Invalid step number: ${stepNumber}. Must be an integer between 1 and 6.`);
+    }
+
+    // Use hardcoded regexes to avoid dynamic RegExp construction (security best practice)
+    const stepRegexMap = {
+        1: /1 of 6/i,
+        2: /2 of 6/i,
+        3: /3 of 6/i,
+        4: /4 of 6/i,
+        5: /5 of 6/i,
+        6: /6 of 6/i
+    };
+
+    cy.contains("button", stepRegexMap[stepNumber]).then(($button) => {
         if ($button.attr("aria-expanded") === "false") {
             cy.wrap($button).click();
         }
