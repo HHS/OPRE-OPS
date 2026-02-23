@@ -48,6 +48,8 @@ SHARED_CACHE = {
     "procurement_tracker_ids": [],
     "procurement_tracker_step_ids": [],
     "procurement_action_ids": [],
+    "research_methodology_ids": [],
+    "special_topic_ids": [],
 }
 
 
@@ -352,6 +354,14 @@ class OPSAPIUser(HttpUser):
             )
 
     @task(2)
+    def list_portfolio_funding_summary(self):
+        """GET /api/v1/portfolio-funding-summary/ - List portfolio funding summaries."""
+        self.client.get(
+            "/api/v1/portfolio-funding-summary/",
+            name="/api/v1/portfolio-funding-summary/",
+        )
+
+    @task(2)
     def get_portfolio_cans(self):
         """GET /api/v1/portfolios/{id}/cans/ - Get portfolio CANs."""
         if SHARED_CACHE["portfolio_ids"]:
@@ -438,6 +448,36 @@ class OPSAPIUser(HttpUser):
         """GET /api/v1/research-types/ - List research types."""
         self.client.get("/api/v1/research-types/", name="/api/v1/research-types/")
 
+    @task(3)
+    def list_research_methodologies(self):
+        """GET /api/v1/research-methodologies/ - List research methodologies."""
+        self.client.get("/api/v1/research-methodologies/", name="/api/v1/research-methodologies/")
+
+    @task(2)
+    def get_research_methodology_detail(self):
+        """GET /api/v1/research-methodologies/{id} - Get specific research methodology."""
+        if SHARED_CACHE["research_methodology_ids"]:
+            methodology_id = random.choice(SHARED_CACHE["research_methodology_ids"])
+            self.client.get(
+                f"/api/v1/research-methodologies/{methodology_id}",
+                name="/api/v1/research-methodologies/[id]",
+            )
+
+    @task(3)
+    def list_special_topics(self):
+        """GET /api/v1/special-topics/ - List special topics."""
+        self.client.get("/api/v1/special-topics/", name="/api/v1/special-topics/")
+
+    @task(2)
+    def get_special_topic_detail(self):
+        """GET /api/v1/special-topics/{id} - Get specific special topic."""
+        if SHARED_CACHE["special_topic_ids"]:
+            topic_id = random.choice(SHARED_CACHE["special_topic_ids"])
+            self.client.get(
+                f"/api/v1/special-topics/{topic_id}",
+                name="/api/v1/special-topics/[id]",
+            )
+
     # === Agreement Extended Tasks ===
 
     @task(4)
@@ -487,6 +527,22 @@ class OPSAPIUser(HttpUser):
         self.client.get(
             "/api/v1/budget-line-items-filters/",
             name="/api/v1/budget-line-items-filters/",
+        )
+
+    @task(3)
+    def get_cans_filters(self):
+        """GET /api/v1/cans-filters/ - Get CAN filter options."""
+        self.client.get(
+            "/api/v1/cans-filters/",
+            name="/api/v1/cans-filters/",
+        )
+
+    @task(3)
+    def get_agreements_filters(self):
+        """GET /api/v1/agreements-filters/ - Get agreement filter options."""
+        self.client.get(
+            "/api/v1/agreements-filters/",
+            name="/api/v1/agreements-filters/",
         )
 
     # === Product & Service Tasks ===
@@ -730,6 +786,16 @@ def _populate_shared_cache(environment):
             "/api/v1/procurement-actions/",
             "procurement_action_ids",
             "Procurement Actions",
+        )
+        fetch_ids(
+            "/api/v1/research-methodologies/",
+            "research_methodology_ids",
+            "Research Methodologies",
+        )
+        fetch_ids(
+            "/api/v1/special-topics/",
+            "special_topic_ids",
+            "Special Topics",
         )
 
         print("Shared cache population complete!")
