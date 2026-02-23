@@ -303,4 +303,30 @@ describe("ProcurementTrackerStepTwo Validation Suite", () => {
             expect(result.hasErrors("dateCompleted")).toBe(true);
         });
     });
+
+    describe("Target Completion Date Field - Range Validation", () => {
+        it("should fail when target completion date is in the past", () => {
+            const data = { targetCompletionDate: getPastDate() };
+            const result = suite(data, "targetCompletionDate");
+
+            expect(result.hasErrors("targetCompletionDate")).toBe(true);
+            expect(result.getErrors("targetCompletionDate")).toContain("Date must be today or later");
+        });
+
+        it("should pass when target completion date is today", () => {
+            const data = { targetCompletionDate: getTodayDate() };
+            const result = suite(data, "targetCompletionDate");
+
+            expect(result.hasErrors("targetCompletionDate")).toBe(false);
+            expect(result.getErrors("targetCompletionDate")).not.toContain("Date must be today or later");
+        });
+
+        it("should pass when target completion date is in the future", () => {
+            const data = { targetCompletionDate: getFutureDate() };
+            const result = suite(data, "targetCompletionDate");
+
+            expect(result.hasErrors("targetCompletionDate")).toBe(false);
+            expect(result.getErrors("targetCompletionDate")).not.toContain("Date must be today or later");
+        });
+    });
 });
