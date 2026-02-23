@@ -292,6 +292,40 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
         viewonly=True,
     )
 
+    # SOLICITATION-specific fields
+    solicitation_task_completed_by: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        ForeignKey("ops_user.id"),
+        nullable=True,
+    )
+
+    solicitation_date_completed: Mapped[Optional[date]] = mapped_column(
+        Date,
+        nullable=True,
+    )
+
+    solicitation_notes: Mapped[Optional[str]] = mapped_column(
+        Text,
+        nullable=True,
+    )
+
+    solicitation_period_start_date: Mapped[Optional[date]] = mapped_column(
+        Date,
+        nullable=True,
+    )
+
+    solicitation_period_end_date: Mapped[Optional[date]] = mapped_column(
+        Date,
+        nullable=True,
+    )
+
+    # Relationships
+    solicitation_completed_by_user: Mapped[Optional["User"]] = relationship(
+        "User",
+        foreign_keys=[solicitation_task_completed_by],
+        viewonly=True,
+    )
+
     # Polymorphic configuration
     __mapper_args__ = {
         "polymorphic_identity": "default_step",
@@ -312,6 +346,13 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
         - Maps pre_solicitation_date_completed → date_completed
         - Maps pre_solicitation_notes → notes
         - Maps pre_solicitation_draft_solicitation_date → draft_solicitation_date
+
+        For SOLICITATION steps:
+        - Maps solicitation_task_completed_by → task_completed_by
+        - Maps solicitation_date_completed → date_completed
+        - Maps solicitation_notes → notes
+        - Maps solicitation_period_start_date → solicitation_period_start_date
+        - Maps solicitation_period_end_date → solicitation_period_end_date
 
         For other step types, these fields are excluded from the output.
         """
@@ -336,6 +377,14 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
             data.pop("pre_solicitation_draft_solicitation_date", None)
             data.pop("pre_solicitation_completed_by_user", None)
 
+            # Remove SOLICITATION-specific fields
+            data.pop("solicitation_task_completed_by", None)
+            data.pop("solicitation_date_completed", None)
+            data.pop("solicitation_notes", None)
+            data.pop("solicitation_period_start_date", None)
+            data.pop("solicitation_period_end_date", None)
+            data.pop("solicitation_completed_by_user", None)
+
         # Handle PRE_SOLICITATION-specific fields
         elif self.step_type == ProcurementTrackerStepType.PRE_SOLICITATION:
             # Map prefixed columns to API field names
@@ -355,6 +404,41 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
             data.pop("acquisition_planning_notes", None)
             data.pop("acquisition_planning_completed_by_user", None)
 
+            # Remove SOLICITATION-specific fields
+            data.pop("solicitation_task_completed_by", None)
+            data.pop("solicitation_date_completed", None)
+            data.pop("solicitation_notes", None)
+            data.pop("solicitation_period_start_date", None)
+            data.pop("solicitation_period_end_date", None)
+            data.pop("solicitation_completed_by_user", None)
+
+        # Handle SOLICITATION-specific fields
+        elif self.step_type == ProcurementTrackerStepType.SOLICITATION:
+            # Map prefixed columns to API field names
+            data["task_completed_by"] = data.pop("solicitation_task_completed_by", None)
+            data["date_completed"] = data.pop("solicitation_date_completed", None)
+            data["notes"] = data.pop("solicitation_notes", None)
+            data["solicitation_period_start_date"] = data.pop("solicitation_period_start_date", None)
+            data["solicitation_period_end_date"] = data.pop("solicitation_period_end_date", None)
+
+            # Map the relationship
+            if "solicitation_completed_by_user" in data:
+                data["completed_by_user"] = data.pop("solicitation_completed_by_user", None)
+
+            # Remove ACQUISITION_PLANNING-specific fields
+            data.pop("acquisition_planning_task_completed_by", None)
+            data.pop("acquisition_planning_date_completed", None)
+            data.pop("acquisition_planning_notes", None)
+            data.pop("acquisition_planning_completed_by_user", None)
+
+            # Remove PRE_SOLICITATION-specific fields
+            data.pop("pre_solicitation_target_completion_date", None)
+            data.pop("pre_solicitation_task_completed_by", None)
+            data.pop("pre_solicitation_date_completed", None)
+            data.pop("pre_solicitation_notes", None)
+            data.pop("pre_solicitation_draft_solicitation_date", None)
+            data.pop("pre_solicitation_completed_by_user", None)
+
         else:
             # Remove all step-specific fields for other step types
             data.pop("acquisition_planning_task_completed_by", None)
@@ -368,6 +452,13 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
             data.pop("pre_solicitation_notes", None)
             data.pop("pre_solicitation_draft_solicitation_date", None)
             data.pop("pre_solicitation_completed_by_user", None)
+
+            data.pop("solicitation_task_completed_by", None)
+            data.pop("solicitation_date_completed", None)
+            data.pop("solicitation_notes", None)
+            data.pop("solicitation_period_start_date", None)
+            data.pop("solicitation_period_end_date", None)
+            data.pop("solicitation_completed_by_user", None)
 
         return data
 
@@ -384,7 +475,7 @@ class DefaultProcurementTracker(ProcurementTracker):
     Steps are stored as separate rows in procurement_tracker_step table:
     - Step 1: ACQUISITION_PLANNING (with extra fields: acquisition_planning_task_completed_by, acquisition_planning_date_completed, acquisition_planning_notes)
     - Step 2: PRE_SOLICITATION (with extra fields: pre_solicitation_target_completion_date, pre_solicitation_task_completed_by, pre_solicitation_date_completed, pre_solicitation_notes, pre_solicitation_draft_solicitation_date)
-    - Step 3: SOLICITATION
+    - Step 3: SOLICITATION (with extra fields: solicitation_task_completed_by, solicitation_date_completed, solicitation_notes, solicitation_period_start_date, solicitation_period_end_date)
     - Step 4: EVALUATION
     - Step 5: PRE_AWARD
     - Step 6: AWARD

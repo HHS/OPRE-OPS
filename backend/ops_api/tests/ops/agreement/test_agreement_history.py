@@ -101,6 +101,26 @@ def test_update_agreement_agreement_history_trigger(loaded_db, app_ctx):
     )
 
 
+def test_agreement_nickname_change_history_trigger(loaded_db, app_ctx):
+    next_agreement_history_ops_event = loaded_db.get(OpsEvent, 70)
+    agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
+
+    loaded_db.flush()  # Ensure items are visible to queries
+    # Filter for history items created by this specific ops event
+    agreement_history_list = (
+        loaded_db.query(AgreementHistory)
+        .where(AgreementHistory.ops_event_id == next_agreement_history_ops_event.id)
+        .order_by(AgreementHistory.id)
+        .all()
+    )
+    assert len(agreement_history_list) == 1
+    assert agreement_history_list[0].history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    assert agreement_history_list[0].history_title == "Change to Agreement Nickname"
+    assert (
+        agreement_history_list[0].history_message == "User Demo changed the Agreement Nickname from TBD to Inter Init."
+    )
+
+
 def test_update_add_remove_team_member_history_trigger(loaded_db, app_ctx):
     next_agreement_history_ops_event = loaded_db.get(OpsEvent, 34)
     agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
