@@ -176,8 +176,8 @@ describe("useProcurementTrackerStepTwo", () => {
         it("handles undefined/null stepTwoData gracefully", () => {
             renderHook(() => useProcurementTrackerStepTwo(undefined));
 
-            expect(useGetUserFullNameFromId).toHaveBeenCalledWith(undefined);
-            expect(formatDateToMonthDayYear).toHaveBeenCalledWith(undefined);
+            expect(useGetUserFullNameFromId).toHaveBeenCalledWith(-1);
+            expect(formatDateToMonthDayYear).toHaveBeenCalledWith("");
         });
     });
 
@@ -322,14 +322,14 @@ describe("useProcurementTrackerStepTwo", () => {
             const stepDataWithoutUser = { ...mockStepTwoData, task_completed_by: null };
             renderHook(() => useProcurementTrackerStepTwo(stepDataWithoutUser));
 
-            expect(useGetUserFullNameFromId).toHaveBeenCalledWith(null);
+            expect(useGetUserFullNameFromId).toHaveBeenCalledWith(-1);
         });
 
         it("handles stepTwoData without date_completed", () => {
             const stepDataWithoutDate = { ...mockStepTwoData, date_completed: null };
             renderHook(() => useProcurementTrackerStepTwo(stepDataWithoutDate));
 
-            expect(formatDateToMonthDayYear).toHaveBeenCalledWith(null);
+            expect(formatDateToMonthDayYear).toHaveBeenCalledWith("");
         });
 
         it("updates multiple fields in sequence", () => {

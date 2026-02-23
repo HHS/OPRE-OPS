@@ -196,8 +196,8 @@ describe("useProcurementTrackerStepOne", () => {
             const { result } = renderHook(() => useProcurementTrackerStepOne(undefined));
 
             expect(result.current.step1NotesLabel).toBeUndefined();
-            expect(useGetUserFullNameFromId).toHaveBeenCalledWith(undefined);
-            expect(formatDateToMonthDayYear).toHaveBeenCalledWith(undefined);
+            expect(useGetUserFullNameFromId).toHaveBeenCalledWith(-1);
+            expect(formatDateToMonthDayYear).toHaveBeenCalledWith("");
         });
     });
 

@@ -130,8 +130,8 @@ describe("Procurement Tracker Step 1", () => {
         cy.get("body").then(($body) => {
             // If checkbox exists, test the dropdown
             if ($body.find(".usa-checkbox__label").length > 0) {
-                // Enable the form
-                cy.get(".usa-checkbox__label").click();
+                // Enable the form - use first() to click only the first checkbox
+                cy.get(".usa-checkbox__label").first().click();
 
                 // Open the users dropdown
                 cy.get("#users-combobox-input").click();
