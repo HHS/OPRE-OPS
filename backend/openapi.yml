@@ -902,6 +902,7 @@ paths:
                   - $ref: "#/components/schemas/ProcurementTrackerStep"
                   - $ref: "#/components/schemas/ProcurementTrackerAcquisitionPlanningStep"
                   - $ref: "#/components/schemas/ProcurementTrackerPreSolicitationStep"
+                  - $ref: "#/components/schemas/ProcurementTrackerSolicitationStep"
                 description: >-
                   Procurement tracker step. ACQUISITION_PLANNING steps
                   include additional fields (task_completed_by,
@@ -916,6 +917,8 @@ paths:
                   $ref: "#/components/examples/ProcurementTrackerAcquisitionPlanningStepExample"
                 "2":
                   $ref: "#/components/examples/ProcurementTrackerPreSolicitationStepExample"
+                "3":
+                  $ref: "#/components/examples/ProcurementTrackerSolicitationStepExample"
         "404":
           description: Not Found
         "500":
@@ -953,6 +956,8 @@ paths:
                 $ref: "#/components/examples/UpdateProcurementTrackerStepAcquisitionPlanningRequest"
               "2":
                 $ref: "#/components/examples/UpdateProcurementTrackerStepPreSolicitationRequest"
+              "3":
+                $ref: "#/components/examples/UpdateProcurementTrackerStepSolicitationRequest"
       responses:
         "200":
           description: Procurement tracker step updated successfully
@@ -963,6 +968,7 @@ paths:
                   - $ref: "#/components/schemas/ProcurementTrackerStep"
                   - $ref: "#/components/schemas/ProcurementTrackerAcquisitionPlanningStep"
                   - $ref: "#/components/schemas/ProcurementTrackerPreSolicitationStep"
+                  - $ref: "#/components/schemas/ProcurementTrackerSolicitationStep"
                 description: >-
                   Updated procurement tracker step. ACQUISITION_PLANNING
                   steps include additional fields (task_completed_by,
@@ -977,6 +983,8 @@ paths:
                   $ref: "#/components/examples/ProcurementTrackerAcquisitionPlanningStepExample"
                 "2":
                   $ref: "#/components/examples/ProcurementTrackerPreSolicitationStepExample"
+                "3":
+                  $ref: "#/components/examples/ProcurementTrackerSolicitationStepExample"
         "400":
           description: Bad Request
         "404":
@@ -6096,6 +6104,36 @@ components:
               description: >-
                 Date when the draft solicitation was completed. Must be
                 current date or future date.
+    ProcurementTrackerSolicitationStep:
+      allOf:
+        - $ref: "#/components/schemas/ProcurementTrackerStep"
+        - type: object
+          description: Solicitation step with additional fields
+          properties:
+            task_completed_by:
+              type: [integer, "null"]
+              description: User ID of the person who completed this step
+            date_completed:
+              type: [string, "null"]
+              format: date
+              description: >-
+                Date when this step was completed. Must be current date
+                or past date.
+            notes:
+              type: [string, "null"]
+              description: Additional notes about this step
+            solicitation_period_start_date:
+              type: [string, "null"]
+              format: date
+              description: >-
+                Date when the solicitation was issued. Must be current date
+                or past date.
+            solicitation_period_end_date:
+              type: [string, "null"]
+              format: date
+              description: >-
+                Date when the solicitation period ended. Must be current date
+                or past date.
     UpdateProcurementTrackerStepRequest:
       type: object
       description: Request schema for updating a procurement tracker step. All fields are optional for PATCH operations.
@@ -7421,6 +7459,26 @@ components:
         step_start_date: "2026-01-02"
         step_completed_date: null
 
+    ProcurementTrackerSolicitationStepExample:
+      summary: Solicitation tracker step
+      description: >-
+        Example showing a solicitation step with additional fields
+        (solicitation_period_start_date, solicitation_period_end_date, task_completed_by, date_completed,
+        notes)
+      value:
+        id: 2
+        procurement_tracker_id: 1
+        step_number: 2
+        step_type: "SOLICITATION"
+        status: "ACTIVE"
+        solicitation_period_start_date: "2026-01-02"
+        solicitation_period_end_date: "2026-02-15"
+        task_completed_by: null
+        date_completed: null
+        notes: "Working on solicitation document."
+        step_start_date: "2026-01-02"
+        step_completed_date: null
+
     UpdateProcurementTrackerStepPreSolicitationRequest:
       summary: PATCH request to complete pre-solicitation step
       description: >-
@@ -7437,6 +7495,21 @@ components:
         notes: >-
           Pre-solicitation phase completed. Draft solicitation reviewed
           and approved by all stakeholders.
+
+    UpdateProcurementTrackerStepSolicitationRequest:
+      summary: PATCH request to complete Solicitation step
+      description: >-
+        Example showing a solicitation step with additional fields
+        (solicitation_period_start_date, solicitation_period_end_date, task_completed_by, date_completed,
+        notes) and a PATCH request to complete the step. All fields in the PATCH request are optional.
+        Date fields (solicitation_period_start_date, solicitation_period_end_date) must be current date or future date.
+      value:
+        status: "COMPLETED"
+        solicitation_period_start_date: "2026-01-02"
+        solicitation_period_end_date: "2026-02-15"
+        task_completed_by: 521
+        date_completed: "2026-02-10"
+        notes: "Solicitation phase completed."
 
     ProcurementTracker:
       summary: Single procurement tracker with mixed step types
@@ -7466,6 +7539,11 @@ components:
             step_number: 2
             step_type: "PRE_SOLICITATION"
             status: "ACTIVE"
+            target_completion_date: "2026-02-15"
+            task_completed_by: null
+            date_completed: null
+            notes: "Working on draft solicitation document."
+            draft_solicitation_date: null
             step_start_date: "2026-01-02"
             step_completed_date: null
           - id: 3
@@ -7473,6 +7551,11 @@ components:
             step_number: 3
             step_type: "SOLICITATION"
             status: "PENDING"
+            solicitation_period_start_date: null
+            solicitation_period_end_date: null
+            task_completed_by: null
+            date_completed: null
+            notes: null
             step_start_date: null
             step_completed_date: null
           - id: 4
