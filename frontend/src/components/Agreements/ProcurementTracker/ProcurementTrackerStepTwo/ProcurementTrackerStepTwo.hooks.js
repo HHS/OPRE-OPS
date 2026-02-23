@@ -12,8 +12,8 @@ import useAlert from "../../../../hooks/use-alert.hooks";
 
 /**
  * Custom hook to manage the state and logic for Procurement Tracker Step Two.
- * @param {Function} handleSetCompletedStepNumber - Function to set the completed step number.
  * @param {ProcurementTrackerPreSolicitationStep | undefined} stepTwoData - The data for step two of the procurement tracker.
+ * @param {Function} handleSetCompletedStepNumber - Function to set the completed step number.
  */
 export default function useProcurementTrackerStepTwo(stepTwoData, handleSetCompletedStepNumber) {
     const [isPreSolicitationPackageFinalized, setIsPreSolicitationPackageFinalized] = React.useState(false);
@@ -32,10 +32,10 @@ export default function useProcurementTrackerStepTwo(stepTwoData, handleSetCompl
     const [patchStepTwo] = useUpdateProcurementTrackerStepMutation();
     const { setAlert } = useAlert();
 
-    const step2CompletedByUserName = useGetUserFullNameFromId(stepTwoData?.task_completed_by);
-    const step2DateCompletedLabel = formatDateToMonthDayYear(stepTwoData?.date_completed);
-    const step2TargetCompletionDateLabel = formatDateToMonthDayYear(stepTwoData?.target_completion_date);
-    const step2DraftSolicitationDateLabel = formatDateToMonthDayYear(stepTwoData?.draft_solicitation_date);
+    const step2CompletedByUserName = useGetUserFullNameFromId(stepTwoData?.task_completed_by ?? -1);
+    const step2DateCompletedLabel = formatDateToMonthDayYear(stepTwoData?.date_completed ?? "");
+    const step2TargetCompletionDateLabel = formatDateToMonthDayYear(stepTwoData?.target_completion_date ?? "");
+    const step2DraftSolicitationDateLabel = formatDateToMonthDayYear(stepTwoData?.draft_solicitation_date ?? "");
     const step2NotesLabel = stepTwoData?.notes;
     const MemoizedDatePicker = React.memo(DatePicker);
 

@@ -13,7 +13,7 @@ import useAlert from "../../../../hooks/use-alert.hooks";
 /**
  * Custom hook to manage the state and logic for Procurement Tracker Step One.
  * @param {ProcurementTrackerAcquisitionPlanningStep | undefined} stepOneData - The data for step one of the procurement tracker.
- * @param {(isSubmitted: boolean) => void} handleSetIsFormSubmitted - Function to set the form submission state.
+ * @param {(isSubmitted: boolean) => void} handleSetCompletedStepNumber - Function to set the form submission state.
  */
 export default function useProcurementTrackerStepOne(stepOneData, handleSetCompletedStepNumber) {
     const [isPreSolicitationPackageSent, setIsPreSolicitationPackageSent] = React.useState(false);
