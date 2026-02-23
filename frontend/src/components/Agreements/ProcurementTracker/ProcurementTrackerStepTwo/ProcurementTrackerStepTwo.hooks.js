@@ -7,9 +7,13 @@ import { useUpdateProcurementTrackerStepMutation } from "../../../../api/opsAPI"
 import useAlert from "../../../../hooks/use-alert.hooks";
 
 /**
+ * @typedef {import("../../../../types/ProcurementTrackerTypes").ProcurementTrackerPreSolicitationStep} ProcurementTrackerPreSolicitationStep
+ */
+
+/**
  * Custom hook to manage the state and logic for Procurement Tracker Step Two.
- * @param {Object} stepTwoData - The data for step two of the procurement tracker.
  * @param {Function} handleSetCompletedStepNumber - Function to set the completed step number.
+ * @param {ProcurementTrackerPreSolicitationStep | undefined} stepTwoData - The data for step two of the procurement tracker.
  */
 export default function useProcurementTrackerStepTwo(stepTwoData, handleSetCompletedStepNumber) {
     const [isPreSolicitationPackageFinalized, setIsPreSolicitationPackageFinalized] = React.useState(false);

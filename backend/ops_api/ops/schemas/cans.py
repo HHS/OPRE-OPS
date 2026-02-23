@@ -171,6 +171,32 @@ class CreateUpdateFundingDetailsSchema(Schema):
     sub_allowance = fields.String(allow_none=True, load_default=None)
 
 
+class FundingDetailsListSchema(Schema):
+    """Lightweight schema for list endpoint with only fields used by frontend.
+
+    Excludes expensive nested relationships (created_by_user, updated_by_user)
+    to eliminate N+1 query problems. Preserves audit timestamps for debugging.
+    """
+
+    id = fields.Integer(required=True)
+    fiscal_year = fields.Integer(required=True)
+    fund_code = fields.String(required=True)
+    active_period = fields.Integer(allow_none=True)
+    funding_method = fields.String(allow_none=True)
+    funding_received = fields.String(allow_none=True)
+    funding_type = fields.String(allow_none=True)
+    allotment = fields.String(allow_none=True)
+    allowance = fields.String(allow_none=True)
+    display_name = fields.String(allow_none=True)
+    funding_partner = fields.String(allow_none=True)
+    funding_source = fields.Enum(CANFundingSource, allow_none=True)
+    method_of_transfer = fields.Enum(CANMethodOfTransfer, allow_none=True)
+    obligate_by = fields.Integer(allow_none=True)
+    sub_allowance = fields.String(allow_none=True)
+    created_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
+    updated_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
+
+
 class FundingDetailsSchema(Schema):
     active_period = fields.Integer(allow_none=True)
     funding_method = fields.String(allow_none=True)
