@@ -1,3 +1,6 @@
+import DatePicker from "../../../UI/USWDS/DatePicker";
+import DateRangePickerWrapper from "../../../UI/USWDS/DateRangePickerWrapper";
+
 /**
  * @typedef {import("../../../../types/UserTypes").SafeUser} SafeUser
  * @typedef {Object} ProcurementTrackerStepThreeProps
@@ -25,6 +28,32 @@ const ProcurementTrackerStepThree = ({ stepStatus }) => {
                         Solicitation Start and End Dates. After all proposals are received, vendor questions have been
                         answered, and evaluations are starting, check this step as complete.
                     </p>
+                    <DateRangePickerWrapper
+                        id="period-of-performance"
+                        key={"period-of-performance"}
+                        className="display-flex flex-justify "
+                    >
+                        <div style={{ width: "275px" }}>
+                            <DatePicker
+                                id="pop-start-date"
+                                name="pop-start-date"
+                                label="Period of Performance-Start"
+                                hint="mm/dd/yyyy"
+                                value={null}
+                                onChange={() => {}}
+                            />
+                        </div>
+                        <div style={{ width: "275px" }}>
+                            <DatePicker
+                                id="pop-end-date"
+                                name="pop-end-date"
+                                label="Period of Performance-End"
+                                hint="mm/dd/yyyy"
+                                value={null}
+                                onChange={() => {}}
+                            />
+                        </div>
+                    </DateRangePickerWrapper>
                 </fieldset>
             )}
             {stepStatus === "COMPLETED" && (
