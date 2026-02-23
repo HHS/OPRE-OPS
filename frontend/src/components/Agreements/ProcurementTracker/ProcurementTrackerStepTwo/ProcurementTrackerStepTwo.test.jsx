@@ -105,6 +105,16 @@ vi.mock("../../../UI/Form/TextArea", () => ({
     )
 }));
 
+vi.mock("../../../UI/Modals/ConfirmationModal", () => ({
+    default: ({ heading, setShowModal, actionButtonText, secondaryButtonText, handleConfirm }) => (
+        <div data-testid="confirmation-modal">
+            <h2>{heading}</h2>
+            <button onClick={handleConfirm}>{actionButtonText}</button>
+            <button onClick={() => setShowModal(false)}>{secondaryButtonText}</button>
+        </div>
+    )
+}));
+
 describe("ProcurementTrackerStepTwo", () => {
     const mockCancelModalStep2 = vi.fn();
     const mockSetIsPreSolicitationPackageFinalized = vi.fn();
@@ -815,5 +825,173 @@ describe("ProcurementTrackerStepTwo", () => {
         // eslint-disable-next-line testing-library/no-node-access
         const dd = screen.getByText("Notes").nextElementSibling;
         expect(dd.textContent).toBe("None");
+    });
+
+    describe("Target Completion Date Save Button", () => {
+        it("calls handleTargetCompletionDateSubmit with stepId when clicked", () => {
+            useProcurementTrackerStepTwo.mockReturnValue({
+                ...defaultHookReturn,
+                targetCompletionDate: "2024-03-20"
+            });
+
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="PENDING"
+                    stepTwoData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                />
+            );
+
+            const saveButton = screen.getByRole("button", { name: /save/i });
+            fireEvent.click(saveButton);
+
+            expect(mockHandleTargetCompletionDateSubmit).toHaveBeenCalledWith(1);
+        });
+
+        it("save button is disabled when target date is empty", () => {
+            useProcurementTrackerStepTwo.mockReturnValue({
+                ...defaultHookReturn,
+                targetCompletionDate: ""
+            });
+
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="PENDING"
+                    stepTwoData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                />
+            );
+
+            const saveButton = screen.getByRole("button", { name: /save/i });
+            expect(saveButton).toBeDisabled();
+        });
+
+        it("save button is disabled when validation errors exist", () => {
+            const mockValidatorResWithErrors = {
+                getErrors: vi.fn(() => []),
+                hasErrors: vi.fn((field) => {
+                    if (field === "targetCompletionDate") {
+                        return true;
+                    }
+                    return false;
+                })
+            };
+
+            useProcurementTrackerStepTwo.mockReturnValue({
+                ...defaultHookReturn,
+                targetCompletionDate: "invalid-date",
+                validatorRes: mockValidatorResWithErrors
+            });
+
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="PENDING"
+                    stepTwoData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                />
+            );
+
+            const saveButton = screen.getByRole("button", { name: /save/i });
+            expect(saveButton).toBeDisabled();
+        });
+    });
+
+    describe("Modal Integration", () => {
+        it("renders ConfirmationModal when showModal is true", () => {
+            useProcurementTrackerStepTwo.mockReturnValue({
+                ...defaultHookReturn,
+                showModal: true,
+                modalProps: {
+                    heading: "Are you sure you want to cancel this task? Your input will not be saved.",
+                    actionButtonText: "Cancel Task",
+                    secondaryButtonText: "Continue Editing",
+                    handleConfirm: vi.fn()
+                }
+            });
+
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="PENDING"
+                    stepTwoData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                />
+            );
+
+            // ConfirmationModal is rendered - check for the heading text
+            expect(screen.getByText(/Are you sure you want to cancel this task/i)).toBeInTheDocument();
+        });
+
+        it("does not render ConfirmationModal when showModal is false", () => {
+            useProcurementTrackerStepTwo.mockReturnValue({
+                ...defaultHookReturn,
+                showModal: false
+            });
+
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="PENDING"
+                    stepTwoData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                />
+            );
+
+            expect(screen.queryByText(/Are you sure you want to cancel this task/i)).not.toBeInTheDocument();
+        });
+    });
+
+    describe("Draft Solicitation Date Field", () => {
+        it("renders DatePicker for draft solicitation date in PENDING state", () => {
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="PENDING"
+                    stepTwoData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                />
+            );
+
+            const datePickers = screen.getAllByTestId("date-picker");
+            const draftSolicitationPicker = datePickers.find(
+                (picker) => picker.getAttribute("data-picker-id") === "step-2-draft-solicitation-date"
+            );
+
+            expect(draftSolicitationPicker).toBeInTheDocument();
+            expect(screen.getByText("Draft Solicitation Date (optional)")).toBeInTheDocument();
+        });
+
+        it("draft solicitation date field calls setDraftSolicitationDate and runValidate on change", () => {
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="PENDING"
+                    stepTwoData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                />
+            );
+
+            const datePickers = screen.getAllByTestId("date-picker");
+            const draftSolicitationPicker = datePickers.find(
+                (picker) => picker.getAttribute("data-picker-id") === "step-2-draft-solicitation-date"
+            );
+            // eslint-disable-next-line testing-library/no-node-access
+            const dateInput = draftSolicitationPicker.querySelector("input");
+
+            fireEvent.change(dateInput, { target: { value: "2024-05-01" } });
+
+            expect(mockRunValidate).toHaveBeenCalledWith("draftSolicitationDate", "2024-05-01");
+            expect(mockSetDraftSolicitationDate).toHaveBeenCalledWith("2024-05-01");
+        });
     });
 });
