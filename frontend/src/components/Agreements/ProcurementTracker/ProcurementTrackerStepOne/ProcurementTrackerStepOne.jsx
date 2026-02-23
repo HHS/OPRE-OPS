@@ -4,6 +4,8 @@ import TermTag from "../../../UI/Term/TermTag";
 import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepOne from "./ProcurementTrackerStepOne.hooks";
 import { getLocalISODate } from "../../../../helpers/utils";
+import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 /**
  * @typedef {import("../../../../types/UserTypes").SafeUser} SafeUser
@@ -150,7 +152,18 @@ const ProcurementTrackerStepOne = ({
                         When the pre-solicitation package has been sufficiently drafted and signed by all parties, send
                         it to the Procurement Shop and update the task below.
                     </p>
-                    <p>The pre-solicitation package has been sent to the Procurement Shop for review</p>
+                    <div className="display-flex flex-align-center margin-top-5">
+                        <FontAwesomeIcon
+                            icon={faCircleCheck}
+                            size="lg"
+                            className="margin-right-1 flex-shrink-0"
+                            style={{ color: "#162e51" }}
+                            aria-hidden="true"
+                        />
+                        <p className="margin-y-0">
+                            The pre-solicitation package has been sent to the Procurement Shop for review
+                        </p>
+                    </div>
 
                     <dl>
                         <TermTag

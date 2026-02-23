@@ -4,6 +4,8 @@ import ConfirmationModal from "../../../UI/Modals/ConfirmationModal";
 import TermTag from "../../../UI/Term/TermTag";
 import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepTwo from "./ProcurementTrackerStepTwo.hooks";
+import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 /**
  * @typedef {import("../../../../types/UserTypes").SafeUser} SafeUser
@@ -225,6 +227,18 @@ const ProcurementTrackerStepTwo = ({
                         are finalized, go to the Documents Tab, upload the final and signed versions, and update the
                         task below.
                     </p>
+                    <div className="display-flex flex-align-center margin-top-5">
+                        <FontAwesomeIcon
+                            icon={faCircleCheck}
+                            size="lg"
+                            className="margin-right-1 flex-shrink-0"
+                            style={{ color: "#162e51" }}
+                            aria-hidden="true"
+                        />
+                        <p className="margin-y-0">
+                            The pre-solicitation package has been sent to the Procurement Shop for review
+                        </p>
+                    </div>
                     <dl>
                         <TermTag
                             term="Target Completion Date"
