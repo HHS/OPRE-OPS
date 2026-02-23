@@ -1022,9 +1022,12 @@ def fy_obligated_sort(agreement, fiscal_year):
     if not agreement.budget_line_items:
         return Decimal("0")
     return sum(
-        (bli.amount or Decimal("0")) + (bli.fees or Decimal("0"))
-        for bli in agreement.budget_line_items
-        if bli.status == BudgetLineItemStatus.OBLIGATED and bli.fiscal_year == fiscal_year
+        (
+            (bli.amount or Decimal("0")) + (bli.fees or Decimal("0"))
+            for bli in agreement.budget_line_items
+            if bli.status == BudgetLineItemStatus.OBLIGATED and bli.fiscal_year == fiscal_year
+        ),
+        Decimal("0"),
     )
 
 
