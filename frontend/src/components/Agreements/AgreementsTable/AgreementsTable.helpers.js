@@ -1,5 +1,4 @@
 import { formatDate } from "../../../helpers/utils";
-import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 
 const handleAgreementProp = (agreement) => {
     if (typeof agreement !== "object") {
@@ -52,13 +51,4 @@ export const getProcurementShopDisplay = (agreement) => {
         return "TBD";
     }
     return `${shop.abbr} - Fee Rate: ${shop.fee_percentage}%`;
-};
-
-export const getFYObligatedAmount = (agreement, fiscalYear) => {
-    handleAgreementProp(agreement);
-    return (
-        agreement.budget_line_items
-            ?.filter((bli) => bli.status === BLI_STATUS.OBLIGATED && bli.fiscal_year === fiscalYear)
-            .reduce((acc, { amount = 0, fees = 0 }) => acc + amount + fees, 0) || 0
-    );
 };

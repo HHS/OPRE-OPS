@@ -65,6 +65,7 @@ const agreements = [
         total_agreement_fees: 15,
         agreement_total: 315,
         lifetime_obligated: 0,
+        fy_obligated: "0",
         created_by: 1,
         notes: "Test notes",
         created_on: "2021-10-21T03:24:00",

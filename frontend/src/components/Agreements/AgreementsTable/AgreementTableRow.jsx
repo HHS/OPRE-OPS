@@ -23,7 +23,6 @@ import {
     getAgreementEndDate,
     getAgreementName,
     getAgreementStartDate,
-    getFYObligatedAmount,
     getProcurementShopDisplay,
     getResearchProjectName,
     isThereAnyBudgetLines
@@ -41,17 +40,21 @@ import { useHandleDeleteAgreement, useHandleEditAgreement, useNavigateAgreementR
  */
 export const AgreementTableRow = ({ agreementId, selectedFiscalYear }) => {
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
+    const effectiveFiscalYear =
+        selectedFiscalYear === "All" ? Number(getCurrentFiscalYear()) : Number(selectedFiscalYear);
     /** @type {{data?: import("../../../types/AgreementTypes").Agreement | undefined, isLoading: boolean, isSuccess: boolean}} */
-    const { data: agreement, isLoading, isSuccess } = useGetAgreementByIdQuery(agreementId, { skip: !agreementId });
+    const {
+        data: agreement,
+        isLoading,
+        isSuccess
+    } = useGetAgreementByIdQuery({ id: agreementId, fiscal_year: effectiveFiscalYear }, { skip: !agreementId });
     const agreementName = isSuccess ? getAgreementName(agreement) : NO_DATA;
     const agreementType = isSuccess ? getAgreementType(agreement?.agreement_type) : NO_DATA;
     const agreementTotal = agreement?.agreement_total ?? 0;
     const agreementStartDate = isSuccess ? getAgreementStartDate(agreement) : NO_DATA;
     const agreementEndDate = isSuccess ? getAgreementEndDate(agreement) : NO_DATA;
 
-    const effectiveFiscalYear =
-        selectedFiscalYear === "All" ? Number(getCurrentFiscalYear()) : Number(selectedFiscalYear);
-    const fyObligatedAmount = isSuccess ? getFYObligatedAmount(agreement, effectiveFiscalYear) : 0;
+    const fyObligatedAmount = isSuccess ? Number(agreement?.fy_obligated ?? 0) : 0;
 
     // Expanded row values
     const researchProjectName = isSuccess ? getResearchProjectName(agreement) : NO_DATA;

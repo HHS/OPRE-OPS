@@ -228,7 +228,7 @@ class Agreement(BaseModel):
     services_components: Mapped[list["ServicesComponent"]] = relationship(
         "ServicesComponent",
         back_populates="agreement",
-        lazy=True,
+        lazy="selectin",
         cascade="all, delete",
     )
 
@@ -284,9 +284,12 @@ class Agreement(BaseModel):
         if not self.budget_line_items:
             return Decimal("0")
         return sum(
-            (bli.amount or Decimal("0"))
-            for bli in self.budget_line_items
-            if bli.is_obe or bli.status != BudgetLineItemStatus.DRAFT
+            (
+                (bli.amount or Decimal("0"))
+                for bli in self.budget_line_items
+                if bli.is_obe or bli.status != BudgetLineItemStatus.DRAFT
+            ),
+            Decimal("0"),
         )
 
     @property
@@ -297,9 +300,12 @@ class Agreement(BaseModel):
         if not self.budget_line_items:
             return Decimal("0")
         return sum(
-            (bli.fees or Decimal("0"))
-            for bli in self.budget_line_items
-            if bli.is_obe or bli.status != BudgetLineItemStatus.DRAFT
+            (
+                (bli.fees or Decimal("0"))
+                for bli in self.budget_line_items
+                if bli.is_obe or bli.status != BudgetLineItemStatus.DRAFT
+            ),
+            Decimal("0"),
         )
 
     @property
@@ -315,9 +321,27 @@ class Agreement(BaseModel):
         if not self.budget_line_items:
             return Decimal("0")
         return sum(
-            (bli.amount or Decimal("0")) + (bli.fees or Decimal("0"))
-            for bli in self.budget_line_items
-            if bli.status == BudgetLineItemStatus.OBLIGATED
+            (
+                (bli.amount or Decimal("0")) + (bli.fees or Decimal("0"))
+                for bli in self.budget_line_items
+                if bli.status == BudgetLineItemStatus.OBLIGATED
+            ),
+            Decimal("0"),
+        )
+
+    def fy_obligated(self, fiscal_year: int) -> Decimal:
+        """Sum of (amount + fees) for OBLIGATED BLIs in the given fiscal year."""
+        from models.budget_line_items import BudgetLineItemStatus
+
+        if not self.budget_line_items:
+            return Decimal("0")
+        return sum(
+            (
+                (bli.amount or Decimal("0")) + (bli.fees or Decimal("0"))
+                for bli in self.budget_line_items
+                if bli.status == BudgetLineItemStatus.OBLIGATED and bli.fiscal_year == fiscal_year
+            ),
+            Decimal("0"),
         )
 
     __mapper_args__: dict[str, str | AgreementType] = {

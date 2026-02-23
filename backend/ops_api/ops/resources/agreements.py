@@ -63,6 +63,17 @@ class AgreementItemAPI(BaseItemAPI):
             service: OpsService[Agreement] = AgreementsService(current_app.db_session)
             item: Agreement = service.get(id)
 
+            # Compute fy_obligated based on optional fiscal_year query param
+            fiscal_year_param = request.args.get("fiscal_year")
+            if fiscal_year_param:
+                effective_fy = int(fiscal_year_param)
+            else:
+                from datetime import date
+
+                today = date.today()
+                effective_fy = today.year + 1 if today.month >= 10 else today.year
+            item._fy_obligated = item.fy_obligated(effective_fy)
+
             serialized_agreement = _serialize_agreement_with_meta(item, AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING)
 
             response = make_response_with_headers(serialized_agreement)

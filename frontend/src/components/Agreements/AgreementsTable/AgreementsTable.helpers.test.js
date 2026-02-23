@@ -1,10 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-    getAgreementStartDate,
-    getAgreementEndDate,
-    getProcurementShopDisplay,
-    getFYObligatedAmount
-} from "./AgreementsTable.helpers";
+import { getAgreementStartDate, getAgreementEndDate, getProcurementShopDisplay } from "./AgreementsTable.helpers";
 
 describe("AgreementsTable helpers", () => {
     describe("getAgreementStartDate", () => {
@@ -65,32 +60,4 @@ describe("AgreementsTable helpers", () => {
         });
     });
 
-    describe("getFYObligatedAmount", () => {
-        it("returns sum of amount + fees for obligated BLIs matching fiscal year", () => {
-            const agreement = {
-                budget_line_items: [
-                    { amount: 1000, fees: 50, status: "OBLIGATED", fiscal_year: 2025 },
-                    { amount: 2000, fees: 100, status: "OBLIGATED", fiscal_year: 2025 },
-                    { amount: 500, fees: 25, status: "OBLIGATED", fiscal_year: 2024 },
-                    { amount: 300, fees: 15, status: "PLANNED", fiscal_year: 2025 }
-                ]
-            };
-            expect(getFYObligatedAmount(agreement, 2025)).toBe(3150); // (1000+50) + (2000+100)
-        });
-
-        it("returns 0 when no obligated BLIs for fiscal year", () => {
-            const agreement = {
-                budget_line_items: [
-                    { amount: 1000, fees: 50, status: "PLANNED", fiscal_year: 2025 },
-                    { amount: 500, fees: 25, status: "OBLIGATED", fiscal_year: 2024 }
-                ]
-            };
-            expect(getFYObligatedAmount(agreement, 2025)).toBe(0);
-        });
-
-        it("returns 0 when no budget line items", () => {
-            const agreement = { budget_line_items: [] };
-            expect(getFYObligatedAmount(agreement, 2025)).toBe(0);
-        });
-    });
 });

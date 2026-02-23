@@ -99,6 +99,7 @@ const baseAgreement = {
     total_agreement_fees: 15,
     agreement_total: 315,
     lifetime_obligated: 0,
+    fy_obligated: "0",
     contract_number: "CT-001",
     vendor: "Vendor Co",
     created_by: 1,

@@ -13,7 +13,6 @@ import AgreementsTable from "../../../components/Agreements/AgreementsTable";
 import {
     getAgreementContractNumber,
     getAgreementName,
-    getFYObligatedAmount,
     getProcurementShopDisplay,
     getResearchProjectName
 } from "../../../components/Agreements/AgreementsTable/AgreementsTable.helpers";
@@ -205,8 +204,11 @@ const AgreementsList = () => {
             // Combine all agreements from all pages
             const allAgreementsList = allResponses.flatMap((response) => response?.agreements || []);
 
+            const effectiveFY =
+                selectedFiscalYear === "All" ? Number(getCurrentFiscalYear()) : Number(selectedFiscalYear);
+
             const allAgreements = allAgreementsList.map((agreement) => {
-                return agreementTrigger(agreement.id).unwrap();
+                return agreementTrigger({ id: agreement.id, fiscal_year: effectiveFY }).unwrap();
             });
 
             const agreementResponses = await Promise.all(allAgreements);
@@ -226,9 +228,6 @@ const AgreementsList = () => {
                     cor: corData?.full_name ?? "TBD"
                 };
             });
-
-            const effectiveFY =
-                selectedFiscalYear === "All" ? Number(getCurrentFiscalYear()) : Number(selectedFiscalYear);
             const fyLabel = `FY${String(effectiveFY).slice(-2)} Obligated`;
 
             const tableHeader = [
@@ -258,7 +257,7 @@ const AgreementsList = () => {
                     const agreementSubTotal = agreement.agreement_subtotal ?? 0;
                     const agreementFees = agreement.total_agreement_fees ?? 0;
                     const total = agreement.agreement_total ?? 0;
-                    const fyObligated = getFYObligatedAmount(agreement, effectiveFY);
+                    const fyObligated = Number(agreement.fy_obligated ?? 0);
                     const project = getResearchProjectName(agreement);
                     const procurementShop = getProcurementShopDisplay(agreement);
                     const lifetimeObligated = agreement.lifetime_obligated ?? 0;

@@ -439,6 +439,11 @@ class AgreementsService(OpsService[Agreement]):
             )
             all_results = _sort_agreements(all_results, sort_condition, sort_descending, filters.fiscal_year)
 
+        # Compute fy_obligated for each agreement based on the effective fiscal year
+        effective_fy = _resolve_fiscal_year(filters.fiscal_year)
+        for agreement in all_results:
+            agreement._fy_obligated = agreement.fy_obligated(effective_fy)
+
         # Calculate count before slicing
         total_count = len(all_results)
 
@@ -1013,22 +1018,15 @@ def _resolve_fiscal_year(fiscal_years):
     """Get the effective fiscal year from filter list, defaulting to current FY."""
     if fiscal_years and len(fiscal_years) == 1:
         return int(fiscal_years[0])
+    if fiscal_years and len(fiscal_years) > 1:
+        logger.debug(f"Multiple fiscal years provided ({fiscal_years}); falling back to current FY.")
     today = date.today()
     return today.year + 1 if today.month >= 10 else today.year
 
 
 def fy_obligated_sort(agreement, fiscal_year):
     """Sum of (amount + fees) for OBLIGATED BLIs in the given fiscal year."""
-    if not agreement.budget_line_items:
-        return Decimal("0")
-    return sum(
-        (
-            (bli.amount or Decimal("0")) + (bli.fees or Decimal("0"))
-            for bli in agreement.budget_line_items
-            if bli.status == BudgetLineItemStatus.OBLIGATED and bli.fiscal_year == fiscal_year
-        ),
-        Decimal("0"),
-    )
+    return agreement.fy_obligated(fiscal_year)
 
 
 def _get_next_obligated_bli(budget_line_items):
