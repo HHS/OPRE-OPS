@@ -30,8 +30,8 @@ const ProcurementTrackerStepThree = ({ stepStatus }) => {
                     </p>
                     <DateRangePickerWrapper
                         id="period-of-performance"
-                        key={"period-of-performance"}
-                        className="display-flex flex-justify "
+                        key="period-of-performance"
+                        className="display-flex flex-justify width-tablet"
                     >
                         <div style={{ width: "275px" }}>
                             <DatePicker
@@ -53,6 +53,16 @@ const ProcurementTrackerStepThree = ({ stepStatus }) => {
                                 onChange={() => {}}
                             />
                         </div>
+                        <button
+                            className="usa-button usa-button--unstyled flex-align-self-end padding-bottom-1"
+                            data-cy="target-completion-save-btn"
+                            disabled={false}
+                            onClick={() => {
+                                alert("Save button clicked! Implement save functionality here.");
+                            }}
+                        >
+                            Save
+                        </button>
                     </DateRangePickerWrapper>
                 </fieldset>
             )}
