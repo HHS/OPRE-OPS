@@ -1,13 +1,8 @@
-from typing import List
-
 from flask import Response, current_app, request
 from flask_jwt_extended import jwt_required
 from marshmallow import Schema, fields
-from sqlalchemy import select
 
 from models import OpsEventType
-from models.base import BaseModel
-from models.cans import CAN
 from models.utils import generate_events_update
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
@@ -145,22 +140,6 @@ class CANListAPI(BaseListAPI):
             serialized_can = can_schema.dump(created_can)
             meta.metadata.update({"new_can": serialized_can})
             return make_response_with_headers(serialized_can, 201)
-
-
-class CANsByPortfolioAPI(BaseItemAPI):
-    def __init__(self, model: BaseModel):
-        super().__init__(model)
-
-    @jwt_required()
-    def _get_item(self, id: int) -> List[CAN]:
-        cfy_stmt = select(CAN).where(CAN.portfolio_id == id).order_by(CAN.id)
-
-        return current_app.db_session.execute(cfy_stmt).scalars().all()
-
-    @jwt_required()
-    def get(self, id: int) -> Response:
-        cans = self._get_item(id)
-        return make_response_with_headers([can.to_dict() for can in cans])
 
 
 class CANListFilterOptionAPI(BaseItemAPI):
