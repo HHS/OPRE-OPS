@@ -263,23 +263,23 @@ def test_fy_obligated_sort_with_none_amount():
 # --- resolve_fiscal_year tests ---
 
 
-def testresolve_fiscal_year_single_value():
+def test_resolve_fiscal_year_single_value():
     assert resolve_fiscal_year(["2025"]) == 2025
 
 
-def testresolve_fiscal_year_none_defaults_to_current():
+def test_resolve_fiscal_year_none_defaults_to_current():
     today = date.today()
     expected = today.year + 1 if today.month >= 10 else today.year
     assert resolve_fiscal_year(None) == expected
 
 
-def testresolve_fiscal_year_empty_defaults_to_current():
+def test_resolve_fiscal_year_empty_defaults_to_current():
     today = date.today()
     expected = today.year + 1 if today.month >= 10 else today.year
     assert resolve_fiscal_year([]) == expected
 
 
-def testresolve_fiscal_year_multiple_defaults_to_current():
+def test_resolve_fiscal_year_multiple_defaults_to_current():
     today = date.today()
     expected = today.year + 1 if today.month >= 10 else today.year
     assert resolve_fiscal_year(["2025", "2026"]) == expected

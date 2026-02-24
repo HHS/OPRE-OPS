@@ -252,13 +252,13 @@ const AgreementsList = () => {
                     const endDate = agreement.sc_end_date
                         ? formatDate(new Date(agreement.sc_end_date + "T00:00:00Z"))
                         : "TBD";
-                    const agreementSubTotal = agreement.agreement_subtotal ?? 0;
-                    const agreementFees = agreement.total_agreement_fees ?? 0;
-                    const total = agreement.agreement_total ?? 0;
+                    const agreementSubTotal = Number(agreement.agreement_subtotal ?? 0);
+                    const agreementFees = Number(agreement.total_agreement_fees ?? 0);
+                    const total = Number(agreement.agreement_total ?? 0);
                     const fyObligated = Number(agreement.fy_obligated ?? 0);
                     const project = getResearchProjectName(agreement);
                     const procurementShop = getProcurementShopDisplay(agreement);
-                    const lifetimeObligated = agreement.lifetime_obligated ?? 0;
+                    const lifetimeObligated = Number(agreement.lifetime_obligated ?? 0);
                     const contractNumber = getAgreementContractNumber(agreement);
 
                     return [

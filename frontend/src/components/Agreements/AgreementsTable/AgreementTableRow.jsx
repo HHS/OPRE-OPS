@@ -268,7 +268,10 @@ export const AgreementTableRow = ({ agreement }) => {
                     <dt className="margin-0 text-base-dark">Vendor</dt>
                     <dd className="margin-0">{vendor}</dd>
                 </dl>
-                <div className="flex-align-self-end margin-left-auto margin-bottom-1 padding-right-5" data-cy="change-icons-expanded">
+                <div
+                    className="flex-align-self-end margin-left-auto margin-bottom-1 padding-right-5"
+                    data-cy="change-icons-expanded"
+                >
                     {changeIcons}
                 </div>
             </div>
