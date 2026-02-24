@@ -76,6 +76,15 @@ const ProcurementTrackerStepTwo = ({
     const isPreSolicitationCheckboxDisabled = isDisabled || !isActiveStep;
     const isUsersComboBoxDisabled = isDisabled || !isPreSolicitationPackageFinalized || authorizedUsers.length === 0;
     const isPackageFinalizedFieldsDisabled = isDisabled || !isPreSolicitationPackageFinalized;
+    const isCompleteStep2Disabled =
+        isPackageFinalizedFieldsDisabled ||
+        validatorRes.hasErrors("users") ||
+        validatorRes.hasErrors("dateCompleted") ||
+        validatorRes.hasErrors("draftSolicitationDate") ||
+        !selectedUser?.id ||
+        !step2DateCompleted ||
+        (!stepTwoData?.target_completion_date &&
+            (validatorRes.hasErrors("targetCompletionDate") || !targetCompletionDate));
 
     return (
         <>
@@ -252,7 +261,7 @@ const ProcurementTrackerStepTwo = ({
                             onClick={() => {
                                 handleStepTwoComplete(stepTwoData?.id);
                             }}
-                            disabled={isPackageFinalizedFieldsDisabled}
+                            disabled={isCompleteStep2Disabled}
                         >
                             Complete Step 2
                         </button>
