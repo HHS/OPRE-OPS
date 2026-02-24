@@ -4,14 +4,16 @@ import TermTag from "../../../UI/Term/TermTag";
 import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepOne from "./ProcurementTrackerStepOne.hooks";
 import { getLocalISODate } from "../../../../helpers/utils";
+import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 /**
  * @typedef {import("../../../../types/UserTypes").SafeUser} SafeUser
  * @typedef {Object} ProcurementTrackerStepOneProps
  * @property {string} stepStatus - The current status of the procurement tracker step
  * @property {Object} stepOneData - The data for step one of the procurement tracker
- * @property {boolean} hasActiveTracker - Whether an active tracker exists
- * @property {Function} handleSetIsFormSubmitted - Function to set the form submission state
+ * @property {boolean} isActiveStep - Whether step is the active step
+ * @property {Function} handleSetCompletedStepNumber - Function to set the completed step number
  * @property {SafeUser[]} authorizedUsers - List of users authorized for this agreement
  */
 
@@ -23,8 +25,8 @@ import { getLocalISODate } from "../../../../helpers/utils";
 const ProcurementTrackerStepOne = ({
     stepStatus,
     stepOneData,
-    hasActiveTracker,
-    handleSetIsFormSubmitted,
+    isActiveStep,
+    handleSetCompletedStepNumber,
     authorizedUsers
 }) => {
     const {
@@ -48,7 +50,7 @@ const ProcurementTrackerStepOne = ({
         step1NotesLabel,
         runValidate,
         validatorRes
-    } = useProcurementTrackerStepOne(stepOneData, handleSetIsFormSubmitted);
+    } = useProcurementTrackerStepOne(stepOneData, handleSetCompletedStepNumber);
 
     return (
         <>
@@ -61,7 +63,7 @@ const ProcurementTrackerStepOne = ({
                     handleConfirm={modalProps.handleConfirm}
                 />
             )}
-            {(stepStatus === "PENDING" || stepStatus === "ACTIVE") && (
+            {stepStatus === "PENDING" && (
                 <fieldset className="usa-fieldset">
                     <p>
                         Once the pre-solicitation package is sufficiently drafted and signed by all parties, send it to
@@ -76,7 +78,7 @@ const ProcurementTrackerStepOne = ({
                             value="step-1-checkbox"
                             checked={isPreSolicitationPackageSent}
                             onChange={() => setIsPreSolicitationPackageSent(!isPreSolicitationPackageSent)}
-                            disabled={!hasActiveTracker}
+                            disabled={!isActiveStep}
                         />
                         <label
                             className="usa-checkbox__label"
@@ -150,7 +152,18 @@ const ProcurementTrackerStepOne = ({
                         When the pre-solicitation package has been sufficiently drafted and signed by all parties, send
                         it to the Procurement Shop and update the task below.
                     </p>
-                    <p>The pre-solicitation package has been sent to the Procurement Shop for review</p>
+                    <div className="display-flex flex-align-center margin-top-5">
+                        <FontAwesomeIcon
+                            icon={faCircleCheck}
+                            size="lg"
+                            className="margin-right-1 flex-shrink-0"
+                            style={{ color: "#162e51" }}
+                            aria-hidden="true"
+                        />
+                        <p className="margin-y-0">
+                            The pre-solicitation package has been sent to the Procurement Shop for review
+                        </p>
+                    </div>
 
                     <dl>
                         <TermTag
@@ -162,7 +175,7 @@ const ProcurementTrackerStepOne = ({
                             description={step1DateCompletedLabel}
                         />
                         <dt className="margin-0 text-base-dark margin-top-3 font-12px">Notes</dt>
-                        <dd className="margin-0 margin-top-1">{step1NotesLabel}</dd>
+                        <dd className="margin-0 margin-top-1">{step1NotesLabel || "None"}</dd>
                     </dl>
                 </div>
             )}

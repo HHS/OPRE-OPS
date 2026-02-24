@@ -43,9 +43,9 @@ describe("ProcurementTrackerStepTwo Validation Suite", () => {
 
     describe("Valid Data", () => {
         it("should pass validation with valid dateCompleted field", () => {
-            const result = suite(validData);
+            const result = suite(validData, "dateCompleted");
 
-            expect(result.hasErrors()).toBe(false);
+            expect(result.hasErrors("dateCompleted")).toBe(false);
             expect(result.getErrors("dateCompleted")).toHaveLength(0);
         });
 
@@ -301,6 +301,32 @@ describe("ProcurementTrackerStepTwo Validation Suite", () => {
 
             // Should fail format validation due to leading/trailing spaces
             expect(result.hasErrors("dateCompleted")).toBe(true);
+        });
+    });
+
+    describe("Target Completion Date Field - Range Validation", () => {
+        it("should fail when target completion date is in the past", () => {
+            const data = { targetCompletionDate: getPastDate() };
+            const result = suite(data, "targetCompletionDate");
+
+            expect(result.hasErrors("targetCompletionDate")).toBe(true);
+            expect(result.getErrors("targetCompletionDate")).toContain("Date must be today or later");
+        });
+
+        it("should pass when target completion date is today", () => {
+            const data = { targetCompletionDate: getTodayDate() };
+            const result = suite(data, "targetCompletionDate");
+
+            expect(result.hasErrors("targetCompletionDate")).toBe(false);
+            expect(result.getErrors("targetCompletionDate")).not.toContain("Date must be today or later");
+        });
+
+        it("should pass when target completion date is in the future", () => {
+            const data = { targetCompletionDate: getFutureDate() };
+            const result = suite(data, "targetCompletionDate");
+
+            expect(result.hasErrors("targetCompletionDate")).toBe(false);
+            expect(result.getErrors("targetCompletionDate")).not.toContain("Date must be today or later");
         });
     });
 });

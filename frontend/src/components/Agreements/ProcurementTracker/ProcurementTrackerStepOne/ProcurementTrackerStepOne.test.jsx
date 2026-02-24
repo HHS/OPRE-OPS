@@ -76,7 +76,7 @@ describe("ProcurementTrackerStepOne", () => {
     const mockHandleStep1Complete = vi.fn();
     const mockCancelStep1 = vi.fn();
     const mockRunValidate = vi.fn();
-    const mockHandleSetIsFormSubmitted = vi.fn();
+    const mockHandleSetCompletedStepNumber = vi.fn();
     const mockValidatorRes = {
         getErrors: vi.fn(() => [])
     };
@@ -145,7 +145,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
-                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                     authorizedUsers={mockAllUsers}
                 />
             );
@@ -163,7 +163,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
-                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                     authorizedUsers={mockAllUsers}
                 />
             );
@@ -178,7 +178,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
-                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                     authorizedUsers={mockAllUsers}
                 />
             );
@@ -193,7 +193,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
-                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                     authorizedUsers={mockAllUsers}
                 />
             );
@@ -209,7 +209,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
-                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                     authorizedUsers={mockAllUsers}
                 />
             );
@@ -227,7 +227,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
-                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                     authorizedUsers={mockAllUsers}
                 />
             );
@@ -244,7 +244,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
-                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                     authorizedUsers={mockAllUsers}
                 />
             );
@@ -266,7 +266,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
-                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                     authorizedUsers={mockAllUsers}
                 />
             );
@@ -285,7 +285,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
-                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                     authorizedUsers={mockAllUsers}
                 />
             );
@@ -306,7 +306,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
-                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                     authorizedUsers={mockAllUsers}
                 />
             );
@@ -327,7 +327,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
-                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                     authorizedUsers={mockAllUsers}
                 />
             );
@@ -348,7 +348,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
-                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                     authorizedUsers={mockAllUsers}
                 />
             );
@@ -370,7 +370,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
-                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                     authorizedUsers={mockAllUsers}
                 />
             );
@@ -392,7 +392,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
-                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                     authorizedUsers={mockAllUsers}
                 />
             );
@@ -414,7 +414,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
-                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                     authorizedUsers={mockAllUsers}
                 />
             );
@@ -435,7 +435,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
-                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                     authorizedUsers={mockAllUsers}
                 />
             );
@@ -462,7 +462,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
-                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                     authorizedUsers={mockAllUsers}
                 />
             );
@@ -489,7 +489,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
-                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                     authorizedUsers={mockAllUsers}
                 />
             );
@@ -515,8 +515,10 @@ describe("ProcurementTrackerStepOne", () => {
         it("renders all form fields: checkbox, UsersComboBox, DatePicker, TextArea, buttons", () => {
             render(
                 <ProcurementTrackerStepOne
-                    stepStatus="ACTIVE"
+                    stepStatus="PENDING"
                     stepOneData={mockStepOneData}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    authorizedUsers={mockAllUsers}
                 />
             );
 
@@ -536,9 +538,10 @@ describe("ProcurementTrackerStepOne", () => {
 
             render(
                 <ProcurementTrackerStepOne
-                    stepStatus="ACTIVE"
+                    stepStatus="PENDING"
                     stepOneData={mockStepOneData}
                     authorizedUsers={mockAllUsers}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
@@ -561,7 +564,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="COMPLETED"
                     stepOneData={mockStepOneData}
-                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                     authorizedUsers={mockAllUsers}
                 />
             );
@@ -578,7 +581,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="COMPLETED"
                     stepOneData={mockStepOneData}
-                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                     authorizedUsers={mockAllUsers}
                 />
             );
@@ -593,7 +596,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="COMPLETED"
                     stepOneData={mockStepOneData}
-                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                     authorizedUsers={mockAllUsers}
                 />
             );
@@ -607,7 +610,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="COMPLETED"
                     stepOneData={mockStepOneData}
-                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                     authorizedUsers={mockAllUsers}
                 />
             );
@@ -621,7 +624,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="COMPLETED"
                     stepOneData={mockStepOneData}
-                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                     authorizedUsers={mockAllUsers}
                 />
             );
@@ -635,7 +638,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="COMPLETED"
                     stepOneData={mockStepOneData}
-                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                     authorizedUsers={mockAllUsers}
                 />
             );
@@ -659,7 +662,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="COMPLETED"
                     stepOneData={mockStepOneData}
-                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                     authorizedUsers={mockAllUsers}
                 />
             );
@@ -726,7 +729,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="COMPLETED"
                     stepOneData={mockStepOneData}
-                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                     authorizedUsers={mockAllUsers}
                 />
             );
@@ -734,7 +737,7 @@ describe("ProcurementTrackerStepOne", () => {
             expect(screen.getByText("Notes")).toBeInTheDocument();
             // eslint-disable-next-line testing-library/no-node-access
             const dd = screen.getByText("Notes").nextElementSibling;
-            expect(dd.textContent).toBe("");
+            expect(dd.textContent).toBe("None");
         });
     });
 
@@ -744,7 +747,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
-                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                     authorizedUsers={mockAllUsers}
                 />
             );
@@ -763,7 +766,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
-                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                     authorizedUsers={mockAllUsers}
                 />
             );
@@ -780,7 +783,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="PENDING"
                     stepOneData={mockStepOneData}
-                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                     authorizedUsers={mockAllUsers}
                 />
             );
@@ -795,7 +798,7 @@ describe("ProcurementTrackerStepOne", () => {
                 <ProcurementTrackerStepOne
                     stepStatus="COMPLETED"
                     stepOneData={mockStepOneData}
-                    handleSetIsFormSubmitted={mockHandleSetIsFormSubmitted}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                     authorizedUsers={mockAllUsers}
                 />
             );

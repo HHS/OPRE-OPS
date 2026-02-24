@@ -269,64 +269,6 @@ class NoPastTargetCompletionDateOnModelRule(ValidationRule):
             )
 
 
-class NoPastDraftSolicitationDateUpdateRule(ValidationRule):
-    """
-    Validates that the pre_solicitation_draft_solicitation_date is not in the past when being updated for pre-solicitation steps.
-    """
-
-    @property
-    def name(self) -> str:
-        return "No Past Draft Solicitation Date for Pre-Solicitation Steps Update"
-
-    def validate(self, procurement_tracker_step: ProcurementTrackerStep, context: ValidationContext) -> None:
-        updated_fields = context.updated_fields
-
-        # Only validate if step type is PRE_SOLICITATION and pre_solicitation_draft_solicitation_date is being updated
-        if (
-            procurement_tracker_step.step_type != ProcurementTrackerStepType.PRE_SOLICITATION
-            or "draft_solicitation_date" not in updated_fields
-        ):
-            return
-
-        draft_solicitation_date = updated_fields.get("draft_solicitation_date")
-        if draft_solicitation_date and draft_solicitation_date < date.today():
-            raise ValidationError(
-                {"draft_solicitation_date": "Draft solicitation date cannot be in the past for Pre-Solicitation steps."}
-            )
-
-        context.metadata["draft_solicitation_date_validated_on_update"] = True
-
-
-class NoPastDraftSolicitationDateOnModelRule(ValidationRule):
-    """
-    Validates that the pre_solicitation_draft_solicitation_date is not in the past when being updated for pre-solicitation steps.
-    This rule is meant to validate the field on the model, which could have been valid at the time of update but becomes invalid over time.
-    """
-
-    @property
-    def name(self) -> str:
-        return "No Past Draft Solicitation Date for Pre-Solicitation Steps on Model"
-
-    def validate(self, procurement_tracker_step: ProcurementTrackerStep, context: ValidationContext) -> None:
-        # Only validate if step type is PRE_SOLICITATION
-        if procurement_tracker_step.step_type != ProcurementTrackerStepType.PRE_SOLICITATION:
-            return
-
-        validated_on_update = context.metadata.get("draft_solicitation_date_validated_on_update", False)
-        if validated_on_update:
-            # If we've already validated the draft solicitation date on update, we can skip validating it again on the model to avoid duplicate errors
-            return
-
-        draft_solicitation_date = procurement_tracker_step.pre_solicitation_draft_solicitation_date
-
-        if draft_solicitation_date and draft_solicitation_date and draft_solicitation_date < date.today():
-            raise ValidationError(
-                {
-                    "pre_solicitation_draft_solicitation_date": "Draft solicitation date cannot be in the past for Pre-Solicitation steps."
-                }
-            )
-
-
 class CompletionAuthorizationRule(ValidationRule):
     """
     Validates that task_completed_by is properly associated with the agreement when completing.
