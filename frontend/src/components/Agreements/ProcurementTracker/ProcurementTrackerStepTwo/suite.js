@@ -2,7 +2,7 @@ import { create, test, enforce, only } from "vest";
 
 // Date validation constants and helpers
 const DATE_FORMAT_REGEX = /^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$/;
-const DATE_FIELDS = ["draftSolicitationDate", "targetCompletionDate", "dateCompleted"];
+const DATE_FIELDS = ["draftSolicitationDate", "targetCompletionDate", "dateCompleted", "revisedTargetDate"];
 
 const isValidDateFormat = (dateString) => DATE_FORMAT_REGEX.test(dateString);
 
@@ -42,6 +42,10 @@ const suite = create((data = {}, fieldName) => {
     // Field-specific date range validations
     test("targetCompletionDate", "Date must be today or later", () => {
         compareDateToToday(data.targetCompletionDate, "greaterThanOrEquals");
+    });
+
+    test("revisedTargetDate", "Date must be today or later", () => {
+        compareDateToToday(data.revisedTargetDate, "greaterThanOrEquals");
     });
 
     test("dateCompleted", "Date must be today or earlier", () => {
