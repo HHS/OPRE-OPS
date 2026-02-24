@@ -105,22 +105,58 @@ vi.mock("../../../UI/Form/TextArea", () => ({
     )
 }));
 
+vi.mock("../../../UI/Modals/ConfirmationModal", () => ({
+    default: ({ heading, setShowModal, actionButtonText, secondaryButtonText, handleConfirm }) => (
+        <div data-testid="confirmation-modal">
+            <h2>{heading}</h2>
+            <button onClick={handleConfirm}>{actionButtonText}</button>
+            <button onClick={() => setShowModal(false)}>{secondaryButtonText}</button>
+        </div>
+    )
+}));
+
+vi.mock("../../../UI/Alert/SimpleAlert", () => ({
+    default: ({ type, heading, message }) => (
+        <div
+            data-testid="simple-alert"
+            data-alert-type={type}
+        >
+            {heading && <h1>{heading}</h1>}
+            <p>{message}</p>
+        </div>
+    )
+}));
+
 describe("ProcurementTrackerStepTwo", () => {
+    const mockCancelModalStep2 = vi.fn();
+    const mockSetIsPreSolicitationPackageFinalized = vi.fn();
     const mockSetSelectedUser = vi.fn();
     const mockSetTargetCompletionDate = vi.fn();
     const mockSetStep2DateCompleted = vi.fn();
+    const mockSetDraftSolicitationDate = vi.fn();
     const mockRunValidate = vi.fn();
+    const mockHandleTargetCompletionDateSubmit = vi.fn();
+    const mockHandleRevisedTargetDateSubmit = vi.fn();
     const mockValidatorRes = {
-        getErrors: vi.fn(() => [])
+        getErrors: vi.fn(() => []),
+        hasErrors: vi.fn(() => false)
     };
 
     const mockSetStep2Notes = vi.fn();
+    const mockHandleSetCompletedStepNumber = vi.fn();
+
+    const mockSetRevisedTargetDate = vi.fn();
 
     const defaultHookReturn = {
+        cancelModalStep2: mockCancelModalStep2,
+        isPreSolicitationPackageFinalized: false,
+        setIsPreSolicitationPackageFinalized: mockSetIsPreSolicitationPackageFinalized,
         selectedUser: {},
         setSelectedUser: mockSetSelectedUser,
         targetCompletionDate: "",
         setTargetCompletionDate: mockSetTargetCompletionDate,
+        draftSolicitationDate: "",
+        setDraftSolicitationDate: mockSetDraftSolicitationDate,
         step2CompletedByUserName: "John Doe",
         step2DateCompleted: "",
         setStep2DateCompleted: mockSetStep2DateCompleted,
@@ -130,7 +166,14 @@ describe("ProcurementTrackerStepTwo", () => {
         runValidate: mockRunValidate,
         validatorRes: mockValidatorRes,
         step2DateCompletedLabel: "January 15, 2024",
-        MemoizedDatePicker: DatePicker
+        step2TargetCompletionDateLabel: "January 30, 2024",
+        step2DraftSolicitationDateLabel: "February 1, 2024",
+        MemoizedDatePicker: DatePicker,
+        handleTargetCompletionDateSubmit: mockHandleTargetCompletionDateSubmit,
+        handleRevisedTargetDateSubmit: mockHandleRevisedTargetDateSubmit,
+        isPastDue: false,
+        revisedTargetDate: "",
+        setRevisedTargetDate: mockSetRevisedTargetDate
     };
 
     const mockStepData = { id: 1 };
@@ -152,7 +195,8 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
@@ -167,7 +211,8 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
@@ -182,7 +227,8 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
@@ -201,7 +247,8 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
@@ -225,7 +272,8 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
@@ -242,7 +290,8 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
@@ -264,7 +313,8 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
@@ -287,7 +337,8 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
@@ -304,7 +355,8 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
@@ -320,10 +372,12 @@ describe("ProcurementTrackerStepTwo", () => {
         it("renders all form fields in ACTIVE state", () => {
             render(
                 <ProcurementTrackerStepTwo
-                    stepStatus="ACTIVE"
+                    stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
+                    isActiveStep={true}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
@@ -332,22 +386,113 @@ describe("ProcurementTrackerStepTwo", () => {
             expect(screen.getByText("Date Completed")).toBeInTheDocument();
         });
 
-        it("form fields are interactive in ACTIVE state", () => {
+        it("form fields are disabled until package is finalized in ACTIVE state", () => {
             render(
                 <ProcurementTrackerStepTwo
-                    stepStatus="ACTIVE"
+                    stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
+                    isActiveStep={true}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
             const datePickers = screen.getAllByTestId("date-picker");
-            expect(datePickers.length).toBeGreaterThan(0);
+            const targetDatePicker = datePickers.find(
+                (picker) => picker.getAttribute("data-picker-id") === "target-completion-date"
+            );
+            const completedDatePicker = datePickers.find(
+                (picker) => picker.getAttribute("data-picker-id") === "step-2-date-completed"
+            );
 
             // eslint-disable-next-line testing-library/no-node-access
             const select = screen.getByTestId("users-combobox").querySelector("select");
+            // eslint-disable-next-line testing-library/no-node-access
+            const targetInput = targetDatePicker.querySelector("input");
+            // eslint-disable-next-line testing-library/no-node-access
+            const completedInput = completedDatePicker.querySelector("input");
+            // eslint-disable-next-line testing-library/no-node-access
+            const notesInput = screen.getByTestId("text-area").querySelector("textarea");
+            const checkbox = screen.getByRole("checkbox");
+            const saveButton = screen.getByRole("button", { name: /save/i });
+            // const cancelButton = screen.getByRole("button", { name: /cancel/i });
+
+            expect(checkbox).not.toBeDisabled();
+            expect(select).toBeDisabled();
+            expect(targetInput).not.toBeDisabled();
+            expect(completedInput).toBeDisabled();
+            expect(notesInput).toBeDisabled();
+            expect(saveButton).toBeDisabled(); // Save button disabled when no target date entered
+        });
+
+        it("form fields are interactive when package is finalized in ACTIVE state", () => {
+            useProcurementTrackerStepTwo.mockReturnValue({
+                ...defaultHookReturn,
+                isPreSolicitationPackageFinalized: true,
+                targetCompletionDate: "2024-03-20"
+            });
+
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="PENDING"
+                    stepTwoData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    isActiveStep={true}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                />
+            );
+
+            const datePickers = screen.getAllByTestId("date-picker");
+            const targetDatePicker = datePickers.find(
+                (picker) => picker.getAttribute("data-picker-id") === "target-completion-date"
+            );
+            const completedDatePicker = datePickers.find(
+                (picker) => picker.getAttribute("data-picker-id") === "step-2-date-completed"
+            );
+
+            // eslint-disable-next-line testing-library/no-node-access
+            const select = screen.getByTestId("users-combobox").querySelector("select");
+            // eslint-disable-next-line testing-library/no-node-access
+            const targetInput = targetDatePicker.querySelector("input");
+            // eslint-disable-next-line testing-library/no-node-access
+            const completedInput = completedDatePicker.querySelector("input");
+            // eslint-disable-next-line testing-library/no-node-access
+            const notesInput = screen.getByTestId("text-area").querySelector("textarea");
+            const checkbox = screen.getByRole("checkbox");
+            const saveButton = screen.getByRole("button", { name: /save/i });
+            const cancelButton = screen.getByRole("button", { name: /cancel/i });
+
+            expect(checkbox).not.toBeDisabled();
             expect(select).not.toBeDisabled();
+            expect(targetInput).not.toBeDisabled();
+            expect(completedInput).not.toBeDisabled();
+            expect(notesInput).not.toBeDisabled();
+            expect(saveButton).not.toBeDisabled();
+            expect(cancelButton).not.toBeDisabled();
+        });
+
+        it("calls cancelStepTwo when cancel button is clicked", () => {
+            useProcurementTrackerStepTwo.mockReturnValue({
+                ...defaultHookReturn,
+                isPreSolicitationPackageFinalized: true,
+                targetCompletionDate: "2024-03-20"
+            });
+
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="PENDING"
+                    stepTwoData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    isActiveStep={true}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                />
+            );
+
+            fireEvent.click(screen.getByRole("button", { name: /cancel/i }));
+            expect(mockCancelModalStep2).toHaveBeenCalledTimes(1);
         });
     });
 
@@ -358,7 +503,8 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="COMPLETED"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
@@ -367,18 +513,19 @@ describe("ProcurementTrackerStepTwo", () => {
             ).toBeInTheDocument();
         });
 
-        it("shows TermTag components (Completed By, Date Completed)", () => {
+        it("shows TermTag components (Target Completion Date, Completed By, Date Completed, Draft Solicitation Date)", () => {
             render(
                 <ProcurementTrackerStepTwo
                     stepStatus="COMPLETED"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
             const termTags = screen.getAllByTestId("term-tag");
-            expect(termTags).toHaveLength(2);
+            expect(termTags).toHaveLength(4);
         });
 
         it("displays formatted user name from step2CompletedByUserName", () => {
@@ -387,7 +534,8 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="COMPLETED"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
@@ -401,7 +549,8 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="COMPLETED"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
@@ -417,7 +566,8 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="COMPLETED"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
@@ -435,7 +585,8 @@ describe("ProcurementTrackerStepTwo", () => {
                         return ["Date must be MM/DD/YYYY"];
                     }
                     return [];
-                })
+                }),
+                hasErrors: vi.fn(() => false)
             };
 
             useProcurementTrackerStepTwo.mockReturnValue({
@@ -448,7 +599,8 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
@@ -462,7 +614,8 @@ describe("ProcurementTrackerStepTwo", () => {
                         return ["This is required information"];
                     }
                     return [];
-                })
+                }),
+                hasErrors: vi.fn(() => false)
             };
 
             useProcurementTrackerStepTwo.mockReturnValue({
@@ -475,7 +628,8 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
@@ -490,7 +644,9 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={false}
+                    isDisabled={true}
+                    isActiveStep={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
@@ -509,11 +665,15 @@ describe("ProcurementTrackerStepTwo", () => {
             const completedInput = completedDatePicker.querySelector("input");
             // eslint-disable-next-line testing-library/no-node-access
             const notesInput = screen.getByTestId("text-area").querySelector("textarea");
+            const checkbox = screen.getByRole("checkbox");
+            const saveButton = screen.getByRole("button", { name: /save/i });
 
+            expect(checkbox).toBeDisabled();
             expect(usersSelect).toBeDisabled();
             expect(targetInput).toBeDisabled();
             expect(completedInput).toBeDisabled();
             expect(notesInput).toBeDisabled();
+            expect(saveButton).toBeDisabled();
         });
     });
 
@@ -524,7 +684,8 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={undefined}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
@@ -537,7 +698,8 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="SKIPPED"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
@@ -551,7 +713,8 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={[]}
-                    hasActiveTracker={true}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
@@ -568,7 +731,8 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="PENDING"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
@@ -583,7 +747,8 @@ describe("ProcurementTrackerStepTwo", () => {
                     stepStatus="COMPLETED"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                 />
             );
 
@@ -600,7 +765,7 @@ describe("ProcurementTrackerStepTwo", () => {
                 stepStatus="PENDING"
                 stepTwoData={mockStepData}
                 authorizedUsers={mockAllUsers}
-                hasActiveTracker={true}
+                isDisabled={false}
             />
         );
 
@@ -614,7 +779,7 @@ describe("ProcurementTrackerStepTwo", () => {
                 stepStatus="PENDING"
                 stepTwoData={mockStepData}
                 authorizedUsers={mockAllUsers}
-                hasActiveTracker={true}
+                isDisabled={false}
             />
         );
 
@@ -639,7 +804,7 @@ describe("ProcurementTrackerStepTwo", () => {
                 stepStatus="COMPLETED"
                 stepTwoData={mockCompletedStepData}
                 authorizedUsers={mockAllUsers}
-                hasActiveTracker={true}
+                isDisabled={false}
             />
         );
 
@@ -671,13 +836,384 @@ describe("ProcurementTrackerStepTwo", () => {
                 stepStatus="COMPLETED"
                 stepTwoData={mockCompletedStepData}
                 authorizedUsers={mockAllUsers}
-                hasActiveTracker={true}
+                isDisabled={false}
             />
         );
 
         expect(screen.getByText("Notes")).toBeInTheDocument();
         // eslint-disable-next-line testing-library/no-node-access
         const dd = screen.getByText("Notes").nextElementSibling;
-        expect(dd.textContent).toBe("");
+        expect(dd.textContent).toBe("None");
+    });
+
+    describe("Target Completion Date Save Button", () => {
+        it("calls handleTargetCompletionDateSubmit with stepId when clicked", () => {
+            useProcurementTrackerStepTwo.mockReturnValue({
+                ...defaultHookReturn,
+                targetCompletionDate: "2024-03-20"
+            });
+
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="PENDING"
+                    stepTwoData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                />
+            );
+
+            const saveButton = screen.getByRole("button", { name: /save/i });
+            fireEvent.click(saveButton);
+
+            expect(mockHandleTargetCompletionDateSubmit).toHaveBeenCalledWith(1);
+        });
+
+        it("save button is disabled when target date is empty", () => {
+            useProcurementTrackerStepTwo.mockReturnValue({
+                ...defaultHookReturn,
+                targetCompletionDate: ""
+            });
+
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="PENDING"
+                    stepTwoData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                />
+            );
+
+            const saveButton = screen.getByRole("button", { name: /save/i });
+            expect(saveButton).toBeDisabled();
+        });
+
+        it("save button is disabled when validation errors exist", () => {
+            const mockValidatorResWithErrors = {
+                getErrors: vi.fn(() => []),
+                hasErrors: vi.fn((field) => {
+                    if (field === "targetCompletionDate") {
+                        return true;
+                    }
+                    return false;
+                })
+            };
+
+            useProcurementTrackerStepTwo.mockReturnValue({
+                ...defaultHookReturn,
+                targetCompletionDate: "invalid-date",
+                validatorRes: mockValidatorResWithErrors
+            });
+
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="PENDING"
+                    stepTwoData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                />
+            );
+
+            const saveButton = screen.getByRole("button", { name: /save/i });
+            expect(saveButton).toBeDisabled();
+        });
+    });
+
+    describe("Modal Integration", () => {
+        it("renders ConfirmationModal when showModal is true", () => {
+            useProcurementTrackerStepTwo.mockReturnValue({
+                ...defaultHookReturn,
+                showModal: true,
+                modalProps: {
+                    heading: "Are you sure you want to cancel this task? Your input will not be saved.",
+                    actionButtonText: "Cancel Task",
+                    secondaryButtonText: "Continue Editing",
+                    handleConfirm: vi.fn()
+                }
+            });
+
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="PENDING"
+                    stepTwoData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                />
+            );
+
+            // ConfirmationModal is rendered - check for the heading text
+            expect(screen.getByText(/Are you sure you want to cancel this task/i)).toBeInTheDocument();
+        });
+
+        it("does not render ConfirmationModal when showModal is false", () => {
+            useProcurementTrackerStepTwo.mockReturnValue({
+                ...defaultHookReturn,
+                showModal: false
+            });
+
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="PENDING"
+                    stepTwoData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                />
+            );
+
+            expect(screen.queryByText(/Are you sure you want to cancel this task/i)).not.toBeInTheDocument();
+        });
+    });
+
+    describe("Draft Solicitation Date Field", () => {
+        it("renders DatePicker for draft solicitation date in PENDING state", () => {
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="PENDING"
+                    stepTwoData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                />
+            );
+
+            const datePickers = screen.getAllByTestId("date-picker");
+            const draftSolicitationPicker = datePickers.find(
+                (picker) => picker.getAttribute("data-picker-id") === "step-2-draft-solicitation-date"
+            );
+
+            expect(draftSolicitationPicker).toBeInTheDocument();
+            expect(screen.getByText("Draft Solicitation Date (optional)")).toBeInTheDocument();
+        });
+
+        it("draft solicitation date field calls setDraftSolicitationDate and runValidate on change", () => {
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="PENDING"
+                    stepTwoData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                />
+            );
+
+            const datePickers = screen.getAllByTestId("date-picker");
+            const draftSolicitationPicker = datePickers.find(
+                (picker) => picker.getAttribute("data-picker-id") === "step-2-draft-solicitation-date"
+            );
+            // eslint-disable-next-line testing-library/no-node-access
+            const dateInput = draftSolicitationPicker.querySelector("input");
+
+            fireEvent.change(dateInput, { target: { value: "2024-05-01" } });
+
+            expect(mockRunValidate).toHaveBeenCalledWith("draftSolicitationDate", "2024-05-01");
+            expect(mockSetDraftSolicitationDate).toHaveBeenCalledWith("2024-05-01");
+        });
+    });
+
+    describe("Past Due Warning and Revised Date", () => {
+        it("does not show warning when step is completed", () => {
+            useProcurementTrackerStepTwo.mockReturnValue({
+                ...defaultHookReturn,
+                isPastDue: true
+            });
+
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="COMPLETED"
+                    stepTwoData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                />
+            );
+
+            expect(screen.queryByTestId("simple-alert")).not.toBeInTheDocument();
+            expect(screen.queryByText("Revised Target Completion Date")).not.toBeInTheDocument();
+        });
+
+        it("does not show warning when not past due", () => {
+            useProcurementTrackerStepTwo.mockReturnValue({
+                ...defaultHookReturn,
+                isPastDue: false
+            });
+
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="PENDING"
+                    stepTwoData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                />
+            );
+
+            expect(screen.queryByTestId("simple-alert")).not.toBeInTheDocument();
+            expect(screen.queryByText("Revised Target Completion Date")).not.toBeInTheDocument();
+        });
+
+        it("shows warning banner when past due and pending", () => {
+            useProcurementTrackerStepTwo.mockReturnValue({
+                ...defaultHookReturn,
+                isPastDue: true
+            });
+
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="PENDING"
+                    stepTwoData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                />
+            );
+
+            const alert = screen.getByTestId("simple-alert");
+            expect(alert).toBeInTheDocument();
+            expect(alert).toHaveAttribute("data-alert-type", "warning");
+            expect(
+                screen.getByText("The Target Completion Date is past due. Please enter a Revised Target Date below.")
+            ).toBeInTheDocument();
+        });
+
+        it("shows revised target date field when past due", () => {
+            useProcurementTrackerStepTwo.mockReturnValue({
+                ...defaultHookReturn,
+                isPastDue: true
+            });
+
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="PENDING"
+                    stepTwoData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                />
+            );
+
+            expect(screen.getByText("Revised Target Completion Date")).toBeInTheDocument();
+
+            const datePickers = screen.getAllByTestId("date-picker");
+            const revisedDatePicker = datePickers.find(
+                (picker) => picker.getAttribute("data-picker-id") === "revised-target-date"
+            );
+
+            expect(revisedDatePicker).toBeInTheDocument();
+        });
+
+        it("revised date field calls setRevisedTargetDate and runValidate on change", () => {
+            useProcurementTrackerStepTwo.mockReturnValue({
+                ...defaultHookReturn,
+                isPastDue: true
+            });
+
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="PENDING"
+                    stepTwoData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                />
+            );
+
+            const datePickers = screen.getAllByTestId("date-picker");
+            const revisedDatePicker = datePickers.find(
+                (picker) => picker.getAttribute("data-picker-id") === "revised-target-date"
+            );
+            // eslint-disable-next-line testing-library/no-node-access
+            const dateInput = revisedDatePicker.querySelector("input");
+
+            fireEvent.change(dateInput, { target: { value: "03/25/2024" } });
+
+            expect(mockRunValidate).toHaveBeenCalledWith("revisedTargetDate", "03/25/2024");
+            expect(mockSetRevisedTargetDate).toHaveBeenCalledWith("03/25/2024");
+        });
+
+        it("revised date field has minDate set to today", () => {
+            useProcurementTrackerStepTwo.mockReturnValue({
+                ...defaultHookReturn,
+                isPastDue: true
+            });
+
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="PENDING"
+                    stepTwoData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                />
+            );
+
+            const datePickers = screen.getAllByTestId("date-picker");
+            const revisedDatePicker = datePickers.find(
+                (picker) => picker.getAttribute("data-picker-id") === "revised-target-date"
+            );
+            // eslint-disable-next-line testing-library/no-node-access
+            const dateInput = revisedDatePicker.querySelector("input");
+
+            expect(dateInput).toHaveAttribute("data-min-date", "2024-01-30");
+        });
+
+        it("revised date field displays validation errors", () => {
+            const mockValidatorResWithErrors = {
+                getErrors: vi.fn((field) => {
+                    if (field === "revisedTargetDate") {
+                        return ["Date must be today or later"];
+                    }
+                    return [];
+                }),
+                hasErrors: vi.fn(() => false)
+            };
+
+            useProcurementTrackerStepTwo.mockReturnValue({
+                ...defaultHookReturn,
+                isPastDue: true,
+                validatorRes: mockValidatorResWithErrors
+            });
+
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="PENDING"
+                    stepTwoData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                />
+            );
+
+            expect(screen.getByText("Date must be today or later")).toBeInTheDocument();
+        });
+
+        it("revised date field respects isDisabled prop", () => {
+            useProcurementTrackerStepTwo.mockReturnValue({
+                ...defaultHookReturn,
+                isPastDue: true
+            });
+
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="PENDING"
+                    stepTwoData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={true}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                />
+            );
+
+            const datePickers = screen.getAllByTestId("date-picker");
+            const revisedDatePicker = datePickers.find(
+                (picker) => picker.getAttribute("data-picker-id") === "revised-target-date"
+            );
+            // eslint-disable-next-line testing-library/no-node-access
+            const dateInput = revisedDatePicker.querySelector("input");
+
+            expect(dateInput).toBeDisabled();
+        });
     });
 });
