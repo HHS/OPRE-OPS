@@ -439,11 +439,6 @@ class AgreementsService(OpsService[Agreement]):
             )
             all_results = _sort_agreements(all_results, sort_condition, sort_descending, filters.fiscal_year)
 
-        # Compute fy_obligated for each agreement based on the effective fiscal year
-        effective_fy = _resolve_fiscal_year(filters.fiscal_year)
-        for agreement in all_results:
-            agreement._fy_obligated = agreement.fy_obligated(effective_fy)
-
         # Calculate count before slicing
         total_count = len(all_results)
 
@@ -975,7 +970,7 @@ def _sort_agreements(results, sort_condition, sort_descending, fiscal_years=None
         case AgreementSortCondition.END:
             return sorted(results, key=end_date_sort, reverse=sort_descending)
         case AgreementSortCondition.FY_OBLIGATED:
-            fy = _resolve_fiscal_year(fiscal_years)
+            fy = resolve_fiscal_year(fiscal_years)
             return sorted(results, key=lambda a: fy_obligated_sort(a, fy), reverse=sort_descending)
         case _:
             return results
@@ -1014,14 +1009,19 @@ def end_date_sort(agreement):
     return agreement.sc_end_date or date.max
 
 
-def _resolve_fiscal_year(fiscal_years):
+def get_current_fiscal_year() -> int:
+    """Return the current federal fiscal year (Oct-Sep)."""
+    today = date.today()
+    return today.year + 1 if today.month >= 10 else today.year
+
+
+def resolve_fiscal_year(fiscal_years):
     """Get the effective fiscal year from filter list, defaulting to current FY."""
     if fiscal_years and len(fiscal_years) == 1:
         return int(fiscal_years[0])
     if fiscal_years and len(fiscal_years) > 1:
         logger.debug(f"Multiple fiscal years provided ({fiscal_years}); falling back to current FY.")
-    today = date.today()
-    return today.year + 1 if today.month >= 10 else today.year
+    return get_current_fiscal_year()
 
 
 def fy_obligated_sort(agreement, fiscal_year):

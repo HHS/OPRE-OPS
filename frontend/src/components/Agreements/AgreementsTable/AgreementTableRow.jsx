@@ -1,12 +1,10 @@
 import CurrencyFormat from "react-currency-format";
 import { Link, useSearchParams } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { useGetAgreementByIdQuery } from "../../../api/opsAPI";
 import { NO_DATA } from "../../../constants";
 import { getAgreementType, isNotDevelopedYet } from "../../../helpers/agreement.helpers";
 import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
-import { getCurrentFiscalYear } from "../../../helpers/utils";
 import ChangeIcons from "../../BudgetLineItems/ChangeIcons";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 import TableRowExpandable from "../../UI/TableRowExpandable";
@@ -34,20 +32,12 @@ import { useHandleDeleteAgreement, useHandleEditAgreement, useNavigateAgreementR
  * Renders a row in the agreements table.
  * @component
  * @param {Object} props - The component props.
- * @param {number} props.agreementId - The agreement object to display.
- * @param {string} props.selectedFiscalYear - The selected fiscal year.
+ * @param {import("../../../types/AgreementTypes").Agreement} props.agreement - The agreement object to display.
  * @returns {JSX.Element} - The rendered component.
  */
-export const AgreementTableRow = ({ agreementId, selectedFiscalYear }) => {
+export const AgreementTableRow = ({ agreement }) => {
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
-    const effectiveFiscalYear =
-        selectedFiscalYear === "All" ? Number(getCurrentFiscalYear()) : Number(selectedFiscalYear);
-    /** @type {{data?: import("../../../types/AgreementTypes").Agreement | undefined, isLoading: boolean, isSuccess: boolean}} */
-    const {
-        data: agreement,
-        isLoading,
-        isSuccess
-    } = useGetAgreementByIdQuery({ id: agreementId, fiscal_year: effectiveFiscalYear }, { skip: !agreementId });
+    const isSuccess = !!agreement;
     const agreementName = isSuccess ? getAgreementName(agreement) : NO_DATA;
     const agreementType = isSuccess ? getAgreementType(agreement?.agreement_type) : NO_DATA;
     const agreementTotal = agreement?.agreement_total ?? 0;
@@ -105,19 +95,6 @@ export const AgreementTableRow = ({ agreementId, selectedFiscalYear }) => {
         }
     }
     const lockedMessage = getLockedMessage();
-
-    if (isLoading) {
-        return (
-            <tr>
-                <td
-                    colSpan={TABLE_HEADINGS_LIST.length + 1}
-                    className="text-center"
-                >
-                    Loading...
-                </td>
-            </tr>
-        );
-    }
 
     const changeIcons = (
         <ChangeIcons

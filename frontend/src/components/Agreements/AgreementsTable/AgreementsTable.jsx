@@ -34,8 +34,7 @@ export const AgreementsTable = ({
                     agreements?.map((agreement) => (
                         <AgreementTableRow
                             key={agreement?.id}
-                            agreementId={agreement.id}
-                            selectedFiscalYear={selectedFiscalYear}
+                            agreement={agreement}
                         />
                     ))}
             </Table>

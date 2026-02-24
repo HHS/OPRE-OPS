@@ -4,7 +4,6 @@ import PacmanLoader from "react-spinners/PacmanLoader";
 import {
     useGetAgreementsFilterOptionsQuery,
     useGetAgreementsQuery,
-    useLazyGetAgreementByIdQuery,
     useLazyGetAgreementsQuery,
     useLazyGetUserQuery
 } from "../../../api/opsAPI.js";
@@ -144,7 +143,6 @@ const AgreementsList = () => {
     };
 
     const [trigger] = useLazyGetUserQuery();
-    const [agreementTrigger] = useLazyGetAgreementByIdQuery();
     const [getAllAgreementsTrigger] = useLazyGetAgreementsQuery();
 
     if (isLoadingAgreement) {
@@ -207,11 +205,7 @@ const AgreementsList = () => {
             const effectiveFY =
                 selectedFiscalYear === "All" ? Number(getCurrentFiscalYear()) : Number(selectedFiscalYear);
 
-            const allAgreements = allAgreementsList.map((agreement) => {
-                return agreementTrigger({ id: agreement.id, fiscal_year: effectiveFY }).unwrap();
-            });
-
-            const agreementResponses = await Promise.all(allAgreements);
+            const agreementResponses = allAgreementsList;
 
             const corPromises = allAgreementsList
                 .filter((agreement) => agreement?.project_officer_id)
@@ -252,8 +246,12 @@ const AgreementsList = () => {
                 rowMapper: (agreement) => {
                     const agreementName = getAgreementName(agreement);
                     const agreementType = convertCodeForDisplay("agreementType", agreement?.agreement_type);
-                    const startDate = agreement.sc_start_date ? formatDate(new Date(agreement.sc_start_date)) : "TBD";
-                    const endDate = agreement.sc_end_date ? formatDate(new Date(agreement.sc_end_date)) : "TBD";
+                    const startDate = agreement.sc_start_date
+                        ? formatDate(new Date(agreement.sc_start_date + "T00:00:00Z"))
+                        : "TBD";
+                    const endDate = agreement.sc_end_date
+                        ? formatDate(new Date(agreement.sc_end_date + "T00:00:00Z"))
+                        : "TBD";
                     const agreementSubTotal = agreement.agreement_subtotal ?? 0;
                     const agreementFees = agreement.total_agreement_fees ?? 0;
                     const total = agreement.agreement_total ?? 0;

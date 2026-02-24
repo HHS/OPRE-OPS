@@ -5,10 +5,10 @@ from unittest.mock import MagicMock
 from models import BudgetLineItemStatus
 from models.agreements import Agreement
 from ops_api.ops.services.agreements import (
-    _resolve_fiscal_year,
     agreement_total_sort,
     fy_obligated_sort,
     next_budget_line_sort,
+    resolve_fiscal_year,
 )
 
 
@@ -260,26 +260,26 @@ def test_fy_obligated_sort_with_none_amount():
     assert result == Decimal("5000.00")
 
 
-# --- _resolve_fiscal_year tests ---
+# --- resolve_fiscal_year tests ---
 
 
-def test_resolve_fiscal_year_single_value():
-    assert _resolve_fiscal_year(["2025"]) == 2025
+def testresolve_fiscal_year_single_value():
+    assert resolve_fiscal_year(["2025"]) == 2025
 
 
-def test_resolve_fiscal_year_none_defaults_to_current():
+def testresolve_fiscal_year_none_defaults_to_current():
     today = date.today()
     expected = today.year + 1 if today.month >= 10 else today.year
-    assert _resolve_fiscal_year(None) == expected
+    assert resolve_fiscal_year(None) == expected
 
 
-def test_resolve_fiscal_year_empty_defaults_to_current():
+def testresolve_fiscal_year_empty_defaults_to_current():
     today = date.today()
     expected = today.year + 1 if today.month >= 10 else today.year
-    assert _resolve_fiscal_year([]) == expected
+    assert resolve_fiscal_year([]) == expected
 
 
-def test_resolve_fiscal_year_multiple_defaults_to_current():
+def testresolve_fiscal_year_multiple_defaults_to_current():
     today = date.today()
     expected = today.year + 1 if today.month >= 10 else today.year
-    assert _resolve_fiscal_year(["2025", "2026"]) == expected
+    assert resolve_fiscal_year(["2025", "2026"]) == expected

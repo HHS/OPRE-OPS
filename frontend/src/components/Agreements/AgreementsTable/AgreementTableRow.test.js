@@ -39,21 +39,13 @@ const userData = {
     full_name: "Test User"
 };
 
-// Create a mock that can be changed per test
-let mockAgreementData = null;
-
 vi.mock("../../../api/opsAPI", async () => {
     const actual = await vi.importActual("../../../api/opsAPI");
 
     return {
         ...actual,
         useGetUserByIdQuery: () => ({ data: userData }),
-        useLazyGetUserByIdQuery: () => [vi.fn().mockResolvedValue({ data: userData })],
-        useGetAgreementByIdQuery: () => ({
-            data: mockAgreementData,
-            isLoading: false,
-            isSuccess: true
-        })
+        useLazyGetUserByIdQuery: () => [vi.fn().mockResolvedValue({ data: userData })]
     };
 });
 
@@ -144,9 +136,6 @@ const renderComponent = (
     agreementData = baseAgreement,
     isSuperUser = false
 ) => {
-    // Set the mock data for this test
-    mockAgreementData = agreementData;
-
     const store = createMockStore(userRoles, isSuperUser);
 
     return render(
@@ -157,10 +146,7 @@ const renderComponent = (
             >
                 <table>
                     <tbody>
-                        <AgreementTableRow
-                            agreementId={agreementData.id}
-                            selectedFiscalYear="2025"
-                        />
+                        <AgreementTableRow agreement={agreementData} />
                     </tbody>
                 </table>
             </Router>
