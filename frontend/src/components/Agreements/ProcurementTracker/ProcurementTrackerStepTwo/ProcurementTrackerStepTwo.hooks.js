@@ -22,6 +22,7 @@ export default function useProcurementTrackerStepTwo(stepTwoData, handleSetCompl
     const [targetCompletionDate, setTargetCompletionDate] = React.useState("");
     const [step2DateCompleted, setStep2DateCompleted] = React.useState("");
     const [step2Notes, setStep2Notes] = React.useState("");
+    const [revisedTargetDate, setRevisedTargetDate] = React.useState("");
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({
         heading: "",
@@ -38,6 +39,29 @@ export default function useProcurementTrackerStepTwo(stepTwoData, handleSetCompl
     const step2DraftSolicitationDateLabel = formatDateToMonthDayYear(stepTwoData?.draft_solicitation_date ?? "");
     const step2NotesLabel = stepTwoData?.notes;
     const MemoizedDatePicker = React.memo(DatePicker);
+
+    // Calculate if target completion date is past due
+    const isPastDue = React.useMemo(() => {
+        // Only show past due warning if step is pending (not completed)
+        if (stepTwoData?.date_completed) {
+            return false;
+        }
+
+        // Need a target date to be past due
+        const targetDate = stepTwoData?.target_completion_date;
+        if (!targetDate) {
+            return false;
+        }
+
+        // Compare date-only (no time component)
+        // Parse YYYY-MM-DD format by appending "T00:00:00" to ensure local timezone
+        const target = new Date(targetDate + "T00:00:00");
+        const today = new Date();
+        const targetDateOnly = new Date(target.getFullYear(), target.getMonth(), target.getDate());
+        const todayDateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+        return targetDateOnly.getTime() < todayDateOnly.getTime();
+    }, [stepTwoData?.target_completion_date, stepTwoData?.date_completed]);
 
     const runValidate = (name, value) => {
         suite({ ...{ [name]: value } }, name);
@@ -118,6 +142,7 @@ export default function useProcurementTrackerStepTwo(stepTwoData, handleSetCompl
         setTargetCompletionDate("");
         setStep2DateCompleted("");
         setStep2Notes("");
+        setRevisedTargetDate("");
     };
 
     const cancelModalStep2 = () => {
@@ -160,6 +185,9 @@ export default function useProcurementTrackerStepTwo(stepTwoData, handleSetCompl
         showModal,
         modalProps,
         setShowModal,
-        cancelModalStep2
+        cancelModalStep2,
+        isPastDue,
+        revisedTargetDate,
+        setRevisedTargetDate
     };
 }

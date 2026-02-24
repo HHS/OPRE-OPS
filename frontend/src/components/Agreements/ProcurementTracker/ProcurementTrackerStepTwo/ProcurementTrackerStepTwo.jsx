@@ -1,6 +1,7 @@
 import { getLocalISODate } from "../../../../helpers/utils";
 import TextArea from "../../../UI/Form/TextArea";
 import ConfirmationModal from "../../../UI/Modals/ConfirmationModal";
+import SimpleAlert from "../../../UI/Alert/SimpleAlert";
 import TermTag from "../../../UI/Term/TermTag";
 import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepTwo from "./ProcurementTrackerStepTwo.hooks";
@@ -60,7 +61,10 @@ const ProcurementTrackerStepTwo = ({
         modalProps,
         cancelModalStep2,
         handleStepTwoComplete,
-        step2DraftSolicitationDateLabel
+        step2DraftSolicitationDateLabel,
+        isPastDue,
+        revisedTargetDate,
+        setRevisedTargetDate
     } = useProcurementTrackerStepTwo(stepTwoData, handleSetCompletedStepNumber);
 
     return (
@@ -123,6 +127,29 @@ const ProcurementTrackerStepTwo = ({
                             </>
                         )}
                     </div>
+                    {stepStatus === "PENDING" && isPastDue && (
+                        <>
+                            <SimpleAlert
+                                type="warning"
+                                heading="Past Due"
+                                message="The Target Completion Date is past due. Please enter a Revised Target Date below."
+                            />
+                            <MemoizedDatePicker
+                                id="revised-target-date"
+                                name="revisedTargetDate"
+                                label="Revised Target Date"
+                                messages={validatorRes.getErrors("revisedTargetDate") || []}
+                                hint="mm/dd/yyyy"
+                                value={revisedTargetDate}
+                                onChange={(e) => {
+                                    runValidate("revisedTargetDate", e.target.value);
+                                    setRevisedTargetDate(e.target.value);
+                                }}
+                                minDate={getLocalISODate()}
+                                isDisabled={isDisabled}
+                            />
+                        </>
+                    )}
                     <div className="usa-checkbox">
                         <input
                             className="usa-checkbox__input"

@@ -864,4 +864,126 @@ describe("useProcurementTrackerStepTwo", () => {
             });
         });
     });
+
+    describe("Past Due Detection", () => {
+        it("returns false when step is completed", () => {
+            const completedStepData = {
+                ...mockStepTwoData,
+                target_completion_date: "2024-01-01",
+                date_completed: "2024-01-20"
+            };
+
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(completedStepData, mockHandleSetCompletedStepNumber)
+            );
+
+            expect(result.current.isPastDue).toBe(false);
+        });
+
+        it("returns false when no target completion date is set", () => {
+            const stepDataWithoutTarget = {
+                ...mockStepTwoData,
+                target_completion_date: null
+            };
+
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(stepDataWithoutTarget, mockHandleSetCompletedStepNumber)
+            );
+
+            expect(result.current.isPastDue).toBe(false);
+        });
+
+        it("returns true when target completion date is in the past and step is pending", () => {
+            const pastDate = new Date();
+            pastDate.setDate(pastDate.getDate() - 5);
+            const pastDateString = pastDate.toISOString().split("T")[0];
+
+            const stepDataWithPastDate = {
+                ...mockStepTwoData,
+                target_completion_date: pastDateString,
+                date_completed: null
+            };
+
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(stepDataWithPastDate, mockHandleSetCompletedStepNumber)
+            );
+
+            expect(result.current.isPastDue).toBe(true);
+        });
+
+        it("returns false when target completion date is today", () => {
+            const today = new Date();
+            const todayString = today.toISOString().split("T")[0];
+
+            const stepDataWithToday = {
+                ...mockStepTwoData,
+                target_completion_date: todayString,
+                date_completed: null
+            };
+
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(stepDataWithToday, mockHandleSetCompletedStepNumber)
+            );
+
+            expect(result.current.isPastDue).toBe(false);
+        });
+
+        it("returns false when target completion date is in the future", () => {
+            const futureDate = new Date();
+            futureDate.setDate(futureDate.getDate() + 5);
+            const futureDateString = futureDate.toISOString().split("T")[0];
+
+            const stepDataWithFutureDate = {
+                ...mockStepTwoData,
+                target_completion_date: futureDateString,
+                date_completed: null
+            };
+
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(stepDataWithFutureDate, mockHandleSetCompletedStepNumber)
+            );
+
+            expect(result.current.isPastDue).toBe(false);
+        });
+    });
+
+    describe("Revised Target Date State", () => {
+        it("initializes revisedTargetDate as empty string", () => {
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber)
+            );
+
+            expect(result.current.revisedTargetDate).toBe("");
+        });
+
+        it("updates revisedTargetDate when setter is called", () => {
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber)
+            );
+
+            act(() => {
+                result.current.setRevisedTargetDate("03/25/2024");
+            });
+
+            expect(result.current.revisedTargetDate).toBe("03/25/2024");
+        });
+
+        it("resets revisedTargetDate when cancelStepTwo is called", () => {
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber)
+            );
+
+            act(() => {
+                result.current.setRevisedTargetDate("03/25/2024");
+            });
+
+            expect(result.current.revisedTargetDate).toBe("03/25/2024");
+
+            act(() => {
+                result.current.cancelStepTwo();
+            });
+
+            expect(result.current.revisedTargetDate).toBe("");
+        });
+    });
 });

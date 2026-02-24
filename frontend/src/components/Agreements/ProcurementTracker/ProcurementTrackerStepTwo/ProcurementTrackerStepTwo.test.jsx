@@ -115,6 +115,18 @@ vi.mock("../../../UI/Modals/ConfirmationModal", () => ({
     )
 }));
 
+vi.mock("../../../UI/Alert/SimpleAlert", () => ({
+    default: ({ type, heading, message }) => (
+        <div
+            data-testid="simple-alert"
+            data-alert-type={type}
+        >
+            <h1>{heading}</h1>
+            <p>{message}</p>
+        </div>
+    )
+}));
+
 describe("ProcurementTrackerStepTwo", () => {
     const mockCancelModalStep2 = vi.fn();
     const mockSetIsPreSolicitationPackageFinalized = vi.fn();
@@ -131,6 +143,8 @@ describe("ProcurementTrackerStepTwo", () => {
 
     const mockSetStep2Notes = vi.fn();
     const mockHandleSetCompletedStepNumber = vi.fn();
+
+    const mockSetRevisedTargetDate = vi.fn();
 
     const defaultHookReturn = {
         cancelModalStep2: mockCancelModalStep2,
@@ -154,7 +168,10 @@ describe("ProcurementTrackerStepTwo", () => {
         step2TargetCompletionDateLabel: "January 30, 2024",
         step2DraftSolicitationDateLabel: "February 1, 2024",
         MemoizedDatePicker: DatePicker,
-        handleTargetCompletionDateSubmit: mockHandleTargetCompletionDateSubmit
+        handleTargetCompletionDateSubmit: mockHandleTargetCompletionDateSubmit,
+        isPastDue: false,
+        revisedTargetDate: "",
+        setRevisedTargetDate: mockSetRevisedTargetDate
     };
 
     const mockStepData = { id: 1 };
@@ -992,6 +1009,210 @@ describe("ProcurementTrackerStepTwo", () => {
 
             expect(mockRunValidate).toHaveBeenCalledWith("draftSolicitationDate", "2024-05-01");
             expect(mockSetDraftSolicitationDate).toHaveBeenCalledWith("2024-05-01");
+        });
+    });
+
+    describe("Past Due Warning and Revised Date", () => {
+        it("does not show warning when step is completed", () => {
+            useProcurementTrackerStepTwo.mockReturnValue({
+                ...defaultHookReturn,
+                isPastDue: true
+            });
+
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="COMPLETED"
+                    stepTwoData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                />
+            );
+
+            expect(screen.queryByTestId("simple-alert")).not.toBeInTheDocument();
+            expect(screen.queryByText("Revised Target Date")).not.toBeInTheDocument();
+        });
+
+        it("does not show warning when not past due", () => {
+            useProcurementTrackerStepTwo.mockReturnValue({
+                ...defaultHookReturn,
+                isPastDue: false
+            });
+
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="PENDING"
+                    stepTwoData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                />
+            );
+
+            expect(screen.queryByTestId("simple-alert")).not.toBeInTheDocument();
+            expect(screen.queryByText("Revised Target Date")).not.toBeInTheDocument();
+        });
+
+        it("shows warning banner when past due and pending", () => {
+            useProcurementTrackerStepTwo.mockReturnValue({
+                ...defaultHookReturn,
+                isPastDue: true
+            });
+
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="PENDING"
+                    stepTwoData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                />
+            );
+
+            const alert = screen.getByTestId("simple-alert");
+            expect(alert).toBeInTheDocument();
+            expect(alert).toHaveAttribute("data-alert-type", "warning");
+            expect(screen.getByText("Past Due")).toBeInTheDocument();
+            expect(
+                screen.getByText("The Target Completion Date is past due. Please enter a Revised Target Date below.")
+            ).toBeInTheDocument();
+        });
+
+        it("shows revised target date field when past due", () => {
+            useProcurementTrackerStepTwo.mockReturnValue({
+                ...defaultHookReturn,
+                isPastDue: true
+            });
+
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="PENDING"
+                    stepTwoData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                />
+            );
+
+            expect(screen.getByText("Revised Target Date")).toBeInTheDocument();
+
+            const datePickers = screen.getAllByTestId("date-picker");
+            const revisedDatePicker = datePickers.find(
+                (picker) => picker.getAttribute("data-picker-id") === "revised-target-date"
+            );
+
+            expect(revisedDatePicker).toBeInTheDocument();
+        });
+
+        it("revised date field calls setRevisedTargetDate and runValidate on change", () => {
+            useProcurementTrackerStepTwo.mockReturnValue({
+                ...defaultHookReturn,
+                isPastDue: true
+            });
+
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="PENDING"
+                    stepTwoData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                />
+            );
+
+            const datePickers = screen.getAllByTestId("date-picker");
+            const revisedDatePicker = datePickers.find(
+                (picker) => picker.getAttribute("data-picker-id") === "revised-target-date"
+            );
+            // eslint-disable-next-line testing-library/no-node-access
+            const dateInput = revisedDatePicker.querySelector("input");
+
+            fireEvent.change(dateInput, { target: { value: "03/25/2024" } });
+
+            expect(mockRunValidate).toHaveBeenCalledWith("revisedTargetDate", "03/25/2024");
+            expect(mockSetRevisedTargetDate).toHaveBeenCalledWith("03/25/2024");
+        });
+
+        it("revised date field has minDate set to today", () => {
+            useProcurementTrackerStepTwo.mockReturnValue({
+                ...defaultHookReturn,
+                isPastDue: true
+            });
+
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="PENDING"
+                    stepTwoData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                />
+            );
+
+            const datePickers = screen.getAllByTestId("date-picker");
+            const revisedDatePicker = datePickers.find(
+                (picker) => picker.getAttribute("data-picker-id") === "revised-target-date"
+            );
+            // eslint-disable-next-line testing-library/no-node-access
+            const dateInput = revisedDatePicker.querySelector("input");
+
+            expect(dateInput).toHaveAttribute("data-min-date", "2024-01-30");
+        });
+
+        it("revised date field displays validation errors", () => {
+            const mockValidatorResWithErrors = {
+                getErrors: vi.fn((field) => {
+                    if (field === "revisedTargetDate") {
+                        return ["Date must be today or later"];
+                    }
+                    return [];
+                }),
+                hasErrors: vi.fn(() => false)
+            };
+
+            useProcurementTrackerStepTwo.mockReturnValue({
+                ...defaultHookReturn,
+                isPastDue: true,
+                validatorRes: mockValidatorResWithErrors
+            });
+
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="PENDING"
+                    stepTwoData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                />
+            );
+
+            expect(screen.getByText("Date must be today or later")).toBeInTheDocument();
+        });
+
+        it("revised date field respects isDisabled prop", () => {
+            useProcurementTrackerStepTwo.mockReturnValue({
+                ...defaultHookReturn,
+                isPastDue: true
+            });
+
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="PENDING"
+                    stepTwoData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={true}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                />
+            );
+
+            const datePickers = screen.getAllByTestId("date-picker");
+            const revisedDatePicker = datePickers.find(
+                (picker) => picker.getAttribute("data-picker-id") === "revised-target-date"
+            );
+            // eslint-disable-next-line testing-library/no-node-access
+            const dateInput = revisedDatePicker.querySelector("input");
+
+            expect(dateInput).toBeDisabled();
         });
     });
 });
