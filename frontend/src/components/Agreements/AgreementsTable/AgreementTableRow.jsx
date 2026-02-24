@@ -46,7 +46,6 @@ export const AgreementTableRow = ({ agreement }) => {
 
     const fyObligatedAmount = isSuccess ? Number(agreement?.fy_obligated ?? 0) : 0;
 
-    // Expanded row values
     const researchProjectName = isSuccess ? getResearchProjectName(agreement) : NO_DATA;
     const procurementShopDisplay = isSuccess ? getProcurementShopDisplay(agreement) : NO_DATA;
     const agreementSubTotal = isSuccess ? (agreement?.agreement_subtotal ?? 0) : 0;
@@ -55,10 +54,8 @@ export const AgreementTableRow = ({ agreement }) => {
     const contractNumber = isSuccess ? getAgreementContractNumber(agreement) : NO_DATA;
     const vendor = isSuccess ? (agreement?.vendor ?? NO_DATA) : NO_DATA;
 
-    // styles for the table row
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
-    // auth checks
     const areAllBudgetLinesInDraftStatus = isSuccess ? areAllBudgetLinesInStatus(agreement, BLI_STATUS.DRAFT) : false;
     const isSuperUser = useSelector((state) => state.auth?.activeUser?.is_superuser) ?? false;
 
@@ -68,7 +65,6 @@ export const AgreementTableRow = ({ agreement }) => {
     const isEditable = isSuperUser || (canUserEditAgreement && !isAgreementTypeNotDeveloped);
     const canUserDeleteAgreement =
         isSuperUser || (canUserEditAgreement && (areAllBudgetLinesInDraftStatus || !areThereAnyBudgetLines));
-    // hooks
     const handleSubmitAgreementForApproval = useNavigateAgreementReview();
     const handleEditAgreement = useHandleEditAgreement();
     const { handleDeleteAgreement, modalProps, setShowModal, showModal } = useHandleDeleteAgreement();
@@ -193,7 +189,10 @@ export const AgreementTableRow = ({ agreement }) => {
             className="border-top-none"
             style={expandedRowBGColor}
         >
-            <div className="display-flex padding-right-9">
+            <div
+                className="display-flex padding-right-4"
+                style={{ justifyContent: "space-between" }}
+            >
                 <dl className="font-12px">
                     <dt className="margin-0 text-base-dark">Project</dt>
                     <dd className="margin-0">{researchProjectName || NO_DATA}</dd>
@@ -256,7 +255,6 @@ export const AgreementTableRow = ({ agreement }) => {
                         />
                     </dd>
                 </dl>
-                <div className="flex-align-self-end margin-left-auto margin-bottom-1">{changeIcons}</div>
             </div>
             <div className="display-flex">
                 <dl className="font-12px">
@@ -270,6 +268,9 @@ export const AgreementTableRow = ({ agreement }) => {
                     <dt className="margin-0 text-base-dark">Vendor</dt>
                     <dd className="margin-0">{vendor}</dd>
                 </dl>
+                <div className="flex-align-self-end margin-left-auto margin-bottom-1 padding-right-5">
+                    {changeIcons}
+                </div>
             </div>
         </td>
     );
