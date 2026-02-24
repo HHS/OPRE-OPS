@@ -163,7 +163,7 @@ class AgreementFiltersQueryParametersSchema(Schema):
 
 
 class FyObligatedMixin:
-    """Mixin that computes fy_obligated via schema context instead of monkey-patching."""
+    """Mixin that computes fy_obligated from schema context."""
 
     fy_obligated = fields.Method("get_fy_obligated")
 

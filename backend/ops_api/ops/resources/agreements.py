@@ -63,7 +63,6 @@ class AgreementItemAPI(BaseItemAPI):
             service: OpsService[Agreement] = AgreementsService(current_app.db_session)
             item: Agreement = service.get(id)
 
-            # Compute fy_obligated based on optional fiscal_year query param
             fiscal_year_param = request.args.get("fiscal_year")
             if fiscal_year_param:
                 try:
