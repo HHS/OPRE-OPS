@@ -78,13 +78,10 @@ const ProcurementTrackerStepTwo = ({
     const isPackageFinalizedFieldsDisabled = isDisabled || !isPreSolicitationPackageFinalized;
     const isCompleteStep2Disabled =
         isPackageFinalizedFieldsDisabled ||
-        validatorRes.hasErrors("users") ||
-        validatorRes.hasErrors("dateCompleted") ||
-        validatorRes.hasErrors("draftSolicitationDate") ||
+        validatorRes.hasErrors() ||
         !selectedUser?.id ||
         !step2DateCompleted ||
-        (!stepTwoData?.target_completion_date &&
-            (validatorRes.hasErrors("targetCompletionDate") || !targetCompletionDate));
+        (!stepTwoData?.target_completion_date && !targetCompletionDate);
 
     return (
         <>
