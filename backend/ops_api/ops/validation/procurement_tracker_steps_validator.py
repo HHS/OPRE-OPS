@@ -82,8 +82,6 @@ class ProcurementTrackerStepsValidator:
             AcquisitionPlanningRequiredFieldsRule,
             CompletedByUpdateAuthorizationRule,
             NoFutureCompletionDateUpdateValidationRule,
-            NoPastDraftSolicitationDateOnModelRule,
-            NoPastDraftSolicitationDateUpdateRule,
             NoPastTargetCompletionDateUpdateRule,
             NoUpdatingCompletedProcurementStepRule,
             PreSolicitationCompletionRequiredFieldsRule,
@@ -112,8 +110,6 @@ class ProcurementTrackerStepsValidator:
                     NoUpdatingCompletedProcurementStepRule(),
                     NoFutureCompletionDateUpdateValidationRule(),
                     NoPastTargetCompletionDateUpdateRule(),
-                    NoPastDraftSolicitationDateUpdateRule(),
-                    NoPastDraftSolicitationDateOnModelRule(),
                 ]
             else:
                 # Non-final updates to presolicitation steps require smaller rule set
@@ -124,7 +120,6 @@ class ProcurementTrackerStepsValidator:
                     NoUpdatingCompletedProcurementStepRule(),
                     NoFutureCompletionDateUpdateValidationRule(),
                     NoPastTargetCompletionDateUpdateRule(),
-                    NoPastDraftSolicitationDateUpdateRule(),
                 ]
 
         elif procurement_tracker_step.step_type == ProcurementTrackerStepType.SOLICITATION:
