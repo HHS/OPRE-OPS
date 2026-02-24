@@ -136,6 +136,7 @@ describe("ProcurementTrackerStepTwo", () => {
     const mockSetDraftSolicitationDate = vi.fn();
     const mockRunValidate = vi.fn();
     const mockHandleTargetCompletionDateSubmit = vi.fn();
+    const mockHandleRevisedTargetDateSubmit = vi.fn();
     const mockValidatorRes = {
         getErrors: vi.fn(() => []),
         hasErrors: vi.fn(() => false)
@@ -169,6 +170,7 @@ describe("ProcurementTrackerStepTwo", () => {
         step2DraftSolicitationDateLabel: "February 1, 2024",
         MemoizedDatePicker: DatePicker,
         handleTargetCompletionDateSubmit: mockHandleTargetCompletionDateSubmit,
+        handleRevisedTargetDateSubmit: mockHandleRevisedTargetDateSubmit,
         isPastDue: false,
         revisedTargetDate: "",
         setRevisedTargetDate: mockSetRevisedTargetDate
@@ -1030,7 +1032,7 @@ describe("ProcurementTrackerStepTwo", () => {
             );
 
             expect(screen.queryByTestId("simple-alert")).not.toBeInTheDocument();
-            expect(screen.queryByText("Revised Target Date")).not.toBeInTheDocument();
+            expect(screen.queryByText("Revised Target Completion Date")).not.toBeInTheDocument();
         });
 
         it("does not show warning when not past due", () => {
@@ -1050,7 +1052,7 @@ describe("ProcurementTrackerStepTwo", () => {
             );
 
             expect(screen.queryByTestId("simple-alert")).not.toBeInTheDocument();
-            expect(screen.queryByText("Revised Target Date")).not.toBeInTheDocument();
+            expect(screen.queryByText("Revised Target Completion Date")).not.toBeInTheDocument();
         });
 
         it("shows warning banner when past due and pending", () => {
@@ -1072,7 +1074,6 @@ describe("ProcurementTrackerStepTwo", () => {
             const alert = screen.getByTestId("simple-alert");
             expect(alert).toBeInTheDocument();
             expect(alert).toHaveAttribute("data-alert-type", "warning");
-            expect(screen.getByText("Past Due")).toBeInTheDocument();
             expect(
                 screen.getByText("The Target Completion Date is past due. Please enter a Revised Target Date below.")
             ).toBeInTheDocument();
@@ -1094,7 +1095,7 @@ describe("ProcurementTrackerStepTwo", () => {
                 />
             );
 
-            expect(screen.getByText("Revised Target Date")).toBeInTheDocument();
+            expect(screen.getByText("Revised Target Completion Date")).toBeInTheDocument();
 
             const datePickers = screen.getAllByTestId("date-picker");
             const revisedDatePicker = datePickers.find(

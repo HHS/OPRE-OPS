@@ -55,6 +55,7 @@ const ProcurementTrackerStepTwo = ({
         step2DateCompletedLabel,
         MemoizedDatePicker,
         handleTargetCompletionDateSubmit,
+        handleRevisedTargetDateSubmit,
         step2TargetCompletionDateLabel,
         showModal,
         setShowModal,
@@ -131,23 +132,37 @@ const ProcurementTrackerStepTwo = ({
                         <>
                             <SimpleAlert
                                 type="warning"
-                                heading="Past Due"
+                                heading=""
                                 message="The Target Completion Date is past due. Please enter a Revised Target Date below."
                             />
-                            <MemoizedDatePicker
-                                id="revised-target-date"
-                                name="revisedTargetDate"
-                                label="Revised Target Date"
-                                messages={validatorRes.getErrors("revisedTargetDate") || []}
-                                hint="mm/dd/yyyy"
-                                value={revisedTargetDate}
-                                onChange={(e) => {
-                                    runValidate("revisedTargetDate", e.target.value);
-                                    setRevisedTargetDate(e.target.value);
-                                }}
-                                minDate={getLocalISODate()}
-                                isDisabled={isDisabled}
-                            />
+                            <div className="display-flex flex-align-end">
+                                <MemoizedDatePicker
+                                    id="revised-target-date"
+                                    name="revisedTargetDate"
+                                    label="Revised Target Completion Date"
+                                    messages={validatorRes.getErrors("revisedTargetDate") || []}
+                                    hint="mm/dd/yyyy"
+                                    value={revisedTargetDate}
+                                    onChange={(e) => {
+                                        runValidate("revisedTargetDate", e.target.value);
+                                        setRevisedTargetDate(e.target.value);
+                                    }}
+                                    minDate={getLocalISODate()}
+                                    isDisabled={isDisabled}
+                                />
+                                <button
+                                    className="usa-button usa-button--unstyled margin-bottom-1 margin-left-2"
+                                    data-cy="revised-target-save-btn"
+                                    disabled={
+                                        isDisabled || validatorRes.hasErrors("revisedTargetDate") || !revisedTargetDate
+                                    }
+                                    onClick={() => {
+                                        handleRevisedTargetDateSubmit(stepTwoData?.id);
+                                    }}
+                                >
+                                    Save
+                                </button>
+                            </div>
                         </>
                     )}
                     <div className="usa-checkbox">

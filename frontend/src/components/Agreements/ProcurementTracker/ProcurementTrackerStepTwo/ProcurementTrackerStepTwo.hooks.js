@@ -95,6 +95,33 @@ export default function useProcurementTrackerStepTwo(stepTwoData, handleSetCompl
     };
 
     /**
+     * Handles the submission of the revised target completion date, updating the target_completion_date field.
+     * @param {number} stepId - The ID of the procurement tracker step being updated.
+     * @returns {Promise<void>}
+     */
+    const handleRevisedTargetDateSubmit = async (stepId) => {
+        const payload = {
+            target_completion_date: formatDateForApi(revisedTargetDate)
+        };
+        try {
+            await patchStepTwo({
+                stepId,
+                data: payload
+            }).unwrap();
+            console.log("Procurement Tracker Step 2 Updated with revised target date");
+            // Clear the revised date input after successful save
+            setRevisedTargetDate("");
+        } catch (error) {
+            console.error("Failed to update Procurement Tracker Step 2", error);
+            setAlert({
+                type: "error",
+                heading: "Error",
+                message: "There was an error updating the procurement tracker step. Please try again."
+            });
+        }
+    };
+
+    /**
      * Handles the submission of the target completion date for step two, updating the procurement tracker step with the new date.
      * @param {number} stepId - The ID of the procurement tracker step being updated.
      * @returns {Promise<void>}
@@ -181,6 +208,7 @@ export default function useProcurementTrackerStepTwo(stepTwoData, handleSetCompl
         step2DateCompletedLabel,
         MemoizedDatePicker,
         handleTargetCompletionDateSubmit,
+        handleRevisedTargetDateSubmit,
         handleStepTwoComplete,
         showModal,
         modalProps,
