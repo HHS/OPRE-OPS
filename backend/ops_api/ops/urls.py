@@ -26,7 +26,6 @@ from ops_api.ops.views import (
     CAN_ITEM_API_VIEW_FUNC,
     CAN_LIST_API_VIEW_FUNC,
     CAN_LIST_FILTER_OPTION_API_VIEW_FUNC,
-    CANS_BY_PORTFOLIO_API_VIEW_FUNC,
     CHANGE_REQUEST_LIST_API_VIEW_FUNC,
     DIVISIONS_ITEM_API_VIEW_FUNC,
     DIVISIONS_LIST_API_VIEW_FUNC,
@@ -140,11 +139,6 @@ def register_api(api_bp: Blueprint) -> None:
         "/can-funding-received/<int:id>",
         view_func=CAN_FUNDING_RECEIVED_ITEM_API_VIEW_FUNC,
     )
-    api_bp.add_url_rule(
-        "/cans/portfolio/<int:id>",
-        view_func=CANS_BY_PORTFOLIO_API_VIEW_FUNC,
-    )
-
     api_bp.add_url_rule(
         "/budget-line-items/<int:id>",
         view_func=BUDGET_LINE_ITEMS_ITEM_API_VIEW_FUNC,
