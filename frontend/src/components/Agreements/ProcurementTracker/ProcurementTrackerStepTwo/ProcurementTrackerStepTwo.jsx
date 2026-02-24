@@ -132,7 +132,6 @@ const ProcurementTrackerStepTwo = ({
                         <>
                             <SimpleAlert
                                 type="warning"
-                                heading=""
                                 message="The Target Completion Date is past due. Please enter a Revised Target Date below."
                             />
                             <div className="display-flex flex-align-end">

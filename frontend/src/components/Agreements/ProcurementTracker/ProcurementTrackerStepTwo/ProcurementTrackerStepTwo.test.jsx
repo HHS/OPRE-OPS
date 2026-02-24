@@ -121,7 +121,7 @@ vi.mock("../../../UI/Alert/SimpleAlert", () => ({
             data-testid="simple-alert"
             data-alert-type={type}
         >
-            <h1>{heading}</h1>
+            {heading && <h1>{heading}</h1>}
             <p>{message}</p>
         </div>
     )

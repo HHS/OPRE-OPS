@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 /**
     @typedef {Object} SimpleAlertProps
     @property {React.ReactNode} [children] - The child elements to render inside the alert. - optional
-    @property {string} heading - The heading text for the alert.
+    @property {string} [heading] - The heading text for the alert. - optional
     @property {string} message - The message text for the alert.
     @property {"success" | "warning" | "error" | "emergency" | "info"} type - The type of alert to display.
     @property {boolean} [isClosable] - Whether the alert is closable. - optional
@@ -69,7 +69,7 @@ const SimpleAlert = ({
                 style={{ flexDirection: "row", justifyContent: "space-between" }}
             >
                 <div>
-                    <h1 className="usa-alert__heading">{heading}</h1>
+                    {heading && <h1 className="usa-alert__heading">{heading}</h1>}
                     <p className="usa-alert__text">{message}</p>
                     {children}
                 </div>
