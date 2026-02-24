@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Optional
 
 import sqlalchemy.dialects.postgresql as pg
-from sqlalchemy import Column, Date, ForeignKey, Sequence, String, Text
+from sqlalchemy import Column, Date, ForeignKey, Index, Sequence, String, Text
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing_extensions import List
@@ -59,6 +59,8 @@ class Project(BaseModel):
         primaryjoin="Project.id == ProjectTeamLeaders.project_id",
         secondaryjoin="User.id == ProjectTeamLeaders.team_lead_id",
     )
+
+    __table_args__ = (Index("ix_project_title_pattern", "title", postgresql_ops={"title": "text_pattern_ops"}),)
 
     @BaseModel.display_name.getter
     def display_name(self):

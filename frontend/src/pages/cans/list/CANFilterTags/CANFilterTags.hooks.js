@@ -10,6 +10,7 @@ import { useState, useEffect, useCallback } from "react";
  * @property {FilterItem[]} portfolio
  * @property {FilterItem[]} transfer
  * @property {[number, number]} budget
+ * @property {FilterItem[]} can
  */
 
 /**
@@ -55,7 +56,7 @@ export const useTagsList = (filters) => {
             } else {
                 if (Array.isArray(filters[filterKey])) {
                     const selectedTags = filters[filterKey].map((item) => ({
-                        tagText: item.title,
+                        tagText: filterKey === "activePeriod" ? `${item.title} CAN` : item.title,
                         filter: filterName
                     }));
                     setTagsList((prevState) => [...prevState.filter((t) => t.filter !== filterName), ...selectedTags]);
@@ -80,6 +81,10 @@ export const useTagsList = (filters) => {
     }, [filters.transfer, updateTags]);
 
     useEffect(() => {
+        updateTags("can", "can");
+    }, [filters.can, updateTags]);
+
+    useEffect(() => {
         updateTags("budget", "budget");
     }, [filters.budget, updateTags]);
 
@@ -96,7 +101,7 @@ export const removeFilter = (tag, setFilters) => {
         case "activePeriod":
             setFilters((prevState) => ({
                 ...prevState,
-                activePeriod: prevState.activePeriod.filter((period) => period.title !== tag.tagText)
+                activePeriod: prevState.activePeriod.filter((period) => `${period.title} CAN` !== tag.tagText)
             }));
             break;
         case "portfolio":
@@ -109,6 +114,12 @@ export const removeFilter = (tag, setFilters) => {
             setFilters((prevState) => ({
                 ...prevState,
                 transfer: prevState.transfer.filter((transfer) => transfer.title !== tag.tagText)
+            }));
+            break;
+        case "can":
+            setFilters((prevState) => ({
+                ...prevState,
+                can: prevState.can.filter((c) => c.title !== tag.tagText)
             }));
             break;
         case "budget":

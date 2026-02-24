@@ -504,7 +504,7 @@ def create_agreement_update_history_event(
                     ops_event_id=ops_event_id,
                     history_title="Change to Description",
                     history_message=(
-                        f"Changes made to the OPRE budget spreadsheet changed the Agreement Description."
+                        "Changes made to the OPRE budget spreadsheet changed the Agreement Description."
                         if updated_by_system_user
                         else f"{updated_by_user.full_name} changed the Agreement Description."
                     ),
@@ -518,9 +518,25 @@ def create_agreement_update_history_event(
                     ops_event_id=ops_event_id,
                     history_title="Change to Notes",
                     history_message=(
-                        f"Changes made to the OPRE budget spreadsheet changed the notes."
+                        "Changes made to the OPRE budget spreadsheet changed the notes."
                         if updated_by_system_user
                         else f"{updated_by_user.full_name} changed the notes."
+                    ),
+                    timestamp=updated_on,
+                    history_type=AgreementHistoryType.AGREEMENT_UPDATED,
+                )
+            case "nick_name":
+                old_nick_name = old_value if old_value else "TBD"
+                new_nick_name = new_value if new_value else "TBD"
+                return AgreementHistory(
+                    agreement_id=get_agreement_id_from_agreement(agreement),
+                    agreement_id_record=agreement_id,
+                    ops_event_id=ops_event_id,
+                    history_title="Change to Agreement Nickname",
+                    history_message=(
+                        f"Changes made to the OPRE budget spreadsheet changed the Agreement Nickname from {old_nick_name} to {new_nick_name}."
+                        if updated_by_system_user
+                        else f"{updated_by_user.full_name} changed the Agreement Nickname from {old_nick_name} to {new_nick_name}."
                     ),
                     timestamp=updated_on,
                     history_type=AgreementHistoryType.AGREEMENT_UPDATED,
@@ -658,7 +674,7 @@ def create_agreement_update_history_event(
                 old_proc_shop_fee_total_str = "{:,.2f}".format(old_proc_shop_fee_total)
                 new_proc_shop_fee_total_str = "{:,.2f}".format(new_proc_shop_fee_total)
                 fee_change_effect_text = f"This changes the fee rate from {old_proc_shop_fee_percentage if old_proc_shop_fee_percentage > 0 else "0"}% to {new_proc_shop_fee_percentage if new_proc_shop_fee_percentage > 0 else "0"}% and the fee total from ${old_proc_shop_fee_total_str} to ${new_proc_shop_fee_total_str}."
-                title = f"Change to Procurement Shop"
+                title = "Change to Procurement Shop"
                 message = (
                     f"Changes made to the OPRE budget spreadsheet changed the Procurement Shop from {old_proc_shop_abbr} to {new_proc_shop_abbr}. {fee_change_effect_text}"
                     if updated_by_system_user
@@ -938,10 +954,13 @@ def create_procurement_tracker_step_update_history_event(
     history_title = ""
     history_message = ""
     if step_type == str(ProcurementTrackerStepType.ACQUISITION_PLANNING):
-        history_title = "Acquisition Planning Complete"
-        history_message = f"{event_user.full_name} completed Step 1: Acquisition Planning and the pre-solicitation package has been sent to the Procurement Shop for review."
+        history_title = "Acquisition Planning Completed"
+        history_message = f"{event_user.full_name} completed step 1 of the Procurement Tracker. The pre-solicitation package has been drafted and sent to the Procurement Shop for review."
+    elif step_type == str(ProcurementTrackerStepType.PRE_SOLICITATION):
+        history_title = "Pre-Solicitation Completed"
+        history_message = f"{event_user.full_name} completed step 2 of the Procurement Tracker. The pre-solicitation package has been finalized with the Procurement Shop and uploaded on the Documents Tab."
     else:
-        return None  # Only Acquisition Planning step is supported right now
+        return None  # Only Acquisition Planning and Pre-Solicitation steps are supported right now
 
     return AgreementHistory(
         agreement_id=procurement_tracker.agreement_id,

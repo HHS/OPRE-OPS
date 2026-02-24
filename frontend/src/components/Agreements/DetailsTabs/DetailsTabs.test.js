@@ -4,7 +4,6 @@ import { Provider } from "react-redux";
 import { BrowserRouter, MemoryRouter } from "react-router-dom";
 import DetailsTabs from "./DetailsTabs";
 import store from "../../../store";
-import * as constants from "../../../constants";
 
 /* eslint-disable testing-library/no-container */
 /* eslint-disable testing-library/no-node-access */
@@ -96,9 +95,7 @@ describe("DetailsTabs", () => {
         expect(screen.queryByText("Documents")).not.toBeInTheDocument();
     });
 
-    it("enables Procurement Tracker tab when hasInExecutionBli is true and feature flag is enabled", () => {
-        vi.spyOn(constants, "IS_PROCUREMENT_TRACKER_READY", "get").mockReturnValue(true);
-
+    it("enables Procurement Tracker tab for developed agreements", () => {
         render(
             <Provider store={store}>
                 <MemoryRouter initialEntries={["/agreements/1"]}>
@@ -116,9 +113,7 @@ describe("DetailsTabs", () => {
         expect(procurementTrackerButton).not.toBeDisabled();
     });
 
-    it("disables Procurement Tracker tab when feature flag is disabled", () => {
-        vi.spyOn(constants, "IS_PROCUREMENT_TRACKER_READY", "get").mockReturnValue(false);
-
+    it("keeps Procurement Tracker tab enabled when no executing budget lines are present", () => {
         render(
             <Provider store={store}>
                 <MemoryRouter initialEntries={["/agreements/1"]}>
@@ -133,7 +128,7 @@ describe("DetailsTabs", () => {
         );
 
         const procurementTrackerButton = screen.getByText("Procurement Tracker");
-        expect(procurementTrackerButton).toBeDisabled();
+        expect(procurementTrackerButton).not.toBeDisabled();
     });
 
     it("disables Award & Modifications tab when agreement is not awarded", () => {
@@ -239,7 +234,7 @@ describe("DetailsTabs", () => {
         expect(container.querySelector('[data-cy="details-tab-Documents"]')).toBeInTheDocument();
     });
 
-    it("renders tooltip for disabled Procurement Tracker tab", () => {
+    it("does not disable Procurement Tracker tab when agreement has no executing budget lines", () => {
         render(
             <Provider store={store}>
                 <MemoryRouter initialEntries={["/agreements/1"]}>
@@ -254,9 +249,7 @@ describe("DetailsTabs", () => {
         );
 
         const procurementTrackerButton = screen.getByText("Procurement Tracker");
-        expect(procurementTrackerButton).toBeDisabled();
-        // Tooltip wraps the button - the button should have a parent tooltip element
-        expect(procurementTrackerButton.parentElement).toBeInTheDocument();
+        expect(procurementTrackerButton).not.toBeDisabled();
     });
 
     it("renders tooltips for Award & Modifications and Documents tabs when disabled", () => {

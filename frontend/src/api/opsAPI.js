@@ -254,6 +254,17 @@ export const opsApi = createApi({
             },
             providesTags: ["Agreements"]
         }),
+        getCanFilterOptions: builder.query({
+            query: ({ fiscalYear }) => {
+                const queryParams = [];
+                if (fiscalYear) {
+                    queryParams.push(`fiscal_year=${fiscalYear}`);
+                }
+                const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
+                return `/cans-filters/${queryString}`;
+            },
+            providesTags: ["Cans"]
+        }),
         getBudgetLineItemsFilterOptions: builder.query({
             query: ({ onlyMy, enableObe }) => {
                 const queryParams = [];
@@ -511,6 +522,7 @@ export const opsApi = createApi({
                 activePeriod,
                 transfer,
                 portfolio,
+                canIds,
                 budgetMin,
                 budgetMax
             }) => {
@@ -541,6 +553,11 @@ export const opsApi = createApi({
                 if (portfolio && portfolio.length > 0) {
                     portfolio.forEach((p) => {
                         queryParams.push(`portfolio=${p}`);
+                    });
+                }
+                if (canIds && canIds.length > 0) {
+                    canIds.forEach((id) => {
+                        queryParams.push(`can_ids=${id}`);
                     });
                 }
                 if (budgetMin !== undefined && budgetMin !== null) {
@@ -982,6 +999,7 @@ export const {
     useUpdateUserMutation,
     useGetCansQuery,
     useLazyGetCansQuery,
+    useGetCanFilterOptionsQuery,
     useGetCanByIdQuery,
     useUpdateCanMutation,
     useAddCanFundingBudgetsMutation,

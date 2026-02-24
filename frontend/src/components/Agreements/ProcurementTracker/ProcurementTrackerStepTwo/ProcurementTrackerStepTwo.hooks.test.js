@@ -1,0 +1,989 @@
+import { renderHook, act } from "@testing-library/react";
+import { vi, expect, describe, it, beforeEach } from "vitest";
+import useProcurementTrackerStepTwo from "./ProcurementTrackerStepTwo.hooks";
+import useGetUserFullNameFromId from "../../../../hooks/user.hooks";
+import { formatDateToMonthDayYear } from "../../../../helpers/utils";
+import { useUpdateProcurementTrackerStepMutation } from "../../../../api/opsAPI";
+import useAlert from "../../../../hooks/use-alert.hooks";
+
+vi.mock("../../../../hooks/user.hooks");
+vi.mock("../../../../helpers/utils", () => ({
+    formatDateToMonthDayYear: vi.fn((date) => date),
+    formatDateForApi: vi.fn((date) => {
+        if (!date) return undefined;
+        // Convert MM/DD/YYYY to YYYY-MM-DD
+        const parts = date.split("/");
+        if (parts.length === 3) {
+            return `${parts[2]}-${parts[0].padStart(2, "0")}-${parts[1].padStart(2, "0")}`;
+        }
+        return date;
+    })
+}));
+vi.mock("../../../../api/opsAPI", () => ({
+    useUpdateProcurementTrackerStepMutation: vi.fn()
+}));
+vi.mock("../../../../hooks/use-alert.hooks", () => ({
+    default: vi.fn()
+}));
+vi.mock("./suite", () => {
+    const mockSuite = vi.fn();
+    mockSuite.get = vi.fn(() => ({
+        getErrors: vi.fn(() => []),
+        hasErrors: vi.fn(() => false),
+        isValid: vi.fn(() => true)
+    }));
+    mockSuite.reset = vi.fn();
+    return { default: mockSuite };
+});
+vi.mock("../../../../api/opsAPI", () => ({
+    useUpdateProcurementTrackerStepMutation: vi.fn(() => [vi.fn(), {}])
+}));
+vi.mock("../../../../hooks/use-alert.hooks", () => ({
+    default: vi.fn(() => ({ setAlert: vi.fn() }))
+}));
+
+describe("useProcurementTrackerStepTwo", () => {
+    const mockPatchStepTwo = vi.fn();
+    const mockSetAlert = vi.fn();
+    const mockHandleSetCompletedStepNumber = vi.fn();
+    const mockStepTwoData = {
+        id: 1,
+        task_completed_by: 123,
+        date_completed: "2024-01-15"
+    };
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+        useGetUserFullNameFromId.mockReturnValue("John Doe");
+        formatDateToMonthDayYear.mockReturnValue("January 15, 2024");
+        useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepTwo]);
+        useAlert.mockReturnValue({ setAlert: mockSetAlert });
+    });
+
+    describe("State Initialization", () => {
+        it("initializes with correct default state", () => {
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber)
+            );
+
+            expect(result.current.selectedUser).toEqual({});
+            expect(result.current.targetCompletionDate).toBe("");
+            expect(result.current.step2DateCompleted).toBe("");
+        });
+
+        it("returns all setter functions", () => {
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber)
+            );
+
+            expect(typeof result.current.setSelectedUser).toBe("function");
+            expect(typeof result.current.setTargetCompletionDate).toBe("function");
+            expect(typeof result.current.setStep2DateCompleted).toBe("function");
+        });
+
+        it("returns stepTwoData", () => {
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber)
+            );
+
+            expect(result.current.stepTwoData).toEqual(mockStepTwoData);
+        });
+    });
+
+    describe("State Updates", () => {
+        it("updates selectedUser when setter is called", () => {
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber)
+            );
+            const mockUser = { id: 456, full_name: "Jane Smith" };
+
+            act(() => {
+                result.current.setSelectedUser(mockUser);
+            });
+
+            expect(result.current.selectedUser).toEqual(mockUser);
+        });
+
+        it("updates targetCompletionDate when setter is called", () => {
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber)
+            );
+
+            act(() => {
+                result.current.setTargetCompletionDate("2024-03-20");
+            });
+
+            expect(result.current.targetCompletionDate).toBe("2024-03-20");
+        });
+
+        it("updates step2DateCompleted when setter is called", () => {
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber)
+            );
+
+            act(() => {
+                result.current.setStep2DateCompleted("2024-03-20");
+            });
+
+            expect(result.current.step2DateCompleted).toBe("2024-03-20");
+        });
+    });
+
+    describe("Validation Functionality", () => {
+        it("provides validatorRes with getErrors method", () => {
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber)
+            );
+
+            expect(result.current.validatorRes).toBeDefined();
+            expect(typeof result.current.validatorRes.getErrors).toBe("function");
+        });
+
+        it("provides runValidate function", () => {
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber)
+            );
+
+            expect(typeof result.current.runValidate).toBe("function");
+        });
+
+        it("runValidate can be called with name and value", () => {
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber)
+            );
+
+            expect(() => {
+                act(() => {
+                    result.current.runValidate("dateCompleted", "01/15/2024");
+                });
+            }).not.toThrow();
+        });
+    });
+
+    describe("Display Values", () => {
+        it("step2CompletedByUserName fetches user name via hook", () => {
+            renderHook(() => useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber));
+
+            expect(useGetUserFullNameFromId).toHaveBeenCalledWith(123);
+        });
+
+        it("step2DateCompletedLabel formats date via helper", () => {
+            renderHook(() => useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber));
+
+            expect(formatDateToMonthDayYear).toHaveBeenCalledWith("2024-01-15");
+        });
+
+        it("handles undefined/null stepTwoData gracefully", () => {
+            renderHook(() => useProcurementTrackerStepTwo(undefined));
+
+            expect(useGetUserFullNameFromId).toHaveBeenCalledWith(-1);
+            expect(formatDateToMonthDayYear).toHaveBeenCalledWith("");
+        });
+    });
+
+    describe("Async Operations", () => {
+        it("calls handleSetCompletedStepNumber with 2 after successful step completion", async () => {
+            const mockUnwrap = vi.fn().mockResolvedValue({ success: true });
+            mockPatchStepTwo.mockReturnValue({ unwrap: mockUnwrap });
+            useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepTwo]);
+
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber)
+            );
+
+            act(() => {
+                result.current.setIsPreSolicitationPackageFinalized(true);
+                result.current.setSelectedUser({ id: 456, full_name: "Jane Smith" });
+                result.current.setStep2DateCompleted("2024-03-20");
+            });
+
+            await act(async () => {
+                await result.current.handleStepTwoComplete(1);
+            });
+
+            expect(mockHandleSetCompletedStepNumber).toHaveBeenCalledWith(2);
+        });
+
+        it("does not call handleSetCompletedStepNumber if function not provided", async () => {
+            const mockUnwrap = vi.fn().mockResolvedValue({ success: true });
+            mockPatchStepTwo.mockReturnValue({ unwrap: mockUnwrap });
+            useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepTwo]);
+
+            const { result } = renderHook(() => useProcurementTrackerStepTwo(mockStepTwoData, undefined));
+
+            act(() => {
+                result.current.setIsPreSolicitationPackageFinalized(true);
+                result.current.setSelectedUser({ id: 456, full_name: "Jane Smith" });
+                result.current.setStep2DateCompleted("2024-03-20");
+            });
+
+            await act(async () => {
+                await result.current.handleStepTwoComplete(1);
+            });
+
+            // Should not throw an error
+            expect(result.current).toBeDefined();
+        });
+
+        it("includes target_completion_date in payload when not already set", async () => {
+            const mockUnwrap = vi.fn().mockResolvedValue({ success: true });
+            mockPatchStepTwo.mockReturnValue({ unwrap: mockUnwrap });
+            useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepTwo]);
+
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber)
+            );
+
+            act(() => {
+                result.current.setIsPreSolicitationPackageFinalized(true);
+                result.current.setSelectedUser({ id: 456, full_name: "Jane Smith" });
+                result.current.setStep2DateCompleted("03/20/2024");
+                result.current.setTargetCompletionDate("04/15/2024");
+                result.current.setDraftSolicitationDate("05/01/2024");
+                result.current.setStep2Notes("Test notes");
+            });
+
+            await act(async () => {
+                await result.current.handleStepTwoComplete(1);
+            });
+
+            expect(mockPatchStepTwo).toHaveBeenCalledWith({
+                stepId: 1,
+                data: {
+                    status: "COMPLETED",
+                    task_completed_by: 456,
+                    date_completed: "2024-03-20",
+                    notes: "Test notes",
+                    target_completion_date: "2024-04-15",
+                    draft_solicitation_date: "2024-05-01"
+                }
+            });
+        });
+
+        it("excludes target_completion_date from payload when already set", async () => {
+            const mockUnwrap = vi.fn().mockResolvedValue({ success: true });
+            mockPatchStepTwo.mockReturnValue({ unwrap: mockUnwrap });
+            useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepTwo]);
+
+            const stepDataWithTargetDate = {
+                ...mockStepTwoData,
+                target_completion_date: "2024-03-01"
+            };
+
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(stepDataWithTargetDate, mockHandleSetCompletedStepNumber)
+            );
+
+            act(() => {
+                result.current.setIsPreSolicitationPackageFinalized(true);
+                result.current.setSelectedUser({ id: 456, full_name: "Jane Smith" });
+                result.current.setStep2DateCompleted("03/20/2024");
+                result.current.setTargetCompletionDate("04/15/2024");
+                result.current.setDraftSolicitationDate("05/01/2024");
+                result.current.setStep2Notes("Test notes");
+            });
+
+            await act(async () => {
+                await result.current.handleStepTwoComplete(1);
+            });
+
+            expect(mockPatchStepTwo).toHaveBeenCalledWith({
+                stepId: 1,
+                data: {
+                    status: "COMPLETED",
+                    task_completed_by: 456,
+                    date_completed: "2024-03-20",
+                    notes: "Test notes",
+                    draft_solicitation_date: "2024-05-01"
+                    // target_completion_date should NOT be included
+                }
+            });
+        });
+    });
+
+    describe("Edge Cases", () => {
+        it("maintains state independence across hook instances", () => {
+            const { result: result1 } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber)
+            );
+            const { result: result2 } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber)
+            );
+
+            act(() => {
+                result1.current.setTargetCompletionDate("2024-04-01");
+            });
+
+            expect(result1.current.targetCompletionDate).toBe("2024-04-01");
+            expect(result2.current.targetCompletionDate).toBe("");
+        });
+
+        it("handles stepTwoData without task_completed_by", () => {
+            const stepDataWithoutUser = { ...mockStepTwoData, task_completed_by: null };
+            renderHook(() => useProcurementTrackerStepTwo(stepDataWithoutUser));
+
+            expect(useGetUserFullNameFromId).toHaveBeenCalledWith(-1);
+        });
+
+        it("handles stepTwoData without date_completed", () => {
+            const stepDataWithoutDate = { ...mockStepTwoData, date_completed: null };
+            renderHook(() => useProcurementTrackerStepTwo(stepDataWithoutDate));
+
+            expect(formatDateToMonthDayYear).toHaveBeenCalledWith("");
+        });
+
+        it("updates multiple fields in sequence", () => {
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber)
+            );
+
+            act(() => {
+                result.current.setSelectedUser({ id: 456, full_name: "Jane Smith" });
+                result.current.setTargetCompletionDate("2024-03-20");
+                result.current.setStep2DateCompleted("2024-03-15");
+            });
+
+            expect(result.current.selectedUser).toEqual({ id: 456, full_name: "Jane Smith" });
+            expect(result.current.targetCompletionDate).toBe("2024-03-20");
+            expect(result.current.step2DateCompleted).toBe("2024-03-15");
+        });
+
+        it("cancelStepTwo resets step two state values", () => {
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber)
+            );
+
+            act(() => {
+                result.current.setIsPreSolicitationPackageFinalized(true);
+                result.current.setDraftSolicitationDate("2024-05-01");
+                result.current.setSelectedUser({ id: 456, full_name: "Jane Smith" });
+                result.current.setTargetCompletionDate("2024-03-20");
+                result.current.setStep2DateCompleted("2024-03-15");
+                result.current.setStep2Notes("Some notes");
+            });
+
+            act(() => {
+                result.current.cancelStepTwo();
+            });
+
+            expect(result.current.isPreSolicitationPackageFinalized).toBe(false);
+            expect(result.current.draftSolicitationDate).toBe("");
+            expect(result.current.selectedUser).toEqual({});
+            expect(result.current.targetCompletionDate).toBe("");
+            expect(result.current.step2DateCompleted).toBe("");
+            expect(result.current.step2Notes).toBe("");
+        });
+    });
+
+    describe("handleTargetCompletionDateSubmit - Success", () => {
+        it("calls API with correct target_completion_date payload", async () => {
+            const mockUnwrap = vi.fn().mockResolvedValue({ success: true });
+            mockPatchStepTwo.mockReturnValue({ unwrap: mockUnwrap });
+            useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepTwo]);
+
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber)
+            );
+
+            act(() => {
+                result.current.setTargetCompletionDate("03/20/2024");
+            });
+
+            await act(async () => {
+                await result.current.handleTargetCompletionDateSubmit(1);
+            });
+
+            expect(mockPatchStepTwo).toHaveBeenCalledWith({
+                stepId: 1,
+                data: {
+                    target_completion_date: "2024-03-20"
+                }
+            });
+        });
+
+        it("formats date via formatDateForApi helper", async () => {
+            const mockUnwrap = vi.fn().mockResolvedValue({ success: true });
+            mockPatchStepTwo.mockReturnValue({ unwrap: mockUnwrap });
+            useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepTwo]);
+            const formatDateForApiMock = vi.fn((date) => date);
+            vi.doMock("../../../../helpers/utils", () => ({
+                formatDateToMonthDayYear: vi.fn((date) => date),
+                formatDateForApi: formatDateForApiMock
+            }));
+
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber)
+            );
+
+            act(() => {
+                result.current.setTargetCompletionDate("03/20/2024");
+            });
+
+            await act(async () => {
+                await result.current.handleTargetCompletionDateSubmit(1);
+            });
+
+            expect(mockPatchStepTwo).toHaveBeenCalled();
+        });
+
+        it("logs success message to console", async () => {
+            const mockUnwrap = vi.fn().mockResolvedValue({ success: true });
+            mockPatchStepTwo.mockReturnValue({ unwrap: mockUnwrap });
+            useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepTwo]);
+            const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber)
+            );
+
+            act(() => {
+                result.current.setTargetCompletionDate("03/20/2024");
+            });
+
+            await act(async () => {
+                await result.current.handleTargetCompletionDateSubmit(1);
+            });
+
+            expect(consoleSpy).toHaveBeenCalledWith("Procurement Tracker Step 2 Updated");
+            consoleSpy.mockRestore();
+        });
+
+        it("handles empty target date gracefully", async () => {
+            const mockUnwrap = vi.fn().mockResolvedValue({ success: true });
+            mockPatchStepTwo.mockReturnValue({ unwrap: mockUnwrap });
+            useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepTwo]);
+
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber)
+            );
+
+            await act(async () => {
+                await result.current.handleTargetCompletionDateSubmit(1);
+            });
+
+            expect(mockPatchStepTwo).toHaveBeenCalledWith({
+                stepId: 1,
+                data: {
+                    target_completion_date: undefined
+                }
+            });
+        });
+    });
+
+    describe("handleTargetCompletionDateSubmit - Error Handling", () => {
+        it("handles API error with console.error and setAlert", async () => {
+            const mockError = new Error("API Error");
+            const mockUnwrap = vi.fn().mockRejectedValue(mockError);
+            mockPatchStepTwo.mockReturnValue({ unwrap: mockUnwrap });
+            useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepTwo]);
+            const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber)
+            );
+
+            act(() => {
+                result.current.setTargetCompletionDate("03/20/2024");
+            });
+
+            await act(async () => {
+                await result.current.handleTargetCompletionDateSubmit(1);
+            });
+
+            expect(consoleErrorSpy).toHaveBeenCalledWith("Failed to update Procurement Tracker Step 2", mockError);
+            expect(mockSetAlert).toHaveBeenCalledWith({
+                type: "error",
+                heading: "Error",
+                message: "There was an error updating the procurement tracker step. Please try again."
+            });
+            consoleErrorSpy.mockRestore();
+        });
+    });
+
+    describe("handleStepTwoComplete - Error Handling", () => {
+        it("handles API error with console.error and setAlert", async () => {
+            const mockError = new Error("API Error");
+            const mockUnwrap = vi.fn().mockRejectedValue(mockError);
+            mockPatchStepTwo.mockReturnValue({ unwrap: mockUnwrap });
+            useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepTwo]);
+            const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber)
+            );
+
+            act(() => {
+                result.current.setSelectedUser({ id: 456, full_name: "Jane Smith" });
+                result.current.setStep2DateCompleted("03/20/2024");
+            });
+
+            await act(async () => {
+                await result.current.handleStepTwoComplete(1);
+            });
+
+            expect(consoleErrorSpy).toHaveBeenCalledWith("Failed to update Procurement Tracker Step 2", mockError);
+            expect(mockSetAlert).toHaveBeenCalledWith({
+                type: "error",
+                heading: "Error",
+                message: "There was an error updating the procurement tracker step. Please try again."
+            });
+            consoleErrorSpy.mockRestore();
+        });
+
+        it("does not call handleSetCompletedStepNumber on error", async () => {
+            const mockError = new Error("API Error");
+            const mockUnwrap = vi.fn().mockRejectedValue(mockError);
+            mockPatchStepTwo.mockReturnValue({ unwrap: mockUnwrap });
+            useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepTwo]);
+            vi.spyOn(console, "error").mockImplementation(() => {});
+
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber)
+            );
+
+            act(() => {
+                result.current.setSelectedUser({ id: 456, full_name: "Jane Smith" });
+                result.current.setStep2DateCompleted("03/20/2024");
+            });
+
+            await act(async () => {
+                await result.current.handleStepTwoComplete(1);
+            });
+
+            expect(mockHandleSetCompletedStepNumber).not.toHaveBeenCalled();
+        });
+
+        it("handles network timeout errors", async () => {
+            const mockError = new Error("Network timeout");
+            mockError.name = "TimeoutError";
+            const mockUnwrap = vi.fn().mockRejectedValue(mockError);
+            mockPatchStepTwo.mockReturnValue({ unwrap: mockUnwrap });
+            useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepTwo]);
+            vi.spyOn(console, "error").mockImplementation(() => {});
+
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber)
+            );
+
+            act(() => {
+                result.current.setSelectedUser({ id: 456, full_name: "Jane Smith" });
+                result.current.setStep2DateCompleted("03/20/2024");
+            });
+
+            await act(async () => {
+                await result.current.handleStepTwoComplete(1);
+            });
+
+            expect(mockSetAlert).toHaveBeenCalledWith({
+                type: "error",
+                heading: "Error",
+                message: "There was an error updating the procurement tracker step. Please try again."
+            });
+        });
+
+        it("handles 400-level validation errors", async () => {
+            const mockError = new Error("Validation failed");
+            mockError.status = 400;
+            const mockUnwrap = vi.fn().mockRejectedValue(mockError);
+            mockPatchStepTwo.mockReturnValue({ unwrap: mockUnwrap });
+            useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepTwo]);
+            vi.spyOn(console, "error").mockImplementation(() => {});
+
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber)
+            );
+
+            act(() => {
+                result.current.setSelectedUser({ id: 456, full_name: "Jane Smith" });
+                result.current.setStep2DateCompleted("03/20/2024");
+            });
+
+            await act(async () => {
+                await result.current.handleStepTwoComplete(1);
+            });
+
+            expect(mockSetAlert).toHaveBeenCalledWith({
+                type: "error",
+                heading: "Error",
+                message: "There was an error updating the procurement tracker step. Please try again."
+            });
+        });
+    });
+
+    describe("Modal State Management", () => {
+        it("cancelModalStep2 sets showModal to true", () => {
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber)
+            );
+
+            act(() => {
+                result.current.cancelModalStep2();
+            });
+
+            expect(result.current.showModal).toBe(true);
+        });
+
+        it("cancelModalStep2 sets correct modal heading", () => {
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber)
+            );
+
+            act(() => {
+                result.current.cancelModalStep2();
+            });
+
+            expect(result.current.modalProps.heading).toBe(
+                "Are you sure you want to cancel this task? Your input will not be saved."
+            );
+        });
+
+        it("cancelModalStep2 sets correct actionButtonText", () => {
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber)
+            );
+
+            act(() => {
+                result.current.cancelModalStep2();
+            });
+
+            expect(result.current.modalProps.actionButtonText).toBe("Cancel Task");
+        });
+
+        it("modal handleConfirm resets all form fields to initial state", () => {
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber)
+            );
+
+            act(() => {
+                result.current.setIsPreSolicitationPackageFinalized(true);
+                result.current.setDraftSolicitationDate("2024-05-01");
+                result.current.setSelectedUser({ id: 456, full_name: "Jane Smith" });
+                result.current.setTargetCompletionDate("2024-03-20");
+                result.current.setStep2DateCompleted("2024-03-15");
+                result.current.setStep2Notes("Some notes");
+            });
+
+            act(() => {
+                result.current.cancelModalStep2();
+            });
+
+            act(() => {
+                result.current.modalProps.handleConfirm();
+            });
+
+            expect(result.current.isPreSolicitationPackageFinalized).toBe(false);
+            expect(result.current.draftSolicitationDate).toBe("");
+            expect(result.current.selectedUser).toEqual({});
+            expect(result.current.targetCompletionDate).toBe("");
+            expect(result.current.step2DateCompleted).toBe("");
+            expect(result.current.step2Notes).toBe("");
+        });
+
+        it("setShowModal can dismiss modal", () => {
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber)
+            );
+
+            act(() => {
+                result.current.cancelModalStep2();
+            });
+
+            expect(result.current.showModal).toBe(true);
+
+            act(() => {
+                result.current.setShowModal(false);
+            });
+
+            expect(result.current.showModal).toBe(false);
+        });
+    });
+
+    describe("Draft Solicitation Date State", () => {
+        it("setDraftSolicitationDate updates state correctly", () => {
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber)
+            );
+
+            act(() => {
+                result.current.setDraftSolicitationDate("05/01/2024");
+            });
+
+            expect(result.current.draftSolicitationDate).toBe("05/01/2024");
+        });
+
+        it("step2DraftSolicitationDateLabel formatted via formatDateToMonthDayYear", () => {
+            const mockStepDataWithDraftDate = {
+                ...mockStepTwoData,
+                draft_solicitation_date: "2024-05-01"
+            };
+
+            renderHook(() => useProcurementTrackerStepTwo(mockStepDataWithDraftDate, mockHandleSetCompletedStepNumber));
+
+            expect(formatDateToMonthDayYear).toHaveBeenCalledWith("2024-05-01");
+        });
+
+        it("draft_solicitation_date included in completion payload", async () => {
+            const mockUnwrap = vi.fn().mockResolvedValue({ success: true });
+            mockPatchStepTwo.mockReturnValue({ unwrap: mockUnwrap });
+            useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepTwo]);
+
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber)
+            );
+
+            act(() => {
+                result.current.setIsPreSolicitationPackageFinalized(true);
+                result.current.setSelectedUser({ id: 456, full_name: "Jane Smith" });
+                result.current.setStep2DateCompleted("03/20/2024");
+                result.current.setDraftSolicitationDate("05/01/2024");
+            });
+
+            await act(async () => {
+                await result.current.handleStepTwoComplete(1);
+            });
+
+            expect(mockPatchStepTwo).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    data: expect.objectContaining({
+                        draft_solicitation_date: "2024-05-01"
+                    })
+                })
+            );
+        });
+    });
+
+    describe("Additional Edge Cases", () => {
+        it("handles stepTwoData with all fields populated correctly", () => {
+            const completeStepData = {
+                id: 1,
+                task_completed_by: 123,
+                date_completed: "2024-01-15",
+                target_completion_date: "2024-03-01",
+                draft_solicitation_date: "2024-05-01",
+                notes: "Complete notes"
+            };
+
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(completeStepData, mockHandleSetCompletedStepNumber)
+            );
+
+            expect(result.current.stepTwoData).toEqual(completeStepData);
+            expect(result.current.step2NotesLabel).toBe("Complete notes");
+        });
+
+        it("trims notes in completion payload", async () => {
+            const mockUnwrap = vi.fn().mockResolvedValue({ success: true });
+            mockPatchStepTwo.mockReturnValue({ unwrap: mockUnwrap });
+            useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepTwo]);
+
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber)
+            );
+
+            act(() => {
+                result.current.setIsPreSolicitationPackageFinalized(true);
+                result.current.setSelectedUser({ id: 456, full_name: "Jane Smith" });
+                result.current.setStep2DateCompleted("03/20/2024");
+                result.current.setStep2Notes("  Test notes with spaces  ");
+            });
+
+            await act(async () => {
+                await result.current.handleStepTwoComplete(1);
+            });
+
+            expect(mockPatchStepTwo).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    data: expect.objectContaining({
+                        notes: "Test notes with spaces"
+                    })
+                })
+            );
+        });
+
+        it("handles empty notes (whitespace only)", async () => {
+            const mockUnwrap = vi.fn().mockResolvedValue({ success: true });
+            mockPatchStepTwo.mockReturnValue({ unwrap: mockUnwrap });
+            useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepTwo]);
+
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber)
+            );
+
+            act(() => {
+                result.current.setIsPreSolicitationPackageFinalized(true);
+                result.current.setSelectedUser({ id: 456, full_name: "Jane Smith" });
+                result.current.setStep2DateCompleted("03/20/2024");
+                result.current.setStep2Notes("   ");
+            });
+
+            await act(async () => {
+                await result.current.handleStepTwoComplete(1);
+            });
+
+            expect(mockPatchStepTwo).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    data: expect.objectContaining({
+                        notes: ""
+                    })
+                })
+            );
+        });
+
+        it("formatDateForApi called for all date fields in completion", async () => {
+            const mockUnwrap = vi.fn().mockResolvedValue({ success: true });
+            mockPatchStepTwo.mockReturnValue({ unwrap: mockUnwrap });
+            useUpdateProcurementTrackerStepMutation.mockReturnValue([mockPatchStepTwo]);
+
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber)
+            );
+
+            act(() => {
+                result.current.setIsPreSolicitationPackageFinalized(true);
+                result.current.setSelectedUser({ id: 456, full_name: "Jane Smith" });
+                result.current.setStep2DateCompleted("03/20/2024");
+                result.current.setTargetCompletionDate("04/15/2024");
+                result.current.setDraftSolicitationDate("05/01/2024");
+            });
+
+            await act(async () => {
+                await result.current.handleStepTwoComplete(1);
+            });
+
+            // Verify all three dates are formatted (converted from MM/DD/YYYY to YYYY-MM-DD)
+            expect(mockPatchStepTwo).toHaveBeenCalledWith({
+                stepId: 1,
+                data: {
+                    status: "COMPLETED",
+                    task_completed_by: 456,
+                    date_completed: "2024-03-20",
+                    notes: "",
+                    target_completion_date: "2024-04-15",
+                    draft_solicitation_date: "2024-05-01"
+                }
+            });
+        });
+    });
+
+    describe("Past Due Detection", () => {
+        it("returns false when step is completed", () => {
+            const completedStepData = {
+                ...mockStepTwoData,
+                target_completion_date: "2024-01-01",
+                date_completed: "2024-01-20"
+            };
+
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(completedStepData, mockHandleSetCompletedStepNumber)
+            );
+
+            expect(result.current.isPastDue).toBe(false);
+        });
+
+        it("returns false when no target completion date is set", () => {
+            const stepDataWithoutTarget = {
+                ...mockStepTwoData,
+                target_completion_date: null
+            };
+
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(stepDataWithoutTarget, mockHandleSetCompletedStepNumber)
+            );
+
+            expect(result.current.isPastDue).toBe(false);
+        });
+
+        it("returns true when target completion date is in the past and step is pending", () => {
+            const pastDate = new Date();
+            pastDate.setDate(pastDate.getDate() - 5);
+            const pastDateString = pastDate.toISOString().split("T")[0];
+
+            const stepDataWithPastDate = {
+                ...mockStepTwoData,
+                target_completion_date: pastDateString,
+                date_completed: null
+            };
+
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(stepDataWithPastDate, mockHandleSetCompletedStepNumber)
+            );
+
+            expect(result.current.isPastDue).toBe(true);
+        });
+
+        it("returns false when target completion date is today", () => {
+            const today = new Date();
+            const todayString = today.toISOString().split("T")[0];
+
+            const stepDataWithToday = {
+                ...mockStepTwoData,
+                target_completion_date: todayString,
+                date_completed: null
+            };
+
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(stepDataWithToday, mockHandleSetCompletedStepNumber)
+            );
+
+            expect(result.current.isPastDue).toBe(false);
+        });
+
+        it("returns false when target completion date is in the future", () => {
+            const futureDate = new Date();
+            futureDate.setDate(futureDate.getDate() + 5);
+            const futureDateString = futureDate.toISOString().split("T")[0];
+
+            const stepDataWithFutureDate = {
+                ...mockStepTwoData,
+                target_completion_date: futureDateString,
+                date_completed: null
+            };
+
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(stepDataWithFutureDate, mockHandleSetCompletedStepNumber)
+            );
+
+            expect(result.current.isPastDue).toBe(false);
+        });
+    });
+
+    describe("Revised Target Date State", () => {
+        it("initializes revisedTargetDate as empty string", () => {
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber)
+            );
+
+            expect(result.current.revisedTargetDate).toBe("");
+        });
+
+        it("updates revisedTargetDate when setter is called", () => {
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber)
+            );
+
+            act(() => {
+                result.current.setRevisedTargetDate("03/25/2024");
+            });
+
+            expect(result.current.revisedTargetDate).toBe("03/25/2024");
+        });
+
+        it("resets revisedTargetDate when cancelStepTwo is called", () => {
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepTwo(mockStepTwoData, mockHandleSetCompletedStepNumber)
+            );
+
+            act(() => {
+                result.current.setRevisedTargetDate("03/25/2024");
+            });
+
+            expect(result.current.revisedTargetDate).toBe("03/25/2024");
+
+            act(() => {
+                result.current.cancelStepTwo();
+            });
+
+            expect(result.current.revisedTargetDate).toBe("");
+        });
+    });
+});

@@ -1,18 +1,15 @@
-from typing import List
-
 from flask import Response, current_app, request
 from flask_jwt_extended import jwt_required
 from marshmallow import Schema, fields
-from sqlalchemy import select
 
 from models import OpsEventType
-from models.base import BaseModel
-from models.cans import CAN
 from models.utils import generate_events_update
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.schemas.cans import (
+    CANFiltersQueryParametersSchema,
+    CANListFilterOptionResponseSchema,
     CANListSchema,
     CANSchema,
     CreateUpdateCANRequestSchema,
@@ -145,17 +142,15 @@ class CANListAPI(BaseListAPI):
             return make_response_with_headers(serialized_can, 201)
 
 
-class CANsByPortfolioAPI(BaseItemAPI):
-    def __init__(self, model: BaseModel):
+class CANListFilterOptionAPI(BaseItemAPI):
+    def __init__(self, model):
         super().__init__(model)
+        self._get_schema = CANFiltersQueryParametersSchema()
+        self._response_schema = CANListFilterOptionResponseSchema()
 
-    @jwt_required()
-    def _get_item(self, id: int) -> List[CAN]:
-        cfy_stmt = select(CAN).where(CAN.portfolio_id == id).order_by(CAN.id)
-
-        return current_app.db_session.execute(cfy_stmt).scalars().all()
-
-    @jwt_required()
-    def get(self, id: int) -> Response:
-        cans = self._get_item(id)
-        return make_response_with_headers([can.to_dict() for can in cans])
+    @is_authorized(PermissionType.GET, Permission.CAN)
+    def get(self) -> Response:
+        data = self._get_schema.load(request.args.to_dict(flat=False))
+        service = CANService(current_app.db_session)
+        filter_options = service.get_filter_options(data)
+        return make_response_with_headers(filter_options)

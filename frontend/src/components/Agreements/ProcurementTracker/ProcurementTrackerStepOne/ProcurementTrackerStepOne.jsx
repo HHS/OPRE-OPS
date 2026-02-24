@@ -4,16 +4,17 @@ import TermTag from "../../../UI/Term/TermTag";
 import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepOne from "./ProcurementTrackerStepOne.hooks";
 import { getLocalISODate } from "../../../../helpers/utils";
-import { useGetUsersQuery } from "../../../../api/opsAPI";
-import { useMemo } from "react";
+import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 /**
+ * @typedef {import("../../../../types/UserTypes").SafeUser} SafeUser
  * @typedef {Object} ProcurementTrackerStepOneProps
  * @property {string} stepStatus - The current status of the procurement tracker step
  * @property {Object} stepOneData - The data for step one of the procurement tracker
- * @property {boolean} hasActiveTracker - Whether an active tracker exists
- * @property {Function} handleSetIsFormSubmitted - Function to set the form submission state
- * @property {import("../../../../types/AgreementTypes").Agreement} [agreement] - Agreement object with authorized_user_ids
+ * @property {boolean} isActiveStep - Whether step is the active step
+ * @property {Function} handleSetCompletedStepNumber - Function to set the completed step number
+ * @property {SafeUser[]} authorizedUsers - List of users authorized for this agreement
  */
 
 /**
@@ -24,9 +25,9 @@ import { useMemo } from "react";
 const ProcurementTrackerStepOne = ({
     stepStatus,
     stepOneData,
-    hasActiveTracker,
-    handleSetIsFormSubmitted,
-    agreement
+    isActiveStep,
+    handleSetCompletedStepNumber,
+    authorizedUsers
 }) => {
     const {
         isPreSolicitationPackageSent,
@@ -49,18 +50,7 @@ const ProcurementTrackerStepOne = ({
         step1NotesLabel,
         runValidate,
         validatorRes
-    } = useProcurementTrackerStepOne(stepOneData, handleSetIsFormSubmitted);
-
-    // Fetch all users
-    const { data: allUsers } = useGetUsersQuery();
-
-    // Filter users by authorized_user_ids from the agreement
-    const authorizedUsers = useMemo(() => {
-        if (!allUsers || !agreement?.authorized_user_ids) {
-            return [];
-        }
-        return allUsers.filter((user) => agreement.authorized_user_ids.includes(user.id));
-    }, [allUsers, agreement?.authorized_user_ids]);
+    } = useProcurementTrackerStepOne(stepOneData, handleSetCompletedStepNumber);
 
     return (
         <>
@@ -73,7 +63,7 @@ const ProcurementTrackerStepOne = ({
                     handleConfirm={modalProps.handleConfirm}
                 />
             )}
-            {(stepStatus === "PENDING" || stepStatus === "ACTIVE") && (
+            {stepStatus === "PENDING" && (
                 <fieldset className="usa-fieldset">
                     <p>
                         Once the pre-solicitation package is sufficiently drafted and signed by all parties, send it to
@@ -88,7 +78,7 @@ const ProcurementTrackerStepOne = ({
                             value="step-1-checkbox"
                             checked={isPreSolicitationPackageSent}
                             onChange={() => setIsPreSolicitationPackageSent(!isPreSolicitationPackageSent)}
-                            disabled={!hasActiveTracker}
+                            disabled={!isActiveStep}
                         />
                         <label
                             className="usa-checkbox__label"
@@ -111,7 +101,7 @@ const ProcurementTrackerStepOne = ({
                             users={authorizedUsers}
                         />
                         <MemoizedDatePicker
-                            id="date-completed"
+                            id="step-1-date-completed"
                             className="margin-left-4"
                             name="dateCompleted"
                             label="Date Completed"
@@ -162,7 +152,18 @@ const ProcurementTrackerStepOne = ({
                         When the pre-solicitation package has been sufficiently drafted and signed by all parties, send
                         it to the Procurement Shop and update the task below.
                     </p>
-                    <p>The pre-solicitation package has been sent to the Procurement Shop for review</p>
+                    <div className="display-flex flex-align-center margin-top-5">
+                        <FontAwesomeIcon
+                            icon={faCircleCheck}
+                            size="lg"
+                            className="margin-right-1 flex-shrink-0"
+                            style={{ color: "#162e51" }}
+                            aria-hidden="true"
+                        />
+                        <p className="margin-y-0">
+                            The pre-solicitation package has been sent to the Procurement Shop for review
+                        </p>
+                    </div>
 
                     <dl>
                         <TermTag
@@ -174,7 +175,7 @@ const ProcurementTrackerStepOne = ({
                             description={step1DateCompletedLabel}
                         />
                         <dt className="margin-0 text-base-dark margin-top-3 font-12px">Notes</dt>
-                        <dd className="margin-0 margin-top-1">{step1NotesLabel}</dd>
+                        <dd className="margin-0 margin-top-1">{step1NotesLabel || "None"}</dd>
                     </dl>
                 </div>
             )}

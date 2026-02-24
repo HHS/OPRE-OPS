@@ -12,6 +12,16 @@ from ops_api.ops.schemas.projects import ProjectSchema
 from ops_api.ops.schemas.users import SafeUserSchema
 
 
+class CANFiltersQueryParametersSchema(Schema):
+    fiscal_year = fields.List(fields.Integer(), required=False)
+
+
+class CANListFilterOptionResponseSchema(Schema):
+    portfolios = fields.List(fields.Dict(keys=fields.String(), values=fields.Raw()), required=True)
+    can_numbers = fields.List(fields.Dict(keys=fields.String(), values=fields.Raw()), required=True)
+    fy_budget_range = fields.Dict(keys=fields.String(), values=fields.Float(), required=True)
+
+
 class GetCANListRequestSchema(PaginationListSchema):
     search = fields.List(fields.String(), required=False)
     fiscal_year = fields.List(fields.Integer(), required=False)
@@ -21,6 +31,8 @@ class GetCANListRequestSchema(PaginationListSchema):
     active_period = fields.List(fields.Integer(), required=False)
     transfer = fields.List(fields.String(), required=False)
     portfolio = fields.List(fields.String(), required=False)
+    portfolio_id = fields.List(fields.Integer(), required=False)
+    can_ids = fields.List(fields.Integer(), required=False)
     # Single-value filters (wrapped in List due to Flask query param parsing with flat=False)
     budget_min = fields.List(fields.Float(), required=False)
     budget_max = fields.List(fields.Float(), required=False)
@@ -158,6 +170,32 @@ class CreateUpdateFundingDetailsSchema(Schema):
     funding_source = fields.Enum(CANFundingSource, allow_none=True, load_default=None)
     method_of_transfer = fields.Enum(CANMethodOfTransfer, allow_none=True, load_default=None)
     sub_allowance = fields.String(allow_none=True, load_default=None)
+
+
+class FundingDetailsListSchema(Schema):
+    """Lightweight schema for list endpoint with only fields used by frontend.
+
+    Excludes expensive nested relationships (created_by_user, updated_by_user)
+    to eliminate N+1 query problems. Preserves audit timestamps for debugging.
+    """
+
+    id = fields.Integer(required=True)
+    fiscal_year = fields.Integer(required=True)
+    fund_code = fields.String(required=True)
+    active_period = fields.Integer(allow_none=True)
+    funding_method = fields.String(allow_none=True)
+    funding_received = fields.String(allow_none=True)
+    funding_type = fields.String(allow_none=True)
+    allotment = fields.String(allow_none=True)
+    allowance = fields.String(allow_none=True)
+    display_name = fields.String(allow_none=True)
+    funding_partner = fields.String(allow_none=True)
+    funding_source = fields.Enum(CANFundingSource, allow_none=True)
+    method_of_transfer = fields.Enum(CANMethodOfTransfer, allow_none=True)
+    obligate_by = fields.Integer(allow_none=True)
+    sub_allowance = fields.String(allow_none=True)
+    created_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
+    updated_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
 
 
 class FundingDetailsSchema(Schema):

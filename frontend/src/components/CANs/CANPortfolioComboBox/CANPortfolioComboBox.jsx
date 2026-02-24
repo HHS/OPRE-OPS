@@ -22,7 +22,7 @@ const CANPortfolioComboBox = ({
     portfolio,
     setPortfolio,
     legendClassname = "usa-label margin-top-0",
-    defaultString = "All Portfolios",
+    defaultString = "",
     overrideStyles = {}
 }) => {
     return (
