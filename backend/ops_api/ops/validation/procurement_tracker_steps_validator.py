@@ -88,6 +88,7 @@ class ProcurementTrackerStepsValidator:
             NoUpdatingCompletedProcurementStepRule,
             PreSolicitationCompletionRequiredFieldsRule,
             ResourceExistsRule,
+            SolicitationPeriodDateOrderRule,
             UserAssociationRule,
         )
 
@@ -127,15 +128,15 @@ class ProcurementTrackerStepsValidator:
                 ]
 
         elif procurement_tracker_step.step_type == ProcurementTrackerStepType.SOLICITATION:
-            if ProcurementTrackerStepsValidator._is_data_completed_step(data):
-                # For solicitation steps being marked as completed, we require additional validation
-                return [
-                    ResourceExistsRule(),
-                    UserAssociationRule(),
-                    CompletedByUpdateAuthorizationRule(),
-                    NoUpdatingCompletedProcurementStepRule(),
-                    NoFutureCompletionDateUpdateValidationRule(),
-                ]
+            # For solicitation steps being marked as completed, we require additional validation
+            return [
+                ResourceExistsRule(),
+                UserAssociationRule(),
+                CompletedByUpdateAuthorizationRule(),
+                NoUpdatingCompletedProcurementStepRule(),
+                NoFutureCompletionDateUpdateValidationRule(),
+                SolicitationPeriodDateOrderRule(),
+            ]
         else:
             return self._get_default_validators()
 

@@ -221,3 +221,58 @@ Scenario: Valid Task Completed By Step 2
       And I submit a procurement step update
 
       Then I should get a message that it was successful and my procurement tracker has completed. Also, the procurement action's status should be awarded
+
+  Scenario: Valid Solicitation Step Update
+    Given I am logged in as an OPS user
+    And I have a Contract Agreement with OPS user as a team member
+    And I have a procurement tracker
+    And I am working with a solicitation procurement tracker step
+
+    When I have a valid completed solicitation step
+    And I submit a procurement step update
+
+    Then I should get a message that it was successful and my procurement tracker has moved onto the next step
+
+  Scenario: Validate solicitation period start date must be earlier than end date
+    Given I am logged in as an OPS user
+    And I have a Contract Agreement with OPS user as a team member
+    And I have a procurement tracker
+    And I am working with a solicitation procurement tracker step
+
+    When I have a solicitation step with start date after end date
+    And I submit a procurement step update
+
+    Then I should get a validation error
+
+  Scenario: Validate solicitation period start date cannot equal end date
+    Given I am logged in as an OPS user
+    And I have a Contract Agreement with OPS user as a team member
+    And I have a procurement tracker
+    And I am working with a solicitation procurement tracker step
+
+    When I have a solicitation step with start date equal to end date
+    And I submit a procurement step update
+
+    Then I should get a validation error
+
+  Scenario: Cannot invalidate solicitation start date with update
+    Given I am logged in as an OPS user
+    And I have a Contract Agreement with OPS user as a team member
+    And I have a procurement tracker
+    And I am working with a solicitation procurement tracker step with a valid solicitation start and end date
+
+    When I have a solicitation step with a start date in the future
+    And I submit a procurement step update
+
+    Then I should get a validation error
+
+  Scenario: Cannot invalidate solicitation end date with update
+    Given I am logged in as an OPS user
+    And I have a Contract Agreement with OPS user as a team member
+    And I have a procurement tracker
+    And I am working with a solicitation procurement tracker step with a valid solicitation start and end date
+
+    When I have a solicitation step with a solicitation end date in the past
+    And I submit a procurement step update
+
+    Then I should get a validation error

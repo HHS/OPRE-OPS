@@ -27,7 +27,7 @@ class ProcurementTrackerStepResponseSchema(Schema):
     step_completed_date = fields.Date(allow_none=True)
 
     # Step-specific fields - these come pre-mapped from model's to_dict()
-    # Shared by ACQUISITION_PLANNING and PRE_SOLICITATION
+    # Shared by ACQUISITION_PLANNING, PRE_SOLICITATION, and SOLICITATION
     task_completed_by = fields.Integer(allow_none=True)
     date_completed = fields.Date(allow_none=True)
     notes = fields.String(allow_none=True)
@@ -35,6 +35,10 @@ class ProcurementTrackerStepResponseSchema(Schema):
     # PRE_SOLICITATION-specific
     target_completion_date = fields.Date(allow_none=True)
     draft_solicitation_date = fields.Date(allow_none=True)
+
+    # SOLICITATION-specific
+    solicitation_period_start_date = fields.Date(allow_none=True)
+    solicitation_period_end_date = fields.Date(allow_none=True)
 
     # BaseModel fields
     display_name = fields.String(dump_only=True)
@@ -83,13 +87,20 @@ class ProcurementTrackerStepResponseSchema(Schema):
             data["target_completion_date"] = obj.pre_solicitation_target_completion_date
             data["draft_solicitation_date"] = obj.pre_solicitation_draft_solicitation_date
 
+        elif obj.step_type == ProcurementTrackerStepType.SOLICITATION:
+            data["task_completed_by"] = obj.solicitation_task_completed_by
+            data["date_completed"] = obj.solicitation_date_completed
+            data["notes"] = obj.solicitation_notes
+            data["solicitation_period_start_date"] = obj.solicitation_period_start_date
+            data["solicitation_period_end_date"] = obj.solicitation_period_end_date
+
         return data
 
     @post_dump
     def remove_none_values(self, data, **_kwargs):
         """Remove None values and inappropriate fields based on step_type.
 
-        For ACQUISITION_PLANNING and PRE_SOLICITATION steps, keep step-specific keys even when None
+        For ACQUISITION_PLANNING, PRE_SOLICITATION, and SOLICITATION steps, keep step-specific keys even when None
         so that clients can reliably render/edit those fields.
         """
         step_type = data.get("step_type")
@@ -111,6 +122,9 @@ class ProcurementTrackerStepResponseSchema(Schema):
             # Remove PRE_SOLICITATION-only fields
             data.pop("target_completion_date", None)
             data.pop("draft_solicitation_date", None)
+            # Remove SOLICITATION-only fields
+            data.pop("solicitation_period_start_date", None)
+            data.pop("solicitation_period_end_date", None)
         elif step_type in ("PRE_SOLICITATION", ProcurementTrackerStepType.PRE_SOLICITATION):
             preserve_keys = base_fields | {
                 "target_completion_date",
@@ -119,6 +133,20 @@ class ProcurementTrackerStepResponseSchema(Schema):
                 "notes",
                 "draft_solicitation_date",
             }
+            # Remove SOLICITATION-only fields
+            data.pop("solicitation_period_start_date", None)
+            data.pop("solicitation_period_end_date", None)
+        elif step_type in ("SOLICITATION", ProcurementTrackerStepType.SOLICITATION):
+            preserve_keys = base_fields | {
+                "task_completed_by",
+                "date_completed",
+                "notes",
+                "solicitation_period_start_date",
+                "solicitation_period_end_date",
+            }
+            # Remove PRE_SOLICITATION-only fields
+            data.pop("target_completion_date", None)
+            data.pop("draft_solicitation_date", None)
         else:
             preserve_keys = base_fields
             # Remove all step-specific fields for other step types
@@ -128,6 +156,8 @@ class ProcurementTrackerStepResponseSchema(Schema):
                 "notes",
                 "target_completion_date",
                 "draft_solicitation_date",
+                "solicitation_period_start_date",
+                "solicitation_period_end_date",
             ]:
                 data.pop(field, None)
 
@@ -139,7 +169,7 @@ class ProcurementTrackerStepPatchRequestSchema(Schema):
 
     status = fields.Enum(ProcurementTrackerStepStatus, required=True, by_value=False)
 
-    # Fields shared by Acquistion Planning and Pre-Solicitation steps
+    # Fields shared by Acquistion Planning, Pre-Solicitation, and Solicitation steps
     task_completed_by = fields.Integer(required=False, allow_none=True)
     date_completed = fields.Date(required=False, allow_none=True)
     notes = fields.String(required=False, allow_none=True)
@@ -147,6 +177,10 @@ class ProcurementTrackerStepPatchRequestSchema(Schema):
     # Pre-solicitation specific fields
     target_completion_date = fields.Date(required=False, allow_none=True)
     draft_solicitation_date = fields.Date(required=False, allow_none=True)
+
+    # Solicitation specific fields
+    solicitation_period_start_date = fields.Date(required=False, allow_none=True)
+    solicitation_period_end_date = fields.Date(required=False, allow_none=True)
 
 
 class ProcurementTrackerStepSchema(Schema):
@@ -170,6 +204,8 @@ class ProcurementTrackerStepSchema(Schema):
     notes = fields.String(allow_none=True)
     target_completion_date = fields.Date(allow_none=True)
     draft_solicitation_date = fields.Date(allow_none=True)
+    solicitation_period_start_date = fields.Date(allow_none=True)
+    solicitation_period_end_date = fields.Date(allow_none=True)
 
     @pre_dump
     def map_step_specific_fields(self, obj, **_kwargs):
@@ -209,6 +245,13 @@ class ProcurementTrackerStepSchema(Schema):
             data["target_completion_date"] = obj.pre_solicitation_target_completion_date
             data["draft_solicitation_date"] = obj.pre_solicitation_draft_solicitation_date
 
+        elif obj.step_type == ProcurementTrackerStepType.SOLICITATION:
+            data["task_completed_by"] = obj.solicitation_task_completed_by
+            data["date_completed"] = obj.solicitation_date_completed
+            data["notes"] = obj.solicitation_notes
+            data["solicitation_period_start_date"] = obj.solicitation_period_start_date
+            data["solicitation_period_end_date"] = obj.solicitation_period_end_date
+
         return data
 
     @post_dump
@@ -218,6 +261,7 @@ class ProcurementTrackerStepSchema(Schema):
 
         For ACQUISITION_PLANNING steps, keep acquisition planning fields even if None.
         For PRE_SOLICITATION steps, keep pre-solicitation fields even if None.
+        For SOLICITATION steps, keep solicitation fields even if None.
         For other step types, remove all step-specific fields entirely.
         """
         step_type = data.get("step_type")
@@ -228,6 +272,13 @@ class ProcurementTrackerStepSchema(Schema):
             "date_completed",
             "notes",
             "draft_solicitation_date",
+        }
+        solicitation_fields = {
+            "task_completed_by",
+            "date_completed",
+            "notes",
+            "solicitation_period_start_date",
+            "solicitation_period_end_date",
         }
 
         # Base fields that should always be present even if None
@@ -247,8 +298,19 @@ class ProcurementTrackerStepSchema(Schema):
             # Remove PRE_SOLICITATION-only fields
             data.pop("target_completion_date", None)
             data.pop("draft_solicitation_date", None)
+            # Remove SOLICITATION-only fields
+            data.pop("solicitation_period_start_date", None)
+            data.pop("solicitation_period_end_date", None)
         elif step_type in ("PRE_SOLICITATION", ProcurementTrackerStepType.PRE_SOLICITATION):
             preserve_keys = base_fields | pre_solicitation_fields
+            # Remove SOLICITATION-only fields
+            data.pop("solicitation_period_start_date", None)
+            data.pop("solicitation_period_end_date", None)
+        elif step_type in ("SOLICITATION", ProcurementTrackerStepType.SOLICITATION):
+            preserve_keys = base_fields | solicitation_fields
+            # Remove PRE_SOLICITATION-only fields
+            data.pop("target_completion_date", None)
+            data.pop("draft_solicitation_date", None)
         else:
             preserve_keys = base_fields
             # Remove all step-specific fields for other step types
@@ -258,6 +320,8 @@ class ProcurementTrackerStepSchema(Schema):
                 "notes",
                 "target_completion_date",
                 "draft_solicitation_date",
+                "solicitation_period_start_date",
+                "solicitation_period_end_date",
             ]:
                 data.pop(field, None)
 
