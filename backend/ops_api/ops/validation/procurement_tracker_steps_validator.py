@@ -106,7 +106,6 @@ class ProcurementTrackerStepsValidator:
             ]
 
         elif procurement_tracker_step.step_type == ProcurementTrackerStepType.SOLICITATION:
-            # For solicitation steps being marked as completed, we require additional validation
             return [
                 ResourceExistsRule(),
                 UserAssociationRule(),
