@@ -157,8 +157,9 @@ const AgreementProcurementTracker = ({ agreement }) => {
                             <div className="usa-fieldset">
                                 <p>
                                     Once the Procurement Shop has posted the Solicitation and it is on the street, enter
-                                    the Solicitation Start and End Dates. After all proposals are received, vendor questions
-                                    have been answered, and evaluations are starting, check this step as complete.
+                                    the Solicitation Start and End Dates. After all proposals are received, vendor
+                                    questions have been answered, and evaluations are starting, check this step as
+                                    complete.
                                 </p>
                             </div>
                         )}
