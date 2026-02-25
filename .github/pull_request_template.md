@@ -10,6 +10,12 @@ _Add link to issue here_
 
 _Write out steps for how someone could test this PR against the acceptance criteria_
 
+## A11y impact
+
+- [ ] No accessibility-impacting changes in this PR
+- [ ] Accessibility changes included and validated against WCAG 2.1 AA intent
+- [ ] Any temporary suppression includes `A11Y-SUPPRESSION` metadata (owner, expires, rationale)
+
 ## Screenshots
 
 _If relevant, e.g. for a front-end feature_

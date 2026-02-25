@@ -21,6 +21,8 @@
 // -- This is a dual command --
 // Cypress.Commands.add('dismiss', { prevSubject: 'optional'}, (subject, options) => { ... })
 
+import { getAllowlistForSpec, isAllowedViolation, validateA11yAllowlist } from "./a11yAllowlist.js";
+
 const severityIndicators = {
     minor: "⚪️",
     moderate: "🟡",
@@ -28,7 +30,30 @@ const severityIndicators = {
     critical: "🔴"
 };
 
+validateA11yAllowlist();
+
+const normalizeViolations = (violations) => {
+    const specName = Cypress.spec.relative;
+    const currentUrl = Cypress.config("baseUrl");
+
+    return violations.map((violation) => ({
+        spec: specName,
+        current_url: currentUrl,
+        rule_id: violation.id,
+        impact: violation.impact || "unknown",
+        help: violation.help,
+        help_url: violation.helpUrl,
+        wcag_tags: (violation.tags || []).filter((tag) => tag.startsWith("wcag")),
+        node_count: violation.nodes.length,
+        targets: violation.nodes.map((node) => node.target).flat()
+    }));
+};
+
 const violationHandler = (violations) => {
+    const normalizedViolations = normalizeViolations(violations);
+    const regressionGateEnabled = Boolean(Cypress.env("A11Y_REGRESSION_GATE"));
+    const currentSpec = Cypress.spec.relative;
+
     violations.forEach((violation) => {
         const violationDomNodes = violation.nodes;
         const violationJQueryNodesReference = Cypress.$(violationDomNodes.map((node) => node.target).join(","));
@@ -49,6 +74,34 @@ const violationHandler = (violations) => {
             });
         });
     });
+
+    Cypress.log({
+        name: "a11y-report",
+        message: JSON.stringify(normalizedViolations),
+        consoleProps: () => ({ normalizedViolations })
+    });
+
+    if (!regressionGateEnabled || violations.length === 0) {
+        return;
+    }
+
+    const allowlistForSpec = getAllowlistForSpec(currentSpec);
+    if (allowlistForSpec.length === 0) {
+        // Specs are onboarded to the gate incrementally. A missing allowlist means report-only for now.
+        return;
+    }
+
+    const unallowed = violations.filter(
+        (violation) => !isAllowedViolation({ specName: currentSpec, ruleId: violation.id })
+    );
+    if (unallowed.length === 0) {
+        return;
+    }
+
+    const details = unallowed
+        .map((violation) => `${violation.id} (${violation.impact || "unknown"})`)
+        .join(", ");
+    throw new Error(`A11y regression gate failed for ${currentSpec}. Unallowlisted violations: ${details}`);
 };
 
 Cypress.Commands.overwrite("checkA11y", (originalFn, context, options, violationCallback, skipFailures) => {
