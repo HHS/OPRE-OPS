@@ -73,7 +73,7 @@ BEGIN {
 
 # Match lines with "X passing" - indicates end of spec run
 /[0-9]+ passing/ {
-    # Only record success if we haven't already recorded a failure for this spec
+    # Only record success if we have not already recorded a failure for this spec
     # This makes the logic order-independent: failures always take precedence
     if (current_spec != "" && spec_final_result[current_spec] != 1) {
         spec_final_result[current_spec] = 0
