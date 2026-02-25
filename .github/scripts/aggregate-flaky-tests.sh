@@ -52,6 +52,17 @@ while IFS= read -r log_file; do
     fi
 done < <(find "$LOGS_DIR" -name "*.log" -type f)
 
+# Check if any log files were found
+if [ "$TOTAL_LOGS" -eq 0 ]; then
+    echo "⚠️  No Cypress output logs found in directory: $LOGS_DIR"
+    echo ""
+    echo "This usually means:"
+    echo "  - The artifacts were not uploaded correctly"
+    echo "  - The directory path is incorrect"
+    echo "  - No E2E tests were run"
+    exit 0
+fi
+
 # Remove duplicates and sort
 sort -u "$ALL_FLAKY_TESTS" -o "$ALL_FLAKY_TESTS"
 
