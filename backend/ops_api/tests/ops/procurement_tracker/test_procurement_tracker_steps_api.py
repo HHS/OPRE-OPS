@@ -718,3 +718,196 @@ def test_pre_solicitation_step_field_mapping_to_model(auth_client, test_step, lo
     # Verify that the API fields mapped to the correct model fields
     assert test_step.pre_solicitation_target_completion_date == future_date
     assert test_step.pre_solicitation_notes == test_notes
+
+
+# Solicitation Step Tests
+
+
+@pytest.fixture
+def test_solicitation_step(app_ctx, loaded_db):
+    """Create a test solicitation step that can be safely modified."""
+    # Get the procurement tracker first to ensure the relationship is valid
+    tracker = loaded_db.get(ProcurementTracker, 1)
+
+    # Create a new solicitation step for testing using DefaultProcurementTrackerStep
+    step = DefaultProcurementTrackerStep(
+        procurement_tracker=tracker,
+        step_number=998,  # Use a high number to avoid conflicts
+        step_type=ProcurementTrackerStepType.SOLICITATION,
+        status=ProcurementTrackerStepStatus.PENDING,
+    )
+    loaded_db.add(step)
+    loaded_db.commit()
+    loaded_db.refresh(step)
+
+    yield step
+
+    # Cleanup
+    loaded_db.rollback()
+    try:
+        from models.procurement_tracker import ProcurementTrackerStep
+
+        test_step_obj = loaded_db.get(ProcurementTrackerStep, step.id)
+        if test_step_obj:
+            loaded_db.delete(test_step_obj)
+            loaded_db.commit()
+    except Exception:
+        loaded_db.rollback()
+
+
+def test_solicitation_step_serialization_includes_all_fields(auth_client, app_ctx, loaded_db):
+    """Test that solicitation steps include all solicitation specific fields in the response."""
+    # Step 3 in tracker 1 should be a SOLICITATION step
+    response = auth_client.get("/api/v1/procurement-tracker-steps/3")
+    assert response.status_code == 200
+
+    data = response.json
+    assert data["step_type"] == "SOLICITATION"
+
+    # Verify all solicitation specific fields are present
+    assert "solicitation_period_start_date" in data
+    assert "solicitation_period_end_date" in data
+
+    # Verify shared fields are present
+    assert "task_completed_by" in data
+    assert "date_completed" in data
+    assert "notes" in data
+
+    # Verify PRE_SOLICITATION fields are NOT present
+    assert "target_completion_date" not in data
+    assert "draft_solicitation_date" not in data
+
+
+def test_solicitation_step_serialization_with_none_values(auth_client, app_ctx, loaded_db):
+    """Test that solicitation steps preserve None values for step-specific fields."""
+    response = auth_client.get("/api/v1/procurement-tracker-steps/3")
+    assert response.status_code == 200
+
+    data = response.json
+    assert data["step_type"] == "SOLICITATION"
+
+    # Verify None values are preserved
+    assert data["solicitation_period_start_date"] is None
+    assert data["solicitation_period_end_date"] is None
+    assert data["task_completed_by"] is None
+    assert data["date_completed"] is None
+    assert data["notes"] is None
+
+
+def test_update_solicitation_step_with_valid_date_order(auth_client, test_solicitation_step, loaded_db):
+    """Test updating a solicitation step with start date earlier than end date succeeds."""
+    from datetime import timedelta
+
+    start_date = date.today()
+    end_date = date.today() + timedelta(days=30)
+
+    update_data = {
+        "status": "ACTIVE",
+        "solicitation_period_start_date": start_date.isoformat(),
+        "solicitation_period_end_date": end_date.isoformat(),
+    }
+
+    response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{test_solicitation_step.id}", json=update_data)
+    assert response.status_code == 200
+
+    data = response.json
+    assert data["solicitation_period_start_date"] == start_date.isoformat()
+    assert data["solicitation_period_end_date"] == end_date.isoformat()
+    assert data["status"] == "ACTIVE"
+
+
+def test_update_solicitation_step_with_all_fields(auth_client, test_solicitation_step, loaded_db):
+    """Test updating a solicitation step with all solicitation specific fields."""
+    from datetime import timedelta
+
+    start_date = date.today()
+    end_date = date.today() + timedelta(days=30)
+    test_notes = "Complete solicitation package notes"
+
+    update_data = {
+        "status": "ACTIVE",
+        "solicitation_period_start_date": start_date.isoformat(),
+        "solicitation_period_end_date": end_date.isoformat(),
+        "task_completed_by": 503,
+        "date_completed": date.today().isoformat(),
+        "notes": test_notes,
+    }
+
+    response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{test_solicitation_step.id}", json=update_data)
+    assert response.status_code == 200
+
+    data = response.json
+    assert data["solicitation_period_start_date"] == start_date.isoformat()
+    assert data["solicitation_period_end_date"] == end_date.isoformat()
+    assert data["notes"] == test_notes
+    assert data["status"] == "ACTIVE"
+
+
+def test_solicitation_step_field_mapping_to_model(auth_client, test_solicitation_step, loaded_db):
+    """Test that solicitation API fields correctly map to model fields."""
+    from datetime import timedelta
+
+    start_date = date.today()
+    end_date = date.today() + timedelta(days=30)
+    test_notes = "Testing solicitation field mapping"
+
+    update_data = {
+        "status": "ACTIVE",
+        "solicitation_period_start_date": start_date.isoformat(),
+        "solicitation_period_end_date": end_date.isoformat(),
+        "notes": test_notes,
+    }
+
+    response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{test_solicitation_step.id}", json=update_data)
+    assert response.status_code == 200
+
+    # Refresh from database to verify model fields were updated
+    loaded_db.refresh(test_solicitation_step)
+
+    # Verify that the API fields mapped to the correct model fields
+    assert test_solicitation_step.solicitation_period_start_date == start_date
+    assert test_solicitation_step.solicitation_period_end_date == end_date
+    assert test_solicitation_step.solicitation_notes == test_notes
+
+
+def test_solicitation_step_list_includes_specific_fields(auth_client, app_ctx, loaded_db):
+    """Test that solicitation steps in list responses include solicitation specific fields."""
+    response = auth_client.get("/api/v1/procurement-tracker-steps/?agreement_id=13")
+    assert response.status_code == 200
+
+    data = response.json["data"]
+
+    # Find a solicitation step (should be step 3)
+    solicitation_step = next((s for s in data if s["step_type"] == "SOLICITATION"), None)
+    assert solicitation_step is not None, "Should have at least one SOLICITATION step"
+
+    # Verify solicitation specific fields are present
+    assert "solicitation_period_start_date" in solicitation_step
+    assert "solicitation_period_end_date" in solicitation_step
+    assert "task_completed_by" in solicitation_step
+    assert "date_completed" in solicitation_step
+    assert "notes" in solicitation_step
+
+    # Verify PRE_SOLICITATION fields are NOT present
+    assert "target_completion_date" not in solicitation_step
+    assert "draft_solicitation_date" not in solicitation_step
+
+
+def test_solicitation_step_excludes_pre_solicitation_fields(auth_client, app_ctx, loaded_db):
+    """Test that solicitation steps do NOT include pre-solicitation specific fields."""
+    response = auth_client.get("/api/v1/procurement-tracker-steps/3")
+    assert response.status_code == 200
+
+    data = response.json
+    assert data["step_type"] == "SOLICITATION"
+
+    # Verify pre-solicitation specific fields are NOT present
+    assert "target_completion_date" not in data
+    assert "draft_solicitation_date" not in data
+
+    # Verify solicitation fields ARE present
+    assert "solicitation_period_start_date" in data
+    assert "solicitation_period_end_date" in data
+    assert "task_completed_by" in data
+    assert "date_completed" in data
+    assert "notes" in data

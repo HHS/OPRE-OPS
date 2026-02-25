@@ -290,7 +290,8 @@ class CompletionAuthorizationRule(ValidationRule):
             task_completed_by_id = procurement_tracker_step.acquisition_planning_task_completed_by
         elif procurement_tracker_step.step_type == ProcurementTrackerStepType.PRE_SOLICITATION:
             task_completed_by_id = procurement_tracker_step.pre_solicitation_task_completed_by
-
+        elif procurement_tracker_step.step_type == ProcurementTrackerStepType.SOLICITATION:
+            task_completed_by_id = procurement_tracker_step.solicitation_task_completed_by
         # If task_completed_by is not set, the CompletionAcquisitionPlanningRequiredFieldsRule will catch it
         if not task_completed_by_id:
             return
@@ -299,32 +300,34 @@ class CompletionAuthorizationRule(ValidationRule):
         validate_task_completed_by_user_association(task_completed_by_id, context, procurement_tracker_step)
 
 
-class NotesMaxLengthUpdateRule(ValidationRule):
+class SolicitationPeriodDateOrderRule(ValidationRule):
     """
-    Validates that the notes field does not exceed 750 characters when being updated.
+    Validates that solicitation_period_start_date is earlier than solicitation_period_end_date
+    for Solicitation steps.
     """
-
-    MAX_NOTES_LENGTH = 750
 
     @property
     def name(self) -> str:
-        return "Notes Max Length Check"
+        return "Solicitation Period Date Order Validation"
 
     def validate(self, procurement_tracker_step: ProcurementTrackerStep, context: ValidationContext) -> None:
+        # Only validate if step type is SOLICITATION
+        if procurement_tracker_step.step_type != ProcurementTrackerStepType.SOLICITATION:
+            return
+
         updated_fields = context.updated_fields
 
-        # Only validate if notes is being updated
-        if "notes" not in updated_fields:
-            return
+        # Get start and end dates from update or model
+        start_date = updated_fields.get(
+            "solicitation_period_start_date", procurement_tracker_step.solicitation_period_start_date
+        )
+        end_date = updated_fields.get(
+            "solicitation_period_end_date", procurement_tracker_step.solicitation_period_end_date
+        )
 
-        notes = updated_fields.get("notes")
-
-        # Skip validation if notes is None or empty
-        if not notes:
-            return
-
-        # Check if notes exceeds maximum length
-        if len(notes) > self.MAX_NOTES_LENGTH:
-            raise ValidationError(
-                {"notes": f"Notes cannot exceed {self.MAX_NOTES_LENGTH} characters. Current length: {len(notes)}."}
-            )
+        # Only validate if both dates are present
+        if start_date and end_date:
+            if start_date >= end_date:
+                raise ValidationError(
+                    {"solicitation_period_start_date": "Solicitation period start date must be earlier than end date."}
+                )
