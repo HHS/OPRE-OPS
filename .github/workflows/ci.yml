@@ -78,7 +78,7 @@ jobs:
         run: |
           dbus-run-session -- npx cypress run \
             --config-file ./cypress.config.ci.js \
-            --config a11yRegressionGate=true \
+            --env A11Y_REGRESSION_GATE=true \
             --headless \
             --spec "cypress/e2e/agreementList.cy.js,cypress/e2e/agreementsPagination.cy.js,cypress/e2e/agreementDetails.cy.js,cypress/e2e/portfolioList.cy.js,cypress/e2e/portfolioDetail.cy.js,cypress/e2e/budgetLineItemsList.cy.js,cypress/e2e/createAgreement.cy.js,cypress/e2e/createAgreementWithValidations.cy.js,cypress/e2e/uploadDocument.cy.js,cypress/e2e/notificationCenter.cy.js"
 
