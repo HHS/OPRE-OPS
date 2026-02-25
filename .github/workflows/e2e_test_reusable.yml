@@ -94,7 +94,7 @@ jobs:
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           path: frontend/cypress/${{ steps.get-filename.outputs.TEST_FILE }}/screenshots # Update this path based on your project structure
-          name: cypress-screenshots
+          name: cypress-screenshots-${{ github.run_id }}-${{ github.sha }}-${{ steps.get-filename.outputs.TEST_FILE }}
 
       # Capture logs from all services
       - name: Capture logs
