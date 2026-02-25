@@ -2,11 +2,11 @@ import React from "react";
 import { useGetProcurementTrackersByAgreementIdQuery, useGetUsersQuery } from "../../../api/opsAPI";
 import ProcurementTrackerStepOne from "../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepOne";
 import ProcurementTrackerStepTwo from "../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepTwo";
+import ProcurementTrackerStepThree from "../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepThree";
 import StepBuilderAccordion from "../../../components/Agreements/ProcurementTracker/StepBuilderAccordion";
 import DebugCode from "../../../components/DebugCode";
 import StepIndicator from "../../../components/UI/StepIndicator";
 import { IS_PROCUREMENT_TRACKER_READY_MAP } from "../../../constants";
-import ProcurementTrackerStepThree from "../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepThree";
 
 /**
  * @typedef {Object} AgreementProcurementTrackerProps
@@ -125,7 +125,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 authorizedUsers={authorizedUsers}
                             />
                         )}
-                        {IS_PROCUREMENT_TRACKER_READY_MAP.STEP_2 && step.step_number === 2 ? (
+                        {IS_PROCUREMENT_TRACKER_READY_MAP.STEP_2 && step.step_number === 2 && (
                             <ProcurementTrackerStepTwo
                                 stepStatus={step.status}
                                 authorizedUsers={authorizedUsers}
@@ -134,37 +134,33 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 handleSetCompletedStepNumber={handleSetCompletedStepNumber}
                                 isDisabled={!hasActiveTracker}
                             />
-                        ) : (
-                            step.step_number === 2 && (
-                                <div className="usa-fieldset">
-                                    <p>
-                                        Edit the pre-solicitation package in collaboration with the Procurement Shop.
-                                        Once the documents are finalized, go to the Documents Tab, upload the final and
-                                        signed versions, and check this step as complete. If you have a target
-                                        completion date for when the package will be finalized, enter it below.
-                                    </p>
-                                </div>
-                            )
                         )}
-                        {IS_PROCUREMENT_TRACKER_READY_MAP.STEP_3 && step.step_number === 3 ? (
+                        {!IS_PROCUREMENT_TRACKER_READY_MAP.STEP_2 && step.step_number === 2 && (
+                            <div className="usa-fieldset">
+                                <p>
+                                    Edit the pre-solicitation package in collaboration with the Procurement Shop. Once
+                                    the documents are finalized, go to the Documents Tab, upload the final and signed
+                                    versions, and check this step as complete. If you have a target completion date for
+                                    when the package will be finalized, enter it below.
+                                </p>
+                            </div>
+                        )}
+                        {IS_PROCUREMENT_TRACKER_READY_MAP.STEP_3 && step.step_number === 3 && (
                             <ProcurementTrackerStepThree
                                 stepStatus={step.status}
                                 authorizedUsers={authorizedUsers}
                                 stepThreeData={stepThreeData}
-                                isActiveStep={currentStep === step.step_number}
-                                handleSetCompletedStepNumber={() => {}}
+                                hasActiveTracker={hasActiveTracker}
                             />
-                        ) : (
-                            step.step_number === 3 && (
-                                <div className="usa-fieldset">
-                                    <p>
-                                        Once the Procurement Shop has posted the Solicitation and it’s “on the street”,
-                                        enter the Solicitation Start and End Dates. After all proposals are received,
-                                        vendor questions have been answered, and evaluations are starting, check this
-                                        step as complete.
-                                    </p>
-                                </div>
-                            )
+                        )}
+                        {!IS_PROCUREMENT_TRACKER_READY_MAP.STEP_3 && step.step_number === 3 && (
+                            <div className="usa-fieldset">
+                                <p>
+                                    Once the Procurement Shop has posted the Solicitation and it is on the street, enter
+                                    the Solicitation Start and End Dates. After all proposals are received, vendor questions
+                                    have been answered, and evaluations are starting, check this step as complete.
+                                </p>
+                            </div>
                         )}
                         {step.step_number === 4 && (
                             <div className="usa-fieldset">
