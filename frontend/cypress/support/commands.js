@@ -58,6 +58,7 @@ const violationHandler = (violations) => {
     const normalizedViolations = normalizeViolations(violations);
     const regressionGateEnabled = isRegressionGateEnabled();
     const currentSpec = Cypress.spec.relative;
+    const allowlistForSpec = getAllowlistForSpec(currentSpec);
 
     violations.forEach((violation) => {
         const violationDomNodes = violation.nodes;
@@ -86,13 +87,12 @@ const violationHandler = (violations) => {
         consoleProps: () => ({ normalizedViolations })
     });
 
-    if (!regressionGateEnabled || violations.length === 0) {
+    if (violations.length === 0) {
         return;
     }
 
-    const allowlistForSpec = getAllowlistForSpec(currentSpec);
-    if (allowlistForSpec.length === 0) {
-        // Specs are onboarded to the gate incrementally. A missing allowlist means report-only for now.
+    // Non-gate mode only enforces for specs explicitly onboarded in the temporary allowlist.
+    if (!regressionGateEnabled && allowlistForSpec.length === 0) {
         return;
     }
 
@@ -111,6 +111,8 @@ const violationHandler = (violations) => {
 
 Cypress.Commands.overwrite("checkA11y", (originalFn, context, options, violationCallback, skipFailures) => {
     const gateEnabled = isRegressionGateEnabled();
+    const currentSpec = Cypress.spec?.relative || "";
+    const hasAllowlistForSpec = getAllowlistForSpec(currentSpec).length > 0;
     const mergedViolationCallback = (violations) => {
         if (violationCallback) {
             violationCallback(violations);
@@ -119,7 +121,7 @@ Cypress.Commands.overwrite("checkA11y", (originalFn, context, options, violation
     };
 
     // In gate mode, we fail from our allowlist-aware handler instead of the default axe assertion path.
-    const effectiveSkipFailures = gateEnabled ? true : skipFailures;
+    const effectiveSkipFailures = gateEnabled || hasAllowlistForSpec ? true : skipFailures;
     return originalFn(context, options, mergedViolationCallback, effectiveSkipFailures);
 });
 
