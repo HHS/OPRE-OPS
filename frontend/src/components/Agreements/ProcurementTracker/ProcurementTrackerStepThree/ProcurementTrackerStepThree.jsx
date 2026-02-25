@@ -3,6 +3,7 @@ import TermTag from "../../../UI/Term/TermTag";
 import TextArea from "../../../UI/Form/TextArea";
 import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepThree from "./ProcurementTrackerStepThree.hooks";
+import DateRangePickerWrapper from "../../../UI/USWDS/DateRangePickerWrapper";
 
 /**
  * @typedef {import("../../../../types/UserTypes").SafeUser} SafeUser
@@ -53,6 +54,52 @@ const ProcurementTrackerStepThree = ({ stepStatus, stepThreeData, authorizedUser
                         solicitation period dates and update when the posting is complete. Solicitation documents should
                         be uploaded to the Documents Tab.
                     </p>
+                    <DateRangePickerWrapper
+                        id="period-of-performance"
+                        key="period-of-performance"
+                        className="display-flex flex-justify width-tablet"
+                    >
+                        <div style={{ width: "275px" }}>
+                            <MemoizedDatePicker
+                                id="solicitation-period-start-date"
+                                name="solicitationPeriodStartDate"
+                                className="width-card-lg"
+                                label="Solicitation Period Start Date"
+                                hint="mm/dd/yyyy"
+                                value={solicitationPeriodStartDate}
+                                messages={validatorRes.getErrors("solicitationPeriodStartDate") || []}
+                                onChange={(/** @type {any} */ e) => {
+                                    runValidate("solicitationPeriodStartDate", e.target.value);
+                                    setSolicitationPeriodStartDate(e.target.value);
+                                }}
+                                isDisabled={!hasActiveTracker}
+                            />
+                        </div>
+                        <div style={{ width: "275px" }}>
+                            <MemoizedDatePicker
+                                id="solicitation-period-end-date"
+                                name="solicitationPeriodEndDate"
+                                className="margin-left-4"
+                                label="Solicitation Period End Date"
+                                hint="mm/dd/yyyy"
+                                value={solicitationPeriodEndDate}
+                                onChange={(/** @type {any} */ e) => {
+                                    setSolicitationPeriodEndDate(e.target.value);
+                                }}
+                                isDisabled={!hasActiveTracker}
+                            />
+                        </div>
+                        <button
+                            className="usa-button usa-button--unstyled flex-align-self-end padding-bottom-1"
+                            data-cy="target-completion-save-btn"
+                            disabled={false}
+                            onClick={() => {
+                                alert("Save button clicked! Implement save functionality here.");
+                            }}
+                        >
+                            Save
+                        </button>
+                    </DateRangePickerWrapper>
                     <div className="display-flex flex-align-center">
                         <UsersComboBox
                             className="width-card-lg margin-top-5"
@@ -83,35 +130,7 @@ const ProcurementTrackerStepThree = ({ stepStatus, stepThreeData, authorizedUser
                             isDisabled={!hasActiveTracker}
                         />
                     </div>
-                    <div className="display-flex flex-align-center margin-top-2">
-                        <MemoizedDatePicker
-                            id="solicitation-period-start-date"
-                            name="solicitationPeriodStartDate"
-                            className="width-card-lg"
-                            label="Solicitation Period Start Date"
-                            hint="mm/dd/yyyy"
-                            value={solicitationPeriodStartDate}
-                            messages={validatorRes.getErrors("solicitationPeriodStartDate") || []}
-                            onChange={(/** @type {any} */ e) => {
-                                runValidate("solicitationPeriodStartDate", e.target.value);
-                                setSolicitationPeriodStartDate(e.target.value);
-                            }}
-                            isDisabled={!hasActiveTracker}
-                        />
 
-                        <MemoizedDatePicker
-                            id="solicitation-period-end-date"
-                            name="solicitationPeriodEndDate"
-                            className="margin-left-4"
-                            label="Solicitation Period End Date"
-                            hint="mm/dd/yyyy"
-                            value={solicitationPeriodEndDate}
-                            onChange={(/** @type {any} */ e) => {
-                                setSolicitationPeriodEndDate(e.target.value);
-                            }}
-                            isDisabled={!hasActiveTracker}
-                        />
-                    </div>
                     <TextArea
                         name="notes"
                         label="Notes (optional)"
