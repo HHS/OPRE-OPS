@@ -188,6 +188,7 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
         return `Fiscal Year ${selectedFiscalYear}`;
     };
 
+    const fullWidth = { width: "26.2rem" };
     const fieldsetList = [
         <fieldset
             key="field1"
@@ -198,7 +199,7 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
                 setSelectedFiscalYears={handleFiscalYearsChange}
                 legendClassname={legendStyles}
                 defaultString={getDefaultFiscalYearString()}
-                overrideStyles={{ width: "22.7rem" }}
+                overrideStyles={fullWidth}
                 budgetLinesFiscalYears={fiscalYearOptions}
                 label="Compare Fiscal Years"
             />
@@ -212,7 +213,7 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
                 selectedPortfolios={portfolios}
                 setSelectedPortfolios={setPortfolios}
                 legendClassname={legendStyles}
-                overrideStyles={{ width: "22.7rem" }}
+                overrideStyles={fullWidth}
             />
         </fieldset>,
         <fieldset
@@ -225,7 +226,7 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
                 setSelectedBLIStatus={setBLIStatus}
                 legendClassname={legendStyles}
                 defaultString={""}
-                overrideStyles={{ width: "22.7rem" }}
+                overrideStyles={fullWidth}
             />
         </fieldset>,
         <fieldset
@@ -238,6 +239,7 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
                 setSelectedRange={setBudgetRange}
                 label="Budget Line Total"
                 legendClassname={legendStyles}
+                overrideStyles={fullWidth}
             />
         </fieldset>,
         <fieldset
@@ -248,7 +250,7 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
                 selectedAgreementTypes={agreementTypes}
                 setSelectedAgreementTypes={setAgreementTypes}
                 legendClassname={legendStyles}
-                overrideStyles={{ width: "22.7rem" }}
+                overrideStyles={fullWidth}
                 agreementTypeOptions={filterOptions?.agreement_types ?? []}
             />
         </fieldset>,
@@ -260,7 +262,7 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
                 selectedAgreementNames={agreementTitles}
                 setSelectedAgreementNames={setAgreementTitles}
                 legendClassname={legendStyles}
-                overrideStyles={{ width: "22.7rem" }}
+                overrideStyles={fullWidth}
                 agreementNameOptions={filterOptions?.agreement_names ?? null}
                 filterLabel="Agreement Title"
             />
@@ -273,7 +275,7 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
                 activePeriod={canActivePeriods}
                 setActivePeriod={setCanActivePeriods}
                 legendClassname={legendStyles}
-                overrideStyles={{ width: "22.7rem" }}
+                overrideStyles={fullWidth}
                 canActivePeriodOptions={filterOptions?.can_active_periods ?? null}
                 filterLabel="CAN Active Period"
             />
