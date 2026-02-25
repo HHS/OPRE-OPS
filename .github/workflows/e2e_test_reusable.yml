@@ -140,4 +140,5 @@ jobs:
 
       - name: Aggregate flaky test results
         run: |
+          mkdir -p cypress-outputs
           ./.github/scripts/aggregate-flaky-tests.sh cypress-outputs "$GITHUB_STEP_SUMMARY"
