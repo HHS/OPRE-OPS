@@ -36,7 +36,7 @@
         "remark-gfm": "4.0.1",
         "sass": "1.97.3",
         "styled-components": "6.3.9",
-        "vest": "5.4.6",
+        "vest": "6.0.0",
         "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
     },
     "overrides": {
