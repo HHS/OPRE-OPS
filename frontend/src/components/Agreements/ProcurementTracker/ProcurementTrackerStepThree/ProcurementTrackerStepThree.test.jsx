@@ -308,7 +308,7 @@ describe("ProcurementTrackerStepThree", () => {
             expect(mockSetSolicitationPeriodStartDate).toHaveBeenCalledWith("2024-02-01");
         });
 
-        it("Solicitation Period End Date calls setSolicitationPeriodEndDate on change", () => {
+        it("Solicitation Period End Date calls runValidate and setSolicitationPeriodEndDate on change", () => {
             render(
                 <ProcurementTrackerStepThree
                     stepStatus="PENDING"
@@ -327,6 +327,7 @@ describe("ProcurementTrackerStepThree", () => {
 
             fireEvent.change(dateInput, { target: { value: "2024-02-28" } });
 
+            expect(mockRunValidate).toHaveBeenCalledWith("solicitationPeriodEndDate", "2024-02-28");
             expect(mockSetSolicitationPeriodEndDate).toHaveBeenCalledWith("2024-02-28");
         });
 

@@ -34,8 +34,19 @@ export default function useProcurementTrackerStepThree(stepThreeData) {
      * @param {string} name
      * @param {any} value
      */
-    const runValidate = (name, value) => {
-        suite({ ...{ [name]: value } }, name);
+    const runValidate = (name, value, overrides = {}) => {
+        suite(
+            {
+                users: selectedUser?.id,
+                dateCompleted: step3DateCompleted,
+                solicitationPeriodStartDate,
+                solicitationPeriodEndDate,
+                notes: step3Notes,
+                ...overrides,
+                [name]: value
+            },
+            name
+        );
     };
 
     let validatorRes = suite.get();
