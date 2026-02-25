@@ -959,6 +959,9 @@ def create_procurement_tracker_step_update_history_event(
     elif step_type == str(ProcurementTrackerStepType.PRE_SOLICITATION):
         history_title = "Pre-Solicitation Completed"
         history_message = f"{event_user.full_name} completed step 2 of the Procurement Tracker. The pre-solicitation package has been finalized with the Procurement Shop and uploaded on the Documents Tab."
+    elif step_type == str(ProcurementTrackerStepType.SOLICITATION):
+        history_title = "Solicitation Completed"
+        history_message = f"{event_user.full_name} completed step 3 of the Procurement Tracker. The evaluations are complete and OPRE has internally selected a vendor."
     else:
         return None  # Only Acquisition Planning and Pre-Solicitation steps are supported right now
 
