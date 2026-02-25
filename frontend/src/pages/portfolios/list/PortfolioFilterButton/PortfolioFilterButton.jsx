@@ -81,6 +81,7 @@ export const PortfolioFilterButton = ({ filters, setFilters, allPortfolios, fyBu
 
     const fieldStyles = "usa-fieldset margin-bottom-205";
     const legendStyles = `usa-legend font-sans-3xs margin-top-0 padding-bottom-1 ${customStyles.legendColor}`;
+      const fullWidth = { width: "26.2rem" };
 
     const fieldsetList = [
         <fieldset
@@ -92,7 +93,7 @@ export const PortfolioFilterButton = ({ filters, setFilters, allPortfolios, fyBu
                 selectedPortfolios={portfolios}
                 setSelectedPortfolios={setPortfolios}
                 legendClassname={legendStyles}
-                overrideStyles={{ width: "22.7rem" }}
+                overrideStyles={fullWidth}
             />
         </fieldset>,
         <fieldset
@@ -104,6 +105,7 @@ export const PortfolioFilterButton = ({ filters, setFilters, allPortfolios, fyBu
                 legendClassname={legendStyles}
                 budget={budgetRange}
                 setBudget={setBudgetRange}
+                overrideStyles={fullWidth}
             />
         </fieldset>,
         <fieldset
@@ -114,6 +116,7 @@ export const PortfolioFilterButton = ({ filters, setFilters, allPortfolios, fyBu
                 selectedRanges={availablePct}
                 setSelectedRanges={setAvailablePct}
                 legendClassname={legendStyles}
+                overrideStyles={fullWidth}
             />
         </fieldset>
     ];
