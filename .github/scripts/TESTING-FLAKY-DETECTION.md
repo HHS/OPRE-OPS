@@ -71,8 +71,8 @@ Download actual CI logs from a PR run and test against them.
 ### Download CI Logs
 
 ```bash
-# Find recent CI runs
-gh run list --branch feature/flaky-test-detection --limit 5
+# Find recent CI runs (optionally filter by branch)
+gh run list --branch your-branch-name --limit 5
 
 # Download logs from a specific E2E test job
 gh run view <RUN_ID> --log-failed > /tmp/ci-logs.txt
