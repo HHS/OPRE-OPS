@@ -36,19 +36,10 @@ export type ProcurementTrackerPreSolicitationStep = ProcurementTrackerStep & {
     draft_solicitation_date?: string | null;
 };
 
-export type ProcurementTrackerSolicitationStep = ProcurementTrackerStep & {
-    task_completed_by?: number | null;
-    date_completed?: string | null;
-    notes?: string | null;
-    solicitation_period_start_date?: string | null;
-    solicitation_period_end_date?: string | null;
-};
-
 export type ProcurementTrackerResponseStep =
     | ProcurementTrackerStep
     | ProcurementTrackerAcquisitionPlanningStep
-    | ProcurementTrackerPreSolicitationStep
-    | ProcurementTrackerSolicitationStep;
+    | ProcurementTrackerPreSolicitationStep;
 
 export type ProcurementTracker = {
     id: number;
