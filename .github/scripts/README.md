@@ -84,6 +84,69 @@ A: The script only flags tests that failed initially but passed on retry. Consis
 
 ---
 
+## aggregate-flaky-tests.sh
+
+**Purpose**: Aggregate flaky test results from multiple Cypress output logs into a single report.
+
+**Description**:
+This script processes all Cypress output logs from E2E test jobs and creates a consolidated flaky test report. Instead of checking 50+ individual E2E test jobs, you get one summary showing all flaky tests across the entire test suite.
+
+**Usage**:
+```bash
+.github/scripts/aggregate-flaky-tests.sh <logs_directory> [github_summary_file]
+```
+
+**Parameters**:
+- `logs_directory` (required): Directory containing Cypress output log files
+- `github_summary_file` (optional): Path to write GitHub Actions job summary (typically `$GITHUB_STEP_SUMMARY`)
+
+**Examples**:
+```bash
+# Basic usage - output to console only
+.github/scripts/aggregate-flaky-tests.sh cypress-outputs/
+
+# CI usage - output to console and GitHub job summary
+.github/scripts/aggregate-flaky-tests.sh cypress-outputs/ "$GITHUB_STEP_SUMMARY"
+```
+
+**How it works**:
+1. Finds all `.log` files in the specified directory
+2. Runs `detect-flaky-tests.sh` on each log file
+3. Collects all unique flaky specs found across all logs
+4. Generates a single consolidated report with:
+   - Total number of specs analyzed
+   - Complete list of flaky tests found
+   - Aggregated statistics
+   - Links to view individual job reports
+
+**CI Integration**:
+This script is automatically run by the E2E test workflow (`.github/workflows/e2e_test_reusable.yml`) after all E2E test jobs complete. The report appears in a dedicated "Aggregate Flaky Test Report" job that's easy to find at the top level.
+
+**Benefits**:
+- **Single place to check**: No need to click through 50+ individual E2E jobs
+- **Complete picture**: See all flaky tests across the entire test suite
+- **Easy prioritization**: Quickly identify which tests need attention
+- **Better visibility**: Aggregate job appears prominently in CI checks
+
+**Output Format**:
+The script generates a Markdown report that includes:
+- Summary statistics (total specs analyzed, flaky specs found)
+- Table of all flaky specs with status indicators
+- Common causes and recommended actions
+- Instructions for viewing individual job reports
+- Links to related documentation
+
+**Viewing in GitHub UI**:
+After CI completes, look for the "Aggregate Flaky Test Report" job:
+1. Open your PR and go to the "Checks" tab
+2. Look for "Aggregate Flaky Test Report" job (appears after all E2E tests)
+3. Click on it to see the consolidated report at the top of the page
+
+**Exit Codes**:
+- `0`: Always exits successfully (warnings only, doesn't fail the build)
+
+---
+
 ## Adding New Scripts
 
 To add a new GitHub Actions script:

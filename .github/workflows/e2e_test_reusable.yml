@@ -118,3 +118,24 @@ jobs:
         with:
           path: frontend/cypress-output-${{ steps.get-filename.outputs.TEST_FILE }}.log
           name: cypress-output-${{ github.run_id }}-${{ github.sha }}-${{ steps.get-filename.outputs.TEST_FILE }}.log
+
+  aggregate-flaky-tests:
+    name: Aggregate Flaky Test Report
+    runs-on: ubuntu-latest
+    needs: e2e
+    if: always() # Run even if some E2E tests failed
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Download all Cypress output artifacts
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4
+        with:
+          pattern: cypress-output-${{ github.run_id }}-${{ github.sha }}-*
+          path: cypress-outputs
+          merge-multiple: true
+
+      - name: Aggregate flaky test results
+        run: |
+          ./.github/scripts/aggregate-flaky-tests.sh cypress-outputs "$GITHUB_STEP_SUMMARY"

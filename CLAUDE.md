@@ -55,13 +55,20 @@ The CI pipeline automatically detects flaky E2E tests by analyzing Cypress retry
 - Cypress is configured in CI via `frontend/cypress.config.ci.js` with `retries.runMode: 3` (3 retries, up to 4 attempts total)
 - A detection script (`.github/scripts/detect-flaky-tests.sh`) parses Cypress output logs
 - Spec files with retries are reported in the job summary with recommended actions
+- An aggregate report (`.github/scripts/aggregate-flaky-tests.sh`) consolidates results from all E2E jobs into one summary
 - Cypress output logs are uploaded as artifacts for manual review
 
 **Viewing flaky test reports**:
 
+**Aggregate Report (Recommended):**
+1. Navigate to the GitHub Actions run for your PR
+2. Look for the **"Aggregate Flaky Test Report"** job (runs after all E2E tests)
+3. Click on it to see all flaky tests across the entire test suite in one place
+
+**Individual Reports:**
 1. Navigate to the GitHub Actions run for your PR
 2. Click on any E2E test job
-3. Scroll to the job summary to see the flaky test detection report
+3. Scroll to the job summary to see the flaky test detection report for that specific test
 
 **Local usage**:
 
