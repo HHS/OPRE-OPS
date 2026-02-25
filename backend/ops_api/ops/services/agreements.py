@@ -706,6 +706,14 @@ class AgreementsService(OpsService[Agreement]):
 
         return query
 
+    def _is_editable(self, agreement: Agreement, user: User) -> bool:
+        """
+        Determine if an agreement is editable for a particular user.
+
+        An agreement is editable if the user is associated with the agreement or if they are a super user.
+        """
+        return user.is_superuser or associated_with_agreement(agreement.id)
+
 
 def add_update_vendor(session: Session, vendor: str, agreement: Agreement, field_name: str = "vendor") -> None:
     if vendor:

@@ -152,13 +152,15 @@ describe("AgreementTableRow", () => {
     });
 
     describe("Super User Edit Permissions", () => {
-        test("super user can edit agreements regardless of isEditable status", async () => {
-            const nonEditableAgreement = {
+        test("super user can edit agreements regardless of team membership", async () => {
+            // API returns isEditable: true for super users
+            const agreementWithoutUserOnTeam = {
                 ...baseAgreement,
-                _meta: { isEditable: false }
+                team_members: [], // User not on team
+                _meta: { isEditable: true } // API returns true for super users
             };
 
-            renderComponent([{ id: 1, name: USER_ROLES.SUPER_USER, is_superuser: true }], nonEditableAgreement, true);
+            renderComponent([{ id: 1, name: USER_ROLES.SUPER_USER, is_superuser: true }], agreementWithoutUserOnTeam, true);
 
             const user = userEvent.setup();
 
@@ -194,12 +196,14 @@ describe("AgreementTableRow", () => {
         });
 
         test("super user sees no locked message tooltip", async () => {
-            const nonEditableAgreement = {
+            // API returns isEditable: true for super users
+            const agreementWithoutUserOnTeam = {
                 ...baseAgreement,
-                _meta: { isEditable: false }
+                team_members: [], // User not on team
+                _meta: { isEditable: true } // API returns true for super users
             };
 
-            renderComponent([{ id: 1, name: USER_ROLES.SUPER_USER, is_superuser: true }], nonEditableAgreement, true);
+            renderComponent([{ id: 1, name: USER_ROLES.SUPER_USER, is_superuser: true }], agreementWithoutUserOnTeam, true);
 
             const user = userEvent.setup();
 
@@ -214,10 +218,11 @@ describe("AgreementTableRow", () => {
         });
 
         test("super user can delete agreements regardless of budget line status", async () => {
+            // API returns isEditable: true for super users
             const agreementWithPlannedBudgetLines = {
                 ...baseAgreement,
                 budget_line_items: [{ amount: 100, fees: 5, date_needed: "2024-05-02T11:00:00", status: "PLANNED" }],
-                _meta: { isEditable: false }
+                _meta: { isEditable: true } // API returns true for super users
             };
 
             renderComponent(
