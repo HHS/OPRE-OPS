@@ -644,11 +644,7 @@ class BudgetLineItemService:
             and budget_line_item.status in [BudgetLineItemStatus.DRAFT]
         ) or (budget_line_item.status not in [BudgetLineItemStatus.DRAFT]):
             # check required fields on budget line item
-            bli_required_fields = (
-                BudgetLineItem.get_required_fields_for_status_change()
-                if not is_super_user(current_user, current_app)
-                else []
-            )
+            bli_required_fields = BudgetLineItem.get_required_fields_for_status_change()
 
             missing_fields = BudgetLineItemService._get_missing_fields(
                 bli_required_fields, budget_line_item, updated_fields

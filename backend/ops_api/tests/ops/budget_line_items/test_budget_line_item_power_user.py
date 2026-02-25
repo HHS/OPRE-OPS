@@ -807,6 +807,7 @@ def test_power_user_update_obligate_by_date(
         status=bli_status,
         amount=5000,
         services_component_id=agreement.awarding_entity_id,
+        date_needed=datetime.now() + timedelta(days=1) if bli_status != BudgetLineItemStatus.DRAFT else None,
     )
     loaded_db.add(bli)
     loaded_db.commit()
@@ -819,7 +820,7 @@ def test_power_user_update_obligate_by_date(
         assert response.status_code == 200
     else:
         assert response.status_code == 400
-        assert "BLI must have a Need By Date when status is not DRAFT" in response.json["errors"]["date_needed"]
+        assert "Budget Line Item is missing required fields." in response.json["errors"]["status"]
 
     response = power_user_auth_client.patch(
         url_for("api.budget-line-items-item", id=bli.id),
@@ -951,11 +952,17 @@ def test_optional_services_component_for_power_user(
     )
     assert response.status_code == 200
 
+    # Power users can set services_component_id to None for DRAFT status
+    # but NOT for higher statuses (PLANNED, IN_EXECUTION, OBLIGATED)
     response = power_user_auth_client.patch(
         url_for("api.budget-line-items-item", id=bli.id),
         json={"services_component_id": None},
     )
-    assert response.status_code == 200
+    if bli_status == BudgetLineItemStatus.DRAFT:
+        assert response.status_code == 200
+    else:
+        assert response.status_code == 400
+        assert "Budget Line Item is missing required fields." in response.json["errors"]["status"]
 
     response = basic_user_auth_client.patch(
         url_for("api.budget-line-items-item", id=bli.id),
