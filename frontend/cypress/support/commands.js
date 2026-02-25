@@ -32,6 +32,11 @@ const severityIndicators = {
 
 validateA11yAllowlist();
 
+const isRegressionGateEnabled = () => {
+    const rawValue = Cypress.env("A11Y_REGRESSION_GATE");
+    return rawValue === true || rawValue === "true" || rawValue === 1 || rawValue === "1";
+};
+
 const normalizeViolations = (violations) => {
     const specName = Cypress.spec.relative;
     const currentUrl = Cypress.config("baseUrl");
@@ -51,7 +56,7 @@ const normalizeViolations = (violations) => {
 
 const violationHandler = (violations) => {
     const normalizedViolations = normalizeViolations(violations);
-    const regressionGateEnabled = Boolean(Cypress.env("A11Y_REGRESSION_GATE"));
+    const regressionGateEnabled = isRegressionGateEnabled();
     const currentSpec = Cypress.spec.relative;
 
     violations.forEach((violation) => {
@@ -105,10 +110,17 @@ const violationHandler = (violations) => {
 };
 
 Cypress.Commands.overwrite("checkA11y", (originalFn, context, options, violationCallback, skipFailures) => {
-    if (!violationCallback) {
-        violationCallback = violationHandler;
-    }
-    return originalFn(context, options, violationCallback, skipFailures);
+    const gateEnabled = isRegressionGateEnabled();
+    const mergedViolationCallback = (violations) => {
+        if (violationCallback) {
+            violationCallback(violations);
+        }
+        violationHandler(violations);
+    };
+
+    // In gate mode, we fail from our allowlist-aware handler instead of the default axe assertion path.
+    const effectiveSkipFailures = gateEnabled ? true : skipFailures;
+    return originalFn(context, options, mergedViolationCallback, effectiveSkipFailures);
 });
 
 Cypress.Commands.add("verifyTableColumnValues", (selector, expectedValue, timeout = 30000) => {

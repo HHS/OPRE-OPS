@@ -88,6 +88,24 @@ const TEMPORARY_A11Y_ALLOWLIST = [
         rationale: "Notification center actions include icon-only links pending refactor.",
         expiresOn: "2026-06-30",
         targetRemovalIssue: "#5149"
+    },
+    {
+        id: "A11Y-ALLOW-0011",
+        specPattern: "cypress/e2e/portfolioDetail.cy.js",
+        ruleId: "svg-img-alt",
+        owner: "frontend-team",
+        rationale: "Legacy inline SVG icon lacks accessible text in portfolio detail widgets.",
+        expiresOn: "2026-06-30",
+        targetRemovalIssue: "#5149"
+    },
+    {
+        id: "A11Y-ALLOW-0012",
+        specPattern: "cypress/e2e/budgetLineItemsList.cy.js",
+        ruleId: "svg-img-alt",
+        owner: "frontend-team",
+        rationale: "Legacy inline SVG icon lacks accessible text in budget line list controls.",
+        expiresOn: "2026-06-30",
+        targetRemovalIssue: "#5149"
     }
 ];
 
