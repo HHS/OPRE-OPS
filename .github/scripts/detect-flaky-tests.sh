@@ -26,79 +26,13 @@ fi
 
 # Temporary files for results
 FLAKY_TESTS=$(mktemp)
-SPEC_RESULTS=$(mktemp)
-trap 'rm -f "$FLAKY_TESTS" "$SPEC_RESULTS"' EXIT
+trap 'rm -f "$FLAKY_TESTS"' EXIT
 
-# Parse Cypress output to track spec runs and their results
+# Parse Cypress output to detect flaky tests
 # This awk script:
 # 1. Identifies when a spec starts running (with or without retry indicator)
 # 2. Tracks whether that run had failures
 # 3. Records specs that had retry attempts and ultimately passed
-awk '
-BEGIN {
-    current_spec = ""
-    has_failures = 0
-}
-
-# Match "Running: path/to/spec.cy.js" or "Running: path/to/spec.cy.js (Attempt X of Y)"
-# Allow leading whitespace to handle indented CI output
-/^[[:space:]]*Running:.*\.cy\.js/ {
-    # Save previous spec results if we were tracking one
-    if (current_spec != "") {
-        # Record: spec_name final_result
-        print current_spec, has_failures
-    }
-
-    # Extract spec filename
-    for(i=1; i<=NF; i++) {
-        if($i ~ /\.cy\.js/) {
-            spec = $i
-            sub(/.*\//, "", spec)  # Remove path
-            current_spec = spec
-            break
-        }
-    }
-
-    # Check if this is a retry attempt and mark it for this spec
-    if ($0 ~ /\(Attempt [2-9] of [0-9]\)/) {
-        spec_had_retry[current_spec] = 1
-    }
-
-    # Reset failure flag for this run
-    has_failures = 0
-}
-
-# Match lines with "X failing" to detect failures
-/[0-9]+ failing/ {
-    has_failures = 1
-}
-
-END {
-    # Save the last spec
-    if (current_spec != "") {
-        print current_spec, has_failures
-    }
-}
-' "$CYPRESS_LOG" > "$SPEC_RESULTS"
-
-# Process the results to find truly flaky tests:
-# Specs that had retry attempts and ultimately passed (no failures in final run)
-awk '
-{
-    spec = $1
-    has_failures = $2
-
-    # Track the final result for each spec (last occurrence wins)
-    spec_final_result[spec] = has_failures
-}
-
-END {
-    # Read spec_had_retry array from the previous awk output
-    # We need to check both conditions in a single pass
-}
-' "$SPEC_RESULTS" > /dev/null
-
-# Simpler approach: combine both parsing steps into one
 awk '
 BEGIN {
     current_spec = ""
