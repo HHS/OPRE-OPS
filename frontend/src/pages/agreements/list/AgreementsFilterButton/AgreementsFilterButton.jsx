@@ -36,6 +36,7 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
 
     const fieldStyles = "usa-fieldset margin-bottom-205";
     const legendStyles = `usa-legend font-sans-3xs margin-top-0 padding-bottom-1 ${customStyles.legendColor}`;
+    const fullWidth = { width: "26.2rem" };
 
     const fieldsetList = [
         <fieldset
@@ -47,7 +48,7 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
                 setSelectedFiscalYears={setFiscalYear}
                 legendClassname={legendStyles}
                 defaultString={""}
-                overrideStyles={{ width: "22.7rem" }}
+                overrideStyles={fullWidth}
                 budgetLinesFiscalYears={agreementFilterOptions?.fiscal_years || []}
                 label="Compare Fiscal Years"
                 includeAllOption={true}
@@ -62,7 +63,7 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
                 setSelectedPortfolios={setPortfolio}
                 legendClassname={legendStyles}
                 defaultString={""}
-                overrideStyles={{ width: "22.7rem" }}
+                overrideStyles={fullWidth}
             />
         </fieldset>,
         <fieldset
@@ -75,7 +76,7 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
                 agreementFilterOptions={agreementFilterOptions}
                 legendClassname={legendStyles}
                 defaultString={""}
-                overrideStyles={{ width: "22.7rem" }}
+                overrideStyles={fullWidth}
             />
         </fieldset>,
         <fieldset
@@ -87,7 +88,7 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
                 setSelectedAgreementTypes={setAgreementType}
                 legendClassname={legendStyles}
                 defaultString={""}
-                overrideStyles={{ width: "22.7rem" }}
+                overrideStyles={fullWidth}
             />
         </fieldset>,
         <fieldset
@@ -99,7 +100,7 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
                 setSelectedAgreementNames={setAgreementName}
                 legendClassname={legendStyles}
                 defaultString={""}
-                overrideStyles={{ width: "22.7rem" }}
+                overrideStyles={fullWidth}
             />
         </fieldset>,
         <fieldset
@@ -112,7 +113,7 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
                 agreementFilterOptions={agreementFilterOptions}
                 legendClassname={legendStyles}
                 defaultString={""}
-                overrideStyles={{ width: "22.7rem" }}
+                overrideStyles={fullWidth}
             />
         </fieldset>
     ];
