@@ -12,6 +12,7 @@ The fastest way to verify basic functionality:
 ```
 
 **What this validates:**
+
 - ✅ Detects tests that failed then passed
 - ✅ Ignores tests that passed on first attempt
 - ✅ Ignores tests that failed all retry attempts
@@ -109,7 +110,7 @@ gh run view <RUN_ID> --log > /tmp/historical-run.log
 
 Run E2E tests locally with retries enabled to capture real flakiness.
 
-### Setup
+### Start Application
 
 ```bash
 # Start the application
@@ -134,6 +135,7 @@ bun run cypress run --config-file cypress.config.ci.js 2>&1 | tee /tmp/local-e2e
 ### Expected Outcomes
 
 If you have flaky tests in your suite:
+
 - Script should report only tests that failed initially but passed on retry
 - Should NOT report tests that passed first time
 - Should NOT report tests that failed all attempts
@@ -168,6 +170,7 @@ To measure effectiveness, track:
 ### Script reports no flaky tests but CI had retries
 
 Check if the retried tests actually passed:
+
 ```bash
 # Look for specs with retries that still failed
 grep -E "Attempt [2-9]" /tmp/cypress-output.log | grep -A 20 "failing"
@@ -176,6 +179,7 @@ grep -E "Attempt [2-9]" /tmp/cypress-output.log | grep -A 20 "failing"
 ### Script reports wrong tests
 
 Verify the Cypress output format matches expectations:
+
 ```bash
 # Check the actual format
 grep -E "^Running:" /tmp/cypress-output.log | head -10
@@ -185,6 +189,7 @@ grep -E "passing|failing" /tmp/cypress-output.log | head -10
 ### Script crashes or has errors
 
 Run with verbose output:
+
 ```bash
 bash -x ./.github/scripts/detect-flaky-tests.sh /tmp/cypress-output.log
 ```
