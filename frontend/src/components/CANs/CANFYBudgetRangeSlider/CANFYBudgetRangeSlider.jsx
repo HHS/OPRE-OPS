@@ -16,7 +16,13 @@ import CurrencyFormat from "react-currency-format";
  * @param {CANFYBudgetRangeSliderProps} props
  * @returns {JSX.Element} - The CAN FY Budget Range Slider component
  */
-const CANFYBudgetRangeSlider = ({ fyBudgetRange, legendClassname = "usa-label margin-top-0", budget, setBudget, overrideStyles = {} }) => {
+const CANFYBudgetRangeSlider = ({
+    fyBudgetRange,
+    legendClassname = "usa-label margin-top-0",
+    budget,
+    setBudget,
+    overrideStyles = {}
+}) => {
     const [minValue, maxValue] = budget;
     const [fyBudgetMin, fyBudgetMax] = fyBudgetRange;
     const [sliderValue, setSliderValue] = React.useState([0, 100]);
