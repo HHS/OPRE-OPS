@@ -60,7 +60,7 @@ You can run this script locally to analyze Cypress output from local test runs:
 ```bash
 # Run Cypress locally and capture output
 cd frontend
-npm run test:e2e 2>&1 | tee cypress-output.log
+bun run test:e2e 2>&1 | tee cypress-output.log
 
 # Analyze for flaky tests
 ../.github/scripts/detect-flaky-tests.sh cypress-output.log
