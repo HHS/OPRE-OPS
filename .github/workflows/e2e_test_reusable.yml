@@ -75,6 +75,7 @@ jobs:
           JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
           JWT_PUBLIC_KEY: ${{ secrets.JWT_PUBLIC_KEY }}
         run: |
+          set -o pipefail
           echo "Spec: ${{ steps.rel-spec.outputs.REL_SPEC }}"
           dbus-run-session -- npx cypress run --config-file ./cypress.config.ci.js --headless --spec "${{ steps.rel-spec.outputs.REL_SPEC }}" 2>&1 | tee cypress-output-${{ steps.get-filename.outputs.TEST_FILE }}.log
 
