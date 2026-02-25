@@ -53,7 +53,8 @@ BEGIN {
     }
 
     # Check if this is a retry attempt and mark it for this spec
-    if ($0 ~ /\(Attempt [2-9] of [0-9]\)/) {
+    # Cypress never shows "Attempt 1", only "Attempt 2" and higher
+    if ($0 ~ /\(Attempt [0-9]+ of [0-9]+\)/) {
         spec_had_retry[current_spec] = 1
     }
 
