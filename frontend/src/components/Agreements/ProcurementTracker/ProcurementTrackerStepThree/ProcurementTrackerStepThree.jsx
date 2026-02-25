@@ -54,43 +54,41 @@ const ProcurementTrackerStepThree = ({ stepStatus, stepThreeData, authorizedUser
                         be uploaded to the Documents Tab.
                     </p>
                     <div className="display-flex flex-justify width-tablet">
-                        <div style={{ width: "275px" }}>
-                            <MemoizedDatePicker
-                                id="solicitation-period-start-date"
-                                name="solicitationPeriodStartDate"
-                                className="width-card-lg"
-                                label="Solicitation Period Start Date"
-                                hint="mm/dd/yyyy"
-                                value={solicitationPeriodStartDate}
-                                messages={validatorRes.getErrors("solicitationPeriodStartDate") || []}
-                                onChange={(/** @type {any} */ e) => {
-                                    const nextStartDate = e.target.value;
-                                    runValidate("solicitationPeriodStartDate", nextStartDate);
-                                    runValidate("solicitationPeriodEndDate", solicitationPeriodEndDate, {
-                                        solicitationPeriodStartDate: nextStartDate
-                                    });
-                                    setSolicitationPeriodStartDate(nextStartDate);
-                                }}
-                                isDisabled={!hasActiveTracker}
-                            />
-                        </div>
-                        <div style={{ width: "275px" }}>
-                            <MemoizedDatePicker
-                                id="solicitation-period-end-date"
-                                name="solicitationPeriodEndDate"
-                                className="margin-left-4"
-                                label="Solicitation Period End Date"
-                                hint="mm/dd/yyyy"
-                                value={solicitationPeriodEndDate}
-                                messages={validatorRes.getErrors("solicitationPeriodEndDate") || []}
-                                onChange={(/** @type {any} */ e) => {
-                                    const nextEndDate = e.target.value;
-                                    runValidate("solicitationPeriodEndDate", nextEndDate);
-                                    setSolicitationPeriodEndDate(nextEndDate);
-                                }}
-                                isDisabled={!hasActiveTracker}
-                            />
-                        </div>
+                        <MemoizedDatePicker
+                            id="solicitation-period-start-date"
+                            name="solicitationPeriodStartDate"
+                            className="width-card-lg"
+                            label="Solicitation Period Start Date"
+                            hint="mm/dd/yyyy"
+                            value={solicitationPeriodStartDate}
+                            messages={validatorRes.getErrors("solicitationPeriodStartDate") || []}
+                            onChange={(/** @type {any} */ e) => {
+                                const nextStartDate = e.target.value;
+                                runValidate("solicitationPeriodStartDate", nextStartDate);
+                                runValidate("solicitationPeriodEndDate", solicitationPeriodEndDate, {
+                                    solicitationPeriodStartDate: nextStartDate
+                                });
+                                setSolicitationPeriodStartDate(nextStartDate);
+                            }}
+                            isDisabled={!hasActiveTracker}
+                        />
+
+                        <MemoizedDatePicker
+                            id="solicitation-period-end-date"
+                            name="solicitationPeriodEndDate"
+                            className="width-card-lg margin-left-neg-3"
+                            label="Solicitation Period End Date"
+                            hint="mm/dd/yyyy"
+                            value={solicitationPeriodEndDate}
+                            messages={validatorRes.getErrors("solicitationPeriodEndDate") || []}
+                            onChange={(/** @type {any} */ e) => {
+                                const nextEndDate = e.target.value;
+                                runValidate("solicitationPeriodEndDate", nextEndDate);
+                                setSolicitationPeriodEndDate(nextEndDate);
+                            }}
+                            isDisabled={!hasActiveTracker}
+                        />
+
                         <button
                             className="usa-button usa-button--unstyled flex-align-self-end padding-bottom-1"
                             data-cy="target-completion-save-btn"

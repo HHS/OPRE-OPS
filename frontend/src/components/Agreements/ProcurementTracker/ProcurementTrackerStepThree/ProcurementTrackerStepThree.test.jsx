@@ -88,7 +88,6 @@ vi.mock("../../../UI/USWDS/DatePicker", () => ({
         </div>
     )
 }));
-
 vi.mock("../../../UI/Form/TextArea", () => ({
     default: ({ label, value, onChange, isDisabled, maxLength, name, className }) => (
         <div data-testid="text-area">
