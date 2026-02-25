@@ -39,14 +39,14 @@ export const CANFilterButton = ({ filters, setFilters, portfolioOptions, canOpti
     const fieldStyles = "usa-fieldset margin-bottom-205";
     const legendStyles = "usa-legend font-sans-3xs margin-top-0 padding-bottom-1 text-base-dark";
     const halfWidth = { width: "12rem" };
-    const fullWidth = { width: "22.7rem" };
+    const fullWidth = { width: "26.2rem" };
 
     const fieldsetList = [
         <div
             key="row-1"
             className="display-flex flex-justify gap-2"
         >
-            <fieldset className={fieldStyles + " flex-1"}>
+            <fieldset className={fieldStyles}>
                 <CANActivePeriodComboBox
                     activePeriod={activePeriod}
                     setActivePeriod={setActivePeriod}
@@ -54,7 +54,7 @@ export const CANFilterButton = ({ filters, setFilters, portfolioOptions, canOpti
                     overrideStyles={halfWidth}
                 />
             </fieldset>
-            <fieldset className={fieldStyles + " flex-1"}>
+            <fieldset className={fieldStyles}>
                 <CANTransferComboBox
                     transfer={transfer}
                     setTransfer={setTransfer}
@@ -96,6 +96,7 @@ export const CANFilterButton = ({ filters, setFilters, portfolioOptions, canOpti
                 setBudget={setBudget}
                 legendClassname={legendStyles}
                 fyBudgetRange={fyBudgetRange}
+                overrideStyles={fullWidth}
             />
         </fieldset>
     ];

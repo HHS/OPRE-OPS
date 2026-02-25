@@ -7,6 +7,7 @@ import CurrencyFormat from "react-currency-format";
  * @property {string} [legendClassname] - CSS class for the legend
  * @property {[number, number]} budget - The current budget range
  * @property {function([number, number]): void} setBudget - Function to update the budget
+ * @property {Object} [overrideStyles] - CSS styles to override the default styles of the slider
  */
 
 /**
@@ -15,7 +16,7 @@ import CurrencyFormat from "react-currency-format";
  * @param {CANFYBudgetRangeSliderProps} props
  * @returns {JSX.Element} - The CAN FY Budget Range Slider component
  */
-const CANFYBudgetRangeSlider = ({ fyBudgetRange, legendClassname = "usa-label margin-top-0", budget, setBudget }) => {
+const CANFYBudgetRangeSlider = ({ fyBudgetRange, legendClassname = "usa-label margin-top-0", budget, setBudget, overrideStyles = {} }) => {
     const [minValue, maxValue] = budget;
     const [fyBudgetMin, fyBudgetMax] = fyBudgetRange;
     const [sliderValue, setSliderValue] = React.useState([0, 100]);
@@ -78,6 +79,7 @@ const CANFYBudgetRangeSlider = ({ fyBudgetRange, legendClassname = "usa-label ma
                     handleChange={calculateBudgetRange}
                     defaultValue={[0, 100]}
                     value={sliderValue}
+                    overrideStyles={overrideStyles}
                 />
             </div>
 
