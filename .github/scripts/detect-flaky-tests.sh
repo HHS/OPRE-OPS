@@ -65,16 +65,17 @@ BEGIN {
 # Match lines with "X failing" to detect failures
 /[0-9]+ failing/ {
     has_failures = 1
-    # Record the failure status for the current spec
+    # Always record failure state (takes precedence)
     if (current_spec != "") {
-        spec_final_result[current_spec] = has_failures
+        spec_final_result[current_spec] = 1
     }
 }
 
 # Match lines with "X passing" - indicates end of spec run
 /[0-9]+ passing/ {
-    # If we have only passing (no failures), record success
-    if (current_spec != "" && has_failures == 0) {
+    # Only record success if we haven't already recorded a failure for this spec
+    # This makes the logic order-independent: failures always take precedence
+    if (current_spec != "" && spec_final_result[current_spec] != 1) {
         spec_final_result[current_spec] = 0
     }
 }
