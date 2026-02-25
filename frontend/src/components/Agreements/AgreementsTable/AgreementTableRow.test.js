@@ -160,7 +160,11 @@ describe("AgreementTableRow", () => {
                 _meta: { isEditable: true } // API returns true for super users
             };
 
-            renderComponent([{ id: 1, name: USER_ROLES.SUPER_USER, is_superuser: true }], agreementWithoutUserOnTeam, true);
+            renderComponent(
+                [{ id: 1, name: USER_ROLES.SUPER_USER, is_superuser: true }],
+                agreementWithoutUserOnTeam,
+                true
+            );
 
             const user = userEvent.setup();
 
@@ -203,7 +207,11 @@ describe("AgreementTableRow", () => {
                 _meta: { isEditable: true } // API returns true for super users
             };
 
-            renderComponent([{ id: 1, name: USER_ROLES.SUPER_USER, is_superuser: true }], agreementWithoutUserOnTeam, true);
+            renderComponent(
+                [{ id: 1, name: USER_ROLES.SUPER_USER, is_superuser: true }],
+                agreementWithoutUserOnTeam,
+                true
+            );
 
             const user = userEvent.setup();
 
