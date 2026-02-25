@@ -73,7 +73,7 @@ jobs:
         working-directory: ./frontend
         env:
           TERM: xterm
-          A11Y_REGRESSION_GATE: "true"
+          CYPRESS_A11Y_REGRESSION_GATE: "true"
           JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
           JWT_PUBLIC_KEY: ${{ secrets.JWT_PUBLIC_KEY }}
         run: |

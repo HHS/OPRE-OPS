@@ -33,7 +33,7 @@ const severityIndicators = {
 validateA11yAllowlist();
 
 const isRegressionGateEnabled = () => {
-    const rawValue = Cypress.env("A11Y_REGRESSION_GATE");
+    const rawValue = Cypress.config("env")?.A11Y_REGRESSION_GATE;
     return rawValue === true || rawValue === "true" || rawValue === 1 || rawValue === "1";
 };
 
