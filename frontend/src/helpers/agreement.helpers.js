@@ -32,6 +32,21 @@ export const getAgreementSubTotal = (agreement) => {
 };
 
 /**
+ * Calculates the total amount of budget lines (amount + fees) for non-DRAFT budget lines,
+ * filtered by the given agreement types.
+ * @param {import("../types/AgreementTypes").Agreement[]} agreements - The list of agreements.
+ * @param {string[]} agreementTypes - The agreement types to include.
+ * @returns {number} - The total amount.
+ */
+export const getAgreementBLITotalByTypes = (agreements, agreementTypes) => {
+    return agreements
+        .filter((agreement) => agreementTypes.includes(agreement.agreement_type))
+        .reduce((total, agreement) => {
+            return total + calculateAgreementTotal(agreement.budget_line_items ?? []);
+        }, 0);
+};
+
+/**
  * Calculates the total amount of all contract agreement budget lines
  * (amount + fees) for non-DRAFT budget lines, matching the per-row
  * totals shown in the agreements table.
@@ -39,11 +54,7 @@ export const getAgreementSubTotal = (agreement) => {
  * @returns {number} - The total amount.
  */
 export const getContractAgreementBLITotal = (agreements) => {
-    return agreements
-        .filter((agreement) => agreement.agreement_type === AgreementType.CONTRACT)
-        .reduce((total, agreement) => {
-            return total + calculateAgreementTotal(agreement.budget_line_items ?? []);
-        }, 0);
+    return getAgreementBLITotalByTypes(agreements, [AgreementType.CONTRACT]);
 };
 
 /**
@@ -53,12 +64,27 @@ export const getContractAgreementBLITotal = (agreements) => {
  * @returns {number} - The total amount.
  */
 export const getPartnerAgreementBLITotal = (agreements) => {
-    const partnerTypes = [AgreementType.AA, AgreementType.IAA];
-    return agreements
-        .filter((agreement) => partnerTypes.includes(agreement.agreement_type))
-        .reduce((total, agreement) => {
-            return total + calculateAgreementTotal(agreement.budget_line_items ?? []);
-        }, 0);
+    return getAgreementBLITotalByTypes(agreements, [AgreementType.AA, AgreementType.IAA]);
+};
+
+/**
+ * Calculates the total amount of all grant agreement budget lines
+ * (amount + fees) for non-DRAFT budget lines.
+ * @param {import("../types/AgreementTypes").Agreement[]} agreements - The list of agreements.
+ * @returns {number} - The total amount.
+ */
+export const getGrantAgreementBLITotal = (agreements) => {
+    return getAgreementBLITotalByTypes(agreements, [AgreementType.GRANT]);
+};
+
+/**
+ * Calculates the total amount of all direct obligation agreement budget lines
+ * (amount + fees) for non-DRAFT budget lines.
+ * @param {import("../types/AgreementTypes").Agreement[]} agreements - The list of agreements.
+ * @returns {number} - The total amount.
+ */
+export const getDirectObligationAgreementBLITotal = (agreements) => {
+    return getAgreementBLITotalByTypes(agreements, [AgreementType.DIRECT_OBLIGATION]);
 };
 
 /**

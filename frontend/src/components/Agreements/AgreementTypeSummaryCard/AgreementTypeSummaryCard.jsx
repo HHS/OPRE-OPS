@@ -12,13 +12,21 @@ import RoundedBox from "../../UI/RoundedBox";
  * @param {string} props.titlePrefix - The prefix for the title, typically indicating the fiscal year
  * @param {number} props.contractTotal - The total amount for Contract agreements
  * @param {number} props.partnerTotal - The total amount for Partner agreements (AA, IAA)
+ * @param {number} props.grantTotal - The total amount for Grant agreements
+ * @param {number} props.directObligationTotal - The total amount for Direct Obligation agreements
  * @returns {React.ReactElement} - A React component that displays the agreement type summary card.
  */
-const AgreementTypeSummaryCard = ({ titlePrefix, contractTotal = 0, partnerTotal = 0 }) => {
+const AgreementTypeSummaryCard = ({
+    titlePrefix,
+    contractTotal = 0,
+    partnerTotal = 0,
+    grantTotal = 0,
+    directObligationTotal = 0
+}) => {
     const [percent, setPercent] = React.useState("");
     const [hoverId, setHoverId] = React.useState(-1);
 
-    const totalAmount = contractTotal + partnerTotal;
+    const totalAmount = contractTotal + partnerTotal + grantTotal + directObligationTotal;
 
     const data = [
         {
@@ -26,14 +34,28 @@ const AgreementTypeSummaryCard = ({ titlePrefix, contractTotal = 0, partnerTotal
             label: "Contract",
             value: contractTotal,
             color: "var(--data-viz-bl-by-status-2)",
-            percent: `${calculatePercent(contractTotal, totalAmount)}%`
+            percent: calculatePercent(contractTotal, totalAmount)
         },
         {
             id: 2,
             label: "Partner",
             value: partnerTotal,
             color: "var(--data-viz-bl-by-status-3)",
-            percent: `${calculatePercent(partnerTotal, totalAmount)}%`
+            percent: calculatePercent(partnerTotal, totalAmount)
+        },
+        {
+            id: 3,
+            label: "Grant",
+            value: grantTotal,
+            color: "var(--data-viz-bl-by-status-4)",
+            percent: calculatePercent(grantTotal, totalAmount)
+        },
+        {
+            id: 4,
+            label: "Direct Obligation",
+            value: directObligationTotal,
+            color: "var(--data-viz-bl-by-status-1)",
+            percent: calculatePercent(directObligationTotal, totalAmount)
         }
     ];
 

@@ -1,4 +1,9 @@
-import { getContractAgreementBLITotal, getPartnerAgreementBLITotal } from "../../../helpers/agreement.helpers";
+import {
+    getContractAgreementBLITotal,
+    getDirectObligationAgreementBLITotal,
+    getGrantAgreementBLITotal,
+    getPartnerAgreementBLITotal
+} from "../../../helpers/agreement.helpers";
 import AgreementFYSpendingSummaryCard from "../AgreementFYSpendingSummaryCard";
 import AgreementTypeSummaryCard from "../AgreementTypeSummaryCard";
 
@@ -16,6 +21,8 @@ const AgreementSummaryCardsSection = ({ fiscalYear, agreements = [], selectedFis
 
     const contractTotal = getContractAgreementBLITotal(agreements, Number(selectedFiscalYear));
     const partnerTotal = getPartnerAgreementBLITotal(agreements);
+    const grantTotal = getGrantAgreementBLITotal(agreements);
+    const directObligationTotal = getDirectObligationAgreementBLITotal(agreements);
 
     return (
         <div className="display-flex flex-justify">
@@ -28,6 +35,8 @@ const AgreementSummaryCardsSection = ({ fiscalYear, agreements = [], selectedFis
                 titlePrefix={titlePrefix}
                 contractTotal={contractTotal}
                 partnerTotal={partnerTotal}
+                grantTotal={grantTotal}
+                directObligationTotal={directObligationTotal}
             />
         </div>
     );
