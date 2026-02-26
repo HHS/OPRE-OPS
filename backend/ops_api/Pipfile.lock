@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "36589a7cd6e61fbf08c9a2649ad756e28ab0e865f86fed47c6a88ba65e73ed6f"
+            "sha256": "deb84439ed67409f04d14e12cea5ef4950823513fe1a0a0b1cfa81c3176a99e9"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -27,12 +27,12 @@
         },
         "alembic-postgresql-enum": {
             "hashes": [
-                "sha256:308666d6f1b154ec4dd10b8599e606711bc7eff050f7fce2e77e435734da5d76",
-                "sha256:5ce76d0fca97e7e11b56ca416aa367aaaf308ff90f3ed5d38a6f160357bebecd"
+                "sha256:39297cb5dc0e71a3e08df1feeab9ffcc1b6aac0be02bf578748d74c442cd3fbf",
+                "sha256:ea23481de3d6a00d68d369f92a46ff4fa27b2575e39c583145f1e23ea9c7511d"
             ],
             "index": "pypi",
             "markers": "python_full_version >= '3.7.0'",
-            "version": "==1.9.0"
+            "version": "==1.10.0"
         },
         "authlib": {
             "hashes": [
@@ -79,11 +79,11 @@
         },
         "certifi": {
             "hashes": [
-                "sha256:9943707519e4add1115f44c2bc244f782c0249876bf51b6599fee1ffbedd685c",
-                "sha256:ac726dd470482006e014ad384921ed6438c457018f4b3d204aea4281258b2120"
+                "sha256:027692e4402ad994f1c42e52a4997a9763c646b73e4096e4d5d6db8af1d6f0fa",
+                "sha256:e887ab5cee78ea814d3472169153c2d12cd43b14bd03329a39a9c6e2e80bfba7"
             ],
             "markers": "python_version >= '3.7'",
-            "version": "==2026.1.4"
+            "version": "==2026.2.25"
         },
         "cffi": {
             "hashes": [
@@ -740,11 +740,11 @@
         },
         "msal": {
             "hashes": [
-                "sha256:76ba83b716ea5a6d75b0279c0ac353a0e05b820ca1f6682c0eb7f45190c43c2f",
-                "sha256:f669b1644e4950115da7a176441b0e13ec2975c29528d8b9e81316023676d6e1"
+                "sha256:76ab7513dbdac88d76abdc6a50110f082b7ed3ff1080aca938c53fc88bc75b51",
+                "sha256:baf268172d2b736e5d409689424d2f321b4142cab231b4b96594c86762e7e01d"
             ],
             "markers": "python_version >= '3.8'",
-            "version": "==1.34.0"
+            "version": "==1.35.0"
         },
         "msal-extensions": {
             "hashes": [
@@ -1454,11 +1454,11 @@
         },
         "certifi": {
             "hashes": [
-                "sha256:9943707519e4add1115f44c2bc244f782c0249876bf51b6599fee1ffbedd685c",
-                "sha256:ac726dd470482006e014ad384921ed6438c457018f4b3d204aea4281258b2120"
+                "sha256:027692e4402ad994f1c42e52a4997a9763c646b73e4096e4d5d6db8af1d6f0fa",
+                "sha256:e887ab5cee78ea814d3472169153c2d12cd43b14bd03329a39a9c6e2e80bfba7"
             ],
             "markers": "python_version >= '3.7'",
-            "version": "==2026.1.4"
+            "version": "==2026.2.25"
         },
         "charset-normalizer": {
             "hashes": [
@@ -2974,6 +2974,14 @@
             "markers": "python_version >= '3.9'",
             "version": "==3.15.1"
         },
+        "python-discovery": {
+            "hashes": [
+                "sha256:447941ba1aed8cc2ab7ee3cb91be5fc137c5bdbb05b7e6ea62fbdcb66e50b268",
+                "sha256:a162893b8809727f54594a99ad2179d2ede4bf953e12d4c7abc3cc9cdbd1437b"
+            ],
+            "markers": "python_version >= '3.8'",
+            "version": "==1.1.0"
+        },
         "python-engineio": {
             "hashes": [
                 "sha256:0a853fcef52f5b345425d8c2b921ac85023a04dfcf75d7b74696c61e940fd066",
@@ -3197,11 +3205,11 @@
         },
         "virtualenv": {
             "hashes": [
-                "sha256:94f39b1abaea5185bf7ea5a46702b56f1d0c9aa2f41a6c2b8b0af4ddc74c10a7",
-                "sha256:d6e78e5889de3a4742df2d3d44e779366325a90cf356f15621fddace82431794"
+                "sha256:d44e70637402c7f4b10f48491c02a6397a3a187152a70cba0b6bc7642d69fb05",
+                "sha256:e8efe4271b4a5efe7a4dce9d60a05fd11859406c0d6aa8464f4cf451bc132889"
             ],
             "markers": "python_version >= '3.8'",
-            "version": "==20.38.0"
+            "version": "==21.0.0"
         },
         "wcwidth": {
             "hashes": [

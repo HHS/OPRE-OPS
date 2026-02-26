@@ -164,18 +164,20 @@ const ProcurementTrackerStepOne = ({
                             The pre-solicitation package has been sent to the Procurement Shop for review
                         </p>
                     </div>
-
-                    <dl>
+                    <dl className="display-flex flex-wrap">
                         <TermTag
                             term="Completed By"
                             description={step1CompletedByUserName}
+                            className="margin-right-4"
                         />
                         <TermTag
                             term="Date Completed"
                             description={step1DateCompletedLabel}
                         />
-                        <dt className="margin-0 text-base-dark margin-top-3 font-12px">Notes</dt>
-                        <dd className="margin-0 margin-top-1">{step1NotesLabel || "None"}</dd>
+                        <div className="width-full">
+                            <dt className="margin-0 text-base-dark margin-top-3 font-12px">Notes</dt>
+                            <dd className="margin-0 margin-top-1">{step1NotesLabel || "None"}</dd>
+                        </div>
                     </dl>
                 </div>
             )}
