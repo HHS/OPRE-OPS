@@ -102,7 +102,7 @@ const ProcurementTrackerStepTwo = ({
                         step as complete. If you have a target completion date for when the package will be finalized,
                         enter it below.
                     </p>
-                    <div className="display-flex flex-align-end">
+                    <div className="display-flex flex-align-end margin-bottom-2">
                         {stepTwoData?.target_completion_date ? (
                             <TermTag
                                 term="Target Completion Date"
@@ -139,11 +139,13 @@ const ProcurementTrackerStepTwo = ({
                     </div>
                     {isPastDue && (
                         <>
-                            <SimpleAlert
-                                type="warning"
-                                message="The Target Completion Date is past due. Please enter a Revised Target Date below."
-                            />
-                            <div className="display-flex flex-align-end">
+                            <div className="margin-x-4">
+                                <SimpleAlert
+                                    type="warning"
+                                    message="The Target Completion Date is past due. Please enter a Revised Target Date below."
+                                />
+                            </div>
+                            <div className="display-flex flex-align-end margin-bottom-2">
                                 <MemoizedDatePicker
                                     id="revised-target-date"
                                     name="revisedTargetDate"
@@ -171,7 +173,7 @@ const ProcurementTrackerStepTwo = ({
                             </div>
                         </>
                     )}
-                    <div className="usa-checkbox">
+                    <div className="usa-checkbox margin-top-3">
                         <input
                             className="usa-checkbox__input"
                             id="step-2-checkbox"
@@ -186,7 +188,8 @@ const ProcurementTrackerStepTwo = ({
                             className="usa-checkbox__label"
                             htmlFor="step-2-checkbox"
                         >
-                            The pre-solicitation package has been sent to the Procurement Shop for review
+                            The pre-solicitation package has been finalized between the Procurement Shop and OPRE and
+                            the final version has been uploaded
                         </label>
                     </div>
                     <div className="display-flex flex-align-center">
@@ -228,11 +231,15 @@ const ProcurementTrackerStepTwo = ({
                         onChange={(_, value) => setStep2Notes(value)}
                         isDisabled={isPackageFinalizedFieldsDisabled}
                     />
-                    <p>After the package is finalized, enter the Draft Solicitation date below (if applicable).</p>
+                    <p
+                        className={`margin-top-4 margin-bottom-0 ${isPackageFinalizedFieldsDisabled ? "text-base" : "text-base-dark"}`}
+                    >
+                        After the package is finalized, enter the Draft Solicitation date below (if applicable).
+                    </p>
                     <MemoizedDatePicker
                         id="step-2-draft-solicitation-date"
                         name="draftSolicitationDate"
-                        className=""
+                        className="width-card-lg"
                         label="Draft Solicitation Date (optional)"
                         hint="mm/dd/yyyy"
                         value={draftSolicitationDate}
@@ -282,28 +289,36 @@ const ProcurementTrackerStepTwo = ({
                             aria-hidden="true"
                         />
                         <p className="margin-y-0">
-                            The pre-solicitation package has been sent to the Procurement Shop for review
+                            The pre-solicitation package has been finalized between the Procurement Shop and OPRE and
+                            the final version has been uploaded
                         </p>
                     </div>
-                    <dl>
-                        <TermTag
-                            term="Target Completion Date"
-                            description={step2TargetCompletionDateLabel || "None"}
-                        />
+                    <dl className="display-flex flex-wrap">
+                        <div className="width-full">
+                            <TermTag
+                                term="Target Completion Date"
+                                description={step2TargetCompletionDateLabel || "None"}
+                            />
+                        </div>
                         <TermTag
                             term="Completed By"
                             description={step2CompletedByUserName}
+                            className="margin-right-4"
                         />
                         <TermTag
                             term="Date Completed"
                             description={step2DateCompletedLabel}
                         />
-                        <TermTag
-                            term="Draft Solicitation Date"
-                            description={step2DraftSolicitationDateLabel || "None"}
-                        />
-                        <dt className="margin-0 text-base-dark margin-top-3 font-12px">Notes</dt>
-                        <dd className="margin-0 margin-top-1">{step2NotesLabel || "None"}</dd>
+                        <div className="width-full">
+                            <TermTag
+                                term="Draft Solicitation Date"
+                                description={step2DraftSolicitationDateLabel || "None"}
+                            />
+                        </div>
+                        <div className="width-full">
+                            <dt className="margin-0 text-base-dark margin-top-3 font-12px">Notes</dt>
+                            <dd className="margin-0 margin-top-1">{step2NotesLabel || "None"}</dd>
+                        </div>
                     </dl>
                 </div>
             )}
