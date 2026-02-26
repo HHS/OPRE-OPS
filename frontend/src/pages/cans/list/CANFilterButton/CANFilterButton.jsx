@@ -6,6 +6,7 @@ import CANTransferComboBox from "../../../../components/CANs/CANTransferComboBox
 import FilterButton from "../../../../components/UI/FilterButton";
 import useCANFilterButton from "./CANFilterButton.hooks";
 import CANFYBudgetRangeSlider from "../../../../components/CANs/CANFYBudgetRangeSlider";
+import { FILTER_MODAL_FULL_WIDTH } from "../../../../constants";
 
 /**
  * @typedef {import('./CANFilterTypes').FilterOption} FilterOption
@@ -39,14 +40,13 @@ export const CANFilterButton = ({ filters, setFilters, portfolioOptions, canOpti
     const fieldStyles = "usa-fieldset margin-bottom-205";
     const legendStyles = "usa-legend font-sans-3xs margin-top-0 padding-bottom-1 text-base-dark";
     const halfWidth = { width: "12rem" };
-    const fullWidth = { width: "22.7rem" };
 
     const fieldsetList = [
         <div
             key="row-1"
             className="display-flex flex-justify gap-2"
         >
-            <fieldset className={fieldStyles + " flex-1"}>
+            <fieldset className={fieldStyles}>
                 <CANActivePeriodComboBox
                     activePeriod={activePeriod}
                     setActivePeriod={setActivePeriod}
@@ -54,7 +54,7 @@ export const CANFilterButton = ({ filters, setFilters, portfolioOptions, canOpti
                     overrideStyles={halfWidth}
                 />
             </fieldset>
-            <fieldset className={fieldStyles + " flex-1"}>
+            <fieldset className={fieldStyles}>
                 <CANTransferComboBox
                     transfer={transfer}
                     setTransfer={setTransfer}
@@ -72,7 +72,7 @@ export const CANFilterButton = ({ filters, setFilters, portfolioOptions, canOpti
                 setPortfolio={setPortfolio}
                 portfolioOptions={portfolioOptions}
                 legendClassname={legendStyles}
-                overrideStyles={fullWidth}
+                overrideStyles={FILTER_MODAL_FULL_WIDTH}
             />
         </fieldset>,
         <fieldset
@@ -84,7 +84,7 @@ export const CANFilterButton = ({ filters, setFilters, portfolioOptions, canOpti
                 setCan={setCan}
                 canOptions={canOptions}
                 legendClassname={legendStyles}
-                overrideStyles={fullWidth}
+                overrideStyles={FILTER_MODAL_FULL_WIDTH}
             />
         </fieldset>,
         <fieldset
@@ -96,6 +96,7 @@ export const CANFilterButton = ({ filters, setFilters, portfolioOptions, canOpti
                 setBudget={setBudget}
                 legendClassname={legendStyles}
                 fyBudgetRange={fyBudgetRange}
+                overrideStyles={FILTER_MODAL_FULL_WIDTH}
             />
         </fieldset>
     ];

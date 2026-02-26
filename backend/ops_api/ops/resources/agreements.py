@@ -3,6 +3,7 @@ from typing import Any, Optional
 
 from flask import Response, current_app, request
 from flask.views import MethodView
+from flask_jwt_extended import current_user
 from loguru import logger
 from marshmallow import EXCLUDE
 
@@ -36,12 +37,11 @@ from ops_api.ops.schemas.agreements import (
     AgreementRequestSchema,
     MetaSchema,
 )
-from ops_api.ops.services.agreements import AgreementsService
+from ops_api.ops.services.agreements import AgreementsService, get_current_fiscal_year, resolve_fiscal_year
 from ops_api.ops.services.budget_line_items import (
     get_bli_is_editable_meta_data_for_agreements,
 )
 from ops_api.ops.services.ops_service import OpsService, ValidationError
-from ops_api.ops.utils.agreements_helpers import associated_with_agreement
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
@@ -63,7 +63,24 @@ class AgreementItemAPI(BaseItemAPI):
             service: OpsService[Agreement] = AgreementsService(current_app.db_session)
             item: Agreement = service.get(id)
 
-            serialized_agreement = _serialize_agreement_with_meta(item, AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING)
+            fiscal_year_param = request.args.get("fiscal_year")
+            if fiscal_year_param:
+                try:
+                    effective_fy = int(fiscal_year_param)
+                except ValueError:
+                    return make_response_with_headers(
+                        {"error": f"Invalid fiscal_year parameter: '{fiscal_year_param}'. Must be an integer."},
+                        400,
+                    )
+            else:
+                effective_fy = get_current_fiscal_year()
+
+            serialized_agreement = _serialize_agreement_with_meta(
+                service,
+                item,
+                AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING,
+                context={"fiscal_year": effective_fy},
+            )
 
             response = make_response_with_headers(serialized_agreement)
 
@@ -150,13 +167,18 @@ class AgreementListAPI(BaseListAPI):
 
             logger.debug("Serializing results")
 
+            fiscal_year_filters = data.get("fiscal_year")
+            effective_fy = resolve_fiscal_year(fiscal_year_filters)
+            schema_context = {"fiscal_year": effective_fy}
+
             agreement_response = []
 
             for agreement in agreements:
                 serialized_agreement = _serialize_agreement_with_meta(
+                    service,
                     agreement,
                     AGREEMENT_LIST_TYPE_TO_RESPONSE_MAPPING,
-                    is_editable=associated_with_agreement(agreement.id),
+                    context=schema_context,
                 )
 
                 agreement_response.append(serialized_agreement)
@@ -394,26 +416,33 @@ def _update(id: int, message_prefix: str, meta: OpsEventHandler, partial: bool =
 
 
 def _serialize_agreement_with_meta(
-    agreement: Agreement,
-    schema_mapping: dict[AgreementType, Any],
-    is_editable: bool = None,
+    service: AgreementsService, agreement: Agreement, schema_mapping: dict[AgreementType, Any], context: dict = None
 ) -> dict:
     """
     Serialize an agreement with its metadata.
+
+    Note: The schema includes a _meta field, but we populate it manually here
+    because we need to compute isEditable based on the current user's permissions
+    and the agreement's awarded state.
     """
     schema_type = schema_mapping.get(agreement.agreement_type)
-    schema = schema_type()
+    if schema_type is None:
+        raise ValueError(f"No schema mapping found for agreement type: {agreement.agreement_type}")
+    schema = schema_type(exclude=["_meta"])  # Exclude _meta from schema dump since we'll set it manually
+    if context:
+        schema.context = context
     serialized_agreement = schema.dump(agreement)
 
+    # Add _meta to each budget line item
     get_bli_is_editable_meta_data_for_agreements(serialized_agreement)
 
+    # Add _meta to the agreement itself
     meta_schema = MetaSchema()
     data_for_meta = {
-        "isEditable": (is_editable if is_editable is not None else associated_with_agreement(agreement.id)),
+        "isEditable": service._is_editable(agreement, current_user),
         "immutable_awarded_fields": agreement.immutable_awarded_fields,
     }
-    meta = meta_schema.dump(data_for_meta)
-    serialized_agreement["_meta"] = meta
+    serialized_agreement["_meta"] = meta_schema.dump(data_for_meta)
 
     return serialized_agreement
 

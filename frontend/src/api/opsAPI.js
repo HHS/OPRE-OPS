@@ -169,7 +169,14 @@ export const opsApi = createApi({
             providesTags: ["Agreements", "BudgetLineItems"]
         }),
         getAgreementById: builder.query({
-            query: (id) => `/agreements/${id}`,
+            query: (arg) => {
+                if (typeof arg === "object" && arg !== null) {
+                    const { id, fiscal_year } = arg;
+                    const params = fiscal_year != null ? `?fiscal_year=${fiscal_year}` : "";
+                    return `/agreements/${id}${params}`;
+                }
+                return `/agreements/${arg}`;
+            },
             providesTags: ["Agreements"]
         }),
         addAgreement: builder.mutation({
