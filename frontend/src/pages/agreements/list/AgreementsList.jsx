@@ -365,6 +365,8 @@ const AgreementsList = () => {
                         agreements?.length > 0 && (
                             <AgreementSummaryCardsSection
                                 fiscalYear={selectedFiscalYear === "All" ? "All FYs" : `FY ${selectedFiscalYear}`}
+                                agreements={agreements}
+                                selectedFiscalYear={selectedFiscalYear}
                             />
                         )
                     }

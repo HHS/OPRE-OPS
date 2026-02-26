@@ -1,3 +1,8 @@
+import React from "react";
+import { calculatePercent } from "../../../helpers/utils";
+import ResponsiveDonutWithInnerPercent from "../../UI/DataViz/ResponsiveDonutWithInnerPercent";
+import CustomLayerComponent from "../../UI/DataViz/ResponsiveDonutWithInnerPercent/CustomLayerComponent";
+import LegendItem from "../../UI/Cards/LineGraphWithLegendCard/LegendItem";
 import RoundedBox from "../../UI/RoundedBox";
 
 /**
@@ -5,9 +10,33 @@ import RoundedBox from "../../UI/RoundedBox";
  * @component
  * @param {Object} props - The props that were defined by the caller of this component.
  * @param {string} props.titlePrefix - The prefix for the title, typically indicating the fiscal year
+ * @param {number} props.contractTotal - The total amount for Contract agreements
+ * @param {number} props.partnerTotal - The total amount for Partner agreements (AA, IAA)
  * @returns {React.ReactElement} - A React component that displays the agreement type summary card.
  */
-const AgreementTypeSummaryCard = ({ titlePrefix }) => {
+const AgreementTypeSummaryCard = ({ titlePrefix, contractTotal = 0, partnerTotal = 0 }) => {
+    const [percent, setPercent] = React.useState("");
+    const [hoverId, setHoverId] = React.useState(-1);
+
+    const totalAmount = contractTotal + partnerTotal;
+
+    const data = [
+        {
+            id: 1,
+            label: "Contract",
+            value: contractTotal,
+            color: "var(--data-viz-bl-by-status-2)",
+            percent: `${calculatePercent(contractTotal, totalAmount)}%`
+        },
+        {
+            id: 2,
+            label: "Partner",
+            value: partnerTotal,
+            color: "var(--data-viz-bl-by-status-3)",
+            percent: `${calculatePercent(partnerTotal, totalAmount)}%`
+        }
+    ];
+
     return (
         <RoundedBox
             dataCy="agreement-type-summary-card"
@@ -20,7 +49,17 @@ const AgreementTypeSummaryCard = ({ titlePrefix }) => {
                     className="font-12px"
                     style={{ minWidth: "230px" }}
                 >
-                    {/* TODO: Add agreement type legend items here */}
+                    {data.map((item) => (
+                        <LegendItem
+                            key={item.id}
+                            id={item.id}
+                            activeId={hoverId}
+                            label={item.label}
+                            value={item.value}
+                            color={item.color}
+                            percent={item.percent}
+                        />
+                    ))}
                 </div>
                 <div
                     id="agreement-type-chart"
@@ -28,7 +67,18 @@ const AgreementTypeSummaryCard = ({ titlePrefix }) => {
                     aria-label="This is a Donut Chart that displays the percent by agreement type in the center."
                     role="img"
                 >
-                    {/* TODO: Add donut chart here */}
+                    {totalAmount > 0 && (
+                        <ResponsiveDonutWithInnerPercent
+                            data={data}
+                            width={150}
+                            height={150}
+                            margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
+                            setPercent={setPercent}
+                            setHoverId={setHoverId}
+                            CustomLayerComponent={CustomLayerComponent(percent)}
+                            container_id="agreement-type-chart"
+                        />
+                    )}
                 </div>
             </div>
         </RoundedBox>

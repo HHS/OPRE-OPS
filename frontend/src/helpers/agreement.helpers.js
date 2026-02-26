@@ -32,6 +32,36 @@ export const getAgreementSubTotal = (agreement) => {
 };
 
 /**
+ * Calculates the total amount of all contract agreement budget lines
+ * (amount + fees) for non-DRAFT budget lines, matching the per-row
+ * totals shown in the agreements table.
+ * @param {import("../types/AgreementTypes").Agreement[]} agreements - The list of agreements.
+ * @returns {number} - The total amount.
+ */
+export const getContractAgreementBLITotal = (agreements) => {
+    return agreements
+        .filter((agreement) => agreement.agreement_type === AgreementType.CONTRACT)
+        .reduce((total, agreement) => {
+            return total + calculateAgreementTotal(agreement.budget_line_items ?? []);
+        }, 0);
+};
+
+/**
+ * Calculates the total amount of all partner agreement (AA, IAA) budget lines
+ * (amount + fees) for non-DRAFT budget lines.
+ * @param {import("../types/AgreementTypes").Agreement[]} agreements - The list of agreements.
+ * @returns {number} - The total amount.
+ */
+export const getPartnerAgreementBLITotal = (agreements) => {
+    const partnerTypes = [AgreementType.AA, AgreementType.IAA];
+    return agreements
+        .filter((agreement) => partnerTypes.includes(agreement.agreement_type))
+        .reduce((total, agreement) => {
+            return total + calculateAgreementTotal(agreement.budget_line_items ?? []);
+        }, 0);
+};
+
+/**
  * Calculates the total cost of a list of items, taking into account a fee per item and non-DRAFT budgetlines.
  * @param {import("../types/BudgetLineTypes").BudgetLine[]} budgetLines - The list of items to calculate the total cost for.
  * @param {number | null} feeRate - The fee rate as a percentage (e.g., 5 for 5%).
