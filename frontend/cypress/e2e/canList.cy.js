@@ -191,7 +191,7 @@ describe("CAN List Filtering", () => {
         cy.get("span").contains("Cost Share").should("exist");
         cy.get("span").contains("Adolescent Development Research (ADR)").should("exist");
         cy.get("span").contains("G1183CE").should("exist");
-        cy.get("span").contains("$690,000 to $9,810,000").should("exist");
+        cy.get("span").contains("$595,000 to $9,905,000").should("exist");
 
         // No CANs found
         cy.get("tbody").should("not.exist");

@@ -35,7 +35,10 @@ const Table = ({ children, tableHeadings, firstHeadingSlot, onClickHeader, selec
      * @returns {object | undefined} - The width to add if the heading matches
      */
     const setColumnWidth = (header) => {
-        if (header.heading === "Next Obligate By" || header.heading === "Status") {
+        if (header.heading === "Status") {
+            return { width: "6.25rem", whiteSpace: "nowrap" };
+        }
+        if (header.heading === "Start" || header.heading === "End") {
             return { width: "6.25rem", whiteSpace: "nowrap" };
         }
         if (header.heading === "Type") {

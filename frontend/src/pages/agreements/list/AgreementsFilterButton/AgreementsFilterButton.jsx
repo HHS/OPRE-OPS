@@ -8,6 +8,7 @@ import AgreementNameComboBox from "../../../../components/Agreements/AgreementNa
 import ContractNumberComboBox from "../../../../components/Agreements/ContractNumberComboBox";
 import FilterButton from "../../../../components/UI/FilterButton/FilterButton";
 import useAgreementsFilterButton from "./AgreementsFilterButton.hooks";
+import { FILTER_MODAL_FULL_WIDTH } from "../../../../constants";
 /**
  * A filter for agreements.
  * @param {Object} props - The component props.
@@ -47,7 +48,7 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
                 setSelectedFiscalYears={setFiscalYear}
                 legendClassname={legendStyles}
                 defaultString={""}
-                overrideStyles={{ width: "22.7rem" }}
+                overrideStyles={FILTER_MODAL_FULL_WIDTH}
                 budgetLinesFiscalYears={agreementFilterOptions?.fiscal_years || []}
                 label="Compare Fiscal Years"
                 includeAllOption={true}
@@ -62,7 +63,7 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
                 setSelectedPortfolios={setPortfolio}
                 legendClassname={legendStyles}
                 defaultString={""}
-                overrideStyles={{ width: "22.7rem" }}
+                overrideStyles={FILTER_MODAL_FULL_WIDTH}
             />
         </fieldset>,
         <fieldset
@@ -75,7 +76,7 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
                 agreementFilterOptions={agreementFilterOptions}
                 legendClassname={legendStyles}
                 defaultString={""}
-                overrideStyles={{ width: "22.7rem" }}
+                overrideStyles={FILTER_MODAL_FULL_WIDTH}
             />
         </fieldset>,
         <fieldset
@@ -87,7 +88,7 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
                 setSelectedAgreementTypes={setAgreementType}
                 legendClassname={legendStyles}
                 defaultString={""}
-                overrideStyles={{ width: "22.7rem" }}
+                overrideStyles={FILTER_MODAL_FULL_WIDTH}
             />
         </fieldset>,
         <fieldset
@@ -99,7 +100,7 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
                 setSelectedAgreementNames={setAgreementName}
                 legendClassname={legendStyles}
                 defaultString={""}
-                overrideStyles={{ width: "22.7rem" }}
+                overrideStyles={FILTER_MODAL_FULL_WIDTH}
             />
         </fieldset>,
         <fieldset
@@ -112,7 +113,7 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
                 agreementFilterOptions={agreementFilterOptions}
                 legendClassname={legendStyles}
                 defaultString={""}
-                overrideStyles={{ width: "22.7rem" }}
+                overrideStyles={FILTER_MODAL_FULL_WIDTH}
             />
         </fieldset>
     ];

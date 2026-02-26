@@ -69,4 +69,26 @@ describe("DoubleRangeSlider", () => {
         expect(thumbs[0]).toHaveAttribute("aria-valuenow", "10");
         expect(thumbs[1]).toHaveAttribute("aria-valuenow", "90");
     });
+    it("applies overrideStyles to the slider", () => {
+        const handleChange = vi.fn();
+        render(
+            <DoubleRangeSlider
+                handleChange={handleChange}
+                value={[25, 75]}
+                overrideStyles={{ width: "50%" }}
+            />
+        );
+
+        const allCSS = Array.from(document.styleSheets)
+            .flatMap((sheet) => {
+                try {
+                    return Array.from(sheet.cssRules);
+                } catch {
+                    return [];
+                }
+            })
+            .map((rule) => rule.cssText)
+            .join("");
+        expect(allCSS).toMatch(/width:\s*50%/);
+    });
 });

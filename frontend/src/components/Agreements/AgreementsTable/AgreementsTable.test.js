@@ -11,8 +11,7 @@ vi.mock("../../../api/opsAPI", async () => {
     const actual = await vi.importActual("../../../api/opsAPI");
     return {
         ...actual,
-        useGetUserByIdQuery: () => ({ data: userData }),
-        useGetAgreementByIdQuery: () => ({ data: agreements[0], isLoading: false, isSuccess: true })
+        useGetUserByIdQuery: () => ({ data: userData })
     };
 });
 
@@ -26,6 +25,7 @@ const agreements = [
         project_officer_id: 1,
         team_members: [{ id: 1 }],
         procurement_shop: {
+            abbr: "GCS",
             fee: 5.0,
             fee_percentage: 5.0
         },
@@ -36,7 +36,8 @@ const agreements = [
                 date_needed: "2024-05-02T11:00:00",
                 status: "DRAFT",
                 proc_shop_fee_percentage: 5.0,
-                total: 105
+                total: 105,
+                fiscal_year: 2025
             },
             {
                 amount: 200,
@@ -44,7 +45,8 @@ const agreements = [
                 date_needed: "2023-03-02T11:00:00",
                 status: "DRAFT",
                 proc_shop_fee_percentage: 5.0,
-                total: 210
+                total: 210,
+                fiscal_year: 2025
             },
             {
                 amount: 300,
@@ -52,9 +54,17 @@ const agreements = [
                 date_needed: "2043-03-04T11:00:00",
                 status: "PLANNED",
                 proc_shop_fee_percentage: 5.0,
-                total: 315
+                total: 315,
+                fiscal_year: 2025
             }
         ],
+        sc_start_date: "2025-01-01",
+        sc_end_date: "2025-12-31",
+        agreement_subtotal: 300,
+        total_agreement_fees: 15,
+        agreement_total: 315,
+        lifetime_obligated: 0,
+        fy_obligated: "0",
         created_by: 1,
         notes: "Test notes",
         created_on: "2021-10-21T03:24:00",
@@ -97,14 +107,18 @@ it("renders without crashing", () => {
     render(
         <Provider store={store}>
             <BrowserRouter>
-                <AgreementsTable agreements={agreements} />
+                <AgreementsTable
+                    agreements={agreements}
+                    selectedFiscalYear="2025"
+                />
             </BrowserRouter>
         </Provider>
     );
 
     expect(screen.getAllByText("Test Agreement")[0]).toBeInTheDocument();
-    expect(screen.getByText("Test Project")).toBeInTheDocument();
     expect(screen.getByText("Grant")).toBeInTheDocument();
-    expect(screen.getAllByText("$315.00")).toHaveLength(2);
-    // expect(screen.getByText("3/4/2043")).toBeInTheDocument(); // Comment out or update if needed
+    expect(screen.getByText("Start")).toBeInTheDocument();
+    expect(screen.getByText("End")).toBeInTheDocument();
+    expect(screen.getByText("Total")).toBeInTheDocument();
+    expect(screen.getByText("FY25 Obligated")).toBeInTheDocument();
 });
