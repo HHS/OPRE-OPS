@@ -39,21 +39,13 @@ const userData = {
     full_name: "Test User"
 };
 
-// Create a mock that can be changed per test
-let mockAgreementData = null;
-
 vi.mock("../../../api/opsAPI", async () => {
     const actual = await vi.importActual("../../../api/opsAPI");
 
     return {
         ...actual,
         useGetUserByIdQuery: () => ({ data: userData }),
-        useLazyGetUserByIdQuery: () => [vi.fn().mockResolvedValue({ data: userData })],
-        useGetAgreementByIdQuery: () => ({
-            data: mockAgreementData,
-            isLoading: false,
-            isSuccess: true
-        })
+        useLazyGetUserByIdQuery: () => [vi.fn().mockResolvedValue({ data: userData })]
     };
 });
 
@@ -65,19 +57,43 @@ const baseAgreement = {
     agreement_type: "CONTRACT", // CONTRACT is a developed type
     project_officer_id: 1,
     team_members: [{ id: 500 }], // Include test user as team member
-    procurement_shop: { fee_percentage: 5.0 },
+    procurement_shop: { abbr: "GCS", fee_percentage: 5.0 },
     budget_line_items: [
-        { amount: 100, fees: 5, total: 105, date_needed: "2024-05-02T11:00:00", status: "DRAFT" },
-        { amount: 200, fees: 10, total: 210, date_needed: "2023-03-02T11:00:00", status: "DRAFT" },
+        {
+            amount: 100,
+            fees: 5,
+            total: 105,
+            date_needed: "2024-05-02T11:00:00",
+            status: "DRAFT",
+            fiscal_year: 2025
+        },
+        {
+            amount: 200,
+            fees: 10,
+            total: 210,
+            date_needed: "2023-03-02T11:00:00",
+            status: "DRAFT",
+            fiscal_year: 2025
+        },
         {
             amount: 300,
             fees: 15,
             total: 315,
             date_needed: "2043-03-04T11:00:00",
             status: "PLANNED",
-            proc_shop_fee_percentage: 5.0
+            proc_shop_fee_percentage: 5.0,
+            fiscal_year: 2025
         }
     ],
+    sc_start_date: "2025-01-15",
+    sc_end_date: "2025-12-31",
+    agreement_subtotal: 300,
+    total_agreement_fees: 15,
+    agreement_total: 315,
+    lifetime_obligated: 0,
+    fy_obligated: "0",
+    contract_number: "CT-001",
+    vendor: "Vendor Co",
     created_by: 1,
     notes: "Test notes",
     created_on: "2021-10-21T03:24:00",
@@ -120,9 +136,6 @@ const renderComponent = (
     agreementData = baseAgreement,
     isSuperUser = false
 ) => {
-    // Set the mock data for this test
-    mockAgreementData = agreementData;
-
     const store = createMockStore(userRoles, isSuperUser);
 
     return render(
@@ -133,7 +146,7 @@ const renderComponent = (
             >
                 <table>
                     <tbody>
-                        <AgreementTableRow agreementId={agreementData.id} />
+                        <AgreementTableRow agreement={agreementData} />
                     </tbody>
                 </table>
             </Router>
@@ -146,19 +159,26 @@ describe("AgreementTableRow", () => {
         renderComponent();
 
         expect(screen.getAllByText("Test Agreement")[0]).toBeInTheDocument();
-        expect(screen.getByText("Test Project")).toBeInTheDocument();
         expect(screen.getByText("Contract")).toBeInTheDocument();
-        expect(screen.getAllByText("$315.00")).toHaveLength(2);
+        expect(screen.getByText("1/15/2025")).toBeInTheDocument();
+        expect(screen.getByText("12/31/2025")).toBeInTheDocument();
+        expect(screen.getAllByText("$315.00")).toHaveLength(1);
     });
 
     describe("Super User Edit Permissions", () => {
-        test("super user can edit agreements regardless of isEditable status", async () => {
-            const nonEditableAgreement = {
+        test("super user can edit agreements regardless of team membership", async () => {
+            // API returns isEditable: true for super users
+            const agreementWithoutUserOnTeam = {
                 ...baseAgreement,
-                _meta: { isEditable: false }
+                team_members: [], // User not on team
+                _meta: { isEditable: true } // API returns true for super users
             };
 
-            renderComponent([{ id: 1, name: USER_ROLES.SUPER_USER, is_superuser: true }], nonEditableAgreement, true);
+            renderComponent(
+                [{ id: 1, name: USER_ROLES.SUPER_USER, is_superuser: true }],
+                agreementWithoutUserOnTeam,
+                true
+            );
 
             const user = userEvent.setup();
 
@@ -193,13 +213,19 @@ describe("AgreementTableRow", () => {
             expect(editButton).not.toBeDisabled();
         });
 
-        test("super user sees no locked message tooltip", async () => {
-            const nonEditableAgreement = {
+        test("super user sees edit button enabled (and no locked message tooltip)", async () => {
+            // API returns isEditable: true for super users
+            const agreementWithoutUserOnTeam = {
                 ...baseAgreement,
-                _meta: { isEditable: false }
+                team_members: [], // User not on team
+                _meta: { isEditable: true } // API returns true for super users
             };
 
-            renderComponent([{ id: 1, name: USER_ROLES.SUPER_USER, is_superuser: true }], nonEditableAgreement, true);
+            renderComponent(
+                [{ id: 1, name: USER_ROLES.SUPER_USER, is_superuser: true }],
+                agreementWithoutUserOnTeam,
+                true
+            );
 
             const user = userEvent.setup();
 
@@ -214,10 +240,14 @@ describe("AgreementTableRow", () => {
         });
 
         test("super user can delete agreements regardless of budget line status", async () => {
+            // API returns isEditable: true for super users
             const agreementWithPlannedBudgetLines = {
                 ...baseAgreement,
-                budget_line_items: [{ amount: 100, fees: 5, date_needed: "2024-05-02T11:00:00", status: "PLANNED" }],
-                _meta: { isEditable: false }
+
+                budget_line_items: [
+                    { amount: 100, fees: 5, date_needed: "2024-05-02T11:00:00", status: "PLANNED", fiscal_year: 2025 }
+                ],
+                _meta: { isEditable: true } // API returns true for super users
             };
 
             renderComponent(

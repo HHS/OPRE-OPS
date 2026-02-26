@@ -9,6 +9,7 @@ import CurrencyFormat from "react-currency-format";
  * @property {[number, number]} selectedRange - The current selected range
  * @property {function([number, number]): void} setSelectedRange - Function to update the range
  * @property {string} [label] - Label for the slider (default: "Budget Range")
+ * @property {Object} [overrideStyles] - CSS styles to override default styles
  */
 
 /**
@@ -22,7 +23,8 @@ const BudgetRangeSlider = ({
     selectedRange,
     setSelectedRange,
     label = "Budget Range",
-    legendClassname = "usa-label margin-top-0"
+    legendClassname = "usa-label margin-top-0",
+    overrideStyles = {}
 }) => {
     const [minValue, maxValue] = selectedRange;
     const [budgetMin, budgetMax] = budgetRange;
@@ -89,6 +91,7 @@ const BudgetRangeSlider = ({
                     handleChange={calculateBudgetRange}
                     defaultValue={[0, 100]}
                     value={sliderValue}
+                    overrideStyles={overrideStyles}
                 />
             </div>
 
