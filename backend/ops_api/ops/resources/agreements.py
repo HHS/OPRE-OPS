@@ -36,7 +36,7 @@ from ops_api.ops.schemas.agreements import (
     AgreementRequestSchema,
     MetaSchema,
 )
-from ops_api.ops.services.agreements import AgreementsService
+from ops_api.ops.services.agreements import AgreementsService, get_current_fiscal_year, resolve_fiscal_year
 from ops_api.ops.services.budget_line_items import (
     get_bli_is_editable_meta_data_for_agreements,
 )
@@ -63,7 +63,23 @@ class AgreementItemAPI(BaseItemAPI):
             service: OpsService[Agreement] = AgreementsService(current_app.db_session)
             item: Agreement = service.get(id)
 
-            serialized_agreement = _serialize_agreement_with_meta(item, AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING)
+            fiscal_year_param = request.args.get("fiscal_year")
+            if fiscal_year_param:
+                try:
+                    effective_fy = int(fiscal_year_param)
+                except ValueError:
+                    return make_response_with_headers(
+                        {"error": f"Invalid fiscal_year parameter: '{fiscal_year_param}'. Must be an integer."},
+                        400,
+                    )
+            else:
+                effective_fy = get_current_fiscal_year()
+
+            serialized_agreement = _serialize_agreement_with_meta(
+                item,
+                AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING,
+                context={"fiscal_year": effective_fy},
+            )
 
             response = make_response_with_headers(serialized_agreement)
 
@@ -150,6 +166,10 @@ class AgreementListAPI(BaseListAPI):
 
             logger.debug("Serializing results")
 
+            fiscal_year_filters = data.get("fiscal_year")
+            effective_fy = resolve_fiscal_year(fiscal_year_filters)
+            schema_context = {"fiscal_year": effective_fy}
+
             agreement_response = []
 
             for agreement in agreements:
@@ -157,6 +177,7 @@ class AgreementListAPI(BaseListAPI):
                     agreement,
                     AGREEMENT_LIST_TYPE_TO_RESPONSE_MAPPING,
                     is_editable=associated_with_agreement(agreement.id),
+                    context=schema_context,
                 )
 
                 agreement_response.append(serialized_agreement)
@@ -397,12 +418,15 @@ def _serialize_agreement_with_meta(
     agreement: Agreement,
     schema_mapping: dict[AgreementType, Any],
     is_editable: bool = None,
+    context: dict = None,
 ) -> dict:
     """
     Serialize an agreement with its metadata.
     """
     schema_type = schema_mapping.get(agreement.agreement_type)
     schema = schema_type()
+    if context:
+        schema.context = context
     serialized_agreement = schema.dump(agreement)
 
     get_bli_is_editable_meta_data_for_agreements(serialized_agreement)

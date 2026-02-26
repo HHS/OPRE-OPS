@@ -106,7 +106,7 @@ const deleteAgreementByName = (name) => {
     cy.contains("tbody tr", name, { timeout: 30000 }).as("agreement-row");
     cy.get("@agreement-row").find('[data-cy="expand-row"]').click();
     // get the first delete button and click
-    cy.get(".padding-right-9").find('[data-cy="delete-row"]').click().wait(1);
+    cy.get('[data-cy="change-icons-expanded"]').find('[data-cy="delete-row"]').click().wait(1);
     // get the modal and cancel
     cy.get("#ops-modal-heading").should("have.text", `Are you sure you want to delete Agreement ${name}?`);
     cy.get('[data-cy="confirm-action"]').click();
@@ -119,7 +119,7 @@ const deleteAgreementByRowAndFail = (row) => {
     // get the created agreement
     cy.get("@table-rows").eq(row).find('[data-cy="expand-row"]').click();
     // get the first delete button and click
-    cy.get(".padding-right-9").find('[data-cy="delete-row"]').should("be.disabled");
+    cy.get('[data-cy="change-icons-expanded"]').find('[data-cy="delete-row"]').should("be.disabled");
     // get the modal and cancel
     cy.get("#ops-modal-heading").should("not.exist");
     cy.get("@table-rows").eq(row).find('[data-cy="expand-row"]').click();

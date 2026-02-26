@@ -437,7 +437,7 @@ class AgreementsService(OpsService[Agreement]):
             sort_descending = (
                 filters.sort_descending[0] if filters.sort_descending and len(filters.sort_descending) > 0 else False
             )
-            all_results = _sort_agreements(all_results, sort_condition, sort_descending)
+            all_results = _sort_agreements(all_results, sort_condition, sort_descending, filters.fiscal_year)
 
         # Calculate count before slicing
         total_count = len(all_results)
@@ -951,7 +951,7 @@ def _filter_by_ownership(results, only_my):
     return results
 
 
-def _sort_agreements(results, sort_condition, sort_descending):
+def _sort_agreements(results, sort_condition, sort_descending, fiscal_years=None):
     match (sort_condition):
         case AgreementSortCondition.AGREEMENT:
             return sorted(results, key=lambda agreement: agreement.name, reverse=sort_descending)
@@ -965,6 +965,13 @@ def _sort_agreements(results, sort_condition, sort_descending):
             return sorted(results, key=next_budget_line_sort, reverse=sort_descending)
         case AgreementSortCondition.NEXT_OBLIGATE_BY:
             return sorted(results, key=next_obligate_by_sort, reverse=sort_descending)
+        case AgreementSortCondition.START:
+            return sorted(results, key=start_date_sort, reverse=sort_descending)
+        case AgreementSortCondition.END:
+            return sorted(results, key=end_date_sort, reverse=sort_descending)
+        case AgreementSortCondition.FY_OBLIGATED:
+            fy = resolve_fiscal_year(fiscal_years)
+            return sorted(results, key=lambda a: fy_obligated_sort(a, fy), reverse=sort_descending)
         case _:
             return results
 
@@ -974,21 +981,7 @@ def project_sort(agreement):
 
 
 def agreement_total_sort(agreement):
-    # Filter out DRAFT budget line items
-    filtered_blis = list(
-        filter(
-            lambda bli: bli.status != BudgetLineItemStatus.DRAFT,
-            agreement.budget_line_items,
-        )
-    )
-
-    # Calculate sum of amounts, skipping None values by using 0 instead
-    bli_totals = Decimal("0")
-    for bli in filtered_blis:
-        if bli.amount is not None:
-            bli_totals += bli.amount + bli.fees
-
-    return bli_totals
+    return agreement.agreement_total
 
 
 def next_budget_line_sort(agreement):
@@ -1006,6 +999,34 @@ def next_obligate_by_sort(agreement):
     next_bli = _get_next_obligated_bli(agreement.budget_line_items)
 
     return next_bli.date_needed if next_bli else date.today()
+
+
+def start_date_sort(agreement):
+    return agreement.sc_start_date or date.max
+
+
+def end_date_sort(agreement):
+    return agreement.sc_end_date or date.max
+
+
+def get_current_fiscal_year() -> int:
+    """Return the current federal fiscal year (Oct-Sep)."""
+    today = date.today()
+    return today.year + 1 if today.month >= 10 else today.year
+
+
+def resolve_fiscal_year(fiscal_years):
+    """Get the effective fiscal year from filter list, defaulting to current FY."""
+    if fiscal_years and len(fiscal_years) == 1:
+        return int(fiscal_years[0])
+    if fiscal_years and len(fiscal_years) > 1:
+        logger.debug(f"Multiple fiscal years provided ({fiscal_years}); falling back to current FY.")
+    return get_current_fiscal_year()
+
+
+def fy_obligated_sort(agreement, fiscal_year):
+    """Sum of (amount + fees) for OBLIGATED BLIs in the given fiscal year."""
+    return agreement.fy_obligated(fiscal_year)
 
 
 def _get_next_obligated_bli(budget_line_items):
