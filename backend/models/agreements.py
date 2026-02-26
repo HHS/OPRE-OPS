@@ -435,6 +435,60 @@ class Agreement(BaseModel):
         return all(is_valid_value(getattr(self, field)) for field in required_fields)
 
     @property
+    def award_date(self) -> Optional[date]:
+        """Get the award date from the first AWARDED/CERTIFIED NEW_AWARD procurement action."""
+        from models.procurement_action import AwardType, ProcurementActionStatus
+
+        for pa in self.procurement_actions:
+            if (
+                pa.status in [ProcurementActionStatus.AWARDED, ProcurementActionStatus.CERTIFIED]
+                and pa.award_type == AwardType.NEW_AWARD
+                and pa.date_awarded_obligated is not None
+            ):
+                return pa.date_awarded_obligated
+        return None
+
+    @property
+    def award_fiscal_year(self) -> Optional[int]:
+        """Get the fiscal year of the award date."""
+        if self.award_date is None:
+            return None
+        return self.award_date.year + 1 if self.award_date.month >= 10 else self.award_date.year
+
+    @property
+    def award_type(self) -> Optional[str]:
+        """
+        Classify agreement as NEW, CONTINUING, or None for Budget Team reporting.
+
+        - None: No non-Draft BLIs
+        - NEW: Has non-Draft BLIs AND (not awarded OR current FY <= award FY)
+        - CONTINUING: Awarded AND current FY > award FY
+        """
+        from models.budget_line_items import BudgetLineItemStatus
+        from ops_api.ops.utils.fiscal_year import get_current_fiscal_year
+
+        has_non_draft_blis = any(
+            bli.status is not None and bli.status != BudgetLineItemStatus.DRAFT for bli in self.budget_line_items
+        )
+
+        if not has_non_draft_blis:
+            return None
+
+        if not self.is_awarded:
+            return "NEW"
+
+        award_fy = self.award_fiscal_year
+        if award_fy is None:
+            # Awarded but no award date recorded — treat as NEW
+            return "NEW"
+
+        current_fy = get_current_fiscal_year()
+        if current_fy <= award_fy:
+            return "NEW"
+
+        return "CONTINUING"
+
+    @property
     def is_awarded(self) -> bool:
         """
         Check if the agreement has at least one procurement action with awarded status.
