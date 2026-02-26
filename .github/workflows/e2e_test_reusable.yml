@@ -75,8 +75,19 @@ jobs:
           JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
           JWT_PUBLIC_KEY: ${{ secrets.JWT_PUBLIC_KEY }}
         run: |
+          set -o pipefail
           echo "Spec: ${{ steps.rel-spec.outputs.REL_SPEC }}"
-          dbus-run-session -- npx cypress run --config-file ./cypress.config.ci.js --headless --spec "${{ steps.rel-spec.outputs.REL_SPEC }}"
+          dbus-run-session -- npx cypress run --config-file ./cypress.config.ci.js --headless --spec "${{ steps.rel-spec.outputs.REL_SPEC }}" 2>&1 | tee cypress-output-${{ steps.get-filename.outputs.TEST_FILE }}.log
+
+      # Detect flaky tests by analyzing retry patterns
+      - name: Detect Flaky Tests
+        if: always()
+        run: |
+          if [ -f frontend/cypress-output-${{ steps.get-filename.outputs.TEST_FILE }}.log ]; then
+            ./.github/scripts/detect-flaky-tests.sh frontend/cypress-output-${{ steps.get-filename.outputs.TEST_FILE }}.log "$GITHUB_STEP_SUMMARY"
+          else
+            echo "⚠️  Cypress output log not found, skipping flaky test detection"
+          fi
 
       # Upload Cypress screenshots as artifact if a test fails
       - name: Upload screenshots if failure
@@ -84,7 +95,7 @@ jobs:
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           path: frontend/cypress/${{ steps.get-filename.outputs.TEST_FILE }}/screenshots # Update this path based on your project structure
-          name: cypress-screenshots
+          name: cypress-screenshots-${{ github.run_id }}-${{ github.sha }}-${{ steps.get-filename.outputs.TEST_FILE }}
 
       # Capture logs from all services
       - name: Capture logs
@@ -100,3 +111,34 @@ jobs:
         with:
           path: full-stack-logs-${{ steps.get-filename.outputs.TEST_FILE }}.log
           name: full-stack-logs-${{ github.run_id }}-${{ github.sha }}-${{ steps.get-filename.outputs.TEST_FILE }}.log
+
+      # Upload Cypress output for flaky test analysis
+      - name: Upload Cypress output log
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          path: frontend/cypress-output-${{ steps.get-filename.outputs.TEST_FILE }}.log
+          name: cypress-output-${{ github.run_id }}-${{ github.sha }}-${{ steps.get-filename.outputs.TEST_FILE }}.log
+
+  aggregate-flaky-tests:
+    name: Aggregate Flaky Test Report
+    runs-on: ubuntu-latest
+    needs: e2e
+    if: always() # Run even if some E2E tests failed
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Download all Cypress output artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        continue-on-error: true
+        with:
+          pattern: cypress-output-${{ github.run_id }}-${{ github.sha }}-*
+          path: cypress-outputs
+          merge-multiple: true
+
+      - name: Aggregate flaky test results
+        run: |
+          mkdir -p cypress-outputs
+          ./.github/scripts/aggregate-flaky-tests.sh cypress-outputs "$GITHUB_STEP_SUMMARY"
