@@ -27,6 +27,7 @@ These scripts can be invoked by Claude Code automatically or run manually.
 This repository includes reusable story templates in `.claude/templates/` for consistent planning and implementation with Claude Code.
 
 Available templates:
+
 - **`feature-story.md`**: For implementing new features
 - **`bug-story.md`**: For fixing bugs and defects
 - **`refactor-story.md`**: For code refactoring and technical improvements
@@ -34,6 +35,7 @@ Available templates:
 See [`.claude/templates/README.md`](.claude/templates/README.md) for detailed usage instructions.
 
 **Example usage**:
+
 ```bash
 # Copy template to gitignored stories directory
 cp .claude/templates/feature-story.md .claude/stories/OPS-1234.md
@@ -43,6 +45,43 @@ cp .claude/templates/feature-story.md .claude/stories/OPS-1234.md
 ```
 
 Personal story files in `.claude/stories/` are gitignored to keep work-in-progress private.
+
+## Flaky Test Detection
+
+The CI pipeline automatically detects flaky E2E tests by analyzing Cypress retry patterns. Spec files that require retries are flagged in the GitHub Actions job summary.
+
+**How it works**:
+
+- Cypress is configured in CI via `frontend/cypress.config.ci.js` with `retries.runMode: 3` (3 retries, up to 4 attempts total)
+- A detection script (`.github/scripts/detect-flaky-tests.sh`) parses Cypress output logs
+- Spec files with retries are reported in the job summary with recommended actions
+- An aggregate report (`.github/scripts/aggregate-flaky-tests.sh`) consolidates results from all E2E jobs into one summary
+- Cypress output logs are uploaded as artifacts for manual review
+
+**Viewing flaky test reports**:
+
+**Aggregate Report (Recommended):**
+1. Navigate to the GitHub Actions run for your PR
+2. Look for the **"Aggregate Flaky Test Report"** job (runs after all E2E tests)
+3. Click on it to see all flaky tests across the entire test suite in one place
+
+**Individual Reports:**
+1. Navigate to the GitHub Actions run for your PR
+2. Click on any E2E test job
+3. Scroll to the job summary to see the flaky test detection report for that specific test
+
+**Local usage**:
+
+```bash
+# Run E2E tests locally and capture output
+cd frontend
+bun run test:e2e 2>&1 | tee cypress-output.log
+
+# Analyze for flaky tests
+../.github/scripts/detect-flaky-tests.sh cypress-output.log
+```
+
+See [`.github/scripts/README.md`](.github/scripts/README.md) for detailed documentation.
 
 ## Project Overview
 
