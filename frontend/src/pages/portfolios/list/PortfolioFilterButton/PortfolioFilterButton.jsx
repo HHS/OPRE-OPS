@@ -5,7 +5,7 @@ import FilterButton from "../../../../components/UI/FilterButton/FilterButton";
 import PortfoliosComboBox from "../../../../components/Portfolios/PortfoliosComboBox";
 import PortfolioFYBudgetRangeSlider from "./PortfolioFYBudgetRangeSlider";
 import AvailableBudgetPercentageFilter from "./AvailableBudgetPercentageFilter";
-import { DEFAULT_PORTFOLIO_BUDGET_RANGE } from "../../../../constants";
+import { DEFAULT_PORTFOLIO_BUDGET_RANGE, FILTER_MODAL_FULL_WIDTH } from "../../../../constants";
 
 /**
  * A filter for portfolios.
@@ -92,7 +92,7 @@ export const PortfolioFilterButton = ({ filters, setFilters, allPortfolios, fyBu
                 selectedPortfolios={portfolios}
                 setSelectedPortfolios={setPortfolios}
                 legendClassname={legendStyles}
-                overrideStyles={{ width: "22.7rem" }}
+                overrideStyles={FILTER_MODAL_FULL_WIDTH}
             />
         </fieldset>,
         <fieldset
@@ -104,6 +104,7 @@ export const PortfolioFilterButton = ({ filters, setFilters, allPortfolios, fyBu
                 legendClassname={legendStyles}
                 budget={budgetRange}
                 setBudget={setBudgetRange}
+                overrideStyles={FILTER_MODAL_FULL_WIDTH}
             />
         </fieldset>,
         <fieldset
@@ -114,6 +115,7 @@ export const PortfolioFilterButton = ({ filters, setFilters, allPortfolios, fyBu
                 selectedRanges={availablePct}
                 setSelectedRanges={setAvailablePct}
                 legendClassname={legendStyles}
+                overrideStyles={FILTER_MODAL_FULL_WIDTH}
             />
         </fieldset>
     ];

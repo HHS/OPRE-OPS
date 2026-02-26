@@ -8,6 +8,7 @@ import CurrencyFormat from "react-currency-format";
  * @property {string} [legendClassname] - CSS class for the legend
  * @property {[number, number]} budget - The current budget range
  * @property {function([number, number]): void} setBudget - Function to update the budget
+ * @property {Object} [overrideStyles] - Additional styles to apply to the component
  */
 
 /**
@@ -20,7 +21,8 @@ const PortfolioFYBudgetRangeSlider = ({
     fyBudgetRange,
     legendClassname = "usa-label margin-top-0",
     budget,
-    setBudget
+    setBudget,
+    overrideStyles = {}
 }) => {
     const [minValue, maxValue] = budget;
     const [fyBudgetMin, fyBudgetMax] = fyBudgetRange;
@@ -94,6 +96,7 @@ const PortfolioFYBudgetRangeSlider = ({
                     handleChange={calculateBudgetRange}
                     defaultValue={[0, 100]}
                     value={sliderValue}
+                    overrideStyles={overrideStyles}
                 />
             </div>
 

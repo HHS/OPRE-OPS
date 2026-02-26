@@ -54,10 +54,10 @@ export const FilterButton = ({ applyFilter, resetFilter, fieldsetList, disabled 
                 className={`${customStyles.filterModal} ${customStyles.modalBackgroundColor}`}
                 overlayClassName={customStyles.filterOverlay}
             >
-                <div className="margin-left-2">
+                <div className="margin-205">
                     <div className="display-flex flex-justify-space-between">
-                        <h1 className="text-bold font-sans-lg margin-bottom-205 margin-top-205">Filters</h1>
-                        <div className="margin-top-205 margin-right-205 padding-08">
+                        <h1 className="text-bold font-sans-lg margin-top-0">Filters</h1>
+                        <div>
                             <svg
                                 className="usa-icon text-ink height-205 width-205 cursor-pointer"
                                 onClick={() => setShowModal(false)}
@@ -69,7 +69,7 @@ export const FilterButton = ({ applyFilter, resetFilter, fieldsetList, disabled 
                     </div>
                     {fieldsetList?.map((formField) => formField)}
                 </div>
-                <div className="display-flex flex-justify-end padding-right-1 padding-top-1 padding-bottom-1">
+                <div className="display-flex flex-justify-end padding-right-205 padding-bottom-205">
                     <button
                         className="usa-button usa-button--outline"
                         onClick={handleResetFilter}
@@ -77,7 +77,7 @@ export const FilterButton = ({ applyFilter, resetFilter, fieldsetList, disabled 
                         <span className="">Reset</span>
                     </button>
                     <button
-                        className="usa-button usa-button--primary"
+                        className="usa-button usa-button--primary margin-right-0"
                         onClick={handleApplyFilter}
                     >
                         <span>Apply</span>
