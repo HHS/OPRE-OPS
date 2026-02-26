@@ -1,8 +1,9 @@
 import ReactSlider from "react-slider";
 import styled from "styled-components";
 
-const DoubleRangeSlider = ({ handleChange, defaultValue = [25, 75], value }) => (
+const DoubleRangeSlider = ({ handleChange, defaultValue = [25, 75], value, overrideStyles }) => (
     <StyledSlider
+        $overrideStyles={overrideStyles}
         onChange={handleChange}
         value={value}
         min={0}
@@ -12,11 +13,12 @@ const DoubleRangeSlider = ({ handleChange, defaultValue = [25, 75], value }) => 
         renderThumb={Thumb}
     />
 );
-const StyledSlider = styled(ReactSlider)`
-    width: 100%;
-    height: 25px;
-    z-index: 0;
-`;
+const StyledSlider = styled(ReactSlider)(({ $overrideStyles }) => ({
+    width: "100%",
+    height: "25px",
+    zIndex: 0,
+    ...$overrideStyles
+}));
 
 const Thumb = ({ key, ...props }) => (
     <StyledThumb

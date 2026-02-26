@@ -167,27 +167,6 @@ def test_validate_pre_solicitation_step_missing_required_fields(): ...
 
 @scenario(
     "validate_procurement_tracker_steps.feature",
-    "Validate pre solicitation step draft solicitation date in update cannot be in the past",
-)
-def test_validate_pre_solicitation_step_draft_solicitation_date_update(): ...
-
-
-@scenario(
-    "validate_procurement_tracker_steps.feature",
-    "Validate solicitation draft date on model is invalid but update is valid",
-)
-def test_validate_pre_solicitation_step_draft_solicitation_date_on_model_invalid_but_update_valid(): ...
-
-
-@scenario(
-    "validate_procurement_tracker_steps.feature",
-    "Validate pre solicitation step draft solicitation date in the model cannot be in the past",
-)
-def test_validate_pre_solicitation_step_draft_solicitation_date_model(): ...
-
-
-@scenario(
-    "validate_procurement_tracker_steps.feature",
     "Complete Procurement Tracker",
 )
 def test_complete_procurement_tracker(): ...
@@ -195,16 +174,37 @@ def test_complete_procurement_tracker(): ...
 
 @scenario(
     "validate_procurement_tracker_steps.feature",
-    "Validate acquisition planning notes cannot exceed 750 characters",
+    "Valid Solicitation Step Update",
 )
-def test_validate_acquisition_planning_notes_max_length(): ...
+def test_validate_valid_solicitation_step_update(): ...
 
 
 @scenario(
     "validate_procurement_tracker_steps.feature",
-    "Validate pre-solicitation notes cannot exceed 750 characters",
+    "Validate solicitation period start date must be earlier than end date",
 )
-def test_validate_pre_solicitation_notes_max_length(): ...
+def test_validate_solicitation_start_date_must_be_earlier_than_end_date(): ...
+
+
+@scenario(
+    "validate_procurement_tracker_steps.feature",
+    "Validate solicitation period start date cannot equal end date",
+)
+def test_validate_solicitation_start_date_cannot_equal_end_date(): ...
+
+
+@scenario(
+    "validate_procurement_tracker_steps.feature",
+    "Cannot invalidate solicitation start date with update",
+)
+def test_cannot_invalidate_solicitation_start_date_with_update(): ...
+
+
+@scenario(
+    "validate_procurement_tracker_steps.feature",
+    "Cannot invalidate solicitation end date with update",
+)
+def test_cannot_invalidate_solicitation_end_date_with_update(): ...
 
 
 @pytest.fixture()
@@ -423,6 +423,30 @@ def validate_pre_solicitation_draft_solicitation_date(context):
     context["procurement_tracker_step"] = step_2
 
 
+@given("I am working with a solicitation procurement tracker step")
+def working_with_solicitation_step(loaded_db, context):
+    """Set the context's procurement_tracker_step to step 3 (solicitation)."""
+    procurement_tracker = context["procurement_tracker"]
+    procurement_tracker.active_step_number = 3
+    step_3 = next((step for step in procurement_tracker.steps if step.step_number == 3), None)
+    context["procurement_tracker_step"] = step_3
+    loaded_db.commit()
+    loaded_db.refresh(procurement_tracker)
+
+
+@given("I am working with a solicitation procurement tracker step with a valid solicitation start and end date")
+def working_with_solicitation_step_with_valid_dates(loaded_db, context):
+    """Set the context's procurement_tracker_step to step 3 (solicitation) and set valid solicitation period start and end dates."""
+    procurement_tracker = context["procurement_tracker"]
+    procurement_tracker.active_step_number = 3
+    step_3 = next((step for step in procurement_tracker.steps if step.step_number == 3), None)
+    step_3.solicitation_period_start_date = date.today()
+    step_3.solicitation_period_end_date = date.today() + timedelta(days=30)
+    context["procurement_tracker_step"] = step_3
+    loaded_db.commit()
+    loaded_db.refresh(procurement_tracker)
+
+
 @when("I have a valid completed procurement step 1")
 def have_valid_completed_procurement_step(context):
     data = {
@@ -625,30 +649,61 @@ def have_procurement_step_2_with_past_draft_solicitation_date(context):
     context["request_body"] = data
 
 
-@when("I have a procurement step with notes exceeding 750 characters")
-def have_procurement_step_with_notes_exceeding_max_length(context):
-    # Create notes that are 751 characters long
-    long_notes = "a" * 751
+@when("I have a valid completed solicitation step")
+def have_valid_completed_solicitation_step(context):
+    start_date = date.today()
+    end_date = (date.today() + timedelta(days=30)).isoformat()
     data = {
         "status": "COMPLETED",
-        "date_completed": date.today().isoformat(),
-        "task_completed_by": context["user_id"],
-        "notes": long_notes,
+        "solicitation_period_start_date": start_date.isoformat(),
+        "solicitation_period_end_date": end_date,
     }
 
     context["request_body"] = data
 
 
-@when("I have a procurement step 2 with notes exceeding 750 characters")
-def have_procurement_step_2_with_notes_exceeding_max_length(context):
-    # Create notes that are 751 characters long
-    long_notes = "a" * 751
+@when("I have a solicitation step with start date after end date")
+def have_solicitation_step_with_start_date_after_end_date(context):
+    start_date = (date.today() + timedelta(days=30)).isoformat()
+    end_date = date.today().isoformat()
     data = {
-        "status": "COMPLETED",
-        "date_completed": date.today().isoformat(),
-        "task_completed_by": context["user_id"],
-        "target_completion_date": date.today().isoformat(),
-        "notes": long_notes,
+        "status": "ACTIVE",
+        "solicitation_period_start_date": start_date,
+        "solicitation_period_end_date": end_date,
+    }
+
+    context["request_body"] = data
+
+
+@when("I have a solicitation step with start date equal to end date")
+def have_solicitation_step_with_start_date_equal_to_end_date(context):
+    same_date = date.today().isoformat()
+    data = {
+        "status": "ACTIVE",
+        "solicitation_period_start_date": same_date,
+        "solicitation_period_end_date": same_date,
+    }
+
+    context["request_body"] = data
+
+
+@when("I have a solicitation step with a start date in the future")
+def have_solicitation_step_with_start_date_in_future(context):
+    future_date = (date.today() + timedelta(days=30)).isoformat()
+    data = {
+        "status": "ACTIVE",
+        "solicitation_period_start_date": future_date,
+    }
+
+    context["request_body"] = data
+
+
+@when("I have a solicitation step with a solicitation end date in the past")
+def have_solicitation_step_with_end_date_in_past(context):
+    past_date = (date.today() - timedelta(days=30)).isoformat()
+    data = {
+        "status": "ACTIVE",
+        "solicitation_period_end_date": past_date,
     }
 
     context["request_body"] = data

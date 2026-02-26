@@ -7,11 +7,15 @@ import suite from "./suite";
 import useAlert from "../../../../hooks/use-alert.hooks";
 
 /**
- * Custom hook to manage the state and logic for Procurement Tracker Step One.
- * @param {Object} stepOneData - The data for step one of the procurement tracker.
- * @param {Function} handleSetIsFormSubmitted - Function to set the form submission state.
+ * @typedef {import("../../../../types/ProcurementTrackerTypes").ProcurementTrackerAcquisitionPlanningStep} ProcurementTrackerAcquisitionPlanningStep
  */
-export default function useProcurementTrackerStepOne(stepOneData, handleSetIsFormSubmitted) {
+
+/**
+ * Custom hook to manage the state and logic for Procurement Tracker Step One.
+ * @param {ProcurementTrackerAcquisitionPlanningStep | undefined} stepOneData - The data for step one of the procurement tracker.
+ * @param {(isSubmitted: boolean) => void} handleSetCompletedStepNumber - Function to set the form submission state.
+ */
+export default function useProcurementTrackerStepOne(stepOneData, handleSetCompletedStepNumber) {
     const [isPreSolicitationPackageSent, setIsPreSolicitationPackageSent] = React.useState(false);
     const [selectedUser, setSelectedUser] = React.useState({});
     const [step1DateCompleted, setStep1DateCompleted] = React.useState("");
@@ -25,8 +29,8 @@ export default function useProcurementTrackerStepOne(stepOneData, handleSetIsFor
         handleConfirm: () => {}
     });
 
-    const step1CompletedByUserName = useGetUserFullNameFromId(stepOneData?.task_completed_by);
-    const step1DateCompletedLabel = formatDateToMonthDayYear(stepOneData?.date_completed);
+    const step1CompletedByUserName = useGetUserFullNameFromId(stepOneData?.task_completed_by ?? -1);
+    const step1DateCompletedLabel = formatDateToMonthDayYear(stepOneData?.date_completed ?? "");
     const step1NotesLabel = stepOneData?.notes;
     const { setAlert } = useAlert();
     const MemoizedDatePicker = React.memo(DatePicker);
@@ -49,7 +53,7 @@ export default function useProcurementTrackerStepOne(stepOneData, handleSetIsFor
                 stepId,
                 data: payload
             }).unwrap();
-            handleSetIsFormSubmitted(true);
+            handleSetCompletedStepNumber(1);
             console.log("Procurement Tracker Step 1 Updated");
         } catch (error) {
             console.error("Failed to update Procurement Tracker Step 1", error);

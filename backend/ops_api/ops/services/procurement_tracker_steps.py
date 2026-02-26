@@ -104,12 +104,21 @@ class ProcurementTrackerStepService:
                 "target_completion_date": "pre_solicitation_target_completion_date",
                 "draft_solicitation_date": "pre_solicitation_draft_solicitation_date",
             },
+            "solicitation": {
+                "task_completed_by": "solicitation_task_completed_by",
+                "date_completed": "solicitation_date_completed",
+                "notes": "solicitation_notes",
+                "solicitation_period_start_date": "solicitation_period_start_date",
+                "solicitation_period_end_date": "solicitation_period_end_date",
+            },
         }
 
         if step.step_type == ProcurementTrackerStepType.ACQUISITION_PLANNING:
             active_mapping = field_mapping["acquisition_planning"]
         elif step.step_type == ProcurementTrackerStepType.PRE_SOLICITATION:
             active_mapping = field_mapping["pre_solicitation"]
+        elif step.step_type == ProcurementTrackerStepType.SOLICITATION:
+            active_mapping = field_mapping["solicitation"]
         else:
             active_mapping = {}
 

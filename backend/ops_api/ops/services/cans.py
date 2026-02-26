@@ -100,6 +100,7 @@ class CANService:
         active_period=None,
         transfer=None,
         portfolio=None,
+        portfolio_id=None,
         can_ids=None,
         budget_min=None,
         budget_max=None,
@@ -128,6 +129,7 @@ class CANService:
         active_period_values = active_period if active_period is not None else []
         transfer_values = transfer if transfer is not None else []
         portfolio_values = portfolio if portfolio is not None else []
+        portfolio_id_values = portfolio_id if portfolio_id is not None else []
         can_ids_values = can_ids if can_ids is not None else []
         # budget_min, budget_max are semantically single values but wrapped in lists
         budget_min_value = budget_min[0] if budget_min and len(budget_min) > 0 else None
@@ -155,6 +157,7 @@ class CANService:
             active_period_values,
             transfer_values,
             portfolio_values,
+            portfolio_id_values,
             can_ids_values,
             budget_min_value,
             budget_max_value,
@@ -395,6 +398,7 @@ class CANService:
         active_period_values: list[int],
         transfer_values: list[str],
         portfolio_values: list[str],
+        portfolio_id_values: list[int],
         can_ids_values: list[int],
         budget_min_value: float,
         budget_max_value: float,
@@ -408,6 +412,7 @@ class CANService:
             active_period_values: List of active period IDs to filter by
             transfer_values: List of transfer method strings to filter by
             portfolio_values: List of portfolio abbreviations to filter by
+            portfolio_id_values: List of portfolio IDs to filter by
             can_ids_values: List of CAN IDs to filter by
             budget_min_value: Minimum budget filter
             budget_max_value: Maximum budget filter
@@ -436,11 +441,16 @@ class CANService:
                 and can.funding_details.method_of_transfer.name in transfer_values
             ]
 
-        # Filter by portfolio
+        # Filter by portfolio abbreviation
         if portfolio_values and len(portfolio_values) > 0:
             filtered_cans = [
                 can for can in filtered_cans if can.portfolio and can.portfolio.abbreviation in portfolio_values
             ]
+
+        # Filter by portfolio ID
+        if portfolio_id_values and len(portfolio_id_values) > 0:
+            portfolio_id_set = set(portfolio_id_values)
+            filtered_cans = [can for can in filtered_cans if can.portfolio_id in portfolio_id_set]
 
         # Filter by budget range
         if budget_min_value is not None or budget_max_value is not None:

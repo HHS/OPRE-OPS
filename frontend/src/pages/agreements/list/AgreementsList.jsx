@@ -4,7 +4,6 @@ import PacmanLoader from "react-spinners/PacmanLoader";
 import {
     useGetAgreementsFilterOptionsQuery,
     useGetAgreementsQuery,
-    useLazyGetAgreementByIdQuery,
     useLazyGetAgreementsQuery,
     useLazyGetUserQuery
 } from "../../../api/opsAPI.js";
@@ -12,11 +11,9 @@ import App from "../../../App";
 import AgreementSummaryCardsSection from "../../../components/Agreements/AgreementSummaryCardsSection";
 import AgreementsTable from "../../../components/Agreements/AgreementsTable";
 import {
-    findNextBudgetLine,
-    findNextNeedBy,
     getAgreementContractNumber,
     getAgreementName,
-    getAgreementSubTotal,
+    getProcurementShopDisplay,
     getResearchProjectName
 } from "../../../components/Agreements/AgreementsTable/AgreementsTable.helpers";
 import ChangeRequests from "../../../components/ChangeRequests";
@@ -26,9 +23,8 @@ import FiscalYear from "../../../components/UI/FiscalYear";
 import PaginationNav from "../../../components/UI/PaginationNav/PaginationNav";
 import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
 import { ITEMS_PER_PAGE } from "../../../constants";
-import { getAgreementFeesFromBackend } from "../../../helpers/agreement.helpers";
 import { exportTableToXlsx } from "../../../helpers/tableExport.helpers";
-import { convertCodeForDisplay, getCurrentFiscalYear } from "../../../helpers/utils";
+import { convertCodeForDisplay, formatDate, getCurrentFiscalYear } from "../../../helpers/utils";
 import icons from "../../../uswds/img/sprite.svg";
 import AgreementsFilterButton from "./AgreementsFilterButton/AgreementsFilterButton";
 import AgreementsFilterTags from "./AgreementsFilterTags/AgreementsFilterTags";
@@ -148,7 +144,6 @@ const AgreementsList = () => {
     };
 
     const [trigger] = useLazyGetUserQuery();
-    const [agreementTrigger] = useLazyGetAgreementByIdQuery();
     const [getAllAgreementsTrigger] = useLazyGetAgreementsQuery();
 
     if (isLoadingAgreement) {
@@ -209,11 +204,10 @@ const AgreementsList = () => {
             // Combine all agreements from all pages
             const allAgreementsList = allResponses.flatMap((response) => response?.agreements || []);
 
-            const allAgreements = allAgreementsList.map((agreement) => {
-                return agreementTrigger(agreement.id).unwrap();
-            });
+            const effectiveFY =
+                selectedFiscalYear === "All" ? Number(getCurrentFiscalYear()) : Number(selectedFiscalYear);
 
-            const agreementResponses = await Promise.all(allAgreements);
+            const agreementResponses = allAgreementsList;
 
             const corPromises = allAgreementsList
                 .filter((agreement) => agreement?.project_officer_id)
@@ -230,18 +224,21 @@ const AgreementsList = () => {
                     cor: corData?.full_name ?? "TBD"
                 };
             });
+            const fyLabel = `FY${String(effectiveFY).slice(-2)} Obligated`;
 
             const tableHeader = [
                 "Agreement",
+                "Type",
+                "Start Date",
+                "End Date",
+                "Total",
+                fyLabel,
                 "Project",
-                "Agreement Type",
-                "Contract Type",
+                "Procurement Shop",
+                "Subtotal",
+                "Fees",
+                "Lifetime Obligated",
                 "Contract Number",
-                "Agreement SubTotal",
-                "Agreement Fees",
-                "Next Budget Line SubTotal",
-                "Next Budget Line Fees",
-                "Next Obligate By",
                 "Vendor",
                 "COR"
             ];
@@ -250,37 +247,41 @@ const AgreementsList = () => {
                 headers: tableHeader,
                 rowMapper: (agreement) => {
                     const agreementName = getAgreementName(agreement);
-                    const project = getResearchProjectName(agreement);
                     const agreementType = convertCodeForDisplay("agreementType", agreement?.agreement_type);
-                    const contractType = convertCodeForDisplay("contractType", agreement?.contract_type);
+                    const startDate = agreement.sc_start_date
+                        ? formatDate(new Date(agreement.sc_start_date + "T00:00:00Z"))
+                        : "TBD";
+                    const endDate = agreement.sc_end_date
+                        ? formatDate(new Date(agreement.sc_end_date + "T00:00:00Z"))
+                        : "TBD";
+                    const agreementSubTotal = Number(agreement.agreement_subtotal ?? 0);
+                    const agreementFees = Number(agreement.total_agreement_fees ?? 0);
+                    const total = Number(agreement.agreement_total ?? 0);
+                    const fyObligated = Number(agreement.fy_obligated ?? 0);
+                    const project = getResearchProjectName(agreement);
+                    const procurementShop = getProcurementShopDisplay(agreement);
+                    const lifetimeObligated = Number(agreement.lifetime_obligated ?? 0);
                     const contractNumber = getAgreementContractNumber(agreement);
-                    const agreementSubTotal = getAgreementSubTotal(agreement);
-                    const agreementFees = getAgreementFeesFromBackend(agreement);
-                    const nextBudgetLine = findNextBudgetLine(agreement);
-                    const nextBudgetLineAmount = nextBudgetLine?.amount ?? 0;
-                    let nextBudgetLineFees = nextBudgetLine?.fees;
-                    if (isNaN(nextBudgetLineFees)) {
-                        nextBudgetLineFees = 0;
-                    }
-                    const nextObligateBy = findNextNeedBy(agreement);
 
                     return [
                         agreementName,
-                        project,
                         agreementType,
-                        contractType,
-                        contractNumber,
+                        startDate,
+                        endDate,
+                        total,
+                        fyObligated,
+                        project ?? "",
+                        procurementShop,
                         agreementSubTotal ?? 0,
                         agreementFees ?? 0,
-                        nextBudgetLineAmount ?? 0,
-                        nextBudgetLineFees ?? 0,
-                        nextObligateBy ?? "",
+                        lifetimeObligated,
+                        contractNumber ?? "",
                         agreement?.vendor ?? "",
                         agreementDataMap[agreement.id]?.cor ?? ""
                     ];
                 },
                 filename: "agreements",
-                currencyColumns: [5, 6, 7, 8] // Agreement SubTotal, Agreement Fees, Next Budget Line SubTotal, Next Budget Line Fees
+                currencyColumns: [4, 5, 8, 9, 10] // Total, FY Obligated, Subtotal, Fees, Lifetime Obligated
             });
         } catch (error) {
             console.error("Failed to export data:", error);
@@ -375,6 +376,7 @@ const AgreementsList = () => {
                                 sortConditions={sortCondition}
                                 sortDescending={sortDescending}
                                 setSortConditions={setSortConditions}
+                                selectedFiscalYear={selectedFiscalYear}
                             />
                             {totalPages > 1 && (
                                 <div className="margin-top-3">
