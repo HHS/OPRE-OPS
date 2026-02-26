@@ -50,6 +50,7 @@ export const LAST_DATA_UPDATE = "2026-01-20";
 export const ITEMS_PER_PAGE = process.env.NODE_ENV === "production" ? 25 : 10;
 export const SUPPORT_URL = "https://opre-orbit.zendesk.com/";
 export const DEFAULT_PORTFOLIO_BUDGET_RANGE = [0, 100_000_000];
+export const FILTER_MODAL_FULL_WIDTH = { width: "26.2rem" };
 // FEATURE FLAGS
 export const IS_AWARDED_TAB_READY = false;
 export const IS_DOCUMENTS_TAB_READY = false;
