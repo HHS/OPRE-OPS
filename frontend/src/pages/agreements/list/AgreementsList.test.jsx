@@ -6,7 +6,6 @@ import {
     useGetAgreementsQuery,
     useGetAgreementsFilterOptionsQuery,
     useLazyGetUserQuery,
-    useLazyGetAgreementByIdQuery,
     useLazyGetAgreementsQuery,
     useGetChangeRequestsListQuery
 } from "../../../api/opsAPI";
@@ -28,8 +27,11 @@ vi.mock("../../../App", () => ({
 
 // Mock complex child components to avoid cascading API dependencies
 vi.mock("../../../components/Agreements/AgreementsTable", () => ({
-    default: ({ agreements }) => (
-        <div data-testid="agreements-table">
+    default: ({ agreements, selectedFiscalYear }) => (
+        <div
+            data-testid="agreements-table"
+            data-fiscal-year={selectedFiscalYear}
+        >
             {agreements && agreements.map((agreement) => <div key={agreement.id}>{agreement.name}</div>)}
         </div>
     )
@@ -155,7 +157,7 @@ describe("AgreementsList - Pagination", () => {
     beforeEach(() => {
         // Mock the lazy query hooks
         useLazyGetUserQuery.mockReturnValue([vi.fn(), {}]);
-        useLazyGetAgreementByIdQuery.mockReturnValue([vi.fn(), {}]);
+
         useLazyGetAgreementsQuery.mockReturnValue([vi.fn(), {}]);
 
         // Mock the change requests query (used by AgreementTabs)
@@ -422,16 +424,11 @@ describe("AgreementsList - Pagination", () => {
                     })
             }));
 
-            const mockAgreementTrigger = vi.fn((id) => ({
-                unwrap: () => Promise.resolve({ id, name: `Agreement ${id}`, budget_line_items: [] })
-            }));
-
             const mockUserTrigger = vi.fn(() => ({
                 unwrap: () => Promise.resolve({ id: 500, full_name: "Test User" })
             }));
 
             useLazyGetAgreementsQuery.mockReturnValue([mockGetAllAgreementsTrigger, {}]);
-            useLazyGetAgreementByIdQuery.mockReturnValue([mockAgreementTrigger, {}]);
             useLazyGetUserQuery.mockReturnValue([mockUserTrigger, {}]);
 
             render(
@@ -524,7 +521,7 @@ describe("AgreementsList - Fiscal Year Filtering", () => {
     beforeEach(() => {
         // Mock the lazy query hooks
         useLazyGetUserQuery.mockReturnValue([vi.fn(), {}]);
-        useLazyGetAgreementByIdQuery.mockReturnValue([vi.fn(), {}]);
+
         useLazyGetAgreementsQuery.mockReturnValue([vi.fn(), {}]);
 
         // Mock the change requests query
