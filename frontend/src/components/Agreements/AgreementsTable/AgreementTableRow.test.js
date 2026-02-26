@@ -199,7 +199,7 @@ describe("AgreementTableRow", () => {
             expect(editButton).not.toBeDisabled();
         });
 
-        test("super user sees no locked message tooltip", async () => {
+        test("super user sees edit button enabled (and no locked message tooltip)", async () => {
             // API returns isEditable: true for super users
             const agreementWithoutUserOnTeam = {
                 ...baseAgreement,
