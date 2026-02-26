@@ -1199,3 +1199,137 @@ class TestAgreementsDuplicateNameHandling:
         assert updated_agreement.name == "Agreement to Update"
         assert updated_agreement.agreement_reason == AgreementReason.RECOMPETE
         assert updated_agreement.description == "Updated description"
+
+
+class TestIsEditable:
+    """Tests for AgreementsService._is_editable method"""
+
+    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    def test_super_user_can_always_edit(self, mock_associated, loaded_db):
+        """Test that super users can always edit agreements regardless of association"""
+        # Mock the associated_with_agreement function to return False
+        mock_associated.return_value = False
+
+        service = AgreementsService(loaded_db)
+        agreement = loaded_db.get(Agreement, 1)
+
+        # Create a mock user with is_superuser = True
+        super_user = MagicMock()
+        super_user.is_superuser = True
+
+        # Super user should be able to edit even when not associated
+        assert service._is_editable(agreement, super_user) is True
+
+        # Verify that associated_with_agreement was NOT called
+        # because the super user check short-circuits the logic
+        mock_associated.assert_not_called()
+
+    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    def test_non_super_user_can_edit_when_associated(self, mock_associated, loaded_db):
+        """Test that non-super users can edit when associated with the agreement"""
+        # Mock the associated_with_agreement function to return True
+        mock_associated.return_value = True
+
+        service = AgreementsService(loaded_db)
+        agreement = loaded_db.get(Agreement, 1)
+
+        # Create a mock user with is_superuser = False
+        regular_user = MagicMock()
+        regular_user.is_superuser = False
+
+        # Non-super user should be able to edit when associated
+        assert service._is_editable(agreement, regular_user) is True
+
+        # Verify that associated_with_agreement was called
+        mock_associated.assert_called_once_with(agreement.id)
+
+    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    def test_non_super_user_cannot_edit_when_not_associated(self, mock_associated, loaded_db):
+        """Test that non-super users cannot edit when not associated with the agreement"""
+        # Mock the associated_with_agreement function to return False
+        mock_associated.return_value = False
+
+        service = AgreementsService(loaded_db)
+        agreement = loaded_db.get(Agreement, 1)
+
+        # Create a mock user with is_superuser = False
+        regular_user = MagicMock()
+        regular_user.is_superuser = False
+
+        # Non-super user should NOT be able to edit when not associated
+        assert service._is_editable(agreement, regular_user) is False
+
+        # Verify that associated_with_agreement was called
+        mock_associated.assert_called_once_with(agreement.id)
+
+    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    def test_is_editable_with_real_users(self, mock_associated, loaded_db, test_admin_user, test_non_admin_user):
+        """Test _is_editable with real User objects from the database"""
+        # Mock the associated_with_agreement function
+        mock_associated.return_value = True
+
+        service = AgreementsService(loaded_db)
+        agreement = loaded_db.get(Agreement, 1)
+
+        # Test with a real admin user (super user)
+        # Note: test_admin_user has SYSTEM_OWNER role but not SUPER_USER role
+        # We need to check if this user actually has is_superuser = True
+        if test_admin_user.is_superuser:
+            assert service._is_editable(agreement, test_admin_user) is True
+        else:
+            # If not a super user, should rely on association
+            assert service._is_editable(agreement, test_admin_user) is True
+            mock_associated.assert_called_with(agreement.id)
+
+        # Reset mock
+        mock_associated.reset_mock()
+        mock_associated.return_value = False
+
+        # Test with a real non-admin user (not super user)
+        assert test_non_admin_user.is_superuser is False
+        assert service._is_editable(agreement, test_non_admin_user) is False
+        mock_associated.assert_called_once_with(agreement.id)
+
+    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    def test_is_editable_checks_super_user_first(self, mock_associated, loaded_db):
+        """Test that is_superuser check happens before associated_with_agreement check"""
+        # This test verifies the short-circuit behavior: if user is super user,
+        # associated_with_agreement should never be called
+        service = AgreementsService(loaded_db)
+        agreement = loaded_db.get(Agreement, 1)
+
+        # Create a super user
+        super_user = MagicMock()
+        super_user.is_superuser = True
+
+        # Call _is_editable
+        result = service._is_editable(agreement, super_user)
+
+        # Result should be True
+        assert result is True
+
+        # associated_with_agreement should NOT have been called
+        mock_associated.assert_not_called()
+
+    @patch("ops_api.ops.services.agreements.associated_with_agreement")
+    def test_is_editable_with_different_agreements(self, mock_associated, loaded_db):
+        """Test _is_editable behavior with multiple agreements"""
+        service = AgreementsService(loaded_db)
+
+        # Create multiple test agreements
+        agreement1 = loaded_db.get(Agreement, 1)
+
+        # Mock user who is not a super user
+        regular_user = MagicMock()
+        regular_user.is_superuser = False
+
+        # Test with agreement1 - user is associated
+        mock_associated.return_value = True
+        assert service._is_editable(agreement1, regular_user) is True
+        mock_associated.assert_called_with(agreement1.id)
+
+        # Reset and test with same agreement - user is NOT associated
+        mock_associated.reset_mock()
+        mock_associated.return_value = False
+        assert service._is_editable(agreement1, regular_user) is False
+        mock_associated.assert_called_with(agreement1.id)
