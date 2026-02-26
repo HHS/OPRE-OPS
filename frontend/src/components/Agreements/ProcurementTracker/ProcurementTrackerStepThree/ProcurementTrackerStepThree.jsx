@@ -79,7 +79,7 @@ const ProcurementTrackerStepThree = ({ stepStatus, stepThreeData, authorizedUser
                         solicitation period dates and update when the posting is complete. Solicitation documents should
                         be uploaded to the Documents Tab.
                     </p>
-                    <div className="display-flex flex-justify width-tablet">
+                    <div className="display-flex flex-align-end width-tablet">
                         <MemoizedDatePicker
                             id="solicitation-period-start-date"
                             name="solicitationPeriodStartDate"
@@ -102,7 +102,7 @@ const ProcurementTrackerStepThree = ({ stepStatus, stepThreeData, authorizedUser
                         <MemoizedDatePicker
                             id="solicitation-period-end-date"
                             name="solicitationPeriodEndDate"
-                            className="width-card-lg margin-left-neg-3"
+                            className="width-card-lg margin-left-2"
                             label="Solicitation Period End Date"
                             hint="mm/dd/yyyy"
                             value={solicitationPeriodEndDate}
@@ -114,6 +114,17 @@ const ProcurementTrackerStepThree = ({ stepStatus, stepThreeData, authorizedUser
                             }}
                             isDisabled={!hasActiveTracker}
                         />
+
+                        <button
+                            className="usa-button usa-button--unstyled margin-bottom-1 margin-left-2"
+                            data-cy="solicitation-dates-save-btn"
+                            disabled={!hasActiveTracker}
+                            onClick={() => {
+                                alert("Save solicitation dates functionality to be implemented with API integration");
+                            }}
+                        >
+                            Save
+                        </button>
                     </div>
 
                     <div className="usa-checkbox margin-top-3">

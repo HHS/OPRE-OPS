@@ -1113,6 +1113,43 @@ describe("ProcurementTrackerStepThree", () => {
     });
 
     describe("Button Rendering", () => {
+        it("renders save button for solicitation dates with correct label and data-cy", () => {
+            useProcurementTrackerStepThree.mockReturnValue({
+                ...defaultHookReturn
+            });
+
+            render(
+                <ProcurementTrackerStepThree
+                    stepStatus="PENDING"
+                    stepThreeData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
+                />
+            );
+
+            const saveButton = screen.getByRole("button", { name: /^save$/i });
+            expect(saveButton).toBeInTheDocument();
+            expect(saveButton).toHaveAttribute("data-cy", "solicitation-dates-save-btn");
+        });
+
+        it("save button for solicitation dates is disabled when tracker not active", () => {
+            useProcurementTrackerStepThree.mockReturnValue({
+                ...defaultHookReturn
+            });
+
+            render(
+                <ProcurementTrackerStepThree
+                    stepStatus="PENDING"
+                    stepThreeData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={false}
+                />
+            );
+
+            const saveButton = screen.getByRole("button", { name: /^save$/i });
+            expect(saveButton).toBeDisabled();
+        });
+
         it("renders cancel button with correct label and data-cy", () => {
             useProcurementTrackerStepThree.mockReturnValue({
                 ...defaultHookReturn,
