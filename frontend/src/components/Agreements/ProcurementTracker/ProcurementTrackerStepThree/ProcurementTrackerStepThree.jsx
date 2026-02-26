@@ -61,6 +61,13 @@ const ProcurementTrackerStepThree = ({ stepStatus, stepThreeData, authorizedUser
         !step3DateCompleted ||
         validatorRes.hasErrors();
 
+    const isSolicitationDatesSaveDisabled =
+        !hasActiveTracker ||
+        validatorRes.hasErrors("solicitationPeriodStartDate") ||
+        validatorRes.hasErrors("solicitationPeriodEndDate") ||
+        !solicitationPeriodStartDate ||
+        !solicitationPeriodEndDate;
+
     return (
         <>
             {showModal && (
@@ -118,7 +125,7 @@ const ProcurementTrackerStepThree = ({ stepStatus, stepThreeData, authorizedUser
                         <button
                             className="usa-button usa-button--unstyled margin-bottom-1 margin-left-2"
                             data-cy="solicitation-dates-save-btn"
-                            disabled={!hasActiveTracker}
+                            disabled={isSolicitationDatesSaveDisabled}
                             onClick={() => {
                                 alert("Save solicitation dates functionality to be implemented with API integration");
                             }}
@@ -183,7 +190,7 @@ const ProcurementTrackerStepThree = ({ stepStatus, stepThreeData, authorizedUser
                         className="margin-top-2"
                         maxLength={750}
                         value={step3Notes}
-                        onChange={(/** @type {any} */ _, /** @type {string} */ value) => setStep3Notes(value)}
+                        onChange={(_, value) => setStep3Notes(value)}
                         isDisabled={!hasActiveTracker || !isSolicitationClosed}
                     />
 

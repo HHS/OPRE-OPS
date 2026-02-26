@@ -831,7 +831,8 @@ describe("ProcurementTrackerStepThree", () => {
                         return ["Date must be MM/DD/YYYY"];
                     }
                     return [];
-                })
+                }),
+                hasErrors: vi.fn(() => false)
             };
 
             useProcurementTrackerStepThree.mockReturnValue({
@@ -858,7 +859,8 @@ describe("ProcurementTrackerStepThree", () => {
                         return ["This is required information"];
                     }
                     return [];
-                })
+                }),
+                hasErrors: vi.fn(() => false)
             };
 
             useProcurementTrackerStepThree.mockReturnValue({
@@ -885,7 +887,8 @@ describe("ProcurementTrackerStepThree", () => {
                         return ["Start date must be earlier than end date"];
                     }
                     return [];
-                })
+                }),
+                hasErrors: vi.fn(() => false)
             };
 
             useProcurementTrackerStepThree.mockReturnValue({
@@ -1148,6 +1151,118 @@ describe("ProcurementTrackerStepThree", () => {
 
             const saveButton = screen.getByRole("button", { name: /^save$/i });
             expect(saveButton).toBeDisabled();
+        });
+
+        it("save button is disabled when start date is empty", () => {
+            useProcurementTrackerStepThree.mockReturnValue({
+                ...defaultHookReturn,
+                solicitationPeriodStartDate: "",
+                solicitationPeriodEndDate: "02/28/2024"
+            });
+
+            render(
+                <ProcurementTrackerStepThree
+                    stepStatus="PENDING"
+                    stepThreeData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
+                />
+            );
+
+            const saveButton = screen.getByRole("button", { name: /^save$/i });
+            expect(saveButton).toBeDisabled();
+        });
+
+        it("save button is disabled when end date is empty", () => {
+            useProcurementTrackerStepThree.mockReturnValue({
+                ...defaultHookReturn,
+                solicitationPeriodStartDate: "02/01/2024",
+                solicitationPeriodEndDate: ""
+            });
+
+            render(
+                <ProcurementTrackerStepThree
+                    stepStatus="PENDING"
+                    stepThreeData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
+                />
+            );
+
+            const saveButton = screen.getByRole("button", { name: /^save$/i });
+            expect(saveButton).toBeDisabled();
+        });
+
+        it("save button is disabled when start date has validation errors", () => {
+            const mockValidatorResWithStartDateError = {
+                getErrors: vi.fn(() => []),
+                hasErrors: vi.fn((fieldName) => fieldName === "solicitationPeriodStartDate")
+            };
+
+            useProcurementTrackerStepThree.mockReturnValue({
+                ...defaultHookReturn,
+                solicitationPeriodStartDate: "13/40/2024",
+                solicitationPeriodEndDate: "02/28/2024",
+                validatorRes: mockValidatorResWithStartDateError
+            });
+
+            render(
+                <ProcurementTrackerStepThree
+                    stepStatus="PENDING"
+                    stepThreeData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
+                />
+            );
+
+            const saveButton = screen.getByRole("button", { name: /^save$/i });
+            expect(saveButton).toBeDisabled();
+        });
+
+        it("save button is disabled when end date has validation errors", () => {
+            const mockValidatorResWithEndDateError = {
+                getErrors: vi.fn(() => []),
+                hasErrors: vi.fn((fieldName) => fieldName === "solicitationPeriodEndDate")
+            };
+
+            useProcurementTrackerStepThree.mockReturnValue({
+                ...defaultHookReturn,
+                solicitationPeriodStartDate: "02/01/2024",
+                solicitationPeriodEndDate: "01/01/2024",
+                validatorRes: mockValidatorResWithEndDateError
+            });
+
+            render(
+                <ProcurementTrackerStepThree
+                    stepStatus="PENDING"
+                    stepThreeData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
+                />
+            );
+
+            const saveButton = screen.getByRole("button", { name: /^save$/i });
+            expect(saveButton).toBeDisabled();
+        });
+
+        it("save button is enabled when both dates are valid and filled", () => {
+            useProcurementTrackerStepThree.mockReturnValue({
+                ...defaultHookReturn,
+                solicitationPeriodStartDate: "02/01/2024",
+                solicitationPeriodEndDate: "02/28/2024"
+            });
+
+            render(
+                <ProcurementTrackerStepThree
+                    stepStatus="PENDING"
+                    stepThreeData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
+                />
+            );
+
+            const saveButton = screen.getByRole("button", { name: /^save$/i });
+            expect(saveButton).not.toBeDisabled();
         });
 
         it("renders cancel button with correct label and data-cy", () => {
