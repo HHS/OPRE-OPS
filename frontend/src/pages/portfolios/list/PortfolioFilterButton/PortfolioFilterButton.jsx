@@ -5,7 +5,7 @@ import FilterButton from "../../../../components/UI/FilterButton/FilterButton";
 import PortfoliosComboBox from "../../../../components/Portfolios/PortfoliosComboBox";
 import PortfolioFYBudgetRangeSlider from "./PortfolioFYBudgetRangeSlider";
 import AvailableBudgetPercentageFilter from "./AvailableBudgetPercentageFilter";
-import { DEFAULT_PORTFOLIO_BUDGET_RANGE } from "../../../../constants";
+import { DEFAULT_PORTFOLIO_BUDGET_RANGE, FILTER_MODAL_FULL_WIDTH } from "../../../../constants";
 
 /**
  * A filter for portfolios.
@@ -81,7 +81,6 @@ export const PortfolioFilterButton = ({ filters, setFilters, allPortfolios, fyBu
 
     const fieldStyles = "usa-fieldset margin-bottom-205";
     const legendStyles = `usa-legend font-sans-3xs margin-top-0 padding-bottom-1 ${customStyles.legendColor}`;
-    const fullWidth = { width: "26.2rem" };
 
     const fieldsetList = [
         <fieldset
@@ -93,7 +92,7 @@ export const PortfolioFilterButton = ({ filters, setFilters, allPortfolios, fyBu
                 selectedPortfolios={portfolios}
                 setSelectedPortfolios={setPortfolios}
                 legendClassname={legendStyles}
-                overrideStyles={fullWidth}
+                overrideStyles={FILTER_MODAL_FULL_WIDTH}
             />
         </fieldset>,
         <fieldset
@@ -105,7 +104,7 @@ export const PortfolioFilterButton = ({ filters, setFilters, allPortfolios, fyBu
                 legendClassname={legendStyles}
                 budget={budgetRange}
                 setBudget={setBudgetRange}
-                overrideStyles={fullWidth}
+                overrideStyles={FILTER_MODAL_FULL_WIDTH}
             />
         </fieldset>,
         <fieldset
@@ -116,7 +115,7 @@ export const PortfolioFilterButton = ({ filters, setFilters, allPortfolios, fyBu
                 selectedRanges={availablePct}
                 setSelectedRanges={setAvailablePct}
                 legendClassname={legendStyles}
-                overrideStyles={fullWidth}
+                overrideStyles={FILTER_MODAL_FULL_WIDTH}
             />
         </fieldset>
     ];
