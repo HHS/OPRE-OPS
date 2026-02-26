@@ -50,6 +50,7 @@ const ProcurementTrackerStepThree = ({ stepStatus, stepThreeData, authorizedUser
         setShowModal,
         modalProps,
         cancelModalStep3,
+        handleSolicitationDatesSubmit,
         handleStep3Complete
         // @ts-expect-error - stepThreeData may be undefined but hook handles it
     } = useProcurementTrackerStepThree(stepThreeData);
@@ -127,7 +128,7 @@ const ProcurementTrackerStepThree = ({ stepStatus, stepThreeData, authorizedUser
                             data-cy="solicitation-dates-save-btn"
                             disabled={isSolicitationDatesSaveDisabled}
                             onClick={() => {
-                                alert("Save solicitation dates functionality to be implemented with API integration");
+                                handleSolicitationDatesSubmit(stepThreeData?.id);
                             }}
                         >
                             Save

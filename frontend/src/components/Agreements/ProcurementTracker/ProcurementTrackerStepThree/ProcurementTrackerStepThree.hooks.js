@@ -1,8 +1,10 @@
 import React from "react";
 import useGetUserFullNameFromId from "../../../../hooks/user.hooks";
-import { formatDateToMonthDayYear } from "../../../../helpers/utils";
+import { formatDateForApi, formatDateToMonthDayYear } from "../../../../helpers/utils";
 import DatePicker from "../../../UI/USWDS/DatePicker";
 import suite from "./suite";
+import { useUpdateProcurementTrackerStepMutation } from "../../../../api/opsAPI";
+import useAlert from "../../../../hooks/use-alert.hooks";
 
 /**
  * @typedef {import("../../../../types/ProcurementTrackerTypes").ProcurementTrackerSolicitationStep} ProcurementTrackerSolicitationStep
@@ -21,6 +23,8 @@ export default function useProcurementTrackerStepThree(stepThreeData) {
     const [isSolicitationClosed, setIsSolicitationClosed] = React.useState(false);
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
+    const [patchStepThree] = useUpdateProcurementTrackerStepMutation();
+    const { setAlert } = useAlert();
 
     // @ts-expect-error - These functions handle undefined values gracefully
     const step3CompletedByUserName = useGetUserFullNameFromId(stepThreeData?.task_completed_by);
@@ -76,10 +80,62 @@ export default function useProcurementTrackerStepThree(stepThreeData) {
         });
     };
 
-    const handleStep3Complete = (stepId) => {
-        // TODO: Implement API call to complete step
-        console.log("Complete Step 3:", stepId);
-        alert("Complete Step 3 functionality to be implemented with API integration");
+    /**
+     * Handles the submission of the solicitation period dates for step three, updating the procurement tracker step with the new dates.
+     * @param {number} stepId - The ID of the procurement tracker step being updated.
+     * @returns {Promise<void>}
+     */
+    const handleSolicitationDatesSubmit = async (stepId) => {
+        const payload = {
+            solicitation_period_start_date: formatDateForApi(solicitationPeriodStartDate),
+            solicitation_period_end_date: formatDateForApi(solicitationPeriodEndDate)
+        };
+        try {
+            await patchStepThree({
+                stepId,
+                data: payload
+            }).unwrap();
+            console.log("Procurement Tracker Step 3 solicitation dates updated");
+        } catch (error) {
+            console.error("Failed to update Procurement Tracker Step 3 solicitation dates", error);
+            setAlert({
+                type: "error",
+                heading: "Error",
+                message: "There was an error updating the solicitation period dates. Please try again."
+            });
+        }
+    };
+
+    const handleStep3Complete = async (stepId) => {
+        const payload = {
+            status: "COMPLETED",
+            task_completed_by: selectedUser.id,
+            date_completed: formatDateForApi(step3DateCompleted),
+            notes: step3Notes.trim()
+        };
+
+        // Only include solicitation dates if they haven't been saved yet
+        if (solicitationPeriodStartDate && !stepThreeData?.solicitation_period_start_date) {
+            payload.solicitation_period_start_date = formatDateForApi(solicitationPeriodStartDate);
+        }
+        if (solicitationPeriodEndDate && !stepThreeData?.solicitation_period_end_date) {
+            payload.solicitation_period_end_date = formatDateForApi(solicitationPeriodEndDate);
+        }
+
+        try {
+            await patchStepThree({
+                stepId,
+                data: payload
+            }).unwrap();
+            console.log("Procurement Tracker Step 3 Updated");
+        } catch (error) {
+            console.error("Failed to update Procurement Tracker Step 3", error);
+            setAlert({
+                type: "error",
+                heading: "Error",
+                message: "There was an error updating the procurement tracker step. Please try again."
+            });
+        }
     };
 
     return {
@@ -108,6 +164,7 @@ export default function useProcurementTrackerStepThree(stepThreeData) {
         setShowModal,
         modalProps,
         cancelModalStep3,
+        handleSolicitationDatesSubmit,
         handleStep3Complete
     };
 }
