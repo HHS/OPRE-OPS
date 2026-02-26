@@ -18,6 +18,7 @@ export default function useProcurementTrackerStepThree(stepThreeData) {
     const [solicitationPeriodStartDate, setSolicitationPeriodStartDate] = React.useState("");
     const [solicitationPeriodEndDate, setSolicitationPeriodEndDate] = React.useState("");
     const [step3Notes, setStep3Notes] = React.useState("");
+    const [isSolicitationClosed, setIsSolicitationClosed] = React.useState(false);
 
     // @ts-expect-error - These functions handle undefined values gracefully
     const step3CompletedByUserName = useGetUserFullNameFromId(stepThreeData?.task_completed_by);
@@ -70,6 +71,8 @@ export default function useProcurementTrackerStepThree(stepThreeData) {
         step3NotesLabel,
         runValidate,
         validatorRes,
-        MemoizedDatePicker
+        MemoizedDatePicker,
+        isSolicitationClosed,
+        setIsSolicitationClosed
     };
 }

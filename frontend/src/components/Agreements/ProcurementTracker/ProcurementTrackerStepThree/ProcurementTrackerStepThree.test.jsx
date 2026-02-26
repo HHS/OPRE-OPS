@@ -116,6 +116,7 @@ describe("ProcurementTrackerStepThree", () => {
     };
 
     const mockSetStep3Notes = vi.fn();
+    const mockSetIsSolicitationClosed = vi.fn();
 
     const defaultHookReturn = {
         selectedUser: {},
@@ -135,7 +136,9 @@ describe("ProcurementTrackerStepThree", () => {
         step3NotesLabel: "Test notes",
         runValidate: mockRunValidate,
         validatorRes: mockValidatorRes,
-        MemoizedDatePicker: DatePicker
+        MemoizedDatePicker: DatePicker,
+        isSolicitationClosed: false,
+        setIsSolicitationClosed: mockSetIsSolicitationClosed
     };
 
     const mockStepData = { id: 1 };
@@ -258,6 +261,62 @@ describe("ProcurementTrackerStepThree", () => {
             const comboBox = screen.getByTestId("users-combobox");
             expect(comboBox).toHaveClass("width-card-lg", "margin-top-5");
         });
+
+        it("renders checkbox with correct label", () => {
+            render(
+                <ProcurementTrackerStepThree
+                    stepStatus="PENDING"
+                    stepThreeData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
+                />
+            );
+
+            const checkbox = screen.getByRole("checkbox");
+            expect(checkbox).toBeInTheDocument();
+            expect(
+                screen.getByText(
+                    "The Solicitation is closed to vendors, vendor questions have been answered, and evaluations can start"
+                )
+            ).toBeInTheDocument();
+        });
+
+        it("checkbox has correct id and htmlFor attributes", () => {
+            render(
+                <ProcurementTrackerStepThree
+                    stepStatus="PENDING"
+                    stepThreeData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
+                />
+            );
+
+            const checkbox = screen.getByRole("checkbox");
+            expect(checkbox).toHaveAttribute("id", "step-3-checkbox");
+            // eslint-disable-next-line testing-library/no-node-access
+            const label = checkbox.parentElement.querySelector("label");
+            expect(label).toHaveAttribute("for", "step-3-checkbox");
+        });
+
+        it("checkbox uses USWDS styling classes", () => {
+            const { container } = render(
+                <ProcurementTrackerStepThree
+                    stepStatus="PENDING"
+                    stepThreeData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
+                />
+            );
+
+            const checkbox = screen.getByRole("checkbox");
+            expect(checkbox).toHaveClass("usa-checkbox__input");
+            // eslint-disable-next-line testing-library/no-container, testing-library/no-node-access
+            const checkboxContainer = container.querySelector(".usa-checkbox");
+            expect(checkboxContainer).toBeInTheDocument();
+            // eslint-disable-next-line testing-library/no-node-access
+            const label = checkbox.parentElement.querySelector("label");
+            expect(label).toHaveClass("usa-checkbox__label");
+        });
     });
 
     describe("PENDING State User Interactions", () => {
@@ -363,6 +422,194 @@ describe("ProcurementTrackerStepThree", () => {
 
             expect(mockRunValidate).toHaveBeenCalledWith("users", 456);
         });
+
+        it("checkbox toggles from unchecked to checked", () => {
+            render(
+                <ProcurementTrackerStepThree
+                    stepStatus="PENDING"
+                    stepThreeData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
+                />
+            );
+
+            const checkbox = screen.getByRole("checkbox");
+            expect(checkbox).not.toBeChecked();
+
+            fireEvent.click(checkbox);
+
+            expect(mockSetIsSolicitationClosed).toHaveBeenCalledWith(true);
+        });
+
+        it("checkbox toggles from checked to unchecked", () => {
+            useProcurementTrackerStepThree.mockReturnValue({
+                ...defaultHookReturn,
+                isSolicitationClosed: true
+            });
+
+            render(
+                <ProcurementTrackerStepThree
+                    stepStatus="PENDING"
+                    stepThreeData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
+                />
+            );
+
+            const checkbox = screen.getByRole("checkbox");
+            expect(checkbox).toBeChecked();
+
+            fireEvent.click(checkbox);
+
+            expect(mockSetIsSolicitationClosed).toHaveBeenCalledWith(false);
+        });
+
+        it("setIsSolicitationClosed called with correct value", () => {
+            render(
+                <ProcurementTrackerStepThree
+                    stepStatus="PENDING"
+                    stepThreeData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
+                />
+            );
+
+            const checkbox = screen.getByRole("checkbox");
+            fireEvent.click(checkbox);
+
+            expect(mockSetIsSolicitationClosed).toHaveBeenCalledTimes(1);
+            expect(mockSetIsSolicitationClosed).toHaveBeenCalledWith(true);
+        });
+    });
+
+    describe("Disable Logic", () => {
+        it("controlled fields disabled when checkbox unchecked", () => {
+            render(
+                <ProcurementTrackerStepThree
+                    stepStatus="PENDING"
+                    stepThreeData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
+                />
+            );
+
+            // eslint-disable-next-line testing-library/no-node-access
+            const usersSelect = screen.getByTestId("users-combobox").querySelector("select");
+            const datePickers = screen.getAllByTestId("date-picker");
+            const completedDatePicker = datePickers.find(
+                (picker) => picker.getAttribute("data-picker-id") === "step-3-date-completed"
+            );
+            // eslint-disable-next-line testing-library/no-node-access
+            const completedInput = completedDatePicker.querySelector("input");
+            // eslint-disable-next-line testing-library/no-node-access
+            const notesInput = screen.getByTestId("text-area").querySelector("textarea");
+
+            expect(usersSelect).toBeDisabled();
+            expect(completedInput).toBeDisabled();
+            expect(notesInput).toBeDisabled();
+        });
+
+        it("controlled fields enabled when checkbox checked AND tracker active", () => {
+            useProcurementTrackerStepThree.mockReturnValue({
+                ...defaultHookReturn,
+                isSolicitationClosed: true
+            });
+
+            render(
+                <ProcurementTrackerStepThree
+                    stepStatus="PENDING"
+                    stepThreeData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
+                />
+            );
+
+            // eslint-disable-next-line testing-library/no-node-access
+            const usersSelect = screen.getByTestId("users-combobox").querySelector("select");
+            const datePickers = screen.getAllByTestId("date-picker");
+            const completedDatePicker = datePickers.find(
+                (picker) => picker.getAttribute("data-picker-id") === "step-3-date-completed"
+            );
+            // eslint-disable-next-line testing-library/no-node-access
+            const completedInput = completedDatePicker.querySelector("input");
+            // eslint-disable-next-line testing-library/no-node-access
+            const notesInput = screen.getByTestId("text-area").querySelector("textarea");
+
+            expect(usersSelect).not.toBeDisabled();
+            expect(completedInput).not.toBeDisabled();
+            expect(notesInput).not.toBeDisabled();
+        });
+
+        it("controlled fields disabled when tracker inactive (regardless of checkbox)", () => {
+            useProcurementTrackerStepThree.mockReturnValue({
+                ...defaultHookReturn,
+                isSolicitationClosed: true
+            });
+
+            render(
+                <ProcurementTrackerStepThree
+                    stepStatus="PENDING"
+                    stepThreeData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={false}
+                />
+            );
+
+            // eslint-disable-next-line testing-library/no-node-access
+            const usersSelect = screen.getByTestId("users-combobox").querySelector("select");
+            const datePickers = screen.getAllByTestId("date-picker");
+            const completedDatePicker = datePickers.find(
+                (picker) => picker.getAttribute("data-picker-id") === "step-3-date-completed"
+            );
+            // eslint-disable-next-line testing-library/no-node-access
+            const completedInput = completedDatePicker.querySelector("input");
+            // eslint-disable-next-line testing-library/no-node-access
+            const notesInput = screen.getByTestId("text-area").querySelector("textarea");
+
+            expect(usersSelect).toBeDisabled();
+            expect(completedInput).toBeDisabled();
+            expect(notesInput).toBeDisabled();
+        });
+
+        it("solicitation date fields remain independent of checkbox", () => {
+            render(
+                <ProcurementTrackerStepThree
+                    stepStatus="PENDING"
+                    stepThreeData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
+                />
+            );
+
+            const datePickers = screen.getAllByTestId("date-picker");
+            const startDatePicker = datePickers.find(
+                (picker) => picker.getAttribute("data-picker-id") === "solicitation-period-start-date"
+            );
+            const endDatePicker = datePickers.find(
+                (picker) => picker.getAttribute("data-picker-id") === "solicitation-period-end-date"
+            );
+            // eslint-disable-next-line testing-library/no-node-access
+            const startInput = startDatePicker.querySelector("input");
+            // eslint-disable-next-line testing-library/no-node-access
+            const endInput = endDatePicker.querySelector("input");
+
+            expect(startInput).not.toBeDisabled();
+            expect(endInput).not.toBeDisabled();
+        });
+
+        it("checkbox disabled when tracker not active", () => {
+            render(
+                <ProcurementTrackerStepThree
+                    stepStatus="PENDING"
+                    stepThreeData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={false}
+                />
+            );
+
+            const checkbox = screen.getByRole("checkbox");
+            expect(checkbox).toBeDisabled();
+        });
     });
 
     describe("ACTIVE State Rendering", () => {
@@ -376,13 +623,20 @@ describe("ProcurementTrackerStepThree", () => {
                 />
             );
 
+            expect(screen.getByRole("checkbox")).toBeInTheDocument();
             expect(screen.getByText("Task Completed By")).toBeInTheDocument();
             expect(screen.getByText("Date Completed")).toBeInTheDocument();
             expect(screen.getByText("Solicitation Period Start Date")).toBeInTheDocument();
             expect(screen.getByText("Solicitation Period End Date")).toBeInTheDocument();
+            expect(screen.getByTestId("text-area")).toBeInTheDocument();
         });
 
-        it("form fields are interactive in ACTIVE state", () => {
+        it("form fields are interactive in ACTIVE state when checkbox is checked", () => {
+            useProcurementTrackerStepThree.mockReturnValue({
+                ...defaultHookReturn,
+                isSolicitationClosed: true
+            });
+
             render(
                 <ProcurementTrackerStepThree
                     stepStatus="ACTIVE"
@@ -486,10 +740,8 @@ describe("ProcurementTrackerStepThree", () => {
             expect(screen.getByText("Solicitation Period End Date")).toBeInTheDocument();
             expect(screen.getByText("February 28, 2024")).toBeInTheDocument();
         });
-    });
 
-    describe("COMPLETED State Validation", () => {
-        it("does not render form controls (date pickers, combobox, buttons)", () => {
+        it("shows checkmark icon with checkbox label text", () => {
             render(
                 <ProcurementTrackerStepThree
                     stepStatus="COMPLETED"
@@ -499,6 +751,41 @@ describe("ProcurementTrackerStepThree", () => {
                 />
             );
 
+            expect(
+                screen.getByText(
+                    "The Solicitation is closed to vendors, vendor questions have been answered, and evaluations can start"
+                )
+            ).toBeInTheDocument();
+        });
+
+        it("uses FontAwesome icon correctly", () => {
+            const { container } = render(
+                <ProcurementTrackerStepThree
+                    stepStatus="COMPLETED"
+                    stepThreeData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
+                />
+            );
+
+            // eslint-disable-next-line testing-library/no-container, testing-library/no-node-access
+            const icon = container.querySelector("svg[data-icon='circle-check']");
+            expect(icon).toBeInTheDocument();
+        });
+    });
+
+    describe("COMPLETED State Validation", () => {
+        it("does not render form controls (checkbox, date pickers, combobox, buttons)", () => {
+            render(
+                <ProcurementTrackerStepThree
+                    stepStatus="COMPLETED"
+                    stepThreeData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
+                />
+            );
+
+            expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
             expect(screen.queryByTestId("users-combobox")).not.toBeInTheDocument();
             expect(screen.queryByTestId("date-picker")).not.toBeInTheDocument();
             expect(screen.queryByRole("button", { name: /save/i })).not.toBeInTheDocument();
@@ -639,6 +926,7 @@ describe("ProcurementTrackerStepThree", () => {
                 />
             );
 
+            expect(screen.getByRole("checkbox")).toBeInTheDocument();
             expect(screen.getByText("Task Completed By")).toBeInTheDocument();
         });
 
@@ -652,6 +940,7 @@ describe("ProcurementTrackerStepThree", () => {
                 />
             );
 
+            expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
             expect(screen.queryByText("Task Completed By")).not.toBeInTheDocument();
             expect(screen.queryByTestId("term-tag")).not.toBeInTheDocument();
         });

@@ -3,6 +3,8 @@ import TermTag from "../../../UI/Term/TermTag";
 import TextArea from "../../../UI/Form/TextArea";
 import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepThree from "./ProcurementTrackerStepThree.hooks";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
 
 /**
  * @typedef {import("../../../../types/UserTypes").SafeUser} SafeUser
@@ -40,7 +42,9 @@ const ProcurementTrackerStepThree = ({ stepStatus, stepThreeData, authorizedUser
         step3NotesLabel,
         runValidate,
         validatorRes,
-        MemoizedDatePicker
+        MemoizedDatePicker,
+        isSolicitationClosed,
+        setIsSolicitationClosed
         // @ts-expect-error - stepThreeData may be undefined but hook handles it
     } = useProcurementTrackerStepThree(stepThreeData);
 
@@ -100,6 +104,26 @@ const ProcurementTrackerStepThree = ({ stepStatus, stepThreeData, authorizedUser
                             Save
                         </button>
                     </div>
+
+                    <div className="usa-checkbox margin-top-3">
+                        <input
+                            className="usa-checkbox__input"
+                            id="step-3-checkbox"
+                            type="checkbox"
+                            name="step-3-checkbox"
+                            value="step-3-checkbox"
+                            checked={isSolicitationClosed}
+                            onChange={() => setIsSolicitationClosed(!isSolicitationClosed)}
+                            disabled={!hasActiveTracker}
+                        />
+                        <label
+                            className="usa-checkbox__label"
+                            htmlFor="step-3-checkbox"
+                        >
+                            The Solicitation is closed to vendors, vendor questions have been answered, and evaluations
+                            can start
+                        </label>
+                    </div>
                     <div className="display-flex flex-align-center">
                         <UsersComboBox
                             className="width-card-lg margin-top-5"
@@ -107,7 +131,7 @@ const ProcurementTrackerStepThree = ({ stepStatus, stepThreeData, authorizedUser
                             selectedUser={selectedUser}
                             setSelectedUser={setSelectedUser}
                             users={authorizedUsers}
-                            isDisabled={!hasActiveTracker}
+                            isDisabled={!hasActiveTracker || !isSolicitationClosed}
                             messages={validatorRes.getErrors("users") || []}
                             onChange={(/** @type {string} */ name, /** @type {any} */ value) => {
                                 runValidate(name, value);
@@ -127,7 +151,7 @@ const ProcurementTrackerStepThree = ({ stepStatus, stepThreeData, authorizedUser
                                 setStep3DateCompleted(e.target.value);
                             }}
                             maxDate={getLocalISODate()}
-                            isDisabled={!hasActiveTracker}
+                            isDisabled={!hasActiveTracker || !isSolicitationClosed}
                         />
                     </div>
 
@@ -138,7 +162,7 @@ const ProcurementTrackerStepThree = ({ stepStatus, stepThreeData, authorizedUser
                         maxLength={750}
                         value={step3Notes}
                         onChange={(/** @type {any} */ _, /** @type {string} */ value) => setStep3Notes(value)}
-                        isDisabled={!hasActiveTracker}
+                        isDisabled={!hasActiveTracker || !isSolicitationClosed}
                     />
                 </fieldset>
             )}
@@ -150,6 +174,19 @@ const ProcurementTrackerStepThree = ({ stepStatus, stepThreeData, authorizedUser
                         solicitation period dates and update when the posting is complete. Solicitation documents should
                         be uploaded to the Documents Tab.
                     </p>
+                    <div className="display-flex flex-align-center margin-top-5">
+                        <FontAwesomeIcon
+                            icon={faCircleCheck}
+                            size="lg"
+                            className="margin-right-1 flex-shrink-0"
+                            style={{ color: "#162e51" }}
+                            aria-hidden="true"
+                        />
+                        <p className="margin-y-0">
+                            The Solicitation is closed to vendors, vendor questions have been answered, and evaluations
+                            can start
+                        </p>
+                    </div>
                     <dl>
                         <TermTag
                             term="Completed By"
