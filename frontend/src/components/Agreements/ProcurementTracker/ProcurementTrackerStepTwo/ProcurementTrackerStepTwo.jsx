@@ -173,7 +173,7 @@ const ProcurementTrackerStepTwo = ({
                             </div>
                         </>
                     )}
-                    <div className="usa-checkbox">
+                    <div className="usa-checkbox margin-top-3">
                         <input
                             className="usa-checkbox__input"
                             id="step-2-checkbox"
@@ -189,7 +189,7 @@ const ProcurementTrackerStepTwo = ({
                             htmlFor="step-2-checkbox"
                         >
                             The pre-solicitation package has been finalized between the Procurement Shop and OPRE and
-                            the final version has been uploaded’
+                            the final version has been uploaded
                         </label>
                     </div>
                     <div className="display-flex flex-align-center">
@@ -236,23 +236,20 @@ const ProcurementTrackerStepTwo = ({
                     >
                         After the package is finalized, enter the Draft Solicitation date below (if applicable).
                     </p>
-                    <div className="display-flex">
-                        <MemoizedDatePicker
-                            id="step-2-draft-solicitation-date"
-                            name="draftSolicitationDate"
-                            className=""
-                            label="Draft Solicitation Date (optional)"
-                            hint="mm/dd/yyyy"
-                            value={draftSolicitationDate}
-                            messages={validatorRes.getErrors("draftSolicitationDate") || []}
-                            onChange={(e) => {
-                                runValidate("draftSolicitationDate", e.target.value);
-                                setDraftSolicitationDate(e.target.value);
-                            }}
-                            isDisabled={isPackageFinalizedFieldsDisabled}
-                        />
-                    </div>
-
+                    <MemoizedDatePicker
+                        id="step-2-draft-solicitation-date"
+                        name="draftSolicitationDate"
+                        className="width-card-lg"
+                        label="Draft Solicitation Date (optional)"
+                        hint="mm/dd/yyyy"
+                        value={draftSolicitationDate}
+                        messages={validatorRes.getErrors("draftSolicitationDate") || []}
+                        onChange={(e) => {
+                            runValidate("draftSolicitationDate", e.target.value);
+                            setDraftSolicitationDate(e.target.value);
+                        }}
+                        isDisabled={isPackageFinalizedFieldsDisabled}
+                    />
                     <div className="margin-top-2 display-flex flex-justify-end">
                         <button
                             className="usa-button usa-button--unstyled margin-right-2"
@@ -292,7 +289,8 @@ const ProcurementTrackerStepTwo = ({
                             aria-hidden="true"
                         />
                         <p className="margin-y-0">
-                            The pre-solicitation package has been sent to the Procurement Shop for review
+                            The pre-solicitation package has been finalized between the Procurement Shop and OPRE and
+                            the final version has been uploaded
                         </p>
                     </div>
                     <dl>
