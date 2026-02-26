@@ -4,7 +4,7 @@ from typing import Any, Dict, List
 
 from sqlalchemy.orm import Session
 
-from models import ProcurementTrackerStep, ProcurementTrackerStepStatus, ProcurementTrackerStepType, User
+from models import ProcurementTrackerStep, ProcurementTrackerStepType, User
 from ops_api.ops.validation.base import ValidationRule
 from ops_api.ops.validation.context import ValidationContext
 
@@ -51,11 +51,6 @@ class ProcurementTrackerStepsValidator:
             CompletionAuthorizationRule(),
         ]
 
-    @staticmethod
-    def _is_data_completed_step(data: dict) -> bool:
-        """Helper method to determine if the update is marking the step as completed."""
-        return data and data.get("status", None) == ProcurementTrackerStepStatus.COMPLETED
-
     def update_validators_for_step(self, procurement_tracker_step: ProcurementTrackerStep, data: dict = None) -> None:
         """
         Update the list of validators based on the procurement tracker step's current state.
@@ -83,10 +78,10 @@ class ProcurementTrackerStepsValidator:
             CompletedByUpdateAuthorizationRule,
             NoFutureCompletionDateUpdateValidationRule,
             NoPastTargetCompletionDateUpdateRule,
-            NotesMaxLengthUpdateRule,
             NoUpdatingCompletedProcurementStepRule,
             PreSolicitationCompletionRequiredFieldsRule,
             ResourceExistsRule,
+            SolicitationPeriodDateOrderRule,
             UserAssociationRule,
         )
 
@@ -98,33 +93,27 @@ class ProcurementTrackerStepsValidator:
                 NoUpdatingCompletedProcurementStepRule(),
                 AcquisitionPlanningRequiredFieldsRule(),
                 NoFutureCompletionDateUpdateValidationRule(),
-                NotesMaxLengthUpdateRule(),
             ]
         elif procurement_tracker_step.step_type == ProcurementTrackerStepType.PRE_SOLICITATION:
-            if ProcurementTrackerStepsValidator._is_data_completed_step(data):
-                # For pre-solicitation steps being marked as completed, we require additional validation
-                return [
-                    ResourceExistsRule(),
-                    UserAssociationRule(),
-                    PreSolicitationCompletionRequiredFieldsRule(),
-                    CompletedByUpdateAuthorizationRule(),
-                    NoUpdatingCompletedProcurementStepRule(),
-                    NoFutureCompletionDateUpdateValidationRule(),
-                    NoPastTargetCompletionDateUpdateRule(),
-                    NotesMaxLengthUpdateRule(),
-                ]
-            else:
-                # Non-final updates to presolicitation steps require smaller rule set
-                return [
-                    ResourceExistsRule(),
-                    UserAssociationRule(),
-                    CompletedByUpdateAuthorizationRule(),
-                    NoUpdatingCompletedProcurementStepRule(),
-                    NoFutureCompletionDateUpdateValidationRule(),
-                    NoPastTargetCompletionDateUpdateRule(),
-                    NotesMaxLengthUpdateRule(),
-                ]
+            return [
+                ResourceExistsRule(),
+                UserAssociationRule(),
+                PreSolicitationCompletionRequiredFieldsRule(),
+                CompletedByUpdateAuthorizationRule(),
+                NoUpdatingCompletedProcurementStepRule(),
+                NoFutureCompletionDateUpdateValidationRule(),
+                NoPastTargetCompletionDateUpdateRule(),
+            ]
 
+        elif procurement_tracker_step.step_type == ProcurementTrackerStepType.SOLICITATION:
+            return [
+                ResourceExistsRule(),
+                UserAssociationRule(),
+                CompletedByUpdateAuthorizationRule(),
+                NoUpdatingCompletedProcurementStepRule(),
+                NoFutureCompletionDateUpdateValidationRule(),
+                SolicitationPeriodDateOrderRule(),
+            ]
         else:
             return self._get_default_validators()
 
