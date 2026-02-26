@@ -293,29 +293,32 @@ const ProcurementTrackerStepTwo = ({
                             the final version has been uploaded
                         </p>
                     </div>
-                    <dl>
-                        <TermTag
-                            term="Target Completion Date"
-                            description={step2TargetCompletionDateLabel || "None"}
-                        />
-                        <div className="display-flex">
+                    <dl className="display-flex flex-wrap">
+                        <div className="width-full">
                             <TermTag
-                                term="Completed By"
-                                description={step2CompletedByUserName}
-                                className="margin-right-4"
-                            />
-                            <TermTag
-                                term="Date Completed"
-                                description={step2DateCompletedLabel}
+                                term="Target Completion Date"
+                                description={step2TargetCompletionDateLabel || "None"}
                             />
                         </div>
-
                         <TermTag
-                            term="Draft Solicitation Date"
-                            description={step2DraftSolicitationDateLabel || "None"}
+                            term="Completed By"
+                            description={step2CompletedByUserName}
+                            className="margin-right-4"
                         />
-                        <dt className="margin-0 text-base-dark margin-top-3 font-12px">Notes</dt>
-                        <dd className="margin-0 margin-top-1">{step2NotesLabel || "None"}</dd>
+                        <TermTag
+                            term="Date Completed"
+                            description={step2DateCompletedLabel}
+                        />
+                        <div className="width-full">
+                            <TermTag
+                                term="Draft Solicitation Date"
+                                description={step2DraftSolicitationDateLabel || "None"}
+                            />
+                        </div>
+                        <div className="width-full">
+                            <dt className="margin-0 text-base-dark margin-top-3 font-12px">Notes</dt>
+                            <dd className="margin-0 margin-top-1">{step2NotesLabel || "None"}</dd>
+                        </div>
                     </dl>
                 </div>
             )}
