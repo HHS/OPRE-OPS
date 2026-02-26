@@ -5,6 +5,7 @@ import ComboBox from "../../../../components/UI/Form/ComboBox";
  * @property {string[]} selectedRanges - Array of selected range codes
  * @property {function(string[]): void} setSelectedRanges - Function to update selected ranges
  * @property {string} [legendClassname] - CSS class for the legend
+ * @property {Object} [overrideStyles] - Additional styles to apply to the component
  */
 
 /**
@@ -28,7 +29,8 @@ const PERCENTAGE_RANGES = [
 const AvailableBudgetPercentageFilter = ({
     selectedRanges,
     setSelectedRanges,
-    legendClassname = "usa-label margin-top-0"
+    legendClassname = "usa-label margin-top-0",
+    overrideStyles = {}
 }) => {
     // Transform PERCENTAGE_RANGES to ComboBox format
     const rangeOptions = PERCENTAGE_RANGES.map((range) => ({
@@ -70,7 +72,7 @@ const AvailableBudgetPercentageFilter = ({
                         data={rangeOptions}
                         selectedData={selectedRangeObjects}
                         setSelectedData={handleRangeChange}
-                        overrideStyles={{ width: "22.7rem" }}
+                        overrideStyles={overrideStyles}
                         isMulti={true}
                     />
                 </div>

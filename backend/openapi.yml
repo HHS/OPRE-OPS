@@ -902,6 +902,7 @@ paths:
                   - $ref: "#/components/schemas/ProcurementTrackerStep"
                   - $ref: "#/components/schemas/ProcurementTrackerAcquisitionPlanningStep"
                   - $ref: "#/components/schemas/ProcurementTrackerPreSolicitationStep"
+                  - $ref: "#/components/schemas/ProcurementTrackerSolicitationStep"
                 description: >-
                   Procurement tracker step. ACQUISITION_PLANNING steps
                   include additional fields (task_completed_by,
@@ -916,6 +917,8 @@ paths:
                   $ref: "#/components/examples/ProcurementTrackerAcquisitionPlanningStepExample"
                 "2":
                   $ref: "#/components/examples/ProcurementTrackerPreSolicitationStepExample"
+                "3":
+                  $ref: "#/components/examples/ProcurementTrackerSolicitationStepExample"
         "404":
           description: Not Found
         "500":
@@ -953,6 +956,8 @@ paths:
                 $ref: "#/components/examples/UpdateProcurementTrackerStepAcquisitionPlanningRequest"
               "2":
                 $ref: "#/components/examples/UpdateProcurementTrackerStepPreSolicitationRequest"
+              "3":
+                $ref: "#/components/examples/UpdateProcurementTrackerStepSolicitationRequest"
       responses:
         "200":
           description: Procurement tracker step updated successfully
@@ -963,6 +968,7 @@ paths:
                   - $ref: "#/components/schemas/ProcurementTrackerStep"
                   - $ref: "#/components/schemas/ProcurementTrackerAcquisitionPlanningStep"
                   - $ref: "#/components/schemas/ProcurementTrackerPreSolicitationStep"
+                  - $ref: "#/components/schemas/ProcurementTrackerSolicitationStep"
                 description: >-
                   Updated procurement tracker step. ACQUISITION_PLANNING
                   steps include additional fields (task_completed_by,
@@ -977,6 +983,8 @@ paths:
                   $ref: "#/components/examples/ProcurementTrackerAcquisitionPlanningStepExample"
                 "2":
                   $ref: "#/components/examples/ProcurementTrackerPreSolicitationStepExample"
+                "3":
+                  $ref: "#/components/examples/ProcurementTrackerSolicitationStepExample"
         "400":
           description: Bad Request
         "404":
@@ -1066,11 +1074,20 @@ paths:
           explode: true
         - in: query
           name: portfolio
-          description: Filter by portfolio abbreviation or name
+          description: Filter by portfolio abbreviation
           schema:
             type: array
             items:
               type: string
+          style: form
+          explode: true
+        - in: query
+          name: portfolio_id
+          description: Filter by portfolio ID
+          schema:
+            type: array
+            items:
+              type: integer
           style: form
           explode: true
         - in: query
@@ -1573,6 +1590,12 @@ paths:
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FundingDetailsList"
     post:
       tags:
         - CAN Funding Details
@@ -2281,6 +2304,16 @@ paths:
           schema:
             type: string
           example: "2023"
+        - name: includeInactive
+          in: query
+          description: |
+              Include inactive CANs in the results.
+              Only applies when budgetFiscalYear is provided.
+              When false (default), only returns CANs with an active period that includes the budget fiscal year.
+          schema:
+            type: boolean
+            default: false
+          example: false
         - in: path
           name: portfolio_id
           description: portfolio Id
@@ -3325,12 +3358,11 @@ paths:
               schema:
                 type: array
                 items:
-                  allOf:
-                    - $ref: "#/components/schemas/BudgetLineItem"
-                    - type: object
-                      properties:
-                        _meta:
-                          $ref: "#/components/schemas/BudgetLineItemMeta"
+                  $ref: "#/components/schemas/BudgetLineItemListItem"
+                description: |
+                  Optimized list response. Excludes team_members and portfolio_team_leaders
+                  (not used in list views). CAN object is minimal (id, display_name, number, portfolio_id only).
+                  Use GET /budget-line-items/{id} for full details.
         "400":
           description: Bad Request
         "401":
@@ -4461,6 +4493,60 @@ components:
             - OTHER
         sub_allowance:
           type: string
+    FundingDetailsList:
+      description: Lightweight Funding Details Object for list endpoints (excludes expensive nested relationships)
+      type: object
+      properties:
+        id:
+          type: integer
+        fiscal_year:
+          type: integer
+        fund_code:
+          type: string
+        active_period:
+          type: integer
+        funding_method:
+          type: string
+        funding_received:
+          type: string
+        funding_type:
+          type: string
+        allotment:
+          type: string
+        allowance:
+          type: string
+        display_name:
+          type: string
+        funding_partner:
+          type: string
+        funding_source:
+          type: string
+          enum:
+            - OPRE
+            - ACF
+            - ACF_MOU
+            - HHS
+            - OTHER
+        method_of_transfer:
+          type: string
+          enum:
+            - DIRECT
+            - COST_SHARE
+            - IAA
+            - IDDA
+            - OTHER
+        obligate_by:
+          type: integer
+        sub_allowance:
+          type: string
+        created_on:
+          $ref: "#/components/parameters/created_on"
+        updated_on:
+          $ref: "#/components/parameters/updated_on"
+      required:
+        - id
+        - fiscal_year
+        - fund_code
     FundingDetails:
       description: Funding Detail Object
       type: object
@@ -4499,6 +4585,16 @@ components:
             - OTHER
         sub_allowance:
           type: string
+        active_period:
+          type: integer
+        funding_method:
+          type: string
+        funding_received:
+          type: string
+        funding_type:
+          type: string
+        obligate_by:
+          type: integer
         created_on:
           $ref: "#/components/parameters/created_on"
         updated_on:
@@ -5040,9 +5136,118 @@ components:
       type: array
       items:
         anyOf:
-          - $ref: "#/components/schemas/BudgetLineItem"
+          - $ref: "#/components/schemas/BudgetLineItemListItem"
+
+    BudgetLineItemCANList:
+      description: Minimal CAN schema for list responses - only fields used by UI
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        display_name:
+          type: string
+        number:
+          type: string
+        portfolio_id:
+          type: integer
+          example: 1
+      required:
+        - id
+        - display_name
+        - number
+        - portfolio_id
+
+    BudgetLineItemListItem:
+      description: Optimized BudgetLineItem schema for list responses (excludes unused fields)
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        budget_line_item_type:
+          type: string
+          example: "CONTRACT"
+        agreement_id:
+          type: integer
+          example: 1
+        can_id:
+          type: integer
+          example: 1
+        can:
+          $ref: "#/components/schemas/BudgetLineItemCANList"
+        services_component_id:
+          type: integer
+          nullable: true
+          description: ID of the associated services component
+        amount:
+          type: number
+          format: float
+          example: 1000000
+          description: BLI amount represented as a floating-point number
+        total:
+          type: number
+          format: float
+          description: Total BLI amount including fees (amount + fees)
+        comments:
+          type: string
+        date_needed:
+          type: string
+          example: "2023-05-06"
+        line_description:
+          type: string
+        proc_shop_fee_percentage:
+          type: number
+          example: 100.2
+        procurement_shop_fee_id:
+          type: integer
+          description: ID reference to the procurement shop fee
+        procurement_shop_fee:
+          $ref: "#/components/schemas/ProcurementShopFee"
+          description: The associated procurement shop fee object
+        status:
+          type: string
+          example: PLANNED
+        is_obe:
+          type: boolean
+          example: false
+        portfolio_id:
+          type: integer
+          example: 1
+        fiscal_year:
+          type: integer
+          example: 1
+        in_review:
+          type: boolean
+          description: Whether this budget line item has change requests in review
+        change_requests_in_review:
+          type: array
+          nullable: true
+          description: BLI-level and agreement-level change requests in review (GenericChangeRequest supports both)
+          items:
+            $ref: "#/components/schemas/GenericChangeRequest"
+        created_on:
+          $ref: "#/components/parameters/created_on"
+        updated_on:
+          $ref: "#/components/parameters/updated_on"
+        created_by:
+          $ref: "#/components/parameters/created_by"
+        updated_by:
+          $ref: "#/components/parameters/updated_by"
+        agreement:
+          $ref: "#/components/schemas/SimpleAgreementSchema"
+        fees:
+          type: number
+          format: float
+          description: BLI fee amount represented as a floating-point number
+        _meta:
+          $ref: "#/components/schemas/BudgetLineItemMeta"
 
     BudgetLineItem:
+      description: |
+        Full BudgetLineItem schema used for single-item responses (GET /budget-line-items/{id}).
+        Includes all fields including team_members, portfolio_team_leaders, and full CAN details.
+        For list responses, see BudgetLineItemListItem which excludes unused fields for performance.
       type: object
       properties:
         id:
@@ -5142,9 +5347,10 @@ components:
           description: Whether this budget line item has change requests in review
         change_requests_in_review:
           type: array
+          nullable: true
+          description: BLI-level and agreement-level change requests in review (GenericChangeRequest supports both)
           items:
-            anyOf:
-              - $ref: "#/components/schemas/GenericChangeRequest"
+            $ref: "#/components/schemas/GenericChangeRequest"
         clin_id:
           type: integer
           example: 1
@@ -5344,6 +5550,8 @@ components:
           example: 1
         budget_line_item_id:
           type: integer
+          nullable: true
+          description: Present for BUDGET_LINE_ITEM_CHANGE_REQUEST; null for AGREEMENT_CHANGE_REQUEST
           example: 1
         has_budget_change:
           type: boolean
@@ -5351,6 +5559,10 @@ components:
         has_status_change:
           type: boolean
           example: false
+        has_proc_shop_change:
+          type: boolean
+          example: false
+          description: Present for AGREEMENT_CHANGE_REQUEST; false for BLI-only change requests
 
     AgreementChangeRequest:
       allOf:
@@ -6026,6 +6238,36 @@ components:
               description: >-
                 Date when the draft solicitation was completed. Must be
                 current date or future date.
+    ProcurementTrackerSolicitationStep:
+      allOf:
+        - $ref: "#/components/schemas/ProcurementTrackerStep"
+        - type: object
+          description: Solicitation step with additional fields
+          properties:
+            task_completed_by:
+              type: [integer, "null"]
+              description: User ID of the person who completed this step
+            date_completed:
+              type: [string, "null"]
+              format: date
+              description: >-
+                Date when this step was completed. Must be current date
+                or past date.
+            notes:
+              type: [string, "null"]
+              description: Additional notes about this step
+            solicitation_period_start_date:
+              type: [string, "null"]
+              format: date
+              description: >-
+                Date when the solicitation was issued. Must be current date
+                or past date.
+            solicitation_period_end_date:
+              type: [string, "null"]
+              format: date
+              description: >-
+                Date when the solicitation period ended. Must be current date
+                or past date.
     UpdateProcurementTrackerStepRequest:
       type: object
       description: Request schema for updating a procurement tracker step. All fields are optional for PATCH operations.
@@ -7351,6 +7593,26 @@ components:
         step_start_date: "2026-01-02"
         step_completed_date: null
 
+    ProcurementTrackerSolicitationStepExample:
+      summary: Solicitation tracker step
+      description: >-
+        Example showing a solicitation step with additional fields
+        (solicitation_period_start_date, solicitation_period_end_date, task_completed_by, date_completed,
+        notes)
+      value:
+        id: 2
+        procurement_tracker_id: 1
+        step_number: 2
+        step_type: "SOLICITATION"
+        status: "ACTIVE"
+        solicitation_period_start_date: "2026-01-02"
+        solicitation_period_end_date: "2026-02-15"
+        task_completed_by: null
+        date_completed: null
+        notes: "Working on solicitation document."
+        step_start_date: "2026-01-02"
+        step_completed_date: null
+
     UpdateProcurementTrackerStepPreSolicitationRequest:
       summary: PATCH request to complete pre-solicitation step
       description: >-
@@ -7367,6 +7629,21 @@ components:
         notes: >-
           Pre-solicitation phase completed. Draft solicitation reviewed
           and approved by all stakeholders.
+
+    UpdateProcurementTrackerStepSolicitationRequest:
+      summary: PATCH request to complete Solicitation step
+      description: >-
+        Example showing a solicitation step with additional fields
+        (solicitation_period_start_date, solicitation_period_end_date, task_completed_by, date_completed,
+        notes) and a PATCH request to complete the step. All fields in the PATCH request are optional.
+        Date fields (solicitation_period_start_date, solicitation_period_end_date) must be current date or future date.
+      value:
+        status: "COMPLETED"
+        solicitation_period_start_date: "2026-01-02"
+        solicitation_period_end_date: "2026-02-15"
+        task_completed_by: 521
+        date_completed: "2026-02-10"
+        notes: "Solicitation phase completed."
 
     ProcurementTracker:
       summary: Single procurement tracker with mixed step types
@@ -7396,6 +7673,11 @@ components:
             step_number: 2
             step_type: "PRE_SOLICITATION"
             status: "ACTIVE"
+            target_completion_date: "2026-02-15"
+            task_completed_by: null
+            date_completed: null
+            notes: "Working on draft solicitation document."
+            draft_solicitation_date: null
             step_start_date: "2026-01-02"
             step_completed_date: null
           - id: 3
@@ -7403,6 +7685,11 @@ components:
             step_number: 3
             step_type: "SOLICITATION"
             status: "PENDING"
+            solicitation_period_start_date: null
+            solicitation_period_end_date: null
+            task_completed_by: null
+            date_completed: null
+            notes: null
             step_start_date: null
             step_completed_date: null
           - id: 4

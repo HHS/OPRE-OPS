@@ -156,17 +156,6 @@ Scenario: Valid Task Completed By Step 2
 
     Then I should get a validation error
 
-  Scenario: Validate solicitation draft date on model is invalid but update is valid
-    Given I am logged in as an OPS user
-    And I have a Contract Agreement with OPS user as a team member
-    And I have a procurement tracker
-    And I am working with a pre-solicitation procurement tracker step with a past draft solicitation date
-
-    When I have a valid completed procurement step 2
-    And I submit a procurement step update
-
-    Then I should get a message that it was successful and my procurement tracker has moved onto the next step
-
   Scenario: Validate pre solicitation step can have required fields spread between model and update
     Given I am logged in as an OPS user
     And I have a Contract Agreement with OPS user as a team member
@@ -189,28 +178,6 @@ Scenario: Valid Task Completed By Step 2
 
     Then I should get a validation error
 
-  Scenario: Validate pre solicitation step draft solicitation date in update cannot be in the past
-    Given I am logged in as an OPS user
-    And I have a Contract Agreement with OPS user as a team member
-    And I have a procurement tracker
-    And I am working with a pre-solicitation procurement tracker step
-
-    When I have a procurement step 2 with a past draft solicitation date
-    And I submit a procurement step update
-
-    Then I should get a validation error
-
-  Scenario: Validate pre solicitation step draft solicitation date in the model cannot be in the past
-    Given I am logged in as an OPS user
-    And I have a Contract Agreement with OPS user as a team member
-    And I have a procurement tracker
-    And I am working with a pre-solicitation procurement tracker step with a past draft solicitation date
-
-    When I have a valid completed procurement step 2 with no draft solicitation date
-    And I submit a procurement step update
-
-    Then I should get a validation error
-
   Scenario: Complete Procurement Tracker
       Given I am logged in as an OPS user
       And I have a Contract Agreement with OPS user as a team member and a new award procurement action
@@ -222,24 +189,57 @@ Scenario: Valid Task Completed By Step 2
 
       Then I should get a message that it was successful and my procurement tracker has completed. Also, the procurement action's status should be awarded
 
-  Scenario: Validate acquisition planning notes cannot exceed 750 characters
+  Scenario: Valid Solicitation Step Update
     Given I am logged in as an OPS user
     And I have a Contract Agreement with OPS user as a team member
     And I have a procurement tracker
-    And I am working with acquisition planning procurement tracker step
+    And I am working with a solicitation procurement tracker step
 
-    When I have a procurement step with notes exceeding 750 characters
+    When I have a valid completed solicitation step
+    And I submit a procurement step update
+
+    Then I should get a message that it was successful and my procurement tracker has moved onto the next step
+
+  Scenario: Validate solicitation period start date must be earlier than end date
+    Given I am logged in as an OPS user
+    And I have a Contract Agreement with OPS user as a team member
+    And I have a procurement tracker
+    And I am working with a solicitation procurement tracker step
+
+    When I have a solicitation step with start date after end date
     And I submit a procurement step update
 
     Then I should get a validation error
 
-  Scenario: Validate pre-solicitation notes cannot exceed 750 characters
+  Scenario: Validate solicitation period start date cannot equal end date
     Given I am logged in as an OPS user
     And I have a Contract Agreement with OPS user as a team member
     And I have a procurement tracker
-    And I am working with a pre-solicitation procurement tracker step
+    And I am working with a solicitation procurement tracker step
 
-    When I have a procurement step 2 with notes exceeding 750 characters
+    When I have a solicitation step with start date equal to end date
+    And I submit a procurement step update
+
+    Then I should get a validation error
+
+  Scenario: Cannot invalidate solicitation start date with update
+    Given I am logged in as an OPS user
+    And I have a Contract Agreement with OPS user as a team member
+    And I have a procurement tracker
+    And I am working with a solicitation procurement tracker step with a valid solicitation start and end date
+
+    When I have a solicitation step with a start date in the future
+    And I submit a procurement step update
+
+    Then I should get a validation error
+
+  Scenario: Cannot invalidate solicitation end date with update
+    Given I am logged in as an OPS user
+    And I have a Contract Agreement with OPS user as a team member
+    And I have a procurement tracker
+    And I am working with a solicitation procurement tracker step with a valid solicitation start and end date
+
+    When I have a solicitation step with a solicitation end date in the past
     And I submit a procurement step update
 
     Then I should get a validation error

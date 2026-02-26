@@ -1,23 +1,67 @@
 import React from "react";
 import useGetUserFullNameFromId from "../../../../hooks/user.hooks";
-import { formatDateToMonthDayYear } from "../../../../helpers/utils";
+import { formatDateForApi, formatDateToMonthDayYear } from "../../../../helpers/utils";
 import DatePicker from "../../../UI/USWDS/DatePicker";
 import suite from "./suite";
+import { useUpdateProcurementTrackerStepMutation } from "../../../../api/opsAPI";
+import useAlert from "../../../../hooks/use-alert.hooks";
+
+/**
+ * @typedef {import("../../../../types/ProcurementTrackerTypes").ProcurementTrackerPreSolicitationStep} ProcurementTrackerPreSolicitationStep
+ */
 
 /**
  * Custom hook to manage the state and logic for Procurement Tracker Step Two.
- * @param {Object} stepTwoData - The data for step two of the procurement tracker.
+ * @param {ProcurementTrackerPreSolicitationStep | undefined} stepTwoData - The data for step two of the procurement tracker.
+ * @param {Function} handleSetCompletedStepNumber - Function to set the completed step number.
  */
-export default function useProcurementTrackerStepTwo(stepTwoData) {
+export default function useProcurementTrackerStepTwo(stepTwoData, handleSetCompletedStepNumber) {
+    const [isPreSolicitationPackageFinalized, setIsPreSolicitationPackageFinalized] = React.useState(false);
+    const [draftSolicitationDate, setDraftSolicitationDate] = React.useState("");
     const [selectedUser, setSelectedUser] = React.useState({});
-    const [targetCompletionDate, setTargetCompletionDate] = React.useState(stepTwoData?.target_completion_date || "");
+    const [targetCompletionDate, setTargetCompletionDate] = React.useState("");
     const [step2DateCompleted, setStep2DateCompleted] = React.useState("");
     const [step2Notes, setStep2Notes] = React.useState("");
+    const [revisedTargetDate, setRevisedTargetDate] = React.useState("");
+    const [showModal, setShowModal] = React.useState(false);
+    const [modalProps, setModalProps] = React.useState({
+        heading: "",
+        actionButtonText: "",
+        secondaryButtonText: "",
+        handleConfirm: () => {}
+    });
+    const [patchStepTwo] = useUpdateProcurementTrackerStepMutation();
+    const { setAlert } = useAlert();
 
-    const step2CompletedByUserName = useGetUserFullNameFromId(stepTwoData?.task_completed_by);
-    const step2DateCompletedLabel = formatDateToMonthDayYear(stepTwoData?.date_completed);
+    const step2CompletedByUserName = useGetUserFullNameFromId(stepTwoData?.task_completed_by ?? -1);
+    const step2DateCompletedLabel = formatDateToMonthDayYear(stepTwoData?.date_completed ?? "");
+    const step2TargetCompletionDateLabel = formatDateToMonthDayYear(stepTwoData?.target_completion_date ?? "");
+    const step2DraftSolicitationDateLabel = formatDateToMonthDayYear(stepTwoData?.draft_solicitation_date ?? "");
     const step2NotesLabel = stepTwoData?.notes;
     const MemoizedDatePicker = React.memo(DatePicker);
+
+    // Calculate if target completion date is past due
+    const isPastDue = React.useMemo(() => {
+        // Only show past due warning if step is pending (not completed)
+        if (stepTwoData?.date_completed) {
+            return false;
+        }
+
+        // Need a target date to be past due
+        const targetDate = stepTwoData?.target_completion_date;
+        if (!targetDate) {
+            return false;
+        }
+
+        // Compare date-only (no time component)
+        // Parse YYYY-MM-DD format by appending "T00:00:00" to ensure local timezone
+        const target = new Date(targetDate + "T00:00:00");
+        const today = new Date();
+        const targetDateOnly = new Date(target.getFullYear(), target.getMonth(), target.getDate());
+        const todayDateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+        return targetDateOnly.getTime() < todayDateOnly.getTime();
+    }, [stepTwoData?.target_completion_date, stepTwoData?.date_completed]);
 
     const runValidate = (name, value) => {
         suite({ ...{ [name]: value } }, name);
@@ -25,7 +69,127 @@ export default function useProcurementTrackerStepTwo(stepTwoData) {
 
     let validatorRes = suite.get();
 
+    /**
+     * Handles the submission of the target completion date for step two, updating the procurement tracker step with the new date.
+     * @param {number} stepId - The ID of the procurement tracker step being updated.
+     * @returns {Promise<void>}
+     */
+    const handleTargetCompletionDateSubmit = async (stepId) => {
+        const payload = {
+            target_completion_date: formatDateForApi(targetCompletionDate)
+        };
+        try {
+            await patchStepTwo({
+                stepId,
+                data: payload
+            }).unwrap();
+            console.log("Procurement Tracker Step 2 Updated");
+        } catch (error) {
+            console.error("Failed to update Procurement Tracker Step 2", error);
+            setAlert({
+                type: "error",
+                heading: "Error",
+                message: "There was an error updating the procurement tracker step. Please try again."
+            });
+        }
+    };
+
+    /**
+     * Handles the submission of the revised target completion date, updating the target_completion_date field.
+     * @param {number} stepId - The ID of the procurement tracker step being updated.
+     * @returns {Promise<void>}
+     */
+    const handleRevisedTargetDateSubmit = async (stepId) => {
+        const payload = {
+            target_completion_date: formatDateForApi(revisedTargetDate)
+        };
+        try {
+            await patchStepTwo({
+                stepId,
+                data: payload
+            }).unwrap();
+            console.log("Procurement Tracker Step 2 Updated with revised target date");
+            // Clear the revised date input after successful save
+            setRevisedTargetDate("");
+        } catch (error) {
+            console.error("Failed to update Procurement Tracker Step 2", error);
+            setAlert({
+                type: "error",
+                heading: "Error",
+                message: "There was an error updating the procurement tracker step. Please try again."
+            });
+        }
+    };
+
+    /**
+     * Handles the submission of the target completion date for step two, updating the procurement tracker step with the new date.
+     * @param {number} stepId - The ID of the procurement tracker step being updated.
+     * @returns {Promise<void>}
+     */
+    const handleStepTwoComplete = async (stepId) => {
+        const payload = {
+            status: "COMPLETED",
+            task_completed_by: selectedUser.id,
+            date_completed: formatDateForApi(step2DateCompleted),
+            notes: step2Notes.trim(),
+            draft_solicitation_date: formatDateForApi(draftSolicitationDate)
+        };
+
+        // Only include target_completion_date if it hasn't been set yet
+        if (!stepTwoData?.target_completion_date) {
+            payload.target_completion_date = formatDateForApi(targetCompletionDate);
+        }
+
+        try {
+            await patchStepTwo({
+                stepId,
+                data: payload
+            }).unwrap();
+
+            // Trigger accordion behavior to keep steps 2 and 3 open
+            if (handleSetCompletedStepNumber) {
+                handleSetCompletedStepNumber(2);
+            }
+
+            console.log("Procurement Tracker Step 2 Updated");
+        } catch (error) {
+            console.error("Failed to update Procurement Tracker Step 2", error);
+            setAlert({
+                type: "error",
+                heading: "Error",
+                message: "There was an error updating the procurement tracker step. Please try again."
+            });
+        }
+    };
+
+    const cancelStepTwo = () => {
+        setIsPreSolicitationPackageFinalized(false);
+        setDraftSolicitationDate("");
+        setSelectedUser({});
+        setTargetCompletionDate("");
+        setStep2DateCompleted("");
+        setStep2Notes("");
+        setRevisedTargetDate("");
+    };
+
+    const cancelModalStep2 = () => {
+        setShowModal(true);
+        setModalProps({
+            heading: "Are you sure you want to cancel this task? Your input will not be saved.",
+            actionButtonText: "Cancel Task",
+            secondaryButtonText: "Continue Editing",
+            handleConfirm: () => {
+                cancelStepTwo();
+            }
+        });
+    };
+
     return {
+        cancelStepTwo,
+        isPreSolicitationPackageFinalized,
+        setIsPreSolicitationPackageFinalized,
+        draftSolicitationDate,
+        setDraftSolicitationDate,
         selectedUser,
         setSelectedUser,
         stepTwoData,
@@ -34,12 +198,24 @@ export default function useProcurementTrackerStepTwo(stepTwoData) {
         step2CompletedByUserName,
         step2DateCompleted,
         setStep2DateCompleted,
+        step2DraftSolicitationDateLabel,
+        step2TargetCompletionDateLabel,
         step2Notes,
         setStep2Notes,
         step2NotesLabel,
         runValidate,
         validatorRes,
         step2DateCompletedLabel,
-        MemoizedDatePicker
+        MemoizedDatePicker,
+        handleTargetCompletionDateSubmit,
+        handleRevisedTargetDateSubmit,
+        handleStepTwoComplete,
+        showModal,
+        modalProps,
+        setShowModal,
+        cancelModalStep2,
+        isPastDue,
+        revisedTargetDate,
+        setRevisedTargetDate
     };
 }
