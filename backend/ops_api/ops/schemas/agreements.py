@@ -162,7 +162,21 @@ class AgreementFiltersQueryParametersSchema(Schema):
     only_my = fields.List(fields.Boolean(), required=False, load_default=[])
 
 
-class AgreementResponse(AgreementData):
+class FyObligatedMixin:
+    """Mixin that computes fy_obligated from schema context."""
+
+    fy_obligated = fields.Method("get_fy_obligated")
+
+    def get_fy_obligated(self, obj):
+        context = getattr(self, "context", None) or {}
+        fiscal_year = context.get("fiscal_year")
+        if fiscal_year is None:
+            return None
+        result = obj.fy_obligated(fiscal_year)
+        return str(result) if result is not None else None
+
+
+class AgreementResponse(FyObligatedMixin, AgreementData):
     """
     Base Schema used in GET /agreements/{id} endpoint to return detailed agreement information.
     """
@@ -185,6 +199,12 @@ class AgreementResponse(AgreementData):
     authorized_user_ids = fields.List(fields.Integer(), required=True)
     special_topic = fields.Nested(SpecialTopicsSchema)
     is_awarded = fields.Bool(load_default=None, dump_default=None, required=False)
+    sc_start_date = fields.Date(allow_none=True)
+    sc_end_date = fields.Date(allow_none=True)
+    agreement_subtotal = fields.Decimal(as_string=True, allow_none=True)
+    total_agreement_fees = fields.Decimal(as_string=True, allow_none=True)
+    agreement_total = fields.Decimal(as_string=True, allow_none=True)
+    lifetime_obligated = fields.Decimal(as_string=True, allow_none=True)
     created_by = fields.Integer(allow_none=True)
     updated_by = fields.Integer(allow_none=True)
     created_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
@@ -192,7 +212,7 @@ class AgreementResponse(AgreementData):
     _meta = fields.Nested(MetaSchema, required=True)
 
 
-class AgreementListResponse(AgreementData):
+class AgreementListResponse(FyObligatedMixin, AgreementData):
     """
     Base Schema used in GET /agreements endpoint to return a list of agreements.
     """
@@ -200,10 +220,16 @@ class AgreementListResponse(AgreementData):
     id = fields.Integer(required=True)
     project = fields.Nested(ProjectSchema())
     product_service_code = fields.Nested(ProductServiceCodeSchema)
-    budget_line_items = fields.List(fields.Nested(BudgetLineItemResponseSchema, only=["id"]), allow_none=True)
+    budget_line_items = fields.List(fields.Nested(BudgetLineItemResponseSchema, only=["id", "status"]), allow_none=True)
     procurement_shop = fields.Nested(ProcurementShopSchema)
     display_name = fields.String(required=True)
     is_awarded = fields.Bool(load_default=None, dump_default=None, required=False)
+    sc_start_date = fields.Date(allow_none=True)
+    sc_end_date = fields.Date(allow_none=True)
+    agreement_subtotal = fields.Decimal(as_string=True, allow_none=True)
+    total_agreement_fees = fields.Decimal(as_string=True, allow_none=True)
+    agreement_total = fields.Decimal(as_string=True, allow_none=True)
+    lifetime_obligated = fields.Decimal(as_string=True, allow_none=True)
     created_by = fields.Integer(allow_none=True)
     updated_by = fields.Integer(allow_none=True)
     created_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
