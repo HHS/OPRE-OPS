@@ -143,7 +143,7 @@ const useReviewAgreement = (agreementId) => {
 
     React.useEffect(() => {
         if (isSuccess) {
-            agreementSuite({
+            agreementSuite.run({
                 ...agreement
             });
         }

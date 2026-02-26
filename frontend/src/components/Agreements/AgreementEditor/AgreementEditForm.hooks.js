@@ -160,7 +160,7 @@ const useAgreementEditForm = (
 
     React.useEffect(() => {
         if (isReviewMode) {
-            suite({
+            suite.run({
                 ...agreement,
                 "procurement-shop-select": selectedProcurementShop
             });
@@ -494,7 +494,7 @@ const useAgreementEditForm = (
     };
 
     const runValidate = (name, value) => {
-        suite(
+        suite.run(
             {
                 ...agreement,
                 ...{ [name]: value }

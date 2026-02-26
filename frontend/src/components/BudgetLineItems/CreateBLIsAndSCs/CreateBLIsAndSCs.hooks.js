@@ -146,7 +146,7 @@ const useCreateBLIsAndSCs = (
     const pageErrors = res.getErrors();
 
     if (isReviewMode) {
-        suite({
+        suite.run({
             budgetLines: tempBudgetLines
         });
     }
