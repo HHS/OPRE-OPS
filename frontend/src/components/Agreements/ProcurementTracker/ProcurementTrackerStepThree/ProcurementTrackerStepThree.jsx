@@ -75,16 +75,16 @@ const ProcurementTrackerStepThree = ({ stepStatus, stepThreeData, authorizedUser
             {(stepStatus === "PENDING" || stepStatus === "ACTIVE") && (
                 <fieldset className="usa-fieldset">
                     <p>
-                        The Procurement Shop posts the solicitation on the street for vendors to respond. Track the
-                        solicitation period dates and update when the posting is complete. Solicitation documents should
-                        be uploaded to the Documents Tab.
+                        Once the Procurement Shop has posted the Solicitation and it’s “on the street”, enter the
+                        Solicitation Start and End Dates. After all proposals are received, vendor questions have been
+                        answered, and evaluations are starting, check this step as complete.
                     </p>
                     <div className="display-flex flex-align-end width-tablet">
                         <MemoizedDatePicker
                             id="solicitation-period-start-date"
                             name="solicitationPeriodStartDate"
                             className="width-card-lg"
-                            label="Solicitation Period Start Date"
+                            label="Solicitation Period - Start"
                             hint="mm/dd/yyyy"
                             value={solicitationPeriodStartDate}
                             messages={validatorRes.getErrors("solicitationPeriodStartDate") || []}
@@ -102,8 +102,8 @@ const ProcurementTrackerStepThree = ({ stepStatus, stepThreeData, authorizedUser
                         <MemoizedDatePicker
                             id="solicitation-period-end-date"
                             name="solicitationPeriodEndDate"
-                            className="width-card-lg margin-left-2"
-                            label="Solicitation Period End Date"
+                            className="width-card-lg margin-left-4"
+                            label="Solicitation Period - End"
                             hint="mm/dd/yyyy"
                             value={solicitationPeriodEndDate}
                             messages={validatorRes.getErrors("solicitationPeriodEndDate") || []}
