@@ -136,6 +136,8 @@ const TEMPORARY_A11Y_ALLOWLIST = [
     }
 ];
 
+const dateOnlyRegex = /^\d{4}-\d{2}-\d{2}$/;
+
 const isSpecMatch = (specPattern, currentSpec) => {
     if (!currentSpec || !specPattern) {
         return false;
@@ -145,7 +147,7 @@ const isSpecMatch = (specPattern, currentSpec) => {
 };
 
 export const validateA11yAllowlist = () => {
-    const now = new Date();
+    const today = new Date().toISOString().slice(0, 10);
 
     TEMPORARY_A11Y_ALLOWLIST.forEach((entry) => {
         const missingFields = ["id", "specPattern", "ruleId", "owner", "rationale", "expiresOn"].filter(
@@ -157,11 +159,10 @@ export const validateA11yAllowlist = () => {
             );
         }
 
-        const expiry = new Date(entry.expiresOn);
-        if (Number.isNaN(expiry.getTime())) {
+        if (!dateOnlyRegex.test(entry.expiresOn)) {
             throw new Error(`Invalid expiresOn value for accessibility allowlist entry ${entry.id}: ${entry.expiresOn}`);
         }
-        if (expiry < now) {
+        if (entry.expiresOn < today) {
             throw new Error(
                 `Expired accessibility allowlist entry ${entry.id}; remove it or extend with justification.`
             );

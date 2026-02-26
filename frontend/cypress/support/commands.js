@@ -39,7 +39,7 @@ const isRegressionGateEnabled = () => {
 
 const normalizeViolations = (violations) => {
     const specName = Cypress.spec.relative;
-    const currentUrl = Cypress.config("baseUrl");
+    const currentUrl = Cypress.state("window")?.location?.href || Cypress.config("baseUrl") || "";
 
     return violations.map((violation) => ({
         spec: specName,
@@ -83,7 +83,9 @@ const violationHandler = (violations) => {
 
     Cypress.log({
         name: "a11y-report",
-        message: JSON.stringify(normalizedViolations),
+        message: `a11y-report: ${normalizedViolations.length} violation(s), ${
+            new Set(normalizedViolations.map((violation) => violation.rule_id)).size
+        } rule(s)`,
         consoleProps: () => ({ normalizedViolations })
     });
 

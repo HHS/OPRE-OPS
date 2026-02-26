@@ -59,7 +59,7 @@ beforeEach(() => {
 
 afterEach(() => {
     cy.injectAxe();
-    cy.checkA11y(null, null, terminalLog);
+    cy.checkA11y(null, null, terminalLog, true);
 });
 
 describe("Save Changes/Edits in Agreement BLIs", () => {

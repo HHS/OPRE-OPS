@@ -18,9 +18,7 @@ export const terminalLog = (violations) => {
     }));
 
     cy.task("table", violationData);
-    violationData.forEach((violation) => {
-        cy.task("log", JSON.stringify({ event: "a11y_violation", ...violation }));
-    });
+    cy.task("log", JSON.stringify({ event: "a11y_violations", count: violationData.length, violations: violationData }));
 };
 /**
  *

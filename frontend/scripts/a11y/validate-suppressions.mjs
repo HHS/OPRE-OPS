@@ -5,6 +5,8 @@ const rootDir = process.cwd();
 const targets = ["cypress/e2e", "cypress/support"];
 const suppressionRegex =
     /A11Y-SUPPRESSION:\s*owner=([^\s]+)\s+expires=(\d{4}-\d{2}-\d{2})\s+rationale=(.+)$/;
+const disabledRuleRegex = /\benabled\s*:\s*false\b/;
+const dateOnlyRegex = /^\d{4}-\d{2}-\d{2}$/;
 
 const walk = (dir) => {
     const entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -21,7 +23,9 @@ const walk = (dir) => {
 };
 
 const errors = [];
-const now = new Date();
+const today = new Date().toISOString().slice(0, 10);
+
+const isExpiredDate = (dateString, todayString) => dateString < todayString;
 
 targets.forEach((target) => {
     const dir = path.join(rootDir, target);
@@ -32,7 +36,7 @@ targets.forEach((target) => {
     walk(dir).forEach((filePath) => {
         const lines = fs.readFileSync(filePath, "utf8").split("\n");
         lines.forEach((line, index) => {
-            if (!line.includes("enabled: false")) {
+            if (!disabledRuleRegex.test(line)) {
                 return;
             }
 
@@ -41,7 +45,7 @@ targets.forEach((target) => {
             const suppressionLine = contextLines.find((contextLine) => contextLine.includes("A11Y-SUPPRESSION:"));
             if (!suppressionLine) {
                 errors.push(
-                    `${path.relative(rootDir, filePath)}:${index + 1} has enabled: false without A11Y-SUPPRESSION metadata`
+                    `${path.relative(rootDir, filePath)}:${index + 1} has enabled:false without A11Y-SUPPRESSION metadata`
                 );
                 return;
             }
@@ -54,14 +58,14 @@ targets.forEach((target) => {
                 return;
             }
 
-            const expiresDate = new Date(match[2]);
-            if (Number.isNaN(expiresDate.getTime())) {
+            const expiresOn = match[2];
+            if (!dateOnlyRegex.test(expiresOn)) {
                 errors.push(`${path.relative(rootDir, filePath)}:${index + 1} has invalid suppression expiry date`);
                 return;
             }
-            if (expiresDate < now) {
+            if (isExpiredDate(expiresOn, today)) {
                 errors.push(
-                    `${path.relative(rootDir, filePath)}:${index + 1} suppression is expired (${match[2]}), remove or renew with rationale`
+                    `${path.relative(rootDir, filePath)}:${index + 1} suppression is expired (${expiresOn}), remove or renew with rationale`
                 );
             }
         });
