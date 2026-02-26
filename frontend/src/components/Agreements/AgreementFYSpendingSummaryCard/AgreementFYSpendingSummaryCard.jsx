@@ -12,6 +12,15 @@ import Tag from "../../UI/Tag";
  * @param {import("../../../types/AgreementTypes").Agreement[]} props.agreements - The list of agreements
  * @returns {JSX.Element} - The rendered component
  */
+const agreementTypeStyles = {
+    CONTRACT: { backgroundColor: "var(--data-viz-agreement-contract)", color: "white" },
+    GRANT: { backgroundColor: "var(--data-viz-agreement-grant)", color: "black" },
+    DIRECT_OBLIGATION: { backgroundColor: "var(--data-viz-agreement-direct-obligation)", color: "white" },
+    "DIRECT OBLIGATION": { backgroundColor: "var(--data-viz-agreement-direct-obligation)", color: "white" },
+    AA: { backgroundColor: "var(--data-viz-agreement-partner)", color: "black" },
+    IAA: { backgroundColor: "var(--data-viz-agreement-partner)", color: "black" }
+};
+
 const AgreementFYSpendingSummaryCard = ({ title, fiscalYear, agreements = [] }) => {
     const totalCount = agreements.length;
 
@@ -39,7 +48,8 @@ const AgreementFYSpendingSummaryCard = ({ title, fiscalYear, agreements = [] }) 
                             {typeCounts.map(({ type, count }, index) => (
                                 <Tag
                                     key={type}
-                                    className={`bg-brand-primary-light text-brand-primary-dark ${index > 0 ? "margin-top-1" : ""}`}
+                                    className={`${index > 0 ? "margin-top-1" : ""}`}
+                                    style={agreementTypeStyles[type]}
                                     text={`${count} ${convertCodeForDisplay("agreementType", type)}`}
                                 />
                             ))}

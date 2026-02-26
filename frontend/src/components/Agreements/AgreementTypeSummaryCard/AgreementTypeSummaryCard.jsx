@@ -33,28 +33,28 @@ const AgreementTypeSummaryCard = ({
             id: 1,
             label: "Contract",
             value: contractTotal,
-            color: "var(--data-viz-bl-by-status-2)",
+            color: "var(--data-viz-agreement-contract)",
             percent: calculatePercent(contractTotal, totalAmount)
         },
         {
             id: 2,
             label: "Partner",
             value: partnerTotal,
-            color: "var(--data-viz-bl-by-status-3)",
+            color: "var(--data-viz-agreement-partner)",
             percent: calculatePercent(partnerTotal, totalAmount)
         },
         {
             id: 3,
             label: "Grant",
             value: grantTotal,
-            color: "var(--data-viz-bl-by-status-4)",
+            color: "var(--data-viz-agreement-grant)",
             percent: calculatePercent(grantTotal, totalAmount)
         },
         {
             id: 4,
             label: "Direct Obligation",
             value: directObligationTotal,
-            color: "var(--data-viz-bl-by-status-1)",
+            color: "var(--data-viz-agreement-direct-obligation)",
             percent: calculatePercent(directObligationTotal, totalAmount)
         }
     ];
