@@ -106,6 +106,33 @@ const TEMPORARY_A11Y_ALLOWLIST = [
         rationale: "Legacy inline SVG icon lacks accessible text in budget line list controls.",
         expiresOn: "2026-06-30",
         targetRemovalIssue: "#5149"
+    },
+    {
+        id: "A11Y-ALLOW-0013",
+        specPattern: "cypress/e2e/budgetLineItemsList.cy.js",
+        ruleId: "landmark-one-main",
+        owner: "frontend-team",
+        rationale: "Budget line detail state renders duplicate main landmark in legacy layout.",
+        expiresOn: "2026-06-30",
+        targetRemovalIssue: "#5149"
+    },
+    {
+        id: "A11Y-ALLOW-0014",
+        specPattern: "cypress/e2e/budgetLineItemsList.cy.js",
+        ruleId: "page-has-heading-one",
+        owner: "frontend-team",
+        rationale: "Budget line detail state occasionally omits a single h1 during transition render.",
+        expiresOn: "2026-06-30",
+        targetRemovalIssue: "#5149"
+    },
+    {
+        id: "A11Y-ALLOW-0015",
+        specPattern: "cypress/e2e/budgetLineItemsList.cy.js",
+        ruleId: "region",
+        owner: "frontend-team",
+        rationale: "Budget line detail state has legacy content outside landmark regions.",
+        expiresOn: "2026-06-30",
+        targetRemovalIssue: "#5149"
     }
 ];
 
