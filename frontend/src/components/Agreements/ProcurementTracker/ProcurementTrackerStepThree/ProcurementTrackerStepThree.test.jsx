@@ -211,9 +211,7 @@ describe("ProcurementTrackerStepThree", () => {
                 />
             );
 
-            expect(
-                screen.getByText(/Once the Procurement Shop has posted the Solicitation/i)
-            ).toBeInTheDocument();
+            expect(screen.getByText(/Once the Procurement Shop has posted the Solicitation/i)).toBeInTheDocument();
         });
 
         it("Date Completed has correct props (label, hint, maxDate)", () => {
