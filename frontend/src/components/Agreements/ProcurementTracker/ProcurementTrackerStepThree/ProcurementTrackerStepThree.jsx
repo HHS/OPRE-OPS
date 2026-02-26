@@ -236,25 +236,33 @@ const ProcurementTrackerStepThree = ({ stepStatus, stepThreeData, authorizedUser
                             can start
                         </p>
                     </div>
-                    <dl>
-                        <TermTag
-                            term="Completed By"
-                            description={step3CompletedByUserName}
-                        />
-                        <TermTag
-                            term="Date Completed"
-                            description={step3DateCompletedLabel}
-                        />
+                    <dl
+                        style={{
+                            display: "inline-grid",
+                            gridTemplateColumns: "auto auto",
+                            columnGap: "2rem"
+                        }}
+                    >
                         <TermTag
                             term="Solicitation Period - Start"
-                            description={solicitationStartDateLabel}
+                            description={solicitationStartDateLabel ?? undefined}
                         />
                         <TermTag
                             term="Solicitation Period - End"
-                            description={solicitationEndDateLabel}
+                            description={solicitationEndDateLabel ?? undefined}
                         />
-                        <dt className="margin-0 text-base-dark margin-top-3 font-12px">Notes</dt>
-                        <dd className="margin-0 margin-top-1">{step3NotesLabel}</dd>
+                        <TermTag
+                            term="Completed By"
+                            description={step3CompletedByUserName ?? undefined}
+                        />
+                        <TermTag
+                            term="Date Completed"
+                            description={step3DateCompletedLabel ?? undefined}
+                        />
+                        <div style={{ gridColumn: "1 / -1" }}>
+                            <dt className="margin-0 text-base-dark margin-top-3 font-12px">Notes</dt>
+                            <dd className="margin-0 margin-top-1">{step3NotesLabel}</dd>
+                        </div>
                     </dl>
                 </div>
             )}
