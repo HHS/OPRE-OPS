@@ -102,7 +102,7 @@ const ProcurementTrackerStepTwo = ({
                         step as complete. If you have a target completion date for when the package will be finalized,
                         enter it below.
                     </p>
-                    <div className="display-flex flex-align-end">
+                    <div className="display-flex flex-align-end margin-bottom-2">
                         {stepTwoData?.target_completion_date ? (
                             <TermTag
                                 term="Target Completion Date"
@@ -139,11 +139,13 @@ const ProcurementTrackerStepTwo = ({
                     </div>
                     {isPastDue && (
                         <>
-                            <SimpleAlert
-                                type="warning"
-                                message="The Target Completion Date is past due. Please enter a Revised Target Date below."
-                            />
-                            <div className="display-flex flex-align-end">
+                            <div className="margin-x-4">
+                                <SimpleAlert
+                                    type="warning"
+                                    message="The Target Completion Date is past due. Please enter a Revised Target Date below."
+                                />
+                            </div>
+                            <div className="display-flex flex-align-end margin-bottom-2">
                                 <MemoizedDatePicker
                                     id="revised-target-date"
                                     name="revisedTargetDate"
@@ -186,7 +188,8 @@ const ProcurementTrackerStepTwo = ({
                             className="usa-checkbox__label"
                             htmlFor="step-2-checkbox"
                         >
-                            The pre-solicitation package has been sent to the Procurement Shop for review
+                            The pre-solicitation package has been finalized between the Procurement Shop and OPRE and
+                            the final version has been uploaded’
                         </label>
                     </div>
                     <div className="display-flex flex-align-center">
@@ -228,21 +231,28 @@ const ProcurementTrackerStepTwo = ({
                         onChange={(_, value) => setStep2Notes(value)}
                         isDisabled={isPackageFinalizedFieldsDisabled}
                     />
-                    <p>After the package is finalized, enter the Draft Solicitation date below (if applicable).</p>
-                    <MemoizedDatePicker
-                        id="step-2-draft-solicitation-date"
-                        name="draftSolicitationDate"
-                        className=""
-                        label="Draft Solicitation Date (optional)"
-                        hint="mm/dd/yyyy"
-                        value={draftSolicitationDate}
-                        messages={validatorRes.getErrors("draftSolicitationDate") || []}
-                        onChange={(e) => {
-                            runValidate("draftSolicitationDate", e.target.value);
-                            setDraftSolicitationDate(e.target.value);
-                        }}
-                        isDisabled={isPackageFinalizedFieldsDisabled}
-                    />
+                    <p
+                        className={`margin-top-4 margin-bottom-0 ${isPackageFinalizedFieldsDisabled ? "text-base" : "text-base-dark"}`}
+                    >
+                        After the package is finalized, enter the Draft Solicitation date below (if applicable).
+                    </p>
+                    <div className="display-flex">
+                        <MemoizedDatePicker
+                            id="step-2-draft-solicitation-date"
+                            name="draftSolicitationDate"
+                            className=""
+                            label="Draft Solicitation Date (optional)"
+                            hint="mm/dd/yyyy"
+                            value={draftSolicitationDate}
+                            messages={validatorRes.getErrors("draftSolicitationDate") || []}
+                            onChange={(e) => {
+                                runValidate("draftSolicitationDate", e.target.value);
+                                setDraftSolicitationDate(e.target.value);
+                            }}
+                            isDisabled={isPackageFinalizedFieldsDisabled}
+                        />
+                    </div>
+
                     <div className="margin-top-2 display-flex flex-justify-end">
                         <button
                             className="usa-button usa-button--unstyled margin-right-2"
@@ -290,14 +300,18 @@ const ProcurementTrackerStepTwo = ({
                             term="Target Completion Date"
                             description={step2TargetCompletionDateLabel || "None"}
                         />
-                        <TermTag
-                            term="Completed By"
-                            description={step2CompletedByUserName}
-                        />
-                        <TermTag
-                            term="Date Completed"
-                            description={step2DateCompletedLabel}
-                        />
+                        <div className="display-flex">
+                            <TermTag
+                                term="Completed By"
+                                description={step2CompletedByUserName}
+                                className="margin-right-4"
+                            />
+                            <TermTag
+                                term="Date Completed"
+                                description={step2DateCompletedLabel}
+                            />
+                        </div>
+
                         <TermTag
                             term="Draft Solicitation Date"
                             description={step2DraftSolicitationDateLabel || "None"}
