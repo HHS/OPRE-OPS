@@ -950,7 +950,7 @@ describe("AgreementProcurementTracker", () => {
         });
 
         it.each([
-            [3, "SOLICITATION", /The Procurement Shop posts the solicitation on the street for vendors to respond/],
+            [3, "SOLICITATION", /Once the Procurement Shop has posted the Solicitation/],
             [4, "EVALUATION", /Complete the technical evaluations and any potential negotiations/],
             [5, "PRE_AWARD", /All agreements need Pre-Award Approval before the Final Consensus Memo/],
             [6, "AWARD", /Once you receive the signed award, click Request Award Approval below/]
