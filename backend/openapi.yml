@@ -2306,7 +2306,10 @@ paths:
           example: "2023"
         - name: includeInactive
           in: query
-          description: Include inactive CANs in the results. When false (default), only returns CANs with an active period that includes the budget fiscal year.
+          description: |
+              Include inactive CANs in the results.
+              Only applies when budgetFiscalYear is provided.
+              When false (default), only returns CANs with an active period that includes the budget fiscal year.
           schema:
             type: boolean
             default: false
