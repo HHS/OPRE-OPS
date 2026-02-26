@@ -104,6 +104,28 @@ vi.mock("../../../UI/Form/TextArea", () => ({
         </div>
     )
 }));
+vi.mock("../../../UI/Modals/ConfirmationModal", () => ({
+    default: ({ heading, actionButtonText, secondaryButtonText, handleConfirm, setShowModal }) => (
+        <div data-testid="confirmation-modal">
+            <h2>{heading}</h2>
+            <button
+                data-testid="modal-confirm-button"
+                onClick={() => {
+                    handleConfirm();
+                    setShowModal(false);
+                }}
+            >
+                {actionButtonText}
+            </button>
+            <button
+                data-testid="modal-cancel-button"
+                onClick={() => setShowModal(false)}
+            >
+                {secondaryButtonText}
+            </button>
+        </div>
+    )
+}));
 
 describe("ProcurementTrackerStepThree", () => {
     const mockSetSelectedUser = vi.fn();
@@ -112,11 +134,15 @@ describe("ProcurementTrackerStepThree", () => {
     const mockSetSolicitationPeriodEndDate = vi.fn();
     const mockRunValidate = vi.fn();
     const mockValidatorRes = {
-        getErrors: vi.fn(() => [])
+        getErrors: vi.fn(() => []),
+        hasErrors: vi.fn(() => false)
     };
 
     const mockSetStep3Notes = vi.fn();
     const mockSetIsSolicitationClosed = vi.fn();
+    const mockSetShowModal = vi.fn();
+    const mockCancelModalStep3 = vi.fn();
+    const mockHandleStep3Complete = vi.fn();
 
     const defaultHookReturn = {
         selectedUser: {},
@@ -138,7 +164,12 @@ describe("ProcurementTrackerStepThree", () => {
         validatorRes: mockValidatorRes,
         MemoizedDatePicker: DatePicker,
         isSolicitationClosed: false,
-        setIsSolicitationClosed: mockSetIsSolicitationClosed
+        setIsSolicitationClosed: mockSetIsSolicitationClosed,
+        showModal: false,
+        setShowModal: mockSetShowModal,
+        modalProps: {},
+        cancelModalStep3: mockCancelModalStep3,
+        handleStep3Complete: mockHandleStep3Complete
     };
 
     const mockStepData = { id: 1 };
@@ -1079,5 +1110,447 @@ describe("ProcurementTrackerStepThree", () => {
         // eslint-disable-next-line testing-library/no-node-access
         const dd = screen.getByText("Notes").nextElementSibling;
         expect(dd.textContent).toBe("");
+    });
+
+    describe("Button Rendering", () => {
+        it("renders cancel button with correct label and data-cy", () => {
+            useProcurementTrackerStepThree.mockReturnValue({
+                ...defaultHookReturn,
+                isSolicitationClosed: true,
+                selectedUser: { id: 123 },
+                step3DateCompleted: "2024-01-15"
+            });
+
+            render(
+                <ProcurementTrackerStepThree
+                    stepStatus="PENDING"
+                    stepThreeData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
+                />
+            );
+
+            const cancelButton = screen.getByRole("button", { name: /cancel/i });
+            expect(cancelButton).toBeInTheDocument();
+            expect(cancelButton).toHaveAttribute("data-cy", "cancel-button");
+        });
+
+        it("renders complete button with correct label and data-cy", () => {
+            useProcurementTrackerStepThree.mockReturnValue({
+                ...defaultHookReturn,
+                isSolicitationClosed: true,
+                selectedUser: { id: 123 },
+                step3DateCompleted: "2024-01-15"
+            });
+
+            render(
+                <ProcurementTrackerStepThree
+                    stepStatus="PENDING"
+                    stepThreeData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
+                />
+            );
+
+            const completeButton = screen.getByRole("button", { name: /complete step 3/i });
+            expect(completeButton).toBeInTheDocument();
+            expect(completeButton).toHaveAttribute("data-cy", "continue-btn");
+        });
+
+        it("buttons have correct styling classes", () => {
+            useProcurementTrackerStepThree.mockReturnValue({
+                ...defaultHookReturn,
+                isSolicitationClosed: true,
+                selectedUser: { id: 123 },
+                step3DateCompleted: "2024-01-15"
+            });
+
+            render(
+                <ProcurementTrackerStepThree
+                    stepStatus="PENDING"
+                    stepThreeData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
+                />
+            );
+
+            const cancelButton = screen.getByRole("button", { name: /cancel/i });
+            expect(cancelButton).toHaveClass("usa-button", "usa-button--unstyled", "margin-right-2");
+
+            const completeButton = screen.getByRole("button", { name: /complete step 3/i });
+            expect(completeButton).toHaveClass("usa-button");
+        });
+
+        it("buttons are in flex container with correct layout classes", () => {
+            useProcurementTrackerStepThree.mockReturnValue({
+                ...defaultHookReturn,
+                isSolicitationClosed: true,
+                selectedUser: { id: 123 },
+                step3DateCompleted: "2024-01-15"
+            });
+
+            render(
+                <ProcurementTrackerStepThree
+                    stepStatus="PENDING"
+                    stepThreeData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
+                />
+            );
+
+            const cancelButton = screen.getByRole("button", { name: /cancel/i });
+            // eslint-disable-next-line testing-library/no-node-access
+            const buttonContainer = cancelButton.parentElement;
+            expect(buttonContainer).toHaveClass("margin-top-2", "display-flex", "flex-justify-end");
+        });
+    });
+
+    describe("Button Interaction", () => {
+        beforeEach(() => {
+            vi.clearAllMocks();
+        });
+
+        it("cancel button calls cancelModalStep3 when clicked", () => {
+            useProcurementTrackerStepThree.mockReturnValue({
+                ...defaultHookReturn,
+                isSolicitationClosed: true,
+                selectedUser: { id: 123 },
+                step3DateCompleted: "2024-01-15",
+                cancelModalStep3: mockCancelModalStep3
+            });
+
+            render(
+                <ProcurementTrackerStepThree
+                    stepStatus="PENDING"
+                    stepThreeData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
+                />
+            );
+
+            const cancelButton = screen.getByRole("button", { name: /cancel/i });
+            fireEvent.click(cancelButton);
+
+            expect(mockCancelModalStep3).toHaveBeenCalledTimes(1);
+        });
+
+        it("complete button calls handleStep3Complete with correct stepId", () => {
+            useProcurementTrackerStepThree.mockReturnValue({
+                ...defaultHookReturn,
+                isSolicitationClosed: true,
+                selectedUser: { id: 123 },
+                step3DateCompleted: "2024-01-15",
+                handleStep3Complete: mockHandleStep3Complete
+            });
+
+            render(
+                <ProcurementTrackerStepThree
+                    stepStatus="PENDING"
+                    stepThreeData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
+                />
+            );
+
+            const completeButton = screen.getByRole("button", { name: /complete step 3/i });
+            fireEvent.click(completeButton);
+
+            expect(mockHandleStep3Complete).toHaveBeenCalledTimes(1);
+            expect(mockHandleStep3Complete).toHaveBeenCalledWith(1);
+        });
+
+        it("cancel button is disabled when hasActiveTracker is false", () => {
+            useProcurementTrackerStepThree.mockReturnValue({
+                ...defaultHookReturn,
+                isSolicitationClosed: true
+            });
+
+            render(
+                <ProcurementTrackerStepThree
+                    stepStatus="PENDING"
+                    stepThreeData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={false}
+                />
+            );
+
+            const cancelButton = screen.getByRole("button", { name: /cancel/i });
+            expect(cancelButton).toBeDisabled();
+        });
+
+        it("cancel button is disabled when checkbox is unchecked", () => {
+            useProcurementTrackerStepThree.mockReturnValue({
+                ...defaultHookReturn,
+                isSolicitationClosed: false
+            });
+
+            render(
+                <ProcurementTrackerStepThree
+                    stepStatus="PENDING"
+                    stepThreeData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
+                />
+            );
+
+            const cancelButton = screen.getByRole("button", { name: /cancel/i });
+            expect(cancelButton).toBeDisabled();
+        });
+
+        it("complete button is disabled when validation fails", () => {
+            const mockValidatorWithErrors = {
+                getErrors: vi.fn(() => []),
+                hasErrors: vi.fn(() => true)
+            };
+
+            useProcurementTrackerStepThree.mockReturnValue({
+                ...defaultHookReturn,
+                isSolicitationClosed: true,
+                selectedUser: { id: 123 },
+                step3DateCompleted: "2024-01-15",
+                validatorRes: mockValidatorWithErrors
+            });
+
+            render(
+                <ProcurementTrackerStepThree
+                    stepStatus="PENDING"
+                    stepThreeData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
+                />
+            );
+
+            const completeButton = screen.getByRole("button", { name: /complete step 3/i });
+            expect(completeButton).toBeDisabled();
+        });
+    });
+
+    describe("Modal Tests", () => {
+        it("renders ConfirmationModal when showModal is true", () => {
+            useProcurementTrackerStepThree.mockReturnValue({
+                ...defaultHookReturn,
+                showModal: true,
+                modalProps: {
+                    heading: "Are you sure you want to cancel this task? Your input will not be saved.",
+                    actionButtonText: "Cancel Task",
+                    secondaryButtonText: "Continue Editing",
+                    handleConfirm: vi.fn()
+                }
+            });
+
+            render(
+                <ProcurementTrackerStepThree
+                    stepStatus="PENDING"
+                    stepThreeData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
+                />
+            );
+
+            expect(screen.getByTestId("confirmation-modal")).toBeInTheDocument();
+        });
+
+        it("modal has correct heading text", () => {
+            useProcurementTrackerStepThree.mockReturnValue({
+                ...defaultHookReturn,
+                showModal: true,
+                modalProps: {
+                    heading: "Are you sure you want to cancel this task? Your input will not be saved.",
+                    actionButtonText: "Cancel Task",
+                    secondaryButtonText: "Continue Editing",
+                    handleConfirm: vi.fn()
+                }
+            });
+
+            render(
+                <ProcurementTrackerStepThree
+                    stepStatus="PENDING"
+                    stepThreeData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
+                />
+            );
+
+            expect(
+                screen.getByText("Are you sure you want to cancel this task? Your input will not be saved.")
+            ).toBeInTheDocument();
+        });
+
+        it('modal has "Cancel Task" and "Continue Editing" buttons', () => {
+            useProcurementTrackerStepThree.mockReturnValue({
+                ...defaultHookReturn,
+                showModal: true,
+                modalProps: {
+                    heading: "Are you sure you want to cancel this task? Your input will not be saved.",
+                    actionButtonText: "Cancel Task",
+                    secondaryButtonText: "Continue Editing",
+                    handleConfirm: vi.fn()
+                }
+            });
+
+            render(
+                <ProcurementTrackerStepThree
+                    stepStatus="PENDING"
+                    stepThreeData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
+                />
+            );
+
+            expect(screen.getByText("Cancel Task")).toBeInTheDocument();
+            expect(screen.getByText("Continue Editing")).toBeInTheDocument();
+        });
+
+        it("does not render modal when showModal is false", () => {
+            useProcurementTrackerStepThree.mockReturnValue({
+                ...defaultHookReturn,
+                showModal: false
+            });
+
+            render(
+                <ProcurementTrackerStepThree
+                    stepStatus="PENDING"
+                    stepThreeData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
+                />
+            );
+
+            expect(screen.queryByTestId("confirmation-modal")).not.toBeInTheDocument();
+        });
+    });
+
+    describe("Button Disable Logic", () => {
+        it("complete button disabled when no user selected", () => {
+            useProcurementTrackerStepThree.mockReturnValue({
+                ...defaultHookReturn,
+                isSolicitationClosed: true,
+                selectedUser: {},
+                step3DateCompleted: "2024-01-15"
+            });
+
+            render(
+                <ProcurementTrackerStepThree
+                    stepStatus="PENDING"
+                    stepThreeData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
+                />
+            );
+
+            const completeButton = screen.getByRole("button", { name: /complete step 3/i });
+            expect(completeButton).toBeDisabled();
+        });
+
+        it("complete button disabled when no date completed", () => {
+            useProcurementTrackerStepThree.mockReturnValue({
+                ...defaultHookReturn,
+                isSolicitationClosed: true,
+                selectedUser: { id: 123 },
+                step3DateCompleted: ""
+            });
+
+            render(
+                <ProcurementTrackerStepThree
+                    stepStatus="PENDING"
+                    stepThreeData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
+                />
+            );
+
+            const completeButton = screen.getByRole("button", { name: /complete step 3/i });
+            expect(completeButton).toBeDisabled();
+        });
+
+        it("complete button disabled when checkbox unchecked", () => {
+            useProcurementTrackerStepThree.mockReturnValue({
+                ...defaultHookReturn,
+                isSolicitationClosed: false,
+                selectedUser: { id: 123 },
+                step3DateCompleted: "2024-01-15"
+            });
+
+            render(
+                <ProcurementTrackerStepThree
+                    stepStatus="PENDING"
+                    stepThreeData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
+                />
+            );
+
+            const completeButton = screen.getByRole("button", { name: /complete step 3/i });
+            expect(completeButton).toBeDisabled();
+        });
+
+        it("complete button disabled when hasActiveTracker is false", () => {
+            useProcurementTrackerStepThree.mockReturnValue({
+                ...defaultHookReturn,
+                isSolicitationClosed: true,
+                selectedUser: { id: 123 },
+                step3DateCompleted: "2024-01-15"
+            });
+
+            render(
+                <ProcurementTrackerStepThree
+                    stepStatus="PENDING"
+                    stepThreeData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={false}
+                />
+            );
+
+            const completeButton = screen.getByRole("button", { name: /complete step 3/i });
+            expect(completeButton).toBeDisabled();
+        });
+
+        it("complete button disabled when validation has errors", () => {
+            const mockValidatorWithErrors = {
+                getErrors: vi.fn(() => ["Error message"]),
+                hasErrors: vi.fn(() => true)
+            };
+
+            useProcurementTrackerStepThree.mockReturnValue({
+                ...defaultHookReturn,
+                isSolicitationClosed: true,
+                selectedUser: { id: 123 },
+                step3DateCompleted: "2024-01-15",
+                validatorRes: mockValidatorWithErrors
+            });
+
+            render(
+                <ProcurementTrackerStepThree
+                    stepStatus="PENDING"
+                    stepThreeData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
+                />
+            );
+
+            const completeButton = screen.getByRole("button", { name: /complete step 3/i });
+            expect(completeButton).toBeDisabled();
+        });
+
+        it("complete button enabled when all conditions met", () => {
+            useProcurementTrackerStepThree.mockReturnValue({
+                ...defaultHookReturn,
+                isSolicitationClosed: true,
+                selectedUser: { id: 123 },
+                step3DateCompleted: "2024-01-15"
+            });
+
+            render(
+                <ProcurementTrackerStepThree
+                    stepStatus="PENDING"
+                    stepThreeData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
+                />
+            );
+
+            const completeButton = screen.getByRole("button", { name: /complete step 3/i });
+            expect(completeButton).not.toBeDisabled();
+        });
     });
 });

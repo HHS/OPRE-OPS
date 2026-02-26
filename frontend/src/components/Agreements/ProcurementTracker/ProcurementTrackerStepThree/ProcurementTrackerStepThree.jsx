@@ -1,4 +1,5 @@
 import { getLocalISODate } from "../../../../helpers/utils";
+import ConfirmationModal from "../../../UI/Modals/ConfirmationModal";
 import TermTag from "../../../UI/Term/TermTag";
 import TextArea from "../../../UI/Form/TextArea";
 import UsersComboBox from "../../UsersComboBox";
@@ -44,12 +45,33 @@ const ProcurementTrackerStepThree = ({ stepStatus, stepThreeData, authorizedUser
         validatorRes,
         MemoizedDatePicker,
         isSolicitationClosed,
-        setIsSolicitationClosed
+        setIsSolicitationClosed,
+        showModal,
+        setShowModal,
+        modalProps,
+        cancelModalStep3,
+        handleStep3Complete
         // @ts-expect-error - stepThreeData may be undefined but hook handles it
     } = useProcurementTrackerStepThree(stepThreeData);
 
+    const disableStep3Buttons =
+        !hasActiveTracker ||
+        !isSolicitationClosed ||
+        !selectedUser?.id ||
+        !step3DateCompleted ||
+        validatorRes.hasErrors();
+
     return (
         <>
+            {showModal && (
+                <ConfirmationModal
+                    heading={modalProps.heading}
+                    actionButtonText={modalProps.actionButtonText}
+                    secondaryButtonText={modalProps.secondaryButtonText}
+                    handleConfirm={modalProps.handleConfirm}
+                    setShowModal={setShowModal}
+                />
+            )}
             {(stepStatus === "PENDING" || stepStatus === "ACTIVE") && (
                 <fieldset className="usa-fieldset">
                     <p>
@@ -92,17 +114,6 @@ const ProcurementTrackerStepThree = ({ stepStatus, stepThreeData, authorizedUser
                             }}
                             isDisabled={!hasActiveTracker}
                         />
-
-                        <button
-                            className="usa-button usa-button--unstyled flex-align-self-end padding-bottom-1"
-                            data-cy="target-completion-save-btn"
-                            disabled={false}
-                            onClick={() => {
-                                alert("Save button clicked! Implement save functionality here.");
-                            }}
-                        >
-                            Save
-                        </button>
                     </div>
 
                     <div className="usa-checkbox margin-top-3">
@@ -164,6 +175,25 @@ const ProcurementTrackerStepThree = ({ stepStatus, stepThreeData, authorizedUser
                         onChange={(/** @type {any} */ _, /** @type {string} */ value) => setStep3Notes(value)}
                         isDisabled={!hasActiveTracker || !isSolicitationClosed}
                     />
+
+                    <div className="margin-top-2 display-flex flex-justify-end">
+                        <button
+                            className="usa-button usa-button--unstyled margin-right-2"
+                            data-cy="cancel-button"
+                            onClick={cancelModalStep3}
+                            disabled={!hasActiveTracker || !isSolicitationClosed}
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            className="usa-button"
+                            data-cy="continue-btn"
+                            onClick={() => handleStep3Complete(stepThreeData?.id)}
+                            disabled={disableStep3Buttons}
+                        >
+                            Complete Step 3
+                        </button>
+                    </div>
                 </fieldset>
             )}
 

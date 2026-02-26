@@ -19,6 +19,8 @@ export default function useProcurementTrackerStepThree(stepThreeData) {
     const [solicitationPeriodEndDate, setSolicitationPeriodEndDate] = React.useState("");
     const [step3Notes, setStep3Notes] = React.useState("");
     const [isSolicitationClosed, setIsSolicitationClosed] = React.useState(false);
+    const [showModal, setShowModal] = React.useState(false);
+    const [modalProps, setModalProps] = React.useState({});
 
     // @ts-expect-error - These functions handle undefined values gracefully
     const step3CompletedByUserName = useGetUserFullNameFromId(stepThreeData?.task_completed_by);
@@ -52,6 +54,34 @@ export default function useProcurementTrackerStepThree(stepThreeData) {
 
     let validatorRes = suite.get();
 
+    const cancelStep3 = () => {
+        setIsSolicitationClosed(false);
+        setSolicitationPeriodStartDate("");
+        setSolicitationPeriodEndDate("");
+        setSelectedUser({});
+        setStep3DateCompleted("");
+        setStep3Notes("");
+        suite.reset();
+    };
+
+    const cancelModalStep3 = () => {
+        setShowModal(true);
+        setModalProps({
+            heading: "Are you sure you want to cancel this task? Your input will not be saved.",
+            actionButtonText: "Cancel Task",
+            secondaryButtonText: "Continue Editing",
+            handleConfirm: () => {
+                cancelStep3();
+            }
+        });
+    };
+
+    const handleStep3Complete = (stepId) => {
+        // TODO: Implement API call to complete step
+        console.log("Complete Step 3:", stepId);
+        alert("Complete Step 3 functionality to be implemented with API integration");
+    };
+
     return {
         selectedUser,
         setSelectedUser,
@@ -73,6 +103,11 @@ export default function useProcurementTrackerStepThree(stepThreeData) {
         validatorRes,
         MemoizedDatePicker,
         isSolicitationClosed,
-        setIsSolicitationClosed
+        setIsSolicitationClosed,
+        showModal,
+        setShowModal,
+        modalProps,
+        cancelModalStep3,
+        handleStep3Complete
     };
 }
