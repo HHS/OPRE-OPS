@@ -62,7 +62,7 @@ export const AgreementTableRow = ({ agreement }) => {
     const canUserEditAgreement = isSuccess && agreement?._meta.isEditable;
     const areThereAnyBudgetLines = isSuccess ? isThereAnyBudgetLines(agreement) : false;
     const isAgreementTypeNotDeveloped = isSuccess ? isNotDevelopedYet(agreement?.agreement_type ?? "") : false;
-    const isEditable = isSuperUser || (canUserEditAgreement && !isAgreementTypeNotDeveloped);
+    const isEditable = canUserEditAgreement && (!isAgreementTypeNotDeveloped || isSuperUser);
     const canUserDeleteAgreement =
         isSuperUser || (canUserEditAgreement && (areAllBudgetLinesInDraftStatus || !areThereAnyBudgetLines));
     const handleSubmitAgreementForApproval = useNavigateAgreementReview();
