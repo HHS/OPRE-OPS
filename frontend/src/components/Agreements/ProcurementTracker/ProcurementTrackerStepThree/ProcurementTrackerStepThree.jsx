@@ -238,11 +238,11 @@ const ProcurementTrackerStepThree = ({ stepStatus, stepThreeData, authorizedUser
                             description={step3DateCompletedLabel}
                         />
                         <TermTag
-                            term="Solicitation Period Start Date"
+                            term="Solicitation Period - Start"
                             description={solicitationStartDateLabel}
                         />
                         <TermTag
-                            term="Solicitation Period End Date"
+                            term="Solicitation Period - End"
                             description={solicitationEndDateLabel}
                         />
                         <dt className="margin-0 text-base-dark margin-top-3 font-12px">Notes</dt>

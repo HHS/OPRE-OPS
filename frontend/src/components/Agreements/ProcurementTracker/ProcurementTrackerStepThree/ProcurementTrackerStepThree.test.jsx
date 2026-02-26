@@ -197,8 +197,8 @@ describe("ProcurementTrackerStepThree", () => {
 
             expect(screen.getByText("Task Completed By")).toBeInTheDocument();
             expect(screen.getByText("Date Completed")).toBeInTheDocument();
-            expect(screen.getByText("Solicitation Period Start Date")).toBeInTheDocument();
-            expect(screen.getByText("Solicitation Period End Date")).toBeInTheDocument();
+            expect(screen.getByText("Solicitation Period - Start")).toBeInTheDocument();
+            expect(screen.getByText("Solicitation Period - End")).toBeInTheDocument();
         });
 
         it("renders instructional paragraph", () => {
@@ -212,7 +212,7 @@ describe("ProcurementTrackerStepThree", () => {
             );
 
             expect(
-                screen.getByText(/The Procurement Shop posts the solicitation on the street for vendors to respond/i)
+                screen.getByText(/Once the Procurement Shop has posted the Solicitation/i)
             ).toBeInTheDocument();
         });
 
@@ -240,7 +240,7 @@ describe("ProcurementTrackerStepThree", () => {
             expect(dateInput).toHaveAttribute("data-max-date");
         });
 
-        it("Solicitation Period Start Date has correct props", () => {
+        it("Solicitation Period - Start has correct props", () => {
             render(
                 <ProcurementTrackerStepThree
                     stepStatus="PENDING"
@@ -256,10 +256,10 @@ describe("ProcurementTrackerStepThree", () => {
             );
 
             expect(startDatePicker).toBeInTheDocument();
-            expect(screen.getByText("Solicitation Period Start Date")).toBeInTheDocument();
+            expect(screen.getByText("Solicitation Period - Start")).toBeInTheDocument();
         });
 
-        it("Solicitation Period End Date has correct props", () => {
+        it("Solicitation Period - End has correct props", () => {
             render(
                 <ProcurementTrackerStepThree
                     stepStatus="PENDING"
@@ -275,7 +275,7 @@ describe("ProcurementTrackerStepThree", () => {
             );
 
             expect(endDatePicker).toBeInTheDocument();
-            expect(screen.getByText("Solicitation Period End Date")).toBeInTheDocument();
+            expect(screen.getByText("Solicitation Period - End")).toBeInTheDocument();
         });
 
         it("UsersComboBox has correct props", () => {
@@ -374,7 +374,7 @@ describe("ProcurementTrackerStepThree", () => {
             expect(mockSetStep3DateCompleted).toHaveBeenCalledWith("2024-03-20");
         });
 
-        it("Solicitation Period Start Date calls runValidate and setSolicitationPeriodStartDate on change", () => {
+        it("Solicitation Period - Start calls runValidate and setSolicitationPeriodStartDate on change", () => {
             render(
                 <ProcurementTrackerStepThree
                     stepStatus="PENDING"
@@ -397,7 +397,7 @@ describe("ProcurementTrackerStepThree", () => {
             expect(mockSetSolicitationPeriodStartDate).toHaveBeenCalledWith("2024-02-01");
         });
 
-        it("Solicitation Period End Date calls runValidate and setSolicitationPeriodEndDate on change", () => {
+        it("Solicitation Period - End calls runValidate and setSolicitationPeriodEndDate on change", () => {
             render(
                 <ProcurementTrackerStepThree
                     stepStatus="PENDING"
@@ -657,8 +657,8 @@ describe("ProcurementTrackerStepThree", () => {
             expect(screen.getByRole("checkbox")).toBeInTheDocument();
             expect(screen.getByText("Task Completed By")).toBeInTheDocument();
             expect(screen.getByText("Date Completed")).toBeInTheDocument();
-            expect(screen.getByText("Solicitation Period Start Date")).toBeInTheDocument();
-            expect(screen.getByText("Solicitation Period End Date")).toBeInTheDocument();
+            expect(screen.getByText("Solicitation Period - Start")).toBeInTheDocument();
+            expect(screen.getByText("Solicitation Period - End")).toBeInTheDocument();
             expect(screen.getByTestId("text-area")).toBeInTheDocument();
         });
 
@@ -754,7 +754,7 @@ describe("ProcurementTrackerStepThree", () => {
                 />
             );
 
-            expect(screen.getByText("Solicitation Period Start Date")).toBeInTheDocument();
+            expect(screen.getByText("Solicitation Period - Start")).toBeInTheDocument();
             expect(screen.getByText("February 1, 2024")).toBeInTheDocument();
         });
 
@@ -768,7 +768,7 @@ describe("ProcurementTrackerStepThree", () => {
                 />
             );
 
-            expect(screen.getByText("Solicitation Period End Date")).toBeInTheDocument();
+            expect(screen.getByText("Solicitation Period - End")).toBeInTheDocument();
             expect(screen.getByText("February 28, 2024")).toBeInTheDocument();
         });
 
