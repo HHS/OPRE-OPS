@@ -57,18 +57,20 @@ class ChangeRequestListAPI(BaseListAPI):
             response = make_response_with_headers([], 200)
         return response
 
+
+class ChangeRequestItemAPI(BaseListAPI):
+    def __init__(self, model: ChangeRequest = ChangeRequest):
+        super().__init__(model)
+        self._response_schema = GenericChangeRequestResponseSchema()
+
     @is_authorized(PermissionType.POST, Permission.CHANGE_REQUEST)
     @jwt_required()
-    def patch(self) -> Response:
+    def patch(self, id: int) -> Response:
         with OpsEventHandler(OpsEventType.UPDATE_CHANGE_REQUEST) as meta:
             request_json = request.get_json()
-            change_request_id = request_json.get("change_request_id")
-
-            if not change_request_id:
-                return make_response_with_headers({"error": "change_request_id is required"}, 400)
 
             service = ChangeRequestService(current_app.db_session)
 
-            change_request, _ = service.update(change_request_id, request_json)
+            change_request, _ = service.update(id, request_json)
             meta.metadata.update({"change_request": change_request.to_dict()})
             return make_response_with_headers(change_request.to_dict(), 200)

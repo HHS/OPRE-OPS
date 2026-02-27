@@ -67,7 +67,7 @@ from ops_api.ops.resources.can_funding_received import (
 from ops_api.ops.resources.can_funding_summary import CANFundingSummaryListAPI
 from ops_api.ops.resources.can_history import CANHistoryListAPI
 from ops_api.ops.resources.cans import CANItemAPI, CANListAPI, CANListFilterOptionAPI
-from ops_api.ops.resources.change_requests import ChangeRequestListAPI
+from ops_api.ops.resources.change_requests import ChangeRequestItemAPI, ChangeRequestListAPI
 from ops_api.ops.resources.divisions import DivisionsItemAPI, DivisionsListAPI
 from ops_api.ops.resources.health_check import HealthCheckAPI
 from ops_api.ops.resources.notifications import NotificationItemAPI, NotificationListAPI
@@ -294,6 +294,7 @@ VERSION_API_VIEW_FUNC = VersionAPI.as_view("version_api")
 
 # CHANGE REQUEST ENDPOINTs
 CHANGE_REQUEST_LIST_API_VIEW_FUNC = ChangeRequestListAPI.as_view("change-requests-list", ChangeRequest)
+CHANGE_REQUEST_ITEM_API_VIEW_FUNC = ChangeRequestItemAPI.as_view("change-requests-item", ChangeRequest)
 
 # Document ENDPOINTs
 DOCUMENT_API_FUNC = DocumentAPI.as_view("documents", Document)
