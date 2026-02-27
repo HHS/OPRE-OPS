@@ -71,9 +71,6 @@ from ops_api.ops.resources.change_requests import ChangeRequestListAPI
 from ops_api.ops.resources.divisions import DivisionsItemAPI, DivisionsListAPI
 from ops_api.ops.resources.health_check import HealthCheckAPI
 from ops_api.ops.resources.notifications import NotificationItemAPI, NotificationListAPI
-from ops_api.ops.resources.portfolio_calculate_funding import (
-    PortfolioCalculateFundingAPI,
-)
 from ops_api.ops.resources.portfolio_cans import PortfolioCansAPI
 from ops_api.ops.resources.portfolio_funding_summary import (
     PortfolioFundingSummaryItemAPI,
@@ -151,9 +148,6 @@ AGREEMENT_AGENCY_ITEM_API_VIEW_FUNC = AgreementAgencyItemAPI.as_view("agreement-
 AGREEMENT_AGENCY_LIST_API_VIEW_FUNC = AgreementAgencyListAPI.as_view("agreement-agency-group", AgreementAgency)
 
 # Portfolio endpoints
-PORTFOLIO_CALCULATE_FUNDING_API_VIEW_FUNC = PortfolioCalculateFundingAPI.as_view(
-    "portfolio-calculate-funding", Portfolio
-)
 PORTFOLIO_CANS_API_VIEW_FUNC = PortfolioCansAPI.as_view("portfolio-cans", CANFundingDetails)
 PORTFOLIO_ITEM_API_VIEW_FUNC = PortfolioItemAPI.as_view("portfolio-item", Portfolio)
 PORTFOLIO_LIST_API_VIEW_FUNC = PortfolioListAPI.as_view("portfolio-group", Portfolio)
