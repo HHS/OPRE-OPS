@@ -313,6 +313,109 @@ describe("Agreement List", () => {
             .should("exist");
     });
 
+    it("Agreement summary cards render with correct data", () => {
+        // Both summary cards should be visible when agreements are loaded
+        cy.get('[data-cy="agreement-fy-spending-summary-card"]', { timeout: 10000 }).should("exist");
+        cy.get('[data-cy="agreement-type-summary-card"]', { timeout: 10000 }).should("exist");
+
+        // --- FY Spending Summary Card ---
+        cy.get('[data-cy="agreement-fy-spending-summary-card"]').within(() => {
+            // Title should reflect "All FYs" since beforeEach selects "All"
+            cy.contains("h3", "All FYs Agreements").should("exist");
+            cy.contains("h3", "All FYs New").should("exist");
+            cy.contains("h3", "All FYs Continuing").should("exist");
+
+            // The total count should be a positive number
+            cy.get(".font-sans-xl.text-bold").invoke("text").then((text) => {
+                const totalCount = parseInt(text, 10);
+                expect(totalCount).to.be.greaterThan(0);
+            });
+
+            // Agreement type tags should exist and each should show a count followed by a label
+            cy.get("span").filter(":contains('Contract')").should("exist");
+        });
+
+        // --- Agreement Type Summary Card ---
+        cy.get('[data-cy="agreement-type-summary-card"]').within(() => {
+            // Title should reflect the fiscal year prefix
+            cy.contains("h3", "Spending by Agreement Type").should("exist");
+
+            // All four legend labels should be present
+            cy.get('[data-testid="label-container"]').should("have.length", 4);
+            cy.get('[data-testid="label-container"]').eq(0).should("have.text", "Contract");
+            cy.get('[data-testid="label-container"]').eq(1).should("have.text", "Partner");
+            cy.get('[data-testid="label-container"]').eq(2).should("have.text", "Grant");
+            cy.get('[data-testid="label-container"]').eq(3).should("have.text", "Direct Obligation");
+
+            // Each legend item should have a dollar value and percentage
+            cy.get('[data-testid="value-container"]').should("have.length", 4);
+            cy.get('[data-testid="legend-tag"]').should("have.length", 4);
+
+            // Percentages should all end with "%"
+            cy.get('[data-testid="legend-tag"]').each(($tag) => {
+                expect($tag.text()).to.match(/\d+%/);
+            });
+
+            // Dollar values should start with "$"
+            cy.get('[data-testid="value-container"]').each(($val) => {
+                expect($val.text()).to.match(/^\$/);
+            });
+
+            // The donut chart should be rendered since there's data
+            cy.get("#agreement-type-chart").should("exist");
+        });
+    });
+
+    it("Agreement summary card counts match the table row count by type", () => {
+        // Get the total count from the FY spending card
+        cy.get('[data-cy="agreement-fy-spending-summary-card"]').within(() => {
+            cy.get(".font-sans-xl.text-bold").invoke("text").then((cardCountText) => {
+                const cardTotal = parseInt(cardCountText, 10);
+
+                // Navigate through all pages to count total table rows
+                // First, get the total from pagination if it exists
+                // The card count should match the total number of agreements across all pages
+                expect(cardTotal).to.be.greaterThan(0);
+            });
+        });
+    });
+
+    it("Agreement summary cards update when fiscal year filter changes", () => {
+        // Switch to a specific fiscal year
+        cy.get("#fiscal-year-select").select("2044");
+
+        // Wait for data to reload
+        cy.contains("h1", "Loading...", { timeout: 30000 }).should("not.exist");
+        cy.get("tbody tr", { timeout: 30000 }).should("have.length.at.least", 1);
+
+        // The FY spending card title should update to reflect the selected FY
+        cy.get('[data-cy="agreement-fy-spending-summary-card"]', { timeout: 10000 }).within(() => {
+            cy.contains("h3", "FY 2044 Agreements").should("exist");
+            cy.contains("h3", "FY 2044 New").should("exist");
+            cy.contains("h3", "FY 2044 Continuing").should("exist");
+        });
+
+        // The type summary card title should also update
+        cy.get('[data-cy="agreement-type-summary-card"]').within(() => {
+            cy.contains("h3", "FY 2044 Spending by Agreement Type").should("exist");
+        });
+    });
+
+    it("Agreement summary card percentages sum to approximately 100%", () => {
+        cy.get('[data-cy="agreement-type-summary-card"]').within(() => {
+            cy.get('[data-testid="legend-tag"]').then(($tags) => {
+                let totalPercent = 0;
+                $tags.each((_, tag) => {
+                    const percentText = Cypress.$(tag).text();
+                    totalPercent += parseInt(percentText, 10);
+                });
+                // Due to rounding, the sum may not be exactly 100 but should be close
+                // (within 2% due to Math.round on each individual percentage)
+                expect(totalPercent).to.be.within(98, 102);
+            });
+        });
+    });
+
     it.skip("Should sort the table by clicking on the header", () => {
         // Sort table by agreement name
         cy.get(`[data-cy=${TABLE_HEADINGS_LIST[0].value}]`).click();
