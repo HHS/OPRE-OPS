@@ -118,6 +118,25 @@ vi.mock("../../../components/Agreements/ProcurementTracker/ProcurementTrackerSte
     )
 }));
 
+vi.mock("../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepThree", () => ({
+    default: ({ stepStatus, stepThreeData, hasActiveTracker }) => (
+        <div
+            data-testid="procurement-step-three"
+            data-step-status={stepStatus}
+            data-step-data-id={stepThreeData?.id}
+            data-has-active-tracker={hasActiveTracker}
+        >
+            <p>
+                Once the Procurement Shop has posted the Solicitation and it&apos;s &quot;on the street&quot;, enter
+                the Solicitation Start and End Dates. After all proposals are received, vendor questions have been
+                answered, and evaluations are starting, check this step as complete.
+            </p>
+            {stepStatus === "ACTIVE" && <input type="checkbox" />}
+            {stepStatus === "COMPLETED" ? "Step Three Completed" : "Step Three Form"}
+        </div>
+    )
+}));
+
 // Mock constants module
 vi.mock("../../../constants", () => ({
     IS_PROCUREMENT_TRACKER_READY_MAP: {
