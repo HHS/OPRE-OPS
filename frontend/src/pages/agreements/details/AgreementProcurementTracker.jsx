@@ -151,6 +151,8 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 authorizedUsers={authorizedUsers}
                                 stepThreeData={stepThreeData}
                                 hasActiveTracker={hasActiveTracker}
+                                handleSetCompletedStepNumber={handleSetCompletedStepNumber}
+                                isActiveStep={activeTracker?.active_step_number === step.step_number}
                             />
                         )}
                         {!IS_PROCUREMENT_TRACKER_READY_MAP.STEP_3 && step.step_number === 3 && (

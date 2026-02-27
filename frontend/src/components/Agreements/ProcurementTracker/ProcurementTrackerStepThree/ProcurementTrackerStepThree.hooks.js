@@ -13,8 +13,9 @@ import useAlert from "../../../../hooks/use-alert.hooks";
 /**
  * Custom hook to manage the state and logic for Procurement Tracker Step Three.
  * @param {ProcurementTrackerSolicitationStep | undefined} stepThreeData - The data for step three of the procurement tracker.
+ * @param {Function} handleSetCompletedStepNumber - Callback to update completed step state.
  */
-export default function useProcurementTrackerStepThree(stepThreeData) {
+export default function useProcurementTrackerStepThree(stepThreeData, handleSetCompletedStepNumber) {
     const [selectedUser, setSelectedUser] = React.useState({});
     const [step3DateCompleted, setStep3DateCompleted] = React.useState("");
     const [solicitationPeriodStartDate, setSolicitationPeriodStartDate] = React.useState("");
@@ -128,6 +129,11 @@ export default function useProcurementTrackerStepThree(stepThreeData) {
                 data: payload
             }).unwrap();
             console.log("Procurement Tracker Step 3 Updated");
+
+            // Trigger accordion behavior to keep steps 3 and 4 open (if step 4 exists)
+            if (handleSetCompletedStepNumber) {
+                handleSetCompletedStepNumber(3);
+            }
         } catch (error) {
             console.error("Failed to update Procurement Tracker Step 3", error);
             setAlert({

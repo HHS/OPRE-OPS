@@ -143,6 +143,7 @@ describe("ProcurementTrackerStepThree", () => {
     const mockSetShowModal = vi.fn();
     const mockCancelModalStep3 = vi.fn();
     const mockHandleStep3Complete = vi.fn();
+    const mockHandleSetCompletedStepNumber = vi.fn();
 
     const defaultHookReturn = {
         selectedUser: {},
@@ -1407,6 +1408,32 @@ describe("ProcurementTrackerStepThree", () => {
 
             expect(mockHandleStep3Complete).toHaveBeenCalledTimes(1);
             expect(mockHandleStep3Complete).toHaveBeenCalledWith(1);
+        });
+
+        it("accepts handleSetCompletedStepNumber and isActiveStep props", () => {
+            useProcurementTrackerStepThree.mockReturnValue({
+                ...defaultHookReturn,
+                isSolicitationClosed: true,
+                selectedUser: { id: 123 },
+                step3DateCompleted: "2024-01-15"
+            });
+
+            render(
+                <ProcurementTrackerStepThree
+                    stepStatus="PENDING"
+                    stepThreeData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    isActiveStep={true}
+                />
+            );
+
+            // Verify component renders without errors with new props
+            expect(screen.getByRole("button", { name: /complete step 3/i })).toBeInTheDocument();
+
+            // Verify the hook is called with handleSetCompletedStepNumber
+            expect(useProcurementTrackerStepThree).toHaveBeenCalledWith(mockStepData, mockHandleSetCompletedStepNumber);
         });
 
         it("cancel button is disabled when hasActiveTracker is false", () => {

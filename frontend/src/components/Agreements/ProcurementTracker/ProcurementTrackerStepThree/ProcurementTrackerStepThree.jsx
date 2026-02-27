@@ -17,6 +17,8 @@ import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
  * @property {Object} stepThreeData - The data for step 3 of the procurement tracker
  * @property {SafeUser[]} authorizedUsers - List of users authorized for this agreement
  * @property {boolean} hasActiveTracker - Whether an active tracker exists
+ * @property {Function} handleSetCompletedStepNumber - Callback to update completed step state
+ * @property {boolean} isActiveStep - Whether this is the currently active step
  */
 
 /**
@@ -24,7 +26,14 @@ import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
  * @param {ProcurementTrackerStepThreeProps} props
  * @returns {React.ReactElement}
  */
-const ProcurementTrackerStepThree = ({ stepStatus, stepThreeData, authorizedUsers, hasActiveTracker }) => {
+const ProcurementTrackerStepThree = ({
+    stepStatus,
+    stepThreeData,
+    authorizedUsers,
+    hasActiveTracker,
+    handleSetCompletedStepNumber,
+    isActiveStep // eslint-disable-line no-unused-vars
+}) => {
     const {
         selectedUser,
         setSelectedUser,
@@ -53,7 +62,7 @@ const ProcurementTrackerStepThree = ({ stepStatus, stepThreeData, authorizedUser
         handleSolicitationDatesSubmit,
         handleStep3Complete
         // @ts-expect-error - stepThreeData may be undefined but hook handles it
-    } = useProcurementTrackerStepThree(stepThreeData);
+    } = useProcurementTrackerStepThree(stepThreeData, handleSetCompletedStepNumber);
 
     const disableStep3Buttons =
         !hasActiveTracker ||
