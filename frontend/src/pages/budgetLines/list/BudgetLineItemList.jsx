@@ -235,6 +235,7 @@ const BudgetLineItemList = () => {
                     <FiscalYear
                         fiscalYear={fiscalYearShortcut}
                         handleChangeFiscalYear={handleChangeFiscalYear}
+                        showAllOption={true}
                     />
                 }
                 SummaryCardsSection={
