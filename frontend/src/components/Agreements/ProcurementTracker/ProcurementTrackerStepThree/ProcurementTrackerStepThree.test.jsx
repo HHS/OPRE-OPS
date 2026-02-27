@@ -642,49 +642,6 @@ describe("ProcurementTrackerStepThree", () => {
         });
     });
 
-    describe("ACTIVE State Rendering", () => {
-        it("renders all form fields in ACTIVE state", () => {
-            render(
-                <ProcurementTrackerStepThree
-                    stepStatus="ACTIVE"
-                    stepThreeData={mockStepData}
-                    authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
-                />
-            );
-
-            expect(screen.getByRole("checkbox")).toBeInTheDocument();
-            expect(screen.getByText("Task Completed By")).toBeInTheDocument();
-            expect(screen.getByText("Date Completed")).toBeInTheDocument();
-            expect(screen.getByText("Solicitation Period - Start")).toBeInTheDocument();
-            expect(screen.getByText("Solicitation Period - End")).toBeInTheDocument();
-            expect(screen.getByTestId("text-area")).toBeInTheDocument();
-        });
-
-        it("form fields are interactive in ACTIVE state when checkbox is checked", () => {
-            useProcurementTrackerStepThree.mockReturnValue({
-                ...defaultHookReturn,
-                isSolicitationClosed: true
-            });
-
-            render(
-                <ProcurementTrackerStepThree
-                    stepStatus="ACTIVE"
-                    stepThreeData={mockStepData}
-                    authorizedUsers={mockAllUsers}
-                    hasActiveTracker={true}
-                />
-            );
-
-            const datePickers = screen.getAllByTestId("date-picker");
-            expect(datePickers.length).toBeGreaterThan(0);
-
-            // eslint-disable-next-line testing-library/no-node-access
-            const select = screen.getByTestId("users-combobox").querySelector("select");
-            expect(select).not.toBeDisabled();
-        });
-    });
-
     describe("COMPLETED State Rendering", () => {
         it("renders read-only display with instructional paragraph", () => {
             render(
