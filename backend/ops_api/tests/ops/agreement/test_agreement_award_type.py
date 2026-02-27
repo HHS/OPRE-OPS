@@ -4,6 +4,7 @@ from datetime import date
 from unittest.mock import patch
 
 from models import (
+    AgreementClassification,
     AgreementType,
     AwardType,
     BudgetLineItemStatus,
@@ -269,7 +270,7 @@ class TestAgreementAwardType:
             loaded_db.delete(agreement)
             loaded_db.commit()
 
-    @patch("ops_api.ops.utils.fiscal_year.get_current_fiscal_year", return_value=2025)
+    @patch("models.utils.fiscal_year.get_current_fiscal_year", return_value=2025)
     def test_planned_bli_not_awarded_returns_new(self, mock_fy, loaded_db, app_ctx):
         """Agreement with a Planned BLI and not awarded returns NEW."""
         agreement = ContractAgreement(
@@ -289,13 +290,13 @@ class TestAgreementAwardType:
         loaded_db.refresh(agreement)
 
         try:
-            assert agreement.award_type == "NEW"
+            assert agreement.award_type == AgreementClassification.NEW.name
         finally:
             loaded_db.delete(bli)
             loaded_db.delete(agreement)
             loaded_db.commit()
 
-    @patch("ops_api.ops.utils.fiscal_year.get_current_fiscal_year", return_value=2025)
+    @patch("models.utils.fiscal_year.get_current_fiscal_year", return_value=2025)
     def test_awarded_in_current_fy_returns_new(self, mock_fy, loaded_db, app_ctx):
         """Agreement awarded in the current FY returns NEW."""
         agreement = ContractAgreement(
@@ -323,14 +324,14 @@ class TestAgreementAwardType:
         loaded_db.refresh(agreement)
 
         try:
-            assert agreement.award_type == "NEW"
+            assert agreement.award_type == AgreementClassification.NEW.name
         finally:
             loaded_db.delete(pa)
             loaded_db.delete(bli)
             loaded_db.delete(agreement)
             loaded_db.commit()
 
-    @patch("ops_api.ops.utils.fiscal_year.get_current_fiscal_year", return_value=2025)
+    @patch("models.utils.fiscal_year.get_current_fiscal_year", return_value=2025)
     def test_awarded_in_prior_fy_with_obligated_bli_returns_continuing(self, mock_fy, loaded_db, app_ctx):
         """Agreement awarded in a prior FY with Obligated BLI returns CONTINUING."""
         agreement = ContractAgreement(
@@ -358,14 +359,14 @@ class TestAgreementAwardType:
         loaded_db.refresh(agreement)
 
         try:
-            assert agreement.award_type == "CONTINUING"
+            assert agreement.award_type == AgreementClassification.CONTINUING.name
         finally:
             loaded_db.delete(pa)
             loaded_db.delete(bli)
             loaded_db.delete(agreement)
             loaded_db.commit()
 
-    @patch("ops_api.ops.utils.fiscal_year.get_current_fiscal_year", return_value=2025)
+    @patch("models.utils.fiscal_year.get_current_fiscal_year", return_value=2025)
     def test_awarded_no_date_returns_new(self, mock_fy, loaded_db, app_ctx):
         """Agreement awarded but with no date_awarded_obligated returns NEW (fallback)."""
         agreement = ContractAgreement(
@@ -393,14 +394,14 @@ class TestAgreementAwardType:
         loaded_db.refresh(agreement)
 
         try:
-            assert agreement.award_type == "NEW"
+            assert agreement.award_type == AgreementClassification.NEW.name
         finally:
             loaded_db.delete(pa)
             loaded_db.delete(bli)
             loaded_db.delete(agreement)
             loaded_db.commit()
 
-    @patch("ops_api.ops.utils.fiscal_year.get_current_fiscal_year", return_value=2025)
+    @patch("models.utils.fiscal_year.get_current_fiscal_year", return_value=2025)
     def test_awarded_in_october_fy_boundary(self, mock_fy, loaded_db, app_ctx):
         """Award in October 2024 is FY 2025, so current FY 2025 <= award FY 2025 → NEW."""
         agreement = ContractAgreement(
@@ -428,14 +429,14 @@ class TestAgreementAwardType:
         loaded_db.refresh(agreement)
 
         try:
-            assert agreement.award_type == "NEW"
+            assert agreement.award_type == AgreementClassification.NEW.name
         finally:
             loaded_db.delete(pa)
             loaded_db.delete(bli)
             loaded_db.delete(agreement)
             loaded_db.commit()
 
-    @patch("ops_api.ops.utils.fiscal_year.get_current_fiscal_year", return_value=2025)
+    @patch("models.utils.fiscal_year.get_current_fiscal_year", return_value=2025)
     def test_mixed_draft_and_planned_not_awarded_returns_new(self, mock_fy, loaded_db, app_ctx):
         """Agreement with mixed Draft + Planned BLIs, not awarded, returns NEW."""
         agreement = ContractAgreement(
@@ -460,14 +461,14 @@ class TestAgreementAwardType:
         loaded_db.refresh(agreement)
 
         try:
-            assert agreement.award_type == "NEW"
+            assert agreement.award_type == AgreementClassification.NEW.name
         finally:
             loaded_db.delete(draft_bli)
             loaded_db.delete(planned_bli)
             loaded_db.delete(agreement)
             loaded_db.commit()
 
-    @patch("ops_api.ops.utils.fiscal_year.get_current_fiscal_year", return_value=2025)
+    @patch("models.utils.fiscal_year.get_current_fiscal_year", return_value=2025)
     def test_mixed_obligated_and_planned_awarded_prior_fy_returns_continuing(self, mock_fy, loaded_db, app_ctx):
         """Agreement with Obligated + Planned BLIs, awarded in prior FY, returns CONTINUING."""
         agreement = ContractAgreement(
@@ -500,7 +501,7 @@ class TestAgreementAwardType:
         loaded_db.refresh(agreement)
 
         try:
-            assert agreement.award_type == "CONTINUING"
+            assert agreement.award_type == AgreementClassification.CONTINUING.name
         finally:
             loaded_db.delete(pa)
             loaded_db.delete(obligated_bli)

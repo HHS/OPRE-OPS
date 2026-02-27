@@ -3,6 +3,7 @@ from sqlalchemy import select
 
 from models import Portfolio
 from models.base import BaseModel
+from models.utils.fiscal_year import get_current_fiscal_year
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
@@ -12,7 +13,6 @@ from ops_api.ops.schemas.portfolio_funding_summary import (
     ResponseListSchema,
     ResponseSchema,
 )
-from ops_api.ops.utils.fiscal_year import get_current_fiscal_year
 from ops_api.ops.utils.portfolios import get_total_funding
 from ops_api.ops.utils.response import make_response_with_headers
 
