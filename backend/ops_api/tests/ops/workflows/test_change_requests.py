@@ -204,7 +204,9 @@ def test_budget_line_item_patch_with_budgets_change_requests(
         can_request = "can_id" in change_request["requested_change_data"]
         action = "REJECT" if can_request else "APPROVE"
         data = {"action": action}
-        response = division_director_auth_client.patch(url_for("api.change-requests-item", id=change_request_id), json=data)
+        response = division_director_auth_client.patch(
+            url_for("api.change-requests-item", id=change_request_id), json=data
+        )
         assert response.status_code == 200
 
     # verify agreement history added for 3 reviews
@@ -475,12 +477,16 @@ def test_change_request_review_auth(
 
     # verify that division directors cannot approve/deny change requests outside their division.
     data = {"action": "APPROVE"}
-    response = division_6_director_auth_client.patch(url_for("api.change-requests-item", id=test_change_request.id), json=data)
+    response = division_6_director_auth_client.patch(
+        url_for("api.change-requests-item", id=test_change_request.id), json=data
+    )
     assert response.status_code == 403
 
     # verify access now granted
     data = {"action": "APPROVE"}
-    response = division_director_auth_client.patch(url_for("api.change-requests-item", id=test_change_request.id), json=data)
+    response = division_director_auth_client.patch(
+        url_for("api.change-requests-item", id=test_change_request.id), json=data
+    )
     assert response.status_code == 200
 
     # delete change request
