@@ -642,6 +642,49 @@ describe("ProcurementTrackerStepThree", () => {
         });
     });
 
+    describe("Solicitation Dates Display", () => {
+        it("displays solicitation dates as TermTags when dates are saved in PENDING state", () => {
+            const mockStepDataWithSavedDates = {
+                ...mockStepData,
+                solicitation_period_start_date: "2024-02-01",
+                solicitation_period_end_date: "2024-02-28"
+            };
+
+            useProcurementTrackerStepThree.mockReturnValue({
+                ...defaultHookReturn,
+                solicitationStartDateLabel: "February 1, 2024",
+                solicitationEndDateLabel: "February 28, 2024"
+            });
+
+            render(
+                <ProcurementTrackerStepThree
+                    stepStatus="PENDING"
+                    stepThreeData={mockStepDataWithSavedDates}
+                    authorizedUsers={mockAllUsers}
+                    hasActiveTracker={true}
+                />
+            );
+
+            // Verify TermTags are displayed for solicitation dates
+            expect(screen.getByText("Solicitation Period - Start")).toBeInTheDocument();
+            expect(screen.getByText("February 1, 2024")).toBeInTheDocument();
+            expect(screen.getByText("Solicitation Period - End")).toBeInTheDocument();
+            expect(screen.getByText("February 28, 2024")).toBeInTheDocument();
+
+            // Verify date input fields are not shown
+            const datePickers = screen.queryAllByTestId("date-picker");
+            const solicitationStartPicker = datePickers.find(
+                (picker) => picker.getAttribute("data-picker-id") === "solicitation-period-start-date"
+            );
+            const solicitationEndPicker = datePickers.find(
+                (picker) => picker.getAttribute("data-picker-id") === "solicitation-period-end-date"
+            );
+
+            expect(solicitationStartPicker).not.toBeDefined();
+            expect(solicitationEndPicker).not.toBeDefined();
+        });
+    });
+
     describe("COMPLETED State Rendering", () => {
         it("renders read-only display with instructional paragraph", () => {
             render(
