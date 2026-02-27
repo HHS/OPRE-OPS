@@ -236,19 +236,22 @@ const ProcurementTrackerStepTwo = ({
                     >
                         After the package is finalized, enter the Draft Solicitation date below (if applicable).
                     </p>
-                    <MemoizedDatePicker
-                        id="step-2-draft-solicitation-date"
-                        name="draftSolicitationDate"
-                        label="Draft Solicitation Date (optional)"
-                        hint="mm/dd/yyyy"
-                        value={draftSolicitationDate}
-                        messages={validatorRes.getErrors("draftSolicitationDate") || []}
-                        onChange={(e) => {
-                            runValidate("draftSolicitationDate", e.target.value);
-                            setDraftSolicitationDate(e.target.value);
-                        }}
-                        isDisabled={isPackageFinalizedFieldsDisabled}
-                    />
+                    <div className="display-flex">
+                        <MemoizedDatePicker
+                            id="step-2-draft-solicitation-date"
+                            name="draftSolicitationDate"
+                            label="Draft Solicitation Date (optional)"
+                            hint="mm/dd/yyyy"
+                            value={draftSolicitationDate}
+                            messages={validatorRes.getErrors("draftSolicitationDate") || []}
+                            onChange={(e) => {
+                                runValidate("draftSolicitationDate", e.target.value);
+                                setDraftSolicitationDate(e.target.value);
+                            }}
+                            isDisabled={isPackageFinalizedFieldsDisabled}
+                        />
+                    </div>
+
                     <div className="margin-top-2 display-flex flex-justify-end">
                         <button
                             className="usa-button usa-button--unstyled margin-right-2"
