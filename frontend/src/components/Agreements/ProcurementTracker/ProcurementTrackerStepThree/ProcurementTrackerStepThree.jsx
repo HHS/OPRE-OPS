@@ -115,7 +115,6 @@ const ProcurementTrackerStepThree = ({
                                 <MemoizedDatePicker
                                     id="solicitation-period-start-date"
                                     name="solicitationPeriodStartDate"
-                                    className="width-card-lg"
                                     label="Solicitation Period - Start"
                                     hint="mm/dd/yyyy"
                                     value={solicitationPeriodStartDate}
@@ -134,7 +133,7 @@ const ProcurementTrackerStepThree = ({
                                 <MemoizedDatePicker
                                     id="solicitation-period-end-date"
                                     name="solicitationPeriodEndDate"
-                                    className="width-card-lg margin-left-4"
+                                    className="margin-left-3"
                                     label="Solicitation Period - End"
                                     hint="mm/dd/yyyy"
                                     value={solicitationPeriodEndDate}

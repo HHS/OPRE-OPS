@@ -239,7 +239,6 @@ const ProcurementTrackerStepTwo = ({
                     <MemoizedDatePicker
                         id="step-2-draft-solicitation-date"
                         name="draftSolicitationDate"
-                        className="width-card-lg"
                         label="Draft Solicitation Date (optional)"
                         hint="mm/dd/yyyy"
                         value={draftSolicitationDate}
