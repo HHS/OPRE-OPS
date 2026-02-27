@@ -10,7 +10,7 @@ vi.mock("../../../../helpers/utils", async (importOriginal) => {
     const actual = await importOriginal();
     return {
         ...actual,
-        getLocalISODate: vi.fn(() => "2024-01-30")
+        getLocalISODate: vi.fn(() => "01/30/2024")
     };
 });
 vi.mock("../../../UI/Term/TermTag", () => ({
@@ -367,10 +367,10 @@ describe("ProcurementTrackerStepThree", () => {
             // eslint-disable-next-line testing-library/no-node-access
             const dateInput = dateCompletedPicker.querySelector("input");
 
-            fireEvent.change(dateInput, { target: { value: "2024-03-20" } });
+            fireEvent.change(dateInput, { target: { value: "03/20/2024" } });
 
-            expect(mockRunValidate).toHaveBeenCalledWith("dateCompleted", "2024-03-20");
-            expect(mockSetStep3DateCompleted).toHaveBeenCalledWith("2024-03-20");
+            expect(mockRunValidate).toHaveBeenCalledWith("dateCompleted", "03/20/2024");
+            expect(mockSetStep3DateCompleted).toHaveBeenCalledWith("03/20/2024");
         });
 
         it("Solicitation Period - Start calls runValidate and setSolicitationPeriodStartDate on change", () => {
@@ -390,10 +390,10 @@ describe("ProcurementTrackerStepThree", () => {
             // eslint-disable-next-line testing-library/no-node-access
             const dateInput = startDatePicker.querySelector("input");
 
-            fireEvent.change(dateInput, { target: { value: "2024-02-01" } });
+            fireEvent.change(dateInput, { target: { value: "02/01/2024" } });
 
-            expect(mockRunValidate).toHaveBeenCalledWith("solicitationPeriodStartDate", "2024-02-01");
-            expect(mockSetSolicitationPeriodStartDate).toHaveBeenCalledWith("2024-02-01");
+            expect(mockRunValidate).toHaveBeenCalledWith("solicitationPeriodStartDate", "02/01/2024");
+            expect(mockSetSolicitationPeriodStartDate).toHaveBeenCalledWith("02/01/2024");
         });
 
         it("Solicitation Period - End calls runValidate and setSolicitationPeriodEndDate on change", () => {
@@ -413,10 +413,10 @@ describe("ProcurementTrackerStepThree", () => {
             // eslint-disable-next-line testing-library/no-node-access
             const dateInput = endDatePicker.querySelector("input");
 
-            fireEvent.change(dateInput, { target: { value: "2024-02-28" } });
+            fireEvent.change(dateInput, { target: { value: "02/28/2024" } });
 
-            expect(mockRunValidate).toHaveBeenCalledWith("solicitationPeriodEndDate", "2024-02-28");
-            expect(mockSetSolicitationPeriodEndDate).toHaveBeenCalledWith("2024-02-28");
+            expect(mockRunValidate).toHaveBeenCalledWith("solicitationPeriodEndDate", "02/28/2024");
+            expect(mockSetSolicitationPeriodEndDate).toHaveBeenCalledWith("02/28/2024");
         });
 
         it("UsersComboBox calls setSelectedUser when user selected", () => {
@@ -646,8 +646,8 @@ describe("ProcurementTrackerStepThree", () => {
         it("displays solicitation dates as TermTags when dates are saved in PENDING state", () => {
             const mockStepDataWithSavedDates = {
                 ...mockStepData,
-                solicitation_period_start_date: "2024-02-01",
-                solicitation_period_end_date: "2024-02-28"
+                solicitation_period_start_date: "02/01/2024",
+                solicitation_period_end_date: "02/28/2024"
             };
 
             useProcurementTrackerStepThree.mockReturnValue({
@@ -1269,7 +1269,7 @@ describe("ProcurementTrackerStepThree", () => {
                 ...defaultHookReturn,
                 isSolicitationClosed: true,
                 selectedUser: { id: 123 },
-                step3DateCompleted: "2024-01-15"
+                step3DateCompleted: "01/15/2024"
             });
 
             render(
@@ -1291,7 +1291,7 @@ describe("ProcurementTrackerStepThree", () => {
                 ...defaultHookReturn,
                 isSolicitationClosed: true,
                 selectedUser: { id: 123 },
-                step3DateCompleted: "2024-01-15"
+                step3DateCompleted: "01/15/2024"
             });
 
             render(
@@ -1313,7 +1313,7 @@ describe("ProcurementTrackerStepThree", () => {
                 ...defaultHookReturn,
                 isSolicitationClosed: true,
                 selectedUser: { id: 123 },
-                step3DateCompleted: "2024-01-15"
+                step3DateCompleted: "01/15/2024"
             });
 
             render(
@@ -1337,7 +1337,7 @@ describe("ProcurementTrackerStepThree", () => {
                 ...defaultHookReturn,
                 isSolicitationClosed: true,
                 selectedUser: { id: 123 },
-                step3DateCompleted: "2024-01-15"
+                step3DateCompleted: "01/15/2024"
             });
 
             render(
@@ -1366,7 +1366,7 @@ describe("ProcurementTrackerStepThree", () => {
                 ...defaultHookReturn,
                 isSolicitationClosed: true,
                 selectedUser: { id: 123 },
-                step3DateCompleted: "2024-01-15",
+                step3DateCompleted: "01/15/2024",
                 cancelModalStep3: mockCancelModalStep3
             });
 
@@ -1390,14 +1390,20 @@ describe("ProcurementTrackerStepThree", () => {
                 ...defaultHookReturn,
                 isSolicitationClosed: true,
                 selectedUser: { id: 123 },
-                step3DateCompleted: "2024-01-15",
+                step3DateCompleted: "01/15/2024",
                 handleStep3Complete: mockHandleStep3Complete
             });
+
+            const stepDataWithDates = {
+                ...mockStepData,
+                solicitation_period_start_date: "02/01/2024",
+                solicitation_period_end_date: "02/28/2024"
+            };
 
             render(
                 <ProcurementTrackerStepThree
                     stepStatus="PENDING"
-                    stepThreeData={mockStepData}
+                    stepThreeData={stepDataWithDates}
                     authorizedUsers={mockAllUsers}
                     hasActiveTracker={true}
                 />
@@ -1415,7 +1421,7 @@ describe("ProcurementTrackerStepThree", () => {
                 ...defaultHookReturn,
                 isSolicitationClosed: true,
                 selectedUser: { id: 123 },
-                step3DateCompleted: "2024-01-15"
+                step3DateCompleted: "01/15/2024"
             });
 
             render(
@@ -1484,7 +1490,7 @@ describe("ProcurementTrackerStepThree", () => {
                 ...defaultHookReturn,
                 isSolicitationClosed: true,
                 selectedUser: { id: 123 },
-                step3DateCompleted: "2024-01-15",
+                step3DateCompleted: "01/15/2024",
                 validatorRes: mockValidatorWithErrors
             });
 
@@ -1603,7 +1609,7 @@ describe("ProcurementTrackerStepThree", () => {
                 ...defaultHookReturn,
                 isSolicitationClosed: true,
                 selectedUser: {},
-                step3DateCompleted: "2024-01-15"
+                step3DateCompleted: "01/15/2024"
             });
 
             render(
@@ -1645,7 +1651,7 @@ describe("ProcurementTrackerStepThree", () => {
                 ...defaultHookReturn,
                 isSolicitationClosed: false,
                 selectedUser: { id: 123 },
-                step3DateCompleted: "2024-01-15"
+                step3DateCompleted: "01/15/2024"
             });
 
             render(
@@ -1666,7 +1672,7 @@ describe("ProcurementTrackerStepThree", () => {
                 ...defaultHookReturn,
                 isSolicitationClosed: true,
                 selectedUser: { id: 123 },
-                step3DateCompleted: "2024-01-15"
+                step3DateCompleted: "01/15/2024"
             });
 
             render(
@@ -1692,7 +1698,7 @@ describe("ProcurementTrackerStepThree", () => {
                 ...defaultHookReturn,
                 isSolicitationClosed: true,
                 selectedUser: { id: 123 },
-                step3DateCompleted: "2024-01-15",
+                step3DateCompleted: "01/15/2024",
                 validatorRes: mockValidatorWithErrors
             });
 
@@ -1714,13 +1720,19 @@ describe("ProcurementTrackerStepThree", () => {
                 ...defaultHookReturn,
                 isSolicitationClosed: true,
                 selectedUser: { id: 123 },
-                step3DateCompleted: "2024-01-15"
+                step3DateCompleted: "01/15/2024"
             });
+
+            const stepDataWithDates = {
+                ...mockStepData,
+                solicitation_period_start_date: "02/01/2024",
+                solicitation_period_end_date: "02/28/2024"
+            };
 
             render(
                 <ProcurementTrackerStepThree
                     stepStatus="PENDING"
-                    stepThreeData={mockStepData}
+                    stepThreeData={stepDataWithDates}
                     authorizedUsers={mockAllUsers}
                     hasActiveTracker={true}
                 />

@@ -43,9 +43,9 @@ describe("useProcurementTrackerStepThree", () => {
     const mockStepThreeData = {
         id: 1,
         task_completed_by: 123,
-        date_completed: "2024-01-15",
-        solicitation_period_start_date: "2024-02-01",
-        solicitation_period_end_date: "2024-02-28",
+        date_completed: "01/15/2024",
+        solicitation_period_start_date: "02/01/2024",
+        solicitation_period_end_date: "02/28/2024",
         notes: "Test notes"
     };
 
@@ -132,10 +132,10 @@ describe("useProcurementTrackerStepThree", () => {
             );
 
             act(() => {
-                result.current.setStep3DateCompleted("2024-03-20");
+                result.current.setStep3DateCompleted("03/20/2024");
             });
 
-            expect(result.current.step3DateCompleted).toBe("2024-03-20");
+            expect(result.current.step3DateCompleted).toBe("03/20/2024");
         });
 
         it("updates solicitation period dates when setters are called", () => {
@@ -144,12 +144,12 @@ describe("useProcurementTrackerStepThree", () => {
             );
 
             act(() => {
-                result.current.setSolicitationPeriodStartDate("2024-03-01");
-                result.current.setSolicitationPeriodEndDate("2024-03-31");
+                result.current.setSolicitationPeriodStartDate("03/01/2024");
+                result.current.setSolicitationPeriodEndDate("03/31/2024");
             });
 
-            expect(result.current.solicitationPeriodStartDate).toBe("2024-03-01");
-            expect(result.current.solicitationPeriodEndDate).toBe("2024-03-31");
+            expect(result.current.solicitationPeriodStartDate).toBe("03/01/2024");
+            expect(result.current.solicitationPeriodEndDate).toBe("03/31/2024");
         });
 
         it("updates step3Notes when setter is called", () => {
@@ -189,7 +189,7 @@ describe("useProcurementTrackerStepThree", () => {
 
             act(() => {
                 result.current.setSelectedUser({ id: 456, full_name: "Jane Smith" });
-                result.current.setStep3DateCompleted("2024-03-20");
+                result.current.setStep3DateCompleted("03/20/2024");
             });
 
             await act(async () => {
@@ -208,7 +208,7 @@ describe("useProcurementTrackerStepThree", () => {
 
             act(() => {
                 result.current.setSelectedUser({ id: 456, full_name: "Jane Smith" });
-                result.current.setStep3DateCompleted("2024-03-20");
+                result.current.setStep3DateCompleted("03/20/2024");
             });
 
             await act(async () => {
@@ -498,9 +498,9 @@ describe("useProcurementTrackerStepThree", () => {
             // Set some state
             act(() => {
                 result.current.setSelectedUser({ id: 456, full_name: "Jane Smith" });
-                result.current.setStep3DateCompleted("2024-03-20");
-                result.current.setSolicitationPeriodStartDate("2024-03-01");
-                result.current.setSolicitationPeriodEndDate("2024-03-31");
+                result.current.setStep3DateCompleted("03/20/2024");
+                result.current.setSolicitationPeriodStartDate("03/01/2024");
+                result.current.setSolicitationPeriodEndDate("03/31/2024");
                 result.current.setStep3Notes("Test notes");
                 result.current.setIsSolicitationClosed(true);
             });

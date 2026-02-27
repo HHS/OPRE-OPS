@@ -68,7 +68,7 @@ describe("Procurement Tracker Step 1", () => {
                 return;
             }
 
-            cy.get("dl").within(() => {
+            cy.get("dl").first().within(() => {
                 cy.get("dd").eq(0).should("not.be.empty");
                 cy.get("dd").eq(1).should("not.be.empty");
                 cy.get("dd").eq(2).should("not.be.empty");
@@ -181,12 +181,9 @@ describe("Procurement Tracker Step 2", () => {
             }
 
             // Verify all Step 2-specific fields are present with values
-            cy.get("dl").within(() => {
-                // Target Completion Date (Step 2 specific)
-                cy.contains("dt", "Target Completion Date").should("exist");
-                // Verify the value is populated (not just the label)
-                cy.contains("Target Completion Date").should("exist");
-
+            // Find the dl that contains "Target Completion Date" (Step 2 specific field)
+            cy.contains("dt", "Target Completion Date").should("exist");
+            cy.contains("dt", "Target Completion Date").parents("dl").within(() => {
                 // Standard completion fields
                 cy.contains("dt", "Completed By").next("dd").should("not.be.empty");
                 cy.contains("dt", "Date Completed").next("dd").should("not.be.empty");
@@ -491,8 +488,8 @@ describe("Procurement Tracker Step 3: Solicitation", () => {
                 cy.contains("Completed By").should("exist");
                 cy.contains("Date Completed").should("exist");
                 cy.contains("Notes").should("exist");
-                cy.contains("Solicitation Period Start").should("exist");
-                cy.contains("Solicitation Period End").should("exist");
+                cy.contains("Solicitation Period - Start").should("exist");
+                cy.contains("Solicitation Period - End").should("exist");
                 cy.get(".usa-checkbox__label").should("not.exist");
                 cy.get('[data-cy="cancel-button"]').should("not.exist");
                 cy.get('[data-cy="continue-btn"]').should("not.exist");
@@ -516,10 +513,11 @@ describe("Procurement Tracker Step 3: Solicitation", () => {
             }
 
             // Verify all Step 3-specific fields are present with values
-            cy.get("dl").within(() => {
-                // Solicitation Period dates (Step 3 specific)
-                cy.contains("dt", "Solicitation Period Start").should("exist");
-                cy.contains("dt", "Solicitation Period End").should("exist");
+            // Find the dl that contains "Solicitation Period - Start" (Step 3 specific field)
+            cy.contains("dt", "Solicitation Period - Start").should("exist");
+            cy.contains("dt", "Solicitation Period - Start").parents("dl").within(() => {
+                // Solicitation Period End date (Step 3 specific)
+                cy.contains("dt", "Solicitation Period - End").should("exist");
 
                 // Standard completion fields
                 cy.contains("dt", "Completed By").next("dd").should("not.be.empty");
@@ -557,12 +555,12 @@ describe("Procurement Tracker Step 3: Solicitation", () => {
         cy.get("body").then(($body) => {
             const isPending = $body.find("#step-3-checkbox").length > 0;
             if (isPending) {
-                const hasSolicitationDateTags = $body.text().includes("Solicitation Period Start");
+                const hasSolicitationDateTags = $body.text().includes("Solicitation Period - Start");
                 if (!hasSolicitationDateTags) {
                     cy.get("#solicitation-period-start-date").should("exist");
                     cy.get("#solicitation-period-end-date").should("exist");
-                    cy.get('[data-cy="solicitation-period-save-btn"]').should("exist");
-                    cy.get('[data-cy="solicitation-period-save-btn"]').should("be.disabled");
+                    cy.get('[data-cy="solicitation-dates-save-btn"]').should("exist");
+                    cy.get('[data-cy="solicitation-dates-save-btn"]').should("be.disabled");
                 } else {
                     cy.log("Solicitation period dates already saved");
                 }
@@ -577,18 +575,23 @@ describe("Procurement Tracker Step 3: Solicitation", () => {
         // Check if step 3 is in pending state and solicitation dates haven't been saved yet
         cy.get("body").then(($body) => {
             const isPending = $body.find("#step-3-checkbox").length > 0;
-            const hasSolicitationDatesSaved = $body.find("dt").text().includes("Solicitation Period Start");
+            const hasSolicitationDatesSaved = $body.find("dt").text().includes("Solicitation Period - Start");
 
             if (isPending && !hasSolicitationDatesSaved) {
                 cy.get("#solicitation-period-start-date").should("exist").and("not.be.disabled");
                 cy.get("#solicitation-period-end-date").should("exist").and("not.be.disabled");
 
-                // Enter both start and end dates
-                cy.get("#solicitation-period-start-date").clear().type("01/15/2026").blur();
-                cy.get("#solicitation-period-end-date").clear().type("02/15/2026").blur();
+                // Enter both start and end dates - break up chain to avoid element detachment
+                cy.get("#solicitation-period-start-date").clear();
+                cy.get("#solicitation-period-start-date").type("01/15/2026");
+                cy.get("#solicitation-period-start-date").blur();
+
+                cy.get("#solicitation-period-end-date").clear();
+                cy.get("#solicitation-period-end-date").type("02/15/2026");
+                cy.get("#solicitation-period-end-date").blur();
 
                 // Wait for validation to run and button to be enabled
-                cy.get('[data-cy="solicitation-period-save-btn"]').should("not.be.disabled");
+                cy.get('[data-cy="solicitation-dates-save-btn"]').should("not.be.disabled");
             } else {
                 cy.log("Step 3 not in correct state for this test - skipping");
             }
@@ -602,15 +605,15 @@ describe("Procurement Tracker Step 3: Solicitation", () => {
         cy.get("body").then(($body) => {
             const isPending = $body.find("#step-3-checkbox").length > 0;
             // Check if TermTags with Solicitation Period dates exist
-            const hasSolicitationDateTags = $body.find("dt:contains('Solicitation Period Start')").length > 0;
+            const hasSolicitationDateTags = $body.find("dt:contains('Solicitation Period - Start')").length > 0;
 
             if (isPending && hasSolicitationDateTags) {
                 // Solicitation dates have been saved and should display as TermTags
-                cy.contains("Solicitation Period Start").should("exist");
-                cy.contains("Solicitation Period End").should("exist");
+                cy.contains("Solicitation Period - Start").should("exist");
+                cy.contains("Solicitation Period - End").should("exist");
                 cy.get("#solicitation-period-start-date").should("not.exist");
                 cy.get("#solicitation-period-end-date").should("not.exist");
-                cy.get('[data-cy="solicitation-period-save-btn"]').should("not.exist");
+                cy.get('[data-cy="solicitation-dates-save-btn"]').should("not.exist");
             } else {
                 cy.log("Solicitation period dates not yet saved - skipping");
             }

@@ -32,7 +32,7 @@ const ProcurementTrackerStepThree = ({
     authorizedUsers,
     hasActiveTracker,
     handleSetCompletedStepNumber,
-    isActiveStep // eslint-disable-line no-unused-vars
+    isActiveStep
 }) => {
     const {
         selectedUser,
@@ -64,12 +64,22 @@ const ProcurementTrackerStepThree = ({
         // @ts-expect-error - stepThreeData may be undefined but hook handles it
     } = useProcurementTrackerStepThree(stepThreeData, handleSetCompletedStepNumber);
 
+    // Check if solicitation dates exist (either saved or entered)
+    const hasSavedSolicitationDates =
+        !!stepThreeData?.solicitation_period_start_date && !!stepThreeData?.solicitation_period_end_date;
+
+    const hasEnteredSolicitationDates = !!solicitationPeriodStartDate && !!solicitationPeriodEndDate;
+
+    const missingSolicitationDates = !hasSavedSolicitationDates && !hasEnteredSolicitationDates;
+
     const disableStep3Buttons =
         !hasActiveTracker ||
         !isSolicitationClosed ||
         !selectedUser?.id ||
         !step3DateCompleted ||
-        validatorRes.hasErrors();
+        validatorRes.hasErrors() ||
+        missingSolicitationDates ||
+        !stepThreeData?.id;
 
     const isSolicitationDatesSaveDisabled =
         !hasActiveTracker ||
@@ -149,9 +159,15 @@ const ProcurementTrackerStepThree = ({
                                 <button
                                     className="usa-button usa-button--unstyled margin-bottom-1 margin-left-2"
                                     data-cy="solicitation-dates-save-btn"
-                                    disabled={isSolicitationDatesSaveDisabled}
+                                    disabled={isSolicitationDatesSaveDisabled || !stepThreeData?.id}
                                     onClick={() => {
-                                        handleSolicitationDatesSubmit(stepThreeData?.id);
+                                        if (!stepThreeData?.id) {
+                                            window.alert(
+                                                "Unable to save solicitation dates because this tracker step is not initialized."
+                                            );
+                                            return;
+                                        }
+                                        handleSolicitationDatesSubmit(stepThreeData.id);
                                     }}
                                 >
                                     Save
@@ -169,7 +185,7 @@ const ProcurementTrackerStepThree = ({
                             value="step-3-checkbox"
                             checked={isSolicitationClosed}
                             onChange={() => setIsSolicitationClosed(!isSolicitationClosed)}
-                            disabled={!hasActiveTracker}
+                            disabled={!hasActiveTracker || !isActiveStep}
                         />
                         <label
                             className="usa-checkbox__label"
@@ -232,7 +248,15 @@ const ProcurementTrackerStepThree = ({
                         <button
                             className="usa-button"
                             data-cy="continue-btn"
-                            onClick={() => handleStep3Complete(stepThreeData?.id)}
+                            onClick={() => {
+                                if (!stepThreeData?.id) {
+                                    window.alert(
+                                        "Unable to complete step because this tracker step is not initialized."
+                                    );
+                                    return;
+                                }
+                                handleStep3Complete(stepThreeData.id);
+                            }}
                             disabled={disableStep3Buttons}
                         >
                             Complete Step 3
