@@ -102,7 +102,7 @@ def db_loaded_with_data_for_total_fiscal_year_funding(app, loaded_db, app_ctx):
     loaded_db.commit()
 
 
-@patch("models.utils.fiscal_year.get_current_fiscal_year", return_value=2023)
+@patch("ops_api.ops.resources.portfolio_funding_summary.get_current_fiscal_year", return_value=2023)
 def test_get_portfolio_funding_summary(
     mock_fy, auth_client, db_loaded_with_data_for_total_fiscal_year_funding, app_ctx
 ):
