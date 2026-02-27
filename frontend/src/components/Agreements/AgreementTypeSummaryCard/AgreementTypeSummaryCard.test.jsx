@@ -144,7 +144,11 @@ describe("AgreementTypeSummaryCard", () => {
 
         render(<AgreementTypeSummaryCard {...unevenProps} />);
 
-        const total = unevenProps.contractTotal + unevenProps.partnerTotal + unevenProps.grantTotal + unevenProps.directObligationTotal;
+        const total =
+            unevenProps.contractTotal +
+            unevenProps.partnerTotal +
+            unevenProps.grantTotal +
+            unevenProps.directObligationTotal;
 
         // Each 333 / 1000 = 33.3 → rounds to 33%
         const contractPercent = Math.round((unevenProps.contractTotal / total) * 100);

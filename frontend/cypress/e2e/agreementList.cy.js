@@ -326,10 +326,12 @@ describe("Agreement List", () => {
             cy.contains("h3", "All FYs Continuing").should("exist");
 
             // The total count should be a positive number
-            cy.get(".font-sans-xl.text-bold").invoke("text").then((text) => {
-                const totalCount = parseInt(text, 10);
-                expect(totalCount).to.be.greaterThan(0);
-            });
+            cy.get(".font-sans-xl.text-bold")
+                .invoke("text")
+                .then((text) => {
+                    const totalCount = parseInt(text, 10);
+                    expect(totalCount).to.be.greaterThan(0);
+                });
 
             // Agreement type tags should exist and each should show a count followed by a label
             cy.get("span").filter(":contains('Contract')").should("exist");
@@ -369,14 +371,16 @@ describe("Agreement List", () => {
     it("Agreement summary card counts match the table row count by type", () => {
         // Get the total count from the FY spending card
         cy.get('[data-cy="agreement-fy-spending-summary-card"]').within(() => {
-            cy.get(".font-sans-xl.text-bold").invoke("text").then((cardCountText) => {
-                const cardTotal = parseInt(cardCountText, 10);
+            cy.get(".font-sans-xl.text-bold")
+                .invoke("text")
+                .then((cardCountText) => {
+                    const cardTotal = parseInt(cardCountText, 10);
 
-                // Navigate through all pages to count total table rows
-                // First, get the total from pagination if it exists
-                // The card count should match the total number of agreements across all pages
-                expect(cardTotal).to.be.greaterThan(0);
-            });
+                    // Navigate through all pages to count total table rows
+                    // First, get the total from pagination if it exists
+                    // The card count should match the total number of agreements across all pages
+                    expect(cardTotal).to.be.greaterThan(0);
+                });
         });
     });
 
