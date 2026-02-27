@@ -89,7 +89,7 @@ const ProcurementTrackerStepThree = ({
                     setShowModal={setShowModal}
                 />
             )}
-            {(stepStatus === "PENDING" || stepStatus === "ACTIVE") && (
+            {stepStatus === "PENDING" && (
                 <fieldset className="usa-fieldset">
                     <p>
                         Once the Procurement Shop has posted the Solicitation and it’s “on the street”, enter the

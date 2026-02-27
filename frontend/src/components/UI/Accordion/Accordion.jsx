@@ -16,6 +16,11 @@ const Accordion = ({ heading, children, level = 4, isClosed = false, dataCy }) =
     const AccordionHeading = `h${level}`;
     const [isOpen, setIsOpen] = React.useState(!isClosed);
 
+    // Sync isOpen state with isClosed prop changes
+    React.useEffect(() => {
+        setIsOpen(!isClosed);
+    }, [isClosed]);
+
     // Ensure accordion JS is loaded
     const accordionRef = React.useRef(null);
     React.useEffect(() => {
