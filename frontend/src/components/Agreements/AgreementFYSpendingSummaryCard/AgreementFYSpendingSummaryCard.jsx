@@ -16,10 +16,10 @@ const agreementTypeStyles = {
     CONTRACT: { backgroundColor: "var(--data-viz-agreement-contract)", color: "white" },
     GRANT: { backgroundColor: "var(--data-viz-agreement-grant)", color: "black" },
     DIRECT_OBLIGATION: { backgroundColor: "var(--data-viz-agreement-direct-obligation)", color: "white" },
-    "DIRECT OBLIGATION": { backgroundColor: "var(--data-viz-agreement-direct-obligation)", color: "white" },
-    AA: { backgroundColor: "var(--data-viz-agreement-partner)", color: "black" },
-    IAA: { backgroundColor: "var(--data-viz-agreement-partner)", color: "black" }
+    Partner: { backgroundColor: "var(--data-viz-agreement-partner)", color: "black" }
 };
+
+const PARTNER_TYPES = ["AA", "IAA"];
 
 const AgreementFYSpendingSummaryCard = ({ title, fiscalYear, agreements = [] }) => {
     const totalCount = agreements.length;
@@ -27,7 +27,8 @@ const AgreementFYSpendingSummaryCard = ({ title, fiscalYear, agreements = [] }) 
     const countsByType = agreements.reduce((acc, agreement) => {
         const type = agreement.agreement_type;
         if (type) {
-            acc[type] = (acc[type] || 0) + 1;
+            const key = PARTNER_TYPES.includes(type) ? "Partner" : type;
+            acc[key] = (acc[key] || 0) + 1;
         }
         return acc;
     }, {});
@@ -50,7 +51,7 @@ const AgreementFYSpendingSummaryCard = ({ title, fiscalYear, agreements = [] }) 
                                     key={type}
                                     className={`${index > 0 ? "margin-top-1" : ""}`}
                                     style={agreementTypeStyles[type]}
-                                    text={`${count} ${convertCodeForDisplay("agreementType", type)}`}
+                                    text={`${count} ${type === "Partner" ? "Partner" : convertCodeForDisplay("agreementType", type)}`}
                                 />
                             ))}
                         </div>

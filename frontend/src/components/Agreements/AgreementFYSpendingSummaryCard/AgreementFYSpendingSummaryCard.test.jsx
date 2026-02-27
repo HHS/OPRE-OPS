@@ -77,26 +77,11 @@ describe("AgreementFYSpendingSummaryCard", () => {
             />
         );
 
-        // Dynamically compute expected counts from the mock data
-        const expectedCounts = mockAgreements.reduce((acc, { agreement_type }) => {
-            if (agreement_type) {
-                acc[agreement_type] = (acc[agreement_type] || 0) + 1;
-            }
-            return acc;
-        }, {});
-
-        const displayTextMap = {
-            CONTRACT: "Contract",
-            GRANT: "Grant",
-            DIRECT_OBLIGATION: "Direct Obligation",
-            AA: "Partner - AA",
-            IAA: "Partner - IAA"
-        };
-
-        Object.entries(expectedCounts).forEach(([type, count]) => {
-            const label = displayTextMap[type] || type;
-            expect(screen.getByText(`${count} ${label}`)).toBeInTheDocument();
-        });
+        expect(screen.getByText("3 Contract")).toBeInTheDocument();
+        expect(screen.getByText("1 Grant")).toBeInTheDocument();
+        expect(screen.getByText("1 Direct Obligation")).toBeInTheDocument();
+        // AA and IAA should be combined into a single "Partner" tag
+        expect(screen.getByText("2 Partner")).toBeInTheDocument();
     });
 
     it("handles a single agreement type correctly", () => {
