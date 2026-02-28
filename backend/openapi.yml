@@ -6579,7 +6579,8 @@ components:
               description: >-
                 Classification of the agreement for Budget Team reporting.
                 Returns "NEW" if the agreement has non-Draft BLIs and is either
-                not yet awarded or was awarded in the current fiscal year.
+                not yet awarded, was awarded in the current fiscal year, or is
+                considered awarded but has no recorded award date (fallback).
                 Returns "CONTINUING" if the agreement has been awarded and the
                 current fiscal year is after the award fiscal year.
                 Returns null if the agreement has no non-Draft BLIs.
