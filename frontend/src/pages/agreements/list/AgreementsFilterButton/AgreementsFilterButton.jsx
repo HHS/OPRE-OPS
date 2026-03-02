@@ -35,7 +35,8 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
         awardType,
         setAwardType,
         applyFilter,
-        resetFilter
+        resetFilter,
+        currentFiscalYear
     } = useAgreementsFilterButton(filters, setFilters);
 
     const fieldStyles = "usa-fieldset margin-bottom-205";
@@ -50,7 +51,7 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
                 selectedFiscalYears={fiscalYear}
                 setSelectedFiscalYears={setFiscalYear}
                 legendClassname={legendStyles}
-                defaultString={""}
+                defaultString={`Fiscal Year ${currentFiscalYear}`}
                 overrideStyles={FILTER_MODAL_FULL_WIDTH}
                 budgetLinesFiscalYears={agreementFilterOptions?.fiscal_years || []}
                 label="Compare Fiscal Years"

@@ -1,4 +1,5 @@
 import React from "react";
+import { getCurrentFiscalYear } from "../../../../helpers/utils";
 
 /**
  * A filter for CANs list.
@@ -13,6 +14,7 @@ export const useAgreementsFilterButton = (filters, setFilters) => {
     const [agreementName, setAgreementName] = React.useState([]);
     const [contractNumber, setContractNumber] = React.useState([]);
     const [awardType, setAwardType] = React.useState([]);
+    const currentFiscalYear = getCurrentFiscalYear();
 
     // The useEffect() hook calls below are used to set the state appropriately when the filter tags (X) are clicked.
     React.useEffect(() => {
@@ -71,6 +73,7 @@ export const useAgreementsFilterButton = (filters, setFilters) => {
             };
         });
     };
+
     const resetFilter = () => {
         setFilters({
             fiscalYear: [],
@@ -99,7 +102,8 @@ export const useAgreementsFilterButton = (filters, setFilters) => {
         awardType,
         setAwardType,
         applyFilter,
-        resetFilter
+        resetFilter,
+        currentFiscalYear
     };
 };
 
