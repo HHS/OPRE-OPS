@@ -26,6 +26,7 @@ from ops_api.ops.views import (
     CAN_ITEM_API_VIEW_FUNC,
     CAN_LIST_API_VIEW_FUNC,
     CAN_LIST_FILTER_OPTION_API_VIEW_FUNC,
+    CHANGE_REQUEST_ITEM_API_VIEW_FUNC,
     CHANGE_REQUEST_LIST_API_VIEW_FUNC,
     DIVISIONS_ITEM_API_VIEW_FUNC,
     DIVISIONS_LIST_API_VIEW_FUNC,
@@ -33,7 +34,6 @@ from ops_api.ops.views import (
     HEALTH_CHECK_VIEW_FUNC,
     NOTIFICATIONS_ITEM_API_VIEW_FUNC,
     NOTIFICATIONS_LIST_API_VIEW_FUNC,
-    PORTFOLIO_CALCULATE_FUNDING_API_VIEW_FUNC,
     PORTFOLIO_CANS_API_VIEW_FUNC,
     PORTFOLIO_FUNDING_SUMMARY_ITEM_API_VIEW_FUNC,
     PORTFOLIO_FUNDING_SUMMARY_LIST_API_VIEW_FUNC,
@@ -81,10 +81,6 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/azure/sas-token/",
         view_func=AZURE_SAS_TOKEN_VIEW_FUNC,
-    )
-    api_bp.add_url_rule(
-        "/portfolios/<int:id>/calcFunding/",
-        view_func=PORTFOLIO_CALCULATE_FUNDING_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
         "/portfolios/<int:id>/cans/",
@@ -344,6 +340,10 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/change-requests/",
         view_func=CHANGE_REQUEST_LIST_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/change-requests/<int:id>",
+        view_func=CHANGE_REQUEST_ITEM_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
         "/documents/<int:agreement_id>",

@@ -2,6 +2,9 @@ import { defineConfig } from "cypress";
 
 export default defineConfig({
     allowCypressEnv: false,
+    env: {
+        A11Y_REGRESSION_GATE: process.env.A11Y_REGRESSION_GATE === "true"
+    },
     e2e: {
         baseUrl: "http://localhost:3000",
         specPattern: [

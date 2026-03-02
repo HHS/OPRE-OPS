@@ -763,21 +763,6 @@ export const opsApi = createApi({
             },
             providesTags: ["Portfolios"]
         }),
-        // NOTE: This endpoint will be deprecated in the future and replaced by getPortfolioFundingSummary
-        getPortfolioCalcFunding: builder.query({
-            query: ({ portfolioId, fiscalYear, simulatedError }) => {
-                const queryParams = [];
-                if (fiscalYear) {
-                    queryParams.push(`fiscal_year=${fiscalYear}`);
-                }
-                if (simulatedError) {
-                    queryParams.push(`simulatedError`);
-                }
-                const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
-                return `/portfolios/${portfolioId}/calcFunding/${queryString}`;
-            },
-            providesTags: ["Portfolios"]
-        }),
         getPortfolioFundingSummary: builder.query({
             query: ({ portfolioId, fiscalYear, simulatedError }) => {
                 const queryParams = [];
@@ -881,12 +866,12 @@ export const opsApi = createApi({
             providesTags: ["ChangeRequests"]
         }),
         updateChangeRequest: builder.mutation({
-            query: (body) => {
+            query: ({ id, data }) => {
                 return {
-                    url: `/change-requests/`,
+                    url: `/change-requests/${id}`,
                     method: "PATCH",
                     headers: { "Content-Type": "application/json" },
-                    body
+                    body: data
                 };
             },
             invalidatesTags: ["ChangeRequests"]
@@ -1023,7 +1008,6 @@ export const {
     useGetPortfolioByIdQuery,
     useLazyGetPortfolioByIdQuery,
     useGetPortfolioCansByIdQuery,
-    useGetPortfolioCalcFundingQuery,
     useGetPortfolioFundingSummaryQuery,
     useLazyGetPortfolioFundingSummaryQuery,
     useGetPortfolioFundingSummaryBatchQuery,

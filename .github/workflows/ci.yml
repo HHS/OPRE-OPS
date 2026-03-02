@@ -22,7 +22,7 @@ jobs:
           fetch-depth: 0
       - name: TruffleHog OSS
         id: trufflehog
-        uses: trufflesecurity/trufflehog@6961f2bace57ab32b23b3ba40f8f420f6bc7e004 # v3.93.3
+        uses: trufflesecurity/trufflehog@041f07e9df901a1038a528e5525b0226d04dd5ea # v3.93.6
         env:
           GITHUB_HEAD_REF_SAFE: ${{ github.head_ref }}
         continue-on-error: true
@@ -45,6 +45,42 @@ jobs:
     name: End-to-End Tests
     secrets: inherit # https://docs.github.com/en/actions/using-workflows/reusing-workflows#passing-inputs-and-secrets-to-a-reusable-workflow
     uses: ./.github/workflows/e2e_test_reusable.yml
+
+  a11y-regression:
+    name: A11y Regression Gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - uses: ./.github/actions/setup-javascript
+
+      - name: Launch Stack
+        uses: ./.github/actions/run-full-stack
+        env:
+          JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
+          JWT_PUBLIC_KEY: ${{ secrets.JWT_PUBLIC_KEY }}
+
+      - name: Validate a11y suppression metadata
+        working-directory: ./frontend
+        run: bun run a11y:validate-suppressions
+
+      - name: Install minimal runtime deps for headless browser
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends dbus-x11 xvfb libgtk-3-0 libnss3 libxss1 libasound2t64 libgbm1
+
+      - name: Run critical accessibility regression specs
+        working-directory: ./frontend
+        env:
+          TERM: xterm
+          A11Y_REGRESSION_GATE: "true"
+          JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
+          JWT_PUBLIC_KEY: ${{ secrets.JWT_PUBLIC_KEY }}
+        run: |
+          dbus-run-session -- npx cypress run \
+            --config-file ./cypress.config.ci.js \
+            --headless \
+            --spec "cypress/e2e/agreementList.cy.js,cypress/e2e/agreementsPagination.cy.js,cypress/e2e/agreementDetails.cy.js,cypress/e2e/portfolioList.cy.js,cypress/e2e/portfolioDetail.cy.js,cypress/e2e/budgetLineItemsList.cy.js,cypress/e2e/createAgreement.cy.js,cypress/e2e/createAgreementWithValidations.cy.js,cypress/e2e/uploadDocument.cy.js,cypress/e2e/notificationCenter.cy.js"
 
   codeql-analysis:
     permissions:
