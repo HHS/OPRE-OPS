@@ -354,6 +354,6 @@ def register_api(api_bp: Blueprint) -> None:
         view_func=DOCUMENT_API_FUNC,
     )
     api_bp.add_url_rule(
-        "/documents/<string:document_id>/status/",
+        "/documents/<string:document_id>",
         view_func=DOCUMENT_API_FUNC,
     )

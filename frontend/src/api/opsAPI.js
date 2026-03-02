@@ -902,7 +902,7 @@ export const opsApi = createApi({
         updateDocumentStatus: builder.mutation({
             query: ({ document_id, data }) => {
                 return {
-                    url: `/documents/${document_id}/status/`,
+                    url: `/documents/${document_id}`,
                     method: "PATCH",
                     headers: { "Content-Type": "application/json" },
                     body: data
