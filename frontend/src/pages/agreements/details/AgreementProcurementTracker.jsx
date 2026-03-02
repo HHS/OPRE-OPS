@@ -114,7 +114,10 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 : step.step_number !== accordionOpenStep
                         }
                         level={3}
-                        key={step.id}
+                        // Key includes state that affects which accordion should be open.
+                        // Since Accordion is an uncontrolled component, we need to force a remount
+                        // when the active/completed step changes to reset the initial state.
+                        key={`${step.id}-${completedStepNumber}-${accordionOpenStep}`}
                     >
                         {IS_PROCUREMENT_TRACKER_READY_MAP.STEP_1 && step.step_number === 1 && (
                             <ProcurementTrackerStepOne
