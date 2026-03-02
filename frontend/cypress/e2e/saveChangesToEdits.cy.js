@@ -1,6 +1,6 @@
 /// <reference types="cypress" />
 
-import { testLogin } from "./utils";
+import { terminalLog, testLogin } from "./utils";
 import { BLI_STATUS } from "../../src/helpers/budgetLines.helpers";
 
 let testAgreement = {
@@ -57,10 +57,10 @@ beforeEach(() => {
     testLogin("system-owner");
 });
 
-// afterEach(() => {
-//     cy.injectAxe();
-//     cy.checkA11y(null, null, terminalLog);
-// });
+afterEach(() => {
+    cy.injectAxe();
+    cy.checkA11y(null, null, terminalLog, true);
+});
 
 describe("Save Changes/Edits in Agreement BLIs", () => {
     let agreementId;
