@@ -41,7 +41,7 @@
     },
     "overrides": {
         "rollup": "4.59.0",
-        "caniuse-lite": "1.0.30001774"
+        "caniuse-lite": "1.0.30001775"
     },
     "devDependencies": {
         "@eslint/compat": "2.0.2",
@@ -57,7 +57,7 @@
         "@vitest/eslint-plugin": "1.6.9",
         "@vitest/ui": "4.0.18",
         "axe-core": "4.11.1",
-        "cypress": "15.10.0",
+        "cypress": "15.11.0",
         "cypress-axe": "1.7.0",
         "cypress-localstorage-commands": "2.2.8",
         "eslint": "10.0.2",
