@@ -88,7 +88,8 @@ export const opsApi = createApi({
                     agreementName,
                     agreementType,
                     projectTitle,
-                    contractNumber
+                    contractNumber,
+                    awardType
                 },
                 onlyMy,
                 sortConditions,
@@ -120,6 +121,11 @@ export const opsApi = createApi({
                 if (contractNumber) {
                     contractNumber.forEach((contract) =>
                         queryParams.push(`contract_number=${encodeURIComponent(contract.id)}`)
+                    );
+                }
+                if (awardType) {
+                    awardType.forEach((award) =>
+                        queryParams.push(`award_type=${encodeURIComponent(award.awardType)}`)
                     );
                 }
                 if (onlyMy) {

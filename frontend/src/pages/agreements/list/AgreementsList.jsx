@@ -110,11 +110,7 @@ const AgreementsList = () => {
     });
 
     // Extract agreements array and metadata from wrapped response
-    const allAgreements = agreementsResponse?.agreements || [];
-    const agreements =
-        filters.awardType.length > 0
-            ? allAgreements.filter((a) => filters.awardType.some((at) => at.awardType === a.award_type))
-            : allAgreements;
+    const agreements = agreementsResponse?.agreements || [];
     const totalCount = agreementsResponse?.count || 0;
     const totalPages = Math.ceil(totalCount / pageSize);
 

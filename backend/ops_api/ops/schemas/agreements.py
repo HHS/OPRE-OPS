@@ -150,6 +150,7 @@ class AgreementRequestSchema(PaginationListSchema):
     sort_conditions = fields.List(fields.Enum(AgreementSortCondition), required=False)
     sort_descending = fields.List(fields.Boolean(), required=False)
     only_my = fields.List(fields.Boolean(), required=False)
+    award_type = fields.List(fields.String(), required=False)
     exact_match = fields.List(fields.Boolean(), required=False, load_default=[True])
 
 
