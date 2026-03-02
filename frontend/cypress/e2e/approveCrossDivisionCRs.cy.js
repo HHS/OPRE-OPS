@@ -104,9 +104,8 @@ describe("Approve Cross Division Change Requests", () => {
                         return cy.wrap(pendingChangeRequestIds).each((changeRequestId) =>
                             cy.request({
                                 method: "PATCH",
-                                url: "http://localhost:8080/api/v1/change-requests/",
+                                url: `http://localhost:8080/api/v1/change-requests/${changeRequestId}`,
                                 body: {
-                                    change_request_id: changeRequestId,
                                     action: "REJECT",
                                     reviewer_notes: "E2E cleanup"
                                 },
@@ -237,9 +236,8 @@ describe("Approve Cross Division Change Requests", () => {
                         const divisionDirectorBearerToken = `Bearer ${window.localStorage.getItem("access_token")}`;
                         return cy.request({
                             method: "PATCH",
-                            url: "http://localhost:8080/api/v1/change-requests/",
+                            url: `http://localhost:8080/api/v1/change-requests/${crId1}`,
                             body: {
-                                change_request_id: crId1,
                                 action: "APPROVE",
                                 reviewer_notes: "approved looks good"
                             },
