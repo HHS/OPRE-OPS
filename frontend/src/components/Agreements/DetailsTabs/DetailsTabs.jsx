@@ -76,7 +76,7 @@ const DetailsTabs = ({ agreementId, isAgreementNotDeveloped, isAgreementAwarded 
             return (
                 <Tooltip
                     key={pathName}
-                    label={`${path.label} tab is coming soon`}
+                    label={`${path.label} tab is coming soon! For now, please upload to the OPRE preferred tool to share documents`}
                     position="bottom"
                 >
                     {button}
