@@ -42,7 +42,7 @@ const FiscalYear = ({ fiscalYear, handleChangeFiscalYear, fiscalYears = [], show
                         </option>
                     );
                 })}
-                {showAllOption && <option value="All">All</option>}
+                {showAllOption && fiscalYear !== "All" && <option value="All">All</option>}
             </select>
         </div>
     );
