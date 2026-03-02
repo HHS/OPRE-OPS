@@ -1,6 +1,6 @@
 from contextlib import suppress
 from enum import Enum
-from typing import Optional
+from typing import Optional, Type
 
 from flask import Response, current_app, jsonify, request
 from flask.views import MethodView
@@ -19,7 +19,7 @@ from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
 
 
-def generate_validator(model: BaseModel) -> BaseModel.Validator:
+def generate_validator(model: type[BaseModel]) -> BaseModel.Validator | None:
     try:
         return model.Validator()
     except AttributeError:
@@ -29,7 +29,7 @@ def generate_validator(model: BaseModel) -> BaseModel.Validator:
 class OPSMethodView(MethodView):
     init_every_request = False
 
-    def __init__(self, model: BaseModel):
+    def __init__(self, model: type[BaseModel]):
         self.model = model
         self.validator = generate_validator(model)
         self.auth_gateway = AuthorizationGateway(BasicAuthorizationProvider())
@@ -105,7 +105,7 @@ class OPSMethodView(MethodView):
 
 
 class BaseItemAPI(OPSMethodView):
-    def __init__(self, model: BaseModel):
+    def __init__(self, model: Type[BaseModel]):
         super().__init__(model)
 
     @jwt_required()
@@ -115,7 +115,7 @@ class BaseItemAPI(OPSMethodView):
 
 
 class BaseListAPI(OPSMethodView):
-    def __init__(self, model: BaseModel):
+    def __init__(self, model: Type[BaseModel]):
         super().__init__(model)
 
     @jwt_required()

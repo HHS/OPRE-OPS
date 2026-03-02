@@ -289,13 +289,12 @@ class BudgetLineItem(BaseModel):
 
     @hybrid_property
     def fiscal_year(self):
+        from models.utils.fiscal_year import date_to_fiscal_year
+
         if not self.date_needed:
             return None
 
-        fiscal_year = self.date_needed.year
-        if self.date_needed.month >= 10:
-            fiscal_year = fiscal_year + 1
-        return fiscal_year
+        return date_to_fiscal_year(self.date_needed)
 
     @fiscal_year.expression
     def fiscal_year(cls):

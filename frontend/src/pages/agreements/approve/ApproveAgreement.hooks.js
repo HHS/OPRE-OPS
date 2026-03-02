@@ -488,9 +488,11 @@ const useApproveAgreement = () => {
             handleConfirm: () => {
                 let promises = changeRequests.map((changeRequest) => {
                     return reviewCR({
-                        change_request_id: changeRequest.id,
-                        action,
-                        reviewer_notes: notes
+                        id: changeRequest.id,
+                        data: {
+                            action,
+                            reviewer_notes: notes
+                        }
                     })
                         .unwrap()
                         .then((fulfilled) => {

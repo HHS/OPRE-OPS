@@ -21,6 +21,8 @@
 // -- This is a dual command --
 // Cypress.Commands.add('dismiss', { prevSubject: 'optional'}, (subject, options) => { ... })
 
+import { getAllowlistForSpec, isAllowedViolation, validateA11yAllowlist } from "./a11yAllowlist.js";
+
 const severityIndicators = {
     minor: "⚪️",
     moderate: "🟡",
@@ -28,7 +30,36 @@ const severityIndicators = {
     critical: "🔴"
 };
 
+validateA11yAllowlist();
+
+const isRegressionGateEnabled = () => {
+    const rawValue = Cypress.config("a11yRegressionGate") ?? Cypress.config("env")?.A11Y_REGRESSION_GATE;
+    return rawValue === true || rawValue === "true" || rawValue === 1 || rawValue === "1";
+};
+
+const normalizeViolations = (violations) => {
+    const specName = Cypress.spec.relative;
+    const currentUrl = Cypress.state("window")?.location?.href || Cypress.config("baseUrl") || "";
+
+    return violations.map((violation) => ({
+        spec: specName,
+        current_url: currentUrl,
+        rule_id: violation.id,
+        impact: violation.impact || "unknown",
+        help: violation.help,
+        help_url: violation.helpUrl,
+        wcag_tags: (violation.tags || []).filter((tag) => tag.startsWith("wcag")),
+        node_count: violation.nodes.length,
+        targets: violation.nodes.map((node) => node.target).flat()
+    }));
+};
+
 const violationHandler = (violations) => {
+    const normalizedViolations = normalizeViolations(violations);
+    const regressionGateEnabled = isRegressionGateEnabled();
+    const currentSpec = Cypress.spec.relative;
+    const allowlistForSpec = getAllowlistForSpec(currentSpec);
+
     violations.forEach((violation) => {
         const violationDomNodes = violation.nodes;
         const violationJQueryNodesReference = Cypress.$(violationDomNodes.map((node) => node.target).join(","));
@@ -49,13 +80,51 @@ const violationHandler = (violations) => {
             });
         });
     });
+
+    Cypress.log({
+        name: "a11y-report",
+        message: `a11y-report: ${normalizedViolations.length} violation(s), ${
+            new Set(normalizedViolations.map((violation) => violation.rule_id)).size
+        } rule(s)`,
+        consoleProps: () => ({ normalizedViolations })
+    });
+
+    if (violations.length === 0) {
+        return;
+    }
+
+    // Non-gate mode only enforces for specs explicitly onboarded in the temporary allowlist.
+    if (!regressionGateEnabled && allowlistForSpec.length === 0) {
+        return;
+    }
+
+    const unallowed = violations.filter(
+        (violation) => !isAllowedViolation({ specName: currentSpec, ruleId: violation.id })
+    );
+    if (unallowed.length === 0) {
+        return;
+    }
+
+    const details = unallowed
+        .map((violation) => `${violation.id} (${violation.impact || "unknown"})`)
+        .join(", ");
+    throw new Error(`A11y regression gate failed for ${currentSpec}. Unallowlisted violations: ${details}`);
 };
 
 Cypress.Commands.overwrite("checkA11y", (originalFn, context, options, violationCallback, skipFailures) => {
-    if (!violationCallback) {
-        violationCallback = violationHandler;
-    }
-    return originalFn(context, options, violationCallback, skipFailures);
+    const gateEnabled = isRegressionGateEnabled();
+    const currentSpec = Cypress.spec?.relative || "";
+    const hasAllowlistForSpec = getAllowlistForSpec(currentSpec).length > 0;
+    const mergedViolationCallback = (violations) => {
+        if (violationCallback) {
+            violationCallback(violations);
+        }
+        violationHandler(violations);
+    };
+
+    // In gate mode, we fail from our allowlist-aware handler instead of the default axe assertion path.
+    const effectiveSkipFailures = gateEnabled || hasAllowlistForSpec ? true : skipFailures;
+    return originalFn(context, options, mergedViolationCallback, effectiveSkipFailures);
 });
 
 Cypress.Commands.add("verifyTableColumnValues", (selector, expectedValue, timeout = 30000) => {

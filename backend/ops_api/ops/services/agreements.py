@@ -32,6 +32,7 @@ from models import (
     User,
     Vendor,
 )
+from models.utils.fiscal_year import get_current_fiscal_year
 from ops_api.ops.schemas.agreements import AgreementListFilterOptionResponseSchema
 from ops_api.ops.services.change_requests import ChangeRequestService
 from ops_api.ops.services.ops_service import (
@@ -1018,12 +1019,6 @@ def start_date_sort(agreement):
 
 def end_date_sort(agreement):
     return agreement.sc_end_date or date.max
-
-
-def get_current_fiscal_year() -> int:
-    """Return the current federal fiscal year (Oct-Sep)."""
-    today = date.today()
-    return today.year + 1 if today.month >= 10 else today.year
 
 
 def resolve_fiscal_year(fiscal_years):

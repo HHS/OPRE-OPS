@@ -183,7 +183,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get('[data-cy="send-to-approval-btn"]').click();
                 cy.get("#ops-modal-heading").contains(/approve this status change to planned status?/i);
                 // Intercept the change request approval API call and the subsequent agreements list load
-                cy.intercept("PATCH", "/api/v1/change-requests/").as("approveChangeRequest");
+                cy.intercept("PATCH", "/api/v1/change-requests/*").as("approveChangeRequest");
                 cy.intercept("GET", "**/api/v1/agreements/**").as("getAgreements");
                 cy.get('[data-cy="confirm-action"]').click();
                 // Wait for the API request to complete before checking the alert
@@ -360,7 +360,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get('[data-cy="send-to-approval-btn"]').click();
                 cy.get("#ops-modal-heading").contains(/approve this status change to executing status?/i);
                 // Intercept the change request approval API call and the subsequent agreements list load
-                cy.intercept("PATCH", "/api/v1/change-requests/").as("approveChangeRequest");
+                cy.intercept("PATCH", "/api/v1/change-requests/*").as("approveChangeRequest");
                 cy.intercept("GET", "**/api/v1/agreements/**").as("getAgreements");
                 cy.get('[data-cy="confirm-action"]').click();
                 // Wait for the API request to complete before checking the alert
@@ -595,7 +595,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get('[data-cy="send-to-approval-btn"]').click();
                 cy.get("#ops-modal-heading").contains(/approve this budget change/i);
                 // Intercept the change request approval API call
-                cy.intercept("PATCH", "/api/v1/change-requests/").as("approveChangeRequest");
+                cy.intercept("PATCH", "/api/v1/change-requests/*").as("approveChangeRequest");
                 cy.get('[data-cy="confirm-action"]').click();
                 // Wait for the API request to complete before checking the alert
                 cy.wait("@approveChangeRequest");

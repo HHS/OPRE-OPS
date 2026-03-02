@@ -20,6 +20,7 @@ from models import (
     OpsEventType,
 )
 from models.utils import generate_agreement_events_update
+from models.utils.fiscal_year import get_current_fiscal_year
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
@@ -37,7 +38,7 @@ from ops_api.ops.schemas.agreements import (
     AgreementRequestSchema,
     MetaSchema,
 )
-from ops_api.ops.services.agreements import AgreementsService, get_current_fiscal_year, resolve_fiscal_year
+from ops_api.ops.services.agreements import AgreementsService, resolve_fiscal_year
 from ops_api.ops.services.budget_line_items import (
     get_bli_is_editable_meta_data_for_agreements,
 )
