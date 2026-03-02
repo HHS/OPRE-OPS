@@ -146,4 +146,19 @@ describe("FiscalYear Component", () => {
         expect(lastOption).toHaveValue("All");
         expect(lastOption).toHaveTextContent("All");
     });
+
+    it("does not display duplicate 'All' options when fiscalYear is 'All' and showAllOption is true", () => {
+        render(
+            <Provider store={store}>
+                <FiscalYear
+                    fiscalYear="All"
+                    handleChangeFiscalYear={() => {}}
+                    showAllOption={true}
+                />
+            </Provider>
+        );
+
+        const allOptions = screen.getAllByRole("option", { name: "All" });
+        expect(allOptions).toHaveLength(1);
+    });
 });
