@@ -34,28 +34,32 @@ const AgreementTypeSummaryCard = ({
             label: "Contract",
             value: contractTotal,
             color: "var(--data-viz-agreement-contract)",
-            percent: calculatePercent(contractTotal, totalAmount)
+            percent: calculatePercent(contractTotal, totalAmount),
+            tagStyleActive: "whiteOnContractBlue"
         },
         {
             id: 2,
             label: "Partner",
             value: partnerTotal,
             color: "var(--data-viz-agreement-partner)",
-            percent: calculatePercent(partnerTotal, totalAmount)
+            percent: calculatePercent(partnerTotal, totalAmount),
+            tagStyleActive: "darkOnPartnerGreen"
         },
         {
             id: 3,
             label: "Grant",
             value: grantTotal,
             color: "var(--data-viz-agreement-grant)",
-            percent: calculatePercent(grantTotal, totalAmount)
+            percent: calculatePercent(grantTotal, totalAmount),
+            tagStyleActive: "darkOnGrantOrange"
         },
         {
             id: 4,
             label: "Direct Obligation",
             value: directObligationTotal,
             color: "var(--data-viz-agreement-direct-obligation)",
-            percent: calculatePercent(directObligationTotal, totalAmount)
+            percent: calculatePercent(directObligationTotal, totalAmount),
+            tagStyleActive: "whiteOnDirectObligationPink"
         }
     ];
 
@@ -80,6 +84,7 @@ const AgreementTypeSummaryCard = ({
                             value={item.value}
                             color={item.color}
                             percent={item.percent}
+                            tagStyleActive={item.tagStyleActive}
                         />
                     ))}
                 </div>

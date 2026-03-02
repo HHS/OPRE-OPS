@@ -84,6 +84,18 @@ const Tag = ({
                 case "whiteOnPink":
                     activeClass += " bg-brand-data-viz-secondary-26 text-white fake-bold";
                     break;
+                case "whiteOnContractBlue":
+                    activeClass += " bg-brand-data-viz-agreement-contract text-white fake-bold";
+                    break;
+                case "darkOnPartnerGreen":
+                    activeClass += " bg-brand-data-viz-agreement-partner text-ink fake-bold";
+                    break;
+                case "darkOnGrantOrange":
+                    activeClass += " bg-brand-data-viz-agreement-grant text-ink fake-bold";
+                    break;
+                case "whiteOnDirectObligationPink":
+                    activeClass += " bg-brand-data-viz-agreement-direct-obligation text-white fake-bold";
+                    break;
                 case "darkTextOnLightBlue":
                     activeClass += " bg-brand-feedback-info fake-bold";
                     break;

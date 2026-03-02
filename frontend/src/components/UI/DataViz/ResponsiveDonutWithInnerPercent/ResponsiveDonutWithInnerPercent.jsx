@@ -13,10 +13,10 @@ const ResponsiveDonutWithInnerPercent = ({
 }) => {
     const setA11y = async () => {
         const container = document.querySelector(`#${container_id}`);
-        const elem = container.querySelector("svg");
+        const elem = container?.querySelector("svg");
 
         if (elem !== null) {
-            elem.setAttribute(
+            elem?.setAttribute(
                 "aria-label",
                 "This is a Donut Chart that displays the percent by budget line status in the center."
             );
