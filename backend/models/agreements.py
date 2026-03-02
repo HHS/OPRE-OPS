@@ -440,7 +440,7 @@ class Agreement(BaseModel):
         return all(is_valid_value(getattr(self, field)) for field in required_fields)
 
     def _find_new_award_procurement_action(self):
-        """Find the first AWARDED/CERTIFIED NEW_AWARD procurement action."""
+        """Find the AWARDED/CERTIFIED NEW_AWARD procurement action. there can be only 0 or 1"""
         from models.procurement_action import AwardType, ProcurementActionStatus
 
         for pa in self.procurement_actions:
