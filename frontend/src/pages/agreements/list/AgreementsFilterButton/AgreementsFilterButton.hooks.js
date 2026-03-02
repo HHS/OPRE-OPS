@@ -12,6 +12,7 @@ export const useAgreementsFilterButton = (filters, setFilters) => {
     const [agreementType, setAgreementType] = React.useState([]);
     const [agreementName, setAgreementName] = React.useState([]);
     const [contractNumber, setContractNumber] = React.useState([]);
+    const [awardType, setAwardType] = React.useState([]);
 
     // The useEffect() hook calls below are used to set the state appropriately when the filter tags (X) are clicked.
     React.useEffect(() => {
@@ -50,6 +51,12 @@ export const useAgreementsFilterButton = (filters, setFilters) => {
         }
     }, [filters.contractNumber]);
 
+    React.useEffect(() => {
+        if (filters.awardType) {
+            setAwardType(filters.awardType);
+        }
+    }, [filters.awardType]);
+
     const applyFilter = () => {
         setFilters((prevState) => {
             return {
@@ -59,7 +66,8 @@ export const useAgreementsFilterButton = (filters, setFilters) => {
                 projectTitle: projectTitle,
                 agreementType: agreementType,
                 agreementName: agreementName,
-                contractNumber: contractNumber
+                contractNumber: contractNumber,
+                awardType: awardType
             };
         });
     };
@@ -70,7 +78,8 @@ export const useAgreementsFilterButton = (filters, setFilters) => {
             projectTitle: [],
             agreementType: [],
             agreementName: [],
-            contractNumber: []
+            contractNumber: [],
+            awardType: []
         });
     };
 
@@ -87,6 +96,8 @@ export const useAgreementsFilterButton = (filters, setFilters) => {
         setAgreementName,
         contractNumber,
         setContractNumber,
+        awardType,
+        setAwardType,
         applyFilter,
         resetFilter
     };

@@ -92,6 +92,10 @@ export const useTagsList = (filters) => {
         updateTags("contractNumber", "contractNumber");
     }, [filters.contractNumber, updateTags]);
 
+    useEffect(() => {
+        updateTags("awardType", "awardType");
+    }, [filters.awardType, updateTags]);
+
     return tagsList;
 };
 
@@ -136,6 +140,12 @@ export const removeFilter = (tag, setFilters) => {
             setFilters((prevState) => ({
                 ...prevState,
                 contractNumber: prevState.contractNumber.filter((contract) => contract.title !== tag.tagText)
+            }));
+            break;
+        case "awardType":
+            setFilters((prevState) => ({
+                ...prevState,
+                awardType: prevState.awardType.filter((award) => award.title !== tag.tagText)
             }));
             break;
         default:

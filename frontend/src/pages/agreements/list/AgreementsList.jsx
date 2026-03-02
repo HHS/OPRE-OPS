@@ -46,7 +46,8 @@ const AgreementsList = () => {
         projectTitle: [],
         agreementType: [],
         agreementName: [],
-        contractNumber: []
+        contractNumber: [],
+        awardType: []
     });
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
     const [currentPage, setCurrentPage] = useState(1); // 1-indexed for UI
@@ -64,7 +65,8 @@ const AgreementsList = () => {
         filters.projectTitle.length > 0 ||
         filters.agreementType.length > 0 ||
         filters.agreementName.length > 0 ||
-        filters.contractNumber.length > 0;
+        filters.contractNumber.length > 0 ||
+        filters.awardType.length > 0;
 
     const getFiscalYearFilter = () => {
         // If explicit filters are set via filter modal, use those
@@ -108,7 +110,11 @@ const AgreementsList = () => {
     });
 
     // Extract agreements array and metadata from wrapped response
-    const agreements = agreementsResponse?.agreements || [];
+    const allAgreements = agreementsResponse?.agreements || [];
+    const agreements =
+        filters.awardType.length > 0
+            ? allAgreements.filter((a) => filters.awardType.some((at) => at.awardType === a.award_type))
+            : allAgreements;
     const totalCount = agreementsResponse?.count || 0;
     const totalPages = Math.ceil(totalCount / pageSize);
 
@@ -137,7 +143,8 @@ const AgreementsList = () => {
             projectTitle: [],
             agreementType: [],
             agreementName: [],
-            contractNumber: []
+            contractNumber: [],
+            awardType: []
         });
         setSelectedFiscalYear(newValue);
     };

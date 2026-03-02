@@ -6,6 +6,7 @@ import ProjectTitleComboBox from "../../../../components/Projects/ProjectTitleCo
 import AgreementTypeComboBox from "../../../../components/Agreements/AgreementTypeComboBox";
 import AgreementNameComboBox from "../../../../components/Agreements/AgreementNameComboBox";
 import ContractNumberComboBox from "../../../../components/Agreements/ContractNumberComboBox";
+import AwardTypeComboBox from "../../../../components/Agreements/AwardTypeComboBox";
 import FilterButton from "../../../../components/UI/FilterButton/FilterButton";
 import useAgreementsFilterButton from "./AgreementsFilterButton.hooks";
 import { FILTER_MODAL_FULL_WIDTH } from "../../../../constants";
@@ -31,6 +32,8 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
         setAgreementName,
         contractNumber,
         setContractNumber,
+        awardType,
+        setAwardType,
         applyFilter,
         resetFilter
     } = useAgreementsFilterButton(filters, setFilters);
@@ -111,6 +114,18 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
                 selectedContractNumbers={contractNumber}
                 setSelectedContractNumbers={setContractNumber}
                 agreementFilterOptions={agreementFilterOptions}
+                legendClassname={legendStyles}
+                defaultString={""}
+                overrideStyles={FILTER_MODAL_FULL_WIDTH}
+            />
+        </fieldset>,
+        <fieldset
+            key="field7"
+            className={`margin-top-105 ${fieldStyles}`}
+        >
+            <AwardTypeComboBox
+                selectedAwardTypes={awardType}
+                setSelectedAwardTypes={setAwardType}
                 legendClassname={legendStyles}
                 defaultString={""}
                 overrideStyles={FILTER_MODAL_FULL_WIDTH}
