@@ -52,6 +52,7 @@ export const AgreementTableRow = ({ agreement }) => {
     const agreementFees = isSuccess ? (agreement?.total_agreement_fees ?? 0) : 0;
     const lifetimeObligated = isSuccess ? (agreement?.lifetime_obligated ?? 0) : 0;
     const contractNumber = isSuccess ? getAgreementContractNumber(agreement) : NO_DATA;
+    const awardType = agreement?.award_type ?? NO_DATA;
     const vendor = isSuccess ? (agreement?.vendor ?? NO_DATA) : NO_DATA;
 
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
@@ -256,10 +257,17 @@ export const AgreementTableRow = ({ agreement }) => {
                     </dd>
                 </dl>
             </div>
-            <div className="display-flex">
+            <div
+                className="display-flex padding-right-4"
+                style={{ justifyContent: "space-between" }}
+            >
                 <dl className="font-12px">
                     <dt className="margin-0 text-base-dark">Contract #</dt>
                     <dd className="margin-0">{contractNumber || NO_DATA}</dd>
+                </dl>
+                <dl className="font-12px">
+                    <dt className="margin-0 text-base-dark">Award Type</dt>
+                    <dd className="margin-0">{awardType}</dd>
                 </dl>
                 <dl
                     className="font-12px"
@@ -268,8 +276,9 @@ export const AgreementTableRow = ({ agreement }) => {
                     <dt className="margin-0 text-base-dark">Vendor</dt>
                     <dd className="margin-0">{vendor}</dd>
                 </dl>
+
                 <div
-                    className="flex-align-self-end margin-left-auto margin-bottom-1 padding-right-5"
+                    className="flex-align-self-end margin-bottom-1"
                     data-cy="change-icons-expanded"
                 >
                     {changeIcons}

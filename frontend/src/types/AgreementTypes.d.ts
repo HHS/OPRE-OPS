@@ -52,6 +52,7 @@ export type Agreement = {
     agreement_total?: number | string | null;
     lifetime_obligated?: number | string | null;
     fy_obligated?: number | string | null;
+    award_type?: string | null;
 };
 
 type ProductServiceCode = {

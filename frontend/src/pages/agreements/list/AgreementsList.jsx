@@ -237,6 +237,7 @@ const AgreementsList = () => {
                 "Fees",
                 "Lifetime Obligated",
                 "Contract Number",
+                "Award Type",
                 "Vendor",
                 "COR"
             ];
@@ -274,6 +275,7 @@ const AgreementsList = () => {
                         agreementFees ?? 0,
                         lifetimeObligated,
                         contractNumber ?? "",
+                        agreement?.award_type ?? "",
                         agreement?.vendor ?? "",
                         agreementDataMap[agreement.id]?.cor ?? ""
                     ];
