@@ -2,6 +2,7 @@ import React from "react";
 import { useGetProcurementTrackersByAgreementIdQuery, useGetUsersQuery } from "../../../api/opsAPI";
 import ProcurementTrackerStepOne from "../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepOne";
 import ProcurementTrackerStepTwo from "../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepTwo";
+import ProcurementTrackerStepThree from "../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepThree";
 import StepBuilderAccordion from "../../../components/Agreements/ProcurementTracker/StepBuilderAccordion";
 import DebugCode from "../../../components/DebugCode";
 import StepIndicator from "../../../components/UI/StepIndicator";
@@ -55,6 +56,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
     const hasActiveTracker = !!activeTracker;
     const stepOneData = activeTracker?.steps.find((step) => step.step_number === 1);
     const stepTwoData = activeTracker?.steps.find((step) => step.step_number === 2);
+    const stepThreeData = activeTracker?.steps.find((step) => step.step_number === 3);
 
     // Handle loading state
     if (isLoading) {
@@ -112,7 +114,10 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 : step.step_number !== accordionOpenStep
                         }
                         level={3}
-                        key={step.id}
+                        // Key includes state that affects which accordion should be open.
+                        // Since Accordion is an uncontrolled component, we need to force a remount
+                        // when the active/completed step changes to reset the initial state.
+                        key={`${step.id}-${completedStepNumber}-${accordionOpenStep}`}
                     >
                         {IS_PROCUREMENT_TRACKER_READY_MAP.STEP_1 && step.step_number === 1 && (
                             <ProcurementTrackerStepOne
@@ -143,11 +148,21 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 </p>
                             </div>
                         )}
-                        {step.step_number === 3 && (
+                        {IS_PROCUREMENT_TRACKER_READY_MAP.STEP_3 && step.step_number === 3 && (
+                            <ProcurementTrackerStepThree
+                                stepStatus={step.status}
+                                authorizedUsers={authorizedUsers}
+                                stepThreeData={stepThreeData}
+                                hasActiveTracker={hasActiveTracker}
+                                handleSetCompletedStepNumber={handleSetCompletedStepNumber}
+                                isActiveStep={activeTracker?.active_step_number === step.step_number}
+                            />
+                        )}
+                        {!IS_PROCUREMENT_TRACKER_READY_MAP.STEP_3 && step.step_number === 3 && (
                             <div className="usa-fieldset">
                                 <p>
-                                    Once the Procurement Shop has posted the Solicitation and it’s “on the street”,
-                                    enter the Solicitation Start and End Dates. After all proposals are received, vendor
+                                    Once the Procurement Shop has posted the Solicitation and it is on the street, enter
+                                    the Solicitation Start and End Dates. After all proposals are received, vendor
                                     questions have been answered, and evaluations are starting, check this step as
                                     complete.
                                 </p>
