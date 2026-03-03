@@ -19,9 +19,7 @@ class DocumentListAPI(BaseListAPI):
     def get(self) -> Response:
         agreement_id = request.args.get("agreement_id", type=int)
         if not agreement_id:
-            return make_response_with_headers(
-                {"error": "agreement_id is required"}, 400
-            )
+            return make_response_with_headers({"error": "agreement_id is required"}, 400)
         # Call document service to get documents by agreement_id
         document_service = DocumentService(DocumentGateway(current_app.config))
         results = document_service.get_documents_by_agreement_id(agreement_id)
