@@ -3716,12 +3716,21 @@ paths:
           description: Unauthorized
         "500":
           description: Internal Server Error
+  /change-requests/{id}:
     patch:
       tags:
         - Change Requests
       operationId: approveOrRejectChangeRequest
       parameters:
         - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: id
+          description: The change request ID
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
       description: approve or reject a change request
       requestBody:
         content:
@@ -3729,8 +3738,6 @@ paths:
             schema:
               type: object
               properties:
-                change_request_id:
-                  type: integer
                 action:
                   type: string
                   description: "APPROVE or REJECT"
@@ -3743,7 +3750,7 @@ paths:
             examples:
               "0":
                 value: >-
-                  {"change_request_id": 123, "action": "APPROVE", "reviewer_notes": "Looks good to me"}
+                  {"action": "APPROVE", "reviewer_notes": "Looks good to me"}
       responses:
         "200":
           description: OK

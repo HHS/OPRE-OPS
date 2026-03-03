@@ -40,9 +40,11 @@ const useChangeRequest = () => {
         const { agreementName, type, bliToStatus, changeMsg } = reviewData;
         const bliStatusExecuting = bliToStatus === "Executing" ? BLI_STATUS.EXECUTING : "";
         const payload = {
-            change_request_id: id,
-            action,
-            reviewer_notes: notes
+            id,
+            data: {
+                action,
+                reviewer_notes: notes
+            }
         };
         const BUDGET_APPROVE =
             action === CHANGE_REQUEST_ACTION.APPROVE &&

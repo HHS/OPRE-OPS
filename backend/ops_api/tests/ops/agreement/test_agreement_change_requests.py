@@ -163,8 +163,8 @@ def test_update_awarding_entity_creates_agreement_change_request(
 
     # Approve the change request
     response = division_director_auth_client.patch(
-        url_for("api.change-requests-list"),
-        json={"change_request_id": change_request_id, "action": "APPROVE"},
+        url_for("api.change-requests-item", id=change_request_id),
+        json={"action": "APPROVE"},
     )
     assert response.status_code == 200
 
@@ -243,8 +243,8 @@ def test_update_procurement_shop_creates_change_request_e2e(
 
     # approve the change request
     response = division_director_auth_client.patch(
-        url_for("api.change-requests-list"),
-        json={"change_request_id": matching_crs[0].id, "action": "APPROVE"},
+        url_for("api.change-requests-item", id=matching_crs[0].id),
+        json={"action": "APPROVE"},
     )
 
     assert response.status_code == 200

@@ -131,9 +131,8 @@ describe("Approve Change Requests at the Agreement Level", () => {
 
                         cy.request({
                             method: "PATCH",
-                            url: "http://localhost:8080/api/v1/change-requests/",
+                            url: `http://localhost:8080/api/v1/change-requests/${changeRequestId}`,
                             body: {
-                                change_request_id: changeRequestId,
                                 action: "APPROVE",
                                 reviewer_notes: "approved looks good"
                             },
@@ -258,9 +257,8 @@ describe("Approve Change Requests at the Agreement Level", () => {
 
                         cy.request({
                             method: "PATCH",
-                            url: "http://localhost:8080/api/v1/change-requests/",
+                            url: `http://localhost:8080/api/v1/change-requests/${changeRequestId}`,
                             body: {
-                                change_request_id: changeRequestId,
                                 action: "REJECT"
                                 // reviewer_notes:null
                             },
