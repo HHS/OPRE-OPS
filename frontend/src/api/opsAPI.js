@@ -124,9 +124,7 @@ export const opsApi = createApi({
                     );
                 }
                 if (awardType) {
-                    awardType.forEach((award) =>
-                        queryParams.push(`award_type=${encodeURIComponent(award.awardType)}`)
-                    );
+                    awardType.forEach((award) => queryParams.push(`award_type=${encodeURIComponent(award.awardType)}`));
                 }
                 if (onlyMy) {
                     queryParams.push("only_my=true");
