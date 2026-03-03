@@ -168,7 +168,7 @@ describe("Agreement List", () => {
         // Wait for table to reload with all agreements
         cy.get("tbody tr", { timeout: 30000 }).should("have.length.at.least", 1);
         // Verify the filter tag is removed (check that no filter tags exist at all)
-        cy.get("span.bg-brand-primary-light.text-brand-primary-dark").should("not.exist");
+        cy.get("svg[id^='filter-tag-']").should("not.exist");
     });
 
     it("filters agreements by agreement type", () => {
@@ -206,7 +206,7 @@ describe("Agreement List", () => {
         // Wait for table to reload with all agreements
         cy.get("tbody tr", { timeout: 30000 }).should("have.length.at.least", 1);
         // Verify the filter tag is removed (check that no filter tags exist at all)
-        cy.get("span.bg-brand-primary-light.text-brand-primary-dark").should("not.exist");
+        cy.get("svg[id^='filter-tag-']").should("not.exist");
     });
 
     it("filters agreements by both agreement name and type", () => {
@@ -249,7 +249,7 @@ describe("Agreement List", () => {
         // Wait for table to reload with all agreements
         cy.get("tbody tr", { timeout: 30000 }).should("have.length.at.least", 1);
         // Verify both filter tags are removed (check that no filter tags exist at all)
-        cy.get("span.bg-brand-primary-light.text-brand-primary-dark").should("not.exist");
+        cy.get("svg[id^='filter-tag-']").should("not.exist");
     });
 
     it("Change Requests tab works", () => {

@@ -4,7 +4,8 @@ import Tag from "../../UI/Tag";
 
 /**
  * AgreementFYSpendingSummaryCard component
- * Displays the total number of agreements and a breakdown by agreement type.
+ * Displays the total number of agreements and a breakdown by agreement type,
+ * along with counts for new and continuing agreements.
  * @component
  * @param {Object} props - Properties passed to component
  * @param {string} props.title - The heading for the card
@@ -21,9 +22,12 @@ const agreementTypeStyles = {
 
 const PARTNER_TYPES = ["AA", "IAA"];
 
-const AgreementFYSpendingSummaryCard = ({ title, fiscalYear, agreements = [] }) => {
-    const totalCount = agreements.length;
-
+/**
+ * Counts agreements by type, grouping partner types (AA, IAA) together.
+ * @param {import("../../../types/AgreementTypes").Agreement[]} agreements
+ * @returns {{type: string, count: number}[]}
+ */
+const getTypeCountsFromAgreements = (agreements) => {
     const countsByType = agreements.reduce((acc, agreement) => {
         const type = agreement.agreement_type;
         if (type) {
@@ -33,7 +37,18 @@ const AgreementFYSpendingSummaryCard = ({ title, fiscalYear, agreements = [] }) 
         return acc;
     }, {});
 
-    const typeCounts = Object.entries(countsByType).map(([type, count]) => ({ type, count }));
+    return Object.entries(countsByType).map(([type, count]) => ({ type, count }));
+};
+
+const AgreementFYSpendingSummaryCard = ({ title, fiscalYear, agreements = [] }) => {
+    const totalCount = agreements.length;
+    const typeCounts = getTypeCountsFromAgreements(agreements);
+
+    const newAgreements = agreements.filter((a) => a.award_type === "NEW");
+    const continuingAgreements = agreements.filter((a) => a.award_type === "CONTINUING");
+
+    const newTypeCounts = getTypeCountsFromAgreements(newAgreements);
+    const continuingTypeCounts = getTypeCountsFromAgreements(continuingAgreements);
 
     return (
         <RoundedBox
@@ -62,12 +77,38 @@ const AgreementFYSpendingSummaryCard = ({ title, fiscalYear, agreements = [] }) 
                     <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">
                         {`${fiscalYear} New`}
                     </h3>
+                    <div>
+                        <span className="font-sans-xl text-bold line-height-sans-1">{newAgreements.length}</span>
+                        <div className="display-flex flex-column grid-gap margin-top-1">
+                            {newTypeCounts.map(({ type, count }, index) => (
+                                <Tag
+                                    key={type}
+                                    tagStyle="primaryDarkTextLightBackground"
+                                    className={`${index > 0 ? "margin-top-1" : ""}`}
+                                    text={`${count} ${type === "Partner" ? "Partner" : convertCodeForDisplay("agreementType", type)}`}
+                                />
+                            ))}
+                        </div>
+                    </div>
                 </article>
 
                 <article>
                     <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">
                         {`${fiscalYear} Continuing`}
                     </h3>
+                    <div>
+                        <span className="font-sans-xl text-bold line-height-sans-1">{continuingAgreements.length}</span>
+                        <div className="display-flex flex-column grid-gap margin-top-1">
+                            {continuingTypeCounts.map(({ type, count }, index) => (
+                                <Tag
+                                    key={type}
+                                    tagStyle="primaryDarkTextLightBackground"
+                                    className={`${index > 0 ? "margin-top-1" : ""}`}
+                                    text={`${count} ${type === "Partner" ? "Partner" : convertCodeForDisplay("agreementType", type)}`}
+                                />
+                            ))}
+                        </div>
+                    </div>
                 </article>
             </div>
         </RoundedBox>

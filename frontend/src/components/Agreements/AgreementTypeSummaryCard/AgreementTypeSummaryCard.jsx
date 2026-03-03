@@ -88,13 +88,13 @@ const AgreementTypeSummaryCard = ({
                         />
                     ))}
                 </div>
-                <div
-                    id="agreement-type-chart"
-                    className="width-card height-card margin-top-neg-1"
-                    aria-label="This is a Donut Chart that displays the percent by agreement type in the center."
-                    role="img"
-                >
-                    {totalAmount > 0 && (
+                {totalAmount > 0 && (
+                    <div
+                        id="agreement-type-chart"
+                        className="width-card height-card margin-top-neg-1"
+                        aria-label="This is a Donut Chart that displays the percent by agreement type in the center."
+                        role="img"
+                    >
                         <ResponsiveDonutWithInnerPercent
                             data={data}
                             width={150}
@@ -105,8 +105,8 @@ const AgreementTypeSummaryCard = ({
                             CustomLayerComponent={CustomLayerComponent(percent)}
                             container_id="agreement-type-chart"
                         />
-                    )}
-                </div>
+                    </div>
+                )}
             </div>
         </RoundedBox>
     );

@@ -1,5 +1,5 @@
 import { ResponsivePie } from "@nivo/pie";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 const ResponsiveDonutWithInnerPercent = ({
     data = [{ id: -1, label: "", value: "", color: "", percent: "" }],
@@ -11,21 +11,39 @@ const ResponsiveDonutWithInnerPercent = ({
     setHoverId = () => {},
     container_id
 }) => {
-    const setA11y = async () => {
-        const container = document.querySelector(`#${container_id}`);
-        const elem = container?.querySelector("svg");
+    const observerRef = useRef(null);
 
-        if (elem !== null) {
-            elem?.setAttribute(
+    useEffect(() => {
+        const container = document.querySelector(`#${container_id}`);
+        if (!container) return;
+
+        const applyA11y = (svg) => {
+            svg.setAttribute(
                 "aria-label",
                 "This is a Donut Chart that displays the percent by budget line status in the center."
             );
-        }
-    };
+        };
 
-    useEffect(() => {
-        setA11y();
-    });
+        const existingSvg = container.querySelector("svg");
+        if (existingSvg) {
+            applyA11y(existingSvg);
+            return;
+        }
+
+        // Nivo renders the SVG asynchronously; observe the container until it appears.
+        observerRef.current = new MutationObserver(() => {
+            const svg = container.querySelector("svg");
+            if (svg) {
+                applyA11y(svg);
+                observerRef.current?.disconnect();
+            }
+        });
+        observerRef.current.observe(container, { childList: true, subtree: true });
+
+        return () => {
+            observerRef.current?.disconnect();
+        };
+    }, [container_id]);
 
     return (
         <ResponsivePie
@@ -51,8 +69,6 @@ const ResponsiveDonutWithInnerPercent = ({
                 setPercent("");
                 setHoverId(-1);
             }}
-            aria-label="Donut chart showing budget line status distribution"
-            role="img"
         />
     );
 };

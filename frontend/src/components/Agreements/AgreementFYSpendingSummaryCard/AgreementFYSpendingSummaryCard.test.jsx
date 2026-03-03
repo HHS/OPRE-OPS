@@ -55,7 +55,8 @@ describe("AgreementFYSpendingSummaryCard", () => {
                 agreements={[]}
             />
         );
-        expect(screen.getByText("0")).toBeInTheDocument();
+        const zeros = screen.getAllByText("0");
+        expect(zeros).toHaveLength(3); // total, new, continuing
     });
 
     it("defaults to empty array when agreements prop is omitted", () => {
@@ -65,7 +66,8 @@ describe("AgreementFYSpendingSummaryCard", () => {
                 fiscalYear="2025"
             />
         );
-        expect(screen.getByText("0")).toBeInTheDocument();
+        const zeros = screen.getAllByText("0");
+        expect(zeros).toHaveLength(3);
     });
 
     it("dynamically counts agreements by type and renders a tag for each", () => {
@@ -100,6 +102,79 @@ describe("AgreementFYSpendingSummaryCard", () => {
 
         expect(screen.getByText(String(singleTypeAgreements.length))).toBeInTheDocument();
         expect(screen.getByText(`${singleTypeAgreements.length} Grant`)).toBeInTheDocument();
+    });
+
+    it("displays new and continuing agreement counts", () => {
+        const agreementsWithAwardType = [
+            { id: 1, agreement_type: "CONTRACT", award_type: "NEW", budget_line_items: [] },
+            { id: 2, agreement_type: "CONTRACT", award_type: "CONTINUING", budget_line_items: [] },
+            { id: 3, agreement_type: "GRANT", award_type: "NEW", budget_line_items: [] },
+            { id: 4, agreement_type: "AA", award_type: "NEW", budget_line_items: [] },
+            { id: 5, agreement_type: "IAA", award_type: "CONTINUING", budget_line_items: [] }
+        ];
+
+        render(
+            <AgreementFYSpendingSummaryCard
+                title="2025 Agreements"
+                fiscalYear="2025"
+                agreements={agreementsWithAwardType}
+            />
+        );
+
+        // Total count
+        expect(screen.getByText("5")).toBeInTheDocument();
+        // New count
+        expect(screen.getByText("3")).toBeInTheDocument();
+        // Continuing count
+        expect(screen.getByText("2")).toBeInTheDocument();
+    });
+
+    it("displays type breakdown tags under new and continuing columns", () => {
+        const agreementsWithAwardType = [
+            { id: 1, agreement_type: "CONTRACT", award_type: "NEW", budget_line_items: [] },
+            { id: 2, agreement_type: "CONTRACT", award_type: "NEW", budget_line_items: [] },
+            { id: 3, agreement_type: "GRANT", award_type: "NEW", budget_line_items: [] },
+            { id: 4, agreement_type: "CONTRACT", award_type: "CONTINUING", budget_line_items: [] },
+            { id: 5, agreement_type: "AA", award_type: "CONTINUING", budget_line_items: [] }
+        ];
+
+        render(
+            <AgreementFYSpendingSummaryCard
+                title="2025 Agreements"
+                fiscalYear="2025"
+                agreements={agreementsWithAwardType}
+            />
+        );
+
+        // Total column tags: 3 Contract, 1 Grant, 1 Partner
+        // New column tags: 2 Contract, 1 Grant
+        // Continuing column tags: 1 Contract, 1 Partner
+        // "Contract" tags exist in all three columns with different counts
+        const contractTags = screen.getAllByText(/Contract/);
+        expect(contractTags).toHaveLength(3); // total, new, continuing
+
+        // Grant only in total and new
+        const grantTags = screen.getAllByText(/Grant/);
+        expect(grantTags).toHaveLength(2);
+
+        // Partner only in total and continuing
+        const partnerTags = screen.getAllByText(/Partner/);
+        expect(partnerTags).toHaveLength(2);
+    });
+
+    it("displays 0 for new and continuing when no agreements have award_type", () => {
+        render(
+            <AgreementFYSpendingSummaryCard
+                title="2025 Agreements"
+                fiscalYear="2025"
+                agreements={mockAgreements}
+            />
+        );
+
+        // Total is 7, new and continuing are both 0
+        expect(screen.getByText("7")).toBeInTheDocument();
+        const zeros = screen.getAllByText("0");
+        expect(zeros).toHaveLength(2); // new and continuing
     });
 
     it("skips agreements with no agreement_type", () => {
