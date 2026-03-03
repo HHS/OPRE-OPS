@@ -57,7 +57,7 @@ export const IS_DOCUMENTS_TAB_READY = false;
 export const IS_PROCUREMENT_TRACKER_READY_MAP = {
     STEP_1: true,
     STEP_2: true,
-    STEP_3: process.env.NODE_ENV !== "production",
+    STEP_3: true,
     STEP_4: process.env.NODE_ENV !== "production",
     STEP_5: process.env.NODE_ENV !== "production",
     STEP_6: process.env.NODE_ENV !== "production"
