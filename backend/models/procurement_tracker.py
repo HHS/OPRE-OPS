@@ -326,6 +326,32 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
         viewonly=True,
     )
 
+    # EVALUATION step fields (Step 4 - follows Step 2 pattern with target completion date)
+    evaluation_target_completion_date: Mapped[Optional[date]] = mapped_column(
+        Date,
+        nullable=True,
+    )
+    evaluation_task_completed_by: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        ForeignKey("ops_user.id"),
+        nullable=True,
+    )
+    evaluation_date_completed: Mapped[Optional[date]] = mapped_column(
+        Date,
+        nullable=True,
+    )
+    evaluation_notes: Mapped[Optional[str]] = mapped_column(
+        Text,
+        nullable=True,
+    )
+
+    # Relationship for evaluation completed by user
+    evaluation_completed_by_user: Mapped[Optional["User"]] = relationship(
+        "User",
+        foreign_keys=[evaluation_task_completed_by],
+        viewonly=True,
+    )
+
     # Polymorphic configuration
     __mapper_args__ = {
         "polymorphic_identity": "default_step",
