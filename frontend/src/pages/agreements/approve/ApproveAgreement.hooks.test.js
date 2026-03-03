@@ -193,9 +193,11 @@ describe("useApproveAgreement", () => {
         });
 
         expect(reviewCRMock).toHaveBeenCalledWith({
-            change_request_id: 9001,
-            action: "APPROVE",
-            reviewer_notes: ""
+            id: 9001,
+            data: {
+                action: "APPROVE",
+                reviewer_notes: ""
+            }
         });
         expect(setAlertMock).toHaveBeenCalledWith(
             expect.objectContaining({
