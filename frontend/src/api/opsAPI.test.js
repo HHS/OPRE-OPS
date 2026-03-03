@@ -12,15 +12,16 @@ function setupApiStore(api, preloadedState) {
     };
 }
 
+beforeEach(() => {
+    global.localStorage = {
+        getItem: vi.fn(() => null),
+        setItem: vi.fn(),
+        removeItem: vi.fn()
+    };
+});
+
 describe("opsAPI - Agreements Pagination", () => {
     beforeAll(() => server.listen());
-    beforeEach(() => {
-        global.localStorage = {
-            getItem: vi.fn(() => null),
-            setItem: vi.fn(),
-            removeItem: vi.fn()
-        };
-    });
     afterEach(() => server.resetHandlers());
     afterAll(() => server.close());
 
@@ -568,13 +569,6 @@ describe("opsAPI - Agreements Pagination", () => {
 
 describe("opsAPI - Wave 2 high-yield endpoint coverage", () => {
     beforeAll(() => server.listen());
-    beforeEach(() => {
-        global.localStorage = {
-            getItem: vi.fn(() => null),
-            setItem: vi.fn(),
-            removeItem: vi.fn()
-        };
-    });
     afterEach(() => server.resetHandlers());
     afterAll(() => server.close());
 

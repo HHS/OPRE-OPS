@@ -106,14 +106,22 @@ describe("useGetAllAgreements", () => {
         const firstPagePromise = new Promise((resolve) => {
             resolveFirstPage = resolve;
         });
-        triggerMock.mockImplementation(() => ({
-            unwrap: () => firstPagePromise
-        }));
+        triggerMock.mockImplementation(({ page }) =>
+            page === 0
+                ? { unwrap: () => firstPagePromise }
+                : {
+                      unwrap: () =>
+                          Promise.resolve({
+                              agreements: [{ id: page + 1 }],
+                              count: 120
+                          })
+                  }
+        );
 
         const { unmount } = renderHook(() => useGetAllAgreements({ filters: {} }));
         unmount();
 
-        await resolveFirstPage({ agreements: [{ id: 1 }], count: 1 });
+        await resolveFirstPage({ agreements: [{ id: 1 }], count: 120 });
         await Promise.resolve();
 
         expect(triggerMock).toHaveBeenCalledTimes(1);

@@ -221,14 +221,14 @@ describe("useChangeRequests.hooks", () => {
         useGetProcurementShopsQueryMock.mockReturnValueOnce({
             data: [],
             isSuccess: false,
-            isLoading: true
+            isLoading: false
         });
         const view = renderHook(() => useChangeRequestsForTooltip({}, "Title"));
         expect(view.result.current).toBe("");
 
         useGetProcurementShopsQueryMock.mockReturnValueOnce({
             data: [],
-            isSuccess: true,
+            isSuccess: false,
             isLoading: true
         });
         {
