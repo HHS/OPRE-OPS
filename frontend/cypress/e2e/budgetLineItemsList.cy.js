@@ -1,5 +1,5 @@
 /// <reference types="cypress" />
-import {testLogin} from "./utils";
+import { terminalLog, testLogin } from "./utils";
 
 const ALL_BLI_TOTAL_2044 = "1,743,043,573.00";
 
@@ -8,11 +8,10 @@ beforeEach(() => {
     cy.visit("/budget-lines");
 });
 
-// TODO: fix a11y issues
-// afterEach(() => {
-//     cy.injectAxe();
-//     cy.checkA11y(null, null, terminalLog);
-// });
+afterEach(() => {
+    cy.injectAxe();
+    cy.checkA11y(null, null, terminalLog);
+});
 
 it("loads", () => {
     cy.get("#fiscal-year-select").select("2044");

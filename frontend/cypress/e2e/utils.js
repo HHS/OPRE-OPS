@@ -18,6 +18,7 @@ export const terminalLog = (violations) => {
     }));
 
     cy.task("table", violationData);
+    cy.task("log", JSON.stringify({ event: "a11y_violations", count: violationData.length, violations: violationData }));
 };
 /**
  *
