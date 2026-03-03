@@ -111,6 +111,7 @@ const AgreementsList = () => {
     // Extract agreements array and metadata from wrapped response
     const agreements = agreementsResponse?.agreements || [];
     const totalCount = agreementsResponse?.count || 0;
+    const totals = agreementsResponse?.totals || null;
     const totalPages = Math.ceil(totalCount / pageSize);
 
     // Reset to page 1 when filters or sort changes
@@ -362,12 +363,10 @@ const AgreementsList = () => {
                         />
                     }
                     SummaryCardsSection={
-                        agreements &&
-                        agreements?.length > 0 && (
+                        totalCount > 0 && (
                             <AgreementSummaryCardsSection
                                 fiscalYear={selectedFiscalYear === "All" ? "All FYs" : `FY ${selectedFiscalYear}`}
-                                agreements={agreements}
-                                selectedFiscalYear={selectedFiscalYear}
+                                totals={totals}
                             />
                         )
                     }

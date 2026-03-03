@@ -3,14 +3,14 @@ import RoundedBox from "../../UI/RoundedBox";
 import Tag from "../../UI/Tag";
 
 /**
- * AgreementFYSpendingSummaryCard component
+ * AgreementCountSummaryCard component
  * Displays the total number of agreements and a breakdown by agreement type,
  * along with counts for new and continuing agreements.
  * @component
  * @param {Object} props - Properties passed to component
  * @param {string} props.title - The heading for the card
  * @param {string} props.fiscalYear - The display string for the fiscal year (e.g. "FY 2025" or "All FYs")
- * @param {import("../../../types/AgreementTypes").Agreement[]} props.agreements - The list of agreements
+ * @param {Object} props.totals - Backend-computed aggregate totals across all filtered agreements
  * @returns {JSX.Element} - The rendered component
  */
 const agreementTypeStyles = {
@@ -23,37 +23,36 @@ const agreementTypeStyles = {
 const PARTNER_TYPES = ["AA", "IAA"];
 
 /**
- * Counts agreements by type, grouping partner types (AA, IAA) together.
- * @param {import("../../../types/AgreementTypes").Agreement[]} agreements
+ * Converts a backend type counts object (e.g. {"CONTRACT": 3, "AA": 1, "IAA": 2})
+ * into an array format [{type, count}] with AA+IAA grouped as "Partner".
+ * @param {Object} countsObj - Object with type keys and count values
  * @returns {{type: string, count: number}[]}
  */
-const getTypeCountsFromAgreements = (agreements) => {
-    const countsByType = agreements.reduce((acc, agreement) => {
-        const type = agreement.agreement_type;
-        if (type) {
-            const key = PARTNER_TYPES.includes(type) ? "Partner" : type;
-            acc[key] = (acc[key] || 0) + 1;
-        }
-        return acc;
-    }, {});
-
-    return Object.entries(countsByType).map(([type, count]) => ({ type, count }));
+const convertTypeCountsObjToArray = (countsObj) => {
+    const merged = {};
+    for (const [type, count] of Object.entries(countsObj)) {
+        const key = PARTNER_TYPES.includes(type) ? "Partner" : type;
+        merged[key] = (merged[key] || 0) + count;
+    }
+    return Object.entries(merged).map(([type, count]) => ({ type, count }));
 };
 
-const AgreementFYSpendingSummaryCard = ({ title, fiscalYear, agreements = [] }) => {
-    const totalCount = agreements.length;
-    const typeCounts = getTypeCountsFromAgreements(agreements);
+const AgreementCountSummaryCard = ({ title, fiscalYear, totals }) => {
+    const totalCount = totals?.total_agreements_count ?? 0;
+    const typeCounts = totals?.type_counts ? convertTypeCountsObjToArray(totals.type_counts) : [];
 
-    const newAgreements = agreements.filter((a) => a.award_type === "NEW");
-    const continuingAgreements = agreements.filter((a) => a.award_type === "CONTINUING");
+    const newCount = totals?.new_count ?? 0;
+    const newTypeCounts = totals?.new_type_counts ? convertTypeCountsObjToArray(totals.new_type_counts) : [];
 
-    const newTypeCounts = getTypeCountsFromAgreements(newAgreements);
-    const continuingTypeCounts = getTypeCountsFromAgreements(continuingAgreements);
+    const continuingCount = totals?.continuing_count ?? 0;
+    const continuingTypeCounts = totals?.continuing_type_counts
+        ? convertTypeCountsObjToArray(totals.continuing_type_counts)
+        : [];
 
     return (
         <RoundedBox
-            id="agreement-fy-spending-summary-card"
-            dataCy="agreement-fy-spending-summary-card"
+            id="agreement-count-summary-card"
+            dataCy="agreement-count-summary-card"
         >
             <div className="display-flex flex-justify">
                 <article>
@@ -78,7 +77,7 @@ const AgreementFYSpendingSummaryCard = ({ title, fiscalYear, agreements = [] }) 
                         {`${fiscalYear} New`}
                     </h3>
                     <div>
-                        <span className="font-sans-xl text-bold line-height-sans-1">{newAgreements.length}</span>
+                        <span className="font-sans-xl text-bold line-height-sans-1">{newCount}</span>
                         <div className="display-flex flex-column grid-gap margin-top-1">
                             {newTypeCounts.map(({ type, count }, index) => (
                                 <Tag
@@ -97,7 +96,7 @@ const AgreementFYSpendingSummaryCard = ({ title, fiscalYear, agreements = [] }) 
                         {`${fiscalYear} Continuing`}
                     </h3>
                     <div>
-                        <span className="font-sans-xl text-bold line-height-sans-1">{continuingAgreements.length}</span>
+                        <span className="font-sans-xl text-bold line-height-sans-1">{continuingCount}</span>
                         <div className="display-flex flex-column grid-gap margin-top-1">
                             {continuingTypeCounts.map(({ type, count }, index) => (
                                 <Tag
@@ -115,4 +114,4 @@ const AgreementFYSpendingSummaryCard = ({ title, fiscalYear, agreements = [] }) 
     );
 };
 
-export default AgreementFYSpendingSummaryCard;
+export default AgreementCountSummaryCard;

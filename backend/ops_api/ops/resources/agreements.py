@@ -201,6 +201,7 @@ class AgreementListAPI(BaseListAPI):
                 "count": metadata["count"],
                 "limit": metadata["limit"],
                 "offset": metadata["offset"],
+                "totals": metadata["totals"],
             }
 
             return make_response_with_headers(response_data)

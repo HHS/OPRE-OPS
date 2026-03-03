@@ -1,37 +1,30 @@
-import {
-    getContractAgreementBLITotal,
-    getDirectObligationAgreementBLITotal,
-    getGrantAgreementBLITotal,
-    getPartnerAgreementBLITotal
-} from "../../../helpers/agreement.helpers";
-import AgreementFYSpendingSummaryCard from "../AgreementFYSpendingSummaryCard";
-import AgreementTypeSummaryCard from "../AgreementTypeSummaryCard";
+import AgreementCountSummaryCard from "../AgreementCountSummaryCard";
+import AgreementSpendingSummaryCard from "../AgreementSpendingSummaryCard";
 
 /**
  * AgreementSummaryCardsSection component
  * @component
  * @param {Object} props - Properties passed to component
  * @param {string|number} props.fiscalYear - The selected fiscal year
- * @param {import("../../../types/AgreementTypes").Agreement[]} props.agreements - The list of agreements
- * @param {string} props.selectedFiscalYear - The selected fiscal year value (e.g. "2025" or "All")
+ * @param {Object} props.totals - Backend-computed aggregate totals across all filtered agreements
  * @returns {React.ReactElement} - The rendered component
  */
-const AgreementSummaryCardsSection = ({ fiscalYear, agreements = [], selectedFiscalYear }) => {
+const AgreementSummaryCardsSection = ({ fiscalYear, totals }) => {
     const titlePrefix = fiscalYear === "Multi" ? "Multiple Years" : `${fiscalYear}`;
 
-    const contractTotal = getContractAgreementBLITotal(agreements, Number(selectedFiscalYear));
-    const partnerTotal = getPartnerAgreementBLITotal(agreements);
-    const grantTotal = getGrantAgreementBLITotal(agreements);
-    const directObligationTotal = getDirectObligationAgreementBLITotal(agreements);
+    const contractTotal = totals?.total_contract_amount ?? 0;
+    const partnerTotal = totals?.total_partner_amount ?? 0;
+    const grantTotal = totals?.total_grant_amount ?? 0;
+    const directObligationTotal = totals?.total_direct_obligation_amount ?? 0;
 
     return (
         <div className="display-flex flex-justify">
-            <AgreementFYSpendingSummaryCard
+            <AgreementCountSummaryCard
                 title={`${titlePrefix} Agreements`}
                 fiscalYear={titlePrefix}
-                agreements={agreements}
+                totals={totals}
             />
-            <AgreementTypeSummaryCard
+            <AgreementSpendingSummaryCard
                 titlePrefix={titlePrefix}
                 contractTotal={contractTotal}
                 partnerTotal={partnerTotal}

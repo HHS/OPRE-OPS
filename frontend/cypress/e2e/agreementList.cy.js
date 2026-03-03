@@ -315,11 +315,11 @@ describe("Agreement List", () => {
 
     it("Agreement summary cards render with correct data", () => {
         // Both summary cards should be visible when agreements are loaded
-        cy.get('[data-cy="agreement-fy-spending-summary-card"]', { timeout: 10000 }).should("exist");
-        cy.get('[data-cy="agreement-type-summary-card"]', { timeout: 10000 }).should("exist");
+        cy.get('[data-cy="agreement-count-summary-card"]', { timeout: 10000 }).should("exist");
+        cy.get('[data-cy="agreement-spending-summary-card"]', { timeout: 10000 }).should("exist");
 
         // --- FY Spending Summary Card ---
-        cy.get('[data-cy="agreement-fy-spending-summary-card"]').within(() => {
+        cy.get('[data-cy="agreement-count-summary-card"]').within(() => {
             // Title should reflect "All FYs" since beforeEach selects "All"
             cy.contains("h3", "All FYs Agreements").should("exist");
             cy.contains("h3", "All FYs New").should("exist");
@@ -338,7 +338,7 @@ describe("Agreement List", () => {
         });
 
         // --- Agreement Type Summary Card ---
-        cy.get('[data-cy="agreement-type-summary-card"]').within(() => {
+        cy.get('[data-cy="agreement-spending-summary-card"]').within(() => {
             // Title should reflect the fiscal year prefix
             cy.contains("h3", "Spending by Agreement Type").should("exist");
 
@@ -370,7 +370,7 @@ describe("Agreement List", () => {
 
     it("Agreement summary card counts match the table row count by type", () => {
         // Get the total count from the FY spending card
-        cy.get('[data-cy="agreement-fy-spending-summary-card"]').within(() => {
+        cy.get('[data-cy="agreement-count-summary-card"]').within(() => {
             cy.get(".font-sans-xl.text-bold")
                 .invoke("text")
                 .then((cardCountText) => {
@@ -393,20 +393,20 @@ describe("Agreement List", () => {
         cy.get("tbody tr", { timeout: 30000 }).should("have.length.at.least", 1);
 
         // The FY spending card title should update to reflect the selected FY
-        cy.get('[data-cy="agreement-fy-spending-summary-card"]', { timeout: 10000 }).within(() => {
+        cy.get('[data-cy="agreement-count-summary-card"]', { timeout: 10000 }).within(() => {
             cy.contains("h3", "FY 2044 Agreements").should("exist");
             cy.contains("h3", "FY 2044 New").should("exist");
             cy.contains("h3", "FY 2044 Continuing").should("exist");
         });
 
         // The type summary card title should also update
-        cy.get('[data-cy="agreement-type-summary-card"]').within(() => {
+        cy.get('[data-cy="agreement-spending-summary-card"]').within(() => {
             cy.contains("h3", "FY 2044 Spending by Agreement Type").should("exist");
         });
     });
 
     it("Agreement summary card percentages sum to approximately 100%", () => {
-        cy.get('[data-cy="agreement-type-summary-card"]').within(() => {
+        cy.get('[data-cy="agreement-spending-summary-card"]').within(() => {
             cy.get('[data-testid="legend-tag"]').then(($tags) => {
                 let totalPercent = 0;
                 $tags.each((_, tag) => {

@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
-import AgreementTypeSummaryCard from "./AgreementTypeSummaryCard";
+import AgreementSpendingSummaryCard from "./AgreementSpendingSummaryCard";
 
 // Mock the donut chart since it relies on D3/SVG rendering
 vi.mock("../../UI/DataViz/ResponsiveDonutWithInnerPercent", () => ({
@@ -22,7 +22,7 @@ vi.mock("../../UI/DataViz/ResponsiveDonutWithInnerPercent/CustomLayerComponent",
     default: () => () => null
 }));
 
-describe("AgreementTypeSummaryCard", () => {
+describe("AgreementSpendingSummaryCard", () => {
     const defaultProps = {
         titlePrefix: "2025",
         contractTotal: 500_000,
@@ -32,12 +32,12 @@ describe("AgreementTypeSummaryCard", () => {
     };
 
     it("renders the spending by agreement type title", () => {
-        render(<AgreementTypeSummaryCard {...defaultProps} />);
+        render(<AgreementSpendingSummaryCard {...defaultProps} />);
         expect(screen.getByText("2025 Spending by Agreement Type")).toBeInTheDocument();
     });
 
     it("renders all four legend labels", () => {
-        render(<AgreementTypeSummaryCard {...defaultProps} />);
+        render(<AgreementSpendingSummaryCard {...defaultProps} />);
         expect(screen.getByText("Contract")).toBeInTheDocument();
         expect(screen.getByText("Partner")).toBeInTheDocument();
         expect(screen.getByText("Grant")).toBeInTheDocument();
@@ -45,7 +45,7 @@ describe("AgreementTypeSummaryCard", () => {
     });
 
     it("computes and displays correct percentages dynamically", () => {
-        render(<AgreementTypeSummaryCard {...defaultProps} />);
+        render(<AgreementSpendingSummaryCard {...defaultProps} />);
 
         const { contractTotal, partnerTotal, grantTotal, directObligationTotal } = defaultProps;
         const totalAmount = contractTotal + partnerTotal + grantTotal + directObligationTotal;
@@ -68,7 +68,7 @@ describe("AgreementTypeSummaryCard", () => {
     });
 
     it("displays formatted dollar values for each type", () => {
-        render(<AgreementTypeSummaryCard {...defaultProps} />);
+        render(<AgreementSpendingSummaryCard {...defaultProps} />);
 
         const valueContainers = screen.getAllByTestId("value-container");
         expect(valueContainers).toHaveLength(4);
@@ -81,13 +81,13 @@ describe("AgreementTypeSummaryCard", () => {
     });
 
     it("renders the donut chart when totalAmount is greater than 0", () => {
-        render(<AgreementTypeSummaryCard {...defaultProps} />);
+        render(<AgreementSpendingSummaryCard {...defaultProps} />);
         expect(screen.getByTestId("donut-chart")).toBeInTheDocument();
     });
 
     it("does not render the donut chart when all totals are 0", () => {
         render(
-            <AgreementTypeSummaryCard
+            <AgreementSpendingSummaryCard
                 titlePrefix="2025"
                 contractTotal={0}
                 partnerTotal={0}
@@ -100,7 +100,7 @@ describe("AgreementTypeSummaryCard", () => {
 
     it("handles when only one type has a value", () => {
         render(
-            <AgreementTypeSummaryCard
+            <AgreementSpendingSummaryCard
                 titlePrefix="2025"
                 contractTotal={1_000_000}
                 partnerTotal={0}
@@ -119,7 +119,7 @@ describe("AgreementTypeSummaryCard", () => {
     });
 
     it("defaults props to 0 when omitted", () => {
-        render(<AgreementTypeSummaryCard titlePrefix="2025" />);
+        render(<AgreementSpendingSummaryCard titlePrefix="2025" />);
 
         // All values should be $0 (no decimal for zero)
         const zeroValues = screen.getAllByText("$0");
@@ -142,7 +142,7 @@ describe("AgreementTypeSummaryCard", () => {
             directObligationTotal: 1
         };
 
-        render(<AgreementTypeSummaryCard {...unevenProps} />);
+        render(<AgreementSpendingSummaryCard {...unevenProps} />);
 
         const total =
             unevenProps.contractTotal +
@@ -160,7 +160,7 @@ describe("AgreementTypeSummaryCard", () => {
     });
 
     it("uses the correct aria label on the chart container", () => {
-        render(<AgreementTypeSummaryCard {...defaultProps} />);
+        render(<AgreementSpendingSummaryCard {...defaultProps} />);
         expect(
             screen.getByRole("img", {
                 name: "This is a Donut Chart that displays the percent by agreement type in the center."

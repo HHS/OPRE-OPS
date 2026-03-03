@@ -16,7 +16,7 @@ import RoundedBox from "../../UI/RoundedBox";
  * @param {number} props.directObligationTotal - The total amount for Direct Obligation agreements
  * @returns {React.ReactElement} - A React component that displays the agreement type summary card.
  */
-const AgreementTypeSummaryCard = ({
+const AgreementSpendingSummaryCard = ({
     titlePrefix,
     contractTotal = 0,
     partnerTotal = 0,
@@ -65,7 +65,7 @@ const AgreementTypeSummaryCard = ({
 
     return (
         <RoundedBox
-            dataCy="agreement-type-summary-card"
+            dataCy="agreement-spending-summary-card"
             style={{ padding: "20px 0 20px 30px" }}
         >
             <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">{`${titlePrefix} Spending by Agreement Type`}</h3>
@@ -102,7 +102,7 @@ const AgreementTypeSummaryCard = ({
                             margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
                             setPercent={setPercent}
                             setHoverId={setHoverId}
-                            CustomLayerComponent={CustomLayerComponent(percent)}
+                            CustomLayerComponent={CustomLayerComponent(percent ? `${percent}%` : "")}
                             container_id="agreement-type-chart"
                         />
                     </div>
@@ -112,4 +112,4 @@ const AgreementTypeSummaryCard = ({
     );
 };
 
-export default AgreementTypeSummaryCard;
+export default AgreementSpendingSummaryCard;
