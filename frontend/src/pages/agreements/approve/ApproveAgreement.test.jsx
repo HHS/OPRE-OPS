@@ -1,117 +1,176 @@
 import { render, screen } from "@testing-library/react";
-import { Provider } from "react-redux";
-import { createMemoryRouter, RouterProvider } from "react-router-dom";
-import {
-    useGetAgreementByIdQuery,
-    useGetPortfoliosQuery,
-    useGetServicesComponentsListQuery,
-    useGetUserByIdQuery
-} from "../../../api/opsAPI";
-import { findDescription, findPeriodEnd, findPeriodStart } from "../../../helpers/servicesComponent.helpers";
-import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
-import { useGetServicesComponentDisplayTitle } from "../../../hooks/useServicesComponents.hooks";
-import store from "../../../store";
-import { agreement, servicesComponent } from "../../../tests/data";
-import Login from "../../Login";
+import userEvent from "@testing-library/user-event";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import ApproveAgreement from "./ApproveAgreement";
 
-vi.mock("../../../api/opsAPI");
-vi.mock("../../../helpers/servicesComponent.helpers", () => ({
-    findDescription: vi.fn(),
-    findPeriodEnd: vi.fn(),
-    findPeriodStart: vi.fn()
+const navigateMock = vi.fn();
+const approveAgreementMock = vi.fn();
+
+vi.mock("react-router-dom", async (importOriginal) => {
+    const actual = await importOriginal();
+    return {
+        ...actual,
+        useNavigate: () => navigateMock
+    };
+});
+
+vi.mock("./ApproveAgreement.hooks", () => ({
+    __esModule: true,
+    default: () => approveAgreementMock()
 }));
-vi.mock("../../../hooks/useServicesComponents.hooks", () => ({
-    useGetServicesComponentDisplayTitle: vi.fn()
+
+vi.mock("../../../App", () => ({
+    __esModule: true,
+    default: ({ children }) => <div data-testid="app">{children}</div>
 }));
-vi.mock("../../../hooks/useChangeRequests.hooks", () => ({
-    useChangeRequestsForTooltip: vi.fn()
+vi.mock("../../../components/Agreements/AgreementBLIAccordion", () => ({
+    __esModule: true,
+    default: ({ children }) => <div>{children}</div>
 }));
-vi.mock("../../../hooks/use-auth.hooks", () => ({
-    useAuth: () => ({
-        isAuthenticated: true,
-        user: { id: 1, name: "Test User" }
-    })
+vi.mock("../../../components/Agreements/AgreementCANReviewAccordion", () => ({
+    __esModule: true,
+    default: () => <div />
 }));
+vi.mock("../../../components/Agreements/AgreementMetaAccordion", () => ({
+    __esModule: true,
+    default: () => <div />
+}));
+vi.mock("../../../components/Agreements/Documents/DocumentCollectionView", () => ({
+    __esModule: true,
+    default: () => <div data-testid="docs-view" />
+}));
+vi.mock("../../../components/BudgetLineItems/BLIDiffTable", () => ({
+    __esModule: true,
+    default: () => <div />
+}));
+vi.mock("../../../components/ChangeRequests/ReviewChangeRequestAccordion", () => ({
+    __esModule: true,
+    default: () => <div />
+}));
+vi.mock("../../../components/ServicesComponents/ServicesComponentAccordion", () => ({
+    __esModule: true,
+    default: ({ children }) => <div>{children}</div>
+}));
+vi.mock("../../../components/UI/Accordion", () => ({
+    __esModule: true,
+    default: ({ heading, children }) => (
+        <section>
+            <h2>{heading}</h2>
+            {children}
+        </section>
+    )
+}));
+vi.mock("../../../components/UI/Form/TextArea", () => ({
+    __esModule: true,
+    default: ({ onChange }) => (
+        <input
+            data-testid="notes-input"
+            onChange={() => onChange("submitter-notes", "new notes")}
+        />
+    )
+}));
+vi.mock("../../../components/UI/Modals/ConfirmationModal", () => ({
+    __esModule: true,
+    default: () => <div data-testid="confirmation-modal" />
+}));
+vi.mock("../../../components/UI/PageHeader", () => ({
+    __esModule: true,
+    default: ({ title, subTitle }) => (
+        <header>
+            <h1>{title}</h1>
+            <h2>{subTitle}</h2>
+        </header>
+    )
+}));
+
+const baseHookResult = () => ({
+    afterApproval: false,
+    agreement: { name: "Agreement 1", service_requirement_type: "TEST" },
+    approvedBudgetLinesPreview: [],
+    budgetLinesInReview: [],
+    changeRequestTitle: "Status Change",
+    changeRequestsInReview: [],
+    changeRequestType: "status-change",
+    checkBoxText: "I understand this action",
+    confirmation: false,
+    errorAgreement: false,
+    groupedBeforeApprovalBudgetLinesByServicesComponent: [],
+    groupedUpdatedBudgetLinesByServicesComponent: [],
+    handleApproveChangeRequests: vi.fn(),
+    handleCancel: vi.fn(),
+    hasPermissionToViewPage: true,
+    isLoadingAgreement: false,
+    isAgreementAwarded: false,
+    modalProps: {},
+    notes: "",
+    newAwardingEntity: null,
+    oldAwardingEntity: null,
+    projectOfficerName: "PO",
+    alternateProjectOfficerName: "Alt PO",
+    requestorNoters: "",
+    servicesComponents: [],
+    setAfterApproval: vi.fn(),
+    setConfirmation: vi.fn(),
+    setNotes: vi.fn(),
+    setShowModal: vi.fn(),
+    showModal: false,
+    statusChangeTo: "IN_EXECUTION",
+    statusForTitle: "- Executing",
+    title: "Approval for Status Change - Executing",
+    urlChangeToStatus: "EXECUTING"
+});
+
 describe("ApproveAgreement", () => {
-    useGetAgreementByIdQuery.mockReturnValue({
-        data: agreement,
-        isSuccess: true
-    });
-    useGetUserByIdQuery.mockReturnValue({
-        data: {
-            id: 1,
-            first_name: "John",
-            last_name: "Doe",
-            email: "jdoe@example.com"
-        },
-        isSuccess: true
-    });
-    useGetServicesComponentsListQuery.mockReturnValue({
-        data: servicesComponent,
-        isSuccess: true
-    });
-    useGetPortfoliosQuery.mockReturnValue({
-        data: [
-            {
-                id: 1,
-                name: "Portfolio 1"
-            }
-        ],
-        isSuccess: true
-    });
-    findDescription.mockReturnValue("description");
-    findPeriodStart.mockReturnValue("2024-06-12T21:25:25.744930Z");
-    findPeriodEnd.mockReturnValue("2024-06-12T21:25:25.744930Z");
-    useGetServicesComponentDisplayTitle.mockReturnValue("title");
-    useChangeRequestsForTooltip.mockReturnValue();
-    // TODO: need to be authenticated to render the component?
-    it.todo("should update heading based on Change Request type", () => {
-        const router = createMemoryRouter(
-            [
-                {
-                    path: "/agreements/approve/:id",
-                    element: <ApproveAgreement />
-                },
-                {
-                    path: "/login",
-                    element: <Login />
-                }
-            ],
-            {
-                initialEntries: ["/agreements/approve/1?type=status-change&to=EXECUTING"]
-            }
-        );
-
-        render(
-            <Provider store={store}>
-                <RouterProvider router={router} />
-            </Provider>
-        );
-        // screen.debug();
-
-        // expect(screen.getByText("Approval for Status Change - Executing")).toBeInTheDocument();
+    beforeEach(() => {
+        vi.clearAllMocks();
+        approveAgreementMock.mockReturnValue(baseHookResult());
     });
 
-    it.todo("should display correct heading for budget change", () => {
-        const router = createMemoryRouter(
-            [
-                {
-                    path: "/agreements/approve/:id",
-                    element: <ApproveAgreement />
-                }
-            ],
-            {
-                initialEntries: ["/agreements/approve/1?type=budget-change"]
-            }
-        );
+    it("shows loading state", () => {
+        approveAgreementMock.mockReturnValue({
+            ...baseHookResult(),
+            isLoadingAgreement: true
+        });
+        render(<ApproveAgreement />);
+        expect(screen.getByText("Loading...")).toBeInTheDocument();
+    });
 
-        render(
-            <Provider store={store}>
-                <RouterProvider router={router} />
-            </Provider>
-        );
+    it("navigates to /error when user cannot view", () => {
+        approveAgreementMock.mockReturnValue({
+            ...baseHookResult(),
+            hasPermissionToViewPage: false
+        });
+        render(<ApproveAgreement />);
+        expect(navigateMock).toHaveBeenCalledWith("/error");
+    });
 
-        expect(screen.getByText("Approval for Budget Change")).toBeInTheDocument();
+    it("renders page title and subtitle", () => {
+        render(<ApproveAgreement />);
+        expect(screen.getByText("Approval for Status Change - Executing")).toBeInTheDocument();
+        expect(screen.getByText("Agreement 1")).toBeInTheDocument();
+    });
+
+    it("renders documents section for executing status", () => {
+        render(<ApproveAgreement />);
+        expect(screen.getByText("Review Documents")).toBeInTheDocument();
+        expect(screen.getByTestId("docs-view")).toBeInTheDocument();
+    });
+
+    it("calls handleApproveChangeRequests when action buttons are clicked", async () => {
+        const user = userEvent.setup();
+        const handleApproveChangeRequests = vi.fn();
+        approveAgreementMock.mockReturnValue({
+            ...baseHookResult(),
+            confirmation: true,
+            handleApproveChangeRequests
+        });
+        render(<ApproveAgreement />);
+
+        await user.click(screen.getByRole("button", { name: "Decline" }));
+        await user.click(screen.getByRole("button", { name: "Approve Changes" }));
+
+        expect(handleApproveChangeRequests).toHaveBeenCalledTimes(2);
+        expect(handleApproveChangeRequests.mock.calls[0][0]).toBe("REJECT");
+        expect(handleApproveChangeRequests.mock.calls[1][0]).toBe("APPROVE");
     });
 });
