@@ -28,7 +28,8 @@ vi.mock("../../../api/opsAPI", async () => {
     const actual = await import("../../../api/opsAPI");
     return {
         ...actual,
-        useGetProductServiceCodesQuery: () => ({ data: productServiceCodesData })
+        useGetProductServiceCodesQuery: () => ({ data: productServiceCodesData, isLoading: false, error: null }),
+        useGetProjectsQuery: () => ({ data: [], isLoading: false, error: null })
     };
 });
 

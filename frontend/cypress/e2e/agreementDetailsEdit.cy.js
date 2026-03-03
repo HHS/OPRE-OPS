@@ -95,6 +95,7 @@ describe("Agreement Details Edit", () => {
             checkAgreementHistory();
             cy.get("#edit").click();
             cy.get("#edit").should("not.exist");
+            cy.get("label").contains("Project").should("exist");
 
             // add research methodology
             cy.get("#research-methodologies-combobox-input").type("Knowledge Development{enter}");
