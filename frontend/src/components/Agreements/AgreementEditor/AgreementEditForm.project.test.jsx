@@ -131,4 +131,21 @@ describe("AgreementEditForm Project field", () => {
 
         expect(screen.queryByTestId("project-combobox-mock")).not.toBeInTheDocument();
     });
+
+    it("disables save button when form has required field errors", () => {
+        useAgreementEditForm.mockReturnValue({
+            ...baseHookState,
+            isWizardMode: false,
+            shouldDisableBtn: true
+        });
+
+        render(
+            <AgreementEditForm
+                isEditMode={true}
+                setIsEditMode={vi.fn()}
+            />
+        );
+
+        expect(screen.getByRole("button", { name: "Save Changes" })).toBeDisabled();
+    });
 });

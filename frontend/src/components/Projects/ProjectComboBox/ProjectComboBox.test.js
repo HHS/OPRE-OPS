@@ -110,4 +110,20 @@ describe("ProjectReactSelect", () => {
         expect(screen.getByText("Project Name")).toBeInTheDocument();
         expect(screen.getByText("Required Information*")).toBeInTheDocument();
     });
+
+    it("shows validation error instead of required hint when both are present", () => {
+        render(
+            <ProjectComboBox
+                researchProjects={researchProjects}
+                selectedResearchProject={null}
+                setSelectedProject={mockSetSelectedProject}
+                label="Project Name"
+                isRequired={true}
+                messages={["This is required information"]}
+            />
+        );
+
+        expect(screen.getByText("This is required information")).toBeInTheDocument();
+        expect(screen.queryByText("Required Information*")).not.toBeInTheDocument();
+    });
 });
