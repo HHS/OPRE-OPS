@@ -3761,14 +3761,14 @@ paths:
         "500":
           description: Internal Server Error
 
-  /documents/{agreement_id}/:
+  /documents/:
     get:
       tags:
         - Documents
       operationId: Get Documents
       description: Get documents by agreement id
       parameters:
-        - in: path
+        - in: query
           name: agreement_id
           description: The agreement id to filter documents
           required: true
@@ -3794,7 +3794,6 @@ paths:
           description: Bad Request
         "500":
           description: Internal Server Error
-  /documents/:
     post:
       tags:
         - Documents

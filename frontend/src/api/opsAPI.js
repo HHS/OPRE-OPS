@@ -896,7 +896,7 @@ export const opsApi = createApi({
             invalidatesTags: ["Documents"]
         }),
         getDocumentsByAgreementId: builder.query({
-            query: (agreement_id) => `/documents/${agreement_id}`,
+            query: (agreement_id) => `/documents/?agreement_id=${agreement_id}`,
             providesTags: ["Documents"]
         }),
         updateDocumentStatus: builder.mutation({
