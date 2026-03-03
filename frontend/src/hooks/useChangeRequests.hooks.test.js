@@ -67,7 +67,9 @@ describe("useChangeRequests.hooks", () => {
         renderFieldMock.mockImplementation((_entity, field, value) => `${field}:${value}`);
         convertToCurrencyMock.mockImplementation((value) => `$${value}`);
         calculateAgreementTotalMock.mockImplementation((_blis, fee) => fee * 100);
-        getChangeRequestMessagesMock.mockReturnValue("Procurement Shop: OLD to NEW\nFee Rate: 5% to 7%\nFee Total: $5 to $7");
+        getChangeRequestMessagesMock.mockReturnValue(
+            "Procurement Shop: OLD to NEW\nFee Rate: 5% to 7%\nFee Total: $5 to $7"
+        );
         useGetProcurementShopsQueryMock.mockReturnValue({
             data: [
                 { id: 1, name: "Old", abbr: "OLD", fee_percentage: 5 },
@@ -231,10 +233,7 @@ describe("useChangeRequests.hooks", () => {
         });
         {
             const view = renderHook(() =>
-                useChangeRequestsForTooltip(
-                    { in_review: true, change_requests_in_review: [] },
-                    "Title"
-                )
+                useChangeRequestsForTooltip({ in_review: true, change_requests_in_review: [] }, "Title")
             );
             expect(view.result.current).toBe("Loading...");
         }
