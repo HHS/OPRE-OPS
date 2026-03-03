@@ -69,8 +69,7 @@ const selectEnabledStatusRadio = (attempt = 0) => {
                 return;
             }
             if (attempt >= maxAttempts) {
-                cy.log("No enabled status radios after retries; continuing without status selection.");
-                return;
+                throw new Error("No enabled status radios after retries.");
             }
             cy.log("No enabled radios yet; refreshing agreement.");
             cy.reload();
@@ -79,84 +78,6 @@ const selectEnabledStatusRadio = (attempt = 0) => {
             selectEnabledStatusRadio(attempt + 1);
         });
     });
-};
-
-const selectFirstRealOption = (selector) => {
-    cy.get(selector, { timeout: 20000 })
-        .find("option")
-        .should(($options) => {
-            const hasRealOption = [...$options].some((option) => option.value && option.value !== "0");
-            expect(hasRealOption, `No selectable options available for ${selector}`).to.eq(true);
-        })
-        .then(($options) => {
-            const realOption = [...$options].find((option) => option.value && option.value !== "0");
-            if (!realOption) {
-                throw new Error(`No selectable option found for ${selector}`);
-            }
-            cy.get(selector).select(realOption.value);
-        });
-};
-
-const waitForReferenceData = (bearerToken, retries = 15) => {
-    return cy
-        .request({
-            method: "GET",
-            url: "http://localhost:8080/api/v1/product-service-codes/",
-            headers: {
-                Authorization: bearerToken,
-                Accept: "application/json"
-            },
-            failOnStatusCode: false
-        })
-        .then((response) => {
-            const hasData = response.status === 200 && Array.isArray(response.body) && response.body.length > 0;
-            if (hasData) {
-                return;
-            }
-            if (retries <= 0) {
-                throw new Error(
-                    `product-service-codes not ready. status=${response.status} body=${JSON.stringify(response.body)}`
-                );
-            }
-            cy.wait(1000);
-            return waitForReferenceData(bearerToken, retries - 1);
-        });
-};
-
-const resolveProjectId = (bearerToken) => {
-    const configuredProjectId =
-        cypressEnv.PROJECT_ID === undefined || cypressEnv.PROJECT_ID === null
-            ? null
-            : Number(cypressEnv.PROJECT_ID);
-
-    if (configuredProjectId !== null && Number.isNaN(configuredProjectId)) {
-        throw new Error(`PROJECT_ID must be numeric when provided. got=${cypressEnv.PROJECT_ID}`);
-    }
-
-    return cy
-        .request({
-            method: "GET",
-            url: "http://localhost:8080/api/v1/projects/",
-            headers: {
-                Authorization: bearerToken,
-                Accept: "application/json"
-            },
-            failOnStatusCode: false
-        })
-        .then((response) => {
-            if (response.status !== 200 || !Array.isArray(response.body) || response.body.length === 0) {
-                throw new Error(`No projects available. status=${response.status} body=${JSON.stringify(response.body)}`);
-            }
-
-            if (configuredProjectId !== null) {
-                const configuredExists = response.body.some((project) => project.id === configuredProjectId);
-                if (configuredExists) {
-                    return configuredProjectId;
-                }
-            }
-
-            return response.body[0].id;
-        });
 };
 
 beforeEach(() => {
@@ -182,28 +103,29 @@ describe("create agreement and test validations", () => {
     it("create an agreement", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 
+        // CI databases often differ; prefer an explicit PROJECT_ID when available
+        const projectId = Number(cypressEnv.PROJECT_ID ?? 1000);
+        expect(projectId, "PROJECT_ID must be a valid number").to.be.a("number").and.not.satisfy(Number.isNaN);
+
+        const createAgreementPayload = {
+            ...minAgreementWithoutProcShop(buildUniqueSuffix()),
+            project_id: projectId
+        };
+
+        cy.log(`Creating agreement with project_id=${projectId}`);
+
         // create test agreement
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
-        waitForReferenceData(bearer_token);
-        resolveProjectId(bearer_token).then((projectId) => {
-            const createAgreementPayload = {
-                ...minAgreementWithoutProcShop(buildUniqueSuffix()),
-                project_id: projectId
-            };
-
-            cy.log(`Creating agreement with project_id=${projectId}`);
-
-            return cy.request({
-                method: "POST",
-                url: "http://localhost:8080/api/v1/agreements/",
-                failOnStatusCode: false,
-                body: createAgreementPayload,
-                headers: {
-                    Authorization: bearer_token,
-                    "Content-Type": "application/json",
-                    Accept: "application/json"
-                }
-            });
+        cy.request({
+            method: "POST",
+            url: "http://localhost:8080/api/v1/agreements/",
+            failOnStatusCode: false,
+            body: createAgreementPayload,
+            headers: {
+                Authorization: bearer_token,
+                "Content-Type": "application/json",
+                Accept: "application/json"
+            }
         }).then((response) => {
             if (response.status !== 201) {
                 // Make failures actionable in CI logs
@@ -231,7 +153,7 @@ describe("create agreement and test validations", () => {
             cy.get('[data-cy="edit-agreement-btn"]').click();
             cy.get("#continue").click();
             // get all errors on page
-            cy.get(".usa-form-group--error").its("length").should("be.gte", 1);
+            cy.get(".usa-form-group--error").should("have.length", 7);
             // test description
             cy.get("#description").type("Test Description");
             cy.get("#description").clear();
@@ -269,7 +191,7 @@ describe("create agreement and test validations", () => {
             cy.get("[data-cy='continue-btn']").click();
             //  Add Services Component
             cy.get("p").should("contain", "You have not added any Services Component yet.");
-            selectFirstRealOption("#servicesComponentSelect");
+            cy.get("#servicesComponentSelect").select("1");
             cy.get("#pop-start-date").type("01/01/2024");
             cy.get("#pop-end-date").type("01/01/2025");
             cy.get("#description").type("This is a description.");
@@ -277,7 +199,7 @@ describe("create agreement and test validations", () => {
             cy.get("[data-cy='alert']").should("contain", "successfully added");
             cy.get("h2").should("contain", "Base Period 1");
             //create a budget line with errors
-            selectFirstRealOption("#allServicesComponentSelect");
+            cy.get("#allServicesComponentSelect").select(`${blData[0].services_component}`);
             // Wait for CAN combobox to finish loading CANs
             cy.contains("Loading...").should("not.exist");
             cy.get("#can-combobox-input").should("not.be.disabled");
@@ -317,14 +239,9 @@ describe("create agreement and test validations", () => {
             );
             // Ensure backend reflects actionable BLIs before reviewing (avoids stale agreement data).
             waitForActionableBudgetLines(agreementId, bearer_token);
-            // Save if enabled, then move to review page.
-            cy.get('[data-cy="continue-btn"]').then(($btn) => {
-                if ($btn.prop("disabled")) {
-                    cy.log("continue-btn is disabled; skipping click.");
-                    return;
-                }
-                cy.wrap($btn).click();
-            });
+            // go back to review page
+            cy.get('[data-cy="continue-btn"]').click();
+            // Wait for navigation and agreement data to load
             cy.visit(`/agreements/review/${agreementId}`);
             cy.wait("@getAgreement", { timeout: 30000 });
             // Wait for page to be ready
@@ -333,47 +250,33 @@ describe("create agreement and test validations", () => {
             // Wait for React 19 to complete full state propagation chain:
             // Render → useEffect → Parent state update → Re-render → DOM update
             cy.wait(8000); // Increased from 5s to 8s for full propagation
-            // Buffer wait for React 19 state propagation after render.
-            cy.wait(500);
-            // If status-change controls are present, use them; otherwise continue with current page state.
+            // Wait for radio buttons to be rendered (some may be disabled depending on data)
+            cy.get('[type="radio"]', { timeout: 60000 }).should("have.length.greaterThan", 0);
+            // Buffer wait for React 19 state propagation after render (recommended 200-300ms per research)
+            cy.wait(500); // Conservative buffer
+            // If the send-to-approval button is still disabled, select an enabled radio and check any checkboxes
             cy.get('[data-cy="send-to-approval-btn"]').should("exist");
             cy.get('[data-cy="send-to-approval-btn"]').then(($btn) => {
                 if (!$btn.prop("disabled")) {
                     cy.log("Send-to-approval already enabled; skipping status selection.");
                     return;
                 }
+                selectEnabledStatusRadio();
+                cy.get('[type="radio"]:checked', { timeout: 60000 }).should("exist");
+                // Wait for React 19 to render checkboxes after radio selection
+                cy.wait(5000);
                 cy.then(() => {
-                    const hasDraftToPlanned = Cypress.$('[data-cy="change-draft-to-planned"]').length > 0;
-                    const hasPlannedToExecuting = Cypress.$('[data-cy="change-planned-to-executing"]').length > 0;
-                    if (!hasDraftToPlanned && !hasPlannedToExecuting) {
-                        cy.log("No status radios rendered; skipping status selection.");
-                        return;
-                    }
-
-                    selectEnabledStatusRadio();
-                    cy.then(() => {
-                        const selectedRadios = Cypress.$('[type="radio"]:checked');
-                        if (!selectedRadios.length) {
-                            cy.log("No status radio selected; continuing without status selection.");
-                            return;
-                        }
-
-                        // Wait for React 19 to render checkboxes after radio selection.
-                        cy.wait(5000);
-                        cy.then(() => {
-                            const checkboxes = Cypress.$('[data-cy="check-all"]');
-                            if (checkboxes.length) {
-                                cy.wrap(checkboxes).each(($el) => {
-                                    cy.wrap($el).check({ force: true });
-                                });
-                                cy.wrap(checkboxes).each(($el) => {
-                                    cy.wrap($el).should("be.checked");
-                                });
-                            } else {
-                                cy.log("No checkboxes rendered for status update.");
-                            }
+                    const checkboxes = Cypress.$('[data-cy="check-all"]');
+                    if (checkboxes.length) {
+                        cy.wrap(checkboxes).each(($el) => {
+                            cy.wrap($el).check({ force: true });
                         });
-                    });
+                        cy.wrap(checkboxes).each(($el) => {
+                            cy.wrap($el).should("be.checked");
+                        });
+                    } else {
+                        cy.log("No checkboxes rendered for status update.");
+                    }
                 });
             });
             // Wait for React 19 state updates and validation to propagate
@@ -384,8 +287,65 @@ describe("create agreement and test validations", () => {
                 cy.log(`Button tooltip: ${tooltipText}`);
                 cy.log(`Button disabled: ${$btn.prop("disabled")}`);
             });
-            // Keep going even if send-to-approval remains disabled for this dataset/state.
-            cy.get('[data-cy="send-to-approval-btn"]', { timeout: 20000 }).should("exist");
+            // Use longer timeout for button state change as validation may be async
+            cy.get('[data-cy="send-to-approval-btn"]', { timeout: 20000 }).should("not.be.disabled");
+
+            // go back to edit mode and look for budget line errors
+            cy.visit(`/agreements/edit/${agreementId}?mode=edit`);
+            cy.get("#continue").click();
+            cy.get(".usa-form-group--error").should("not.exist");
+            cy.get('[data-cy="continue-btn"]').click();
+            // add incomplete budget line
+            cy.get("#allServicesComponentSelect").select(`${blData[0].services_component}`);
+            cy.get("#add-budget-line").should("not.be.disabled");
+            cy.get("#add-budget-line").click();
+            cy.get(".usa-alert__text").should(
+                "contain",
+                "Budget line TBD was updated. When you're done editing, click Create Agreement below."
+            );
+            // patch agreement
+            cy.get('[data-cy="continue-btn"]').click();
+            //check for new budget line errors
+            cy.visit(`/agreements/review/${agreementId}?mode=review`);
+            cy.wait("@getAgreement", { timeout: 30000 });
+            // Give React time to render after data loads
+            cy.wait(300);
+
+            //send-to-approval button should be disabled
+            cy.get('[data-cy="send-to-approval-btn"]', { timeout: 10000 }).should("be.disabled");
+
+            // fix errors
+            cy.get('[data-cy="edit-agreement-btn"]').click();
+            cy.get("#continue").click();
+            cy.get('[data-cy="continue-btn"]').click();
+            // check for new budget line errors
+            cy.get(".usa-form-group--error").should("exist");
+            cy.get("tbody").children().as("table-rows").should("have.length", 2);
+            cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
+            cy.get("[data-cy='edit-row']").click();
+            cy.get(".usa-form-group--error").should("have.length", 4);
+            cy.get('[data-cy="update-budget-line"]').should("be.disabled");
+            // fix errors
+            // Wait for CAN combobox to finish loading CANs
+            cy.contains("Loading...").should("not.exist");
+            cy.get("#can-combobox-input").should("not.be.disabled");
+            cy.get("#can-combobox-input").type(`${blData[0].can}{enter}`);
+            cy.get("#allServicesComponentSelect").select(`${blData[0].services_component}`);
+            cy.get("#need-by-date").type(`${blData[0].needByDate}`);
+            cy.get("#enteredAmount").type(`${blData[0].amount}`);
+            cy.get("#enteredDescription").type(`${blData[0].line_description}`);
+            cy.get('[data-cy="update-budget-line"]').should("not.be.disabled");
+            cy.get('[data-cy="update-budget-line"]').click();
+            cy.get(".usa-alert__text").should("contain", "was updated");
+            cy.get(".usa-form-group--error").should("not.exist");
+            // patch agreement
+            cy.get('[data-cy="continue-btn"]').click();
+            //check review page
+            cy.visit(`/agreements/review/${agreementId}?mode=review`);
+            cy.wait("@getAgreement", { timeout: 30000 });
+            // Wait for page to render
+            cy.get("h1", { timeout: 20000 }).should("be.visible").and("not.have.text", "Please resolve the errors outlined below");
+            cy.get('[data-cy="error-list"]').should("not.exist");
 
             cy.request({
                 method: "DELETE",
