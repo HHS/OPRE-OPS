@@ -1,7 +1,10 @@
+from typing import Type
+
 from flask import Response, current_app, request
 from flask_jwt_extended import jwt_required
 
 from models import (
+    BaseModel,
     BudgetLineItemChangeRequest,
     ChangeRequest,
     ChangeRequestStatus,
@@ -9,7 +12,7 @@ from models import (
 )
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
-from ops_api.ops.base_views import BaseListAPI
+from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.schemas.change_requests import (
     GenericChangeRequestResponseSchema,
 )
@@ -27,7 +30,7 @@ def build_change_request_response(change_request: ChangeRequest):
 
 
 class ChangeRequestListAPI(BaseListAPI):
-    def __init__(self, model: ChangeRequest = ChangeRequest):
+    def __init__(self, model: Type[BaseModel] = ChangeRequest):
         super().__init__(model)
         self._response_schema = GenericChangeRequestResponseSchema()
         self._response_schema_collection = GenericChangeRequestResponseSchema(many=True)
@@ -57,18 +60,20 @@ class ChangeRequestListAPI(BaseListAPI):
             response = make_response_with_headers([], 200)
         return response
 
-    @is_authorized(PermissionType.POST, Permission.CHANGE_REQUEST)
+
+class ChangeRequestItemAPI(BaseItemAPI):
+    def __init__(self, model: Type[BaseModel] = ChangeRequest):
+        super().__init__(model)
+        self._response_schema = GenericChangeRequestResponseSchema()
+
+    @is_authorized(PermissionType.PATCH, Permission.CHANGE_REQUEST)
     @jwt_required()
-    def patch(self) -> Response:
+    def patch(self, id: int) -> Response:
         with OpsEventHandler(OpsEventType.UPDATE_CHANGE_REQUEST) as meta:
             request_json = request.get_json()
-            change_request_id = request_json.get("change_request_id")
-
-            if not change_request_id:
-                return make_response_with_headers({"error": "change_request_id is required"}, 400)
 
             service = ChangeRequestService(current_app.db_session)
 
-            change_request, _ = service.update(change_request_id, request_json)
+            change_request, _ = service.update(id, request_json)
             meta.metadata.update({"change_request": change_request.to_dict()})
             return make_response_with_headers(change_request.to_dict(), 200)

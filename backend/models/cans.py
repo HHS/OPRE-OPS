@@ -105,8 +105,10 @@ class CAN(BaseModel):
         if self.funding_details is None:
             return True
 
+        from models.utils.fiscal_year import date_to_fiscal_year
+
         today = date.today()
-        current_fy = today.year if today.month <= 9 else today.year + 1
+        current_fy = date_to_fiscal_year(today)
 
         # For perpetual funds (active_period = 0), check if fiscal year has started
         if self.funding_details.active_period == 0:
@@ -260,8 +262,10 @@ class CANFundingDetails(BaseModel):
         """
         if self.active_period == 0:
             # For perpetual funds, return from fiscal year to current FY + 5 years
+            from models.utils.fiscal_year import date_to_fiscal_year
+
             today = date.today()
-            current_fy = today.year if today.month <= 9 else today.year + 1
+            current_fy = date_to_fiscal_year(today)
             end_year = current_fy + 5
 
             return [

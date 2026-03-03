@@ -866,12 +866,12 @@ export const opsApi = createApi({
             providesTags: ["ChangeRequests"]
         }),
         updateChangeRequest: builder.mutation({
-            query: (body) => {
+            query: ({ id, data }) => {
                 return {
-                    url: `/change-requests/`,
+                    url: `/change-requests/${id}`,
                     method: "PATCH",
                     headers: { "Content-Type": "application/json" },
-                    body
+                    body: data
                 };
             },
             invalidatesTags: ["ChangeRequests"]

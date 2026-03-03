@@ -11,7 +11,7 @@ vi.mock("../../../../helpers/utils", async (importOriginal) => {
     };
 });
 vi.mock("../../../UI/Form/TextArea", () => ({
-    default: ({ label, value, onChange, isDisabled, maxLength, name, className }) => (
+    default: ({ label, value, onChange, isDisabled, maxLength, name, className, messages }) => (
         <div data-testid="text-area">
             <label htmlFor={name}>{label}</label>
             <textarea
@@ -23,6 +23,13 @@ vi.mock("../../../UI/Form/TextArea", () => ({
                 maxLength={maxLength}
                 className={className}
             />
+            {messages && messages.length > 0 && (
+                <div data-testid="text-area-validation-messages">
+                    {messages.map((msg, idx) => (
+                        <span key={idx}>{msg}</span>
+                    ))}
+                </div>
+            )}
         </div>
     )
 }));
@@ -66,6 +73,16 @@ vi.mock("../../UsersComboBox", () => ({
             )}
         </div>
     )
+}));
+vi.mock("../../../UI/Modals/ConfirmationModal", () => ({
+    default: ({ heading, actionButtonText, secondaryButtonText }) =>
+        heading ? (
+            <div data-testid="confirmation-modal">
+                <h2>{heading}</h2>
+                <button>{actionButtonText}</button>
+                <button>{secondaryButtonText}</button>
+            </div>
+        ) : null
 }));
 
 describe("ProcurementTrackerStepOne", () => {
@@ -673,6 +690,141 @@ describe("ProcurementTrackerStepOne", () => {
             expect(screen.queryByTestId("text-area")).not.toBeInTheDocument();
             expect(screen.queryByRole("button", { name: /cancel/i })).not.toBeInTheDocument();
             expect(screen.queryByRole("button", { name: /complete step 1/i })).not.toBeInTheDocument();
+        });
+    });
+
+    describe("Modal Integration", () => {
+        it("renders ConfirmationModal when showModal is true", () => {
+            useProcurementTrackerStepOne.mockReturnValue({
+                ...defaultHookReturn,
+                showModal: true,
+                modalProps: {
+                    heading: "Are you sure you want to cancel this task? Your input will not be saved.",
+                    actionButtonText: "Cancel Task",
+                    secondaryButtonText: "Continue Editing",
+                    handleConfirm: vi.fn()
+                }
+            });
+
+            render(
+                <ProcurementTrackerStepOne
+                    stepStatus="PENDING"
+                    stepOneData={mockStepOneData}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    authorizedUsers={mockAllUsers}
+                />
+            );
+
+            expect(screen.getByTestId("confirmation-modal")).toBeInTheDocument();
+        });
+
+        it("does not render ConfirmationModal when showModal is false", () => {
+            useProcurementTrackerStepOne.mockReturnValue({
+                ...defaultHookReturn,
+                showModal: false
+            });
+
+            render(
+                <ProcurementTrackerStepOne
+                    stepStatus="PENDING"
+                    stepOneData={mockStepOneData}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    authorizedUsers={mockAllUsers}
+                />
+            );
+
+            expect(screen.queryByTestId("confirmation-modal")).not.toBeInTheDocument();
+        });
+    });
+
+    describe("Validation Display", () => {
+        it("displays validation errors for users", () => {
+            const mockValidatorResWithErrors = {
+                getErrors: vi.fn((field) => {
+                    if (field === "users") {
+                        return ["This is required information"];
+                    }
+                    return [];
+                })
+            };
+
+            useProcurementTrackerStepOne.mockReturnValue({
+                ...defaultHookReturn,
+                validatorRes: mockValidatorResWithErrors
+            });
+
+            render(
+                <ProcurementTrackerStepOne
+                    stepStatus="PENDING"
+                    stepOneData={mockStepOneData}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    authorizedUsers={mockAllUsers}
+                />
+            );
+
+            expect(screen.getByText("This is required information")).toBeInTheDocument();
+        });
+
+        it("displays validation errors for date completed", () => {
+            const mockValidatorResWithErrors = {
+                getErrors: vi.fn((field) => {
+                    if (field === "dateCompleted") {
+                        return ["Date must be MM/DD/YYYY"];
+                    }
+                    return [];
+                })
+            };
+
+            useProcurementTrackerStepOne.mockReturnValue({
+                ...defaultHookReturn,
+                validatorRes: mockValidatorResWithErrors
+            });
+
+            render(
+                <ProcurementTrackerStepOne
+                    stepStatus="PENDING"
+                    stepOneData={mockStepOneData}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    authorizedUsers={mockAllUsers}
+                />
+            );
+
+            expect(screen.getByText("Date must be MM/DD/YYYY")).toBeInTheDocument();
+        });
+    });
+
+    describe("Inactive Tracker", () => {
+        it("disables form controls when isActiveStep is false", () => {
+            render(
+                <ProcurementTrackerStepOne
+                    stepStatus="PENDING"
+                    stepOneData={mockStepOneData}
+                    isActiveStep={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    authorizedUsers={mockAllUsers}
+                />
+            );
+
+            const checkbox = screen.getByRole("checkbox");
+            expect(checkbox).toBeDisabled();
+        });
+
+        it("disables buttons when isActiveStep is false", () => {
+            render(
+                <ProcurementTrackerStepOne
+                    stepStatus="PENDING"
+                    stepOneData={mockStepOneData}
+                    isActiveStep={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    authorizedUsers={mockAllUsers}
+                />
+            );
+
+            const cancelButton = screen.getByRole("button", { name: /cancel/i });
+            const completeButton = screen.getByRole("button", { name: /complete step 1/i });
+
+            expect(cancelButton).toBeDisabled();
+            expect(completeButton).toBeDisabled();
         });
     });
 

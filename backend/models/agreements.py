@@ -94,6 +94,11 @@ class ModType(Enum):
     REPLACEMENT_AMOUNT_FINAL = auto()
 
 
+class AgreementClassification(Enum):
+    NEW = auto()
+    CONTINUING = auto()
+
+
 class AgreementReason(Enum):
     NEW_REQ = auto()
     RECOMPETE = auto()  ## recompete is brand new contract related to same work
@@ -434,6 +439,70 @@ class Agreement(BaseModel):
 
         return all(is_valid_value(getattr(self, field)) for field in required_fields)
 
+    def _find_new_award_procurement_action(self):
+        """Find the AWARDED/CERTIFIED NEW_AWARD procurement action. there can be only 0 or 1"""
+        from models.procurement_action import AwardType, ProcurementActionStatus
+
+        for pa in self.procurement_actions:
+            if (
+                pa.status in [ProcurementActionStatus.AWARDED, ProcurementActionStatus.CERTIFIED]
+                and pa.award_type == AwardType.NEW_AWARD
+            ):
+                return pa
+        return None
+
+    @property
+    def award_date(self) -> Optional[date]:
+        """Get the award date from the first AWARDED/CERTIFIED NEW_AWARD procurement action."""
+        pa = self._find_new_award_procurement_action()
+        if pa is not None and pa.date_awarded_obligated is not None:
+            return pa.date_awarded_obligated
+        return None
+
+    @property
+    def award_fiscal_year(self) -> Optional[int]:
+        """Get the fiscal year of the award date."""
+        from models.utils.fiscal_year import date_to_fiscal_year
+
+        if self.award_date is None:
+            return None
+        return date_to_fiscal_year(self.award_date)
+
+    @property
+    def award_type(self) -> Optional[str]:
+        """
+        Classify agreement as NEW, CONTINUING, or None for Budget Team reporting.
+
+        - None: No non-Draft BLIs
+        - NEW: Has non-Draft BLIs AND (not awarded OR current FY <= award FY)
+        - CONTINUING: Awarded AND current FY > award FY
+
+        Returns the name of an AgreementClassification enum value (e.g. "NEW", "CONTINUING").
+        """
+        from models.budget_line_items import BudgetLineItemStatus
+        from models.utils.fiscal_year import get_current_fiscal_year
+
+        has_non_draft_blis = any(
+            bli.status is not None and bli.status != BudgetLineItemStatus.DRAFT for bli in self.budget_line_items
+        )
+
+        if not has_non_draft_blis:
+            return None
+
+        if not self.is_awarded:
+            return AgreementClassification.NEW.name
+
+        award_fy = self.award_fiscal_year
+        if award_fy is None:
+            # Awarded but no award date recorded — treat as NEW
+            return AgreementClassification.NEW.name
+
+        current_fy = get_current_fiscal_year()
+        if current_fy <= award_fy:
+            return AgreementClassification.NEW.name
+
+        return AgreementClassification.CONTINUING.name
+
     @property
     def is_awarded(self) -> bool:
         """
@@ -443,14 +512,7 @@ class Agreement(BaseModel):
             True if the agreement has an awarded procurement action with NEW_AWARD type
             False if the agreement does not have an awarded procurement action
         """
-        # Import at runtime to avoid circular dependency
-        from models.procurement_action import AwardType, ProcurementActionStatus
-
-        return any(
-            pa.status in [ProcurementActionStatus.AWARDED, ProcurementActionStatus.CERTIFIED]
-            and pa.award_type == AwardType.NEW_AWARD
-            for pa in self.procurement_actions
-        )
+        return self._find_new_award_procurement_action() is not None
 
     @property
     def immutable_awarded_fields(self) -> list[str]:
