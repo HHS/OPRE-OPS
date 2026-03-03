@@ -92,7 +92,7 @@ def test_get_can_history_list_from_api(auth_client, mocker, app_ctx):
     mocker_get_can_history = mocker.patch("ops_api.ops.services.can_history.CANHistoryService.get")
     mocker_get_can_history.return_value = mock_can_history_list
 
-    response = auth_client.get(f"/api/v1/can-history/?can_id={test_can_id}&fiscal_year=2025")
+    response = auth_client.get(f"/api/v1/cans/{test_can_id}/history/?fiscal_year=2025")
     assert response.status_code == 200
     assert len(response.json) == 10
 
@@ -117,26 +117,26 @@ def test_get_can_history_list_from_api_with_params(auth_client, mocker, app_ctx)
     mocker_get_can_history = mocker.patch("ops_api.ops.services.can_history.CANHistoryService.get")
     mocker_get_can_history.return_value = mock_can_history_list
 
-    response = auth_client.get(f"/api/v1/can-history/?can_id={test_can_id}&fiscal_year=2025&limit=5&offset=1")
+    response = auth_client.get(f"/api/v1/cans/{test_can_id}/history/?fiscal_year=2025&limit=5&offset=1")
     assert response.status_code == 200
     assert len(response.json) == 5
 
 
 def test_get_can_history_list_from_api_with_bad_limit(auth_client, app_ctx):
     test_can_id = 500
-    response = auth_client.get(f"/api/v1/can-history/?can_id={test_can_id}&fiscal_year=2025&limit=0")
+    response = auth_client.get(f"/api/v1/cans/{test_can_id}/history/?fiscal_year=2025&limit=0")
     assert response.status_code == 400
 
 
 def test_get_can_history_list_from_api_with_bad_offset(auth_client, app_ctx):
     test_can_id = 500
-    response = auth_client.get(f"/api/v1/can-history/?can_id={test_can_id}&fiscal_year=2025&offset=-1")
+    response = auth_client.get(f"/api/v1/cans/{test_can_id}/history/?fiscal_year=2025&offset=-1")
     assert response.status_code == 400
 
 
 def test_get_can_history_list_from_api_with_no_can_id(auth_client, app_ctx):
-    response = auth_client.get("/api/v1/can-history/")
-    assert response.status_code == 400
+    response = auth_client.get("/api/v1/cans/history/")
+    assert response.status_code == 404
 
 
 def test_get_can_history_from_api_no_fiscal_year(auth_client, mocker, app_ctx):
@@ -144,7 +144,7 @@ def test_get_can_history_from_api_no_fiscal_year(auth_client, mocker, app_ctx):
     mock_can_history_list = []
     mocker_get_can_history = mocker.patch("ops_api.ops.services.can_history.CANHistoryService.get")
     mocker_get_can_history.return_value = mock_can_history_list
-    response = auth_client.get(f"/api/v1/can-history/?can_id={test_can_id}")
+    response = auth_client.get(f"/api/v1/cans/{test_can_id}/history/")
     mocker_get_can_history.assert_called_once_with(test_can_id, 10, 0, 0, False)
     assert response.status_code == 200
 
@@ -154,7 +154,7 @@ def test_get_can_history_from_api_asc_sort(auth_client, mocker, app_ctx):
     mock_can_history_list = []
     mocker_get_can_history = mocker.patch("ops_api.ops.services.can_history.CANHistoryService.get")
     mocker_get_can_history.return_value = mock_can_history_list
-    response = auth_client.get(f"/api/v1/can-history/?can_id={test_can_id}&sort_asc=true")
+    response = auth_client.get(f"/api/v1/cans/{test_can_id}/history/?sort_asc=true")
     mocker_get_can_history.assert_called_once_with(test_can_id, 10, 0, 0, True)
     assert response.status_code == 200
 
@@ -165,7 +165,7 @@ def test_get_can_history_list_from_api_with_nonexistent_can(auth_client, mocker,
     mocker_get_can_history = mocker.patch("ops_api.ops.services.can_history.CANHistoryService.get")
     mocker_get_can_history.return_value = mock_can_history_list
 
-    response = auth_client.get(f"/api/v1/can-history/?can_id={test_can_id}&limit=5&offset=1")
+    response = auth_client.get(f"/api/v1/cans/{test_can_id}/history/?limit=5&offset=1")
     assert response.status_code == 200
     assert len(response.json) == 0
 

@@ -198,7 +198,7 @@ def register_api(api_bp: Blueprint) -> None:
         view_func=CAN_FUNDING_SUMMARY_LIST_API_VIEW_FUNC,
     )
 
-    api_bp.add_url_rule("/can-history/", view_func=CAN_HISTORY_LIST_API_VIEW_FUNC)
+    api_bp.add_url_rule("/cans/<int:id>/history/", view_func=CAN_HISTORY_LIST_API_VIEW_FUNC)
     api_bp.add_url_rule(
         "/portfolio-funding-summary/",
         view_func=PORTFOLIO_FUNDING_SUMMARY_LIST_API_VIEW_FUNC,
@@ -250,7 +250,7 @@ def register_api(api_bp: Blueprint) -> None:
         view_func=AGREEMENT_LIST_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
-        "/agreement-history/<int:id>",
+        "/agreements/<int:id>/history/",
         view_func=AGREEMENT_HISTORY_LIST_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
