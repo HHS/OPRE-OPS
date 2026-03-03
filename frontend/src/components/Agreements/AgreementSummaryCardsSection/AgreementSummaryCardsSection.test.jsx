@@ -43,7 +43,6 @@ describe("AgreementSummaryCardsSection", () => {
         render(
             <AgreementSummaryCardsSection
                 fiscalYear="2025"
-
                 totals={testTotals}
             />
         );
@@ -55,7 +54,6 @@ describe("AgreementSummaryCardsSection", () => {
         render(
             <AgreementSummaryCardsSection
                 fiscalYear="2025"
-
                 totals={testTotals}
             />
         );
@@ -67,7 +65,6 @@ describe("AgreementSummaryCardsSection", () => {
         render(
             <AgreementSummaryCardsSection
                 fiscalYear="Multi"
-
                 totals={testTotals}
             />
         );
@@ -79,7 +76,6 @@ describe("AgreementSummaryCardsSection", () => {
         render(
             <AgreementSummaryCardsSection
                 fiscalYear="2025"
-
                 totals={testTotals}
             />
         );
@@ -90,7 +86,6 @@ describe("AgreementSummaryCardsSection", () => {
         render(
             <AgreementSummaryCardsSection
                 fiscalYear="2025"
-
                 totals={testTotals}
             />
         );
@@ -101,7 +96,6 @@ describe("AgreementSummaryCardsSection", () => {
         render(
             <AgreementSummaryCardsSection
                 fiscalYear="2025"
-
                 totals={testTotals}
             />
         );
@@ -112,7 +106,6 @@ describe("AgreementSummaryCardsSection", () => {
         render(
             <AgreementSummaryCardsSection
                 fiscalYear="2025"
-
                 totals={testTotals}
             />
         );
@@ -123,7 +116,6 @@ describe("AgreementSummaryCardsSection", () => {
         render(
             <AgreementSummaryCardsSection
                 fiscalYear="2025"
-
                 totals={testTotals}
             />
         );
@@ -134,7 +126,6 @@ describe("AgreementSummaryCardsSection", () => {
         render(
             <AgreementSummaryCardsSection
                 fiscalYear="2025"
-
                 totals={null}
             />
         );
@@ -146,12 +137,7 @@ describe("AgreementSummaryCardsSection", () => {
     });
 
     it("handles undefined totals gracefully", () => {
-        render(
-            <AgreementSummaryCardsSection
-                fiscalYear="2025"
-
-            />
-        );
+        render(<AgreementSummaryCardsSection fiscalYear="2025" />);
         expect(screen.getByTestId("fy-spending-count")).toHaveTextContent("0");
         expect(screen.getByTestId("contract-total")).toHaveTextContent("0");
     });

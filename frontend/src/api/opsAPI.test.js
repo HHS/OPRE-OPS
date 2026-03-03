@@ -205,7 +205,8 @@ describe("opsAPI - Agreements Pagination", () => {
                 ],
                 count: 50,
                 limit: 10,
-                offset: 0
+                offset: 0,
+                totals: null
             });
         });
 
@@ -250,7 +251,8 @@ describe("opsAPI - Agreements Pagination", () => {
                 ],
                 count: 50,
                 limit: 10,
-                offset: 0
+                offset: 0,
+                totals: null
             });
         });
 
@@ -288,7 +290,8 @@ describe("opsAPI - Agreements Pagination", () => {
                 ],
                 count: 2,
                 limit: 2,
-                offset: 0
+                offset: 0,
+                totals: null
             });
         });
 
@@ -327,7 +330,8 @@ describe("opsAPI - Agreements Pagination", () => {
                 agreements: [],
                 count: 0,
                 limit: 10,
-                offset: 0
+                offset: 0,
+                totals: null
             });
         });
 
