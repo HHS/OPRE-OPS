@@ -23,6 +23,7 @@ describe("ProjectReactSelect", () => {
             />
         );
         expect(screen.getByRole("combobox")).toBeInTheDocument();
+        expect(screen.getByText("Project")).toBeInTheDocument();
     });
 
     it("renders the component with the correct options", () => {
@@ -93,5 +94,20 @@ describe("ProjectReactSelect", () => {
         );
 
         expect(screen.getByText("This is required information")).toBeInTheDocument();
+    });
+
+    it("renders required hint when field is marked required", () => {
+        render(
+            <ProjectComboBox
+                researchProjects={researchProjects}
+                selectedResearchProject={researchProjects[0]}
+                setSelectedProject={mockSetSelectedProject}
+                label="Project Name"
+                isRequired={true}
+            />
+        );
+
+        expect(screen.getByText("Project Name")).toBeInTheDocument();
+        expect(screen.getByText("Required Information*")).toBeInTheDocument();
     });
 });

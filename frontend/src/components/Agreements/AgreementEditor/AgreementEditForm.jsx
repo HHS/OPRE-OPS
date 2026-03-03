@@ -218,6 +218,8 @@ const AgreementEditForm = ({
                     selectedResearchProject={selectedProject}
                     setSelectedProject={changeSelectedProject}
                     messages={res.getErrors("project_id")}
+                    label="Project Name"
+                    isRequired={true}
                     legendClassname="usa-label margin-top-3 margin-bottom-1"
                     overrideStyles={{ width: "30em" }}
                 />
