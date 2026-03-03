@@ -380,6 +380,12 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
         - Maps solicitation_period_start_date → solicitation_period_start_date
         - Maps solicitation_period_end_date → solicitation_period_end_date
 
+        For EVALUATION steps:
+        - Maps evaluation_target_completion_date → target_completion_date
+        - Maps evaluation_task_completed_by → task_completed_by
+        - Maps evaluation_date_completed → date_completed
+        - Maps evaluation_notes → notes
+
         For other step types, these fields are excluded from the output.
         """
         data = super().to_dict()
@@ -411,6 +417,13 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
             data.pop("solicitation_period_end_date", None)
             data.pop("solicitation_completed_by_user", None)
 
+            # Remove EVALUATION-specific fields
+            data.pop("evaluation_target_completion_date", None)
+            data.pop("evaluation_task_completed_by", None)
+            data.pop("evaluation_date_completed", None)
+            data.pop("evaluation_notes", None)
+            data.pop("evaluation_completed_by_user", None)
+
         # Handle PRE_SOLICITATION-specific fields
         elif self.step_type == ProcurementTrackerStepType.PRE_SOLICITATION:
             # Map prefixed columns to API field names
@@ -437,6 +450,13 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
             data.pop("solicitation_period_start_date", None)
             data.pop("solicitation_period_end_date", None)
             data.pop("solicitation_completed_by_user", None)
+
+            # Remove EVALUATION-specific fields
+            data.pop("evaluation_target_completion_date", None)
+            data.pop("evaluation_task_completed_by", None)
+            data.pop("evaluation_date_completed", None)
+            data.pop("evaluation_notes", None)
+            data.pop("evaluation_completed_by_user", None)
 
         # Handle SOLICITATION-specific fields
         elif self.step_type == ProcurementTrackerStepType.SOLICITATION:
@@ -465,6 +485,47 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
             data.pop("pre_solicitation_draft_solicitation_date", None)
             data.pop("pre_solicitation_completed_by_user", None)
 
+            # Remove EVALUATION-specific fields
+            data.pop("evaluation_target_completion_date", None)
+            data.pop("evaluation_task_completed_by", None)
+            data.pop("evaluation_date_completed", None)
+            data.pop("evaluation_notes", None)
+            data.pop("evaluation_completed_by_user", None)
+
+        # Handle EVALUATION-specific fields
+        elif self.step_type == ProcurementTrackerStepType.EVALUATION:
+            # Map prefixed columns to API field names
+            data["target_completion_date"] = data.pop("evaluation_target_completion_date", None)
+            data["task_completed_by"] = data.pop("evaluation_task_completed_by", None)
+            data["date_completed"] = data.pop("evaluation_date_completed", None)
+            data["notes"] = data.pop("evaluation_notes", None)
+
+            # Map the relationship
+            if "evaluation_completed_by_user" in data:
+                data["completed_by_user"] = data.pop("evaluation_completed_by_user", None)
+
+            # Remove ACQUISITION_PLANNING-specific fields
+            data.pop("acquisition_planning_task_completed_by", None)
+            data.pop("acquisition_planning_date_completed", None)
+            data.pop("acquisition_planning_notes", None)
+            data.pop("acquisition_planning_completed_by_user", None)
+
+            # Remove PRE_SOLICITATION-specific fields
+            data.pop("pre_solicitation_target_completion_date", None)
+            data.pop("pre_solicitation_task_completed_by", None)
+            data.pop("pre_solicitation_date_completed", None)
+            data.pop("pre_solicitation_notes", None)
+            data.pop("pre_solicitation_draft_solicitation_date", None)
+            data.pop("pre_solicitation_completed_by_user", None)
+
+            # Remove SOLICITATION-specific fields
+            data.pop("solicitation_task_completed_by", None)
+            data.pop("solicitation_date_completed", None)
+            data.pop("solicitation_notes", None)
+            data.pop("solicitation_period_start_date", None)
+            data.pop("solicitation_period_end_date", None)
+            data.pop("solicitation_completed_by_user", None)
+
         else:
             # Remove all step-specific fields for other step types
             data.pop("acquisition_planning_task_completed_by", None)
@@ -485,6 +546,12 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
             data.pop("solicitation_period_start_date", None)
             data.pop("solicitation_period_end_date", None)
             data.pop("solicitation_completed_by_user", None)
+
+            data.pop("evaluation_target_completion_date", None)
+            data.pop("evaluation_task_completed_by", None)
+            data.pop("evaluation_date_completed", None)
+            data.pop("evaluation_notes", None)
+            data.pop("evaluation_completed_by_user", None)
 
         return data
 
