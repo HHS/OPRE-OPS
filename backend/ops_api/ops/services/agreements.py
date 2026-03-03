@@ -96,7 +96,7 @@ class AgreementFilters:
             name=data.get("name", []),
             search=data.get("search", []),
             only_my=data.get("only_my", []),
-            award_type=data.get("award_type", []),
+            award_type=[at.name if hasattr(at, "name") else at for at in data.get("award_type", [])],
             exact_match=data.get("exact_match", [True])[0],
             limit=data.get("limit", [10]),
             offset=data.get("offset", [0]),
