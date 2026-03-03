@@ -65,9 +65,7 @@ describe("useChangeRequestTotal", () => {
     });
 
     it("returns total count with active user id", () => {
-        useSelectorMock.mockImplementation((selector) =>
-            selector({ auth: { activeUser: { id: 8 } } })
-        );
+        useSelectorMock.mockImplementation((selector) => selector({ auth: { activeUser: { id: 8 } } }));
         useGetChangeRequestsListQueryMock.mockReturnValue({ data: [{ id: 1 }, { id: 2 }] });
 
         const { result } = renderHook(() => useChangeRequestTotal());
@@ -184,9 +182,7 @@ describe("useChangeRequestsForProcurementShop", () => {
         const oldShop = { name: "Old Shop", abbr: "OLD", fee_percentage: 1 };
         const newShop = { name: "New Shop", abbr: "NEW", fee_percentage: 2 };
 
-        const { result } = renderHook(() =>
-            useChangeRequestsForProcurementShop(agreementData, oldShop, newShop)
-        );
+        const { result } = renderHook(() => useChangeRequestsForProcurementShop(agreementData, oldShop, newShop));
 
         expect(result.current).toContain("Procurement Shop: Old Shop (OLD) to New Shop (NEW)");
         expect(result.current).toContain("Fee Rate: 1% to 2%");
@@ -265,7 +261,10 @@ describe("useChangeRequestsForTooltip", () => {
     it("returns detailed tooltip message for in-review budget line", () => {
         useGetAllCansMock.mockReturnValue({ cans: mockCans, isLoading: false, isError: false });
         useGetProcurementShopsQueryMock.mockReturnValue({
-            data: [{ id: 10, name: "Old" }, { id: 20, name: "New" }],
+            data: [
+                { id: 10, name: "Old" },
+                { id: 20, name: "New" }
+            ],
             isSuccess: true,
             isLoading: false
         });
