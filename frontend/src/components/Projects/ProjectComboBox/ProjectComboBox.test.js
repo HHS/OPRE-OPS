@@ -23,7 +23,7 @@ describe("ProjectReactSelect", () => {
             />
         );
         expect(screen.getByRole("combobox")).toBeInTheDocument();
-        expect(screen.getByText("Project")).toBeInTheDocument();
+        expect(screen.getByText("Project Title or Nickname")).toBeInTheDocument();
     });
 
     it("renders the component with the correct options", () => {
