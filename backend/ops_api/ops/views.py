@@ -29,7 +29,7 @@ from models import (
     SpecialTopic,
     User,
 )
-from ops_api.ops.document.api import DocumentAPI
+from ops_api.ops.document.api import DocumentItemAPI, DocumentListAPI
 from ops_api.ops.resources.administrative_and_support_projects import (
     AdministrativeAndSupportProjectItemAPI,
     AdministrativeAndSupportProjectListAPI,
@@ -67,7 +67,10 @@ from ops_api.ops.resources.can_funding_received import (
 from ops_api.ops.resources.can_funding_summary import CANFundingSummaryListAPI
 from ops_api.ops.resources.can_history import CANHistoryListAPI
 from ops_api.ops.resources.cans import CANItemAPI, CANListAPI, CANListFilterOptionAPI
-from ops_api.ops.resources.change_requests import ChangeRequestItemAPI, ChangeRequestListAPI
+from ops_api.ops.resources.change_requests import (
+    ChangeRequestItemAPI,
+    ChangeRequestListAPI,
+)
 from ops_api.ops.resources.divisions import DivisionsItemAPI, DivisionsListAPI
 from ops_api.ops.resources.health_check import HealthCheckAPI
 from ops_api.ops.resources.notifications import NotificationItemAPI, NotificationListAPI
@@ -297,4 +300,5 @@ CHANGE_REQUEST_LIST_API_VIEW_FUNC = ChangeRequestListAPI.as_view("change-request
 CHANGE_REQUEST_ITEM_API_VIEW_FUNC = ChangeRequestItemAPI.as_view("change-requests-item", ChangeRequest)
 
 # Document ENDPOINTs
-DOCUMENT_API_FUNC = DocumentAPI.as_view("documents", Document)
+DOCUMENT_LIST_API_VIEW_FUNC = DocumentListAPI.as_view("documents-list", Document)
+DOCUMENT_ITEM_API_VIEW_FUNC = DocumentItemAPI.as_view("documents-item", Document)
