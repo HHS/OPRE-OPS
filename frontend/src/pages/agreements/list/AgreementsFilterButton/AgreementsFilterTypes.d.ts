@@ -10,4 +10,5 @@ export type Filters = {
     agreementType?: FilterOption[];
     agreementName?: FilterOption[];
     contractNumber?: FilterOption[];
+    awardType?: FilterOption[];
 };
