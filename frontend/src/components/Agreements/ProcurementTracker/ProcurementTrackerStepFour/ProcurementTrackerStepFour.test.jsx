@@ -410,7 +410,9 @@ describe("ProcurementTrackerStepFour", () => {
 
             const termTags = screen.getAllByTestId("term-tag");
             const tagTexts = termTags.map((tag) => tag.textContent);
-            expect(tagTexts.some((text) => text.includes("Target Completion Date") && text.includes("None"))).toBe(true);
+            expect(tagTexts.some((text) => text.includes("Target Completion Date") && text.includes("None"))).toBe(
+                true
+            );
         });
     });
 

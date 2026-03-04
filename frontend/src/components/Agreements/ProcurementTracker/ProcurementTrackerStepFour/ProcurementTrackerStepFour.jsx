@@ -214,8 +214,8 @@ const ProcurementTrackerStepFour = ({
                 <div>
                     <p>
                         OPRE completes the technical evaluations and any potential negotiations. Once OPRE internally
-                        selects a vendor (before sending the Final Consensus Memo to the Procurement Shop), this step
-                        is marked complete.
+                        selects a vendor (before sending the Final Consensus Memo to the Procurement Shop), this step is
+                        marked complete.
                     </p>
                     <div className="display-flex flex-align-center margin-top-5">
                         <FontAwesomeIcon

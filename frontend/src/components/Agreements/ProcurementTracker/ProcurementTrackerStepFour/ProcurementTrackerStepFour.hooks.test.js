@@ -252,9 +252,7 @@ describe("useProcurementTrackerStepFour", () => {
 
     describe("handleStepFourComplete", () => {
         it("calls API with correct payload including all required fields", async () => {
-            const { result } = renderHook(() =>
-                useProcurementTrackerStepFour({}, mockHandleSetCompletedStepNumber)
-            );
+            const { result } = renderHook(() => useProcurementTrackerStepFour({}, mockHandleSetCompletedStepNumber));
 
             act(() => {
                 result.current.setSelectedUser({ id: 456, full_name: "Jane Smith" });
@@ -304,9 +302,7 @@ describe("useProcurementTrackerStepFour", () => {
         });
 
         it("trims notes before submission", async () => {
-            const { result } = renderHook(() =>
-                useProcurementTrackerStepFour({}, mockHandleSetCompletedStepNumber)
-            );
+            const { result } = renderHook(() => useProcurementTrackerStepFour({}, mockHandleSetCompletedStepNumber));
 
             act(() => {
                 result.current.setSelectedUser({ id: 456, full_name: "Jane Smith" });
@@ -323,9 +319,7 @@ describe("useProcurementTrackerStepFour", () => {
         });
 
         it("calls handleSetCompletedStepNumber with 4 after successful completion", async () => {
-            const { result } = renderHook(() =>
-                useProcurementTrackerStepFour({}, mockHandleSetCompletedStepNumber)
-            );
+            const { result } = renderHook(() => useProcurementTrackerStepFour({}, mockHandleSetCompletedStepNumber));
 
             act(() => {
                 result.current.setSelectedUser({ id: 456, full_name: "Jane Smith" });
@@ -344,9 +338,7 @@ describe("useProcurementTrackerStepFour", () => {
                 unwrap: vi.fn().mockRejectedValue(new Error("API Error"))
             });
 
-            const { result } = renderHook(() =>
-                useProcurementTrackerStepFour({}, mockHandleSetCompletedStepNumber)
-            );
+            const { result } = renderHook(() => useProcurementTrackerStepFour({}, mockHandleSetCompletedStepNumber));
 
             act(() => {
                 result.current.setSelectedUser({ id: 456, full_name: "Jane Smith" });
