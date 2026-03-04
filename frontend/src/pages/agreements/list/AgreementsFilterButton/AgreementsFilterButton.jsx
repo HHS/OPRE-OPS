@@ -44,7 +44,7 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
 
     const fieldsetList = [
         <fieldset
-            key="field1"
+            key="fiscalYearField"
             className={`margin-top-105 ${fieldStyles}`}
         >
             <FiscalYearComboBox
@@ -59,7 +59,7 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
             />
         </fieldset>,
         <fieldset
-            key="field2"
+            key="portfolioField"
             className="usa-fieldset"
         >
             <PortfoliosComboBox
@@ -71,7 +71,7 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
             />
         </fieldset>,
         <fieldset
-            key="field3"
+            key="projectTitleField"
             className={`margin-top-105 ${fieldStyles}`}
         >
             <ProjectTitleComboBox
@@ -84,7 +84,7 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
             />
         </fieldset>,
         <fieldset
-            key="field4"
+            key="agreementTypeField"
             className={`margin-top-105 ${fieldStyles}`}
         >
             <AgreementTypeComboBox
@@ -96,7 +96,7 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
             />
         </fieldset>,
         <fieldset
-            key="field5"
+            key="agreementNameField"
             className={`margin-top-105 ${fieldStyles}`}
         >
             <AgreementNameComboBox
@@ -108,7 +108,7 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
             />
         </fieldset>,
         <fieldset
-            key="field6"
+            key="contractNumberField"
             className={`margin-top-105 ${fieldStyles}`}
         >
             <ContractNumberComboBox
@@ -121,7 +121,7 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
             />
         </fieldset>,
         <fieldset
-            key="field7"
+            key="awardTypeField"
             className={`margin-top-105 ${fieldStyles}`}
         >
             <AwardTypeComboBox
