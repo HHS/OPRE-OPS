@@ -6,6 +6,7 @@ import ProjectTitleComboBox from "../../../../components/Projects/ProjectTitleCo
 import AgreementTypeComboBox from "../../../../components/Agreements/AgreementTypeComboBox";
 import AgreementNameComboBox from "../../../../components/Agreements/AgreementNameComboBox";
 import ContractNumberComboBox from "../../../../components/Agreements/ContractNumberComboBox";
+import AwardTypeComboBox from "../../../../components/Agreements/AwardTypeComboBox";
 import FilterButton from "../../../../components/UI/FilterButton/FilterButton";
 import useAgreementsFilterButton from "./AgreementsFilterButton.hooks";
 import { FILTER_MODAL_FULL_WIDTH } from "../../../../constants";
@@ -31,8 +32,11 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
         setAgreementName,
         contractNumber,
         setContractNumber,
+        awardType,
+        setAwardType,
         applyFilter,
-        resetFilter
+        resetFilter,
+        currentFiscalYear
     } = useAgreementsFilterButton(filters, setFilters);
 
     const fieldStyles = "usa-fieldset margin-bottom-205";
@@ -40,14 +44,14 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
 
     const fieldsetList = [
         <fieldset
-            key="field1"
+            key="fiscalYearField"
             className={`margin-top-105 ${fieldStyles}`}
         >
             <FiscalYearComboBox
                 selectedFiscalYears={fiscalYear}
                 setSelectedFiscalYears={setFiscalYear}
                 legendClassname={legendStyles}
-                defaultString={""}
+                defaultString={`Fiscal Year ${currentFiscalYear}`}
                 overrideStyles={FILTER_MODAL_FULL_WIDTH}
                 budgetLinesFiscalYears={agreementFilterOptions?.fiscal_years || []}
                 label="Compare Fiscal Years"
@@ -55,7 +59,7 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
             />
         </fieldset>,
         <fieldset
-            key="field2"
+            key="portfolioField"
             className="usa-fieldset"
         >
             <PortfoliosComboBox
@@ -67,7 +71,7 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
             />
         </fieldset>,
         <fieldset
-            key="field3"
+            key="projectTitleField"
             className={`margin-top-105 ${fieldStyles}`}
         >
             <ProjectTitleComboBox
@@ -80,7 +84,7 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
             />
         </fieldset>,
         <fieldset
-            key="field4"
+            key="agreementTypeField"
             className={`margin-top-105 ${fieldStyles}`}
         >
             <AgreementTypeComboBox
@@ -92,7 +96,7 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
             />
         </fieldset>,
         <fieldset
-            key="field5"
+            key="agreementNameField"
             className={`margin-top-105 ${fieldStyles}`}
         >
             <AgreementNameComboBox
@@ -104,13 +108,25 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
             />
         </fieldset>,
         <fieldset
-            key="field6"
+            key="contractNumberField"
             className={`margin-top-105 ${fieldStyles}`}
         >
             <ContractNumberComboBox
                 selectedContractNumbers={contractNumber}
                 setSelectedContractNumbers={setContractNumber}
                 agreementFilterOptions={agreementFilterOptions}
+                legendClassname={legendStyles}
+                defaultString={""}
+                overrideStyles={FILTER_MODAL_FULL_WIDTH}
+            />
+        </fieldset>,
+        <fieldset
+            key="awardTypeField"
+            className={`margin-top-105 ${fieldStyles}`}
+        >
+            <AwardTypeComboBox
+                selectedAwardTypes={awardType}
+                setSelectedAwardTypes={setAwardType}
                 legendClassname={legendStyles}
                 defaultString={""}
                 overrideStyles={FILTER_MODAL_FULL_WIDTH}

@@ -16,10 +16,19 @@ import { useState, useEffect, useCallback } from "react";
  */
 
 /**
+ * @typedef {Object} FilterItem
+ * @property {string} title
+ */
+
+/**
  * @typedef {Object} Filters
  * @property {FYFilterItem[]} fiscalYear
  * @property {PortfolioFilterItem[]} portfolio
- * @property {BLIFilterItem[]} budgetLineStatus
+ * @property {FilterItem[]} projectTitle
+ * @property {FilterItem[]} agreementType
+ * @property {FilterItem[]} agreementName
+ * @property {FilterItem[]} contractNumber
+ * @property {FilterItem[]} awardType
  */
 
 /**
@@ -92,6 +101,10 @@ export const useTagsList = (filters) => {
         updateTags("contractNumber", "contractNumber");
     }, [filters.contractNumber, updateTags]);
 
+    useEffect(() => {
+        updateTags("awardType", "awardType");
+    }, [filters.awardType, updateTags]);
+
     return tagsList;
 };
 
@@ -136,6 +149,12 @@ export const removeFilter = (tag, setFilters) => {
             setFilters((prevState) => ({
                 ...prevState,
                 contractNumber: prevState.contractNumber.filter((contract) => contract.title !== tag.tagText)
+            }));
+            break;
+        case "awardType":
+            setFilters((prevState) => ({
+                ...prevState,
+                awardType: prevState.awardType.filter((award) => award.title !== tag.tagText)
             }));
             break;
         default:
