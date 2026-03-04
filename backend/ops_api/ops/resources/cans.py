@@ -92,6 +92,42 @@ class CANItemAPI(BaseItemAPI):
 
 
 class CANListAPI(BaseListAPI):
+    """
+    API endpoint for listing and creating CANs.
+
+    **Endpoint:** ``GET /cans/``
+
+    This is the **CAN management list** endpoint with rich filtering and pagination:
+      - Supports pagination (``limit``/``offset``)
+      - User-configurable sorting (7 sort fields)
+      - Multi-field filtering: ``portfolio``, ``portfolio_id``, ``active_period``, ``transfer``,
+        ``can_ids``, ``budget_min``, ``budget_max``
+      - ILIKE search on CAN number
+      - Active-period filtering via SQL queries + shared :func:`~ops_api.ops.utils.cans.filter_active_cans`
+      - Returns a **paginated wrapper** ``{ data, count, limit, offset }``
+      - Uses ``CANListSchema`` (Marshmallow) for serialization
+
+    **Frontend consumers:**
+      - ``CanList`` page — the CAN management list with filters and sorting
+
+    .. note::
+        **Relationship to GET /portfolios/{id}/cans/ (PortfolioCansAPI):**
+
+        There is functional overlap when filtering by portfolio, but important differences.
+        See :class:`~ops_api.ops.resources.portfolio_cans.PortfolioCansAPI` docstring for a
+        detailed comparison table.
+
+        Features this endpoint does **not** support (that the nested endpoint does):
+          - ``includeInactive`` param to bypass active-period filtering
+          - In-memory BLI fiscal year filtering per CAN
+          - Appropriation-year-descending sort order
+
+        **Future consolidation plan:**
+        Add the above missing features to this endpoint, migrate ``PortfolioSpending`` and
+        ``PortfolioFunding`` to use ``useGetCansQuery``, and deprecate the nested endpoint.
+        See :func:`~ops_api.ops.utils.cans.is_can_active_for_year` for the full plan.
+    """
+
     def __init__(self, model):
         super().__init__(model)
         self._can_service = None
