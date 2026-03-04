@@ -46,7 +46,8 @@ const AgreementsList = () => {
         projectTitle: [],
         agreementType: [],
         agreementName: [],
-        contractNumber: []
+        contractNumber: [],
+        awardType: []
     });
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
     const [currentPage, setCurrentPage] = useState(1); // 1-indexed for UI
@@ -64,7 +65,8 @@ const AgreementsList = () => {
         filters.projectTitle.length > 0 ||
         filters.agreementType.length > 0 ||
         filters.agreementName.length > 0 ||
-        filters.contractNumber.length > 0;
+        filters.contractNumber.length > 0 ||
+        filters.awardType.length > 0;
 
     const getFiscalYearFilter = () => {
         // If explicit filters are set via filter modal, use those
@@ -137,7 +139,8 @@ const AgreementsList = () => {
             projectTitle: [],
             agreementType: [],
             agreementName: [],
-            contractNumber: []
+            contractNumber: [],
+            awardType: []
         });
         setSelectedFiscalYear(newValue);
     };
@@ -237,6 +240,7 @@ const AgreementsList = () => {
                 "Fees",
                 "Lifetime Obligated",
                 "Contract Number",
+                "Award Type",
                 "Vendor",
                 "COR"
             ];
@@ -274,6 +278,7 @@ const AgreementsList = () => {
                         agreementFees ?? 0,
                         lifetimeObligated,
                         contractNumber ?? "",
+                        agreement?.award_type ?? "",
                         agreement?.vendor ?? "",
                         agreementDataMap[agreement.id]?.cor ?? ""
                     ];
