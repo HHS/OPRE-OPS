@@ -900,13 +900,13 @@ export const opsApi = createApi({
             invalidatesTags: ["Documents"]
         }),
         getDocumentsByAgreementId: builder.query({
-            query: (agreement_id) => `/documents/${agreement_id}`,
+            query: (agreement_id) => `/documents/?agreement_id=${agreement_id}`,
             providesTags: ["Documents"]
         }),
         updateDocumentStatus: builder.mutation({
             query: ({ document_id, data }) => {
                 return {
-                    url: `/documents/${document_id}/status/`,
+                    url: `/documents/${document_id}`,
                     method: "PATCH",
                     headers: { "Content-Type": "application/json" },
                     body: data
