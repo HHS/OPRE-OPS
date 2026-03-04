@@ -9,16 +9,17 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 /**
  * @typedef {import("../../../../types/UserTypes").SafeUser} SafeUser
+ * @typedef {import("../../../../types/ProcurementTrackerTypes").ProcurementTrackerEvaluationStep} ProcurementTrackerEvaluationStep
  */
 
 /**
  * @typedef {Object} ProcurementTrackerStepFourProps
  * @property {string} stepStatus - The current status of the procurement tracker step
  * @property {boolean} isDisabled - The complete step form is disabled
- * @property {Object} stepFourData - The data for step 4 of the procurement tracker
+ * @property {ProcurementTrackerEvaluationStep} stepFourData - The data for step 4 of the procurement tracker
  * @property {boolean} isActiveStep - Whether step is the active step
  * @property {SafeUser[]} authorizedUsers - List of users authorized for this agreement
- * @property {Function} [handleSetCompletedStepNumber] - Optional callback to set completed step number
+ * @property {((stepNumber: number) => void) | undefined} [handleSetCompletedStepNumber] - Optional callback to set completed step number
  */
 
 /**
@@ -108,7 +109,7 @@ const ProcurementTrackerStepFour = ({
                                     messages={validatorRes.getErrors("targetCompletionDate") || []}
                                     hint="mm/dd/yyyy"
                                     value={targetCompletionDate}
-                                    onChange={(e) => {
+                                    onChange={/** @param {any} e */ (e) => {
                                         runValidate("targetCompletionDate", e.target.value);
                                         setTargetCompletionDate(e.target.value);
                                     }}
@@ -156,7 +157,7 @@ const ProcurementTrackerStepFour = ({
                             users={authorizedUsers}
                             isDisabled={isUsersComboBoxDisabled}
                             messages={validatorRes.getErrors("users") || []}
-                            onChange={(name, value) => {
+                            onChange={/** @param {any} name @param {any} value */ (name, value) => {
                                 runValidate(name, value);
                             }}
                         />
@@ -169,7 +170,7 @@ const ProcurementTrackerStepFour = ({
                             hint="mm/dd/yyyy"
                             value={step4DateCompleted}
                             messages={validatorRes.getErrors("dateCompleted") || []}
-                            onChange={(e) => {
+                            onChange={/** @param {any} e */ (e) => {
                                 runValidate("dateCompleted", e.target.value);
                                 setStep4DateCompleted(e.target.value);
                             }}
@@ -183,7 +184,7 @@ const ProcurementTrackerStepFour = ({
                         className="margin-top-2"
                         maxLength={750}
                         value={step4Notes}
-                        onChange={(_, value) => setStep4Notes(value)}
+                        onChange={/** @param {any} _ @param {any} value */ (_, value) => setStep4Notes(value)}
                         isDisabled={isEvaluationFieldsDisabled}
                     />
 

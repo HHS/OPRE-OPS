@@ -8,16 +8,17 @@ import useAlert from "../../../../hooks/use-alert.hooks";
 
 /**
  * @typedef {import("../../../../types/ProcurementTrackerTypes").ProcurementTrackerEvaluationStep} ProcurementTrackerEvaluationStep
+ * @typedef {import("../../../../types/UserTypes").SafeUser} SafeUser
  */
 
 /**
  * Custom hook to manage the state and logic for Procurement Tracker Step Four (Evaluation).
  * @param {ProcurementTrackerEvaluationStep | undefined} stepFourData - The data for step four of the procurement tracker.
- * @param {Function} handleSetCompletedStepNumber - Function to set the completed step number.
+ * @param {Function | undefined} handleSetCompletedStepNumber - Function to set the completed step number.
  */
 export default function useProcurementTrackerStepFour(stepFourData, handleSetCompletedStepNumber) {
     const [isEvaluationComplete, setIsEvaluationComplete] = React.useState(false);
-    const [selectedUser, setSelectedUser] = React.useState({});
+    const [selectedUser, setSelectedUser] = React.useState(/** @type {SafeUser | undefined} */ (undefined));
     const [targetCompletionDate, setTargetCompletionDate] = React.useState("");
     const [step4DateCompleted, setStep4DateCompleted] = React.useState("");
     const [step4Notes, setStep4Notes] = React.useState("");
@@ -32,11 +33,15 @@ export default function useProcurementTrackerStepFour(stepFourData, handleSetCom
     const { setAlert } = useAlert();
 
     const step4CompletedByUserName = useGetUserFullNameFromId(stepFourData?.task_completed_by ?? -1);
-    const step4DateCompletedLabel = formatDateToMonthDayYear(stepFourData?.date_completed ?? "");
-    const step4TargetCompletionDateLabel = formatDateToMonthDayYear(stepFourData?.target_completion_date ?? "");
+    const step4DateCompletedLabel = formatDateToMonthDayYear(stepFourData?.date_completed ?? "") ?? undefined;
+    const step4TargetCompletionDateLabel = formatDateToMonthDayYear(stepFourData?.target_completion_date ?? "") ?? undefined;
     const step4NotesLabel = stepFourData?.notes;
     const MemoizedDatePicker = React.memo(DatePicker);
 
+    /**
+     * @param {string} name
+     * @param {any} value
+     */
     const runValidate = (name, value) => {
         suite({ ...{ [name]: value } }, name);
     };
@@ -75,9 +80,10 @@ export default function useProcurementTrackerStepFour(stepFourData, handleSetCom
      * @returns {Promise<void>}
      */
     const handleStepFourComplete = async (stepId) => {
+        /** @type {Record<string, any>} */
         const payload = {
             status: "COMPLETED",
-            task_completed_by: selectedUser.id,
+            task_completed_by: selectedUser?.id,
             date_completed: formatDateForApi(step4DateCompleted),
             notes: step4Notes.trim()
         };
@@ -111,7 +117,7 @@ export default function useProcurementTrackerStepFour(stepFourData, handleSetCom
 
     const cancelStepFour = () => {
         setIsEvaluationComplete(false);
-        setSelectedUser({});
+        setSelectedUser(undefined);
         setTargetCompletionDate("");
         setStep4DateCompleted("");
         setStep4Notes("");
