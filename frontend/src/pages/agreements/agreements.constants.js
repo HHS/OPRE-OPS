@@ -62,3 +62,12 @@ export const AgreementFields = {
 };
 
 export const AGREEMENT_NICKNAME_LABEL = "Agreement Nickname or Acronym";
+
+/**
+ * Mapping of award type codes to display labels.
+ * @type {Record<string, string>}
+ */
+export const AWARD_TYPE_LABELS = {
+    NEW: "New Award",
+    CONTINUING: "Continuing Agreement"
+};
