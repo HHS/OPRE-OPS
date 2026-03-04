@@ -94,6 +94,12 @@ class ProcurementTrackerStepResponseSchema(Schema):
             data["solicitation_period_start_date"] = obj.solicitation_period_start_date
             data["solicitation_period_end_date"] = obj.solicitation_period_end_date
 
+        elif obj.step_type == ProcurementTrackerStepType.EVALUATION:
+            data["task_completed_by"] = obj.evaluation_task_completed_by
+            data["date_completed"] = obj.evaluation_date_completed
+            data["notes"] = obj.evaluation_notes
+            data["target_completion_date"] = obj.evaluation_target_completion_date
+
         return data
 
     @post_dump
@@ -147,6 +153,18 @@ class ProcurementTrackerStepResponseSchema(Schema):
             # Remove PRE_SOLICITATION-only fields
             data.pop("target_completion_date", None)
             data.pop("draft_solicitation_date", None)
+        elif step_type in ("EVALUATION", ProcurementTrackerStepType.EVALUATION):
+            preserve_keys = base_fields | {
+                "target_completion_date",
+                "task_completed_by",
+                "date_completed",
+                "notes",
+            }
+            # Remove PRE_SOLICITATION-only fields
+            data.pop("draft_solicitation_date", None)
+            # Remove SOLICITATION-only fields
+            data.pop("solicitation_period_start_date", None)
+            data.pop("solicitation_period_end_date", None)
         else:
             preserve_keys = base_fields
             # Remove all step-specific fields for other step types
@@ -252,6 +270,12 @@ class ProcurementTrackerStepSchema(Schema):
             data["solicitation_period_start_date"] = obj.solicitation_period_start_date
             data["solicitation_period_end_date"] = obj.solicitation_period_end_date
 
+        elif obj.step_type == ProcurementTrackerStepType.EVALUATION:
+            data["task_completed_by"] = obj.evaluation_task_completed_by
+            data["date_completed"] = obj.evaluation_date_completed
+            data["notes"] = obj.evaluation_notes
+            data["target_completion_date"] = obj.evaluation_target_completion_date
+
         return data
 
     @post_dump
@@ -311,6 +335,19 @@ class ProcurementTrackerStepSchema(Schema):
             # Remove PRE_SOLICITATION-only fields
             data.pop("target_completion_date", None)
             data.pop("draft_solicitation_date", None)
+        elif step_type in ("EVALUATION", ProcurementTrackerStepType.EVALUATION):
+            evaluation_fields = {
+                "target_completion_date",
+                "task_completed_by",
+                "date_completed",
+                "notes",
+            }
+            preserve_keys = base_fields | evaluation_fields
+            # Remove PRE_SOLICITATION-only fields
+            data.pop("draft_solicitation_date", None)
+            # Remove SOLICITATION-only fields
+            data.pop("solicitation_period_start_date", None)
+            data.pop("solicitation_period_end_date", None)
         else:
             preserve_keys = base_fields
             # Remove all step-specific fields for other step types
