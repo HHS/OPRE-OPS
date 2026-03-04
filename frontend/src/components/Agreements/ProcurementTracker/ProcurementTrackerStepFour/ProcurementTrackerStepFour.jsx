@@ -1,0 +1,264 @@
+import { getLocalISODate } from "../../../../helpers/utils";
+import TextArea from "../../../UI/Form/TextArea";
+import ConfirmationModal from "../../../UI/Modals/ConfirmationModal";
+import TermTag from "../../../UI/Term/TermTag";
+import UsersComboBox from "../../UsersComboBox";
+import useProcurementTrackerStepFour from "./ProcurementTrackerStepFour.hooks";
+import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
+/**
+ * @typedef {import("../../../../types/UserTypes").SafeUser} SafeUser
+ */
+
+/**
+ * @typedef {Object} ProcurementTrackerStepFourProps
+ * @property {string} stepStatus - The current status of the procurement tracker step
+ * @property {boolean} isDisabled - The complete step form is disabled
+ * @property {Object} stepFourData - The data for step 4 of the procurement tracker
+ * @property {boolean} isActiveStep - Whether step is the active step
+ * @property {SafeUser[]} authorizedUsers - List of users authorized for this agreement
+ * @property {Function} [handleSetCompletedStepNumber] - Optional callback to set completed step number
+ */
+
+/**
+ * @component
+ * @param {ProcurementTrackerStepFourProps} props
+ * @returns {React.ReactElement}
+ */
+const ProcurementTrackerStepFour = ({
+    stepStatus,
+    isDisabled,
+    stepFourData,
+    isActiveStep,
+    authorizedUsers,
+    handleSetCompletedStepNumber
+}) => {
+    const {
+        isEvaluationComplete,
+        setIsEvaluationComplete,
+        selectedUser,
+        setSelectedUser,
+        setTargetCompletionDate,
+        targetCompletionDate,
+        step4CompletedByUserName,
+        step4DateCompleted,
+        setStep4DateCompleted,
+        step4Notes,
+        setStep4Notes,
+        step4NotesLabel,
+        runValidate,
+        validatorRes,
+        step4DateCompletedLabel,
+        MemoizedDatePicker,
+        handleTargetCompletionDateSubmit,
+        step4TargetCompletionDateLabel,
+        showModal,
+        setShowModal,
+        modalProps,
+        cancelModalStep4,
+        handleStepFourComplete
+    } = useProcurementTrackerStepFour(stepFourData, handleSetCompletedStepNumber);
+
+    // Disabled flags for form controls
+    const isTargetCompletionDateSaveDisabled =
+        isDisabled || validatorRes.hasErrors("targetCompletionDate") || !targetCompletionDate;
+    const isEvaluationCheckboxDisabled = isDisabled || !isActiveStep;
+    const isUsersComboBoxDisabled = isDisabled || !isEvaluationComplete || authorizedUsers.length === 0;
+    const isEvaluationFieldsDisabled = isDisabled || !isEvaluationComplete;
+    const disableStep4Buttons =
+        isDisabled ||
+        !isEvaluationComplete ||
+        !selectedUser?.id ||
+        !step4DateCompleted ||
+        validatorRes.hasErrors() ||
+        !stepFourData?.id;
+
+    return (
+        <>
+            {showModal && (
+                <ConfirmationModal
+                    heading={modalProps.heading}
+                    setShowModal={setShowModal}
+                    actionButtonText={modalProps.actionButtonText}
+                    secondaryButtonText={modalProps.secondaryButtonText}
+                    handleConfirm={modalProps.handleConfirm}
+                />
+            )}
+            {stepStatus === "PENDING" && (
+                <fieldset className="usa-fieldset">
+                    <p>
+                        Complete the technical evaluations and any potential negotiations. If you have a target
+                        completion date for when evaluations will be complete, enter it below. Once you internally
+                        select a vendor check this task as complete (Internally means internal to OPRE, before you send
+                        the Final Consensus Memo to the Procurement Shop).
+                    </p>
+                    <div className="display-flex flex-align-end margin-bottom-2">
+                        {stepFourData?.target_completion_date ? (
+                            <TermTag
+                                term="Target Completion Date"
+                                description={step4TargetCompletionDateLabel}
+                            />
+                        ) : (
+                            <>
+                                <MemoizedDatePicker
+                                    id="target-completion-date"
+                                    name="targetCompletionDate"
+                                    label="Target Completion Date (optional)"
+                                    messages={validatorRes.getErrors("targetCompletionDate") || []}
+                                    hint="mm/dd/yyyy"
+                                    value={targetCompletionDate}
+                                    onChange={(e) => {
+                                        runValidate("targetCompletionDate", e.target.value);
+                                        setTargetCompletionDate(e.target.value);
+                                    }}
+                                    minDate={getLocalISODate()}
+                                    isDisabled={isDisabled}
+                                />
+                                <button
+                                    className="usa-button usa-button--unstyled margin-bottom-1 margin-left-2"
+                                    data-cy="target-completion-save-btn"
+                                    disabled={isTargetCompletionDateSaveDisabled}
+                                    onClick={() => {
+                                        handleTargetCompletionDateSubmit(stepFourData?.id);
+                                    }}
+                                >
+                                    Save
+                                </button>
+                            </>
+                        )}
+                    </div>
+                    <div className="usa-checkbox margin-top-3">
+                        <input
+                            className="usa-checkbox__input"
+                            id="step-4-checkbox"
+                            type="checkbox"
+                            name="step-4-checkbox"
+                            value="step-4-checkbox"
+                            checked={isEvaluationComplete}
+                            onChange={() => setIsEvaluationComplete(!isEvaluationComplete)}
+                            disabled={isEvaluationCheckboxDisabled}
+                        />
+                        <label
+                            className="usa-checkbox__label"
+                            htmlFor="step-4-checkbox"
+                        >
+                            Evaluations are complete and OPRE has internally selected a vendor (Final Consensus Memo has
+                            not been sent)
+                        </label>
+                    </div>
+                    <div className="display-flex flex-align-center">
+                        <UsersComboBox
+                            className="width-card-lg margin-top-5"
+                            label={"Task Completed By"}
+                            selectedUser={selectedUser}
+                            setSelectedUser={setSelectedUser}
+                            users={authorizedUsers}
+                            isDisabled={isUsersComboBoxDisabled}
+                            messages={validatorRes.getErrors("users") || []}
+                            onChange={(name, value) => {
+                                runValidate(name, value);
+                            }}
+                        />
+
+                        <MemoizedDatePicker
+                            id="step-4-date-completed"
+                            name="dateCompleted"
+                            className="margin-left-4"
+                            label="Date Completed"
+                            hint="mm/dd/yyyy"
+                            value={step4DateCompleted}
+                            messages={validatorRes.getErrors("dateCompleted") || []}
+                            onChange={(e) => {
+                                runValidate("dateCompleted", e.target.value);
+                                setStep4DateCompleted(e.target.value);
+                            }}
+                            maxDate={getLocalISODate()}
+                            isDisabled={isEvaluationFieldsDisabled}
+                        />
+                    </div>
+                    <TextArea
+                        name="notes"
+                        label="Notes (optional)"
+                        className="margin-top-2"
+                        maxLength={750}
+                        value={step4Notes}
+                        onChange={(_, value) => setStep4Notes(value)}
+                        isDisabled={isEvaluationFieldsDisabled}
+                    />
+
+                    <div className="margin-top-2 display-flex flex-justify-end">
+                        <button
+                            className="usa-button usa-button--unstyled margin-right-2"
+                            data-cy="cancel-button"
+                            onClick={cancelModalStep4}
+                            disabled={isEvaluationFieldsDisabled}
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            className="usa-button"
+                            data-cy="continue-btn"
+                            onClick={() => {
+                                handleStepFourComplete(stepFourData?.id);
+                            }}
+                            disabled={disableStep4Buttons}
+                        >
+                            Complete Step 4
+                        </button>
+                    </div>
+                </fieldset>
+            )}
+
+            {stepStatus === "COMPLETED" && (
+                <div>
+                    <p>
+                        OPRE completes the technical evaluations and any potential negotiations. Once OPRE internally
+                        selects a vendor (before sending the Final Consensus Memo to the Procurement Shop), this step
+                        is marked complete.
+                    </p>
+                    <div className="display-flex flex-align-center margin-top-5">
+                        <FontAwesomeIcon
+                            icon={faCircleCheck}
+                            size="lg"
+                            className="margin-right-1 flex-shrink-0"
+                            style={{ color: "#162e51" }}
+                            aria-hidden="true"
+                        />
+                        <p className="margin-y-0">
+                            Evaluations are complete and OPRE has internally selected a vendor (Final Consensus Memo has
+                            not been sent)
+                        </p>
+                    </div>
+                    <dl className="display-flex flex-wrap">
+                        {stepFourData?.target_completion_date && (
+                            <div className="width-full">
+                                <TermTag
+                                    term="Target Completion Date"
+                                    description={step4TargetCompletionDateLabel}
+                                />
+                            </div>
+                        )}
+                        <TermTag
+                            term="Completed By"
+                            description={step4CompletedByUserName}
+                            className="margin-right-4"
+                        />
+                        <TermTag
+                            term="Date Completed"
+                            description={step4DateCompletedLabel}
+                        />
+                        {step4NotesLabel && (
+                            <div className="width-full">
+                                <dt className="margin-0 text-base-dark margin-top-3 font-12px">Notes</dt>
+                                <dd className="margin-0 margin-top-1">{step4NotesLabel}</dd>
+                            </div>
+                        )}
+                    </dl>
+                </div>
+            )}
+        </>
+    );
+};
+
+export default ProcurementTrackerStepFour;
