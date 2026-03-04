@@ -218,6 +218,41 @@ class PreSolicitationCompletionRequiredFieldsRule(ValidationRule):
             )
 
 
+class EvaluationCompletionRequiredFieldsRule(ValidationRule):
+    """
+    Validates that required fields are present when completing the Evaluation step.
+    Only runs when status is being set to COMPLETED.
+    """
+
+    @property
+    def name(self) -> str:
+        return "Evaluation Completion Required Fields Check"
+
+    def validate(self, procurement_tracker_step: ProcurementTrackerStep, context: ValidationContext) -> None:
+        mapping = {
+            "task_completed_by": "evaluation_task_completed_by",
+            "date_completed": "evaluation_date_completed",
+        }
+
+        if not is_procurement_tracker_step_updated_to_complete(context):
+            return
+
+        updated_fields = context.updated_fields
+        evaluation_required_fields = ["task_completed_by", "date_completed"]
+        missing_fields = [field for field in evaluation_required_fields if field not in updated_fields]
+
+        final_missing_fields = [
+            field for field in missing_fields
+            if getattr(procurement_tracker_step, mapping[field], None) is None
+        ]
+
+        if final_missing_fields:
+            raise ValidationError({
+                field: f"{field} is required when completing evaluation step."
+                for field in final_missing_fields
+            })
+
+
 class NoPastTargetCompletionDateUpdateRule(ValidationRule):
     """
     Validates that the pre_solicitation_target_completion_date is not in the past when being updated for pre-solicitation steps.
@@ -292,7 +327,9 @@ class CompletionAuthorizationRule(ValidationRule):
             task_completed_by_id = procurement_tracker_step.pre_solicitation_task_completed_by
         elif procurement_tracker_step.step_type == ProcurementTrackerStepType.SOLICITATION:
             task_completed_by_id = procurement_tracker_step.solicitation_task_completed_by
-        # If task_completed_by is not set, the CompletionAcquisitionPlanningRequiredFieldsRule will catch it
+        elif procurement_tracker_step.step_type == ProcurementTrackerStepType.EVALUATION:
+            task_completed_by_id = procurement_tracker_step.evaluation_task_completed_by
+        # If task_completed_by is not set, the CompletionRequiredFieldsRule will catch it
         if not task_completed_by_id:
             return
 
