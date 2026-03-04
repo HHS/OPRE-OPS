@@ -16,10 +16,12 @@ import accordion from "@uswds/uswds/js/usa-accordion";
  * @param {React.ReactNode} props.children - The content to display in the accordion.
  * @param {number} [props.level=4] - The heading level for the accordion. Defaults to 4.
  * @param {boolean} [props.isClosed=false] - Initial closed state (only used on mount).
+ * @param {string} [props.id] - Optional id for anchor linking.
  * @param {string} [props.dataCy] - Data attribute for testing.
+ * @param {(isOpen: boolean) => void} [props.onToggle] - Optional callback fired on toggle.
  * @returns {JSX.Element} - The rendered accordion component.
  */
-const Accordion = ({ heading, children, level = 4, isClosed = false, dataCy }) => {
+const Accordion = ({ heading, children, level = 4, isClosed = false, id, dataCy, onToggle }) => {
     const accordionId = React.useId();
     const AccordionHeading = `h${level}`;
     const [isOpen, setIsOpen] = React.useState(!isClosed);
@@ -52,6 +54,7 @@ const Accordion = ({ heading, children, level = 4, isClosed = false, dataCy }) =
 
     return (
         <div
+            id={id}
             className={`usa-accordion ${isOpen ? "padding-bottom-6" : ""}`}
             style={{ lineHeight: "inherit" }}
             ref={accordionRef}
@@ -63,7 +66,11 @@ const Accordion = ({ heading, children, level = 4, isClosed = false, dataCy }) =
                     className="usa-accordion__button bg-brand-base-light-variant"
                     aria-expanded={isOpen}
                     aria-controls={accordionId}
-                    onClick={() => setIsOpen(!isOpen)}
+                    onClick={() => {
+                        const nextIsOpen = !isOpen;
+                        setIsOpen(nextIsOpen);
+                        onToggle?.(nextIsOpen);
+                    }}
                 >
                     {heading}
                 </button>
