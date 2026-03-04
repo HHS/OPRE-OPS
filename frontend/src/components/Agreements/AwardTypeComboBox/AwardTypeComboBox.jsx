@@ -1,14 +1,24 @@
+import { AWARD_TYPE_LABELS } from "../../../pages/agreements/agreements.constants";
 import ComboBox from "../../UI/Form/ComboBox";
 
-const AWARD_TYPE_OPTIONS = [
-    { id: 1, title: "New Award", awardType: "NEW" },
-    { id: 2, title: "Continuing Agreement", awardType: "CONTINUING" }
-];
+/**
+ * @typedef {Object} AwardTypeOption
+ * @property {number} id - Unique identifier for the option.
+ * @property {string} title - Display label for the award type.
+ * @property {string} awardType - The award type code (e.g., "NEW", "CONTINUING").
+ */
+
+/** @type {AwardTypeOption[]} */
+const AWARD_TYPE_OPTIONS = Object.entries(AWARD_TYPE_LABELS).map(([code, label], index) => ({
+    id: index + 1,
+    title: label,
+    awardType: code
+}));
 
 /**
  * A comboBox for choosing Award Type(s).
  * @param {Object} props - The component props.
- * @param {object[]} props.selectedAwardTypes - The currently selected award types.
+ * @param {AwardTypeOption[]} props.selectedAwardTypes - The currently selected award types.
  * @param {Function} props.setSelectedAwardTypes - A function to call when the selected award types change.
  * @param {string} [props.legendClassname] - Additional CSS classes to apply to the label/legend (optional).
  * @param {string} [props.defaultString] - Initial text to display in select (optional).

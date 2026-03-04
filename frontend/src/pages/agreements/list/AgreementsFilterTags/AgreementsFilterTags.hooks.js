@@ -16,10 +16,19 @@ import { useState, useEffect, useCallback } from "react";
  */
 
 /**
+ * @typedef {Object} FilterItem
+ * @property {string} title
+ */
+
+/**
  * @typedef {Object} Filters
  * @property {FYFilterItem[]} fiscalYear
  * @property {PortfolioFilterItem[]} portfolio
- * @property {BLIFilterItem[]} budgetLineStatus
+ * @property {FilterItem[]} projectTitle
+ * @property {FilterItem[]} agreementType
+ * @property {FilterItem[]} agreementName
+ * @property {FilterItem[]} contractNumber
+ * @property {FilterItem[]} awardType
  */
 
 /**

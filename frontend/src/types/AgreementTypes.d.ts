@@ -2,7 +2,7 @@ import { SafeUser } from "./UserTypes";
 import { ResearchProject } from "./ProjectTypes";
 import { BudgetLine } from "./BudgetLineTypes";
 import { ChangeRequest } from "./ChangeRequestsTypes";
-import { AgreementType } from "../pages/agreements/agreements.constants";
+import { AgreementType, AWARD_TYPE_LABELS } from "../pages/agreements/agreements.constants";
 
 export type Agreement = {
     team_leaders: string[];
@@ -52,7 +52,7 @@ export type Agreement = {
     agreement_total?: number | string | null;
     lifetime_obligated?: number | string | null;
     fy_obligated?: number | string | null;
-    award_type?: string | null;
+    award_type?: keyof typeof AWARD_TYPE_LABELS | null;
 };
 
 type ProductServiceCode = {

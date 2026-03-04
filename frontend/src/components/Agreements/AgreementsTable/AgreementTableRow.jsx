@@ -26,6 +26,7 @@ import {
     isThereAnyBudgetLines
 } from "./AgreementsTable.helpers";
 import { TABLE_HEADINGS_LIST } from "./AgreementsTable.constants";
+import { AWARD_TYPE_LABELS } from "../../../pages/agreements/agreements.constants";
 import { useHandleDeleteAgreement, useHandleEditAgreement, useNavigateAgreementReview } from "./AgreementsTable.hooks";
 
 /**
@@ -52,7 +53,6 @@ export const AgreementTableRow = ({ agreement }) => {
     const agreementFees = isSuccess ? (agreement?.total_agreement_fees ?? 0) : 0;
     const lifetimeObligated = isSuccess ? (agreement?.lifetime_obligated ?? 0) : 0;
     const contractNumber = isSuccess ? getAgreementContractNumber(agreement) : NO_DATA;
-    const AWARD_TYPE_LABELS = { NEW: "New Award", CONTINUING: "Continuing Agreement" };
     const awardType = AWARD_TYPE_LABELS[agreement?.award_type] ?? NO_DATA;
     const vendor = isSuccess ? (agreement?.vendor ?? NO_DATA) : NO_DATA;
 
