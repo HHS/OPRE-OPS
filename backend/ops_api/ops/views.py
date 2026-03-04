@@ -1,6 +1,5 @@
 from models import (
     CAN,
-    AdministrativeAndSupportProject,
     Agreement,
     AgreementAgency,
     BudgetLineItem,
@@ -30,10 +29,6 @@ from models import (
     User,
 )
 from ops_api.ops.document.api import DocumentAPI
-from ops_api.ops.resources.administrative_and_support_projects import (
-    AdministrativeAndSupportProjectItemAPI,
-    AdministrativeAndSupportProjectListAPI,
-)
 from ops_api.ops.resources.agreement_agency import (
     AgreementAgencyItemAPI,
     AgreementAgencyListAPI,
@@ -112,10 +107,6 @@ from ops_api.ops.resources.research_methodology import (
 )
 from ops_api.ops.resources.research_project_funding_summary import (
     ResearchProjectFundingSummaryListAPI,
-)
-from ops_api.ops.resources.research_projects import (
-    ResearchProjectItemAPI,
-    ResearchProjectListAPI,
 )
 from ops_api.ops.resources.research_type import ResearchTypeListAPI
 from ops_api.ops.resources.services_component import (
@@ -239,9 +230,6 @@ CAN_FUNDING_DETAILS_LIST_API_VIEW_FUNC = CANFundingDetailsListAPI.as_view(
 PROJECT_ITEM_API_VIEW_FUNC = ProjectItemAPI.as_view("projects-item", Project)
 PROJECT_LIST_API_VIEW_FUNC = ProjectListAPI.as_view("projects-group", Project)
 
-# RESEARCH PROJECT ENDPOINTS
-RESEARCH_PROJECT_ITEM_API_VIEW_FUNC = ResearchProjectItemAPI.as_view("research-projects-item", ResearchProject)
-RESEARCH_PROJECT_LIST_API_VIEW_FUNC = ResearchProjectListAPI.as_view("research-projects-group", ResearchProject)
 
 RESEARCH_METHODOLOGY_ITEM_API_VIEW_FUNC = ResearchMethodologyItemAPI.as_view(
     "research-methodology-item", ResearchMethodology
@@ -251,14 +239,6 @@ RESEARCH_METHODOLOGY_LIST_API_VIEW_FUNC = ResearchMethodologyListAPI.as_view(
 )
 SPECIAL_TOPICS_ITEM_API_VIEW_FUNC = SpecialTopicsItemAPI.as_view("special-topics-item", SpecialTopic)
 SPECIAL_TOPICS_LIST_API_VIEW_FUNC = SpecialTopicsListAPI.as_view("special-topics-list", SpecialTopic)
-
-# ADMINISTRATIVE AND SUPPORT PROJECT ENDPOINTS
-ADMINISTRATIVE_AND_SUPPORT_PROJECT_ITEM_API_VIEW_FUNC = AdministrativeAndSupportProjectItemAPI.as_view(
-    "administrative-and-support-projects-item", AdministrativeAndSupportProject
-)
-ADMINISTRATIVE_AND_SUPPORT_PROJECT_LIST_API_VIEW_FUNC = AdministrativeAndSupportProjectListAPI.as_view(
-    "administrative-and-support-projects-group", AdministrativeAndSupportProject
-)
 
 # RESEARCH TYPE ENDPOINTS
 RESEARCH_TYPE_LIST_API_VIEW_FUNC = ResearchTypeListAPI.as_view("research-type-group", ResearchType)

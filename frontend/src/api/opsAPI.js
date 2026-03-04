@@ -411,7 +411,7 @@ export const opsApi = createApi({
             providesTags: ["Users"]
         }),
         getResearchProjects: builder.query({
-            query: () => `/research-projects/`,
+            query: () => `/projects/?project_type=RESEARCH`,
             providesTags: ["ResearchProjects"]
         }),
         getProjects: builder.query({
@@ -447,14 +447,15 @@ export const opsApi = createApi({
                 if (search) {
                     queryParams.push(`search=${search}`);
                 }
+                queryParams.push(`project_type=RESEARCH`);
                 const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
-                return `/research-projects/${queryString}`;
+                return `/projects/${queryString}`;
             },
             providesTags: ["ResearchProjects"]
         }),
         addResearchProjects: builder.mutation({
             query: (body) => ({
-                url: `/research-projects/`,
+                url: `/projects/`,
                 method: "POST",
                 body
             }),
