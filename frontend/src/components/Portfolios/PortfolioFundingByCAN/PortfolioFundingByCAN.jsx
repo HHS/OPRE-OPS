@@ -129,6 +129,7 @@ const PortfolioFundingByCAN = () => {
                             CustomLayerComponent={CustomLayerComponent(percent)}
                             setPercent={setPercent}
                             container_id="portfolioCANChart"
+                            ariaLabel="This is a Donut Chart that displays the percent by CAN in the center."
                         />
                     </div>
                 </div>

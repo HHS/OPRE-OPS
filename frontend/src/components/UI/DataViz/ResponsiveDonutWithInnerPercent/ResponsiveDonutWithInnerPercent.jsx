@@ -9,7 +9,8 @@ const ResponsiveDonutWithInnerPercent = ({
     CustomLayerComponent,
     setPercent = () => {},
     setHoverId = () => {},
-    container_id
+    container_id,
+    ariaLabel = "This is a Donut Chart that displays the percent by budget line status in the center."
 }) => {
     const observerRef = useRef(null);
 
@@ -18,10 +19,7 @@ const ResponsiveDonutWithInnerPercent = ({
         if (!container) return;
 
         const applyA11y = (svg) => {
-            svg.setAttribute(
-                "aria-label",
-                "This is a Donut Chart that displays the percent by budget line status in the center."
-            );
+            svg.setAttribute("aria-label", ariaLabel);
         };
 
         const existingSvg = container.querySelector("svg");
@@ -43,7 +41,7 @@ const ResponsiveDonutWithInnerPercent = ({
         return () => {
             observerRef.current?.disconnect();
         };
-    }, [container_id]);
+    }, [container_id, ariaLabel]);
 
     return (
         <ResponsivePie

@@ -104,6 +104,7 @@ const AgreementSpendingSummaryCard = ({
                             setHoverId={setHoverId}
                             CustomLayerComponent={CustomLayerComponent(percent ? `${percent}%` : "")}
                             container_id="agreement-type-chart"
+                            ariaLabel="This is a Donut Chart that displays the percent by agreement type in the center."
                         />
                     </div>
                 )}
