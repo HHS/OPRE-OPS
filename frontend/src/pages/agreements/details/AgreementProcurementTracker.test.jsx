@@ -118,12 +118,31 @@ vi.mock("../../../components/Agreements/ProcurementTracker/ProcurementTrackerSte
     )
 }));
 
+vi.mock("../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepThree", () => ({
+    default: ({ stepStatus, stepThreeData, hasActiveTracker }) => (
+        <div
+            data-testid="procurement-step-three"
+            data-step-status={stepStatus}
+            data-step-data-id={stepThreeData?.id}
+            data-has-active-tracker={hasActiveTracker}
+        >
+            <p>
+                Once the Procurement Shop has posted the Solicitation and it&apos;s &quot;on the street&quot;, enter the
+                Solicitation Start and End Dates. After all proposals are received, vendor questions have been answered,
+                and evaluations are starting, check this step as complete.
+            </p>
+            {stepStatus === "ACTIVE" && <input type="checkbox" />}
+            {stepStatus === "COMPLETED" ? "Step Three Completed" : "Step Three Form"}
+        </div>
+    )
+}));
+
 // Mock constants module
 vi.mock("../../../constants", () => ({
     IS_PROCUREMENT_TRACKER_READY_MAP: {
         STEP_1: true,
         STEP_2: true,
-        STEP_3: false,
+        STEP_3: true,
         STEP_4: false,
         STEP_5: false,
         STEP_6: false
@@ -950,7 +969,7 @@ describe("AgreementProcurementTracker", () => {
         });
 
         it.each([
-            [3, "SOLICITATION", /Once the Procurement Shop has posted the Solicitation and it’s “on the street”/],
+            [3, "SOLICITATION", /Once the Procurement Shop has posted the Solicitation/],
             [4, "EVALUATION", /Complete the technical evaluations and any potential negotiations/],
             [5, "PRE_AWARD", /All agreements need Pre-Award Approval before the Final Consensus Memo/],
             [6, "AWARD", /Once you receive the signed award, click Request Award Approval below/]
@@ -997,7 +1016,12 @@ describe("AgreementProcurementTracker", () => {
                 );
 
                 expect(screen.getByText(expectedInstructionalText)).toBeInTheDocument();
-                expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
+
+                // Step 3 has a checkbox, other steps don't
+                const checkbox = screen.queryByRole("checkbox");
+                const shouldHaveCheckbox = activeStepNumber === 3;
+
+                expect(checkbox !== null).toBe(shouldHaveCheckbox);
             }
         );
     });

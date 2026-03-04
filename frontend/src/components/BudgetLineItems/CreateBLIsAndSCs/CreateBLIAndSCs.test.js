@@ -1,14 +1,20 @@
-import { render } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { test, describe, expect, vi } from "vitest";
 import { Provider } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
 import { configureStore } from "@reduxjs/toolkit";
 import CreateBLIsAndSCs from "./CreateBLIsAndSCs"; // replace with your component
 import authSlice from "../../../components/Auth/authSlice";
+import alertSlice from "../../../components/UI/Alert/alertSlice";
 import { agreement } from "../../../tests/data";
 import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
 import { USER_ROLES } from "../../Users/User.constants";
 import { AgreementType } from "../../../pages/agreements/agreements.constants";
+
+vi.mock("../../ServicesComponents", () => ({
+    __esModule: true,
+    default: () => <div data-testid="services-components" />
+}));
 
 const wizardSteps = ["Project", "Agreement", "Budget Lines"];
 
@@ -19,7 +25,8 @@ const setIsEditMode = mockFn;
 const createMockStore = (userRoles = []) => {
     return configureStore({
         reducer: {
-            auth: authSlice
+            auth: authSlice,
+            alert: alertSlice
         },
         preloadedState: {
             auth: {
@@ -27,6 +34,12 @@ const createMockStore = (userRoles = []) => {
                     id: 1,
                     roles: userRoles
                 }
+            },
+            alert: {
+                isActive: false,
+                type: "",
+                heading: "",
+                message: ""
             }
         }
     });
@@ -35,7 +48,8 @@ const createMockStore = (userRoles = []) => {
 // Mock the useCreateBLIsAndSCs hook to return isSuperUser
 vi.mock("./CreateBLIsAndSCs.hooks", () => ({
     __esModule: true,
-    default: vi.fn((isEditMode, isReviewMode, selectedAgreement) => {
+    default: vi.fn((...args) => {
+        const selectedAgreement = args[6];
         // Check if agreement is not yet developed based on agreement type
         const isAgreementNotYetDeveloped =
             selectedAgreement?.agreement_type === AgreementType.GRANT ||
@@ -44,10 +58,15 @@ vi.mock("./CreateBLIsAndSCs.hooks", () => ({
 
         // Mock implementation that returns isSuperUser based on Redux state
         return {
+            blocker: { state: "unblocked" },
             activeBudgetLine: null,
             addBudgetLine: mockFn,
             addServicesComponent: mockFn,
-            budgetFormSuite: { get: () => ({ hasErrors: () => false }) },
+            budgetFormSuite: {
+                hasErrors: () => false,
+                getErrors: () => [],
+                get: () => ({ hasErrors: () => false })
+            },
             budgetLineForEditing: null,
             canAddBudgetLine: true,
             canAddServicesComponent: true,
@@ -63,7 +82,15 @@ vi.mock("./CreateBLIsAndSCs.hooks", () => ({
             editBudgetLine: mockFn,
             editServicesComponent: mockFn,
             enteredComments: "",
+            enteredAmount: "",
+            enteredDescription: "",
             handleEditBudgetLine: mockFn,
+            handleDeleteBudgetLine: mockFn,
+            handleDuplicateBudgetLine: mockFn,
+            handleEditBLI: mockFn,
+            handleResetForm: mockFn,
+            handleSetBudgetLineForEditingById: mockFn,
+            handleAddBLI: mockFn,
             handleSetNeedByDate: mockFn,
             handleSetPeriodEnd: mockFn,
             handleSetPeriodStart: mockFn,
@@ -71,20 +98,36 @@ vi.mock("./CreateBLIsAndSCs.hooks", () => ({
             isApproveBudgetLinesMode: false,
             isEditMode: false,
             isReviewMode: false,
+            isEditing: false,
+            modalProps: {},
+            pageErrors: [],
             needByDate: "",
+            datePickerSuite: { get: () => ({ hasErrors: () => false, getErrors: () => [] }) },
             periodEnd: "",
             periodStart: "",
             runningTotals: { budgetLines: 0, fees: 0, total: 0 },
             saveBudgetLine: mockFn,
             selectedCan: null,
+            servicesComponents: [],
+            servicesComponentNumber: "",
             servicesComponentForEditing: null,
             servicesComponentId: null,
             setEnteredComments: mockFn,
+            setEnteredAmount: mockFn,
+            setEnteredDescription: mockFn,
             setNeedByDate: mockFn,
             setSelectedCan: mockFn,
             setServicesComponentForEditing: mockFn,
             setServicesComponentId: mockFn,
+            setServicesComponentNumber: mockFn,
+            setHasUnsavedChanges: mockFn,
             showModal: false,
+            hasUnsavedChanges: false,
+            handleCancel: mockFn,
+            handleGoBack: mockFn,
+            handleSave: mockFn,
+            setShowModal: mockFn,
+            setShowSaveChangesModal: mockFn,
             subTotalForCards: mockFn,
             tempBudgetLines: [],
             totalsForCards: mockFn,
@@ -97,7 +140,7 @@ vi.mock("./CreateBLIsAndSCs.hooks", () => ({
     })
 }));
 
-describe.todo("CreateBLIsAndSCs", () => {
+describe("CreateBLIsAndSCs", () => {
     test("renders without crashing", () => {
         const mockStore = createMockStore();
         render(
@@ -170,7 +213,7 @@ describe.todo("CreateBLIsAndSCs", () => {
                         workflow="none"
                         currentStep={1}
                         isReviewMode={false}
-                        canUserEditBudgetLines={true}
+                        canUserEditBudgetLines={false}
                         setIsEditMode={setIsEditMode}
                         includeDrafts={true}
                         setIncludeDrafts={setIncludeDrafts}
@@ -209,9 +252,7 @@ describe.todo("CreateBLIsAndSCs", () => {
             </Provider>
         );
 
-        // ServicesComponents should not be rendered for GRANT agreements
-        // We can check that certain form elements that would be in ServicesComponentForm are not present
-        expect(screen.queryByText("Please add a Service Requirement Type to the Agreement.")).not.toBeInTheDocument();
+        expect(screen.queryByTestId("services-components")).not.toBeInTheDocument();
     });
 
     test("does not render ServicesComponents for NYD agreement types (DIRECT_OBLIGATION)", () => {
@@ -241,8 +282,7 @@ describe.todo("CreateBLIsAndSCs", () => {
             </Provider>
         );
 
-        // ServicesComponents should not be rendered for DIRECT_OBLIGATION agreements
-        expect(screen.queryByText("Please add a Service Requirement Type to the Agreement.")).not.toBeInTheDocument();
+        expect(screen.queryByTestId("services-components")).not.toBeInTheDocument();
     });
 
     test("does not render ServicesComponents for NYD agreement types (IAA)", () => {
@@ -272,8 +312,7 @@ describe.todo("CreateBLIsAndSCs", () => {
             </Provider>
         );
 
-        // ServicesComponents should not be rendered for IAA agreements
-        expect(screen.queryByText("Please add a Service Requirement Type to the Agreement.")).not.toBeInTheDocument();
+        expect(screen.queryByTestId("services-components")).not.toBeInTheDocument();
     });
 
     test("renders ServicesComponents for non-NYD agreement types (CONTRACT)", () => {
@@ -303,8 +342,6 @@ describe.todo("CreateBLIsAndSCs", () => {
             </Provider>
         );
 
-        // This test verifies the component renders without crash for CONTRACT type
-        // The actual ServicesComponents content would need mocking for more specific assertions
-        expect(document.body).toBeInTheDocument();
+        expect(screen.getByTestId("services-components")).toBeInTheDocument();
     });
 });

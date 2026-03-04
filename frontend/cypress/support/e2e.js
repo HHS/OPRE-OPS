@@ -16,16 +16,28 @@
 import "cypress-axe";
 import "./commands";
 
+const isRegressionGateEnabled = () => {
+    const rawValue = Cypress.config("a11yRegressionGate") ?? Cypress.config("env")?.A11Y_REGRESSION_GATE;
+    return rawValue === true || rawValue === "true" || rawValue === 1 || rawValue === "1";
+};
+
 Cypress.Commands.overwrite("injectAxe", (originalFn, ...args) => {
     originalFn(...args);
-    return cy.configureAxe({
-        rules: [
-            {
-                id: "link-name",
-                enabled: false
-            }
-        ]
-    });
+
+    // Preserve legacy E2E behavior while phased a11y gate tracks/remediates debt.
+    if (!isRegressionGateEnabled()) {
+        // A11Y-SUPPRESSION: owner=frontend-team expires=2026-06-30 rationale=Legacy E2E suite relies on link-name suppression outside dedicated regression gate.
+        return cy.configureAxe({
+            rules: [
+                {
+                    id: "link-name",
+                    enabled: false
+                }
+            ]
+        });
+    }
+
+    return cy.wrap(null, { log: false });
 });
 
 Cypress.Commands.add("login", () => {
