@@ -221,13 +221,13 @@ describe("useChangeRequestsForTooltip", () => {
         ]
     };
 
-    it("returns empty string when dependencies are not ready", () => {
+    it("returns loading string when dependencies are still loading", () => {
         useGetAllCansMock.mockReturnValue({ cans: [], isLoading: true, isError: false });
         useGetProcurementShopsQueryMock.mockReturnValue({ data: [], isSuccess: false, isLoading: false });
 
         const { result } = renderHook(() => useChangeRequestsForTooltip(tooltipBudgetLine));
 
-        expect(result.current).toBe("");
+        expect(result.current).toBe("Loading...");
     });
 
     it("returns loading text when hooks report loading despite success", () => {
