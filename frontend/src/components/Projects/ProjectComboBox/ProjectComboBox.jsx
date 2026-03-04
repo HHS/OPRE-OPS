@@ -1,4 +1,5 @@
 import ComboBox from "../../UI/Form/ComboBox";
+import IsRequiredHelper from "../../UI/Form/IsRequiredHelper";
 
 /**
  * @typedef {Object} ProjectOption
@@ -53,7 +54,9 @@ export const ProjectComboBox = ({
                         {messages[0]}
                     </span>
                 ) : (
-                    isRequired && <div className="usa-hint margin-top-neg-1">Required Information*</div>
+                    <div className="margin-top-neg-1">
+                        <IsRequiredHelper isRequired={isRequired} />
+                    </div>
                 )}
                 <div>
                     <ComboBox

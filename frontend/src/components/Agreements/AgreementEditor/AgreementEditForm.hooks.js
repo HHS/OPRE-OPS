@@ -173,6 +173,19 @@ const useAgreementEditForm = (
     const hasProcurementShopChanged = useHasStateChanged(selectedProcurementShop);
     const shouldRequestChange = hasProcurementShopChanged && areAnyBudgetLinesPlanned && !isAgreementAwarded;
 
+    const runValidate = React.useCallback(
+        (name, value) => {
+            suite(
+                {
+                    ...agreement,
+                    [name]: value
+                },
+                name
+            );
+        },
+        [agreement]
+    );
+
     React.useEffect(() => {
         if (isReviewMode) {
             suite({
@@ -186,8 +199,7 @@ const useAgreementEditForm = (
         if (!isWizardMode) {
             runValidate("project_id", agreement?.project_id);
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isWizardMode, agreement?.project_id]);
+    }, [isWizardMode, agreement?.project_id, runValidate]);
 
     React.useEffect(() => {
         if (errorProductServiceCodes || errorProjects) {
@@ -521,16 +533,6 @@ const useAgreementEditForm = (
     const handleOnChangeSelectedProcurementShop = (procurementShop) => {
         setSelectedProcurementShop(procurementShop);
         setAgreementProcurementShopId(procurementShop?.id);
-    };
-
-    const runValidate = (name, value) => {
-        suite(
-            {
-                ...agreement,
-                ...{ [name]: value }
-            },
-            name
-        );
     };
 
     const hasProcurementShopChangeRequest = agreement?.change_requests_in_review?.some(
