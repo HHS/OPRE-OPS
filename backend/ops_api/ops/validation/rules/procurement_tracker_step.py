@@ -255,27 +255,28 @@ class EvaluationCompletionRequiredFieldsRule(ValidationRule):
 
 class NoPastTargetCompletionDateUpdateRule(ValidationRule):
     """
-    Validates that the pre_solicitation_target_completion_date is not in the past when being updated for pre-solicitation steps.
+    Validates that the target_completion_date is not in the past when being updated for pre-solicitation and evaluation steps.
     """
 
     @property
     def name(self) -> str:
-        return "No Past Target Completion Date for Pre-Solicitation Steps Update"
+        return "No Past Target Completion Date for Pre-Solicitation and Evaluation Steps Update"
 
     def validate(self, procurement_tracker_step: ProcurementTrackerStep, context: ValidationContext) -> None:
         updated_fields = context.updated_fields
 
-        # Only validate if step type is PRE_SOLICITATION and pre_solicitation_target_completion_date is being updated
+        # Only validate if step type is PRE_SOLICITATION or EVALUATION and target_completion_date is being updated
         if (
-            procurement_tracker_step.step_type != ProcurementTrackerStepType.PRE_SOLICITATION
+            procurement_tracker_step.step_type not in [ProcurementTrackerStepType.PRE_SOLICITATION, ProcurementTrackerStepType.EVALUATION]
             or "target_completion_date" not in updated_fields
         ):
             return
 
         target_completion_date = updated_fields.get("target_completion_date")
         if target_completion_date and target_completion_date < date.today():
+            step_name = "Pre-Solicitation" if procurement_tracker_step.step_type == ProcurementTrackerStepType.PRE_SOLICITATION else "Evaluation"
             raise ValidationError(
-                {"target_completion_date": "Target completion date cannot be in the past for Pre-Solicitation steps."}
+                {"target_completion_date": f"Target completion date cannot be in the past for {step_name} steps."}
             )
 
 

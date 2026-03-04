@@ -62,7 +62,7 @@ const ProcurementTrackerStepFour = ({
 
     // Disabled flags for form controls
     const isTargetCompletionDateSaveDisabled =
-        isDisabled || validatorRes.hasErrors("targetCompletionDate") || !targetCompletionDate;
+        isDisabled || validatorRes.hasErrors("targetCompletionDate") || !targetCompletionDate || !stepFourData?.id;
     const isEvaluationCheckboxDisabled = isDisabled || !isActiveStep;
     const isUsersComboBoxDisabled = isDisabled || !isEvaluationComplete || authorizedUsers.length === 0;
     const isEvaluationFieldsDisabled = isDisabled || !isEvaluationComplete;

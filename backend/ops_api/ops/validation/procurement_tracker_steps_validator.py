@@ -123,6 +123,7 @@ class ProcurementTrackerStepsValidator:
                 CompletedByUpdateAuthorizationRule(),
                 NoUpdatingCompletedProcurementStepRule(),
                 NoFutureCompletionDateUpdateValidationRule(),
+                NoPastTargetCompletionDateUpdateRule(),
             ]
         else:
             return self._get_default_validators()

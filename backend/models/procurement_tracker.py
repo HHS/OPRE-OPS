@@ -569,7 +569,7 @@ class DefaultProcurementTracker(ProcurementTracker):
     - Step 1: ACQUISITION_PLANNING (with extra fields: acquisition_planning_task_completed_by, acquisition_planning_date_completed, acquisition_planning_notes)
     - Step 2: PRE_SOLICITATION (with extra fields: pre_solicitation_target_completion_date, pre_solicitation_task_completed_by, pre_solicitation_date_completed, pre_solicitation_notes, pre_solicitation_draft_solicitation_date)
     - Step 3: SOLICITATION (with extra fields: solicitation_task_completed_by, solicitation_date_completed, solicitation_notes, solicitation_period_start_date, solicitation_period_end_date)
-    - Step 4: EVALUATION
+    - Step 4: EVALUATION (with extra fields: evaluation_target_completion_date, evaluation_task_completed_by, evaluation_date_completed, evaluation_notes)
     - Step 5: PRE_AWARD
     - Step 6: AWARD
     """

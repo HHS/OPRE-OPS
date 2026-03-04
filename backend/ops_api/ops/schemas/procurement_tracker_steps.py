@@ -187,7 +187,7 @@ class ProcurementTrackerStepPatchRequestSchema(Schema):
 
     status = fields.Enum(ProcurementTrackerStepStatus, required=True, by_value=False)
 
-    # Fields shared by Acquisition Planning, Pre-Solicitation, and Solicitation steps
+    # Fields shared by Acquisition Planning, Pre-Solicitation, Solicitation, and Evaluation steps
     task_completed_by = fields.Integer(required=False, allow_none=True)
     date_completed = fields.Date(required=False, allow_none=True)
     notes = fields.String(required=False, allow_none=True)
