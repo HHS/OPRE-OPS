@@ -109,21 +109,15 @@ def test_post_projects(auth_client, loaded_db):
     }
     response = auth_client.post(url_for("api.projects-group"), json=data)
     assert response.status_code == 201
-    assert response.json["title"] == "Research Project #1"
-    expected_team_leaders = [
-        {
-            "email": "chris.fortunato@example.com",
-            "full_name": "Chris Fortunato",
-            "id": 500,
-        },
-        {"email": "Amy.Madigan@example.com", "full_name": "Amy Madigan", "id": 501},
-        {
-            "email": "Ivelisse.Martinez-Beck@example.com",
-            "full_name": "Ivelisse Martinez-Beck",
-            "id": 502,
-        },
-    ]
-    assert [person in expected_team_leaders for person in response.json["team_leaders"]]
+    id = response.json["id"]
+    # verify project was created in db with correct values
+    project = loaded_db.get(Project, id)
+    assert project is not None
+    assert project.title == "Research Project #1"
+    assert len(project.team_leaders) == 3
+    assert project.team_leaders[0].id == 500
+    assert project.team_leaders[1].id == 501
+    assert project.team_leaders[2].id == 502
 
 
 def test_post_projects_minimum(auth_client, loaded_db):
@@ -134,8 +128,12 @@ def test_post_projects_minimum(auth_client, loaded_db):
     }
     response = auth_client.post(url_for("api.projects-group"), json=data)
     assert response.status_code == 201
-    assert response.json["title"] == "Research Project #1"
-    assert response.json["team_leaders"] == []
+    id = response.json["id"]
+    # verify project was created in db with correct values
+    project = loaded_db.get(Project, id)
+    assert project is not None
+    assert project.title == "Research Project #1"
+    assert len(project.team_leaders) == 0
 
 
 def test_post_projects_empty_post(auth_client, loaded_db):

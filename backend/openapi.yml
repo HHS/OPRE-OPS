@@ -2791,6 +2791,146 @@ paths:
                   message:
                     type: string
 
+  /projects:
+    get:
+      tags:
+        - Projects
+      operationId: getProjects
+      description: Get Projects with optional filtering by fiscal year, portfolio, or search term
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - name: fiscal_year
+          in: query
+          schema:
+            type: integer
+          example: 2023
+          description: Filter projects by fiscal year
+        - name: portfolio_id
+          in: query
+          schema:
+            type: integer
+          example: 1
+          description: Filter projects by portfolio ID
+        - name: search
+          in: query
+          schema:
+            type: string
+          example: "research"
+          description: Search projects by title
+        - name: project_type
+          in: query
+          schema:
+            type: string
+            enum: [RESEARCH, ADMINISTRATIVE_AND_SUPPORT]
+          example: RESEARCH
+          description: Filter projects by type
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Project"
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+    post:
+      tags:
+        - Projects
+      operationId: createProject
+      summary: Create a new Project (Research or Administrative/Support)
+      description: |
+        Create a new project of any type. The project_type field determines whether
+        a Research Project or Administrative/Support Project is created.
+
+        - For Research projects: all fields including origination_date are supported
+        - For Administrative/Support projects: origination_date is ignored if provided
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResearchProjectRequest"
+            examples:
+              research_project:
+                summary: Research Project Example
+                value:
+                  project_type: RESEARCH
+                  title: "Child Welfare Research Initiative"
+                  short_title: "CWRI"
+                  description: "Research on child welfare outcomes"
+                  url: "https://example.com"
+                  origination_date: "2023-01-01"
+                  team_leaders:
+                    - id: 500
+                      full_name: "Jane Smith"
+                      email: "jane.smith@example.com"
+              admin_project:
+                summary: Administrative Project Example
+                value:
+                  project_type: ADMINISTRATIVE_AND_SUPPORT
+                  title: "IT Infrastructure Support"
+                  short_title: "IT-INFRA"
+                  description: "Infrastructure support project"
+                  team_leaders:
+                    - id: 501
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    description: The ID of the newly created project
+                    example: 1001
+        "400":
+          description: Bad Request - Invalid input or validation error
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+  /projects/{id}:
+    get:
+      tags:
+        - Projects
+      operationId: getProjectById
+      description: Get a Project by ID (supports both Research and Administrative/Support projects)
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: id
+          description: Project ID
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/ResearchProject"
+                  - $ref: "#/components/schemas/Project"
+                description: Returns ResearchProject schema for research projects, or Project schema for administrative/support projects
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not Found
+
   /research-projects/:
     get:
       tags:

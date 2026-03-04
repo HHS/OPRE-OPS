@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date
 from typing import Optional, override
 
 from flask import Response, current_app, request
@@ -22,6 +22,10 @@ from models import (
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
+from ops_api.ops.schemas.projects import (
+    ResearchProjectListResponse,
+    ResearchProjectResponse,
+)
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
@@ -41,6 +45,7 @@ class RequestBody(Schema):
     short_title: str = fields.String()
     description: Optional[str] = fields.String(allow_none=True)
     url: Optional[str] = fields.String(allow_none=True)
+    # For research projects. Will be ignored if project_type is administrative/support
     origination_date: Optional[date] = fields.Date(format="%Y-%m-%d", load_default=None, dump_default=None)
 
     team_leaders: Optional[list[TeamLeaders]] = fields.List(
@@ -48,39 +53,6 @@ class RequestBody(Schema):
         load_default=[],
         dump_default=[],
     )
-
-
-class ResearchProjectResponse(Schema):
-    id: int = fields.Int()
-    title: str = fields.String()
-    created_by: int = fields.Int()
-    short_title: str = fields.String()
-    description: Optional[str] = fields.String(allow_none=True)
-    url: Optional[str] = fields.String(allow_none=True)
-    origination_date: Optional[date] = fields.Date(format="%Y-%m-%d", load_default=None, dump_default=None)
-    team_leaders: Optional[list[TeamLeaders]] = fields.List(
-        fields.Nested(TeamLeaders), load_default=[], dump_default=[]
-    )
-    created_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ")
-    updated_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ")
-    project_type: ProjectType = fields.Enum(ProjectType)
-
-
-class ResearchProjectListResponse(Schema):
-    """Lightweight schema for list endpoint with only fields used by frontend.
-
-    Excludes expensive nested relationships (team_leaders) to eliminate N+1 query problems.
-    """
-
-    id: int = fields.Int()
-    title: str = fields.String()
-    short_title: str = fields.String()
-    description: Optional[str] = fields.String(allow_none=True)
-    url: Optional[str] = fields.String(allow_none=True)
-    origination_date: Optional[date] = fields.Date(format="%Y-%m-%d", load_default=None, dump_default=None)
-    created_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ")
-    updated_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ")
-    project_type: ProjectType = fields.Enum(ProjectType)
 
 
 class ResearchProjectItemAPI(BaseItemAPI):
