@@ -29,7 +29,7 @@ from models import (
     SpecialTopic,
     User,
 )
-from ops_api.ops.document.api import DocumentAPI
+from ops_api.ops.document.api import DocumentItemAPI, DocumentListAPI
 from ops_api.ops.resources.administrative_and_support_projects import (
     AdministrativeAndSupportProjectItemAPI,
     AdministrativeAndSupportProjectListAPI,
@@ -300,4 +300,5 @@ CHANGE_REQUEST_LIST_API_VIEW_FUNC = ChangeRequestListAPI.as_view("change-request
 CHANGE_REQUEST_ITEM_API_VIEW_FUNC = ChangeRequestItemAPI.as_view("change-requests-item", ChangeRequest)
 
 # Document ENDPOINTs
-DOCUMENT_API_FUNC = DocumentAPI.as_view("documents", Document)
+DOCUMENT_LIST_API_VIEW_FUNC = DocumentListAPI.as_view("documents-list", Document)
+DOCUMENT_ITEM_API_VIEW_FUNC = DocumentItemAPI.as_view("documents-item", Document)

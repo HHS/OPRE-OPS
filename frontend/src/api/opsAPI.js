@@ -88,7 +88,8 @@ export const opsApi = createApi({
                     agreementName,
                     agreementType,
                     projectTitle,
-                    contractNumber
+                    contractNumber,
+                    awardType
                 },
                 onlyMy,
                 sortConditions,
@@ -121,6 +122,9 @@ export const opsApi = createApi({
                     contractNumber.forEach((contract) =>
                         queryParams.push(`contract_number=${encodeURIComponent(contract.id)}`)
                     );
+                }
+                if (awardType) {
+                    awardType.forEach((award) => queryParams.push(`award_type=${encodeURIComponent(award.awardType)}`));
                 }
                 if (onlyMy) {
                     queryParams.push("only_my=true");
@@ -896,13 +900,13 @@ export const opsApi = createApi({
             invalidatesTags: ["Documents"]
         }),
         getDocumentsByAgreementId: builder.query({
-            query: (agreement_id) => `/documents/${agreement_id}`,
+            query: (agreement_id) => `/documents/?agreement_id=${agreement_id}`,
             providesTags: ["Documents"]
         }),
         updateDocumentStatus: builder.mutation({
             query: ({ document_id, data }) => {
                 return {
-                    url: `/documents/${document_id}/status/`,
+                    url: `/documents/${document_id}`,
                     method: "PATCH",
                     headers: { "Content-Type": "application/json" },
                     body: data
