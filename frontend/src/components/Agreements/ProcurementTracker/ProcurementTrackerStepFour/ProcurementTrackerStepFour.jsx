@@ -117,7 +117,7 @@ const ProcurementTrackerStepFour = ({
                                 />
                                 <button
                                     className="usa-button usa-button--unstyled margin-bottom-1 margin-left-2"
-                                    data-cy="target-completion-save-btn"
+                                    data-cy="step-4-target-completion-save-btn"
                                     disabled={isTargetCompletionDateSaveDisabled}
                                     onClick={() => {
                                         handleTargetCompletionDateSubmit(stepFourData?.id);
