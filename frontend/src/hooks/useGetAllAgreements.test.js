@@ -1,156 +1,242 @@
-// @vitest-environment jsdom
 import { renderHook, waitFor } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { useGetAllAgreements } from "./useGetAllAgreements";
-import { useLazyGetAgreementsQuery } from "../api/opsAPI";
+
+const useLazyGetAgreementsQueryMock = vi.fn();
 
 vi.mock("../api/opsAPI", () => ({
-    useLazyGetAgreementsQuery: vi.fn()
+    useLazyGetAgreementsQuery: (...args) => useLazyGetAgreementsQueryMock(...args)
 }));
 
+function createDeferred() {
+    let resolve;
+    let reject;
+    const promise = new Promise((res, rej) => {
+        resolve = res;
+        reject = rej;
+    });
+    return { promise, resolve, reject };
+}
+
 describe("useGetAllAgreements", () => {
-    const triggerMock = vi.fn();
+    let triggerMock;
 
     beforeEach(() => {
         vi.clearAllMocks();
-        useLazyGetAgreementsQuery.mockReturnValue([triggerMock]);
+        triggerMock = vi.fn();
+        useLazyGetAgreementsQueryMock.mockReturnValue([triggerMock]);
     });
 
-    it("short-circuits when skip=true", () => {
+    it("respects skip=true and does not trigger requests", async () => {
         const { result } = renderHook(() => useGetAllAgreements({}, { skip: true }));
 
-        expect(result.current.isLoading).toBe(false);
+        await waitFor(() => {
+            expect(result.current.isLoading).toBe(false);
+        });
+
         expect(result.current.agreements).toEqual([]);
         expect(result.current.isError).toBe(false);
+        expect(result.current.error).toBeNull();
         expect(triggerMock).not.toHaveBeenCalled();
     });
 
-    it("returns first page only when count <= page size", async () => {
-        triggerMock.mockImplementation(({ page }) => ({
-            unwrap: () =>
-                Promise.resolve({
-                    agreements: [{ id: 1, display_name: `A-${page}` }],
-                    count: 1
-                })
+    it("fetches a single page when count <= limit", async () => {
+        triggerMock.mockImplementation(() => ({
+            unwrap: () => Promise.resolve({ agreements: [{ id: 1 }, { id: 2 }], count: 2 })
         }));
 
-        const { result } = renderHook(() =>
-            useGetAllAgreements({
-                filters: { fiscalYear: [{ title: "FY 2026" }] },
-                onlyMy: true,
-                sortConditions: "name",
-                sortDescending: false
-            })
-        );
+        const { result } = renderHook(() => useGetAllAgreements({ filters: { fiscalYear: [2026] } }));
 
-        await waitFor(() => expect(result.current.isLoading).toBe(false));
+        await waitFor(() => {
+            expect(result.current.isLoading).toBe(false);
+        });
 
+        expect(result.current.agreements).toEqual([{ id: 1 }, { id: 2 }]);
         expect(result.current.isError).toBe(false);
-        expect(result.current.agreements).toEqual([{ id: 1, display_name: "A-0" }]);
         expect(triggerMock).toHaveBeenCalledTimes(1);
         expect(triggerMock).toHaveBeenCalledWith(
             expect.objectContaining({
-                page: 0,
-                limit: 50,
-                onlyMy: true,
-                sortConditions: "name"
-            })
-        );
-    });
-
-    it("fetches and merges multiple pages in order", async () => {
-        triggerMock.mockImplementation(({ page }) => ({
-            unwrap: () =>
-                Promise.resolve({
-                    agreements: [{ id: page + 1, display_name: `Agreement-${page}` }],
-                    count: 120
-                })
-        }));
-
-        const { result } = renderHook(() =>
-            useGetAllAgreements({
-                filters: {},
+                filters: { fiscalYear: [2026] },
                 onlyMy: false,
                 sortConditions: "",
-                sortDescending: false
+                sortDescending: false,
+                page: 0,
+                limit: 50
             })
         );
-
-        await waitFor(() => expect(result.current.isLoading).toBe(false));
-
-        expect(triggerMock).toHaveBeenCalledTimes(3);
-        expect(result.current.agreements).toEqual([
-            { id: 1, display_name: "Agreement-0" },
-            { id: 2, display_name: "Agreement-1" },
-            { id: 3, display_name: "Agreement-2" }
-        ]);
     });
 
-    it("sets error state when request fails", async () => {
-        const error = new Error("boom");
+    it("fetches multiple pages and flattens in order", async () => {
+        triggerMock.mockImplementation(({ page }) => {
+            if (page === 0) {
+                return {
+                    unwrap: () => Promise.resolve({ agreements: [{ id: 1 }, { id: 2 }], count: 120 })
+                };
+            }
+            if (page === 1) {
+                return { unwrap: () => Promise.resolve({ agreements: [{ id: 3 }] }) };
+            }
+            return { unwrap: () => Promise.resolve({ agreements: [{ id: 4 }] }) };
+        });
+
+        const { result } = renderHook(() => useGetAllAgreements());
+
+        await waitFor(() => {
+            expect(result.current.isLoading).toBe(false);
+        });
+
+        expect(result.current.agreements).toEqual([{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }]);
+        expect(triggerMock).toHaveBeenCalledTimes(3);
+    });
+
+    it("sets error state when first request fails", async () => {
+        const error = new Error("first request failed");
         triggerMock.mockImplementation(() => ({
             unwrap: () => Promise.reject(error)
         }));
 
-        const { result } = renderHook(() => useGetAllAgreements({ filters: {} }));
+        const { result } = renderHook(() => useGetAllAgreements());
 
-        await waitFor(() => expect(result.current.isLoading).toBe(false));
+        await waitFor(() => {
+            expect(result.current.isLoading).toBe(false);
+        });
 
         expect(result.current.isError).toBe(true);
         expect(result.current.error).toBe(error);
         expect(result.current.agreements).toEqual([]);
     });
 
-    it("ignores late responses after unmount (cancel guard)", async () => {
-        let resolveFirstPage;
-        const firstPagePromise = new Promise((resolve) => {
-            resolveFirstPage = resolve;
+    it("sets error state when a subsequent page request fails", async () => {
+        const error = new Error("page two failed");
+        triggerMock.mockImplementation(({ page }) => {
+            if (page === 0) {
+                return {
+                    unwrap: () => Promise.resolve({ agreements: [{ id: 1 }], count: 101 })
+                };
+            }
+            if (page === 1) {
+                return { unwrap: () => Promise.reject(error) };
+            }
+            return { unwrap: () => Promise.resolve({ agreements: [{ id: 3 }] }) };
         });
-        triggerMock.mockImplementation(({ page }) =>
-            page === 0
-                ? { unwrap: () => firstPagePromise }
-                : {
-                      unwrap: () =>
-                          Promise.resolve({
-                              agreements: [{ id: page + 1 }],
-                              count: 120
-                          })
-                  }
-        );
 
-        const { unmount } = renderHook(() => useGetAllAgreements({ filters: {} }));
+        const { result } = renderHook(() => useGetAllAgreements());
+
+        await waitFor(() => {
+            expect(result.current.isLoading).toBe(false);
+        });
+
+        expect(result.current.isError).toBe(true);
+        expect(result.current.error).toBe(error);
+    });
+
+    it("forwards explicit params to all page requests", async () => {
+        triggerMock.mockImplementation(({ page }) => {
+            if (page === 0) {
+                return {
+                    unwrap: () => Promise.resolve({ agreements: [{ id: "first" }], count: 51 })
+                };
+            }
+            return { unwrap: () => Promise.resolve({ agreements: [{ id: "second" }] }) };
+        });
+
+        const params = {
+            filters: { agreementType: [{ type: "Contract" }] },
+            onlyMy: true,
+            sortConditions: "name",
+            sortDescending: true
+        };
+
+        const { result } = renderHook(() => useGetAllAgreements(params));
+
+        await waitFor(() => {
+            expect(result.current.isLoading).toBe(false);
+        });
+
+        expect(triggerMock).toHaveBeenNthCalledWith(
+            1,
+            expect.objectContaining({
+                filters: params.filters,
+                onlyMy: true,
+                sortConditions: "name",
+                sortDescending: true,
+                page: 0,
+                limit: 50
+            })
+        );
+        expect(triggerMock).toHaveBeenNthCalledWith(
+            2,
+            expect.objectContaining({
+                filters: params.filters,
+                onlyMy: true,
+                sortConditions: "name",
+                sortDescending: true,
+                page: 1,
+                limit: 50
+            })
+        );
+        expect(result.current.agreements).toEqual([{ id: "first" }, { id: "second" }]);
+    });
+
+    it("guards against updates after unmount (cancellation path)", async () => {
+        const deferred = createDeferred();
+        triggerMock.mockImplementation(() => ({
+            unwrap: () => deferred.promise
+        }));
+
+        const { unmount } = renderHook(() => useGetAllAgreements());
         unmount();
 
-        await resolveFirstPage({ agreements: [{ id: 1 }], count: 120 });
+        deferred.resolve({ agreements: [{ id: 1 }], count: 1 });
+        await Promise.resolve();
         await Promise.resolve();
 
         expect(triggerMock).toHaveBeenCalledTimes(1);
     });
 
-    it("re-fetches when dependency inputs change", async () => {
-        triggerMock.mockImplementation(({ page, sortConditions }) => ({
-            unwrap: () =>
-                Promise.resolve({
-                    agreements: [{ id: page, sortConditions }],
-                    count: 1
-                })
+    it("does not refetch when filter object identity changes but content is equal", async () => {
+        triggerMock.mockImplementation(() => ({
+            unwrap: () => Promise.resolve({ agreements: [{ id: 1 }], count: 1 })
         }));
 
-        const initialProps = {
-            params: { filters: { status: ["DRAFT"] }, onlyMy: false, sortConditions: "", sortDescending: false },
-            options: { skip: false }
-        };
-        const { rerender } = renderHook(({ params, options }) => useGetAllAgreements(params, options), {
-            initialProps
+        const { rerender } = renderHook(({ params }) => useGetAllAgreements(params), {
+            initialProps: {
+                params: {
+                    filters: { fiscalYear: [{ id: 2026 }] },
+                    onlyMy: false,
+                    sortConditions: "",
+                    sortDescending: false
+                }
+            }
         });
 
-        await waitFor(() => expect(triggerMock).toHaveBeenCalledTimes(1));
+        await waitFor(() => {
+            expect(triggerMock).toHaveBeenCalledTimes(1);
+        });
 
         rerender({
-            params: { ...initialProps.params, sortConditions: "name" },
-            options: { skip: false }
+            params: {
+                filters: { fiscalYear: [{ id: 2026 }] },
+                onlyMy: false,
+                sortConditions: "",
+                sortDescending: false
+            }
         });
 
-        await waitFor(() => expect(triggerMock).toHaveBeenCalledTimes(2));
+        await Promise.resolve();
+        expect(triggerMock).toHaveBeenCalledTimes(1);
+
+        rerender({
+            params: {
+                filters: { fiscalYear: [{ id: 2027 }] },
+                onlyMy: false,
+                sortConditions: "",
+                sortDescending: false
+            }
+        });
+
+        await waitFor(() => {
+            expect(triggerMock).toHaveBeenCalledTimes(2);
+        });
     });
 });

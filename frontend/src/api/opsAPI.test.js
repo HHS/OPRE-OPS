@@ -565,6 +565,199 @@ describe("opsAPI - Agreements Pagination", () => {
             expect(capturedUrl).toContain("offset=10");
         });
     });
+
+    describe("Fiscal Year Query Normalization", () => {
+        it("normalizes fiscal year values from primitive and object formats", async () => {
+            let capturedUrl = "";
+            server.use(
+                http.get("*/api/v1/agreements/", ({ request }) => {
+                    capturedUrl = request.url;
+                    return HttpResponse.json({ data: [], count: 0, limit: 10, offset: 0 });
+                })
+            );
+
+            const storeRef = setupApiStore(opsApi);
+            await storeRef.store.dispatch(
+                opsApi.endpoints.getAgreements.initiate({
+                    filters: {
+                        fiscalYear: [2024, { id: 2025 }, { title: "FY 2026" }, { title: "2027" }],
+                        budgetLineStatus: [],
+                        portfolio: [],
+                        agreementName: [],
+                        agreementType: [],
+                        projectTitle: [],
+                        contractNumber: []
+                    },
+                    onlyMy: false,
+                    sortConditions: null,
+                    sortDescending: false
+                })
+            );
+
+            expect(capturedUrl).toContain("fiscal_year=2024");
+            expect(capturedUrl).toContain("fiscal_year=2025");
+            expect(capturedUrl).toContain("fiscal_year=2026");
+            expect(capturedUrl).toContain("fiscal_year=2027");
+        });
+    });
+
+    describe("Query Construction Matrix", () => {
+        it("includes all supported query params when provided", async () => {
+            let capturedUrl = "";
+            server.use(
+                http.get("*/api/v1/agreements/", ({ request }) => {
+                    capturedUrl = request.url;
+                    return HttpResponse.json({ data: [], count: 1, limit: 25, offset: 25 });
+                })
+            );
+
+            const storeRef = setupApiStore(opsApi);
+            await storeRef.store.dispatch(
+                opsApi.endpoints.getAgreements.initiate({
+                    filters: {
+                        fiscalYear: [{ title: "FY 2026" }],
+                        budgetLineStatus: [{ status: "IN_REVIEW" }],
+                        portfolio: [{ id: 7 }],
+                        agreementName: [{ display_name: "Ops Name" }],
+                        agreementType: [{ type: "Grant Type" }],
+                        projectTitle: [{ id: 123 }],
+                        contractNumber: [{ id: "CN-100" }]
+                    },
+                    onlyMy: true,
+                    sortConditions: "name",
+                    sortDescending: true,
+                    page: 1,
+                    limit: 25
+                })
+            );
+
+            expect(capturedUrl).toContain("fiscal_year=2026");
+            expect(capturedUrl).toContain("budget_line_status=IN_REVIEW");
+            expect(capturedUrl).toContain("portfolio=7");
+            expect(capturedUrl).toContain("name=Ops%20Name");
+            expect(capturedUrl).toContain("agreement_type=Grant%20Type");
+            expect(capturedUrl).toContain("project_id=123");
+            expect(capturedUrl).toContain("contract_number=CN-100");
+            expect(capturedUrl).toContain("only_my=true");
+            expect(capturedUrl).toContain("sort_conditions=name");
+            expect(capturedUrl).toContain("sort_descending=true");
+            expect(capturedUrl).toContain("limit=25");
+            expect(capturedUrl).toContain("offset=25");
+        });
+
+        it("omits optional params and trailing ? when all filters are empty", async () => {
+            let capturedUrl = "";
+            server.use(
+                http.get("*/api/v1/agreements/", ({ request }) => {
+                    capturedUrl = request.url;
+                    return HttpResponse.json({ data: [], count: 0, limit: 0, offset: 0 });
+                })
+            );
+
+            const storeRef = setupApiStore(opsApi);
+            await storeRef.store.dispatch(
+                opsApi.endpoints.getAgreements.initiate({
+                    filters: {},
+                    onlyMy: false,
+                    sortConditions: "",
+                    sortDescending: false,
+                    page: null
+                })
+            );
+
+            expect(capturedUrl).toMatch(/\/api\/v1\/agreements\/$/);
+            expect(capturedUrl).not.toContain("?");
+            expect(capturedUrl).not.toContain("sort_descending=");
+            expect(capturedUrl).not.toContain("limit=");
+            expect(capturedUrl).not.toContain("offset=");
+        });
+    });
+
+    describe("Additional transformResponse coverage", () => {
+        it("handles a legacy empty array response", async () => {
+            server.use(
+                http.get("*/api/v1/agreements/", () => {
+                    return HttpResponse.json([]);
+                })
+            );
+
+            const storeRef = setupApiStore(opsApi);
+            const result = await storeRef.store.dispatch(
+                opsApi.endpoints.getAgreements.initiate({
+                    filters: {},
+                    onlyMy: false,
+                    sortConditions: null,
+                    sortDescending: false
+                })
+            );
+
+            expect(result.data).toEqual({
+                agreements: [],
+                count: 0,
+                limit: 0,
+                offset: 0
+            });
+        });
+    });
+
+    describe("getAgreementById query modes", () => {
+        it("builds scalar id endpoint", async () => {
+            let capturedUrl = "";
+            server.use(
+                http.get("*/api/v1/agreements/:id", ({ request }) => {
+                    capturedUrl = request.url;
+                    return HttpResponse.json({ id: 42, name: "Agreement 42" });
+                })
+            );
+
+            const storeRef = setupApiStore(opsApi);
+            await storeRef.store.dispatch(opsApi.endpoints.getAgreementById.initiate(42));
+
+            expect(capturedUrl).toContain("/api/v1/agreements/42");
+            expect(capturedUrl).not.toContain("fiscal_year=");
+        });
+
+        it("builds object endpoint with fiscal year when provided", async () => {
+            let capturedUrl = "";
+            server.use(
+                http.get("*/api/v1/agreements/:id", ({ request }) => {
+                    capturedUrl = request.url;
+                    return HttpResponse.json({ id: 42, fiscal_year: 2026 });
+                })
+            );
+
+            const storeRef = setupApiStore(opsApi);
+            await storeRef.store.dispatch(
+                opsApi.endpoints.getAgreementById.initiate({
+                    id: 42,
+                    fiscal_year: 2026
+                })
+            );
+
+            expect(capturedUrl).toContain("/api/v1/agreements/42?fiscal_year=2026");
+        });
+
+        it("omits fiscal year when object arg has null fiscal year", async () => {
+            let capturedUrl = "";
+            server.use(
+                http.get("*/api/v1/agreements/:id", ({ request }) => {
+                    capturedUrl = request.url;
+                    return HttpResponse.json({ id: 42 });
+                })
+            );
+
+            const storeRef = setupApiStore(opsApi);
+            await storeRef.store.dispatch(
+                opsApi.endpoints.getAgreementById.initiate({
+                    id: 42,
+                    fiscal_year: null
+                })
+            );
+
+            expect(capturedUrl).toContain("/api/v1/agreements/42");
+            expect(capturedUrl).not.toContain("?");
+        });
+    });
 });
 
 describe("opsAPI - Wave 2 high-yield endpoint coverage", () => {
