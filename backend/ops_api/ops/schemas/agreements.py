@@ -2,6 +2,7 @@ from marshmallow import EXCLUDE, Schema, fields
 
 from models import (
     AcquisitionType,
+    AgreementClassification,
     AgreementReason,
     AgreementSortCondition,
     AgreementType,
@@ -150,6 +151,7 @@ class AgreementRequestSchema(PaginationListSchema):
     sort_conditions = fields.List(fields.Enum(AgreementSortCondition), required=False)
     sort_descending = fields.List(fields.Boolean(), required=False)
     only_my = fields.List(fields.Boolean(), required=False)
+    award_type = fields.List(fields.Enum(AgreementClassification), required=False)
     exact_match = fields.List(fields.Boolean(), required=False, load_default=[True])
 
 

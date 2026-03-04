@@ -1,3 +1,4 @@
+from datetime import date
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -6,13 +7,18 @@ from models import (
     AaAgreement,
     Agreement,
     AgreementReason,
+    AgreementType,
+    AwardType,
     BudgetLineItem,
     BudgetLineItemStatus,
     ChangeRequestType,
     ContractAgreement,
+    ContractBudgetLineItem,
     DirectAgreement,
     GrantAgreement,
     IaaAgreement,
+    ProcurementAction,
+    ProcurementActionStatus,
 )
 from models.agreements import AgreementType
 from ops_api.ops.services.agreements import AgreementsService, _compute_agreement_totals
@@ -479,6 +485,120 @@ class TestAgreementsPagination:
 
         # Filtered count should be <= total count
         assert metadata_filtered["count"] <= metadata_all["count"]
+
+
+class TestAgreementsAwardTypeFilter:
+    """Test suite for award_type filtering in AgreementsService.get_list()"""
+
+    @pytest.fixture()
+    def new_award_agreement(self, loaded_db):
+        """Create a NEW agreement (has non-draft BLI, not awarded)."""
+        agreement = ContractAgreement(
+            name="Test Filter - New Award",
+            agreement_type=AgreementType.CONTRACT,
+        )
+        loaded_db.add(agreement)
+        loaded_db.flush()
+
+        bli = ContractBudgetLineItem(
+            agreement_id=agreement.id,
+            status=BudgetLineItemStatus.PLANNED,
+            line_description="Planned BLI",
+        )
+        loaded_db.add(bli)
+        loaded_db.commit()
+        loaded_db.refresh(agreement)
+
+        yield agreement
+
+        loaded_db.delete(bli)
+        loaded_db.delete(agreement)
+        loaded_db.commit()
+
+    @pytest.fixture()
+    def continuing_award_agreement(self, loaded_db):
+        """Create a CONTINUING agreement (awarded in prior FY with non-draft BLI)."""
+        agreement = ContractAgreement(
+            name="Test Filter - Continuing",
+            agreement_type=AgreementType.CONTRACT,
+        )
+        loaded_db.add(agreement)
+        loaded_db.flush()
+
+        bli = ContractBudgetLineItem(
+            agreement_id=agreement.id,
+            status=BudgetLineItemStatus.OBLIGATED,
+            line_description="Obligated BLI",
+        )
+        loaded_db.add(bli)
+
+        pa = ProcurementAction(
+            agreement_id=agreement.id,
+            status=ProcurementActionStatus.AWARDED,
+            award_type=AwardType.NEW_AWARD,
+            date_awarded_obligated=date(2023, 3, 15),  # FY 2023 (prior to current FY 2025)
+        )
+        loaded_db.add(pa)
+        loaded_db.commit()
+        loaded_db.refresh(agreement)
+
+        yield agreement
+
+        loaded_db.delete(pa)
+        loaded_db.delete(bli)
+        loaded_db.delete(agreement)
+        loaded_db.commit()
+
+    @patch("models.utils.fiscal_year.get_current_fiscal_year", return_value=2025)
+    def test_filter_by_new_award_type(self, mock_fy, loaded_db, app_ctx, new_award_agreement):
+        """Test filtering agreements by award_type=NEW returns only NEW agreements."""
+        service = AgreementsService(loaded_db)
+        data = {"award_type": ["NEW"], "limit": [100], "offset": [0]}
+        results, metadata = service.get_list([ContractAgreement], data)
+
+        assert all(a.award_type == "NEW" for a in results)
+        assert any(a.id == new_award_agreement.id for a in results)
+        assert metadata["count"] == len(results)
+
+    @patch("models.utils.fiscal_year.get_current_fiscal_year", return_value=2025)
+    def test_filter_by_continuing_award_type(self, mock_fy, loaded_db, app_ctx, continuing_award_agreement):
+        """Test filtering agreements by award_type=CONTINUING returns only CONTINUING agreements."""
+        service = AgreementsService(loaded_db)
+        data = {"award_type": ["CONTINUING"], "limit": [100], "offset": [0]}
+        results, metadata = service.get_list([ContractAgreement], data)
+
+        assert all(a.award_type == "CONTINUING" for a in results)
+        assert any(a.id == continuing_award_agreement.id for a in results)
+        assert metadata["count"] == len(results)
+
+    @patch("models.utils.fiscal_year.get_current_fiscal_year", return_value=2025)
+    def test_award_type_filter_affects_count(self, mock_fy, loaded_db, app_ctx):
+        """Test that award_type filter reduces the total count compared to unfiltered."""
+        service = AgreementsService(loaded_db)
+        agreement_classes = [ContractAgreement]
+
+        # Get all results
+        data_all = {"limit": [100], "offset": [0]}
+        _, metadata_all = service.get_list(agreement_classes, data_all)
+
+        # Get filtered results
+        data_filtered = {"award_type": ["NEW"], "limit": [100], "offset": [0]}
+        _, metadata_filtered = service.get_list(agreement_classes, data_filtered)
+
+        assert metadata_filtered["count"] <= metadata_all["count"]
+
+    def test_no_award_type_filter_returns_all(self, loaded_db, app_ctx):
+        """Test that omitting award_type filter returns all agreements (no filtering)."""
+        service = AgreementsService(loaded_db)
+        agreement_classes = [ContractAgreement]
+
+        data_no_filter = {"limit": [100], "offset": [0]}
+        results_no_filter, meta_no_filter = service.get_list(agreement_classes, data_no_filter)
+
+        data_empty_filter = {"award_type": [], "limit": [100], "offset": [0]}
+        results_empty_filter, meta_empty_filter = service.get_list(agreement_classes, data_empty_filter)
+
+        assert meta_no_filter["count"] == meta_empty_filter["count"]
 
 
 class TestAgreementsAtomicCreation:

@@ -42,7 +42,7 @@ it("should create a document database record and upload to in memory storage", (
     cy.then(() => {
         cy.request({
             method: "GET",
-            url: "http://localhost:8080/api/v1/documents/1",
+            url: "http://localhost:8080/api/v1/documents/?agreement_id=1",
             headers: {
                 Authorization: bearer_token,
                 "Content-Type": "application/json",
@@ -69,7 +69,7 @@ it.skip("Should download document in memory storage and verify logs", () => {
         logSpy = cy.spy(win.console, "log");
     });
 
-    cy.intercept("GET", "http://localhost:8080/api/v1/documents/1").as("getDocumentsRequest");
+    cy.intercept("GET", "http://localhost:8080/api/v1/documents/*").as("getDocumentsRequest");
 
     cy.get("#agreement-id-get").type("1");
     cy.get("button").contains("Get Documents").click();

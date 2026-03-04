@@ -252,6 +252,47 @@ describe("Agreement List", () => {
         cy.get("svg[id^='filter-tag-']").should("not.exist");
     });
 
+    it("filters agreements by award type", () => {
+        cy.get("button").contains("Filter").click();
+
+        // Select an award type
+        cy.get(".award-type-combobox__control").click();
+        // Wait for menu to be visible before interacting
+        cy.get(".award-type-combobox__menu").should("be.visible");
+        // Break up the chain to avoid stale element issues
+        cy.get(".award-type-combobox__menu").contains("New Award").click();
+
+        // Apply the filter
+        cy.get("button").contains("Apply").click();
+
+        // Verify the filter tag is displayed
+        cy.get("span.bg-brand-primary-light.text-brand-primary-dark", { timeout: 10000 })
+            .contains("New Award")
+            .should("exist");
+
+        // Verify the table shows only New Award agreements
+        cy.get("tbody tr[data-testid^='agreement-table-row-']", { timeout: 30000 }).should("have.length.at.least", 1);
+
+        // Expand first result row and verify Award Type shows "New Award"
+        cy.get("tbody tr[data-testid^='agreement-table-row-']")
+            .first()
+            .find('[data-cy="expand-row"]')
+            .click();
+        cy.get('[data-cy="expanded-data"]', { timeout: 10000 }).should("exist");
+        cy.get('[data-cy="expanded-data"]').should("contain.text", "Award Type");
+        cy.get('[data-cy="expanded-data"]').should("contain.text", "New Award");
+
+        // Reset the filter
+        cy.get("button").contains("Filter").click();
+        cy.get("button").contains("Reset").click();
+        cy.get("button").contains("Apply").click();
+
+        // Wait for table to reload with all agreements
+        cy.get("tbody tr", { timeout: 30000 }).should("have.length.at.least", 1);
+        // Verify the filter tag is removed (check that no filter tags exist at all)
+        cy.get("span.bg-brand-primary-light.text-brand-primary-dark").should("not.exist");
+    });
+
     it("Change Requests tab works", () => {
         cy.visit("/agreements?filter=change-requests");
         // Wait for loading to complete
