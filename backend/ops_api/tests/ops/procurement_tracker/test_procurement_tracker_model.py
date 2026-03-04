@@ -269,19 +269,20 @@ def test_step_to_dict_excludes_step_specific_fields_for_other_steps(loaded_db):
     loaded_db.add(tracker)
     loaded_db.commit()
 
-    # Step 4 (EVALUATION) should NOT include any step-specific fields
+    # Step 4 (EVALUATION) should INCLUDE evaluation-specific fields (mapped from prefixed columns)
     step_4_dict = tracker.steps[3].to_dict()
 
-    # Should not have unprefixed step-specific fields
-    assert "task_completed_by" not in step_4_dict
-    assert "date_completed" not in step_4_dict
-    assert "notes" not in step_4_dict
-    assert "target_completion_date" not in step_4_dict
+    # Should have unprefixed step-specific fields for EVALUATION
+    assert "task_completed_by" in step_4_dict
+    assert "date_completed" in step_4_dict
+    assert "notes" in step_4_dict
+    assert "target_completion_date" in step_4_dict
+    # Should not have other steps' specific fields
     assert "draft_solicitation_date" not in step_4_dict
     assert "solicitation_period_start_date" not in step_4_dict
     assert "solicitation_period_end_date" not in step_4_dict
 
-    # Should not have prefixed fields either
+    # Should not have prefixed fields from OTHER steps
     assert "acquisition_planning_task_completed_by" not in step_4_dict
     assert "acquisition_planning_date_completed" not in step_4_dict
     assert "acquisition_planning_notes" not in step_4_dict
@@ -293,6 +294,11 @@ def test_step_to_dict_excludes_step_specific_fields_for_other_steps(loaded_db):
     assert "solicitation_task_completed_by" not in step_4_dict
     assert "solicitation_date_completed" not in step_4_dict
     assert "solicitation_notes" not in step_4_dict
+    # Should not have EVALUATION prefixed fields (they should be mapped to unprefixed)
+    assert "evaluation_task_completed_by" not in step_4_dict
+    assert "evaluation_date_completed" not in step_4_dict
+    assert "evaluation_notes" not in step_4_dict
+    assert "evaluation_target_completion_date" not in step_4_dict
 
 
 def test_cascade_delete_steps(loaded_db):

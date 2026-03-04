@@ -974,7 +974,7 @@ def test_complete_evaluation_step(auth_client, test_evaluation_step, loaded_db):
         f"/api/v1/procurement-tracker-steps/{test_evaluation_step.id}",
         json={
             "status": "COMPLETED",
-            "task_completed_by": 1,
+            "task_completed_by": 503,
             "date_completed": date.today().isoformat(),
             "notes": "Vendor selected after technical evaluation",
         },
@@ -982,14 +982,14 @@ def test_complete_evaluation_step(auth_client, test_evaluation_step, loaded_db):
     assert response.status_code == 200
     data = response.json
     assert data["status"] == "COMPLETED"
-    assert data["task_completed_by"] == 1
+    assert data["task_completed_by"] == 503
     assert data["date_completed"] == date.today().isoformat()
     assert data["notes"] == "Vendor selected after technical evaluation"
 
     # Verify database was updated with prefixed columns
     loaded_db.refresh(test_evaluation_step)
     assert test_evaluation_step.status == ProcurementTrackerStepStatus.COMPLETED
-    assert test_evaluation_step.evaluation_task_completed_by == 1
+    assert test_evaluation_step.evaluation_task_completed_by == 503
     assert test_evaluation_step.evaluation_date_completed == date.today()
     assert test_evaluation_step.evaluation_notes == "Vendor selected after technical evaluation"
 
