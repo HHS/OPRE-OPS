@@ -209,6 +209,26 @@ describe("useProcurementTrackerStepFour", () => {
             });
         });
 
+        it("shows success alert when API call succeeds", async () => {
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepFour(mockStepFourData, mockHandleSetCompletedStepNumber)
+            );
+
+            act(() => {
+                result.current.setTargetCompletionDate("03/20/2024");
+            });
+
+            await act(async () => {
+                await result.current.handleTargetCompletionDateSubmit(1);
+            });
+
+            expect(mockSetAlert).toHaveBeenCalledWith({
+                type: "success",
+                heading: "Success",
+                message: "Target completion date saved successfully."
+            });
+        });
+
         it("shows error alert when API call fails", async () => {
             mockPatchStepFour.mockReturnValue({
                 unwrap: vi.fn().mockRejectedValue(new Error("API Error"))
@@ -321,6 +341,27 @@ describe("useProcurementTrackerStepFour", () => {
             });
 
             expect(mockHandleSetCompletedStepNumber).toHaveBeenCalledWith(4);
+        });
+
+        it("shows success alert when step completion succeeds", async () => {
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepFour({}, mockHandleSetCompletedStepNumber)
+            );
+
+            act(() => {
+                result.current.setSelectedUser({ id: 456, full_name: "Jane Smith" });
+                result.current.setStep4DateCompleted("03/20/2024");
+            });
+
+            await act(async () => {
+                await result.current.handleStepFourComplete(1);
+            });
+
+            expect(mockSetAlert).toHaveBeenCalledWith({
+                type: "success",
+                heading: "Success",
+                message: "Step 4 completed successfully."
+            });
         });
 
         it("shows error alert when API call fails", async () => {

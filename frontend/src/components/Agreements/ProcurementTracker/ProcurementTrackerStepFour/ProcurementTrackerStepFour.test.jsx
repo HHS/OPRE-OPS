@@ -378,7 +378,7 @@ describe("ProcurementTrackerStepFour", () => {
             expect(screen.getByText("Vendor selected after evaluation")).toBeInTheDocument();
         });
 
-        it("does not render notes section when notes are empty", () => {
+        it("renders notes as None when notes are empty", () => {
             useProcurementTrackerStepFour.mockReturnValue({
                 ...defaultHookReturn,
                 step4NotesLabel: ""
@@ -391,10 +391,16 @@ describe("ProcurementTrackerStepFour", () => {
 
             render(<ProcurementTrackerStepFour {...propsWithoutNotes} />);
 
-            expect(screen.queryByText("Notes")).not.toBeInTheDocument();
+            expect(screen.getByText("Notes")).toBeInTheDocument();
+            expect(screen.getByText("None")).toBeInTheDocument();
         });
 
-        it("does not render target completion date when not set", () => {
+        it("renders target completion date as None when not set", () => {
+            useProcurementTrackerStepFour.mockReturnValue({
+                ...defaultHookReturn,
+                step4TargetCompletionDateLabel: ""
+            });
+
             const propsWithoutTargetDate = {
                 ...completedProps,
                 stepFourData: { ...completedProps.stepFourData, target_completion_date: null }
@@ -404,7 +410,7 @@ describe("ProcurementTrackerStepFour", () => {
 
             const termTags = screen.getAllByTestId("term-tag");
             const tagTexts = termTags.map((tag) => tag.textContent);
-            expect(tagTexts.some((text) => text.includes("Target Completion Date"))).toBe(false);
+            expect(tagTexts.some((text) => text.includes("Target Completion Date") && text.includes("None"))).toBe(true);
         });
     });
 

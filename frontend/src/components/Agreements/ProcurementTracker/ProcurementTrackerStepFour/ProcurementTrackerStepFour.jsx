@@ -231,14 +231,12 @@ const ProcurementTrackerStepFour = ({
                         </p>
                     </div>
                     <dl className="display-flex flex-wrap">
-                        {stepFourData?.target_completion_date && (
-                            <div className="width-full">
-                                <TermTag
-                                    term="Target Completion Date"
-                                    description={step4TargetCompletionDateLabel}
-                                />
-                            </div>
-                        )}
+                        <div className="width-full">
+                            <TermTag
+                                term="Target Completion Date"
+                                description={step4TargetCompletionDateLabel || "None"}
+                            />
+                        </div>
                         <TermTag
                             term="Completed By"
                             description={step4CompletedByUserName}
@@ -248,12 +246,10 @@ const ProcurementTrackerStepFour = ({
                             term="Date Completed"
                             description={step4DateCompletedLabel}
                         />
-                        {step4NotesLabel && (
-                            <div className="width-full">
-                                <dt className="margin-0 text-base-dark margin-top-3 font-12px">Notes</dt>
-                                <dd className="margin-0 margin-top-1">{step4NotesLabel}</dd>
-                            </div>
-                        )}
+                        <div className="width-full">
+                            <dt className="margin-0 text-base-dark margin-top-3 font-12px">Notes</dt>
+                            <dd className="margin-0 margin-top-1">{step4NotesLabel || "None"}</dd>
+                        </div>
                     </dl>
                 </div>
             )}
