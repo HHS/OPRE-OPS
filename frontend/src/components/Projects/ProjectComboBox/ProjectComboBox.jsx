@@ -30,7 +30,7 @@ export const ProjectComboBox = ({
     selectedResearchProject,
     setSelectedProject,
     messages = [],
-    label = "Project",
+    label = "Project Title or Nickname",
     isRequired = false,
     legendClassname = "usa-label margin-top-0",
     defaultString = "",
