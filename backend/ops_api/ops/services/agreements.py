@@ -68,6 +68,7 @@ class AgreementFilters:
     name: Optional[list[str]] = None
     search: Optional[list[str]] = None
     only_my: Optional[list[bool]] = None
+    award_type: Optional[list[str]] = None
     exact_match: Optional[bool] = None
     limit: Optional[list[int]] = None
     offset: Optional[list[int]] = None
@@ -95,6 +96,7 @@ class AgreementFilters:
             name=data.get("name", []),
             search=data.get("search", []),
             only_my=data.get("only_my", []),
+            award_type=[at.name if hasattr(at, "name") else at for at in data.get("award_type", [])],
             exact_match=data.get("exact_match", [True])[0],
             limit=data.get("limit", [10]),
             offset=data.get("offset", [0]),
@@ -431,6 +433,10 @@ class AgreementsService(OpsService[Agreement]):
         for agreement_cls in agreement_classes:
             agreements = _get_agreements(self.db_session, agreement_cls, data)
             all_results.extend(agreements)
+
+        # Filter by award_type (computed property, must be done post-query)
+        if filters.award_type:
+            all_results = [a for a in all_results if a.award_type in filters.award_type]
 
         # Sort combined results
         if filters.sort_conditions and len(filters.sort_conditions) > 0:

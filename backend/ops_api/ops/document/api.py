@@ -2,7 +2,7 @@ from flask import Response, current_app, request
 
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
-from ops_api.ops.base_views import BaseItemAPI
+from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.document.document_gateway import DocumentGateway
 from ops_api.ops.document.schema import (
     DocumentResponseSchema,
@@ -14,9 +14,12 @@ from ops_api.ops.document.service import DocumentService
 from ops_api.ops.utils.response import make_response_with_headers
 
 
-class DocumentAPI(BaseItemAPI):
+class DocumentListAPI(BaseListAPI):
     @is_authorized(PermissionType.GET, Permission.UPLOAD_DOCUMENT)
-    def get(self, agreement_id: int) -> Response:
+    def get(self) -> Response:
+        agreement_id = request.args.get("agreement_id", type=int)
+        if not agreement_id:
+            return make_response_with_headers({"error": "agreement_id is required"}, 400)
         # Call document service to get documents by agreement_id
         document_service = DocumentService(DocumentGateway(current_app.config))
         results = document_service.get_documents_by_agreement_id(agreement_id)
@@ -42,6 +45,8 @@ class DocumentAPI(BaseItemAPI):
         response_data = response_schema.dump(result)
         return make_response_with_headers(data=response_data, status_code=201)
 
+
+class DocumentItemAPI(BaseItemAPI):
     @is_authorized(PermissionType.PATCH, Permission.UPLOAD_DOCUMENT)
     def patch(self, document_id: int) -> Response:
         # Use schema to validate request data and get status
