@@ -369,18 +369,78 @@ describe("Agreement List", () => {
     });
 
     it("Agreement summary card counts match the table row count by type", () => {
-        // Get the total count from the FY spending card
-        cy.get('[data-cy="agreement-count-summary-card"]').within(() => {
-            cy.get(".font-sans-xl.text-bold")
-                .invoke("text")
-                .then((cardCountText) => {
-                    const cardTotal = parseInt(cardCountText, 10);
+        // Extract per-type counts from the summary card tags (e.g. "5 Contract", "2 Partner")
+        const cardTypeCounts = {};
+        let cardTotal = 0;
 
-                    // Navigate through all pages to count total table rows
-                    // First, get the total from pagination if it exists
-                    // The card count should match the total number of agreements across all pages
+        cy.get('[data-cy="agreement-count-summary-card"]').within(() => {
+            // Read the total count
+            cy.get(".font-sans-xl.text-bold")
+                .first()
+                .invoke("text")
+                .then((text) => {
+                    cardTotal = parseInt(text, 10);
                     expect(cardTotal).to.be.greaterThan(0);
                 });
+
+            // Read per-type tags from the first article (total breakdown)
+            // Tags are <span> elements with text like "5 Contract" or "2 Partner"
+            cy.get("article")
+                .first()
+                .find("span.font-12px")
+                .each(($tag) => {
+                    const tagText = $tag.text().trim();
+                    const match = tagText.match(/^(\d+)\s+(.+)$/);
+                    if (match) {
+                        cardTypeCounts[match[2]] = parseInt(match[1], 10);
+                    }
+                });
+        });
+
+        // Count all table rows across all pages by type
+        const tableTypeCounts = {};
+        let tableTotal = 0;
+
+        // Map table type text to card type text (e.g. "Partner - AA" → "Partner")
+        const normalizeType = (type) => (type.startsWith("Partner") ? "Partner" : type);
+
+        const countRowsOnCurrentPage = () => {
+            cy.get("tbody tr[data-testid^='agreement-table-row-']").each(($row) => {
+                tableTotal++;
+                const typeText = normalizeType($row.find("[data-cy='agreement-type']").text().trim());
+                tableTypeCounts[typeText] = (tableTypeCounts[typeText] || 0) + 1;
+            });
+        };
+
+        const countAllPages = () => {
+            countRowsOnCurrentPage();
+            cy.get("body").then(($body) => {
+                const $nextBtn = $body.find("button[aria-label='Next page']:visible");
+                if ($nextBtn.length > 0) {
+                    // Capture the first row's testid so we can detect when the page actually changes
+                    const firstRowTestId = $body
+                        .find("tbody tr[data-testid^='agreement-table-row-']")
+                        .first()
+                        .attr("data-testid");
+                    cy.wrap($nextBtn).click();
+                    // Wait until the first row's testid changes, confirming new page data loaded
+                    cy.get(`tbody tr[data-testid^='agreement-table-row-']`, { timeout: 10000 })
+                        .first()
+                        .should("not.have.attr", "data-testid", firstRowTestId);
+                    countAllPages();
+                }
+            });
+        };
+
+        cy.then(() => countAllPages(1)).then(() => {
+            // Compare total count
+            expect(tableTotal).to.equal(cardTotal);
+
+            // Compare per-type counts
+            for (const [type, count] of Object.entries(cardTypeCounts)) {
+                const tableCount = tableTypeCounts[type] || 0;
+                expect(tableCount, `Table count for "${type}"`).to.equal(count);
+            }
         });
     });
 

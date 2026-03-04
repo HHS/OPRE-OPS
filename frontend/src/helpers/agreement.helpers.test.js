@@ -1,6 +1,11 @@
 import {
     calculateAgreementTotal,
     calculateFeeTotal,
+    getAgreementBLITotalByTypes,
+    getContractAgreementBLITotal,
+    getPartnerAgreementBLITotal,
+    getGrantAgreementBLITotal,
+    getDirectObligationAgreementBLITotal,
     getProcurementShopSubTotal,
     getProcurementShopFees,
     getAgreementType,
@@ -13,6 +18,140 @@ import { BLI_STATUS } from "./budgetLines.helpers";
 import { AGREEMENT_TYPES } from "../components/ServicesComponents/ServicesComponents.constants";
 import { AgreementType, AgreementFields } from "../pages/agreements/agreements.constants";
 import { NO_DATA } from "../constants";
+
+describe("getAgreementBLITotalByTypes", () => {
+    const makeAgreement = (type, budgetLineItems) => ({
+        agreement_type: type,
+        budget_line_items: budgetLineItems
+    });
+
+    const agreements = [
+        makeAgreement(AgreementType.CONTRACT, [
+            { amount: 100, fees: 10, status: BLI_STATUS.PLANNED },
+            { amount: 200, fees: 20, status: BLI_STATUS.EXECUTING }
+        ]),
+        makeAgreement(AgreementType.CONTRACT, [
+            { amount: 50, fees: 5, status: BLI_STATUS.PLANNED },
+            { amount: 50, fees: 0, status: BLI_STATUS.DRAFT }
+        ]),
+        makeAgreement(AgreementType.GRANT, [
+            { amount: 300, fees: 30, status: BLI_STATUS.PLANNED }
+        ]),
+        makeAgreement(AgreementType.AA, [
+            { amount: 400, fees: 40, status: BLI_STATUS.OBLIGATED }
+        ]),
+        makeAgreement(AgreementType.IAA, [
+            { amount: 150, fees: 15, status: BLI_STATUS.PLANNED }
+        ]),
+        makeAgreement(AgreementType.DIRECT_OBLIGATION, [
+            { amount: 500, fees: 50, status: BLI_STATUS.EXECUTING }
+        ])
+    ];
+
+    it("filters by a single agreement type", () => {
+        const result = getAgreementBLITotalByTypes(agreements, [AgreementType.GRANT]);
+        // 300 + 30 = 330
+        expect(result).toBe(330);
+    });
+
+    it("filters by multiple agreement types", () => {
+        const result = getAgreementBLITotalByTypes(agreements, [AgreementType.AA, AgreementType.IAA]);
+        // AA: 400 + 40 = 440, IAA: 150 + 15 = 165 => 605
+        expect(result).toBe(605);
+    });
+
+    it("returns 0 when no agreements match the types", () => {
+        const result = getAgreementBLITotalByTypes(agreements, [AgreementType.MISCELLANEOUS]);
+        expect(result).toBe(0);
+    });
+
+    it("returns 0 for an empty agreements array", () => {
+        const result = getAgreementBLITotalByTypes([], [AgreementType.CONTRACT]);
+        expect(result).toBe(0);
+    });
+
+    it("excludes DRAFT budget lines from totals", () => {
+        // Second CONTRACT agreement has a DRAFT BLI (50 + 0) that should be excluded
+        const result = getAgreementBLITotalByTypes(agreements, [AgreementType.CONTRACT]);
+        // First CONTRACT: (100 + 10) + (200 + 20) = 330
+        // Second CONTRACT: only PLANNED BLI: 50 + 5 = 55 (DRAFT excluded)
+        // Total: 330 + 55 = 385
+        expect(result).toBe(385);
+    });
+});
+
+describe("getContractAgreementBLITotal", () => {
+    it("returns totals for CONTRACT agreements only", () => {
+        const agreements = [
+            {
+                agreement_type: AgreementType.CONTRACT,
+                budget_line_items: [{ amount: 100, fees: 10, status: BLI_STATUS.PLANNED }]
+            },
+            {
+                agreement_type: AgreementType.GRANT,
+                budget_line_items: [{ amount: 200, fees: 20, status: BLI_STATUS.PLANNED }]
+            }
+        ];
+        const result = getContractAgreementBLITotal(agreements);
+        expect(result).toBe(110);
+    });
+});
+
+describe("getPartnerAgreementBLITotal", () => {
+    it("returns totals for AA and IAA agreements combined", () => {
+        const agreements = [
+            {
+                agreement_type: AgreementType.AA,
+                budget_line_items: [{ amount: 100, fees: 10, status: BLI_STATUS.PLANNED }]
+            },
+            {
+                agreement_type: AgreementType.IAA,
+                budget_line_items: [{ amount: 200, fees: 20, status: BLI_STATUS.PLANNED }]
+            },
+            {
+                agreement_type: AgreementType.CONTRACT,
+                budget_line_items: [{ amount: 999, fees: 99, status: BLI_STATUS.PLANNED }]
+            }
+        ];
+        const result = getPartnerAgreementBLITotal(agreements);
+        // AA: 110, IAA: 220 => 330
+        expect(result).toBe(330);
+    });
+});
+
+describe("getGrantAgreementBLITotal", () => {
+    it("returns totals for GRANT agreements only", () => {
+        const agreements = [
+            {
+                agreement_type: AgreementType.GRANT,
+                budget_line_items: [{ amount: 300, fees: 30, status: BLI_STATUS.PLANNED }]
+            },
+            {
+                agreement_type: AgreementType.CONTRACT,
+                budget_line_items: [{ amount: 100, fees: 10, status: BLI_STATUS.PLANNED }]
+            }
+        ];
+        const result = getGrantAgreementBLITotal(agreements);
+        expect(result).toBe(330);
+    });
+});
+
+describe("getDirectObligationAgreementBLITotal", () => {
+    it("returns totals for DIRECT_OBLIGATION agreements only", () => {
+        const agreements = [
+            {
+                agreement_type: AgreementType.DIRECT_OBLIGATION,
+                budget_line_items: [{ amount: 500, fees: 50, status: BLI_STATUS.EXECUTING }]
+            },
+            {
+                agreement_type: AgreementType.CONTRACT,
+                budget_line_items: [{ amount: 100, fees: 10, status: BLI_STATUS.PLANNED }]
+            }
+        ];
+        const result = getDirectObligationAgreementBLITotal(agreements);
+        expect(result).toBe(550);
+    });
+});
 
 describe("getProcurementShopSubTotal", () => {
     /** @type {import("../types/AgreementTypes").Agreement} */
