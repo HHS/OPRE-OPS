@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useBlocker } from "react-router-dom";
 import classnames from "vest/classnames";
 import {
     useDeleteAgreementMutation,
+    useGetProjectsQuery,
     useGetProductServiceCodesQuery,
     useUpdateAgreementMutation
 } from "../../../api/opsAPI";
@@ -54,6 +55,7 @@ const useAgreementEditForm = (
 
     // SETTERS
     const setSelectedProcurementShop = useSetState("selected_procurement_shop");
+    const setSelectedProject = useSetState("selected_project");
     const setSelectedProductServiceCode = useSetState("selected_product_service_code");
     const setSelectedProjectOfficer = useSetState("selected_project_officer");
     const setSelectedAlternateProjectOfficer = useSetState("selected_alternate_project_officer");
@@ -63,6 +65,7 @@ const useAgreementEditForm = (
     const setAgreementTitle = useUpdateAgreement("name");
     const setAgreementNickName = useUpdateAgreement("nick_name");
     const setAgreementDescription = useUpdateAgreement("description");
+    const setAgreementProjectId = useUpdateAgreement("project_id");
     const setAgreementProcurementShopId = useUpdateAgreement("awarding_entity_id");
     const setProductServiceCodeId = useUpdateAgreement("product_service_code_id");
     const setAgreementReason = useUpdateAgreement("agreement_reason");
@@ -94,6 +97,7 @@ const useAgreementEditForm = (
 
     const {
         agreement,
+        selected_project: selectedProject,
         selected_procurement_shop: selectedProcurementShop,
         selected_product_service_code: selectedProductServiceCode,
         selected_project_officer: selectedProjectOfficer,
@@ -117,6 +121,17 @@ const useAgreementEditForm = (
         research_methodologies: researchMethodologies,
         _meta: { immutable_awarded_fields: immutableFields = [] } = {}
     } = agreement;
+
+    const {
+        data: projects = [],
+        error: errorProjects,
+        isLoading: isLoadingProjects
+    } = useGetProjectsQuery(
+        {},
+        {
+            skip: isWizardMode
+        }
+    );
 
     const {
         data: productServiceCodes = [],
@@ -158,6 +173,19 @@ const useAgreementEditForm = (
     const hasProcurementShopChanged = useHasStateChanged(selectedProcurementShop);
     const shouldRequestChange = hasProcurementShopChanged && areAnyBudgetLinesPlanned && !isAgreementAwarded;
 
+    const runValidate = React.useCallback(
+        (name, value) => {
+            suite.run(
+                {
+                    ...agreement,
+                    [name]: value
+                },
+                name
+            );
+        },
+        [agreement]
+    );
+
     React.useEffect(() => {
         if (isReviewMode) {
             suite.run({
@@ -168,10 +196,16 @@ const useAgreementEditForm = (
     }, [isReviewMode, agreement, selectedProcurementShop]);
 
     React.useEffect(() => {
-        if (errorProductServiceCodes) {
+        if (!isWizardMode) {
+            runValidate("project_id", agreement?.project_id);
+        }
+    }, [isWizardMode, agreement?.project_id, runValidate]);
+
+    React.useEffect(() => {
+        if (errorProductServiceCodes || errorProjects) {
             navigate("/error");
         }
-    }, [errorProductServiceCodes, navigate]);
+    }, [errorProductServiceCodes, errorProjects, navigate]);
 
     let res = suite.get();
 
@@ -185,6 +219,7 @@ const useAgreementEditForm = (
     const isAgreementAA = agreementType === AGREEMENT_TYPES.AA;
     const shouldDisableBtn =
         !agreementTitle ||
+        !agreement?.project_id ||
         !agreementType ||
         res.hasErrors() ||
         (isAgreementAA && (!servicingAgency || !requestingAgency));
@@ -199,6 +234,13 @@ const useAgreementEditForm = (
         setSelectedProductServiceCode(selectedProductServiceCode);
         const productServiceCodeId = selectedProductServiceCode ? selectedProductServiceCode.id : null;
         setProductServiceCodeId(productServiceCodeId);
+    };
+
+    const changeSelectedProject = (project) => {
+        setSelectedProject(project);
+        const projectId = project ? project.id : null;
+        setAgreementProjectId(projectId);
+        runValidate("project_id", projectId);
     };
 
     const changeSelectedProjectOfficer = (selectedProjectOfficer) => {
@@ -493,16 +535,6 @@ const useAgreementEditForm = (
         setAgreementProcurementShopId(procurementShop?.id);
     };
 
-    const runValidate = (name, value) => {
-        suite.run(
-            {
-                ...agreement,
-                ...{ [name]: value }
-            },
-            name
-        );
-    };
-
     const hasProcurementShopChangeRequest = agreement?.change_requests_in_review?.some(
         (changeRequest) => changeRequest.has_proc_shop_change
     );
@@ -544,6 +576,8 @@ const useAgreementEditForm = (
         agreementDescription,
         agreementReason,
         selectedTeamMembers,
+        projects,
+        selectedProject,
         contractType,
         serviceReqType,
         servicingAgency,
@@ -564,6 +598,7 @@ const useAgreementEditForm = (
         isAgreementAA,
         isSuperUser,
         shouldDisableBtn,
+        changeSelectedProject,
         changeSelectedProductServiceCode,
         changeSelectedProjectOfficer,
         changeSelectedAlternateProjectOfficer,
@@ -598,7 +633,8 @@ const useAgreementEditForm = (
         setShowBlockerModal,
         blockerModalProps,
         saveAgreement,
-        isLoadingProductServiceCodes
+        isLoadingProductServiceCodes,
+        isLoadingProjects
     };
 };
 

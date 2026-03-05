@@ -1,10 +1,27 @@
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
+import { useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import Accordion from "../../components/UI/Accordion";
 import { data } from "./content/faq";
+import { buildAnchorIds, getAnchorIdFromHash } from "./helpCenterAnchors";
 
 const FAQ = () => {
+    const location = useLocation();
+    const navigate = useNavigate();
+    const anchorIds = buildAnchorIds(data);
+    const activeAnchorId = getAnchorIdFromHash(location.hash);
+
+    useEffect(() => {
+        if (!activeAnchorId) return;
+
+        const targetElement = document.getElementById(activeAnchorId);
+        if (targetElement && typeof targetElement.scrollIntoView === "function") {
+            targetElement.scrollIntoView({ block: "start" });
+        }
+    }, [activeAnchorId]);
+
     const components = {
         table: (props) => (
             <table
@@ -22,22 +39,39 @@ const FAQ = () => {
         <>
             <h2 className="margin-bottom-4">Frequently Asked Questions</h2>
             <section className="usa-prose">
-                {data.map((item) => (
-                    <Accordion
-                        key={item.heading}
-                        heading={item.heading}
-                        level={3}
-                        isClosed={true}
-                    >
-                        <ReactMarkdown
-                            remarkPlugins={[remarkGfm]}
-                            components={components}
-                            rehypePlugins={[rehypeRaw]}
+                {data.map((item, index) => {
+                    const anchorId = anchorIds[index];
+
+                    return (
+                        <Accordion
+                            key={`${anchorId}-${activeAnchorId}`}
+                            id={anchorId}
+                            heading={item.heading}
+                            level={3}
+                            isClosed={activeAnchorId !== anchorId}
+                            onToggle={(isOpen) => {
+                                if (!isOpen) return;
+
+                                navigate(
+                                    {
+                                        pathname: location.pathname,
+                                        search: location.search,
+                                        hash: `#${anchorId}`
+                                    },
+                                    { replace: true }
+                                );
+                            }}
                         >
-                            {item.content}
-                        </ReactMarkdown>
-                    </Accordion>
-                ))}
+                            <ReactMarkdown
+                                remarkPlugins={[remarkGfm]}
+                                components={components}
+                                rehypePlugins={[rehypeRaw]}
+                            >
+                                {item.content}
+                            </ReactMarkdown>
+                        </Accordion>
+                    );
+                })}
             </section>
         </>
     );
