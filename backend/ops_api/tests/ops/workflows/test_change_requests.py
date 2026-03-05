@@ -324,7 +324,7 @@ def test_budget_line_item_patch_with_status_change_requests(
     agreement_id = 1
 
     # initialize hist count
-    response = division_director_auth_client.get(url_for("api.agreement-history-group", id=agreement_id, limit=100))
+    response = division_director_auth_client.get(url_for("api.agreement-history", id=agreement_id, limit=100))
     assert response.status_code in [200, 404]
     prev_hist_count = len(response.json) if response.status_code == 200 else 0
 
@@ -382,7 +382,7 @@ def test_budget_line_item_patch_with_status_change_requests(
     assert change_request["requestor_notes"] == data["requestor_notes"]
 
     # # verify agreement history added for 1 change request
-    response = division_director_auth_client.get(url_for("api.agreement-history-group", id=agreement_id, limit=100))
+    response = division_director_auth_client.get(url_for("api.agreement-history", id=agreement_id, limit=100))
     assert response.status_code == 200
     hist_count = len(response.json)
     assert hist_count == prev_hist_count + 1
@@ -437,7 +437,7 @@ def test_budget_line_item_patch_with_status_change_requests(
     assert notification.change_request.id == change_request_id
 
     # verify agreement history added for 1 review and 1 update
-    response = division_director_auth_client.get(url_for("api.agreement-history-group", id=agreement_id, limit=100))
+    response = division_director_auth_client.get(url_for("api.agreement-history", id=agreement_id, limit=100))
     hist_count = len(response.json)
     assert hist_count == prev_hist_count + 1
     prev_hist_count = hist_count

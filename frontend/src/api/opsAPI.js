@@ -708,8 +708,8 @@ export const opsApi = createApi({
                 if (sort) {
                     queryParams.push(`sort_asc=${sort}`);
                 }
-                const queryString = queryParams.length > 0 ? `&${queryParams.join("&")}` : "";
-                return `/can-history/?can_id=${canId}${queryString}`;
+                const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
+                return `/cans/${canId}/history/${queryString}`;
             },
             providesTags: ["Cans"]
         }),

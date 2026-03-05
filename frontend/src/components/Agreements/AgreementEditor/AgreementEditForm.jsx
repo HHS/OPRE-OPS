@@ -21,6 +21,7 @@ import ResearchMethodologyComboBox from "../ResearchMethodologyComboBox";
 import SpecialTopicComboBox from "../SpecialTopicComboBox";
 import TeamMemberComboBox from "../TeamMemberComboBox";
 import TeamMemberList from "../TeamMemberList";
+import ProjectComboBox from "../../Projects/ProjectComboBox";
 import { isFieldDisabled } from "./AgreementEditForm.helpers";
 import useAgreementEditForm from "./AgreementEditForm.hooks";
 
@@ -65,6 +66,8 @@ const AgreementEditForm = ({
         agreementDescription,
         agreementReason,
         selectedTeamMembers,
+        projects,
+        selectedProject,
         contractType,
         serviceReqType,
         servicingAgency,
@@ -85,6 +88,7 @@ const AgreementEditForm = ({
         isAgreementAA,
         isSuperUser,
         shouldDisableBtn,
+        changeSelectedProject,
         changeSelectedProductServiceCode,
         changeSelectedProjectOfficer,
         changeSelectedAlternateProjectOfficer,
@@ -117,7 +121,8 @@ const AgreementEditForm = ({
         showBlockerModal,
         setShowBlockerModal,
         blockerModalProps,
-        isLoadingProductServiceCodes
+        isLoadingProductServiceCodes,
+        isLoadingProjects
     } = useAgreementEditForm(
         isAgreementAwarded,
         areAnyBudgetLinesPlanned,
@@ -133,7 +138,7 @@ const AgreementEditForm = ({
 
     const awardedImmutableFieldsTooltipMsg = "This information cannot be edited on awarded agreements";
 
-    if (isLoadingProductServiceCodes) {
+    if (isLoadingProductServiceCodes || isLoadingProjects) {
         return <div>Loading...</div>;
     }
 
@@ -207,6 +212,18 @@ const AgreementEditForm = ({
                 value={agreementNickName || ""}
                 onChange={(_, value) => setAgreementNickName(value)}
             />
+            {!isWizardMode && (
+                <ProjectComboBox
+                    researchProjects={projects}
+                    selectedResearchProject={selectedProject}
+                    setSelectedProject={changeSelectedProject}
+                    messages={res.getErrors("project_id")}
+                    label="Project Title or Nickname"
+                    isRequired={true}
+                    legendClassname="usa-label margin-top-3 margin-bottom-1"
+                    overrideStyles={{ width: "30em" }}
+                />
+            )}
             <TextArea
                 name="description"
                 label="Description"

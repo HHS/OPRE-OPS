@@ -291,6 +291,42 @@ describe("Accordion Component", () => {
             expect(accordion).toBeInTheDocument();
             expect(accordion).toHaveClass("usa-accordion");
         });
+
+        it("applies id attribute when provided", () => {
+            const { container } = render(
+                <Accordion
+                    {...defaultProps}
+                    id="test-anchor-id"
+                />
+            );
+
+            const accordion = container.querySelector("#test-anchor-id");
+            expect(accordion).toBeInTheDocument();
+            expect(accordion).toHaveClass("usa-accordion");
+        });
+    });
+
+    describe("Callbacks", () => {
+        it("calls onToggle with next open state", async () => {
+            const user = userEvent.setup();
+            const onToggle = vi.fn();
+
+            render(
+                <Accordion
+                    {...defaultProps}
+                    isClosed={true}
+                    onToggle={onToggle}
+                />
+            );
+
+            const button = screen.getByRole("button", { name: defaultProps.heading });
+
+            await user.click(button);
+            await user.click(button);
+
+            expect(onToggle).toHaveBeenNthCalledWith(1, true);
+            expect(onToggle).toHaveBeenNthCalledWith(2, false);
+        });
     });
 
     describe("Styling", () => {

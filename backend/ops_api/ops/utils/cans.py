@@ -1,7 +1,92 @@
 from decimal import Decimal
-from typing import List, Optional, TypedDict
+from typing import Iterable, List, Optional, TypedDict
 
 from models import CAN, BudgetLineItemStatus
+
+
+def is_can_active_for_year(can: CAN, fiscal_year: int) -> bool:
+    """
+    Determine whether a CAN is considered "active" for a given fiscal year.
+
+    This is the **single source of truth** for active-period filtering logic,
+    used by both:
+      - GET /portfolios/{id}/cans/  (PortfolioCansAPI)
+      - GET /cans/                  (CANListAPI via CANService)
+
+    A CAN is active for a fiscal year if ALL of the following are true:
+      1. The CAN has ``funding_details`` with a valid ``active_period``.
+      2. The fiscal year falls within the CAN's active window:
+         - **Perpetual funds** (``active_period == 0``): active for any year >= funding start year.
+         - **Time-limited funds** (``active_period >= 1``): active within the half-open interval
+           ``[funding_details.fiscal_year, funding_details.fiscal_year + active_period)``.
+
+    Args:
+        can: The CAN instance to check.
+        fiscal_year: The fiscal year to evaluate against.
+
+    Returns:
+        True if the CAN is active for the given fiscal year, False otherwise.
+
+    .. note::
+        **Future consolidation (Option B):**
+        Currently two endpoints expose CAN data filtered by active period:
+
+        * ``GET /portfolios/{id}/cans/`` — portfolio-scoped, returns a bare JSON array,
+          supports ``includeInactive``, BLI-level fiscal year filtering, and sorts by
+          appropriation year descending. Used by ``PortfolioSpending`` and ``PortfolioFunding``.
+
+        * ``GET /cans/`` — paginated, supports rich filtering (portfolio, transfer,
+          active_period, budget range), configurable sorting, and search. Used by the
+          CAN management list page (``CanList``).
+
+        A future consolidation should:
+        1. Add ``includeInactive`` and ``budgetFiscalYear`` (BLI filtering) query params to ``GET /cans/``.
+        2. Add an appropriation-year sort option to ``GET /cans/``.
+        3. Migrate ``PortfolioSpending`` / ``PortfolioFunding`` to ``useGetCansQuery`` with ``portfolio_id``.
+        4. Deprecate and remove ``GET /portfolios/{id}/cans/``.
+
+        See also: the endpoint-level docstrings on ``PortfolioCansAPI`` and ``CANListAPI``
+        for per-endpoint documentation of their differences.
+    """
+    if not can.funding_details:
+        return False
+
+    active_period = can.active_period
+    if active_period is None:
+        return False
+
+    start_year = can.funding_details.fiscal_year
+
+    # Perpetual funds (active_period == 0) are active for any year at or after the start year
+    if active_period == 0:
+        return fiscal_year >= start_year
+
+    # Time-limited funds: half-open interval [start_year, start_year + active_period)
+    return start_year <= fiscal_year < (start_year + active_period)
+
+
+def filter_active_cans(cans: Optional[Iterable[CAN]] = None, fiscal_year: Optional[int] = None) -> set[CAN]:
+    """
+    Filter a collection of CANs to include only those active for a given fiscal year.
+
+    Uses :func:`is_can_active_for_year` for the per-CAN determination.
+
+    Args:
+        cans: An iterable of CAN instances to filter. If ``None`` or empty, returns an empty set.
+        fiscal_year: The fiscal year to check. If ``None``, all CANs are returned unfiltered.
+
+    Returns:
+        A set of CANs that are active for the given fiscal year.
+    """
+    if not cans:
+        return set()
+
+    if fiscal_year is None:
+        return set(cans)
+
+    fiscal_year = int(fiscal_year)
+
+    return {can for can in cans if is_can_active_for_year(can, fiscal_year)}
 
 
 class CanObject(TypedDict):
