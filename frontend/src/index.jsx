@@ -34,6 +34,7 @@ import EditUser from "./pages/users/edit/EditUser";
 import VersionPage from "./pages/version/VersionPage";
 import WhatsNext from "./pages/home/whats-next";
 import ProcurementMocksDebug from "./pages/dev/ProcurementMocksDebug";
+import { IS_PROJECTS_LIST_READY } from "./constants";
 
 // NOTE: store muse be imported after react-router-dom to avoid access lexical declaration 'opsApi' before initialization
 
@@ -195,10 +196,12 @@ const router = createBrowserRouter(
                     path="/budget-lines"
                     element={<BudgetLineItemList />}
                 />
-                <Route
-                    path="/projects"
-                    element={<ProjectsList />}
-                />
+                {IS_PROJECTS_LIST_READY && (
+                    <Route
+                        path="/projects"
+                        element={<ProjectsList />}
+                    />
+                )}
                 <Route
                     path="/projects/create"
                     element={<CreateProject />}
