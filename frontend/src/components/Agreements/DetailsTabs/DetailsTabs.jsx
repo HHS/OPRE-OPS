@@ -12,9 +12,15 @@ import { IS_AWARDED_TAB_READY, IS_DOCUMENTS_TAB_READY } from "../../../constants
  * @param {number} props.agreementId - The ID of the agreement.
  * @param {boolean} props.isAgreementNotDeveloped - Indicates whether the agreement is not developed.
  * @param {boolean} props.isAgreementAwarded - Indicates whether the agreement is awarded.
+ * @param {boolean} props.isEditableForProcurementTracker - Indicates whether the current user can edit the procurement tracker.
  * @returns {JSX.Element} The rendered JSX element.
  */
-const DetailsTabs = ({ agreementId, isAgreementNotDeveloped, isAgreementAwarded }) => {
+const DetailsTabs = ({
+    agreementId,
+    isAgreementNotDeveloped,
+    isAgreementAwarded,
+    isEditableForProcurementTracker = true
+}) => {
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -38,16 +44,22 @@ const DetailsTabs = ({ agreementId, isAgreementNotDeveloped, isAgreementAwarded 
               {
                   name: "TBD1",
                   label: "Award & Modifications",
-                  disabled: !IS_AWARDED_TAB_READY || !isAgreementAwarded
+                  disabled: !IS_AWARDED_TAB_READY || !isAgreementAwarded,
+                  disabledTooltip:
+                      "Award & Modifications tab is coming soon! For now, please upload to the OPRE preferred tool to share documents"
               },
               {
                   name: "/procurement-tracker",
-                  label: "Procurement Tracker"
+                  label: "Procurement Tracker",
+                  disabled: !isEditableForProcurementTracker,
+                  disabledTooltip: "Only agreement team members can edit the procurement tracker"
               },
               {
                   name: "/documents",
                   label: "Documents",
-                  disabled: !IS_DOCUMENTS_TAB_READY || !isAgreementAwarded
+                  disabled: !IS_DOCUMENTS_TAB_READY || !isAgreementAwarded,
+                  disabledTooltip:
+                      "Documents tab is coming soon! For now, please upload to the OPRE preferred tool to share documents"
               }
           ]
         : [];
@@ -71,12 +83,12 @@ const DetailsTabs = ({ agreementId, isAgreementNotDeveloped, isAgreementAwarded 
             </button>
         );
 
-        // Add tooltips for specific tabs when disabled
-        if (path.disabled && ["Award & Modifications", "Documents"].includes(path.label)) {
+        // Add tooltip if tab is disabled and has a tooltip message
+        if (path.disabled && path.disabledTooltip) {
             return (
                 <Tooltip
                     key={pathName}
-                    label={`${path.label} tab is coming soon! For now, please upload to the OPRE preferred tool to share documents`}
+                    label={path.disabledTooltip}
                     position="bottom"
                 >
                     {button}
