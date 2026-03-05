@@ -8,6 +8,7 @@ import {
     useLazyGetUserQuery
 } from "../../../api/opsAPI.js";
 import App from "../../../App";
+import AgreementSummaryCardsSection from "../../../components/Agreements/AgreementSummaryCardsSection";
 import AgreementsTable from "../../../components/Agreements/AgreementsTable";
 import {
     getAgreementContractNumber,
@@ -112,6 +113,7 @@ const AgreementsList = () => {
     // Extract agreements array and metadata from wrapped response
     const agreements = agreementsResponse?.agreements || [];
     const totalCount = agreementsResponse?.count || 0;
+    const totals = agreementsResponse?.totals || null;
     const totalPages = Math.ceil(totalCount / pageSize);
 
     // Reset to page 1 when filters or sort changes
@@ -161,7 +163,8 @@ const AgreementsList = () => {
     }
 
     let subtitle = "All Agreements";
-    let details = "This is a list of all agreements across OPRE. Draft budget lines are not included in the Totals.";
+    let details =
+        "This is a list of all agreements across OPRE for the selected fiscal year. Draft budget lines are not included in the Totals.";
     if (myAgreementsUrl) {
         subtitle = "My Agreements";
         details =
@@ -319,8 +322,6 @@ const AgreementsList = () => {
                     title="Agreements"
                     subtitle={subtitle}
                     details={details}
-                    buttonText="Add Agreement"
-                    buttonLink="/agreements/create"
                     TabsSection={<AgreementTabs />}
                     FilterTags={
                         <AgreementsFilterTags
@@ -366,6 +367,14 @@ const AgreementsList = () => {
                             showAllOption={true}
                         />
                     }
+                    SummaryCardsSection={
+                        totalCount > 0 && (
+                            <AgreementSummaryCardsSection
+                                fiscalYear={selectedFiscalYear === "All" ? "All FYs" : `FY ${selectedFiscalYear}`}
+                                totals={totals}
+                            />
+                        )
+                    }
                     TableSection={
                         <>
                             <AgreementsTable
@@ -393,8 +402,6 @@ const AgreementsList = () => {
                     title="Agreements"
                     subtitle={subtitle}
                     details={details}
-                    buttonText="Add Agreement"
-                    buttonLink="/agreements/create"
                     TabsSection={<AgreementTabs />}
                 >
                     <ChangeRequests />
