@@ -54,33 +54,6 @@ const resolveProjectId = (bearerToken) => {
         });
 };
 
-const waitForActionableBudgetLines = (agreementId, bearerToken, retries = 6) => {
-    return cy
-        .request({
-            method: "GET",
-            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
-            headers: {
-                Authorization: bearerToken,
-                Accept: "application/json"
-            },
-            failOnStatusCode: false
-        })
-        .then((response) => {
-            const budgetLines = response.body?.budget_line_items ?? [];
-            const hasActionable = budgetLines.some(
-                (bli) => (bli.status === "DRAFT" || bli.status === "PLANNED") && !bli.in_review
-            );
-            if (hasActionable) {
-                return true;
-            }
-            if (retries <= 0) {
-                return false;
-            }
-            cy.wait(1000);
-            return waitForActionableBudgetLines(agreementId, bearerToken, retries - 1);
-        });
-};
-
 const selectEnabledStatusRadio = (attempt = 0) => {
     const maxAttempts = 3;
     cy.get('[data-cy="change-draft-to-planned"]', { timeout: 60000 }).should("exist");
@@ -317,10 +290,8 @@ describe("create agreement and test validations", () => {
                 "contain",
                 "Budget line TBD was updated. When you're done editing, click Create Agreement below."
             );
-            // Ensure backend reflects actionable BLIs before reviewing (avoids stale agreement data).
-            waitForActionableBudgetLines(agreementId, bearer_token);
-            // go back to review page
-            cy.get('[data-cy="continue-btn"]').click();
+            // Unsaved BLI edits only exist in the client state until this save.
+            cy.get('[data-cy="continue-btn"]').should("not.be.disabled").click();
             // Wait for navigation and agreement data to load
             cy.visit(`/agreements/review/${agreementId}`);
             cy.wait("@getAgreement", { timeout: 30000 });
