@@ -120,9 +120,8 @@ describe("Agreement List", () => {
         cy.contains("FY 2044").should("exist");
         cy.get("div").contains("Adolescent Development Research").should("exist");
 
-        // Check that table shows results or zero results based on filter combination
-        // (May show results or no results depending on data)
-        cy.get("tbody tr", { timeout: 10000 }).should("exist");
+        // Verify filters were applied — table shows results or zero-results message
+        cy.get("tbody tr, div[id='agreements-table-zero-results']", { timeout: 10000 }).should("exist");
 
         // reset
         cy.get("button").contains("Filter").click();
@@ -290,7 +289,7 @@ describe("Agreement List", () => {
         // Wait for table to reload with all agreements
         cy.get("tbody tr", { timeout: 30000 }).should("have.length.at.least", 1);
         // Verify the filter tag is removed (check that no filter tags exist at all)
-        cy.get("span.bg-brand-primary-light.text-brand-primary-dark").should("not.exist");
+        cy.get("svg[id^='filter-tag-']").should("not.exist");
     });
 
     it("Change Requests tab works", () => {
