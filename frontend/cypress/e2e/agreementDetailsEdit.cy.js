@@ -6,7 +6,7 @@ const HISTORY_POLL_INTERVAL_MS = 1000;
 const HISTORY_TIMEOUT_MS = 20000;
 
 const waitForAgreementHistory = (agreementId, bearer_token, startedAt = Date.now()) => {
-    const historyUrl = `http://localhost:8080/api/v1/agreement-history/${agreementId}?limit=20&offset=0`;
+    const historyUrl = `http://localhost:8080/api/v1/agreements/${agreementId}/history/?limit=20&offset=0`;
     return cy
         .request({
             method: "GET",
@@ -95,6 +95,7 @@ describe("Agreement Details Edit", () => {
             checkAgreementHistory();
             cy.get("#edit").click();
             cy.get("#edit").should("not.exist");
+            cy.get("label").contains("Project").should("exist");
 
             // add research methodology
             cy.get("#research-methodologies-combobox-input").type("Knowledge Development{enter}");
