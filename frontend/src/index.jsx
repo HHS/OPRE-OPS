@@ -23,6 +23,7 @@ import PortfolioDetail from "./pages/portfolios/detail/PortfolioDetail";
 import PortfolioFunding from "./components/Portfolios/PortfolioFunding";
 import PortfolioSpending from "./components/Portfolios/PortfolioSpending";
 import PortfolioList from "./pages/portfolios/list/PortfolioList";
+import ProjectsList from "./pages/projects/list/ProjectsList";
 import ResearchProjectDetail from "./pages/researchProjects/detail/ResearchProjectDetail";
 import ReleaseNotes from "./pages/home/release-notes";
 import UserAdmin from "./pages/users/admin/UserAdmin.jsx";
@@ -193,6 +194,10 @@ const router = createBrowserRouter(
                 <Route
                     path="/budget-lines"
                     element={<BudgetLineItemList />}
+                />
+                <Route
+                    path="/projects"
+                    element={<ProjectsList />}
                 />
                 <Route
                     path="/projects/create"

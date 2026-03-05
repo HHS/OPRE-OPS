@@ -49,6 +49,15 @@ const NavMenu = () => {
                 </li>
                 <li className="usa-nav__primary-item">
                     <NavLink
+                        to="/projects"
+                        className={getNavLinkClass}
+                        end
+                    >
+                        Projects
+                    </NavLink>
+                </li>
+                <li className="usa-nav__primary-item">
+                    <NavLink
                         to="/agreements"
                         className={getNavLinkClass}
                         end
