@@ -20,7 +20,6 @@ from models import (
     ProcurementAction,
     ProcurementActionStatus,
 )
-from models.agreements import AgreementType
 from ops_api.ops.services.agreements import AgreementsService, _compute_agreement_totals
 from ops_api.ops.services.ops_service import ValidationError
 

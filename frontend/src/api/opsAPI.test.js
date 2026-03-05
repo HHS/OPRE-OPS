@@ -699,7 +699,8 @@ describe("opsAPI - Agreements Pagination", () => {
                 agreements: [],
                 count: 0,
                 limit: 0,
-                offset: 0
+                offset: 0,
+                totals: null
             });
         });
     });
