@@ -108,12 +108,13 @@ export const useChangeRequestsForTooltip = (budgetLine, title) => {
         isLoading: isProcurementShopLoading
     } = useGetProcurementShopsQuery({});
     const { change_requests_in_review: changeRequests, in_review: isBLIInReview } = budgetLine || {};
-    if (!cansSuccess || !procurementShopsSuccess) {
-        return "";
-    }
 
     if (isCansLoading || isProcurementShopLoading) {
         return "Loading...";
+    }
+
+    if (!cansSuccess || !procurementShopsSuccess) {
+        return "";
     }
 
     return getChangeRequestsForTooltip(changeRequests ?? [], procurementShops, budgetLine, cans, isBLIInReview, title);
