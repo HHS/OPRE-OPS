@@ -127,7 +127,7 @@ const Agreement = () => {
 
     const isAgreementNotDeveloped = isNotDevelopedYet(agreement?.agreement_type ?? "");
     const isSuperUser = useIsUserSuperUser();
-    const isEditableForProcurementTracker = isSuperUser || agreement?._meta?.isEditable;
+    const isEditableForProcurementTracker = isSuperUser || (agreement?._meta?.isEditable ?? false);
 
     useEffect(() => {
         /**

@@ -8,6 +8,7 @@ import StepBuilderAccordion from "../../../components/Agreements/ProcurementTrac
 import DebugCode from "../../../components/DebugCode";
 import StepIndicator from "../../../components/UI/StepIndicator";
 import { IS_PROCUREMENT_TRACKER_READY_MAP } from "../../../constants";
+import { useIsUserSuperUser } from "../../../hooks/user.hooks";
 
 /**
  * @typedef {Object} AgreementProcurementTrackerProps
@@ -34,6 +35,8 @@ const AgreementProcurementTracker = ({ agreement }) => {
         setCompletedStepNumber(stepNumber);
     };
     const agreementId = agreement?.id;
+    const isSuperUser = useIsUserSuperUser();
+    const isEditable = isSuperUser || (agreement?._meta?.isEditable ?? false);
 
     const { data, isLoading, isError } = useGetProcurementTrackersByAgreementIdQuery(agreementId, {
         skip: !agreementId,
@@ -128,6 +131,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 isActiveStep={activeTracker?.active_step_number === step.step_number}
                                 handleSetCompletedStepNumber={handleSetCompletedStepNumber}
                                 authorizedUsers={authorizedUsers}
+                                isEditable={isEditable}
                             />
                         )}
                         {IS_PROCUREMENT_TRACKER_READY_MAP.STEP_2 && step.step_number === 2 && (
@@ -137,7 +141,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 stepTwoData={stepTwoData}
                                 isActiveStep={activeTracker?.active_step_number === step.step_number}
                                 handleSetCompletedStepNumber={handleSetCompletedStepNumber}
-                                isDisabled={!hasActiveTracker}
+                                isDisabled={!hasActiveTracker || !isEditable}
                             />
                         )}
                         {!IS_PROCUREMENT_TRACKER_READY_MAP.STEP_2 && step.step_number === 2 && (
@@ -155,7 +159,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 stepStatus={step.status}
                                 authorizedUsers={authorizedUsers}
                                 stepThreeData={stepThreeData}
-                                hasActiveTracker={hasActiveTracker}
+                                hasActiveTracker={hasActiveTracker && isEditable}
                                 handleSetCompletedStepNumber={handleSetCompletedStepNumber}
                                 isActiveStep={activeTracker?.active_step_number === step.step_number}
                             />
@@ -175,7 +179,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 stepStatus={step.status}
                                 authorizedUsers={authorizedUsers}
                                 stepFourData={stepFourData}
-                                isDisabled={!hasActiveTracker}
+                                isDisabled={!hasActiveTracker || !isEditable}
                                 isActiveStep={activeTracker?.active_step_number === step.step_number}
                                 handleSetCompletedStepNumber={handleSetCompletedStepNumber}
                             />

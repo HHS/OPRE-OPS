@@ -124,7 +124,7 @@ vi.mock("../../../components/Agreements/ProcurementTracker/ProcurementTrackerSte
             data-testid="procurement-step-three"
             data-step-status={stepStatus}
             data-step-data-id={stepThreeData?.id}
-            data-has-active-tracker={hasActiveTracker}
+            data-has-active-tracker={String(hasActiveTracker)}
         >
             <p>
                 Once the Procurement Shop has posted the Solicitation and it&apos;s &quot;on the street&quot;, enter the
@@ -164,7 +164,8 @@ vi.mock("../../../constants", () => ({
 
 // Mock user hooks
 vi.mock("../../../hooks/user.hooks", () => ({
-    default: vi.fn()
+    default: vi.fn(),
+    useIsUserSuperUser: vi.fn()
 }));
 
 // Mock formatDateToMonthDayYear helper
@@ -202,7 +203,7 @@ import {
     useUpdateProcurementTrackerStepMutation,
     useGetUsersQuery
 } from "../../../api/opsAPI";
-import useGetUserFullNameFromId from "../../../hooks/user.hooks";
+import useGetUserFullNameFromId, { useIsUserSuperUser } from "../../../hooks/user.hooks";
 
 describe("AgreementProcurementTracker", () => {
     const mockAgreement = {
@@ -1550,6 +1551,187 @@ describe("AgreementProcurementTracker", () => {
             // Verify that 0 users are passed to the component
             const comboBox = screen.getByTestId("users-combobox");
             expect(comboBox).toHaveAttribute("data-users-count", "0");
+        });
+    });
+
+    describe("Authorization", () => {
+        const mockTrackerWithActiveSteps = {
+            data: [
+                {
+                    id: 1,
+                    agreement_id: 13,
+                    status: "ACTIVE",
+                    active_step_number: 2,
+                    steps: [
+                        { id: 1, step_number: 1, status: "COMPLETED" },
+                        { id: 2, step_number: 2, status: "ACTIVE" },
+                        { id: 3, step_number: 3, status: "PENDING" },
+                        { id: 4, step_number: 4, status: "PENDING" }
+                    ]
+                }
+            ]
+        };
+
+        beforeEach(() => {
+            useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
+                data: mockTrackerWithActiveSteps,
+                isLoading: false,
+                isError: false
+            });
+            // Default to non-super user
+            useIsUserSuperUser.mockReturnValue(false);
+        });
+
+        it("should disable Step 2 when user is not authorized", () => {
+            const agreementWithoutMeta = { id: 13, authorized_user_ids: [1] };
+
+            render(
+                <Provider store={setupStore()}>
+                    <AgreementProcurementTracker agreement={agreementWithoutMeta} />
+                </Provider>
+            );
+
+            const stepTwo = screen.getByTestId("procurement-step-two");
+            // hasActiveTracker=true but isEditable=false => isDisabled=true
+            expect(stepTwo).toHaveAttribute("data-is-disabled", "true");
+        });
+
+        it("should enable Step 2 when user is authorized", () => {
+            const agreementWithMeta = {
+                id: 13,
+                authorized_user_ids: [1],
+                _meta: { isEditable: true }
+            };
+
+            render(
+                <Provider store={setupStore()}>
+                    <AgreementProcurementTracker agreement={agreementWithMeta} />
+                </Provider>
+            );
+
+            const stepTwo = screen.getByTestId("procurement-step-two");
+            // hasActiveTracker=true && isEditable=true => isDisabled=false
+            expect(stepTwo).toHaveAttribute("data-is-disabled", "false");
+        });
+
+        it("should enable Step 2 when user is super user", () => {
+            useIsUserSuperUser.mockReturnValue(true);
+            const agreementWithoutMeta = { id: 13, authorized_user_ids: [1] };
+
+            render(
+                <Provider store={setupStore()}>
+                    <AgreementProcurementTracker agreement={agreementWithoutMeta} />
+                </Provider>
+            );
+
+            const stepTwo = screen.getByTestId("procurement-step-two");
+            // Super user bypasses authorization
+            expect(stepTwo).toHaveAttribute("data-is-disabled", "false");
+        });
+
+        it("should set hasActiveTracker=false for Step 3 when user is not authorized", async () => {
+            const agreementWithoutMeta = { id: 13, authorized_user_ids: [1] };
+
+            render(
+                <Provider store={setupStore()}>
+                    <AgreementProcurementTracker agreement={agreementWithoutMeta} />
+                </Provider>
+            );
+
+            // Open step 3 accordion
+            const step3Heading = screen.getByTestId("step-builder-heading-3");
+            fireEvent.click(step3Heading);
+
+            // Wait for accordion to open and step to render
+            const stepThree = await screen.findByTestId("procurement-step-three", {}, { timeout: 3000 });
+            // hasActiveTracker=true but isEditable=false => combined hasActiveTracker=false
+            expect(stepThree).toHaveAttribute("data-has-active-tracker", "false");
+        });
+
+        it("should set hasActiveTracker=true for Step 3 when user is authorized", async () => {
+            const agreementWithMeta = {
+                id: 13,
+                authorized_user_ids: [1],
+                _meta: { isEditable: true }
+            };
+
+            render(
+                <Provider store={setupStore()}>
+                    <AgreementProcurementTracker agreement={agreementWithMeta} />
+                </Provider>
+            );
+
+            // Open step 3 accordion
+            const step3Heading = screen.getByTestId("step-builder-heading-3");
+            fireEvent.click(step3Heading);
+
+            await waitFor(() => {
+                const stepThree = screen.getByTestId("procurement-step-three");
+                // hasActiveTracker=true && isEditable=true => combined hasActiveTracker=true
+                expect(stepThree).toHaveAttribute("data-has-active-tracker", "true");
+            });
+        });
+
+        it("should disable Step 4 when user is not authorized", async () => {
+            const agreementWithoutMeta = { id: 13, authorized_user_ids: [1] };
+
+            render(
+                <Provider store={setupStore()}>
+                    <AgreementProcurementTracker agreement={agreementWithoutMeta} />
+                </Provider>
+            );
+
+            // Open step 4 accordion
+            const step4Heading = screen.getByTestId("step-builder-heading-4");
+            fireEvent.click(step4Heading);
+
+            await waitFor(() => {
+                const stepFour = screen.getByTestId("procurement-step-four");
+                // hasActiveTracker=true but isEditable=false => isDisabled=true
+                expect(stepFour).toHaveAttribute("data-is-disabled", "true");
+            });
+        });
+
+        it("should enable Step 4 when user is authorized", async () => {
+            const agreementWithMeta = {
+                id: 13,
+                authorized_user_ids: [1],
+                _meta: { isEditable: true }
+            };
+
+            render(
+                <Provider store={setupStore()}>
+                    <AgreementProcurementTracker agreement={agreementWithMeta} />
+                </Provider>
+            );
+
+            // Open step 4 accordion
+            const step4Heading = screen.getByTestId("step-builder-heading-4");
+            fireEvent.click(step4Heading);
+
+            await waitFor(() => {
+                const stepFour = screen.getByTestId("procurement-step-four");
+                // hasActiveTracker=true && isEditable=true => isDisabled=false
+                expect(stepFour).toHaveAttribute("data-is-disabled", "false");
+            });
+        });
+
+        it("should handle missing _meta.isEditable gracefully (default to not editable)", () => {
+            const agreementWithEmptyMeta = {
+                id: 13,
+                authorized_user_ids: [1],
+                _meta: {}
+            };
+
+            render(
+                <Provider store={setupStore()}>
+                    <AgreementProcurementTracker agreement={agreementWithEmptyMeta} />
+                </Provider>
+            );
+
+            const stepTwo = screen.getByTestId("procurement-step-two");
+            // Missing isEditable should default to false
+            expect(stepTwo).toHaveAttribute("data-is-disabled", "true");
         });
     });
 });
