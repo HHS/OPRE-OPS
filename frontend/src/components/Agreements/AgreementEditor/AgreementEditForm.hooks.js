@@ -139,6 +139,14 @@ const useAgreementEditForm = (
         isLoading: isLoadingProductServiceCodes
     } = useGetProductServiceCodesQuery({});
 
+    React.useEffect(() => {
+        suite.reset();
+
+        return () => {
+            suite.reset();
+        };
+    }, []);
+
     // make a copy of the agreement object
     const hasAgreementChanged = useHasStateChanged(agreement);
 
