@@ -23,6 +23,50 @@ class ProjectsService(OpsService[Project]):
     def __init__(self, db_session):
         self.db_session = db_session
 
+    def _update_fields(self, old_project: Project, project_update) -> bool:
+        """
+        Update fields on the Project based on the fields passed in project_update.
+        Returns true if any fields were updated.
+        """
+        is_changed = False
+        for attr, value in project_update.items():
+            if getattr(old_project, attr) != value:
+                setattr(old_project, attr, value)
+                is_changed = True
+
+        return is_changed
+
+    def _check_immutable_fields(self, project, updated_fields) -> None:
+        """
+        Validate that the immutable fields are not changed on the project.
+        Raises ValidationError if any fields are invalid.
+        """
+        # Validate that immutable fields aren't being changed
+        if "id" in updated_fields and id != updated_fields.get("id"):
+            raise ValidationError({"id": ["ID cannot be changed"]})
+
+        if "project_type" in updated_fields and project.project_type != updated_fields.get("project_type"):
+            raise ValidationError({"project_type": ["Project type cannot be changed"]})
+
+    def _validate_and_convert_team_leaders(self, team_leaders_data) -> list[User]:
+        """
+        Validate that the team leaders provided are valid users and convert them to User objects.
+        Raises ValidationError if any team leader IDs are invalid.
+        """
+        tl_users = []
+        for tl_id in team_leaders_data:
+            team_leader = self.db_session.get(User, tl_id["id"])
+            if team_leader is None:
+                logger.error(f"Provided invalid Team Leader {tl_id['id']}")
+                raise ValidationError(
+                    {
+                        "team_leader": f"Team leader provided with id {tl_id['id']} does not exist. All team leaders must be valid users."
+                    }
+                )
+            else:
+                tl_users.append(team_leader)
+        return tl_users
+
     def create(self, data: dict[str, Any]) -> Project:
         """
         Create a new project.
@@ -76,10 +120,42 @@ class ProjectsService(OpsService[Project]):
         Returns:
             Tuple containing:
                 - project: The updated Project instance
-                - status_code: HTTP status code (200 or 202)
+                - status_code: HTTP status code (200)
+
+        Raises:
+            ResourceNotFoundError: If the project doesn't exist
+            ValidationError: If trying to change immutable fields or invalid data
         """
-        # TODO: Implement project update logic
-        pass
+        # Get the existing project
+        project = self.db_session.get(Project, id)
+        if not project:
+            raise ResourceNotFoundError("Project", id)
+
+        self._check_immutable_fields(project, updated_fields)
+
+        # Remove origination_date if updating an admin project (not a valid field for that type)
+        if project.project_type == ProjectType.ADMINISTRATIVE_AND_SUPPORT:
+            updated_fields.pop("origination_date", None)
+
+        # Handle team_leaders if provided
+        tl_users = None
+        if "team_leaders" in updated_fields:
+            tl_users = self._validate_and_convert_team_leaders(updated_fields["team_leaders"])
+
+            # Remove team_leaders dict from updated_fields as we'll set it directly
+            updated_fields.pop("team_leaders")
+            project.team_leaders = tl_users
+
+        self._update_fields(project, updated_fields)
+
+        try:
+            self.db_session.merge(project)
+            self.db_session.commit()
+            return project, 200
+        except Exception as e:
+            self.db_session.rollback()
+            logger.error(f"Failed to update project id={id}: {e}")
+            raise
 
     def delete(self, id: int) -> None:
         """

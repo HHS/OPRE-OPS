@@ -42,6 +42,26 @@ class ProjectCreationRequestSchema(Schema):
     )
 
 
+class ProjectUpdateRequestSchema(Schema):
+    """Schema for updating a project.
+
+    Includes all fields that can be updated:
+    - Common fields: title, short_title, description, url, team_leaders
+    - Research-specific: origination_date
+    """
+
+    title = fields.String(allow_none=True)
+    short_title = fields.String(allow_none=True)
+    description = fields.String(allow_none=True)
+    url = fields.String(allow_none=True)
+    origination_date = fields.Date(format="%Y-%m-%d", load_default=None, dump_default=None, allow_none=True)
+    team_leaders = fields.List(
+        fields.Nested(TeamLeaders),
+        load_default=[],
+        dump_default=[],
+    )
+
+
 class ProjectSchema(Schema):
     id = fields.Integer(required=True)
     project_type = fields.Enum(ProjectType, required=True)
@@ -94,6 +114,22 @@ class ResearchProjectListResponse(Schema):
     description: Optional[str] = fields.String(allow_none=True)
     url: Optional[str] = fields.String(allow_none=True)
     origination_date: Optional[date] = fields.Date(format="%Y-%m-%d", load_default=None, dump_default=None)
+    created_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ")
+    updated_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ")
+    project_type: ProjectType = fields.Enum(ProjectType)
+
+
+class ProjectListResponse(Schema):
+    """Lightweight schema for list endpoint with only fields used by frontend.
+
+    Excludes expensive nested relationships (team_leaders) to eliminate N+1 query problems.
+    """
+
+    id: int = fields.Int()
+    title: str = fields.String()
+    short_title: str = fields.String()
+    description: Optional[str] = fields.String(allow_none=True)
+    url: Optional[str] = fields.String(allow_none=True)
     created_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ")
     updated_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ")
     project_type: ProjectType = fields.Enum(ProjectType)

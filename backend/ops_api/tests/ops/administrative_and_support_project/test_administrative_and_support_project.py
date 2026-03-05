@@ -3,9 +3,6 @@ import uuid
 from flask import url_for
 
 from models import AdministrativeAndSupportProject, ProjectType
-from ops_api.ops.resources.administrative_and_support_projects import (
-    AdministrativeAndSupportProjectListAPI,
-)
 
 
 def test_administrative_and_support_projects_get_all(auth_client, loaded_db):
@@ -64,34 +61,6 @@ def test_administrative_and_support_projects_with_fiscal_year_not_found(auth_cli
         p for p in response.json if p.get("project_type") == ProjectType.ADMINISTRATIVE_AND_SUPPORT.name
     ]
     assert len(admin_support_projects) == 0
-
-
-def test_get_query_for_fiscal_year_with_fiscal_year_found(loaded_db, app_ctx):
-    stmt = AdministrativeAndSupportProjectListAPI._get_query(2023)
-    result = loaded_db.execute(stmt).fetchall()
-    assert len(result) == 1
-    assert result[0][0].title == "Support Project #1"
-    assert result[0][0].id == 1013
-
-
-def test_get_query_for_fiscal_year_with_fiscal_year_not_found(loaded_db, app_ctx):
-    stmt = AdministrativeAndSupportProjectListAPI._get_query(1900)
-    result = loaded_db.execute(stmt).fetchall()
-    assert len(result) == 0
-
-
-def test_get_query_for_fiscal_year_with_portfolio_id_found(loaded_db, app_ctx):
-    stmt = AdministrativeAndSupportProjectListAPI._get_query(2023, 3)
-    result = loaded_db.execute(stmt).fetchall()
-    assert len(result) == 1
-    assert result[0][0].title == "Support Project #1"
-    assert result[0][0].id == 1013
-
-
-def test_get_query_for_fiscal_year_with_portfolio_id_not_found(loaded_db, app_ctx):
-    stmt = AdministrativeAndSupportProjectListAPI._get_query(2023, 6)
-    result = loaded_db.execute(stmt).fetchall()
-    assert len(result) == 0
 
 
 def test_administrative_and_support_projects_search(auth_client, loaded_db):

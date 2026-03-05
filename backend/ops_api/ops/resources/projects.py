@@ -7,16 +7,13 @@ from models.events import OpsEventType
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
-from ops_api.ops.resources.administrative_and_support_projects import (
-    AdministrativeAndSupportProjectListAPI,
-)
-from ops_api.ops.resources.research_projects import (
-    ResearchProjectListAPI,
-)
 from ops_api.ops.schemas.projects import (
     ProjectCreationRequestSchema,
     ProjectListGetRequestSchema,
+    ProjectListResponse,
     ProjectResponse,
+    ProjectUpdateRequestSchema,
+    ResearchProjectListResponse,
     ResearchProjectResponse,
 )
 from ops_api.ops.services.projects import ProjectsService
@@ -30,18 +27,6 @@ class ProjectItemAPI(BaseItemAPI):
 
     @is_authorized(PermissionType.GET, Permission.RESEARCH_PROJECT)
     def get(self, id: int) -> Response:
-        # Old implementation (commented out - keeping until service is fully implemented):
-        # item = self._get_item(id)
-        # if not item:
-        #     return make_response_with_headers({}, 404)
-        # match item.project_type:
-        #     case ProjectType.RESEARCH:
-        #         return ResearchProjectItemAPI.get(self, id)
-        #     case ProjectType.ADMINISTRATIVE_AND_SUPPORT:
-        #         return AdministrativeAndSupportProjectItemAPI.get(self, id)
-        #     case _:
-        #         return make_response_with_headers({}, 404)
-
         # New implementation using ProjectsService:
         service = ProjectsService(current_app.db_session)
 
@@ -60,6 +45,16 @@ class ProjectItemAPI(BaseItemAPI):
 
         return make_response_with_headers(serialized_project)
 
+    @is_authorized(PermissionType.PATCH, Permission.RESEARCH_PROJECT)
+    def patch(self, id: int) -> Response:
+        with OpsEventHandler(OpsEventType.UPDATE_PROJECT) as meta:
+            request_schema = ProjectUpdateRequestSchema(partial=True)
+            data = request_schema.load(request.json)
+            service = ProjectsService(current_app.db_session)
+            updated_project, status_code = service.update(id, data)
+            meta.metadata.update({"updated_project": updated_project.to_dict()})
+            return make_response_with_headers({"id": updated_project.id}, status_code)
+
 
 class ProjectListAPI(BaseListAPI):
     def __init__(self, model: BaseModel = Project):
@@ -74,11 +69,11 @@ class ProjectListAPI(BaseListAPI):
 
         project_response: List[dict] = []
         if research_projects:
-            project_response.extend(ResearchProjectListAPI._list_response_schema.dump(research_projects, many=True))
+            schema = ResearchProjectListResponse()
+            project_response.extend(schema.dump(research_projects, many=True))
         if admin_support_projects:
-            project_response.extend(
-                AdministrativeAndSupportProjectListAPI._list_response_schema.dump(admin_support_projects, many=True)
-            )
+            schema = ProjectListResponse()
+            project_response.extend(schema.dump(admin_support_projects, many=True))
 
         return make_response_with_headers(project_response)
 

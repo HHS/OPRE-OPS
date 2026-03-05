@@ -215,3 +215,152 @@ def test_projects_list_uses_lightweight_schema(auth_client, loaded_db, app_ctx):
     # Verify expensive nested fields are NOT present (performance optimization)
     assert "team_leaders" not in project, "Nested 'team_leaders' should not be in list response (causes N+1 queries)"
     assert "created_by" not in project, "Unused 'created_by' field should not be in list response"
+
+
+# PATCH/UPDATE tests
+def test_patch_project_title(budget_team_auth_client, loaded_db, test_project):
+    """Test updating a project's title."""
+    data = {"title": "Updated Project Title"}
+    response = budget_team_auth_client.patch(url_for("api.projects-item", id=test_project.id), json=data)
+    assert response.status_code == 200
+    assert response.json["id"] == test_project.id
+
+    # Verify project was updated in db
+    project = loaded_db.get(Project, test_project.id)
+    assert project.title == "Updated Project Title"
+
+
+def test_patch_project_short_title(budget_team_auth_client, loaded_db, test_project):
+    """Test updating a project's short title."""
+    data = {"short_title": "NEW-SHORT"}
+    response = budget_team_auth_client.patch(url_for("api.projects-item", id=test_project.id), json=data)
+    assert response.status_code == 200
+
+    # Verify project was updated in db
+    project = loaded_db.get(Project, test_project.id)
+    assert project.short_title == "NEW-SHORT"
+
+
+def test_patch_project_description(budget_team_auth_client, loaded_db, test_project):
+    """Test updating a project's description."""
+    data = {"description": "This is a new description"}
+    response = budget_team_auth_client.patch(url_for("api.projects-item", id=test_project.id), json=data)
+    assert response.status_code == 200
+
+    # Verify project was updated in db
+    project = loaded_db.get(Project, test_project.id)
+    assert project.description == "This is a new description"
+
+
+def test_patch_project_url(budget_team_auth_client, loaded_db, test_project):
+    """Test updating a project's URL."""
+    data = {"url": "https://new-url.example.com"}
+    response = budget_team_auth_client.patch(url_for("api.projects-item", id=test_project.id), json=data)
+    assert response.status_code == 200
+
+    # Verify project was updated in db
+    project = loaded_db.get(Project, test_project.id)
+    assert project.url == "https://new-url.example.com"
+
+
+def test_patch_project_origination_date(budget_team_auth_client, loaded_db, test_project):
+    """Test updating a research project's origination date."""
+    data = {"origination_date": "2024-06-15"}
+    response = budget_team_auth_client.patch(url_for("api.projects-item", id=test_project.id), json=data)
+    assert response.status_code == 200
+
+    # Verify project was updated in db
+    project = loaded_db.get(Project, test_project.id)
+    assert project.origination_date.strftime("%Y-%m-%d") == "2024-06-15"
+
+
+def test_patch_project_team_leaders(budget_team_auth_client, loaded_db, test_project):
+    """Test updating a project's team leaders."""
+    data = {"team_leaders": [{"id": 501}, {"id": 502}]}
+    response = budget_team_auth_client.patch(url_for("api.projects-item", id=test_project.id), json=data)
+    assert response.status_code == 200
+
+    # Verify project was updated in db
+    project = loaded_db.get(Project, test_project.id)
+    assert len(project.team_leaders) == 2
+    assert project.team_leaders[0].id == 501
+    assert project.team_leaders[1].id == 502
+
+
+def test_patch_project_multiple_fields(budget_team_auth_client, loaded_db, test_project):
+    """Test updating multiple fields at once."""
+    data = {
+        "title": "Multi-Update Title",
+        "description": "Multi-Update Description",
+        "url": "https://multi-update.example.com",
+    }
+    response = budget_team_auth_client.patch(url_for("api.projects-item", id=test_project.id), json=data)
+    assert response.status_code == 200
+
+    # Verify all fields were updated
+    project = loaded_db.get(Project, test_project.id)
+    assert project.title == "Multi-Update Title"
+    assert project.description == "Multi-Update Description"
+    assert project.url == "https://multi-update.example.com"
+
+
+def test_patch_project_not_found(budget_team_auth_client, loaded_db):
+    """Test patching a non-existent project returns 404."""
+    data = {"title": "Updated Title"}
+    response = budget_team_auth_client.patch(url_for("api.projects-item", id=999999), json=data)
+    assert response.status_code == 404
+
+
+def test_patch_project_invalid_team_leader(budget_team_auth_client, loaded_db, test_project):
+    """Test updating with invalid team leader ID returns 400."""
+    data = {"team_leaders": [{"id": 999999}]}
+    response = budget_team_auth_client.patch(url_for("api.projects-item", id=test_project.id), json=data)
+    assert response.status_code == 400
+
+
+def test_patch_project_cannot_change_id(budget_team_auth_client, loaded_db, test_project):
+    """Test that ID cannot be changed."""
+    data = {"id": 888888, "title": "New Title"}
+    response = budget_team_auth_client.patch(url_for("api.projects-item", id=test_project.id), json=data)
+    assert response.status_code == 400
+
+
+def test_patch_project_cannot_change_project_type(budget_team_auth_client, loaded_db, test_project):
+    """Test that project_type cannot be changed."""
+    data = {"project_type": ProjectType.ADMINISTRATIVE_AND_SUPPORT.name}
+    response = budget_team_auth_client.patch(url_for("api.projects-item", id=test_project.id), json=data)
+    assert response.status_code == 400
+
+
+def test_patch_project_auth_required(client, loaded_db, test_project):
+    """Test that PATCH requires authentication."""
+    data = {"title": "Updated Title"}
+    response = client.patch(url_for("api.projects-item", id=test_project.id), json=data)
+    assert response.status_code == 401
+
+
+def test_patch_project_empty_team_leaders(budget_team_auth_client, loaded_db, test_project):
+    """Test updating with empty team leaders list clears team leaders."""
+    data = {"team_leaders": []}
+    response = budget_team_auth_client.patch(url_for("api.projects-item", id=test_project.id), json=data)
+    assert response.status_code == 200
+
+    # Verify team leaders were cleared
+    project = loaded_db.get(Project, test_project.id)
+    assert len(project.team_leaders) == 0
+
+
+def test_patch_project_partial_update(budget_team_auth_client, loaded_db, test_project):
+    """Test partial update doesn't affect other fields."""
+    original_title = test_project.title
+    original_description = test_project.description
+
+    data = {"url": "https://partial-update.example.com"}
+    response = budget_team_auth_client.patch(url_for("api.projects-item", id=test_project.id), json=data)
+    assert response.status_code == 200
+
+    # Verify only URL was updated, other fields unchanged
+    project = loaded_db.get(Project, test_project.id)
+    assert project.url == "https://partial-update.example.com"
+    assert project.title == original_title
+    assert project.description == original_description
