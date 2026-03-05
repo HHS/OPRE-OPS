@@ -96,10 +96,31 @@ const selectFirstRealOption = (selector) => {
         });
 };
 
-const selectFirstComboboxOption = (inputSelector, menuSelector, optionSelector) => {
-    cy.get(inputSelector, { timeout: 20000 }).should("not.be.disabled").click().type("a", { force: true });
-    cy.get(menuSelector, { timeout: 20000 }).should("be.visible");
-    cy.get(menuSelector).find(optionSelector).first().click();
+const selectComboboxOption = (inputSelector, menuSelector, optionSelector, preferredText, fallbackIndex = 0) => {
+    cy.get(inputSelector, { timeout: 20000 })
+        .should("not.be.disabled")
+        .click()
+        .type(preferredText, { force: true });
+    cy.get(menuSelector, { timeout: 20000 })
+        .should("be.visible")
+        .then(($menu) => {
+            const preferredOption = [...$menu.find(optionSelector)].find((option) =>
+                option.textContent?.includes(preferredText)
+            );
+
+            if (preferredOption) {
+                cy.wrap(preferredOption).click();
+                return;
+            }
+
+            cy.get(menuSelector)
+                .find(optionSelector)
+                .its("length")
+                .then((length) => {
+                    const targetIndex = Math.min(fallbackIndex, Math.max(0, length - 1));
+                    cy.get(menuSelector).find(optionSelector).eq(targetIndex).click();
+                });
+        });
 };
 
 beforeEach(() => {
@@ -183,15 +204,15 @@ describe("create agreement and test validations", () => {
             cy.get(".usa-error-message").should("exist");
             cy.get("#description").type("Test Description");
             // test contract type
-            selectFirstRealOption("#contract-type");
+            cy.get("#contract-type").select("Firm Fixed Price (FFP)");
             cy.get("#contract-type").select("-Select an option-");
             cy.get(".usa-error-message").should("exist");
-            selectFirstRealOption("#contract-type");
+            cy.get("#contract-type").select("Firm Fixed Price (FFP)");
             // test service requirement select
-            selectFirstRealOption("#service_requirement_type");
+            cy.get("#service_requirement_type").select("Severable");
             cy.get("#service_requirement_type").select("-Select Service Requirement Type-");
             cy.get(".usa-error-message").should("exist");
-            selectFirstRealOption("#service_requirement_type");
+            cy.get("#service_requirement_type").select("Severable");
             // test product service code
             selectFirstRealOption("#product_service_code_id");
             cy.get("#product_service_code_id").select(0);
@@ -203,19 +224,23 @@ describe("create agreement and test validations", () => {
             cy.get(".usa-error-message").should("exist");
             selectFirstRealOption("#procurement-shop-select");
             // test agreement type
-            selectFirstRealOption("#agreement_reason");
+            cy.get("#agreement_reason").select("NEW_REQ");
             cy.get("#agreement_reason").select(0);
             cy.get(".usa-error-message").should("exist");
-            selectFirstRealOption("#agreement_reason");
-            selectFirstComboboxOption(
+            cy.get("#agreement_reason").select("NEW_REQ");
+            selectComboboxOption(
                 "#project-officer-combobox-input",
                 ".project-officer-combobox__menu",
-                ".project-officer-combobox__option"
+                ".project-officer-combobox__option",
+                "Chris Fortunato",
+                0
             );
-            selectFirstComboboxOption(
+            selectComboboxOption(
                 "#team-member-combobox-input",
                 ".team-member-combobox__menu",
-                ".team-member-combobox__option"
+                ".team-member-combobox__option",
+                "System Owner",
+                1
             );
             cy.get("#agreementNotes").type("This is a note.");
             cy.get("[data-cy='continue-btn']").should("not.be.disabled").click();

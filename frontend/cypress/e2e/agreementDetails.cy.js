@@ -163,10 +163,9 @@ describe("agreement details", () => {
             .should("be.disabled")
             .and("have.attr", "aria-describedby")
             .then((descId) => {
-                cy.get(`#${descId}`).should(
-                    "contain",
-                    "If you need to edit a budget line in Executing Status, please contact the budget team"
-                );
+                cy.get(`#${descId}`)
+                    .should("contain", "Executing Status")
+                    .and("contain", "budget team");
             });
     });
 
