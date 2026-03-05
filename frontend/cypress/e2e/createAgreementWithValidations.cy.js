@@ -80,6 +80,28 @@ const selectEnabledStatusRadio = (attempt = 0) => {
     });
 };
 
+const selectFirstRealOption = (selector) => {
+    cy.get(selector, { timeout: 20000 })
+        .find("option")
+        .should(($options) => {
+            const hasRealOption = [...$options].some((option) => option.value && option.value !== "0");
+            expect(hasRealOption, `No selectable options available for ${selector}`).to.eq(true);
+        })
+        .then(($options) => {
+            const realOption = [...$options].find((option) => option.value && option.value !== "0");
+            if (!realOption) {
+                throw new Error(`No selectable option found for ${selector}`);
+            }
+            cy.get(selector).select(realOption.value);
+        });
+};
+
+const selectFirstComboboxOption = (inputSelector, menuSelector, optionSelector) => {
+    cy.get(inputSelector, { timeout: 20000 }).should("not.be.disabled").click().type("a", { force: true });
+    cy.get(menuSelector, { timeout: 20000 }).should("be.visible");
+    cy.get(menuSelector).find(optionSelector).first().click();
+};
+
 beforeEach(() => {
     testLogin("system-owner");
 });
@@ -161,34 +183,42 @@ describe("create agreement and test validations", () => {
             cy.get(".usa-error-message").should("exist");
             cy.get("#description").type("Test Description");
             // test contract type
-            cy.get("#contract-type").select("Firm Fixed Price (FFP)");
+            selectFirstRealOption("#contract-type");
             cy.get("#contract-type").select("-Select an option-");
             cy.get(".usa-error-message").should("exist");
-            cy.get("#contract-type").select("Firm Fixed Price (FFP)");
+            selectFirstRealOption("#contract-type");
             // test service requirement select
-            cy.get("#service_requirement_type").select("Severable");
+            selectFirstRealOption("#service_requirement_type");
             cy.get("#service_requirement_type").select("-Select Service Requirement Type-");
             cy.get(".usa-error-message").should("exist");
-            cy.get("#service_requirement_type").select("Severable");
+            selectFirstRealOption("#service_requirement_type");
             // test product service code
-            cy.get("#product_service_code_id").select(1);
+            selectFirstRealOption("#product_service_code_id");
             cy.get("#product_service_code_id").select(0);
             cy.get(".usa-error-message").should("exist");
-            cy.get("#product_service_code_id").select(1);
+            selectFirstRealOption("#product_service_code_id");
             // test procurement shop
-            cy.get("#procurement-shop-select").select(2);
+            selectFirstRealOption("#procurement-shop-select");
             cy.get("#procurement-shop-select").select("-Select Procurement Shop-");
             cy.get(".usa-error-message").should("exist");
-            cy.get("#procurement-shop-select").select(2);
+            selectFirstRealOption("#procurement-shop-select");
             // test agreement type
-            cy.get("#agreement_reason").select("NEW_REQ");
+            selectFirstRealOption("#agreement_reason");
             cy.get("#agreement_reason").select(0);
             cy.get(".usa-error-message").should("exist");
-            cy.get("#agreement_reason").select("NEW_REQ");
-            cy.get("#project-officer-combobox-input").type("Chris Fortunato{enter}");
-            cy.get("#team-member-combobox-input").type("System Owner{enter}");
+            selectFirstRealOption("#agreement_reason");
+            selectFirstComboboxOption(
+                "#project-officer-combobox-input",
+                ".project-officer-combobox__menu",
+                ".project-officer-combobox__option"
+            );
+            selectFirstComboboxOption(
+                "#team-member-combobox-input",
+                ".team-member-combobox__menu",
+                ".team-member-combobox__option"
+            );
             cy.get("#agreementNotes").type("This is a note.");
-            cy.get("[data-cy='continue-btn']").click();
+            cy.get("[data-cy='continue-btn']").should("not.be.disabled").click();
             //  Add Services Component
             cy.get("p").should("contain", "You have not added any Services Component yet.");
             cy.get("#servicesComponentSelect").select("1");
