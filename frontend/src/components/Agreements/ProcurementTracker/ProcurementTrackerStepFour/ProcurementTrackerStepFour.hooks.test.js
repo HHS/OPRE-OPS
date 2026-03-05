@@ -66,7 +66,7 @@ describe("useProcurementTrackerStepFour", () => {
             );
 
             expect(result.current.isEvaluationComplete).toBe(false);
-            expect(result.current.selectedUser).toEqual({});
+            expect(result.current.selectedUser).toBeUndefined();
             expect(result.current.targetCompletionDate).toBe("");
             expect(result.current.step4DateCompleted).toBe("");
             expect(result.current.step4Notes).toBe("");
@@ -379,7 +379,7 @@ describe("useProcurementTrackerStepFour", () => {
 
             // Verify state is reset
             expect(result.current.isEvaluationComplete).toBe(false);
-            expect(result.current.selectedUser).toEqual({});
+            expect(result.current.selectedUser).toBeUndefined();
             expect(result.current.targetCompletionDate).toBe("");
             expect(result.current.step4DateCompleted).toBe("");
             expect(result.current.step4Notes).toBe("");
