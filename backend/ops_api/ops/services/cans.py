@@ -10,7 +10,7 @@ from models import CAN, CANSortCondition
 from models.cans import CANFundingBudget, CANFundingDetails
 from models.portfolios import Portfolio
 from ops_api.ops.schemas.cans import CANListFilterOptionResponseSchema
-from ops_api.ops.utils.cans import get_can_funding_summary
+from ops_api.ops.utils.cans import filter_active_cans, get_can_funding_summary
 from ops_api.ops.utils.query_helpers import QueryHelper
 
 
@@ -108,15 +108,34 @@ class CANService:
         """
         Get a list of CANs, optionally filtered by a search parameter or fiscal year.
 
-        1. if no fiscal_year is provided, return all CANs
-        2. if fiscal_year is provided, filter out CANs that do not have funding_details
-            a. get all 1-year CANs
-            b. get all multiple-year CANs
-            c. get all 0-year CANs
-        3. join the results and remove duplicates
-        4. apply additional filters (active_period, transfer, portfolio, budget range)
-        5. sort results
-        6. apply pagination
+        Pipeline:
+            1. If no ``fiscal_year`` is provided, return all CANs.
+            2. If ``fiscal_year`` is provided, run three SQL queries by active-period category
+               (1-year, multi-year, perpetual) as a performance optimization, then post-filter
+               using the shared :func:`~ops_api.ops.utils.cans.filter_active_cans` utility to
+               ensure correctness consistent with ``GET /portfolios/{id}/cans/``.
+            3. Join the results and remove duplicates.
+            4. Apply additional filters (active_period, transfer, portfolio, budget range).
+            5. Sort results.
+            6. Apply pagination.
+
+        .. note::
+            **Relationship to GET /portfolios/{id}/cans/ (PortfolioCansAPI):**
+
+            Both endpoints filter CANs by active period using the same shared utility
+            :func:`~ops_api.ops.utils.cans.is_can_active_for_year`. This endpoint additionally
+            provides pagination, configurable sorting, search, and multi-field filtering that
+            the nested endpoint does not support.
+
+            Features this endpoint does **not** support (that the nested endpoint does):
+              - ``includeInactive`` param to bypass active-period filtering
+              - In-memory BLI fiscal year filtering per CAN
+              - Appropriation-year-descending sort order
+
+            **Future consolidation plan:**
+            Add the above missing features to this endpoint, migrate PortfolioSpending and
+            PortfolioFunding to use ``useGetCansQuery``, and deprecate the nested endpoint.
+            See :func:`~ops_api.ops.utils.cans.is_can_active_for_year` for the full plan.
         """
 
         # Extract values from lists (schema wraps all params in lists)
@@ -148,7 +167,10 @@ class CANService:
 
             all_results = one_year_cans + multiple_year_cans + zero_year_cans
             unique_results = {can.id: can for can in all_results}
-            cursor_results = list(unique_results.values())
+            # Post-filter using the shared active-period utility to ensure consistency
+            # with the PortfolioCansAPI endpoint. The SQL queries above are a performance
+            # optimization; this step guarantees correctness using the canonical logic.
+            cursor_results = list(filter_active_cans(unique_results.values(), fiscal_year_value))
 
         # Apply additional filters
         filtered_results = self._apply_filters(
@@ -220,8 +242,12 @@ class CANService:
         return self.db_session.execute(stmt).scalars().all()
 
     def _get_zero_year_cans(self, base_stmt, fiscal_year, search=None) -> list[CAN]:
+        """Get perpetual-fund CANs (active_period == 0) active for the given fiscal year.
+
+        Perpetual funds are active for any year at or after their funding start year.
+        """
         active_period_expr = cast(func.substr(CANFundingDetails.fund_code, 11, 1), Integer)
-        stmt = base_stmt.where(active_period_expr == 0, CANFundingDetails.fiscal_year >= fiscal_year).order_by(CAN.id)
+        stmt = base_stmt.where(active_period_expr == 0, CANFundingDetails.fiscal_year <= fiscal_year).order_by(CAN.id)
 
         if search is not None and len(search) > 0:
             query_helper = QueryHelper(stmt)
@@ -260,7 +286,7 @@ class CANService:
             )
             zero_year_ids = base_id_stmt.where(
                 active_period_expr == 0,
-                CANFundingDetails.fiscal_year >= fiscal_year_value,
+                CANFundingDetails.fiscal_year <= fiscal_year_value,
             )
             can_ids_subquery = union_all(one_year_ids, multiple_year_ids, zero_year_ids)
 

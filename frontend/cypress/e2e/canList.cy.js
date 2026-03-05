@@ -45,7 +45,9 @@ describe("CAN List", () => {
         // budget-summary-card-2021 should contain $ 30,200,000
         cy.get("[data-cy='budget-summary-card-2021']").contains("$ 30,200,000");
 
-        const expectedValues = ["$10,000,000.00", "$10,000,000.00", "$10,000,000.00", "$0", "$200,000.00"];
+        // CAN 527 (G995679, perpetual, fiscal_year=2025) is correctly excluded for FY 2021
+        // because its start year is after the requested year.
+        const expectedValues = ["$10,000,000.00", "$10,000,000.00", "$10,000,000.00", "$200,000.00"];
         validateBudgetColumn(expectedValues);
     });
 
@@ -107,8 +109,11 @@ describe("CAN List", () => {
 
     it("test cans with no funding budgets", () => {
         cy.get("#fiscal-year-select").select("2044");
-        cy.get("tbody").find("tr").should("have.length", 1);
+        // G99AB14 (5-year, fiscal_year=2044) and G995679 (perpetual, fiscal_year=2025)
+        // are both correctly active for FY 2044.
+        cy.get("tbody").find("tr").should("have.length", 2);
         cy.get("tbody").contains("G99AB14").should("exist");
+        cy.get("tbody").contains("G995679").should("exist");
     });
 });
 
