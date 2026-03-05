@@ -3,6 +3,7 @@ import { useGetProcurementTrackersByAgreementIdQuery, useGetUsersQuery } from ".
 import ProcurementTrackerStepOne from "../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepOne";
 import ProcurementTrackerStepTwo from "../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepTwo";
 import ProcurementTrackerStepThree from "../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepThree";
+import ProcurementTrackerStepFour from "../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepFour";
 import StepBuilderAccordion from "../../../components/Agreements/ProcurementTracker/StepBuilderAccordion";
 import DebugCode from "../../../components/DebugCode";
 import StepIndicator from "../../../components/UI/StepIndicator";
@@ -57,6 +58,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
     const stepOneData = activeTracker?.steps.find((step) => step.step_number === 1);
     const stepTwoData = activeTracker?.steps.find((step) => step.step_number === 2);
     const stepThreeData = activeTracker?.steps.find((step) => step.step_number === 3);
+    const stepFourData = activeTracker?.steps.find((step) => step.step_number === 4);
 
     // Handle loading state
     if (isLoading) {
@@ -168,7 +170,17 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 </p>
                             </div>
                         )}
-                        {step.step_number === 4 && (
+                        {IS_PROCUREMENT_TRACKER_READY_MAP.STEP_4 && step.step_number === 4 && (
+                            <ProcurementTrackerStepFour
+                                stepStatus={step.status}
+                                authorizedUsers={authorizedUsers}
+                                stepFourData={stepFourData}
+                                isDisabled={!hasActiveTracker}
+                                isActiveStep={activeTracker?.active_step_number === step.step_number}
+                                handleSetCompletedStepNumber={handleSetCompletedStepNumber}
+                            />
+                        )}
+                        {!IS_PROCUREMENT_TRACKER_READY_MAP.STEP_4 && step.step_number === 4 && (
                             <div className="usa-fieldset">
                                 <p>
                                     Complete the technical evaluations and any potential negotiations. If you have a

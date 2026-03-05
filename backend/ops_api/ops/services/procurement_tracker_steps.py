@@ -111,6 +111,12 @@ class ProcurementTrackerStepService:
                 "solicitation_period_start_date": "solicitation_period_start_date",
                 "solicitation_period_end_date": "solicitation_period_end_date",
             },
+            "evaluation": {
+                "task_completed_by": "evaluation_task_completed_by",
+                "date_completed": "evaluation_date_completed",
+                "notes": "evaluation_notes",
+                "target_completion_date": "evaluation_target_completion_date",
+            },
         }
 
         if step.step_type == ProcurementTrackerStepType.ACQUISITION_PLANNING:
@@ -119,6 +125,8 @@ class ProcurementTrackerStepService:
             active_mapping = field_mapping["pre_solicitation"]
         elif step.step_type == ProcurementTrackerStepType.SOLICITATION:
             active_mapping = field_mapping["solicitation"]
+        elif step.step_type == ProcurementTrackerStepType.EVALUATION:
+            active_mapping = field_mapping["evaluation"]
         else:
             active_mapping = {}
 
