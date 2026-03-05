@@ -24,6 +24,36 @@ const minAgreementWithoutProcShop = (uniqueSuffix) => ({
     // remove awarding entity id so no procurement shop selected
 });
 
+const resolveProjectId = (bearerToken) => {
+    const explicitProjectId = Number(cypressEnv.PROJECT_ID);
+    if (Number.isInteger(explicitProjectId) && explicitProjectId > 0) {
+        return cy.wrap(explicitProjectId);
+    }
+
+    return cy
+        .request({
+            method: "GET",
+            url: "http://localhost:8080/api/v1/projects/",
+            headers: {
+                Authorization: bearerToken,
+                Accept: "application/json"
+            },
+            failOnStatusCode: false
+        })
+        .then((response) => {
+            if (response.status !== 200 || !Array.isArray(response.body) || response.body.length === 0) {
+                throw new Error(
+                    `Failed to resolve a project id. status=${response.status} body=${JSON.stringify(response.body)}`
+                );
+            }
+            const firstValidProject = response.body.find((project) => Number.isInteger(project?.id) && project.id > 0);
+            if (!firstValidProject) {
+                throw new Error(`No valid project id found in projects response: ${JSON.stringify(response.body)}`);
+            }
+            return firstValidProject.id;
+        });
+};
+
 const waitForActionableBudgetLines = (agreementId, bearerToken, retries = 6) => {
     return cy
         .request({
@@ -146,38 +176,33 @@ describe("create agreement and test validations", () => {
     it("create an agreement", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 
-        // CI databases often differ; prefer an explicit PROJECT_ID when available
-        const projectId = Number(cypressEnv.PROJECT_ID ?? 1000);
-        expect(projectId, "PROJECT_ID must be a valid number").to.be.a("number").and.not.satisfy(Number.isNaN);
-
-        const createAgreementPayload = {
-            ...minAgreementWithoutProcShop(buildUniqueSuffix()),
-            project_id: projectId
-        };
-
-        cy.log(`Creating agreement with project_id=${projectId}`);
-
-        // create test agreement
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
-        cy.request({
-            method: "POST",
-            url: "http://localhost:8080/api/v1/agreements/",
-            failOnStatusCode: false,
-            body: createAgreementPayload,
-            headers: {
-                Authorization: bearer_token,
-                "Content-Type": "application/json",
-                Accept: "application/json"
-            }
-        }).then((response) => {
-            if (response.status !== 201) {
-                // Make failures actionable in CI logs
-                throw new Error(
-                    `Failed to create agreement. status=${response.status} body=${JSON.stringify(response.body)}`
-                );
-            }
-            expect(response.body.id).to.exist;
-            const agreementId = response.body.id;
+        resolveProjectId(bearer_token).then((projectId) => {
+            const createAgreementPayload = {
+                ...minAgreementWithoutProcShop(buildUniqueSuffix()),
+                project_id: projectId
+            };
+            cy.log(`Creating agreement with project_id=${projectId}`);
+            // create test agreement
+            cy.request({
+                method: "POST",
+                url: "http://localhost:8080/api/v1/agreements/",
+                failOnStatusCode: false,
+                body: createAgreementPayload,
+                headers: {
+                    Authorization: bearer_token,
+                    "Content-Type": "application/json",
+                    Accept: "application/json"
+                }
+            }).then((response) => {
+                if (response.status !== 201) {
+                    // Make failures actionable in CI logs
+                    throw new Error(
+                        `Failed to create agreement. status=${response.status} body=${JSON.stringify(response.body)}`
+                    );
+                }
+                expect(response.body.id).to.exist;
+                const agreementId = response.body.id;
 
             // Set up intercepts before visiting the page
             cy.intercept("GET", `**/agreements/${agreementId}**`).as("getAgreement");
@@ -402,15 +427,16 @@ describe("create agreement and test validations", () => {
             cy.get("h1", { timeout: 20000 }).should("be.visible").and("not.have.text", "Please resolve the errors outlined below");
             cy.get('[data-cy="error-list"]').should("not.exist");
 
-            cy.request({
-                method: "DELETE",
-                url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
-                headers: {
-                    Authorization: bearer_token,
-                    Accept: "application/json"
-                }
-            }).then((response) => {
-                expect(response.status).to.eq(200);
+                cy.request({
+                    method: "DELETE",
+                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                    headers: {
+                        Authorization: bearer_token,
+                        Accept: "application/json"
+                    }
+                }).then((response) => {
+                    expect(response.status).to.eq(200);
+                });
             });
         });
     });
