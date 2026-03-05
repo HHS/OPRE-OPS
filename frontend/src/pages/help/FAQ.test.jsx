@@ -66,6 +66,12 @@ describe("FAQ Component", () => {
         expect(accordionButton).toHaveAttribute("aria-expanded", "false");
     });
 
+    it("does not crash on malformed hash encoding", () => {
+        renderWithRouter("/help-center/faq#%E0%A4");
+
+        expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent("Frequently Asked Questions");
+    });
+
     it("updates URL hash when an accordion is opened", async () => {
         renderWithRouter();
         const user = userEvent.setup();

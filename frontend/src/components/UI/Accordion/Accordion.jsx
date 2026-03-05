@@ -66,11 +66,13 @@ const Accordion = ({ heading, children, level = 4, isClosed = false, id, dataCy,
                     className="usa-accordion__button bg-brand-base-light-variant"
                     aria-expanded={isOpen}
                     aria-controls={accordionId}
-                    onClick={() => {
-                        const nextIsOpen = !isOpen;
-                        setIsOpen(nextIsOpen);
-                        onToggle?.(nextIsOpen);
-                    }}
+                    onClick={() =>
+                        setIsOpen((prevIsOpen) => {
+                            const nextIsOpen = !prevIsOpen;
+                            onToggle?.(nextIsOpen);
+                            return nextIsOpen;
+                        })
+                    }
                 >
                     {heading}
                 </button>

@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Accordion from "../../components/UI/Accordion";
 import { data } from "./content/howToGuides";
-import { buildAnchorIds } from "./helpCenterAnchors";
+import { buildAnchorIds, getAnchorIdFromHash } from "./helpCenterAnchors";
 
 /**
  * How-to Guides component
@@ -15,7 +15,7 @@ const HowToGuides = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const anchorIds = buildAnchorIds(data);
-    const activeAnchorId = decodeURIComponent(location.hash.replace("#", ""));
+    const activeAnchorId = getAnchorIdFromHash(location.hash);
 
     useEffect(() => {
         if (!activeAnchorId) return;
@@ -48,7 +48,7 @@ const HowToGuides = () => {
 
                     return (
                         <Accordion
-                            key={anchorId}
+                            key={`${anchorId}-${activeAnchorId}`}
                             id={anchorId}
                             heading={item.heading}
                             level={3}

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildAnchorIds, toAnchorSlug } from "./helpCenterAnchors";
+import { buildAnchorIds, getAnchorIdFromHash, toAnchorSlug } from "./helpCenterAnchors";
 
 describe("helpCenterAnchors", () => {
     describe("toAnchorSlug", () => {
@@ -37,6 +37,21 @@ describe("helpCenterAnchors", () => {
             expect(buildAnchorIds(null)).toEqual([]);
             expect(buildAnchorIds(undefined)).toEqual([]);
             expect(buildAnchorIds({})).toEqual([]);
+        });
+    });
+
+    describe("getAnchorIdFromHash", () => {
+        it("returns empty string for empty hash", () => {
+            expect(getAnchorIdFromHash("")).toBe("");
+            expect(getAnchorIdFromHash(null)).toBe("");
+        });
+
+        it("decodes valid percent-encoding", () => {
+            expect(getAnchorIdFromHash("#how-to%20guide")).toBe("how-to guide");
+        });
+
+        it("returns raw hash text when decoding fails", () => {
+            expect(getAnchorIdFromHash("#%E0%A4")).toBe("%E0%A4");
         });
     });
 });

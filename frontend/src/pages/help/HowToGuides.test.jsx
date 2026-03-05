@@ -57,6 +57,12 @@ describe("How-to Guides Page", () => {
         expect(accordionButton).toHaveAttribute("aria-expanded", "false");
     });
 
+    it("does not crash on malformed hash encoding", () => {
+        renderWithRouter("/help-center#%E0%A4");
+
+        expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent("How-to Guides");
+    });
+
     it("updates URL hash when an accordion is opened", async () => {
         renderWithRouter();
 

@@ -5,13 +5,13 @@ import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Accordion from "../../components/UI/Accordion";
 import { data } from "./content/faq";
-import { buildAnchorIds } from "./helpCenterAnchors";
+import { buildAnchorIds, getAnchorIdFromHash } from "./helpCenterAnchors";
 
 const FAQ = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const anchorIds = buildAnchorIds(data);
-    const activeAnchorId = decodeURIComponent(location.hash.replace("#", ""));
+    const activeAnchorId = getAnchorIdFromHash(location.hash);
 
     useEffect(() => {
         if (!activeAnchorId) return;
@@ -44,7 +44,7 @@ const FAQ = () => {
 
                     return (
                         <Accordion
-                            key={anchorId}
+                            key={`${anchorId}-${activeAnchorId}`}
                             id={anchorId}
                             heading={item.heading}
                             level={3}

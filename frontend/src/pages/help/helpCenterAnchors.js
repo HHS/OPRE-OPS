@@ -38,3 +38,22 @@ export const buildAnchorIds = (items) => {
         return count === 1 ? baseSlug : `${baseSlug}-${count}`;
     });
 };
+
+/**
+ * Safely decode a location hash into an anchor id.
+ * @param {string} hash
+ * @returns {string}
+ */
+export const getAnchorIdFromHash = (hash) => {
+    const hashWithoutPound = String(hash || "").replace("#", "");
+
+    if (!hashWithoutPound) {
+        return "";
+    }
+
+    try {
+        return decodeURIComponent(hashWithoutPound);
+    } catch {
+        return hashWithoutPound;
+    }
+};
