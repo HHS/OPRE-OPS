@@ -1,9 +1,12 @@
 import uuid
 
+import pytest
 from flask import url_for
 
-from models import Project, ProjectType
+from models import ContractAgreement, Project, ProjectType, ResearchProject
 from models.projects import ResearchType
+from ops_api.ops.services.ops_service import ResourceNotFoundError, ValidationError
+from ops_api.ops.services.projects import ProjectsService
 
 
 def test_project_retrieve(loaded_db, app_ctx):
@@ -364,3 +367,126 @@ def test_patch_project_partial_update(budget_team_auth_client, loaded_db, test_p
     assert project.url == "https://partial-update.example.com"
     assert project.title == original_title
     assert project.description == original_description
+
+
+# ProjectsService.delete() tests
+@pytest.fixture
+def projects_service(loaded_db):
+    """Create a ProjectsService instance with the loaded database session."""
+    return ProjectsService(loaded_db)
+
+
+@pytest.fixture
+def project_with_no_agreements(loaded_db):
+    """Create a test project with no agreements."""
+    project = ResearchProject(
+        project_type=ProjectType.RESEARCH,
+        title="Test Project With No Agreements",
+        short_title="TPNA",
+        description="A test project that has no associated agreements",
+    )
+    loaded_db.add(project)
+    loaded_db.commit()
+    loaded_db.refresh(project)
+    return project
+
+
+def test_delete_project_successfully(projects_service, loaded_db, project_with_no_agreements):
+    """Test successfully deleting a project with no agreements."""
+    project_id = project_with_no_agreements.id
+
+    # Verify project exists before deletion
+    assert loaded_db.get(Project, project_id) is not None
+
+    # Delete the project
+    projects_service.delete(project_id)
+
+    # Verify project is deleted
+    assert loaded_db.get(Project, project_id) is None
+
+
+def test_delete_project_with_agreements_raises_validation_error(projects_service, loaded_db, test_project):
+    """Test that deleting a project with associated agreements raises ValidationError."""
+    project_id = test_project.id
+
+    # Verify project has agreements
+    project = loaded_db.get(Project, project_id)
+    assert project is not None
+    assert len(project.agreements) > 0, "Test project must have associated agreements"
+
+    # Attempt to delete should raise ValidationError
+    with pytest.raises(ValidationError) as exc_info:
+        projects_service.delete(project_id)
+
+    # Verify error message
+    assert "agreements" in exc_info.value.validation_errors
+    assert "Cannot delete a project that has associated agreements" in str(
+        exc_info.value.validation_errors["agreements"]
+    )
+
+    # Verify project still exists
+    assert loaded_db.get(Project, project_id) is not None
+
+
+def test_delete_non_existent_project_raises_resource_not_found(projects_service, loaded_db):
+    """Test that deleting a non-existent project raises ResourceNotFoundError."""
+    non_existent_id = 999999
+
+    # Verify project doesn't exist
+    assert loaded_db.get(Project, non_existent_id) is None
+
+    # Attempt to delete should raise ResourceNotFoundError
+    with pytest.raises(ResourceNotFoundError) as exc_info:
+        projects_service.delete(non_existent_id)
+
+    # Verify error details
+    assert exc_info.value.resource_type == "Project"
+    assert exc_info.value.resource_id == non_existent_id
+    assert "Project with id 999999 not found" in str(exc_info.value)
+
+
+def test_delete_project_removes_from_database(projects_service, loaded_db, project_with_no_agreements):
+    """Test that delete actually removes the project from the database."""
+    project_id = project_with_no_agreements.id
+
+    # Count projects before deletion
+    count_before = loaded_db.query(Project).count()
+
+    # Delete the project
+    projects_service.delete(project_id)
+
+    # Count projects after deletion
+    count_after = loaded_db.query(Project).count()
+
+    # Verify count decreased by one
+    assert count_after == count_before - 1
+
+
+def test_delete_project_with_single_agreement(projects_service, loaded_db, project_with_no_agreements):
+    """Test that a project with even one agreement cannot be deleted."""
+    project_id = project_with_no_agreements.id
+
+    # Add a single agreement to the project
+    agreement = ContractAgreement(
+        name="Test Agreement",
+        project_id=project_id,
+    )
+    loaded_db.add(agreement)
+    loaded_db.commit()
+
+    # Verify project now has one agreement
+    project = loaded_db.get(Project, project_id)
+    assert len(project.agreements) == 1
+
+    # Attempt to delete should raise ValidationError
+    with pytest.raises(ValidationError) as exc_info:
+        projects_service.delete(project_id)
+
+    # Verify error message
+    assert "agreements" in exc_info.value.validation_errors
+    assert "Cannot delete a project that has associated agreements" in str(
+        exc_info.value.validation_errors["agreements"]
+    )
+
+    # Verify project still exists
+    assert loaded_db.get(Project, project_id) is not None

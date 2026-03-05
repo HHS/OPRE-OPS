@@ -163,9 +163,24 @@ class ProjectsService(OpsService[Project]):
 
         Args:
             id: Project ID
+
+        Raises:
+            ResourceNotFoundError: If the project doesn't exist
+            ValidationError: If the project has associated agreements
         """
-        # TODO: Implement project deletion logic
-        pass
+        project = self.db_session.get(Project, id)
+
+        if not project:
+            raise ResourceNotFoundError("Project", id)
+
+        # Prevent deletion if project has associated agreements
+        if project.agreements:
+            raise ValidationError(
+                {"agreements": ["Cannot delete a project that has associated agreements."]}
+            )
+
+        self.db_session.delete(project)
+        self.db_session.commit()
 
     @staticmethod
     def _get_research_projects_query(fiscal_year=None, portfolio_id=None, search=None):
