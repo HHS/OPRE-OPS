@@ -109,10 +109,12 @@ const ProcurementTrackerStepFour = ({
                                     messages={validatorRes.getErrors("targetCompletionDate") || []}
                                     hint="mm/dd/yyyy"
                                     value={targetCompletionDate}
-                                    onChange={/** @param {any} e */ (e) => {
-                                        runValidate("targetCompletionDate", e.target.value);
-                                        setTargetCompletionDate(e.target.value);
-                                    }}
+                                    onChange={
+                                        /** @param {any} e */ (e) => {
+                                            runValidate("targetCompletionDate", e.target.value);
+                                            setTargetCompletionDate(e.target.value);
+                                        }
+                                    }
                                     minDate={getLocalISODate()}
                                     isDisabled={isDisabled}
                                 />
@@ -157,9 +159,11 @@ const ProcurementTrackerStepFour = ({
                             users={authorizedUsers}
                             isDisabled={isUsersComboBoxDisabled}
                             messages={validatorRes.getErrors("users") || []}
-                            onChange={/** @param {any} name @param {any} value */ (name, value) => {
-                                runValidate(name, value);
-                            }}
+                            onChange={
+                                /** @param {any} name @param {any} value */ (name, value) => {
+                                    runValidate(name, value);
+                                }
+                            }
                         />
 
                         <MemoizedDatePicker
@@ -170,10 +174,12 @@ const ProcurementTrackerStepFour = ({
                             hint="mm/dd/yyyy"
                             value={step4DateCompleted}
                             messages={validatorRes.getErrors("dateCompleted") || []}
-                            onChange={/** @param {any} e */ (e) => {
-                                runValidate("dateCompleted", e.target.value);
-                                setStep4DateCompleted(e.target.value);
-                            }}
+                            onChange={
+                                /** @param {any} e */ (e) => {
+                                    runValidate("dateCompleted", e.target.value);
+                                    setStep4DateCompleted(e.target.value);
+                                }
+                            }
                             maxDate={getLocalISODate()}
                             isDisabled={isEvaluationFieldsDisabled}
                         />

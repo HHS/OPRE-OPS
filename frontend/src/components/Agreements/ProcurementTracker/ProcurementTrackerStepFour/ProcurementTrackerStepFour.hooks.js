@@ -34,7 +34,8 @@ export default function useProcurementTrackerStepFour(stepFourData, handleSetCom
 
     const step4CompletedByUserName = useGetUserFullNameFromId(stepFourData?.task_completed_by ?? -1);
     const step4DateCompletedLabel = formatDateToMonthDayYear(stepFourData?.date_completed ?? "") ?? undefined;
-    const step4TargetCompletionDateLabel = formatDateToMonthDayYear(stepFourData?.target_completion_date ?? "") ?? undefined;
+    const step4TargetCompletionDateLabel =
+        formatDateToMonthDayYear(stepFourData?.target_completion_date ?? "") ?? undefined;
     const step4NotesLabel = stepFourData?.notes;
     const MemoizedDatePicker = React.memo(DatePicker);
 
