@@ -14,8 +14,9 @@ import useAlert from "../../../../hooks/use-alert.hooks";
  * Custom hook to manage the state and logic for Procurement Tracker Step One.
  * @param {ProcurementTrackerAcquisitionPlanningStep | undefined} stepOneData - The data for step one of the procurement tracker.
  * @param {(isSubmitted: boolean) => void} handleSetCompletedStepNumber - Function to set the form submission state.
+ * @param {boolean} isEditable - Whether the current user can edit the agreement.
  */
-export default function useProcurementTrackerStepOne(stepOneData, handleSetCompletedStepNumber) {
+export default function useProcurementTrackerStepOne(stepOneData, handleSetCompletedStepNumber, isEditable = true) {
     const [isPreSolicitationPackageSent, setIsPreSolicitationPackageSent] = React.useState(false);
     const [selectedUser, setSelectedUser] = React.useState({});
     const [step1DateCompleted, setStep1DateCompleted] = React.useState("");
@@ -83,7 +84,8 @@ export default function useProcurementTrackerStepOne(stepOneData, handleSetCompl
         });
     };
 
-    const disableStep1Buttons = !isPreSolicitationPackageSent || !selectedUser?.id || !step1DateCompleted;
+    const disableStep1Buttons =
+        !isEditable || !isPreSolicitationPackageSent || !selectedUser?.id || !step1DateCompleted;
 
     return {
         isPreSolicitationPackageSent,

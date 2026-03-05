@@ -961,4 +961,206 @@ describe("ProcurementTrackerStepOne", () => {
             expect(dl.tagName).toBe("DL");
         });
     });
+
+    describe("Authorization", () => {
+        beforeEach(() => {
+            // Use a factory function that can accept props to determine mock behavior
+            useProcurementTrackerStepOne.mockImplementation(
+                (stepOneData, handleSetCompletedStepNumber, isEditable = true) => ({
+                    isPreSolicitationPackageSent: true,
+                    setIsPreSolicitationPackageSent: mockSetIsPreSolicitationPackageSent,
+                    selectedUser: mockAllUsers[0],
+                    setSelectedUser: mockSetSelectedUser,
+                    step1DateCompleted: "2024-01-15",
+                    setStep1DateCompleted: mockSetStep1DateCompleted,
+                    MemoizedDatePicker: ({ label, value, onChange, isDisabled }) => (
+                        <div data-testid="datepicker">
+                            <label>{label}</label>
+                            <input
+                                type="text"
+                                value={value}
+                                onChange={onChange}
+                                disabled={isDisabled}
+                            />
+                        </div>
+                    ),
+                    step1Notes: "Test notes",
+                    setStep1Notes: mockSetStep1Notes,
+                    handleStep1Complete: mockHandleStep1Complete,
+                    cancelModalStep1: mockCancelStep1,
+                    // Hook properly calculates disable state based on isEditable
+                    disableStep1Buttons: !isEditable || !true || !mockAllUsers[0]?.id || !"2024-01-15",
+                    step1CompletedByUserName: "Jane Smith",
+                    step1DateCompletedLabel: "January 15, 2024",
+                    step1NotesLabel: "Completed notes",
+                    modalProps: {
+                        heading: "",
+                        actionButtonText: "",
+                        secondaryButtonText: "",
+                        handleConfirm: vi.fn()
+                    },
+                    showModal: false,
+                    setShowModal: vi.fn(),
+                    runValidate: mockRunValidate,
+                    validatorRes: mockValidatorRes
+                })
+            );
+        });
+
+        it("should disable checkbox when isEditable=false", () => {
+            render(
+                <ProcurementTrackerStepOne
+                    stepStatus="PENDING"
+                    stepOneData={mockStepOneData}
+                    isActiveStep={true}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    authorizedUsers={mockAllUsers}
+                    isEditable={false}
+                />
+            );
+
+            const checkbox = screen.getByRole("checkbox");
+            expect(checkbox).toBeDisabled();
+        });
+
+        it("should disable UsersComboBox when isEditable=false", () => {
+            render(
+                <ProcurementTrackerStepOne
+                    stepStatus="PENDING"
+                    stepOneData={mockStepOneData}
+                    isActiveStep={true}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    authorizedUsers={mockAllUsers}
+                    isEditable={false}
+                />
+            );
+
+            const select = screen.getByRole("combobox");
+            expect(select).toBeDisabled();
+        });
+
+        it("should disable DatePicker when isEditable=false", () => {
+            render(
+                <ProcurementTrackerStepOne
+                    stepStatus="PENDING"
+                    stepOneData={mockStepOneData}
+                    isActiveStep={true}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    authorizedUsers={mockAllUsers}
+                    isEditable={false}
+                />
+            );
+
+            const datepicker = screen.getByTestId("datepicker");
+            // eslint-disable-next-line testing-library/no-node-access
+            const input = datepicker.querySelector("input");
+            expect(input).toBeDisabled();
+        });
+
+        it("should disable TextArea when isEditable=false", () => {
+            render(
+                <ProcurementTrackerStepOne
+                    stepStatus="PENDING"
+                    stepOneData={mockStepOneData}
+                    isActiveStep={true}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    authorizedUsers={mockAllUsers}
+                    isEditable={false}
+                />
+            );
+
+            const textarea = screen.getByRole("textbox", { name: /notes/i });
+            expect(textarea).toBeDisabled();
+        });
+
+        it("should disable Cancel button when isEditable=false", () => {
+            render(
+                <ProcurementTrackerStepOne
+                    stepStatus="PENDING"
+                    stepOneData={mockStepOneData}
+                    isActiveStep={true}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    authorizedUsers={mockAllUsers}
+                    isEditable={false}
+                />
+            );
+
+            const cancelButton = screen.getByText("Cancel");
+            expect(cancelButton).toBeDisabled();
+        });
+
+        it("should disable Complete button when isEditable=false", () => {
+            render(
+                <ProcurementTrackerStepOne
+                    stepStatus="PENDING"
+                    stepOneData={mockStepOneData}
+                    isActiveStep={true}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    authorizedUsers={mockAllUsers}
+                    isEditable={false}
+                />
+            );
+
+            const completeButton = screen.getByText("Complete Step 1");
+            expect(completeButton).toBeDisabled();
+        });
+
+        it("should enable form elements when isEditable=true and conditions are met", () => {
+            render(
+                <ProcurementTrackerStepOne
+                    stepStatus="PENDING"
+                    stepOneData={mockStepOneData}
+                    isActiveStep={true}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    authorizedUsers={mockAllUsers}
+                    isEditable={true}
+                />
+            );
+
+            const checkbox = screen.getByRole("checkbox");
+            const select = screen.getByRole("combobox");
+            const textarea = screen.getByRole("textbox", { name: /notes/i });
+            const cancelButton = screen.getByText("Cancel");
+
+            expect(checkbox).not.toBeDisabled();
+            expect(select).not.toBeDisabled();
+            expect(textarea).not.toBeDisabled();
+            expect(cancelButton).not.toBeDisabled();
+        });
+
+        it("should show completed state correctly regardless of isEditable", () => {
+            render(
+                <ProcurementTrackerStepOne
+                    stepStatus="COMPLETED"
+                    stepOneData={mockStepOneData}
+                    isActiveStep={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    authorizedUsers={mockAllUsers}
+                    isEditable={false}
+                />
+            );
+
+            // Completed state should show read-only view for all users
+            expect(screen.getByText(/sent to the Procurement Shop for review/i)).toBeInTheDocument();
+            expect(screen.getByText("Completed By")).toBeInTheDocument();
+            expect(screen.getByText("Date Completed")).toBeInTheDocument();
+        });
+
+        it("should default isEditable to true when not provided (backward compatibility)", () => {
+            render(
+                <ProcurementTrackerStepOne
+                    stepStatus="PENDING"
+                    stepOneData={mockStepOneData}
+                    isActiveStep={true}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    authorizedUsers={mockAllUsers}
+                    // isEditable not provided - should default to true
+                />
+            );
+
+            const checkbox = screen.getByRole("checkbox");
+            // Checkbox should be enabled because isActiveStep=true and isEditable defaults to true
+            expect(checkbox).not.toBeDisabled();
+        });
+    });
 });
