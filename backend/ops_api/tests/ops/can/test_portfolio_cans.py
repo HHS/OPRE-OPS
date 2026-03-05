@@ -2,6 +2,7 @@ from decimal import Decimal
 
 from models import CAN, BudgetLineItem, BudgetLineItemStatus, CANFundingDetails
 from ops_api.ops.resources.portfolio_cans import PortfolioCansAPI
+from ops_api.ops.utils.cans import filter_active_cans
 
 
 def test_portfolio_cans(auth_client, app_ctx):
@@ -99,10 +100,14 @@ def test_portfolio_5_cans_with_no_budgets_sorted_by_newest(auth_client):
     assert response.status_code == 200
 
     # Expected order by newest (and then by number)
+    # Note: G995679 is a perpetual fund (active_period=0, fiscal_year=2025) that is
+    # active for any year >= 2025. It is correctly included by the shared
+    # filter_active_cans utility.
     expected_cans = [
-        # Numer, Funding_Details.Fiscal Year, Active Period
+        # Number, Funding_Details.Fiscal Year, Active Period
         ("G991234", 2025, 1),  # 2025
         ("G995678", 2025, 1),  # 2025
+        ("G995679", 2025, 0),  # 2025+ (perpetual)
         ("GE7RM25", 2025, 5),  # 2025, 2026, 2027, 2028, 2029
         ("GE7RM24", 2024, 5),  # 2024, 2025, 2026, 2027, 2028
         ("GE7RM23", 2023, 5),  # 2023, 2024, 2025, 2026, 2027
@@ -117,46 +122,55 @@ def test_portfolio_5_cans_with_no_budgets_sorted_by_newest(auth_client):
         assert can["display_name"] == expected_number
         assert can["funding_details"]["fiscal_year"] == expected_year
         assert can["active_period"] == active_period
-        assert can["funding_details"]["fiscal_year"] + can["active_period"] >= 2025
+        # Perpetual funds (active_period=0) are always active from their start year onward
+        if active_period > 0:
+            assert can["funding_details"]["fiscal_year"] + can["active_period"] >= 2025
 
 
 def test_portfolio_5_active_cans(auth_client):
+    # Portfolio 5 includes a perpetual fund CAN (G995679, fiscal_year=2025, active_period=0)
+    # which is active for all years >= 2025. This is correctly handled by the shared
+    # filter_active_cans utility.
     fiscal_years = {
-        2026: 4,
-        2027: 3,
-        2028: 2,
-        2029: 1,
-        2030: 0,
-        2024: 3,
-        2023: 2,
-        2022: 1,
-        2021: 0,
+        2026: 5,  # 4 time-limited + 1 perpetual
+        2027: 4,  # 3 time-limited + 1 perpetual
+        2028: 3,  # 2 time-limited + 1 perpetual
+        2029: 2,  # 1 time-limited + 1 perpetual
+        2030: 1,  # 0 time-limited + 1 perpetual
+        2024: 3,  # 3 time-limited + 0 perpetual (perpetual starts at 2025)
+        2023: 2,  # 2 time-limited + 0 perpetual
+        2022: 1,  # 1 time-limited + 0 perpetual
+        2021: 0,  # 0 time-limited + 0 perpetual
     }
 
     for year, expected_count in fiscal_years.items():
         resp = auth_client.get(f"/api/v1/portfolios/5/cans/?budgetFiscalYear={year}")
         assert resp.status_code == 200
-        assert len(resp.json) == expected_count
+        assert (
+            len(resp.json) == expected_count
+        ), f"FY {year}: expected {expected_count} active CANs, got {len(resp.json)}"
 
 
 def test_portfolio_5_cans_include_inactive(auth_client):
     """Test that includeInactive=true returns all CANs regardless of active period."""
-    # Without includeInactive, for year 2030, no CANs are active
+    # Without includeInactive, for year 2030, only the perpetual fund CAN is active
     response_without_inactive = auth_client.get("/api/v1/portfolios/5/cans/?budgetFiscalYear=2030")
     assert response_without_inactive.status_code == 200
-    assert len(response_without_inactive.json) == 0
+    assert len(response_without_inactive.json) == 1
+    # The only active CAN should be the perpetual one
+    assert response_without_inactive.json[0]["active_period"] == 0
 
     # With includeInactive=true, all CANs for portfolio 5 should be returned
     response_with_inactive = auth_client.get("/api/v1/portfolios/5/cans/?budgetFiscalYear=2030&includeInactive=true")
     assert response_with_inactive.status_code == 200
 
-    # Should return more CANs than without includeInactive (which returned 0)
-    assert len(response_with_inactive.json) > 0
+    # Should return more CANs than without includeInactive
+    assert len(response_with_inactive.json) > len(response_without_inactive.json)
 
     # Verify all returned CANs belong to portfolio 5
     assert all(can["portfolio_id"] == 5 for can in response_with_inactive.json)
 
-    # Compare with a year where some CANs are active (2025 returns 6 active CANs)
+    # Compare with a year where some CANs are active (2025 returns 7 active CANs)
     # With includeInactive=true, we should get at least as many (or more) CANs
     response_active_year = auth_client.get("/api/v1/portfolios/5/cans/?budgetFiscalYear=2025")
     assert len(response_with_inactive.json) >= len(response_active_year.json)
@@ -223,8 +237,14 @@ def test_include_only_active_cans():
         2007: 1,
     }
     for year, expected_count in fiscal_years.items():
-        result = PortfolioCansAPI._include_only_active_cans(test_cans, year)
-        assert len(result) == expected_count
+        # Verify both the static method and the shared utility return the same results
+        result_via_static = PortfolioCansAPI._include_only_active_cans(test_cans, year)
+        result_via_shared = filter_active_cans(test_cans, year)
+        assert len(result_via_static) == expected_count
+        assert result_via_static == result_via_shared, (
+            f"Year {year}: PortfolioCansAPI._include_only_active_cans and "
+            f"filter_active_cans returned different results"
+        )
 
 
 def test_sort_by_appropriation_year():
