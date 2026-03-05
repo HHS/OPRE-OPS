@@ -62,6 +62,7 @@ describe("Not awarded Agreement", () => {
             cy.get("[data-cy='page-heading']").should("have.text", "Edit Agreement");
             cy.get("#budget-lines-header").should("not.exist");
             cy.get("#continue").click();
+            cy.get("#project-combobox-input").should("not.exist");
             // test validation
             cy.get("#name").clear();
             cy.get("#name").blur();
