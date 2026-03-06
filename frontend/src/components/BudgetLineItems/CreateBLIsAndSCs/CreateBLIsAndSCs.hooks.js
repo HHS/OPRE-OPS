@@ -85,7 +85,6 @@ const useCreateBLIsAndSCs = (
     const [groupedBudgetLinesByServicesComponent, setGroupedBudgetLinesByServicesComponent] = React.useState([]);
     const [deletedBudgetLines, setDeletedBudgetLines] = React.useState([]);
     const [isBudgetLineNotDraft, setIsBudgetLineNotDraft] = React.useState(false);
-    const [suiteResult, setSuiteResult] = React.useState(() => suite.get());
     const navigate = useNavigate();
     const { setAlert } = useAlert();
     const [addAgreement] = useAddAgreementMutation();
@@ -143,23 +142,12 @@ const useCreateBLIsAndSCs = (
     }, [tempBudgetLines, servicesComponents]);
 
     // Validation
-    const res = suiteResult;
+    const res = isReviewMode
+        ? suite.run({
+              budgetLines: tempBudgetLines
+          })
+        : suite.get();
     const pageErrors = res.getErrors();
-
-    React.useEffect(() => {
-        if (isReviewMode) {
-            setSuiteResult(
-                suite.run({
-                    budgetLines: tempBudgetLines
-                })
-            );
-        } else {
-            setSuiteResult(suite.get());
-        }
-        return () => {
-            suite.reset();
-        };
-    }, [isReviewMode, tempBudgetLines]);
     // Filter page errors to only include "Budget line item" errors and consolidate into single message
     const budgetLineErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget line item"));
 
@@ -333,6 +321,7 @@ const useCreateBLIsAndSCs = (
         setNeedByDate(null);
         setEnteredDescription(null);
         setBudgetLineBeingEdited(null);
+        suite.reset();
         budgetFormSuite.reset();
         datePickerSuite.reset();
     }, []);

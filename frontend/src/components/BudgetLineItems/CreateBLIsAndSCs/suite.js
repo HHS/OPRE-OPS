@@ -1,8 +1,6 @@
-import { create, test, enforce, only, each } from "vest";
+import { create, test, enforce, each } from "vest";
 
 const suite = create((data) => {
-    only(data);
-
     // test to ensure at least one budget line item exists
     test("data", "Must have at least one budget line", () => {
         enforce(data.budgetLines.length).greaterThan(0);
