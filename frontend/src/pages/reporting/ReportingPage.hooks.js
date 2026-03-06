@@ -1,12 +1,25 @@
 import { useState, useMemo } from "react";
-import { useGetPortfolioFundingSummaryBatchQuery } from "../../api/opsAPI";
+import { useGetPortfolioFundingSummaryBatchQuery, useGetPortfoliosQuery } from "../../api/opsAPI";
 import { getCurrentFiscalYear } from "../../helpers/utils";
 
 export const useReportingPageData = () => {
     const [selectedFiscalYear, setSelectedFiscalYear] = useState(getCurrentFiscalYear());
     const fiscalYear = Number(selectedFiscalYear);
 
-    const { data: fundingData, isLoading, isError } = useGetPortfolioFundingSummaryBatchQuery({ fiscalYear });
+    const {
+        data: allPortfolios,
+        isLoading: isLoadingPortfolios,
+        isError: isErrorPortfolios
+    } = useGetPortfoliosQuery({});
+
+    const {
+        data: fundingData,
+        isLoading: isLoadingFunding,
+        isError: isErrorFunding
+    } = useGetPortfolioFundingSummaryBatchQuery({ fiscalYear });
+
+    const isLoading = isLoadingPortfolios || isLoadingFunding;
+    const isError = isErrorPortfolios || isErrorFunding;
 
     const { totalFunding, totalSpending } = useMemo(() => {
         if (!fundingData?.portfolios) {
@@ -26,12 +39,39 @@ export const useReportingPageData = () => {
         );
     }, [fundingData]);
 
+    const portfoliosWithFunding = useMemo(() => {
+        if (!fundingData?.portfolios || !allPortfolios) return [];
+
+        return fundingData.portfolios
+            .map((fundingPortfolio) => {
+                const portfolio = allPortfolios.find((p) => p.id === fundingPortfolio.id);
+                if (!portfolio) return null;
+
+                return {
+                    ...portfolio,
+                    ...fundingPortfolio,
+                    fundingSummary: {
+                        total_funding: fundingPortfolio.total_funding,
+                        available_funding: fundingPortfolio.available_funding,
+                        carry_forward_funding: fundingPortfolio.carry_forward_funding,
+                        new_funding: fundingPortfolio.new_funding,
+                        planned_funding: fundingPortfolio.planned_funding,
+                        obligated_funding: fundingPortfolio.obligated_funding,
+                        in_execution_funding: fundingPortfolio.in_execution_funding,
+                        draft_funding: fundingPortfolio.draft_funding
+                    }
+                };
+            })
+            .filter(Boolean);
+    }, [fundingData, allPortfolios]);
+
     return {
         fiscalYear,
         selectedFiscalYear,
         setSelectedFiscalYear,
         totalFunding,
         totalSpending,
+        portfoliosWithFunding,
         isLoading,
         isError
     };

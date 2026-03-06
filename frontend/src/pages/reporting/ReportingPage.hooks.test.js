@@ -4,39 +4,71 @@ import { useReportingPageData } from "./ReportingPage.hooks";
 import * as opsAPI from "../../api/opsAPI";
 
 vi.mock("../../api/opsAPI", () => ({
-    useGetPortfolioFundingSummaryBatchQuery: vi.fn()
+    useGetPortfolioFundingSummaryBatchQuery: vi.fn(),
+    useGetPortfoliosQuery: vi.fn()
 }));
 
-describe("useReportingPageData", () => {
-    const mockFundingData = {
-        portfolios: [
-            {
-                id: 1,
-                total_funding: { amount: 10000000 },
-                planned_funding: { amount: 2000000 },
-                obligated_funding: { amount: 3000000 },
-                in_execution_funding: { amount: 1000000 }
-            },
-            {
-                id: 2,
-                total_funding: { amount: 5000000 },
-                planned_funding: { amount: 500000 },
-                obligated_funding: { amount: 1000000 },
-                in_execution_funding: { amount: 500000 }
-            }
-        ]
-    };
+const mockAllPortfolios = [
+    { id: 1, name: "Portfolio A", abbreviation: "PA" },
+    { id: 2, name: "Portfolio B", abbreviation: "PB" }
+];
 
+const mockFundingData = {
+    portfolios: [
+        {
+            id: 1,
+            total_funding: { amount: 10000000 },
+            planned_funding: { amount: 2000000 },
+            obligated_funding: { amount: 3000000 },
+            in_execution_funding: { amount: 1000000 },
+            available_funding: { amount: 4000000 },
+            carry_forward_funding: { amount: 500000 },
+            new_funding: { amount: 9500000 },
+            draft_funding: { amount: 1000000 }
+        },
+        {
+            id: 2,
+            total_funding: { amount: 5000000 },
+            planned_funding: { amount: 500000 },
+            obligated_funding: { amount: 1000000 },
+            in_execution_funding: { amount: 500000 },
+            available_funding: { amount: 3000000 },
+            carry_forward_funding: { amount: 200000 },
+            new_funding: { amount: 4800000 },
+            draft_funding: { amount: 500000 }
+        }
+    ]
+};
+
+const setupMocks = (overrides = {}) => {
+    const {
+        portfolios = mockAllPortfolios,
+        funding = mockFundingData,
+        loadingPortfolios = false,
+        loadingFunding = false,
+        errorPortfolios = false,
+        errorFunding = false
+    } = overrides;
+
+    opsAPI.useGetPortfoliosQuery.mockReturnValue({
+        data: "portfolios" in overrides ? overrides.portfolios : portfolios,
+        isLoading: loadingPortfolios,
+        isError: errorPortfolios
+    });
+    opsAPI.useGetPortfolioFundingSummaryBatchQuery.mockReturnValue({
+        data: "funding" in overrides ? overrides.funding : funding,
+        isLoading: loadingFunding,
+        isError: errorFunding
+    });
+};
+
+describe("useReportingPageData", () => {
     beforeEach(() => {
         vi.clearAllMocks();
     });
 
     it("should return loading state when data is loading", () => {
-        opsAPI.useGetPortfolioFundingSummaryBatchQuery.mockReturnValue({
-            data: undefined,
-            isLoading: true,
-            isError: false
-        });
+        setupMocks({ loadingPortfolios: true, loadingFunding: true, portfolios: null, funding: null });
 
         const { result } = renderHook(() => useReportingPageData());
 
@@ -46,11 +78,7 @@ describe("useReportingPageData", () => {
     });
 
     it("should return error state when API fails", () => {
-        opsAPI.useGetPortfolioFundingSummaryBatchQuery.mockReturnValue({
-            data: undefined,
-            isLoading: false,
-            isError: true
-        });
+        setupMocks({ errorFunding: true, portfolios: null, funding: null });
 
         const { result } = renderHook(() => useReportingPageData());
 
@@ -58,11 +86,7 @@ describe("useReportingPageData", () => {
     });
 
     it("should aggregate totalFunding and totalSpending across all portfolios", () => {
-        opsAPI.useGetPortfolioFundingSummaryBatchQuery.mockReturnValue({
-            data: mockFundingData,
-            isLoading: false,
-            isError: false
-        });
+        setupMocks();
 
         const { result } = renderHook(() => useReportingPageData());
 
@@ -72,11 +96,7 @@ describe("useReportingPageData", () => {
     });
 
     it("should initialize with the current fiscal year", () => {
-        opsAPI.useGetPortfolioFundingSummaryBatchQuery.mockReturnValue({
-            data: mockFundingData,
-            isLoading: false,
-            isError: false
-        });
+        setupMocks();
 
         const { result } = renderHook(() => useReportingPageData());
 
@@ -86,21 +106,19 @@ describe("useReportingPageData", () => {
     });
 
     it("should handle empty portfolios array", () => {
-        opsAPI.useGetPortfolioFundingSummaryBatchQuery.mockReturnValue({
-            data: { portfolios: [] },
-            isLoading: false,
-            isError: false
-        });
+        setupMocks({ funding: { portfolios: [] } });
 
         const { result } = renderHook(() => useReportingPageData());
 
         expect(result.current.totalFunding).toBe(0);
         expect(result.current.totalSpending).toBe(0);
+        expect(result.current.portfoliosWithFunding).toEqual([]);
     });
 
     it("should handle portfolios with missing funding fields", () => {
-        opsAPI.useGetPortfolioFundingSummaryBatchQuery.mockReturnValue({
-            data: {
+        setupMocks({
+            portfolios: [{ id: 1, name: "Portfolio A", abbreviation: "PA" }],
+            funding: {
                 portfolios: [
                     {
                         id: 1,
@@ -110,14 +128,40 @@ describe("useReportingPageData", () => {
                         in_execution_funding: null
                     }
                 ]
-            },
-            isLoading: false,
-            isError: false
+            }
         });
 
         const { result } = renderHook(() => useReportingPageData());
 
         expect(result.current.totalFunding).toBe(5000000);
         expect(result.current.totalSpending).toBe(1000000);
+    });
+
+    it("should merge portfolios with funding data into portfoliosWithFunding", () => {
+        setupMocks();
+
+        const { result } = renderHook(() => useReportingPageData());
+
+        expect(result.current.portfoliosWithFunding).toHaveLength(2);
+        expect(result.current.portfoliosWithFunding[0].name).toBe("Portfolio A");
+        expect(result.current.portfoliosWithFunding[0].abbreviation).toBe("PA");
+        expect(result.current.portfoliosWithFunding[0].fundingSummary.total_funding.amount).toBe(10000000);
+    });
+
+    it("should filter out funding portfolios not found in allPortfolios", () => {
+        setupMocks({ portfolios: [mockAllPortfolios[0]] }); // Only portfolio 1
+
+        const { result } = renderHook(() => useReportingPageData());
+
+        expect(result.current.portfoliosWithFunding).toHaveLength(1);
+        expect(result.current.portfoliosWithFunding[0].id).toBe(1);
+    });
+
+    it("should return empty portfoliosWithFunding when allPortfolios is not available", () => {
+        setupMocks({ portfolios: null });
+
+        const { result } = renderHook(() => useReportingPageData());
+
+        expect(result.current.portfoliosWithFunding).toEqual([]);
     });
 });

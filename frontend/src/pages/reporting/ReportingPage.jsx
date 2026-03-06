@@ -1,11 +1,19 @@
 import App from "../../App";
+import PortfolioSummaryCards from "../../components/Portfolios/PortfolioSummaryCards";
 import BigBudgetCard from "../../components/UI/Cards/BudgetCard/BigBudgetCard";
 import FiscalYear from "../../components/UI/FiscalYear/FiscalYear";
 import { useReportingPageData } from "./ReportingPage.hooks";
 
 const ReportingPage = () => {
-    const { fiscalYear, selectedFiscalYear, setSelectedFiscalYear, totalFunding, totalSpending, isLoading } =
-        useReportingPageData();
+    const {
+        fiscalYear,
+        selectedFiscalYear,
+        setSelectedFiscalYear,
+        totalFunding,
+        totalSpending,
+        portfoliosWithFunding,
+        isLoading
+    } = useReportingPageData();
 
     return (
         <App breadCrumbName="OPRE Budget Reporting">
@@ -23,11 +31,19 @@ const ReportingPage = () => {
             {isLoading ? (
                 <div>Loading...</div>
             ) : (
-                <BigBudgetCard
-                    title={`FY ${fiscalYear} Available OPRE Budget *`}
-                    totalSpending={totalSpending}
-                    totalFunding={totalFunding}
-                />
+                <>
+                    <BigBudgetCard
+                        title={`FY ${fiscalYear} Available OPRE Budget *`}
+                        totalSpending={totalSpending}
+                        totalFunding={totalFunding}
+                    />
+                    <div className="margin-top-4">
+                        <PortfolioSummaryCards
+                            fiscalYear={fiscalYear}
+                            filteredPortfolios={portfoliosWithFunding}
+                        />
+                    </div>
+                </>
             )}
         </App>
     );

@@ -12,12 +12,17 @@ vi.mock("./ReportingPage.hooks", () => ({
     useReportingPageData: vi.fn()
 }));
 
+vi.mock("../../components/Portfolios/PortfolioSummaryCards", () => ({
+    default: () => <div data-testid="portfolio-summary-cards">Summary Cards</div>
+}));
+
 const mockDefaultHookReturn = {
     fiscalYear: 2026,
     selectedFiscalYear: "2026",
     setSelectedFiscalYear: vi.fn(),
     totalFunding: 15000000,
     totalSpending: 8000000,
+    portfoliosWithFunding: [{ id: 1, name: "Test Portfolio" }],
     isLoading: false,
     isError: false
 };
@@ -57,6 +62,11 @@ describe("ReportingPage", () => {
     it("should render the FiscalYear selector", () => {
         renderWithProviders(<ReportingPage />);
         expect(screen.getByLabelText("Fiscal Year")).toBeInTheDocument();
+    });
+
+    it("should render the PortfolioSummaryCards", () => {
+        renderWithProviders(<ReportingPage />);
+        expect(screen.getByTestId("portfolio-summary-cards")).toBeInTheDocument();
     });
 
     it("should render loading state when data is loading", () => {
