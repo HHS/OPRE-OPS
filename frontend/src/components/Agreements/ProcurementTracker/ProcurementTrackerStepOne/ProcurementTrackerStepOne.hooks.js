@@ -13,7 +13,7 @@ import useAlert from "../../../../hooks/use-alert.hooks";
 /**
  * Custom hook to manage the state and logic for Procurement Tracker Step One.
  * @param {ProcurementTrackerAcquisitionPlanningStep | undefined} stepOneData - The data for step one of the procurement tracker.
- * @param {(isSubmitted: boolean) => void} handleSetCompletedStepNumber - Function to set the form submission state.
+ * @param {(step: number) => void} handleSetCompletedStepNumber - Function to set the completed step number.
  * @param {boolean} isEditable - Whether the current user can edit the agreement.
  */
 export default function useProcurementTrackerStepOne(stepOneData, handleSetCompletedStepNumber, isEditable = true) {

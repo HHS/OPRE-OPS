@@ -1154,12 +1154,12 @@ describe("ProcurementTrackerStepOne", () => {
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                     authorizedUsers={mockAllUsers}
-                    // isEditable not provided - should default to true
+                    // isDisabled not provided - should default to undefined/false
                 />
             );
 
             const checkbox = screen.getByRole("checkbox");
-            // Checkbox should be enabled because isActiveStep=true and isEditable defaults to true
+            // Checkbox should be enabled because isActiveStep=true and isDisabled defaults to false
             expect(checkbox).not.toBeDisabled();
         });
     });

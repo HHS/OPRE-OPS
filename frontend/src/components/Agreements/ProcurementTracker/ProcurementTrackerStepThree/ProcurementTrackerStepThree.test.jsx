@@ -1442,7 +1442,7 @@ describe("ProcurementTrackerStepThree", () => {
             expect(useProcurementTrackerStepThree).toHaveBeenCalledWith(mockStepData, mockHandleSetCompletedStepNumber);
         });
 
-        it("cancel button is disabled when hasActiveTracker is false", () => {
+        it("cancel button is disabled when isDisabled is true", () => {
             useProcurementTrackerStepThree.mockReturnValue({
                 ...defaultHookReturn,
                 isSolicitationClosed: true
@@ -1667,7 +1667,7 @@ describe("ProcurementTrackerStepThree", () => {
             expect(completeButton).toBeDisabled();
         });
 
-        it("complete button disabled when hasActiveTracker is false", () => {
+        it("complete button disabled when isDisabled is true", () => {
             useProcurementTrackerStepThree.mockReturnValue({
                 ...defaultHookReturn,
                 isSolicitationClosed: true,
