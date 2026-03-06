@@ -15,12 +15,12 @@ import { getCurrentFiscalYear } from "../../../helpers/utils";
 import { FILTER_MODAL_FULL_WIDTH } from "../../../constants";
 
 /**
- * A filter for agreements.
+ * A filter for budget line items.
  * @param {Object} props - The component props.
  * @param {Object} props.filters - The current filters.
  * @param {Function} props.setFilters - A function to call to set the filters.
- * @param {string|number} props.selectedFiscalYear - The current fiscal year shortcut value from the dropdown.
- * @returns {React.ReactElement} - The procurement shop select element.
+ * @param {string|number} props.selectedFiscalYear - The current fiscal year value from the page-level dropdown. Can be a number (specific year), "All" (user-selected), "Multi" (auto-set when multiple years filtered), or undefined. Used to update the modal's placeholder text only - does not pre-select filter values.
+ * @returns {React.ReactElement} - The filter button component.
  */
 export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => {
     const [fiscalYears, setFiscalYears] = React.useState([]);
@@ -67,15 +67,18 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
     }, [filterOptions?.fiscal_years, filters.fiscalYears, selectedFiscalYear, allFiscalYearsOption]);
 
     // The useEffect() hook calls below are used to set the state appropriately when the filter tags (X) are clicked.
-    // Also pre-populates with the selected fiscal year when no filters are applied
+    // filters.fiscalYears = null means "All FYs" was selected in the modal (should show in modal)
+    // filters.fiscalYears = [] means page dropdown was changed (should NOT show in modal)
     React.useEffect(() => {
         if (isResetting.current) {
             // Don't pre-populate if user just reset the filters
             setFiscalYears(filters.fiscalYears ?? []);
             isResetting.current = false;
         } else if (filters.fiscalYears === null) {
+            // "All FYs" was selected in the modal, show it as selected when reopening
             setFiscalYears([allFiscalYearsOption]);
         } else {
+            // Either specific years selected or empty array (page dropdown change)
             setFiscalYears(filters.fiscalYears ?? []);
         }
     }, [filters.fiscalYears, selectedFiscalYear, allFiscalYearsOption]);
@@ -138,7 +141,8 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
         if (hasAllFiscalYears) {
             nextFiscalYears = null;
         } else if (normalizedFiscalYears.length === 0) {
-            nextFiscalYears = undefined;
+            // Keep as empty array to preserve page dropdown state
+            nextFiscalYears = [];
         }
         setFilters((prevState) => {
             return {
