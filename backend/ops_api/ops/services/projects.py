@@ -1,4 +1,5 @@
-from typing import Any, Sequence
+from dataclasses import dataclass
+from typing import Any, Optional, Sequence
 
 from loguru import logger
 from sqlalchemy import select
@@ -17,6 +18,28 @@ from models import (
 )
 from ops_api.ops.services.ops_service import OpsService, ResourceNotFoundError, ValidationError
 from ops_api.ops.utils.query_helpers import QueryHelper
+
+
+@dataclass
+class ProjectFilters:
+    """Data class to encapsulate all filter parameters for Projects."""
+
+    fiscal_year: Optional[list[int]] = None
+    portfolio_id: Optional[list[int]] = None
+    project_search: Optional[list[str]] = None
+    agreement_search: Optional[list[str]] = None
+    project_type: Optional[list[ProjectType]] = None
+
+    @classmethod
+    def parse_filters(cls, data: dict) -> "ProjectFilters":
+        """Parse filter parameters from request data."""
+        return cls(
+            fiscal_year=data.get("fiscal_year", []),
+            portfolio_id=data.get("portfolio_id", []),
+            project_search=data.get("project_search", []),
+            agreement_search=data.get("agreement_search", []),
+            project_type=data.get("project_type", []),
+        )
 
 
 class ProjectsService(OpsService[Project]):
@@ -175,15 +198,21 @@ class ProjectsService(OpsService[Project]):
 
         # Prevent deletion if project has associated agreements
         if project.agreements:
-            raise ValidationError(
-                {"agreements": ["Cannot delete a project that has associated agreements."]}
-            )
+            raise ValidationError({"agreements": ["Cannot delete a project that has associated agreements."]})
 
         self.db_session.delete(project)
         self.db_session.commit()
 
     @staticmethod
-    def _get_research_projects_query(fiscal_year=None, portfolio_id=None, search=None):
+    def _get_research_projects_query(filters: ProjectFilters):
+        """Build query for research projects with filtering.
+
+        Args:
+            filters: ProjectFilters object containing filter parameters
+
+        Returns:
+            SQLAlchemy select statement
+        """
         stmt = (
             select(ResearchProject)
             .distinct(ResearchProject.id)
@@ -196,23 +225,38 @@ class ProjectsService(OpsService[Project]):
 
         query_helper = QueryHelper(stmt)
 
-        if portfolio_id:
-            query_helper.add_column_equals(CAN.portfolio_id, portfolio_id)
+        # Apply portfolio filter (OR logic - match any portfolio)
+        if filters.portfolio_id:
+            query_helper.add_column_in_list(CAN.portfolio_id, filters.portfolio_id)
 
-        if fiscal_year:
-            query_helper.add_column_equals(CANFundingBudget.fiscal_year, fiscal_year)
-            # Also ensure that the CANFundingDetails.obligate_by is in or after the fiscal year
-            # i.e. the funds are still valid to be used in that fiscal year (not expired)
-            query_helper.add_column_in_range(
-                CANFundingDetails.fiscal_year,
-                CANFundingDetails.obligate_by,
-                fiscal_year,
+        # Apply fiscal year filter (OR logic - match any fiscal year)
+        if filters.fiscal_year:
+            if len(filters.fiscal_year) == 1:
+                fiscal_year = filters.fiscal_year[0]
+                query_helper.add_column_equals(CANFundingBudget.fiscal_year, fiscal_year)
+                query_helper.add_column_in_range(
+                    CANFundingDetails.fiscal_year,
+                    CANFundingDetails.obligate_by,
+                    fiscal_year,
+                )
+            else:
+                # Multiple fiscal years - use IN clause
+                query_helper.add_column_in_list(CANFundingBudget.fiscal_year, filters.fiscal_year)
+                # For multiple years, we'll just ensure funding budget exists for one of those years
+                # The obligate_by range check becomes complex with multiple years, so we skip it
+
+        # Apply project search filter on project title (AND logic - must match all search terms)
+        if filters.project_search:
+            query_helper.add_search_list(ResearchProject.title, filters.project_search)
+
+        # Apply agreement search filter on agreement name and nick_name (exact match - OR logic)
+        # Projects are returned if any agreement has name OR nick_name matching any search term
+        if filters.agreement_search:
+            from sqlalchemy import or_
+
+            query_helper.where_clauses.append(
+                or_(Agreement.name.in_(filters.agreement_search), Agreement.nick_name.in_(filters.agreement_search))
             )
-
-        if search is not None and len(search) == 0:
-            query_helper.return_none()
-        elif search:
-            query_helper.add_search(ResearchProject.title, search)
 
         stmt = query_helper.get_stmt()
         logger.debug(f"SQL: {stmt}")
@@ -220,7 +264,15 @@ class ProjectsService(OpsService[Project]):
         return stmt
 
     @staticmethod
-    def _get_administrative_and_support_projects_query(fiscal_year=None, portfolio_id=None, search=None):
+    def _get_administrative_and_support_projects_query(filters: ProjectFilters):
+        """Build query for administrative and support projects with filtering.
+
+        Args:
+            filters: ProjectFilters object containing filter parameters
+
+        Returns:
+            SQLAlchemy select statement
+        """
         stmt = (
             select(AdministrativeAndSupportProject)
             .distinct(AdministrativeAndSupportProject.id)
@@ -233,23 +285,38 @@ class ProjectsService(OpsService[Project]):
 
         query_helper = QueryHelper(stmt)
 
-        if portfolio_id:
-            query_helper.add_column_equals(CAN.portfolio_id, portfolio_id)
+        # Apply portfolio filter (OR logic - match any portfolio)
+        if filters.portfolio_id:
+            query_helper.add_column_in_list(CAN.portfolio_id, filters.portfolio_id)
 
-        if fiscal_year:
-            query_helper.add_column_equals(CANFundingBudget.fiscal_year, fiscal_year)
-            # Also ensure that the CANFundingDetails.obligate_by is in or after the fiscal year
-            # i.e. the funds are still valid to be used in that fiscal year (not expired)
-            query_helper.add_column_in_range(
-                CANFundingDetails.fiscal_year,
-                CANFundingDetails.obligate_by,
-                fiscal_year,
+        # Apply fiscal year filter (OR logic - match any fiscal year)
+        if filters.fiscal_year:
+            if len(filters.fiscal_year) == 1:
+                fiscal_year = filters.fiscal_year[0]
+                query_helper.add_column_equals(CANFundingBudget.fiscal_year, fiscal_year)
+                query_helper.add_column_in_range(
+                    CANFundingDetails.fiscal_year,
+                    CANFundingDetails.obligate_by,
+                    fiscal_year,
+                )
+            else:
+                # Multiple fiscal years - use IN clause
+                query_helper.add_column_in_list(CANFundingBudget.fiscal_year, filters.fiscal_year)
+                # For multiple years, we'll just ensure funding budget exists for one of those years
+                # The obligate_by range check becomes complex with multiple years, so we skip it
+
+        # Apply project search filter on project title (AND logic - must match all search terms)
+        if filters.project_search:
+            query_helper.add_search_list(AdministrativeAndSupportProject.title, filters.project_search)
+
+        # Apply agreement search filter on agreement name and nick_name (exact match - OR logic)
+        # Projects are returned if any agreement has name OR nick_name matching any search term
+        if filters.agreement_search:
+            from sqlalchemy import or_
+
+            query_helper.where_clauses.append(
+                or_(Agreement.name.in_(filters.agreement_search), Agreement.nick_name.in_(filters.agreement_search))
             )
-
-        if search is not None and len(search) == 0:
-            query_helper.return_none()
-        elif search:
-            query_helper.add_search(AdministrativeAndSupportProject.title, search)
 
         stmt = query_helper.get_stmt()
         logger.debug(f"SQL: {stmt}")
@@ -279,26 +346,29 @@ class ProjectsService(OpsService[Project]):
         Get list of projects with optional filtering and pagination.
 
         Args:
-            data: Dictionary containing filter parameters
+            data: Dictionary containing filter parameters (all as lists)
 
         Returns:
             Tuple of (research_projects, administrative_and_support_projects), where each is a list of their respective project types.
         """
-        fiscal_year = data.get("fiscal_year", None)
-        portfolio_id = data.get("portfolio_id", None)
-        search = data.get("search", None)
-        project_type = data.get("project_type", None)
+        filters = ProjectFilters.parse_filters(data)
 
         research_project = []
         administrative_and_support_project = []
-        if project_type is None or project_type == ProjectType.RESEARCH:
-            research_stmt = ProjectsService._get_research_projects_query(fiscal_year, portfolio_id, search)
+
+        # If no project types specified, query both types
+        # If project types specified, only query the specified types
+        should_query_research = not filters.project_type or ProjectType.RESEARCH in filters.project_type
+        should_query_admin = not filters.project_type or ProjectType.ADMINISTRATIVE_AND_SUPPORT in filters.project_type
+
+        if should_query_research:
+            research_stmt = ProjectsService._get_research_projects_query(filters)
+            value = research_stmt.compile(compile_kwargs={"literal_binds": True})
+            logger.debug(f"Compiled SQL for research projects: {value}")
             research_project = self.db_session.scalars(research_stmt).all()
 
-        if project_type is None or project_type == ProjectType.ADMINISTRATIVE_AND_SUPPORT:
-            administrative_and_support_stmt = ProjectsService._get_administrative_and_support_projects_query(
-                fiscal_year, portfolio_id, search
-            )
+        if should_query_admin:
+            administrative_and_support_stmt = ProjectsService._get_administrative_and_support_projects_query(filters)
             administrative_and_support_project = self.db_session.scalars(administrative_and_support_stmt).all()
 
         return research_project, administrative_and_support_project

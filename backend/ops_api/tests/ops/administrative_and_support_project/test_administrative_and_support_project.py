@@ -39,7 +39,7 @@ def test_administrative_and_support_projects_serialization(auth_client, loaded_d
 
 def test_administrative_and_support_projects_with_fiscal_year_found(auth_client, loaded_db):
     response = auth_client.get(
-        url_for("api.projects-group", fiscal_year=2023, project_type=ProjectType.ADMINISTRATIVE_AND_SUPPORT.name)
+        url_for("api.projects-group", fiscal_year=[2023], project_type=[ProjectType.ADMINISTRATIVE_AND_SUPPORT.name])
     )
     assert response.status_code == 200
     # Filter for administrative and support projects
@@ -53,7 +53,7 @@ def test_administrative_and_support_projects_with_fiscal_year_found(auth_client,
 
 def test_administrative_and_support_projects_with_fiscal_year_not_found(auth_client, loaded_db):
     response = auth_client.get(
-        url_for("api.projects-group", fiscal_year=2000, project_type=ProjectType.ADMINISTRATIVE_AND_SUPPORT.name)
+        url_for("api.projects-group", fiscal_year=[2000], project_type=[ProjectType.ADMINISTRATIVE_AND_SUPPORT.name])
     )
     assert response.status_code == 200
     # Filter for administrative and support projects
@@ -65,14 +65,14 @@ def test_administrative_and_support_projects_with_fiscal_year_not_found(auth_cli
 
 def test_administrative_and_support_projects_search(auth_client, loaded_db):
     response = auth_client.get(
-        url_for("api.projects-group", search="", project_type=ProjectType.ADMINISTRATIVE_AND_SUPPORT.name)
+        url_for("api.projects-group", project_search=[""], project_type=[ProjectType.ADMINISTRATIVE_AND_SUPPORT.name])
     )
 
     assert response.status_code == 200
     assert len(response.json) == 0
 
     response = auth_client.get(
-        url_for("api.projects-group", search="su", project_type=ProjectType.ADMINISTRATIVE_AND_SUPPORT.name)
+        url_for("api.projects-group", project_search=["su"], project_type=[ProjectType.ADMINISTRATIVE_AND_SUPPORT.name])
     )
 
     assert response.status_code == 200
@@ -83,7 +83,7 @@ def test_administrative_and_support_projects_search(auth_client, loaded_db):
     assert len(admin_support_projects) == 2
 
     response = auth_client.get(
-        url_for("api.projects-group", search="#2", project_type=ProjectType.ADMINISTRATIVE_AND_SUPPORT.name)
+        url_for("api.projects-group", project_search=["#2"], project_type=[ProjectType.ADMINISTRATIVE_AND_SUPPORT.name])
     )
 
     assert response.status_code == 200
@@ -94,7 +94,7 @@ def test_administrative_and_support_projects_search(auth_client, loaded_db):
     assert len(admin_support_projects) == 1
 
     response = auth_client.get(
-        url_for("api.projects-group", search="blah", project_type=ProjectType.ADMINISTRATIVE_AND_SUPPORT.name)
+        url_for("api.projects-group", project_search=["blah"], project_type=[ProjectType.ADMINISTRATIVE_AND_SUPPORT.name])
     )
 
     assert response.status_code == 200

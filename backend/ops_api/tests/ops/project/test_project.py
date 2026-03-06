@@ -50,7 +50,7 @@ def test_projects_serialization(auth_client, loaded_db, test_user, test_project)
 
 
 def test_projects_with_fiscal_year_found(auth_client, loaded_db, test_project):
-    response = auth_client.get(url_for("api.projects-group", fiscal_year=2023))
+    response = auth_client.get(url_for("api.projects-group", fiscal_year=[2023]))
     assert response.status_code == 200
     assert len(response.json) == 5
     assert response.json[0]["title"] == "Human Services Interoperability Support"
@@ -58,36 +58,258 @@ def test_projects_with_fiscal_year_found(auth_client, loaded_db, test_project):
 
 
 def test_projects_with_fiscal_year_not_found(auth_client, loaded_db):
-    response = auth_client.get(url_for("api.projects-group", fiscal_year=2000))
+    response = auth_client.get(url_for("api.projects-group", fiscal_year=[2000]))
     assert response.status_code == 200
     assert len(response.json) == 0
 
 
 def test_project_search(auth_client, loaded_db):
-    response = auth_client.get(url_for("api.projects-group", search=""))
+    response = auth_client.get(url_for("api.projects-group", project_search=[""]))
 
     assert response.status_code == 200
     assert len(response.json) == 0
 
-    response = auth_client.get(url_for("api.projects-group", search="fa"))
+    response = auth_client.get(url_for("api.projects-group", project_search=["fa"]))
 
     assert response.status_code == 200
     assert len(response.json) == 4
 
-    response = auth_client.get(url_for("api.projects-group", search="father"))
+    response = auth_client.get(url_for("api.projects-group", project_search=["father"]))
 
     assert response.status_code == 200
     assert len(response.json) == 2
 
-    response = auth_client.get(url_for("api.projects-group", search="ExCELS"))
+    response = auth_client.get(url_for("api.projects-group", project_search=["ExCELS"]))
 
     assert response.status_code == 200
     assert len(response.json) == 1
 
-    response = auth_client.get(url_for("api.projects-group", search="blah"))
+    response = auth_client.get(url_for("api.projects-group", project_search=["blah"]))
 
     assert response.status_code == 200
     assert len(response.json) == 0
+
+
+def test_agreement_search(auth_client, loaded_db, test_project):
+    """Test filtering projects by associated agreement names (exact match)."""
+    # Create test agreements associated with test_project
+    agreement1 = ContractAgreement(
+        name="Research Agreement for Testing 2023",
+        project_id=test_project.id,
+    )
+    agreement2 = ContractAgreement(
+        name="Support Services Agreement",
+        project_id=test_project.id,
+    )
+    loaded_db.add(agreement1)
+    loaded_db.add(agreement2)
+    loaded_db.commit()
+
+    # Search for exact agreement name - should find test_project
+    response = auth_client.get(url_for("api.projects-group", agreement_search=["Research Agreement for Testing 2023"]))
+    assert response.status_code == 200
+    project_ids = [p["id"] for p in response.json]
+    assert test_project.id in project_ids
+
+    # Search for exact agreement name - should find test_project
+    response = auth_client.get(url_for("api.projects-group", agreement_search=["Support Services Agreement"]))
+    assert response.status_code == 200
+    project_ids = [p["id"] for p in response.json]
+    assert test_project.id in project_ids
+
+    # Search for multiple exact agreement names - should find test_project
+    response = auth_client.get(
+        url_for(
+            "api.projects-group",
+            agreement_search=["Research Agreement for Testing 2023", "Support Services Agreement"],
+        )
+    )
+    assert response.status_code == 200
+    project_ids = [p["id"] for p in response.json]
+    assert test_project.id in project_ids
+
+    # Search for non-existent agreement name - should return no projects or projects without this agreement
+    response = auth_client.get(url_for("api.projects-group", agreement_search=["NonExistentAgreement"]))
+    assert response.status_code == 200
+    project_ids = [p["id"] for p in response.json]
+    assert test_project.id not in project_ids
+
+    # Empty search should return no results
+    response = auth_client.get(url_for("api.projects-group", agreement_search=[""]))
+    assert response.status_code == 200
+    assert len(response.json) == 0
+
+
+def test_agreement_search_multiple_projects(auth_client, loaded_db):
+    """Test agreement search returns all projects with matching agreements (exact match)."""
+    # Create two research projects
+    project1 = ResearchProject(
+        project_type=ProjectType.RESEARCH,
+        title="Project Alpha",
+        short_title="PA",
+        description="First test project",
+    )
+    project2 = ResearchProject(
+        project_type=ProjectType.RESEARCH,
+        title="Project Beta",
+        short_title="PB",
+        description="Second test project",
+    )
+    loaded_db.add(project1)
+    loaded_db.add(project2)
+    loaded_db.commit()
+
+    # Create agreements for both projects
+    agreement1 = ContractAgreement(
+        name="Special Contract Alpha",
+        project_id=project1.id,
+    )
+    agreement2 = ContractAgreement(
+        name="Special Contract Beta",
+        project_id=project2.id,
+    )
+    loaded_db.add(agreement1)
+    loaded_db.add(agreement2)
+    loaded_db.commit()
+
+    # Search for exact agreement name - should find both projects
+    response = auth_client.get(
+        url_for("api.projects-group", agreement_search=["Special Contract Alpha", "Special Contract Beta"])
+    )
+    assert response.status_code == 200
+    project_ids = [p["id"] for p in response.json]
+    assert project1.id in project_ids
+    assert project2.id in project_ids
+
+    # Search for exact agreement name - should find only project1
+    response = auth_client.get(url_for("api.projects-group", agreement_search=["Special Contract Alpha"]))
+    assert response.status_code == 200
+    project_ids = [p["id"] for p in response.json]
+    assert project1.id in project_ids
+    assert project2.id not in project_ids
+
+
+def test_combined_project_and_agreement_search(auth_client, loaded_db, test_project):
+    """Test combining project_search and agreement_search filters (agreement uses exact match)."""
+    # Create an agreement for test_project
+    agreement = ContractAgreement(
+        name="Integration Test Agreement",
+        project_id=test_project.id,
+    )
+    loaded_db.add(agreement)
+    loaded_db.commit()
+
+    # Search with both project title (partial match) and exact agreement name (AND logic)
+    # Should find test_project (title contains "Human" AND has agreement exactly matching "Integration Test Agreement")
+    response = auth_client.get(
+        url_for("api.projects-group", project_search=["Human"], agreement_search=["Integration Test Agreement"])
+    )
+    assert response.status_code == 200
+    project_ids = [p["id"] for p in response.json]
+    assert test_project.id in project_ids
+
+    # Search with project title that matches but agreement name that doesn't
+    # Should NOT find test_project
+    response = auth_client.get(
+        url_for("api.projects-group", project_search=["Human"], agreement_search=["NonExistent"])
+    )
+    assert response.status_code == 200
+    project_ids = [p["id"] for p in response.json]
+    assert test_project.id not in project_ids
+
+
+def test_agreement_search_by_nick_name(auth_client, loaded_db, test_project):
+    """Test filtering projects by agreement nick_name in addition to agreement name (exact match)."""
+    # Create agreements with nick_names
+    agreement1 = ContractAgreement(
+        name="Complex Long Agreement Name 2024",
+        nick_name="CLAN-2024",
+        project_id=test_project.id,
+    )
+    agreement2 = ContractAgreement(
+        name="Another Agreement",
+        nick_name="SPECIAL-NICKNAME",
+        project_id=test_project.id,
+    )
+    loaded_db.add(agreement1)
+    loaded_db.add(agreement2)
+    loaded_db.commit()
+
+    # Search by exact nick_name - should find test_project
+    response = auth_client.get(url_for("api.projects-group", agreement_search=["CLAN-2024"]))
+    assert response.status_code == 200
+    project_ids = [p["id"] for p in response.json]
+    assert test_project.id in project_ids
+
+    # Search by exact nick_name - should find test_project
+    response = auth_client.get(url_for("api.projects-group", agreement_search=["SPECIAL-NICKNAME"]))
+    assert response.status_code == 200
+    project_ids = [p["id"] for p in response.json]
+    assert test_project.id in project_ids
+
+    # Search by exact agreement name - should find test_project
+    response = auth_client.get(url_for("api.projects-group", agreement_search=["Complex Long Agreement Name 2024"]))
+    assert response.status_code == 200
+    project_ids = [p["id"] for p in response.json]
+    assert test_project.id in project_ids
+
+    # Search with multiple exact terms - should find test_project if ANY agreement matches ANY term
+    # agreement1.name exactly matches "Complex Long Agreement Name 2024"
+    # agreement2.nick_name exactly matches "SPECIAL-NICKNAME"
+    response = auth_client.get(
+        url_for("api.projects-group", agreement_search=["Complex Long Agreement Name 2024", "SPECIAL-NICKNAME"])
+    )
+    assert response.status_code == 200
+    project_ids = [p["id"] for p in response.json]
+    assert test_project.id in project_ids
+
+
+def test_project_type_filter_all_vs_none(auth_client, loaded_db):
+    """Test that no project_type filter returns same results as all types specified."""
+    # Get all projects without type filter
+    response_no_filter = auth_client.get(url_for("api.projects-group"))
+    assert response_no_filter.status_code == 200
+
+    # Get all projects with both types explicitly specified
+    response_all_types = auth_client.get(
+        url_for(
+            "api.projects-group",
+            project_type=[ProjectType.RESEARCH.name, ProjectType.ADMINISTRATIVE_AND_SUPPORT.name],
+        )
+    )
+    assert response_all_types.status_code == 200
+
+    # Both should return the same number of projects
+    assert len(response_no_filter.json) == len(response_all_types.json)
+
+    # Both should contain the same project IDs (order might differ)
+    ids_no_filter = sorted([p["id"] for p in response_no_filter.json])
+    ids_all_types = sorted([p["id"] for p in response_all_types.json])
+    assert ids_no_filter == ids_all_types
+
+
+def test_project_type_filter_single_type(auth_client, loaded_db):
+    """Test filtering by a single project type."""
+    # Get only research projects
+    response_research = auth_client.get(url_for("api.projects-group", project_type=[ProjectType.RESEARCH.name]))
+    assert response_research.status_code == 200
+    research_projects = [p for p in response_research.json if p["project_type"] == ProjectType.RESEARCH.name]
+    assert len(research_projects) == len(response_research.json), "Should only return research projects"
+
+    # Get only admin/support projects
+    response_admin = auth_client.get(
+        url_for("api.projects-group", project_type=[ProjectType.ADMINISTRATIVE_AND_SUPPORT.name])
+    )
+    assert response_admin.status_code == 200
+    admin_projects = [
+        p for p in response_admin.json if p["project_type"] == ProjectType.ADMINISTRATIVE_AND_SUPPORT.name
+    ]
+    assert len(admin_projects) == len(response_admin.json), "Should only return admin/support projects"
+
+    # Sum of both types should equal total projects
+    response_all = auth_client.get(url_for("api.projects-group"))
+    assert response_all.status_code == 200
+    assert len(response_research.json) + len(response_admin.json) == len(response_all.json)
 
 
 def test_projects_get_by_id_auth(client):

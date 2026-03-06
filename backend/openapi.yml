@@ -2796,43 +2796,73 @@ paths:
       tags:
         - Projects
       operationId: getProjects
-      description: Get Projects with optional filtering by fiscal year, portfolio, or search term
+      description: Get Projects with optional filtering
       parameters:
         - $ref: "#/components/parameters/simulatedError"
         - name: fiscal_year
           in: query
+          description: Filter projects by fiscal year (can specify multiple, OR logic)
           schema:
-            type: integer
-          example: 2023
-          description: Filter projects by fiscal year
+            type: array
+            items:
+              type: integer
+          style: form
+          explode: true
+          example: [2023, 2024]
         - name: portfolio_id
           in: query
+          description: Filter projects by portfolio ID (can specify multiple, OR logic)
           schema:
-            type: integer
-          example: 1
-          description: Filter projects by portfolio ID
-        - name: search
+            type: array
+            items:
+              type: integer
+          style: form
+          explode: true
+          example: [1, 5]
+        - name: project_search
           in: query
+          description: Search project titles (can specify multiple terms, AND logic - all terms must match)
           schema:
-            type: string
-          example: "research"
-          description: Search projects by title
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
+          example: ["research", "child"]
+        - name: agreement_search
+          in: query
+          description: Search agreement names and nicknames associated with projects (can match either name or nickname, )
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
+          example: ["contract", "2023"]
         - name: project_type
           in: query
+          description: Filter projects by type (can specify multiple, OR logic)
           schema:
-            type: string
-            enum: [RESEARCH, ADMINISTRATIVE_AND_SUPPORT]
-          example: RESEARCH
-          description: Filter projects by type
+            type: array
+            items:
+              type: string
+              enum: [RESEARCH, ADMINISTRATIVE_AND_SUPPORT]
+          style: form
+          explode: true
+          example: [RESEARCH]
       responses:
         "200":
-          description: OK
+          description: OK - Returns array of projects matching the filter criteria
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Project"
+                  oneOf:
+                    - $ref: "#/components/schemas/ResearchProject"
+                    - $ref: "#/components/schemas/Project"
+                  discriminator:
+                    propertyName: project_type
         "400":
           description: Bad Request
         "401":
@@ -2930,94 +2960,59 @@ paths:
           description: Unauthorized
         "404":
           description: Not Found
-
-  /research-projects/:
-    get:
+    patch:
       tags:
         - Projects
-      operationId: getResearchProjects
-      description: Get ResearchProjects
+      operationId: updateProject
+      summary: Update an existing Project
+      description: |
+        Update a Project by ID. The project_type field cannot be changed.
+        Only the fields provided in the request body will be updated.
       parameters:
         - $ref: "#/components/parameters/simulatedError"
-        - name: fiscal_year
-          in: query
+        - in: path
+          name: id
+          description: Project ID
+          required: true
           schema:
-            type: string
-          example: "2023"
-        - name: portfolio_id
-          in: query
-          schema:
-            type: string
-          example: "1"
-        - name: search
-          in: query
-          schema:
-            type: string
-          example: father
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResearchProjects"
-              examples:
-                "0":
-                  $ref: "#/components/examples/ResearchProjects"
-        "400":
-          description: Bad Request
-        "401":
-          description: Unauthorized
-    post:
-      tags:
-        - Projects
-      operationId: createResearchProject
-      summary: Create a new Research Project
-      parameters:
-        - $ref: "#/components/parameters/simulatedError"
+            type: integer
+            format: int32
+            minimum: 1
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: "#/components/schemas/ResearchProjectRequest"
-      responses:
-        "201":
-          description: Created
-        "400":
-          description: Bad Request
-        "401":
-          description: Unauthorized
-        "500":
-          description: Internal Server Error
-  /research-projects/{id}:
-    get:
-      tags:
-        - Projects
-      operationId: getResearchProjectById
-      description: Get Research Projects by id
-      parameters:
-        - $ref: "#/components/parameters/simulatedError"
-        - in: path
-          name: id
-          description: Id
-          required: true
-          schema:
-            type: integer
-            format: int32
-            minimum: 1
-            default: 1
+            examples:
+              update_title:
+                summary: Update Project Title
+                value:
+                  title: "Updated Project Title"
+              update_team_leaders:
+                summary: Update Team Leaders
+                value:
+                  team_leaders:
+                    - id: 500
+                    - id: 501
       responses:
         "200":
-          description: OK
+          description: OK - Project updated successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ResearchProject"
+                oneOf:
+                  - $ref: "#/components/schemas/ResearchProject"
+                  - $ref: "#/components/schemas/Project"
         "400":
-          description: Bad Request
+          description: Bad Request - Invalid input or validation error
         "401":
           description: Unauthorized
+        "404":
+          description: Not Found - Project does not exist
+        "500":
+          description: Internal Server Error
+
   /research-project-funding-summary/:
     get:
       tags:

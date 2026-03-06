@@ -64,7 +64,7 @@ class ProjectListAPI(BaseListAPI):
     def get(self) -> Response:
         projects_service = ProjectsService(current_app.db_session)
         request_schema = ProjectListGetRequestSchema()
-        data = request_schema.load(request.args)
+        data = request_schema.load(request.args.to_dict(flat=False))
         research_projects, admin_support_projects = projects_service.get_list(data)
 
         project_response: List[dict] = []

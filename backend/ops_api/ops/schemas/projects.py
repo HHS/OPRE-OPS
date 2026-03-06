@@ -7,12 +7,16 @@ from models import ProjectType
 
 
 class ProjectListGetRequestSchema(Schema):
-    """Schema for validating ProjectListAPI GET request query parameters."""
+    """Schema for validating ProjectListAPI GET request query parameters.
 
-    fiscal_year = fields.Integer(required=False, allow_none=True)
-    portfolio_id = fields.Integer(required=False, allow_none=True)
-    search = fields.String(required=False, allow_none=True)
-    project_type = fields.Enum(ProjectType, required=False, allow_none=True)
+    All filter parameters accept lists to enable filtering by multiple values.
+    """
+
+    fiscal_year = fields.List(fields.Integer(), required=False, load_default=[])
+    portfolio_id = fields.List(fields.Integer(), required=False, load_default=[])
+    project_search = fields.List(fields.String(), required=False, load_default=[])
+    agreement_search = fields.List(fields.String(), required=False, load_default=[])
+    project_type = fields.List(fields.Enum(ProjectType), required=False, load_default=[])
 
 
 class TeamLeaders(Schema):

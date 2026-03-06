@@ -50,27 +50,37 @@ def test_research_projects_with_fiscal_year_not_found(auth_client, loaded_db, ap
 
 
 def test_research_project_search(auth_client, loaded_db):
-    response = auth_client.get(url_for("api.projects-group", search=""))
+    response = auth_client.get(
+        url_for("api.projects-group", project_search=[""], project_type=[ProjectType.RESEARCH.name])
+    )
 
     assert response.status_code == 200
     assert len(response.json) == 0
 
-    response = auth_client.get(url_for("api.projects-group", search="fa"))
+    response = auth_client.get(
+        url_for("api.projects-group", project_search=["fa"], project_type=[ProjectType.RESEARCH.name])
+    )
 
     assert response.status_code == 200
     assert len(response.json) == 4
 
-    response = auth_client.get(url_for("api.projects-group", search="father"))
+    response = auth_client.get(
+        url_for("api.projects-group", project_search=["father"], project_type=[ProjectType.RESEARCH.name])
+    )
 
     assert response.status_code == 200
     assert len(response.json) == 2
 
-    response = auth_client.get(url_for("api.projects-group", search="ExCELS"))
+    response = auth_client.get(
+        url_for("api.projects-group", project_search=["ExCELS"], project_type=[ProjectType.RESEARCH.name])
+    )
 
     assert response.status_code == 200
     assert len(response.json) == 1
 
-    response = auth_client.get(url_for("api.projects-group", search="blah"))
+    response = auth_client.get(
+        url_for("api.projects-group", project_search=["blah"], project_type=[ProjectType.RESEARCH.name])
+    )
 
     assert response.status_code == 200
     assert len(response.json) == 0
