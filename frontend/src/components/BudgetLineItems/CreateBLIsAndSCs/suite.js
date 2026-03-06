@@ -9,7 +9,7 @@ const suite = create((data) => {
     each(data.budgetLines, (item) => {
         test(`Budget line item (${item.id})`, "This is required information", () => {
             enforce(item.date_needed).isNotBlank();
-            enforce(item.can_id).isNotBlank();
+            enforce(item.can_id).isNotNullish().greaterThan(0);
             enforce(item.amount).greaterThan(0);
         });
         test(`Budget line item (${item.id})`, "Need by date must be in the future", () => {
