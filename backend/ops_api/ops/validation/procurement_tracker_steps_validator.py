@@ -76,6 +76,7 @@ class ProcurementTrackerStepsValidator:
         from ops_api.ops.validation.rules.procurement_tracker_step import (
             AcquisitionPlanningRequiredFieldsRule,
             CompletedByUpdateAuthorizationRule,
+            EvaluationCompletionRequiredFieldsRule,
             NoFutureCompletionDateUpdateValidationRule,
             NoPastTargetCompletionDateUpdateRule,
             NoUpdatingCompletedProcurementStepRule,
@@ -113,6 +114,16 @@ class ProcurementTrackerStepsValidator:
                 NoUpdatingCompletedProcurementStepRule(),
                 NoFutureCompletionDateUpdateValidationRule(),
                 SolicitationPeriodDateOrderRule(),
+            ]
+        elif procurement_tracker_step.step_type == ProcurementTrackerStepType.EVALUATION:
+            return [
+                ResourceExistsRule(),
+                UserAssociationRule(),
+                EvaluationCompletionRequiredFieldsRule(),
+                CompletedByUpdateAuthorizationRule(),
+                NoUpdatingCompletedProcurementStepRule(),
+                NoFutureCompletionDateUpdateValidationRule(),
+                NoPastTargetCompletionDateUpdateRule(),
             ]
         else:
             return self._get_default_validators()

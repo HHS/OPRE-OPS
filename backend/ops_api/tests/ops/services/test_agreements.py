@@ -20,7 +20,7 @@ from models import (
     ProcurementAction,
     ProcurementActionStatus,
 )
-from ops_api.ops.services.agreements import AgreementsService
+from ops_api.ops.services.agreements import AgreementsService, _compute_agreement_totals
 from ops_api.ops.services.ops_service import ValidationError
 
 
@@ -1453,3 +1453,106 @@ class TestIsEditable:
         mock_associated.return_value = False
         assert service._is_editable(agreement1, regular_user) is False
         mock_associated.assert_called_with(agreement1.id)
+
+
+def _make_mock_agreement(agreement_type, total, award_type=None):
+    """Helper to create a mock agreement for _compute_agreement_totals tests."""
+    ag = MagicMock()
+    ag.agreement_type = agreement_type
+    ag.agreement_total = total
+    ag.award_type = award_type
+    return ag
+
+
+class TestComputeAgreementTotals:
+    def test_empty_list(self):
+        result = _compute_agreement_totals([])
+        assert result["total_agreements_count"] == 0
+        assert result["total_contract_amount"] == 0.0
+        assert result["total_partner_amount"] == 0.0
+        assert result["total_grant_amount"] == 0.0
+        assert result["total_direct_obligation_amount"] == 0.0
+        assert result["type_counts"] == {}
+        assert result["new_count"] == 0
+        assert result["new_type_counts"] == {}
+        assert result["continuing_count"] == 0
+        assert result["continuing_type_counts"] == {}
+
+    def test_single_contract(self):
+        agreements = [_make_mock_agreement(AgreementType.CONTRACT, 100)]
+        result = _compute_agreement_totals(agreements)
+        assert result["total_agreements_count"] == 1
+        assert result["total_contract_amount"] == 100.0
+        assert result["type_counts"] == {"CONTRACT": 1}
+
+    def test_amounts_accumulated_by_type(self):
+        agreements = [
+            _make_mock_agreement(AgreementType.CONTRACT, 100),
+            _make_mock_agreement(AgreementType.CONTRACT, 200),
+            _make_mock_agreement(AgreementType.GRANT, 50),
+            _make_mock_agreement(AgreementType.DIRECT_OBLIGATION, 75),
+        ]
+        result = _compute_agreement_totals(agreements)
+        assert result["total_agreements_count"] == 4
+        assert result["total_contract_amount"] == 300.0
+        assert result["total_grant_amount"] == 50.0
+        assert result["total_direct_obligation_amount"] == 75.0
+        assert result["total_partner_amount"] == 0.0
+
+    def test_partner_types_grouped(self):
+        agreements = [
+            _make_mock_agreement(AgreementType.AA, 100),
+            _make_mock_agreement(AgreementType.IAA, 200),
+        ]
+        result = _compute_agreement_totals(agreements)
+        assert result["total_partner_amount"] == 300.0
+        assert result["type_counts"] == {"AA": 1, "IAA": 1}
+
+    def test_type_counts(self):
+        agreements = [
+            _make_mock_agreement(AgreementType.CONTRACT, 10),
+            _make_mock_agreement(AgreementType.CONTRACT, 20),
+            _make_mock_agreement(AgreementType.GRANT, 30),
+        ]
+        result = _compute_agreement_totals(agreements)
+        assert result["type_counts"] == {"CONTRACT": 2, "GRANT": 1}
+
+    def test_new_award_tracking(self):
+        agreements = [
+            _make_mock_agreement(AgreementType.CONTRACT, 100, award_type="NEW"),
+            _make_mock_agreement(AgreementType.GRANT, 50, award_type="NEW"),
+            _make_mock_agreement(AgreementType.CONTRACT, 200),
+        ]
+        result = _compute_agreement_totals(agreements)
+        assert result["new_count"] == 2
+        assert result["new_type_counts"] == {"CONTRACT": 1, "GRANT": 1}
+
+    def test_continuing_award_tracking(self):
+        agreements = [
+            _make_mock_agreement(AgreementType.CONTRACT, 100, award_type="CONTINUING"),
+            _make_mock_agreement(AgreementType.AA, 50, award_type="CONTINUING"),
+        ]
+        result = _compute_agreement_totals(agreements)
+        assert result["continuing_count"] == 2
+        assert result["continuing_type_counts"] == {"CONTRACT": 1, "AA": 1}
+
+    def test_mixed_award_types(self):
+        agreements = [
+            _make_mock_agreement(AgreementType.CONTRACT, 100, award_type="NEW"),
+            _make_mock_agreement(AgreementType.GRANT, 200, award_type="CONTINUING"),
+            _make_mock_agreement(AgreementType.IAA, 300, award_type=None),
+        ]
+        result = _compute_agreement_totals(agreements)
+        assert result["total_agreements_count"] == 3
+        assert result["new_count"] == 1
+        assert result["new_type_counts"] == {"CONTRACT": 1}
+        assert result["continuing_count"] == 1
+        assert result["continuing_type_counts"] == {"GRANT": 1}
+
+    def test_decimal_amounts_converted_to_float(self):
+        from decimal import Decimal
+
+        agreements = [_make_mock_agreement(AgreementType.CONTRACT, Decimal("123.45"))]
+        result = _compute_agreement_totals(agreements)
+        assert result["total_contract_amount"] == 123.45
+        assert isinstance(result["total_contract_amount"], float)
