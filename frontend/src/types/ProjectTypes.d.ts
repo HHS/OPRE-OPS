@@ -1,4 +1,4 @@
-import { SafeUser } from "../Users/UserTypes";
+import { SafeUser } from "./UserTypes";
 
 export type ResearchProject = {
     id: number;
@@ -20,9 +20,12 @@ export type ResearchProject = {
 
 export type Project = {
     id: number;
-    project_type: string;
+    project_type: "RESEARCH" | "ADMINISTRATIVE_AND_SUPPORT";
     title: string;
     short_title: string;
     description: string;
-    url?: string;
+    url: string;
+    origination_date?: string;
+    created_on?: string;
+    updated_on?: string;
 };

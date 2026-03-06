@@ -23,6 +23,7 @@ import PortfolioDetail from "./pages/portfolios/detail/PortfolioDetail";
 import PortfolioFunding from "./components/Portfolios/PortfolioFunding";
 import PortfolioSpending from "./components/Portfolios/PortfolioSpending";
 import PortfolioList from "./pages/portfolios/list/PortfolioList";
+import ProjectsList from "./pages/projects/list/ProjectsList";
 import ResearchProjectDetail from "./pages/researchProjects/detail/ResearchProjectDetail";
 import ReleaseNotes from "./pages/home/release-notes";
 import UserAdmin from "./pages/users/admin/UserAdmin.jsx";
@@ -33,6 +34,7 @@ import EditUser from "./pages/users/edit/EditUser";
 import VersionPage from "./pages/version/VersionPage";
 import WhatsNext from "./pages/home/whats-next";
 import ProcurementMocksDebug from "./pages/dev/ProcurementMocksDebug";
+import { IS_PROJECTS_LIST_READY } from "./constants";
 
 // NOTE: store muse be imported after react-router-dom to avoid access lexical declaration 'opsApi' before initialization
 
@@ -194,6 +196,12 @@ const router = createBrowserRouter(
                     path="/budget-lines"
                     element={<BudgetLineItemList />}
                 />
+                {IS_PROJECTS_LIST_READY && (
+                    <Route
+                        path="/projects"
+                        element={<ProjectsList />}
+                    />
+                )}
                 <Route
                     path="/projects/create"
                     element={<CreateProject />}
