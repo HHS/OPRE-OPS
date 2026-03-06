@@ -50,6 +50,8 @@ const ProjectDetailsView = ({ project }) => {
             : convertCodeForDisplay("project", project.project_type);
 
     const teamLeaderNames = project.team_leaders?.map((tl) => tl.full_name) ?? [];
+    const methodologies = project.methodologies ?? [];
+    const populations = project.populations ?? [];
 
     return (
         <section>
@@ -98,18 +100,16 @@ const ProjectDetailsView = ({ project }) => {
 
                         <dt className="margin-0 text-base-dark margin-top-3">Methodologies</dt>
                         <dd className="margin-0 margin-top-1">
-                            <Tag
-                                tagStyle="primaryDarkTextLightBackground"
-                                text={NO_DATA}
+                            <TagList
+                                items={methodologies}
                                 dataCy="project-methodologies-tag"
                             />
                         </dd>
 
                         <dt className="margin-0 text-base-dark margin-top-3">Special Topic/Population Studied</dt>
                         <dd className="margin-0 margin-top-1">
-                            <Tag
-                                tagStyle="primaryDarkTextLightBackground"
-                                text={NO_DATA}
+                            <TagList
+                                items={populations}
                                 dataCy="project-populations-tag"
                             />
                         </dd>
