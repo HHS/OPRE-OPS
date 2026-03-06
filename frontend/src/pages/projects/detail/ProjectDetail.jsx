@@ -3,10 +3,12 @@ import { useNavigate, useParams } from "react-router-dom";
 import App from "../../../App";
 import { useGetProjectByIdQuery } from "../../../api/opsAPI";
 import DebugCode from "../../../components/DebugCode";
+import ProjectDetailTabs from "./ProjectDetailTabs";
+import ProjectDetailsView from "./ProjectDetailsView";
 
 /**
  * Minimalistic project detail page.
- * Displays the raw project data from the API while the full UI is being built out.
+ * Displays project metadata and raw API response while the full UI is being built out.
  * @returns {React.ReactElement | null}
  */
 const ProjectDetail = () => {
@@ -57,6 +59,10 @@ const ProjectDetail = () => {
         <App breadCrumbName={project?.title}>
             <h1 className="font-sans-2xl margin-0 text-brand-primary">{project?.title}</h1>
             <h2 className="font-sans-3xs text-normal margin-top-1 margin-bottom-2">{project?.short_title}</h2>
+            <div className="display-flex flex-justify margin-top-3">
+                <ProjectDetailTabs projectId={projectId} />
+            </div>
+            <ProjectDetailsView project={project} />
             <DebugCode data={project} />
         </App>
     );

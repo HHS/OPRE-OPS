@@ -29,6 +29,16 @@ vi.mock("../../../App", () => ({
     default: ({ children }) => <div data-testid="app-wrapper">{children}</div>
 }));
 
+const mockProject = {
+    id: 1000,
+    title: "Human Services Interoperability Support",
+    short_title: "HSS",
+    description: "This contract will conduct interoperability activities.",
+    project_type: "RESEARCH",
+    origination_date: "2021-01-01",
+    team_leaders: [{ id: 500, full_name: "Chris Fortunato", email: "chris.fortunato@example.com" }]
+};
+
 describe("ProjectDetail", () => {
     let mockStore;
 
@@ -53,7 +63,7 @@ describe("ProjectDetail", () => {
         });
     });
 
-    const renderComponent = (id = "10") =>
+    const renderComponent = (id = "1000") =>
         render(
             <Provider store={mockStore}>
                 <MemoryRouter initialEntries={[`/projects/${id}`]}>
@@ -79,24 +89,34 @@ describe("ProjectDetail", () => {
         expect(screen.getByText("Loading...")).toBeInTheDocument();
     });
 
-    it("renders the project title and debug data on success", () => {
+    it("renders the project title, tabs, and details view on success", () => {
         mockUseGetProjectByIdQuery.mockReturnValue({
-            data: {
-                id: 10,
-                title: "Child Welfare Research Project",
-                short_title: "CWRP",
-                description: "A project focused on child welfare outcomes.",
-                project_type: "RESEARCH",
-                origination_date: "2020-06-15"
-            },
+            data: mockProject,
             isLoading: false,
             error: undefined
         });
 
         renderComponent();
 
-        expect(screen.getByText("Child Welfare Research Project")).toBeInTheDocument();
-        expect(screen.getByText("CWRP")).toBeInTheDocument();
+        // Header
+        expect(screen.getByText("Human Services Interoperability Support")).toBeInTheDocument();
+        // "HSS" appears in both the subtitle h2 and the Project Nickname tag
+        expect(screen.getAllByText("HSS")).toHaveLength(2);
+
+        // Tabs
+        expect(screen.getByRole("button", { name: "Project Details" })).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "Project Spending" })).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "Project Funding" })).toBeInTheDocument();
+
+        // Details section heading
+        expect(screen.getByText("Project Details", { selector: "h2" })).toBeInTheDocument();
+
+        // Description
+        expect(screen.getByText("This contract will conduct interoperability activities.")).toBeInTheDocument();
+
+        // Right column tags
+        expect(screen.getByText("Research Project")).toBeInTheDocument();
+        expect(screen.getByText("Chris Fortunato")).toBeInTheDocument();
     });
 
     it("renders a not-found message on a 404 error", () => {

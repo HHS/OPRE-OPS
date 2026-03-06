@@ -20,9 +20,17 @@ export type ResearchProject = {
 
 export type Project = {
     id: number;
-    project_type: string;
+    project_type: "RESEARCH" | "ADMINISTRATIVE_AND_SUPPORT";
     title: string;
     short_title: string;
     description: string;
     url?: string;
+    origination_date?: string;
+    team_leaders?: SafeUser[];
+    methodologies?: string[];
+    populations?: string[];
+    created_on?: string;
+    updated_on?: string;
+    created_by?: any;
+    updated_by?: any;
 };
