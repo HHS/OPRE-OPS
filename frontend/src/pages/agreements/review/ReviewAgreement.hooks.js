@@ -151,7 +151,6 @@ const useReviewAgreement = (agreementId) => {
         }
         return () => {
             agreementSuite.reset();
-            setSuiteResult(null);
         };
     }, [isSuccess, agreement]);
 

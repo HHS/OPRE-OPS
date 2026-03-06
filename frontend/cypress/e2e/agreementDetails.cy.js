@@ -160,9 +160,9 @@ describe("agreement details", () => {
             .next("[data-testid='expanded-data']")
             .find("[data-cy='edit-row']")
             .should("be.disabled")
-            .and("have.attr", "aria-describedby")
+            .invoke("attr", "aria-describedby")
             .then((descId) => {
-                cy.get(`#${descId}`, { timeout: 10000 })
+                cy.get(`#${descId.split(" ")[0]}`, { timeout: 10000 })
                     .should("contain", "Executing Status")
                     .and("contain", "budget team");
             });
