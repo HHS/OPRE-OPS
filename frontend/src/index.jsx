@@ -207,7 +207,7 @@ const router = createBrowserRouter(
                         handle={{
                             crumb: () => (
                                 <Link
-                                    to="/projects"
+                                    to="/"
                                     className="text-primary"
                                 >
                                     Projects

@@ -44,10 +44,7 @@ const ProjectDetailsView = ({ project }) => {
         return <p>No project data.</p>;
     }
 
-    const projectTypeLabel =
-        project.project_type === "RESEARCH"
-            ? "Research Project"
-            : convertCodeForDisplay("project", project.project_type);
+    const projectTypeLabel = convertCodeForDisplay("project", project.project_type);
 
     const teamLeaderNames = project.team_leaders?.map((tl) => tl.full_name) ?? [];
     const methodologies = project.methodologies ?? [];
@@ -123,11 +120,11 @@ const ProjectDetailsView = ({ project }) => {
                             />
                         </dd>
 
-                        <dt className="margin-0 text-base-dark margin-top-3">Team Members</dt>
+                        <dt className="margin-0 text-base-dark margin-top-3">Team Leaders</dt>
                         <dd className="margin-0 margin-top-1">
                             <TagList
                                 items={teamLeaderNames}
-                                dataCy="project-team-members-tag"
+                                dataCy="project-team-leaders-tag"
                             />
                         </dd>
                     </dl>

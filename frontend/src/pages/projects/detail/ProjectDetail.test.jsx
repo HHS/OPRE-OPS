@@ -118,7 +118,7 @@ describe("ProjectDetail", () => {
         expect(screen.getByText("This contract will conduct interoperability activities.")).toBeInTheDocument();
 
         // Right column tags — each team member gets their own tag
-        expect(screen.getByText("Research Project")).toBeInTheDocument();
+        expect(screen.getByText("Research")).toBeInTheDocument();
         expect(screen.getByText("Chris Fortunato")).toBeInTheDocument();
         expect(screen.getByText("Jane Smith")).toBeInTheDocument();
     });
@@ -149,5 +149,49 @@ describe("ProjectDetail", () => {
         await waitFor(() => {
             expect(mockNavigate).toHaveBeenCalledWith("/error");
         });
+    });
+
+    it("skips the query and renders nothing when no id param is present", () => {
+        mockUseGetProjectByIdQuery.mockReturnValue({
+            data: undefined,
+            isLoading: false,
+            error: undefined
+        });
+
+        // Render outside a :id route so useParams returns no id
+        render(
+            <Provider store={mockStore}>
+                <MemoryRouter initialEntries={["/projects"]}>
+                    <Routes>
+                        <Route
+                            path="/projects"
+                            element={<ProjectDetail />}
+                        />
+                    </Routes>
+                </MemoryRouter>
+            </Provider>
+        );
+
+        // Query is skipped (projectId === -1), nothing errored, nothing loaded
+        expect(mockNavigate).not.toHaveBeenCalled();
+    });
+
+    it("fires navigate when a tab is clicked", async () => {
+        const { userEvent } = await import("@testing-library/user-event");
+        const user = userEvent.setup();
+
+        mockUseGetProjectByIdQuery.mockReturnValue({
+            data: mockProject,
+            isLoading: false,
+            error: undefined
+        });
+
+        renderComponent("1000");
+
+        // Project Details tab is already selected; click Project Spending (disabled) — skip.
+        // Click the enabled Project Details tab to fire the onClick.
+        await user.click(screen.getByRole("button", { name: "Project Details" }));
+
+        expect(mockNavigate).toHaveBeenCalledWith("/projects/1000");
     });
 });
