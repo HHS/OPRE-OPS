@@ -119,7 +119,8 @@ vi.mock("./suite", () => {
     const suite = vi.fn();
     suite.get = vi.fn(() => ({
         getErrors: () => ({}),
-        hasErrors: () => false
+        hasErrors: () => false,
+        isValid: () => true
     }));
     suite.run = vi.fn(() => ({
         getErrors: () => ({}),
