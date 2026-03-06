@@ -19,7 +19,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
  * @property {boolean} isActiveStep - Whether step is the active step
  * @property {Function} handleSetCompletedStepNumber - Function to set the completed step number
  * @property {SafeUser[]} authorizedUsers - List of users authorized for this agreement
- * @property {boolean} isEditable - Whether the current user can edit the agreement
+ * @property {boolean} [isDisabled] - Whether step controls should be disabled (NEW - preferred)
+ * @property {boolean} [isEditable] - DEPRECATED: Use isDisabled instead
  */
 
 /**
@@ -33,8 +34,11 @@ const ProcurementTrackerStepOne = ({
     isActiveStep,
     handleSetCompletedStepNumber,
     authorizedUsers,
-    isEditable = true
+    isEditable = true, // Keep for backward compat
+    isDisabled // Add new prop
 }) => {
+    // Determine which prop to use (new takes precedence)
+    const disabled = isDisabled !== undefined ? isDisabled : !isEditable;
     const {
         isPreSolicitationPackageSent,
         setIsPreSolicitationPackageSent,
@@ -56,7 +60,7 @@ const ProcurementTrackerStepOne = ({
         step1NotesLabel,
         runValidate,
         validatorRes
-    } = useProcurementTrackerStepOne(stepOneData, handleSetCompletedStepNumber, isEditable);
+    } = useProcurementTrackerStepOne(stepOneData, handleSetCompletedStepNumber, !disabled);
 
     return (
         <>
@@ -84,7 +88,7 @@ const ProcurementTrackerStepOne = ({
                             value="step-1-checkbox"
                             checked={isPreSolicitationPackageSent}
                             onChange={() => setIsPreSolicitationPackageSent(!isPreSolicitationPackageSent)}
-                            disabled={!isEditable || !isActiveStep}
+                            disabled={disabled || !isActiveStep}
                         />
                         <label
                             className="usa-checkbox__label"
@@ -100,7 +104,7 @@ const ProcurementTrackerStepOne = ({
                             selectedUser={selectedUser}
                             setSelectedUser={setSelectedUser}
                             messages={validatorRes.getErrors("users") || []}
-                            isDisabled={!isEditable || !isPreSolicitationPackageSent || authorizedUsers.length === 0}
+                            isDisabled={disabled || !isPreSolicitationPackageSent || authorizedUsers.length === 0}
                             onChange={(name, value) => {
                                 runValidate(name, value);
                             }}
@@ -118,7 +122,7 @@ const ProcurementTrackerStepOne = ({
                                 runValidate("dateCompleted", e.target.value);
                                 setStep1DateCompleted(e.target.value);
                             }}
-                            isDisabled={!isEditable || !isPreSolicitationPackageSent}
+                            isDisabled={disabled || !isPreSolicitationPackageSent}
                             maxDate={getLocalISODate()}
                         />
                     </div>
@@ -129,14 +133,14 @@ const ProcurementTrackerStepOne = ({
                         maxLength={750}
                         value={step1Notes}
                         onChange={(_, value) => setStep1Notes(value)}
-                        isDisabled={!isEditable || !isPreSolicitationPackageSent}
+                        isDisabled={disabled || !isPreSolicitationPackageSent}
                     />
                     <div className="margin-top-2 display-flex flex-justify-end">
                         <button
                             className="usa-button usa-button--unstyled margin-right-2"
                             data-cy="cancel-button"
                             onClick={cancelModalStep1}
-                            disabled={!isEditable || !isPreSolicitationPackageSent}
+                            disabled={disabled || !isPreSolicitationPackageSent}
                         >
                             Cancel
                         </button>
