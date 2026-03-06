@@ -36,7 +36,10 @@ const mockProject = {
     description: "This contract will conduct interoperability activities.",
     project_type: "RESEARCH",
     origination_date: "2021-01-01",
-    team_leaders: [{ id: 500, full_name: "Chris Fortunato", email: "chris.fortunato@example.com" }]
+    team_leaders: [
+        { id: 500, full_name: "Chris Fortunato", email: "chris.fortunato@example.com" },
+        { id: 501, full_name: "Jane Smith", email: "jane.smith@example.com" }
+    ]
 };
 
 describe("ProjectDetail", () => {
@@ -114,9 +117,10 @@ describe("ProjectDetail", () => {
         // Description
         expect(screen.getByText("This contract will conduct interoperability activities.")).toBeInTheDocument();
 
-        // Right column tags
+        // Right column tags — each team member gets their own tag
         expect(screen.getByText("Research Project")).toBeInTheDocument();
         expect(screen.getByText("Chris Fortunato")).toBeInTheDocument();
+        expect(screen.getByText("Jane Smith")).toBeInTheDocument();
     });
 
     it("renders a not-found message on a 404 error", () => {
