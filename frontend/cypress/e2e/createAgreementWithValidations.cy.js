@@ -445,14 +445,16 @@ describe("create agreement and test validations", () => {
 
                     cy.contains("Loading...").should("not.exist");
                     cy.get("#can-combobox-input").should("not.be.disabled");
-                    cy.get("#can-combobox-input").type("G99HRF2{enter}");
+                    cy.get("#can-combobox-input").clear().type("G994426{enter}");
+                    cy.get(".can-combobox__single-value").should("contain", "G994426");
                     selectFirstRealOption("#allServicesComponentSelect");
-                    cy.get("#need-by-date").type("09/01/2048");
-                    cy.get("#enteredAmount").type("111111");
-                    cy.get("#enteredDescription").type("test line description");
+                    cy.get("#need-by-date").clear().type("09/01/2048");
+                    cy.get("#enteredAmount").clear().type("111111");
+                    cy.get("#enteredDescription").clear().type("test line description");
                     cy.get('[data-cy="update-budget-line"]').should("not.be.disabled").click();
                     cy.get(".usa-alert__text").should("contain", "was updated");
                     cy.get("#budget-line-form").find(".usa-form-group--error").should("not.exist");
+                    cy.get("#budget-line-form").should("not.contain", "Update Budget Line");
 
                     cy.get('[data-cy="continue-btn"]').should("not.be.disabled").click();
 
