@@ -24,16 +24,27 @@ const ProjectDetail = () => {
         skip: !projectId || projectId === -1
     });
 
+    const is404 = error?.status === 404;
+
     useEffect(() => {
-        if (error) {
+        if (error && !is404) {
             navigate("/error");
         }
-    }, [error, navigate]);
+    }, [error, is404, navigate]);
 
     if (isLoading) {
         return (
             <App>
                 <h1>Loading...</h1>
+            </App>
+        );
+    }
+
+    if (is404) {
+        return (
+            <App breadCrumbName="Not Found">
+                <h1 className="font-sans-2xl margin-0 text-brand-primary">Project Not Found</h1>
+                <p className="margin-top-2">No project exists with ID {projectId}.</p>
             </App>
         );
     }

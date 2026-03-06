@@ -99,11 +99,25 @@ describe("ProjectDetail", () => {
         expect(screen.getByText("CWRP")).toBeInTheDocument();
     });
 
-    it("navigates to the error page when the query fails", async () => {
+    it("renders a not-found message on a 404 error", () => {
         mockUseGetProjectByIdQuery.mockReturnValue({
             data: undefined,
             isLoading: false,
             error: { status: 404, data: "Not Found" }
+        });
+
+        renderComponent("9999");
+
+        expect(screen.getByText("Project Not Found")).toBeInTheDocument();
+        expect(screen.getByText(/No project exists with ID 9999/)).toBeInTheDocument();
+        expect(mockNavigate).not.toHaveBeenCalled();
+    });
+
+    it("navigates to the error page on a non-404 server error", async () => {
+        mockUseGetProjectByIdQuery.mockReturnValue({
+            data: undefined,
+            isLoading: false,
+            error: { status: 500, data: "Internal Server Error" }
         });
 
         renderComponent();
