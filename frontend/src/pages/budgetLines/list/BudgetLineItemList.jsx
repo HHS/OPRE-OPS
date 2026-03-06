@@ -49,10 +49,11 @@ const BudgetLineItemList = () => {
         } else if ((filters.fiscalYears ?? []).length === 1) {
             setIsFiscalYearShortcutActive(false);
             setFiscalYearShortcut(filters.fiscalYears[0].id);
-        } else if ((filters.fiscalYears ?? []).length === 0 && !isFiscalYearShortcutActive) {
+        } else if ((filters.fiscalYears ?? []).length === 0 && !isFiscalYearShortcutActive && fiscalYearShortcut !== "All") {
+            // Reset to current fiscal year, but preserve "All" state
             setFiscalYearShortcut(getCurrentFiscalYear());
-        } else if (fiscalYearShortcut === "Multi" || fiscalYearShortcut === "All") {
-            // Reset to current fiscal year when filters are cleared
+        } else if (fiscalYearShortcut === "Multi" && !isFiscalYearShortcutActive) {
+            // Reset "Multi" to current fiscal year when filters are cleared (but preserve "All")
             setFiscalYearShortcut(getCurrentFiscalYear());
         }
     }, [filters.fiscalYears, fiscalYearShortcut, isFiscalYearShortcutActive]);
@@ -70,10 +71,10 @@ const BudgetLineItemList = () => {
         }
     }, [filters.fiscalYears]);
 
-    // Handle fiscal year change - clear filters if changing from "Multi" to a specific year
+    // Handle fiscal year change - clear filters when changing fiscal year selection
     const handleChangeFiscalYear = (newValue) => {
         setFilters({
-            fiscalYears: newValue === "All" ? null : [],
+            fiscalYears: [],
             portfolios: [],
             bliStatus: [],
             budgetRange: null,
@@ -93,6 +94,11 @@ const BudgetLineItemList = () => {
         } else if (filters.fiscalYears === undefined) {
             return [{ id: currentFiscalYear, title: currentFiscalYear }];
         } else if ((filters.fiscalYears ?? []).length === 0) {
+            // If page dropdown is set to "All", fetch all fiscal years (no filter)
+            // Check both active shortcut and current shortcut value to preserve "All" state
+            if (fiscalYearShortcut === "All") {
+                return null;
+            }
             const fallbackFiscalYear = isFiscalYearShortcutActive ? fiscalYearShortcut : currentFiscalYear;
             return [{ id: Number(fallbackFiscalYear), title: Number(fallbackFiscalYear) }];
         }
