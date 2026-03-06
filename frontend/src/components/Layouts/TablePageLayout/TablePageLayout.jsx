@@ -58,11 +58,11 @@ export const TablePageLayout = ({
                 {TabsSection}
                 {FYSelect && FYSelect}
             </div>
-                <div className="display-flex flex-justify flex-align-center padding-y-1">
-                    <h2 className="margin-0">{subtitle}</h2>
-                    {FilterButton}
-                </div>
-                <p>{details}</p>
+            <div className="display-flex flex-justify flex-align-center padding-y-1">
+                <h2 className="margin-0">{subtitle}</h2>
+                {FilterButton}
+            </div>
+            <p>{details}</p>
             {FilterTags}
             {SummaryCardsSection && <div className="margin-top-1">{SummaryCardsSection}</div>}
             <div className="margin-top-4">{TableSection}</div>
