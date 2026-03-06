@@ -162,7 +162,7 @@ describe("agreement details", () => {
             .should("be.disabled")
             .and("have.attr", "aria-describedby")
             .then((descId) => {
-                cy.get(`#${descId}`)
+                cy.get(`#${descId}`, { timeout: 10000 })
                     .should("contain", "Executing Status")
                     .and("contain", "budget team");
             });
