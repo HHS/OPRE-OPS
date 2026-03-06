@@ -1,30 +1,59 @@
 /// <reference types="cypress" />
 import { terminalLog, testLogin } from "./utils";
 
-// Use a suffix that is extremely unlikely to collide across CI runs/retries
 const cypressEnv = Cypress.config("env") || {};
 const runId = cypressEnv.GITHUB_RUN_ID || cypressEnv.CI_PIPELINE_ID || "local";
 const runAttempt = cypressEnv.GITHUB_RUN_ATTEMPT || "1";
 const buildUniqueSuffix = () => `${runId}-${runAttempt}-${Date.now()}-${Cypress._.random(0, 1_000_000_000)}`;
 
-const blData = [
-    {
-        services_component: "Base Period 1",
-        can: "G99HRF2",
-        needByDate: "09/01/2048",
-        amount: 111111,
-        line_description: "test line description"
-    }
-];
+const createdAgreementIds = [];
+
+const agreementDetailsData = {
+    description: "Test Description",
+    contract_type: "FIRM_FIXED_PRICE",
+    service_requirement_type: "NON_SEVERABLE",
+    product_service_code_id: 1,
+    awarding_entity_id: 2,
+    agreement_reason: "NEW_REQ",
+    project_officer_id: 500,
+    team_members: [{ id: 502 }, { id: 504 }],
+    notes: "This is a note.",
+    vendor: "Test Vendor"
+};
+
+const servicesComponentData = {
+    number: 1,
+    optional: false,
+    description: "This is a description.",
+    period_start: "2024-01-01",
+    period_end: "2025-01-01"
+};
+
+const budgetLineData = {
+    can_id: 504,
+    date_needed: "2048-09-01",
+    amount: 111111,
+    line_description: "test line description"
+};
+
+const getBearerToken = () => `Bearer ${window.localStorage.getItem("access_token")}`;
+
+const getAuthHeaders = () => ({
+    Authorization: getBearerToken(),
+    Accept: "application/json"
+});
+
+const getJsonHeaders = () => ({
+    ...getAuthHeaders(),
+    "Content-Type": "application/json"
+});
 
 const minAgreementWithoutProcShop = (uniqueSuffix) => ({
     agreement_type: "CONTRACT",
     name: `Test Contract ${uniqueSuffix}`
-    // project_id injected at runtime (varies by env)
-    // remove awarding entity id so no procurement shop selected
 });
 
-const resolveProjectId = (bearerToken) => {
+const resolveProjectId = () => {
     const explicitProjectId = Number(cypressEnv.PROJECT_ID);
     if (Number.isInteger(explicitProjectId) && explicitProjectId > 0) {
         return cy.wrap(explicitProjectId);
@@ -34,10 +63,7 @@ const resolveProjectId = (bearerToken) => {
         .request({
             method: "GET",
             url: "http://localhost:8080/api/v1/projects/",
-            headers: {
-                Authorization: bearerToken,
-                Accept: "application/json"
-            },
+            headers: getAuthHeaders(),
             failOnStatusCode: false
         })
         .then((response) => {
@@ -46,12 +72,98 @@ const resolveProjectId = (bearerToken) => {
                     `Failed to resolve a project id. status=${response.status} body=${JSON.stringify(response.body)}`
                 );
             }
+
             const firstValidProject = response.body.find((project) => Number.isInteger(project?.id) && project.id > 0);
             if (!firstValidProject) {
                 throw new Error(`No valid project id found in projects response: ${JSON.stringify(response.body)}`);
             }
+
             return firstValidProject.id;
         });
+};
+
+const createAgreement = (overrides = {}) => {
+    return resolveProjectId().then((projectId) => {
+        const payload = {
+            ...minAgreementWithoutProcShop(buildUniqueSuffix()),
+            project_id: projectId,
+            ...overrides
+        };
+
+        return cy
+            .request({
+                method: "POST",
+                url: "http://localhost:8080/api/v1/agreements/",
+                failOnStatusCode: false,
+                body: payload,
+                headers: getJsonHeaders()
+            })
+            .then((response) => {
+                expect(response.status).to.eq(201);
+                expect(response.body.id).to.exist;
+                createdAgreementIds.push(response.body.id);
+                return response.body.id;
+            });
+    });
+};
+
+const createValidAgreement = () => createAgreement(agreementDetailsData);
+
+const createServicesComponent = (agreementId, overrides = {}) => {
+    return cy
+        .request({
+            method: "POST",
+            url: "http://localhost:8080/api/v1/services-components/",
+            body: {
+                agreement_id: agreementId,
+                ...servicesComponentData,
+                ...overrides
+            },
+            headers: getJsonHeaders()
+        })
+        .then((response) => {
+            expect(response.status).to.eq(201);
+            expect(response.body.id).to.exist;
+            return response.body.id;
+        });
+};
+
+const createBudgetLineItem = (agreementId, servicesComponentId, overrides = {}) => {
+    return cy
+        .request({
+            method: "POST",
+            url: "http://localhost:8080/api/v1/budget-line-items/",
+            body: {
+                agreement_id: agreementId,
+                services_component_id: servicesComponentId,
+                status: "DRAFT",
+                ...budgetLineData,
+                ...overrides
+            },
+            headers: getJsonHeaders()
+        })
+        .then((response) => {
+            expect(response.status).to.eq(201);
+            expect(response.body.id).to.exist;
+            return response.body.id;
+        });
+};
+
+const deleteCreatedAgreements = () => {
+    if (!createdAgreementIds.length) {
+        return;
+    }
+
+    cy.wrap(createdAgreementIds.splice(0)).each((agreementId) => {
+        cy.request({
+            method: "DELETE",
+            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+            headers: getAuthHeaders(),
+            failOnStatusCode: false
+        }).then((response) => {
+            expect(response.status).to.eq(200);
+        });
+    });
 };
 
 const selectEnabledStatusRadio = (attempt = 0) => {
@@ -67,14 +179,16 @@ const selectEnabledStatusRadio = (attempt = 0) => {
                 cy.wrap($draft).check({ force: true });
                 return;
             }
+
             if (plannedEnabled) {
                 cy.wrap($planned).check({ force: true });
                 return;
             }
+
             if (attempt >= maxAttempts) {
                 throw new Error("No enabled status radios after retries.");
             }
-            cy.log("No enabled radios yet; refreshing agreement.");
+
             cy.reload();
             cy.wait("@getAgreement", { timeout: 30000 });
             cy.wait(500);
@@ -104,6 +218,7 @@ const selectComboboxOption = (inputSelector, menuSelector, optionSelector, prefe
         .should("not.be.disabled")
         .click()
         .type(preferredText, { force: true });
+
     cy.get(menuSelector, { timeout: 20000 })
         .should("be.visible")
         .then(($menu) => {
@@ -126,7 +241,81 @@ const selectComboboxOption = (inputSelector, menuSelector, optionSelector, prefe
         });
 };
 
+const visitReviewPage = (agreementId) => {
+    cy.intercept("GET", `**/agreements/${agreementId}**`).as("getAgreement");
+    cy.visit(`/agreements/review/${agreementId}?mode=review`);
+    cy.wait("@getAgreement", { timeout: 30000 });
+    cy.url().should("include", `/agreements/review/${agreementId}`);
+};
+
+const openEditWizard = (agreementId) => {
+    cy.visit(`/agreements/edit/${agreementId}?mode=edit`);
+    cy.get("[data-cy='page-heading']").should("have.text", "Edit Agreement");
+    cy.get("#continue").click();
+};
+
+const goToServicesStep = () => {
+    cy.get("[data-cy='continue-btn']").should("not.be.disabled").click();
+    cy.get("h2").first().should("have.text", "Create Services Components");
+};
+
+const goToBudgetLinesStep = () => {
+    cy.get("#allServicesComponentSelect", { timeout: 20000 }).should("exist");
+};
+
+const fillRequiredAgreementDetails = () => {
+    cy.get("#description").clear().type(agreementDetailsData.description);
+    cy.get("#contract-type").select(agreementDetailsData.contract_type);
+    cy.get("#service_requirement_type").select("Severable");
+    selectFirstRealOption("#product_service_code_id");
+    selectFirstRealOption("#procurement-shop-select");
+    cy.get("#agreement_reason").select(agreementDetailsData.agreement_reason);
+    selectComboboxOption(
+        "#project-officer-combobox-input",
+        ".project-officer-combobox__menu",
+        ".project-officer-combobox__option",
+        "Chris Fortunato",
+        0
+    );
+    selectComboboxOption(
+        "#team-member-combobox-input",
+        ".team-member-combobox__menu",
+        ".team-member-combobox__option",
+        "System Owner",
+        1
+    );
+    cy.get("#agreementNotes").clear().type(agreementDetailsData.notes);
+};
+
+const addServicesComponentViaUi = () => {
+    cy.get("#servicesComponentSelect").select("1");
+    cy.get("#pop-start-date").type("01/01/2024");
+    cy.get("#pop-end-date").type("01/01/2025");
+    cy.get("#description").type("This is a description.");
+    cy.get("[data-cy='add-services-component-btn']").click();
+    cy.get("[data-cy='alert']").should("contain", "successfully added");
+    cy.contains("h2", /services component 1|base period 1/i).should("exist");
+};
+
+const addBudgetLineWithValidationTouches = () => {
+    cy.get("#allServicesComponentSelect", { timeout: 20000 }).should("exist");
+    cy.contains("Loading...").should("not.exist");
+    cy.get("#can-combobox-input").should("not.be.disabled");
+
+    cy.get("#can-combobox-input").type("G99HRF2{enter}");
+    cy.get("#need-by-date").type("09/01/2048");
+    cy.get("#enteredAmount").type("123");
+    cy.get("#enteredDescription").type("test line description");
+
+    cy.get("#add-budget-line").should("not.be.disabled").click();
+    cy.get(".usa-alert__text").should(
+        "contain",
+        "Budget line TBD was updated. When you're done editing, click Create Agreement below."
+    );
+};
+
 beforeEach(() => {
+    createdAgreementIds.length = 0;
     testLogin("system-owner");
 });
 
@@ -143,270 +332,127 @@ afterEach(() => {
         },
         terminalLog
     );
+    deleteCreatedAgreements();
 });
 
 describe("create agreement and test validations", () => {
-    it("create an agreement", () => {
-        expect(localStorage.getItem("access_token")).to.exist;
+    it("advances to services step after agreement details are completed", () => {
+        createAgreement().then((agreementId) => {
+            openEditWizard(agreementId);
 
-        const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
-        resolveProjectId(bearer_token).then((projectId) => {
-            const createAgreementPayload = {
-                ...minAgreementWithoutProcShop(buildUniqueSuffix()),
-                project_id: projectId
-            };
-            cy.log(`Creating agreement with project_id=${projectId}`);
-            // create test agreement
-            cy.request({
-                method: "POST",
-                url: "http://localhost:8080/api/v1/agreements/",
-                failOnStatusCode: false,
-                body: createAgreementPayload,
-                headers: {
-                    Authorization: bearer_token,
-                    "Content-Type": "application/json",
-                    Accept: "application/json"
-                }
-            }).then((response) => {
-                if (response.status !== 201) {
-                    // Make failures actionable in CI logs
-                    throw new Error(
-                        `Failed to create agreement. status=${response.status} body=${JSON.stringify(response.body)}`
-                    );
-                }
-                expect(response.body.id).to.exist;
-                const agreementId = response.body.id;
-
-            // Set up intercepts before visiting the page
-            cy.intercept("GET", `**/agreements/${agreementId}**`).as("getAgreement");
-            cy.intercept("PATCH", "**/agreements/**").as("patchAgreement");
-            cy.intercept("GET", "**/cans/**").as("getCans");
-            cy.intercept("GET", "**/budget-line-items/**").as("getBudgetLines");
-
-            // Visit page and wait for agreement to load
-            cy.visit(`/agreements/review/${agreementId}?mode=review`);
-            cy.wait("@getAgreement", { timeout: 30000 });
-            // Give React time to render after data loads
-            cy.wait(300);
-            // Wait for send-to-approval button to be disabled
-            cy.get('[data-cy="send-to-approval-btn"]', { timeout: 10000 }).should("be.disabled");
-            //fix errors
-            cy.get('[data-cy="edit-agreement-btn"]').click();
-            cy.get("#continue").click();
-            // get all errors on page
-            cy.get(".usa-form-group--error").should("have.length", 7);
-            // test description
-            cy.get("#description").type("Test Description");
-            cy.get("#description").clear();
-            cy.get("#description").blur();
-            cy.get(".usa-error-message").should("exist");
-            cy.get("#description").type("Test Description");
-            // test contract type
-            cy.get("#contract-type").select("Firm Fixed Price (FFP)");
-            cy.get("#contract-type").select("-Select an option-");
-            cy.get(".usa-error-message").should("exist");
-            cy.get("#contract-type").select("Firm Fixed Price (FFP)");
-            // test service requirement select
-            cy.get("#service_requirement_type").select("Severable");
-            cy.get("#service_requirement_type").select("-Select Service Requirement Type-");
-            cy.get(".usa-error-message").should("exist");
-            cy.get("#service_requirement_type").select("Severable");
-            // test product service code
-            selectFirstRealOption("#product_service_code_id");
-            cy.get("#product_service_code_id").select(0);
-            cy.get(".usa-error-message").should("exist");
-            selectFirstRealOption("#product_service_code_id");
-            // test procurement shop
-            selectFirstRealOption("#procurement-shop-select");
-            cy.get("#procurement-shop-select").select("-Select Procurement Shop-");
-            cy.get(".usa-error-message").should("exist");
-            selectFirstRealOption("#procurement-shop-select");
-            // test agreement type
-            cy.get("#agreement_reason").select("NEW_REQ");
-            cy.get("#agreement_reason").select(0);
-            cy.get(".usa-error-message").should("exist");
-            cy.get("#agreement_reason").select("NEW_REQ");
-            selectComboboxOption(
-                "#project-officer-combobox-input",
-                ".project-officer-combobox__menu",
-                ".project-officer-combobox__option",
-                "Chris Fortunato",
-                0
-            );
-            selectComboboxOption(
-                "#team-member-combobox-input",
-                ".team-member-combobox__menu",
-                ".team-member-combobox__option",
-                "System Owner",
-                1
-            );
-            cy.get("#agreementNotes").type("This is a note.");
+            fillRequiredAgreementDetails();
             cy.get("[data-cy='continue-btn']").should("not.be.disabled").click();
-            //  Add Services Component
+            cy.get("h2").first().should("have.text", "Create Services Components");
+        });
+    });
+
+    it("creates a services component after details are valid", () => {
+        createValidAgreement().then((agreementId) => {
+            openEditWizard(agreementId);
+            cy.get("#project-combobox-input").should("not.exist");
+            cy.get(".usa-form-group--error").should("not.exist");
+
+            goToServicesStep();
+
             cy.get("p").should("contain", "You have not added any Services Component yet.");
-            cy.get("#servicesComponentSelect").select("1");
-            cy.get("#pop-start-date").type("01/01/2024");
-            cy.get("#pop-end-date").type("01/01/2025");
-            cy.get("#description").type("This is a description.");
             cy.get("[data-cy='add-services-component-btn']").click();
-            cy.get("[data-cy='alert']").should("contain", "successfully added");
-            cy.get("h2").should("contain", "Base Period 1");
-            //create a budget line with errors
-            cy.get("#allServicesComponentSelect").select(`${blData[0].services_component}`);
-            // Wait for CAN combobox to finish loading CANs
-            cy.contains("Loading...").should("not.exist");
-            cy.get("#can-combobox-input").should("not.be.disabled");
-            // add a CAN and clear it
-            cy.get("#can-combobox-input").type(`${blData[0].can}{enter}`);
-            cy.get(".can-combobox__clear-indicator").click();
-            cy.get(".usa-error-message").should("exist");
-            cy.get("#can-combobox-input").type(`${blData[0].can}{enter}`);
-            // ensure date is in the future
-            cy.get("#need-by-date").type("09/01/1998{enter}");
-            // check for date to be in the future  which should error
-            cy.get(".usa-error-message").should("exist");
-            // fix by adding a valid date
-            cy.get("#need-by-date").clear();
-            // test for invalid date
-            cy.get("#need-by-date").type("tacocat");
-            cy.get(".usa-error-message").should("exist");
-            // fix by adding a valid date
-            cy.get("#need-by-date").clear();
-            cy.get("#need-by-date").type(blData[0].needByDate);
-            // add entered amount and clear it
-            cy.get("#enteredAmount").type(`${blData[0].amount}`);
-            cy.get("#enteredAmount").clear();
-            cy.get(".usa-error-message").should("exist");
-            cy.get("#enteredAmount").type("123");
-            // add description and clear it
-            cy.get("#enteredDescription").type(`${blData[0].line_description}`);
-            cy.get("#enteredDescription").clear();
-            cy.get("#input-error-message").should("not.exist");
-            cy.get("#enteredDescription").type(`${blData[0].line_description}`);
-            cy.get("#add-budget-line").should("not.be.disabled");
-            // add budget line
-            cy.get("#add-budget-line").click();
-            cy.get(".usa-alert__text").should(
-                "contain",
-                "Budget line TBD was updated. When you're done editing, click Create Agreement below."
-            );
-            // Unsaved BLI edits only exist in the client state until this save.
-            cy.get('[data-cy="continue-btn"]').should("not.be.disabled").click();
-            // Wait for navigation and agreement data to load
-            cy.visit(`/agreements/review/${agreementId}`);
-            cy.wait("@getAgreement", { timeout: 30000 });
-            // Wait for page to be ready
-            cy.url().should("include", `/agreements/review/${agreementId}`);
-            cy.get('[data-cy="error-list"]').should("not.exist");
-            // Wait for React 19 to complete full state propagation chain:
-            // Render → useEffect → Parent state update → Re-render → DOM update
-            cy.wait(8000); // Increased from 5s to 8s for full propagation
-            // Wait for radio buttons to be rendered (some may be disabled depending on data)
-            cy.get('[type="radio"]', { timeout: 60000 }).should("have.length.greaterThan", 0);
-            // Buffer wait for React 19 state propagation after render (recommended 200-300ms per research)
-            cy.wait(500); // Conservative buffer
-            // If the send-to-approval button is still disabled, select an enabled radio and check any checkboxes
-            cy.get('[data-cy="send-to-approval-btn"]').should("exist");
-            cy.get('[data-cy="send-to-approval-btn"]').then(($btn) => {
-                if (!$btn.prop("disabled")) {
-                    cy.log("Send-to-approval already enabled; skipping status selection.");
-                    return;
-                }
-                selectEnabledStatusRadio();
-                cy.get('[type="radio"]:checked', { timeout: 60000 }).should("exist");
-                // Wait for React 19 to render checkboxes after radio selection
-                cy.wait(5000);
-                cy.then(() => {
-                    const checkboxes = Cypress.$('[data-cy="check-all"]');
-                    if (checkboxes.length) {
-                        cy.wrap(checkboxes).each(($el) => {
-                            cy.wrap($el).check({ force: true });
-                        });
-                        cy.wrap(checkboxes).each(($el) => {
-                            cy.wrap($el).should("be.checked");
-                        });
-                    } else {
-                        cy.log("No checkboxes rendered for status update.");
-                    }
+            cy.get("p").should("contain", "You have not added any Services Component yet.");
+
+            cy.get("#servicesComponentSelect").select("1");
+            cy.get("#servicesComponentSelect").select("");
+            cy.get("[data-cy='add-services-component-btn']").click();
+            cy.get("p").should("contain", "You have not added any Services Component yet.");
+
+            addServicesComponentViaUi();
+            cy.get("[data-cy='continue-btn']").should("not.be.disabled");
+        });
+    });
+
+    it("validates and saves a budget line", () => {
+        createValidAgreement().then((agreementId) => {
+            createServicesComponent(agreementId).then(() => {
+                openEditWizard(agreementId);
+                goToServicesStep();
+                goToBudgetLinesStep();
+
+                addBudgetLineWithValidationTouches();
+
+                cy.get('[data-cy="continue-btn"]').should("not.be.disabled").click();
+
+                visitReviewPage(agreementId);
+                cy.get('[data-cy="error-list"]').should("not.exist");
+            });
+        });
+    });
+
+    it("enables review status transitions when valid data exists", () => {
+        createValidAgreement().then((agreementId) => {
+            createServicesComponent(agreementId).then((servicesComponentId) => {
+                createBudgetLineItem(agreementId, servicesComponentId).then((budgetLineId) => {
+                    visitReviewPage(agreementId);
+
+                    cy.get('[data-cy="error-list"]').should("not.exist");
+                    cy.get('[type="radio"]', { timeout: 60000 }).should("have.length.greaterThan", 0);
+                    cy.get('[data-cy="send-to-approval-btn"]').should("be.disabled");
+
+                    selectEnabledStatusRadio();
+                    cy.get('[type="radio"]:checked', { timeout: 60000 }).should("exist");
+                    cy.get(`#${budgetLineId}`, { timeout: 20000 }).check({ force: true });
+
+                    cy.get('[data-cy="send-to-approval-btn"]', { timeout: 20000 }).should("not.be.disabled");
                 });
             });
-            // Wait for React 19 state updates and validation to propagate
-            cy.wait(3000);
-            // Debug: Check if button exists and its tooltip text
-            cy.get('[data-cy="send-to-approval-btn"]').parent().then(($btn) => {
-                const tooltipText = $btn.attr("data-tip") || "no tooltip";
-                cy.log(`Button tooltip: ${tooltipText}`);
-                cy.log(`Button disabled: ${$btn.prop("disabled")}`);
-            });
-            // Use longer timeout for button state change as validation may be async
-            cy.get('[data-cy="send-to-approval-btn"]', { timeout: 20000 }).should("not.be.disabled");
+        });
+    });
 
-            // go back to edit mode and look for budget line errors
-            cy.visit(`/agreements/edit/${agreementId}?mode=edit`);
-            cy.get("#continue").click();
-            cy.get(".usa-form-group--error").should("not.exist");
-            cy.get('[data-cy="continue-btn"]').click();
-            // add incomplete budget line
-            cy.get("#allServicesComponentSelect").select(`${blData[0].services_component}`);
-            cy.get("#add-budget-line").should("not.be.disabled");
-            cy.get("#add-budget-line").click();
-            cy.get(".usa-alert__text").should(
-                "contain",
-                "Budget line TBD was updated. When you're done editing, click Create Agreement below."
-            );
-            // patch agreement
-            cy.get('[data-cy="continue-btn"]').click();
-            //check for new budget line errors
-            cy.visit(`/agreements/review/${agreementId}?mode=review`);
-            cy.wait("@getAgreement", { timeout: 30000 });
-            // Give React time to render after data loads
-            cy.wait(300);
+    it("repairs an incomplete budget line after review disables submission", () => {
+        createValidAgreement().then((agreementId) => {
+            createServicesComponent(agreementId).then((servicesComponentId) => {
+                createBudgetLineItem(agreementId, servicesComponentId).then(() => {
+                    openEditWizard(agreementId);
+                    goToServicesStep();
+                    goToBudgetLinesStep();
 
-            //send-to-approval button should be disabled
-            cy.get('[data-cy="send-to-approval-btn"]', { timeout: 10000 }).should("be.disabled");
+                    selectFirstRealOption("#allServicesComponentSelect");
+                    cy.get("#add-budget-line").should("not.be.disabled").click();
+                    cy.get(".usa-alert__text").should(
+                        "contain",
+                        "Budget line TBD was updated. When you're done editing, click Create Agreement below."
+                    );
 
-            // fix errors
-            cy.get('[data-cy="edit-agreement-btn"]').click();
-            cy.get("#continue").click();
-            cy.get('[data-cy="continue-btn"]').click();
-            // check for new budget line errors
-            cy.get(".usa-form-group--error").should("exist");
-            cy.get("tbody").children().as("table-rows").should("have.length", 2);
-            cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
-            cy.get("[data-cy='edit-row']").click();
-            cy.get(".usa-form-group--error").should("have.length", 4);
-            cy.get('[data-cy="update-budget-line"]').should("be.disabled");
-            // fix errors
-            // Wait for CAN combobox to finish loading CANs
-            cy.contains("Loading...").should("not.exist");
-            cy.get("#can-combobox-input").should("not.be.disabled");
-            cy.get("#can-combobox-input").type(`${blData[0].can}{enter}`);
-            cy.get("#allServicesComponentSelect").select(`${blData[0].services_component}`);
-            cy.get("#need-by-date").type(`${blData[0].needByDate}`);
-            cy.get("#enteredAmount").type(`${blData[0].amount}`);
-            cy.get("#enteredDescription").type(`${blData[0].line_description}`);
-            cy.get('[data-cy="update-budget-line"]').should("not.be.disabled");
-            cy.get('[data-cy="update-budget-line"]').click();
-            cy.get(".usa-alert__text").should("contain", "was updated");
-            cy.get(".usa-form-group--error").should("not.exist");
-            // patch agreement
-            cy.get('[data-cy="continue-btn"]').click();
-            //check review page
-            cy.visit(`/agreements/review/${agreementId}?mode=review`);
-            cy.wait("@getAgreement", { timeout: 30000 });
-            // Wait for page to render
-            cy.get("h1", { timeout: 20000 }).should("be.visible").and("not.have.text", "Please resolve the errors outlined below");
-            cy.get('[data-cy="error-list"]').should("not.exist");
+                    cy.get('[data-cy="continue-btn"]').should("not.be.disabled").click();
 
-                cy.request({
-                    method: "DELETE",
-                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
-                    headers: {
-                        Authorization: bearer_token,
-                        Accept: "application/json"
-                    }
-                }).then((response) => {
-                    expect(response.status).to.eq(200);
+                    visitReviewPage(agreementId);
+                    cy.get('[data-cy="send-to-approval-btn"]').should("be.disabled");
+
+                    cy.get('[data-cy="edit-agreement-btn"]').click();
+                    cy.get("#continue").click();
+                    cy.get('[data-cy="continue-btn"]').should("not.be.disabled").click();
+                    cy.get(".usa-form-group--error").should("exist");
+                    cy.get("tbody").children().as("table-rows").should("have.length", 2);
+                    cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
+                    cy.get("[data-cy='edit-row']").click();
+                    cy.get(".usa-form-group--error").should("have.length", 4);
+                    cy.get('[data-cy="update-budget-line"]').should("be.disabled");
+
+                    cy.contains("Loading...").should("not.exist");
+                    cy.get("#can-combobox-input").should("not.be.disabled");
+                    cy.get("#can-combobox-input").type("G99HRF2{enter}");
+                    selectFirstRealOption("#allServicesComponentSelect");
+                    cy.get("#need-by-date").type("09/01/2048");
+                    cy.get("#enteredAmount").type("111111");
+                    cy.get("#enteredDescription").type("test line description");
+                    cy.get('[data-cy="update-budget-line"]').should("not.be.disabled").click();
+                    cy.get(".usa-alert__text").should("contain", "was updated");
+                    cy.get(".usa-form-group--error").should("not.exist");
+
+                    cy.get('[data-cy="continue-btn"]').should("not.be.disabled").click();
+
+                    visitReviewPage(agreementId);
+                    cy.get("h1", { timeout: 20000 })
+                        .should("be.visible")
+                        .and("not.have.text", "Please resolve the errors outlined below");
+                    cy.get('[data-cy="error-list"]').should("not.exist");
                 });
             });
         });

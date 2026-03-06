@@ -2,6 +2,8 @@
 import { terminalLog, testLogin } from "./utils";
 import { TABLE_HEADINGS_LIST } from "../../src/components/Agreements/AgreementsTable/AgreementsTable.constants";
 
+const getAppliedFilters = () => cy.contains("span", "Filters Applied:").parent();
+
 describe("Agreement List", () => {
     beforeEach(() => {
         testLogin("system-owner");
@@ -117,8 +119,10 @@ describe("Agreement List", () => {
         cy.get("button").contains("Apply").click();
 
         // check that the correct tags are displayed
-        cy.contains("FY 2044").should("exist");
-        cy.get("div").contains("Adolescent Development Research").should("exist");
+        getAppliedFilters().within(() => {
+            cy.contains("FY 2044").should("exist");
+            cy.contains("Adolescent Development Research").should("exist");
+        });
 
         // Check that table shows results or zero results based on filter combination
         // (May show results or no results depending on data)
@@ -133,8 +137,7 @@ describe("Agreement List", () => {
         cy.wait(1000);
 
         // check that no tags are displayed
-        cy.get("div").contains("FY 2044").should("not.exist");
-        cy.get("div").contains("Adolescent Development Research").should("not.exist");
+        cy.contains("span", "Filters Applied:").should("not.exist");
     });
 
     it("filters agreements by agreement name", () => {
@@ -151,9 +154,9 @@ describe("Agreement List", () => {
         cy.get("button").contains("Apply").click();
 
         // Verify the filter tag is displayed
-        cy.get("span.bg-brand-primary-light.text-brand-primary-dark", { timeout: 10000 })
-            .contains("Interoperability Initiatives")
-            .should("exist");
+        getAppliedFilters().within(() => {
+            cy.contains("Interoperability Initiatives", { timeout: 10000 }).should("exist");
+        });
 
         // Verify the table is filtered correctly
         cy.get("tbody tr", { timeout: 30000 }).should("have.length.at.least", 1);
@@ -168,7 +171,7 @@ describe("Agreement List", () => {
         // Wait for table to reload with all agreements
         cy.get("tbody tr", { timeout: 30000 }).should("have.length.at.least", 1);
         // Verify the filter tag is removed (check that no filter tags exist at all)
-        cy.get("span.bg-brand-primary-light.text-brand-primary-dark").should("not.exist");
+        cy.contains("span", "Filters Applied:").should("not.exist");
     });
 
     it("filters agreements by agreement type", () => {
@@ -185,9 +188,9 @@ describe("Agreement List", () => {
         cy.get("button").contains("Apply").click();
 
         // Verify the filter tag is displayed
-        cy.get("span.bg-brand-primary-light.text-brand-primary-dark", { timeout: 10000 })
-            .contains("Contract")
-            .should("exist");
+        getAppliedFilters().within(() => {
+            cy.contains("Contract", { timeout: 10000 }).should("exist");
+        });
 
         // Verify the table shows only contracts
         // Wait for actual agreement rows to render (skip loading placeholder row)
@@ -206,7 +209,7 @@ describe("Agreement List", () => {
         // Wait for table to reload with all agreements
         cy.get("tbody tr", { timeout: 30000 }).should("have.length.at.least", 1);
         // Verify the filter tag is removed (check that no filter tags exist at all)
-        cy.get("span.bg-brand-primary-light.text-brand-primary-dark").should("not.exist");
+        cy.contains("span", "Filters Applied:").should("not.exist");
     });
 
     it("filters agreements by both agreement name and type", () => {
@@ -230,10 +233,10 @@ describe("Agreement List", () => {
         cy.get("button").contains("Apply").click();
 
         // Verify both filter tags are displayed
-        cy.get("span.bg-brand-primary-light.text-brand-primary-dark", { timeout: 10000 })
-            .contains("Interoperability Initiatives")
-            .should("exist");
-        cy.get("span.bg-brand-primary-light.text-brand-primary-dark").contains("Contract").should("exist");
+        getAppliedFilters().within(() => {
+            cy.contains("Interoperability Initiatives", { timeout: 10000 }).should("exist");
+            cy.contains("Contract").should("exist");
+        });
 
         // Verify the table is filtered correctly
         cy.get("tbody tr", { timeout: 30000 }).should("have.length.at.least", 1);
@@ -249,7 +252,7 @@ describe("Agreement List", () => {
         // Wait for table to reload with all agreements
         cy.get("tbody tr", { timeout: 30000 }).should("have.length.at.least", 1);
         // Verify both filter tags are removed (check that no filter tags exist at all)
-        cy.get("span.bg-brand-primary-light.text-brand-primary-dark").should("not.exist");
+        cy.contains("span", "Filters Applied:").should("not.exist");
     });
 
     it("filters agreements by award type", () => {
@@ -266,9 +269,9 @@ describe("Agreement List", () => {
         cy.get("button").contains("Apply").click();
 
         // Verify the filter tag is displayed
-        cy.get("span.bg-brand-primary-light.text-brand-primary-dark", { timeout: 10000 })
-            .contains("New Award")
-            .should("exist");
+        getAppliedFilters().within(() => {
+            cy.contains("New Award", { timeout: 10000 }).should("exist");
+        });
 
         // Verify the table shows only New Award agreements
         cy.get("tbody tr[data-testid^='agreement-table-row-']", { timeout: 30000 }).should("have.length.at.least", 1);
@@ -290,7 +293,7 @@ describe("Agreement List", () => {
         // Wait for table to reload with all agreements
         cy.get("tbody tr", { timeout: 30000 }).should("have.length.at.least", 1);
         // Verify the filter tag is removed (check that no filter tags exist at all)
-        cy.get("span.bg-brand-primary-light.text-brand-primary-dark").should("not.exist");
+        cy.contains("span", "Filters Applied:").should("not.exist");
     });
 
     it("Change Requests tab works", () => {
