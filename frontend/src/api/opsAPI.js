@@ -425,6 +425,10 @@ export const opsApi = createApi({
             query: () => `/projects/`,
             providesTags: ["ResearchProjects"]
         }),
+        getProjectById: builder.query({
+            query: (id) => `/projects/${id}`,
+            providesTags: ["ResearchProjects"]
+        }),
         getProjectsByPortfolio: builder.query({
             query: ({ fiscal_year, portfolio_id, search }) => {
                 const queryParams = [];
@@ -980,6 +984,7 @@ export const {
     useLazyGetUserByIdQuery,
     useGetUserByOIDCIdQuery,
     useGetProjectsQuery,
+    useGetProjectByIdQuery,
     useGetProjectsByPortfolioQuery,
     useGetResearchProjectsQuery,
     useGetResearchProjectsByPortfolioQuery,
