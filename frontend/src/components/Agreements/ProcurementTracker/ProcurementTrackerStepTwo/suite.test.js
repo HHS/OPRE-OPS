@@ -43,7 +43,7 @@ describe("ProcurementTrackerStepTwo Validation Suite", () => {
 
     describe("Valid Data", () => {
         it("should pass validation with valid dateCompleted field", () => {
-            const result = suite(validData, "dateCompleted");
+            const result = suite.run(validData, "dateCompleted");
 
             expect(result.hasErrors("dateCompleted")).toBe(false);
             expect(result.getErrors("dateCompleted")).toHaveLength(0);
@@ -51,7 +51,7 @@ describe("ProcurementTrackerStepTwo Validation Suite", () => {
 
         it("should pass validation with today's date", () => {
             const data = { dateCompleted: getTodayDate() };
-            const result = suite(data, "dateCompleted");
+            const result = suite.run(data, "dateCompleted");
 
             expect(result.hasErrors("dateCompleted")).toBe(false);
             expect(result.getErrors("dateCompleted")).toHaveLength(0);
@@ -59,7 +59,7 @@ describe("ProcurementTrackerStepTwo Validation Suite", () => {
 
         it("should pass validation with a past date", () => {
             const data = { dateCompleted: getPastDate() };
-            const result = suite(data, "dateCompleted");
+            const result = suite.run(data, "dateCompleted");
 
             expect(result.hasErrors("dateCompleted")).toBe(false);
             expect(result.getErrors("dateCompleted")).toHaveLength(0);
@@ -69,7 +69,7 @@ describe("ProcurementTrackerStepTwo Validation Suite", () => {
     describe("Date Completed Field - Required Validation", () => {
         it("should fail when dateCompleted is empty", () => {
             const data = { dateCompleted: "" };
-            const result = suite(data, "dateCompleted");
+            const result = suite.run(data, "dateCompleted");
 
             expect(result.hasErrors("dateCompleted")).toBe(true);
             expect(result.getErrors("dateCompleted")).toContain("This is required information");
@@ -77,7 +77,7 @@ describe("ProcurementTrackerStepTwo Validation Suite", () => {
 
         it("should fail when dateCompleted is null", () => {
             const data = { dateCompleted: null };
-            const result = suite(data, "dateCompleted");
+            const result = suite.run(data, "dateCompleted");
 
             expect(result.hasErrors("dateCompleted")).toBe(true);
             expect(result.getErrors("dateCompleted")).toContain("This is required information");
@@ -85,7 +85,7 @@ describe("ProcurementTrackerStepTwo Validation Suite", () => {
 
         it("should fail when dateCompleted is undefined", () => {
             const data = { dateCompleted: undefined };
-            const result = suite(data, "dateCompleted");
+            const result = suite.run(data, "dateCompleted");
 
             expect(result.hasErrors("dateCompleted")).toBe(true);
             expect(result.getErrors("dateCompleted")).toContain("This is required information");
@@ -95,7 +95,7 @@ describe("ProcurementTrackerStepTwo Validation Suite", () => {
     describe("Date Completed Field - Format Validation", () => {
         it("should fail with invalid date format (wrong separator)", () => {
             const data = { dateCompleted: "01-15-2024" };
-            const result = suite(data, "dateCompleted");
+            const result = suite.run(data, "dateCompleted");
 
             expect(result.hasErrors("dateCompleted")).toBe(true);
             expect(result.getErrors("dateCompleted")).toContain("Date must be MM/DD/YYYY");
@@ -103,7 +103,7 @@ describe("ProcurementTrackerStepTwo Validation Suite", () => {
 
         it("should fail with invalid date format (single digit month)", () => {
             const data = { dateCompleted: "1/15/2024" };
-            const result = suite(data, "dateCompleted");
+            const result = suite.run(data, "dateCompleted");
 
             expect(result.hasErrors("dateCompleted")).toBe(true);
             expect(result.getErrors("dateCompleted")).toContain("Date must be MM/DD/YYYY");
@@ -111,7 +111,7 @@ describe("ProcurementTrackerStepTwo Validation Suite", () => {
 
         it("should fail with invalid date format (single digit day)", () => {
             const data = { dateCompleted: "01/5/2024" };
-            const result = suite(data, "dateCompleted");
+            const result = suite.run(data, "dateCompleted");
 
             expect(result.hasErrors("dateCompleted")).toBe(true);
             expect(result.getErrors("dateCompleted")).toContain("Date must be MM/DD/YYYY");
@@ -119,7 +119,7 @@ describe("ProcurementTrackerStepTwo Validation Suite", () => {
 
         it("should fail with invalid date format (two digit year)", () => {
             const data = { dateCompleted: "01/15/24" };
-            const result = suite(data, "dateCompleted");
+            const result = suite.run(data, "dateCompleted");
 
             expect(result.hasErrors("dateCompleted")).toBe(true);
             expect(result.getErrors("dateCompleted")).toContain("Date must be MM/DD/YYYY");
@@ -127,7 +127,7 @@ describe("ProcurementTrackerStepTwo Validation Suite", () => {
 
         it("should fail with invalid date format (text)", () => {
             const data = { dateCompleted: "January 15, 2024" };
-            const result = suite(data, "dateCompleted");
+            const result = suite.run(data, "dateCompleted");
 
             expect(result.hasErrors("dateCompleted")).toBe(true);
             expect(result.getErrors("dateCompleted")).toContain("Date must be MM/DD/YYYY");
@@ -135,7 +135,7 @@ describe("ProcurementTrackerStepTwo Validation Suite", () => {
 
         it("should fail with invalid date format (ISO format)", () => {
             const data = { dateCompleted: "2024-01-15" };
-            const result = suite(data, "dateCompleted");
+            const result = suite.run(data, "dateCompleted");
 
             expect(result.hasErrors("dateCompleted")).toBe(true);
             expect(result.getErrors("dateCompleted")).toContain("Date must be MM/DD/YYYY");
@@ -143,7 +143,7 @@ describe("ProcurementTrackerStepTwo Validation Suite", () => {
 
         it("should pass with valid MM/DD/YYYY format", () => {
             const data = { dateCompleted: "01/15/2024" };
-            const result = suite(data, "dateCompleted");
+            const result = suite.run(data, "dateCompleted");
 
             // Should not have format error (may have other errors like future date)
             const errors = result.getErrors("dateCompleted");
@@ -152,7 +152,7 @@ describe("ProcurementTrackerStepTwo Validation Suite", () => {
 
         it("should fail with invalid month (13)", () => {
             const data = { dateCompleted: "13/15/2024" };
-            const result = suite(data, "dateCompleted");
+            const result = suite.run(data, "dateCompleted");
 
             expect(result.hasErrors("dateCompleted")).toBe(true);
             expect(result.getErrors("dateCompleted")).toContain("Date must be MM/DD/YYYY");
@@ -160,7 +160,7 @@ describe("ProcurementTrackerStepTwo Validation Suite", () => {
 
         it("should fail with invalid day (32)", () => {
             const data = { dateCompleted: "01/32/2024" };
-            const result = suite(data, "dateCompleted");
+            const result = suite.run(data, "dateCompleted");
 
             expect(result.hasErrors("dateCompleted")).toBe(true);
             expect(result.getErrors("dateCompleted")).toContain("Date must be MM/DD/YYYY");
@@ -168,7 +168,7 @@ describe("ProcurementTrackerStepTwo Validation Suite", () => {
 
         it("should fail with invalid day (00)", () => {
             const data = { dateCompleted: "01/00/2024" };
-            const result = suite(data, "dateCompleted");
+            const result = suite.run(data, "dateCompleted");
 
             expect(result.hasErrors("dateCompleted")).toBe(true);
             expect(result.getErrors("dateCompleted")).toContain("Date must be MM/DD/YYYY");
@@ -176,7 +176,7 @@ describe("ProcurementTrackerStepTwo Validation Suite", () => {
 
         it("should fail with invalid month (00)", () => {
             const data = { dateCompleted: "00/15/2024" };
-            const result = suite(data, "dateCompleted");
+            const result = suite.run(data, "dateCompleted");
 
             expect(result.hasErrors("dateCompleted")).toBe(true);
             expect(result.getErrors("dateCompleted")).toContain("Date must be MM/DD/YYYY");
@@ -186,7 +186,7 @@ describe("ProcurementTrackerStepTwo Validation Suite", () => {
     describe("Date Completed Field - Range Validation", () => {
         it("should fail when date is in the future", () => {
             const data = { dateCompleted: getFutureDate() };
-            const result = suite(data, "dateCompleted");
+            const result = suite.run(data, "dateCompleted");
 
             expect(result.hasErrors("dateCompleted")).toBe(true);
             expect(result.getErrors("dateCompleted")).toContain("Date must be today or earlier");
@@ -194,7 +194,7 @@ describe("ProcurementTrackerStepTwo Validation Suite", () => {
 
         it("should pass when date is today", () => {
             const data = { dateCompleted: getTodayDate() };
-            const result = suite(data, "dateCompleted");
+            const result = suite.run(data, "dateCompleted");
 
             expect(result.hasErrors("dateCompleted")).toBe(false);
             expect(result.getErrors("dateCompleted")).not.toContain("Date must be today or earlier");
@@ -202,7 +202,7 @@ describe("ProcurementTrackerStepTwo Validation Suite", () => {
 
         it("should pass when date is in the past", () => {
             const data = { dateCompleted: getPastDate() };
-            const result = suite(data, "dateCompleted");
+            const result = suite.run(data, "dateCompleted");
 
             expect(result.hasErrors("dateCompleted")).toBe(false);
             expect(result.getErrors("dateCompleted")).not.toContain("Date must be today or earlier");
@@ -210,7 +210,7 @@ describe("ProcurementTrackerStepTwo Validation Suite", () => {
 
         it("should pass when date is far in the past", () => {
             const data = { dateCompleted: "01/01/2020" };
-            const result = suite(data, "dateCompleted");
+            const result = suite.run(data, "dateCompleted");
 
             expect(result.hasErrors("dateCompleted")).toBe(false);
             expect(result.getErrors("dateCompleted")).not.toContain("Date must be today or earlier");
@@ -222,7 +222,7 @@ describe("ProcurementTrackerStepTwo Validation Suite", () => {
             const data = { dateCompleted: "invalid" };
 
             // Only validate dateCompleted field
-            const result = suite(data, "dateCompleted");
+            const result = suite.run(data, "dateCompleted");
 
             expect(result.hasErrors("dateCompleted")).toBe(true);
         });
@@ -231,7 +231,7 @@ describe("ProcurementTrackerStepTwo Validation Suite", () => {
             const data = { dateCompleted: getFutureDate() };
 
             // Only validate dateCompleted field
-            const result = suite(data, "dateCompleted");
+            const result = suite.run(data, "dateCompleted");
 
             expect(result.hasErrors("dateCompleted")).toBe(true);
             expect(result.getErrors("dateCompleted")).toContain("Date must be today or earlier");
@@ -241,7 +241,7 @@ describe("ProcurementTrackerStepTwo Validation Suite", () => {
     describe("Users Field - Required Validation", () => {
         it("should fail when users is empty", () => {
             const data = { users: "" };
-            const result = suite(data, "users");
+            const result = suite.run(data, "users");
 
             expect(result.hasErrors("users")).toBe(true);
             expect(result.getErrors("users")).toContain("This is required information");
@@ -249,7 +249,7 @@ describe("ProcurementTrackerStepTwo Validation Suite", () => {
 
         it("should fail when users is null", () => {
             const data = { users: null };
-            const result = suite(data, "users");
+            const result = suite.run(data, "users");
 
             expect(result.hasErrors("users")).toBe(true);
             expect(result.getErrors("users")).toContain("This is required information");
@@ -257,7 +257,7 @@ describe("ProcurementTrackerStepTwo Validation Suite", () => {
 
         it("should pass when users is present", () => {
             const data = { users: { id: 456, full_name: "Jane Smith" } };
-            const result = suite(data, "users");
+            const result = suite.run(data, "users");
 
             expect(result.hasErrors("users")).toBe(false);
             expect(result.getErrors("users")).toHaveLength(0);
@@ -267,7 +267,7 @@ describe("ProcurementTrackerStepTwo Validation Suite", () => {
     describe("Multiple Validation Errors", () => {
         it("should show all date errors when date is invalid", () => {
             const data = { dateCompleted: "invalid" };
-            const result = suite(data, "dateCompleted");
+            const result = suite.run(data, "dateCompleted");
 
             expect(result.hasErrors("dateCompleted")).toBe(true);
             const errors = result.getErrors("dateCompleted");
@@ -278,26 +278,26 @@ describe("ProcurementTrackerStepTwo Validation Suite", () => {
 
     describe("Edge Cases", () => {
         it("should handle empty data object", () => {
-            const result = suite({}, "dateCompleted");
+            const result = suite.run({}, "dateCompleted");
 
             expect(result.hasErrors("dateCompleted")).toBe(true);
         });
 
         it("should handle null data", () => {
-            const result = suite(null, "dateCompleted");
+            const result = suite.run(null, "dateCompleted");
 
             expect(result.hasErrors("dateCompleted")).toBe(true);
         });
 
         it("should handle undefined data", () => {
-            const result = suite(undefined, "dateCompleted");
+            const result = suite.run(undefined, "dateCompleted");
 
             expect(result.hasErrors("dateCompleted")).toBe(true);
         });
 
         it("should handle date with spaces", () => {
             const data = { dateCompleted: " 01/15/2024 " };
-            const result = suite(data, "dateCompleted");
+            const result = suite.run(data, "dateCompleted");
 
             // Should fail format validation due to leading/trailing spaces
             expect(result.hasErrors("dateCompleted")).toBe(true);
@@ -307,7 +307,7 @@ describe("ProcurementTrackerStepTwo Validation Suite", () => {
     describe("Target Completion Date Field - Range Validation", () => {
         it("should fail when target completion date is in the past", () => {
             const data = { targetCompletionDate: getPastDate() };
-            const result = suite(data, "targetCompletionDate");
+            const result = suite.run(data, "targetCompletionDate");
 
             expect(result.hasErrors("targetCompletionDate")).toBe(true);
             expect(result.getErrors("targetCompletionDate")).toContain("Date must be today or later");
@@ -315,7 +315,7 @@ describe("ProcurementTrackerStepTwo Validation Suite", () => {
 
         it("should pass when target completion date is today", () => {
             const data = { targetCompletionDate: getTodayDate() };
-            const result = suite(data, "targetCompletionDate");
+            const result = suite.run(data, "targetCompletionDate");
 
             expect(result.hasErrors("targetCompletionDate")).toBe(false);
             expect(result.getErrors("targetCompletionDate")).not.toContain("Date must be today or later");
@@ -323,7 +323,7 @@ describe("ProcurementTrackerStepTwo Validation Suite", () => {
 
         it("should pass when target completion date is in the future", () => {
             const data = { targetCompletionDate: getFutureDate() };
-            const result = suite(data, "targetCompletionDate");
+            const result = suite.run(data, "targetCompletionDate");
 
             expect(result.hasErrors("targetCompletionDate")).toBe(false);
             expect(result.getErrors("targetCompletionDate")).not.toContain("Date must be today or later");

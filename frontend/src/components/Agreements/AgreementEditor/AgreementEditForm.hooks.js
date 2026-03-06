@@ -139,6 +139,14 @@ const useAgreementEditForm = (
         isLoading: isLoadingProductServiceCodes
     } = useGetProductServiceCodesQuery({});
 
+    React.useEffect(() => {
+        suite.reset();
+
+        return () => {
+            suite.reset();
+        };
+    }, []);
+
     // make a copy of the agreement object
     const hasAgreementChanged = useHasStateChanged(agreement);
 
@@ -175,7 +183,7 @@ const useAgreementEditForm = (
 
     const runValidate = React.useCallback(
         (name, value) => {
-            suite(
+            suite.run(
                 {
                     ...agreement,
                     [name]: value
@@ -188,7 +196,7 @@ const useAgreementEditForm = (
 
     React.useEffect(() => {
         if (isReviewMode) {
-            suite({
+            suite.run({
                 ...agreement,
                 "procurement-shop-select": selectedProcurementShop
             });

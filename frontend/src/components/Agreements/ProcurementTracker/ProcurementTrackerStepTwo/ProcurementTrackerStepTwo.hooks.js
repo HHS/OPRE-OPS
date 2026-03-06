@@ -64,7 +64,7 @@ export default function useProcurementTrackerStepTwo(stepTwoData, handleSetCompl
     }, [stepTwoData?.target_completion_date, stepTwoData?.date_completed]);
 
     const runValidate = (name, value) => {
-        suite({ ...{ [name]: value } }, name);
+        suite.run({ ...{ [name]: value } }, name);
     };
 
     let validatorRes = suite.get();
