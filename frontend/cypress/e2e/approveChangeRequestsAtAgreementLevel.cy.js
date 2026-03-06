@@ -665,7 +665,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
 
 const waitForAgreementHistory = (agreementId, startedAt = Date.now()) => {
     const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
-    const historyUrl = `http://localhost:8080/api/v1/agreement-history/${agreementId}?limit=20&offset=0`;
+    const historyUrl = `http://localhost:8080/api/v1/agreements/${agreementId}/history/?limit=20&offset=0`;
     return cy
         .request({
             method: "GET",

@@ -137,13 +137,26 @@ vi.mock("../../../components/Agreements/ProcurementTracker/ProcurementTrackerSte
     )
 }));
 
+vi.mock("../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepFour", () => ({
+    default: ({ stepStatus, stepFourData, isDisabled }) => (
+        <div
+            data-testid="procurement-step-four"
+            data-step-status={stepStatus}
+            data-step-data-id={stepFourData?.id}
+            data-is-disabled={isDisabled}
+        >
+            {stepStatus === "COMPLETED" ? "Step Four Completed" : "Step Four Form"}
+        </div>
+    )
+}));
+
 // Mock constants module
 vi.mock("../../../constants", () => ({
     IS_PROCUREMENT_TRACKER_READY_MAP: {
         STEP_1: true,
         STEP_2: true,
         STEP_3: true,
-        STEP_4: false,
+        STEP_4: true,
         STEP_5: false,
         STEP_6: false
     }
@@ -968,9 +981,51 @@ describe("AgreementProcurementTracker", () => {
             expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
         });
 
+        it("renders step 4 content when active step is 4", () => {
+            const mockTrackerWithActiveStepFour = {
+                data: [
+                    {
+                        id: 4,
+                        agreement_id: 13,
+                        display_name: "ProcurementTracker#4",
+                        status: "ACTIVE",
+                        tracker_type: "DEFAULT",
+                        active_step_number: 4,
+                        steps: [
+                            {
+                                id: 101,
+                                step_number: 1,
+                                step_type: "ACQUISITION_PLANNING",
+                                status: "COMPLETED"
+                            },
+                            {
+                                id: 104,
+                                step_number: 4,
+                                step_type: "EVALUATION",
+                                status: "ACTIVE"
+                            }
+                        ]
+                    }
+                ]
+            };
+
+            useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
+                data: mockTrackerWithActiveStepFour,
+                isLoading: false,
+                isError: false
+            });
+
+            render(
+                <Provider store={setupStore()}>
+                    <AgreementProcurementTracker agreement={mockAgreement} />
+                </Provider>
+            );
+
+            expect(screen.getByTestId("procurement-step-four")).toHaveTextContent("Step Four Form");
+        });
+
         it.each([
             [3, "SOLICITATION", /Once the Procurement Shop has posted the Solicitation/],
-            [4, "EVALUATION", /Complete the technical evaluations and any potential negotiations/],
             [5, "PRE_AWARD", /All agreements need Pre-Award Approval before the Final Consensus Memo/],
             [6, "AWARD", /Once you receive the signed award, click Request Award Approval below/]
         ])(

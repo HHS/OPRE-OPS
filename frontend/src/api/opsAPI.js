@@ -150,7 +150,8 @@ export const opsApi = createApi({
                         agreements: response.data, // Keep "agreements" name for internal use
                         count: response.count,
                         limit: response.limit,
-                        offset: response.offset
+                        offset: response.offset,
+                        totals: response.totals ?? null
                     };
                 }
                 // Backward compatibility with old "agreements" key
@@ -159,7 +160,8 @@ export const opsApi = createApi({
                         agreements: response.agreements,
                         count: response.count,
                         limit: response.limit,
-                        offset: response.offset
+                        offset: response.offset,
+                        totals: response.totals ?? null
                     };
                 }
                 // Legacy array format (no pagination)
@@ -167,7 +169,8 @@ export const opsApi = createApi({
                     agreements: response,
                     count: response.length,
                     limit: response.length,
-                    offset: 0
+                    offset: 0,
+                    totals: null
                 };
             },
             providesTags: ["Agreements", "BudgetLineItems"]
@@ -705,8 +708,8 @@ export const opsApi = createApi({
                 if (sort) {
                     queryParams.push(`sort_asc=${sort}`);
                 }
-                const queryString = queryParams.length > 0 ? `&${queryParams.join("&")}` : "";
-                return `/can-history/?can_id=${canId}${queryString}`;
+                const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
+                return `/cans/${canId}/history/${queryString}`;
             },
             providesTags: ["Cans"]
         }),

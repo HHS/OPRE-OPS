@@ -19,10 +19,10 @@ class CANHistoryListAPI(BaseListAPI):
 
     @jwt_required()
     @error_simulator
-    def get(self) -> Response:
+    def get(self, id: int) -> Response:
         data = self._get_schema.dump(self._get_schema.load(request.args))
         result = self.service.get(
-            data.get("can_id"),
+            id,
             data.get("limit"),
             data.get("offset"),
             data.get("fiscal_year"),
