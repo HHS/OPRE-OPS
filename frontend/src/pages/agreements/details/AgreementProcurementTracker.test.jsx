@@ -209,7 +209,10 @@ describe("AgreementProcurementTracker", () => {
     const mockAgreement = {
         id: 13,
         name: "Test Agreement",
-        authorized_user_ids: [1, 2, 3]
+        authorized_user_ids: [1, 2, 3],
+        _meta: {
+            isEditable: true
+        }
     };
 
     const mockTrackerData = {
@@ -247,6 +250,8 @@ describe("AgreementProcurementTracker", () => {
         });
         // Mock useGetUserFullNameFromId
         useGetUserFullNameFromId.mockReturnValue("Test User");
+        // Mock useIsUserSuperUser to return false by default (non-super-user)
+        useIsUserSuperUser.mockReturnValue(false);
     });
 
     afterEach(() => {
