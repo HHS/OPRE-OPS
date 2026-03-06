@@ -119,12 +119,12 @@ vi.mock("../../../components/Agreements/ProcurementTracker/ProcurementTrackerSte
 }));
 
 vi.mock("../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepThree", () => ({
-    default: ({ stepStatus, stepThreeData, hasActiveTracker, isDisabled }) => (
+    default: ({ stepStatus, stepThreeData, isDisabled }) => (
         <div
             data-testid="procurement-step-three"
             data-step-status={stepStatus}
             data-step-data-id={stepThreeData?.id}
-            data-is-disabled={isDisabled !== undefined ? String(isDisabled) : String(!hasActiveTracker)}
+            data-is-disabled={String(isDisabled)}
         >
             <p>
                 Once the Procurement Shop has posted the Solicitation and it&apos;s &quot;on the street&quot;, enter the
@@ -1634,7 +1634,7 @@ describe("AgreementProcurementTracker", () => {
             expect(stepTwo).toHaveAttribute("data-is-disabled", "false");
         });
 
-        it("should set hasActiveTracker=false for Step 3 when user is not authorized", async () => {
+        it("should set isDisabled=true for Step 3 when user is not authorized", async () => {
             const agreementWithoutMeta = { id: 13, authorized_user_ids: [1] };
 
             render(
@@ -1649,11 +1649,11 @@ describe("AgreementProcurementTracker", () => {
 
             // Wait for accordion to open and step to render
             const stepThree = await screen.findByTestId("procurement-step-three", {}, { timeout: 3000 });
-            // hasActiveTracker=true but isEditable=false => combined hasActiveTracker=false
+            // hasActiveTracker=true but isEditable=false => isDisabled=true
             expect(stepThree).toHaveAttribute("data-is-disabled", "true");
         });
 
-        it("should set hasActiveTracker=true for Step 3 when user is authorized", async () => {
+        it("should set isDisabled=false for Step 3 when user is authorized", async () => {
             const agreementWithMeta = {
                 id: 13,
                 authorized_user_ids: [1],
@@ -1672,7 +1672,7 @@ describe("AgreementProcurementTracker", () => {
 
             await waitFor(() => {
                 const stepThree = screen.getByTestId("procurement-step-three");
-                // hasActiveTracker=true && isEditable=true => combined hasActiveTracker=true
+                // hasActiveTracker=true && isEditable=true => isDisabled=false
                 expect(stepThree).toHaveAttribute("data-is-disabled", "false");
             });
         });

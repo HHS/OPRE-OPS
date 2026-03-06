@@ -1015,7 +1015,7 @@ describe("ProcurementTrackerStepOne", () => {
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                     authorizedUsers={mockAllUsers}
-                    isEditable={false}
+                    isDisabled={true}
                 />
             );
 
@@ -1031,7 +1031,7 @@ describe("ProcurementTrackerStepOne", () => {
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                     authorizedUsers={mockAllUsers}
-                    isEditable={false}
+                    isDisabled={true}
                 />
             );
 
@@ -1047,7 +1047,7 @@ describe("ProcurementTrackerStepOne", () => {
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                     authorizedUsers={mockAllUsers}
-                    isEditable={false}
+                    isDisabled={true}
                 />
             );
 
@@ -1065,7 +1065,7 @@ describe("ProcurementTrackerStepOne", () => {
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                     authorizedUsers={mockAllUsers}
-                    isEditable={false}
+                    isDisabled={true}
                 />
             );
 
@@ -1081,7 +1081,7 @@ describe("ProcurementTrackerStepOne", () => {
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                     authorizedUsers={mockAllUsers}
-                    isEditable={false}
+                    isDisabled={true}
                 />
             );
 
@@ -1097,7 +1097,7 @@ describe("ProcurementTrackerStepOne", () => {
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                     authorizedUsers={mockAllUsers}
-                    isEditable={false}
+                    isDisabled={true}
                 />
             );
 
@@ -1113,7 +1113,7 @@ describe("ProcurementTrackerStepOne", () => {
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                     authorizedUsers={mockAllUsers}
-                    isEditable={true}
+                    isDisabled={false}
                 />
             );
 
@@ -1136,7 +1136,7 @@ describe("ProcurementTrackerStepOne", () => {
                     isActiveStep={false}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                     authorizedUsers={mockAllUsers}
-                    isEditable={false}
+                    isDisabled={true}
                 />
             );
 
