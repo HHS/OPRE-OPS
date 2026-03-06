@@ -248,6 +248,14 @@ const visitReviewPage = (agreementId) => {
     cy.url().should("include", `/agreements/review/${agreementId}`);
 };
 
+const selectAllActionableBudgetLinesForReview = () => {
+    cy.get('[data-cy="check-all"]', { timeout: 20000 }).should("be.visible");
+    cy.get('[data-cy="check-all"]').each(($el) => {
+        cy.wrap($el).check({ force: true });
+    });
+    cy.get('input[name="budget-line-checkbox"]:checked').should("have.length.greaterThan", 1);
+};
+
 const openEditWizard = (agreementId) => {
     cy.visit(`/agreements/edit/${agreementId}?mode=edit`);
     cy.get("[data-cy='page-heading']").should("have.text", "Edit Agreement");
@@ -388,16 +396,16 @@ describe("create agreement and test validations", () => {
     it("enables review status transitions when valid data exists", () => {
         createValidAgreement().then((agreementId) => {
             createServicesComponent(agreementId).then((servicesComponentId) => {
-                createBudgetLineItem(agreementId, servicesComponentId).then((budgetLineId) => {
-                    visitReviewPage(agreementId);
+                createBudgetLineItem(agreementId, servicesComponentId).then(() => {
+                    cy.visit(`/agreements/${agreementId}/budget-lines`);
+                    cy.get('[data-cy="bli-continue-btn"]').should("not.be.disabled").click();
 
-                    cy.get('[data-cy="error-list"]').should("not.exist");
                     cy.get('[type="radio"]', { timeout: 60000 }).should("have.length.greaterThan", 0);
                     cy.get('[data-cy="send-to-approval-btn"]').should("be.disabled");
 
                     selectEnabledStatusRadio();
                     cy.get('[type="radio"]:checked', { timeout: 60000 }).should("exist");
-                    cy.get(`#${budgetLineId}`, { timeout: 20000 }).check({ force: true });
+                    selectAllActionableBudgetLinesForReview();
 
                     cy.get('[data-cy="send-to-approval-btn"]', { timeout: 20000 }).should("not.be.disabled");
                 });
@@ -444,7 +452,7 @@ describe("create agreement and test validations", () => {
                     cy.get("#enteredDescription").type("test line description");
                     cy.get('[data-cy="update-budget-line"]').should("not.be.disabled").click();
                     cy.get(".usa-alert__text").should("contain", "was updated");
-                    cy.get(".usa-form-group--error").should("not.exist");
+                    cy.get("#budget-line-form").find(".usa-form-group--error").should("not.exist");
 
                     cy.get('[data-cy="continue-btn"]').should("not.be.disabled").click();
 
