@@ -60,10 +60,21 @@ export const useTagsList = (filters) => {
                 setTagsList((prevState) => [...prevState.filter((t) => t.filter !== filterName), ...selectedTags]);
             } else if (filterKey == "fiscalYear") {
                 const selectedTags =
-                    filters[filterKey]?.map((item) => ({
-                        tagText: "FY " + item.title,
-                        filter: filterName
-                    })) ?? [];
+                    filters[filterKey]?.map((item) => {
+                        // Special handling for "All FYs" option
+                        if (item.id === "all" || item.title === "All FYs") {
+                            return {
+                                tagText: "All FYs",
+                                filter: filterName
+                            };
+                        }
+                        // Check if title already starts with "FY " to avoid duplicating
+                        const tag = item.title.toString().startsWith("FY ") ? item.title : `FY ${item.title}`;
+                        return {
+                            tagText: tag,
+                            filter: filterName
+                        };
+                    }) ?? [];
                 setTagsList((prevState) => [...prevState.filter((t) => t.filter !== filterName), ...selectedTags]);
             } else {
                 const selectedTags =
@@ -118,7 +129,17 @@ export const removeFilter = (tag, setFilters) => {
         case "fiscalYear":
             setFilters((prevState) => ({
                 ...prevState,
-                fiscalYear: prevState.fiscalYear.filter((fiscalYear) => "FY " + fiscalYear.title !== tag.tagText)
+                fiscalYear: prevState.fiscalYear.filter((fiscalYear) => {
+                    // Handle "All FYs" special case
+                    if (tag.tagText === "All FYs") {
+                        return fiscalYear.id !== "all" && fiscalYear.title !== "All FYs";
+                    }
+                    // Check if title already starts with "FY " to match the tag creation logic
+                    const formattedTitle = fiscalYear.title.toString().startsWith("FY ")
+                        ? fiscalYear.title
+                        : `FY ${fiscalYear.title}`;
+                    return formattedTitle !== tag.tagText;
+                })
             }));
             break;
         case "portfolio":

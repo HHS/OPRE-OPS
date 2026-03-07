@@ -5,8 +5,9 @@ import { getCurrentFiscalYear } from "../../../../helpers/utils";
  * A filter for CANs list.
  * @param {import ('./AgreementsFilterTypes').Filters} filters - The current filters.
  * @param {Function} setFilters - A function to call to set the filters.
+ * @param {string|number} selectedFiscalYear - The current fiscal year value from the page-level dropdown.
  */
-export const useAgreementsFilterButton = (filters, setFilters) => {
+export const useAgreementsFilterButton = (filters, setFilters, selectedFiscalYear) => {
     const [fiscalYear, setFiscalYear] = React.useState([]);
     const [portfolio, setPortfolio] = React.useState([]);
     const [projectTitle, setProjectTitle] = React.useState([]);
@@ -103,7 +104,8 @@ export const useAgreementsFilterButton = (filters, setFilters) => {
         setAwardType,
         applyFilter,
         resetFilter,
-        currentFiscalYear
+        currentFiscalYear,
+        selectedFiscalYear
     };
 };
 

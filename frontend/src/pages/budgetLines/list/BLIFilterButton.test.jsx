@@ -238,7 +238,7 @@ describe("BLIFilterButton", () => {
         expect(result.fiscalYears).toBeNull();
     });
 
-    it("sets fiscalYears to undefined when Compare Fiscal Years is cleared", async () => {
+    it("sets fiscalYears to empty array when Compare Fiscal Years is cleared", async () => {
         render(
             <BLIFilterButton
                 filters={defaultFilters}
@@ -255,7 +255,7 @@ describe("BLIFilterButton", () => {
 
         const setFiltersCallback = mockSetFilters.mock.calls[0][0];
         const result = setFiltersCallback(defaultFilters);
-        expect(result.fiscalYears).toBeUndefined();
+        expect(result.fiscalYears).toEqual([]);
     });
 
     it("resets filters correctly", async () => {

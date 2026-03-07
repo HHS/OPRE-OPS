@@ -121,17 +121,22 @@ const AgreementsList = () => {
         setCurrentPage(1);
     }, [filters, myAgreementsUrl, sortCondition, sortDescending]);
 
-    // Sync fiscal year filter modal with page-level dropdown
-    // When "All FYs" is selected in the filter modal, change page dropdown to "All"
+    // Sync fiscal year filter modal selections back to page-level dropdown
     useEffect(() => {
         if (filters.fiscalYear && filters.fiscalYear.length > 0) {
             const hasAllFYs = filters.fiscalYear.some((fy) => fy.id === "all");
 
-            if (hasAllFYs && selectedFiscalYear !== "All") {
+            if (hasAllFYs) {
                 setSelectedFiscalYear("All");
+            } else if (filters.fiscalYear.length > 1) {
+                setSelectedFiscalYear("Multi");
+            } else if (filters.fiscalYear.length === 1) {
+                setSelectedFiscalYear(filters.fiscalYear[0].id);
             }
         }
-    }, [filters.fiscalYear, selectedFiscalYear]);
+        // Note: Don't reset to current fiscal year when filters.fiscalYear is empty,
+        // as this could be from page dropdown changes which manage their own state
+    }, [filters.fiscalYear]);
 
     // Handle fiscal year change - clear filters when changing fiscal year selection
     const handleChangeFiscalYear = (newValue) => {
@@ -355,6 +360,7 @@ const AgreementsList = () => {
                                         filters={filters}
                                         setFilters={setFilters}
                                         agreementFilterOptions={agreementFilterOptions}
+                                        selectedFiscalYear={selectedFiscalYear}
                                     />
                                 </div>
                             </div>
