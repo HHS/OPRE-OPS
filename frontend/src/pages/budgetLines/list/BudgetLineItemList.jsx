@@ -49,7 +49,11 @@ const BudgetLineItemList = () => {
         } else if ((filters.fiscalYears ?? []).length === 1) {
             setIsFiscalYearShortcutActive(false);
             setFiscalYearShortcut(filters.fiscalYears[0].id);
-        } else if ((filters.fiscalYears ?? []).length === 0 && !isFiscalYearShortcutActive && fiscalYearShortcut !== "All") {
+        } else if (
+            (filters.fiscalYears ?? []).length === 0 &&
+            !isFiscalYearShortcutActive &&
+            fiscalYearShortcut !== "All"
+        ) {
             // Reset to current fiscal year, but preserve "All" state
             setFiscalYearShortcut(getCurrentFiscalYear());
         } else if (fiscalYearShortcut === "Multi" && !isFiscalYearShortcutActive) {
