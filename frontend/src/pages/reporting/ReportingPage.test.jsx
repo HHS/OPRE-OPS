@@ -16,6 +16,10 @@ vi.mock("../../components/Portfolios/PortfolioSummaryCards", () => ({
     default: () => <div data-testid="portfolio-summary-cards">Summary Cards</div>
 }));
 
+vi.mock("../../components/Agreements/AgreementSpendingCards", () => ({
+    default: () => <div data-testid="agreement-spending-cards">Spending Cards</div>
+}));
+
 const mockDefaultHookReturn = {
     fiscalYear: 2026,
     selectedFiscalYear: "2026",
@@ -23,6 +27,7 @@ const mockDefaultHookReturn = {
     totalFunding: 15000000,
     totalSpending: 8000000,
     portfoliosWithFunding: [{ id: 1, name: "Test Portfolio" }],
+    agreementSpendingData: { total_spending: 5000000, agreement_types: [] },
     isLoading: false,
     isError: false
 };
@@ -67,6 +72,11 @@ describe("ReportingPage", () => {
     it("should render the PortfolioSummaryCards", () => {
         renderWithProviders(<ReportingPage />);
         expect(screen.getByTestId("portfolio-summary-cards")).toBeInTheDocument();
+    });
+
+    it("should render the AgreementSpendingCards", () => {
+        renderWithProviders(<ReportingPage />);
+        expect(screen.getByTestId("agreement-spending-cards")).toBeInTheDocument();
     });
 
     it("should render loading state when data is loading", () => {

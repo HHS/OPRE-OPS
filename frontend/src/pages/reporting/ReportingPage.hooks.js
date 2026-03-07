@@ -1,5 +1,9 @@
 import { useState, useMemo } from "react";
-import { useGetPortfolioFundingSummaryBatchQuery, useGetPortfoliosQuery } from "../../api/opsAPI";
+import {
+    useGetAgreementSpendingSummaryQuery,
+    useGetPortfolioFundingSummaryBatchQuery,
+    useGetPortfoliosQuery
+} from "../../api/opsAPI";
 import { getCurrentFiscalYear } from "../../helpers/utils";
 
 export const useReportingPageData = () => {
@@ -18,8 +22,14 @@ export const useReportingPageData = () => {
         isError: isErrorFunding
     } = useGetPortfolioFundingSummaryBatchQuery({ fiscalYear });
 
-    const isLoading = isLoadingPortfolios || isLoadingFunding;
-    const isError = isErrorPortfolios || isErrorFunding;
+    const {
+        data: agreementSpendingData,
+        isLoading: isLoadingAgreementSpending,
+        isError: isErrorAgreementSpending
+    } = useGetAgreementSpendingSummaryQuery({ fiscalYear });
+
+    const isLoading = isLoadingPortfolios || isLoadingFunding || isLoadingAgreementSpending;
+    const isError = isErrorPortfolios || isErrorFunding || isErrorAgreementSpending;
 
     const { totalFunding, totalSpending } = useMemo(() => {
         if (!fundingData?.portfolios) {
@@ -72,6 +82,7 @@ export const useReportingPageData = () => {
         totalFunding,
         totalSpending,
         portfoliosWithFunding,
+        agreementSpendingData,
         isLoading,
         isError
     };

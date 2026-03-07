@@ -5,7 +5,8 @@ import * as opsAPI from "../../api/opsAPI";
 
 vi.mock("../../api/opsAPI", () => ({
     useGetPortfolioFundingSummaryBatchQuery: vi.fn(),
-    useGetPortfoliosQuery: vi.fn()
+    useGetPortfoliosQuery: vi.fn(),
+    useGetAgreementSpendingSummaryQuery: vi.fn()
 }));
 
 const mockAllPortfolios = [
@@ -40,14 +41,34 @@ const mockFundingData = {
     ]
 };
 
+const mockAgreementSpendingData = {
+    total_spending: 5000000,
+    agreement_types: [
+        { type: "CONTRACT", label: "Contracts", total: 3000000, percent: "60", new: 2000000, continuing: 1000000 },
+        { type: "PARTNER", label: "Partner", total: 1000000, percent: "20", new: 500000, continuing: 500000 },
+        { type: "GRANT", label: "Grants", total: 500000, percent: "10", new: 300000, continuing: 200000 },
+        {
+            type: "DIRECT_OBLIGATION",
+            label: "Direct Oblig.",
+            total: 500000,
+            percent: "10",
+            new: 250000,
+            continuing: 250000
+        }
+    ]
+};
+
 const setupMocks = (overrides = {}) => {
     const {
         portfolios = mockAllPortfolios,
         funding = mockFundingData,
+        agreementSpending = mockAgreementSpendingData,
         loadingPortfolios = false,
         loadingFunding = false,
+        loadingAgreementSpending = false,
         errorPortfolios = false,
-        errorFunding = false
+        errorFunding = false,
+        errorAgreementSpending = false
     } = overrides;
 
     opsAPI.useGetPortfoliosQuery.mockReturnValue({
@@ -59,6 +80,11 @@ const setupMocks = (overrides = {}) => {
         data: "funding" in overrides ? overrides.funding : funding,
         isLoading: loadingFunding,
         isError: errorFunding
+    });
+    opsAPI.useGetAgreementSpendingSummaryQuery.mockReturnValue({
+        data: "agreementSpending" in overrides ? overrides.agreementSpending : agreementSpending,
+        isLoading: loadingAgreementSpending,
+        isError: errorAgreementSpending
     });
 };
 
@@ -163,5 +189,30 @@ describe("useReportingPageData", () => {
         const { result } = renderHook(() => useReportingPageData());
 
         expect(result.current.portfoliosWithFunding).toEqual([]);
+    });
+
+    it("should return agreementSpendingData from the API", () => {
+        setupMocks();
+
+        const { result } = renderHook(() => useReportingPageData());
+
+        expect(result.current.agreementSpendingData).toEqual(mockAgreementSpendingData);
+        expect(result.current.agreementSpendingData.total_spending).toBe(5000000);
+    });
+
+    it("should include agreement spending loading state in isLoading", () => {
+        setupMocks({ loadingAgreementSpending: true, agreementSpending: null });
+
+        const { result } = renderHook(() => useReportingPageData());
+
+        expect(result.current.isLoading).toBe(true);
+    });
+
+    it("should include agreement spending error state in isError", () => {
+        setupMocks({ errorAgreementSpending: true, agreementSpending: null });
+
+        const { result } = renderHook(() => useReportingPageData());
+
+        expect(result.current.isError).toBe(true);
     });
 });
