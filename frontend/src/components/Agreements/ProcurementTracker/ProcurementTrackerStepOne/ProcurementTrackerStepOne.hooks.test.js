@@ -16,6 +16,7 @@ vi.mock("../../../../hooks/use-alert.hooks", () => ({
 }));
 vi.mock("./suite", () => {
     const mockSuite = vi.fn();
+    mockSuite.run = vi.fn();
     mockSuite.get = vi.fn(() => ({
         getErrors: vi.fn(() => []),
         hasErrors: vi.fn(() => false),

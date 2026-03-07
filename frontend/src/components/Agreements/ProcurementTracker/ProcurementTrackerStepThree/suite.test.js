@@ -7,21 +7,21 @@ describe("ProcurementTrackerStepThree Validation Suite", () => {
     });
 
     it("validates solicitation start date format", () => {
-        const result = suite({ solicitationPeriodStartDate: "2024-01-31" }, "solicitationPeriodStartDate");
+        const result = suite.run({ solicitationPeriodStartDate: "2024-01-31" }, "solicitationPeriodStartDate");
 
         expect(result.hasErrors("solicitationPeriodStartDate")).toBe(true);
         expect(result.getErrors("solicitationPeriodStartDate")).toContain("Date must be MM/DD/YYYY");
     });
 
     it("validates solicitation end date format", () => {
-        const result = suite({ solicitationPeriodEndDate: "2024-01-31" }, "solicitationPeriodEndDate");
+        const result = suite.run({ solicitationPeriodEndDate: "2024-01-31" }, "solicitationPeriodEndDate");
 
         expect(result.hasErrors("solicitationPeriodEndDate")).toBe(true);
         expect(result.getErrors("solicitationPeriodEndDate")).toContain("Date must be MM/DD/YYYY");
     });
 
     it("requires solicitation end date to be after solicitation start date", () => {
-        const result = suite(
+        const result = suite.run(
             {
                 solicitationPeriodStartDate: "02/10/2026",
                 solicitationPeriodEndDate: "02/09/2026"
@@ -34,7 +34,7 @@ describe("ProcurementTrackerStepThree Validation Suite", () => {
     });
 
     it("accepts solicitation end date after solicitation start date", () => {
-        const result = suite(
+        const result = suite.run(
             {
                 solicitationPeriodStartDate: "02/10/2026",
                 solicitationPeriodEndDate: "02/12/2026"

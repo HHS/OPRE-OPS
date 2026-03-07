@@ -43,7 +43,7 @@ const CreateProject = () => {
     const handleChange = (currentField, value) => {
         const nextState = { ...project, [currentField]: value };
         setProject(nextState);
-        suite(nextState, currentField);
+        suite.run(nextState, currentField);
     };
 
     const cn = classnames(suite.get(), {

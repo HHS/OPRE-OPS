@@ -142,14 +142,12 @@ const useCreateBLIsAndSCs = (
     }, [tempBudgetLines, servicesComponents]);
 
     // Validation
-    let res = suite.get();
+    const res = isReviewMode
+        ? suite.run({
+              budgetLines: tempBudgetLines
+          })
+        : suite.get();
     const pageErrors = res.getErrors();
-
-    if (isReviewMode) {
-        suite({
-            budgetLines: tempBudgetLines
-        });
-    }
     // Filter page errors to only include "Budget line item" errors and consolidate into single message
     const budgetLineErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget line item"));
 
@@ -323,7 +321,6 @@ const useCreateBLIsAndSCs = (
         setNeedByDate(null);
         setEnteredDescription(null);
         setBudgetLineBeingEdited(null);
-        suite.reset();
         budgetFormSuite.reset();
         datePickerSuite.reset();
     }, []);

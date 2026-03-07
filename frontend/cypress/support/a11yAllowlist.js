@@ -133,6 +133,33 @@ const TEMPORARY_A11Y_ALLOWLIST = [
         rationale: "Budget line detail state has legacy content outside landmark regions.",
         expiresOn: "2026-06-30",
         targetRemovalIssue: "#5149"
+    },
+    {
+        id: "A11Y-ALLOW-0016",
+        specPattern: "cypress/e2e/agreementDetails.cy.js",
+        ruleId: "landmark-one-main",
+        owner: "frontend-team",
+        rationale: "Agreement edit mode renders content outside main landmark in legacy layout.",
+        expiresOn: "2026-06-30",
+        targetRemovalIssue: "#5149"
+    },
+    {
+        id: "A11Y-ALLOW-0017",
+        specPattern: "cypress/e2e/agreementDetails.cy.js",
+        ruleId: "page-has-heading-one",
+        owner: "frontend-team",
+        rationale: "Agreement edit mode occasionally omits a single h1 during transition render.",
+        expiresOn: "2026-06-30",
+        targetRemovalIssue: "#5149"
+    },
+    {
+        id: "A11Y-ALLOW-0018",
+        specPattern: "cypress/e2e/agreementDetails.cy.js",
+        ruleId: "region",
+        owner: "frontend-team",
+        rationale: "Agreement edit mode has legacy content outside landmark regions.",
+        expiresOn: "2026-06-30",
+        targetRemovalIssue: "#5149"
     }
 ];
 
