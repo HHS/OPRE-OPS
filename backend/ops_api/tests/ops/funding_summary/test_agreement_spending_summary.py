@@ -14,7 +14,7 @@ from models import (
     GrantBudgetLineItem,
 )
 from models.agreements import AgreementClassification
-from ops_api.ops.utils.agreement_spending import (
+from ops_api.ops.utils.reporting_summary import (
     classify_agreement_for_fy,
     get_agreement_spending_by_type,
 )
@@ -92,7 +92,7 @@ class TestClassifyAgreementForFy:
 
 @pytest.fixture()
 def db_with_agreement_spending_data(app, loaded_db, app_ctx):
-    from models import CAN, CANFundingBudget, CANFundingDetails, Portfolio
+    from models import CAN, CANFundingBudget, CANFundingDetails, Portfolio, ResearchProject
 
     portfolio = Portfolio(name="SPENDING TEST PORTFOLIO", division_id=1)
     can = CAN(number="SPEND_TEST_CAN")
@@ -109,8 +109,13 @@ def db_with_agreement_spending_data(app, loaded_db, app_ctx):
     loaded_db.add(can_funding_budget)
     loaded_db.commit()
 
+    # Research project for the contract agreement
+    project = ResearchProject(title="Test Research Project", short_title="TRP", description="Test project")
+    loaded_db.add(project)
+    loaded_db.commit()
+
     # Contract agreement (NEW - not awarded)
-    contract = ContractAgreement(name="Test Contract", agreement_type=AgreementType.CONTRACT)
+    contract = ContractAgreement(name="Test Contract", agreement_type=AgreementType.CONTRACT, project_id=project.id)
     loaded_db.add(contract)
     loaded_db.commit()
 
@@ -126,7 +131,7 @@ def db_with_agreement_spending_data(app, loaded_db, app_ctx):
     loaded_db.commit()
 
     # Grant agreement (NEW - not awarded)
-    grant = GrantAgreement(name="Test Grant", agreement_type=AgreementType.GRANT)
+    grant = GrantAgreement(name="Test Grant", agreement_type=AgreementType.GRANT, project_id=project.id)
     loaded_db.add(grant)
     loaded_db.commit()
 
@@ -142,7 +147,9 @@ def db_with_agreement_spending_data(app, loaded_db, app_ctx):
     loaded_db.commit()
 
     # Contract with DRAFT BLI only (should be excluded)
-    contract_draft = ContractAgreement(name="Draft Only Contract", agreement_type=AgreementType.CONTRACT)
+    contract_draft = ContractAgreement(
+        name="Draft Only Contract", agreement_type=AgreementType.CONTRACT, project_id=project.id
+    )
     loaded_db.add(contract_draft)
     loaded_db.commit()
 
@@ -167,6 +174,7 @@ def db_with_agreement_spending_data(app, loaded_db, app_ctx):
         contract_draft,
         grant,
         contract,
+        project,
         can_funding_budget,
         can_funding_details,
         can,
@@ -219,23 +227,25 @@ def test_draft_blis_excluded(app, db_with_agreement_spending_data, app_ctx):
     assert type_map["CONTRACT"]["new"] >= 10000000.0
 
 
-@patch("ops_api.ops.resources.agreement_spending_summary.get_current_fiscal_year", return_value=2025)
+@patch("ops_api.ops.resources.reporting_summary.get_current_fiscal_year", return_value=2025)
 def test_endpoint_default_fy(mock_fy, auth_client, db_with_agreement_spending_data, app_ctx):
-    response = auth_client.get("/api/v1/agreement-spending-summary/")
+    response = auth_client.get("/api/v1/reporting-summary/")
     assert response.status_code == 200
     data = response.json
-    assert "total_spending" in data
-    assert "agreement_types" in data
-    assert len(data["agreement_types"]) == 4
+    assert "spending" in data
+    assert "counts" in data
+    assert "total_spending" in data["spending"]
+    assert "agreement_types" in data["spending"]
+    assert len(data["spending"]["agreement_types"]) == 4
 
 
 def test_endpoint_explicit_fy(auth_client, db_with_agreement_spending_data, app_ctx):
-    response = auth_client.get("/api/v1/agreement-spending-summary/?fiscal_year=2025")
+    response = auth_client.get("/api/v1/reporting-summary/?fiscal_year=2025")
     assert response.status_code == 200
     data = response.json
-    assert data["total_spending"] > 0
+    assert data["spending"]["total_spending"] > 0
 
 
 def test_endpoint_unauthorized(client):
-    response = client.get("/api/v1/agreement-spending-summary/")
+    response = client.get("/api/v1/reporting-summary/")
     assert response.status_code == 401

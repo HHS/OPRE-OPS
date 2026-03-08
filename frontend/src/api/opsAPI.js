@@ -781,14 +781,14 @@ export const opsApi = createApi({
             },
             providesTags: ["Portfolios"]
         }),
-        getAgreementSpendingSummary: builder.query({
+        getReportingSummary: builder.query({
             query: ({ fiscalYear }) => {
                 const queryParams = [];
                 if (fiscalYear) {
                     queryParams.push(`fiscal_year=${fiscalYear}`);
                 }
                 const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
-                return `/agreement-spending-summary/${queryString}`;
+                return `/reporting-summary/${queryString}`;
             },
             providesTags: ["Agreements"]
         }),
@@ -965,7 +965,7 @@ export const createResetApiOnLogoutMiddleware = (api) => (store) => (next) => (a
 export const resetApiOnLogoutMiddleware = createResetApiOnLogoutMiddleware(opsApi);
 
 export const {
-    useGetAgreementSpendingSummaryQuery,
+    useGetReportingSummaryQuery,
     useGetAgreementsQuery,
     useGetAgreementByIdQuery,
     useLazyGetAgreementByIdQuery,

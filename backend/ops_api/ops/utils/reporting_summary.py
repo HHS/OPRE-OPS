@@ -1,10 +1,10 @@
 from decimal import Decimal
 from typing import Optional
 
-from sqlalchemy import and_, select
+from sqlalchemy import and_, func, select
 from sqlalchemy.orm import Session, joinedload
 
-from models import Agreement, AgreementType, BudgetLineItem, BudgetLineItemStatus
+from models import Agreement, AgreementType, BudgetLineItem, BudgetLineItemStatus, Project
 from models.agreements import AgreementClassification
 
 SPENDING_STATUSES = [
@@ -127,3 +127,96 @@ def _get_percentage(total: Decimal, part: Decimal) -> str:
     if not total:
         return "0"
     return f"{round(float(part) / float(total), 2) * 100}"
+
+
+def get_reporting_counts(session: Session, fiscal_year: int) -> dict:
+    """Get reporting counts for projects, agreements, and budget lines for a given fiscal year."""
+
+    # --- Projects: count by type (projects with at least one BLI in the FY) ---
+    project_type_counts = session.execute(
+        select(Project.project_type, func.count(func.distinct(Project.id)))
+        .join(Agreement, Agreement.project_id == Project.id)
+        .join(BudgetLineItem, BudgetLineItem.agreement_id == Agreement.id)
+        .where(BudgetLineItem.fiscal_year == fiscal_year)
+        .group_by(Project.project_type)
+    ).all()
+
+    project_types = []
+    project_total = 0
+    for pt, count in project_type_counts:
+        project_types.append({"type": pt.name, "count": count})
+        project_total += count
+
+    projects = {"total": project_total, "types": project_types}
+
+    # --- Agreements: count by grouped type (non-DRAFT BLIs in FY) ---
+    stmt = (
+        select(Agreement)
+        .join(Agreement.budget_line_items)
+        .where(
+            and_(
+                BudgetLineItem.fiscal_year == fiscal_year,
+                BudgetLineItem.status != BudgetLineItemStatus.DRAFT,
+                BudgetLineItem.status.isnot(None),
+            )
+        )
+        .options(
+            joinedload(Agreement.budget_line_items),
+            joinedload(Agreement.procurement_actions),
+        )
+        .distinct()
+    )
+    agreements_list = session.execute(stmt).unique().scalars().all()
+
+    agreement_counts = {config["type"]: 0 for config in AGREEMENT_TYPE_CONFIG}
+    new_counts = {config["type"]: 0 for config in AGREEMENT_TYPE_CONFIG}
+    continuing_counts = {config["type"]: 0 for config in AGREEMENT_TYPE_CONFIG}
+
+    for agreement in agreements_list:
+        bucket_type = _find_bucket_type(agreement.agreement_type)
+        if bucket_type is None:
+            continue
+        agreement_counts[bucket_type] += 1
+
+        classification = classify_agreement_for_fy(agreement, fiscal_year)
+        if classification == AgreementClassification.NEW.name:
+            new_counts[bucket_type] += 1
+        elif classification == AgreementClassification.CONTINUING.name:
+            continuing_counts[bucket_type] += 1
+
+    def _build_type_list(counts_dict):
+        types = []
+        total = 0
+        for config in AGREEMENT_TYPE_CONFIG:
+            c = counts_dict[config["type"]]
+            types.append({"type": config["type"], "count": c})
+            total += c
+        return {"total": total, "types": types}
+
+    agreements = _build_type_list(agreement_counts)
+    new_agreements = _build_type_list(new_counts)
+    continuing_agreements = _build_type_list(continuing_counts)
+
+    # --- Budget lines: count by status for the FY ---
+    bli_status_counts = session.execute(
+        select(BudgetLineItem.status, func.count(BudgetLineItem.id))
+        .where(BudgetLineItem.fiscal_year == fiscal_year)
+        .group_by(BudgetLineItem.status)
+    ).all()
+
+    bli_types = []
+    bli_total = 0
+    for status, count in bli_status_counts:
+        if status is not None:
+            bli_types.append({"type": status.name, "count": count})
+            bli_total += count
+
+    budget_lines = {"total": bli_total, "types": bli_types}
+
+    return {
+        "projects": projects,
+        "agreements": agreements,
+        "new_agreements": new_agreements,
+        "continuing_agreements": continuing_agreements,
+        "budget_lines": budget_lines,
+    }
