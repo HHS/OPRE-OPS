@@ -25,6 +25,7 @@ import PortfolioSpending from "./components/Portfolios/PortfolioSpending";
 import PortfolioList from "./pages/portfolios/list/PortfolioList";
 import ResearchProjectDetail from "./pages/researchProjects/detail/ResearchProjectDetail";
 import ReleaseNotes from "./pages/home/release-notes";
+import ReportingPage from "./pages/reporting/ReportingPage";
 import UserAdmin from "./pages/users/admin/UserAdmin.jsx";
 import ReviewAgreement from "./pages/agreements/review/ReviewAgreement";
 import UserDetail from "./pages/users/detail/UserDetail";
@@ -241,6 +242,10 @@ const router = createBrowserRouter(
                 <Route
                     path="/cans"
                     element={<CanList />}
+                />
+                <Route
+                    path="/reporting"
+                    element={<ReportingPage />}
                 />
                 <Route
                     path="/cans/:id/*"

@@ -784,6 +784,17 @@ export const opsApi = createApi({
             },
             providesTags: ["Portfolios"]
         }),
+        getAgreementSpendingSummary: builder.query({
+            query: ({ fiscalYear }) => {
+                const queryParams = [];
+                if (fiscalYear) {
+                    queryParams.push(`fiscal_year=${fiscalYear}`);
+                }
+                const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
+                return `/agreement-spending-summary/${queryString}`;
+            },
+            providesTags: ["Agreements"]
+        }),
         getPortfolioFundingSummaryBatch: builder.query({
             query: ({ fiscalYear, portfolioIds, budgetMin, budgetMax, availablePct }) => {
                 const queryParams = [];
@@ -957,6 +968,7 @@ export const createResetApiOnLogoutMiddleware = (api) => (store) => (next) => (a
 export const resetApiOnLogoutMiddleware = createResetApiOnLogoutMiddleware(opsApi);
 
 export const {
+    useGetAgreementSpendingSummaryQuery,
     useGetAgreementsQuery,
     useGetAgreementByIdQuery,
     useLazyGetAgreementByIdQuery,

@@ -39,6 +39,7 @@ from ops_api.ops.resources.agreement_agency import (
     AgreementAgencyListAPI,
 )
 from ops_api.ops.resources.agreement_history import AgreementHistoryListAPI
+from ops_api.ops.resources.agreement_spending_summary import AgreementSpendingSummaryListAPI
 from ops_api.ops.resources.agreements import (
     AgreementItemAPI,
     AgreementListAPI,
@@ -226,6 +227,9 @@ PORTFOLIO_FUNDING_SUMMARY_LIST_API_VIEW_FUNC = PortfolioFundingSummaryListAPI.as
 )
 RESEARCH_PROJECT_FUNDING_SUMMARY_LIST_API_VIEW_FUNC = ResearchProjectFundingSummaryListAPI.as_view(
     "research-project-funding-summary-group", ResearchProject
+)
+AGREEMENT_SPENDING_SUMMARY_LIST_API_VIEW_FUNC = AgreementSpendingSummaryListAPI.as_view(
+    "agreement-spending-summary-list", Agreement
 )
 
 # FUNDING BUDGET ENDPOINTS
