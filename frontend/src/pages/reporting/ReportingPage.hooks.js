@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import {
-    useGetAgreementSpendingSummaryQuery,
+    useGetReportingSummaryQuery,
     useGetPortfolioFundingSummaryBatchQuery,
     useGetPortfoliosQuery
 } from "../../api/opsAPI";
@@ -23,13 +23,16 @@ export const useReportingPageData = () => {
     } = useGetPortfolioFundingSummaryBatchQuery({ fiscalYear });
 
     const {
-        data: agreementSpendingData,
-        isLoading: isLoadingAgreementSpending,
-        isError: isErrorAgreementSpending
-    } = useGetAgreementSpendingSummaryQuery({ fiscalYear });
+        data: reportingSummaryResponse,
+        isLoading: isLoadingReportingSummary,
+        isError: isErrorReportingSummary
+    } = useGetReportingSummaryQuery({ fiscalYear });
 
-    const isLoading = isLoadingPortfolios || isLoadingFunding || isLoadingAgreementSpending;
-    const isError = isErrorPortfolios || isErrorFunding || isErrorAgreementSpending;
+    const agreementSpendingData = reportingSummaryResponse?.spending;
+    const reportingSummaryData = reportingSummaryResponse?.counts;
+
+    const isLoading = isLoadingPortfolios || isLoadingFunding || isLoadingReportingSummary;
+    const isError = isErrorPortfolios || isErrorFunding || isErrorReportingSummary;
 
     const { totalFunding, totalSpending } = useMemo(() => {
         if (!fundingData?.portfolios) {
@@ -83,6 +86,7 @@ export const useReportingPageData = () => {
         totalSpending,
         portfoliosWithFunding,
         agreementSpendingData,
+        reportingSummaryData,
         isLoading,
         isError
     };

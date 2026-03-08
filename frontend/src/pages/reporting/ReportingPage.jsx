@@ -1,6 +1,7 @@
 import App from "../../App";
 import AgreementSpendingCards from "../../components/Agreements/AgreementSpendingCards";
 import PortfolioSummaryCards from "../../components/Portfolios/PortfolioSummaryCards";
+import ReportingCountCard from "../../components/Reporting/ReportingCountCard";
 import BigBudgetCard from "../../components/UI/Cards/BudgetCard/BigBudgetCard";
 import FiscalYear from "../../components/UI/FiscalYear/FiscalYear";
 import { useReportingPageData } from "./ReportingPage.hooks";
@@ -14,6 +15,7 @@ const ReportingPage = () => {
         totalSpending,
         portfoliosWithFunding,
         agreementSpendingData,
+        reportingSummaryData,
         isLoading
     } = useReportingPageData();
 
@@ -50,12 +52,20 @@ const ReportingPage = () => {
             <h2 className="margin-bottom-1">Spending Summary</h2>
             <p>This is a summary of OPRE&apos;s spending for the selected FY and applied filters.</p>
             {!isLoading && (
-                <div className="margin-top-4">
-                    <AgreementSpendingCards
-                        fiscalYear={fiscalYear}
-                        spendingData={agreementSpendingData}
-                    />
-                </div>
+                <>
+                    <div className="margin-top-4">
+                        <AgreementSpendingCards
+                            fiscalYear={fiscalYear}
+                            spendingData={agreementSpendingData}
+                        />
+                    </div>
+                    <div className="margin-top-4">
+                        <ReportingCountCard
+                            fiscalYear={fiscalYear}
+                            counts={reportingSummaryData}
+                        />
+                    </div>
+                </>
             )}
         </App>
     );

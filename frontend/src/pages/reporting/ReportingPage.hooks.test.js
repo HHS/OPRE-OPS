@@ -6,7 +6,7 @@ import * as opsAPI from "../../api/opsAPI";
 vi.mock("../../api/opsAPI", () => ({
     useGetPortfolioFundingSummaryBatchQuery: vi.fn(),
     useGetPortfoliosQuery: vi.fn(),
-    useGetAgreementSpendingSummaryQuery: vi.fn()
+    useGetReportingSummaryQuery: vi.fn()
 }));
 
 const mockAllPortfolios = [
@@ -41,34 +41,43 @@ const mockFundingData = {
     ]
 };
 
-const mockAgreementSpendingData = {
-    total_spending: 5000000,
-    agreement_types: [
-        { type: "CONTRACT", label: "Contracts", total: 3000000, percent: "60", new: 2000000, continuing: 1000000 },
-        { type: "PARTNER", label: "Partner", total: 1000000, percent: "20", new: 500000, continuing: 500000 },
-        { type: "GRANT", label: "Grants", total: 500000, percent: "10", new: 300000, continuing: 200000 },
-        {
-            type: "DIRECT_OBLIGATION",
-            label: "Direct Oblig.",
-            total: 500000,
-            percent: "10",
-            new: 250000,
-            continuing: 250000
-        }
-    ]
+const mockReportingSummaryData = {
+    spending: {
+        total_spending: 5000000,
+        agreement_types: [
+            { type: "CONTRACT", label: "Contracts", total: 3000000, percent: "60", new: 2000000, continuing: 1000000 },
+            { type: "PARTNER", label: "Partner", total: 1000000, percent: "20", new: 500000, continuing: 500000 },
+            { type: "GRANT", label: "Grants", total: 500000, percent: "10", new: 300000, continuing: 200000 },
+            {
+                type: "DIRECT_OBLIGATION",
+                label: "Direct Oblig.",
+                total: 500000,
+                percent: "10",
+                new: 250000,
+                continuing: 250000
+            }
+        ]
+    },
+    counts: {
+        projects: { total: 34, types: [{ type: "RESEARCH", count: 24 }] },
+        agreements: { total: 40, types: [{ type: "CONTRACT", count: 20 }] },
+        new_agreements: { total: 17, types: [{ type: "CONTRACT", count: 10 }] },
+        continuing_agreements: { total: 15, types: [{ type: "CONTRACT", count: 10 }] },
+        budget_lines: { total: 80, types: [{ type: "DRAFT", count: 10 }] }
+    }
 };
 
 const setupMocks = (overrides = {}) => {
     const {
         portfolios = mockAllPortfolios,
         funding = mockFundingData,
-        agreementSpending = mockAgreementSpendingData,
+        reportingSummary = mockReportingSummaryData,
         loadingPortfolios = false,
         loadingFunding = false,
-        loadingAgreementSpending = false,
+        loadingReportingSummary = false,
         errorPortfolios = false,
         errorFunding = false,
-        errorAgreementSpending = false
+        errorReportingSummary = false
     } = overrides;
 
     opsAPI.useGetPortfoliosQuery.mockReturnValue({
@@ -81,10 +90,10 @@ const setupMocks = (overrides = {}) => {
         isLoading: loadingFunding,
         isError: errorFunding
     });
-    opsAPI.useGetAgreementSpendingSummaryQuery.mockReturnValue({
-        data: "agreementSpending" in overrides ? overrides.agreementSpending : agreementSpending,
-        isLoading: loadingAgreementSpending,
-        isError: errorAgreementSpending
+    opsAPI.useGetReportingSummaryQuery.mockReturnValue({
+        data: "reportingSummary" in overrides ? overrides.reportingSummary : reportingSummary,
+        isLoading: loadingReportingSummary,
+        isError: errorReportingSummary
     });
 };
 
@@ -191,25 +200,34 @@ describe("useReportingPageData", () => {
         expect(result.current.portfoliosWithFunding).toEqual([]);
     });
 
-    it("should return agreementSpendingData from the API", () => {
+    it("should return agreementSpendingData from the reporting summary response", () => {
         setupMocks();
 
         const { result } = renderHook(() => useReportingPageData());
 
-        expect(result.current.agreementSpendingData).toEqual(mockAgreementSpendingData);
+        expect(result.current.agreementSpendingData).toEqual(mockReportingSummaryData.spending);
         expect(result.current.agreementSpendingData.total_spending).toBe(5000000);
     });
 
-    it("should include agreement spending loading state in isLoading", () => {
-        setupMocks({ loadingAgreementSpending: true, agreementSpending: null });
+    it("should return reportingSummaryData (counts) from the reporting summary response", () => {
+        setupMocks();
+
+        const { result } = renderHook(() => useReportingPageData());
+
+        expect(result.current.reportingSummaryData).toEqual(mockReportingSummaryData.counts);
+        expect(result.current.reportingSummaryData.projects.total).toBe(34);
+    });
+
+    it("should include reporting summary loading state in isLoading", () => {
+        setupMocks({ loadingReportingSummary: true, reportingSummary: null });
 
         const { result } = renderHook(() => useReportingPageData());
 
         expect(result.current.isLoading).toBe(true);
     });
 
-    it("should include agreement spending error state in isError", () => {
-        setupMocks({ errorAgreementSpending: true, agreementSpending: null });
+    it("should include reporting summary error state in isError", () => {
+        setupMocks({ errorReportingSummary: true, reportingSummary: null });
 
         const { result } = renderHook(() => useReportingPageData());
 
