@@ -1,6 +1,7 @@
 import App from "../../App";
 import AgreementSpendingCards from "../../components/Agreements/AgreementSpendingCards";
 import AgreementSpendingSummaryCard from "../../components/Agreements/AgreementSpendingSummaryCard";
+import BLIStatusSummaryCard from "../../components/BudgetLineItems/BLIStatusSummaryCard";
 import PortfolioSummaryCards from "../../components/Portfolios/PortfolioSummaryCards";
 import ReportingCountCard from "../../components/Reporting/ReportingCountCard";
 import BigBudgetCard from "../../components/UI/Cards/BudgetCard/BigBudgetCard";
@@ -17,6 +18,7 @@ const ReportingPage = () => {
         portfoliosWithFunding,
         agreementSpendingData,
         reportingSummaryData,
+        bliStatusSpending,
         isLoading
     } = useReportingPageData();
 
@@ -66,7 +68,7 @@ const ReportingPage = () => {
                             counts={reportingSummaryData}
                         />
                     </div>
-                    <div className="margin-top-4">
+                    <div className="margin-top-4 display-flex flex-justify gap-4">
                         <AgreementSpendingSummaryCard
                             titlePrefix={`FY ${fiscalYear}`}
                             contractTotal={
@@ -82,6 +84,14 @@ const ReportingPage = () => {
                                 agreementSpendingData?.agreement_types?.find((t) => t.type === "DIRECT_OBLIGATION")
                                     ?.total ?? 0
                             }
+                        />
+                        <BLIStatusSummaryCard
+                            titlePrefix={`FY ${fiscalYear}`}
+                            totalDraftAmount={bliStatusSpending.draft}
+                            totalPlannedAmount={bliStatusSpending.planned}
+                            totalExecutingAmount={bliStatusSpending.inExecution}
+                            totalObligatedAmount={bliStatusSpending.obligated}
+                            totalAmount={bliStatusSpending.total}
                         />
                     </div>
                 </>

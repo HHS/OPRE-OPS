@@ -226,6 +226,34 @@ describe("useReportingPageData", () => {
         expect(result.current.isLoading).toBe(true);
     });
 
+    it("should aggregate bliStatusSpending across all portfolios", () => {
+        setupMocks();
+
+        const { result } = renderHook(() => useReportingPageData());
+
+        expect(result.current.bliStatusSpending).toEqual({
+            draft: 1500000,
+            planned: 2500000,
+            inExecution: 1500000,
+            obligated: 4000000,
+            total: 9500000
+        });
+    });
+
+    it("should return zero bliStatusSpending when fundingData is unavailable", () => {
+        setupMocks({ funding: null });
+
+        const { result } = renderHook(() => useReportingPageData());
+
+        expect(result.current.bliStatusSpending).toEqual({
+            draft: 0,
+            planned: 0,
+            inExecution: 0,
+            obligated: 0,
+            total: 0
+        });
+    });
+
     it("should include reporting summary error state in isError", () => {
         setupMocks({ errorReportingSummary: true, reportingSummary: null });
 

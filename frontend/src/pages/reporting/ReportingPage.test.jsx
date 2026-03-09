@@ -28,6 +28,10 @@ vi.mock("../../components/Agreements/AgreementSpendingSummaryCard", () => ({
     default: () => <div data-testid="agreement-spending-summary-card">Spending Summary</div>
 }));
 
+vi.mock("../../components/BudgetLineItems/BLIStatusSummaryCard", () => ({
+    default: () => <div data-testid="bli-status-summary-card">BLI Status Summary</div>
+}));
+
 const mockDefaultHookReturn = {
     fiscalYear: 2026,
     selectedFiscalYear: "2026",
@@ -37,6 +41,7 @@ const mockDefaultHookReturn = {
     portfoliosWithFunding: [{ id: 1, name: "Test Portfolio" }],
     agreementSpendingData: { total_spending: 5000000, agreement_types: [] },
     reportingSummaryData: { projects: { total: 10, types: [] }, agreements: { total: 20, types: [] } },
+    bliStatusSpending: { draft: 1500000, planned: 2500000, inExecution: 1500000, obligated: 4000000, total: 9500000 },
     isLoading: false,
     isError: false
 };
@@ -96,6 +101,11 @@ describe("ReportingPage", () => {
     it("should render the AgreementSpendingSummaryCard", () => {
         renderWithProviders(<ReportingPage />);
         expect(screen.getByTestId("agreement-spending-summary-card")).toBeInTheDocument();
+    });
+
+    it("should render the BLIStatusSummaryCard", () => {
+        renderWithProviders(<ReportingPage />);
+        expect(screen.getByTestId("bli-status-summary-card")).toBeInTheDocument();
     });
 
     it("should render loading state when data is loading", () => {

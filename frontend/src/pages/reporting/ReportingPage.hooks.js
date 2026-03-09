@@ -52,6 +52,28 @@ export const useReportingPageData = () => {
         );
     }, [fundingData]);
 
+    const bliStatusSpending = useMemo(() => {
+        if (!fundingData?.portfolios) {
+            return { draft: 0, planned: 0, inExecution: 0, obligated: 0, total: 0 };
+        }
+
+        return fundingData.portfolios.reduce(
+            (acc, portfolio) => {
+                acc.draft += portfolio.draft_funding?.amount ?? 0;
+                acc.planned += portfolio.planned_funding?.amount ?? 0;
+                acc.inExecution += portfolio.in_execution_funding?.amount ?? 0;
+                acc.obligated += portfolio.obligated_funding?.amount ?? 0;
+                acc.total +=
+                    (portfolio.draft_funding?.amount ?? 0) +
+                    (portfolio.planned_funding?.amount ?? 0) +
+                    (portfolio.in_execution_funding?.amount ?? 0) +
+                    (portfolio.obligated_funding?.amount ?? 0);
+                return acc;
+            },
+            { draft: 0, planned: 0, inExecution: 0, obligated: 0, total: 0 }
+        );
+    }, [fundingData]);
+
     const portfoliosWithFunding = useMemo(() => {
         if (!fundingData?.portfolios || !allPortfolios) return [];
 
@@ -87,6 +109,7 @@ export const useReportingPageData = () => {
         portfoliosWithFunding,
         agreementSpendingData,
         reportingSummaryData,
+        bliStatusSpending,
         isLoading,
         isError
     };
