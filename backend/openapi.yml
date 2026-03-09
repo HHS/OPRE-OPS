@@ -22,6 +22,8 @@ tags:
     description: Procurement trackers for tracking the workflow of procurement actions
   - name: Procurement Tracker Steps
     description: Individual workflow steps within procurement trackers
+  - name: Lookups
+    description: Lookup endpoints for enum values and reference data
 paths:
   /agreements/:
     get:
@@ -4008,6 +4010,145 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SpecialTopic"
+  /lookups/agreement-types/:
+    get:
+      tags:
+        - Lookups
+      operationId: getLookupAgreementTypes
+      description: Get a list of all agreement type enum values
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                  enum:
+                    - CONTRACT
+                    - GRANT
+                    - DIRECT_OBLIGATION
+                    - IAA
+                    - AA
+                example:
+                  - CONTRACT
+                  - GRANT
+                  - DIRECT_OBLIGATION
+                  - IAA
+                  - AA
+        "401":
+          description: Unauthorized
+  /lookups/agreement-reasons/:
+    get:
+      tags:
+        - Lookups
+      operationId: getLookupAgreementReasons
+      description: Get a list of all agreement reason enum values
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                  enum:
+                    - NEW_REQ
+                    - RECOMPETE
+                    - LOGICAL_FOLLOW_ON
+                example:
+                  - NEW_REQ
+                  - RECOMPETE
+                  - LOGICAL_FOLLOW_ON
+        "401":
+          description: Unauthorized
+  /lookups/research-types/:
+    get:
+      tags:
+        - Lookups
+      operationId: getLookupResearchTypes
+      description: Get a mapping of research type enum names to their integer values
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: integer
+                example:
+                  APPLIED_RESEARCH: 1
+                  EVALUATIVE_RESEARCH: 2
+                  PROGRAM_SUPPORT: 3
+        "401":
+          description: Unauthorized
+  /lookups/portfolio-status/:
+    get:
+      tags:
+        - Lookups
+      operationId: getLookupPortfolioStatuses
+      description: Get a list of all portfolio status enum values
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                  enum:
+                    - IN_PROCESS
+                    - NOT_STARTED
+                    - SANDBOX
+                example:
+                  - IN_PROCESS
+                  - NOT_STARTED
+                  - SANDBOX
+        "401":
+          description: Unauthorized
+  /lookups/portfolio-status/{id}:
+    get:
+      tags:
+        - Lookups
+      operationId: getLookupPortfolioStatusById
+      description: Get a single portfolio status enum value by its integer ID
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: id
+          description: Portfolio status enum ID
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            maximum: 3
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: string
+                enum:
+                  - IN_PROCESS
+                  - NOT_STARTED
+                  - SANDBOX
+                example: IN_PROCESS
+        "401":
+          description: Unauthorized
 components:
   parameters:
     created_by:
