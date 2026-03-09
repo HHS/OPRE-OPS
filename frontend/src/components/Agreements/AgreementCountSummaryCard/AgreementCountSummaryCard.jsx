@@ -28,13 +28,15 @@ const PARTNER_TYPES = ["AA", "IAA"];
  * @param {Object} countsObj - Object with type keys and count values
  * @returns {{type: string, count: number}[]}
  */
+const TYPE_ORDER = ["CONTRACT", "Partner", "GRANT", "DIRECT_OBLIGATION"];
+
 const convertTypeCountsObjToArray = (countsObj) => {
     const merged = {};
     for (const [type, count] of Object.entries(countsObj)) {
         const key = PARTNER_TYPES.includes(type) ? "Partner" : type;
         merged[key] = (merged[key] || 0) + count;
     }
-    return Object.entries(merged).map(([type, count]) => ({ type, count }));
+    return TYPE_ORDER.filter((type) => type in merged).map((type) => ({ type, count: merged[type] }));
 };
 
 const AgreementCountSummaryCard = ({ title, fiscalYear, totals }) => {
