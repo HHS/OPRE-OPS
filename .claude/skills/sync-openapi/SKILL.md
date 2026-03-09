@@ -3,6 +3,7 @@ name: sync-openapi
 description: Sync, update, and validate the OpenAPI specification (backend/openapi.yml) against the Flask API routes. Use when endpoints have been added, changed, or removed.
 argument-hint: "[endpoint-path | --branch | --all]"
 allowed-tools: Read, Grep, Glob, Bash, Edit, Write
+disable-model-invocation: true
 ---
 
 # Sync OpenAPI Specification

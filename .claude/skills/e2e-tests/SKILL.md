@@ -3,6 +3,7 @@ name: e2e-tests
 description: Run, monitor, and fix frontend Cypress E2E tests. Handles local execution, CI monitoring, failure diagnosis, and flaky test detection.
 argument-hint: "[run | run <spec> | monitor | fix <spec> | flaky | status]"
 allowed-tools: Read, Grep, Glob, Bash, Edit, Write, Task, WebFetch
+disable-model-invocation: true
 ---
 
 # E2E Test Runner, Monitor, and Fixer
