@@ -92,7 +92,7 @@ jobs:
       # Upload Cypress screenshots as artifact if a test fails
       - name: Upload screenshots if failure
         if: failure() # This step will run only if the previous step fails
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           path: frontend/cypress/${{ steps.get-filename.outputs.TEST_FILE }}/screenshots # Update this path based on your project structure
           name: cypress-screenshots-${{ github.run_id }}-${{ github.sha }}-${{ steps.get-filename.outputs.TEST_FILE }}
@@ -107,7 +107,7 @@ jobs:
       # Upload logs as artifact
       - name: Upload logs as artifact
         if: always() # Ensure this runs, even if E2E fails
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           path: full-stack-logs-${{ steps.get-filename.outputs.TEST_FILE }}.log
           name: full-stack-logs-${{ github.run_id }}-${{ github.sha }}-${{ steps.get-filename.outputs.TEST_FILE }}.log
@@ -115,7 +115,7 @@ jobs:
       # Upload Cypress output for flaky test analysis
       - name: Upload Cypress output log
         if: always()
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           path: frontend/cypress-output-${{ steps.get-filename.outputs.TEST_FILE }}.log
           name: cypress-output-${{ github.run_id }}-${{ github.sha }}-${{ steps.get-filename.outputs.TEST_FILE }}.log
@@ -131,7 +131,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Download all Cypress output artifacts
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8
         continue-on-error: true
         with:
           pattern: cypress-output-${{ github.run_id }}-${{ github.sha }}-*

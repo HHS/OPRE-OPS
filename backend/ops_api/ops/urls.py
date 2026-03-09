@@ -28,7 +28,8 @@ from ops_api.ops.views import (
     CHANGE_REQUEST_LIST_API_VIEW_FUNC,
     DIVISIONS_ITEM_API_VIEW_FUNC,
     DIVISIONS_LIST_API_VIEW_FUNC,
-    DOCUMENT_API_FUNC,
+    DOCUMENT_ITEM_API_VIEW_FUNC,
+    DOCUMENT_LIST_API_VIEW_FUNC,
     HEALTH_CHECK_VIEW_FUNC,
     NOTIFICATIONS_ITEM_API_VIEW_FUNC,
     NOTIFICATIONS_LIST_API_VIEW_FUNC,
@@ -195,7 +196,7 @@ def register_api(api_bp: Blueprint) -> None:
         view_func=CAN_FUNDING_SUMMARY_LIST_API_VIEW_FUNC,
     )
 
-    api_bp.add_url_rule("/can-history/", view_func=CAN_HISTORY_LIST_API_VIEW_FUNC)
+    api_bp.add_url_rule("/cans/<int:id>/history/", view_func=CAN_HISTORY_LIST_API_VIEW_FUNC)
     api_bp.add_url_rule(
         "/portfolio-funding-summary/",
         view_func=PORTFOLIO_FUNDING_SUMMARY_LIST_API_VIEW_FUNC,
@@ -236,7 +237,7 @@ def register_api(api_bp: Blueprint) -> None:
         view_func=AGREEMENT_LIST_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
-        "/agreement-history/<int:id>",
+        "/agreements/<int:id>/history/",
         view_func=AGREEMENT_HISTORY_LIST_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
@@ -332,14 +333,10 @@ def register_api(api_bp: Blueprint) -> None:
         view_func=CHANGE_REQUEST_ITEM_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
-        "/documents/<int:agreement_id>",
-        view_func=DOCUMENT_API_FUNC,
-    )
-    api_bp.add_url_rule(
         "/documents/",
-        view_func=DOCUMENT_API_FUNC,
+        view_func=DOCUMENT_LIST_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
-        "/documents/<string:document_id>/status/",
-        view_func=DOCUMENT_API_FUNC,
+        "/documents/<string:document_id>",
+        view_func=DOCUMENT_ITEM_API_VIEW_FUNC,
     )

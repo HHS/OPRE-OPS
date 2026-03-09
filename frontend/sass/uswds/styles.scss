@@ -57,6 +57,10 @@ html {
     --data-viz-bl-by-fy-3: #eb6a94;
     --data-viz-bl-by-fy-4: #f492bd;
     --data-viz-bl-by-fy-5: #d393b3;
+    --data-viz-agreement-contract: #11305C;
+    --data-viz-agreement-partner: #4AA487;
+    --data-viz-agreement-grant: #E38356;
+    --data-viz-agreement-direct-obligation: #C54878;
     --data-viz-bl-by-status-1: #a9aeb1;
     --data-viz-bl-by-status-2: #336a90;
     --data-viz-bl-by-status-3: #e5a000;
@@ -142,6 +146,10 @@ $themeColors: (
     "data-viz-bl-by-fy-3": var(--data-viz-bl-by-fy-3),
     "data-viz-bl-by-fy-4": var(--data-viz-bl-by-fy-4),
     "data-viz-bl-by-fy-5": var(--data-viz-bl-by-fy-5),
+    "data-viz-agreement-contract": var(--data-viz-agreement-contract),
+    "data-viz-agreement-partner": var(--data-viz-agreement-partner),
+    "data-viz-agreement-grant": var(--data-viz-agreement-grant),
+    "data-viz-agreement-direct-obligation": var(--data-viz-agreement-direct-obligation),
     "data-viz-bl-by-status-1": var(--data-viz-bl-by-status-1),
     "data-viz-bl-by-status-2": var(--data-viz-bl-by-status-2),
     "data-viz-bl-by-status-3": var(--data-viz-bl-by-status-3),

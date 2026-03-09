@@ -5,7 +5,7 @@ import ComboBox from "../../UI/Form/ComboBox";
 /**
  * A comboBox for choosing a user.
  * @param {Object} props - The component props.
- * @param {import("../../../types/UserTypes").SafeUser} props.selectedUser - The currently selected user type.
+ * @param {import("../../../types/UserTypes").SafeUser | undefined} props.selectedUser - The currently selected user type.
  * @param {string[]} [props.messages] - An array of error messages to display (optional).
  * @param {Function} props.setSelectedUser - A function to call when the selected user changes.
  * @param {string} [props.className] - Additional class names to apply to the component (optional).
@@ -40,6 +40,9 @@ const UsersComboBox = ({
         return <div>Error loading users.</div>;
     }
 
+    /**
+     * @param {import("../../../types/UserTypes").SafeUser | undefined} user
+     */
     const handleChange = (user) => {
         setSelectedUser(user);
         onChange("users", user?.id ?? "");
@@ -67,12 +70,11 @@ const UsersComboBox = ({
                 </span>
             )}
             <ComboBox
-                name="users"
                 namespace="users-combobox"
                 data={userData}
-                selectedData={selectedUser}
+                selectedData={/** @type {any} */ (selectedUser)}
                 setSelectedData={handleChange}
-                optionText={(user) => user.full_name || user.email}
+                optionText={/** @param {any} user */ (user) => user.full_name || user.email}
                 isDisabled={isDisabled}
                 messages={messages}
             />

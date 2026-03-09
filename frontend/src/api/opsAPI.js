@@ -88,7 +88,8 @@ export const opsApi = createApi({
                     agreementName,
                     agreementType,
                     projectTitle,
-                    contractNumber
+                    contractNumber,
+                    awardType
                 },
                 onlyMy,
                 sortConditions,
@@ -122,6 +123,9 @@ export const opsApi = createApi({
                         queryParams.push(`contract_number=${encodeURIComponent(contract.id)}`)
                     );
                 }
+                if (awardType) {
+                    awardType.forEach((award) => queryParams.push(`award_type=${encodeURIComponent(award.awardType)}`));
+                }
                 if (onlyMy) {
                     queryParams.push("only_my=true");
                 }
@@ -146,7 +150,8 @@ export const opsApi = createApi({
                         agreements: response.data, // Keep "agreements" name for internal use
                         count: response.count,
                         limit: response.limit,
-                        offset: response.offset
+                        offset: response.offset,
+                        totals: response.totals ?? null
                     };
                 }
                 // Backward compatibility with old "agreements" key
@@ -155,7 +160,8 @@ export const opsApi = createApi({
                         agreements: response.agreements,
                         count: response.count,
                         limit: response.limit,
-                        offset: response.offset
+                        offset: response.offset,
+                        totals: response.totals ?? null
                     };
                 }
                 // Legacy array format (no pagination)
@@ -163,7 +169,8 @@ export const opsApi = createApi({
                     agreements: response,
                     count: response.length,
                     limit: response.length,
-                    offset: 0
+                    offset: 0,
+                    totals: null
                 };
             },
             providesTags: ["Agreements", "BudgetLineItems"]
@@ -702,8 +709,8 @@ export const opsApi = createApi({
                 if (sort) {
                     queryParams.push(`sort_asc=${sort}`);
                 }
-                const queryString = queryParams.length > 0 ? `&${queryParams.join("&")}` : "";
-                return `/can-history/?can_id=${canId}${queryString}`;
+                const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
+                return `/cans/${canId}/history/${queryString}`;
             },
             providesTags: ["Cans"]
         }),
@@ -897,13 +904,13 @@ export const opsApi = createApi({
             invalidatesTags: ["Documents"]
         }),
         getDocumentsByAgreementId: builder.query({
-            query: (agreement_id) => `/documents/${agreement_id}`,
+            query: (agreement_id) => `/documents/?agreement_id=${agreement_id}`,
             providesTags: ["Documents"]
         }),
         updateDocumentStatus: builder.mutation({
             query: ({ document_id, data }) => {
                 return {
-                    url: `/documents/${document_id}/status/`,
+                    url: `/documents/${document_id}`,
                     method: "PATCH",
                     headers: { "Content-Type": "application/json" },
                     body: data

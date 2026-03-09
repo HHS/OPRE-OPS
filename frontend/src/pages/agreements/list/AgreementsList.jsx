@@ -8,6 +8,7 @@ import {
     useLazyGetUserQuery
 } from "../../../api/opsAPI.js";
 import App from "../../../App";
+import AgreementSummaryCardsSection from "../../../components/Agreements/AgreementSummaryCardsSection";
 import AgreementsTable from "../../../components/Agreements/AgreementsTable";
 import {
     getAgreementContractNumber,
@@ -46,7 +47,8 @@ const AgreementsList = () => {
         projectTitle: [],
         agreementType: [],
         agreementName: [],
-        contractNumber: []
+        contractNumber: [],
+        awardType: []
     });
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
     const [currentPage, setCurrentPage] = useState(1); // 1-indexed for UI
@@ -64,7 +66,8 @@ const AgreementsList = () => {
         filters.projectTitle.length > 0 ||
         filters.agreementType.length > 0 ||
         filters.agreementName.length > 0 ||
-        filters.contractNumber.length > 0;
+        filters.contractNumber.length > 0 ||
+        filters.awardType.length > 0;
 
     const getFiscalYearFilter = () => {
         // If explicit filters are set via filter modal, use those
@@ -110,6 +113,7 @@ const AgreementsList = () => {
     // Extract agreements array and metadata from wrapped response
     const agreements = agreementsResponse?.agreements || [];
     const totalCount = agreementsResponse?.count || 0;
+    const totals = agreementsResponse?.totals || null;
     const totalPages = Math.ceil(totalCount / pageSize);
 
     // Reset to page 1 when filters or sort changes
@@ -137,7 +141,8 @@ const AgreementsList = () => {
             projectTitle: [],
             agreementType: [],
             agreementName: [],
-            contractNumber: []
+            contractNumber: [],
+            awardType: []
         });
         setSelectedFiscalYear(newValue);
     };
@@ -158,7 +163,8 @@ const AgreementsList = () => {
     }
 
     let subtitle = "All Agreements";
-    let details = "This is a list of all agreements across OPRE. Draft budget lines are not included in the Totals.";
+    let details =
+        "This is a list of all agreements across OPRE for the selected fiscal year. Draft budget lines are not included in the Totals.";
     if (myAgreementsUrl) {
         subtitle = "My Agreements";
         details =
@@ -237,6 +243,7 @@ const AgreementsList = () => {
                 "Fees",
                 "Lifetime Obligated",
                 "Contract Number",
+                "Award Type",
                 "Vendor",
                 "COR"
             ];
@@ -274,6 +281,7 @@ const AgreementsList = () => {
                         agreementFees ?? 0,
                         lifetimeObligated,
                         contractNumber ?? "",
+                        agreement?.award_type ?? "",
                         agreement?.vendor ?? "",
                         agreementDataMap[agreement.id]?.cor ?? ""
                     ];
@@ -314,8 +322,6 @@ const AgreementsList = () => {
                     title="Agreements"
                     subtitle={subtitle}
                     details={details}
-                    buttonText="Add Agreement"
-                    buttonLink="/agreements/create"
                     TabsSection={<AgreementTabs />}
                     FilterTags={
                         <AgreementsFilterTags
@@ -361,6 +367,14 @@ const AgreementsList = () => {
                             showAllOption={true}
                         />
                     }
+                    SummaryCardsSection={
+                        totalCount > 0 && (
+                            <AgreementSummaryCardsSection
+                                fiscalYear={selectedFiscalYear === "All" ? "All FYs" : `FY ${selectedFiscalYear}`}
+                                totals={totals}
+                            />
+                        )
+                    }
                     TableSection={
                         <>
                             <AgreementsTable
@@ -388,8 +402,6 @@ const AgreementsList = () => {
                     title="Agreements"
                     subtitle={subtitle}
                     details={details}
-                    buttonText="Add Agreement"
-                    buttonLink="/agreements/create"
                     TabsSection={<AgreementTabs />}
                 >
                     <ChangeRequests />
