@@ -16,7 +16,7 @@ describe("Agreement Review Suite", () => {
 
     it("passes validation with all required fields", () => {
         suite.reset();
-        suite(validData);
+        suite.run(validData);
         const result = suite.get();
         expect(result.isValid()).toBe(true);
         expect(result.getErrors()).toEqual({});
@@ -24,7 +24,7 @@ describe("Agreement Review Suite", () => {
 
     it("fails validation if required fields are missing", () => {
         suite.reset();
-        suite({});
+        suite.run({});
         const result = suite.get();
         expect(result.isValid()).toBe(false);
         expect(result.getErrors()).toHaveProperty("name");
@@ -41,7 +41,7 @@ describe("Agreement Review Suite", () => {
 
     it("validates only a single field when fieldName is provided", () => {
         suite.reset();
-        suite({}, "name");
+        suite.run({}, "name");
         const result = suite.get();
         expect(Object.keys(result.getErrors())).toEqual(["name"]);
         expect(result.isValid()).toBe(false);
@@ -51,7 +51,7 @@ describe("Agreement Review Suite", () => {
         const data = { ...validData };
         delete data.vendor;
         suite.reset();
-        suite(data);
+        suite.run(data);
         const result = suite.get();
         expect(result.isValid()).toBe(true);
     });
@@ -59,7 +59,7 @@ describe("Agreement Review Suite", () => {
     it("fails if contract_type is '-Select an option-'", () => {
         const data = { ...validData, contract_type: "-Select an option-" };
         suite.reset();
-        suite(data);
+        suite.run(data);
         const result = suite.get();
         expect(result.isValid()).toBe(false);
         expect(result.getErrors()).toHaveProperty("contract-type");
@@ -68,7 +68,7 @@ describe("Agreement Review Suite", () => {
     it("fails if team_members is empty", () => {
         const data = { ...validData, team_members: [] };
         suite.reset();
-        suite(data);
+        suite.run(data);
         const result = suite.get();
         expect(result.isValid()).toBe(false);
         expect(result.getErrors()).toHaveProperty("team-members");
@@ -77,7 +77,7 @@ describe("Agreement Review Suite", () => {
     it("fails if budget_line_items is empty", () => {
         const data = { ...validData, budget_line_items: [] };
         suite.reset();
-        suite(data);
+        suite.run(data);
         const result = suite.get();
         expect(result.isValid()).toBe(false);
         expect(result.getErrors()).toHaveProperty("budget-line-items");

@@ -31,6 +31,7 @@ const useReviewAgreement = (agreementId) => {
         secondaryButtonText: "",
         handleConfirm: () => {}
     });
+    const [suiteResult, setSuiteResult] = React.useState(null);
 
     const [afterApproval, setAfterApproval] = useToggle(true);
     const [updateBudgetLineItem] = useUpdateBudgetLineItemMutation();
@@ -78,8 +79,8 @@ const useReviewAgreement = (agreementId) => {
         if (selectedBudgetLines.length === 0) {
             return null;
         }
-        return agreementSuite.get();
-    }, [selectedBudgetLines.length]);
+        return suiteResult;
+    }, [selectedBudgetLines.length, suiteResult]);
 
     const bliValidationResults = React.useMemo(() => {
         if (!selectedBudgetLines || selectedBudgetLines.length === 0) {
@@ -143,9 +144,10 @@ const useReviewAgreement = (agreementId) => {
 
     React.useEffect(() => {
         if (isSuccess) {
-            agreementSuite({
+            const result = agreementSuite.run({
                 ...agreement
             });
+            setSuiteResult(result);
         }
         return () => {
             agreementSuite.reset();

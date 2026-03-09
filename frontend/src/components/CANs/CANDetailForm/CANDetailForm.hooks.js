@@ -84,7 +84,7 @@ export default function useCanDetailForm(canId, canNumber, canNickname, canDescr
     };
 
     const runValidate = (name, value) => {
-        suite(
+        suite.run(
             {
                 ...{ [name]: value }
             },
