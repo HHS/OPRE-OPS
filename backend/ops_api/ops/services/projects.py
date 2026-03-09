@@ -118,6 +118,8 @@ class ProjectsService(OpsService[Project]):
             else:
                 tl_users.append(team_leader)
 
+        sorted_tl_users = sorted(tl_users, key=lambda x: x.id)
+
         project_type = data.get("project_type", None)
         if project_type == ProjectType.RESEARCH:
             new_project = ResearchProject(**data)
@@ -129,7 +131,7 @@ class ProjectsService(OpsService[Project]):
             raise ValidationError({"project_type": "Invalid project type."})
 
         # convert team leaders from key value pair to user object on ResearchProject
-        new_project.team_leaders = tl_users
+        new_project.team_leaders = sorted_tl_users
 
         self.db_session.add(new_project)
         self.db_session.commit()
