@@ -430,7 +430,7 @@ export default function useCanFunding(
      * @returns {void}
      */
     const runValidate = (name, value) => {
-        suite(
+        suite.run(
             {
                 remainingAmount: +budgetForm.submittedAmount - totalReceived + +fundingReceivedForm.originalAmount,
                 receivedFunding,

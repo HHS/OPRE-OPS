@@ -272,4 +272,63 @@ describe("DetailsTabs", () => {
         expect(awardButton).toBeDisabled();
         expect(documentsButton).toBeDisabled();
     });
+
+    it("disables Procurement Tracker tab when isEditableForProcurementTracker is false", () => {
+        render(
+            <Provider store={store}>
+                <MemoryRouter initialEntries={["/agreements/1"]}>
+                    <DetailsTabs
+                        agreementId={1}
+                        isAgreementNotDeveloped={false}
+                        isAgreementAwarded={true}
+                        isEditableForProcurementTracker={false}
+                    />
+                </MemoryRouter>
+            </Provider>
+        );
+
+        const procurementTrackerButton = screen.getByText("Procurement Tracker");
+        expect(procurementTrackerButton).toBeDisabled();
+    });
+
+    it("enables Procurement Tracker tab when isEditableForProcurementTracker is true", () => {
+        render(
+            <Provider store={store}>
+                <MemoryRouter initialEntries={["/agreements/1"]}>
+                    <DetailsTabs
+                        agreementId={1}
+                        isAgreementNotDeveloped={false}
+                        isAgreementAwarded={true}
+                        isEditableForProcurementTracker={true}
+                    />
+                </MemoryRouter>
+            </Provider>
+        );
+
+        const procurementTrackerButton = screen.getByText("Procurement Tracker");
+        expect(procurementTrackerButton).not.toBeDisabled();
+    });
+
+    it("does not navigate when disabled Procurement Tracker tab is clicked", () => {
+        render(
+            <Provider store={store}>
+                <MemoryRouter initialEntries={["/agreements/1"]}>
+                    <DetailsTabs
+                        agreementId={1}
+                        isAgreementNotDeveloped={false}
+                        isAgreementAwarded={true}
+                        isEditableForProcurementTracker={false}
+                    />
+                </MemoryRouter>
+            </Provider>
+        );
+
+        const procurementTrackerButton = screen.getByText("Procurement Tracker");
+        const initialCallCount = mockNavigate.mock.calls.length;
+
+        fireEvent.click(procurementTrackerButton);
+
+        // Navigate should not be called when clicking disabled tab
+        expect(mockNavigate.mock.calls.length).toBe(initialCallCount);
+    });
 });
