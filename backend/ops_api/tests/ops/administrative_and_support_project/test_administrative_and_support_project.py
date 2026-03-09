@@ -94,7 +94,9 @@ def test_administrative_and_support_projects_search(auth_client, loaded_db):
     assert len(admin_support_projects) == 1
 
     response = auth_client.get(
-        url_for("api.projects-group", project_search=["blah"], project_type=[ProjectType.ADMINISTRATIVE_AND_SUPPORT.name])
+        url_for(
+            "api.projects-group", project_search=["blah"], project_type=[ProjectType.ADMINISTRATIVE_AND_SUPPORT.name]
+        )
     )
 
     assert response.status_code == 200
