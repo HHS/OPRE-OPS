@@ -54,6 +54,7 @@ export const FILTER_MODAL_FULL_WIDTH = { width: "26.2rem" };
 // FEATURE FLAGS
 export const IS_AWARDED_TAB_READY = false;
 export const IS_DOCUMENTS_TAB_READY = false;
+export const IS_PROJECT_DETAIL_READY = process.env.NODE_ENV !== "production";
 export const IS_PROCUREMENT_TRACKER_READY_MAP = {
     STEP_1: true,
     STEP_2: true,
