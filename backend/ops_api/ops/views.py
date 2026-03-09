@@ -139,7 +139,7 @@ AGREEMENT_LIST_API_VIEW_FUNC = AgreementListAPI.as_view("agreements-group", Agre
 AGREEMENT_REASON_LIST_API_VIEW_FUNC = AgreementReasonListAPI.as_view("agreement-reason-list")
 
 # Agreement History Endpoint - specialized from OpsDBHistory
-AGREEMENT_HISTORY_LIST_API_VIEW_FUNC = AgreementHistoryListAPI.as_view("agreement-history-group", OpsDBHistory)
+AGREEMENT_HISTORY_LIST_API_VIEW_FUNC = AgreementHistoryListAPI.as_view("agreement-history", OpsDBHistory)
 
 # AGREEMENT-TYPE ENDPOINTS
 AGREEMENT_TYPE_LIST_API_VIEW_FUNC = AgreementTypeListAPI.as_view("agreement-type-list")
@@ -169,7 +169,7 @@ CAN_FUNDING_RECEIVED_LIST_API_VIEW_FUNC = CANFundingReceivedListAPI.as_view(
 CAN_FUNDING_RECEIVED_ITEM_API_VIEW_FUNC = CANFundingReceivedItemAPI.as_view(
     "can-funding-received-item", CANFundingReceived
 )
-CAN_HISTORY_LIST_API_VIEW_FUNC = CANHistoryListAPI.as_view("can-history-group", CANHistory)
+CAN_HISTORY_LIST_API_VIEW_FUNC = CANHistoryListAPI.as_view("can-history", CANHistory)
 
 # BUDGET LINE ITEM ENDPOINTS
 BUDGET_LINE_ITEMS_ITEM_API_VIEW_FUNC = BudgetLineItemsItemAPI.as_view("budget-line-items-item", BudgetLineItem)

@@ -223,7 +223,10 @@ class AgreementListResponse(FyObligatedMixin, AgreementData):
     id = fields.Integer(required=True)
     project = fields.Nested(ProjectSchema())
     product_service_code = fields.Nested(ProductServiceCodeSchema)
-    budget_line_items = fields.List(fields.Nested(BudgetLineItemResponseSchema, only=["id", "status"]), allow_none=True)
+    budget_line_items = fields.List(
+        fields.Nested(BudgetLineItemResponseSchema, only=["id", "amount", "fees", "status", "is_obe"]),
+        allow_none=True,
+    )
     procurement_shop = fields.Nested(ProcurementShopSchema)
     display_name = fields.String(required=True)
     is_awarded = fields.Bool(load_default=None, dump_default=None, required=False)

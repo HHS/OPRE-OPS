@@ -31,14 +31,14 @@ black = {extras = ["d"], version = "==25.12.0"}
 flake8 = "==7.3.0"
 isort = "==8.0.1"
 nox = "==2026.2.9"
-numpy = "==2.4.2"
+numpy = "==2.4.3"
 pytest = "==9.0.2"
 pytest-bdd = "==8.1.0"
 pytest-cov = "==7.0.0"
 pytest-docker = {extras = ["docker-compose-v2"], version = "==3.2.5"}
 pytest-flask = "==1.3.0"
 pytest-mock = "==3.15.1"
-ipython = "==9.10.0"
+ipython = "==9.11.0"
 locust = "==2.43.3"
 
 [requires]

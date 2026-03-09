@@ -911,3 +911,123 @@ def test_solicitation_step_excludes_pre_solicitation_fields(auth_client, app_ctx
     assert "task_completed_by" in data
     assert "date_completed" in data
     assert "notes" in data
+
+
+# Evaluation Step Tests (Step 4)
+
+
+@pytest.fixture
+def test_evaluation_step(app_ctx, loaded_db):
+    """Create a test evaluation step that can be safely modified."""
+    # Get the procurement tracker first to ensure the relationship is valid
+    tracker = loaded_db.get(ProcurementTracker, 1)
+
+    # Create a new step for testing using DefaultProcurementTrackerStep
+    step = DefaultProcurementTrackerStep(
+        procurement_tracker=tracker,  # Use object reference to preload the relationship
+        step_number=998,  # Use a high number to avoid conflicts
+        step_type=ProcurementTrackerStepType.EVALUATION,
+        status=ProcurementTrackerStepStatus.PENDING,
+    )
+    loaded_db.add(step)
+    loaded_db.commit()
+    loaded_db.refresh(step)
+
+    yield step
+
+    # Cleanup: rollback any changes and delete the test step
+    loaded_db.rollback()
+    try:
+        # Re-fetch the step to ensure we have the latest version
+        from models.procurement_tracker import ProcurementTrackerStep
+
+        test_step = loaded_db.get(ProcurementTrackerStep, step.id)
+        if test_step:
+            loaded_db.delete(test_step)
+            loaded_db.commit()
+    except Exception:
+        loaded_db.rollback()
+
+
+def test_update_evaluation_target_completion_date(auth_client, test_evaluation_step, loaded_db):
+    """Test updating target completion date for step 4 (EVALUATION)."""
+    from datetime import timedelta
+
+    future_date = date.today() + timedelta(days=30)
+
+    response = auth_client.patch(
+        f"/api/v1/procurement-tracker-steps/{test_evaluation_step.id}",
+        json={"target_completion_date": future_date.isoformat()},
+    )
+    assert response.status_code == 200
+    data = response.json
+    assert data["target_completion_date"] == future_date.isoformat()
+
+    # Verify database was updated with prefixed column
+    loaded_db.refresh(test_evaluation_step)
+    assert test_evaluation_step.evaluation_target_completion_date == future_date
+
+
+def test_complete_evaluation_step(auth_client, test_evaluation_step, loaded_db):
+    """Test completing step 4 (EVALUATION) with all required fields."""
+    response = auth_client.patch(
+        f"/api/v1/procurement-tracker-steps/{test_evaluation_step.id}",
+        json={
+            "status": "COMPLETED",
+            "task_completed_by": 503,
+            "date_completed": date.today().isoformat(),
+            "notes": "Vendor selected after technical evaluation",
+        },
+    )
+    assert response.status_code == 200
+    data = response.json
+    assert data["status"] == "COMPLETED"
+    assert data["task_completed_by"] == 503
+    assert data["date_completed"] == date.today().isoformat()
+    assert data["notes"] == "Vendor selected after technical evaluation"
+
+    # Verify database was updated with prefixed columns
+    loaded_db.refresh(test_evaluation_step)
+    assert test_evaluation_step.status == ProcurementTrackerStepStatus.COMPLETED
+    assert test_evaluation_step.evaluation_task_completed_by == 503
+    assert test_evaluation_step.evaluation_date_completed == date.today()
+    assert test_evaluation_step.evaluation_notes == "Vendor selected after technical evaluation"
+
+
+def test_evaluation_required_fields_validation(auth_client, test_evaluation_step, loaded_db):
+    """Test that required fields are validated when completing evaluation step."""
+    # Try to complete without required fields
+    response = auth_client.patch(
+        f"/api/v1/procurement-tracker-steps/{test_evaluation_step.id}",
+        json={
+            "status": "COMPLETED",
+            # Missing task_completed_by and date_completed
+        },
+    )
+    assert response.status_code == 400
+    errors = response.json["errors"]
+    assert "task_completed_by" in errors or "date_completed" in errors
+
+
+def test_evaluation_step_field_mapping(auth_client, test_evaluation_step, loaded_db):
+    """Test that evaluation step API fields map correctly to model fields."""
+    from datetime import timedelta
+
+    future_date = date.today() + timedelta(days=30)
+    test_notes = "Evaluation period tracking"
+
+    update_data = {
+        "status": "ACTIVE",
+        "target_completion_date": future_date.isoformat(),
+        "notes": test_notes,
+    }
+
+    response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{test_evaluation_step.id}", json=update_data)
+    assert response.status_code == 200
+
+    # Refresh from database to verify model fields were updated
+    loaded_db.refresh(test_evaluation_step)
+
+    # Verify that the API fields mapped to the correct model fields
+    assert test_evaluation_step.evaluation_target_completion_date == future_date
+    assert test_evaluation_step.evaluation_notes == test_notes

@@ -15,6 +15,5 @@ class CANHistoryItemSchema(Schema):
 
 
 class GetHistoryListQueryParametersSchema(PaginationSchema):
-    can_id = fields.Integer(required=True)
     fiscal_year = fields.Integer(load_default=0, dump_default=0)
     sort_asc = fields.Boolean(load_default=False, dump_default=False)
