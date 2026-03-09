@@ -712,3 +712,84 @@ def test_delete_project_with_single_agreement(projects_service, loaded_db, proje
 
     # Verify project still exists
     assert loaded_db.get(Project, project_id) is not None
+
+
+class TestProjectFilterOptions:
+
+    def test_get_project_filter_options(self, auth_client, app_ctx):
+        """GET /projects-filters/ returns all expected filter option fields."""
+        response = auth_client.get(url_for("api.projects-filters"))
+        assert response.status_code == 200
+
+        data = response.json
+        assert "fiscal_years" in data
+        assert "portfolios" in data
+        assert "project_titles" in data
+        assert "project_types" in data
+        assert "agreement_names" in data
+
+    def test_filter_options_fiscal_years_sorted_descending(self, auth_client, app_ctx):
+        """Fiscal years should be sorted in descending order."""
+        response = auth_client.get(url_for("api.projects-filters"))
+        assert response.status_code == 200
+
+        fiscal_years = response.json["fiscal_years"]
+        assert len(fiscal_years) > 0
+        assert fiscal_years == sorted(fiscal_years, reverse=True)
+
+    def test_filter_options_portfolios_have_id_and_name(self, auth_client, app_ctx):
+        """Portfolios should be returned as list of dicts with id and name."""
+        response = auth_client.get(url_for("api.projects-filters"))
+        assert response.status_code == 200
+        portfolios = response.json["portfolios"]
+        assert len(portfolios) > 0
+        for portfolio in portfolios:
+            assert "id" in portfolio
+            assert "name" in portfolio
+
+    def test_filter_options_portfolios_sorted_by_name(self, auth_client, app_ctx):
+        """Portfolios should be sorted alphabetically by name."""
+        response = auth_client.get(url_for("api.projects-filters"))
+        assert response.status_code == 200
+
+        portfolios = response.json["portfolios"]
+        names = [p["name"] for p in portfolios]
+        assert names == sorted(names)
+
+    def test_filter_options_project_titles_have_id_and_name(self, auth_client, app_ctx):
+        """Project titles should be returned as list of dicts with id and name."""
+        response = auth_client.get(url_for("api.projects-filters"))
+        assert response.status_code == 200
+
+        project_titles = response.json["project_titles"]
+        assert len(project_titles) > 0
+        for project in project_titles:
+            assert "id" in project
+            assert "name" in project
+
+    def test_filter_options_project_titles_sorted_by_name(self, auth_client, app_ctx):
+        """Project titles should be sorted alphabetically by name."""
+        response = auth_client.get(url_for("api.projects-filters"))
+        assert response.status_code == 200
+
+        project_titles = response.json["project_titles"]
+        names = [p["name"] for p in project_titles]
+        assert names == sorted(names)
+
+    def test_filter_options_agreement_types_sorted(self, auth_client, app_ctx):
+        """Agreement types should be sorted alphabetically."""
+        response = auth_client.get(url_for("api.projects-filters"))
+        assert response.status_code == 200
+
+        project_types = response.json["project_types"]
+        assert len(project_types) > 0
+        assert project_types == sorted(project_types)
+
+    def test_filter_options_agreement_names_sorted_by_name(self, auth_client, app_ctx):
+        """Agreement names should be sorted alphabetically by name."""
+        response = auth_client.get(url_for("api.projects-filters"))
+        assert response.status_code == 200
+
+        agreement_names = response.json["agreement_names"]
+        names = [a for a in agreement_names]
+        assert names == sorted(names)

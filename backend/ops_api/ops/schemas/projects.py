@@ -137,3 +137,13 @@ class ProjectListResponse(Schema):
     created_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ")
     updated_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ")
     project_type: ProjectType = fields.Enum(ProjectType)
+
+
+class ProjectListFilterOptionResponseSchema(Schema):
+    """Schema for the response from the projects filter options endpoint."""
+
+    fiscal_years = fields.List(fields.Int(), required=True)
+    portfolios = fields.List(fields.Dict(keys=fields.String(), values=fields.Raw()), required=True)
+    project_titles = fields.List(fields.Dict(keys=fields.String(), values=fields.Raw()), required=True)
+    project_types = fields.List(fields.String(), required=True)
+    agreement_names = fields.List(fields.String(), required=True)

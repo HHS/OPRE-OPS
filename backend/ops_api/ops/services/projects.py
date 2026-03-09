@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Any, Optional, Sequence
 
 from loguru import logger
-from sqlalchemy import select
+from sqlalchemy import distinct, select
 
 from models import (
     CAN,
@@ -11,6 +11,7 @@ from models import (
     BudgetLineItem,
     CANFundingBudget,
     CANFundingDetails,
+    Portfolio,
     Project,
     ProjectType,
     ResearchProject,
@@ -372,3 +373,88 @@ class ProjectsService(OpsService[Project]):
             administrative_and_support_project = self.db_session.scalars(administrative_and_support_stmt).all()
 
         return research_project, administrative_and_support_project
+
+    def get_filter_options(self) -> dict[str, Any]:
+        """
+        Get filter options for the Project list using optimized database queries.
+
+        PERFORMANCE: Uses database-level aggregation with DISTINCT queries instead of
+        loading all agreements into memory. This approach is efficient even with
+        thousands of agreements and budget line items.
+
+        Respects the only_my parameter to filter by user association.
+        """
+
+        logger.debug("Beginning projects filter queries")
+
+        # Step 1: Build base project IDs subquery with optional user filtering
+        base_project_query = select(Project.id)
+
+        project_ids_subquery = base_project_query.subquery()
+
+        # Step 2: Fiscal years - Query BLI fiscal_year - JOIN through Project → Agreement → BLI and get distinct fiscal years
+        fiscal_years_query = (
+            select(distinct(BudgetLineItem.fiscal_year))
+            .join(Agreement, BudgetLineItem.agreement_id == Agreement.id)
+            .join(Project, Agreement.project_id == Project.id)
+            .where(Project.id.in_(project_ids_subquery))
+            .where(BudgetLineItem.fiscal_year.isnot(None))
+        )
+        fiscal_years = sorted([fy for fy in self.db_session.scalars(fiscal_years_query).all()], reverse=True)
+
+        # Step 3: Portfolios - JOIN through Project → Agreement → BLI → CAN to get distinct portfolio IDs and names associated with projects
+        portfolios_query = (
+            select(distinct(Portfolio.id), Portfolio.name)
+            .join(CAN, Portfolio.id == CAN.portfolio_id)
+            .join(BudgetLineItem, CAN.id == BudgetLineItem.can_id)
+            .join(Agreement, BudgetLineItem.agreement_id == Agreement.id)
+            .join(Project, Agreement.project_id == Project.id)
+            .where(Project.id.in_(project_ids_subquery))
+        )
+        portfolios = [{"id": p_id, "name": p_name} for p_id, p_name in self.db_session.execute(portfolios_query).all()]
+        portfolios = sorted(portfolios, key=lambda x: x["name"])
+
+        # Step 4: Project titles
+        projects_query = select(distinct(Project.id), Project.title).where(Project.title.isnot(None))
+        project_titles = [
+            {"id": p_id, "name": p_title} for p_id, p_title in self.db_session.execute(projects_query).all()
+        ]
+        project_titles = sorted(project_titles, key=lambda x: x["name"])
+
+        # Step 5: Project types - Direct query on project_type column
+        project_types_query = (
+            select(distinct(Project.project_type))
+            .where(Project.id.in_(project_ids_subquery))
+            .where(Project.project_type.isnot(None))
+        )
+        project_types = sorted([pt.name for pt in self.db_session.scalars(project_types_query).all()])
+
+        # Step 6: Agreement names and nick_names - Query both and create a sorted list
+        agreement_names_query = (
+            select(Agreement.id, Agreement.name, Agreement.nick_name)
+            .join(Project, Agreement.project_id == Project.id)
+            .where(Project.id.in_(project_ids_subquery))
+            .where(Agreement.name.isnot(None))
+        )
+
+        # Collect all names and nick_names into a single sorted list
+        # Don't need ids because the match query matches directly on name and nick_name.
+        agreement_values = set()  # Use set to avoid duplicates
+        for _, a_name, a_nick_name in self.db_session.execute(agreement_names_query).all():
+            if a_name:
+                agreement_values.add(a_name)
+            if a_nick_name:
+                agreement_values.add(a_nick_name)
+
+        agreement_names = sorted(list(agreement_values))
+
+        # Build response
+        filters = {
+            "fiscal_years": fiscal_years,
+            "portfolios": portfolios,
+            "project_titles": project_titles,
+            "project_types": project_types,
+            "agreement_names": agreement_names,
+        }
+
+        return filters

@@ -100,7 +100,7 @@ from ops_api.ops.resources.product_service_code import (
     ProductServiceCodeItemAPI,
     ProductServiceCodeListAPI,
 )
-from ops_api.ops.resources.projects import ProjectItemAPI, ProjectListAPI
+from ops_api.ops.resources.projects import ProjectItemAPI, ProjectListAPI, ProjectListFilterOptionAPI
 from ops_api.ops.resources.research_methodology import (
     ResearchMethodologyItemAPI,
     ResearchMethodologyListAPI,
@@ -229,7 +229,7 @@ CAN_FUNDING_DETAILS_LIST_API_VIEW_FUNC = CANFundingDetailsListAPI.as_view(
 # PROJECT ENDPOINTS
 PROJECT_ITEM_API_VIEW_FUNC = ProjectItemAPI.as_view("projects-item", Project)
 PROJECT_LIST_API_VIEW_FUNC = ProjectListAPI.as_view("projects-group", Project)
-
+PROJECT_LIST_FILTER_OPTION_API_VIEW_FUNC = ProjectListFilterOptionAPI.as_view("projects-filters", Project)
 
 RESEARCH_METHODOLOGY_ITEM_API_VIEW_FUNC = ResearchMethodologyItemAPI.as_view(
     "research-methodology-item", ResearchMethodology

@@ -9,6 +9,7 @@ from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.schemas.projects import (
     ProjectCreationRequestSchema,
+    ProjectListFilterOptionResponseSchema,
     ProjectListGetRequestSchema,
     ProjectListResponse,
     ProjectResponse,
@@ -89,3 +90,20 @@ class ProjectListAPI(BaseListAPI):
             project = service.create(data)
             meta.metadata.update({"new_project": project.to_dict()})
             return make_response_with_headers({"id": project.id}, 201)
+
+
+class ProjectListFilterOptionAPI(BaseItemAPI):
+    """Get filter options for Projects"""
+
+    def __init__(self, model: BaseModel = Project):
+        super().__init__(model)
+
+    @is_authorized(PermissionType.GET, Permission.RESEARCH_PROJECT)
+    def get(self) -> Response:
+        service = ProjectsService(current_app.db_session)
+        filters = service.get_filter_options()
+
+        schema = ProjectListFilterOptionResponseSchema()
+        serialized_filters = schema.dump(filters)
+        # The service already returns a dict in the correct format, so we can return it directly
+        return make_response_with_headers(serialized_filters)
