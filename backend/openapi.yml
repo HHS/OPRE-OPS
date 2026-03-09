@@ -2807,7 +2807,7 @@ paths:
                   message:
                     type: string
 
-  /projects:
+  /projects/:
     get:
       tags:
         - Projects

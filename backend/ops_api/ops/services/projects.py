@@ -66,7 +66,7 @@ class ProjectsService(OpsService[Project]):
         Raises ValidationError if any fields are invalid.
         """
         # Validate that immutable fields aren't being changed
-        if "id" in updated_fields and id != updated_fields.get("id"):
+        if "id" in updated_fields and project.id != updated_fields.get("id"):
             raise ValidationError({"id": ["ID cannot be changed"]})
 
         if "project_type" in updated_fields and project.project_type != updated_fields.get("project_type"):
@@ -84,7 +84,7 @@ class ProjectsService(OpsService[Project]):
                 logger.error(f"Provided invalid Team Leader {tl_id['id']}")
                 raise ValidationError(
                     {
-                        "team_leader": f"Team leader provided with id {tl_id['id']} does not exist. All team leaders must be valid users."
+                        "team_leaders": f"Team leader provided with id {tl_id['id']} does not exist. All team leaders must be valid users."
                     }
                 )
             else:
@@ -103,18 +103,10 @@ class ProjectsService(OpsService[Project]):
                 - project: The created Project instance
                 - metadata: Dictionary with creation metadata
         """
-        project_type = data.get("project_type", None)
-        if project_type == ProjectType.RESEARCH:
-            new_project = ResearchProject(**data)
-        elif project_type == ProjectType.ADMINISTRATIVE_AND_SUPPORT:
-            # remove origination_date if it's present since it's not a field on AdministrativeAndSupportProject
-            data.pop("origination_date", None)
-            new_project = AdministrativeAndSupportProject(**data)
-        else:
-            raise ValidationError({"project_type": "Invalid project type."})
 
         tl_users = []
-        for tl_id in data.get("team_leaders", []):
+        # Pop team_leaders from data and convert from list of dicts with id to list of User objects, validating that each team leader exists
+        for tl_id in data.pop("team_leaders", []):
             team_leader = self.db_session.get(User, tl_id["id"])
             if team_leader is None:
                 logger.error(f"POST to Provided invalid Team Leader {tl_id['id']}")
@@ -125,6 +117,17 @@ class ProjectsService(OpsService[Project]):
                 )
             else:
                 tl_users.append(team_leader)
+
+        project_type = data.get("project_type", None)
+        if project_type == ProjectType.RESEARCH:
+            new_project = ResearchProject(**data)
+        elif project_type == ProjectType.ADMINISTRATIVE_AND_SUPPORT:
+            # remove origination_date if it's present since it's not a field on AdministrativeAndSupportProject
+            data.pop("origination_date", None)
+            new_project = AdministrativeAndSupportProject(**data)
+        else:
+            raise ValidationError({"project_type": "Invalid project type."})
+
         # convert team leaders from key value pair to user object on ResearchProject
         new_project.team_leaders = tl_users
 
@@ -341,7 +344,7 @@ class ProjectsService(OpsService[Project]):
         return project
 
     def get_list(
-        self, data: dict[str, Any] | None = None
+        self, data: dict[str, Any] | None = {}
     ) -> tuple[Sequence[ResearchProject], Sequence[AdministrativeAndSupportProject]]:
         """
         Get list of projects with optional filtering and pagination.

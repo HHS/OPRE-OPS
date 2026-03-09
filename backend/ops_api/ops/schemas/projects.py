@@ -20,7 +20,7 @@ class ProjectListGetRequestSchema(Schema):
 
 
 class TeamLeaders(Schema):
-    id: int = fields.Int()
+    id: int = fields.Int(required=True)
     full_name: Optional[str] = fields.String()
     email: Optional[str] = fields.String()
 
@@ -35,7 +35,7 @@ class ProjectCreationRequestSchema(Schema):
 
     project_type = fields.Enum(ProjectType, required=True)
     title = fields.String(required=True)
-    short_title = fields.String(required=True)
+    short_title = fields.String(required=False, allow_none=True)
     description = fields.String(allow_none=True)
     url = fields.String(allow_none=True)
     origination_date = fields.Date(format="%Y-%m-%d", load_default=None, dump_default=None, allow_none=True)
@@ -58,10 +58,9 @@ class ProjectUpdateRequestSchema(Schema):
     short_title = fields.String(allow_none=True)
     description = fields.String(allow_none=True)
     url = fields.String(allow_none=True)
-    origination_date = fields.Date(format="%Y-%m-%d", load_default=None, dump_default=None, allow_none=True)
+    origination_date = fields.Date(format="%Y-%m-%d", dump_default=None, allow_none=True)
     team_leaders = fields.List(
         fields.Nested(TeamLeaders),
-        load_default=[],
         dump_default=[],
     )
 
@@ -82,9 +81,7 @@ class ProjectResponse(Schema):
     short_title: str = fields.String()
     description: Optional[str] = fields.String(allow_none=True)
     url: Optional[str] = fields.String(allow_none=True)
-    team_leaders: Optional[list[TeamLeaders]] = fields.List(
-        fields.Nested(TeamLeaders), load_default=[], dump_default=[]
-    )
+    team_leaders: Optional[list[TeamLeaders]] = fields.List(fields.Nested(TeamLeaders), dump_default=[])
     created_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ")
     updated_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ")
     project_type: ProjectType = fields.Enum(ProjectType)
@@ -97,7 +94,7 @@ class ResearchProjectResponse(Schema):
     short_title: str = fields.String()
     description: Optional[str] = fields.String(allow_none=True)
     url: Optional[str] = fields.String(allow_none=True)
-    origination_date: Optional[date] = fields.Date(format="%Y-%m-%d", load_default=None, dump_default=None)
+    origination_date: Optional[date] = fields.Date(format="%Y-%m-%d", dump_default=None)
     team_leaders: Optional[list[TeamLeaders]] = fields.List(
         fields.Nested(TeamLeaders), load_default=[], dump_default=[]
     )
@@ -117,7 +114,7 @@ class ResearchProjectListResponse(Schema):
     short_title: str = fields.String()
     description: Optional[str] = fields.String(allow_none=True)
     url: Optional[str] = fields.String(allow_none=True)
-    origination_date: Optional[date] = fields.Date(format="%Y-%m-%d", load_default=None, dump_default=None)
+    origination_date: Optional[date] = fields.Date(format="%Y-%m-%d", dump_default=None)
     created_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ")
     updated_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ")
     project_type: ProjectType = fields.Enum(ProjectType)
