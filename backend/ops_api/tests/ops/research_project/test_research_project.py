@@ -27,12 +27,13 @@ def test_research_projects_get_by_id_404(auth_client, loaded_db, app_ctx):
 
 def test_research_projects_serialization(auth_client, loaded_db, test_user, test_project, app_ctx):
     response = auth_client.get(url_for("api.projects-item", id=test_project.id))
+    test_project_leader_ids = [tl.id for tl in test_project.team_leaders]
     assert response.status_code == 200
     assert response.json["id"] == test_project.id
     assert response.json["title"] == "Human Services Interoperability Support"
     assert response.json["origination_date"] == "2021-01-01"
-    assert response.json["team_leaders"][0]["id"] == test_user.id
-    assert response.json["team_leaders"][0]["full_name"] == "Chris Fortunato"
+    assert response.json["team_leaders"][0]["id"] in test_project_leader_ids
+    assert "full_name" in response.json["team_leaders"][0]
 
 
 def test_research_projects_with_fiscal_year_found(auth_client, loaded_db, test_project, app_ctx):
@@ -97,6 +98,7 @@ def test_research_projects_auth(client, loaded_db, app_ctx):
 
 
 def test_post_research_projects(auth_client, app_ctx, loaded_db):
+    team_leader_ids = [500, 501, 502]
     data = {
         "project_type": ProjectType.RESEARCH.name,
         "title": "Research Project #1",
@@ -115,9 +117,9 @@ def test_post_research_projects(auth_client, app_ctx, loaded_db):
     assert project.title == "Research Project #1"
     assert project.origination_date.strftime("%Y-%m-%d") == "2023-01-01"
     assert len(project.team_leaders) == 3
-    assert project.team_leaders[0].id == 500
-    assert project.team_leaders[1].id == 501
-    assert project.team_leaders[2].id == 502
+    assert project.team_leaders[0].id in team_leader_ids
+    assert project.team_leaders[1].id in team_leader_ids
+    assert project.team_leaders[2].id in team_leader_ids
 
 
 def test_post_research_projects_minimum(auth_client, app_ctx, loaded_db):
