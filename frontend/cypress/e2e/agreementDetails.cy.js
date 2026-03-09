@@ -161,7 +161,6 @@ describe("agreement details", () => {
             .find("[data-cy='edit-row']")
             .should("be.disabled")
             .should("have.attr", "aria-describedby")
-            .invoke("attr", "aria-describedby")
             .then((descId) => {
                 const firstId = descId.trim().split(/\s+/)[0];
                 cy.get(`#${firstId}`, { timeout: 10000 })
