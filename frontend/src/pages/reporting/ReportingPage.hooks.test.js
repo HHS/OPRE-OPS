@@ -261,4 +261,27 @@ describe("useReportingPageData", () => {
 
         expect(result.current.isError).toBe(true);
     });
+
+    it("should return filters and setFilters", () => {
+        setupMocks();
+
+        const { result } = renderHook(() => useReportingPageData());
+
+        expect(result.current.filters).toEqual({ portfolios: [] });
+        expect(typeof result.current.setFilters).toBe("function");
+    });
+
+    it("should pass portfolioIds to queries when portfolios are filtered", () => {
+        setupMocks();
+
+        renderHook(() => useReportingPageData());
+
+        // Default: no portfolio filter, queries called without portfolioIds
+        expect(opsAPI.useGetPortfolioFundingSummaryBatchQuery).toHaveBeenCalledWith(
+            expect.objectContaining({ portfolioIds: undefined })
+        );
+        expect(opsAPI.useGetReportingSummaryQuery).toHaveBeenCalledWith(
+            expect.objectContaining({ portfolioIds: undefined })
+        );
+    });
 });

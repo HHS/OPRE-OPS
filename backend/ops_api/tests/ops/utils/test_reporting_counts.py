@@ -172,6 +172,28 @@ def test_get_reporting_counts_budget_lines(app, db_with_reporting_data, app_ctx)
     assert type_map.get("DRAFT", 0) >= 1
 
 
+def test_get_reporting_counts_with_portfolio_ids(app, db_with_reporting_data, app_ctx):
+    from models import CAN
+
+    # Find the portfolio ID for the test portfolio via the CAN
+    can = app.db_session.execute(app.db_session.query(CAN).filter(CAN.number == "COUNTS_TEST_CAN").statement).scalar()
+    portfolio_id = can.portfolio_id
+
+    result = get_reporting_counts(app.db_session, 2025, portfolio_ids=[portfolio_id])
+
+    assert result["projects"]["total"] >= 1
+    assert result["agreements"]["total"] >= 2
+    assert result["budget_lines"]["total"] >= 3
+
+
+def test_get_reporting_counts_with_nonexistent_portfolio_id(app, db_with_reporting_data, app_ctx):
+    result = get_reporting_counts(app.db_session, 2025, portfolio_ids=[999999])
+
+    assert result["projects"]["total"] == 0
+    assert result["agreements"]["total"] == 0
+    assert result["budget_lines"]["total"] == 0
+
+
 def test_get_reporting_counts_empty_fy(app, loaded_db, app_ctx):
     result = get_reporting_counts(app.db_session, 9999)
 

@@ -8,7 +8,11 @@ import { getCurrentFiscalYear } from "../../helpers/utils";
 
 export const useReportingPageData = () => {
     const [selectedFiscalYear, setSelectedFiscalYear] = useState(getCurrentFiscalYear());
+    const [filters, setFilters] = useState({ portfolios: [] });
     const fiscalYear = Number(selectedFiscalYear);
+
+    const portfolioIds = filters.portfolios.map((p) => p.id);
+    const portfolioIdsParam = portfolioIds.length > 0 ? portfolioIds : undefined;
 
     const {
         data: allPortfolios,
@@ -20,13 +24,13 @@ export const useReportingPageData = () => {
         data: fundingData,
         isLoading: isLoadingFunding,
         isError: isErrorFunding
-    } = useGetPortfolioFundingSummaryBatchQuery({ fiscalYear });
+    } = useGetPortfolioFundingSummaryBatchQuery({ fiscalYear, portfolioIds: portfolioIdsParam });
 
     const {
         data: reportingSummaryResponse,
         isLoading: isLoadingReportingSummary,
         isError: isErrorReportingSummary
-    } = useGetReportingSummaryQuery({ fiscalYear });
+    } = useGetReportingSummaryQuery({ fiscalYear, portfolioIds: portfolioIdsParam });
 
     const agreementSpendingData = reportingSummaryResponse?.spending;
     const reportingSummaryData = reportingSummaryResponse?.counts;
@@ -104,6 +108,8 @@ export const useReportingPageData = () => {
         fiscalYear,
         selectedFiscalYear,
         setSelectedFiscalYear,
+        filters,
+        setFilters,
         totalFunding,
         totalSpending,
         portfoliosWithFunding,

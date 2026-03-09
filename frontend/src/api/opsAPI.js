@@ -785,10 +785,15 @@ export const opsApi = createApi({
             providesTags: ["Portfolios"]
         }),
         getReportingSummary: builder.query({
-            query: ({ fiscalYear }) => {
+            query: ({ fiscalYear, portfolioIds }) => {
                 const queryParams = [];
                 if (fiscalYear) {
                     queryParams.push(`fiscal_year=${fiscalYear}`);
+                }
+                if (portfolioIds && portfolioIds.length > 0) {
+                    portfolioIds.forEach((id) => {
+                        queryParams.push(`portfolio_ids=${id}`);
+                    });
                 }
                 const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
                 return `/reporting-summary/${queryString}`;

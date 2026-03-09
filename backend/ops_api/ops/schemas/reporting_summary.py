@@ -3,6 +3,7 @@ from marshmallow import Schema, fields
 
 class RequestSchema(Schema):
     fiscal_year = fields.List(fields.Integer(), allow_none=True)
+    portfolio_ids = fields.List(fields.Integer(), allow_none=True)
 
 
 class AgreementTypeSpendingSchema(Schema):

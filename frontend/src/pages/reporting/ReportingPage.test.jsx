@@ -41,10 +41,20 @@ vi.mock("../../components/BudgetLineItems/BLIStatusSummaryCard", () => ({
     default: () => <div data-testid="bli-status-summary-card">BLI Status Summary</div>
 }));
 
+vi.mock("./ReportingFilterButton", () => ({
+    default: () => <div data-testid="reporting-filter-button">Filter Button</div>
+}));
+
+vi.mock("./ReportingFilterTags", () => ({
+    default: () => <div data-testid="reporting-filter-tags">Filter Tags</div>
+}));
+
 const mockDefaultHookReturn = {
     fiscalYear: 2026,
     selectedFiscalYear: "2026",
     setSelectedFiscalYear: vi.fn(),
+    filters: { portfolios: [] },
+    setFilters: vi.fn(),
     totalFunding: 15000000,
     totalSpending: 8000000,
     portfoliosWithFunding: [{ id: 1, name: "Test Portfolio" }],
@@ -126,6 +136,22 @@ describe("ReportingPage", () => {
 
         renderWithProviders(<ReportingPage />);
         expect(screen.getByText("Loading...")).toBeInTheDocument();
+    });
+
+    it("should render the filter button", () => {
+        renderWithProviders(<ReportingPage />);
+        expect(screen.getByTestId("reporting-filter-button")).toBeInTheDocument();
+    });
+
+    it("should render filter tags when portfolios are selected", () => {
+        vi.mocked(useReportingPageData).mockReturnValue({
+            ...mockDefaultHookReturn,
+            filters: { portfolios: [{ id: 1, name: "Child Care" }] }
+        });
+
+        renderWithProviders(<ReportingPage />);
+        expect(screen.getByTestId("reporting-filter-tags")).toBeInTheDocument();
+        expect(screen.getByText("All Portfolios")).toBeInTheDocument();
     });
 
     it("should navigate to error page when isError is true", async () => {

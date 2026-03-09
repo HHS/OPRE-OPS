@@ -20,8 +20,9 @@ class ReportingSummaryListAPI(BaseListAPI):
         schema = RequestSchema()
         data = schema.load(request.args.to_dict(flat=False))
         fiscal_year = _extract_first_or_default(data.get("fiscal_year"), get_current_fiscal_year())
-        spending = get_agreement_spending_by_type(current_app.db_session, fiscal_year)
-        counts = get_reporting_counts(current_app.db_session, fiscal_year)
+        portfolio_ids = data.get("portfolio_ids")
+        spending = get_agreement_spending_by_type(current_app.db_session, fiscal_year, portfolio_ids=portfolio_ids)
+        counts = get_reporting_counts(current_app.db_session, fiscal_year, portfolio_ids=portfolio_ids)
         result = {"spending": spending, "counts": counts}
         response_schema = ResponseSchema()
         return make_response_with_headers(response_schema.dump(result))

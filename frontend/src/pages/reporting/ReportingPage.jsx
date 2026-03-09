@@ -9,6 +9,8 @@ import ReportingCountCard from "../../components/Reporting/ReportingCountCard";
 import BigBudgetCard from "../../components/UI/Cards/BudgetCard/BigBudgetCard";
 import FiscalYear from "../../components/UI/FiscalYear/FiscalYear";
 import { useReportingPageData } from "./ReportingPage.hooks";
+import ReportingFilterButton from "./ReportingFilterButton";
+import ReportingFilterTags from "./ReportingFilterTags";
 
 const ReportingPage = () => {
     const navigate = useNavigate();
@@ -16,6 +18,8 @@ const ReportingPage = () => {
         fiscalYear,
         selectedFiscalYear,
         setSelectedFiscalYear,
+        filters,
+        setFilters,
         totalFunding,
         totalSpending,
         portfoliosWithFunding,
@@ -43,8 +47,20 @@ const ReportingPage = () => {
             </div>
             <p className="margin-top-0">All Portfolios</p>
 
-            <h2 className="margin-bottom-1">Budget Summary</h2>
+            <div className="display-flex flex-justify flex-align-center">
+                <h2 className="margin-bottom-1">Budget Summary</h2>
+                <ReportingFilterButton
+                    filters={filters}
+                    setFilters={setFilters}
+                />
+            </div>
             <p>This is a summary of OPRE&apos;s budget for the selected FY and applied filters.</p>
+            {filters.portfolios.length > 0 && (
+                <ReportingFilterTags
+                    filters={filters}
+                    setFilters={setFilters}
+                />
+            )}
             {isLoading ? (
                 <div>Loading...</div>
             ) : (

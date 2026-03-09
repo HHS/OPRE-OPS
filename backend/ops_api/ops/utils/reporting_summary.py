@@ -4,7 +4,7 @@ from typing import Optional
 from sqlalchemy import and_, func, select
 from sqlalchemy.orm import Session, joinedload
 
-from models import Agreement, AgreementType, BudgetLineItem, BudgetLineItemStatus, Project
+from models import CAN, Agreement, AgreementType, BudgetLineItem, BudgetLineItemStatus, Project
 from models.agreements import AgreementClassification
 
 SPENDING_STATUSES = [
@@ -75,7 +75,7 @@ def _accumulate_agreement_spending(agreement, fiscal_year, totals):
             totals[bucket_type][key] += bli.total or Decimal(0)
 
 
-def get_agreement_spending_by_type(session: Session, fiscal_year: int) -> dict:
+def get_agreement_spending_by_type(session: Session, fiscal_year: int, portfolio_ids=None) -> dict:
     """Get agreement spending grouped by agreement type for a given fiscal year."""
     stmt = (
         select(Agreement)
@@ -92,6 +92,8 @@ def get_agreement_spending_by_type(session: Session, fiscal_year: int) -> dict:
         )
         .distinct()
     )
+
+    stmt = _apply_portfolio_filter(stmt, portfolio_ids)
 
     agreements = session.execute(stmt).unique().scalars().all()
 
@@ -129,17 +131,36 @@ def _get_percentage(total: Decimal, part: Decimal) -> int:
     return round(float(part) / float(total) * 100)
 
 
-def get_reporting_counts(session: Session, fiscal_year: int) -> dict:
+def _apply_portfolio_filter(stmt, portfolio_ids):
+    """Apply portfolio_ids filter by joining BudgetLineItem to CAN."""
+    if portfolio_ids:
+        stmt = stmt.join(CAN, BudgetLineItem.can_id == CAN.id).where(CAN.portfolio_id.in_(portfolio_ids))
+    return stmt
+
+
+def _build_type_list(counts_dict):
+    """Build a {total, types} dict from a counts dictionary keyed by agreement type."""
+    types = []
+    total = 0
+    for config in AGREEMENT_TYPE_CONFIG:
+        c = counts_dict[config["type"]]
+        types.append({"type": config["type"], "count": c})
+        total += c
+    return {"total": total, "types": types}
+
+
+def get_reporting_counts(session: Session, fiscal_year: int, portfolio_ids=None) -> dict:
     """Get reporting counts for projects, agreements, and budget lines for a given fiscal year."""
 
     # --- Projects: count by type (projects with at least one BLI in the FY) ---
-    project_type_counts = session.execute(
+    project_stmt = (
         select(Project.project_type, func.count(func.distinct(Project.id)))
         .join(Agreement, Agreement.project_id == Project.id)
         .join(BudgetLineItem, BudgetLineItem.agreement_id == Agreement.id)
         .where(BudgetLineItem.fiscal_year == fiscal_year)
-        .group_by(Project.project_type)
-    ).all()
+    )
+    project_stmt = _apply_portfolio_filter(project_stmt, portfolio_ids)
+    project_type_counts = session.execute(project_stmt.group_by(Project.project_type)).all()
 
     project_types = []
     project_total = 0
@@ -166,6 +187,7 @@ def get_reporting_counts(session: Session, fiscal_year: int) -> dict:
         )
         .distinct()
     )
+    stmt = _apply_portfolio_filter(stmt, portfolio_ids)
     agreements_list = session.execute(stmt).unique().scalars().all()
 
     agreement_counts = {config["type"]: 0 for config in AGREEMENT_TYPE_CONFIG}
@@ -184,25 +206,16 @@ def get_reporting_counts(session: Session, fiscal_year: int) -> dict:
         elif classification == AgreementClassification.CONTINUING.name:
             continuing_counts[bucket_type] += 1
 
-    def _build_type_list(counts_dict):
-        types = []
-        total = 0
-        for config in AGREEMENT_TYPE_CONFIG:
-            c = counts_dict[config["type"]]
-            types.append({"type": config["type"], "count": c})
-            total += c
-        return {"total": total, "types": types}
-
     agreements = _build_type_list(agreement_counts)
     new_agreements = _build_type_list(new_counts)
     continuing_agreements = _build_type_list(continuing_counts)
 
     # --- Budget lines: count by status for the FY ---
-    bli_status_counts = session.execute(
-        select(BudgetLineItem.status, func.count(BudgetLineItem.id))
-        .where(BudgetLineItem.fiscal_year == fiscal_year)
-        .group_by(BudgetLineItem.status)
-    ).all()
+    bli_stmt = select(BudgetLineItem.status, func.count(BudgetLineItem.id)).where(
+        BudgetLineItem.fiscal_year == fiscal_year
+    )
+    bli_stmt = _apply_portfolio_filter(bli_stmt, portfolio_ids)
+    bli_status_counts = session.execute(bli_stmt.group_by(BudgetLineItem.status)).all()
 
     bli_types = []
     bli_total = 0

@@ -2955,6 +2955,15 @@ paths:
           schema:
             type: integer
             example: 2025
+        - name: portfolio_ids
+          in: query
+          description: Filter results to only include data from budget line items associated with the specified portfolio IDs.
+          schema:
+            type: array
+            items:
+              type: integer
+          style: form
+          explode: true
       responses:
         "200":
           description: OK

@@ -249,3 +249,41 @@ def test_endpoint_explicit_fy(auth_client, db_with_agreement_spending_data, app_
 def test_endpoint_unauthorized(client):
     response = client.get("/api/v1/reporting-summary/")
     assert response.status_code == 401
+
+
+def test_get_agreement_spending_with_portfolio_ids(app, db_with_agreement_spending_data, app_ctx):
+    from models import CAN
+
+    can = app.db_session.execute(app.db_session.query(CAN).filter(CAN.number == "SPEND_TEST_CAN").statement).scalar()
+    portfolio_id = can.portfolio_id
+
+    result = get_agreement_spending_by_type(app.db_session, 2025, portfolio_ids=[portfolio_id])
+
+    assert result["total_spending"] > 0
+    type_map = {at["type"]: at for at in result["agreement_types"]}
+    assert type_map["CONTRACT"]["total"] > 0
+    assert type_map["GRANT"]["total"] > 0
+
+
+def test_get_agreement_spending_with_nonexistent_portfolio_id(app, db_with_agreement_spending_data, app_ctx):
+    result = get_agreement_spending_by_type(app.db_session, 2025, portfolio_ids=[999999])
+
+    assert result["total_spending"] == 0.0
+    for at in result["agreement_types"]:
+        assert at["total"] == 0.0
+
+
+def test_endpoint_with_portfolio_ids(auth_client, db_with_agreement_spending_data, app_ctx):
+    from flask import current_app
+
+    from models import CAN
+
+    can = current_app.db_session.execute(
+        current_app.db_session.query(CAN).filter(CAN.number == "SPEND_TEST_CAN").statement
+    ).scalar()
+    portfolio_id = can.portfolio_id
+
+    response = auth_client.get(f"/api/v1/reporting-summary/?fiscal_year=2025&portfolio_ids={portfolio_id}")
+    assert response.status_code == 200
+    data = response.json
+    assert data["spending"]["total_spending"] > 0
