@@ -236,8 +236,19 @@ def test_get_procurement_tracker_all_step_fields(auth_client, app_ctx):
     assert "draft_solicitation_date" not in solicitation_step
     assert "target_completion_date" not in solicitation_step
 
-    # Other steps (EVALUATION, PRE_AWARD, AWARD) should NOT have extra fields
-    for step in steps[3:]:
+    # EVALUATION step should have extra fields
+    evaluation_step = steps[3]
+    assert evaluation_step["step_type"] == "EVALUATION"
+    assert "task_completed_by" in evaluation_step
+    assert "date_completed" in evaluation_step
+    assert "notes" in evaluation_step
+    assert "target_completion_date" in evaluation_step
+    assert "draft_solicitation_date" not in evaluation_step
+    assert "solicitation_period_start_date" not in evaluation_step
+    assert "solicitation_period_end_date" not in evaluation_step
+
+    # Other steps (PRE_AWARD, AWARD) should NOT have extra fields
+    for step in steps[4:]:
         assert "task_completed_by" not in step
         assert "date_completed" not in step
         assert "notes" not in step

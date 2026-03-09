@@ -9,12 +9,13 @@ import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
 
 /**
  * @typedef {import("../../../../types/UserTypes").SafeUser} SafeUser
+ * @typedef {import("../../../../types/ProcurementTrackerTypes").ProcurementTrackerSolicitationStep} ProcurementTrackerSolicitationStep
  */
 
 /**
  * @typedef {Object} ProcurementTrackerStepThreeProps
  * @property {string} stepStatus - The current status of the procurement tracker step
- * @property {Object} stepThreeData - The data for step 3 of the procurement tracker
+ * @property {ProcurementTrackerSolicitationStep} stepThreeData - The data for step 3 of the procurement tracker
  * @property {SafeUser[]} authorizedUsers - List of users authorized for this agreement
  * @property {boolean} hasActiveTracker - Whether an active tracker exists
  * @property {Function} handleSetCompletedStepNumber - Callback to update completed step state

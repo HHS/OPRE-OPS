@@ -252,5 +252,6 @@ data/
 .claude/settings.local.json
 .claude/stories/
 docs/stories/
+.vscode/mcp.json
 
 /frontend/frontend/public/mockServiceWorker.js

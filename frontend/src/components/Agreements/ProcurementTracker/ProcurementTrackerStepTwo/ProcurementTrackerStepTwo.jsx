@@ -10,13 +10,14 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 /**
  * @typedef {import("../../../../types/UserTypes").SafeUser} SafeUser
+ * @typedef {import("../../../../types/ProcurementTrackerTypes").ProcurementTrackerPreSolicitationStep} ProcurementTrackerPreSolicitationStep
  */
 
 /**
  * @typedef {Object} ProcurementTrackerStepTwoProps
  * @property {string} stepStatus - The current status of the procurement tracker step
  * @property {boolean} isDisabled - The complete step form is disabled
- * @property {Object} stepTwoData - The data for step 2 of the procurement tracker
+ * @property {ProcurementTrackerPreSolicitationStep} stepTwoData - The data for step 2 of the procurement tracker
  * @property {boolean} isActiveStep - Whether step is the active step
  * @property {SafeUser[]} authorizedUsers - List of users authorized for this agreement
  * @property {Function} [handleSetCompletedStepNumber] - Optional callback to set completed step number
