@@ -19,6 +19,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
  * @property {boolean} isActiveStep - Whether step is the active step
  * @property {Function} handleSetCompletedStepNumber - Function to set the completed step number
  * @property {SafeUser[]} authorizedUsers - List of users authorized for this agreement
+ * @property {boolean} isDisabled - Whether step controls should be disabled
  */
 
 /**
@@ -31,7 +32,8 @@ const ProcurementTrackerStepOne = ({
     stepOneData,
     isActiveStep,
     handleSetCompletedStepNumber,
-    authorizedUsers
+    authorizedUsers,
+    isDisabled
 }) => {
     const {
         isPreSolicitationPackageSent,
@@ -54,7 +56,7 @@ const ProcurementTrackerStepOne = ({
         step1NotesLabel,
         runValidate,
         validatorRes
-    } = useProcurementTrackerStepOne(stepOneData, handleSetCompletedStepNumber);
+    } = useProcurementTrackerStepOne(stepOneData, handleSetCompletedStepNumber, !isDisabled);
 
     return (
         <>
@@ -82,7 +84,7 @@ const ProcurementTrackerStepOne = ({
                             value="step-1-checkbox"
                             checked={isPreSolicitationPackageSent}
                             onChange={() => setIsPreSolicitationPackageSent(!isPreSolicitationPackageSent)}
-                            disabled={!isActiveStep}
+                            disabled={isDisabled || !isActiveStep}
                         />
                         <label
                             className="usa-checkbox__label"
@@ -98,7 +100,7 @@ const ProcurementTrackerStepOne = ({
                             selectedUser={selectedUser}
                             setSelectedUser={setSelectedUser}
                             messages={validatorRes.getErrors("users") || []}
-                            isDisabled={!isPreSolicitationPackageSent || authorizedUsers.length === 0}
+                            isDisabled={isDisabled || !isPreSolicitationPackageSent || authorizedUsers.length === 0}
                             onChange={(name, value) => {
                                 runValidate(name, value);
                             }}
@@ -116,7 +118,7 @@ const ProcurementTrackerStepOne = ({
                                 runValidate("dateCompleted", e.target.value);
                                 setStep1DateCompleted(e.target.value);
                             }}
-                            isDisabled={!isPreSolicitationPackageSent}
+                            isDisabled={isDisabled || !isPreSolicitationPackageSent}
                             maxDate={getLocalISODate()}
                         />
                     </div>
@@ -127,14 +129,14 @@ const ProcurementTrackerStepOne = ({
                         maxLength={750}
                         value={step1Notes}
                         onChange={(_, value) => setStep1Notes(value)}
-                        isDisabled={!isPreSolicitationPackageSent}
+                        isDisabled={isDisabled || !isPreSolicitationPackageSent}
                     />
                     <div className="margin-top-2 display-flex flex-justify-end">
                         <button
                             className="usa-button usa-button--unstyled margin-right-2"
                             data-cy="cancel-button"
                             onClick={cancelModalStep1}
-                            disabled={!isPreSolicitationPackageSent}
+                            disabled={isDisabled || !isPreSolicitationPackageSent}
                         >
                             Cancel
                         </button>
