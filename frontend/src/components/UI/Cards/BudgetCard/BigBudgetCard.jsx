@@ -123,9 +123,7 @@ const BigBudgetCard = ({ title, totalSpending, totalFunding }) => {
                     )}
                 </div>
             </RoundedBox>
-            <p
-                className="font-12px margin-top-1 text-base-dark"
-            >
+            <p className="font-12px margin-top-1 text-base-dark">
                 *Spending equals the sum of Budget Lines in Planned, Executing and Obligated Status
             </p>
         </>
