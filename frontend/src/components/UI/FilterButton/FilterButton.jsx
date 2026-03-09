@@ -22,7 +22,6 @@ export const FilterButton = ({ applyFilter, resetFilter, fieldsetList, disabled 
 
     const handleResetFilter = () => {
         resetFilter();
-        setShowModal(false);
     };
 
     Modal.setAppElement("#root");

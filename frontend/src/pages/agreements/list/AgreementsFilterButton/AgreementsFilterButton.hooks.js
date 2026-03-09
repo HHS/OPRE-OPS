@@ -76,6 +76,16 @@ export const useAgreementsFilterButton = (filters, setFilters, selectedFiscalYea
     };
 
     const resetFilter = () => {
+        // Reset local state first to ensure modal form fields clear immediately
+        setFiscalYear([]);
+        setPortfolio([]);
+        setProjectTitle([]);
+        setAgreementType([]);
+        setAgreementName([]);
+        setContractNumber([]);
+        setAwardType([]);
+
+        // Then reset global filters to clear tags
         setFilters({
             fiscalYear: [],
             portfolio: [],
