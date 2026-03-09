@@ -143,10 +143,9 @@ describe("agreement details", () => {
             .next("[data-testid='expanded-data']")
             .find("[data-cy='edit-row']")
             .should("be.disabled")
-            .and("have.attr", "aria-describedby")
-            .then((descId) => {
-                cy.get(`#${descId}`).should("contain", "Obligated budget lines cannot be edited");
-            });
+            .closest(".usa-tooltip")
+            .find(".usa-tooltip__body")
+            .should("contain", "Obligated budget lines cannot be edited");
     });
 
     it("should not allow editing EXECUTING BLIs", () => {
@@ -161,13 +160,12 @@ describe("agreement details", () => {
             .next("[data-testid='expanded-data']")
             .find("[data-cy='edit-row']")
             .should("be.disabled")
-            .and("have.attr", "aria-describedby")
-            .then((descId) => {
-                cy.get(`#${descId}`).should(
-                    "contain",
-                    "If you need to edit a budget line in Executing Status, please contact the budget team"
-                );
-            });
+            .closest(".usa-tooltip")
+            .find(".usa-tooltip__body")
+            .should(
+                "contain",
+                "If you need to edit a budget line in Executing Status, please contact the budget team"
+            );
     });
 
     it("Should allow the user to export BLIs for an agreement", () => {

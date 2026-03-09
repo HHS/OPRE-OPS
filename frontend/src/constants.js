@@ -55,11 +55,12 @@ export const FILTER_MODAL_FULL_WIDTH = { width: "26.2rem" };
 export const IS_AWARDED_TAB_READY = false;
 export const IS_DOCUMENTS_TAB_READY = false;
 export const IS_PROJECTS_LIST_READY = process.env.NODE_ENV !== "production";
+export const IS_PROJECT_DETAIL_READY = process.env.NODE_ENV !== "production";
 export const IS_PROCUREMENT_TRACKER_READY_MAP = {
     STEP_1: true,
     STEP_2: true,
     STEP_3: true,
-    STEP_4: process.env.NODE_ENV !== "production",
+    STEP_4: true,
     STEP_5: process.env.NODE_ENV !== "production",
     STEP_6: process.env.NODE_ENV !== "production"
 };

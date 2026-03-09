@@ -1,7 +1,7 @@
 import { faArrowDown, faArrowUp } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useGetProjectsQuery } from "../../../api/opsAPI";
 import App from "../../../App";
 import DebugCode from "../../../components/DebugCode";
@@ -93,7 +93,9 @@ const ProjectsTable = ({ projects, sortConditions, sortDescending, setSortCondit
             <tbody>
                 {sortedProjects.map((project) => (
                     <tr key={project.id}>
-                        <td>{project.title}</td>
+                        <td>
+                            <Link to={`/projects/${project.id}`}>{project.title}</Link>
+                        </td>
                         <td>{convertCodeForDisplay("project", project.project_type)}</td>
                         <td>{formatProjectStartDate(project.origination_date)}</td>
                         <td>TBD</td>

@@ -1,5 +1,5 @@
 import { ResponsivePie } from "@nivo/pie";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 const ResponsiveDonutWithInnerPercent = ({
     data = [{ id: -1, label: "", value: "", color: "", percent: "" }],
@@ -9,23 +9,39 @@ const ResponsiveDonutWithInnerPercent = ({
     CustomLayerComponent,
     setPercent = () => {},
     setHoverId = () => {},
-    container_id
+    container_id,
+    ariaLabel = "This is a Donut Chart that displays the percent by budget line status in the center."
 }) => {
-    const setA11y = async () => {
-        const container = document.querySelector(`#${container_id}`);
-        const elem = container.querySelector("svg");
-
-        if (elem !== null) {
-            elem.setAttribute(
-                "aria-label",
-                "This is a Donut Chart that displays the percent by budget line status in the center."
-            );
-        }
-    };
+    const observerRef = useRef(null);
 
     useEffect(() => {
-        setA11y();
-    });
+        const container = document.querySelector(`#${container_id}`);
+        if (!container) return;
+
+        const applyA11y = (svg) => {
+            svg.setAttribute("aria-label", ariaLabel);
+        };
+
+        const existingSvg = container.querySelector("svg");
+        if (existingSvg) {
+            applyA11y(existingSvg);
+            return;
+        }
+
+        // Nivo renders the SVG asynchronously; observe the container until it appears.
+        observerRef.current = new MutationObserver(() => {
+            const svg = container.querySelector("svg");
+            if (svg) {
+                applyA11y(svg);
+                observerRef.current?.disconnect();
+            }
+        });
+        observerRef.current.observe(container, { childList: true, subtree: true });
+
+        return () => {
+            observerRef.current?.disconnect();
+        };
+    }, [container_id, ariaLabel]);
 
     return (
         <ResponsivePie
@@ -51,8 +67,6 @@ const ResponsiveDonutWithInnerPercent = ({
                 setPercent("");
                 setHoverId(-1);
             }}
-            aria-label="Donut chart showing budget line status distribution"
-            role="img"
         />
     );
 };

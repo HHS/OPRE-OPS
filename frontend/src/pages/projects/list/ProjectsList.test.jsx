@@ -102,7 +102,8 @@ describe("ProjectsList", () => {
         expect(screen.getByRole("columnheader", { name: "End" })).toBeInTheDocument();
         expect(screen.getByRole("columnheader", { name: "FY Total" })).toBeInTheDocument();
         expect(screen.getByRole("columnheader", { name: "Project Total" })).toBeInTheDocument();
-        expect(screen.getByText("Project Alpha")).toBeInTheDocument();
+        expect(screen.getByRole("link", { name: "Project Alpha" })).toBeInTheDocument();
+        expect(screen.getByRole("link", { name: "Project Alpha" })).toHaveAttribute("href", "/projects/10");
         expect(screen.getByText("Research")).toBeInTheDocument();
         expect(screen.getByText("1/1/2021")).toBeInTheDocument();
         expect(screen.getAllByText("TBD")).toHaveLength(3);

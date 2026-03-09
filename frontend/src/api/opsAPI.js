@@ -150,7 +150,8 @@ export const opsApi = createApi({
                         agreements: response.data, // Keep "agreements" name for internal use
                         count: response.count,
                         limit: response.limit,
-                        offset: response.offset
+                        offset: response.offset,
+                        totals: response.totals ?? null
                     };
                 }
                 // Backward compatibility with old "agreements" key
@@ -159,7 +160,8 @@ export const opsApi = createApi({
                         agreements: response.agreements,
                         count: response.count,
                         limit: response.limit,
-                        offset: response.offset
+                        offset: response.offset,
+                        totals: response.totals ?? null
                     };
                 }
                 // Legacy array format (no pagination)
@@ -167,7 +169,8 @@ export const opsApi = createApi({
                     agreements: response,
                     count: response.length,
                     limit: response.length,
-                    offset: 0
+                    offset: 0,
+                    totals: null
                 };
             },
             providesTags: ["Agreements", "BudgetLineItems"]
@@ -420,6 +423,10 @@ export const opsApi = createApi({
         }),
         getProjects: builder.query({
             query: () => `/projects/`,
+            providesTags: ["ResearchProjects"]
+        }),
+        getProjectById: builder.query({
+            query: (id) => `/projects/${id}`,
             providesTags: ["ResearchProjects"]
         }),
         getProjectsByPortfolio: builder.query({
@@ -977,6 +984,7 @@ export const {
     useLazyGetUserByIdQuery,
     useGetUserByOIDCIdQuery,
     useGetProjectsQuery,
+    useGetProjectByIdQuery,
     useGetProjectsByPortfolioQuery,
     useGetResearchProjectsQuery,
     useGetResearchProjectsByPortfolioQuery,

@@ -32,6 +32,7 @@ from models import (
     User,
     Vendor,
 )
+from models.agreements import AgreementType
 from models.utils.fiscal_year import get_current_fiscal_year
 from ops_api.ops.schemas.agreements import AgreementListFilterOptionResponseSchema
 from ops_api.ops.services.change_requests import ChangeRequestService
@@ -449,6 +450,9 @@ class AgreementsService(OpsService[Agreement]):
         # Calculate count before slicing
         total_count = len(all_results)
 
+        # Calculate aggregate totals before pagination (for summary cards)
+        totals = _compute_agreement_totals(all_results)
+
         # Apply pagination slicing
         if filters.limit is not None and filters.offset is not None:
             limit_value = filters.limit[0]
@@ -463,6 +467,7 @@ class AgreementsService(OpsService[Agreement]):
             "count": total_count,
             "limit": limit_value,
             "offset": offset_value,
+            "totals": totals,
         }
 
         return paginated_results, metadata
@@ -821,6 +826,57 @@ def _validate_special_topics(db_session: Session, special_topics: List[SpecialTo
 
     if invalid_special_topic_ids:
         raise ValidationError({"special_topics": [f"Special Topic IDs do not exist: {invalid_special_topic_ids}"]})
+
+
+def _compute_agreement_totals(all_results: list[Agreement]) -> dict[str, Any]:
+    """Compute aggregate totals across all filtered agreements for summary cards."""
+    totals = {
+        "total_contract_amount": Decimal("0"),
+        "total_partner_amount": Decimal("0"),
+        "total_grant_amount": Decimal("0"),
+        "total_direct_obligation_amount": Decimal("0"),
+        "total_agreements_count": len(all_results),
+        "type_counts": {},
+        "new_count": 0,
+        "new_type_counts": {},
+        "continuing_count": 0,
+        "continuing_type_counts": {},
+    }
+
+    for agreement in all_results:
+        ag_type = agreement.agreement_type
+        ag_total = agreement.agreement_total
+
+        if ag_type == AgreementType.CONTRACT:
+            totals["total_contract_amount"] += ag_total
+        elif ag_type in (AgreementType.AA, AgreementType.IAA):
+            totals["total_partner_amount"] += ag_total
+        elif ag_type == AgreementType.GRANT:
+            totals["total_grant_amount"] += ag_total
+        elif ag_type == AgreementType.DIRECT_OBLIGATION:
+            totals["total_direct_obligation_amount"] += ag_total
+
+        type_key = ag_type.name
+        totals["type_counts"][type_key] = totals["type_counts"].get(type_key, 0) + 1
+
+        award = agreement.award_type
+        if award == "NEW":
+            totals["new_count"] += 1
+            totals["new_type_counts"][type_key] = totals["new_type_counts"].get(type_key, 0) + 1
+        elif award == "CONTINUING":
+            totals["continuing_count"] += 1
+            totals["continuing_type_counts"][type_key] = totals["continuing_type_counts"].get(type_key, 0) + 1
+
+    # Convert Decimals to floats for JSON serialization
+    for key in [
+        "total_contract_amount",
+        "total_partner_amount",
+        "total_grant_amount",
+        "total_direct_obligation_amount",
+    ]:
+        totals[key] = float(totals[key])
+
+    return totals
 
 
 def _get_agreements(session: Session, agreement_cls: Type[Agreement], data: dict[str, Any]) -> Sequence[Agreement]:
