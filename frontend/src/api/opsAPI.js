@@ -474,7 +474,7 @@ export const opsApi = createApi({
             invalidatesTags: ["Agreements", "BudgetLineItems"]
         }),
         getAgreementTypes: builder.query({
-            query: () => `/agreement-types/`,
+            query: () => `/lookups/agreement-types/`,
             providesTags: ["AgreementTypes"]
         }),
         getProductServiceCodes: builder.query({
@@ -490,7 +490,7 @@ export const opsApi = createApi({
             providesTags: ["ProcurementShops"]
         }),
         getAgreementReasons: builder.query({
-            query: () => `/agreement-reasons/`,
+            query: () => `/lookups/agreement-reasons/`,
             providesTags: ["AgreementReasons"]
         }),
         getUsers: builder.query({
