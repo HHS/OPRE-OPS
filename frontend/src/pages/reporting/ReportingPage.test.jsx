@@ -24,6 +24,10 @@ vi.mock("../../components/Reporting/ReportingCountCard", () => ({
     default: () => <div data-testid="reporting-summary-card">Reporting Summary</div>
 }));
 
+vi.mock("../../components/Agreements/AgreementSpendingSummaryCard", () => ({
+    default: () => <div data-testid="agreement-spending-summary-card">Spending Summary</div>
+}));
+
 const mockDefaultHookReturn = {
     fiscalYear: 2026,
     selectedFiscalYear: "2026",
@@ -87,6 +91,11 @@ describe("ReportingPage", () => {
     it("should render the ReportingCountCard", () => {
         renderWithProviders(<ReportingPage />);
         expect(screen.getByTestId("reporting-summary-card")).toBeInTheDocument();
+    });
+
+    it("should render the AgreementSpendingSummaryCard", () => {
+        renderWithProviders(<ReportingPage />);
+        expect(screen.getByTestId("agreement-spending-summary-card")).toBeInTheDocument();
     });
 
     it("should render loading state when data is loading", () => {

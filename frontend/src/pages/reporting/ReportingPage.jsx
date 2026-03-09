@@ -1,5 +1,6 @@
 import App from "../../App";
 import AgreementSpendingCards from "../../components/Agreements/AgreementSpendingCards";
+import AgreementSpendingSummaryCard from "../../components/Agreements/AgreementSpendingSummaryCard";
 import PortfolioSummaryCards from "../../components/Portfolios/PortfolioSummaryCards";
 import ReportingCountCard from "../../components/Reporting/ReportingCountCard";
 import BigBudgetCard from "../../components/UI/Cards/BudgetCard/BigBudgetCard";
@@ -63,6 +64,24 @@ const ReportingPage = () => {
                         <ReportingCountCard
                             fiscalYear={fiscalYear}
                             counts={reportingSummaryData}
+                        />
+                    </div>
+                    <div className="margin-top-4">
+                        <AgreementSpendingSummaryCard
+                            titlePrefix={`FY ${fiscalYear}`}
+                            contractTotal={
+                                agreementSpendingData?.agreement_types?.find((t) => t.type === "CONTRACT")?.total ?? 0
+                            }
+                            partnerTotal={
+                                agreementSpendingData?.agreement_types?.find((t) => t.type === "PARTNER")?.total ?? 0
+                            }
+                            grantTotal={
+                                agreementSpendingData?.agreement_types?.find((t) => t.type === "GRANT")?.total ?? 0
+                            }
+                            directObligationTotal={
+                                agreementSpendingData?.agreement_types?.find((t) => t.type === "DIRECT_OBLIGATION")
+                                    ?.total ?? 0
+                            }
                         />
                     </div>
                 </>
