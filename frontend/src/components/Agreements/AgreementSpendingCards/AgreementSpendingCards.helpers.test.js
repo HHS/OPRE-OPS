@@ -24,11 +24,11 @@ describe("transformToChartData", () => {
         expect(result[0].id).toBe("CONTRACT");
         expect(result[0].label).toBe("Contracts (New)");
         expect(result[0].value).toBe(10000000);
-        expect(result[0].color).toBe("#1B2B85");
+        expect(result[0].color).toBe("var(--data-viz-agreement-contract)");
         expect(result[1].id).toBe("CONTRACT_CONTINUING");
         expect(result[1].label).toBe("Contracts (Continuing)");
         expect(result[1].value).toBe(10000000);
-        expect(result[1].color).toBe("#4A5CB8");
+        expect(result[1].color).toBe("var(--data-viz-agreement-contract-continuing)");
     });
 
     it("filters out types with zero value", () => {

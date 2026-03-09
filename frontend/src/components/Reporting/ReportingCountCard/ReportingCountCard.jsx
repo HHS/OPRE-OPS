@@ -22,10 +22,10 @@ const PROJECT_TYPE_LABELS = {
 };
 
 const AGREEMENT_TYPE_COLORS = {
-    CONTRACT: "#11305C",
-    PARTNER: "#4AA487",
-    GRANT: "#E38356",
-    DIRECT_OBLIGATION: "#C54878"
+    CONTRACT: "var(--data-viz-agreement-contract)",
+    PARTNER: "var(--data-viz-agreement-partner)",
+    GRANT: "var(--data-viz-agreement-grant)",
+    DIRECT_OBLIGATION: "var(--data-viz-agreement-direct-obligation)"
 };
 
 const CountColumn = ({ title, total, types, labelMap, getTagProps }) => (
@@ -48,7 +48,7 @@ const CountColumn = ({ title, total, types, labelMap, getTagProps }) => (
     </div>
 );
 
-const projectTagProps = () => ({ style: { backgroundColor: "#BCD9ED" } });
+const projectTagProps = () => ({ tagStyle: "primaryDarkTextLightBackground" });
 
 const agreementTagProps = (type) => ({
     style: { backgroundColor: AGREEMENT_TYPE_COLORS[type], color: "#fff" }
