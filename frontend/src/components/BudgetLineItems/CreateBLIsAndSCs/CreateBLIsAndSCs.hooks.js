@@ -321,6 +321,7 @@ const useCreateBLIsAndSCs = (
         setNeedByDate(null);
         setEnteredDescription(null);
         setBudgetLineBeingEdited(null);
+        suite.reset();
         budgetFormSuite.reset();
         datePickerSuite.reset();
     }, []);
