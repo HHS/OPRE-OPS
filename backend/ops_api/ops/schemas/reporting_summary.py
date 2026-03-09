@@ -9,7 +9,7 @@ class AgreementTypeSpendingSchema(Schema):
     type = fields.String(required=True)
     label = fields.String(required=True)
     total = fields.Float(required=True)
-    percent = fields.String(required=True)
+    percent = fields.Integer(required=True)
     new = fields.Float(required=True)
     continuing = fields.Float(required=True)
 

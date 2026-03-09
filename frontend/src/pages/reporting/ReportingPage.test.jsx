@@ -1,8 +1,17 @@
-import { screen } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import { vi } from "vitest";
 import { renderWithProviders } from "../../test-utils";
 import ReportingPage from "./ReportingPage";
 import { useReportingPageData } from "./ReportingPage.hooks";
+
+const mockNavigate = vi.fn();
+vi.mock("react-router-dom", async () => {
+    const actual = await vi.importActual("react-router-dom");
+    return {
+        ...actual,
+        useNavigate: () => mockNavigate
+    };
+});
 
 vi.mock("../../App", () => ({
     default: ({ children }) => <div data-testid="app-wrapper">{children}</div>
@@ -48,6 +57,7 @@ const mockDefaultHookReturn = {
 
 describe("ReportingPage", () => {
     beforeEach(() => {
+        mockNavigate.mockClear();
         vi.mocked(useReportingPageData).mockReturnValue(mockDefaultHookReturn);
     });
 
@@ -116,5 +126,18 @@ describe("ReportingPage", () => {
 
         renderWithProviders(<ReportingPage />);
         expect(screen.getByText("Loading...")).toBeInTheDocument();
+    });
+
+    it("should navigate to error page when isError is true", async () => {
+        vi.mocked(useReportingPageData).mockReturnValue({
+            ...mockDefaultHookReturn,
+            isError: true
+        });
+
+        renderWithProviders(<ReportingPage />);
+
+        await waitFor(() => {
+            expect(mockNavigate).toHaveBeenCalledWith("/error");
+        });
     });
 });

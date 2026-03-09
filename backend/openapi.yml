@@ -2983,7 +2983,7 @@ paths:
                               type: number
                               format: float
                             percent:
-                              type: string
+                              type: integer
                             new:
                               type: number
                               format: float

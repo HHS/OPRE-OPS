@@ -4,14 +4,14 @@ import AgreementSpendingLegend from "./AgreementSpendingLegend";
 
 describe("AgreementSpendingLegend", () => {
     const mockAgreementTypes = [
-        { type: "CONTRACT", label: "Contracts", total: 20000000, percent: "43", new: 10000000, continuing: 10000000 },
-        { type: "PARTNER", label: "Partner", total: 15000000, percent: "33", new: 8000000, continuing: 7000000 },
-        { type: "GRANT", label: "Grants", total: 8000000, percent: "17", new: 5000000, continuing: 3000000 },
+        { type: "CONTRACT", label: "Contracts", total: 20000000, percent: 43, new: 10000000, continuing: 10000000 },
+        { type: "PARTNER", label: "Partner", total: 15000000, percent: 33, new: 8000000, continuing: 7000000 },
+        { type: "GRANT", label: "Grants", total: 8000000, percent: 17, new: 5000000, continuing: 3000000 },
         {
             type: "DIRECT_OBLIGATION",
             label: "Direct Oblig.",
             total: 3000000,
-            percent: "7",
+            percent: 7,
             new: 2000000,
             continuing: 1000000
         }

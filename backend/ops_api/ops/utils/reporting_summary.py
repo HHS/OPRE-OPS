@@ -123,10 +123,10 @@ def get_agreement_spending_by_type(session: Session, fiscal_year: int) -> dict:
     }
 
 
-def _get_percentage(total: Decimal, part: Decimal) -> str:
+def _get_percentage(total: Decimal, part: Decimal) -> int:
     if not total:
-        return "0"
-    return f"{round(float(part) / float(total) * 100)}"
+        return 0
+    return round(float(part) / float(total) * 100)
 
 
 def get_reporting_counts(session: Session, fiscal_year: int) -> dict:

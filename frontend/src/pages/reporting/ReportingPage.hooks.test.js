@@ -45,14 +45,14 @@ const mockReportingSummaryData = {
     spending: {
         total_spending: 5000000,
         agreement_types: [
-            { type: "CONTRACT", label: "Contracts", total: 3000000, percent: "60", new: 2000000, continuing: 1000000 },
-            { type: "PARTNER", label: "Partner", total: 1000000, percent: "20", new: 500000, continuing: 500000 },
-            { type: "GRANT", label: "Grants", total: 500000, percent: "10", new: 300000, continuing: 200000 },
+            { type: "CONTRACT", label: "Contracts", total: 3000000, percent: 60, new: 2000000, continuing: 1000000 },
+            { type: "PARTNER", label: "Partner", total: 1000000, percent: 20, new: 500000, continuing: 500000 },
+            { type: "GRANT", label: "Grants", total: 500000, percent: 10, new: 300000, continuing: 200000 },
             {
                 type: "DIRECT_OBLIGATION",
                 label: "Direct Oblig.",
                 total: 500000,
-                percent: "10",
+                percent: 10,
                 new: 250000,
                 continuing: 250000
             }

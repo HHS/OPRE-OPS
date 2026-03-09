@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import App from "../../App";
 import AgreementSpendingCards from "../../components/Agreements/AgreementSpendingCards";
 import AgreementSpendingSummaryCard from "../../components/Agreements/AgreementSpendingSummaryCard";
@@ -9,6 +11,7 @@ import FiscalYear from "../../components/UI/FiscalYear/FiscalYear";
 import { useReportingPageData } from "./ReportingPage.hooks";
 
 const ReportingPage = () => {
+    const navigate = useNavigate();
     const {
         fiscalYear,
         selectedFiscalYear,
@@ -19,8 +22,15 @@ const ReportingPage = () => {
         agreementSpendingData,
         reportingSummaryData,
         bliStatusSpending,
-        isLoading
+        isLoading,
+        isError
     } = useReportingPageData();
+
+    useEffect(() => {
+        if (isError) {
+            navigate("/error");
+        }
+    }, [isError, navigate]);
 
     return (
         <App breadCrumbName="OPRE Budget Reporting">
