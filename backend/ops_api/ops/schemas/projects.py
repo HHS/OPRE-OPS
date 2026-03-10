@@ -4,12 +4,14 @@ from typing import Optional
 from marshmallow import Schema, fields
 
 from models import ProjectType
+from ops_api.ops.schemas.pagination import PaginationListSchema
 
 
-class ProjectListGetRequestSchema(Schema):
+class ProjectListGetRequestSchema(PaginationListSchema):
     """Schema for validating ProjectListAPI GET request query parameters.
 
     All filter parameters accept lists to enable filtering by multiple values.
+    Inherits pagination parameters (limit, offset) from PaginationListSchema.
     """
 
     fiscal_year = fields.List(fields.Integer(), required=False, load_default=[])

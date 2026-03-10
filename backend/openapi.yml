@@ -2814,7 +2814,7 @@ paths:
       tags:
         - Projects
       operationId: getProjects
-      description: Get Projects with optional filtering
+      description: Get Projects with optional filtering and pagination
       parameters:
         - $ref: "#/components/parameters/simulatedError"
         - name: fiscal_year
@@ -2868,19 +2868,64 @@ paths:
           style: form
           explode: true
           example: [RESEARCH]
+        - name: limit
+          in: query
+          description: Maximum number of projects to return (1-50, default 10)
+          schema:
+            type: array
+            items:
+              type: integer
+              minimum: 1
+              maximum: 50
+              default: 10
+          style: form
+          explode: true
+          example: [10]
+        - name: offset
+          in: query
+          description: Number of projects to skip (default 0)
+          schema:
+            type: array
+            items:
+              type: integer
+              minimum: 0
+              default: 0
+          style: form
+          explode: true
+          example: [0]
       responses:
         "200":
-          description: OK - Returns array of projects matching the filter criteria
+          description: OK - Returns paginated list of projects with metadata
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  oneOf:
-                    - $ref: "#/components/schemas/ResearchProjectListItem"
-                    - $ref: "#/components/schemas/ProjectListItem"
-                  discriminator:
-                    propertyName: project_type
+                type: object
+                required:
+                  - data
+                  - count
+                  - limit
+                  - offset
+                properties:
+                  data:
+                    type: array
+                    items:
+                      oneOf:
+                        - $ref: "#/components/schemas/ResearchProjectListItem"
+                        - $ref: "#/components/schemas/ProjectListItem"
+                      discriminator:
+                        propertyName: project_type
+                  count:
+                    type: integer
+                    description: Total number of projects matching the filter criteria (before pagination)
+                    example: 42
+                  limit:
+                    type: integer
+                    description: Maximum number of projects returned in this response
+                    example: 10
+                  offset:
+                    type: integer
+                    description: Number of projects skipped
+                    example: 0
         "400":
           description: Bad Request
         "401":
