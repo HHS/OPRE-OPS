@@ -44,7 +44,7 @@ export default function useProcurementTrackerStepFour(stepFourData, handleSetCom
      * @param {any} value
      */
     const runValidate = (name, value) => {
-        suite({ ...{ [name]: value } }, name);
+        suite.run({ ...{ [name]: value } }, name);
     };
 
     let validatorRes = suite.get();

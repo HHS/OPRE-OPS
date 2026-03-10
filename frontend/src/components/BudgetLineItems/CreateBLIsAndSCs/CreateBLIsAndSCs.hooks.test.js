@@ -119,7 +119,13 @@ vi.mock("./suite", () => {
     const suite = vi.fn();
     suite.get = vi.fn(() => ({
         getErrors: () => ({}),
-        hasErrors: () => false
+        hasErrors: () => false,
+        isValid: () => true
+    }));
+    suite.run = vi.fn(() => ({
+        getErrors: () => ({}),
+        hasErrors: () => false,
+        isValid: () => true
     }));
     suite.reset = vi.fn();
     return { default: suite };
@@ -216,5 +222,46 @@ describe("useCreateBLIsAndSCs", () => {
 
         expect(setIsEditModeMock).toHaveBeenCalledWith(false);
         expect(navigateMock).toHaveBeenCalledWith("/agreements/1/budget-lines");
+    });
+
+    it("uses the latest review-mode suite result for page validation", async () => {
+        const suiteModule = await import("./suite");
+        const reviewErrors = {
+            "Budget line item (temp-id)": ["This is required information"]
+        };
+        suiteModule.default.run.mockImplementation(() => ({
+            getErrors: () => reviewErrors,
+            hasErrors: () => true,
+            isValid: () => false
+        }));
+
+        const { result } = renderHook(() =>
+            useCreateBLIsAndSCs(
+                true,
+                true,
+                [],
+                vi.fn(),
+                goBackMock,
+                vi.fn(),
+                {
+                    id: 1,
+                    agreement_type: "GRANT",
+                    display_name: "AGR-1"
+                },
+                {
+                    fee_percentage: 5,
+                    abbr: "PSC"
+                },
+                setIsEditModeMock,
+                "agreement",
+                true,
+                true,
+                "Save & Exit",
+                1
+            )
+        );
+
+        expect(suiteModule.default.run).toHaveBeenCalledWith({ budgetLines: [] });
+        expect(result.current.budgetLinePageErrorsExist).toBe(true);
     });
 });

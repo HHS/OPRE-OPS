@@ -17,7 +17,7 @@ import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
  * @property {string} stepStatus - The current status of the procurement tracker step
  * @property {ProcurementTrackerSolicitationStep} stepThreeData - The data for step 3 of the procurement tracker
  * @property {SafeUser[]} authorizedUsers - List of users authorized for this agreement
- * @property {boolean} hasActiveTracker - Whether an active tracker exists
+ * @property {boolean} isDisabled - Whether step controls should be disabled
  * @property {Function} handleSetCompletedStepNumber - Callback to update completed step state
  * @property {boolean} isActiveStep - Whether this is the currently active step
  */
@@ -31,7 +31,7 @@ const ProcurementTrackerStepThree = ({
     stepStatus,
     stepThreeData,
     authorizedUsers,
-    hasActiveTracker,
+    isDisabled,
     handleSetCompletedStepNumber,
     isActiveStep
 }) => {
@@ -74,7 +74,7 @@ const ProcurementTrackerStepThree = ({
     const missingSolicitationDates = !hasSavedSolicitationDates && !hasEnteredSolicitationDates;
 
     const disableStep3Buttons =
-        !hasActiveTracker ||
+        isDisabled ||
         !isSolicitationClosed ||
         !selectedUser?.id ||
         !step3DateCompleted ||
@@ -83,7 +83,7 @@ const ProcurementTrackerStepThree = ({
         !stepThreeData?.id;
 
     const isSolicitationDatesSaveDisabled =
-        !hasActiveTracker ||
+        isDisabled ||
         validatorRes.hasErrors("solicitationPeriodStartDate") ||
         validatorRes.hasErrors("solicitationPeriodEndDate") ||
         !solicitationPeriodStartDate ||
@@ -138,7 +138,7 @@ const ProcurementTrackerStepThree = ({
                                         });
                                         setSolicitationPeriodStartDate(nextStartDate);
                                     }}
-                                    isDisabled={!hasActiveTracker}
+                                    isDisabled={isDisabled}
                                 />
 
                                 <MemoizedDatePicker
@@ -154,7 +154,7 @@ const ProcurementTrackerStepThree = ({
                                         runValidate("solicitationPeriodEndDate", nextEndDate);
                                         setSolicitationPeriodEndDate(nextEndDate);
                                     }}
-                                    isDisabled={!hasActiveTracker}
+                                    isDisabled={isDisabled}
                                 />
 
                                 <button
@@ -186,7 +186,7 @@ const ProcurementTrackerStepThree = ({
                             value="step-3-checkbox"
                             checked={isSolicitationClosed}
                             onChange={() => setIsSolicitationClosed(!isSolicitationClosed)}
-                            disabled={!hasActiveTracker || !isActiveStep}
+                            disabled={isDisabled || !isActiveStep}
                         />
                         <label
                             className="usa-checkbox__label"
@@ -203,7 +203,7 @@ const ProcurementTrackerStepThree = ({
                             selectedUser={selectedUser}
                             setSelectedUser={setSelectedUser}
                             users={authorizedUsers}
-                            isDisabled={!hasActiveTracker || !isSolicitationClosed}
+                            isDisabled={isDisabled || !isSolicitationClosed}
                             messages={validatorRes.getErrors("users") || []}
                             onChange={(/** @type {string} */ name, /** @type {any} */ value) => {
                                 runValidate(name, value);
@@ -223,7 +223,7 @@ const ProcurementTrackerStepThree = ({
                                 setStep3DateCompleted(e.target.value);
                             }}
                             maxDate={getLocalISODate()}
-                            isDisabled={!hasActiveTracker || !isSolicitationClosed}
+                            isDisabled={isDisabled || !isSolicitationClosed}
                         />
                     </div>
 
@@ -234,7 +234,7 @@ const ProcurementTrackerStepThree = ({
                         maxLength={750}
                         value={step3Notes}
                         onChange={(_, value) => setStep3Notes(value)}
-                        isDisabled={!hasActiveTracker || !isSolicitationClosed}
+                        isDisabled={isDisabled || !isSolicitationClosed}
                     />
 
                     <div className="margin-top-2 display-flex flex-justify-end">
@@ -242,7 +242,7 @@ const ProcurementTrackerStepThree = ({
                             className="usa-button usa-button--unstyled margin-right-2"
                             data-cy="cancel-button"
                             onClick={cancelModalStep3}
-                            disabled={!hasActiveTracker || !isSolicitationClosed}
+                            disabled={isDisabled || !isSolicitationClosed}
                         >
                             Cancel
                         </button>

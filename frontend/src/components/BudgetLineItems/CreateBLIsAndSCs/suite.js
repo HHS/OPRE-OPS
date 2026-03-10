@@ -1,8 +1,6 @@
-import { create, test, enforce, only, each } from "vest";
+import { create, test, enforce, each } from "vest";
 
 const suite = create((data) => {
-    only(data);
-
     // test to ensure at least one budget line item exists
     test("data", "Must have at least one budget line", () => {
         enforce(data.budgetLines.length).greaterThan(0);
@@ -11,7 +9,7 @@ const suite = create((data) => {
     each(data.budgetLines, (item) => {
         test(`Budget line item (${item.id})`, "This is required information", () => {
             enforce(item.date_needed).isNotBlank();
-            enforce(item.can_id).isNotBlank();
+            enforce(item.can_id).isNotNullish().greaterThan(0);
             enforce(item.amount).greaterThan(0);
         });
         test(`Budget line item (${item.id})`, "Need by date must be in the future", () => {

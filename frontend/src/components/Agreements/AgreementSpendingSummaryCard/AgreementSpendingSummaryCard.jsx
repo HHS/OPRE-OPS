@@ -72,8 +72,8 @@ const AgreementSpendingSummaryCard = ({
 
             <div className="display-flex flex-justify">
                 <div
-                    className="font-12px"
-                    style={{ minWidth: "230px" }}
+                    className="font-12px flex-fill"
+                    style={{ marginRight: "1rem" }}
                 >
                     {data.map((item) => (
                         <LegendItem

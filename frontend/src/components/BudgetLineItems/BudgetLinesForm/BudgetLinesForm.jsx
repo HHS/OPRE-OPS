@@ -70,7 +70,7 @@ export const BudgetLinesForm = ({
     // validate all budget line fields if in review mode and is editing
     if (isEditing) {
         if (isReviewMode || isBudgetLineNotDraft) {
-            const validationResult = budgetFormSuite(
+            const validationResult = budgetFormSuite.run(
                 {
                     servicesComponentNumber,
                     selectedCan,
@@ -92,7 +92,7 @@ export const BudgetLinesForm = ({
             needByDateCn = budgetCn("needByDate");
         }
         if (!isBudgetLineNotDraft) {
-            datePickerSuite(
+            datePickerSuite.run(
                 {
                     needByDate
                 },
@@ -102,7 +102,7 @@ export const BudgetLinesForm = ({
     }
 
     const validateBudgetForm = (name, value) => {
-        budgetFormSuite(
+        budgetFormSuite.run(
             {
                 servicesComponentNumber,
                 selectedCan,
@@ -115,7 +115,7 @@ export const BudgetLinesForm = ({
     };
 
     const validateDatePicker = (name, value) => {
-        datePickerSuite(
+        datePickerSuite.run(
             {
                 needByDate,
                 ...{ [name]: value }

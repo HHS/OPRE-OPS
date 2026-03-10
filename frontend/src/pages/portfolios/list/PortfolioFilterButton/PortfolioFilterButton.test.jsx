@@ -130,9 +130,10 @@ describe("PortfolioFilterButton", () => {
 
         await waitFor(() => {
             expect(screen.getByText("FY Budget")).toBeInTheDocument();
-            // "Available Budget" appears in both label and placeholder
-            expect(screen.getAllByText("Available Budget")[0]).toBeInTheDocument();
         });
+
+        // "Available Budget" appears in both label and placeholder
+        expect(screen.getAllByText("Available Budget")[0]).toBeInTheDocument();
     });
 
     it("should display Apply and Reset buttons in modal", async () => {
@@ -151,8 +152,9 @@ describe("PortfolioFilterButton", () => {
 
         await waitFor(() => {
             expect(screen.getByRole("button", { name: /apply/i })).toBeInTheDocument();
-            expect(screen.getByRole("button", { name: /reset/i })).toBeInTheDocument();
         });
+
+        expect(screen.getByRole("button", { name: /reset/i })).toBeInTheDocument();
     });
 
     it("should call setFilters when Apply is clicked", async () => {
