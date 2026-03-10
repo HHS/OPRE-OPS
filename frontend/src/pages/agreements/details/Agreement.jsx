@@ -202,7 +202,10 @@ const Agreement = () => {
                 </Tag>
             )}
             <h1 className={`font-sans-2xl margin-0 text-brand-primary`}>{agreement?.name}</h1>
-            <h2 className={`font-sans-3xs text-normal margin-top-1 margin-bottom-2`}>{agreement?.project?.title}</h2>
+            <h2 className={`font-sans-3xs text-normal margin-top-1 margin-bottom-2`}>
+                {agreement?.project?.title}
+                {agreement?.project?.short_title ? ` (${agreement.project.short_title})` : ""}
+            </h2>
 
             {user_agreement_notifications?.length > 0 && (
                 <AgreementChangesResponseAlert
