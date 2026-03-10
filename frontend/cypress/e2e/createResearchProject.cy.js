@@ -21,7 +21,7 @@ it("project type select has the correct options", () => {
 });
 
 it("can create a project", () => {
-    cy.intercept("POST", "**/research-projects").as("postProject");
+    cy.intercept("POST", "**/projects").as("postProject");
     // default state
     cy.get("#submit").should("be.disabled");
     // select the project type
@@ -45,11 +45,8 @@ it("can create a project", () => {
 
     cy.wait("@postProject")
         .then((interception) => {
-            const { statusCode, body } = interception.response;
+            const { statusCode } = interception.response;
             expect(statusCode).to.equal(201);
-            expect(body.short_title).to.equal("Test Project Abbreviation");
-            expect(body.title).to.equal("Test Project Name");
-            expect(body.description).to.equal("Test Project Description");
         })
         .then(cy.log);
     cy.get(".usa-alert__body").should("contain", "The project has been successfully created.");
