@@ -509,9 +509,7 @@ describe("Agreement memoization functionality", () => {
                 </TestWrapper>
             );
 
-            expect(screen.getByTestId("project-title")).toHaveTextContent(
-                "Human Services Interoperability Support"
-            );
+            expect(screen.getByTestId("project-title")).toHaveTextContent("Human Services Interoperability Support");
             expect(screen.getByTestId("project-title").textContent).not.toContain("(");
         });
 
@@ -529,9 +527,7 @@ describe("Agreement memoization functionality", () => {
                 </TestWrapper>
             );
 
-            expect(screen.getByTestId("project-title")).toHaveTextContent(
-                "Human Services Interoperability Support"
-            );
+            expect(screen.getByTestId("project-title")).toHaveTextContent("Human Services Interoperability Support");
             expect(screen.getByTestId("project-title").textContent).not.toContain("(");
         });
 
