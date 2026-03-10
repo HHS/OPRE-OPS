@@ -17,7 +17,7 @@ import { FILTER_MODAL_FULL_WIDTH } from "../../../../constants";
  * @param {Function} props.setFilters - A function to call to set the filters.
  * @param {Object} props.agreementFilterOptions - The filter options from API.
  * @param {string|number} props.selectedFiscalYear - The current fiscal year value from the page-level dropdown. Can be a number (specific year), "All" (user-selected), "Multi" (auto-set when multiple years filtered), or undefined. Used to update the modal's placeholder text only - does not pre-select filter values.
- * @returns {JSX.Element} - The procurement shop select element.
+ * @returns {JSX.Element} - The filter button component.
  */
 export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOptions, selectedFiscalYear }) => {
     const {
@@ -38,7 +38,7 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
         applyFilter,
         resetFilter,
         currentFiscalYear
-    } = useAgreementsFilterButton(filters, setFilters, selectedFiscalYear);
+    } = useAgreementsFilterButton(filters, setFilters);
 
     const fieldStyles = "usa-fieldset margin-bottom-205";
     const legendStyles = `usa-legend font-sans-3xs margin-top-0 padding-bottom-1 ${customStyles.legendColor}`;

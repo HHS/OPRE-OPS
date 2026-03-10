@@ -56,9 +56,6 @@ const BudgetLineItemList = () => {
         ) {
             // Reset to current fiscal year, but preserve "All" state
             setFiscalYearShortcut(getCurrentFiscalYear());
-        } else if (fiscalYearShortcut === "Multi" && !isFiscalYearShortcutActive) {
-            // Reset "Multi" to current fiscal year when filters are cleared (but preserve "All")
-            setFiscalYearShortcut(getCurrentFiscalYear());
         }
     }, [filters.fiscalYears, fiscalYearShortcut, isFiscalYearShortcutActive]);
 

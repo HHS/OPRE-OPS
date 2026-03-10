@@ -86,6 +86,10 @@ const AgreementsList = () => {
         if (selectedFiscalYear === "All") {
             return [];
         }
+        // If "Multi" (should only happen if user clears all filter tags), default to current fiscal year
+        if (selectedFiscalYear === "Multi") {
+            return [{ id: getCurrentFiscalYear(), title: getCurrentFiscalYear() }];
+        }
         // Otherwise, use the selected fiscal year
         return [{ id: Number(selectedFiscalYear), title: Number(selectedFiscalYear) }];
     };
