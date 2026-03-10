@@ -116,12 +116,12 @@ it("filter button works as expected", () => {
 
     // check that the correct tags are displayed
     cy.get("div").contains("Filters Applied:").should("exist");
-    cy.get("svg[id='filter-tag-fiscalYears']").should("exist");
-    cy.get("svg[id='filter-tag-portfolios']").should("exist");
-    cy.get("svg[id='filter-tag-agreementTypes']").should("exist");
-    cy.get("svg[id='filter-tag-agreementTitles']").should("exist");
-    cy.get("svg[id='filter-tag-canActivePeriods']").should("exist");
-    cy.get("svg[id='filter-tag-budgetRange']").should("exist");
+    cy.get("button[id='filter-tag-fiscalYears']").should("exist");
+    cy.get("button[id='filter-tag-portfolios']").should("exist");
+    cy.get("button[id='filter-tag-agreementTypes']").should("exist");
+    cy.get("button[id='filter-tag-agreementTitles']").should("exist");
+    cy.get("button[id='filter-tag-canActivePeriods']").should("exist");
+    cy.get("button[id='filter-tag-budgetRange']").should("exist");
 
     cy.get("div").contains("FY 2043").should("exist");
     cy.get("div").contains("Child Welfare Research").should("exist");
@@ -139,12 +139,12 @@ it("filter button works as expected", () => {
 
     // check that the correct tags are displayed
     cy.get("div").contains("Filters Applied:").should("not.exist");
-    cy.get("svg[id='filter-tag-fiscalYears']").should("not.exist");
-    cy.get("svg[id='filter-tag-portfolios']").should("not.exist");
-    cy.get("svg[id='filter-tag-agreementTypes']").should("not.exist");
-    cy.get("svg[id='filter-tag-agreementTitles']").should("not.exist");
-    cy.get("svg[id='filter-tag-canActivePeriods']").should("not.exist");
-    cy.get("svg[id='filter-tag-budgetRange']").should("not.exist");
+    cy.get("button[id='filter-tag-fiscalYears']").should("not.exist");
+    cy.get("button[id='filter-tag-portfolios']").should("not.exist");
+    cy.get("button[id='filter-tag-agreementTypes']").should("not.exist");
+    cy.get("button[id='filter-tag-agreementTitles']").should("not.exist");
+    cy.get("button[id='filter-tag-canActivePeriods']").should("not.exist");
+    cy.get("button[id='filter-tag-budgetRange']").should("not.exist");
 });
 
 it("click on chevron down should open row and see budgetline data", () => {
