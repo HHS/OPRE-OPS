@@ -255,3 +255,9 @@ docs/stories/
 .vscode/mcp.json
 
 /frontend/frontend/public/mockServiceWorker.js
+
+# OpenAPI validation reports
+docs/openapi_reports/spectral_*
+docs/openapi_reports/swagger_cli_*
+docs/openapi_reports/validation_summary_*
+docs/openapi_reports/yamllint_*
