@@ -56,6 +56,12 @@ def test_get_lookup_portfolio_status_by_id(auth_client, app_ctx):
     assert response.json == "IN_PROCESS"
 
 
+def test_get_lookup_portfolio_status_invalid_id(auth_client, app_ctx):
+    """GET /api/v1/lookups/portfolio-status/999 returns 404 for out-of-range enum id."""
+    response = auth_client.get("/api/v1/lookups/portfolio-status/999")
+    assert response.status_code == 404
+
+
 # ---------------------------------------------------------------------------
 # Group B — Unauthenticated 401 tests
 # ---------------------------------------------------------------------------
