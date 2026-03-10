@@ -41,12 +41,6 @@ export const handlers = [
         ]);
     }),
 
-    http.post(`https://localhost:8000/api/v1/research-projects/`, async ({ request }) => {
-        const body = await request.json();
-
-        return HttpResponse.json({ id: 3, name: body.name }, { status: 201 });
-    }),
-
     http.get(`https://localhost:8000/api/v1/change-requests/`, () => {
         return HttpResponse.json(changeRequests);
     }),
