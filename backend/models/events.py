@@ -16,6 +16,7 @@ class OpsEventType(Enum):
 
     # Project Related Events
     CREATE_PROJECT = auto()
+    UPDATE_PROJECT = auto()
 
     # Agreement Related Events
     GET_AGREEMENT = auto()

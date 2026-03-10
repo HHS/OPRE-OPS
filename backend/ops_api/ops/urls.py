@@ -1,16 +1,12 @@
 from flask import Blueprint
 
 from ops_api.ops.views import (
-    ADMINISTRATIVE_AND_SUPPORT_PROJECT_ITEM_API_VIEW_FUNC,
-    ADMINISTRATIVE_AND_SUPPORT_PROJECT_LIST_API_VIEW_FUNC,
     AGREEMENT_AGENCY_ITEM_API_VIEW_FUNC,
     AGREEMENT_AGENCY_LIST_API_VIEW_FUNC,
     AGREEMENT_HISTORY_LIST_API_VIEW_FUNC,
     AGREEMENT_ITEM_API_VIEW_FUNC,
     AGREEMENT_LIST_API_VIEW_FUNC,
     AGREEMENT_LIST_FILTER_OPTION_API_VIEW_FUNC,
-    AGREEMENT_REASON_LIST_API_VIEW_FUNC,
-    AGREEMENT_TYPE_LIST_API_VIEW_FUNC,
     AZURE_SAS_TOKEN_VIEW_FUNC,
     BUDGET_LINE_ITEMS_ITEM_API_VIEW_FUNC,
     BUDGET_LINE_ITEMS_LIST_API_VIEW_FUNC,
@@ -33,6 +29,11 @@ from ops_api.ops.views import (
     DOCUMENT_ITEM_API_VIEW_FUNC,
     DOCUMENT_LIST_API_VIEW_FUNC,
     HEALTH_CHECK_VIEW_FUNC,
+    LOOKUP_AGREEMENT_REASON_LIST_API_VIEW_FUNC,
+    LOOKUP_AGREEMENT_TYPE_LIST_API_VIEW_FUNC,
+    LOOKUP_PORTFOLIO_STATUS_ITEM_API_VIEW_FUNC,
+    LOOKUP_PORTFOLIO_STATUS_LIST_API_VIEW_FUNC,
+    LOOKUP_RESEARCH_TYPE_LIST_API_VIEW_FUNC,
     NOTIFICATIONS_ITEM_API_VIEW_FUNC,
     NOTIFICATIONS_LIST_API_VIEW_FUNC,
     PORTFOLIO_CANS_API_VIEW_FUNC,
@@ -40,8 +41,6 @@ from ops_api.ops.views import (
     PORTFOLIO_FUNDING_SUMMARY_LIST_API_VIEW_FUNC,
     PORTFOLIO_ITEM_API_VIEW_FUNC,
     PORTFOLIO_LIST_API_VIEW_FUNC,
-    PORTFOLIO_STATUS_ITEM_API_VIEW_FUNC,
-    PORTFOLIO_STATUS_LIST_API_VIEW_FUNC,
     PORTFOLIO_URL_ITEM_API_VIEW_FUNC,
     PORTFOLIO_URL_LIST_API_VIEW_FUNC,
     PROCUREMENT_ACTION_ITEM_API_VIEW_FUNC,
@@ -56,12 +55,10 @@ from ops_api.ops.views import (
     PRODUCT_SERVICE_CODE_LIST_API_VIEW_FUNC,
     PROJECT_ITEM_API_VIEW_FUNC,
     PROJECT_LIST_API_VIEW_FUNC,
+    PROJECT_LIST_FILTER_OPTION_API_VIEW_FUNC,
     RESEARCH_METHODOLOGY_ITEM_API_VIEW_FUNC,
     RESEARCH_METHODOLOGY_LIST_API_VIEW_FUNC,
     RESEARCH_PROJECT_FUNDING_SUMMARY_LIST_API_VIEW_FUNC,
-    RESEARCH_PROJECT_ITEM_API_VIEW_FUNC,
-    RESEARCH_PROJECT_LIST_API_VIEW_FUNC,
-    RESEARCH_TYPE_LIST_API_VIEW_FUNC,
     SERVICES_COMPONENT_ITEM_API_VIEW_FUNC,
     SERVICES_COMPONENT_LIST_API_VIEW_FUNC,
     SPECIAL_TOPICS_ITEM_API_VIEW_FUNC,
@@ -167,13 +164,20 @@ def register_api(api_bp: Blueprint) -> None:
         view_func=PROCUREMENT_TRACKER_STEP_LIST_API_VIEW_FUNC,
     )
 
+    # LOOKUP ENDPOINTS
+    api_bp.add_url_rule("/lookups/agreement-types/", view_func=LOOKUP_AGREEMENT_TYPE_LIST_API_VIEW_FUNC)
     api_bp.add_url_rule(
-        "/portfolio-status/<int:id>",
-        view_func=PORTFOLIO_STATUS_ITEM_API_VIEW_FUNC,
+        "/lookups/agreement-reasons/",
+        view_func=LOOKUP_AGREEMENT_REASON_LIST_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule("/lookups/research-types/", view_func=LOOKUP_RESEARCH_TYPE_LIST_API_VIEW_FUNC)
+    api_bp.add_url_rule(
+        "/lookups/portfolio-status/",
+        view_func=LOOKUP_PORTFOLIO_STATUS_LIST_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
-        "/portfolio-status/",
-        view_func=PORTFOLIO_STATUS_LIST_API_VIEW_FUNC,
+        "/lookups/portfolio-status/<int:id>",
+        view_func=LOOKUP_PORTFOLIO_STATUS_ITEM_API_VIEW_FUNC,
     )
 
     api_bp.add_url_rule(
@@ -222,24 +226,8 @@ def register_api(api_bp: Blueprint) -> None:
         view_func=PROJECT_LIST_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
-        "/research-projects/<int:id>",
-        view_func=RESEARCH_PROJECT_ITEM_API_VIEW_FUNC,
-    )
-    api_bp.add_url_rule(
-        "/research-projects/",
-        view_func=RESEARCH_PROJECT_LIST_API_VIEW_FUNC,
-    )
-    api_bp.add_url_rule(
-        "/administrative-and-support-projects/<int:id>",
-        view_func=ADMINISTRATIVE_AND_SUPPORT_PROJECT_ITEM_API_VIEW_FUNC,
-    )
-    api_bp.add_url_rule(
-        "/administrative-and-support-projects/",
-        view_func=ADMINISTRATIVE_AND_SUPPORT_PROJECT_LIST_API_VIEW_FUNC,
-    )
-    api_bp.add_url_rule(
-        "/research-types/",
-        view_func=RESEARCH_TYPE_LIST_API_VIEW_FUNC,
+        "/projects-filters/",
+        view_func=PROJECT_LIST_FILTER_OPTION_API_VIEW_FUNC,
     )
 
     api_bp.add_url_rule(
@@ -261,14 +249,6 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/agreement-agencies/<int:id>",
         view_func=AGREEMENT_AGENCY_ITEM_API_VIEW_FUNC,
-    )
-    api_bp.add_url_rule(
-        "/agreement-reasons/",
-        view_func=AGREEMENT_REASON_LIST_API_VIEW_FUNC,
-    )
-    api_bp.add_url_rule(
-        "/agreement-types/",
-        view_func=AGREEMENT_TYPE_LIST_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
         "/agreements-filters/",

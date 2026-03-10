@@ -22,6 +22,8 @@ tags:
     description: Procurement trackers for tracking the workflow of procurement actions
   - name: Procurement Tracker Steps
     description: Individual workflow steps within procurement trackers
+  - name: Lookups
+    description: Lookup endpoints for enum values and reference data
 paths:
   /agreements/:
     get:
@@ -2807,39 +2809,78 @@ paths:
                   message:
                     type: string
 
-  /research-projects/:
+  /projects/:
     get:
       tags:
         - Projects
-      operationId: getResearchProjects
-      description: Get ResearchProjects
+      operationId: getProjects
+      description: Get Projects with optional filtering
       parameters:
         - $ref: "#/components/parameters/simulatedError"
         - name: fiscal_year
           in: query
+          description: Filter projects by fiscal year (can specify multiple, OR logic)
           schema:
-            type: string
-          example: "2023"
+            type: array
+            items:
+              type: integer
+          style: form
+          explode: true
+          example: [2023, 2024]
         - name: portfolio_id
           in: query
+          description: Filter projects by portfolio ID (can specify multiple, OR logic)
           schema:
-            type: string
-          example: "1"
-        - name: search
+            type: array
+            items:
+              type: integer
+          style: form
+          explode: true
+          example: [1, 5]
+        - name: project_search
           in: query
+          description: Search project titles (can specify multiple terms, AND logic - all terms must match)
           schema:
-            type: string
-          example: father
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
+          example: ["research", "child"]
+        - name: agreement_search
+          in: query
+          description: Search agreement names and nicknames associated with projects (can match either name or nickname, )
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
+          example: ["contract", "2023"]
+        - name: project_type
+          in: query
+          description: Filter projects by type (can specify multiple, OR logic)
+          schema:
+            type: array
+            items:
+              type: string
+              enum: [RESEARCH, ADMINISTRATIVE_AND_SUPPORT]
+          style: form
+          explode: true
+          example: [RESEARCH]
       responses:
         "200":
-          description: OK
+          description: OK - Returns array of projects matching the filter criteria
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ResearchProjects"
-              examples:
-                "0":
-                  $ref: "#/components/examples/ResearchProjects"
+                type: array
+                items:
+                  oneOf:
+                    - $ref: "#/components/schemas/ResearchProject"
+                    - $ref: "#/components/schemas/Project"
+                  discriminator:
+                    propertyName: project_type
         "400":
           description: Bad Request
         "401":
@@ -2847,8 +2888,14 @@ paths:
     post:
       tags:
         - Projects
-      operationId: createResearchProject
-      summary: Create a new Research Project
+      operationId: createProject
+      summary: Create a new Project (Research or Administrative/Support)
+      description: |
+        Create a new project of any type. The project_type field determines whether
+        a Research Project or Administrative/Support Project is created.
+
+        - For Research projects: all fields including origination_date are supported
+        - For Administrative/Support projects: origination_date is ignored if provided
       parameters:
         - $ref: "#/components/parameters/simulatedError"
       requestBody:
@@ -2857,26 +2904,58 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/ResearchProjectRequest"
+            examples:
+              research_project:
+                summary: Research Project Example
+                value:
+                  project_type: RESEARCH
+                  title: "Child Welfare Research Initiative"
+                  short_title: "CWRI"
+                  description: "Research on child welfare outcomes"
+                  url: "https://example.com"
+                  origination_date: "2023-01-01"
+                  team_leaders:
+                    - id: 500
+                      full_name: "Jane Smith"
+                      email: "jane.smith@example.com"
+              admin_project:
+                summary: Administrative Project Example
+                value:
+                  project_type: ADMINISTRATIVE_AND_SUPPORT
+                  title: "IT Infrastructure Support"
+                  short_title: "IT-INFRA"
+                  description: "Infrastructure support project"
+                  team_leaders:
+                    - id: 501
       responses:
         "201":
           description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    description: The ID of the newly created project
+                    example: 1001
         "400":
-          description: Bad Request
+          description: Bad Request - Invalid input or validation error
         "401":
           description: Unauthorized
         "500":
           description: Internal Server Error
-  /research-projects/{id}:
+  /projects/{id}:
     get:
       tags:
         - Projects
-      operationId: getResearchProjectById
-      description: Get Research Projects by id
+      operationId: getProjectById
+      description: Get a Project by ID (supports both Research and Administrative/Support projects)
       parameters:
         - $ref: "#/components/parameters/simulatedError"
         - in: path
           name: id
-          description: Id
+          description: Project ID
           required: true
           schema:
             type: integer
@@ -2889,11 +2968,156 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ResearchProject"
+                oneOf:
+                  - $ref: "#/components/schemas/ResearchProject"
+                  - $ref: "#/components/schemas/Project"
+                description: Returns ResearchProject schema for research projects, or Project schema for administrative/support projects
         "400":
           description: Bad Request
         "401":
           description: Unauthorized
+        "404":
+          description: Not Found
+    patch:
+      tags:
+        - Projects
+      operationId: updateProject
+      summary: Update an existing Project
+      description: |
+        Update a Project by ID. The project_type field cannot be changed.
+        Only the fields provided in the request body will be updated.
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: id
+          description: Project ID
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResearchProjectRequest"
+            examples:
+              update_title:
+                summary: Update Project Title
+                value:
+                  title: "Updated Project Title"
+              update_team_leaders:
+                summary: Update Team Leaders
+                value:
+                  team_leaders:
+                    - id: 500
+                    - id: 501
+      responses:
+        "200":
+          description: OK - Project updated successfully
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/ResearchProject"
+                  - $ref: "#/components/schemas/Project"
+        "400":
+          description: Bad Request - Invalid input or validation error
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not Found - Project does not exist
+        "500":
+          description: Internal Server Error
+
+  /projects-filters/:
+    get:
+      tags:
+        - Projects
+      operationId: getProjectsFilterOptions
+      summary: Get filter options for projects
+      description: |
+        Returns available filter options from all projects in the database.
+        This endpoint provides distinct values for filtering projects, including
+        fiscal years, portfolios, project titles, project types, and agreement names.
+
+        Uses database-level aggregation with DISTINCT queries for efficiency,
+        even with thousands of projects and related records.
+      responses:
+        "200":
+          description: Successfully retrieved project filter options
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - fiscal_years
+                  - portfolios
+                  - project_titles
+                  - project_types
+                  - agreement_names
+                properties:
+                  fiscal_years:
+                    type: array
+                    items:
+                      type: integer
+                    description: List of fiscal years from budget line items associated with projects (sorted descending)
+                    example: [2025, 2024, 2023]
+                  portfolios:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - id
+                        - name
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                    description: List of portfolios linked to projects via CANs and budget line items (sorted by name)
+                    example:
+                      - id: 1
+                        name: "Child Care"
+                      - id: 2
+                        name: "Child Welfare"
+                  project_titles:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - id
+                        - name
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                    description: List of project titles (sorted by name)
+                    example:
+                      - id: 100
+                        name: "Child Welfare Research Initiative"
+                      - id: 101
+                        name: "IT Infrastructure Support"
+                  project_types:
+                    type: array
+                    items:
+                      type: string
+                      enum: [RESEARCH, ADMINISTRATIVE_AND_SUPPORT]
+                    description: List of project types (sorted alphabetically)
+                    example: ["ADMINISTRATIVE_AND_SUPPORT", "RESEARCH"]
+                  agreement_names:
+                    type: array
+                    items:
+                      type: string
+                    description: List of agreement names and nicknames associated with projects (sorted alphabetically, no duplicates)
+                    example: ["Agreement 001", "Contract Alpha", "Grant Beta"]
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+
   /research-project-funding-summary/:
     get:
       tags:
@@ -4008,6 +4232,145 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SpecialTopic"
+  /lookups/agreement-types/:
+    get:
+      tags:
+        - Lookups
+      operationId: getLookupAgreementTypes
+      description: Get a list of all agreement type enum values
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                  enum:
+                    - CONTRACT
+                    - GRANT
+                    - DIRECT_OBLIGATION
+                    - IAA
+                    - AA
+                example:
+                  - CONTRACT
+                  - GRANT
+                  - DIRECT_OBLIGATION
+                  - IAA
+                  - AA
+        "401":
+          description: Unauthorized
+  /lookups/agreement-reasons/:
+    get:
+      tags:
+        - Lookups
+      operationId: getLookupAgreementReasons
+      description: Get a list of all agreement reason enum values
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                  enum:
+                    - NEW_REQ
+                    - RECOMPETE
+                    - LOGICAL_FOLLOW_ON
+                example:
+                  - NEW_REQ
+                  - RECOMPETE
+                  - LOGICAL_FOLLOW_ON
+        "401":
+          description: Unauthorized
+  /lookups/research-types/:
+    get:
+      tags:
+        - Lookups
+      operationId: getLookupResearchTypes
+      description: Get a mapping of research type enum names to their integer values
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: integer
+                example:
+                  APPLIED_RESEARCH: 1
+                  EVALUATIVE_RESEARCH: 2
+                  PROGRAM_SUPPORT: 3
+        "401":
+          description: Unauthorized
+  /lookups/portfolio-status/:
+    get:
+      tags:
+        - Lookups
+      operationId: getLookupPortfolioStatuses
+      description: Get a list of all portfolio status enum values
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                  enum:
+                    - IN_PROCESS
+                    - NOT_STARTED
+                    - SANDBOX
+                example:
+                  - IN_PROCESS
+                  - NOT_STARTED
+                  - SANDBOX
+        "401":
+          description: Unauthorized
+  /lookups/portfolio-status/{id}:
+    get:
+      tags:
+        - Lookups
+      operationId: getLookupPortfolioStatusById
+      description: Get a single portfolio status enum value by its integer ID
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: id
+          description: Portfolio status enum ID
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            maximum: 3
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: string
+                enum:
+                  - IN_PROCESS
+                  - NOT_STARTED
+                  - SANDBOX
+                example: IN_PROCESS
+        "401":
+          description: Unauthorized
 components:
   parameters:
     created_by:

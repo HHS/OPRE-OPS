@@ -304,8 +304,7 @@ describe("AgreementsList - Pagination", () => {
 
             await waitFor(() => {
                 // Pagination component should be rendered
-                const paginationNav = screen.queryByRole("navigation");
-                expect(paginationNav).toBeInTheDocument();
+                expect(screen.getByRole("navigation")).toBeInTheDocument();
             });
         });
 
@@ -358,8 +357,7 @@ describe("AgreementsList - Pagination", () => {
             );
 
             await waitFor(() => {
-                const exportButton = screen.getByText("Export");
-                expect(exportButton).toBeInTheDocument();
+                expect(screen.getByText("Export")).toBeInTheDocument();
             });
         });
 
@@ -440,8 +438,7 @@ describe("AgreementsList - Pagination", () => {
             );
 
             await waitFor(() => {
-                const exportButton = screen.getByText("Export");
-                expect(exportButton).toBeInTheDocument();
+                expect(screen.getByText("Export")).toBeInTheDocument();
             });
 
             const exportButton = screen.getByRole("button", { name: /export/i });
@@ -510,8 +507,7 @@ describe("AgreementsList - Pagination", () => {
 
             await waitFor(() => {
                 // Component should render pagination (totalPages = 100/10 = 10)
-                const paginationNav = screen.queryByRole("navigation");
-                expect(paginationNav).toBeInTheDocument();
+                expect(screen.getByRole("navigation")).toBeInTheDocument();
             });
         });
     });
@@ -741,11 +737,12 @@ describe("AgreementsList - Fiscal Year Filtering", () => {
         await waitFor(
             () => {
                 expect(mockQuery).toHaveBeenCalled();
-                const lastCall = mockQuery.mock.calls[mockQuery.mock.calls.length - 1];
-                expect(lastCall[0].filters.fiscalYear).toEqual([{ id: currentFY, title: currentFY }]);
             },
             { timeout: 3000 }
         );
+
+        const lastCall = mockQuery.mock.calls[mockQuery.mock.calls.length - 1];
+        expect(lastCall[0].filters.fiscalYear).toEqual([{ id: currentFY, title: currentFY }]);
     });
 
     it("should send empty fiscalYear filter when 'All' is selected from dropdown", async () => {

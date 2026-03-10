@@ -15,17 +15,15 @@ export const handlers = [
         return HttpResponse.json({ id, name: `Agreement ${id}` });
     }),
 
-    http.get(`https://localhost:8000/api/v1/research-projects/`, () => {
+    http.get(`https://localhost:8000/api/v1/projects*`, () => {
         return HttpResponse.json([
             { id: 1, name: "Research Project 1" },
             { id: 2, name: "Research Project 2" }
         ]);
     }),
 
-    http.post(`https://localhost:8000/api/v1/research-projects/`, async ({ request }) => {
-        const body = await request.json();
-
-        return HttpResponse.json({ id: 3, name: body.name }, { status: 201 });
+    http.post(`https://localhost:8000/api/v1/projects/`, async () => {
+        return HttpResponse.json({ id: 3 }, { status: 201 });
     }),
 
     http.get(`https://localhost:8000/api/v1/change-requests/`, () => {
