@@ -267,6 +267,7 @@
 
         "GET_RESEARCH_PROJECT",
         "PUT_RESEARCH_PROJECT",
+        "PATCH_RESEARCH_PROJECT",
         "POST_RESEARCH_PROJECT",
 
         "GET_USER",

@@ -160,12 +160,13 @@ describe("agreement details", () => {
             .next("[data-testid='expanded-data']")
             .find("[data-cy='edit-row']")
             .should("be.disabled")
-            .closest(".usa-tooltip")
-            .find(".usa-tooltip__body")
-            .should(
-                "contain",
-                "If you need to edit a budget line in Executing Status, please contact the budget team"
-            );
+            .should("have.attr", "aria-describedby")
+            .then((descId) => {
+                const firstId = descId.trim().split(/\s+/)[0];
+                cy.get(`#${firstId}`, { timeout: 10000 })
+                    .should("contain", "Executing Status")
+                    .and("contain", "budget team");
+            });
     });
 
     it("Should allow the user to export BLIs for an agreement", () => {

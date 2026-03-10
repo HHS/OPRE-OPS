@@ -19,6 +19,7 @@ import { hasBlIsInReview } from "../../../helpers/budgetLines.helpers";
 import { getAwardingEntityIds } from "../../../helpers/procurementShop.helpers";
 import { convertToCurrency } from "../../../helpers/utils";
 import { useChangeRequestsForAgreement } from "../../../hooks/useChangeRequests.hooks";
+import { useIsUserSuperUser } from "../../../hooks/user.hooks";
 import icons from "../../../uswds/img/sprite.svg";
 import { AgreementType } from "../agreements.constants";
 import AgreementBudgetLines from "./AgreementBudgetLines";
@@ -125,6 +126,8 @@ const Agreement = () => {
     }
 
     const isAgreementNotDeveloped = isNotDevelopedYet(agreement?.agreement_type ?? "");
+    const isSuperUser = useIsUserSuperUser();
+    const isEditableForProcurementTracker = isSuperUser || (agreement?._meta?.isEditable ?? false);
 
     useEffect(() => {
         /**
@@ -217,6 +220,7 @@ const Agreement = () => {
                         agreementId={agreement?.id ?? 0}
                         isAgreementNotDeveloped={isAgreementNotDeveloped}
                         isAgreementAwarded={isAgreementAwarded ?? false}
+                        isEditableForProcurementTracker={isEditableForProcurementTracker}
                     />
                 </section>
 

@@ -13,6 +13,7 @@ import CreateAgreement from "./pages/agreements/CreateAgreement";
 import Can from "./pages/cans/detail/Can";
 import CanList from "./pages/cans/list/CanList";
 import CreateProject from "./pages/projects/CreateProject";
+import ProjectDetail from "./pages/projects/detail/ProjectDetail";
 import EditAgreement from "./pages/agreements/EditAgreement";
 import ErrorBoundary from "./components/ErrorBoundary";
 import ErrorPage from "./pages/ErrorPage";
@@ -34,6 +35,7 @@ import EditUser from "./pages/users/edit/EditUser";
 import VersionPage from "./pages/version/VersionPage";
 import WhatsNext from "./pages/home/whats-next";
 import ProcurementMocksDebug from "./pages/dev/ProcurementMocksDebug";
+import { IS_PROJECT_DETAIL_READY } from "./constants";
 
 // NOTE: store muse be imported after react-router-dom to avoid access lexical declaration 'opsApi' before initialization
 
@@ -199,6 +201,22 @@ const router = createBrowserRouter(
                     path="/projects/create"
                     element={<CreateProject />}
                 />
+                {IS_PROJECT_DETAIL_READY && (
+                    <Route
+                        path="/projects/:id"
+                        element={<ProjectDetail />}
+                        handle={{
+                            crumb: () => (
+                                <Link
+                                    to="/"
+                                    className="text-primary"
+                                >
+                                    Projects
+                                </Link>
+                            )
+                        }}
+                    />
+                )}
                 <Route
                     path="/agreements"
                     element={<AgreementsList />}

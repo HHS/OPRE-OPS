@@ -43,7 +43,7 @@ export default function useProcurementTrackerStepThree(stepThreeData, handleSetC
      * @param {any} value
      */
     const runValidate = (name, value, overrides = {}) => {
-        suite(
+        suite.run(
             {
                 users: selectedUser?.id,
                 dateCompleted: step3DateCompleted,
