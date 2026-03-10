@@ -131,3 +131,51 @@ The frontend makes API calls to `http://localhost:8080/api/v1/`. Key integration
 - **Simulated errors**: Append `?simulatedError=true` to any API call for testing error handling
 
 When backend API responses change, update the corresponding RTK Query endpoints in `src/api/opsAPI.js`.
+
+### Vest v6 Form Validation Patterns
+
+**CRITICAL**: This project uses **vest v6** for form validation. Vest v6 has significant breaking changes from v5. When writing or editing suite files (`suite.js`) or validation hooks, follow these rules:
+
+**1. `isNotBlank()` only accepts non-empty strings — numbers always fail.**
+
+Numeric fields (IDs, amounts, counts) must NOT use `isNotBlank()`.
+
+```javascript
+// ✅ CORRECT: numeric field
+enforce(item.can_id).isNotNullish().greaterThan(0);
+
+// ❌ INCORRECT: enforce(504).isNotBlank() FAILS in vest v6
+enforce(item.can_id).isNotBlank();
+```
+
+**2. Suite invocation API changed: `suite(data)` → `suite.run(data)`.**
+
+```javascript
+// ✅ CORRECT
+const result = suite.run(formData);
+
+// ❌ INCORRECT (vest v5 API — throws in v6)
+const result = suite(formData);
+```
+
+**3. Do not use `only(data)` with a data object.**
+
+In vest v6, `only(fieldName)` skips all other tests and those tests **retain their previous failed state**, causing phantom validation errors. Pass a specific field name string or omit `only()` entirely.
+
+```javascript
+// ✅ CORRECT: omit only() to run all tests
+create("suiteName", () => {
+    test("field_a", "Error message", () => { ... });
+    test("field_b", "Error message", () => { ... });
+});
+
+// ❌ INCORRECT: only(data) where data is the whole form object silently skips tests
+create("suiteName", (data) => {
+    only(data); // DO NOT DO THIS
+    test("field_a", "Error message", () => { ... });
+});
+```
+
+**4. Avoid calling `suite.reset()` during a render cycle.**
+
+If you need validation state in a component, store the result with `useEffect` or call `suite.run()` inline during render (not in an effect that also resets state). See `ReviewAgreement.hooks.js` for the `useEffect`-based pattern.
