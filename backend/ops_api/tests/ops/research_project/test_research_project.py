@@ -51,6 +51,7 @@ def test_research_projects_with_fiscal_year_not_found(auth_client, loaded_db, ap
 
 
 def test_research_project_search(auth_client, loaded_db):
+    # Empty string returns no results
     response = auth_client.get(
         url_for("api.projects-group", project_search=[""], project_type=[ProjectType.RESEARCH.name])
     )
@@ -58,27 +59,31 @@ def test_research_project_search(auth_client, loaded_db):
     assert response.status_code == 200
     assert len(response.json) == 0
 
+    # Search by exact short_title "RFH" (Responsible Fatherhood project)
     response = auth_client.get(
-        url_for("api.projects-group", project_search=["fa"], project_type=[ProjectType.RESEARCH.name])
-    )
-
-    assert response.status_code == 200
-    assert len(response.json) == 4
-
-    response = auth_client.get(
-        url_for("api.projects-group", project_search=["father"], project_type=[ProjectType.RESEARCH.name])
-    )
-
-    assert response.status_code == 200
-    assert len(response.json) == 2
-
-    response = auth_client.get(
-        url_for("api.projects-group", project_search=["ExCELS"], project_type=[ProjectType.RESEARCH.name])
+        url_for("api.projects-group", project_search=["RFH"], project_type=[ProjectType.RESEARCH.name])
     )
 
     assert response.status_code == 200
     assert len(response.json) == 1
 
+    # Search by multiple exact short_titles - "RFH" and "FCL" (Fathers and Continuous Learning)
+    response = auth_client.get(
+        url_for("api.projects-group", project_search=["RFH", "FCL"], project_type=[ProjectType.RESEARCH.name])
+    )
+
+    assert response.status_code == 200
+    assert len(response.json) == 2
+
+    # Search by exact short_title "ECE" (Early Care and Education Leadership Study)
+    response = auth_client.get(
+        url_for("api.projects-group", project_search=["ECE"], project_type=[ProjectType.RESEARCH.name])
+    )
+
+    assert response.status_code == 200
+    assert len(response.json) == 1
+
+    # Search with non-existent title returns no results
     response = auth_client.get(
         url_for("api.projects-group", project_search=["blah"], project_type=[ProjectType.RESEARCH.name])
     )

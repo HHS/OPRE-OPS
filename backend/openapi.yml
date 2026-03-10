@@ -2839,24 +2839,24 @@ paths:
           example: [1, 5]
         - name: project_search
           in: query
-          description: Search project titles (can specify multiple terms, AND logic - all terms must match)
+          description: Filter by exact project title or short_title (can specify multiple values, OR logic - matches if any value equals the title or short_title)
           schema:
             type: array
             items:
               type: string
           style: form
           explode: true
-          example: ["research", "child"]
+          example: ["HSS", "RFH", "Human Services Interoperability Support"]
         - name: agreement_search
           in: query
-          description: Search agreement names and nicknames associated with projects (can match either name or nickname, )
+          description: Filter by exact agreement name or nickname (can specify multiple values, OR logic - matches projects that have agreements with exactly matching names or nicknames)
           schema:
             type: array
             items:
               type: string
           style: form
           explode: true
-          example: ["contract", "2023"]
+          example: ["Contract #1: African American Child and Family Research Center", "Grant Beta"]
         - name: project_type
           in: query
           description: Filter projects by type (can specify multiple, OR logic)
@@ -2877,8 +2877,8 @@ paths:
                 type: array
                 items:
                   oneOf:
-                    - $ref: "#/components/schemas/ResearchProject"
-                    - $ref: "#/components/schemas/Project"
+                    - $ref: "#/components/schemas/ResearchProjectListItem"
+                    - $ref: "#/components/schemas/ProjectListItem"
                   discriminator:
                     propertyName: project_type
         "400":
@@ -3019,9 +3019,12 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: "#/components/schemas/ResearchProject"
-                  - $ref: "#/components/schemas/Project"
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    description: The ID of the updated project
+                    example: 1
         "400":
           description: Bad Request - Invalid input or validation error
         "401":
@@ -5255,6 +5258,56 @@ components:
           type: string
           enum: [RESEARCH, ADMINISTRATIVE_AND_SUPPORT]
           example: RESEARCH
+        end_date:
+          type: string
+          format: date
+          nullable: true
+          description: End date of the project (nullable)
+          example: "2024-12-31"
+        fiscal_year_total:
+          type: integer
+          nullable: true
+          description: Total budget amount for the current fiscal year (nullable)
+          example: 500000
+        project_total:
+          type: integer
+          nullable: true
+          description: Total budget amount for the entire project (nullable)
+          example: 2000000
+      required:
+        - title
+    ProjectListItem:
+      type: object
+      description: Lightweight schema for list endpoint (Administrative/Support projects)
+      properties:
+        id:
+          type: integer
+          example: 2
+        title:
+          type: string
+          example: IT Infrastructure Support
+        short_title:
+          type: string
+          example: IT-INFRA
+        description:
+          type: string
+          example: Infrastructure support project
+        url:
+          type: string
+          nullable: true
+          example: https://example.com
+        created_on:
+          type: string
+          format: date-time
+          example: "2023-04-06T20:33:38.292475Z"
+        updated_on:
+          type: string
+          format: date-time
+          example: "2023-04-06T20:33:38.292475Z"
+        project_type:
+          type: string
+          enum: [RESEARCH, ADMINISTRATIVE_AND_SUPPORT]
+          example: ADMINISTRATIVE_AND_SUPPORT
       required:
         - title
     ResearchProject:
@@ -6697,6 +6750,7 @@ components:
         - name
     Project:
       type: object
+      description: Full schema for Administrative/Support projects (detail endpoint)
       properties:
         id:
           type: integer
@@ -6706,6 +6760,7 @@ components:
           enum:
             - RESEARCH
             - ADMINISTRATIVE_AND_SUPPORT
+          example: ADMINISTRATIVE_AND_SUPPORT
         title:
           type: string
           example: Example Project Title
@@ -6717,7 +6772,34 @@ components:
           example: A short description about the project
         url:
           type: string
+          nullable: true
           example: www.example.com
+        created_by:
+          type: integer
+          example: 1
+        team_leaders:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              full_name:
+                type: string
+              email:
+                type: string
+          example:
+            - id: 500
+              full_name: "Jane Smith"
+              email: "jane.smith@example.com"
+        created_on:
+          type: string
+          format: date-time
+          example: "2023-04-06T20:33:38.292475Z"
+        updated_on:
+          type: string
+          format: date-time
+          example: "2023-04-06T20:33:38.292475Z"
       required:
         - id
         - project_type

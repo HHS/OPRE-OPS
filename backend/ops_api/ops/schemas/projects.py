@@ -118,6 +118,9 @@ class ResearchProjectListResponse(Schema):
     created_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ")
     updated_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ")
     project_type: ProjectType = fields.Enum(ProjectType)
+    end_date: Optional[date] = fields.Date(format="%Y-%m-%d", dump_default=None)
+    fiscal_year_total: Optional[int] = fields.Int(allow_none=True)
+    project_total: Optional[int] = fields.Int(allow_none=True)
 
 
 class ProjectListResponse(Schema):

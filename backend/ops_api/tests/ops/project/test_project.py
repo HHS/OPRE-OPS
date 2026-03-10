@@ -64,26 +64,31 @@ def test_projects_with_fiscal_year_not_found(auth_client, loaded_db):
 
 
 def test_project_search(auth_client, loaded_db):
+    # Empty string returns no results
     response = auth_client.get(url_for("api.projects-group", project_search=[""]))
 
     assert response.status_code == 200
     assert len(response.json) == 0
 
-    response = auth_client.get(url_for("api.projects-group", project_search=["fa"]))
-
-    assert response.status_code == 200
-    assert len(response.json) == 4
-
-    response = auth_client.get(url_for("api.projects-group", project_search=["father"]))
-
-    assert response.status_code == 200
-    assert len(response.json) == 2
-
-    response = auth_client.get(url_for("api.projects-group", project_search=["ExCELS"]))
+    # Search by exact short_title "RFH" (Responsible Fatherhood project)
+    response = auth_client.get(url_for("api.projects-group", project_search=["RFH"]))
 
     assert response.status_code == 200
     assert len(response.json) == 1
 
+    # Search by multiple exact short_titles - "RFH" and "FCL" (Fathers and Continuous Learning)
+    response = auth_client.get(url_for("api.projects-group", project_search=["RFH", "FCL"]))
+
+    assert response.status_code == 200
+    assert len(response.json) == 2
+
+    # Search by exact short_title "ECE" (Early Care and Education Leadership Study)
+    response = auth_client.get(url_for("api.projects-group", project_search=["ECE"]))
+
+    assert response.status_code == 200
+    assert len(response.json) == 1
+
+    # Search with non-existent title returns no results
     response = auth_client.get(url_for("api.projects-group", project_search=["blah"]))
 
     assert response.status_code == 200
@@ -190,7 +195,7 @@ def test_agreement_search_multiple_projects(auth_client, loaded_db):
 
 
 def test_combined_project_and_agreement_search(auth_client, loaded_db, test_project):
-    """Test combining project_search and agreement_search filters (agreement uses exact match)."""
+    """Test combining project_search and agreement_search filters (both use exact match)."""
     # Create an agreement for test_project
     agreement = ContractAgreement(
         name="Integration Test Agreement",
@@ -199,19 +204,20 @@ def test_combined_project_and_agreement_search(auth_client, loaded_db, test_proj
     loaded_db.add(agreement)
     loaded_db.commit()
 
-    # Search with both project title (partial match) and exact agreement name (AND logic)
-    # Should find test_project (title contains "Human" AND has agreement exactly matching "Integration Test Agreement")
+    # Search with both exact project short_title and exact agreement name (AND logic)
+    # test_project has title "Human Services Interoperability Support" and short_title "HSS"
+    # Should find test_project (short_title exactly matches "HSS" AND has agreement exactly matching "Integration Test Agreement")
     response = auth_client.get(
-        url_for("api.projects-group", project_search=["Human"], agreement_search=["Integration Test Agreement"])
+        url_for("api.projects-group", project_search=["HSS"], agreement_search=["Integration Test Agreement"])
     )
     assert response.status_code == 200
     project_ids = [p["id"] for p in response.json]
     assert test_project.id in project_ids
 
-    # Search with project title that matches but agreement name that doesn't
+    # Search with exact project short_title that matches but agreement name that doesn't
     # Should NOT find test_project
     response = auth_client.get(
-        url_for("api.projects-group", project_search=["Human"], agreement_search=["NonExistent"])
+        url_for("api.projects-group", project_search=["HSS"], agreement_search=["NonExistent"])
     )
     assert response.status_code == 200
     project_ids = [p["id"] for p in response.json]

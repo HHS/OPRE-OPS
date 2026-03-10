@@ -1,13 +1,13 @@
 from enum import Enum
 from typing import Optional
 
-import sqlalchemy.dialects.postgresql as pg
-from sqlalchemy import Column, Date, ForeignKey, Index, Sequence, String, Text
+from sqlalchemy import Date, ForeignKey, Index, Sequence, String, Text
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing_extensions import List
 
 from models.base import BaseModel
+
 
 class ResearchType(Enum):
     APPLIED_RESEARCH = 1
@@ -19,9 +19,7 @@ class ProjectTeamLeaders(BaseModel):
     __tablename__ = "project_team_leaders"
 
     project_id: Mapped[int] = mapped_column(ForeignKey("project.id"), primary_key=True)
-    team_lead_id: Mapped[int] = mapped_column(
-        ForeignKey("ops_user.id"), primary_key=True
-    )
+    team_lead_id: Mapped[int] = mapped_column(ForeignKey("ops_user.id"), primary_key=True)
 
     @BaseModel.display_name.getter
     def display_name(self):
@@ -40,18 +38,14 @@ class Project(BaseModel):
         "polymorphic_on": "project_type",
     }
 
-    id: Mapped[int] = BaseModel.get_pk_column(
-        sequence=Sequence("project_id_seq", start=1000, increment=1)
-    )
+    id: Mapped[int] = BaseModel.get_pk_column(sequence=Sequence("project_id_seq", start=1000, increment=1))
     project_type: Mapped[ProjectType] = mapped_column(ENUM(ProjectType), nullable=False)
     title: Mapped[str] = mapped_column(String(), nullable=False)
     short_title: Mapped[Optional[str]] = mapped_column(String(), nullable=True)
     description: Mapped[str] = mapped_column(Text(), nullable=False, default="")
     url: Mapped[Optional[str]] = mapped_column(Text(), nullable=True)
 
-    agreements: Mapped[List["Agreement"]] = relationship(
-        "Agreement", back_populates="project"
-    )
+    agreements: Mapped[List["Agreement"]] = relationship("Agreement", back_populates="project")
     team_leaders: Mapped[List["User"]] = relationship(
         "User",
         back_populates="projects",
