@@ -50,8 +50,15 @@ const CountColumn = ({ title, total, types, labelMap, getTagProps }) => (
 
 const projectTagProps = () => ({ tagStyle: "primaryDarkTextLightBackground" });
 
+const AGREEMENT_TYPE_TEXT_COLORS = {
+    CONTRACT: "white",
+    PARTNER: "black",
+    GRANT: "black",
+    DIRECT_OBLIGATION: "white"
+};
+
 const agreementTagProps = (type) => ({
-    style: { backgroundColor: AGREEMENT_TYPE_COLORS[type], color: "white" }
+    style: { backgroundColor: AGREEMENT_TYPE_COLORS[type], color: AGREEMENT_TYPE_TEXT_COLORS[type] ?? "black" }
 });
 
 const newContinuingTagProps = () => ({ tagStyle: "primaryDarkTextLightBackground" });

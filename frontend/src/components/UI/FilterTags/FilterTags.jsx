@@ -18,16 +18,20 @@ import Tag from "../Tag";
 const FilterTag = ({ tag, removeFilter }) => (
     <Tag className="bg-brand-primary-light text-brand-primary-dark display-flex flex-align-center">
         {tag.tagText}
-        <svg
-            className="height-2 width-2 margin-left-05 cursor-pointer"
+        <button
+            className="usa-button--unstyled display-flex flex-align-center margin-left-05 cursor-pointer"
             onClick={() => removeFilter(tag)}
-            id={`filter-tag-${tag.filter}`}
-            style={{ fill: "currentColor" }}
             aria-label={`Remove ${tag.tagText} filter`}
-            role="img"
+            id={`filter-tag-${tag.filter}`}
         >
-            <use href={`${icons}#cancel`}></use>
-        </svg>
+            <svg
+                className="height-2 width-2"
+                style={{ fill: "currentColor" }}
+                aria-hidden="true"
+            >
+                <use href={`${icons}#cancel`}></use>
+            </svg>
+        </button>
     </Tag>
 );
 
