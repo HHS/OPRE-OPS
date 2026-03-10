@@ -25,7 +25,7 @@ const suite = create((data = {}, fieldName = undefined) => {
     });
     // vendor is not required
     test("project-officer", "This information is required to submit for approval", () => {
-        enforce(data.project_officer_id).isNotBlank();
+        enforce(Number(data.project_officer_id)).greaterThan(0);
     });
     test("contract-type", "This information is required to submit for approval", () => {
         enforce(data.contract_type).notEquals("-Select an option-");
@@ -86,7 +86,7 @@ const cloneErrors = (errors = {}) => {
  */
 export const validateBudgetLineItem = (budgetLine, fieldName) => {
     budgetLineSuite.reset();
-    budgetLineSuite(budgetLine, fieldName);
+    budgetLineSuite.run(budgetLine, fieldName);
     const result = budgetLineSuite.get();
     return {
         isValid: result.isValid(),

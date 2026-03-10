@@ -36,7 +36,7 @@ export default function useProcurementTrackerStepOne(stepOneData, handleSetCompl
     const { setAlert } = useAlert();
     const MemoizedDatePicker = React.memo(DatePicker);
     const runValidate = (name, value) => {
-        suite({ ...{ [name]: value } }, name);
+        suite.run({ ...{ [name]: value } }, name);
     };
 
     let validatorRes = suite.get();
