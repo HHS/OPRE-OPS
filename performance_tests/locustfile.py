@@ -373,13 +373,19 @@ class OPSAPIUser(HttpUser):
 
     @task(4)
     def list_portfolio_status(self):
-        """GET /api/v1/portfolio-status/ - List portfolio statuses."""
-        self.client.get("/api/v1/portfolio-status/", name="/api/v1/portfolio-status/")
+        """GET /api/v1/lookups/portfolio-status/ - List portfolio statuses."""
+        self.client.get(
+            "/api/v1/lookups/portfolio-status/",
+            name="/api/v1/lookups/portfolio-status/",
+        )
 
     @task(2)
     def get_portfolio_status_detail(self):
-        """GET /api/v1/portfolio-status/{id} - Get specific portfolio status."""
-        self.client.get("/api/v1/portfolio-status/1", name="/api/v1/portfolio-status/[id]")
+        """GET /api/v1/lookups/portfolio-status/{id} - Get specific portfolio status."""
+        self.client.get(
+            "/api/v1/lookups/portfolio-status/1",
+            name="/api/v1/lookups/portfolio-status/[id]",
+        )
 
     @task(3)
     def list_portfolios_url(self):
@@ -445,8 +451,8 @@ class OPSAPIUser(HttpUser):
 
     @task(3)
     def list_research_types(self):
-        """GET /api/v1/research-types/ - List research types."""
-        self.client.get("/api/v1/research-types/", name="/api/v1/research-types/")
+        """GET /api/v1/lookups/research-types/ - List research types."""
+        self.client.get("/api/v1/lookups/research-types/", name="/api/v1/lookups/research-types/")
 
     @task(3)
     def list_research_methodologies(self):
@@ -497,13 +503,16 @@ class OPSAPIUser(HttpUser):
 
     @task(3)
     def list_agreement_reasons(self):
-        """GET /api/v1/agreement-reasons/ - List agreement reasons."""
-        self.client.get("/api/v1/agreement-reasons/", name="/api/v1/agreement-reasons/")
+        """GET /api/v1/lookups/agreement-reasons/ - List agreement reasons."""
+        self.client.get(
+            "/api/v1/lookups/agreement-reasons/",
+            name="/api/v1/lookups/agreement-reasons/",
+        )
 
     @task(3)
     def list_agreement_types(self):
-        """GET /api/v1/agreement-types/ - List agreement types."""
-        self.client.get("/api/v1/agreement-types/", name="/api/v1/agreement-types/")
+        """GET /api/v1/lookups/agreement-types/ - List agreement types."""
+        self.client.get("/api/v1/lookups/agreement-types/", name="/api/v1/lookups/agreement-types/")
 
     # === Division Tasks ===
 
@@ -612,7 +621,10 @@ class OPSAPIUser(HttpUser):
     @task(4)
     def list_procurement_tracker_steps(self):
         """GET /api/v1/procurement-tracker-steps/ - List procurement tracker steps."""
-        self.client.get("/api/v1/procurement-tracker-steps/", name="/api/v1/procurement-tracker-steps/")
+        self.client.get(
+            "/api/v1/procurement-tracker-steps/",
+            name="/api/v1/procurement-tracker-steps/",
+        )
 
     @task(2)
     def get_procurement_tracker_step_detail(self):
