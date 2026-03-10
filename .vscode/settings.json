@@ -52,5 +52,5 @@
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
     "python.analysis.extraPaths": ["backend"],
-    "python-envs.defaultEnvManager": "ms-python.python:system"
+    "python-envs.defaultEnvManager": "ms-python.python:pipenv"
 }
