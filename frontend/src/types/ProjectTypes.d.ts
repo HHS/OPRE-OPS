@@ -1,4 +1,4 @@
-import { SafeUser } from "../Users/UserTypes";
+import { SafeUser } from "./UserTypes";
 
 export type ResearchProject = {
     id: number;

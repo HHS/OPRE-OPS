@@ -22,8 +22,23 @@ export const handlers = [
         ]);
     }),
 
-    http.post(`https://localhost:8000/api/v1/projects/`, async () => {
-        return HttpResponse.json({ id: 3 }, { status: 201 });
+    http.get(`https://localhost:8000/api/v1/projects/`, () => {
+        return HttpResponse.json([
+            {
+                id: 1,
+                title: "Child Care Research",
+                short_title: "CCR",
+                description: "Research project for child care outcomes.",
+                project_type: "RESEARCH"
+            },
+            {
+                id: 2,
+                title: "Operations Support",
+                short_title: "OPS",
+                description: "Administrative and support project.",
+                project_type: "ADMINISTRATIVE_AND_SUPPORT"
+            }
+        ]);
     }),
 
     http.get(`https://localhost:8000/api/v1/change-requests/`, () => {
