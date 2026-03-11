@@ -20,7 +20,7 @@ Generate a new migration from model changes.
 
 **Step 1: Verify the working directory and database**
 ```bash
-cd /Users/jdeangelis/PycharmProjects/OPRE-OPS-2/backend
+cd backend
 
 # Check that the database is running
 docker compose ps db --format json 2>/dev/null | jq -r '.Name + " " + .State' || echo "DB service not found — is Docker running?"
@@ -51,7 +51,7 @@ Read the changed model files to understand the schema changes.
 
 Extract the message from `$ARGUMENTS` (everything after "create"):
 ```bash
-cd /Users/jdeangelis/PycharmProjects/OPRE-OPS-2/backend
+cd backend
 alembic revision --autogenerate -m "your migration message"
 ```
 
@@ -71,7 +71,7 @@ Present a summary to the user: "Here's what the migration does: [list of operati
 
 **Step 5: Test the migration**
 ```bash
-cd /Users/jdeangelis/PycharmProjects/OPRE-OPS-2/backend
+cd backend
 
 # Apply the migration
 alembic upgrade head
@@ -94,7 +94,7 @@ Review an existing migration file for correctness.
 
 If a specific filename is provided, read that file. Otherwise, review the most recent migration:
 ```bash
-ls -t /Users/jdeangelis/PycharmProjects/OPRE-OPS-2/backend/alembic/versions/*.py | head -1
+ls -t backend/alembic/versions/*.py | head -1
 ```
 
 Check for the same issues listed in Step 4 above. Also check:
@@ -106,7 +106,7 @@ Check for the same issues listed in Step 4 above. Also check:
 
 Apply migrations:
 ```bash
-cd /Users/jdeangelis/PycharmProjects/OPRE-OPS-2/backend
+cd backend
 
 # Upgrade to head (default)
 alembic upgrade head
@@ -122,7 +122,7 @@ alembic current
 
 Roll back migrations:
 ```bash
-cd /Users/jdeangelis/PycharmProjects/OPRE-OPS-2/backend
+cd backend
 
 # Roll back one migration (default)
 alembic downgrade -1
@@ -138,7 +138,7 @@ alembic current
 
 Show the current migration state:
 ```bash
-cd /Users/jdeangelis/PycharmProjects/OPRE-OPS-2/backend
+cd backend
 
 # Current revision applied to the database
 alembic current
@@ -156,7 +156,7 @@ Report whether the database is up to date or has pending migrations.
 
 Show recent migration history:
 ```bash
-cd /Users/jdeangelis/PycharmProjects/OPRE-OPS-2/backend
+cd backend
 
 # Show last 10 migrations
 alembic history -r -10:current --verbose

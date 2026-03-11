@@ -19,7 +19,7 @@ Interpret `$ARGUMENTS` to decide the action:
 Run the ops_api test suite.
 
 ```bash
-cd /Users/jdeangelis/PycharmProjects/OPRE-OPS-2/backend/ops_api
+cd backend/ops_api
 
 # Run all API tests
 pipenv run pytest
@@ -30,7 +30,7 @@ pipenv run pytest -v --tb=short
 
 If `$ARGUMENTS` includes a specific path or test name after `api` (e.g., `api test_agreements`):
 ```bash
-cd /Users/jdeangelis/PycharmProjects/OPRE-OPS-2/backend/ops_api
+cd backend/ops_api
 
 # Find matching test files
 find tests -name "*<pattern>*" -type f
@@ -56,7 +56,7 @@ docker info > /dev/null 2>&1 && echo "Docker: OK" || echo "Docker: NOT RUNNING"
 ```
 
 ```bash
-cd /Users/jdeangelis/PycharmProjects/OPRE-OPS-2/backend/data_tools
+cd backend/data_tools
 
 # Run all data tools tests
 pipenv run pytest
@@ -67,7 +67,7 @@ pipenv run pytest -v --tb=short
 
 If a specific test path is provided:
 ```bash
-cd /Users/jdeangelis/PycharmProjects/OPRE-OPS-2/backend/data_tools
+cd backend/data_tools
 pipenv run pytest tests/load_projects/test_load_projects.py
 ```
 
@@ -83,12 +83,12 @@ Report results the same as API tests.
 Run linting across both packages:
 ```bash
 echo "=== ops_api linting ==="
-cd /Users/jdeangelis/PycharmProjects/OPRE-OPS-2/backend/ops_api
+cd backend/ops_api
 pipenv run nox -s lint
 
 echo ""
 echo "=== data_tools linting ==="
-cd /Users/jdeangelis/PycharmProjects/OPRE-OPS-2/backend/data_tools
+cd backend/data_tools
 pipenv run nox -s lint
 ```
 
@@ -99,21 +99,21 @@ Report any linting violations with file, line number, and rule code.
 Check formatting (Black + isort) without modifying files:
 ```bash
 echo "=== ops_api format check ==="
-cd /Users/jdeangelis/PycharmProjects/OPRE-OPS-2/backend/ops_api
+cd backend/ops_api
 pipenv run nox -s format_check
 
 echo ""
 echo "=== data_tools format check ==="
-cd /Users/jdeangelis/PycharmProjects/OPRE-OPS-2/backend/data_tools
+cd backend/data_tools
 pipenv run nox -s format_check
 ```
 
 If formatting issues are found, offer to auto-fix:
 ```bash
-cd /Users/jdeangelis/PycharmProjects/OPRE-OPS-2/backend/ops_api
+cd backend/ops_api
 pipenv run nox -s black
 
-cd /Users/jdeangelis/PycharmProjects/OPRE-OPS-2/backend/data_tools
+cd backend/data_tools
 pipenv run nox -s black
 ```
 
@@ -127,11 +127,11 @@ Determine which package it belongs to:
 
 ```bash
 # For ops_api tests
-cd /Users/jdeangelis/PycharmProjects/OPRE-OPS-2/backend/ops_api
+cd backend/ops_api
 pipenv run pytest <test-path> -v --tb=short
 
 # For data_tools tests
-cd /Users/jdeangelis/PycharmProjects/OPRE-OPS-2/backend/data_tools
+cd backend/data_tools
 pipenv run pytest <test-path> -v --tb=short
 ```
 
@@ -143,24 +143,24 @@ Run the full backend CI check suite — everything that CI would catch.
 
 ```bash
 echo "=== Step 1/4: ops_api lint + format ==="
-cd /Users/jdeangelis/PycharmProjects/OPRE-OPS-2/backend/ops_api
+cd backend/ops_api
 pipenv run nox -s lint
 pipenv run nox -s format_check
 
 echo ""
 echo "=== Step 2/4: ops_api tests ==="
-cd /Users/jdeangelis/PycharmProjects/OPRE-OPS-2/backend/ops_api
+cd backend/ops_api
 pipenv run pytest --tb=short
 
 echo ""
 echo "=== Step 3/4: data_tools lint + format ==="
-cd /Users/jdeangelis/PycharmProjects/OPRE-OPS-2/backend/data_tools
+cd backend/data_tools
 pipenv run nox -s lint
 pipenv run nox -s format_check
 
 echo ""
 echo "=== Step 4/4: data_tools tests ==="
-cd /Users/jdeangelis/PycharmProjects/OPRE-OPS-2/backend/data_tools
+cd backend/data_tools
 pipenv run pytest --tb=short
 ```
 
