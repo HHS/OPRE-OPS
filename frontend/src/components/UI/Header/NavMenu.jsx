@@ -1,6 +1,7 @@
 import React from "react";
 import { useSelector } from "react-redux";
 import { NavLink, useLocation } from "react-router-dom";
+import { IS_PROJECTS_LIST_READY } from "../../../constants";
 
 const NavMenu = () => {
     const activeUser = useSelector((state) => state.auth?.activeUser);
@@ -47,6 +48,17 @@ const NavMenu = () => {
                         Portfolios
                     </NavLink>
                 </li>
+                {IS_PROJECTS_LIST_READY && (
+                    <li className="usa-nav__primary-item">
+                        <NavLink
+                            to="/projects"
+                            className={getNavLinkClass}
+                            end
+                        >
+                            Projects
+                        </NavLink>
+                    </li>
+                )}
                 <li className="usa-nav__primary-item">
                     <NavLink
                         to="/agreements"
