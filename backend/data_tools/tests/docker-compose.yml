@@ -4,7 +4,7 @@ services:
 
   db:
     image: "postgres:16"
-    container_name: unit-test-db
+    container_name: data-tools-unit-test-db
     security_opt:
       - no-new-privileges:true  # Resolve semgrep https://sg.run/0n8q
     environment:
