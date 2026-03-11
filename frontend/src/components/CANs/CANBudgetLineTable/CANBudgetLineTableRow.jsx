@@ -64,7 +64,9 @@ const CANBudgetLineTableRow = ({
     const feeTotal = budgetLine.fees;
     const displayCreatedDate = formatDateToMonthDayYear(creationDate);
     const procShopLabel = getProcurementShopLabel(budgetLine);
-    const resolvedAgreementName = agreementName?.trim() || "Agreement details";
+    const resolvedAgreementName =
+        agreementName?.trim() ||
+        (budgetLine?.agreement?.id ? `Agreement ${budgetLine.agreement.id}` : "Agreement details");
 
     const TableRowData = (
         <>
