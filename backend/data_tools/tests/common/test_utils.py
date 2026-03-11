@@ -3,7 +3,6 @@ from decimal import Decimal
 
 import pytest
 import sqlalchemy
-from sqlalchemy import text
 
 from data_tools.environment.pytest import PytestConfig
 from data_tools.src.common.db import init_db_from_config

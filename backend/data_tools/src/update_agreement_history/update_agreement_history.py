@@ -156,7 +156,7 @@ def create_add_agreement_history_item(
             ops_event_id=ops_event.id,
             history_title="Agreement Created",
             history_message=(
-                f"Changes made to the OPRE budget spreadsheet created a new agreement."
+                "Changes made to the OPRE budget spreadsheet created a new agreement."
                 if updated_by_system_user
                 else f"{event_user.full_name} created a new agreement."
             ),
@@ -432,8 +432,8 @@ def create_bli_update_history_event(
     """
     Create a new AgreementHistory item for BudgetLineItem updates.
     """
-    history_title = f""
-    history_message = f""
+    history_title = ""
+    history_message = ""
     if key == "can_id":
         old_can_number = "None"
         new_can_number = "None"
@@ -445,10 +445,13 @@ def create_bli_update_history_event(
             new_can_number = f"CAN {new_can.number}"
         history_title = "Change to CAN"
         if updated_by_system_user:
-            history_message = f"Changes made to the OPRE budget spreadsheet changed the CAN for BL {bli_id} from {old_can_number} to {new_can_number}."
+            history_message = (
+                f"Changes made to the OPRE budget spreadsheet changed the CAN"
+                f" for BL {bli_id} from {old_can_number} to {new_can_number}."
+            )
         else:
             history_message = (
-                f"{event_user.full_name} changed the CAN for BL {bli_id} from {old_can_number} to {new_can_number}."
+                f"{event_user.full_name} changed the CAN for BL {bli_id}" f" from {old_can_number} to {new_can_number}."
             )
     elif key == "date_needed":
         history_title = "Change to Obligate By"
@@ -459,10 +462,14 @@ def create_bli_update_history_event(
         if new_value:
             new_date = datetime.strftime(datetime.strptime(new_value, "%Y-%m-%d"), "%m/%d/%Y")
         if updated_by_system_user:
-            history_message = f"Changes made to the OPRE budget spreadsheet changed the Obligate By date for BL {bli_id} from {old_date} to {new_date}."
+            history_message = (
+                f"Changes made to the OPRE budget spreadsheet changed the Obligate By date"
+                f" for BL {bli_id} from {old_date} to {new_date}."
+            )
         else:
             history_message = (
-                f"{event_user.full_name} changed the Obligate By date for BL {bli_id} from {old_date} to {new_date}."
+                f"{event_user.full_name} changed the Obligate By date"
+                f" for BL {bli_id} from {old_date} to {new_date}."
             )
     elif key == "amount":
         old_value_float = float(old_value)
@@ -471,10 +478,14 @@ def create_bli_update_history_event(
         new_value_str = "{:,.2f}".format(new_value_float)
         history_title = "Change to Amount"
         if updated_by_system_user:
-            history_message = f"Changes made to the OPRE budget spreadsheet changed the amount for BL {bli_id} from ${old_value_str} to ${new_value_str}."
+            history_message = (
+                f"Changes made to the OPRE budget spreadsheet changed the amount"
+                f" for BL {bli_id} from ${old_value_str} to ${new_value_str}."
+            )
         else:
             history_message = (
-                f"{event_user.full_name} changed the amount for BL {bli_id} from ${old_value_str} to ${new_value_str}."
+                f"{event_user.full_name} changed the amount"
+                f" for BL {bli_id} from ${old_value_str} to ${new_value_str}."
             )
 
     elif key == "line_description":
@@ -492,9 +503,15 @@ def create_bli_update_history_event(
         new_sc_name = new_services_component.display_name if new_services_component else "None"
         history_title = "Change to Services Component"
         if updated_by_system_user:
-            history_message = f"Changes made to the OPRE budget spreadsheet changed the services component for BL {bli_id} from {old_sc_name} to {new_sc_name}."
+            history_message = (
+                f"Changes made to the OPRE budget spreadsheet changed the services component"
+                f" for BL {bli_id} from {old_sc_name} to {new_sc_name}."
+            )
         else:
-            history_message = f"{event_user.full_name} changed the services component for BL {bli_id} from {old_sc_name} to {new_sc_name}."
+            history_message = (
+                f"{event_user.full_name} changed the services component"
+                f" for BL {bli_id} from {old_sc_name} to {new_sc_name}."
+            )
     if history_title and history_message:
         return AgreementHistory(
             agreement_id=agreement_id if agreement else None,

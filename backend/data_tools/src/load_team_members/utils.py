@@ -7,7 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from data_tools.src.common.utils import get_cig_type_mapping
-from models import Agreement, AgreementType, OpsEvent, OpsEventStatus, OpsEventType, User
+from models import Agreement, OpsEvent, OpsEventStatus, OpsEventType, User
 
 
 @dataclass

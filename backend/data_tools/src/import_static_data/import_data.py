@@ -139,8 +139,8 @@ def load_new_data(
                     if name in agreement_subtypes:
                         print(f"Resetting parent 'agreement' ID sequence (due to {name} having explicit IDs) ...")
                         stmt = text(
-                            f"SELECT setval(pg_get_serial_sequence('ops.agreement', 'id'), "
-                            f"(SELECT coalesce(max(id),0) FROM ops.agreement), true);"
+                            "SELECT setval(pg_get_serial_sequence('ops.agreement', 'id'), "
+                            "(SELECT coalesce(max(id),0) FROM ops.agreement), true);"
                         )
                         session.execute(stmt)
                         session.commit()

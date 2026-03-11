@@ -1,9 +1,14 @@
 import os
 from csv import DictReader
 from dataclasses import dataclass
+from typing import List
+
+from loguru import logger
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 from data_tools.src.common.utils import get_cig_type_mapping
-from models import *
+from models import Agreement, OpsEvent, OpsEventStatus, OpsEventType, User
 
 
 @dataclass
@@ -46,7 +51,7 @@ def create_models(data: AgreementData, sys_user: User, session: Session) -> None
     ).one_or_none()
 
     if not agreement:
-        logger.warning(f"No agreement found with name '{data.AGREEMENT_NAME}' and type '{data.AGREEMENT_TYPE}'")
+        logger.warning(f"No agreement found with name {data.AGREEMENT_NAME!r} and type {data.AGREEMENT_TYPE!r}")
         return
 
     # Store agreement data for event details
@@ -54,7 +59,7 @@ def create_models(data: AgreementData, sys_user: User, session: Session) -> None
 
     # Check if agreement has budget line items
     if agreement.budget_line_items:
-        logger.warning(f"Agreement '{agreement.name}' (ID: {agreement.id}) has budget line items. Skipping deletion.")
+        logger.warning(f"Agreement {agreement.name!r} (ID: {agreement.id}) has budget line items. Skipping deletion.")
         return
 
     if os.getenv("DRY_RUN"):

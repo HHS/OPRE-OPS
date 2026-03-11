@@ -13,7 +13,6 @@ from data_tools.src.load_remove_budget_lines.utils import (
     create_models,
     validate_data,
 )
-from data_tools.tests.conftest import loaded_db
 from models import (
     CAN,
     AgreementType,

@@ -117,8 +117,8 @@ def verify_and_log_project_title(data: BudgetLineItemData, session: Session, pro
 
     if project_title and project_title.strip().lower() != data.PROJECT_TITLE.strip().lower():
         logger.warning(
-            f"Mismatch: Expected Project Title '{data.PROJECT_TITLE}', "
-            f"got '{project_title}' for Agreement {data.CIG_NAME}."
+            f"Mismatch: Expected Project Title {data.PROJECT_TITLE!r}, "
+            f"got {project_title!r} for Agreement {data.CIG_NAME}."
         )
 
 
@@ -253,7 +253,8 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
                 ).scalar_one_or_none()
                 if agreement_history:
                     logger.info(
-                        f"Found AgreementHistory record {agreement_history.id} for BLI id={existing_budget_line_item.id}, updating it now."
+                        f"Found AgreementHistory record {agreement_history.id}"
+                        f" for BLI id={existing_budget_line_item.id}, updating it now."
                     )
                     agreement_history.agreement_id = agreement.id
                     agreement_history.agreement_id_record = agreement.id
@@ -286,8 +287,9 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
         # Record the new SYS_BUDGET_ID to manually update the spreadsheet later
         if not existing_budget_line_item:
             logger.warning(
-                f"***Manually update SYS_BUDGET_ID in Budget Spreadsheet: original CIG_Name={data.CIG_NAME}, original LINE_DESC={data.LINE_DESC},"
-                f"created SYS_BUDGET_ID = {bli.id}.***"
+                f"***Manually update SYS_BUDGET_ID in Budget Spreadsheet:"
+                f" original CIG_Name={data.CIG_NAME}, original LINE_DESC={data.LINE_DESC},"
+                f" created SYS_BUDGET_ID = {bli.id}.***"
             )
 
         if os.getenv("DRY_RUN"):
