@@ -13,6 +13,23 @@ export const getCurrentFiscalYear = (today = new Date()) => {
 };
 
 /**
+ * Returns the default fiscal year string for filter modals based on the selected fiscal year.
+ * @param {string|number|undefined} selectedFiscalYear - The selected fiscal year. Can be a number (specific year), "All" (user-selected), "Multi" (auto-set when multiple years filtered), or undefined.
+ * @param {string|number} currentFiscalYear - The current fiscal year.
+ * @returns {string} The default fiscal year string.
+ */
+export const getDefaultFiscalYearString = (selectedFiscalYear, currentFiscalYear) => {
+    if (!selectedFiscalYear || selectedFiscalYear === "Multi") {
+        return `Fiscal Year ${currentFiscalYear}`;
+    }
+    if (selectedFiscalYear === "All") {
+        return "All Fiscal Years";
+    }
+    // It's a specific year number
+    return `Fiscal Year ${selectedFiscalYear}`;
+};
+
+/**
  * This function calculate a percent based on a numerator and denominator.
  * @param {number} numerator - The numerator. This parameter is required.
  * @param {number} denominator - The denominator. This parameter is required.

@@ -10,6 +10,7 @@ import AwardTypeComboBox from "../../../../components/Agreements/AwardTypeComboB
 import FilterButton from "../../../../components/UI/FilterButton/FilterButton";
 import useAgreementsFilterButton from "./AgreementsFilterButton.hooks";
 import { FILTER_MODAL_FULL_WIDTH } from "../../../../constants";
+import { getDefaultFiscalYearString } from "../../../../helpers/utils";
 /**
  * A filter for agreements.
  * @param {Object} props - The component props.
@@ -43,18 +44,6 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
     const fieldStyles = "usa-fieldset margin-bottom-205";
     const legendStyles = `usa-legend font-sans-3xs margin-top-0 padding-bottom-1 ${customStyles.legendColor}`;
 
-    // Calculate default string based on selectedFiscalYear from the page-level dropdown
-    const getDefaultFiscalYearString = () => {
-        if (!selectedFiscalYear || selectedFiscalYear === "Multi") {
-            return `Fiscal Year ${currentFiscalYear}`;
-        }
-        if (selectedFiscalYear === "All") {
-            return "All Fiscal Years";
-        }
-        // It's a specific year number
-        return `Fiscal Year ${selectedFiscalYear}`;
-    };
-
     const fieldsetList = [
         <fieldset
             key="fiscalYearField"
@@ -64,7 +53,7 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
                 selectedFiscalYears={fiscalYear}
                 setSelectedFiscalYears={setFiscalYear}
                 legendClassname={legendStyles}
-                defaultString={getDefaultFiscalYearString()}
+                defaultString={getDefaultFiscalYearString(selectedFiscalYear, currentFiscalYear)}
                 overrideStyles={FILTER_MODAL_FULL_WIDTH}
                 budgetLinesFiscalYears={agreementFilterOptions?.fiscal_years || []}
                 label="Compare Fiscal Years"

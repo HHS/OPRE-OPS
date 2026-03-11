@@ -11,7 +11,7 @@ import CANActivePeriodComboBox from "../../../components/CANs/CANActivePeriodCom
 import BLIStatusComboBox from "../../../components/BudgetLineItems/BLIStatusComboBox";
 import { useSearchParams } from "react-router-dom";
 import { useGetBudgetLineItemsFilterOptionsQuery } from "../../../api/opsAPI";
-import { getCurrentFiscalYear } from "../../../helpers/utils";
+import { getCurrentFiscalYear, getDefaultFiscalYearString } from "../../../helpers/utils";
 import { FILTER_MODAL_FULL_WIDTH } from "../../../constants";
 
 /**
@@ -181,18 +181,6 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
     const fieldStyles = "usa-fieldset margin-bottom-205";
     const legendStyles = `usa-legend font-sans-3xs margin-top-0 padding-bottom-1 ${customStyles.legendColor}`;
 
-    // Calculate default string based on selectedFiscalYear from the shortcut dropdown
-    const getDefaultFiscalYearString = () => {
-        if (!selectedFiscalYear || selectedFiscalYear === "Multi") {
-            return `Fiscal Year ${getCurrentFiscalYear()}`;
-        }
-        if (selectedFiscalYear === "All") {
-            return "All Fiscal Years";
-        }
-        // It's a specific year number
-        return `Fiscal Year ${selectedFiscalYear}`;
-    };
-
     const fieldsetList = [
         <fieldset
             key="field1"
@@ -202,7 +190,7 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
                 selectedFiscalYears={fiscalYears}
                 setSelectedFiscalYears={handleFiscalYearsChange}
                 legendClassname={legendStyles}
-                defaultString={getDefaultFiscalYearString()}
+                defaultString={getDefaultFiscalYearString(selectedFiscalYear, getCurrentFiscalYear())}
                 overrideStyles={FILTER_MODAL_FULL_WIDTH}
                 budgetLinesFiscalYears={fiscalYearOptions}
                 label="Compare Fiscal Years"
