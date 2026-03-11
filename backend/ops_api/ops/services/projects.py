@@ -317,13 +317,16 @@ class ProjectsService(OpsService[Project]):
 
         # Apply project search filter on project title (AND logic - must match all search terms)
         if filters.project_search:
-            query_helper.add_search_list(AdministrativeAndSupportProject.title, filters.project_search)
+            query_helper.where_clauses.append(
+                or_(
+                    Project.title.in_(filters.project_search),
+                    Project.short_title.in_(filters.project_search),
+                )
+            )
 
         # Apply agreement search filter on agreement name and nick_name (exact match - OR logic)
         # Projects are returned if any agreement has name OR nick_name matching any search term
         if filters.agreement_search:
-            from sqlalchemy import or_
-
             query_helper.where_clauses.append(
                 or_(Agreement.name.in_(filters.agreement_search), Agreement.nick_name.in_(filters.agreement_search))
             )

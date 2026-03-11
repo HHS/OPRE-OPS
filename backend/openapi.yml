@@ -5303,22 +5303,32 @@ components:
           type: string
           enum: [RESEARCH, ADMINISTRATIVE_AND_SUPPORT]
           example: RESEARCH
+        start_date:
+          type: string
+          format: date
+          nullable: true
+          description: Earliest period_start across all services_components in all agreements
+          example: "2023-01-01"
         end_date:
           type: string
           format: date
           nullable: true
-          description: End date of the project (nullable)
+          description: Latest period_end across all services_components in all agreements
           example: "2024-12-31"
-        fiscal_year_total:
-          type: integer
+        fiscal_year_totals:
+          type: object
           nullable: true
-          description: Total budget amount for the current fiscal year (nullable)
-          example: 500000
+          description: Dictionary mapping fiscal year to total BLI value for that year (non-DRAFT BLIs only)
+          additionalProperties:
+            type: string
+          example:
+            "2023": "1000.00"
+            "2024": "2000.00"
         project_total:
           type: integer
           nullable: true
-          description: Total budget amount for the entire project (nullable)
-          example: 2000000
+          description: Total value of all agreements in the project (sum of agreement_total for each)
+          example: 3000
       required:
         - title
     ProjectListItem:
@@ -5353,6 +5363,32 @@ components:
           type: string
           enum: [RESEARCH, ADMINISTRATIVE_AND_SUPPORT]
           example: ADMINISTRATIVE_AND_SUPPORT
+        start_date:
+          type: string
+          format: date
+          nullable: true
+          description: Earliest period_start across all services_components in all agreements
+          example: "2023-01-01"
+        end_date:
+          type: string
+          format: date
+          nullable: true
+          description: Latest period_end across all services_components in all agreements
+          example: "2024-12-31"
+        fiscal_year_totals:
+          type: object
+          nullable: true
+          description: Dictionary mapping fiscal year to total BLI value for that year (non-DRAFT BLIs only)
+          additionalProperties:
+            type: string
+          example:
+            "2023": "1000.00"
+            "2024": "2000.00"
+        project_total:
+          type: integer
+          nullable: true
+          description: Total value of all agreements in the project (sum of agreement_total for each)
+          example: 3000
       required:
         - title
     ResearchProject:

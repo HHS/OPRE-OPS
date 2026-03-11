@@ -1,9 +1,10 @@
 import uuid
+from datetime import date
 
 import pytest
 from flask import url_for
 
-from models import ContractAgreement, Project, ProjectType, ResearchProject
+from models import AgreementType, ContractAgreement, Project, ProjectType, ResearchProject
 from models.projects import ResearchType
 from ops_api.ops.services.ops_service import ResourceNotFoundError, ValidationError
 from ops_api.ops.services.projects import ProjectsService
@@ -229,9 +230,7 @@ def test_combined_project_and_agreement_search(auth_client, loaded_db, test_proj
 
     # Search with exact project short_title that matches but agreement name that doesn't
     # Should NOT find test_project
-    response = auth_client.get(
-        url_for("api.projects-group", project_search=["HSS"], agreement_search=["NonExistent"])
-    )
+    response = auth_client.get(url_for("api.projects-group", project_search=["HSS"], agreement_search=["NonExistent"]))
     assert response.status_code == 200
     project_ids = [p["id"] for p in response.json["data"]]
     assert test_project.id not in project_ids
@@ -302,33 +301,35 @@ def test_project_type_filter_all_vs_none(auth_client, loaded_db):
     assert len(response_no_filter.json) == len(response_all_types.json)
 
     # Both should contain the same project IDs (order might differ)
-    ids_no_filter = sorted([p["id"] for p in response_no_filter.json])
-    ids_all_types = sorted([p["id"] for p in response_all_types.json])
+    ids_no_filter = sorted([p["id"] for p in response_no_filter.json["data"]])
+    ids_all_types = sorted([p["id"] for p in response_all_types.json["data"]])
     assert ids_no_filter == ids_all_types
 
 
 def test_project_type_filter_single_type(auth_client, loaded_db):
     """Test filtering by a single project type."""
     # Get only research projects
-    response_research = auth_client.get(url_for("api.projects-group", project_type=[ProjectType.RESEARCH.name]))
+    response_research = auth_client.get(
+        url_for("api.projects-group", project_type=[ProjectType.RESEARCH.name], limit=50)
+    )
     assert response_research.status_code == 200
-    research_projects = [p for p in response_research.json if p["project_type"] == ProjectType.RESEARCH.name]
-    assert len(research_projects) == len(response_research.json), "Should only return research projects"
+    research_projects = [p for p in response_research.json["data"] if p["project_type"] == ProjectType.RESEARCH.name]
+    assert len(research_projects) == len(response_research.json["data"]), "Should only return research projects"
 
     # Get only admin/support projects
     response_admin = auth_client.get(
-        url_for("api.projects-group", project_type=[ProjectType.ADMINISTRATIVE_AND_SUPPORT.name])
+        url_for("api.projects-group", project_type=[ProjectType.ADMINISTRATIVE_AND_SUPPORT.name], limit=50)
     )
     assert response_admin.status_code == 200
     admin_projects = [
-        p for p in response_admin.json if p["project_type"] == ProjectType.ADMINISTRATIVE_AND_SUPPORT.name
+        p for p in response_admin.json["data"] if p["project_type"] == ProjectType.ADMINISTRATIVE_AND_SUPPORT.name
     ]
-    assert len(admin_projects) == len(response_admin.json), "Should only return admin/support projects"
+    assert len(admin_projects) == len(response_admin.json["data"]), "Should only return admin/support projects"
 
     # Sum of both types should equal total projects
-    response_all = auth_client.get(url_for("api.projects-group"))
+    response_all = auth_client.get(url_for("api.projects-group", limit=50))
     assert response_all.status_code == 200
-    assert len(response_research.json) + len(response_admin.json) == len(response_all.json)
+    assert len(response_research.json["data"]) + len(response_admin.json["data"]) == len(response_all.json["data"])
 
 
 def test_projects_get_by_id_auth(client):
@@ -457,10 +458,84 @@ def test_projects_list_uses_lightweight_schema(auth_client, loaded_db, app_ctx):
     assert "short_title" in project
     assert "description" in project
     assert "project_type" in project
+    assert "created_on" in project
+    assert "updated_on" in project
+
+    # Verify project metadata fields from project_list_metadata are present
+    assert "start_date" in project
+    assert "end_date" in project
+    assert "fiscal_year_totals" in project
+    assert "project_total" in project
+
+    # Verify fiscal_year_totals is a dict (or None)
+    assert project["fiscal_year_totals"] is None or isinstance(project["fiscal_year_totals"], dict)
+
+    # Verify project_total is an int (or None)
+    assert project["project_total"] is None or isinstance(project["project_total"], int)
 
     # Verify expensive nested fields are NOT present (performance optimization)
     assert "team_leaders" not in project, "Nested 'team_leaders' should not be in list response (causes N+1 queries)"
     assert "created_by" not in project, "Unused 'created_by' field should not be in list response"
+
+
+def test_project_list_metadata_serialization(auth_client, loaded_db, test_project):
+    """
+    Test that project_list_metadata is correctly extracted and serialized in list response.
+    """
+    from decimal import Decimal
+
+    from models import BudgetLineItem, ServicesComponent
+
+    # Add a services component with date range to the test project's agreement
+    agreement = test_project.agreements[0]
+    sc = ServicesComponent(
+        agreement_id=agreement.id,
+        period_start=date.fromisoformat("2023-01-01"),
+        period_end=date.fromisoformat("2023-12-31"),
+        number=10,
+    )
+    loaded_db.add(sc)
+
+    # Add budget line items with fiscal years to test fiscal_year_totals
+    # Set status to PLANNED so they're included in totals (DRAFT items are excluded)
+    from models.budget_line_items import BudgetLineItemStatus
+
+    bli1 = BudgetLineItem(
+        budget_line_item_type=AgreementType.CONTRACT,
+        agreement_id=agreement.id,
+        amount=Decimal("1000.00"),
+        date_needed=date.fromisoformat("2023-03-15"),  # FY 2023
+        status=BudgetLineItemStatus.PLANNED,
+    )
+    bli2 = BudgetLineItem(
+        budget_line_item_type=AgreementType.CONTRACT,
+        agreement_id=agreement.id,
+        amount=Decimal("2000.00"),
+        date_needed=date.fromisoformat("2024-03-15"),  # FY 2024
+        status=BudgetLineItemStatus.PLANNED,
+    )
+    loaded_db.add(bli1)
+    loaded_db.add(bli2)
+    loaded_db.commit()
+
+    response = auth_client.get(url_for("api.projects-group"))
+    assert response.status_code == 200
+
+    # Find the test project in the response
+    project_data = next((p for p in response.json["data"] if p["id"] == test_project.id), None)
+    assert project_data is not None
+
+    # Verify metadata fields are populated
+    assert project_data["start_date"] == "2023-01-01"
+    assert project_data["end_date"] == "2045-06-13"
+    assert project_data["project_total"] is not None
+    assert isinstance(project_data["project_total"], int)
+
+    # Verify fiscal_year_totals contains the expected fiscal years
+    assert project_data["fiscal_year_totals"] is not None
+    assert isinstance(project_data["fiscal_year_totals"], dict)
+    # Fiscal year totals should have entries for FY 2023 and 2024
+    assert "2023" in project_data["fiscal_year_totals"] or "2024" in project_data["fiscal_year_totals"].keys()
 
 
 # PATCH/UPDATE tests

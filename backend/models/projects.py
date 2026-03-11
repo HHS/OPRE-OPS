@@ -1,5 +1,6 @@
 from enum import Enum
 from typing import Optional
+from decimal import Decimal
 
 from sqlalchemy import Date, ForeignKey, Index, Sequence, String, Text
 from sqlalchemy.dialects.postgresql import ENUM
@@ -59,6 +60,50 @@ class Project(BaseModel):
     @BaseModel.display_name.getter
     def display_name(self):
         return self.title
+
+    @property
+    def project_list_metadata(self) -> dict:
+        """
+        Calculate project totals, fiscal year breakdown, and date range.
+
+        Returns a dict with:
+        - total: Total value of all agreements (sum of agreement_total for each)
+        - by_fiscal_year: Dict mapping fiscal year to total BLI value for that year (non-DRAFT BLIs only)
+        - project_start: Earliest period_start across all services_components in all agreements
+        - project_end: Latest period_end across all services_components in all agreements
+        """
+        from collections import defaultdict
+        from models.budget_line_items import BudgetLineItemStatus
+
+        total = Decimal("0")
+        by_fiscal_year = defaultdict(lambda: Decimal("0"))
+        start_dates = []
+        end_dates = []
+
+        for agreement in self.agreements:
+            # Add agreement total to overall total
+            total += agreement.agreement_total
+
+            # Add BLI amounts by fiscal year (only non-DRAFT or OBE BLIs)
+            for bli in agreement.budget_line_items:
+                if (bli.is_obe or bli.status != BudgetLineItemStatus.DRAFT) and bli.fiscal_year is not None:
+                    # Include amount + fees for the BLI
+                    bli_total = (bli.amount or Decimal("0")) + (bli.fees or Decimal("0"))
+                    by_fiscal_year[bli.fiscal_year] += bli_total
+
+            # Collect all services_component dates
+            for sc in agreement.services_components:
+                if sc.period_start is not None:
+                    start_dates.append(sc.period_start)
+                if sc.period_end is not None:
+                    end_dates.append(sc.period_end)
+
+        return {
+            "total": total,
+            "by_fiscal_year": dict(by_fiscal_year),
+            "project_start": min(start_dates) if start_dates else None,
+            "project_end": max(end_dates) if end_dates else None
+        }
 
 
 class ResearchProject(Project):
