@@ -19,9 +19,9 @@ ALLOWED_TABLES = [
     "funding_partner",
     "funding_source",
     "ops_user",
-    "roles",
+    "role",
     "user_role",
-    "groups",
+    "group",
     "user_group",
     "can",
     "can_fiscal_year",
@@ -79,6 +79,11 @@ ALLOWED_TABLES = [
     "procurement_tracker",
     "default_procurement_tracker",
     "procurement_tracker_step",
+    "ops_event",
+    "product_service_code",
+    "can_funding_details",
+    "administrative_and_support_project",
+    "can_history",
 ]
 
 data = os.getenv("DATA")
@@ -96,6 +101,9 @@ def load_new_data(
 ) -> None:
     for name, data_items in data.items():
         logging.debug(f"Loading {name}...")
+        if name not in ALLOWED_TABLES:
+            logging.warning(f"Skipping unknown table {name!r} (not in ALLOWED_TABLES)")
+            continue
         model = BaseModel.model_lookup_by_table_name(name)
         if model:
             seq_needs_reset = False
@@ -122,7 +130,7 @@ def load_new_data(
                 with Session(conn) as session:
                     print(f"Resetting ID sequence for {name} (after IDs were set manually) ...")
                     stmt = text(
-                        f"SELECT setval(pg_get_serial_sequence('ops.{name}', 'id'), "
+                        f"SELECT setval(pg_get_serial_sequence('ops.{name}', 'id'), "  # noqa: S608
                         f"(SELECT coalesce(max(id),0) FROM ops.{name}), true);"
                     )
                     session.execute(stmt)

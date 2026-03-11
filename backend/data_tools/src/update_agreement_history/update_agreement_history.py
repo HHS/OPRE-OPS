@@ -197,6 +197,136 @@ def create_add_agreement_history_item(
         logger.info(f"Created AgreementHistory item for new BLI {bli_id} on agreement {agreement_id}")
 
 
+def _handle_change_request_update(session, db_history_item, agreement_id, agreement_exists):
+    """Handle AgreementChangeRequest history updates. Returns True if the CR was APPROVED."""
+    ops_event = OpsEvent(
+        event_type=OpsEventType.UPDATE_CHANGE_REQUEST,
+        event_status=OpsEventStatus.SUCCESS,
+        event_details=db_history_item.event_details,
+        created_by=db_history_item.created_by,
+        created_on=db_history_item.created_on,
+        updated_on=db_history_item.updated_on,
+    )
+    session.add(ops_event)
+    session.flush()
+    agreement_history_item = create_change_request_history_event(
+        db_history_item.event_details, ops_event, session, False
+    )
+    if not agreement_exists:
+        agreement_history_item.agreement_id = None
+    session.add(agreement_history_item)
+    logger.info(f"Created AgreementHistory item for updated change request on agreement {agreement_id}")
+    return db_history_item.event_details.get("status") == "APPROVED"
+
+
+def _build_team_member_history_events(team_members, agreement_id, ops_event_id, event_user, timestamp):
+    """Build AgreementHistory items for team member additions and removals."""
+    events = []
+    for action, title in [("added", "Team Member Added"), ("removed", "Team Member Removed")]:
+        for member in team_members.get(action, []):
+            verb = "added by" if action == "added" else "removed by"
+            events.append(
+                (
+                    member["id"],
+                    AgreementHistory(
+                        agreement_id=agreement_id,
+                        agreement_id_record=agreement_id,
+                        ops_event_id=ops_event_id,
+                        history_title=title,
+                        history_message=None,  # set below after user lookup
+                        timestamp=timestamp,
+                        history_type=AgreementHistoryType.AGREEMENT_UPDATED,
+                    ),
+                    verb,
+                )
+            )
+    return events
+
+
+def _handle_agreement_update(session, db_history_item, event_user, agreement_id, agreement_exists, system_user):
+    """Handle Agreement field and team member history updates."""
+    ops_event = OpsEvent(
+        event_type=OpsEventType.UPDATE_AGREEMENT,
+        event_status=OpsEventStatus.SUCCESS,
+        event_details=db_history_item.event_details,
+        created_by=db_history_item.created_by,
+        created_on=db_history_item.created_on,
+        updated_on=db_history_item.updated_on,
+    )
+    session.add(ops_event)
+    session.flush()
+    timestamp = db_history_item.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+    db_history_changes = db_history_item.changes
+    for key in db_history_changes.keys():
+        if key == "team_members":
+            pending = _build_team_member_history_events(
+                db_history_changes[key], agreement_id, ops_event.id, event_user, timestamp
+            )
+            for user_id, event, verb in pending:
+                user = session.get(User, user_id)
+                event.history_message = f"Team Member {user.full_name} {verb} {event_user.full_name}."
+                if not agreement_exists:
+                    event.agreement_id = None
+                session.add(event)
+        else:
+            agreement_history_item = create_agreement_update_history_event(
+                key,
+                db_history_changes[key]["old"],
+                db_history_changes[key]["new"],
+                event_user,
+                timestamp,
+                agreement_id,
+                ops_event.id,
+                session,
+                system_user,
+            )
+            if agreement_history_item:
+                if not agreement_exists:
+                    agreement_history_item.agreement_id = None
+                session.add(agreement_history_item)
+        logger.info(f"Created AgreementHistory item for updated agreement {agreement_id} field {key}")
+
+
+def _handle_bli_update(session, db_history_item, system_user, event_user, agreement_exists):
+    """Handle BudgetLineItem history updates."""
+    ops_event = OpsEvent(
+        event_type=OpsEventType.UPDATE_BLI,
+        event_status=OpsEventStatus.SUCCESS,
+        event_details=db_history_item.event_details,
+        created_by=db_history_item.created_by,
+        created_on=db_history_item.created_on,
+        updated_on=db_history_item.updated_on,
+    )
+    session.add(ops_event)
+    session.flush()
+    bli_id = ops_event.event_details["id"]
+    agreement_id = ops_event.event_details.get("agreement_id", None)
+    budget_line = session.get(BudgetLineItem, bli_id)
+    agreement = session.get(Agreement, agreement_id) if agreement_id else None
+    updated_by_system_user = system_user.id == event_user.id
+    db_history_changes = db_history_item.changes
+    for key in db_history_changes.keys():
+        agreement_history_item = create_bli_update_history_event(
+            agreement,
+            budget_line,
+            bli_id,
+            key,
+            db_history_changes[key]["old"],
+            db_history_changes[key]["new"],
+            event_user,
+            db_history_item.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            agreement_id,
+            ops_event.id,
+            session,
+            updated_by_system_user,
+        )
+        if agreement_history_item:
+            if not agreement_exists:
+                agreement_history_item.agreement_id = None
+            session.add(agreement_history_item)
+        logger.info(f"Created AgreementHistory item for updated BLI {bli_id} on agreement {agreement_id} field {key}")
+
+
 def create_update_agreement_history_item(
     session,
     db_history_item: OpsDBHistory,
@@ -212,134 +342,13 @@ def create_update_agreement_history_item(
     Returns whether an approved change request was created or not
     """
     if db_history_item.class_name == "AgreementChangeRequest":
-        ops_event = OpsEvent(
-            event_type=OpsEventType.UPDATE_CHANGE_REQUEST,
-            event_status=OpsEventStatus.SUCCESS,
-            event_details=db_history_item.event_details,
-            created_by=db_history_item.created_by,
-            created_on=db_history_item.created_on,
-            updated_on=db_history_item.updated_on,
-        )
-        session.add(ops_event)
-        # Flush so we get ops_event_id
-        session.flush()
-        agreement_history_item = create_change_request_history_event(
-            db_history_item.event_details, ops_event, session, False
-        )
-        if not agreement_exists:
-            agreement_history_item.agreement_id = None
-        session.add(agreement_history_item)
-        logger.info(f"Created AgreementHistory item for updated change request on agreement {agreement_id}")
-        # return true if this was an approved change request because it will be followed by an agreement update we SHOULDN'T log
-        return db_history_item.event_details.get("status") == "APPROVED"
+        return _handle_change_request_update(session, db_history_item, agreement_id, agreement_exists)
     elif "Agreement" in db_history_item.class_name:
-        # Only generate event if previous run was not an approved change request
         if not last_run_approved_cr:
-            ops_event = OpsEvent(
-                event_type=OpsEventType.UPDATE_AGREEMENT,
-                event_status=OpsEventStatus.SUCCESS,
-                event_details=db_history_item.event_details,
-                created_by=db_history_item.created_by,
-                created_on=db_history_item.created_on,
-                updated_on=db_history_item.updated_on,
-            )
-            session.add(ops_event)
-
-            # Flush so we get ops_event_id
-            session.flush()
-            db_history_changes = db_history_item.changes
-            for key in db_history_changes.keys():
-                if key == "team_members":
-                    history_events = []
-                    team_members = db_history_changes[key]
-                    for team_member in team_members.get("added", []):
-                        added_user_id = session.get(User, team_member["id"])
-                        history_events.append(
-                            AgreementHistory(
-                                agreement_id=agreement_id,
-                                agreement_id_record=agreement_id,
-                                ops_event_id=ops_event.id,
-                                history_title="Team Member Added",
-                                history_message=f"Team Member {added_user_id.full_name} added by {event_user.full_name}.",
-                                timestamp=db_history_item.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                                history_type=AgreementHistoryType.AGREEMENT_UPDATED,
-                            )
-                        )
-                    for team_member in team_members.get("removed", []):
-                        removed_user_id = session.get(User, team_member["id"])
-                        history_events.append(
-                            AgreementHistory(
-                                agreement_id=agreement_id,
-                                agreement_id_record=agreement_id,
-                                ops_event_id=ops_event.id,
-                                history_title="Team Member Removed",
-                                history_message=f"Team Member {removed_user_id.full_name} removed by {event_user.full_name}.",
-                                timestamp=db_history_item.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                                history_type=AgreementHistoryType.AGREEMENT_UPDATED,
-                            )
-                        )
-                    for event in history_events:
-                        if not agreement_exists:
-                            event.agreement_id = None
-                        session.add(event)
-                else:
-                    agreement_history_item = create_agreement_update_history_event(
-                        key,
-                        db_history_changes[key]["old"],
-                        db_history_changes[key]["new"],
-                        event_user,
-                        db_history_item.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                        agreement_id,
-                        ops_event.id,
-                        session,
-                        system_user,
-                    )
-                    if agreement_history_item:
-                        if not agreement_exists:
-                            agreement_history_item.agreement_id = None
-                        session.add(agreement_history_item)
-                logger.info(f"Created AgreementHistory item for updated agreement {agreement_id} field {key}")
+            _handle_agreement_update(session, db_history_item, event_user, agreement_id, agreement_exists, system_user)
         return False
     elif "BudgetLineItem" in db_history_item.class_name:
-        ops_event = OpsEvent(
-            event_type=OpsEventType.UPDATE_BLI,
-            event_status=OpsEventStatus.SUCCESS,
-            event_details=db_history_item.event_details,
-            created_by=db_history_item.created_by,
-            created_on=db_history_item.created_on,
-            updated_on=db_history_item.updated_on,
-        )
-        session.add(ops_event)
-        # Flush so we get ops_event_id
-        session.flush()
-        bli_id = ops_event.event_details["id"]
-        agreement_id = ops_event.event_details.get("agreement_id", None)
-        budget_line = session.get(BudgetLineItem, bli_id)
-        agreement = session.get(Agreement, agreement_id) if agreement_id else None
-        updated_by_system_user = system_user.id == event_user.id
-        db_history_changes = db_history_item.changes
-        for key in db_history_changes.keys():
-            agreement_history_item = create_bli_update_history_event(
-                agreement,
-                budget_line,
-                bli_id,
-                key,
-                db_history_changes[key]["old"],
-                db_history_changes[key]["new"],
-                event_user,
-                db_history_item.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                agreement_id,
-                ops_event.id,
-                session,
-                updated_by_system_user,
-            )
-            if agreement_history_item:
-                if not agreement_exists:
-                    agreement_history_item.agreement_id = None
-                session.add(agreement_history_item)
-            logger.info(
-                f"Created AgreementHistory item for updated BLI {bli_id} on agreement {agreement_id} field {key}"
-            )
+        _handle_bli_update(session, db_history_item, system_user, event_user, agreement_exists)
         return False
 
 
@@ -415,6 +424,60 @@ def update_agreement_history(session, sys_user: User, dry_run: bool):
         raise
 
 
+def _format_bli_change_message(updated_by_system_user, event_user, change_desc, bli_id, old_val, new_val):
+    """Format a BLI change message depending on whether the system user or a named user made the change."""
+    if updated_by_system_user:
+        return (
+            f"Changes made to the OPRE budget spreadsheet changed the {change_desc}"
+            f" for BL {bli_id} from {old_val} to {new_val}."
+        )
+    return f"{event_user.full_name} changed the {change_desc} for BL {bli_id} from {old_val} to {new_val}."
+
+
+def _bli_can_change(old_value, new_value, session, bli_id, event_user, updated_by_system_user):
+    old_can = session.get(CAN, old_value)
+    new_can = session.get(CAN, new_value)
+    old_can_number = f"CAN {old_can.number}" if old_can else "None"
+    new_can_number = f"CAN {new_can.number}" if new_can else "None"
+    msg = _format_bli_change_message(updated_by_system_user, event_user, "CAN", bli_id, old_can_number, new_can_number)
+    return "Change to CAN", msg
+
+
+def _bli_date_needed_change(old_value, new_value, bli_id, event_user, updated_by_system_user):
+    old_date = datetime.strftime(datetime.strptime(old_value, "%Y-%m-%d"), "%m/%d/%Y") if old_value else "None"
+    new_date = datetime.strftime(datetime.strptime(new_value, "%Y-%m-%d"), "%m/%d/%Y") if new_value else "None"
+    msg = _format_bli_change_message(updated_by_system_user, event_user, "Obligate By date", bli_id, old_date, new_date)
+    return "Change to Obligate By", msg
+
+
+def _bli_amount_change(old_value, new_value, bli_id, event_user, updated_by_system_user):
+    old_value_str = "{:,.2f}".format(float(old_value))
+    new_value_str = "{:,.2f}".format(float(new_value))
+    msg = _format_bli_change_message(
+        updated_by_system_user, event_user, "amount", bli_id, f"${old_value_str}", f"${new_value_str}"
+    )
+    return "Change to Amount", msg
+
+
+def _bli_line_description_change(bli_id, event_user, updated_by_system_user):
+    if updated_by_system_user:
+        msg = f"Changes made to the OPRE budget spreadsheet changed the line description for BL {bli_id}."
+    else:
+        msg = f"{event_user.full_name} changed the line description for BL {bli_id}."
+    return "Change to Line Description", msg
+
+
+def _bli_services_component_change(old_value, new_value, session, bli_id, event_user, updated_by_system_user):
+    old_sc = session.get(ServicesComponent, old_value) if old_value else None
+    new_sc = session.get(ServicesComponent, new_value) if new_value else None
+    old_sc_name = old_sc.display_name if old_sc else "None"
+    new_sc_name = new_sc.display_name if new_sc else "None"
+    msg = _format_bli_change_message(
+        updated_by_system_user, event_user, "services component", bli_id, old_sc_name, new_sc_name
+    )
+    return "Change to Services Component", msg
+
+
 def create_bli_update_history_event(
     agreement,
     bli,
@@ -432,87 +495,23 @@ def create_bli_update_history_event(
     """
     Create a new AgreementHistory item for BudgetLineItem updates.
     """
-    history_title = ""
-    history_message = ""
+    handler_args = (old_value, new_value, bli_id, event_user, updated_by_system_user)
+    result = None
     if key == "can_id":
-        old_can_number = "None"
-        new_can_number = "None"
-        old_can = session.get(CAN, old_value)
-        new_can = session.get(CAN, new_value)
-        if old_can:
-            old_can_number = f"CAN {old_can.number}"
-        if new_can:
-            new_can_number = f"CAN {new_can.number}"
-        history_title = "Change to CAN"
-        if updated_by_system_user:
-            history_message = (
-                f"Changes made to the OPRE budget spreadsheet changed the CAN"
-                f" for BL {bli_id} from {old_can_number} to {new_can_number}."
-            )
-        else:
-            history_message = (
-                f"{event_user.full_name} changed the CAN for BL {bli_id}" f" from {old_can_number} to {new_can_number}."
-            )
+        result = _bli_can_change(old_value, new_value, session, bli_id, event_user, updated_by_system_user)
     elif key == "date_needed":
-        history_title = "Change to Obligate By"
-        old_date = "None"
-        new_date = "None"
-        if old_value:
-            old_date = datetime.strftime(datetime.strptime(old_value, "%Y-%m-%d"), "%m/%d/%Y")
-        if new_value:
-            new_date = datetime.strftime(datetime.strptime(new_value, "%Y-%m-%d"), "%m/%d/%Y")
-        if updated_by_system_user:
-            history_message = (
-                f"Changes made to the OPRE budget spreadsheet changed the Obligate By date"
-                f" for BL {bli_id} from {old_date} to {new_date}."
-            )
-        else:
-            history_message = (
-                f"{event_user.full_name} changed the Obligate By date"
-                f" for BL {bli_id} from {old_date} to {new_date}."
-            )
+        result = _bli_date_needed_change(*handler_args)
     elif key == "amount":
-        old_value_float = float(old_value)
-        new_value_float = float(new_value)
-        old_value_str = "{:,.2f}".format(old_value_float)
-        new_value_str = "{:,.2f}".format(new_value_float)
-        history_title = "Change to Amount"
-        if updated_by_system_user:
-            history_message = (
-                f"Changes made to the OPRE budget spreadsheet changed the amount"
-                f" for BL {bli_id} from ${old_value_str} to ${new_value_str}."
-            )
-        else:
-            history_message = (
-                f"{event_user.full_name} changed the amount"
-                f" for BL {bli_id} from ${old_value_str} to ${new_value_str}."
-            )
-
+        result = _bli_amount_change(*handler_args)
     elif key == "line_description":
-        history_title = "Change to Line Description"
-        if updated_by_system_user:
-            history_message = (
-                f"Changes made to the OPRE budget spreadsheet changed the line description for BL {bli_id}."
-            )
-        else:
-            history_message = f"{event_user.full_name} changed the line description for BL {bli_id}."
+        result = _bli_line_description_change(bli_id, event_user, updated_by_system_user)
     elif key == "services_component_id":
-        old_services_component = session.get(ServicesComponent, old_value) if old_value else None
-        new_services_component = session.get(ServicesComponent, new_value) if new_value else None
-        old_sc_name = old_services_component.display_name if old_services_component else "None"
-        new_sc_name = new_services_component.display_name if new_services_component else "None"
-        history_title = "Change to Services Component"
-        if updated_by_system_user:
-            history_message = (
-                f"Changes made to the OPRE budget spreadsheet changed the services component"
-                f" for BL {bli_id} from {old_sc_name} to {new_sc_name}."
-            )
-        else:
-            history_message = (
-                f"{event_user.full_name} changed the services component"
-                f" for BL {bli_id} from {old_sc_name} to {new_sc_name}."
-            )
-    if history_title and history_message:
+        result = _bli_services_component_change(
+            old_value, new_value, session, bli_id, event_user, updated_by_system_user
+        )
+
+    if result:
+        history_title, history_message = result
         return AgreementHistory(
             agreement_id=agreement_id if agreement else None,
             agreement_id_record=agreement_id,

@@ -75,6 +75,23 @@ def validate_all(data: List[TeamMemberData]) -> bool:
     return sum(1 for d in data if validate_data(d)) == len(data)
 
 
+def _find_agreement(data: TeamMemberData, session: Session):
+    """Look up an Agreement by MAPS_ID or TITLE + CIG_TYPE."""
+    if data.MAPS_ID and data.CIG_TYPE:
+        return session.execute(
+            select(Agreement)
+            .where(Agreement.maps_sys_id == data.MAPS_ID)
+            .where(Agreement.agreement_type == get_cig_type_mapping()[data.CIG_TYPE])
+        ).scalar_one_or_none()
+    elif data.TITLE and data.CIG_TYPE:
+        return session.execute(
+            select(Agreement)
+            .where(Agreement.name == data.TITLE)
+            .where(Agreement.agreement_type == get_cig_type_mapping()[data.CIG_TYPE])
+        ).scalar_one_or_none()
+    return None
+
+
 def create_models(data: TeamMemberData, sys_user: User, session: Session) -> None:
     """
     Create and persist team member associations to agreements.
@@ -88,19 +105,7 @@ def create_models(data: TeamMemberData, sys_user: User, session: Session) -> Non
     if not data or not sys_user or not session:
         raise ValueError(f"Arguments are invalid. {data}, {sys_user}, {session}")
 
-    agreement = None
-    if data.MAPS_ID and data.CIG_TYPE:
-        agreement = session.execute(
-            select(Agreement)
-            .where(Agreement.maps_sys_id == data.MAPS_ID)
-            .where(Agreement.agreement_type == get_cig_type_mapping()[data.CIG_TYPE])
-        ).scalar_one_or_none()
-    elif data.TITLE and data.CIG_TYPE:
-        agreement = session.execute(
-            select(Agreement)
-            .where(Agreement.name == data.TITLE)
-            .where(Agreement.agreement_type == get_cig_type_mapping()[data.CIG_TYPE])
-        ).scalar_one_or_none()
+    agreement = _find_agreement(data, session)
 
     if not agreement:
         logger.warning(f"Agreement not found for MAPS_ID {data.MAPS_ID}, TITLE {data.TITLE}, CIG_TYPE {data.CIG_TYPE}")
