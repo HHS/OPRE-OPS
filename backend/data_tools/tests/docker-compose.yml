@@ -4,7 +4,7 @@ services:
 
   db:
     image: "postgres:16"
-    container_name: unit-test-db
+
     security_opt:
       - no-new-privileges:true  # Resolve semgrep https://sg.run/0n8q
     environment:
@@ -14,4 +14,4 @@ services:
     volumes:
       - ../ops_db_sql_init:/docker-entrypoint-initdb.d
     ports:
-      - "54321:5432"
+      - "${DB_PORT:-54321}:5432"
