@@ -99,14 +99,14 @@ When `data-import` is in a profile and not activated, `backend`'s dependency on 
 **New developer workflows:**
 
 ```bash
-# First run or data reset — seeds the database then starts the full stack
+# First run or data reset — starts the full stack including setup services that seed the database
 docker compose --profile setup up --build
 
 # Subsequent runs — starts db + backend + frontend only (no setup containers)
 docker compose up --build
 ```
 
-This eliminates stale exited `ops-data-import` and `disable-users` containers from showing up in Docker Desktop / `docker ps -a` on every run.
+This eliminates stale exited `data-import` and `disable-users` setup containers from showing up in Docker Desktop / `docker ps -a` on every run.
 
 ---
 

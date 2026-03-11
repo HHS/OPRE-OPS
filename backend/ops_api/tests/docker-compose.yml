@@ -23,6 +23,7 @@ services:
     build:
       context: ../../../backend
       dockerfile: Dockerfile.data-tools
+    container_name: pytest-data-import
 
     environment:
       - ENV=pytest

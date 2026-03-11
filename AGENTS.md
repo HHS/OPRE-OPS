@@ -89,7 +89,7 @@ bun run format
 ### Docker Commands
 
 ```bash
-# First run or data reset — seeds the database then starts the full stack
+# First run or data reset — starts the full stack including setup services that seed the database
 docker compose --profile setup up --build
 
 # Subsequent runs — starts db + backend + frontend only (faster, no setup containers)
