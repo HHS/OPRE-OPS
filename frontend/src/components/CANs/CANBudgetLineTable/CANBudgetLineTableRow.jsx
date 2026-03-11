@@ -64,6 +64,7 @@ const CANBudgetLineTableRow = ({
     const feeTotal = budgetLine.fees;
     const displayCreatedDate = formatDateToMonthDayYear(creationDate);
     const procShopLabel = getProcurementShopLabel(budgetLine);
+    const resolvedAgreementName = agreementName?.trim() || "Agreement details";
 
     const TableRowData = (
         <>
@@ -81,9 +82,10 @@ const CANBudgetLineTableRow = ({
                     <Link
                         className="text-ink"
                         to={`/agreements/${budgetLine.agreement.id}`}
+                        aria-label={resolvedAgreementName}
                     >
                         <TextClip
-                            text={agreementName}
+                            text={agreementName?.trim() || `${budgetLine.agreement.id}`}
                             tooltipThreshold={30}
                             maxLines={1}
                         />

@@ -56,7 +56,7 @@ repos:
       - id: trufflehog
         name: TruffleHog
         description: Detect secrets in your data.
-        entry: bash -c 'if command -v podman >/dev/null 2>&1; then podman run --rm -v "$(pwd):/workdir" -i trufflesecurity/trufflehog:latest git file:///workdir --since-commit HEAD --only-verified --fail; elif command -v docker >/dev/null 2>&1; then docker run --rm -v "$(pwd):/workdir" -i trufflesecurity/trufflehog:latest git file:///workdir --since-commit HEAD --only-verified --fail; else echo "Neither docker nor podman found. Please install one of them." && exit 1; fi'
+        entry: bash -c 'if command -v podman >/dev/null 2>&1; then podman run --rm -v "$(pwd):/workdir" -i trufflesecurity/trufflehog:latest filesystem /workdir --only-verified --fail; elif command -v docker >/dev/null 2>&1; then docker run --rm -v "$(pwd):/workdir" -i trufflesecurity/trufflehog:latest filesystem /workdir --only-verified --fail; else echo "Neither docker nor podman found. Please install one of them." && exit 1; fi'
         language: system
         stages: ["pre-commit", "pre-push"]
   - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
