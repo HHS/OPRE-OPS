@@ -4,13 +4,14 @@ import FilterTagsWrapper from "../../components/UI/FilterTags/FilterTagsWrapper"
 const ReportingFilterTags = ({ filters, setFilters }) => {
     const tagsList = (filters.portfolios ?? []).map((portfolio) => ({
         tagText: portfolio.name,
-        filter: "portfolios"
+        filter: "portfolios",
+        id: portfolio.id
     }));
 
     const removeFilter = (tag) => {
         setFilters((prevState) => ({
             ...prevState,
-            portfolios: (prevState.portfolios ?? []).filter((portfolio) => portfolio.name !== tag.tagText)
+            portfolios: (prevState.portfolios ?? []).filter((portfolio) => portfolio.id !== tag.id)
         }));
     };
 

@@ -1,4 +1,4 @@
-import { renderHook } from "@testing-library/react";
+import { renderHook, act } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { useReportingPageData } from "./ReportingPage.hooks";
 import * as opsAPI from "../../api/opsAPI";
@@ -271,17 +271,31 @@ describe("useReportingPageData", () => {
         expect(typeof result.current.setFilters).toBe("function");
     });
 
-    it("should pass portfolioIds to queries when portfolios are filtered", () => {
+    it("should pass undefined portfolioIds when no portfolios are filtered", () => {
         setupMocks();
 
         renderHook(() => useReportingPageData());
 
-        // Default: no portfolio filter, queries called without portfolioIds
         expect(opsAPI.useGetPortfolioFundingSummaryBatchQuery).toHaveBeenCalledWith(
             expect.objectContaining({ portfolioIds: undefined })
         );
         expect(opsAPI.useGetReportingSummaryQuery).toHaveBeenCalledWith(
             expect.objectContaining({ portfolioIds: undefined })
         );
+    });
+
+    it("should pass portfolioIds to queries when portfolios are filtered", () => {
+        setupMocks();
+
+        const { result } = renderHook(() => useReportingPageData());
+
+        act(() => {
+            result.current.setFilters({ portfolios: [{ id: 1, name: "Portfolio A" }] });
+        });
+
+        expect(opsAPI.useGetPortfolioFundingSummaryBatchQuery).toHaveBeenCalledWith(
+            expect.objectContaining({ portfolioIds: [1] })
+        );
+        expect(opsAPI.useGetReportingSummaryQuery).toHaveBeenCalledWith(expect.objectContaining({ portfolioIds: [1] }));
     });
 });
