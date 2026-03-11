@@ -139,8 +139,6 @@ pipenv run pytest <test-path> -v --tb=short
 
 Run the full backend CI check suite — everything that CI would catch.
 
-**IMPORTANT: Do NOT run ops_api and data_tools tests in parallel.** Both use pytest-docker with a Postgres container, and running them simultaneously causes a container name collision. Run lint/format in parallel if desired, but run the two test suites sequentially.
-
 ```bash
 echo "=== Step 1/4: ops_api lint + format ==="
 cd backend/ops_api

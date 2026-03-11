@@ -56,8 +56,6 @@ Interpret `$ARGUMENTS` to decide what to sync:
 - Print a summary count: "X routes in urls.py, Y paths in openapi.yml, Z missing, W extra"
 - Ask the user which endpoints to update, then proceed
 
-**Known drift as of last audit**: endpoints for health, azure/sas-token, version, divisions, and product-service-codes exist in urls.py but are missing from openapi.yml. Internal/infrastructure endpoints (health, version, azure) may be intentionally omitted — confirm with the user before adding them.
-
 ## How to Sync an Endpoint
 
 For each endpoint that needs syncing, follow these steps:
