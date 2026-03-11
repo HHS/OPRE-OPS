@@ -415,7 +415,7 @@ def test_post_projects_auth_required(client, loaded_db):
 
 
 def test_get_research_types(auth_client, app_ctx):
-    response = auth_client.get("/api/v1/research-types/")
+    response = auth_client.get("/api/v1/lookups/research-types/")
     assert response.status_code == 200
     assert response.json == {e.name: e.value for e in ResearchType}
 

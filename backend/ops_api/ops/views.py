@@ -127,13 +127,9 @@ from ops_api.ops.utils.version import VersionAPI
 # AGREEMENT ENDPOINTS
 AGREEMENT_ITEM_API_VIEW_FUNC = AgreementItemAPI.as_view("agreements-item", Agreement)
 AGREEMENT_LIST_API_VIEW_FUNC = AgreementListAPI.as_view("agreements-group", Agreement)
-AGREEMENT_REASON_LIST_API_VIEW_FUNC = AgreementReasonListAPI.as_view("agreement-reason-list")
 
 # Agreement History Endpoint - specialized from OpsDBHistory
 AGREEMENT_HISTORY_LIST_API_VIEW_FUNC = AgreementHistoryListAPI.as_view("agreement-history", OpsDBHistory)
-
-# AGREEMENT-TYPE ENDPOINTS
-AGREEMENT_TYPE_LIST_API_VIEW_FUNC = AgreementTypeListAPI.as_view("agreement-type-list")
 
 # AGREEMENT FILTER OPTIONS ENDPOINT
 AGREEMENT_LIST_FILTER_OPTION_API_VIEW_FUNC = AgreementListFilterOptionAPI.as_view("agreements-filters", Agreement)
@@ -190,15 +186,18 @@ PROCUREMENT_TRACKER_STEP_ITEM_API_VIEW_FUNC = ProcurementTrackerStepItemAPI.as_v
 PROCUREMENT_TRACKER_STEP_LIST_API_VIEW_FUNC = ProcurementTrackerStepListAPI.as_view(
     "procurement-tracker-steps-group", ProcurementTrackerStep
 )
-# PORTFOLIO STATUS ENDPOINTS
-PORTFOLIO_STATUS_ITEM_API_VIEW_FUNC = PortfolioStatusItemAPI.as_view(
-    "portfolio-status-item",
+# LOOKUP ENDPOINTS
+LOOKUP_AGREEMENT_REASON_LIST_API_VIEW_FUNC = AgreementReasonListAPI.as_view("lookups-agreement-reason-list")
+LOOKUP_AGREEMENT_TYPE_LIST_API_VIEW_FUNC = AgreementTypeListAPI.as_view("lookups-agreement-type-list")
+LOOKUP_PORTFOLIO_STATUS_ITEM_API_VIEW_FUNC = PortfolioStatusItemAPI.as_view(
+    "lookups-portfolio-status-item",
     PortfolioStatus,
 )
-PORTFOLIO_STATUS_LIST_API_VIEW_FUNC = PortfolioStatusListAPI.as_view(
-    "portfolio-status-group",
+LOOKUP_PORTFOLIO_STATUS_LIST_API_VIEW_FUNC = PortfolioStatusListAPI.as_view(
+    "lookups-portfolio-status-group",
     PortfolioStatus,
 )
+LOOKUP_RESEARCH_TYPE_LIST_API_VIEW_FUNC = ResearchTypeListAPI.as_view("lookups-research-type-group", ResearchType)
 
 # DIVISION ENDPOINTS
 DIVISIONS_ITEM_API_VIEW_FUNC = DivisionsItemAPI.as_view("divisions-item", Division)

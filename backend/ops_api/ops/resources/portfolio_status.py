@@ -5,6 +5,7 @@ from models.portfolios import PortfolioStatus
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
+from ops_api.ops.services.ops_service import ResourceNotFoundError
 
 
 class PortfolioStatusItemAPI(BaseItemAPI):
@@ -13,7 +14,10 @@ class PortfolioStatusItemAPI(BaseItemAPI):
 
     @is_authorized(PermissionType.GET, Permission.PORTFOLIO)
     def get(self, id: int) -> Response:
-        item = PortfolioStatus(id)
+        try:
+            item = PortfolioStatus(id)
+        except ValueError:
+            raise ResourceNotFoundError("PortfolioStatus", id)
         return jsonify(item.name)
 
 
