@@ -56,9 +56,32 @@ repos:
       - id: trufflehog
         name: TruffleHog
         description: Detect secrets in your data.
-        entry: bash -c 'if command -v podman >/dev/null 2>&1; then podman run --rm -v "$(pwd):/workdir" -i trufflesecurity/trufflehog:latest git file:///workdir --since-commit HEAD --only-verified --fail; elif command -v docker >/dev/null 2>&1; then docker run --rm -v "$(pwd):/workdir" -i trufflesecurity/trufflehog:latest git file:///workdir --since-commit HEAD --only-verified --fail; else echo "Neither docker nor podman found. Please install one of them." && exit 1; fi'
+        entry: bash
+        args:
+          - -c
+          - |
+            GIT_COMMON_DIR=$(git rev-parse --git-common-dir)
+            GIT_DIR=$(git rev-parse --git-dir)
+
+            if command -v podman >/dev/null 2>&1; then
+              CONTAINER_BIN=podman
+            elif command -v docker >/dev/null 2>&1; then
+              CONTAINER_BIN=docker
+            else
+              echo "Neither docker nor podman found. Please install one of them."
+              exit 1
+            fi
+
+            "$CONTAINER_BIN" run --rm \
+              -v "$(pwd):/workdir" \
+              -v "$GIT_COMMON_DIR:/git-common:ro" \
+              -v "$GIT_DIR:/git-worktree:ro" \
+              --entrypoint sh \
+              -i trufflesecurity/trufflehog:latest \
+              -c 'cp -R /workdir /scan && rm -f /scan/.git && mkdir -p /scan/.git && cp -R /git-worktree/. /scan/.git && printf "%s\n" /git-common > /scan/.git/commondir && trufflehog git file:///scan --since-commit HEAD --only-verified --fail'
         language: system
         stages: ["pre-commit", "pre-push"]
+        pass_filenames: false
   - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
     rev: v9.24.0
     hooks:
