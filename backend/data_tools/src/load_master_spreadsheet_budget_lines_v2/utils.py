@@ -37,6 +37,27 @@ from models import (
 )
 
 
+def _strip_or_none(val):
+    """Convert a string value to stripped string or None if empty/non-string."""
+    if isinstance(val, str):
+        return val.strip() or None
+    return val
+
+
+def _to_float_or_none(val):
+    """Convert a string value to float using the master budget converter, or pass through."""
+    if isinstance(val, str):
+        return convert_master_budget_amount_string_to_float(val)
+    return val
+
+
+def _to_int_or_none(val):
+    """Convert a string value to int if numeric, or None."""
+    if isinstance(val, str):
+        return int(val) if val.isdigit() else None
+    return val
+
+
 @dataclass
 class BudgetLineItemData:
     """
@@ -61,44 +82,78 @@ class BudgetLineItemData:
         """
         Post-initialization processing to convert data types.
         """
-        if isinstance(self.ID, str):
-            self.ID = int(self.ID) if self.ID.isdigit() else None
-
-        if isinstance(self.AGREEMENT_NAME, str):
-            self.AGREEMENT_NAME = self.AGREEMENT_NAME.strip() if self.AGREEMENT_NAME.strip() else None
+        self.ID = _to_int_or_none(self.ID)
+        self.AGREEMENT_NAME = _strip_or_none(self.AGREEMENT_NAME)
+        self.LINE_DESC = _strip_or_none(self.LINE_DESC)
+        self.COMMENTS = _strip_or_none(self.COMMENTS)
+        self.CAN = _strip_or_none(self.CAN)
+        self.SC = _strip_or_none(self.SC)
+        self.PROC_SHOP = _strip_or_none(self.PROC_SHOP)
+        self.AMOUNT = _to_float_or_none(self.AMOUNT)
+        self.PROC_SHOP_FEE = _to_float_or_none(self.PROC_SHOP_FEE)
+        self.PROC_SHOP_RATE = _to_float_or_none(self.PROC_SHOP_RATE)
 
         if isinstance(self.AGREEMENT_TYPE, str):
             self.AGREEMENT_TYPE = get_cig_type_mapping().get(self.AGREEMENT_TYPE.lower(), None)
 
-        if isinstance(self.LINE_DESC, str):
-            self.LINE_DESC = self.LINE_DESC.strip() if self.LINE_DESC.strip() else None
-
         if isinstance(self.DATE_NEEDED, str):
             self.DATE_NEEDED = convert_master_budget_amount_string_to_date(self.DATE_NEEDED)
-
-        if isinstance(self.AMOUNT, str):
-            self.AMOUNT = convert_master_budget_amount_string_to_float(self.AMOUNT)
 
         if isinstance(self.STATUS, str):
             self.STATUS = get_bli_status(self.STATUS)
 
-        if isinstance(self.COMMENTS, str):
-            self.COMMENTS = self.COMMENTS.strip() if self.COMMENTS.strip() else None
 
-        if isinstance(self.CAN, str):
-            self.CAN = self.CAN.strip() if self.CAN.strip() else None
+def _resolve_procurement_fee(data, proc_shop, agreement, session):
+    """Resolve procurement shop assignment and fee lookup. Returns procurement_shop_fee_id."""
+    if proc_shop and agreement and proc_shop != agreement.procurement_shop:
+        agreement.procurement_shop = proc_shop
 
-        if isinstance(self.SC, str):
-            self.SC = self.SC.strip() if self.SC.strip() else None
+    procurement_shop_fee_id = None
+    if proc_shop and data.STATUS == BudgetLineItemStatus.OBLIGATED:
+        if data.PROC_SHOP_FEE is None or data.AMOUNT is None:
+            logger.warning(
+                f"OBLIGATED budget line missing PROC_SHOP_FEE or AMOUNT data. "
+                f"Agreement: {data.AGREEMENT_NAME}, PROC_SHOP_FEE: {data.PROC_SHOP_FEE}, AMOUNT: {data.AMOUNT}"
+            )
+        else:
+            calc_result = calculate_proc_fee_percentage(Decimal(data.PROC_SHOP_FEE), Decimal(data.AMOUNT))
+            fee_percentage = calc_result * 100 if calc_result else 0
+            procurement_shop_fee = session.scalar(
+                select(ProcurementShopFee).where(
+                    ProcurementShopFee.procurement_shop_id == proc_shop.id,
+                    ProcurementShopFee.fee.between(fee_percentage - Decimal(0.01), fee_percentage + Decimal(0.01)),
+                )
+            )
+            if procurement_shop_fee:
+                procurement_shop_fee_id = procurement_shop_fee.id
+                if agreement and not agreement.procurement_shop:
+                    agreement.procurement_shop = procurement_shop_fee.procurement_shop
+            else:
+                logger.warning(
+                    f"Procurement shop fee not found for ProcurementShop {proc_shop.name}"
+                    f" with fee {data.PROC_SHOP_FEE}."
+                )
+    return procurement_shop_fee_id
 
-        if isinstance(self.PROC_SHOP, str):
-            self.PROC_SHOP = self.PROC_SHOP.strip() if self.PROC_SHOP.strip() else None
 
-        if isinstance(self.PROC_SHOP_FEE, str):
-            self.PROC_SHOP_FEE = convert_master_budget_amount_string_to_float(self.PROC_SHOP_FEE)
+def _find_agreement_and_can(data, session):
+    """Find the agreement and CAN for the budget line item."""
+    agreement = session.execute(
+        select(Agreement)
+        .where(Agreement.name == data.AGREEMENT_NAME)
+        .where(Agreement.agreement_type == data.AGREEMENT_TYPE)
+    ).scalar_one_or_none()
 
-        if isinstance(self.PROC_SHOP_RATE, str):
-            self.PROC_SHOP_RATE = convert_master_budget_amount_string_to_float(self.PROC_SHOP_RATE)
+    if not agreement:
+        logger.warning(f"Agreement with Agreement Name {data.AGREEMENT_NAME} not found.")
+
+    can_number = data.CAN.split(" ")[0] if data.CAN else None
+    can = session.execute(select(CAN).where(CAN.number == can_number)).scalar_one_or_none()
+
+    if not can:
+        logger.warning(f"CAN with number {can_number} not found.")
+
+    return agreement, can
 
 
 def create_models(data: BudgetLineItemData, sys_user: User, session: Session) -> None:
@@ -108,59 +163,11 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
     logger.debug(f"Creating models for {data}.")
 
     try:
-        # is_not_in_execution = data.STATUS != BudgetLineItemStatus.IN_EXECUTION
-        # is_contract = data.AGREEMENT_TYPE == AgreementType.CONTRACT
-
-        # Find the associated Agreement
-        agreement = session.execute(
-            select(Agreement)
-            .where(Agreement.name == data.AGREEMENT_NAME)
-            .where(Agreement.agreement_type == data.AGREEMENT_TYPE)
-        ).scalar_one_or_none()
-
-        if not agreement:
-            logger.warning(f"Agreement with Agreement Name {data.AGREEMENT_NAME} not found.")
-
-        # Get CAN if it exists
-        can_number = data.CAN.split(" ")[0] if data.CAN else None
-        can = session.execute(select(CAN).where(CAN.number == can_number)).scalar_one_or_none()
-
-        if not can:
-            logger.warning(f"CAN with number {can_number} not found.")
+        agreement, can = _find_agreement_and_can(data, session)
 
         # Get the Procurement Shop if it exists
         proc_shop = session.scalar(select(ProcurementShop).where(ProcurementShop.abbr == data.PROC_SHOP))
-
-        # Update the procurement shop on the agreement if it has changed
-        if proc_shop and agreement and proc_shop != agreement.procurement_shop:
-            agreement.procurement_shop = proc_shop
-
-        procurement_shop_fee_id = None
-        if proc_shop and data.STATUS == BudgetLineItemStatus.OBLIGATED:
-            # Validate required fields for OBLIGATED lines
-            if data.PROC_SHOP_FEE is None or data.AMOUNT is None:
-                logger.warning(
-                    f"OBLIGATED budget line missing PROC_SHOP_FEE or AMOUNT data. "
-                    f"Agreement: {data.AGREEMENT_NAME}, PROC_SHOP_FEE: {data.PROC_SHOP_FEE}, AMOUNT: {data.AMOUNT}"
-                )
-            else:
-                calc_result = calculate_proc_fee_percentage(Decimal(data.PROC_SHOP_FEE), Decimal(data.AMOUNT))
-                fee_percentage = calc_result * 100 if calc_result else 0
-                procurement_shop_fee = session.scalar(
-                    select(ProcurementShopFee).where(
-                        ProcurementShopFee.procurement_shop_id == proc_shop.id,
-                        ProcurementShopFee.fee.between(fee_percentage - Decimal(0.01), fee_percentage + Decimal(0.01)),
-                    )
-                )
-                if procurement_shop_fee:
-                    procurement_shop_fee_id = procurement_shop_fee.id
-                    # If the agreement does not yet have a procurement_shop, set it from the fee's procurement_shop.
-                    if agreement and not agreement.procurement_shop:
-                        agreement.procurement_shop = procurement_shop_fee.procurement_shop
-                else:
-                    logger.warning(
-                        f"Procurement shop fee not found for ProcurementShop {proc_shop.name} with fee {data.PROC_SHOP_FEE}."
-                    )
+        procurement_shop_fee_id = _resolve_procurement_fee(data, proc_shop, agreement, session)
 
         # Determine which subclass to instantiate
         bli_class = {

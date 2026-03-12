@@ -4,7 +4,6 @@ services:
 
   db:
     image: "postgres:16"
-
     security_opt:
       - no-new-privileges:true  # Resolve semgrep https://sg.run/0n8q
     environment:

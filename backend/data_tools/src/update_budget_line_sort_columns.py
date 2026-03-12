@@ -97,7 +97,8 @@ def update_budget_lines(session):
                 component = session.get(ServicesComponent, budget_line.services_component_id)
                 if component:
                     logger.info(
-                        f"Updating budget line {budget_line.id} with service component name for sort {component.display_name_for_sort}"
+                        f"Updating budget line {budget_line.id} with service component"
+                        f" name for sort {component.display_name_for_sort}"
                     )
                     budget_line.service_component_name_for_sort = component.display_name_for_sort
                     session.add(budget_line)

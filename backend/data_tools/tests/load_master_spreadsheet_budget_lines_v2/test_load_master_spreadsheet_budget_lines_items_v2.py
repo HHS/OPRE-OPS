@@ -15,7 +15,6 @@ from data_tools.src.load_master_spreadsheet_budget_lines_v2.utils import (
     create_models,
     validate_data,
 )
-from data_tools.tests.conftest import loaded_db
 from models import (
     CAN,
     AaAgreement,
