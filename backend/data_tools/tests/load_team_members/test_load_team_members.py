@@ -101,15 +101,11 @@ def test_validate_data():
 
     # Invalid data with neither MAPS_ID nor TITLE
     with pytest.raises(ValueError):
-        data3 = TeamMemberData(CIG_TYPE="contract")
-        validate_data(data3)
+        TeamMemberData(CIG_TYPE="contract")
 
     # Invalid data with TITLE but no CIG_TYPE
     with pytest.raises(ValueError):
-        data4 = TeamMemberData(
-            TITLE="Test Agreement",
-        )
-        validate_data(data4)
+        TeamMemberData(TITLE="Test Agreement")
 
 
 def test_validate_all():
@@ -122,11 +118,8 @@ def test_validate_all():
     assert validate_all(data_list) is True
 
     with pytest.raises(ValueError):
-        # Add an invalid item
-        data_list.append(TeamMemberData())
-
-        # This should trigger the post_init validation
-        validate_all(data_list)
+        # This triggers the __post_init__ validation
+        TeamMemberData()
 
 
 def test_create_models_by_maps_id(db_with_users_and_agreements):

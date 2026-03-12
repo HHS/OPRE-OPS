@@ -91,7 +91,7 @@ def test_log_summary_logs_correctly(mock_logger, mock_user_session):
 
     # Test with <=5 sessions
     log_summary([mock_user_session], cutoff)
-    mock_logger.info.assert_any_call(f"Found 1 session(s) eligible for deletion.")
+    mock_logger.info.assert_any_call("Found 1 session(s) eligible for deletion.")
     mock_logger.info.assert_any_call(f"Cutoff date: {cutoff.isoformat()}")
     mock_logger.info.assert_any_call(
         f"Sample Session → id={mock_user_session.id}, user_id={mock_user_session.user_id}, "
@@ -102,7 +102,7 @@ def test_log_summary_logs_correctly(mock_logger, mock_user_session):
     sessions = [mock_user_session] * 7
     mock_logger.reset_mock()
     log_summary(sessions, cutoff)
-    mock_logger.info.assert_any_call(f"...and 2 more sessions omitted from logs.")
+    mock_logger.info.assert_any_call("...and 2 more sessions omitted from logs.")
 
 
 @patch("data_tools.src.cleanup_user_sessions.utils.logger")

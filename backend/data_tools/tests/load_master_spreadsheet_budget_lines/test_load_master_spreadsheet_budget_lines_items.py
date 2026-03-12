@@ -16,7 +16,6 @@ from data_tools.src.load_master_spreadsheet_budget_lines.utils import (
     validate_data,
     verify_and_log_project_title,
 )
-from data_tools.tests.conftest import loaded_db
 from models import (
     CAN,
     AaAgreement,

@@ -822,7 +822,7 @@ paths:
           description: Not Found
         "500":
           description: Internal Server Error
-  /procurement-tracker-steps:
+  /procurement-tracker-steps/:
     get:
       tags:
         - Procurement Tracker Steps
@@ -1997,7 +1997,7 @@ paths:
         "403":
           description: Forbidden
 
-  /portfolios:
+  /portfolios/:
     get:
       tags:
         - Portfolios
@@ -2038,7 +2038,7 @@ paths:
                 "0":
                   $ref: "#/components/examples/Portfolio"
 
-  /portfolios-url:
+  /portfolios-url/:
     get:
       tags:
         - Portfolio Url
@@ -2474,7 +2474,7 @@ paths:
           description: Portfolio not found
         "500":
           description: Internal Server Error
-  /can-funding-summary:
+  /can-funding-summary/:
     get:
       tags:
         - CAN Funding Summary
@@ -3581,7 +3581,7 @@ paths:
         "500":
           description: Internal Server Error
 
-  /budget-line-items/{id}/:
+  /budget-line-items/{id}:
     parameters:
       - in: path
         name: id
@@ -4417,6 +4417,184 @@ paths:
                   - NOT_STARTED
                   - SANDBOX
                 example: IN_PROCESS
+        "401":
+          description: Unauthorized
+  /divisions/:
+    get:
+      tags:
+        - Divisions
+      operationId: getAllDivisions
+      summary: Get all Divisions
+      description: Get a list of all divisions
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Division"
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not Found
+  /divisions/{id}:
+    get:
+      tags:
+        - Divisions
+      operationId: getDivisionById
+      summary: Get a Division by ID
+      description: Get a single division by its ID
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: id
+          description: Division ID
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Division"
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not Found
+  /product-service-codes/:
+    get:
+      tags:
+        - Product Service Codes
+      operationId: getAllProductServiceCodes
+      summary: Get all Product Service Codes
+      description: Get a list of all product service codes
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProductServiceCode"
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not Found
+  /product-service-codes/{id}:
+    get:
+      tags:
+        - Product Service Codes
+      operationId: getProductServiceCodeById
+      summary: Get a Product Service Code by ID
+      description: Get a single product service code by its ID
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: id
+          description: Product Service Code ID
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductServiceCode"
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not Found
+  /health/:
+    get:
+      tags:
+        - Infrastructure
+      operationId: getHealthCheck
+      summary: Health check
+      description: Returns the health status of the API and its dependencies
+      security: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                      - OK
+                      - Maybe problems
+                      - BAD
+                  alarm_level:
+                    type: integer
+                  checks:
+                    type: object
+                    additionalProperties:
+                      type: object
+                      properties:
+                        alarm_level:
+                          type: integer
+                example:
+                  status: OK
+                  alarm_level: 0
+                  checks:
+                    database:
+                      alarm_level: 0
+  /version/:
+    get:
+      tags:
+        - Infrastructure
+      operationId: getVersion
+      summary: Get API version
+      description: Returns the current API version from the OpenAPI spec
+      security: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  version:
+                    type: string
+                example:
+                  version: "1.0.0"
+  /azure/sas-token/:
+    get:
+      tags:
+        - Infrastructure
+      operationId: getAzureSasToken
+      summary: Get Azure Blob Storage SAS token
+      description: Generates a short-lived SAS token for uploading files to Azure Blob Storage
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sas_token:
+                    type: string
+                example:
+                  sas_token: "se=2026-03-11T10%3A00%3A00Z&sp=w&sv=2021-08-06&sr=b&sig=..."
         "401":
           description: Unauthorized
 components:

@@ -1,7 +1,4 @@
 import csv
-from datetime import date
-from decimal import Decimal
-from json import load
 
 import pytest
 from click.testing import CliRunner
