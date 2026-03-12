@@ -538,6 +538,146 @@ def test_project_list_metadata_serialization(auth_client, loaded_db, test_projec
     assert "2023" in project_data["fiscal_year_totals"] or "2024" in project_data["fiscal_year_totals"].keys()
 
 
+def test_project_list_metadata_agreement_name_list_property(loaded_db, test_project):
+    """
+    Test that the project_list_metadata property returns agreement_name_list correctly.
+    """
+    # Directly test the property on the model
+    metadata = test_project.project_list_metadata
+    assert "agreement_name_list" in metadata
+    assert isinstance(metadata["agreement_name_list"], list)
+    if len(test_project.agreements) > 0:
+        assert len(metadata["agreement_name_list"]) > 0
+        # Check that each entry has id and name
+        for item in metadata["agreement_name_list"]:
+            assert "id" in item
+            assert "name" in item
+
+
+def test_agreement_name_list_prefers_nick_name_over_title(auth_client, loaded_db, test_project):
+    """
+    Test that agreement_name_list prefers nick_name over title when nick_name is available.
+    """
+    # Get the test project's first agreement and set a nick_name
+    agreement = test_project.agreements[0]
+    agreement.nick_name = "HSS-2023"
+    loaded_db.commit()
+
+    response = auth_client.get(url_for("api.projects-group"))
+    assert response.status_code == 200
+
+    # Find the test project in the response
+    project_data = next((p for p in response.json["data"] if p["id"] == test_project.id), None)
+    assert project_data is not None
+
+    # Verify agreement_name_list is present
+    assert "agreement_name_list" in project_data
+    assert project_data["agreement_name_list"] is not None
+    assert isinstance(project_data["agreement_name_list"], list)
+    assert len(project_data["agreement_name_list"]) > 0
+
+    # Find the agreement in the list
+    agreement_entry = next((a for a in project_data["agreement_name_list"] if a["id"] == agreement.id), None)
+    assert agreement_entry is not None
+
+    # Verify nick_name is used instead of title
+    assert agreement_entry["name"] == "HSS-2023"
+    assert agreement_entry["name"] != agreement.name  # Should not be the name since nick_name is available
+
+
+def test_agreement_name_list_uses_title_when_no_nick_name(auth_client, loaded_db, test_project):
+    """
+    Test that agreement_name_list uses title when nick_name is not available.
+    """
+    # Ensure the test project's first agreement has no nick_name
+    agreement = test_project.agreements[0]
+    agreement.nick_name = None
+    loaded_db.commit()
+
+    response = auth_client.get(url_for("api.projects-group"))
+    assert response.status_code == 200
+
+    # Find the test project in the response
+    project_data = next((p for p in response.json["data"] if p["id"] == test_project.id), None)
+    assert project_data is not None
+
+    # Verify agreement_name_list is present
+    assert "agreement_name_list" in project_data
+    assert project_data["agreement_name_list"] is not None
+    assert isinstance(project_data["agreement_name_list"], list)
+    assert len(project_data["agreement_name_list"]) > 0
+
+    # Find the agreement in the list
+    agreement_entry = next((a for a in project_data["agreement_name_list"] if a["id"] == agreement.id), None)
+    assert agreement_entry is not None
+
+    # Verify name is used when nick_name is None
+    assert agreement_entry["name"] == agreement.name
+
+
+def test_agreement_name_list_always_includes_id(auth_client, loaded_db, test_project):
+    """
+    Test that every entry in agreement_name_list always has an agreement id.
+    """
+    # Add multiple agreements to the test project
+    agreement1 = ContractAgreement(
+        name="First Agreement",
+        nick_name="FA-2023",
+        project_id=test_project.id,
+    )
+    agreement2 = ContractAgreement(
+        name="Second Agreement",
+        nick_name=None,  # No nick_name
+        project_id=test_project.id,
+    )
+    agreement3 = ContractAgreement(
+        name="Third Agreement",
+        nick_name="TA-2024",
+        project_id=test_project.id,
+    )
+    loaded_db.add(agreement1)
+    loaded_db.add(agreement2)
+    loaded_db.add(agreement3)
+    loaded_db.commit()
+
+    response = auth_client.get(url_for("api.projects-group"))
+    assert response.status_code == 200
+
+    # Find the test project in the response
+    project_data = next((p for p in response.json["data"] if p["id"] == test_project.id), None)
+    assert project_data is not None
+
+    # Verify agreement_name_list is present
+    assert "agreement_name_list" in project_data
+    assert project_data["agreement_name_list"] is not None
+    assert isinstance(project_data["agreement_name_list"], list)
+
+    # Verify all entries have both 'id' and 'name' keys
+    for agreement_entry in project_data["agreement_name_list"]:
+        assert "id" in agreement_entry, "Every agreement entry must have an 'id' key"
+        assert "name" in agreement_entry, "Every agreement entry must have a 'name' key"
+        assert isinstance(agreement_entry["id"], int), "Agreement id must be an integer"
+        assert isinstance(agreement_entry["name"], str), "Agreement name must be a string"
+        assert agreement_entry["id"] > 0, "Agreement id must be positive"
+        assert len(agreement_entry["name"]) > 0, "Agreement name must not be empty"
+
+    # Verify specific agreements are in the list with correct names
+    agreement_ids = [a["id"] for a in project_data["agreement_name_list"]]
+    assert agreement1.id in agreement_ids
+    assert agreement2.id in agreement_ids
+    assert agreement3.id in agreement_ids
+
+    # Verify names match expected values (nick_name preferred)
+    agreement1_entry = next((a for a in project_data["agreement_name_list"] if a["id"] == agreement1.id), None)
+    assert agreement1_entry["name"] == "FA-2023"  # Uses nick_name
+
+    agreement2_entry = next((a for a in project_data["agreement_name_list"] if a["id"] == agreement2.id), None)
+    assert agreement2_entry["name"] == "Second Agreement"  # Uses title (no nick_name)
+
+    agreement3_entry = next((a for a in project_data["agreement_name_list"] if a["id"] == agreement3.id), None)
+    assert agreement3_entry["name"] == "TA-2024"  # Uses nick_name
+
+
 # PATCH/UPDATE tests
 def test_patch_project_title(budget_team_auth_client, loaded_db, project_with_no_agreements):
     """Test updating a project's title."""

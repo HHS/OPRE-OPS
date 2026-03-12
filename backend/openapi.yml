@@ -5329,6 +5329,29 @@ components:
           nullable: true
           description: Total value of all agreements in the project (sum of agreement_total for each)
           example: 3000
+        agreement_name_list:
+          type: array
+          nullable: true
+          description: List of agreements associated with this project (id and name, where name prefers nick_name over title)
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                description: Agreement ID
+                example: 1
+              name:
+                type: string
+                description: Agreement name (nick_name if available, otherwise title)
+                example: "HSS-2023"
+            required:
+              - id
+              - name
+          example:
+            - id: 1
+              name: "Contract #1: African American Child and Family Research Center"
+            - id: 2
+              name: "HSS-2023"
       required:
         - title
     ProjectListItem:
@@ -5389,6 +5412,29 @@ components:
           nullable: true
           description: Total value of all agreements in the project (sum of agreement_total for each)
           example: 3000
+        agreement_name_list:
+          type: array
+          nullable: true
+          description: List of agreements associated with this project (id and name, where name prefers nick_name over title)
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                description: Agreement ID
+                example: 1
+              name:
+                type: string
+                description: Agreement name (nick_name if available, otherwise title)
+                example: "Admin Contract 2024"
+            required:
+              - id
+              - name
+          example:
+            - id: 3
+              name: "IT-Support-2024"
+            - id: 4
+              name: "Infrastructure Contract"
       required:
         - title
     ResearchProject:

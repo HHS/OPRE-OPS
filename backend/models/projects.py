@@ -71,6 +71,7 @@ class Project(BaseModel):
         - by_fiscal_year: Dict mapping fiscal year to total BLI value for that year (non-DRAFT BLIs only)
         - project_start: Earliest period_start across all services_components in all agreements
         - project_end: Latest period_end across all services_components in all agreements
+        - agreement_name_list: List of dicts with agreement id and name (nick_name if available, otherwise title)
         """
         from collections import defaultdict
         from models.budget_line_items import BudgetLineItemStatus
@@ -79,10 +80,15 @@ class Project(BaseModel):
         by_fiscal_year = defaultdict(lambda: Decimal("0"))
         start_dates = []
         end_dates = []
+        agreement_name_list = []
 
         for agreement in self.agreements:
             # Add agreement total to overall total
             total += agreement.agreement_total
+            if agreement.nick_name:
+                agreement_name_list.append({"id": agreement.id, "name": agreement.nick_name})
+            else:
+                agreement_name_list.append({"id": agreement.id, "name": agreement.name})
 
             # Add BLI amounts by fiscal year (only non-DRAFT or OBE BLIs)
             for bli in agreement.budget_line_items:
@@ -102,7 +108,8 @@ class Project(BaseModel):
             "total": total,
             "by_fiscal_year": dict(by_fiscal_year),
             "project_start": min(start_dates) if start_dates else None,
-            "project_end": max(end_dates) if end_dates else None
+            "project_end": max(end_dates) if end_dates else None,
+            "agreement_name_list": agreement_name_list,
         }
 
 

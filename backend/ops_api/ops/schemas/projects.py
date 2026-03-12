@@ -27,6 +27,11 @@ class TeamLeaders(Schema):
     email: Optional[str] = fields.String()
 
 
+class AgreementNameListItem(Schema):
+    id: int = fields.Int(required=True)
+    name: str = fields.String(required=True)
+
+
 class ProjectCreationRequestSchema(Schema):
     """Combined schema for creating both Research and Administrative/Support projects.
 
@@ -125,6 +130,9 @@ class ProjectListResponse(Schema):
         keys=fields.Int(), values=fields.Decimal(as_string=True), allow_none=True
     )
     project_total: Optional[int] = fields.Int(allow_none=True)
+    agreement_name_list: Optional[list[dict]] = fields.List(
+        fields.Nested(AgreementNameListItem), dump_default=[], allow_none=True
+    )
 
     @pre_dump
     def extract_metadata(self, data, **kwargs):
@@ -141,6 +149,7 @@ class ProjectListResponse(Schema):
 
             # Map fiscal year breakdown
             data.fiscal_year_totals = metadata["by_fiscal_year"]
+            data.agreement_name_list = metadata.get("agreement_name_list", [])
 
         return data
 
