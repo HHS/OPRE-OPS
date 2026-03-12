@@ -352,6 +352,32 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
         viewonly=True,
     )
 
+    # PRE_AWARD step fields (Step 5)
+    pre_award_target_completion_date: Mapped[Optional[date]] = mapped_column(
+        Date,
+        nullable=True,
+    )
+    pre_award_task_completed_by: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        ForeignKey("ops_user.id"),
+        nullable=True,
+    )
+    pre_award_date_completed: Mapped[Optional[date]] = mapped_column(
+        Date,
+        nullable=True,
+    )
+    pre_award_notes: Mapped[Optional[str]] = mapped_column(
+        Text,
+        nullable=True,
+    )
+
+    # Relationship for pre_award completed by user
+    pre_award_completed_by_user: Mapped[Optional["User"]] = relationship(
+        "User",
+        foreign_keys=[pre_award_task_completed_by],
+        viewonly=True,
+    )
+
     # Polymorphic configuration
     __mapper_args__ = {
         "polymorphic_identity": "default_step",
@@ -526,6 +552,54 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
             data.pop("solicitation_period_end_date", None)
             data.pop("solicitation_completed_by_user", None)
 
+            # Remove PRE_AWARD-specific fields
+            data.pop("pre_award_target_completion_date", None)
+            data.pop("pre_award_task_completed_by", None)
+            data.pop("pre_award_date_completed", None)
+            data.pop("pre_award_notes", None)
+            data.pop("pre_award_completed_by_user", None)
+
+        # Handle PRE_AWARD-specific fields
+        elif self.step_type == ProcurementTrackerStepType.PRE_AWARD:
+            # Map prefixed columns to API field names
+            data["target_completion_date"] = data.pop("pre_award_target_completion_date", None)
+            data["task_completed_by"] = data.pop("pre_award_task_completed_by", None)
+            data["date_completed"] = data.pop("pre_award_date_completed", None)
+            data["notes"] = data.pop("pre_award_notes", None)
+
+            # Map the relationship
+            if "pre_award_completed_by_user" in data:
+                data["completed_by_user"] = data.pop("pre_award_completed_by_user", None)
+
+            # Remove ACQUISITION_PLANNING-specific fields
+            data.pop("acquisition_planning_task_completed_by", None)
+            data.pop("acquisition_planning_date_completed", None)
+            data.pop("acquisition_planning_notes", None)
+            data.pop("acquisition_planning_completed_by_user", None)
+
+            # Remove PRE_SOLICITATION-specific fields
+            data.pop("pre_solicitation_target_completion_date", None)
+            data.pop("pre_solicitation_task_completed_by", None)
+            data.pop("pre_solicitation_date_completed", None)
+            data.pop("pre_solicitation_notes", None)
+            data.pop("pre_solicitation_draft_solicitation_date", None)
+            data.pop("pre_solicitation_completed_by_user", None)
+
+            # Remove SOLICITATION-specific fields
+            data.pop("solicitation_task_completed_by", None)
+            data.pop("solicitation_date_completed", None)
+            data.pop("solicitation_notes", None)
+            data.pop("solicitation_period_start_date", None)
+            data.pop("solicitation_period_end_date", None)
+            data.pop("solicitation_completed_by_user", None)
+
+            # Remove EVALUATION-specific fields
+            data.pop("evaluation_target_completion_date", None)
+            data.pop("evaluation_task_completed_by", None)
+            data.pop("evaluation_date_completed", None)
+            data.pop("evaluation_notes", None)
+            data.pop("evaluation_completed_by_user", None)
+
         else:
             # Remove all step-specific fields for other step types
             data.pop("acquisition_planning_task_completed_by", None)
@@ -552,6 +626,12 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
             data.pop("evaluation_date_completed", None)
             data.pop("evaluation_notes", None)
             data.pop("evaluation_completed_by_user", None)
+
+            data.pop("pre_award_target_completion_date", None)
+            data.pop("pre_award_task_completed_by", None)
+            data.pop("pre_award_date_completed", None)
+            data.pop("pre_award_notes", None)
+            data.pop("pre_award_completed_by_user", None)
 
         return data
 
