@@ -156,8 +156,8 @@ const ProcurementTrackerStepFive = ({
                             htmlFor="step-5-checkbox"
                         >
                             The Agreement was edited to match the Vendor Price Sheet and any final Budget Changes were
-                            approved, if needed. I received Pre-Award Approval and the Final Consensus Memo has been sent
-                            to the Procurement Shop.
+                            approved, if needed. I received Pre-Award Approval and the Final Consensus Memo has been
+                            sent to the Procurement Shop.
                         </label>
                     </div>
                     <div className="display-flex flex-align-center">
@@ -230,9 +230,9 @@ const ProcurementTrackerStepFive = ({
             {stepStatus === "COMPLETED" && (
                 <div>
                     <p>
-                        OPRE edits the Agreement to match the Vendor Price Sheet and ensures any final Budget Changes are
-                        approved, if needed. Once OPRE receives Pre-Award Approval and sends the Final Consensus Memo to
-                        the Procurement Shop, this step is marked complete.
+                        OPRE edits the Agreement to match the Vendor Price Sheet and ensures any final Budget Changes
+                        are approved, if needed. Once OPRE receives Pre-Award Approval and sends the Final Consensus
+                        Memo to the Procurement Shop, this step is marked complete.
                     </p>
                     <div className="display-flex flex-align-center margin-top-5">
                         <FontAwesomeIcon
