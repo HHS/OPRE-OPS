@@ -25,7 +25,7 @@ describe("agreement details", () => {
     it("Awarded Contract type agreement loads with details", () => {
         cy.visit("/agreements/7");
         cy.get("h1").contains("MIHOPE Check-In");
-        cy.get("h2").first().contains("Mother and Infant Home Visiting Program Evaluation 2");
+        cy.get("h2").first().contains("Mother and Infant Home Visiting Program Evaluation 2 (MIHOPE)");
         cy.get("span").contains("Awarded");
         cy.get('[data-cy="details-tab-Award & Modifications"]').should("be.disabled");
         cy.get('[data-cy="details-tab-Procurement Tracker"]').should("be.enabled");
@@ -53,7 +53,7 @@ describe("agreement details", () => {
     it("AA type agreement loads with details", () => {
         cy.visit("/agreements/5");
         cy.get("h1").contains("AA #1: Fathers and Continuous Learning (FCL)");
-        cy.get("h2").first().contains("Annual Performance Plans and Reports");
+        cy.get("h2").first().contains("Annual Performance Plans and Reports (APP)");
         cy.get("h2").eq(1).contains("Agreement Details");
         cy.get("span").contains("Awarded").should("not.exist");
 
