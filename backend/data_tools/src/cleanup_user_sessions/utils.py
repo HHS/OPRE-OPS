@@ -43,10 +43,10 @@ def parse_cutoff_days(days_before_deletion: str) -> int:
     """Validate and convert the cutoff days value to an integer."""
     try:
         return int(days_before_deletion)
-    except (TypeError, ValueError):
+    except (TypeError, ValueError) as e:
         raise ValueError(
             f"Invalid CLEANUP_USER_SESSIONS_CUTOFF_DAYS value: {days_before_deletion!r}. Must be an integer."
-        )
+        ) from e
 
 
 def get_system_admin_id(se: Session) -> int:

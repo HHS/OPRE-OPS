@@ -2,7 +2,6 @@ import csv
 import os
 
 import pytest
-from sqlalchemy import select, text
 
 from data_tools.src.load_obe_budget_lines.utils import (
     OBEBudgetLineItemData,
@@ -11,8 +10,7 @@ from data_tools.src.load_obe_budget_lines.utils import (
     mark_budget_lines_as_obe,
     validate_data,
 )
-from data_tools.tests.conftest import loaded_db
-from models import AgreementType, BudgetLineItem, User
+from models import BudgetLineItem, User
 
 file_path = os.path.join(os.path.dirname(__file__), "../../test_csv/obe_budget_lines.tsv")
 
@@ -74,6 +72,6 @@ def test_mark_budget_lines_as_obe(loaded_db):
             assert bli.obligation_date is None
             assert bli.status is None
             assert bli.can_id is None
-            assert bli.is_obe == True
+            assert bli.is_obe is True
         else:
             assert bli is None  # Checks if non-existing BLIs are being handled correctly
