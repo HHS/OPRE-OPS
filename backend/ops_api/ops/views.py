@@ -2,6 +2,7 @@ from models import (
     CAN,
     Agreement,
     AgreementAgency,
+    AgreementHistory,
     BudgetLineItem,
     CANFundingBudget,
     CANFundingDetails,
@@ -11,7 +12,6 @@ from models import (
     Division,
     Document,
     Notification,
-    OpsDBHistory,
     Portfolio,
     PortfolioStatus,
     PortfolioUrl,
@@ -127,8 +127,8 @@ from ops_api.ops.utils.version import VersionAPI
 AGREEMENT_ITEM_API_VIEW_FUNC = AgreementItemAPI.as_view("agreements-item", Agreement)
 AGREEMENT_LIST_API_VIEW_FUNC = AgreementListAPI.as_view("agreements-group", Agreement)
 
-# Agreement History Endpoint - specialized from OpsDBHistory
-AGREEMENT_HISTORY_LIST_API_VIEW_FUNC = AgreementHistoryListAPI.as_view("agreement-history", OpsDBHistory)
+# Agreement History Endpoint
+AGREEMENT_HISTORY_LIST_API_VIEW_FUNC = AgreementHistoryListAPI.as_view("agreement-history", AgreementHistory)
 
 # AGREEMENT FILTER OPTIONS ENDPOINT
 AGREEMENT_LIST_FILTER_OPTION_API_VIEW_FUNC = AgreementListFilterOptionAPI.as_view("agreements-filters", Agreement)
