@@ -1,6 +1,6 @@
 ---
 name: e2e-tests
-description: Run, monitor, and fix frontend Cypress E2E tests. Handles local execution, CI monitoring, failure diagnosis, and flaky test detection.
+description: Run, monitor, and fix frontend Cypress E2E tests. Handles local execution, CI monitoring, failure diagnosis, flaky test detection, and accessibility regression checks. Use this skill whenever the user mentions Cypress, E2E tests, end-to-end tests, test failures, CI failures, "CI is red", flaky tests, accessibility testing, or wants to run/debug/fix any frontend integration test — even if they don't say "e2e" explicitly.
 argument-hint: "[run | run <spec> | monitor | fix <spec> | flaky | status]"
 allowed-tools: Read, Grep, Glob, Bash, Edit, Write, Task, WebFetch
 disable-model-invocation: true
@@ -63,6 +63,14 @@ Report results to the user:
 
 Check or monitor the CI E2E test status for the current branch.
 
+**Pre-flight check** (run this first):
+```bash
+# Verify gh CLI is installed and authenticated
+command -v gh > /dev/null && gh auth status 2>&1 | head -3 || echo "gh CLI: NOT AVAILABLE — install with 'brew install gh' and authenticate with 'gh auth login'"
+```
+
+If `gh` is not installed or not authenticated, tell the user and stop. All CI commands require `gh`.
+
 **For `status`** (quick check):
 ```bash
 BRANCH=$(git branch --show-current)
@@ -80,7 +88,10 @@ gh run view "$RUN_ID" --json jobs | jq -r '.jobs[] | select(.name | contains("En
 ```bash
 BRANCH=$(git branch --show-current)
 RUN_ID=$(gh run list --branch "$BRANCH" --limit 1 --json databaseId,workflowName --jq '.[] | select(.workflowName == "Continuous Integration") | .databaseId')
-./.claude/actions/monitor-ci.sh "$RUN_ID" 90
+# Use the E2E-specific monitor for focused E2E tracking:
+./.claude/actions/monitor-e2e.sh "$RUN_ID" 60
+# Or use the full CI monitor for broader coverage:
+# ./.claude/actions/monitor-ci.sh "$RUN_ID" 90
 ```
 
 Report back:
@@ -91,6 +102,14 @@ Report back:
 ### 3. Fix Failing Tests: `$ARGUMENTS` is `fix` or `fix <spec-name>`
 
 Diagnose and fix failing E2E tests. Follow this systematic approach:
+
+**Pre-flight check** (run this first):
+```bash
+# Verify gh CLI is installed and authenticated
+command -v gh > /dev/null && gh auth status 2>&1 | head -3 || echo "gh CLI: NOT AVAILABLE — install with 'brew install gh' and authenticate with 'gh auth login'"
+```
+
+If `gh` is not installed or not authenticated, tell the user and stop. CI log fetching requires `gh`.
 
 **Step 1: Identify the failure**
 
@@ -173,6 +192,14 @@ Report the fix and verification results.
 
 Analyze flaky tests from the most recent CI run.
 
+**Pre-flight check** (run this first):
+```bash
+# Verify gh CLI is installed and authenticated
+command -v gh > /dev/null && gh auth status 2>&1 | head -3 || echo "gh CLI: NOT AVAILABLE — install with 'brew install gh' and authenticate with 'gh auth login'"
+```
+
+If `gh` is not installed or not authenticated, tell the user and stop. Flaky analysis requires `gh` to download CI artifacts.
+
 ```bash
 BRANCH=$(git branch --show-current)
 RUN_ID=$(gh run list --branch "$BRANCH" --limit 1 --json databaseId,workflowName --jq '.[] | select(.workflowName == "Continuous Integration") | .databaseId')
@@ -195,7 +222,31 @@ For any flaky tests found:
 3. Suggest specific fixes using retry-able patterns and custom Cypress commands
 4. Offer to apply the fixes
 
-### 5. Default: `$ARGUMENTS` is empty or unrecognized
+### 5. Accessibility Regression: `$ARGUMENTS` is `a11y` or `accessibility`
+
+Analyze or run the accessibility regression tests. CI runs a dedicated `a11y-regression` job that tests 10 specific specs with the `A11Y_REGRESSION_GATE=true` environment variable enabled.
+
+**Run a11y specs locally:**
+```bash
+cd frontend
+A11Y_REGRESSION_GATE=true npx cypress run --config-file ./cypress.config.js --headless --spec "cypress/e2e/agreementList.cy.js,cypress/e2e/agreementsPagination.cy.js,cypress/e2e/agreementDetails.cy.js" 2>&1 | tee /tmp/cypress-a11y-output.log
+```
+
+**Check the allowlist:**
+Read `frontend/cypress/support/a11yAllowlist.js` to see which a11y violations are temporarily suppressed. Each entry has:
+- A rule ID (e.g., `link-name`)
+- An expiration date — expired entries should be resolved
+- A GitHub issue tracking the fix
+
+When `A11Y_REGRESSION_GATE` is enabled, `cy.checkA11y()` (overridden in `e2e.js`) validates that only allowlisted violations appear. New violations not in the allowlist will fail the test.
+
+For any expired allowlist entries or new violations:
+1. Read the spec file and the component it tests
+2. Identify the a11y fix needed
+3. Suggest the fix (usually adding `aria-label`, fixing heading hierarchy, or adding link text)
+4. Offer to apply the fix
+
+### 6. Default: `$ARGUMENTS` is empty or unrecognized
 
 Show a help summary:
 
@@ -209,6 +260,7 @@ E2E Test Skill - Available Commands:
   /e2e-tests fix                  Diagnose and fix failing E2E tests from CI
   /e2e-tests fix <spec>           Fix a specific failing spec
   /e2e-tests flaky                Analyze flaky tests from latest CI run
+  /e2e-tests a11y                 Analyze accessibility regression tests and allowlist
 
 Prerequisites:
   - Local runs require Docker stack: docker compose up --build -d
@@ -222,19 +274,38 @@ Prerequisites:
 - **Cypress config (local)**: `frontend/cypress.config.js`
 - **Cypress config (CI)**: `frontend/cypress.config.ci.js`
 - **Support/commands**: `frontend/cypress/support/commands.js`, `frontend/cypress/support/e2e.js`
+- **A11y allowlist**: `frontend/cypress/support/a11yAllowlist.js`
 - **Test utilities**: `frontend/cypress/e2e/utils.js`
 - **Fixtures**: `frontend/cypress/fixtures/`
 - **CI workflow**: `.github/workflows/e2e_test_reusable.yml`
+- **CI main workflow** (includes a11y-regression job): `.github/workflows/ci.yml`
 - **Flaky detection**: `.github/scripts/detect-flaky-tests.sh`
 - **Flaky aggregation**: `.github/scripts/aggregate-flaky-tests.sh`
-- **CI monitoring**: `.claude/actions/monitor-ci.sh`, `.claude/actions/quick-ci-status.sh`
+- **E2E monitoring**: `.claude/actions/monitor-e2e.sh` (E2E-focused)
+- **CI monitoring**: `.claude/actions/monitor-ci.sh` (full CI), `.claude/actions/quick-ci-status.sh`
+
+## Local vs CI Configuration Differences
+
+Understanding these differences helps diagnose "passes locally, fails in CI" issues:
+
+| Setting | Local (`cypress.config.js`) | CI (`cypress.config.ci.js`) |
+|---------|---------------------------|----------------------------|
+| Retries | 2 (3 total attempts) | 3 (4 total attempts) |
+| Page load timeout | 180s | 120s |
+| Default command timeout | (Cypress default 4s) | 20s |
+| Request timeout | (Cypress default 5s) | 20s |
+| Memory management | Off | `experimentalMemoryManagement: true` |
+| `numTestsKeptInMemory` | (default) | 1 |
+
+CI config is tuned for React 19 + headless Electron performance. If a test times out in CI but not locally, the command/request timeouts are likely the issue. If it passes intermittently, look at the retry count difference.
 
 ## Custom Cypress Commands
 
 These are defined in `frontend/cypress/support/commands.js` and `frontend/cypress/support/e2e.js`:
 
 **Authentication:**
-- `cy.FakeAuth("system-owner")` - Login as a specific user type
+- `cy.login()` - Sets mock JWT token to localStorage (low-level, rarely used directly)
+- `cy.FakeAuth("system-owner")` - Session-based login as a specific user type (preferred)
 - Available types: `system-owner`, `basic`, `division-director`, `budget-team`, `procurement-team`, `power-user`
 
 **State Management (React 19 compatible):**
@@ -244,9 +315,15 @@ These are defined in `frontend/cypress/support/commands.js` and `frontend/cypres
 - `cy.waitForStateChange(selector, expectedText)` - Wait for element text to match
 - `cy.selectAndWaitForChange(selector, value)` - Select dropdown value and wait for React state
 
+**Table Verification:**
+- `cy.verifyTableColumnValues(selector, expectedValue, timeout)` - Verify all cells in a table column match an expected value
+
+**Debugging:**
+- `cy.logLocalStorage()` - Log localStorage contents to Cypress output (useful for debugging auth issues)
+
 **Accessibility:**
-- `cy.injectAxe()` - Inject axe-core
-- `cy.checkA11y()` - Run accessibility checks (uses allowlist from `cypress/support/a11yAllowlist.js`)
+- `cy.injectAxe()` - Inject axe-core (overridden in `e2e.js` to suppress link-name violations outside regression gate mode)
+- `cy.checkA11y()` - Run accessibility checks (overridden in `e2e.js` — when `A11Y_REGRESSION_GATE=true`, validates against the allowlist in `cypress/support/a11yAllowlist.js`)
 
 ## Important Notes
 

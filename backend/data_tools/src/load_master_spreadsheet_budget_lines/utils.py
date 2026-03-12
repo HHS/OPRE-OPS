@@ -117,9 +117,81 @@ def verify_and_log_project_title(data: BudgetLineItemData, session: Session, pro
 
     if project_title and project_title.strip().lower() != data.PROJECT_TITLE.strip().lower():
         logger.warning(
-            f"Mismatch: Expected Project Title '{data.PROJECT_TITLE}', "
-            f"got '{project_title}' for Agreement {data.CIG_NAME}."
+            f"Mismatch: Expected Project Title {data.PROJECT_TITLE!r}, "
+            f"got {project_title!r} for Agreement {data.CIG_NAME}."
         )
+
+
+def _resolve_procurement_fee(data, proc_shop, agreement, session, status):
+    """Resolve procurement shop assignment and fee lookup. Returns procurement_shop_fee_id."""
+    if proc_shop and agreement and proc_shop != agreement.procurement_shop:
+        agreement.procurement_shop = proc_shop
+
+    procurement_shop_fee_id = None
+    if proc_shop and status == BudgetLineItemStatus.OBLIGATED:
+        calc_result = calculate_proc_fee_percentage(data.PROC_FEE_AMOUNT, data.AMOUNT)
+        fee_percentage = calc_result * 100 if calc_result else 0
+        procurement_shop_fee_id = session.scalar(
+            select(ProcurementShopFee.id).where(
+                ProcurementShopFee.procurement_shop_id == proc_shop.id,
+                ProcurementShopFee.fee.between(fee_percentage - 0.01, fee_percentage + 0.01),
+            )
+        )
+    if proc_shop and status == BudgetLineItemStatus.OBLIGATED and not procurement_shop_fee_id:
+        logger.warning(
+            f"Procurement shop fee not found for ProcurementShop {proc_shop.name} with fee {data.PROC_FEE_AMOUNT}."
+        )
+    return procurement_shop_fee_id
+
+
+def _update_existing_bli_agreement_history(existing_bli, agreement, session, sys_user):
+    """If an existing BLI has no agreement but one was found, update its AgreementHistory record."""
+    if existing_bli.agreement is None and agreement:
+        agreement_history = session.execute(
+            select(AgreementHistory)
+            .where(AgreementHistory.budget_line_id_record == existing_bli.id)
+            .where(AgreementHistory.history_type == AgreementHistoryType.BUDGET_LINE_ITEM_CREATED)
+        ).scalar_one_or_none()
+        if agreement_history:
+            logger.info(
+                f"Found AgreementHistory record {agreement_history.id}"
+                f" for BLI id={existing_bli.id}, updating it now."
+            )
+            agreement_history.agreement_id = agreement.id
+            agreement_history.agreement_id_record = agreement.id
+            agreement_history.updated_by = sys_user.id
+            agreement_history.updated_on = datetime.now()
+            session.merge(agreement_history)
+            session.flush()
+
+
+def _find_can(data, session):
+    """Find the CAN for the budget line item."""
+    can_number = data.CAN.split(" ")[0] if data.CAN else None
+    can = session.execute(select(CAN).where(CAN.number == can_number)).scalar_one_or_none()
+    if not can:
+        logger.warning(f"CAN with number {can_number} not found.")
+    return can
+
+
+def _should_skip_contract_line(data, agreement_type, status, is_first_run):
+    """Check if a CONTRACT budget line should be skipped (not first run and not IN_EXECUTION)."""
+    is_contract = agreement_type == AgreementType.CONTRACT
+    is_not_in_execution = status != BudgetLineItemStatus.IN_EXECUTION
+    return not is_first_run and is_contract and is_not_in_execution
+
+
+def _find_agreement_and_project(data, agreement_type, session):
+    """Find the agreement and resolve its project_id."""
+    agreement = session.execute(
+        select(Agreement).where(Agreement.name == data.CIG_NAME).where(Agreement.agreement_type == agreement_type)
+    ).scalar_one_or_none()
+
+    if not agreement:
+        logger.warning(f"Agreement with CIG_NAME {data.CIG_NAME} not found.")
+        return agreement, None
+    logger.info(f"project_id={agreement.project_id} for Agreement={data.CIG_NAME}.")
+    return agreement, agreement.project_id
 
 
 def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is_first_run: bool) -> None:
@@ -143,56 +215,24 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
 
         # Get the status of the BudgetLineItem
         status = get_bli_status(data.STATUS)
-        is_not_in_execution = status != BudgetLineItemStatus.IN_EXECUTION
-        is_contract = agreement_type == AgreementType.CONTRACT
 
         # Only process CONTRACT budget lines on the first run — skip them otherwise, unless they are in execution.
-        if not is_first_run and is_contract and is_not_in_execution:
+        if _should_skip_contract_line(data, agreement_type, status, is_first_run):
             logger.warning(f"Skipping ContractBudgetLineItem {data.SYS_BUDGET_ID}, status is not IN_EXECUTION.")
             return
 
         # Find the associated Agreement
-        agreement = session.execute(
-            select(Agreement).where(Agreement.name == data.CIG_NAME).where(Agreement.agreement_type == agreement_type)
-        ).scalar_one_or_none()
-
-        if not agreement:
-            logger.warning(f"Agreement with CIG_NAME {data.CIG_NAME} not found.")
-            project_id = None
-        else:
-            project_id = agreement.project_id
-            logger.info(f"project_id={project_id} for Agreement={data.CIG_NAME}.")
+        agreement, project_id = _find_agreement_and_project(data, agreement_type, session)
 
         # Verify the Project Title
         verify_and_log_project_title(data, session, project_id)
 
         # Get CAN if it exists
-        can_number = data.CAN.split(" ")[0] if data.CAN else None
-        can = session.execute(select(CAN).where(CAN.number == can_number)).scalar_one_or_none()
-
-        if not can:
-            logger.warning(f"CAN with number {can_number} not found.")
+        can = _find_can(data, session)
 
         # Get the Procurement Shop if it exists
         proc_shop = session.scalar(select(ProcurementShop).where(ProcurementShop.abbr == data.PROC_SHOP))
-
-        if proc_shop and agreement and proc_shop != agreement.procurement_shop:
-            agreement.procurement_shop = proc_shop
-
-        procurement_shop_fee_id = None
-        if proc_shop and status == BudgetLineItemStatus.OBLIGATED:
-            calc_result = calculate_proc_fee_percentage(data.PROC_FEE_AMOUNT, data.AMOUNT)
-            fee_percentage = calc_result * 100 if calc_result else 0
-            procurement_shop_fee_id = session.scalar(
-                select(ProcurementShopFee.id).where(
-                    ProcurementShopFee.procurement_shop_id == proc_shop.id,
-                    ProcurementShopFee.fee.between(fee_percentage - 0.01, fee_percentage + 0.01),
-                )
-            )
-        if proc_shop and status == BudgetLineItemStatus.OBLIGATED and not procurement_shop_fee_id:
-            logger.warning(
-                f"Procurement shop fee not found for ProcurementShop {proc_shop.name} with fee {data.PROC_FEE_AMOUNT}."
-            )
+        procurement_shop_fee_id = _resolve_procurement_fee(data, proc_shop, agreement, session, status)
 
         # Determine which subclass to instantiate
         bli_class = {
@@ -245,22 +285,7 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
 
         else:
             old_bli = existing_budget_line_item.to_dict()
-            if existing_budget_line_item.agreement is None and agreement:
-                agreement_history = session.execute(
-                    select(AgreementHistory)
-                    .where(AgreementHistory.budget_line_id_record == existing_budget_line_item.id)
-                    .where(AgreementHistory.history_type == AgreementHistoryType.BUDGET_LINE_ITEM_CREATED)
-                ).scalar_one_or_none()
-                if agreement_history:
-                    logger.info(
-                        f"Found AgreementHistory record {agreement_history.id} for BLI id={existing_budget_line_item.id}, updating it now."
-                    )
-                    agreement_history.agreement_id = agreement.id
-                    agreement_history.agreement_id_record = agreement.id
-                    agreement_history.updated_by = sys_user.id
-                    agreement_history.updated_on = datetime.now()
-                    session.merge(agreement_history)
-                    session.flush()
+            _update_existing_bli_agreement_history(existing_budget_line_item, agreement, session, sys_user)
             # Update the existing BudgetLineItem
             bli = existing_budget_line_item
             bli.budget_line_item_type = agreement_type if agreement_type else None
@@ -286,8 +311,9 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session, is
         # Record the new SYS_BUDGET_ID to manually update the spreadsheet later
         if not existing_budget_line_item:
             logger.warning(
-                f"***Manually update SYS_BUDGET_ID in Budget Spreadsheet: original CIG_Name={data.CIG_NAME}, original LINE_DESC={data.LINE_DESC},"
-                f"created SYS_BUDGET_ID = {bli.id}.***"
+                f"***Manually update SYS_BUDGET_ID in Budget Spreadsheet:"
+                f" original CIG_Name={data.CIG_NAME}, original LINE_DESC={data.LINE_DESC},"
+                f" created SYS_BUDGET_ID = {bli.id}.***"
             )
 
         if os.getenv("DRY_RUN"):
