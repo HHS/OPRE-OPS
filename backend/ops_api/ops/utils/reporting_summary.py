@@ -59,7 +59,7 @@ def _find_bucket_type(agreement_type):
     return None
 
 
-def _accumulate_agreement_spending(agreement, fiscal_year, totals):
+def _accumulate_agreement_spending(agreement, fiscal_year, totals, portfolio_ids=None):
     """Accumulate BLI spending from a single agreement into totals."""
     bucket_type = _find_bucket_type(agreement.agreement_type)
     if bucket_type is None:
@@ -69,9 +69,12 @@ def _accumulate_agreement_spending(agreement, fiscal_year, totals):
     if classification is None:
         return
 
+    portfolio_id_set = set(portfolio_ids) if portfolio_ids else None
     key = "new" if classification == AgreementClassification.NEW.name else "continuing"
     for bli in agreement.budget_line_items:
         if bli.fiscal_year == fiscal_year and bli.status in SPENDING_STATUSES:
+            if portfolio_id_set and (not bli.can or bli.can.portfolio_id not in portfolio_id_set):
+                continue
             totals[bucket_type][key] += bli.total or Decimal(0)
 
 
@@ -87,7 +90,7 @@ def get_agreement_spending_by_type(session: Session, fiscal_year: int, portfolio
             )
         )
         .options(
-            joinedload(Agreement.budget_line_items),
+            joinedload(Agreement.budget_line_items).joinedload(BudgetLineItem.can),
             joinedload(Agreement.procurement_actions),
         )
         .distinct()
@@ -100,7 +103,7 @@ def get_agreement_spending_by_type(session: Session, fiscal_year: int, portfolio
     totals = {config["type"]: {"new": Decimal(0), "continuing": Decimal(0)} for config in AGREEMENT_TYPE_CONFIG}
 
     for agreement in agreements:
-        _accumulate_agreement_spending(agreement, fiscal_year, totals)
+        _accumulate_agreement_spending(agreement, fiscal_year, totals, portfolio_ids)
 
     total_spending = sum(t["new"] + t["continuing"] for t in totals.values())
 

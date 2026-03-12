@@ -287,3 +287,86 @@ def test_endpoint_with_portfolio_ids(auth_client, db_with_agreement_spending_dat
     assert response.status_code == 200
     data = response.json
     assert data["spending"]["total_spending"] > 0
+
+
+@pytest.fixture()
+def db_with_cross_portfolio_agreement(app, loaded_db, app_ctx):
+    """Agreement with BLIs spanning two different portfolios."""
+    from models import CAN, CANFundingBudget, CANFundingDetails, Portfolio, ResearchProject
+
+    portfolio_a = Portfolio(name="CROSS PORTFOLIO A", division_id=1)
+    can_a = CAN(number="CROSS_CAN_A")
+    portfolio_a.cans.append(can_a)
+    loaded_db.add(portfolio_a)
+
+    portfolio_b = Portfolio(name="CROSS PORTFOLIO B", division_id=1)
+    can_b = CAN(number="CROSS_CAN_B")
+    portfolio_b.cans.append(can_b)
+    loaded_db.add(portfolio_b)
+    loaded_db.commit()
+
+    funding_objects = []
+    for can in [can_a, can_b]:
+        details = CANFundingDetails(fiscal_year=2025, fund_code=f"CROSS{can.number[-1]}2025")
+        can.funding_details = details
+        loaded_db.add(details)
+        budget = CANFundingBudget(can_id=can.id, fiscal_year=2025, budget=Decimal(50000000))
+        loaded_db.add(budget)
+        funding_objects.extend([budget, details])
+    loaded_db.commit()
+
+    project = ResearchProject(title="Cross Portfolio Project", short_title="CPP", description="Test")
+    loaded_db.add(project)
+    loaded_db.commit()
+
+    contract = ContractAgreement(
+        name="Cross Portfolio Contract", agreement_type=AgreementType.CONTRACT, project_id=project.id
+    )
+    loaded_db.add(contract)
+    loaded_db.commit()
+
+    bli_a = ContractBudgetLineItem(
+        line_description="BLI in portfolio A",
+        amount=Decimal("1000000"),
+        status=BudgetLineItemStatus.PLANNED,
+        can_id=can_a.id,
+        date_needed=date(2025, 3, 1),
+        agreement_id=contract.id,
+    )
+    bli_b = ContractBudgetLineItem(
+        line_description="BLI in portfolio B",
+        amount=Decimal("2000000"),
+        status=BudgetLineItemStatus.PLANNED,
+        can_id=can_b.id,
+        date_needed=date(2025, 3, 1),
+        agreement_id=contract.id,
+    )
+    loaded_db.add_all([bli_a, bli_b])
+    loaded_db.commit()
+
+    yield {
+        "portfolio_a_id": portfolio_a.id,
+        "portfolio_b_id": portfolio_b.id,
+        "bli_a_amount": 1000000.0,
+        "bli_b_amount": 2000000.0,
+    }
+
+    loaded_db.rollback()
+    for obj in [bli_b, bli_a, contract, project] + funding_objects + [can_a, can_b, portfolio_a, portfolio_b]:
+        loaded_db.delete(obj)
+    loaded_db.commit()
+
+
+def test_portfolio_filter_excludes_other_portfolio_blis(app, db_with_cross_portfolio_agreement, app_ctx):
+    """Filtering by portfolio A should only include spending from BLIs in portfolio A, not B."""
+    data = db_with_cross_portfolio_agreement
+
+    result_a = get_agreement_spending_by_type(app.db_session, 2025, portfolio_ids=[data["portfolio_a_id"]])
+    type_map_a = {at["type"]: at for at in result_a["agreement_types"]}
+    # Should only include the 1M BLI from portfolio A, not the 2M from portfolio B
+    assert type_map_a["CONTRACT"]["total"] == data["bli_a_amount"]
+
+    result_b = get_agreement_spending_by_type(app.db_session, 2025, portfolio_ids=[data["portfolio_b_id"]])
+    type_map_b = {at["type"]: at for at in result_b["agreement_types"]}
+    # Should only include the 2M BLI from portfolio B
+    assert type_map_b["CONTRACT"]["total"] == data["bli_b_amount"]
