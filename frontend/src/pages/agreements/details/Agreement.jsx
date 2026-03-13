@@ -159,7 +159,11 @@ const Agreement = () => {
     }, [agreement]);
 
     if (isLoadingAgreement) {
-        return <div>Loading...</div>;
+        return (
+            <App breadCrumbName="Agreement">
+                <h1>Loading...</h1>
+            </App>
+        );
     }
     if (errorAgreement) {
         navigate("/error");

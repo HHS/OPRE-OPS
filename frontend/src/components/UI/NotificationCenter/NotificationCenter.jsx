@@ -23,19 +23,25 @@ const NotificationCenter = ({ user }) => {
 
     return (
         <>
-            <svg
-                className="usa-icon height-205 width-205 text-primary hover: cursor-pointer"
+            <button
+                type="button"
+                className="usa-button usa-button--unstyled display-flex flex-align-center text-primary"
                 onClick={() => setShowModal(true)}
                 id="notification-center-bell"
                 aria-label="View notifications"
-                role="img"
             >
-                {unreadNotifications?.length > 0 ? (
-                    <use href={`${icons}#notifications_active`}></use>
-                ) : (
-                    <use href={`${icons}#notifications_none`}></use>
-                )}
-            </svg>
+                <svg
+                    className="usa-icon height-205 width-205"
+                    aria-hidden="true"
+                    focusable="false"
+                >
+                    {unreadNotifications?.length > 0 ? (
+                        <use href={`${icons}#notifications_active`}></use>
+                    ) : (
+                        <use href={`${icons}#notifications_none`}></use>
+                    )}
+                </svg>
+            </button>
 
             <Modal
                 isOpen={showModal}
@@ -49,29 +55,35 @@ const NotificationCenter = ({ user }) => {
 
                     <div className={customStyles.flexRight}>
                         <div className={customStyles.closeButtonWrapper}>
-                            <svg
-                                className="usa-icon text-ink height-205 width-205 cursor-pointer"
+                            <button
+                                type="button"
+                                className="usa-button usa-button--unstyled display-flex flex-align-center text-ink"
                                 onClick={() => setShowModal(false)}
                                 id="notification-center-close"
                                 aria-label="Close notifications"
-                                role="img"
                             >
-                                <use href={`${icons}#close`}></use>
-                            </svg>
+                                <svg
+                                    className="usa-icon height-205 width-205"
+                                    aria-hidden="true"
+                                    focusable="false"
+                                >
+                                    <use href={`${icons}#close`}></use>
+                                </svg>
+                            </button>
                         </div>
 
                         <div className={customStyles.headerSection}>
                             <h1 className="font-sans-lg">Notifications</h1>
                             <button
-                                id={"clear-all-button"}
+                                id="clear-all-button"
                                 className="usa-button usa-button--unstyled padding-right-2 text-no-underline display-flex align-items-center flex-align-center"
                                 onClick={dismissAll}
                             >
                                 <svg
                                     className={`${customStyles.clearButtonIcon} usa-icon text-primary height-205 width-205`}
                                     id="notification-center-clear-all"
-                                    aria-label="Clear all notifications"
-                                    role="img"
+                                    aria-hidden="true"
+                                    focusable="false"
                                 >
                                     <use href={`${icons}#close`}></use>
                                 </svg>

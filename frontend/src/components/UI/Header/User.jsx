@@ -17,16 +17,23 @@ import { useSelector } from "react-redux";
  */
 const User = ({ user }) => {
     const isLoggedIn = useSelector((state) => state.auth?.isLoggedIn);
+    const email = user?.email?.trim();
+    const profileLabel = email || "User profile";
 
     return (
         <span>
             {isLoggedIn ? (
-                <Link
-                    className="text-primary"
-                    to={`/users/${user?.id}`}
-                >
-                    {user?.email}
-                </Link>
+                user?.id ? (
+                    <Link
+                        className="text-primary"
+                        to={`/users/${user.id}`}
+                        aria-label={profileLabel}
+                    >
+                        {profileLabel}
+                    </Link>
+                ) : (
+                    <span className="text-primary">{profileLabel}</span>
+                )
             ) : (
                 <span></span>
             )}
