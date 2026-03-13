@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Any, Optional, Sequence
 
 from loguru import logger
-from sqlalchemy import distinct, select
+from sqlalchemy import distinct, or_, select
 
 from models import (
     CAN,
@@ -30,6 +30,8 @@ class ProjectFilters:
     project_search: Optional[list[str]] = None
     agreement_search: Optional[list[str]] = None
     project_type: Optional[list[ProjectType]] = None
+    limit: Optional[list[int]] = None
+    offset: Optional[list[int]] = None
 
     @classmethod
     def parse_filters(cls, data: dict) -> "ProjectFilters":
@@ -40,6 +42,8 @@ class ProjectFilters:
             project_search=data.get("project_search", []),
             agreement_search=data.get("agreement_search", []),
             project_type=data.get("project_type", []),
+            limit=data.get("limit", [10]),
+            offset=data.get("offset", [0]),
         )
 
 
@@ -253,13 +257,13 @@ class ProjectsService(OpsService[Project]):
 
         # Apply project search filter on project title (AND logic - must match all search terms)
         if filters.project_search:
-            query_helper.add_search_list(ResearchProject.title, filters.project_search)
+            query_helper.where_clauses.append(
+                or_(Project.title.in_(filters.project_search), Project.short_title.in_(filters.project_search))
+            )
 
         # Apply agreement search filter on agreement name and nick_name (exact match - OR logic)
         # Projects are returned if any agreement has name OR nick_name matching any search term
         if filters.agreement_search:
-            from sqlalchemy import or_
-
             query_helper.where_clauses.append(
                 or_(Agreement.name.in_(filters.agreement_search), Agreement.nick_name.in_(filters.agreement_search))
             )
@@ -313,13 +317,16 @@ class ProjectsService(OpsService[Project]):
 
         # Apply project search filter on project title (AND logic - must match all search terms)
         if filters.project_search:
-            query_helper.add_search_list(AdministrativeAndSupportProject.title, filters.project_search)
+            query_helper.where_clauses.append(
+                or_(
+                    Project.title.in_(filters.project_search),
+                    Project.short_title.in_(filters.project_search),
+                )
+            )
 
         # Apply agreement search filter on agreement name and nick_name (exact match - OR logic)
         # Projects are returned if any agreement has name OR nick_name matching any search term
         if filters.agreement_search:
-            from sqlalchemy import or_
-
             query_helper.where_clauses.append(
                 or_(Agreement.name.in_(filters.agreement_search), Agreement.nick_name.in_(filters.agreement_search))
             )
@@ -347,20 +354,21 @@ class ProjectsService(OpsService[Project]):
 
     def get_list(
         self, data: dict[str, Any] | None = {}
-    ) -> tuple[Sequence[ResearchProject], Sequence[AdministrativeAndSupportProject]]:
+    ) -> tuple[Sequence[ResearchProject], Sequence[AdministrativeAndSupportProject], dict[str, Any]]:
         """
         Get list of projects with optional filtering and pagination.
 
         Args:
-            data: Dictionary containing filter parameters (all as lists)
+            data: Dictionary containing filter parameters (all as lists) including limit and offset
 
         Returns:
-            Tuple of (research_projects, administrative_and_support_projects), where each is a list of their respective project types.
+            Tuple of (research_projects, administrative_and_support_projects, metadata)
+            where metadata includes count, limit, and offset
         """
         filters = ProjectFilters.parse_filters(data)
 
-        research_project = []
-        administrative_and_support_project = []
+        research_projects = []
+        administrative_and_support_projects = []
 
         # If no project types specified, query both types
         # If project types specified, only query the specified types
@@ -371,13 +379,35 @@ class ProjectsService(OpsService[Project]):
             research_stmt = ProjectsService._get_research_projects_query(filters)
             value = research_stmt.compile(compile_kwargs={"literal_binds": True})
             logger.debug(f"Compiled SQL for research projects: {value}")
-            research_project = self.db_session.scalars(research_stmt).all()
+            research_projects = list(self.db_session.scalars(research_stmt).all())
 
         if should_query_admin:
             administrative_and_support_stmt = ProjectsService._get_administrative_and_support_projects_query(filters)
-            administrative_and_support_project = self.db_session.scalars(administrative_and_support_stmt).all()
+            administrative_and_support_projects = list(self.db_session.scalars(administrative_and_support_stmt).all())
 
-        return research_project, administrative_and_support_project
+        # Combine results for pagination
+        all_projects = research_projects + administrative_and_support_projects
+
+        # Calculate total count before pagination
+        total_count = len(all_projects)
+
+        # Apply pagination
+        limit_value = filters.limit[0] if filters.limit else 10
+        offset_value = filters.offset[0] if filters.offset else 0
+
+        paginated_projects = all_projects[offset_value : offset_value + limit_value]
+
+        # Separate paginated results back into their types for serialization
+        paginated_research = [p for p in paginated_projects if isinstance(p, ResearchProject)]
+        paginated_admin = [p for p in paginated_projects if isinstance(p, AdministrativeAndSupportProject)]
+
+        metadata = {
+            "count": total_count,
+            "limit": limit_value,
+            "offset": offset_value,
+        }
+
+        return paginated_research, paginated_admin, metadata
 
     def get_filter_options(self) -> dict[str, Any]:
         """

@@ -8,11 +8,14 @@ from models import AdministrativeAndSupportProject, ProjectType
 def test_administrative_and_support_projects_get_all(auth_client, loaded_db):
     count = loaded_db.query(AdministrativeAndSupportProject).count()
 
-    response = auth_client.get(url_for("api.projects-group"))
+    response = auth_client.get(
+        url_for("api.projects-group", project_type=[ProjectType.ADMINISTRATIVE_AND_SUPPORT.name])
+    )
     assert response.status_code == 200
+    assert "data" in response.json
     # Note: projects-group returns all projects (research + admin/support), so we need to filter
     admin_support_projects = [
-        p for p in response.json if p.get("project_type") == ProjectType.ADMINISTRATIVE_AND_SUPPORT.name
+        p for p in response.json["data"] if p.get("project_type") == ProjectType.ADMINISTRATIVE_AND_SUPPORT.name
     ]
     assert len(admin_support_projects) == count
 
@@ -44,7 +47,7 @@ def test_administrative_and_support_projects_with_fiscal_year_found(auth_client,
     assert response.status_code == 200
     # Filter for administrative and support projects
     admin_support_projects = [
-        p for p in response.json if p.get("project_type") == ProjectType.ADMINISTRATIVE_AND_SUPPORT.name
+        p for p in response.json["data"] if p.get("project_type") == ProjectType.ADMINISTRATIVE_AND_SUPPORT.name
     ]
     assert len(admin_support_projects) == 1
     assert admin_support_projects[0]["title"] == "Support Project #1"
@@ -58,41 +61,54 @@ def test_administrative_and_support_projects_with_fiscal_year_not_found(auth_cli
     assert response.status_code == 200
     # Filter for administrative and support projects
     admin_support_projects = [
-        p for p in response.json if p.get("project_type") == ProjectType.ADMINISTRATIVE_AND_SUPPORT.name
+        p for p in response.json["data"] if p.get("project_type") == ProjectType.ADMINISTRATIVE_AND_SUPPORT.name
     ]
     assert len(admin_support_projects) == 0
 
 
 def test_administrative_and_support_projects_search(auth_client, loaded_db):
+    # Empty string returns no results
     response = auth_client.get(
         url_for("api.projects-group", project_search=[""], project_type=[ProjectType.ADMINISTRATIVE_AND_SUPPORT.name])
     )
 
     assert response.status_code == 200
-    assert len(response.json) == 0
+    assert response.json["count"] == 0
+    assert len(response.json["data"]) == 0
 
+    # Search by multiple exact short_titles - should find both support projects
     response = auth_client.get(
-        url_for("api.projects-group", project_search=["su"], project_type=[ProjectType.ADMINISTRATIVE_AND_SUPPORT.name])
+        url_for(
+            "api.projects-group",
+            project_search=["SP1", "SP2"],
+            project_type=[ProjectType.ADMINISTRATIVE_AND_SUPPORT.name],
+        )
     )
 
     assert response.status_code == 200
+    assert response.json["count"] == 2
     # Filter for administrative and support projects
     admin_support_projects = [
-        p for p in response.json if p.get("project_type") == ProjectType.ADMINISTRATIVE_AND_SUPPORT.name
+        p for p in response.json["data"] if p.get("project_type") == ProjectType.ADMINISTRATIVE_AND_SUPPORT.name
     ]
     assert len(admin_support_projects) == 2
 
+    # Search by exact short_title "SP2" - should find one project
     response = auth_client.get(
-        url_for("api.projects-group", project_search=["#2"], project_type=[ProjectType.ADMINISTRATIVE_AND_SUPPORT.name])
+        url_for(
+            "api.projects-group", project_search=["SP2"], project_type=[ProjectType.ADMINISTRATIVE_AND_SUPPORT.name]
+        )
     )
 
     assert response.status_code == 200
+    assert response.json["count"] == 1
     # Filter for administrative and support projects
     admin_support_projects = [
-        p for p in response.json if p.get("project_type") == ProjectType.ADMINISTRATIVE_AND_SUPPORT.name
+        p for p in response.json["data"] if p.get("project_type") == ProjectType.ADMINISTRATIVE_AND_SUPPORT.name
     ]
     assert len(admin_support_projects) == 1
 
+    # Search with non-existent title returns no results
     response = auth_client.get(
         url_for(
             "api.projects-group", project_search=["blah"], project_type=[ProjectType.ADMINISTRATIVE_AND_SUPPORT.name]
@@ -100,7 +116,8 @@ def test_administrative_and_support_projects_search(auth_client, loaded_db):
     )
 
     assert response.status_code == 200
-    assert len(response.json) == 0
+    assert response.json["count"] == 0
+    assert len(response.json["data"]) == 0
 
 
 def test_administrative_and_support_projects_get_by_id_auth(client, loaded_db):

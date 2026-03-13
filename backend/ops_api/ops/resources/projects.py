@@ -66,7 +66,7 @@ class ProjectListAPI(BaseListAPI):
         projects_service = ProjectsService(current_app.db_session)
         request_schema = ProjectListGetRequestSchema()
         data = request_schema.load(request.args.to_dict(flat=False))
-        research_projects, admin_support_projects = projects_service.get_list(data)
+        research_projects, admin_support_projects, metadata = projects_service.get_list(data)
 
         project_response: List[dict] = []
         if research_projects:
@@ -76,7 +76,15 @@ class ProjectListAPI(BaseListAPI):
             schema = ProjectListResponse()
             project_response.extend(schema.dump(admin_support_projects, many=True))
 
-        return make_response_with_headers(project_response)
+        # Return wrapped response with pagination metadata
+        response_data = {
+            "data": project_response,
+            "count": metadata["count"],
+            "limit": metadata["limit"],
+            "offset": metadata["offset"],
+        }
+
+        return make_response_with_headers(response_data)
 
     @is_authorized(PermissionType.POST, Permission.RESEARCH_PROJECT)
     def post(self) -> Response:

@@ -11,7 +11,9 @@ def test_research_projects_get_all(auth_client, loaded_db):
 
     response = auth_client.get(url_for("api.projects-group", project_type=ProjectType.RESEARCH.name))
     assert response.status_code == 200
-    assert len(response.json) == count
+    assert "data" in response.json
+    assert response.json["count"] == count
+    assert len(response.json["data"]) == min(count, 10)  # Default limit is 10
 
 
 def test_research_projects_get_by_id(auth_client, loaded_db, test_project, app_ctx):
@@ -39,52 +41,64 @@ def test_research_projects_serialization(auth_client, loaded_db, test_user, test
 def test_research_projects_with_fiscal_year_found(auth_client, loaded_db, test_project, app_ctx):
     response = auth_client.get(url_for("api.projects-group", fiscal_year=2023, project_type=ProjectType.RESEARCH.name))
     assert response.status_code == 200
-    assert len(response.json) == 4
-    assert response.json[0]["title"] == "Human Services Interoperability Support"
-    assert response.json[0]["id"] == test_project.id
+    assert response.json["count"] == 4
+    assert len(response.json["data"]) == 4
+    assert response.json["data"][0]["title"] == "Human Services Interoperability Support"
+    assert response.json["data"][0]["id"] == test_project.id
 
 
 def test_research_projects_with_fiscal_year_not_found(auth_client, loaded_db, app_ctx):
     response = auth_client.get(url_for("api.projects-group", fiscal_year=2000, project_type=ProjectType.RESEARCH.name))
     assert response.status_code == 200
-    assert len(response.json) == 0
+    assert response.json["count"] == 0
+    assert len(response.json["data"]) == 0
 
 
 def test_research_project_search(auth_client, loaded_db):
+    # Empty string returns no results
     response = auth_client.get(
         url_for("api.projects-group", project_search=[""], project_type=[ProjectType.RESEARCH.name])
     )
 
     assert response.status_code == 200
-    assert len(response.json) == 0
+    assert response.json["count"] == 0
+    assert len(response.json["data"]) == 0
 
+    # Search by exact short_title "RFH" (Responsible Fatherhood project)
     response = auth_client.get(
-        url_for("api.projects-group", project_search=["fa"], project_type=[ProjectType.RESEARCH.name])
+        url_for("api.projects-group", project_search=["RFH"], project_type=[ProjectType.RESEARCH.name])
     )
 
     assert response.status_code == 200
-    assert len(response.json) == 4
+    assert response.json["count"] == 1
+    assert len(response.json["data"]) == 1
 
+    # Search by multiple exact short_titles - "RFH" and "FCL" (Fathers and Continuous Learning)
     response = auth_client.get(
-        url_for("api.projects-group", project_search=["father"], project_type=[ProjectType.RESEARCH.name])
+        url_for("api.projects-group", project_search=["RFH", "FCL"], project_type=[ProjectType.RESEARCH.name])
     )
 
     assert response.status_code == 200
-    assert len(response.json) == 2
+    assert response.json["count"] == 2
+    assert len(response.json["data"]) == 2
 
+    # Search by exact short_title "ECE" (Early Care and Education Leadership Study)
     response = auth_client.get(
-        url_for("api.projects-group", project_search=["ExCELS"], project_type=[ProjectType.RESEARCH.name])
+        url_for("api.projects-group", project_search=["ECE"], project_type=[ProjectType.RESEARCH.name])
     )
 
     assert response.status_code == 200
-    assert len(response.json) == 1
+    assert response.json["count"] == 1
+    assert len(response.json["data"]) == 1
 
+    # Search with non-existent title returns no results
     response = auth_client.get(
         url_for("api.projects-group", project_search=["blah"], project_type=[ProjectType.RESEARCH.name])
     )
 
     assert response.status_code == 200
-    assert len(response.json) == 0
+    assert response.json["count"] == 0
+    assert len(response.json["data"]) == 0
 
 
 def test_research_projects_get_by_id_auth(client, loaded_db, app_ctx):
@@ -202,11 +216,12 @@ def test_research_projects_list_uses_lightweight_schema(auth_client, loaded_db, 
     Test that the list endpoint returns lightweight schema without expensive nested relationships.
     This verifies the performance optimization that excludes: team_leaders.
     """
-    response = auth_client.get(url_for("api.projects-group"))
+    response = auth_client.get(url_for("api.projects-group", project_type=[ProjectType.RESEARCH.name]))
     assert response.status_code == 200
-    assert len(response.json) > 0
+    assert "data" in response.json
+    assert len(response.json["data"]) > 0
 
-    project = response.json[0]
+    project = response.json["data"][0]
 
     # Verify required fields are present
     assert "id" in project
@@ -218,6 +233,18 @@ def test_research_projects_list_uses_lightweight_schema(auth_client, loaded_db, 
     assert "created_on" in project
     assert "updated_on" in project
     assert "project_type" in project
+
+    # Verify project metadata fields from project_list_metadata are present (inherited from ProjectListResponse)
+    assert "start_date" in project
+    assert "end_date" in project
+    assert "fiscal_year_totals" in project
+    assert "project_total" in project
+
+    # Verify fiscal_year_totals is a dict (or None)
+    assert project["fiscal_year_totals"] is None or isinstance(project["fiscal_year_totals"], dict)
+
+    # Verify project_total is an int (or None)
+    assert project["project_total"] is None or isinstance(project["project_total"], int)
 
     # Verify expensive nested fields are NOT present (performance optimization)
     assert "team_leaders" not in project, "Nested 'team_leaders' should not be in list response (causes N+1 queries)"
