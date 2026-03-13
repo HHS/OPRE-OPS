@@ -16,7 +16,7 @@ const AgreementTabs = () => {
     const { search } = useLocation();
     const changeRequestsTotal = useChangeRequestTotal();
     const userRoles = useSelector((state) => state.auth?.activeUser?.roles) ?? [];
-    const isReviewerApprover = userRoles.some((role) => role?.name === USER_ROLES.REVIEWER_APPROVER);
+    const displayReviewTab = !userRoles.every((role) => role?.name === USER_ROLES.VIEWER_EDITOR);
 
     const paths = [
         {
@@ -27,7 +27,7 @@ const AgreementTabs = () => {
             name: "?filter=my-agreements",
             label: "My Agreements"
         },
-        ...(isReviewerApprover
+        ...(displayReviewTab
             ? [
                   {
                       name: "?filter=change-requests",
