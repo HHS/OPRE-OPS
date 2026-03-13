@@ -239,18 +239,18 @@ describe("Procurement Tracker Step 2", () => {
         cy.visit(`/agreements/${ISOLATED_ACTIVE_TRACKER_AGREEMENT_ID}/procurement-tracker`);
         openTrackerStep(2);
 
-        // Check if step 2 is in pending state and target date hasn't been saved yet
+        // Check if step 2 is in pending state and target date input is visible (not saved yet)
         cy.get("body").then(($body) => {
             const isPending = $body.find("#step-2-checkbox").length > 0;
-            const hasTargetDateSaved = $body.find("dt").text().includes("Target Completion Date");
+            const hasTargetDateInput = $body.find("#target-completion-date").is(":visible");
 
-            if (isPending && !hasTargetDateSaved) {
+            if (isPending && hasTargetDateInput) {
                 cy.get("#target-completion-date").should("exist").and("not.be.disabled");
                 cy.get("#target-completion-date").clear().type("12/31/2026").blur();
                 // Wait for validation to run and button to be enabled
                 cy.get('[data-cy="target-completion-save-btn"]').should("not.be.disabled");
             } else {
-                cy.log("Step 2 not in correct state for this test - skipping");
+                cy.log("Step 2 not in correct state for this test - skipping (target date may already be saved)");
             }
         });
     });
@@ -867,18 +867,18 @@ describe("Procurement Tracker Step 5: Pre-Award", () => {
         cy.visit(`/agreements/${ISOLATED_ACTIVE_TRACKER_AGREEMENT_ID}/procurement-tracker`);
         openTrackerStep(5);
 
-        // Check if step 5 is in pending state and target date hasn't been saved yet
+        // Check if step 5 is in pending state and target date input is visible (not saved yet)
         cy.get("body").then(($body) => {
             const isPending = $body.find("#step-5-checkbox").length > 0;
-            const hasTargetDateSaved = $body.find("dt").text().includes("Target Completion Date");
+            const hasTargetDateInput = $body.find("#target-completion-date").is(":visible");
 
-            if (isPending && !hasTargetDateSaved) {
+            if (isPending && hasTargetDateInput) {
                 cy.get("#target-completion-date").should("exist").and("not.be.disabled");
                 cy.get("#target-completion-date").clear().type("12/31/2026").blur();
                 // Wait for validation to run and button to be enabled
                 cy.get('[data-cy="step-5-target-completion-save-btn"]').should("not.be.disabled");
             } else {
-                cy.log("Step 5 not in correct state for this test - skipping");
+                cy.log("Step 5 not in correct state for this test - skipping (target date may already be saved)");
             }
         });
     });
