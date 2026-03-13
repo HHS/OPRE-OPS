@@ -3162,6 +3162,84 @@ paths:
                     items:
                       type: string
                       example: Must be greater than or equal to 1900.
+  /reporting-summary/:
+    get:
+      tags:
+        - Reporting Summary
+      summary: Get consolidated reporting summary
+      operationId: getReportingSummary
+      description: >
+        Retrieve a consolidated reporting summary for the reporting page including spending
+        by agreement type and counts of projects, agreements, and budget lines for a given fiscal year.
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - name: fiscal_year
+          in: query
+          description: Fiscal year for which the summary is requested. Defaults to the current fiscal year if not provided.
+          schema:
+            type: integer
+            example: 2025
+        - name: portfolio_ids
+          in: query
+          description: Filter results to only include data from budget line items associated with the specified portfolio IDs.
+          schema:
+            type: array
+            items:
+              type: integer
+          style: form
+          explode: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  spending:
+                    type: object
+                    properties:
+                      total_spending:
+                        type: number
+                        format: float
+                      agreement_types:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            type:
+                              type: string
+                              enum: [CONTRACT, PARTNER, GRANT, DIRECT_OBLIGATION]
+                            label:
+                              type: string
+                            total:
+                              type: number
+                              format: float
+                            percent:
+                              type: integer
+                            new:
+                              type: number
+                              format: float
+                            continuing:
+                              type: number
+                              format: float
+                  counts:
+                    type: object
+                    properties:
+                      projects:
+                        $ref: "#/components/schemas/CountGroup"
+                      agreements:
+                        $ref: "#/components/schemas/CountGroup"
+                      new_agreements:
+                        $ref: "#/components/schemas/CountGroup"
+                      continuing_agreements:
+                        $ref: "#/components/schemas/CountGroup"
+                      budget_lines:
+                        $ref: "#/components/schemas/CountGroup"
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
   /procurement-shops/:
     get:
       tags:
@@ -4604,6 +4682,20 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
+    CountGroup:
+      type: object
+      properties:
+        total:
+          type: integer
+        types:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+              count:
+                type: integer
     BasicCAN:
       description: >-
         A simple version of the Common Accounting Number (CAN) Object.

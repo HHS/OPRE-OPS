@@ -75,7 +75,7 @@ describe("Portfolio List Page", () => {
         cy.get("table tbody tr").should("have.length.greaterThan", 0);
 
         // Remove filter tag (click SVG icon)
-        cy.get("svg[id^='filter-tag-']").first().click();
+        cy.get("button[id^='filter-tag-']").first().click();
 
         // Reset all filters
         cy.get("button").contains("Filter").click();
