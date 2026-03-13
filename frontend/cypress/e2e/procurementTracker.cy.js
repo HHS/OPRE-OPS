@@ -239,18 +239,18 @@ describe("Procurement Tracker Step 2", () => {
         cy.visit(`/agreements/${ISOLATED_ACTIVE_TRACKER_AGREEMENT_ID}/procurement-tracker`);
         openTrackerStep(2);
 
-        // Check if step 2 is in pending state and target date hasn't been saved yet
+        // Check if step 2 is in pending state and target date input is visible (not saved yet)
         cy.get("body").then(($body) => {
             const isPending = $body.find("#step-2-checkbox").length > 0;
-            const hasTargetDateSaved = $body.find("dt").text().includes("Target Completion Date");
+            const hasTargetDateInput = $body.find("#target-completion-date").is(":visible");
 
-            if (isPending && !hasTargetDateSaved) {
+            if (isPending && hasTargetDateInput) {
                 cy.get("#target-completion-date").should("exist").and("not.be.disabled");
                 cy.get("#target-completion-date").clear().type("12/31/2026").blur();
                 // Wait for validation to run and button to be enabled
                 cy.get('[data-cy="target-completion-save-btn"]').should("not.be.disabled");
             } else {
-                cy.log("Step 2 not in correct state for this test - skipping");
+                cy.log("Step 2 not in correct state for this test - skipping (target date may already be saved)");
             }
         });
     });
@@ -771,5 +771,370 @@ describe("Procurement Tracker Step 3: Solicitation", () => {
         cy.get("@stepThreeButton").should("have.attr", "aria-expanded", "false");
         cy.get("@stepThreeButton").click();
         cy.get("@stepThreeButton").should("have.attr", "aria-expanded", "true");
+    });
+});
+
+describe("Procurement Tracker Step 5: Pre-Award", () => {
+    it("renders the step 5 view that matches API status", () => {
+        cy.visit(`/agreements/${ACTIVE_TRACKER_AGREEMENT_ID}/procurement-tracker`);
+        openTrackerStep(5);
+
+        cy.get("body").then(($body) => {
+            const completedViewVisible = $body.find("dl").length > 0 && $body.text().includes("Completed By");
+            if (completedViewVisible) {
+                cy.contains("Completed By").should("exist");
+                cy.contains("Date Completed").should("exist");
+                cy.contains("Notes").should("exist");
+                cy.contains("Target Completion Date").should("exist");
+                cy.get(".usa-checkbox__label").should("not.exist");
+                cy.get('[data-cy="cancel-button"]').should("not.exist");
+                cy.get('[data-cy="continue-btn"]').should("not.exist");
+            } else {
+                cy.get(".usa-checkbox__label").should("exist");
+                cy.get('[data-cy="cancel-button"]').should("exist");
+                cy.get('[data-cy="continue-btn"]').should("exist");
+            }
+        });
+    });
+
+    it("renders completed summary data when step 5 is completed", () => {
+        cy.visit(`/agreements/${ACTIVE_TRACKER_AGREEMENT_ID}/procurement-tracker`);
+        openTrackerStep(5);
+
+        cy.get("body").then(($body) => {
+            const completedViewVisible = $body.find("dl").length > 0 && $body.text().includes("Completed By");
+            if (!completedViewVisible) {
+                cy.get(".usa-checkbox__label").should("exist");
+                return;
+            }
+
+            // Verify all Step 5-specific fields are present with values
+            // Find the dl that contains "Target Completion Date" (Step 5 specific field)
+            cy.contains("dt", "Target Completion Date").should("exist");
+            cy.contains("dt", "Target Completion Date").parents("dl").within(() => {
+                // Standard completion fields
+                cy.contains("dt", "Completed By").next("dd").should("not.be.empty");
+                cy.contains("dt", "Date Completed").next("dd").should("not.be.empty");
+
+                // Notes field (may be "None")
+                cy.contains("dt", "Notes").should("exist");
+            });
+        });
+    });
+
+    it("shows or hides editable controls based on step 5 status", () => {
+        cy.visit(`/agreements/${ACTIVE_TRACKER_AGREEMENT_ID}/procurement-tracker`);
+        openTrackerStep(5);
+
+        cy.get("body").then(($body) => {
+            const completedViewVisible = $body.find("dl").length > 0 && $body.text().includes("Completed By");
+            if (completedViewVisible) {
+                cy.get(".usa-checkbox__label").should("not.exist");
+                cy.get("#users-combobox-input").should("not.exist");
+                cy.get("#step-5-date-completed").should("not.exist");
+                cy.get("#notes").should("not.exist");
+                cy.get('[data-cy="cancel-button"]').should("not.exist");
+                cy.get('[data-cy="continue-btn"]').should("not.exist");
+                return;
+            }
+
+            cy.get(".usa-checkbox__label").should("exist");
+            cy.get('[data-cy="cancel-button"]').should("exist");
+            cy.get('[data-cy="continue-btn"]').should("exist");
+        });
+    });
+
+    it("displays target completion date save button when date not yet saved", () => {
+        cy.visit(`/agreements/${ISOLATED_ACTIVE_TRACKER_AGREEMENT_ID}/procurement-tracker`);
+        openTrackerStep(5);
+
+        cy.get("body").then(($body) => {
+            const isPending = $body.find("#step-5-checkbox").length > 0;
+            if (isPending) {
+                const hasTargetDateTag = $body.text().includes("Target Completion Date");
+                if (!hasTargetDateTag) {
+                    cy.get("#target-completion-date").should("exist");
+                    cy.get('[data-cy="step-5-target-completion-save-btn"]').should("exist");
+                    cy.get('[data-cy="step-5-target-completion-save-btn"]').should("be.disabled");
+                } else {
+                    cy.log("Target completion date already saved");
+                }
+            }
+        });
+    });
+
+    it("enables save button when valid target date is entered", () => {
+        cy.visit(`/agreements/${ISOLATED_ACTIVE_TRACKER_AGREEMENT_ID}/procurement-tracker`);
+        openTrackerStep(5);
+
+        // Check if step 5 is in pending state and target date input is visible (not saved yet)
+        cy.get("body").then(($body) => {
+            const isPending = $body.find("#step-5-checkbox").length > 0;
+            const hasTargetDateInput = $body.find("#target-completion-date").is(":visible");
+
+            if (isPending && hasTargetDateInput) {
+                cy.get("#target-completion-date").should("exist").and("not.be.disabled");
+                cy.get("#target-completion-date").clear().type("12/31/2026").blur();
+                // Wait for validation to run and button to be enabled
+                cy.get('[data-cy="step-5-target-completion-save-btn"]').should("not.be.disabled");
+            } else {
+                cy.log("Step 5 not in correct state for this test - skipping (target date may already be saved)");
+            }
+        });
+    });
+
+    it("displays saved target completion date as a TermTag", () => {
+        cy.visit(`/agreements/${ACTIVE_TRACKER_AGREEMENT_ID}/procurement-tracker`);
+        openTrackerStep(5);
+
+        cy.get("body").then(($body) => {
+            const isPending = $body.find("#step-5-checkbox").length > 0;
+            // Check if TermTag with Target Completion Date exists
+            const hasTargetDateTag = $body.find("dt:contains('Target Completion Date')").length > 0;
+
+            if (isPending && hasTargetDateTag) {
+                // Target date has been saved and should display as TermTag
+                cy.contains("Target Completion Date").should("exist");
+                cy.get("#target-completion-date").should("not.exist");
+                cy.get('[data-cy="step-5-target-completion-save-btn"]').should("not.exist");
+            } else {
+                cy.log("Target completion date not yet saved - skipping");
+            }
+        });
+    });
+
+    it("displays Request Pre-Award Approval button as disabled", () => {
+        cy.visit(`/agreements/${ISOLATED_ACTIVE_TRACKER_AGREEMENT_ID}/procurement-tracker`);
+        openTrackerStep(5);
+
+        cy.get("body").then(($body) => {
+            const isPending = $body.find("#step-5-checkbox").length > 0;
+            if (isPending) {
+                cy.contains("button", "Request Pre-Award Approval").should("exist");
+                cy.contains("button", "Request Pre-Award Approval").should("be.disabled");
+                cy.contains("button", "Request Pre-Award Approval").should("have.attr", "title", "Feature coming soon");
+            }
+        });
+    });
+
+    it("disables all completion fields when checkbox is unchecked", () => {
+        cy.visit(`/agreements/${ISOLATED_ACTIVE_TRACKER_AGREEMENT_ID}/procurement-tracker`);
+        openTrackerStep(5);
+
+        cy.get("body").then(($body) => {
+            const isPending = $body.find("#step-5-checkbox").length > 0;
+            if (isPending) {
+                cy.get("#users-combobox-input").should("be.disabled");
+                cy.get("#step-5-date-completed").should("be.disabled");
+                cy.get("#notes").should("be.disabled");
+                cy.get('[data-cy="cancel-button"]').should("be.disabled");
+                cy.get('[data-cy="continue-btn"]').should("be.disabled");
+            }
+        });
+    });
+
+    it("enables completion fields when checkbox is checked", () => {
+        cy.visit(`/agreements/${ISOLATED_ACTIVE_TRACKER_AGREEMENT_ID}/procurement-tracker`);
+        openTrackerStep(5);
+
+        // Use Cypress retry logic instead of synchronous jQuery check
+        isStepCheckboxEnabled("#step-5-checkbox").then((isEnabled) => {
+            if (isEnabled) {
+                // Step is active and checkbox is enabled
+                cy.get("#step-5-checkbox").check({ force: true });
+                cy.get("#step-5-checkbox").should("be.checked");
+
+                // Wait for React state update, then verify fields are enabled
+                cy.get("#users-combobox-input").should("not.be.disabled");
+                cy.get("#step-5-date-completed").should("not.be.disabled");
+                cy.get("#notes").should("not.be.disabled");
+                cy.get('[data-cy="cancel-button"]').should("not.be.disabled");
+            } else {
+                cy.log("Step 5 checkbox is disabled or step not pending - skipping");
+            }
+        });
+    });
+
+    it("re-disables fields when checkbox is unchecked after being checked", () => {
+        cy.visit(`/agreements/${ISOLATED_ACTIVE_TRACKER_AGREEMENT_ID}/procurement-tracker`);
+        openTrackerStep(5);
+
+        // Use helper to check if checkbox is enabled
+        isStepCheckboxEnabled("#step-5-checkbox").then((isEnabled) => {
+            if (isEnabled) {
+                // Check the checkbox first
+                cy.get("#step-5-checkbox").check({ force: true });
+                cy.get("#step-5-checkbox").should("be.checked");
+                cy.get("#users-combobox-input").should("not.be.disabled");
+
+                // Uncheck the checkbox
+                cy.get("#step-5-checkbox").uncheck({ force: true });
+                cy.get("#step-5-checkbox").should("not.be.checked");
+
+                // Wait for React state update, then verify fields are disabled again
+                cy.get("#users-combobox-input").should("be.disabled");
+                cy.get('[data-cy="cancel-button"]').should("be.disabled");
+                cy.get('[data-cy="continue-btn"]').should("be.disabled");
+            } else {
+                cy.log("Step 5 checkbox is disabled or step not pending - skipping");
+            }
+        });
+    });
+
+    it("enables continue button when all required fields are filled", () => {
+        cy.visit(`/agreements/${ISOLATED_ACTIVE_TRACKER_AGREEMENT_ID}/procurement-tracker`);
+        openTrackerStep(5);
+
+        // Use helper to check if checkbox is enabled
+        isStepCheckboxEnabled("#step-5-checkbox").then((isEnabled) => {
+            if (isEnabled) {
+                cy.get("#step-5-checkbox").check({ force: true });
+                cy.get("#step-5-checkbox").should("be.checked");
+
+                // Fill out required fields with waits for validation
+                cy.get("#users-combobox-input").should("not.be.disabled").click();
+                cy.get(".users-combobox__menu").should("exist");
+                cy.get(".users-combobox__option").first().click();
+
+                // Trigger validation by blurring after typing
+                cy.get("#step-5-date-completed").should("not.be.disabled").type("02/20/2026").blur();
+
+                // Wait for validation to complete before checking button state
+                cy.get('[data-cy="continue-btn"]').should("not.be.disabled");
+            } else {
+                cy.log("Step 5 checkbox is disabled or step not pending - skipping");
+            }
+        });
+    });
+
+    it("displays cancel confirmation modal when cancel button is clicked", () => {
+        cy.visit(`/agreements/${ISOLATED_ACTIVE_TRACKER_AGREEMENT_ID}/procurement-tracker`);
+        openTrackerStep(5);
+
+        // Use helper to check if checkbox is enabled
+        isStepCheckboxEnabled("#step-5-checkbox").then((isEnabled) => {
+            if (isEnabled) {
+                cy.get("#step-5-checkbox").check({ force: true });
+                cy.get("#step-5-checkbox").should("be.checked");
+                cy.get('[data-cy="cancel-button"]').should("not.be.disabled").click();
+
+                // Verify modal appears with correct content
+                cy.get(".usa-modal").should("be.visible");
+                cy.contains("Are you sure you want to cancel this task?").should("be.visible");
+                cy.contains("button", "Cancel Task").should("be.visible");
+                cy.contains("button", "Continue Editing").should("be.visible");
+            } else {
+                cy.log("Step 5 checkbox is disabled or step not pending - skipping");
+            }
+        });
+    });
+
+    it("resets form when modal cancel is confirmed", () => {
+        cy.visit(`/agreements/${ISOLATED_ACTIVE_TRACKER_AGREEMENT_ID}/procurement-tracker`);
+        openTrackerStep(5);
+
+        // Use helper to check if checkbox is enabled
+        isStepCheckboxEnabled("#step-5-checkbox").then((isEnabled) => {
+            if (isEnabled) {
+                cy.get("#step-5-checkbox").check({ force: true });
+                cy.get("#step-5-checkbox").should("be.checked");
+
+                // Fill out form fields
+                cy.get("#step-5-date-completed").should("not.be.disabled").type("02/20/2026");
+                cy.get("#notes").should("not.be.disabled").type("Test notes");
+
+                // Trigger cancel modal and confirm
+                cy.get('[data-cy="cancel-button"]').should("not.be.disabled").click();
+                cy.get(".usa-modal").should("be.visible");
+                cy.contains("button", "Cancel Task").click();
+
+                // Verify form was reset
+                cy.get("#step-5-checkbox").should("not.be.checked");
+                cy.get("#notes").should("have.value", "");
+            } else {
+                cy.log("Step 5 checkbox is disabled or step not pending - skipping");
+            }
+        });
+    });
+
+    it("only shows authorized users in Task Completed By dropdown", () => {
+        // Navigate via tab to ensure full page context
+        cy.visit(`/agreements/${ACTIVE_TRACKER_AGREEMENT_ID}`);
+        cy.get('[data-cy="details-tab-Procurement Tracker"]').should("exist").click();
+        openTrackerStep(5);
+
+        // Use helper to check if checkbox is enabled
+        isStepCheckboxEnabled("#step-5-checkbox").then((isEnabled) => {
+            if (isEnabled) {
+                cy.get("#step-5-checkbox").check({ force: true });
+                cy.get("#step-5-checkbox").should("be.checked");
+
+                // Open users dropdown and verify authorized users are shown
+                cy.get("#users-combobox-input").should("not.be.disabled").click();
+                cy.get(".users-combobox__menu").should("be.visible");
+
+                // Amy Madigan should be authorized for this agreement
+                cy.get(".users-combobox__menu").should("contain", "Amy Madigan");
+            } else {
+                // Step already completed
+                cy.contains("Completed By").should("exist");
+                cy.log("Step 5 already completed or checkbox disabled - skipping user dropdown test");
+            }
+        });
+    });
+
+    it("toggles step 5 accordion open/close", () => {
+        cy.visit(`/agreements/${ISOLATED_ACTIVE_TRACKER_AGREEMENT_ID}/procurement-tracker`);
+        openTrackerStep(5);
+
+        cy.contains("button", /5 of 6/i).as("stepFiveButton");
+
+        cy.get("@stepFiveButton").should("have.attr", "aria-expanded", "true");
+        cy.get("@stepFiveButton").click();
+        cy.get("@stepFiveButton").should("have.attr", "aria-expanded", "false");
+        cy.get("@stepFiveButton").click();
+        cy.get("@stepFiveButton").should("have.attr", "aria-expanded", "true");
+    });
+
+    it("accepts optional notes field", () => {
+        cy.visit(`/agreements/${ISOLATED_ACTIVE_TRACKER_AGREEMENT_ID}/procurement-tracker`);
+        openTrackerStep(5);
+
+        // Use helper to check if checkbox is enabled
+        isStepCheckboxEnabled("#step-5-checkbox").then((isEnabled) => {
+            if (isEnabled) {
+                cy.get("#step-5-checkbox").check({ force: true });
+                cy.get("#step-5-checkbox").should("be.checked");
+
+                // Verify notes field exists and accepts input
+                cy.get("#notes").should("exist").and("not.be.disabled");
+                cy.get("#notes").type("Pre-award approval received from procurement shop");
+                cy.get("#notes").should("contain.value", "Pre-award approval received");
+            } else {
+                cy.log("Step 5 checkbox is disabled or step not pending - skipping");
+            }
+        });
+    });
+
+    it("validates date completed cannot be in the future", () => {
+        cy.visit(`/agreements/${ISOLATED_ACTIVE_TRACKER_AGREEMENT_ID}/procurement-tracker`);
+        openTrackerStep(5);
+
+        // Use helper to check if checkbox is enabled
+        isStepCheckboxEnabled("#step-5-checkbox").then((isEnabled) => {
+            if (isEnabled) {
+                cy.get("#step-5-checkbox").check({ force: true });
+                cy.get("#step-5-checkbox").should("be.checked");
+
+                // Try to enter a future date
+                cy.get("#step-5-date-completed").should("not.be.disabled");
+                cy.get("#step-5-date-completed").type("12/31/2099").blur();
+
+                // Button should remain disabled due to validation error
+                cy.get('[data-cy="continue-btn"]').should("be.disabled");
+            } else {
+                cy.log("Step 5 checkbox is disabled or step not pending - skipping");
+            }
+        });
     });
 });
