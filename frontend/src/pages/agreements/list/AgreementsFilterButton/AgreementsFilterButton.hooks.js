@@ -2,7 +2,7 @@ import React from "react";
 import { getCurrentFiscalYear } from "../../../../helpers/utils";
 
 /**
- * A filter for CANs list.
+ * A custom hook for the Agreements filter.
  * @param {import ('./AgreementsFilterTypes').Filters} filters - The current filters.
  * @param {Function} setFilters - A function to call to set the filters.
  */
@@ -75,6 +75,16 @@ export const useAgreementsFilterButton = (filters, setFilters) => {
     };
 
     const resetFilter = () => {
+        // Reset local state first to ensure modal form fields clear immediately
+        setFiscalYear([]);
+        setPortfolio([]);
+        setProjectTitle([]);
+        setAgreementType([]);
+        setAgreementName([]);
+        setContractNumber([]);
+        setAwardType([]);
+
+        // Then reset global filters to clear tags
         setFilters({
             fiscalYear: [],
             portfolio: [],

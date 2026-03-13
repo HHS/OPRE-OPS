@@ -10,15 +10,17 @@ import AwardTypeComboBox from "../../../../components/Agreements/AwardTypeComboB
 import FilterButton from "../../../../components/UI/FilterButton/FilterButton";
 import useAgreementsFilterButton from "./AgreementsFilterButton.hooks";
 import { FILTER_MODAL_FULL_WIDTH } from "../../../../constants";
+import { getDefaultFiscalYearString } from "../../../../helpers/utils";
 /**
  * A filter for agreements.
  * @param {Object} props - The component props.
  * @param {Object} props.filters - The current filters.
  * @param {Function} props.setFilters - A function to call to set the filters.
  * @param {Object} props.agreementFilterOptions - The filter options from API.
- * @returns {JSX.Element} - The procurement shop select element.
+ * @param {string|number} props.selectedFiscalYear - The current fiscal year value from the page-level dropdown. Can be a number (specific year), "All" (user-selected), "Multi" (auto-set when multiple years filtered), or undefined. Used to update the modal's placeholder text only - does not pre-select filter values.
+ * @returns {JSX.Element} - The filter button component.
  */
-export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOptions }) => {
+export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOptions, selectedFiscalYear }) => {
     const {
         fiscalYear,
         setFiscalYear,
@@ -51,7 +53,7 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
                 selectedFiscalYears={fiscalYear}
                 setSelectedFiscalYears={setFiscalYear}
                 legendClassname={legendStyles}
-                defaultString={`Fiscal Year ${currentFiscalYear}`}
+                defaultString={getDefaultFiscalYearString(selectedFiscalYear, currentFiscalYear)}
                 overrideStyles={FILTER_MODAL_FULL_WIDTH}
                 budgetLinesFiscalYears={agreementFilterOptions?.fiscal_years || []}
                 label="Compare Fiscal Years"
