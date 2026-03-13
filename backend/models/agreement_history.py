@@ -632,6 +632,42 @@ def create_agreement_update_history_event(
                     timestamp=updated_on,
                     history_type=AgreementHistoryType.AGREEMENT_UPDATED,
                 )
+            case "project_id":
+                from models import Project
+
+                old_project = session.get(Project, old_value) if old_value else None
+                new_project = session.get(Project, new_value) if new_value else None
+                old_project_title = (
+                    (
+                        f"{old_project.title} ({old_project.short_title})"
+                        if old_project.short_title
+                        else old_project.title
+                    )
+                    if old_project
+                    else "None"
+                )
+                new_project_title = (
+                    (
+                        f"{new_project.title} ({new_project.short_title})"
+                        if new_project.short_title
+                        else new_project.title
+                    )
+                    if new_project
+                    else "None"
+                )
+                return AgreementHistory(
+                    agreement_id=get_agreement_id_from_agreement(agreement),
+                    agreement_id_record=agreement_id,
+                    ops_event_id=ops_event_id,
+                    history_title="Change to Project",
+                    history_message=(
+                        f"Changes made to the OPRE budget spreadsheet changed the project from {old_project_title} to {new_project_title}."
+                        if updated_by_system_user
+                        else f"{updated_by_user.full_name} changed the project from {old_project_title} to {new_project_title}."
+                    ),
+                    timestamp=updated_on,
+                    history_type=AgreementHistoryType.AGREEMENT_UPDATED,
+                )
             case "awarding_entity_id":
                 from models import ProcurementShop
 
