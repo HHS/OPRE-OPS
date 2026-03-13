@@ -92,22 +92,40 @@ class ProjectResponse(Schema):
     created_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ")
     updated_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ")
     project_type: ProjectType = fields.Enum(ProjectType)
+    special_topics: Optional[list[str]] = fields.List(fields.String(), dump_default=[])
+    research_methodologies: Optional[list[str]] = fields.List(fields.String(), dump_default=[])
+    project_start: Optional[date] = fields.Date(format="%Y-%m-%d", dump_default=None)
+    project_end: Optional[date] = fields.Date(format="%Y-%m-%d", dump_default=None)
+    team_members: Optional[list[TeamLeaders]] = fields.List(fields.Nested(TeamLeaders), dump_default=[])
+    division_directors: Optional[list[str]] = fields.List(fields.String(), dump_default=[])
+
+    @pre_dump
+    def extract_metadata(self, data, **kwargs):
+        """Extract fields from project_metadata property and map to schema fields."""
+        if hasattr(data, "project_metadata"):
+            metadata = data.project_metadata
+
+            # Map special_topics
+            data.special_topics = list(metadata["special_topics"])
+
+            # Map research_methodologies
+            data.research_methodologies = list(metadata["research_methodologies"])
+
+            # Map date ranges
+            data.project_start = metadata["project_start"]
+            data.project_end = metadata["project_end"]
+
+            # Map team_members
+            data.team_members = metadata["team_members"]
+
+            # Map division_directors
+            data.division_directors = metadata["division_directors"]
+
+        return data
 
 
-class ResearchProjectResponse(Schema):
-    id: int = fields.Int()
-    title: str = fields.String()
-    created_by: int = fields.Int()
-    short_title: str = fields.String()
-    description: Optional[str] = fields.String(allow_none=True)
-    url: Optional[str] = fields.String(allow_none=True)
+class ResearchProjectResponse(ProjectResponse):
     origination_date: Optional[date] = fields.Date(format="%Y-%m-%d", dump_default=None)
-    team_leaders: Optional[list[TeamLeaders]] = fields.List(
-        fields.Nested(TeamLeaders), load_default=[], dump_default=[]
-    )
-    created_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ")
-    updated_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ")
-    project_type: ProjectType = fields.Enum(ProjectType)
 
 
 class ProjectListResponse(Schema):

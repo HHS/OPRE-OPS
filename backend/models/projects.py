@@ -62,9 +62,59 @@ class Project(BaseModel):
         return self.title
 
     @property
+    def project_metadata(self) -> dict:
+        """
+        Calculate a set of extra metadata about the project that is needed for various endpoints.
+
+        Returns a dict with:
+        - special_topics: Set of unique special topics across all agreements in the project
+        - research_methodologies: Set of unique research methodologies across all agreements in the project
+        - project_start: Earliest period_start across all services_components in all agreements
+        - project_end: Latest period_end across all services_components in all agreements
+        - team_members: List of unique team members across all agreements
+        - division_directors: Set of unique division directors across all agreements
+        """
+        special_topics_set = set()
+        research_methodologies_set = set()
+        start_dates = []
+        end_dates = []
+        team_members_dict = {}
+        division_directors_set = set()
+
+        for agreement in self.agreements:
+            for special_topic in agreement.special_topics:
+                special_topics_set.add(special_topic.name)
+            for research_methodology in agreement.research_methodologies:
+                research_methodologies_set.add(research_methodology.name)
+
+            # Collect unique team members
+            for team_member in agreement.team_members:
+                team_members_dict[team_member.id] = team_member
+
+            # Collect division directors
+            for director in agreement.division_directors:
+                division_directors_set.add(director)
+
+            # Collect all services_component dates
+            for sc in agreement.services_components:
+                if sc.period_start is not None:
+                    start_dates.append(sc.period_start)
+                if sc.period_end is not None:
+                    end_dates.append(sc.period_end)
+
+        return {
+            "special_topics": special_topics_set,
+            "research_methodologies": research_methodologies_set,
+            "project_start": min(start_dates) if start_dates else None,
+            "project_end": max(end_dates) if end_dates else None,
+            "team_members": list(team_members_dict.values()),
+            "division_directors": list(division_directors_set),
+        }
+
+    @property
     def project_list_metadata(self) -> dict:
         """
-        Calculate project totals, fiscal year breakdown, and date range.
+        Calculate a set of extra metadata that is needed for the project list endpoint to render
 
         Returns a dict with:
         - total: Total value of all agreements (sum of agreement_total for each)

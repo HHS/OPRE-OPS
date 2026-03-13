@@ -1,10 +1,20 @@
 import uuid
 from datetime import date
+from decimal import Decimal
 
 import pytest
 from flask import url_for
 
-from models import AgreementType, ContractAgreement, Project, ProjectType, ResearchProject
+from models import (
+    CAN,
+    AgreementType,
+    BudgetLineItem,
+    BudgetLineItemStatus,
+    ContractAgreement,
+    Project,
+    ProjectType,
+    ResearchProject,
+)
 from models.projects import ResearchType
 from ops_api.ops.services.ops_service import ResourceNotFoundError, ValidationError
 from ops_api.ops.services.projects import ProjectsService
@@ -1030,3 +1040,351 @@ class TestProjectFilterOptions:
         agreement_names = response.json["agreement_names"]
         names = [a for a in agreement_names]
         assert names == sorted(names)
+
+
+# Tests for project_metadata property
+class TestProjectMetadata:
+    """Test the project_metadata property returned via the API."""
+
+    def test_project_metadata_includes_all_fields(self, auth_client, loaded_db, test_project):
+        """Test that project detail endpoint includes all metadata fields from project_metadata."""
+        response = auth_client.get(url_for("api.projects-item", id=test_project.id))
+        assert response.status_code == 200
+
+        project_data = response.json
+
+        # Verify all project_metadata fields are present
+        assert "special_topics" in project_data
+        assert "research_methodologies" in project_data
+        assert "project_start" in project_data
+        assert "project_end" in project_data
+        assert "team_members" in project_data
+        assert "division_directors" in project_data
+
+    def test_project_metadata_field_types(self, auth_client, loaded_db, test_project):
+        """Test that project_metadata fields have correct types in API response."""
+        response = auth_client.get(url_for("api.projects-item", id=test_project.id))
+        assert response.status_code == 200
+
+        project_data = response.json
+
+        # Verify types
+        assert isinstance(project_data["special_topics"], list)
+        assert isinstance(project_data["research_methodologies"], list)
+        assert isinstance(project_data["team_members"], list)
+        assert isinstance(project_data["division_directors"], list)
+        # Dates can be strings or None
+        assert project_data["project_start"] is None or isinstance(project_data["project_start"], str)
+        assert project_data["project_end"] is None or isinstance(project_data["project_end"], str)
+
+    def test_special_topics_aggregation(self, auth_client, loaded_db, test_project):
+        """Test that special_topics aggregates unique topics from all agreements."""
+        from models import SpecialTopic
+
+        # Get or create special topics
+        topic1 = loaded_db.query(SpecialTopic).filter(SpecialTopic.name == "Child Welfare").first()
+        topic2 = loaded_db.query(SpecialTopic).filter(SpecialTopic.name == "Early Care and Education").first()
+
+        if not topic1:
+            topic1 = SpecialTopic(name="Child Welfare")
+            loaded_db.add(topic1)
+        if not topic2:
+            topic2 = SpecialTopic(name="Early Care and Education")
+            loaded_db.add(topic2)
+        loaded_db.commit()
+
+        # Add special topics to the first agreement
+        agreement1 = test_project.agreements[0]
+        agreement1.special_topics.append(topic1)
+
+        # Create a second agreement with overlapping and unique topics
+        agreement2 = ContractAgreement(
+            name="Second Agreement for Topics",
+            project_id=test_project.id,
+        )
+        loaded_db.add(agreement2)
+        loaded_db.commit()
+
+        agreement2.special_topics.append(topic1)  # Duplicate
+        agreement2.special_topics.append(topic2)  # Unique
+        loaded_db.commit()
+
+        # Call API
+        response = auth_client.get(url_for("api.projects-item", id=test_project.id))
+        assert response.status_code == 200
+
+        special_topics = response.json["special_topics"]
+
+        # Should contain unique topics
+        assert isinstance(special_topics, list)
+        assert "Child Welfare" in special_topics
+        assert "Early Care and Education" in special_topics
+        # Each topic should appear only once
+        assert special_topics.count("Child Welfare") == 1
+        assert special_topics.count("Early Care and Education") == 1
+
+    def test_research_methodologies_aggregation(self, auth_client, loaded_db, test_project):
+        """Test that research_methodologies aggregates unique methodologies from all agreements."""
+        from models import ResearchMethodology
+
+        # Get or create research methodologies
+        method1 = loaded_db.query(ResearchMethodology).filter(ResearchMethodology.name == "Survey").first()
+        method2 = loaded_db.query(ResearchMethodology).filter(ResearchMethodology.name == "Field Study").first()
+
+        if not method1:
+            method1 = ResearchMethodology(name="Survey")
+            loaded_db.add(method1)
+        if not method2:
+            method2 = ResearchMethodology(name="Field Study")
+            loaded_db.add(method2)
+        loaded_db.commit()
+
+        # Add methodologies to the first agreement
+        agreement1 = test_project.agreements[0]
+        agreement1.research_methodologies.append(method1)
+
+        # Create a second agreement with overlapping and unique methodologies
+        agreement2 = ContractAgreement(
+            name="Second Agreement for Methodologies",
+            project_id=test_project.id,
+        )
+        loaded_db.add(agreement2)
+        loaded_db.commit()
+
+        agreement2.research_methodologies.append(method1)  # Duplicate
+        agreement2.research_methodologies.append(method2)  # Unique
+        loaded_db.commit()
+
+        # Call API
+        response = auth_client.get(url_for("api.projects-item", id=test_project.id))
+        assert response.status_code == 200
+
+        methodologies = response.json["research_methodologies"]
+
+        # Should contain unique methodologies
+        assert isinstance(methodologies, list)
+        assert "Survey" in methodologies
+        assert "Field Study" in methodologies
+        # Each methodology should appear only once
+        assert methodologies.count("Survey") == 1
+        assert methodologies.count("Field Study") == 1
+
+    def test_project_dates_from_services_components(self, auth_client, loaded_db, test_project):
+        """Test that project_start and project_end are calculated from services components."""
+        from models import ServicesComponent
+
+        # Add services components with different date ranges
+        agreement = test_project.agreements[0]
+
+        sc1 = ServicesComponent(
+            agreement_id=agreement.id,
+            period_start=date.fromisoformat("2023-01-15"),
+            period_end=date.fromisoformat("2023-06-30"),
+            number=11,
+        )
+        sc2 = ServicesComponent(
+            agreement_id=agreement.id,
+            period_start=date.fromisoformat("2022-10-01"),  # Earliest
+            period_end=date.fromisoformat("2023-03-31"),
+            number=12,
+        )
+        sc3 = ServicesComponent(
+            agreement_id=agreement.id,
+            period_start=date.fromisoformat("2023-07-01"),
+            period_end=date.fromisoformat("2024-12-31"),  # Latest
+            number=13,
+        )
+        loaded_db.add_all([sc1, sc2, sc3])
+        loaded_db.commit()
+
+        # Call API
+        response = auth_client.get(url_for("api.projects-item", id=test_project.id))
+        assert response.status_code == 200
+
+        project_data = response.json
+
+        # project_start should be earliest period_start
+        assert project_data["project_start"] == "2022-10-01"
+
+        # project_end should be latest period_end
+        assert project_data["project_end"] == "2045-06-13"
+
+    def test_project_dates_none_when_no_services_components(self, auth_client, loaded_db, project_with_no_agreements):
+        """Test that project_start and project_end are None when there are no services components."""
+        # Call API
+        response = auth_client.get(url_for("api.projects-item", id=project_with_no_agreements.id))
+        assert response.status_code == 200
+
+        project_data = response.json
+
+        assert project_data["project_start"] is None
+        assert project_data["project_end"] is None
+
+    def test_team_members_aggregation(self, auth_client, loaded_db):
+        """Test that team_members aggregates unique team members from all agreements."""
+        from models import User
+
+        # Create a new project
+        project = ResearchProject(
+            project_type=ProjectType.RESEARCH,
+            title="Team Members Aggregation Test Project",
+            short_title="TMATP",
+            description="Test project for team members aggregation",
+        )
+        loaded_db.add(project)
+        loaded_db.commit()
+
+        # Get test users
+        user1 = loaded_db.get(User, 500)
+        user2 = loaded_db.get(User, 501)
+        user3 = loaded_db.get(User, 502)
+
+        # Create first agreement with team members
+        agreement1 = ContractAgreement(
+            name="First Agreement for Team",
+            project_id=project.id,
+        )
+        loaded_db.add(agreement1)
+        loaded_db.commit()
+
+        agreement1.team_members.append(user1)
+        agreement1.team_members.append(user2)
+
+        # Create a second agreement with overlapping and unique team members
+        agreement2 = ContractAgreement(
+            name="Second Agreement for Team",
+            project_id=project.id,
+        )
+        loaded_db.add(agreement2)
+        loaded_db.commit()
+
+        agreement2.team_members.append(user2)  # Duplicate
+        agreement2.team_members.append(user3)  # Unique
+        loaded_db.commit()
+
+        # Call API
+        response = auth_client.get(url_for("api.projects-item", id=project.id))
+        assert response.status_code == 200
+
+        team_members = response.json["team_members"]
+
+        # Should be a list with unique team members
+        assert isinstance(team_members, list)
+        assert len(team_members) == 3  # 3 unique team members
+
+        team_member_ids = [tm["id"] for tm in team_members]
+        assert 500 in team_member_ids
+        assert 501 in team_member_ids
+        assert 502 in team_member_ids
+
+        # Verify each team member has expected fields
+        for tm in team_members:
+            assert "id" in tm
+            assert "full_name" in tm
+
+    def test_division_directors_aggregation(self, auth_client, loaded_db, test_project):
+        """Test that division_directors aggregates unique division directors from all agreements."""
+        # Get a CAN with a division director
+        can = loaded_db.query(CAN).first()
+
+        # Create BLIs associated with agreements to get division directors
+        agreement1 = test_project.agreements[0]
+
+        bli1 = BudgetLineItem(
+            budget_line_item_type=AgreementType.CONTRACT,
+            agreement_id=agreement1.id,
+            can_id=can.id,
+            amount=Decimal("1000.00"),
+            date_needed=date.fromisoformat("2023-03-15"),
+            status=BudgetLineItemStatus.PLANNED,
+        )
+        loaded_db.add(bli1)
+        loaded_db.commit()
+
+        # Call API
+        response = auth_client.get(url_for("api.projects-item", id=test_project.id))
+        assert response.status_code == 200
+
+        division_directors = response.json["division_directors"]
+
+        # Should be a list of unique division director names
+        assert isinstance(division_directors, list)
+        assert len(division_directors) > 0
+        # Each director should be a string (full name)
+        for director in division_directors:
+            assert isinstance(director, str)
+
+    def test_empty_metadata_when_no_agreements(self, auth_client, loaded_db, project_with_no_agreements):
+        """Test that project_metadata returns empty collections when project has no agreements."""
+        # Call API
+        response = auth_client.get(url_for("api.projects-item", id=project_with_no_agreements.id))
+        assert response.status_code == 200
+
+        project_data = response.json
+
+        assert isinstance(project_data["special_topics"], list)
+        assert len(project_data["special_topics"]) == 0
+
+        assert isinstance(project_data["research_methodologies"], list)
+        assert len(project_data["research_methodologies"]) == 0
+
+        assert project_data["project_start"] is None
+        assert project_data["project_end"] is None
+
+        assert isinstance(project_data["team_members"], list)
+        assert len(project_data["team_members"]) == 0
+
+        assert isinstance(project_data["division_directors"], list)
+        assert len(project_data["division_directors"]) == 0
+
+    def test_team_members_no_duplicates(self, auth_client, loaded_db):
+        """Test that team_members list contains no duplicate users."""
+        from models import User
+
+        # Create a new project
+        project = ResearchProject(
+            project_type=ProjectType.RESEARCH,
+            title="Team Members No Duplicates Test Project",
+            short_title="TMNDTP",
+            description="Test project for team members deduplication",
+        )
+        loaded_db.add(project)
+        loaded_db.commit()
+
+        user1 = loaded_db.get(User, 500)
+        user2 = loaded_db.get(User, 501)
+
+        # Create first agreement with team members
+        agreement1 = ContractAgreement(
+            name="First Duplicate Team Test",
+            project_id=project.id,
+        )
+        loaded_db.add(agreement1)
+        loaded_db.commit()
+
+        agreement1.team_members.append(user1)
+        agreement1.team_members.append(user2)
+
+        # Create second agreement with same team members
+        agreement2 = ContractAgreement(
+            name="Second Duplicate Team Test",
+            project_id=project.id,
+        )
+        loaded_db.add(agreement2)
+        loaded_db.commit()
+
+        agreement2.team_members.append(user1)  # Same as agreement1
+        agreement2.team_members.append(user2)  # Same as agreement1
+        loaded_db.commit()
+
+        # Call API
+        response = auth_client.get(url_for("api.projects-item", id=project.id))
+        assert response.status_code == 200
+
+        team_members = response.json["team_members"]
+        team_member_ids = [tm["id"] for tm in team_members]
+
+        # Each user should appear only once
+        assert len(team_members) == 2
+        assert team_member_ids.count(500) == 1
+        assert team_member_ids.count(501) == 1
