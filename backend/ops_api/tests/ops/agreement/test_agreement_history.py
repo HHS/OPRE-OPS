@@ -135,9 +135,11 @@ def test_agreement_project_change_history_trigger(loaded_db, app_ctx):
     assert len(agreement_history_list) == 1
     assert agreement_history_list[0].history_type == AgreementHistoryType.AGREEMENT_UPDATED
     assert agreement_history_list[0].history_title == "Change to Project"
-    assert "changed the project from" in agreement_history_list[0].history_message
-    assert "(" in agreement_history_list[0].history_message
-    assert ")" in agreement_history_list[0].history_message
+    assert (
+        agreement_history_list[0].history_message
+        == "User Demo changed the project from Annual Performance Plans and Reports (APP)"
+        " to Human Services Interoperability Support (HSS)."
+    )
 
 
 def test_update_add_remove_team_member_history_trigger(loaded_db, app_ctx):
