@@ -78,7 +78,20 @@ bun install
 
 We have a Docker Compose configuration that makes it easy to run the application.
 
-To run the application using the vite development server (allows hot reloading)...
+### First run / data reset
+
+The `data-import` and `disable-users` services are one-shot setup services placed behind a
+`setup` [Compose profile](https://docs.docker.com/compose/how-tos/profiles/). Run them explicitly
+the first time you bring up a stack, or any time you need to re-seed the database:
+
+```shell
+docker compose --profile setup up --build
+```
+
+### Subsequent runs
+
+Once the database is seeded you can start the stack without the setup services. This is faster
+and avoids leaving stale exited containers in your Docker tooling:
 
 ```shell
 docker compose up --build
@@ -99,13 +112,57 @@ docker compose up --build --watch
 To run the application using the production server configuration...
 
 ```shell
-docker compose -f docker-compose.static.yml up --build
-````
+docker compose -f docker-compose.static.yml --profile setup up --build
+```
 
 To run the application using the demo data set...
 
 ```shell
-docker compose -f docker-compose.demo.yml up --build
+docker compose -f docker-compose.demo.yml --profile setup up --build
+```
+
+### Running multiple worktrees in parallel
+
+Because `container_name` is no longer hard-coded, Docker Compose uses the **project name** to
+namespace all containers and networks. By default Compose derives the project name from the
+directory name, so two worktrees in different directories are already isolated from each other.
+
+If two worktrees share the same directory name, or if you want to be explicit, set
+`COMPOSE_PROJECT_NAME`:
+
+```shell
+export COMPOSE_PROJECT_NAME=ops_feature_xyz
+```
+
+To avoid host-port collisions between parallel stacks, override the port variables:
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `DB_PORT` | `5432` | PostgreSQL host port |
+| `BACKEND_PORT` | `8080` | Flask API host port |
+| `FRONTEND_PORT` | `3000` | Frontend host port |
+| `BACKEND_DOMAIN` | `http://localhost:8080` | Backend URL used by the frontend container |
+
+Example — running a second worktree on alternate ports:
+
+```shell
+COMPOSE_PROJECT_NAME=ops_feature_xyz \
+DB_PORT=55432 \
+BACKEND_PORT=58080 \
+FRONTEND_PORT=53000 \
+BACKEND_DOMAIN=http://localhost:58080 \
+docker compose --profile setup up --build
+```
+
+On subsequent runs for that worktree, omit `--profile setup` and keep the same port variables:
+
+```shell
+COMPOSE_PROJECT_NAME=ops_feature_xyz \
+DB_PORT=55432 \
+BACKEND_PORT=58080 \
+FRONTEND_PORT=53000 \
+BACKEND_DOMAIN=http://localhost:58080 \
+docker compose up --build
 ```
 
 
@@ -266,10 +323,10 @@ The current ERD is [here](./docs/ops.md).
 When updating the SQLAlchemy models, you will need to generate a new migration script for the database schema. This is
 done using [Alembic](https://alembic.sqlalchemy.org/en/latest/).
 
-First start the DB and update it to the latest version...
+First start the DB and seed it with the latest migrations...
 
 ```shell
-docker compose up db data-import --build
+docker compose --profile setup up db data-import --build
 ```
 
 To generate a new migration script, run...
