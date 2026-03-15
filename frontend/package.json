@@ -78,7 +78,7 @@
         "redux-mock-store": "1.5.5",
         "sass-loader": "16.0.7",
         "semantic-release": "25.0.3",
-        "vite": "7.3.1",
+        "vite": "8.0.0",
         "vite-jsconfig-paths": "2.0.1",
         "vite-plugin-babel-macros": "1.0.6",
         "vite-plugin-eslint": "1.8.1",
