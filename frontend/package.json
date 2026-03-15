@@ -72,7 +72,7 @@
         "eslint-plugin-testing-library": "7.16.0",
         "globals": "17.4.0",
         "history": "5.3.0",
-        "jsdom": "28.1.0",
+        "jsdom": "29.0.0",
         "msw": "2.12.10",
         "prettier": "3.8.1",
         "redux-mock-store": "1.5.5",
