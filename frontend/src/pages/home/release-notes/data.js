@@ -6,6 +6,40 @@ NOTE: types of changes are 'New Feature', 'Improvements', 'Fixes'
 */
 export const data = [
     {
+        releaseDate: "2026-3-13",
+        version: "1.326.0",
+        changes: [
+            {
+                id: "0001",
+                subject: "Procurement Tracker Steps 1-4",
+                type: "New Feature",
+                description:
+                    "If an agreement has budget lines in executing status, you can now track your progress through procurement up to step 4. Steps 1-4 include acquisition planning, pre-solicitation, solicitation, and evaluation. Step 5 (pre-award) and step 6 (award) will be developed soon!"
+            },
+            {
+                id: "0002",
+                subject: "Changing the Project For an Agreement",
+                type: "Improvements",
+                description:
+                    "You can now change the project associated to each agreement by clicking edit on the agreement details page (only DDs, Team Leaders, CORs, ACORs, and other team members listed on each agreement can edit them)."
+            },
+            {
+                id: "0003",
+                subject: "New Agreements List",
+                type: "Improvements",
+                description:
+                    "Based on your feedback, the agreements list page now includes new columns such as Start, End, Total and FY25 Obligated, as well as new graphs showing the total # of agreements per FY and the breakdown of agreement types. This builds on the new filters updated in the last release providing you with even more diverse ways to view your agreement data."
+            },
+            {
+                id: "0004",
+                subject: "Performance Improvements",
+                type: "Improvements",
+                description:
+                    "We’ve made some recent performance improvements that will reduce the time it takes to sign-in or load data across tables."
+            }
+        ]
+    },
+    {
         releaseDate: "2026-2-13",
         version: "1.289.3",
         changes: [
