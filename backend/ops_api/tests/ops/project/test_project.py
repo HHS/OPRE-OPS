@@ -478,16 +478,35 @@ def test_projects_list_uses_lightweight_schema(auth_client, loaded_db, app_ctx):
     assert "created_by" not in project, "Unused 'created_by' field should not be in list response"
 
 
-def test_project_list_metadata_serialization(auth_client, loaded_db, test_project):
+def test_project_list_metadata_serialization(auth_client, loaded_db):
     """
     Test that project_list_metadata is correctly extracted and serialized in list response.
     """
     from decimal import Decimal
 
     from models import BudgetLineItem, ServicesComponent
+    from models.budget_line_items import BudgetLineItemStatus
 
-    # Add a services component with date range to the test project's agreement
-    agreement = test_project.agreements[0]
+    # Create a new project
+    project = ResearchProject(
+        project_type=ProjectType.RESEARCH,
+        title="Project List Metadata Test Project",
+        short_title="PLMTP",
+        description="Test project for list metadata serialization",
+    )
+    loaded_db.add(project)
+    loaded_db.commit()
+    loaded_db.refresh(project)
+
+    # Create an agreement for the project
+    agreement = ContractAgreement(
+        name="Test Agreement for Metadata",
+        project_id=project.id,
+    )
+    loaded_db.add(agreement)
+    loaded_db.commit()
+
+    # Add a services component with date range
     sc = ServicesComponent(
         agreement_id=agreement.id,
         period_start=date.fromisoformat("2023-01-01"),
@@ -498,8 +517,6 @@ def test_project_list_metadata_serialization(auth_client, loaded_db, test_projec
 
     # Add budget line items with fiscal years to test fiscal_year_totals
     # Set status to PLANNED so they're included in totals (DRAFT items are excluded)
-    from models.budget_line_items import BudgetLineItemStatus
-
     bli1 = BudgetLineItem(
         budget_line_item_type=AgreementType.CONTRACT,
         agreement_id=agreement.id,
@@ -518,16 +535,16 @@ def test_project_list_metadata_serialization(auth_client, loaded_db, test_projec
     loaded_db.add(bli2)
     loaded_db.commit()
 
-    response = auth_client.get(url_for("api.projects-group"))
+    response = auth_client.get(url_for("api.projects-group", limit=50))
     assert response.status_code == 200
 
-    # Find the test project in the response
-    project_data = next((p for p in response.json["data"] if p["id"] == test_project.id), None)
+    # Find the project in the response
+    project_data = next((p for p in response.json["data"] if p["id"] == project.id), None)
     assert project_data is not None
 
     # Verify metadata fields are populated
     assert project_data["start_date"] == "2023-01-01"
-    assert project_data["end_date"] == "2045-06-13"
+    assert project_data["end_date"] == "2023-12-31"
     assert project_data["project_total"] is not None
     assert isinstance(project_data["project_total"], int)
 
@@ -535,7 +552,7 @@ def test_project_list_metadata_serialization(auth_client, loaded_db, test_projec
     assert project_data["fiscal_year_totals"] is not None
     assert isinstance(project_data["fiscal_year_totals"], dict)
     # Fiscal year totals should have entries for FY 2023 and 2024
-    assert "2023" in project_data["fiscal_year_totals"] or "2024" in project_data["fiscal_year_totals"].keys()
+    assert "2023" in project_data["fiscal_year_totals"] and "2024" in project_data["fiscal_year_totals"].keys()
 
 
 def test_project_list_metadata_agreement_name_list_property(loaded_db, test_project):

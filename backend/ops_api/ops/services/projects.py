@@ -3,6 +3,7 @@ from typing import Any, Optional, Sequence
 
 from loguru import logger
 from sqlalchemy import distinct, or_, select
+from sqlalchemy.orm import selectinload
 
 from models import (
     CAN,
@@ -37,13 +38,13 @@ class ProjectFilters:
     def parse_filters(cls, data: dict) -> "ProjectFilters":
         """Parse filter parameters from request data."""
         return cls(
-            fiscal_year=data.get("fiscal_year", []),
-            portfolio_id=data.get("portfolio_id", []),
-            project_search=data.get("project_search", []),
-            agreement_search=data.get("agreement_search", []),
-            project_type=data.get("project_type", []),
-            limit=data.get("limit", [10]),
-            offset=data.get("offset", [0]),
+            fiscal_year=data.get("fiscal_year", []) if data else [],
+            portfolio_id=data.get("portfolio_id", []) if data else [],
+            project_search=data.get("project_search", []) if data else [],
+            agreement_search=data.get("agreement_search", []) if data else [],
+            project_type=data.get("project_type", []) if data else [],
+            limit=data.get("limit", [10]) if data else [10],
+            offset=data.get("offset", [0]) if data else [0],
         )
 
 
@@ -231,6 +232,7 @@ class ProjectsService(OpsService[Project]):
             .join(CAN, isouter=True)
             .join(CANFundingDetails, isouter=True)
             .join(CANFundingBudget, isouter=True)
+            .options(selectinload(ResearchProject.agreements).selectinload(Agreement.services_components))
         )
 
         query_helper = QueryHelper(stmt)
@@ -255,7 +257,7 @@ class ProjectsService(OpsService[Project]):
                 # For multiple years, we'll just ensure funding budget exists for one of those years
                 # The obligate_by range check becomes complex with multiple years, so we skip it
 
-        # Apply project search filter on project title (AND logic - must match all search terms)
+        # Apply project search filter on project title (OR logic, exact match on title/short title)
         if filters.project_search:
             query_helper.where_clauses.append(
                 or_(Project.title.in_(filters.project_search), Project.short_title.in_(filters.project_search))
@@ -291,6 +293,7 @@ class ProjectsService(OpsService[Project]):
             .join(CAN, isouter=True)
             .join(CANFundingDetails, isouter=True)
             .join(CANFundingBudget, isouter=True)
+            .options(selectinload(AdministrativeAndSupportProject.agreements).selectinload(Agreement.services_components))
         )
 
         query_helper = QueryHelper(stmt)
@@ -353,7 +356,7 @@ class ProjectsService(OpsService[Project]):
         return project
 
     def get_list(
-        self, data: dict[str, Any] | None = {}
+        self, data: dict[str, Any] | None = None
     ) -> tuple[Sequence[ResearchProject], Sequence[AdministrativeAndSupportProject], dict[str, Any]]:
         """
         Get list of projects with optional filtering and pagination.
@@ -388,14 +391,16 @@ class ProjectsService(OpsService[Project]):
         # Combine results for pagination
         all_projects = research_projects + administrative_and_support_projects
 
+        sorted_projects = sorted(all_projects, key=lambda p: p.id)
+
         # Calculate total count before pagination
-        total_count = len(all_projects)
+        total_count = len(sorted_projects)
 
         # Apply pagination
         limit_value = filters.limit[0] if filters.limit else 10
         offset_value = filters.offset[0] if filters.offset else 0
 
-        paginated_projects = all_projects[offset_value : offset_value + limit_value]
+        paginated_projects = sorted_projects[offset_value : offset_value + limit_value]
 
         # Separate paginated results back into their types for serialization
         paginated_research = [p for p in paginated_projects if isinstance(p, ResearchProject)]

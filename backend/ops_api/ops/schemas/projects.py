@@ -141,7 +141,7 @@ class ProjectListResponse(Schema):
             metadata = data.project_list_metadata
 
             # Map total to project_total (convert Decimal to int)
-            data.project_total = int(metadata["total"]) if metadata["total"] else None
+            data.project_total = metadata["total"] if metadata["total"] is not None else None
 
             # Map date ranges
             data.start_date = metadata["project_start"]
