@@ -1028,7 +1028,7 @@ def _filter_by_ownership(results, only_my):
 def _sort_agreements(results, sort_condition, sort_descending, fiscal_years=None):
     match (sort_condition):
         case AgreementSortCondition.AGREEMENT:
-            return sorted(results, key=lambda agreement: agreement.name, reverse=sort_descending)
+            return sorted(results, key=lambda agreement: agreement.name.casefold(), reverse=sort_descending)
         case AgreementSortCondition.PROJECT:
             return sorted(results, key=project_sort, reverse=sort_descending)
         case AgreementSortCondition.TYPE:

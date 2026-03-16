@@ -468,4 +468,79 @@ describe("Agreement memoization functionality", () => {
             expect(screen.getByTestId("propagated-value")).toHaveTextContent("true");
         });
     });
+
+    describe("project title with nickname display", () => {
+        const ProjectTitleDisplay = ({ agreement }) => (
+            <h2 data-testid="project-title">
+                {`${agreement?.project?.title ?? ""}${agreement?.project?.short_title ? ` (${agreement.project.short_title})` : ""}`}
+            </h2>
+        );
+
+        it("renders project title with short_title in parentheses when short_title is present", () => {
+            const agreement = {
+                project: {
+                    title: "Human Services Interoperability Support",
+                    short_title: "HSS"
+                }
+            };
+
+            render(
+                <TestWrapper>
+                    <ProjectTitleDisplay agreement={agreement} />
+                </TestWrapper>
+            );
+
+            expect(screen.getByTestId("project-title")).toHaveTextContent(
+                "Human Services Interoperability Support (HSS)"
+            );
+        });
+
+        it("renders project title without parentheses when short_title is null", () => {
+            const agreement = {
+                project: {
+                    title: "Human Services Interoperability Support",
+                    short_title: null
+                }
+            };
+
+            render(
+                <TestWrapper>
+                    <ProjectTitleDisplay agreement={agreement} />
+                </TestWrapper>
+            );
+
+            expect(screen.getByTestId("project-title")).toHaveTextContent("Human Services Interoperability Support");
+            expect(screen.getByTestId("project-title").textContent).not.toContain("(");
+        });
+
+        it("renders project title without parentheses when short_title is empty string", () => {
+            const agreement = {
+                project: {
+                    title: "Human Services Interoperability Support",
+                    short_title: ""
+                }
+            };
+
+            render(
+                <TestWrapper>
+                    <ProjectTitleDisplay agreement={agreement} />
+                </TestWrapper>
+            );
+
+            expect(screen.getByTestId("project-title")).toHaveTextContent("Human Services Interoperability Support");
+            expect(screen.getByTestId("project-title").textContent).not.toContain("(");
+        });
+
+        it("renders empty content when project is undefined", () => {
+            const agreement = {};
+
+            render(
+                <TestWrapper>
+                    <ProjectTitleDisplay agreement={agreement} />
+                </TestWrapper>
+            );
+
+            expect(screen.getByTestId("project-title")).toHaveTextContent("");
+        });
+    });
 });
