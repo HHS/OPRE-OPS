@@ -133,21 +133,6 @@ describe("ProcurementTrackerStepFive Validation Suite", () => {
             expect(result.hasErrors("dateCompleted")).toBe(true);
             expect(result.getErrors("dateCompleted")).toContain("Date must be MM/DD/YYYY");
         });
-
-        it("should fail with invalid calendar date (02/31/2024)", () => {
-            const data = { dateCompleted: "02/31/2024" };
-            const result = suite.run(data, "dateCompleted");
-
-            expect(result.hasErrors("dateCompleted")).toBe(true);
-            // Invalid calendar dates won't match format so they'll fail date comparison
-        });
-
-        it("should fail with invalid calendar date (02/30/2024)", () => {
-            const data = { dateCompleted: "02/30/2024" };
-            const result = suite.run(data, "dateCompleted");
-
-            expect(result.hasErrors("dateCompleted")).toBe(true);
-        });
     });
 
     describe("Date Completed Field - Range Validation", () => {

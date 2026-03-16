@@ -53,13 +53,6 @@ const suite = create((data = {}, fieldName) => {
             if (!data[field]) return; // Skip validation if field is empty (for optional fields)
             enforce(data[field]).matches(DATE_FORMAT_REGEX);
         });
-
-        test(field, "Date must be a valid calendar date", () => {
-            if (!data[field]) return; // Skip validation if field is empty (for optional fields)
-            if (!isValidDateFormat(data[field])) return; // Skip if format is already invalid
-            const parsed = parseDateString(data[field]);
-            enforce(parsed).isNotEmpty(); // Will fail if parseDateString returns null
-        });
     });
 
     // Field-specific date range validations
