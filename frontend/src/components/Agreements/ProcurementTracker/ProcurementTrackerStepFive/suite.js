@@ -11,15 +11,11 @@ const getDateOnly = (date) => new Date(date.getFullYear(), date.getMonth(), date
 const parseDateString = (dateString) => {
     if (!dateString || !isValidDateFormat(dateString)) return null;
 
-    const [month, day, year] = dateString.split('/').map(Number);
+    const [month, day, year] = dateString.split("/").map(Number);
     const date = new Date(year, month - 1, day);
 
     // Verify the parsed date matches the input (catches invalid calendar dates)
-    if (
-        date.getFullYear() !== year ||
-        date.getMonth() !== month - 1 ||
-        date.getDate() !== day
-    ) {
+    if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
         return null; // Invalid calendar date (e.g., 02/31/2024)
     }
 
@@ -56,6 +52,13 @@ const suite = create((data = {}, fieldName) => {
         test(field, "Date must be MM/DD/YYYY", () => {
             if (!data[field]) return; // Skip validation if field is empty (for optional fields)
             enforce(data[field]).matches(DATE_FORMAT_REGEX);
+        });
+
+        test(field, "Date must be a valid calendar date", () => {
+            if (!data[field]) return; // Skip validation if field is empty (for optional fields)
+            if (!isValidDateFormat(data[field])) return; // Skip if format is already invalid
+            const parsed = parseDateString(data[field]);
+            enforce(parsed).isNotEmpty(); // Will fail if parseDateString returns null
         });
     });
 
