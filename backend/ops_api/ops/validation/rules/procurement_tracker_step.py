@@ -423,3 +423,51 @@ class SolicitationPeriodDateOrderRule(ValidationRule):
                 raise ValidationError(
                     {"solicitation_period_start_date": "Solicitation period start date must be earlier than end date."}
                 )
+
+
+class PreAwardApprovalRequestAuthorizationRule(ValidationRule):
+    """
+    Validates that the user requesting pre-award approval is authorized.
+    Only checks when approval_requested fields are being updated for PRE_AWARD steps.
+    """
+
+    @property
+    def name(self) -> str:
+        return "PRE_AWARD Approval Request Authorization"
+
+    def validate(self, procurement_tracker_step: ProcurementTrackerStep, context: ValidationContext) -> None:
+        # Only validate if step type is PRE_AWARD
+        if procurement_tracker_step.step_type != ProcurementTrackerStepType.PRE_AWARD:
+            return
+
+        updated_fields = context.updated_fields
+
+        # Only validate if approval_requested fields are being updated
+        approval_fields = [
+            "pre_award_approval_requested",
+            "pre_award_approval_requested_date",
+            "pre_award_approval_requested_by",
+            "pre_award_requestor_notes",
+        ]
+        if not any(field in updated_fields for field in approval_fields):
+            return
+
+        # Check if procurement tracker step has a valid agreement
+        if (
+            not procurement_tracker_step.procurement_tracker
+            or not procurement_tracker_step.procurement_tracker.agreement
+        ):
+            raise ValidationError(
+                {
+                    "agreement": f"Procurement tracker step {procurement_tracker_step.id} is not linked to a valid agreement."
+                }
+            )
+
+        agreement = procurement_tracker_step.procurement_tracker.agreement
+
+        # Verify user is authorized for the agreement
+        if not check_user_association(agreement, context.user):
+            raise AuthorizationError(
+                f"User {context.user.id} is not authorized to request pre-award approval for procurement tracker step {procurement_tracker_step.id}.",
+                "ProcurementTrackerStep",
+            )

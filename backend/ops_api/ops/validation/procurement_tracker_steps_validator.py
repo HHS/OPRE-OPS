@@ -80,6 +80,7 @@ class ProcurementTrackerStepsValidator:
             NoFutureCompletionDateUpdateValidationRule,
             NoPastTargetCompletionDateUpdateRule,
             NoUpdatingCompletedProcurementStepRule,
+            PreAwardApprovalRequestAuthorizationRule,
             PreAwardCompletionRequiredFieldsRule,
             PreSolicitationCompletionRequiredFieldsRule,
             ResourceExistsRule,
@@ -130,6 +131,7 @@ class ProcurementTrackerStepsValidator:
             return [
                 ResourceExistsRule(),
                 UserAssociationRule(),
+                PreAwardApprovalRequestAuthorizationRule(),
                 PreAwardCompletionRequiredFieldsRule(),
                 CompletedByUpdateAuthorizationRule(),
                 NoUpdatingCompletedProcurementStepRule(),

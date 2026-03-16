@@ -40,6 +40,12 @@ class ProcurementTrackerStepResponseSchema(Schema):
     solicitation_period_start_date = fields.Date(allow_none=True)
     solicitation_period_end_date = fields.Date(allow_none=True)
 
+    # PRE_AWARD approval request fields
+    approval_requested = fields.Boolean(allow_none=True)
+    approval_requested_date = fields.Date(allow_none=True)
+    approval_requested_by = fields.Integer(allow_none=True)
+    requestor_notes = fields.String(allow_none=True)
+
     # BaseModel fields
     display_name = fields.String(dump_only=True)
     created_on = fields.DateTime(dump_only=True)
@@ -177,6 +183,10 @@ class ProcurementTrackerStepResponseSchema(Schema):
                 "task_completed_by",
                 "date_completed",
                 "notes",
+                "approval_requested",
+                "approval_requested_date",
+                "approval_requested_by",
+                "requestor_notes",
             }
             # Remove PRE_SOLICITATION-only fields
             data.pop("draft_solicitation_date", None)
@@ -194,6 +204,10 @@ class ProcurementTrackerStepResponseSchema(Schema):
                 "draft_solicitation_date",
                 "solicitation_period_start_date",
                 "solicitation_period_end_date",
+                "approval_requested",
+                "approval_requested_date",
+                "approval_requested_by",
+                "requestor_notes",
             ]:
                 data.pop(field, None)
 
@@ -378,6 +392,10 @@ class ProcurementTrackerStepSchema(Schema):
                 "task_completed_by",
                 "date_completed",
                 "notes",
+                "approval_requested",
+                "approval_requested_date",
+                "approval_requested_by",
+                "requestor_notes",
             }
             preserve_keys = base_fields | pre_award_fields
             # Remove PRE_SOLICITATION-only fields
@@ -396,6 +414,10 @@ class ProcurementTrackerStepSchema(Schema):
                 "draft_solicitation_date",
                 "solicitation_period_start_date",
                 "solicitation_period_end_date",
+                "approval_requested",
+                "approval_requested_date",
+                "approval_requested_by",
+                "requestor_notes",
             ]:
                 data.pop(field, None)
 
