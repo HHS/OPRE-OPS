@@ -205,6 +205,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 stepFiveData={stepFiveData}
                                 isDisabled={isStepDisabled}
                                 isActiveStep={activeTracker?.active_step_number === step.step_number}
+                                agreementId={agreement?.id}
                                 handleSetCompletedStepNumber={handleSetCompletedStepNumber}
                             />
                         )}

@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { getLocalISODate } from "../../../../helpers/utils";
 import TextArea from "../../../UI/Form/TextArea";
 import ConfirmationModal from "../../../UI/Modals/ConfirmationModal";
@@ -19,6 +20,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
  * @property {ProcurementTrackerPreAwardStep} stepFiveData - The data for step 5 of the procurement tracker
  * @property {boolean} isActiveStep - Whether step is the active step
  * @property {SafeUser[]} authorizedUsers - List of users authorized for this agreement
+ * @property {number} agreementId - The agreement ID
  * @property {((stepNumber: number) => void) | undefined} [handleSetCompletedStepNumber] - Optional callback to set completed step number
  */
 
@@ -33,8 +35,10 @@ const ProcurementTrackerStepFive = ({
     stepFiveData,
     isActiveStep,
     authorizedUsers,
+    agreementId,
     handleSetCompletedStepNumber
 }) => {
+    const navigate = useNavigate();
     const {
         isPreAwardComplete,
         setIsPreAwardComplete,
@@ -95,6 +99,37 @@ const ProcurementTrackerStepFive = ({
                         Pre-Award Approval and send the Final Consensus Memo to the Procurement Shop, check this task as
                         complete.
                     </p>
+
+                    {/* Pre-Award Approval Request Section */}
+                    {!stepFiveData?.approval_requested ? (
+                        <div className="margin-bottom-3">
+                            <p>
+                                Before completing this step, you may request Pre-Award Approval from your Division
+                                Director.
+                            </p>
+                            <button
+                                className="usa-button"
+                                onClick={() => navigate(`/agreements/${agreementId}/pre-award-approval`)}
+                                disabled={isDisabled}
+                                data-cy="request-pre-award-approval-btn"
+                            >
+                                Request Pre-Award Approval
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="margin-bottom-3 bg-base-lightest padding-2">
+                            <p className="margin-0 text-bold">Pre-Award Approval Requested</p>
+                            <p className="margin-top-1">
+                                Approval request submitted and pending Division Director review.
+                            </p>
+                            {stepFiveData.requestor_notes && (
+                                <p className="margin-top-1 font-body-xs">
+                                    <strong>Notes:</strong> {stepFiveData.requestor_notes}
+                                </p>
+                            )}
+                        </div>
+                    )}
+
                     <div className="display-flex flex-align-end margin-bottom-2">
                         {stepFiveData?.target_completion_date ? (
                             <TermTag
