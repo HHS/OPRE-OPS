@@ -44,9 +44,19 @@ export default defineConfig(({ mode }) => {
             }
         },
         plugins: [
-            // Vitest-only workaround: @vitejs/plugin-react v6 relies on Vite 8's built-in
-            // Oxc pipeline for JSX transforms. Vitest's bundled Vite 7 ignores Oxc entirely,
-            // so without this plugin no JSX transform runs at all during tests.
+            // TODO: Remove this plugin once Vitest ships with Vite 8 internally.
+            //
+            // WHY THIS EXISTS:
+            // @vitejs/plugin-react v6 migrated JSX transforms to Vite 8's built-in Oxc
+            // pipeline — it no longer uses Babel or esbuild for JSX. However, Vitest 4
+            // bundles its own internal copy of Vite 7, which has no Oxc support. So when
+            // tests run, plugin-react v6's Oxc config is silently ignored and no JSX
+            // transform runs at all.
+            //
+            // NOTE: esbuild is still a real dependency of Vite 8 (not a regression).
+            // We use it here as the available tool to fill the gap. This plugin will
+            // become unnecessary once Vitest upgrades its internal Vite to v8+.
+            //
             // - .jsx/.tsx files: Vite 7's esbuild plugin handles them but defaults to
             //   jsx:'transform' (classic runtime), so we need jsx:'automatic' here.
             // - .js files: Vite 7's esbuild plugin infers loader:'js' (not 'jsx') so JSX
@@ -55,8 +65,10 @@ export default defineConfig(({ mode }) => {
                 name: "jsx-in-tests",
                 enforce: "pre",
                 async transform(code, id) {
-                    if (!id.match(/src\/.*\.[jt]sx?$/) || id.includes("node_modules")) return null;
-                    const ext = id.split(".").pop();
+                    // Strip query strings/hashes (e.g. ?v=abc, ?import) before matching
+                    const cleanId = id.split("?")[0].split("#")[0];
+                    if (!cleanId.match(/src\/.*\.[jt]sx?$/) || cleanId.includes("node_modules")) return null;
+                    const ext = cleanId.split(".").pop();
                     const loader = ext === "js" || ext === "ts" ? `${ext}x` : ext;
                     const result = await transform(code, {
                         loader,
