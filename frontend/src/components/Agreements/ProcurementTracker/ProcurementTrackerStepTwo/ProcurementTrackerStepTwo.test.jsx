@@ -1275,9 +1275,7 @@ describe("ProcurementTrackerStepTwo", () => {
                 />
             );
 
-            expect(
-                screen.getByText(/pre-solicitation package has been finalized/i)
-            ).toBeInTheDocument();
+            expect(screen.getByText(/pre-solicitation package has been finalized/i)).toBeInTheDocument();
             expect(screen.getAllByTestId("term-tag").length).toBeGreaterThan(0);
         });
     });

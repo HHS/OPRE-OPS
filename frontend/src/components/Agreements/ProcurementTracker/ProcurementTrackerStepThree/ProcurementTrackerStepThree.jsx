@@ -105,22 +105,21 @@ const ProcurementTrackerStepThree = ({
             {isReadOnly && (
                 <div>
                     <p>
-                        Once the Procurement Shop has posted the Solicitation and it&apos;s &quot;on the street&quot;, enter the
-                        Solicitation Start and End Dates. After all proposals are received, vendor questions have been
-                        answered, and evaluations are starting, check this step as complete.
+                        Once the Procurement Shop has posted the Solicitation and it&apos;s &quot;on the street&quot;,
+                        enter the Solicitation Start and End Dates. After all proposals are received, vendor questions
+                        have been answered, and evaluations are starting, check this step as complete.
                     </p>
                     {stepStatus === "COMPLETED" && (
                         <div className="display-flex flex-align-center margin-top-5">
                             <FontAwesomeIcon
                                 icon={faCircleCheck}
                                 size="lg"
-                                className="margin-right-1 flex-shrink-0"
-                                style={{ color: "#162e51" }}
+                                className="margin-right-1 flex-shrink-0 text-primary-darker"
                                 aria-hidden="true"
                             />
                             <p className="margin-y-0">
-                                The Solicitation is closed to vendors, vendor questions have been answered, and evaluations
-                                can start
+                                The Solicitation is closed to vendors, vendor questions have been answered, and
+                                evaluations can start
                             </p>
                         </div>
                     )}
@@ -327,8 +326,7 @@ const ProcurementTrackerStepThree = ({
                         <FontAwesomeIcon
                             icon={faCircleCheck}
                             size="lg"
-                            className="margin-right-1 flex-shrink-0"
-                            style={{ color: "#162e51" }}
+                            className="margin-right-1 flex-shrink-0 text-primary-darker"
                             aria-hidden="true"
                         />
                         <p className="margin-y-0">

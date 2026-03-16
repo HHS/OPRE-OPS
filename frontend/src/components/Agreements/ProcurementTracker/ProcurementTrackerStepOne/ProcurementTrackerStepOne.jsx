@@ -82,8 +82,7 @@ const ProcurementTrackerStepOne = ({
                             <FontAwesomeIcon
                                 icon={faCircleCheck}
                                 size="lg"
-                                className="margin-right-1 flex-shrink-0"
-                                style={{ color: "#162e51" }}
+                                className="margin-right-1 flex-shrink-0 text-primary-darker"
                                 aria-hidden="true"
                             />
                             <p className="margin-y-0">
@@ -201,8 +200,7 @@ const ProcurementTrackerStepOne = ({
                         <FontAwesomeIcon
                             icon={faCircleCheck}
                             size="lg"
-                            className="margin-right-1 flex-shrink-0"
-                            style={{ color: "#162e51" }}
+                            className="margin-right-1 flex-shrink-0 text-primary-darker"
                             aria-hidden="true"
                         />
                         <p className="margin-y-0">

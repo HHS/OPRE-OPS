@@ -110,13 +110,12 @@ const ProcurementTrackerStepTwo = ({
                             <FontAwesomeIcon
                                 icon={faCircleCheck}
                                 size="lg"
-                                className="margin-right-1 flex-shrink-0"
-                                style={{ color: "#162e51" }}
+                                className="margin-right-1 flex-shrink-0 text-primary-darker"
                                 aria-hidden="true"
                             />
                             <p className="margin-y-0">
-                                The pre-solicitation package has been finalized between the Procurement Shop and OPRE and
-                                the final version has been uploaded
+                                The pre-solicitation package has been finalized between the Procurement Shop and OPRE
+                                and the final version has been uploaded
                             </p>
                         </div>
                     )}
@@ -341,8 +340,7 @@ const ProcurementTrackerStepTwo = ({
                         <FontAwesomeIcon
                             icon={faCircleCheck}
                             size="lg"
-                            className="margin-right-1 flex-shrink-0"
-                            style={{ color: "#162e51" }}
+                            className="margin-right-1 flex-shrink-0 text-primary-darker"
                             aria-hidden="true"
                         />
                         <p className="margin-y-0">

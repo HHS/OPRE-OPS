@@ -508,9 +508,7 @@ describe("ProcurementTrackerStepFour", () => {
                 />
             );
 
-            expect(
-                screen.getByText(/Evaluations are complete and OPRE has internally selected/i)
-            ).toBeInTheDocument();
+            expect(screen.getByText(/Evaluations are complete and OPRE has internally selected/i)).toBeInTheDocument();
             expect(screen.getAllByTestId("term-tag").length).toBeGreaterThan(0);
         });
     });

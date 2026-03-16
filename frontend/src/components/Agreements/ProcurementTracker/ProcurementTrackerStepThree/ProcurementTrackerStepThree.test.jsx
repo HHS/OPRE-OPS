@@ -1798,9 +1798,7 @@ describe("ProcurementTrackerStepThree", () => {
                 />
             );
 
-            expect(
-                screen.getByText(/Solicitation is closed to vendors/i)
-            ).toBeInTheDocument();
+            expect(screen.getByText(/Solicitation is closed to vendors/i)).toBeInTheDocument();
             expect(screen.getAllByTestId("term-tag").length).toBeGreaterThan(0);
         });
     });

@@ -101,13 +101,12 @@ const ProcurementTrackerStepFour = ({
                             <FontAwesomeIcon
                                 icon={faCircleCheck}
                                 size="lg"
-                                className="margin-right-1 flex-shrink-0"
-                                style={{ color: "#162e51" }}
+                                className="margin-right-1 flex-shrink-0 text-primary-darker"
                                 aria-hidden="true"
                             />
                             <p className="margin-y-0">
-                                Evaluations are complete and OPRE has internally selected a vendor (Final Consensus Memo has
-                                not been sent)
+                                Evaluations are complete and OPRE has internally selected a vendor (Final Consensus Memo
+                                has not been sent)
                             </p>
                         </div>
                     )}
@@ -276,8 +275,7 @@ const ProcurementTrackerStepFour = ({
                         <FontAwesomeIcon
                             icon={faCircleCheck}
                             size="lg"
-                            className="margin-right-1 flex-shrink-0"
-                            style={{ color: "#162e51" }}
+                            className="margin-right-1 flex-shrink-0 text-primary-darker"
                             aria-hidden="true"
                         />
                         <p className="margin-y-0">
