@@ -1742,4 +1742,66 @@ describe("ProcurementTrackerStepThree", () => {
             expect(completeButton).not.toBeDisabled();
         });
     });
+
+    describe("Read-Only Mode", () => {
+        it("renders TermTags and no form controls when isReadOnly is true and PENDING", () => {
+            render(
+                <ProcurementTrackerStepThree
+                    stepStatus="PENDING"
+                    stepThreeData={{ id: 1 }}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    isReadOnly={true}
+                />
+            );
+
+            expect(screen.getAllByTestId("term-tag").length).toBeGreaterThan(0);
+            expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
+            expect(screen.queryByRole("button", { name: /complete step 3/i })).not.toBeInTheDocument();
+            expect(screen.queryByTestId("users-combobox")).not.toBeInTheDocument();
+        });
+
+        it("shows TBD for empty fields in read-only PENDING mode", () => {
+            useProcurementTrackerStepThree.mockReturnValue({
+                ...defaultHookReturn,
+                step3CompletedByUserName: "",
+                step3DateCompletedLabel: "",
+                solicitationStartDateLabel: "",
+                solicitationEndDateLabel: "",
+                step3NotesLabel: ""
+            });
+
+            render(
+                <ProcurementTrackerStepThree
+                    stepStatus="PENDING"
+                    stepThreeData={{ id: 1 }}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    isReadOnly={true}
+                />
+            );
+
+            const termTags = screen.getAllByTestId("term-tag");
+            const tagTexts = termTags.map((tag) => tag.textContent);
+            expect(tagTexts.some((text) => text.includes("TBD"))).toBe(true);
+            expect(screen.getByText("None")).toBeInTheDocument();
+        });
+
+        it("shows checkmark icon when COMPLETED and read-only", () => {
+            render(
+                <ProcurementTrackerStepThree
+                    stepStatus="COMPLETED"
+                    stepThreeData={{ id: 1 }}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    isReadOnly={true}
+                />
+            );
+
+            expect(
+                screen.getByText(/Solicitation is closed to vendors/i)
+            ).toBeInTheDocument();
+            expect(screen.getAllByTestId("term-tag").length).toBeGreaterThan(0);
+        });
+    });
 });

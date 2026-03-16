@@ -20,6 +20,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
  * @property {boolean} isActiveStep - Whether step is the active step
  * @property {SafeUser[]} authorizedUsers - List of users authorized for this agreement
  * @property {((stepNumber: number) => void) | undefined} [handleSetCompletedStepNumber] - Optional callback to set completed step number
+ * @property {boolean} [isReadOnly] - Whether to render in read-only mode (plain text, no form controls)
  */
 
 /**
@@ -33,7 +34,8 @@ const ProcurementTrackerStepFour = ({
     stepFourData,
     isActiveStep,
     authorizedUsers,
-    handleSetCompletedStepNumber
+    handleSetCompletedStepNumber,
+    isReadOnly = false
 }) => {
     const {
         isEvaluationComplete,
@@ -86,7 +88,53 @@ const ProcurementTrackerStepFour = ({
                     handleConfirm={modalProps.handleConfirm}
                 />
             )}
-            {stepStatus === "PENDING" && (
+            {isReadOnly && (
+                <div>
+                    <p>
+                        Complete the technical evaluations and any potential negotiations. If you have a target
+                        completion date for when evaluations will be complete, enter it below. Once you internally
+                        select a vendor check this task as complete (Internally means internal to OPRE, before you send
+                        the Final Consensus Memo to the Procurement Shop).
+                    </p>
+                    {stepStatus === "COMPLETED" && (
+                        <div className="display-flex flex-align-center margin-top-5">
+                            <FontAwesomeIcon
+                                icon={faCircleCheck}
+                                size="lg"
+                                className="margin-right-1 flex-shrink-0"
+                                style={{ color: "#162e51" }}
+                                aria-hidden="true"
+                            />
+                            <p className="margin-y-0">
+                                Evaluations are complete and OPRE has internally selected a vendor (Final Consensus Memo has
+                                not been sent)
+                            </p>
+                        </div>
+                    )}
+                    <dl className="display-flex flex-wrap">
+                        <div className="width-full">
+                            <TermTag
+                                term="Target Completion Date"
+                                description={step4TargetCompletionDateLabel || "TBD"}
+                            />
+                        </div>
+                        <TermTag
+                            term="Completed By"
+                            description={step4CompletedByUserName || "TBD"}
+                            className="margin-right-4"
+                        />
+                        <TermTag
+                            term="Date Completed"
+                            description={step4DateCompletedLabel || "TBD"}
+                        />
+                        <div className="width-full">
+                            <dt className="margin-0 text-base-dark margin-top-3 font-12px">Notes</dt>
+                            <dd className="margin-0 margin-top-1">{step4NotesLabel || "None"}</dd>
+                        </div>
+                    </dl>
+                </div>
+            )}
+            {!isReadOnly && stepStatus === "PENDING" && (
                 <fieldset className="usa-fieldset">
                     <p>
                         Complete the technical evaluations and any potential negotiations. If you have a target
@@ -217,7 +265,7 @@ const ProcurementTrackerStepFour = ({
                 </fieldset>
             )}
 
-            {stepStatus === "COMPLETED" && (
+            {!isReadOnly && stepStatus === "COMPLETED" && (
                 <div>
                     <p>
                         OPRE completes the technical evaluations and any potential negotiations. Once OPRE internally

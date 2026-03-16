@@ -21,6 +21,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
  * @property {boolean} isActiveStep - Whether step is the active step
  * @property {SafeUser[]} authorizedUsers - List of users authorized for this agreement
  * @property {Function} [handleSetCompletedStepNumber] - Optional callback to set completed step number
+ * @property {boolean} [isReadOnly] - Whether to render in read-only mode (plain text, no form controls)
  */
 
 /**
@@ -34,7 +35,8 @@ const ProcurementTrackerStepTwo = ({
     stepTwoData,
     isActiveStep,
     authorizedUsers,
-    handleSetCompletedStepNumber
+    handleSetCompletedStepNumber,
+    isReadOnly = false
 }) => {
     const {
         isPreSolicitationPackageFinalized,
@@ -95,7 +97,59 @@ const ProcurementTrackerStepTwo = ({
                     handleConfirm={modalProps.handleConfirm}
                 />
             )}
-            {stepStatus === "PENDING" && (
+            {isReadOnly && (
+                <div>
+                    <p>
+                        Edit the pre-solicitation package in collaboration with the Procurement Shop. Once the documents
+                        are finalized, go to the Documents Tab, upload the final and signed versions, and check this
+                        step as complete. If you have a target completion date for when the package will be finalized,
+                        enter it below.
+                    </p>
+                    {stepStatus === "COMPLETED" && (
+                        <div className="display-flex flex-align-center margin-top-5">
+                            <FontAwesomeIcon
+                                icon={faCircleCheck}
+                                size="lg"
+                                className="margin-right-1 flex-shrink-0"
+                                style={{ color: "#162e51" }}
+                                aria-hidden="true"
+                            />
+                            <p className="margin-y-0">
+                                The pre-solicitation package has been finalized between the Procurement Shop and OPRE and
+                                the final version has been uploaded
+                            </p>
+                        </div>
+                    )}
+                    <dl className="display-flex flex-wrap">
+                        <div className="width-full">
+                            <TermTag
+                                term="Target Completion Date"
+                                description={step2TargetCompletionDateLabel || "TBD"}
+                            />
+                        </div>
+                        <TermTag
+                            term="Completed By"
+                            description={step2CompletedByUserName || "TBD"}
+                            className="margin-right-4"
+                        />
+                        <TermTag
+                            term="Date Completed"
+                            description={step2DateCompletedLabel || "TBD"}
+                        />
+                        <div className="width-full">
+                            <TermTag
+                                term="Draft Solicitation Date"
+                                description={step2DraftSolicitationDateLabel || "TBD"}
+                            />
+                        </div>
+                        <div className="width-full">
+                            <dt className="margin-0 text-base-dark margin-top-3 font-12px">Notes</dt>
+                            <dd className="margin-0 margin-top-1">{step2NotesLabel || "None"}</dd>
+                        </div>
+                    </dl>
+                </div>
+            )}
+            {!isReadOnly && stepStatus === "PENDING" && (
                 <fieldset className="usa-fieldset">
                     <p>
                         Edit the pre-solicitation package in collaboration with the Procurement Shop. Once the documents
@@ -276,7 +330,7 @@ const ProcurementTrackerStepTwo = ({
                 </fieldset>
             )}
 
-            {stepStatus === "COMPLETED" && (
+            {!isReadOnly && stepStatus === "COMPLETED" && (
                 <div>
                     <p>
                         Edit the pre-solicitation package in collaboration with the Procurement Shop. Once the documents
