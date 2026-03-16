@@ -272,15 +272,27 @@ class PreAwardCompletionRequiredFieldsRule(ValidationRule):
 
         updated_fields = context.updated_fields
         pre_award_required_fields = ["task_completed_by", "date_completed"]
+
+        # Check for missing fields
         missing_fields = [field for field in pre_award_required_fields if field not in updated_fields]
 
+        # Check if missing fields are populated on model
         final_missing_fields = [
             field for field in missing_fields if getattr(procurement_tracker_step, mapping[field], None) is None
         ]
 
-        if final_missing_fields:
+        # Check if any provided fields are explicitly set to None
+        null_fields = [
+            field for field in pre_award_required_fields
+            if field in updated_fields and updated_fields[field] is None
+        ]
+
+        # Combine missing and null fields
+        invalid_fields = list(set(final_missing_fields + null_fields))
+
+        if invalid_fields:
             raise ValidationError(
-                {field: f"{field} is required when completing PRE_AWARD step." for field in final_missing_fields}
+                {field: f"{field} is required when completing PRE_AWARD step." for field in invalid_fields}
             )
 
 

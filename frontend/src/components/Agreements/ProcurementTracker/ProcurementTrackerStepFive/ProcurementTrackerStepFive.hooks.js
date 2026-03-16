@@ -117,6 +117,7 @@ export default function useProcurementTrackerStepFive(stepFiveData, handleSetCom
     };
 
     const cancelStepFive = () => {
+        suite.reset(); // Clear validation state
         setIsPreAwardComplete(false);
         setSelectedUser(undefined);
         setTargetCompletionDate("");

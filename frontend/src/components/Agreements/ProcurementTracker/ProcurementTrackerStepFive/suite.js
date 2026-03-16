@@ -8,10 +8,28 @@ const isValidDateFormat = (dateString) => DATE_FORMAT_REGEX.test(dateString);
 
 const getDateOnly = (date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
-const compareDateToToday = (dateString, comparison) => {
-    if (!dateString || !isValidDateFormat(dateString)) return;
+const parseDateString = (dateString) => {
+    if (!dateString || !isValidDateFormat(dateString)) return null;
 
-    const enteredDate = new Date(dateString);
+    const [month, day, year] = dateString.split('/').map(Number);
+    const date = new Date(year, month - 1, day);
+
+    // Verify the parsed date matches the input (catches invalid calendar dates)
+    if (
+        date.getFullYear() !== year ||
+        date.getMonth() !== month - 1 ||
+        date.getDate() !== day
+    ) {
+        return null; // Invalid calendar date (e.g., 02/31/2024)
+    }
+
+    return date;
+};
+
+const compareDateToToday = (dateString, comparison) => {
+    const enteredDate = parseDateString(dateString);
+    if (!enteredDate) return;
+
     const today = new Date();
     const enteredDateOnly = getDateOnly(enteredDate);
     const todayDateOnly = getDateOnly(today);
@@ -24,6 +42,8 @@ const compareDateToToday = (dateString, comparison) => {
 };
 
 const suite = create((data = {}, fieldName) => {
+    // Normalize null/undefined to empty object
+    data = data ?? {};
     only(fieldName);
 
     // dateCompleted: required validation must run first
