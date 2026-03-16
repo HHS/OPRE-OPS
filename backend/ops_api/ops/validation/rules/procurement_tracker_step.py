@@ -283,8 +283,7 @@ class PreAwardCompletionRequiredFieldsRule(ValidationRule):
 
         # Check if any provided fields are explicitly set to None
         null_fields = [
-            field for field in pre_award_required_fields
-            if field in updated_fields and updated_fields[field] is None
+            field for field in pre_award_required_fields if field in updated_fields and updated_fields[field] is None
         ]
 
         # Combine missing and null fields

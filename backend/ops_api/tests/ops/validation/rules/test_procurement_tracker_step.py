@@ -26,17 +26,14 @@ class TestPreAwardCompletionRequiredFieldsRule:
     def test_validate_passes_when_not_completing(self, loaded_db, app_ctx):
         """Test that validation is skipped when not completing the step."""
         step = ProcurementTrackerStep(
-            step_type=ProcurementTrackerStepType.PRE_AWARD,
-            status=ProcurementTrackerStepStatus.IN_PROGRESS
+            step_type=ProcurementTrackerStepType.PRE_AWARD, status=ProcurementTrackerStepStatus.IN_PROGRESS
         )
         loaded_db.add(step)
         loaded_db.commit()
 
         # Not setting status to COMPLETED
         context = ValidationContext(
-            user=loaded_db.query(User).first(),
-            db_session=loaded_db,
-            updated_fields={"notes": "Some notes"}
+            user=loaded_db.query(User).first(), db_session=loaded_db, updated_fields={"notes": "Some notes"}
         )
 
         rule = PreAwardCompletionRequiredFieldsRule()
@@ -51,8 +48,7 @@ class TestPreAwardCompletionRequiredFieldsRule:
         """Test that validation passes when all required fields are provided."""
         user = loaded_db.query(User).first()
         step = ProcurementTrackerStep(
-            step_type=ProcurementTrackerStepType.PRE_AWARD,
-            status=ProcurementTrackerStepStatus.IN_PROGRESS
+            step_type=ProcurementTrackerStepType.PRE_AWARD, status=ProcurementTrackerStepStatus.IN_PROGRESS
         )
         loaded_db.add(step)
         loaded_db.commit()
@@ -63,8 +59,8 @@ class TestPreAwardCompletionRequiredFieldsRule:
             updated_fields={
                 "status": ProcurementTrackerStepStatus.COMPLETED,
                 "task_completed_by": user.id,
-                "date_completed": date.today()
-            }
+                "date_completed": date.today(),
+            },
         )
 
         rule = PreAwardCompletionRequiredFieldsRule()
@@ -79,8 +75,7 @@ class TestPreAwardCompletionRequiredFieldsRule:
         """Test that validation fails when task_completed_by is explicitly null."""
         user = loaded_db.query(User).first()
         step = ProcurementTrackerStep(
-            step_type=ProcurementTrackerStepType.PRE_AWARD,
-            status=ProcurementTrackerStepStatus.IN_PROGRESS
+            step_type=ProcurementTrackerStepType.PRE_AWARD, status=ProcurementTrackerStepStatus.IN_PROGRESS
         )
         loaded_db.add(step)
         loaded_db.commit()
@@ -91,8 +86,8 @@ class TestPreAwardCompletionRequiredFieldsRule:
             updated_fields={
                 "status": ProcurementTrackerStepStatus.COMPLETED,
                 "task_completed_by": None,  # Explicit null
-                "date_completed": date.today()
-            }
+                "date_completed": date.today(),
+            },
         )
 
         rule = PreAwardCompletionRequiredFieldsRule()
@@ -111,8 +106,7 @@ class TestPreAwardCompletionRequiredFieldsRule:
         """Test that validation fails when date_completed is explicitly null."""
         user = loaded_db.query(User).first()
         step = ProcurementTrackerStep(
-            step_type=ProcurementTrackerStepType.PRE_AWARD,
-            status=ProcurementTrackerStepStatus.IN_PROGRESS
+            step_type=ProcurementTrackerStepType.PRE_AWARD, status=ProcurementTrackerStepStatus.IN_PROGRESS
         )
         loaded_db.add(step)
         loaded_db.commit()
@@ -123,8 +117,8 @@ class TestPreAwardCompletionRequiredFieldsRule:
             updated_fields={
                 "status": ProcurementTrackerStepStatus.COMPLETED,
                 "task_completed_by": user.id,
-                "date_completed": None  # Explicit null
-            }
+                "date_completed": None,  # Explicit null
+            },
         )
 
         rule = PreAwardCompletionRequiredFieldsRule()
@@ -143,8 +137,7 @@ class TestPreAwardCompletionRequiredFieldsRule:
         """Test that validation fails when both required fields are explicitly null."""
         user = loaded_db.query(User).first()
         step = ProcurementTrackerStep(
-            step_type=ProcurementTrackerStepType.PRE_AWARD,
-            status=ProcurementTrackerStepStatus.IN_PROGRESS
+            step_type=ProcurementTrackerStepType.PRE_AWARD, status=ProcurementTrackerStepStatus.IN_PROGRESS
         )
         loaded_db.add(step)
         loaded_db.commit()
@@ -155,8 +148,8 @@ class TestPreAwardCompletionRequiredFieldsRule:
             updated_fields={
                 "status": ProcurementTrackerStepStatus.COMPLETED,
                 "task_completed_by": None,  # Explicit null
-                "date_completed": None  # Explicit null
-            }
+                "date_completed": None,  # Explicit null
+            },
         )
 
         rule = PreAwardCompletionRequiredFieldsRule()
@@ -178,18 +171,14 @@ class TestPreAwardCompletionRequiredFieldsRule:
             step_type=ProcurementTrackerStepType.PRE_AWARD,
             status=ProcurementTrackerStepStatus.IN_PROGRESS,
             pre_award_task_completed_by=user.id,
-            pre_award_date_completed=date.today()
+            pre_award_date_completed=date.today(),
         )
         loaded_db.add(step)
         loaded_db.commit()
 
         # Only updating status, not providing task_completed_by or date_completed
         context = ValidationContext(
-            user=user,
-            db_session=loaded_db,
-            updated_fields={
-                "status": ProcurementTrackerStepStatus.COMPLETED
-            }
+            user=user, db_session=loaded_db, updated_fields={"status": ProcurementTrackerStepStatus.COMPLETED}
         )
 
         rule = PreAwardCompletionRequiredFieldsRule()
@@ -207,7 +196,7 @@ class TestPreAwardCompletionRequiredFieldsRule:
             step_type=ProcurementTrackerStepType.PRE_AWARD,
             status=ProcurementTrackerStepStatus.IN_PROGRESS,
             pre_award_task_completed_by=user.id,
-            pre_award_date_completed=date.today()
+            pre_award_date_completed=date.today(),
         )
         loaded_db.add(step)
         loaded_db.commit()
@@ -218,8 +207,8 @@ class TestPreAwardCompletionRequiredFieldsRule:
             db_session=loaded_db,
             updated_fields={
                 "status": ProcurementTrackerStepStatus.COMPLETED,
-                "task_completed_by": None  # Attempting to null out existing value
-            }
+                "task_completed_by": None,  # Attempting to null out existing value
+            },
         )
 
         rule = PreAwardCompletionRequiredFieldsRule()
