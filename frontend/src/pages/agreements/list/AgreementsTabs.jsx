@@ -1,7 +1,9 @@
 import React from "react";
+import { useSelector } from "react-redux";
 import { Link, useLocation } from "react-router-dom";
 import styles from "../../../components/Portfolios/PortfolioTabsSection/PortfolioTabsSection.module.scss";
 import TabsSection from "../../../components/UI/TabsSection";
+import { USER_ROLES } from "../../../components/Users/User.constants";
 import { useChangeRequestTotal } from "../../../hooks/useChangeRequests.hooks";
 import tabStyles from "./AgreementTabs.module.css";
 
@@ -10,24 +12,30 @@ import tabStyles from "./AgreementTabs.module.css";
  * @returns {JSX.Element} - The procurement shop select element.
  */
 
-const paths = [
-    {
-        name: "",
-        label: "All Agreements"
-    },
-    {
-        name: "?filter=my-agreements",
-        label: "My Agreements"
-    },
-    {
-        name: "?filter=change-requests",
-        label: "For Review"
-    }
-];
-
 const AgreementTabs = () => {
     const { search } = useLocation();
     const changeRequestsTotal = useChangeRequestTotal();
+    const userRoles = useSelector((state) => state.auth?.activeUser?.roles) ?? [];
+    const displayReviewTab = !userRoles.every((role) => role?.name === USER_ROLES.VIEWER_EDITOR);
+
+    const paths = [
+        {
+            name: "",
+            label: "All Agreements"
+        },
+        {
+            name: "?filter=my-agreements",
+            label: "My Agreements"
+        },
+        ...(displayReviewTab
+            ? [
+                  {
+                      name: "?filter=change-requests",
+                      label: "For Review"
+                  }
+              ]
+            : [])
+    ];
     /**
      * @param {string} queryString - The query string of the tab.
      */
