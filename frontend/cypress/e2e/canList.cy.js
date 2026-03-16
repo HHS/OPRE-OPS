@@ -186,11 +186,11 @@ describe("CAN List Filtering", () => {
 
         // check that the correct tags are displayed
         cy.get("div").contains("Filters Applied:").should("exist");
-        cy.get("svg[id='filter-tag-activePeriod']").should("exist");
-        cy.get("svg[id='filter-tag-transfer']").should("exist");
-        cy.get("svg[id='filter-tag-portfolio']").should("exist");
-        cy.get("svg[id='filter-tag-can']").should("exist");
-        cy.get("svg[id='filter-tag-budget']").should("exist");
+        cy.get("button[id='filter-tag-activePeriod-0']").should("exist");
+        cy.get("button[id='filter-tag-portfolio-1']").should("exist");
+        cy.get("button[id='filter-tag-transfer-2']").should("exist");
+        cy.get("button[id='filter-tag-can-3']").should("exist");
+        cy.get("button[id='filter-tag-budget-4']").should("exist");
 
         cy.get("span").contains("1 Year CAN").should("exist");
         cy.get("span").contains("Cost Share").should("exist");
@@ -206,10 +206,10 @@ describe("CAN List Filtering", () => {
         cy.get("button").contains("Reset").click();
 
         cy.get("div").contains("Filters Applied:").should("not.exist");
-        cy.get("svg[id='filter-tag-activePeriod']").should("not.exist");
-        cy.get("svg[id='filter-tag-transfer']").should("not.exist");
-        cy.get("svg[id='filter-tag-portfolio']").should("not.exist");
-        cy.get("svg[id='filter-tag-budget']").should("not.exist");
+        cy.get("button[id='filter-tag-activePeriod-0']").should("not.exist");
+        cy.get("button[id='filter-tag-portfolio-1']").should("not.exist");
+        cy.get("button[id='filter-tag-transfer-2']").should("not.exist");
+        cy.get("button[id='filter-tag-budget-4']").should("not.exist");
 
         cy.get("tbody").find("tr").should("have.length.greaterThan", 3);
     });
