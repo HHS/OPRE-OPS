@@ -258,18 +258,31 @@ export const AgreementTableRow = ({ agreement }) => {
                     </dd>
                 </dl>
             </div>
-            <div className="display-flex padding-right-4 flex-justify">
+            <div
+                className="display-flex padding-right-4"
+                style={{ justifyContent: "space-between" }}
+            >
                 <dl className="font-12px">
                     <dt className="margin-0 text-base-dark">Contract #</dt>
                     <dd className="margin-0">{contractNumber || NO_DATA}</dd>
                 </dl>
-                <dl className="font-12px">
+                <dl
+                    className="font-12px"
+                    style={{ marginLeft: "7rem" }}
+                >
                     <dt className="margin-0 text-base-dark">Award Type</dt>
                     <dd className="margin-0">{awardType}</dd>
                 </dl>
                 <dl
                     className="font-12px"
                     style={{ marginLeft: "2.5rem" }}
+                >
+                    <dt className="margin-0 text-base-dark">&nbsp;</dt>
+                    <dd className="margin-0">&nbsp;</dd>
+                </dl>
+                <dl
+                    className="font-12px"
+                    style={{ marginLeft: "4rem" }}
                 >
                     <dt className="margin-0 text-base-dark">Vendor</dt>
                     <dd className="margin-0">{vendor}</dd>
