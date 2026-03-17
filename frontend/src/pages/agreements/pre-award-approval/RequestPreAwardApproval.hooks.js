@@ -34,10 +34,12 @@ export default function useRequestPreAwardApproval(agreementId) {
 
         try {
             await updateProcurementTrackerStep({
-                id: step5.id,
-                pre_award_approval_requested: true,
-                pre_award_approval_requested_date: formatDateForApi(new Date()),
-                pre_award_requestor_notes: notes.trim() || null
+                stepId: step5.id,
+                data: {
+                    approval_requested: true,
+                    approval_requested_date: formatDateForApi(new Date()),
+                    requestor_notes: notes.trim() || null
+                }
             }).unwrap();
 
             // Navigate back to agreement detail / procurement tracker

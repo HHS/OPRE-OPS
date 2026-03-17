@@ -122,6 +122,10 @@ class ProcurementTrackerStepService:
                 "date_completed": "pre_award_date_completed",
                 "notes": "pre_award_notes",
                 "target_completion_date": "pre_award_target_completion_date",
+                "approval_requested": "pre_award_approval_requested",
+                "approval_requested_date": "pre_award_approval_requested_date",
+                "approval_requested_by": "pre_award_approval_requested_by",
+                "requestor_notes": "pre_award_requestor_notes",
             },
         }
 
@@ -151,6 +155,11 @@ class ProcurementTrackerStepService:
                 setattr(step, key, value)
             else:
                 logger.warning(f"Field {model_field} does not exist on ProcurementTrackerStep")
+
+        # Auto-set approval_requested_by to current user when approval is requested
+        if data.get("approval_requested") is True and "approval_requested_by" not in data:
+            step.pre_award_approval_requested_by = current_user.id
+            logger.debug(f"Auto-set pre_award_approval_requested_by = {current_user.id}")
 
         # Handle COMPLETED status
         self._advance_active_step_if_needed(step, data, current_user)

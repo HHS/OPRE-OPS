@@ -232,6 +232,12 @@ class ProcurementTrackerStepPatchRequestSchema(Schema):
     solicitation_period_start_date = fields.Date(required=False, allow_none=True)
     solicitation_period_end_date = fields.Date(required=False, allow_none=True)
 
+    # Pre-Award approval request fields
+    approval_requested = fields.Boolean(required=False, allow_none=True)
+    approval_requested_date = fields.Date(required=False, allow_none=True)
+    approval_requested_by = fields.Integer(required=False, allow_none=True)
+    requestor_notes = fields.String(required=False, allow_none=True)
+
 
 class ProcurementTrackerStepSchema(Schema):
     """Schema for procurement tracker step serialization."""
