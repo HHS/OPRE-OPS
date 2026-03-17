@@ -22,7 +22,6 @@ from models import (
     ProductServiceCode,
     Project,
     ResearchMethodology,
-    ResearchProject,
     ResearchType,
     ServicesComponent,
     SpecialTopic,
@@ -108,9 +107,6 @@ from ops_api.ops.resources.reporting_summary import ReportingSummaryListAPI
 from ops_api.ops.resources.research_methodology import (
     ResearchMethodologyItemAPI,
     ResearchMethodologyListAPI,
-)
-from ops_api.ops.resources.research_project_funding_summary import (
-    ResearchProjectFundingSummaryListAPI,
 )
 from ops_api.ops.resources.research_type import ResearchTypeListAPI
 from ops_api.ops.resources.services_component import (
@@ -214,9 +210,6 @@ PORTFOLIO_FUNDING_SUMMARY_ITEM_API_VIEW_FUNC = PortfolioFundingSummaryItemAPI.as
 )
 PORTFOLIO_FUNDING_SUMMARY_LIST_API_VIEW_FUNC = PortfolioFundingSummaryListAPI.as_view(
     "portfolio-funding-summary-list", Portfolio
-)
-RESEARCH_PROJECT_FUNDING_SUMMARY_LIST_API_VIEW_FUNC = ResearchProjectFundingSummaryListAPI.as_view(
-    "research-project-funding-summary-group", ResearchProject
 )
 REPORTING_SUMMARY_LIST_API_VIEW_FUNC = ReportingSummaryListAPI.as_view("reporting-summary-list", Agreement)
 
