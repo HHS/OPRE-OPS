@@ -130,10 +130,19 @@ export const RequestPreAwardApproval = () => {
                     <div className="display-flex flex-align-center">
                         <div
                             className="position-relative bg-white border-1px border-base-light"
-                            style={{ maxWidth: "500px", flexGrow: 1 }}
+                            style={{
+                                maxWidth: "500px",
+                                flexGrow: 1,
+                                minHeight: "56px",
+                                display: "flex",
+                                alignItems: "center"
+                            }}
                         >
-                            <div className="padding-2 padding-right-9">
-                                <span className="text-base">
+                            <div
+                                className="padding-left-2 padding-right-9"
+                                style={{ flex: 1 }}
+                            >
+                                <span style={{ fontSize: "0.875rem" }}>
                                     {selectedFile ? selectedFile.name : "Final Consensus Memo"}
                                 </span>
                             </div>
@@ -141,7 +150,7 @@ export const RequestPreAwardApproval = () => {
                                 htmlFor="consensus-memo-upload"
                                 className="position-absolute cursor-pointer"
                                 style={{
-                                    right: "8px",
+                                    right: "12px",
                                     top: "50%",
                                     transform: "translateY(-50%)",
                                     display: "inline-flex",
