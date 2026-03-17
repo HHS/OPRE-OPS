@@ -6,6 +6,7 @@ import AgreementBLIAccordion from "../../../components/Agreements/AgreementBLIAc
 import AgreementCANReviewAccordion from "../../../components/Agreements/AgreementCANReviewAccordion";
 import Accordion from "../../../components/UI/Accordion";
 import TextArea from "../../../components/UI/Form/TextArea";
+import { convertCodeForDisplay } from "../../../helpers/utils";
 import useRequestPreAwardApproval from "./RequestPreAwardApproval.hooks";
 
 /**
@@ -44,6 +45,8 @@ export const RequestPreAwardApproval = () => {
                 agreement={agreement}
                 projectOfficerName={projectOfficerName}
                 alternateProjectOfficerName={alternateProjectOfficerName}
+                convertCodeForDisplay={convertCodeForDisplay}
+                instructions="Review the agreement details below before requesting pre-award approval."
             />
 
             {/* Budget Lines (Executing Status) */}
