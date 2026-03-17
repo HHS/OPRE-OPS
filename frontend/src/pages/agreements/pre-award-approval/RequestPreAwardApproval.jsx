@@ -131,34 +131,31 @@ export const RequestPreAwardApproval = () => {
                         <div
                             className="position-relative bg-white border-1px border-base-light"
                             style={{
-                                maxWidth: "500px",
+                                maxWidth: "540px",
                                 flexGrow: 1,
-                                minHeight: "56px",
+                                minHeight: "100px",
                                 display: "flex",
-                                alignItems: "center"
+                                flexDirection: "column",
+                                justifyContent: "space-between",
+                                padding: "1rem"
                             }}
                         >
-                            <div
-                                className="padding-left-2 padding-right-9"
-                                style={{ flex: 1 }}
-                            >
-                                <span style={{ fontSize: "0.875rem" }}>
+                            <div>
+                                <span style={{ fontSize: "0.875rem", color: "#757575" }}>
                                     {selectedFile ? selectedFile.name : "Final Consensus Memo"}
                                 </span>
                             </div>
                             <label
                                 htmlFor="consensus-memo-upload"
-                                className="position-absolute cursor-pointer"
+                                className="cursor-pointer"
                                 style={{
-                                    right: "12px",
-                                    top: "50%",
-                                    transform: "translateY(-50%)",
-                                    display: "inline-flex",
+                                    display: "flex",
                                     alignItems: "center",
+                                    justifyContent: "center",
                                     gap: "0.5rem",
-                                    color: "#005ea2",
+                                    color: "#757575",
                                     fontSize: "0.875rem",
-                                    whiteSpace: "nowrap"
+                                    marginTop: "0.5rem"
                                 }}
                             >
                                 <svg
