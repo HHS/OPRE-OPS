@@ -100,36 +100,6 @@ const ProcurementTrackerStepFive = ({
                         complete.
                     </p>
 
-                    {/* Pre-Award Approval Request Section */}
-                    {!stepFiveData?.approval_requested ? (
-                        <div className="margin-bottom-3">
-                            <p>
-                                Before completing this step, you may request Pre-Award Approval from your Division
-                                Director.
-                            </p>
-                            <button
-                                className="usa-button"
-                                onClick={() => navigate(`/agreements/${agreementId}/pre-award-approval`)}
-                                disabled={isDisabled}
-                                data-cy="request-pre-award-approval-btn"
-                            >
-                                Request Pre-Award Approval
-                            </button>
-                        </div>
-                    ) : (
-                        <div className="margin-bottom-3 bg-base-lightest padding-2">
-                            <p className="margin-0 text-bold">Pre-Award Approval Requested</p>
-                            <p className="margin-top-1">
-                                Approval request submitted and pending Division Director review.
-                            </p>
-                            {stepFiveData.requestor_notes && (
-                                <p className="margin-top-1 font-body-xs">
-                                    <strong>Notes:</strong> {stepFiveData.requestor_notes}
-                                </p>
-                            )}
-                        </div>
-                    )}
-
                     <div className="display-flex flex-align-end margin-bottom-2">
                         {stepFiveData?.target_completion_date ? (
                             <TermTag
@@ -167,6 +137,37 @@ const ProcurementTrackerStepFive = ({
                             </>
                         )}
                     </div>
+
+                    {/* Pre-Award Approval Request Section */}
+                    {!stepFiveData?.approval_requested ? (
+                        <div className="margin-bottom-3">
+                            <p>
+                                Before completing this step, you may request Pre-Award Approval from your Division
+                                Director.
+                            </p>
+                            <button
+                                className="usa-button"
+                                onClick={() => navigate(`/agreements/${agreementId}/pre-award-approval`)}
+                                disabled={isDisabled}
+                                data-cy="request-pre-award-approval-btn"
+                            >
+                                Request Pre-Award Approval
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="margin-bottom-3 bg-base-lightest padding-2">
+                            <p className="margin-0 text-bold">Pre-Award Approval Requested</p>
+                            <p className="margin-top-1">
+                                Approval request submitted and pending Division Director review.
+                            </p>
+                            {stepFiveData.requestor_notes && (
+                                <p className="margin-top-1 font-body-xs">
+                                    <strong>Notes:</strong> {stepFiveData.requestor_notes}
+                                </p>
+                            )}
+                        </div>
+                    )}
+
                     <div className="usa-checkbox margin-top-3">
                         <input
                             className="usa-checkbox__input"
