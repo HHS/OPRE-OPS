@@ -1,8 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useGetAgreementByIdQuery, useUpdateProcurementTrackerStepMutation } from "../../../api/opsAPI";
+import {
+    useGetAgreementByIdQuery,
+    useGetServicesComponentsListQuery,
+    useUpdateProcurementTrackerStepMutation
+} from "../../../api/opsAPI";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import { formatDateForApi } from "../../../helpers/utils";
+import { groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
 
 /**
  * Custom hook for the Request Pre-Award Approval page
@@ -15,12 +20,19 @@ export default function useRequestPreAwardApproval(agreementId) {
 
     const { data: agreement, isLoading } = useGetAgreementByIdQuery(agreementId);
     const [updateProcurementTrackerStep] = useUpdateProcurementTrackerStepMutation();
+    const { data: servicesComponents } = useGetServicesComponentsListQuery(agreementId, { skip: !agreementId });
 
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
     const alternateProjectOfficerName = useGetUserFullNameFromId(agreement?.alternate_project_officer_id);
 
     // Get executing budget lines
     const executingBudgetLines = agreement?.budget_line_items?.filter((bli) => bli.status === "EXECUTING") || [];
+
+    // Group budget lines by services component
+    const groupedBudgetLinesByServicesComponent = groupByServicesComponent(
+        executingBudgetLines,
+        servicesComponents || []
+    );
 
     // Get Step 5 (Pre-Award) from procurement tracker
     const procurementTracker = agreement?.procurement_tracker;
@@ -64,6 +76,8 @@ export default function useRequestPreAwardApproval(agreementId) {
         handleSubmit,
         handleCancel,
         projectOfficerName,
-        alternateProjectOfficerName
+        alternateProjectOfficerName,
+        servicesComponents,
+        groupedBudgetLinesByServicesComponent
     };
 }

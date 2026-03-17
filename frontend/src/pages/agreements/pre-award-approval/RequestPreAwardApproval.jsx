@@ -4,9 +4,17 @@ import PageHeader from "../../../components/UI/PageHeader";
 import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
 import AgreementBLIAccordion from "../../../components/Agreements/AgreementBLIAccordion";
 import AgreementCANReviewAccordion from "../../../components/Agreements/AgreementCANReviewAccordion";
+import AgreementBLIReviewTable from "../../../components/BudgetLineItems/BLIReviewTable";
+import ServicesComponentAccordion from "../../../components/ServicesComponents/ServicesComponentAccordion";
 import Accordion from "../../../components/UI/Accordion";
 import TextArea from "../../../components/UI/Form/TextArea";
 import { convertCodeForDisplay } from "../../../helpers/utils";
+import {
+    findDescription,
+    findIfOptional,
+    findPeriodEnd,
+    findPeriodStart
+} from "../../../helpers/servicesComponent.helpers";
 import useRequestPreAwardApproval from "./RequestPreAwardApproval.hooks";
 
 /**
@@ -26,7 +34,9 @@ export const RequestPreAwardApproval = () => {
         handleSubmit,
         handleCancel,
         projectOfficerName,
-        alternateProjectOfficerName
+        alternateProjectOfficerName,
+        servicesComponents,
+        groupedBudgetLinesByServicesComponent
     } = useRequestPreAwardApproval(agreementId);
 
     if (isLoading) {
@@ -60,7 +70,37 @@ export const RequestPreAwardApproval = () => {
                 setAfterApproval={() => {}}
                 action=""
             >
-                {/* No additional content */}
+                {groupedBudgetLinesByServicesComponent && groupedBudgetLinesByServicesComponent.length > 0 &&
+                    groupedBudgetLinesByServicesComponent.map((group, index) => {
+                        const budgetLineScGroupingLabel = group.serviceComponentGroupingLabel
+                            ? group.serviceComponentGroupingLabel
+                            : group.servicesComponentNumber;
+                        return (
+                            <ServicesComponentAccordion
+                                key={`${group.servicesComponentNumber}-${index}`}
+                                servicesComponentNumber={group.servicesComponentNumber}
+                                serviceComponentGroupingLabel={group.serviceComponentGroupingLabel}
+                                withMetadata={true}
+                                periodStart={findPeriodStart(servicesComponents, budgetLineScGroupingLabel)}
+                                periodEnd={findPeriodEnd(servicesComponents, budgetLineScGroupingLabel)}
+                                description={findDescription(servicesComponents, budgetLineScGroupingLabel)}
+                                optional={findIfOptional(servicesComponents, budgetLineScGroupingLabel)}
+                                serviceRequirementType={agreement?.service_requirement_type}
+                            >
+                                {group.budgetLines.length > 0 ? (
+                                    <AgreementBLIReviewTable
+                                        readOnly={true}
+                                        budgetLines={group.budgetLines}
+                                        isReviewMode={true}
+                                    />
+                                ) : (
+                                    <p className="text-center margin-y-7">
+                                        No budget lines in this services component.
+                                    </p>
+                                )}
+                            </ServicesComponentAccordion>
+                        );
+                    })}
             </AgreementBLIAccordion>
 
             {/* CAN Impact */}
