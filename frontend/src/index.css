@@ -9,10 +9,10 @@
  *   laptops (Windows + Edge/Chrome) compared to developer Macs.
  *
  * Strategy:
- *   Keep macOS rendering unchanged.  On Windows (and Linux), apply a subtle
- *   text stroke to thicken glyph outlines, closing the visual weight gap.
- *   An OS-detection script in index.html adds .os-windows / .os-mac / .os-linux
- *   to <html> before first paint so these rules apply without FOUC.
+ *   Keep macOS rendering unchanged.  On Windows, apply a subtle text stroke
+ *   to thicken glyph outlines, closing the visual weight gap.
+ *   An OS-detection script in index.html adds .os-windows / .os-mac to <html>
+ *   before first paint so these rules apply without FOUC.
  */
 
 /* ---------- Improve text rendering quality on all platforms ---------- */
@@ -22,13 +22,5 @@ body {
 
 /* ---------- Windows: thicken strokes to approximate macOS weight ---------- */
 .os-windows body {
-    -webkit-text-stroke: 0.35px;
-}
-
-/*
- * Linux also uses thinner rendering than macOS in most distros.
- * Apply the same compensation.
- */
-.os-linux body {
     -webkit-text-stroke: 0.35px;
 }
