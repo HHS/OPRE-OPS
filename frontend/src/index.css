@@ -1,0 +1,34 @@
+/*
+ * Global application styles — loaded after USWDS to layer on
+ * cross-platform font rendering consistency.
+ *
+ * Problem:
+ *   macOS applies subpixel antialiasing that makes web fonts look heavier and
+ *   smoother.  Windows ClearType / DirectWrite renders the same glyphs thinner
+ *   and sharper, so Public Sans looks noticeably different on customer GFE
+ *   laptops (Windows + Edge/Chrome) compared to developer Macs.
+ *
+ * Strategy:
+ *   Keep macOS rendering unchanged.  On Windows (and Linux), apply a subtle
+ *   text stroke to thicken glyph outlines, closing the visual weight gap.
+ *   An OS-detection script in index.html adds .os-windows / .os-mac / .os-linux
+ *   to <html> before first paint so these rules apply without FOUC.
+ */
+
+/* ---------- Improve text rendering quality on all platforms ---------- */
+body {
+    text-rendering: optimizeLegibility;
+}
+
+/* ---------- Windows: thicken strokes to approximate macOS weight ---------- */
+.os-windows body {
+    -webkit-text-stroke: 0.35px;
+}
+
+/*
+ * Linux also uses thinner rendering than macOS in most distros.
+ * Apply the same compensation.
+ */
+.os-linux body {
+    -webkit-text-stroke: 0.35px;
+}

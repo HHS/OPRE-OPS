@@ -39,6 +39,16 @@
             href="/manifest.json"
         />
         <title>OPRE OPS</title>
+        <script>
+            // Detect OS before first paint so CSS can scope platform-specific
+            // font rendering fixes (e.g. Windows stroke compensation).
+            (function () {
+                var ua = navigator.userAgent;
+                if (/Windows/.test(ua)) document.documentElement.classList.add("os-windows");
+                else if (/Mac/.test(ua)) document.documentElement.classList.add("os-mac");
+                else if (/Linux/.test(ua)) document.documentElement.classList.add("os-linux");
+            })();
+        </script>
     </head>
     <body>
         <noscript>You need to enable JavaScript to run this website.</noscript>
