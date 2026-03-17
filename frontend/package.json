@@ -41,7 +41,7 @@
     },
     "overrides": {
         "rollup": "4.59.0",
-        "caniuse-lite": "1.0.30001779"
+        "caniuse-lite": "1.0.30001780"
     },
     "devDependencies": {
         "@eslint/compat": "2.0.3",
@@ -73,7 +73,7 @@
         "globals": "17.4.0",
         "history": "5.3.0",
         "jsdom": "29.0.0",
-        "msw": "2.12.10",
+        "msw": "2.12.13",
         "prettier": "3.8.1",
         "redux-mock-store": "1.5.5",
         "sass-loader": "16.0.7",
