@@ -167,14 +167,6 @@ const ProcurementTrackerStepFive = ({
                             </>
                         )}
                     </div>
-                    <button
-                        type="button"
-                        className="usa-button margin-top-2"
-                        disabled={true}
-                        title="Feature coming soon"
-                    >
-                        Request Pre-Award Approval
-                    </button>
                     <div className="usa-checkbox margin-top-3">
                         <input
                             className="usa-checkbox__input"
