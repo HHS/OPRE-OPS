@@ -229,10 +229,8 @@ export const RequestPreAwardApproval = () => {
             </Accordion>
 
             {/* Notes */}
-            <Accordion
-                heading="Notes"
-                level={2}
-            >
+            <div className="margin-top-5">
+                <h2 className="font-sans-lg margin-bottom-2">Notes</h2>
                 <TextArea
                     name="requestor-notes"
                     label="Notes (optional)"
@@ -240,7 +238,7 @@ export const RequestPreAwardApproval = () => {
                     value={notes}
                     onChange={(name, value) => setNotes(value)}
                 />
-            </Accordion>
+            </div>
 
             {/* Action Buttons */}
             <div className="grid-row flex-justify-end margin-top-8">
