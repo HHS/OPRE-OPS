@@ -42,6 +42,7 @@ import { IS_PROJECTS_LIST_READY, IS_PROJECT_DETAIL_READY } from "./constants";
 
 //  USWDS
 import "./uswds/css/styles.css";
+import ProcurementDashboard from "./pages/procurementDashboard/ProcurementDashboardPage";
 
 // NOTE: Uncomment the following line to include the USWDS JavaScript but breaks DatePicker
 // import "./uswds/js/uswds.min.js";
@@ -271,6 +272,10 @@ const router = createBrowserRouter(
                 <Route
                     path="/reporting"
                     element={<ReportingPage />}
+                />
+                <Route
+                    path="/procurement-dashboard"
+                    element={<ProcurementDashboard />}
                 />
                 <Route
                     path="/cans/:id/*"
