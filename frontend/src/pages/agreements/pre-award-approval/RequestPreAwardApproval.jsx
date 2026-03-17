@@ -36,7 +36,13 @@ export const RequestPreAwardApproval = () => {
         projectOfficerName,
         alternateProjectOfficerName,
         servicesComponents,
-        groupedBudgetLinesByServicesComponent
+        groupedBudgetLinesByServicesComponent,
+        selectedFile,
+        handleFileChange,
+        handleFileUpload,
+        isUploading,
+        uploadError,
+        preAwardMemoDocuments
     } = useRequestPreAwardApproval(agreementId);
 
     if (isLoading) {
@@ -113,6 +119,78 @@ export const RequestPreAwardApproval = () => {
                 changeRequestType=""
             />
 
+            {/* Upload Final Consensus Memo */}
+            <Accordion
+                heading="Upload Final Consensus Memo"
+                level={2}
+            >
+                <p>Please upload the Final Consensus Memo so the Division Director can review it.</p>
+
+                <div className="usa-form-group">
+                    <label
+                        className="usa-label"
+                        htmlFor="consensus-memo-upload"
+                    >
+                        Final Consensus Memo
+                    </label>
+                    <span
+                        className="usa-hint"
+                        id="consensus-memo-upload-hint"
+                    >
+                        Documents tab is coming soon! For now, please upload to the OPRE preferred tool to share
+                        documents
+                    </span>
+                    <input
+                        id="consensus-memo-upload"
+                        className="usa-file-input"
+                        type="file"
+                        name="consensus-memo-upload"
+                        aria-describedby="consensus-memo-upload-hint"
+                        accept=".pdf,.doc,.docx,.xls,.xlsx"
+                        onChange={handleFileChange}
+                        disabled={isUploading}
+                    />
+                </div>
+
+                {uploadError && (
+                    <div className="usa-alert usa-alert--error usa-alert--slim margin-top-2">
+                        <div className="usa-alert__body">
+                            <p className="usa-alert__text">{uploadError}</p>
+                        </div>
+                    </div>
+                )}
+
+                {selectedFile && (
+                    <div className="margin-top-2">
+                        <p className="text-bold">Selected file: {selectedFile.name}</p>
+                        <button
+                            className="usa-button margin-top-1"
+                            onClick={handleFileUpload}
+                            disabled={isUploading}
+                        >
+                            {isUploading ? "Uploading..." : "Upload File"}
+                        </button>
+                    </div>
+                )}
+
+                {preAwardMemoDocuments && preAwardMemoDocuments.length > 0 && (
+                    <div className="margin-top-3">
+                        <p className="text-bold">Uploaded Documents:</p>
+                        {preAwardMemoDocuments.map((doc) => (
+                            <div
+                                key={doc.id}
+                                className="padding-2 bg-base-lightest margin-top-1"
+                            >
+                                <p className="margin-0">
+                                    <span className="text-bold">{doc.document_name}</span>
+                                    {doc.document_size && <span> ({doc.document_size} MB)</span>}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </Accordion>
+
             {/* Notes */}
             <Accordion
                 heading="Notes"
@@ -121,7 +199,7 @@ export const RequestPreAwardApproval = () => {
                 <TextArea
                     name="requestor-notes"
                     label="Notes (optional)"
-                    maxLength={750}
+                    maxLength={150}
                     value={notes}
                     onChange={(name, value) => setNotes(value)}
                 />
@@ -138,6 +216,12 @@ export const RequestPreAwardApproval = () => {
                 <button
                     className="usa-button"
                     onClick={handleSubmit}
+                    disabled={!preAwardMemoDocuments || preAwardMemoDocuments.length === 0}
+                    title={
+                        !preAwardMemoDocuments || preAwardMemoDocuments.length === 0
+                            ? "Please upload the Final Consensus Memo before requesting approval"
+                            : ""
+                    }
                 >
                     Request Pre-Award Approval
                 </button>
