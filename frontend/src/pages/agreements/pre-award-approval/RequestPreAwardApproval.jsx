@@ -47,6 +47,7 @@ export const RequestPreAwardApproval = () => {
                 alternateProjectOfficerName={alternateProjectOfficerName}
                 convertCodeForDisplay={convertCodeForDisplay}
                 instructions="Review the agreement details below before requesting pre-award approval."
+                changeRequestType={agreement?.change_request_type}
             />
 
             {/* Budget Lines (Executing Status) */}
@@ -55,12 +56,21 @@ export const RequestPreAwardApproval = () => {
                 instructions="Review all executing budget lines for this agreement before requesting approval."
                 budgetLineItems={executingBudgetLines}
                 agreement={agreement}
-            />
+                afterApproval={false}
+                setAfterApproval={() => {}}
+                action=""
+            >
+                {/* No additional content */}
+            </AgreementBLIAccordion>
 
             {/* CAN Impact */}
             <AgreementCANReviewAccordion
                 instructions="Review the CAN budget impact for executing budget lines."
                 selectedBudgetLines={executingBudgetLines}
+                afterApproval={false}
+                setAfterApproval={() => {}}
+                action=""
+                changeRequestType=""
             />
 
             {/* Notes */}
@@ -73,7 +83,7 @@ export const RequestPreAwardApproval = () => {
                     label="Notes (optional)"
                     maxLength={750}
                     value={notes}
-                    onChange={(_, value) => setNotes(value)}
+                    onChange={(name, value) => setNotes(value)}
                 />
             </Accordion>
 
