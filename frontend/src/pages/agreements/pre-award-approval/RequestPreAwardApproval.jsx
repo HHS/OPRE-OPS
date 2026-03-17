@@ -127,9 +127,9 @@ export const RequestPreAwardApproval = () => {
                 <p>Please upload the Final Consensus Memo so the Division Director can review it.</p>
 
                 <div className="usa-form-group margin-top-3">
-                    <div className="display-flex flex-align-center position-relative">
-                        <div className="flex-fill">
-                            <div className="usa-input padding-2 bg-white border-1px border-base-light display-flex flex-justify">
+                    <div className="display-flex flex-align-center">
+                        <div style={{ maxWidth: "500px", flexGrow: 1 }}>
+                            <div className="usa-input padding-2 bg-white border-1px border-base-light">
                                 <span className="text-base">
                                     {selectedFile ? selectedFile.name : "Final Consensus Memo"}
                                 </span>
@@ -139,15 +139,15 @@ export const RequestPreAwardApproval = () => {
                             <label
                                 htmlFor="consensus-memo-upload"
                                 className="usa-button usa-button--outline margin-0 cursor-pointer"
-                                style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem" }}
+                                style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", whiteSpace: "nowrap" }}
                             >
                                 <svg
                                     className="usa-icon"
                                     aria-hidden="true"
                                     focusable="false"
                                     role="img"
-                                    width="24"
-                                    height="24"
+                                    width="20"
+                                    height="20"
                                     viewBox="0 0 24 24"
                                 >
                                     <path
@@ -168,15 +168,10 @@ export const RequestPreAwardApproval = () => {
                             />
                         </div>
                         <div
-                            className="position-absolute bg-base-darker text-white padding-2 border-radius-md"
+                            className="bg-base-darker text-white padding-2 border-radius-md margin-left-2"
                             style={{
-                                right: "-20px",
-                                top: "50%",
-                                transform: "translateY(-50%) translateX(100%)",
                                 maxWidth: "300px",
-                                fontSize: "0.875rem",
-                                zIndex: 1,
-                                whiteSpace: "normal"
+                                fontSize: "0.875rem"
                             }}
                         >
                             Documents tab is coming soon! For now, please upload to the OPRE preferred tool to share

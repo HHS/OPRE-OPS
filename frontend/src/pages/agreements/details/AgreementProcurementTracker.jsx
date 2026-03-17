@@ -1,4 +1,5 @@
 import React from "react";
+import { useLocation } from "react-router-dom";
 import { useGetProcurementTrackersByAgreementIdQuery, useGetUsersQuery } from "../../../api/opsAPI";
 import ProcurementTrackerStepOne from "../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepOne";
 import ProcurementTrackerStepTwo from "../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepTwo";
@@ -7,6 +8,7 @@ import ProcurementTrackerStepFour from "../../../components/Agreements/Procureme
 import ProcurementTrackerStepFive from "../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepFive";
 import StepBuilderAccordion from "../../../components/Agreements/ProcurementTracker/StepBuilderAccordion";
 import DebugCode from "../../../components/DebugCode";
+import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import StepIndicator from "../../../components/UI/StepIndicator";
 import { IS_PROCUREMENT_TRACKER_READY_MAP } from "../../../constants";
 import { useIsUserSuperUser } from "../../../hooks/user.hooks";
@@ -23,6 +25,9 @@ import { useIsUserSuperUser } from "../../../hooks/user.hooks";
  */
 
 const AgreementProcurementTracker = ({ agreement }) => {
+    const location = useLocation();
+    const [showSuccessAlert, setShowSuccessAlert] = React.useState(false);
+
     const WIZARD_STEPS = [
         "Acquisition Planning",
         "Pre-Solicitation",
@@ -36,6 +41,13 @@ const AgreementProcurementTracker = ({ agreement }) => {
         setCompletedStepNumber(stepNumber);
     };
     const agreementId = agreement?.id;
+
+    // Check for success message from location state
+    React.useEffect(() => {
+        if (location.state?.success) {
+            setShowSuccessAlert(true);
+        }
+    }, [location.state]);
     const isSuperUser = useIsUserSuperUser();
     const isEditable = isSuperUser || (agreement?._meta?.isEditable ?? false);
     const { data, isLoading, isError } = useGetProcurementTrackersByAgreementIdQuery(agreementId, {
@@ -99,6 +111,15 @@ const AgreementProcurementTracker = ({ agreement }) => {
 
     return (
         <>
+            {showSuccessAlert && (
+                <SimpleAlert
+                    type="success"
+                    heading="Agreement Sent to Pre-Award Approval"
+                    message="This agreement has been successfully sent to your Division Director to review. After it's approved, you can send the Final Consensus Memo and continue your progress in the Procurement Tracker."
+                    isClosable={true}
+                    setIsAlertVisible={setShowSuccessAlert}
+                />
+            )}
             <div className="display-flex flex-justify flex-align-center">
                 <h2 className="font-sans-lg">Procurement Tracker</h2>
             </div>
