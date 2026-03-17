@@ -128,18 +128,29 @@ export const RequestPreAwardApproval = () => {
 
                 <div className="usa-form-group margin-top-3">
                     <div className="display-flex flex-align-center">
-                        <div style={{ maxWidth: "500px", flexGrow: 1 }}>
-                            <div className="usa-input padding-2 bg-white border-1px border-base-light">
+                        <div
+                            className="position-relative bg-white border-1px border-base-light"
+                            style={{ maxWidth: "500px", flexGrow: 1 }}
+                        >
+                            <div className="padding-2 padding-right-9">
                                 <span className="text-base">
                                     {selectedFile ? selectedFile.name : "Final Consensus Memo"}
                                 </span>
                             </div>
-                        </div>
-                        <div className="margin-left-2">
                             <label
                                 htmlFor="consensus-memo-upload"
-                                className="usa-button usa-button--outline margin-0 cursor-pointer"
-                                style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", whiteSpace: "nowrap" }}
+                                className="position-absolute cursor-pointer"
+                                style={{
+                                    right: "8px",
+                                    top: "50%",
+                                    transform: "translateY(-50%)",
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: "0.5rem",
+                                    color: "#005ea2",
+                                    fontSize: "0.875rem",
+                                    whiteSpace: "nowrap"
+                                }}
                             >
                                 <svg
                                     className="usa-icon"
@@ -149,11 +160,9 @@ export const RequestPreAwardApproval = () => {
                                     width="20"
                                     height="20"
                                     viewBox="0 0 24 24"
+                                    style={{ fill: "currentColor" }}
                                 >
-                                    <path
-                                        fill="currentColor"
-                                        d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"
-                                    />
+                                    <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" />
                                 </svg>
                                 Upload File
                             </label>
