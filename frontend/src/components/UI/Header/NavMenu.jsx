@@ -65,7 +65,7 @@ const NavMenu = () => {
                             position="bottom"
                         >
                             <span
-                                className="usa-nav__link text-bold text-base"
+                                className="usa-nav__link text-bold text-base cursor-default"
                                 style={{ display: "flex", alignItems: "center", height: "100%" }}
                             >
                                 Projects
