@@ -111,6 +111,10 @@ class ProcurementTrackerStepResponseSchema(Schema):
             data["date_completed"] = obj.pre_award_date_completed
             data["notes"] = obj.pre_award_notes
             data["target_completion_date"] = obj.pre_award_target_completion_date
+            data["approval_requested"] = obj.pre_award_approval_requested
+            data["approval_requested_date"] = obj.pre_award_approval_requested_date
+            data["approval_requested_by"] = obj.pre_award_approval_requested_by
+            data["requestor_notes"] = obj.pre_award_requestor_notes
 
         return data
 
@@ -263,6 +267,12 @@ class ProcurementTrackerStepSchema(Schema):
     solicitation_period_start_date = fields.Date(allow_none=True)
     solicitation_period_end_date = fields.Date(allow_none=True)
 
+    # PRE_AWARD approval request fields
+    approval_requested = fields.Boolean(allow_none=True)
+    approval_requested_date = fields.Date(allow_none=True)
+    approval_requested_by = fields.Integer(allow_none=True)
+    requestor_notes = fields.String(allow_none=True)
+
     @pre_dump
     def map_step_specific_fields(self, obj, **_kwargs):
         """
@@ -319,6 +329,10 @@ class ProcurementTrackerStepSchema(Schema):
             data["date_completed"] = obj.pre_award_date_completed
             data["notes"] = obj.pre_award_notes
             data["target_completion_date"] = obj.pre_award_target_completion_date
+            data["approval_requested"] = obj.pre_award_approval_requested
+            data["approval_requested_date"] = obj.pre_award_approval_requested_date
+            data["approval_requested_by"] = obj.pre_award_approval_requested_by
+            data["requestor_notes"] = obj.pre_award_requestor_notes
 
         return data
 
