@@ -243,8 +243,8 @@ def test_research_projects_list_uses_lightweight_schema(auth_client, loaded_db, 
     # Verify fiscal_year_totals is a dict (or None)
     assert project["fiscal_year_totals"] is None or isinstance(project["fiscal_year_totals"], dict)
 
-    # Verify project_total is an int (or None)
-    assert project["project_total"] is None or isinstance(project["project_total"], int)
+    # Verify project_total is an string (or None) to preserve precision (since it can be a large decimal), and is not a float which could lose precision
+    assert project["project_total"] is None or isinstance(project["project_total"], str)
 
     # Verify expensive nested fields are NOT present (performance optimization)
     assert "team_leaders" not in project, "Nested 'team_leaders' should not be in list response (causes N+1 queries)"

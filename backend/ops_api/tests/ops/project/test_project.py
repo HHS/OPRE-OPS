@@ -480,8 +480,8 @@ def test_projects_list_uses_lightweight_schema(auth_client, loaded_db, app_ctx):
     # Verify fiscal_year_totals is a dict (or None)
     assert project["fiscal_year_totals"] is None or isinstance(project["fiscal_year_totals"], dict)
 
-    # Verify project_total is an int (or None)
-    assert project["project_total"] is None or isinstance(project["project_total"], int)
+    # Verify project_total is an str (or None) to preserve precision (since it can be a large decimal), and is not a float which could lose precision
+    assert project["project_total"] is None or isinstance(project["project_total"], str)
 
     # Verify expensive nested fields are NOT present (performance optimization)
     assert "team_leaders" not in project, "Nested 'team_leaders' should not be in list response (causes N+1 queries)"
@@ -551,7 +551,7 @@ def test_project_list_metadata_serialization(auth_client, loaded_db):
     assert project_data["start_date"] == "2023-01-01"
     assert project_data["end_date"] == "2023-12-31"
     assert project_data["project_total"] is not None
-    assert isinstance(project_data["project_total"], int)
+    assert isinstance(project_data["project_total"], str)
 
     # Verify fiscal_year_totals contains the expected fiscal years
     assert project_data["fiscal_year_totals"] is not None
@@ -1168,7 +1168,7 @@ class TestProjectSorting:
         assert len(projects) >= 3
 
         # Check first 3 are sorted ascending
-        totals = [p["project_total"] if p["project_total"] is not None else 0 for p in projects[:3]]
+        totals = [Decimal(p["project_total"]) if p["project_total"] is not None else 0 for p in projects[:3]]
         assert totals == sorted(totals)
 
         # Sort descending
@@ -1180,7 +1180,7 @@ class TestProjectSorting:
         assert len(projects) >= 3
 
         # Check first 3 are sorted descending
-        totals = [p["project_total"] if p["project_total"] is not None else 0 for p in projects[:3]]
+        totals = [Decimal(p["project_total"]) if p["project_total"] is not None else 0 for p in projects[:3]]
         assert totals == sorted(totals, reverse=True)
 
     def test_sort_without_sort_field_defaults_to_id(self, auth_client, loaded_db):

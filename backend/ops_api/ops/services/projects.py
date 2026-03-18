@@ -233,7 +233,10 @@ class ProjectsService(OpsService[Project]):
             .join(CAN, isouter=True)
             .join(CANFundingDetails, isouter=True)
             .join(CANFundingBudget, isouter=True)
-            .options(selectinload(ResearchProject.agreements).selectinload(Agreement.services_components))
+            .options(
+                selectinload(ResearchProject.agreements).selectinload(Agreement.services_components),
+                selectinload(ResearchProject.agreements).selectinload(Agreement.budget_line_items),
+            )
         )
 
         query_helper = QueryHelper(stmt)
@@ -295,7 +298,8 @@ class ProjectsService(OpsService[Project]):
             .join(CANFundingDetails, isouter=True)
             .join(CANFundingBudget, isouter=True)
             .options(
-                selectinload(AdministrativeAndSupportProject.agreements).selectinload(Agreement.services_components)
+                selectinload(AdministrativeAndSupportProject.agreements).selectinload(Agreement.services_components),
+                selectinload(AdministrativeAndSupportProject.agreements).selectinload(Agreement.budget_line_items),
             )
         )
 
@@ -360,7 +364,11 @@ class ProjectsService(OpsService[Project]):
 
     @staticmethod
     def _get_project_sort_key(
-        project: Project, sort_field: str | None, sort_fiscal_year: int | None, metadata_cache: dict
+        project: Project,
+        sort_field: str | None,
+        sort_fiscal_year: int | None,
+        metadata_cache: dict,
+        sort_descending: bool = False,
     ) -> Any:
         """
         Generate a sort key for a project based on the sort field.
@@ -370,6 +378,7 @@ class ProjectsService(OpsService[Project]):
             sort_field: The field to sort by (must match ProjectSortCondition enum values)
             sort_fiscal_year: The fiscal year to use when sorting by FY_TOTAL
             metadata_cache: Dictionary mapping project IDs to their project_list_metadata results
+            sort_descending: Whether the sort is descending (affects None handling for date fields)
 
         Returns:
             A sortable key value
@@ -390,11 +399,15 @@ class ProjectsService(OpsService[Project]):
         elif sort_condition == ProjectSortCondition.PROJECT_START:
             metadata = metadata_cache[project.id]
             # Handle None values by sorting them last
-            return (metadata["project_start"] is None, metadata["project_start"])
+            # When descending, invert the boolean so None still comes last after reversal
+            is_none = metadata["project_start"] is None
+            return (is_none if not sort_descending else not is_none, metadata["project_start"])
         elif sort_condition == ProjectSortCondition.PROJECT_END:
             metadata = metadata_cache[project.id]
             # Handle None values by sorting them last
-            return (metadata["project_end"] is None, metadata["project_end"])
+            # When descending, invert the boolean so None still comes last after reversal
+            is_none = metadata["project_end"] is None
+            return (is_none if not sort_descending else not is_none, metadata["project_end"])
         elif sort_condition == ProjectSortCondition.FY_TOTAL:
             metadata = metadata_cache[project.id]
             # Get fiscal year total, defaulting to 0 if not present
@@ -458,7 +471,7 @@ class ProjectsService(OpsService[Project]):
         # Sort projects using the extracted sort key function
         sorted_projects = sorted(
             all_projects,
-            key=lambda p: self._get_project_sort_key(p, sort_field, sort_fiscal_year, metadata_cache),
+            key=lambda p: self._get_project_sort_key(p, sort_field, sort_fiscal_year, metadata_cache, sort_descending),
             reverse=sort_descending,
         )
 
