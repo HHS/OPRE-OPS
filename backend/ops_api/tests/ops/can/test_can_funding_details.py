@@ -59,6 +59,7 @@ def test_funding_details_post_creates_funding_details(budget_team_auth_client, m
     )
     input_data["allotment"] = None
     input_data["allowance"] = None
+    input_data["appropriation"] = None
     input_data["display_name"] = None
     input_data["funding_partner"] = None
     input_data["funding_source"] = None
@@ -218,6 +219,7 @@ def test_funding_details_put(budget_team_auth_client, mocker, app_ctx):
     update_data["method_of_transfer"] = CANMethodOfTransfer.COST_SHARE
     update_data["allotment"] = None
     update_data["allowance"] = None
+    update_data["appropriation"] = None
     update_data["display_name"] = None
     update_data["funding_partner"] = None
     update_data["funding_source"] = None
