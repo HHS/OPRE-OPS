@@ -6,10 +6,11 @@ import {
     useUpdateProcurementTrackerStepMutation,
     useAddDocumentMutation,
     useUpdateDocumentStatusMutation,
-    useGetDocumentsByAgreementIdQuery
+    useGetDocumentsByAgreementIdQuery,
+    useGetProcurementTrackersByAgreementIdQuery
 } from "../../../api/opsAPI";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
-import { formatDateForApi } from "../../../helpers/utils";
+import { getLocalISODate } from "../../../helpers/utils";
 import { groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
 import {
     convertFileSizeToMB,
@@ -30,6 +31,7 @@ export default function useRequestPreAwardApproval(agreementId) {
     const [selectedFile, setSelectedFile] = useState(null);
     const [isUploading, setIsUploading] = useState(false);
     const [uploadError, setUploadError] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const { data: agreement, isLoading } = useGetAgreementByIdQuery(agreementId);
     const [updateProcurementTrackerStep] = useUpdateProcurementTrackerStepMutation();
@@ -37,6 +39,9 @@ export default function useRequestPreAwardApproval(agreementId) {
     const [addDocument] = useAddDocumentMutation();
     const [updateDocumentStatus] = useUpdateDocumentStatusMutation();
     const { data: documentsData } = useGetDocumentsByAgreementIdQuery(agreementId, { skip: !agreementId });
+    const { data: procurementTrackersData } = useGetProcurementTrackersByAgreementIdQuery(agreementId, {
+        skip: !agreementId
+    });
 
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
     const alternateProjectOfficerName = useGetUserFullNameFromId(agreement?.alternate_project_officer_id);
@@ -51,12 +56,16 @@ export default function useRequestPreAwardApproval(agreementId) {
     );
 
     // Get Step 5 (Pre-Award) from procurement tracker
-    const procurementTracker = agreement?.procurement_tracker;
-    const step5 = procurementTracker?.steps?.find((step) => step.step_number === 5);
+    const trackers = procurementTrackersData?.data || [];
+    const activeTracker = trackers.find((tracker) => tracker.status === "ACTIVE");
+    const step5 = activeTracker?.steps?.find((step) => step.step_number === 5);
 
     // Get existing Pre-Award Consensus Memo documents
     const preAwardMemoDocuments =
         documentsData?.documents?.filter((doc) => doc.document_type === "PRE_AWARD_CONSENSUS_MEMO") || [];
+
+    // Check if approval has already been requested
+    const hasApprovalBeenRequested = step5?.approval_requested === true;
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
@@ -125,27 +134,30 @@ export default function useRequestPreAwardApproval(agreementId) {
             return;
         }
 
+        setIsSubmitting(true);
+
         try {
             await updateProcurementTrackerStep({
                 stepId: step5.id,
                 data: {
                     approval_requested: true,
-                    approval_requested_date: formatDateForApi(new Date()),
+                    approval_requested_date: getLocalISODate(),
                     requestor_notes: notes.trim() || null
                 }
             }).unwrap();
 
-            // Navigate back to agreement detail / procurement tracker
-            navigate(`/agreements/${agreementId}?tab=procurement-tracker`, {
-                state: { success: "Pre-Award approval request submitted successfully" }
+            // Navigate back to procurement tracker with success message
+            navigate(`/agreements/${agreementId}/procurement-tracker`, {
+                state: { success: true }
             });
         } catch (error) {
             console.error("Failed to submit approval request:", error);
+            setIsSubmitting(false);
         }
     };
 
     const handleCancel = () => {
-        navigate(`/agreements/${agreementId}?tab=procurement-tracker`);
+        navigate(-1);
     };
 
     return {
@@ -165,6 +177,8 @@ export default function useRequestPreAwardApproval(agreementId) {
         handleFileUpload,
         isUploading,
         uploadError,
-        preAwardMemoDocuments
+        preAwardMemoDocuments,
+        isSubmitting,
+        hasApprovalBeenRequested
     };
 }

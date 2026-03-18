@@ -12,7 +12,7 @@ import { NO_DATA } from "../constants";
  */
 const useGetUserFullNameFromId = (id) => {
     const [userFullName, setUserFullName] = React.useState(NO_DATA);
-    const { data, isSuccess } = useGetUserByIdQuery(id, { skip: !id });
+    const { data, isSuccess } = useGetUserByIdQuery(id, { skip: !id || id < 0 });
 
     React.useEffect(() => {
         if (isSuccess) {

@@ -8,6 +8,7 @@ import AgreementBLIReviewTable from "../../../components/BudgetLineItems/BLIRevi
 import ServicesComponentAccordion from "../../../components/ServicesComponents/ServicesComponentAccordion";
 import Accordion from "../../../components/UI/Accordion";
 import TextArea from "../../../components/UI/Form/TextArea";
+import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import {
     findDescription,
@@ -42,7 +43,9 @@ export const RequestPreAwardApproval = () => {
         handleFileUpload,
         isUploading,
         uploadError,
-        preAwardMemoDocuments
+        preAwardMemoDocuments,
+        isSubmitting,
+        hasApprovalBeenRequested
     } = useRequestPreAwardApproval(agreementId);
 
     if (isLoading) {
@@ -55,6 +58,15 @@ export const RequestPreAwardApproval = () => {
                 title="Request Pre-Award Approval"
                 subTitle={agreement?.name}
             />
+
+            {hasApprovalBeenRequested && (
+                <SimpleAlert
+                    type="info"
+                    heading="Pre-Award Approval Already Requested"
+                    message="A pre-award approval request has already been submitted for this agreement. You cannot submit another request."
+                    isClosable={false}
+                />
+            )}
 
             {/* Agreement Details */}
             <AgreementMetaAccordion
@@ -122,7 +134,7 @@ export const RequestPreAwardApproval = () => {
 
             {/* Upload Final Consensus Memo */}
             <Accordion
-                heading="Upload Final Consensus Memo"
+                heading="Upload Final Consensus Memo (optional)"
                 level={2}
             >
                 <p>Please upload the Final Consensus Memo so the Division Director can review it.</p>
@@ -254,20 +266,17 @@ export const RequestPreAwardApproval = () => {
                 <button
                     className="usa-button usa-button--unstyled margin-right-2"
                     onClick={handleCancel}
+                    disabled={isSubmitting}
                 >
                     Cancel
                 </button>
                 <button
                     className="usa-button"
                     onClick={handleSubmit}
-                    disabled={!preAwardMemoDocuments || preAwardMemoDocuments.length === 0}
-                    title={
-                        !preAwardMemoDocuments || preAwardMemoDocuments.length === 0
-                            ? "Please upload the Final Consensus Memo before requesting approval"
-                            : ""
-                    }
+                    disabled={isSubmitting || hasApprovalBeenRequested}
+                    title={hasApprovalBeenRequested ? "Pre-Award approval has already been requested" : ""}
                 >
-                    Request Pre-Award Approval
+                    {isSubmitting ? "Submitting..." : "Request Pre-Award Approval"}
                 </button>
             </div>
         </App>

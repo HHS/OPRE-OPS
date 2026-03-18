@@ -27,6 +27,7 @@ import { useIsUserSuperUser } from "../../../hooks/user.hooks";
 const AgreementProcurementTracker = ({ agreement }) => {
     const location = useLocation();
     const [showSuccessAlert, setShowSuccessAlert] = React.useState(false);
+    const [showInReviewAlert, setShowInReviewAlert] = React.useState(false);
 
     const WIZARD_STEPS = [
         "Acquisition Planning",
@@ -46,6 +47,9 @@ const AgreementProcurementTracker = ({ agreement }) => {
     React.useEffect(() => {
         if (location.state?.success) {
             setShowSuccessAlert(true);
+            setShowInReviewAlert(false);
+            // Clear the location state to avoid showing alert on refresh/revisit
+            window.history.replaceState({}, document.title);
         }
     }, [location.state]);
     const isSuperUser = useIsUserSuperUser();
@@ -79,6 +83,16 @@ const AgreementProcurementTracker = ({ agreement }) => {
     const stepFourData = activeTracker?.steps.find((step) => step.step_number === 4);
     const stepFiveData = activeTracker?.steps.find((step) => step.step_number === 5);
 
+    // Show "In Review" alert when approval is requested but not just submitted
+    React.useEffect(() => {
+        if (stepFiveData?.approval_requested && !location.state?.success) {
+            setShowInReviewAlert(true);
+            setShowSuccessAlert(false);
+        } else if (!stepFiveData?.approval_requested) {
+            setShowInReviewAlert(false);
+        }
+    }, [stepFiveData?.approval_requested, location.state?.success]);
+
     // Handle loading state
     if (isLoading) {
         return <div>Loading procurement tracker...</div>;
@@ -111,6 +125,14 @@ const AgreementProcurementTracker = ({ agreement }) => {
 
     return (
         <>
+            {showInReviewAlert && (
+                <SimpleAlert
+                    type="warning"
+                    heading="Pre-Award Approval In Review"
+                    message="This agreement is In Review for Pre-Award Approval. Edits or changes cannot be made at this time."
+                    isClosable={false}
+                />
+            )}
             {showSuccessAlert && (
                 <SimpleAlert
                     type="success"
