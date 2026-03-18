@@ -14,6 +14,7 @@ from models import (
     CANFundingDetails,
     Portfolio,
     Project,
+    ProjectSortCondition,
     ProjectType,
     ResearchProject,
     User,
@@ -293,7 +294,9 @@ class ProjectsService(OpsService[Project]):
             .join(CAN, isouter=True)
             .join(CANFundingDetails, isouter=True)
             .join(CANFundingBudget, isouter=True)
-            .options(selectinload(AdministrativeAndSupportProject.agreements).selectinload(Agreement.services_components))
+            .options(
+                selectinload(AdministrativeAndSupportProject.agreements).selectinload(Agreement.services_components)
+            )
         )
 
         query_helper = QueryHelper(stmt)
@@ -355,9 +358,55 @@ class ProjectsService(OpsService[Project]):
             raise ResourceNotFoundError("Project", id)
         return project
 
-    def get_list(
-        self, data: dict[str, Any] | None = None
-    ) -> tuple[Sequence[ResearchProject], Sequence[AdministrativeAndSupportProject], dict[str, Any]]:
+    @staticmethod
+    def _get_project_sort_key(
+        project: Project, sort_field: str | None, sort_fiscal_year: int | None, metadata_cache: dict
+    ) -> Any:
+        """
+        Generate a sort key for a project based on the sort field.
+
+        Args:
+            project: The project to generate a sort key for
+            sort_field: The field to sort by (must match ProjectSortCondition enum values)
+            sort_fiscal_year: The fiscal year to use when sorting by FY_TOTAL
+            metadata_cache: Dictionary mapping project IDs to their project_list_metadata results
+
+        Returns:
+            A sortable key value
+        """
+        if not sort_field:
+            return project.id
+
+        try:
+            sort_condition = ProjectSortCondition(sort_field)
+        except ValueError:
+            # Invalid sort_field, default to id
+            return project.id
+
+        if sort_condition == ProjectSortCondition.TITLE:
+            return (project.title or "").lower()
+        elif sort_condition == ProjectSortCondition.PROJECT_TYPE:
+            return project.project_type.value if project.project_type else ""
+        elif sort_condition == ProjectSortCondition.PROJECT_START:
+            metadata = metadata_cache[project.id]
+            # Handle None values by sorting them last
+            return (metadata["project_start"] is None, metadata["project_start"])
+        elif sort_condition == ProjectSortCondition.PROJECT_END:
+            metadata = metadata_cache[project.id]
+            # Handle None values by sorting them last
+            return (metadata["project_end"] is None, metadata["project_end"])
+        elif sort_condition == ProjectSortCondition.FY_TOTAL:
+            metadata = metadata_cache[project.id]
+            # Get fiscal year total, defaulting to 0 if not present
+            fy_total = metadata["by_fiscal_year"].get(sort_fiscal_year, 0) if sort_fiscal_year else 0
+            return fy_total
+        elif sort_condition == ProjectSortCondition.PROJECT_TOTAL:
+            metadata = metadata_cache[project.id]
+            return metadata["total"]
+        else:
+            return project.id
+
+    def get_list(self, data: dict[str, Any] | None = None) -> tuple[Sequence[Project], dict[str, Any]]:
         """
         Get list of projects with optional filtering and pagination.
 
@@ -369,6 +418,16 @@ class ProjectsService(OpsService[Project]):
             where metadata includes count, limit, and offset
         """
         filters = ProjectFilters.parse_filters(data)
+
+        # Extract first value from sort parameter lists (only first value is used)
+        sort_field_list = data.get("sort_field", [])
+        sort_field = sort_field_list[0] if sort_field_list else None
+
+        sort_descending_list = data.get("sort_descending", [])
+        sort_descending = sort_descending_list[0] if sort_descending_list else False
+
+        sort_fiscal_year_list = data.get("sort_fiscal_year", [])
+        sort_fiscal_year = sort_fiscal_year_list[0] if sort_fiscal_year_list else None
 
         research_projects = []
         administrative_and_support_projects = []
@@ -391,7 +450,17 @@ class ProjectsService(OpsService[Project]):
         # Combine results for pagination
         all_projects = research_projects + administrative_and_support_projects
 
-        sorted_projects = sorted(all_projects, key=lambda p: p.id)
+        # Memoize project_list_metadata to prevent repeat calculations
+        metadata_cache = {}
+        for project in all_projects:
+            metadata_cache[project.id] = project.project_list_metadata
+
+        # Sort projects using the extracted sort key function
+        sorted_projects = sorted(
+            all_projects,
+            key=lambda p: self._get_project_sort_key(p, sort_field, sort_fiscal_year, metadata_cache),
+            reverse=sort_descending,
+        )
 
         # Calculate total count before pagination
         total_count = len(sorted_projects)
@@ -402,17 +471,13 @@ class ProjectsService(OpsService[Project]):
 
         paginated_projects = sorted_projects[offset_value : offset_value + limit_value]
 
-        # Separate paginated results back into their types for serialization
-        paginated_research = [p for p in paginated_projects if isinstance(p, ResearchProject)]
-        paginated_admin = [p for p in paginated_projects if isinstance(p, AdministrativeAndSupportProject)]
-
         metadata = {
             "count": total_count,
             "limit": limit_value,
             "offset": offset_value,
         }
 
-        return paginated_research, paginated_admin, metadata
+        return paginated_projects, metadata
 
     def get_filter_options(self) -> dict[str, Any]:
         """

@@ -2893,6 +2893,37 @@ paths:
           style: form
           explode: true
           example: [0]
+        - name: sort_field
+          in: query
+          description: Field to sort projects by
+          schema:
+            type: array
+            items:
+              type: string
+              enum: [TITLE, PROJECT_TYPE, PROJECT_START, PROJECT_END, FY_TOTAL, PROJECT_TOTAL]
+          style: form
+          explode: true
+          example: [TITLE]
+        - name: sort_descending
+          in: query
+          description: Sort order - true for descending, false for ascending
+          schema:
+            type: array
+            items:
+              type: boolean
+          style: form
+          explode: true
+          example: [false]
+        - name: sort_fiscal_year
+          in: query
+          description: Fiscal year to use when sorting by FY_TOTAL (required when sort_field includes FY_TOTAL)
+          schema:
+            type: array
+            items:
+              type: integer
+          style: form
+          explode: true
+          example: [2023]
       responses:
         "200":
           description: OK - Returns paginated list of projects with metadata

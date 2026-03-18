@@ -32,6 +32,15 @@ class ProjectType(Enum):
     ADMINISTRATIVE_AND_SUPPORT = 2
 
 
+class ProjectSortCondition(Enum):
+    TITLE = "title"
+    PROJECT_TYPE = "project_type"
+    PROJECT_START = "project_start"
+    PROJECT_END = "project_end"
+    FY_TOTAL = "fy_total"
+    PROJECT_TOTAL = "project_total"
+
+
 class Project(BaseModel):
     __tablename__ = "project"
     __mapper_args__: dict[str, str | ProjectType] = {
