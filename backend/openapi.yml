@@ -5008,6 +5008,8 @@ components:
           type: string
         allowance:
           type: string
+        appropriation:
+          type: string
         display_name:
           type: string
         fiscal_year:
@@ -5055,6 +5057,8 @@ components:
         allotment:
           type: string
         allowance:
+          type: string
+        appropriation:
           type: string
         display_name:
           type: string
