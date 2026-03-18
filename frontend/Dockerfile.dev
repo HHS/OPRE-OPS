@@ -12,7 +12,7 @@ RUN --mount=type=cache,target=/root/.bun/install/cache \
     bun install --frozen-lockfile
 
 # Copy configuration files that change less frequently
-COPY vite.config.mjs eslint.config.js jsconfig.json .babelrc gulpfile.js bunfig.toml .babel-plugin-macrosrc ./
+COPY vite.config.mjs eslint.config.js jsconfig.json gulpfile.js bunfig.toml ./
 COPY vite-env ./vite-env/
 
 # Copy source code and assets (this invalidates cache only when code changes)

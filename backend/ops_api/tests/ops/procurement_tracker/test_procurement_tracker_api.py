@@ -247,15 +247,27 @@ def test_get_procurement_tracker_all_step_fields(auth_client, app_ctx):
     assert "solicitation_period_start_date" not in evaluation_step
     assert "solicitation_period_end_date" not in evaluation_step
 
-    # Other steps (PRE_AWARD, AWARD) should NOT have extra fields
-    for step in steps[4:]:
-        assert "task_completed_by" not in step
-        assert "date_completed" not in step
-        assert "notes" not in step
-        assert "draft_solicitation_date" not in step
-        assert "target_completion_date" not in step
-        assert "solicitation_period_start_date" not in step
-        assert "solicitation_period_end_date" not in step
+    # PRE_AWARD step should have extra fields
+    pre_award_step = steps[4]
+    assert pre_award_step["step_type"] == "PRE_AWARD"
+    assert "task_completed_by" in pre_award_step
+    assert "date_completed" in pre_award_step
+    assert "notes" in pre_award_step
+    assert "target_completion_date" in pre_award_step
+    assert "draft_solicitation_date" not in pre_award_step
+    assert "solicitation_period_start_date" not in pre_award_step
+    assert "solicitation_period_end_date" not in pre_award_step
+
+    # AWARD step should NOT have extra fields
+    award_step = steps[5]
+    assert award_step["step_type"] == "AWARD"
+    assert "task_completed_by" not in award_step
+    assert "date_completed" not in award_step
+    assert "notes" not in award_step
+    assert "draft_solicitation_date" not in award_step
+    assert "target_completion_date" not in award_step
+    assert "solicitation_period_start_date" not in award_step
+    assert "solicitation_period_end_date" not in award_step
 
 
 def test_get_procurement_tracker_response_structure(auth_client, app_ctx):
