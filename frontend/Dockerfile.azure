@@ -1,9 +1,6 @@
 # ---- Dependency Installation Stage ----
 FROM oven/bun@sha256:3885ef8337c9a4f4f2a425c609351ac0d5bd42ed5b97b1ded7fc31ee6a81ca04 as deps
 
-# hadolint ignore=DL3018
-RUN apk add --no-cache unzip
-
 WORKDIR /home/bun/app
 
 # Copy only the package files first to leverage Docker cache
