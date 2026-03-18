@@ -136,7 +136,7 @@ const UserInfo = ({ user, isEditable }) => {
         <div className="usa-card">
             <div className="usa-card__container">
                 <div className="usa-card__header">
-                    <h1 className="usa-card__heading">{user.full_name}</h1>
+                    <h1 className="usa-card__heading">{user.display_name ?? user.full_name}</h1>
                 </div>
                 <div className="usa-card__body">
                     <div className="font-sans-md line-height-sans-4 flex-align-center">

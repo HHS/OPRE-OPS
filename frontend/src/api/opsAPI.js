@@ -3,6 +3,22 @@ import { getAccessToken } from "../components/Auth/auth";
 import { postRefresh } from "./postRefresh.js";
 import { logout } from "../components/Auth/authSlice.js";
 import store from "../store";
+import { getUserDisplayName } from "../helpers/users.helpers";
+
+/**
+ * Adds a `display_name` field to a user object derived from their name fields.
+ * The raw `full_name` is preserved unchanged; `display_name` is the formatted value
+ * safe to render directly in the UI.
+ * @param {Object} user
+ * @returns {Object}
+ */
+const normalizeUser = (user) => {
+    if (!user || typeof user !== "object") return user;
+    return {
+        ...user,
+        display_name: getUserDisplayName(user)
+    };
+};
 
 const BACKEND_DOMAIN =
     (typeof window !== "undefined" && window.__RUNTIME_CONFIG__?.REACT_APP_BACKEND_DOMAIN) ||
@@ -411,10 +427,13 @@ export const opsApi = createApi({
         }),
         getUserById: builder.query({
             query: (id) => `/users/${id}`,
+            transformResponse: (response) => normalizeUser(response),
             providesTags: ["Users"]
         }),
         getUserByOIDCId: builder.query({
             query: (id) => `/users/?oidc_id=${id}`,
+            transformResponse: (response) =>
+                Array.isArray(response) ? response.map(normalizeUser) : normalizeUser(response),
             providesTags: ["Users"]
         }),
         getResearchProjects: builder.query({
@@ -503,14 +522,18 @@ export const opsApi = createApi({
         }),
         getUsers: builder.query({
             query: () => `/users/`,
+            transformResponse: (response) => (Array.isArray(response) ? response.map(normalizeUser) : response),
             providesTags: ["Users"]
         }),
         getUser: builder.query({
             query: (id) => `/users/${id}`,
+            transformResponse: (response) => normalizeUser(response),
             providesTags: ["User"]
         }),
         getUserByOidc: builder.query({
             query: (oidc_id) => `/users/?oidc_id=${oidc_id}`,
+            transformResponse: (response) =>
+                Array.isArray(response) ? response.map(normalizeUser) : normalizeUser(response),
             providesTags: ["User"]
         }),
         addUser: builder.mutation({

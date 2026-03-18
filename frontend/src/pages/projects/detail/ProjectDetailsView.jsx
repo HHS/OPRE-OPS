@@ -46,7 +46,7 @@ const ProjectDetailsView = ({ project }) => {
 
     const projectTypeLabel = convertCodeForDisplay("project", project.project_type);
 
-    const teamLeaderNames = project.team_leaders?.map((tl) => tl.full_name) ?? [];
+    const teamLeaderNames = project.team_leaders?.map((tl) => tl.display_name ?? tl.full_name) ?? [];
     const methodologies = project.methodologies ?? [];
     const populations = project.populations ?? [];
 
