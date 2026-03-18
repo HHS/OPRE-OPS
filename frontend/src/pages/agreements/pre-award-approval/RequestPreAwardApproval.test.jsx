@@ -227,9 +227,7 @@ describe("RequestPreAwardApproval", () => {
 
         expect(screen.getByText("Budget Line In Review")).toBeInTheDocument();
         expect(
-            screen.getByText(
-                /One or more budget lines have pending change requests that are currently in review/
-            )
+            screen.getByText(/One or more budget lines have pending change requests that are currently in review/)
         ).toBeInTheDocument();
     });
 
