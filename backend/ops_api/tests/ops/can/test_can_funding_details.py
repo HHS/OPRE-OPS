@@ -12,6 +12,8 @@ def test_funding_details_get_all(auth_client, mocker, test_can_funding_details, 
     response = auth_client.get("/api/v1/can-funding-details/")
     assert response.status_code == 200
     assert len(response.json) == 1
+    assert "appropriation" in response.json[0]
+    assert response.json[0]["appropriation"] == "75-23-1552"
     mocker_get_funding_details.assert_called_once()
 
 
@@ -31,6 +33,7 @@ def test_funding_details_get_by_id(auth_client, mocker, test_can_funding_details
     assert response.json["fund_code"] == "AAXXXX20231DAD"
     assert response.json["method_of_transfer"] == "DIRECT"
     assert response.json["funding_source"] == "OPRE"
+    assert response.json["appropriation"] == "75-23-1552"
 
 
 def test_funding_details_service_get_by_id(test_can_funding_details):
@@ -75,6 +78,7 @@ def test_funding_details_post_creates_funding_details(budget_team_auth_client, m
     assert response.json["fund_code"] == mock_output_data.fund_code
     assert response.json["fiscal_year"] == mock_output_data.fiscal_year
     assert response.json["method_of_transfer"] == "DIRECT"
+    assert response.json["appropriation"] is None
 
 
 def test_basic_user_cannot_post_funding_details(basic_user_auth_client, app_ctx):
