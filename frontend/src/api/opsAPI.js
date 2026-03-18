@@ -3,22 +3,7 @@ import { getAccessToken } from "../components/Auth/auth";
 import { postRefresh } from "./postRefresh.js";
 import { logout } from "../components/Auth/authSlice.js";
 import store from "../store";
-import { getUserDisplayName } from "../helpers/users.helpers";
-
-/**
- * Adds a `display_name` field to a user object derived from their name fields.
- * The raw `full_name` is preserved unchanged; `display_name` is the formatted value
- * safe to render directly in the UI.
- * @param {Object} user
- * @returns {Object}
- */
-const normalizeUser = (user) => {
-    if (!user || typeof user !== "object") return user;
-    return {
-        ...user,
-        display_name: getUserDisplayName(user)
-    };
-};
+import { normalizeUser } from "../helpers/users.helpers";
 
 const BACKEND_DOMAIN =
     (typeof window !== "undefined" && window.__RUNTIME_CONFIG__?.REACT_APP_BACKEND_DOMAIN) ||

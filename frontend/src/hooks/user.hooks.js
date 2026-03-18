@@ -4,25 +4,33 @@ import { useGetUserByIdQuery } from "../api/opsAPI";
 import { NO_DATA } from "../constants";
 
 /**
- * This hook returns the display name of a user given their id.
- * It prefers the formatted `display_name` (derived at the API boundary) over `full_name`.
+ * Returns the display name of a user given their id.
+ * Prefers the formatted `display_name` (derived at the API boundary) over raw `full_name`.
+ *
  * @param {number} id - The id of the user.
  * @returns {string} - The display name of the user.
  * @example
- * const userDisplayName = useGetUserFullNameFromId(1);
+ * const name = useGetUserDisplayNameFromId(1);
  */
-const useGetUserFullNameFromId = (id) => {
-    const [userFullName, setUserFullName] = React.useState(NO_DATA);
+export const useGetUserDisplayNameFromId = (id) => {
+    const [userDisplayName, setUserDisplayName] = React.useState(NO_DATA);
     const { data, isSuccess } = useGetUserByIdQuery(id, { skip: !id });
 
     React.useEffect(() => {
         if (isSuccess) {
-            setUserFullName(`${data?.display_name ?? data?.full_name}`);
+            setUserDisplayName(`${data?.display_name ?? data?.full_name}`);
         }
     }, [data, isSuccess]);
 
-    return userFullName;
+    return userDisplayName;
 };
+
+/**
+ * Backwards-compatible alias for useGetUserDisplayNameFromId.
+ * @param {number} id
+ * @returns {string}
+ */
+const useGetUserFullNameFromId = useGetUserDisplayNameFromId;
 
 export const useGetLoggedInUserFullName = () => {
     const loggedInUserDisplayName = useSelector((state) => state.auth?.activeUser?.display_name);

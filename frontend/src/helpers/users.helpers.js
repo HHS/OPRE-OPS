@@ -54,7 +54,7 @@ const titleCaseWord = (word) => {
  * - Returns the original value for null/undefined/empty/non-string inputs.
  *
  * @param {string | null | undefined} name - The raw name value from the backend/AMS.
- * @returns {string} The display-ready name.
+ * @returns {string | null | undefined} The display-ready name, or the original value if it is null/undefined/empty/non-string.
  *
  * @example
  * formatUserName("JOHN SMITH")      // "John Smith"
@@ -88,4 +88,23 @@ export const getUserDisplayName = (user) => {
     if (user.full_name) return formatUserName(user.full_name);
     if (user.first_name) return formatUserName(user.first_name);
     return user.email ?? null;
+};
+
+/**
+ * Adds a `display_name` field to a user object derived from their name fields.
+ * The raw `full_name` is preserved unchanged; `display_name` is the formatted value
+ * safe to render directly in the UI.
+ *
+ * This is the single canonical normalizer used at all API boundaries (RTK Query
+ * transformResponse and legacy getUser helpers) to avoid duplication and drift.
+ *
+ * @param {Object} user
+ * @returns {Object}
+ */
+export const normalizeUser = (user) => {
+    if (!user || typeof user !== "object") return user;
+    return {
+        ...user,
+        display_name: getUserDisplayName(user)
+    };
 };

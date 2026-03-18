@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { formatUserName, getUserDisplayName } from "./users.helpers";
+import { formatUserName, getUserDisplayName, normalizeUser } from "./users.helpers";
 
 describe("formatUserName", () => {
     // Already mixed-case — leave untouched
@@ -92,5 +92,33 @@ describe("getUserDisplayName", () => {
 
     it("returns null for null user", () => {
         expect(getUserDisplayName(null)).toBeNull();
+    });
+});
+
+describe("normalizeUser", () => {
+    it("adds display_name derived from all-caps full_name", () => {
+        expect(normalizeUser({ id: 1, full_name: "JOHN SMITH", email: "j@example.com" })).toEqual({
+            id: 1,
+            full_name: "JOHN SMITH",
+            email: "j@example.com",
+            display_name: "John Smith"
+        });
+    });
+
+    it("preserves mixed-case full_name and sets display_name to same", () => {
+        const user = { id: 2, full_name: "DeAngelis", email: "d@example.com" };
+        expect(normalizeUser(user)).toEqual({ ...user, display_name: "DeAngelis" });
+    });
+
+    it("does not mutate the original object", () => {
+        const user = { id: 3, full_name: "JANE DOE" };
+        const result = normalizeUser(user);
+        expect(user).not.toHaveProperty("display_name");
+        expect(result.display_name).toBe("Jane Doe");
+    });
+
+    it("returns non-object inputs unchanged", () => {
+        expect(normalizeUser(null)).toBeNull();
+        expect(normalizeUser(undefined)).toBeUndefined();
     });
 });

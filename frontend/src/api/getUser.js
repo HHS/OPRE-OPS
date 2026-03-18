@@ -1,10 +1,5 @@
 import ApplicationContext from "../applicationContext/ApplicationContext";
-import { getUserDisplayName } from "../helpers/users.helpers";
-
-const normalizeUser = (user) => {
-    if (!user || typeof user !== "object") return user;
-    return { ...user, display_name: getUserDisplayName(user) };
-};
+import { normalizeUser } from "../helpers/users.helpers";
 
 export const getUser = async (id) => {
     const api_version = ApplicationContext.get().helpers().backEndConfig.apiVersion;
