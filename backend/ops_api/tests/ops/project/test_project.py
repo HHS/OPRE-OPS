@@ -1415,19 +1415,19 @@ class TestProjectMetadata:
             agreement_id=agreement.id,
             period_start=date.fromisoformat("2023-01-15"),
             period_end=date.fromisoformat("2023-06-30"),
-            number=11,
+            number=31,
         )
         sc2 = ServicesComponent(
             agreement_id=agreement.id,
             period_start=date.fromisoformat("2022-10-01"),  # Earliest
             period_end=date.fromisoformat("2023-03-31"),
-            number=12,
+            number=32,
         )
         sc3 = ServicesComponent(
             agreement_id=agreement.id,
             period_start=date.fromisoformat("2023-07-01"),
             period_end=date.fromisoformat("2024-12-31"),  # Latest
-            number=13,
+            number=33,
         )
         loaded_db.add_all([sc1, sc2, sc3])
         loaded_db.commit()
