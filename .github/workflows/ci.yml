@@ -111,19 +111,43 @@ jobs:
   lint:
     name: Linting
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.head_ref || github.ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Detect commit source
+        id: detect
+        run: |
+          COMMITTER_NAME=$(git log -1 --pretty=format:'%cn')
+          COMMITTER_EMAIL=$(git log -1 --pretty=format:'%ce')
+          echo "Last committer: $COMMITTER_NAME <$COMMITTER_EMAIL>"
+          if [[ "$COMMITTER_NAME" == "GitHub" && "$COMMITTER_EMAIL" == *"noreply@github.com"* ]]; then
+            echo "source=web-ui" >> $GITHUB_OUTPUT
+            echo "Web UI commit detected — will auto-format if needed"
+          else
+            echo "source=local" >> $GITHUB_OUTPUT
+            echo "Local commit detected — will check formatting"
+          fi
+
       - uses: ./.github/actions/setup-python
 
       - name: Lint backend
         working-directory: ./backend/ops_api
         run: pipenv run nox -s lint
 
+      # --- For local commits: check formatting (fail build if wrong) ---
       - name: Check backend formatting (Black)
+        if: steps.detect.outputs.source != 'web-ui'
         working-directory: ./backend/ops_api
         run: pipenv run black --config ./pyproject.toml --check ops tests ./noxfile.py ../../performance_tests/locustfile.py
 
       - name: Check backend import sorting (isort)
+        if: steps.detect.outputs.source != 'web-ui'
         working-directory: ./backend/ops_api
         run: pipenv run isort --settings-file ./pyproject.toml --check-only --filter-files ops tests ./noxfile.py ../../performance_tests/locustfile.py
 
@@ -132,10 +156,12 @@ jobs:
         run: pipenv install --dev
 
       - name: Check data_tools formatting (Black)
+        if: steps.detect.outputs.source != 'web-ui'
         working-directory: ./backend/data_tools
         run: pipenv run black --config ./pyproject.toml --check .
 
       - name: Check data_tools import sorting (isort)
+        if: steps.detect.outputs.source != 'web-ui'
         working-directory: ./backend/data_tools
         run: pipenv run isort --settings-file ./pyproject.toml --check-only --filter-files .
 
@@ -146,5 +172,94 @@ jobs:
         run: bun lint
 
       - name: Check frontend formatting
+        if: steps.detect.outputs.source != 'web-ui'
         working-directory: ./frontend
         run: bun run prettier --check --ignore-unknown 'src/**/*' '!src/uswds/**'
+
+      # --- For web UI commits: auto-fix formatting instead of failing ---
+      - name: Auto-fix backend formatting (Black)
+        if: steps.detect.outputs.source == 'web-ui'
+        working-directory: ./backend/ops_api
+        run: pipenv run black --config ./pyproject.toml ops tests ./noxfile.py ../../performance_tests/locustfile.py
+
+      - name: Auto-fix backend import sorting (isort)
+        if: steps.detect.outputs.source == 'web-ui'
+        working-directory: ./backend/ops_api
+        run: pipenv run isort --settings-file ./pyproject.toml --filter-files ops tests ./noxfile.py ../../performance_tests/locustfile.py
+
+      - name: Auto-fix data_tools formatting (Black)
+        if: steps.detect.outputs.source == 'web-ui'
+        working-directory: ./backend/data_tools
+        run: pipenv run black --config ./pyproject.toml .
+
+      - name: Auto-fix data_tools import sorting (isort)
+        if: steps.detect.outputs.source == 'web-ui'
+        working-directory: ./backend/data_tools
+        run: pipenv run isort --settings-file ./pyproject.toml --filter-files .
+
+      - name: Auto-fix frontend formatting (Prettier)
+        if: steps.detect.outputs.source == 'web-ui'
+        working-directory: ./frontend
+        run: bun run prettier --write --ignore-unknown 'src/**/*' '!src/uswds/**'
+
+      - name: Commit and push formatting fixes
+        id: auto-commit
+        if: steps.detect.outputs.source == 'web-ui'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --staged --quiet; then
+            echo "committed=none" >> $GITHUB_OUTPUT
+            echo "No formatting changes needed"
+          else
+            git commit -m "style: auto-format code (web UI commit)"
+            if git push; then
+              echo "committed=true" >> $GITHUB_OUTPUT
+              echo "Formatting fixes committed and pushed"
+            else
+              echo "committed=false" >> $GITHUB_OUTPUT
+              echo "Could not push formatting fixes (check permissions, branch protection, or fork restrictions)"
+            fi
+          fi
+
+      - name: Comment on PR — formatting auto-fixed
+        if: |
+          steps.detect.outputs.source == 'web-ui' &&
+          steps.auto-commit.outputs.committed == 'true' &&
+          github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          BODY='🤖 **Auto-formatting applied!**
+
+          I detected that this PR was edited via the GitHub web UI and had some formatting issues. I automatically applied fixes using:
+
+          - **Prettier** (frontend)
+          - **Black** + **isort** (backend)
+
+          The fixes have been committed to this branch. For future contributions, consider setting up the [local development environment](https://github.com/HHS/OPRE-OPS/blob/main/CONTRIBUTING.md) to run formatters before pushing — it avoids this extra round-trip.'
+          gh pr comment "$PR_NUMBER" --body "$BODY"
+
+      - name: Comment on PR — formatting could not be auto-fixed
+        if: |
+          steps.detect.outputs.source == 'web-ui' &&
+          steps.auto-commit.outputs.committed == 'false' &&
+          github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          BODY='🤖 **Formatting note for web UI contributors**
+
+          I detected that this PR was edited via the GitHub web UI and may have formatting issues. I was unable to auto-fix them automatically (this can happen with fork PRs, branch protection rules, or network issues).
+
+          Please run the formatters locally before pushing:
+
+          - **Frontend:** `cd frontend && bun run format`
+          - **Backend (ops_api):** `cd backend/ops_api && pipenv run black --config ./pyproject.toml ops tests ./noxfile.py && pipenv run isort --settings-file ./pyproject.toml --filter-files ops tests ./noxfile.py`
+          - **Backend (data_tools):** `cd backend/data_tools && pipenv run black --config ./pyproject.toml . && pipenv run isort --settings-file ./pyproject.toml --filter-files .`
+
+          See [CONTRIBUTING.md](https://github.com/HHS/OPRE-OPS/blob/main/CONTRIBUTING.md) for full setup instructions.'
+          gh pr comment "$PR_NUMBER" --body "$BODY"
