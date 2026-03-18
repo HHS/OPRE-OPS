@@ -1,18 +1,25 @@
-/// <reference types="vitest" />
+/// <reference types="vitest/config" />
 import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
-import viteJsconfigPaths from "vite-jsconfig-paths";
 import svgr from "vite-plugin-svgr";
 import eslint from "vite-plugin-eslint";
+import { transform } from "esbuild";
 
 export default defineConfig(({ mode }) => {
     // Load env file based on `mode` in the current working directory.
     // Set the third parameter to '' to load all env regardless of the `VITE_` prefix.
     const { VITE_BACKEND_DOMAIN } = loadEnv(mode, process.cwd(), "");
 
+    // Vitest sets mode to 'test'. We use this to gate the JSX workaround plugin
+    // that is only needed under Vitest (which bundles its own Vite 7 internally).
+    const isTest = mode === "test";
+
     return {
         build: {
             outDir: "build"
+        },
+        resolve: {
+            tsconfigPaths: true
         },
         server: {
             host: true,
@@ -37,12 +44,43 @@ export default defineConfig(({ mode }) => {
             }
         },
         plugins: [
-            react({
-                babel: {
-                    plugins: ["babel-plugin-macros"]
+            // TODO: Remove this plugin once Vitest ships with Vite 8 internally.
+            //
+            // WHY THIS EXISTS:
+            // @vitejs/plugin-react v6 migrated JSX transforms to Vite 8's built-in Oxc
+            // pipeline — it no longer uses Babel or esbuild for JSX. However, Vitest 4
+            // bundles its own internal copy of Vite 7, which has no Oxc support. So when
+            // tests run, plugin-react v6's Oxc config is silently ignored and no JSX
+            // transform runs at all.
+            //
+            // NOTE: esbuild is still a real dependency of Vite 8 (not a regression).
+            // We use it here as the available tool to fill the gap. This plugin will
+            // become unnecessary once Vitest upgrades its internal Vite to v8+.
+            //
+            // - .jsx/.tsx files: Vite 7's esbuild plugin handles them but defaults to
+            //   jsx:'transform' (classic runtime), so we need jsx:'automatic' here.
+            // - .js files: Vite 7's esbuild plugin infers loader:'js' (not 'jsx') so JSX
+            //   syntax fails; we must use loader:'jsx' explicitly.
+            isTest && {
+                name: "jsx-in-tests",
+                enforce: "pre",
+                async transform(code, id) {
+                    // Strip query strings/hashes (e.g. ?v=abc, ?import) before matching
+                    const cleanId = id.split("?")[0].split("#")[0];
+                    if (!cleanId.match(/src\/.*\.[jt]sx?$/) || cleanId.includes("node_modules")) return null;
+                    const ext = cleanId.split(".").pop();
+                    const loader = ext === "js" || ext === "ts" ? `${ext}x` : ext;
+                    const result = await transform(code, {
+                        loader,
+                        jsx: "automatic",
+                        jsxImportSource: "react",
+                        sourcefile: id,
+                        sourcemap: true
+                    });
+                    return { code: result.code, map: result.map };
                 }
-            }),
-            viteJsconfigPaths(),
+            },
+            react(),
             svgr({
                 include: "**/*.svg?react"
             }),
@@ -69,8 +107,8 @@ export default defineConfig(({ mode }) => {
                     url: "https://localhost:8000"
                 }
             },
-            setupFiles: ["./src/tests/setupTests.js"],
-            files: ["**/*.test.{jsx,js,tsx,ts}", "**/*.spec.{jsx,js,tsx,ts}"],
+            setupFiles: ["./src/tests/setupTests.jsx"],
+            include: ["**/*.test.{jsx,js,tsx,ts}", "**/*.spec.{jsx,js,tsx,ts}"],
             exclude: ["src/uswds/**", "node_modules/**"],
             coverage: {
                 provider: "istanbul",
@@ -83,20 +121,12 @@ export default defineConfig(({ mode }) => {
                     "**/uswds/**",
                     "**/node_modules/**",
                     "**/dist/**",
-                    "**/cypress/**",
-                    "**/.{idea,git,cache,output,temp}/**",
-                    "**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*",
-                    "**/*.d.ts"
+                    "**/cypress/**"
                 ]
             }
         },
         define: {
             "process.env": {}
-        },
-        esbuild: {
-            loader: "jsx",
-            include: /src\/.*\.jsx?$/,
-            exclude: [/\.d\.ts$/]
         }
     };
 });
