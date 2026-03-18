@@ -36,7 +36,7 @@
         "remark-gfm": "4.0.1",
         "sass": "1.98.0",
         "styled-components": "6.3.11",
-        "vest": "6.1.0",
+        "vest": "6.2.7",
         "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
       },
       "devDependencies": {
@@ -2434,7 +2434,7 @@
 
     "verror": ["verror@1.10.0", "", { "dependencies": { "assert-plus": "^1.0.0", "core-util-is": "1.0.2", "extsprintf": "^1.2.0" } }, "sha512-ZZKSmDAEFOijERBLkmYfJ+vmk3w+7hOLYDNkRCuRuMJGEmqYNCNLyBBFwWKVMhfwaEF3WOd0Zlw86U/WC/+nYw=="],
 
-    "vest": ["vest@6.1.0", "", { "dependencies": { "context": "^4.0.3", "n4s": "^6.1.0", "vast": "^2.0.3", "vest-utils": "^2.0.3", "vestjs-runtime": "^2.0.3" } }, "sha512-/nM72YVpl6iDaJCHQU8BWwTxX00Uh+hn5I5gzZDNA4IK871vWsp/ADpxnm+hgV+DNtx4dwQj+tjOziJUtPJVfA=="],
+    "vest": ["vest@6.2.7", "", { "dependencies": { "context": "^4.0.14", "n4s": "^6.1.11", "vast": "^2.0.14", "vest-utils": "^2.0.14", "vestjs-runtime": "^2.0.14" } }, "sha512-MLbDhzNqYJ4uhYnZAjEkjAS0QrFqrKQil98kNGXfWiiinJI0MyII3vQw3EhporOKA6SBcKmVCrFG0dQ8SQnrUg=="],
 
     "vest-utils": ["vest-utils@2.0.14", "", {}, "sha512-S70ZpqX6/LLV9guBMJDJynlpU2jvUVFZdXvVRybTbtUsXQoyPcslfbVobXKb/NyhesRGvLL8kkzA34VKcIjDAw=="],
 
