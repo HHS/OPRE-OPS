@@ -80,6 +80,7 @@ class ProcurementTrackerStepsValidator:
             NoFutureCompletionDateUpdateValidationRule,
             NoPastTargetCompletionDateUpdateRule,
             NoUpdatingCompletedProcurementStepRule,
+            PreAwardCompletionRequiredFieldsRule,
             PreSolicitationCompletionRequiredFieldsRule,
             ResourceExistsRule,
             SolicitationPeriodDateOrderRule,
@@ -120,6 +121,16 @@ class ProcurementTrackerStepsValidator:
                 ResourceExistsRule(),
                 UserAssociationRule(),
                 EvaluationCompletionRequiredFieldsRule(),
+                CompletedByUpdateAuthorizationRule(),
+                NoUpdatingCompletedProcurementStepRule(),
+                NoFutureCompletionDateUpdateValidationRule(),
+                NoPastTargetCompletionDateUpdateRule(),
+            ]
+        elif procurement_tracker_step.step_type == ProcurementTrackerStepType.PRE_AWARD:
+            return [
+                ResourceExistsRule(),
+                UserAssociationRule(),
+                PreAwardCompletionRequiredFieldsRule(),
                 CompletedByUpdateAuthorizationRule(),
                 NoUpdatingCompletedProcurementStepRule(),
                 NoFutureCompletionDateUpdateValidationRule(),
