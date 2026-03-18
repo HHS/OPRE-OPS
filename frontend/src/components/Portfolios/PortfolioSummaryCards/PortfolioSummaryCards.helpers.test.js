@@ -224,7 +224,7 @@ describe("PortfolioSummaryCards.helpers", () => {
             expect(actualPortfolios[0].percent).toBe(0);
         });
 
-        it("should use fallback color for unknown portfolios and append them at the end", () => {
+        it("should use fallback color for unknown portfolios and place them in column 4 placeholders", () => {
             const portfolios = [
                 {
                     id: 1,
@@ -239,14 +239,14 @@ describe("PortfolioSummaryCards.helpers", () => {
 
             const result = transformPortfoliosToChartData(portfolios, totalBudget);
 
-            // Result has 16 placeholders + 1 unknown portfolio = 17 items
-            expect(result).toHaveLength(17);
+            // Result stays at exactly 16 items (no overflow)
+            expect(result).toHaveLength(16);
 
-            // Unknown portfolio is appended at the end (after all placeholders)
-            const lastItem = result[result.length - 1];
-            expect(lastItem.abbreviation).toBe("UNKNOWN");
-            expect(lastItem.color).toBe("var(--data-viz-bl-by-status-1)");
-            expect(lastItem.isPlaceholder).toBeUndefined();
+            // Unknown portfolio replaces a column 4 placeholder (indices 12-15)
+            const unknownItem = result.find((item) => item.abbreviation === "UNKNOWN");
+            expect(unknownItem).toBeDefined();
+            expect(unknownItem.color).toBe("var(--data-viz-bl-by-status-1)");
+            expect(unknownItem.isPlaceholder).toBeUndefined();
         });
 
         it("should return empty array for null portfolios", () => {
@@ -271,13 +271,14 @@ describe("PortfolioSummaryCards.helpers", () => {
 
             const result = transformPortfoliosToChartData(portfolios, totalBudget);
 
-            // Result has 16 placeholders + 1 unknown portfolio = 17 items
-            expect(result).toHaveLength(17);
+            // Result stays at exactly 16 items
+            expect(result).toHaveLength(16);
 
-            // Unknown portfolio is at the end with value 0
-            const lastItem = result[result.length - 1];
-            expect(lastItem.value).toBe(0);
-            expect(lastItem.percent).toBe(0);
+            // Unknown portfolio replaces a column 4 placeholder
+            const unknownItem = result.find((item) => item.abbreviation === "TEST");
+            expect(unknownItem).toBeDefined();
+            expect(unknownItem.value).toBe(0);
+            expect(unknownItem.percent).toBe(0);
         });
 
         it("should use index as fallback id for unknown portfolios", () => {
@@ -294,12 +295,92 @@ describe("PortfolioSummaryCards.helpers", () => {
 
             const result = transformPortfoliosToChartData(portfolios, totalBudget);
 
-            // Result has 16 placeholders + 1 unknown portfolio = 17 items
-            expect(result).toHaveLength(17);
+            // Result stays at exactly 16 items
+            expect(result).toHaveLength(16);
 
-            // Unknown portfolio is at the end
-            const lastItem = result[result.length - 1];
-            expect(lastItem.id).toBe("unknown-0"); // Should use unknown-index format
+            // Unknown portfolio replaces a column 4 placeholder
+            const unknownItem = result.find((item) => item.abbreviation === "TEST");
+            expect(unknownItem).toBeDefined();
+            expect(unknownItem.id).toBe("unknown-0");
+        });
+
+        it("should fill multiple column 4 placeholders with multiple unknown portfolios", () => {
+            const portfolios = [
+                {
+                    id: 101,
+                    name: "Unknown A",
+                    abbreviation: "UA",
+                    fundingSummary: { total_funding: { amount: 500000 } }
+                },
+                {
+                    id: 102,
+                    name: "Unknown B",
+                    abbreviation: "UB",
+                    fundingSummary: { total_funding: { amount: 300000 } }
+                }
+            ];
+            const totalBudget = 800000;
+
+            const result = transformPortfoliosToChartData(portfolios, totalBudget);
+
+            expect(result).toHaveLength(16);
+
+            const unknowns = result.filter((item) => item.abbreviation === "UA" || item.abbreviation === "UB");
+            expect(unknowns).toHaveLength(2);
+            expect(unknowns[0].abbreviation).toBe("UA");
+            expect(unknowns[1].abbreviation).toBe("UB");
+        });
+
+        it("should drop excess unknown portfolios beyond column 4 placeholders", () => {
+            // Include Non-OPRE and OCDO (the 2 known column 4 portfolios) so only 2 placeholders remain
+            const portfolios = [
+                {
+                    id: 100,
+                    name: "Non-OPRE",
+                    abbreviation: "Non-OPRE",
+                    fundingSummary: { total_funding: { amount: 50000 } }
+                },
+                {
+                    id: 101,
+                    name: "OCDO",
+                    abbreviation: "OCDO",
+                    fundingSummary: { total_funding: { amount: 50000 } }
+                },
+                {
+                    id: 201,
+                    name: "Unknown X",
+                    abbreviation: "UX",
+                    fundingSummary: { total_funding: { amount: 100000 } }
+                },
+                {
+                    id: 202,
+                    name: "Unknown Y",
+                    abbreviation: "UY",
+                    fundingSummary: { total_funding: { amount: 200000 } }
+                },
+                {
+                    id: 203,
+                    name: "Unknown Z",
+                    abbreviation: "UZ",
+                    fundingSummary: { total_funding: { amount: 300000 } }
+                }
+            ];
+            const totalBudget = 700000;
+
+            const result = transformPortfoliosToChartData(portfolios, totalBudget);
+
+            // Grid stays at exactly 16 items
+            expect(result).toHaveLength(16);
+
+            // Only first 2 unknowns should be placed (2 placeholders in column 4)
+            const unknowns = result.filter(
+                (item) => ["UX", "UY", "UZ"].includes(item.abbreviation)
+            );
+            expect(unknowns).toHaveLength(2);
+            expect(unknowns[0].abbreviation).toBe("UX");
+            expect(unknowns[1].abbreviation).toBe("UY");
+            // UZ is dropped
+            expect(result.find((item) => item.abbreviation === "UZ")).toBeUndefined();
         });
 
         it("should maintain column positions and compact each column when portfolios are missing", () => {
