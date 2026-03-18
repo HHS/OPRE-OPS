@@ -45,7 +45,8 @@ export const RequestPreAwardApproval = () => {
         uploadError,
         preAwardMemoDocuments,
         isSubmitting,
-        hasApprovalBeenRequested
+        hasApprovalBeenRequested,
+        hasBLIInReview
     } = useRequestPreAwardApproval(agreementId);
 
     if (isLoading) {
@@ -64,6 +65,15 @@ export const RequestPreAwardApproval = () => {
                     type="info"
                     heading="Pre-Award Approval Already Requested"
                     message="A pre-award approval request has already been submitted for this agreement. You cannot submit another request."
+                    isClosable={false}
+                />
+            )}
+
+            {hasBLIInReview && (
+                <SimpleAlert
+                    type="warning"
+                    heading="Budget Line In Review"
+                    message="One or more budget lines have pending change requests that are currently in review. You cannot request pre-award approval until all change requests are resolved."
                     isClosable={false}
                 />
             )}
@@ -273,8 +283,14 @@ export const RequestPreAwardApproval = () => {
                 <button
                     className="usa-button"
                     onClick={handleSubmit}
-                    disabled={isSubmitting || hasApprovalBeenRequested}
-                    title={hasApprovalBeenRequested ? "Pre-Award approval has already been requested" : ""}
+                    disabled={isSubmitting || hasApprovalBeenRequested || hasBLIInReview}
+                    title={
+                        hasApprovalBeenRequested
+                            ? "Pre-Award approval has already been requested"
+                            : hasBLIInReview
+                              ? "Cannot request approval while budget lines have pending change requests"
+                              : ""
+                    }
                 >
                     {isSubmitting ? "Submitting..." : "Request Pre-Award Approval"}
                 </button>

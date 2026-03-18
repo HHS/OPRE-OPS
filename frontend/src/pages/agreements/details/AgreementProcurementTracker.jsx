@@ -249,6 +249,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 isDisabled={isStepDisabled}
                                 isActiveStep={activeTracker?.active_step_number === step.step_number}
                                 agreementId={agreement?.id}
+                                budgetLineItems={agreement?.budget_line_items}
                                 handleSetCompletedStepNumber={handleSetCompletedStepNumber}
                             />
                         )}

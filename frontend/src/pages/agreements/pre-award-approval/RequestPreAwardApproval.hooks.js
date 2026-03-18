@@ -47,7 +47,7 @@ export default function useRequestPreAwardApproval(agreementId) {
     const alternateProjectOfficerName = useGetUserFullNameFromId(agreement?.alternate_project_officer_id);
 
     // Get executing budget lines
-    const executingBudgetLines = agreement?.budget_line_items?.filter((bli) => bli.status === "EXECUTING") || [];
+    const executingBudgetLines = agreement?.budget_line_items?.filter((bli) => bli.status === "IN_EXECUTION") || [];
 
     // Group budget lines by services component
     const groupedBudgetLinesByServicesComponent = groupByServicesComponent(
@@ -66,6 +66,9 @@ export default function useRequestPreAwardApproval(agreementId) {
 
     // Check if approval has already been requested
     const hasApprovalBeenRequested = step5?.approval_requested === true;
+
+    // Check if any BLI is in review status
+    const hasBLIInReview = agreement?.budget_line_items?.some((bli) => bli.in_review) ?? false;
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
@@ -179,6 +182,7 @@ export default function useRequestPreAwardApproval(agreementId) {
         uploadError,
         preAwardMemoDocuments,
         isSubmitting,
-        hasApprovalBeenRequested
+        hasApprovalBeenRequested,
+        hasBLIInReview
     };
 }

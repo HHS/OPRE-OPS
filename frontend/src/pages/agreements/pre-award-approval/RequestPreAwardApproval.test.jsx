@@ -74,13 +74,16 @@ vi.mock("../../../components/UI/PageHeader", () => ({
 const baseHookResult = () => ({
     agreement: { name: "Test Agreement", id: 1 },
     isLoading: false,
-    executingBudgetLines: [{ id: 1, status: "EXECUTING" }],
+    executingBudgetLines: [{ id: 1, status: "IN_EXECUTION" }],
     notes: "",
     setNotes: vi.fn(),
     handleSubmit: vi.fn(),
     handleCancel: vi.fn(),
     projectOfficerName: "John Doe",
-    alternateProjectOfficerName: "Jane Smith"
+    alternateProjectOfficerName: "Jane Smith",
+    hasApprovalBeenRequested: false,
+    hasBLIInReview: false,
+    isSubmitting: false
 });
 
 describe("RequestPreAwardApproval", () => {
@@ -177,5 +180,70 @@ describe("RequestPreAwardApproval", () => {
         await user.click(submitButton);
 
         expect(handleSubmitMock).toHaveBeenCalledTimes(1);
+    });
+
+    it("disables submit button when approval already requested", () => {
+        requestPreAwardApprovalHookMock.mockReturnValue({
+            ...baseHookResult(),
+            hasApprovalBeenRequested: true
+        });
+
+        render(<RequestPreAwardApproval />);
+
+        const submitButton = screen.getByRole("button", { name: "Request Pre-Award Approval" });
+        expect(submitButton).toBeDisabled();
+    });
+
+    it("shows alert when approval already requested", () => {
+        requestPreAwardApprovalHookMock.mockReturnValue({
+            ...baseHookResult(),
+            hasApprovalBeenRequested: true
+        });
+
+        render(<RequestPreAwardApproval />);
+
+        expect(screen.getByText("Pre-Award Approval Already Requested")).toBeInTheDocument();
+    });
+
+    it("disables submit button when BLI is in review", () => {
+        requestPreAwardApprovalHookMock.mockReturnValue({
+            ...baseHookResult(),
+            hasBLIInReview: true
+        });
+
+        render(<RequestPreAwardApproval />);
+
+        const submitButton = screen.getByRole("button", { name: "Request Pre-Award Approval" });
+        expect(submitButton).toBeDisabled();
+    });
+
+    it("shows alert when BLI is in review", () => {
+        requestPreAwardApprovalHookMock.mockReturnValue({
+            ...baseHookResult(),
+            hasBLIInReview: true
+        });
+
+        render(<RequestPreAwardApproval />);
+
+        expect(screen.getByText("Budget Line In Review")).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                /One or more budget lines have pending change requests that are currently in review/
+            )
+        ).toBeInTheDocument();
+    });
+
+    it("enables submit button when no blocking conditions", () => {
+        requestPreAwardApprovalHookMock.mockReturnValue({
+            ...baseHookResult(),
+            hasApprovalBeenRequested: false,
+            hasBLIInReview: false,
+            isSubmitting: false
+        });
+
+        render(<RequestPreAwardApproval />);
+
+        const submitButton = screen.getByRole("button", { name: "Request Pre-Award Approval" });
+        expect(submitButton).not.toBeDisabled();
     });
 });

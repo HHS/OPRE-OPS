@@ -21,6 +21,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
  * @property {boolean} isActiveStep - Whether step is the active step
  * @property {SafeUser[]} authorizedUsers - List of users authorized for this agreement
  * @property {number} agreementId - The agreement ID
+ * @property {import("../../../../types/BudgetLineTypes").BudgetLine[] | undefined} [budgetLineItems] - Array of budget line items
  * @property {((stepNumber: number) => void) | undefined} [handleSetCompletedStepNumber] - Optional callback to set completed step number
  */
 
@@ -36,6 +37,7 @@ const ProcurementTrackerStepFive = ({
     isActiveStep,
     authorizedUsers,
     agreementId,
+    budgetLineItems,
     handleSetCompletedStepNumber
 }) => {
     const navigate = useNavigate();
@@ -71,7 +73,9 @@ const ProcurementTrackerStepFive = ({
     const isPreAwardCheckboxDisabled = isDisabled || !isActiveStep;
     const isUsersComboBoxDisabled = isDisabled || !isPreAwardComplete || authorizedUsers.length === 0;
     const isPreAwardFieldsDisabled = isDisabled || !isPreAwardComplete;
-    const disableStep5Buttons = Boolean(
+    const hasBLIInReview = budgetLineItems?.some((bli) => bli.in_review) ?? false;
+    const isRequestBtnDisabled = !!stepFiveData?.approval_requested || hasBLIInReview;
+    const isStep5SubmitDisabled = Boolean(
         isDisabled ||
         !isPreAwardComplete ||
         !selectedUser?.id ||
@@ -149,7 +153,7 @@ const ProcurementTrackerStepFive = ({
                             <button
                                 className="usa-button"
                                 onClick={() => navigate(`/agreements/${agreementId}/pre-award-approval`)}
-                                disabled={disableStep5Buttons}
+                                disabled={isRequestBtnDisabled}
                                 data-cy="request-pre-award-approval-btn"
                             >
                                 Request Pre-Award Approval
@@ -236,7 +240,7 @@ const ProcurementTrackerStepFive = ({
                             onClick={() => {
                                 handleStepFiveComplete(stepFiveData?.id);
                             }}
-                            disabled={disableStep5Buttons}
+                            disabled={isStep5SubmitDisabled}
                         >
                             Complete Step 5
                         </button>
