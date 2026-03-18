@@ -3031,7 +3031,7 @@ paths:
         "500":
           description: Internal Server Error
 
-  /projects/{id}/funding:
+  /projects/{id}/funding/:
     get:
       tags:
         - Projects
@@ -5468,18 +5468,18 @@ components:
           type: object
           required:
             - total
-            - carry_forward
-            - new
+            - carry_forward_funding
+            - new_funding
           properties:
             total:
               type: number
               format: double
               example: 246.912
-            carry_forward:
+            carry_forward_funding:
               type: number
               format: double
               example: 0
-            new:
+            new_funding:
               type: number
               format: double
               example: 246.912
