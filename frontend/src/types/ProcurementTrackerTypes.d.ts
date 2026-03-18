@@ -51,12 +51,20 @@ export type ProcurementTrackerEvaluationStep = ProcurementTrackerStep & {
     notes?: string | null;
 };
 
+export type ProcurementTrackerPreAwardStep = ProcurementTrackerStep & {
+    target_completion_date?: string | null;
+    task_completed_by?: number | null;
+    date_completed?: string | null;
+    notes?: string | null;
+};
+
 export type ProcurementTrackerResponseStep =
     | ProcurementTrackerStep
     | ProcurementTrackerAcquisitionPlanningStep
     | ProcurementTrackerPreSolicitationStep
     | ProcurementTrackerSolicitationStep
-    | ProcurementTrackerEvaluationStep;
+    | ProcurementTrackerEvaluationStep
+    | ProcurementTrackerPreAwardStep;
 
 export type ProcurementTracker = {
     id: number;

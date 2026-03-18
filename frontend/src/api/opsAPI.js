@@ -419,10 +419,26 @@ export const opsApi = createApi({
         }),
         getResearchProjects: builder.query({
             query: () => `/projects/?project_type=RESEARCH`,
+            transformResponse: (response) => {
+                // New wrapped format with data key
+                if (response.data) {
+                    return response.data;
+                }
+                // Legacy array format (no wrapper) - for backward compatibility during transition
+                return response;
+            },
             providesTags: ["ResearchProjects"]
         }),
         getProjects: builder.query({
             query: () => `/projects/`,
+            transformResponse: (response) => {
+                // New wrapped format with data key
+                if (response.data) {
+                    return response.data;
+                }
+                // Legacy array format (no wrapper) - for backward compatibility during transition
+                return response;
+            },
             providesTags: ["ResearchProjects"]
         }),
         getProjectById: builder.query({
@@ -444,6 +460,14 @@ export const opsApi = createApi({
                 const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
                 return `/projects/${queryString}`;
             },
+            transformResponse: (response) => {
+                // New wrapped format with data key
+                if (response.data) {
+                    return response.data;
+                }
+                // Legacy array format (no wrapper) - for backward compatibility during transition
+                return response;
+            },
             providesTags: ["ResearchProjects"]
         }),
         getResearchProjectsByPortfolio: builder.query({
@@ -461,6 +485,14 @@ export const opsApi = createApi({
                 queryParams.push(`project_type=RESEARCH`);
                 const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
                 return `/projects/${queryString}`;
+            },
+            transformResponse: (response) => {
+                // New wrapped format with data key
+                if (response.data) {
+                    return response.data;
+                }
+                // Legacy array format (no wrapper) - for backward compatibility during transition
+                return response;
             },
             providesTags: ["ResearchProjects"]
         }),
@@ -789,6 +821,22 @@ export const opsApi = createApi({
             },
             providesTags: ["Portfolios"]
         }),
+        getReportingSummary: builder.query({
+            query: ({ fiscalYear, portfolioIds }) => {
+                const queryParams = [];
+                if (fiscalYear) {
+                    queryParams.push(`fiscal_year=${fiscalYear}`);
+                }
+                if (portfolioIds && portfolioIds.length > 0) {
+                    portfolioIds.forEach((id) => {
+                        queryParams.push(`portfolio_ids=${id}`);
+                    });
+                }
+                const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
+                return `/reporting-summary/${queryString}`;
+            },
+            providesTags: ["Agreements"]
+        }),
         getPortfolioFundingSummaryBatch: builder.query({
             query: ({ fiscalYear, portfolioIds, budgetMin, budgetMax, availablePct }) => {
                 const queryParams = [];
@@ -962,6 +1010,7 @@ export const createResetApiOnLogoutMiddleware = (api) => (store) => (next) => (a
 export const resetApiOnLogoutMiddleware = createResetApiOnLogoutMiddleware(opsApi);
 
 export const {
+    useGetReportingSummaryQuery,
     useGetAgreementsQuery,
     useGetAgreementByIdQuery,
     useLazyGetAgreementByIdQuery,

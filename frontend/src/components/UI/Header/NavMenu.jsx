@@ -85,6 +85,15 @@ const NavMenu = () => {
                         CANs
                     </NavLink>
                 </li>
+                <li className="usa-nav__primary-item">
+                    <NavLink
+                        to="/reporting"
+                        className={getNavLinkClass}
+                        end
+                    >
+                        Reporting
+                    </NavLink>
+                </li>
                 {isUserAdmin && (
                     <li className="usa-nav__primary-item">
                         <NavLink

@@ -15,19 +15,24 @@ import Tag from "../Tag";
  * @param {Function} props.removeFilter - A function to call to remove the tag.
  * @returns {JSX.Element} - The filter tag component. (A pill with an 'x' to remove it)
  */
-const FilterTag = ({ tag, removeFilter }) => (
+const FilterTag = ({ tag, tagIndex, removeFilter }) => (
     <Tag className="bg-brand-primary-light text-brand-primary-dark display-flex flex-align-center">
         {tag.tagText}
-        <svg
-            className="height-2 width-2 margin-left-05 cursor-pointer"
+        <button
+            type="button"
+            className="usa-button--unstyled display-flex flex-align-center margin-left-05 cursor-pointer"
             onClick={() => removeFilter(tag)}
-            id={`filter-tag-${tag.filter}`}
-            style={{ fill: "currentColor" }}
             aria-label={`Remove ${tag.tagText} filter`}
-            role="img"
+            id={`filter-tag-${tag.filter}-${tagIndex}`}
         >
-            <use href={`${icons}#cancel`}></use>
-        </svg>
+            <svg
+                className="height-2 width-2"
+                style={{ fill: "currentColor" }}
+                aria-hidden="true"
+            >
+                <use href={`${icons}#cancel`}></use>
+            </svg>
+        </button>
     </Tag>
 );
 
@@ -50,6 +55,7 @@ const FilterTags = ({ tagsList, removeFilter }) => {
                     >
                         <FilterTag
                             tag={tag}
+                            tagIndex={index}
                             removeFilter={removeFilter}
                         />
                     </span>

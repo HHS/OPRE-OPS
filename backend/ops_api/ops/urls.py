@@ -56,6 +56,7 @@ from ops_api.ops.views import (
     PROJECT_ITEM_API_VIEW_FUNC,
     PROJECT_LIST_API_VIEW_FUNC,
     PROJECT_LIST_FILTER_OPTION_API_VIEW_FUNC,
+    REPORTING_SUMMARY_LIST_API_VIEW_FUNC,
     RESEARCH_METHODOLOGY_ITEM_API_VIEW_FUNC,
     RESEARCH_METHODOLOGY_LIST_API_VIEW_FUNC,
     RESEARCH_PROJECT_FUNDING_SUMMARY_LIST_API_VIEW_FUNC,
@@ -215,6 +216,10 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/research-project-funding-summary/",
         view_func=RESEARCH_PROJECT_FUNDING_SUMMARY_LIST_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/reporting-summary/",
+        view_func=REPORTING_SUMMARY_LIST_API_VIEW_FUNC,
     )
 
     api_bp.add_url_rule(

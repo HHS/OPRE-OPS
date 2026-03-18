@@ -14,6 +14,7 @@ from models import (
     Project,
     ProjectType,
     ResearchProject,
+    ServicesComponent,
 )
 from models.projects import ResearchType
 from ops_api.ops.services.ops_service import ResourceNotFoundError, ValidationError
@@ -488,16 +489,30 @@ def test_projects_list_uses_lightweight_schema(auth_client, loaded_db, app_ctx):
     assert "created_by" not in project, "Unused 'created_by' field should not be in list response"
 
 
-def test_project_list_metadata_serialization(auth_client, loaded_db, test_project):
+def test_project_list_metadata_serialization(auth_client, loaded_db):
     """
     Test that project_list_metadata is correctly extracted and serialized in list response.
     """
-    from decimal import Decimal
+    # Create a new project
+    project = ResearchProject(
+        project_type=ProjectType.RESEARCH,
+        title="Project List Metadata Test Project",
+        short_title="PLMTP",
+        description="Test project for list metadata serialization",
+    )
+    loaded_db.add(project)
+    loaded_db.commit()
+    loaded_db.refresh(project)
 
-    from models import BudgetLineItem, ServicesComponent
+    # Create an agreement for the project
+    agreement = ContractAgreement(
+        name="Test Agreement for Metadata",
+        project_id=project.id,
+    )
+    loaded_db.add(agreement)
+    loaded_db.commit()
 
-    # Add a services component with date range to the test project's agreement
-    agreement = test_project.agreements[0]
+    # Add a services component with date range
     sc = ServicesComponent(
         agreement_id=agreement.id,
         period_start=date.fromisoformat("2023-01-01"),
@@ -508,8 +523,6 @@ def test_project_list_metadata_serialization(auth_client, loaded_db, test_projec
 
     # Add budget line items with fiscal years to test fiscal_year_totals
     # Set status to PLANNED so they're included in totals (DRAFT items are excluded)
-    from models.budget_line_items import BudgetLineItemStatus
-
     bli1 = BudgetLineItem(
         budget_line_item_type=AgreementType.CONTRACT,
         agreement_id=agreement.id,
@@ -528,16 +541,16 @@ def test_project_list_metadata_serialization(auth_client, loaded_db, test_projec
     loaded_db.add(bli2)
     loaded_db.commit()
 
-    response = auth_client.get(url_for("api.projects-group"))
+    response = auth_client.get(url_for("api.projects-group", limit=50))
     assert response.status_code == 200
 
-    # Find the test project in the response
-    project_data = next((p for p in response.json["data"] if p["id"] == test_project.id), None)
+    # Find the project in the response
+    project_data = next((p for p in response.json["data"] if p["id"] == project.id), None)
     assert project_data is not None
 
     # Verify metadata fields are populated
     assert project_data["start_date"] == "2023-01-01"
-    assert project_data["end_date"] == "2045-06-13"
+    assert project_data["end_date"] == "2023-12-31"
     assert project_data["project_total"] is not None
     assert isinstance(project_data["project_total"], int)
 
@@ -545,7 +558,7 @@ def test_project_list_metadata_serialization(auth_client, loaded_db, test_projec
     assert project_data["fiscal_year_totals"] is not None
     assert isinstance(project_data["fiscal_year_totals"], dict)
     # Fiscal year totals should have entries for FY 2023 and 2024
-    assert "2023" in project_data["fiscal_year_totals"] or "2024" in project_data["fiscal_year_totals"].keys()
+    assert "2023" in project_data["fiscal_year_totals"] and "2024" in project_data["fiscal_year_totals"].keys()
 
 
 def test_project_list_metadata_agreement_name_list_property(loaded_db, test_project):
@@ -959,6 +972,228 @@ def test_delete_project_with_single_agreement(projects_service, loaded_db, proje
 
     # Verify project still exists
     assert loaded_db.get(Project, project_id) is not None
+
+
+class TestProjectSorting:
+    """Tests for project sorting functionality."""
+
+    def test_sort_by_title(self, auth_client, loaded_db):
+        """Test sorting projects by title in ascending and descending order."""
+        # Sort ascending
+        response = auth_client.get(url_for("api.projects-group", sort_field="TITLE", sort_descending=False, limit=50))
+        assert response.status_code == 200
+        projects = response.json["data"]
+        assert len(projects) >= 3
+
+        # Check first 3 are sorted ascending (case-insensitive)
+        titles = [p["title"].lower() for p in projects[:3]]
+        assert titles == sorted(titles)
+
+        # Sort descending
+        response = auth_client.get(url_for("api.projects-group", sort_field="TITLE", sort_descending=True, limit=50))
+        assert response.status_code == 200
+        projects = response.json["data"]
+        assert len(projects) >= 3
+
+        # Check first 3 are sorted descending (case-insensitive)
+        titles = [p["title"].lower() for p in projects[:3]]
+        assert titles == sorted(titles, reverse=True)
+
+    def test_sort_by_project_type(self, auth_client, loaded_db):
+        """Test sorting projects by project type in ascending and descending order."""
+        # Sort ascending
+        response = auth_client.get(
+            url_for("api.projects-group", sort_field="PROJECT_TYPE", sort_descending=False, limit=50)
+        )
+        assert response.status_code == 200
+        projects = response.json["data"]
+        assert len(projects) >= 3
+
+        # Check first 3 are sorted ascending
+        types = [p["project_type"] for p in projects[:3]]
+        assert types == sorted(types, reverse=True)
+
+        # Sort descending
+        response = auth_client.get(
+            url_for("api.projects-group", sort_field="PROJECT_TYPE", sort_descending=True, limit=50)
+        )
+        assert response.status_code == 200
+        projects = response.json["data"]
+        assert len(projects) >= 3
+
+        # Check first 3 are sorted descending
+        types = [p["project_type"] for p in projects[:3]]
+        assert types == sorted(types, reverse=False)
+
+    def test_sort_by_project_start(self, auth_client, loaded_db, test_project):
+        """Test sorting projects by start date in ascending and descending order."""
+        # Add services components with start dates to test_project
+        agreement = test_project.agreements[0]
+        sc1 = ServicesComponent(
+            agreement_id=agreement.id,
+            period_start=date.fromisoformat("2023-01-01"),
+            period_end=date.fromisoformat("2023-12-31"),
+            number=11,
+        )
+        loaded_db.add(sc1)
+        loaded_db.commit()
+
+        # Sort ascending
+        response = auth_client.get(
+            url_for("api.projects-group", sort_field="PROJECT_START", sort_descending=False, limit=50)
+        )
+        assert response.status_code == 200
+        projects = response.json["data"]
+        assert len(projects) >= 3
+
+        # Check first 3 are sorted ascending (None values should be last)
+        dates = [p["start_date"] for p in projects[:3]]
+        # Filter out None values for comparison
+        non_none_dates = [d for d in dates if d is not None]
+        assert non_none_dates == sorted(non_none_dates)
+
+        # Sort descending
+        response = auth_client.get(
+            url_for("api.projects-group", sort_field="PROJECT_START", sort_descending=True, limit=50)
+        )
+        assert response.status_code == 200
+        projects = response.json["data"]
+        assert len(projects) >= 3
+
+        # Check first 3 are sorted descending
+        dates = [p["start_date"] for p in projects[:3]]
+        non_none_dates = [d for d in dates if d is not None]
+        assert non_none_dates == sorted(non_none_dates, reverse=True)
+
+    def test_sort_by_project_end(self, auth_client, loaded_db, test_project):
+        """Test sorting projects by end date in ascending and descending order."""
+        # Add services components with end dates to test_project
+        agreement = test_project.agreements[0]
+        sc1 = ServicesComponent(
+            agreement_id=agreement.id,
+            period_start=date.fromisoformat("2023-01-01"),
+            period_end=date.fromisoformat("2023-12-31"),
+            number=20,
+        )
+        loaded_db.add(sc1)
+        loaded_db.commit()
+
+        # Sort ascending
+        response = auth_client.get(
+            url_for("api.projects-group", sort_field="PROJECT_END", sort_descending=False, limit=50)
+        )
+        assert response.status_code == 200
+        projects = response.json["data"]
+        assert len(projects) >= 3
+
+        # Check first 3 are sorted ascending (None values should be last)
+        dates = [p["end_date"] for p in projects[:3]]
+        non_none_dates = [d for d in dates if d is not None]
+        assert non_none_dates == sorted(non_none_dates)
+
+        # Sort descending
+        response = auth_client.get(
+            url_for("api.projects-group", sort_field="PROJECT_END", sort_descending=True, limit=50)
+        )
+        assert response.status_code == 200
+        projects = response.json["data"]
+        assert len(projects) >= 3
+
+        # Check first 3 are sorted descending
+        dates = [p["end_date"] for p in projects[:3]]
+        non_none_dates = [d for d in dates if d is not None]
+        assert non_none_dates == sorted(non_none_dates, reverse=True)
+
+    def test_sort_by_fy_total(self, auth_client, loaded_db, test_project):
+        """Test sorting projects by fiscal year total in ascending and descending order."""
+        # Add BLIs to test_project for FY 2023
+        agreement = test_project.agreements[0]
+        bli1 = BudgetLineItem(
+            budget_line_item_type=AgreementType.CONTRACT,
+            agreement_id=agreement.id,
+            amount=Decimal("5000.00"),
+            date_needed=date.fromisoformat("2023-03-15"),
+            status=BudgetLineItemStatus.PLANNED,
+        )
+        loaded_db.add(bli1)
+        loaded_db.commit()
+
+        # Sort ascending by FY 2023
+        response = auth_client.get(
+            url_for("api.projects-group", sort_field="FY_TOTAL", sort_fiscal_year=2023, sort_descending=False, limit=50)
+        )
+        assert response.status_code == 200
+        projects = response.json["data"]
+        assert len(projects) >= 3
+
+        # Check first 3 are sorted ascending
+        fy_totals = [
+            Decimal(p["fiscal_year_totals"].get("2023", 0)) if p["fiscal_year_totals"] else 0 for p in projects[:3]
+        ]
+        assert fy_totals == sorted(fy_totals)
+
+        # Sort descending by FY 2023
+        response = auth_client.get(
+            url_for("api.projects-group", sort_field="FY_TOTAL", sort_fiscal_year=2023, sort_descending=True, limit=50)
+        )
+        assert response.status_code == 200
+        projects = response.json["data"]
+        assert len(projects) >= 3
+
+        # Check first 3 are sorted descending
+        fy_totals = [
+            Decimal(p["fiscal_year_totals"].get("2023", 0)) if p["fiscal_year_totals"] else 0 for p in projects[:3]
+        ]
+        assert fy_totals == sorted(fy_totals, reverse=True)
+
+    def test_sort_by_project_total(self, auth_client, loaded_db, test_project):
+        """Test sorting projects by project total in ascending and descending order."""
+        # Add BLIs to test_project
+        agreement = test_project.agreements[0]
+        bli1 = BudgetLineItem(
+            budget_line_item_type=AgreementType.CONTRACT,
+            agreement_id=agreement.id,
+            amount=Decimal("10000.00"),
+            date_needed=date.fromisoformat("2023-03-15"),
+            status=BudgetLineItemStatus.PLANNED,
+        )
+        loaded_db.add(bli1)
+        loaded_db.commit()
+
+        # Sort ascending
+        response = auth_client.get(
+            url_for("api.projects-group", sort_field="PROJECT_TOTAL", sort_descending=False, limit=50)
+        )
+        assert response.status_code == 200
+        projects = response.json["data"]
+        assert len(projects) >= 3
+
+        # Check first 3 are sorted ascending
+        totals = [p["project_total"] if p["project_total"] is not None else 0 for p in projects[:3]]
+        assert totals == sorted(totals)
+
+        # Sort descending
+        response = auth_client.get(
+            url_for("api.projects-group", sort_field="PROJECT_TOTAL", sort_descending=True, limit=50)
+        )
+        assert response.status_code == 200
+        projects = response.json["data"]
+        assert len(projects) >= 3
+
+        # Check first 3 are sorted descending
+        totals = [p["project_total"] if p["project_total"] is not None else 0 for p in projects[:3]]
+        assert totals == sorted(totals, reverse=True)
+
+    def test_sort_without_sort_field_defaults_to_id(self, auth_client, loaded_db):
+        """Test that omitting sort_field defaults to sorting by ID."""
+        response = auth_client.get(url_for("api.projects-group", limit=50))
+        assert response.status_code == 200
+        projects = response.json["data"]
+        assert len(projects) >= 3
+
+        # Check first 3 are sorted by ID
+        ids = [p["id"] for p in projects[:3]]
+        assert ids == sorted(ids)
 
 
 class TestProjectFilterOptions:

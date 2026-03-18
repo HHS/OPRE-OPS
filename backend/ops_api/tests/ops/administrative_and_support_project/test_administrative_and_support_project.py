@@ -13,11 +13,7 @@ def test_administrative_and_support_projects_get_all(auth_client, loaded_db):
     )
     assert response.status_code == 200
     assert "data" in response.json
-    # Note: projects-group returns all projects (research + admin/support), so we need to filter
-    admin_support_projects = [
-        p for p in response.json["data"] if p.get("project_type") == ProjectType.ADMINISTRATIVE_AND_SUPPORT.name
-    ]
-    assert len(admin_support_projects) == count
+    assert len(response.json["data"]) == count
 
 
 def test_administrative_and_support_projects_get_by_id(auth_client, loaded_db):

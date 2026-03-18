@@ -3,7 +3,7 @@ from typing import Optional
 
 from marshmallow import Schema, fields, pre_dump
 
-from models import ProjectType
+from models import ProjectSortCondition, ProjectType
 from ops_api.ops.schemas.pagination import PaginationListSchema
 
 
@@ -19,6 +19,9 @@ class ProjectListGetRequestSchema(PaginationListSchema):
     project_search = fields.List(fields.String(), required=False, load_default=[])
     agreement_search = fields.List(fields.String(), required=False, load_default=[])
     project_type = fields.List(fields.Enum(ProjectType), required=False, load_default=[])
+    sort_field = fields.List(fields.Enum(ProjectSortCondition), required=False, load_default=[])
+    sort_descending = fields.List(fields.Boolean(), required=False, load_default=[])
+    sort_fiscal_year = fields.List(fields.Integer(), required=False, load_default=[])
 
 
 class TeamLeaders(Schema):
@@ -159,7 +162,7 @@ class ProjectListResponse(Schema):
             metadata = data.project_list_metadata
 
             # Map total to project_total (convert Decimal to int)
-            data.project_total = int(metadata["total"]) if metadata["total"] else None
+            data.project_total = metadata["total"] if metadata["total"] is not None else None
 
             # Map date ranges
             data.start_date = metadata["project_start"]
