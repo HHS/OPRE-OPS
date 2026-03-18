@@ -150,7 +150,7 @@ class ProjectListResponse(Schema):
     fiscal_year_totals: Optional[dict] = fields.Dict(
         keys=fields.Int(), values=fields.Decimal(as_string=True), allow_none=True
     )
-    project_total: Optional[int] = fields.Int(allow_none=True)
+    project_total: Optional[int] = fields.Decimal(allow_none=True)
     agreement_name_list: Optional[list[dict]] = fields.List(
         fields.Nested(AgreementNameListItem), dump_default=[], allow_none=True
     )
