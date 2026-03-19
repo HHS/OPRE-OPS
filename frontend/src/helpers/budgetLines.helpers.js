@@ -419,7 +419,9 @@ export const handleExport = async (
                         budgetLine.id,
                         budgetLinesDataMap[budgetLine.id]?.portfolio_name,
                         budgetLine.agreement?.project?.title ?? NO_DATA,
-                        budgetLine.agreement?.project?.project_type ? convertCodeForDisplay("project", budgetLine.agreement.project.project_type) : NO_DATA,
+                        budgetLine.agreement?.project?.project_type
+                            ? convertCodeForDisplay("project", budgetLine.agreement.project.project_type)
+                            : NO_DATA,
                         budgetLine.agreement?.name ?? NO_DATA,
                         budgetLinesDataMap[budgetLine.id]?.service_component_name,
                         budgetLine.agreement?.agreement_type ?? NO_DATA,
