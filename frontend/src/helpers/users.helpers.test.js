@@ -121,4 +121,16 @@ describe("normalizeUser", () => {
         expect(normalizeUser(null)).toBeNull();
         expect(normalizeUser(undefined)).toBeUndefined();
     });
+
+    it("respects a backend-provided display_name when it is already mixed-case", () => {
+        // Backend sends a properly cased display_name — frontend should not overwrite it.
+        const user = { id: 4, full_name: "JOHN SMITH", display_name: "John Smith", email: "j@example.com" };
+        expect(normalizeUser(user)).toEqual({ ...user, display_name: "John Smith" });
+    });
+
+    it("applies title-casing to a backend-provided display_name that is all-caps", () => {
+        // Backend sends an all-caps display_name — frontend should still normalize it.
+        const user = { id: 5, full_name: "JANE DOE", display_name: "JANE DOE", email: "jane@example.com" };
+        expect(normalizeUser(user)).toEqual({ ...user, display_name: "Jane Doe" });
+    });
 });

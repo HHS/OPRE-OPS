@@ -98,11 +98,19 @@ export const getUserDisplayName = (user) => {
  * This is the single canonical normalizer used at all API boundaries (RTK Query
  * transformResponse and legacy getUser helpers) to avoid duplication and drift.
  *
+ * If the backend already provides a `display_name`, it is respected and only passed
+ * through `formatUserName` to apply title-casing if it is all-caps. This ensures
+ * any future backend-side display name logic is not discarded by the frontend.
+ *
  * @param {Object} user
  * @returns {Object}
  */
 export const normalizeUser = (user) => {
     if (!user || typeof user !== "object") return user;
+    if (user.display_name) {
+        // Backend provided a display_name — still apply title-case if it is all-caps.
+        return { ...user, display_name: formatUserName(user.display_name) };
+    }
     return {
         ...user,
         display_name: getUserDisplayName(user)
