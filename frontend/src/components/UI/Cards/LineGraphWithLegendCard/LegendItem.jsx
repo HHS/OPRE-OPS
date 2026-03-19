@@ -29,7 +29,7 @@ const LegendItem = ({ activeId, id, label, value, color, percent, tagStyleActive
                     <FontAwesomeIcon
                         icon={faCircle}
                         className="margin-right-05"
-                        style={{ color: color, width: 'var(--legend-dot-size)', height: 'var(--legend-dot-size)' }}
+                        style={{ color: color, width: "var(--legend-dot-size)", height: "var(--legend-dot-size)" }}
                         data-testid="legend-icon"
                         title={`${label} indicator`}
                         aria-label={`${label} indicator`}
