@@ -1,4 +1,4 @@
-import { create } from "vest";
+import { create, test } from "vest";
 
 /**
  * Validation suite for Request Pre-Award Approval page
@@ -6,10 +6,13 @@ import { create } from "vest";
  */
 // eslint-disable-next-line no-unused-vars
 const suite = create((data = {}) => {
-    // No validation rules needed - notes are optional
+    // Notes field is optional - no validation needed
     // Backend handles authorization and required field validation
-    // This suite intentionally has no tests since all fields are optional
-    // and validation happens on the backend
+    // This test always passes since notes can be empty or present
+    test("notes", "Notes are optional", () => {
+        // This test intentionally always passes
+        return true;
+    });
 });
 
 export default suite;

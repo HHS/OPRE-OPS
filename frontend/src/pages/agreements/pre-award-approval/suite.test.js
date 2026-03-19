@@ -9,12 +9,14 @@ describe("Request Pre-Award Approval validation suite", () => {
     });
 
     it("should not have errors for empty data", () => {
-        const result = suite({});
+        suite({});
+        const result = suite.get();
         expect(result.hasErrors()).toBe(false);
     });
 
     it("should not have errors with notes", () => {
-        const result = suite({ notes: "Test notes" });
+        suite({ notes: "Test notes" });
+        const result = suite.get();
         expect(result.hasErrors()).toBe(false);
     });
 });
