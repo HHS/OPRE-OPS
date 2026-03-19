@@ -219,6 +219,7 @@ class BudgetLineItemCANSchema(Schema):
 class SimpleProjectSchema(Schema):
     id = fields.Int(required=True)
     title = fields.Str(required=True)
+    project_type = fields.String(allow_none=True)
 
 
 class SimpleAgreementSchema(Schema):
