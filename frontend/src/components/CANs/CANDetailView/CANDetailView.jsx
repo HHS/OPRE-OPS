@@ -92,7 +92,7 @@ const CANDetailView = ({
                             >
                                 <Tag
                                     tagStyle="primaryDarkTextLightBackground"
-                                    text={teamLeader.full_name}
+                                    text={teamLeader.display_name ?? teamLeader.full_name}
                                 />
                             </dd>
                         ))}

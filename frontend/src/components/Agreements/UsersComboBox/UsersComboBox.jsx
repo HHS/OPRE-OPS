@@ -74,7 +74,7 @@ const UsersComboBox = ({
                 data={userData}
                 selectedData={/** @type {any} */ (selectedUser)}
                 setSelectedData={handleChange}
-                optionText={/** @param {any} user */ (user) => user.full_name || user.email}
+                optionText={/** @param {any} user */ (user) => user.display_name || user.full_name || user.email}
                 isDisabled={isDisabled}
                 messages={messages}
             />

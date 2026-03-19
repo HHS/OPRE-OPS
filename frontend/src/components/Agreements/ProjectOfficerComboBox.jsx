@@ -77,7 +77,7 @@ export const ProjectOfficerComboBox = ({
                     selectedData={selectedProjectOfficer}
                     setSelectedData={handleChange}
                     defaultString={defaultString}
-                    optionText={(user) => user.full_name || user.email}
+                    optionText={(user) => user.display_name || user.full_name || user.email}
                     overrideStyles={overrideStyles}
                     messages={messages}
                 />
