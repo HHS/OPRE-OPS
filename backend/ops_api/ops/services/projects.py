@@ -2,7 +2,8 @@ from dataclasses import dataclass
 from typing import Any, Optional, Sequence
 
 from loguru import logger
-from sqlalchemy import distinct, select
+from sqlalchemy import distinct, or_, select
+from sqlalchemy.orm import selectinload
 
 from models import (
     CAN,
@@ -13,6 +14,7 @@ from models import (
     CANFundingDetails,
     Portfolio,
     Project,
+    ProjectSortCondition,
     ProjectType,
     ResearchProject,
     User,
@@ -30,16 +32,20 @@ class ProjectFilters:
     project_search: Optional[list[str]] = None
     agreement_search: Optional[list[str]] = None
     project_type: Optional[list[ProjectType]] = None
+    limit: Optional[list[int]] = None
+    offset: Optional[list[int]] = None
 
     @classmethod
     def parse_filters(cls, data: dict) -> "ProjectFilters":
         """Parse filter parameters from request data."""
         return cls(
-            fiscal_year=data.get("fiscal_year", []),
-            portfolio_id=data.get("portfolio_id", []),
-            project_search=data.get("project_search", []),
-            agreement_search=data.get("agreement_search", []),
-            project_type=data.get("project_type", []),
+            fiscal_year=data.get("fiscal_year", []) if data else [],
+            portfolio_id=data.get("portfolio_id", []) if data else [],
+            project_search=data.get("project_search", []) if data else [],
+            agreement_search=data.get("agreement_search", []) if data else [],
+            project_type=data.get("project_type", []) if data else [],
+            limit=data.get("limit", [10]) if data else [10],
+            offset=data.get("offset", [0]) if data else [0],
         )
 
 
@@ -227,6 +233,10 @@ class ProjectsService(OpsService[Project]):
             .join(CAN, isouter=True)
             .join(CANFundingDetails, isouter=True)
             .join(CANFundingBudget, isouter=True)
+            .options(
+                selectinload(ResearchProject.agreements).selectinload(Agreement.services_components),
+                selectinload(ResearchProject.agreements).selectinload(Agreement.budget_line_items),
+            )
         )
 
         query_helper = QueryHelper(stmt)
@@ -251,15 +261,15 @@ class ProjectsService(OpsService[Project]):
                 # For multiple years, we'll just ensure funding budget exists for one of those years
                 # The obligate_by range check becomes complex with multiple years, so we skip it
 
-        # Apply project search filter on project title (AND logic - must match all search terms)
+        # Apply project search filter on project title (OR logic, exact match on title/short title)
         if filters.project_search:
-            query_helper.add_search_list(ResearchProject.title, filters.project_search)
+            query_helper.where_clauses.append(
+                or_(Project.title.in_(filters.project_search), Project.short_title.in_(filters.project_search))
+            )
 
         # Apply agreement search filter on agreement name and nick_name (exact match - OR logic)
         # Projects are returned if any agreement has name OR nick_name matching any search term
         if filters.agreement_search:
-            from sqlalchemy import or_
-
             query_helper.where_clauses.append(
                 or_(Agreement.name.in_(filters.agreement_search), Agreement.nick_name.in_(filters.agreement_search))
             )
@@ -287,6 +297,10 @@ class ProjectsService(OpsService[Project]):
             .join(CAN, isouter=True)
             .join(CANFundingDetails, isouter=True)
             .join(CANFundingBudget, isouter=True)
+            .options(
+                selectinload(AdministrativeAndSupportProject.agreements).selectinload(Agreement.services_components),
+                selectinload(AdministrativeAndSupportProject.agreements).selectinload(Agreement.budget_line_items),
+            )
         )
 
         query_helper = QueryHelper(stmt)
@@ -313,13 +327,16 @@ class ProjectsService(OpsService[Project]):
 
         # Apply project search filter on project title (AND logic - must match all search terms)
         if filters.project_search:
-            query_helper.add_search_list(AdministrativeAndSupportProject.title, filters.project_search)
+            query_helper.where_clauses.append(
+                or_(
+                    Project.title.in_(filters.project_search),
+                    Project.short_title.in_(filters.project_search),
+                )
+            )
 
         # Apply agreement search filter on agreement name and nick_name (exact match - OR logic)
         # Projects are returned if any agreement has name OR nick_name matching any search term
         if filters.agreement_search:
-            from sqlalchemy import or_
-
             query_helper.where_clauses.append(
                 or_(Agreement.name.in_(filters.agreement_search), Agreement.nick_name.in_(filters.agreement_search))
             )
@@ -345,22 +362,88 @@ class ProjectsService(OpsService[Project]):
             raise ResourceNotFoundError("Project", id)
         return project
 
-    def get_list(
-        self, data: dict[str, Any] | None = {}
-    ) -> tuple[Sequence[ResearchProject], Sequence[AdministrativeAndSupportProject]]:
+    @staticmethod
+    def _get_project_sort_key(
+        project: Project,
+        sort_field: str | None,
+        sort_fiscal_year: int | None,
+        metadata_cache: dict,
+        sort_descending: bool = False,
+    ) -> Any:
+        """
+        Generate a sort key for a project based on the sort field.
+
+        Args:
+            project: The project to generate a sort key for
+            sort_field: The field to sort by (must match ProjectSortCondition enum values)
+            sort_fiscal_year: The fiscal year to use when sorting by FY_TOTAL
+            metadata_cache: Dictionary mapping project IDs to their project_list_metadata results
+            sort_descending: Whether the sort is descending (affects None handling for date fields)
+
+        Returns:
+            A sortable key value
+        """
+        if not sort_field:
+            return project.id
+
+        try:
+            sort_condition = ProjectSortCondition(sort_field)
+        except ValueError:
+            # Invalid sort_field, default to id
+            return project.id
+
+        if sort_condition == ProjectSortCondition.TITLE:
+            return (project.title or "").lower()
+        elif sort_condition == ProjectSortCondition.PROJECT_TYPE:
+            return project.project_type.value if project.project_type else ""
+        elif sort_condition == ProjectSortCondition.PROJECT_START:
+            metadata = metadata_cache[project.id]
+            # Handle None values by sorting them last
+            # When descending, invert the boolean so None still comes last after reversal
+            is_none = metadata["project_start"] is None
+            return (is_none if not sort_descending else not is_none, metadata["project_start"])
+        elif sort_condition == ProjectSortCondition.PROJECT_END:
+            metadata = metadata_cache[project.id]
+            # Handle None values by sorting them last
+            # When descending, invert the boolean so None still comes last after reversal
+            is_none = metadata["project_end"] is None
+            return (is_none if not sort_descending else not is_none, metadata["project_end"])
+        elif sort_condition == ProjectSortCondition.FY_TOTAL:
+            metadata = metadata_cache[project.id]
+            # Get fiscal year total, defaulting to 0 if not present
+            fy_total = metadata["by_fiscal_year"].get(sort_fiscal_year, 0) if sort_fiscal_year else 0
+            return fy_total
+        elif sort_condition == ProjectSortCondition.PROJECT_TOTAL:
+            metadata = metadata_cache[project.id]
+            return metadata["total"]
+        else:
+            return project.id
+
+    def get_list(self, data: dict[str, Any] | None = None) -> tuple[Sequence[Project], dict[str, Any]]:
         """
         Get list of projects with optional filtering and pagination.
 
         Args:
-            data: Dictionary containing filter parameters (all as lists)
+            data: Dictionary containing filter parameters (all as lists) including limit and offset
 
         Returns:
-            Tuple of (research_projects, administrative_and_support_projects), where each is a list of their respective project types.
+            Tuple of (research_projects, administrative_and_support_projects, metadata)
+            where metadata includes count, limit, and offset
         """
         filters = ProjectFilters.parse_filters(data)
 
-        research_project = []
-        administrative_and_support_project = []
+        # Extract first value from sort parameter lists (only first value is used)
+        sort_field_list = data.get("sort_field", [])
+        sort_field = sort_field_list[0] if sort_field_list else None
+
+        sort_descending_list = data.get("sort_descending", [])
+        sort_descending = sort_descending_list[0] if sort_descending_list else False
+
+        sort_fiscal_year_list = data.get("sort_fiscal_year", [])
+        sort_fiscal_year = sort_fiscal_year_list[0] if sort_fiscal_year_list else None
+
+        research_projects = []
+        administrative_and_support_projects = []
 
         # If no project types specified, query both types
         # If project types specified, only query the specified types
@@ -371,13 +454,43 @@ class ProjectsService(OpsService[Project]):
             research_stmt = ProjectsService._get_research_projects_query(filters)
             value = research_stmt.compile(compile_kwargs={"literal_binds": True})
             logger.debug(f"Compiled SQL for research projects: {value}")
-            research_project = self.db_session.scalars(research_stmt).all()
+            research_projects = list(self.db_session.scalars(research_stmt).all())
 
         if should_query_admin:
             administrative_and_support_stmt = ProjectsService._get_administrative_and_support_projects_query(filters)
-            administrative_and_support_project = self.db_session.scalars(administrative_and_support_stmt).all()
+            administrative_and_support_projects = list(self.db_session.scalars(administrative_and_support_stmt).all())
 
-        return research_project, administrative_and_support_project
+        # Combine results for pagination
+        all_projects = research_projects + administrative_and_support_projects
+
+        # Memoize project_list_metadata to prevent repeat calculations
+        metadata_cache = {}
+        for project in all_projects:
+            metadata_cache[project.id] = project.project_list_metadata
+
+        # Sort projects using the extracted sort key function
+        sorted_projects = sorted(
+            all_projects,
+            key=lambda p: self._get_project_sort_key(p, sort_field, sort_fiscal_year, metadata_cache, sort_descending),
+            reverse=sort_descending,
+        )
+
+        # Calculate total count before pagination
+        total_count = len(sorted_projects)
+
+        # Apply pagination
+        limit_value = filters.limit[0] if filters.limit else 10
+        offset_value = filters.offset[0] if filters.offset else 0
+
+        paginated_projects = sorted_projects[offset_value : offset_value + limit_value]
+
+        metadata = {
+            "count": total_count,
+            "limit": limit_value,
+            "offset": offset_value,
+        }
+
+        return paginated_projects, metadata
 
     def get_filter_options(self) -> dict[str, Any]:
         """
