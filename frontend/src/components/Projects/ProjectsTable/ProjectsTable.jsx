@@ -100,6 +100,9 @@ const ProjectsTable = ({ projects, sortConditions, sortDescending, setSortCondit
                         sortDescending={sortDescending}
                         onClickHeader={setSortConditions}
                     />
+                    <th scope="col">
+                        <span className="usa-sr-only">Expand row</span>
+                    </th>
                 </tr>
             </thead>
             <tbody>

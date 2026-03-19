@@ -132,7 +132,7 @@ describe("ProjectsList", () => {
         expect(screen.getByText("All Projects")).toBeInTheDocument();
         expect(screen.getByRole("table")).toBeInTheDocument();
         // "Project" header button text is exactly "Project" (with arrow icon); use exact false to catch it
-        expect(screen.getAllByRole("columnheader").length).toBe(6);
+        expect(screen.getAllByRole("columnheader").length).toBe(7);
         expect(screen.getByRole("columnheader", { name: /^Project$/ })).toBeInTheDocument();
         expect(screen.getByRole("columnheader", { name: /Type/ })).toBeInTheDocument();
         expect(screen.getByRole("columnheader", { name: /Start/ })).toBeInTheDocument();

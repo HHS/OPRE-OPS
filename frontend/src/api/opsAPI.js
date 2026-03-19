@@ -430,7 +430,7 @@ export const opsApi = createApi({
             providesTags: ["ResearchProjects"]
         }),
         getProjects: builder.query({
-            query: ({ sortConditions, sortDescending, page, limit = 10, fiscalYear } = {}) => {
+            query: ({ sortConditions, sortDescending, page, limit, fiscalYear } = {}) => {
                 const queryParams = [];
                 if (fiscalYear && fiscalYear !== "All") {
                     queryParams.push(`fiscal_year=${fiscalYear}`);
@@ -443,9 +443,10 @@ export const opsApi = createApi({
                         queryParams.push(`sort_fiscal_year=${fiscalYear}`);
                     }
                 }
-                if (page !== undefined && page !== null) {
+                if (limit !== undefined && limit !== null) {
                     queryParams.push(`limit=${limit}`);
-                    queryParams.push(`offset=${page * limit}`);
+                    const offset = page !== undefined && page !== null ? page * limit : 0;
+                    queryParams.push(`offset=${offset}`);
                 }
                 const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
                 return `/projects/${queryString}`;

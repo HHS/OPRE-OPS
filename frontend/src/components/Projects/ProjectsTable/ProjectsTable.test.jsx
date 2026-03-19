@@ -49,7 +49,7 @@ describe("ProjectsTable", () => {
     it("renders a table with 6 column headers", () => {
         renderTable();
         expect(screen.getByRole("table")).toBeInTheDocument();
-        expect(screen.getAllByRole("columnheader").length).toBe(6);
+        expect(screen.getAllByRole("columnheader").length).toBe(7);
     });
 
     it("renders column headers with correct labels", () => {
