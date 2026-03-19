@@ -637,24 +637,8 @@ def create_agreement_update_history_event(
 
                 old_project = session.get(Project, old_value) if old_value else None
                 new_project = session.get(Project, new_value) if new_value else None
-                old_project_title = (
-                    (
-                        f"{old_project.title} ({old_project.short_title})"
-                        if old_project.short_title
-                        else old_project.title
-                    )
-                    if old_project
-                    else "None"
-                )
-                new_project_title = (
-                    (
-                        f"{new_project.title} ({new_project.short_title})"
-                        if new_project.short_title
-                        else new_project.title
-                    )
-                    if new_project
-                    else "None"
-                )
+                old_project_title = get_project_display_name(old_project)
+                new_project_title = get_project_display_name(new_project)
                 return AgreementHistory(
                     agreement_id=get_agreement_id_from_agreement(agreement),
                     agreement_id_record=agreement_id,
@@ -780,6 +764,15 @@ def create_agreement_update_history_event(
             case _:
                 logger.info(f"{property_name} changed by {updated_by_user.full_name} from {old_value} to {new_value}")
                 return None
+
+
+def get_project_display_name(project) -> str:
+    """Format a project's display name, including short_title if available."""
+    if not project:
+        return "None"
+    if project.short_title:
+        return f"{project.title} ({project.short_title})"
+    return project.title
 
 
 def get_agreement_id_from_agreement(agreement: Agreement) -> int | None:

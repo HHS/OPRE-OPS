@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from sqlalchemy import select
 
 from models import AgreementHistory, AgreementHistoryType, OpsEvent, OpsEventStatus, OpsEventType
-from models.agreement_history import add_history_events
+from models.agreement_history import add_history_events, get_project_display_name
 from ops_api.ops.services.agreement_messages import agreement_history_trigger
 
 test_user_id = 503
@@ -1085,3 +1085,29 @@ def test_add_history_events_deduplicates_with_different_ops_event_ids(loaded_db,
     loaded_db.delete(event_1)
     loaded_db.delete(event_2)
     loaded_db.commit()
+
+
+class TestGetProjectDisplayName:
+    def test_returns_none_string_when_project_is_none(self):
+        assert get_project_display_name(None) == "None"
+
+    def test_returns_title_when_no_short_title(self):
+        class FakeProject:
+            title = "Child Welfare Research"
+            short_title = None
+
+        assert get_project_display_name(FakeProject()) == "Child Welfare Research"
+
+    def test_returns_title_with_short_title(self):
+        class FakeProject:
+            title = "Child Welfare Research"
+            short_title = "CWR"
+
+        assert get_project_display_name(FakeProject()) == "Child Welfare Research (CWR)"
+
+    def test_returns_title_when_short_title_is_empty_string(self):
+        class FakeProject:
+            title = "Child Welfare Research"
+            short_title = ""
+
+        assert get_project_display_name(FakeProject()) == "Child Welfare Research"
