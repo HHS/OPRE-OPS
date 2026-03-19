@@ -141,27 +141,6 @@ class agreement_mod_version {
    integer id
    bigint transaction_id
 }
-class agreement_ops_db_history {
-   integer agreement_id
-   integer ops_db_history_id
-   integer created_by
-   integer updated_by
-   timestamp created_on
-   timestamp updated_on
-   integer id
-}
-class agreement_ops_db_history_version {
-   integer agreement_id
-   integer ops_db_history_id
-   integer created_by
-   integer updated_by
-   timestamp created_on
-   timestamp updated_on
-   bigint end_transaction_id
-   smallint operation_type
-   integer id
-   bigint transaction_id
-}
 class agreement_team_members {
    integer created_by
    integer updated_by
@@ -1570,13 +1549,6 @@ agreement_mod  -->  ops_user : created_by:id
 agreement_mod  -->  ops_user : updated_by:id
 agreement_mod_version  -->  agreement : agreement_id:id
 agreement_mod_version  -->  transaction : transaction_id:id
-agreement_ops_db_history  -->  agreement : agreement_id:id
-agreement_ops_db_history  -->  ops_db_history : ops_db_history_id:id
-agreement_ops_db_history  -->  ops_user : updated_by:id
-agreement_ops_db_history  -->  ops_user : created_by:id
-agreement_ops_db_history_version  -->  agreement : agreement_id:id
-agreement_ops_db_history_version  -->  ops_db_history : ops_db_history_id:id
-agreement_ops_db_history_version  -->  transaction : transaction_id:id
 agreement_team_members  -->  agreement : agreement_id:id
 agreement_team_members  -->  ops_user : user_id:id
 agreement_team_members  -->  ops_user : created_by:id

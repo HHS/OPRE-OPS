@@ -22,7 +22,7 @@ azure-keyvault-secrets = "==4.10.0"
 loguru = "==0.7.3"
 click = "==8.3.1"
 aiohttp = "==3.13.3"
-deepdiff = "==8.6.1"
+deepdiff = "==8.6.2"
 python-dotenv = "==1.2.2"
 ipython = "==9.11.0"
 

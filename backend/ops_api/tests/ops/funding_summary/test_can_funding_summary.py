@@ -289,7 +289,7 @@ def test_get_can_funding_summary_no_fiscal_year(loaded_db, test_can, app_ctx) ->
                     "funding_details": {
                         "allotment": None,
                         "allowance": None,
-                        "appropriation": None,
+                        "appropriation": "75-23-1552",
                         "created_by": None,
                         "created_by_user": None,
                         "display_name": "CANFundingDetails#1",
@@ -433,7 +433,7 @@ def test_get_can_funding_summary_with_fiscal_year(loaded_db, test_can, app_ctx) 
                     "funding_details": {
                         "allotment": None,
                         "allowance": None,
-                        "appropriation": None,
+                        "appropriation": "75-23-1552",
                         "created_by": None,
                         "created_by_user": None,
                         "display_name": "CANFundingDetails#1",
