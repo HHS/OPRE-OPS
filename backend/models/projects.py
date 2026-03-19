@@ -1,13 +1,14 @@
 from enum import Enum
 from typing import Optional
+from decimal import Decimal
 
-import sqlalchemy.dialects.postgresql as pg
-from sqlalchemy import Column, Date, ForeignKey, Index, Sequence, String, Text
+from sqlalchemy import Date, ForeignKey, Index, Sequence, String, Text
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing_extensions import List
 
 from models.base import BaseModel
+
 
 class ResearchType(Enum):
     APPLIED_RESEARCH = 1
@@ -19,9 +20,7 @@ class ProjectTeamLeaders(BaseModel):
     __tablename__ = "project_team_leaders"
 
     project_id: Mapped[int] = mapped_column(ForeignKey("project.id"), primary_key=True)
-    team_lead_id: Mapped[int] = mapped_column(
-        ForeignKey("ops_user.id"), primary_key=True
-    )
+    team_lead_id: Mapped[int] = mapped_column(ForeignKey("ops_user.id"), primary_key=True)
 
     @BaseModel.display_name.getter
     def display_name(self):
@@ -33,6 +32,15 @@ class ProjectType(Enum):
     ADMINISTRATIVE_AND_SUPPORT = 2
 
 
+class ProjectSortCondition(Enum):
+    TITLE = "title"
+    PROJECT_TYPE = "project_type"
+    PROJECT_START = "project_start"
+    PROJECT_END = "project_end"
+    FY_TOTAL = "fy_total"
+    PROJECT_TOTAL = "project_total"
+
+
 class Project(BaseModel):
     __tablename__ = "project"
     __mapper_args__: dict[str, str | ProjectType] = {
@@ -40,18 +48,14 @@ class Project(BaseModel):
         "polymorphic_on": "project_type",
     }
 
-    id: Mapped[int] = BaseModel.get_pk_column(
-        sequence=Sequence("project_id_seq", start=1000, increment=1)
-    )
+    id: Mapped[int] = BaseModel.get_pk_column(sequence=Sequence("project_id_seq", start=1000, increment=1))
     project_type: Mapped[ProjectType] = mapped_column(ENUM(ProjectType), nullable=False)
     title: Mapped[str] = mapped_column(String(), nullable=False)
     short_title: Mapped[Optional[str]] = mapped_column(String(), nullable=True)
     description: Mapped[str] = mapped_column(Text(), nullable=False, default="")
     url: Mapped[Optional[str]] = mapped_column(Text(), nullable=True)
 
-    agreements: Mapped[List["Agreement"]] = relationship(
-        "Agreement", back_populates="project"
-    )
+    agreements: Mapped[List["Agreement"]] = relationship("Agreement", back_populates="project")
     team_leaders: Mapped[List["User"]] = relationship(
         "User",
         back_populates="projects",
@@ -65,6 +69,57 @@ class Project(BaseModel):
     @BaseModel.display_name.getter
     def display_name(self):
         return self.title
+
+    @property
+    def project_list_metadata(self) -> dict:
+        """
+        Calculate project totals, fiscal year breakdown, and date range.
+
+        Returns a dict with:
+        - total: Total value of all agreements (sum of agreement_total for each)
+        - by_fiscal_year: Dict mapping fiscal year to total BLI value for that year (non-DRAFT BLIs only)
+        - project_start: Earliest period_start across all services_components in all agreements
+        - project_end: Latest period_end across all services_components in all agreements
+        - agreement_name_list: List of dicts with agreement id and name (nick_name if available, otherwise title)
+        """
+        from collections import defaultdict
+        from models.budget_line_items import BudgetLineItemStatus
+
+        total = Decimal("0")
+        by_fiscal_year = defaultdict(lambda: Decimal("0"))
+        start_dates = []
+        end_dates = []
+        agreement_name_list = []
+
+        for agreement in self.agreements:
+            # Add agreement total to overall total
+            total += agreement.agreement_total
+            if agreement.nick_name:
+                agreement_name_list.append({"id": agreement.id, "name": agreement.nick_name})
+            else:
+                agreement_name_list.append({"id": agreement.id, "name": agreement.name})
+
+            # Add BLI amounts by fiscal year (only non-DRAFT or OBE BLIs)
+            for bli in agreement.budget_line_items:
+                if (bli.is_obe or bli.status != BudgetLineItemStatus.DRAFT) and bli.fiscal_year is not None:
+                    # Include amount + fees for the BLI
+                    bli_total = (bli.amount or Decimal("0")) + (bli.fees or Decimal("0"))
+                    by_fiscal_year[bli.fiscal_year] += bli_total
+
+            # Collect all services_component dates
+            for sc in agreement.services_components:
+                if sc.period_start is not None:
+                    start_dates.append(sc.period_start)
+                if sc.period_end is not None:
+                    end_dates.append(sc.period_end)
+
+        return {
+            "total": total,
+            "by_fiscal_year": dict(by_fiscal_year),
+            "project_start": min(start_dates) if start_dates else None,
+            "project_end": max(end_dates) if end_dates else None,
+            "agreement_name_list": agreement_name_list,
+        }
 
 
 class ResearchProject(Project):

@@ -97,6 +97,8 @@ describe("Agreement Details Edit", () => {
             cy.get("#edit").should("not.exist");
             cy.get("label").contains("Project").should("exist");
 
+            //change project
+            cy.get("#project-combobox-input").type("Baby's First Years (BFY){enter}");
             // add research methodology
             cy.get("#research-methodologies-combobox-input").type("Knowledge Development{enter}");
             // add special topics
@@ -123,10 +125,7 @@ describe("Agreement Details Edit", () => {
                     expect(body.message).to.equal("Agreement updated");
                 })
                 .then(cy.log);
-            cy.get(".usa-alert__body").should(
-                "contain",
-                `The agreement ${editedTitle} has been successfully updated`
-            );
+            cy.get(".usa-alert__body").should("contain", `The agreement ${editedTitle} has been successfully updated`);
             cy.get("[data-cy='close-alert']").click();
             cy.get("h1").should("have.text", editedTitle);
             cy.get("[data-cy='details-notes']").should("exist");
@@ -144,6 +143,7 @@ describe("Agreement Details Edit", () => {
                         "Change to Description",
                         "System Owner changed the Agreement Description.",
                         "Change to Agreement Title",
+                        "Change to Project",
                         `System Owner changed the agreement title from ${testAgreement.name} to ${editedTitle}.`,
                         "Change to Notes",
                         "System Owner changed the notes.",

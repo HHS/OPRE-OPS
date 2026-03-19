@@ -3,7 +3,6 @@
 from datetime import date
 from typing import Optional
 
-from numpy import require
 from sqlalchemy import (
     Boolean,
     Date,
