@@ -517,6 +517,7 @@ def test_pre_award_approval_request_fields_can_be_set(loaded_db, test_user):
 
     # Fetch it again by ID
     from models import ProcurementTrackerStep
+
     updated_step = loaded_db.get(ProcurementTrackerStep, step_5_id)
     assert updated_step.pre_award_approval_requested is True
     assert updated_step.pre_award_approval_requested_date == date(2026, 3, 15)

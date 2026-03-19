@@ -113,6 +113,10 @@ def get_by_agreement_id(agreement_id):
     document_stmt = select(Document).where(Document.agreement_id == agreement_id)
     documents = current_app.db_session.execute(document_stmt).scalars().all()
 
-    logger.info(f"Agreement {agreement_id} has {len(documents)} documents." if documents else f"Agreement {agreement_id} has no documents.")
+    logger.info(
+        f"Agreement {agreement_id} has {len(documents)} documents."
+        if documents
+        else f"Agreement {agreement_id} has no documents."
+    )
 
     return documents
