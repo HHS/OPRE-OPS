@@ -173,7 +173,9 @@ const CANFundingReceivedTableRow = ({
             }
             expandedData={
                 <ExpandedData
-                    createdBy={fundingReceived.created_by_user?.full_name}
+                    createdBy={
+                        fundingReceived.created_by_user?.display_name ?? fundingReceived.created_by_user?.full_name
+                    }
                     createdOn={fundingReceived.created_on}
                     notes={fundingReceived.notes}
                 />

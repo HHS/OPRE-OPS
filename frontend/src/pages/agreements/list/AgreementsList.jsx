@@ -225,7 +225,7 @@ const AgreementsList = () => {
                 const corData = corResponses.find((cor) => cor.id === agreement.project_officer_id);
 
                 agreementDataMap[agreement.id] = {
-                    cor: corData?.full_name ?? "TBD"
+                    cor: corData?.display_name ?? corData?.full_name ?? "TBD"
                 };
             });
             const fyLabel = `FY${String(effectiveFY).slice(-2)} Obligated`;
