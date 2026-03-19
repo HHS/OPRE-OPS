@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from sqlalchemy import select
 
 from models import AgreementHistory, AgreementHistoryType, OpsEvent, OpsEventStatus, OpsEventType
-from models.agreement_history import add_history_events
+from models.agreement_history import add_history_events, get_project_display_name
 from ops_api.ops.services.agreement_messages import agreement_history_trigger
 
 test_user_id = 503
@@ -118,6 +118,27 @@ def test_agreement_nickname_change_history_trigger(loaded_db, app_ctx):
     assert agreement_history_list[0].history_title == "Change to Agreement Nickname"
     assert (
         agreement_history_list[0].history_message == "User Demo changed the Agreement Nickname from TBD to Inter Init."
+    )
+
+
+def test_agreement_project_change_history_trigger(loaded_db, app_ctx):
+    ops_event = loaded_db.get(OpsEvent, 72)
+    agreement_history_trigger(ops_event, loaded_db)
+
+    loaded_db.flush()
+    agreement_history_list = (
+        loaded_db.query(AgreementHistory)
+        .where(AgreementHistory.ops_event_id == ops_event.id)
+        .order_by(AgreementHistory.id)
+        .all()
+    )
+    assert len(agreement_history_list) == 1
+    assert agreement_history_list[0].history_type == AgreementHistoryType.AGREEMENT_UPDATED
+    assert agreement_history_list[0].history_title == "Change to Project"
+    assert (
+        agreement_history_list[0].history_message
+        == "User Demo changed the project from Annual Performance Plans and Reports (APP)"
+        " to Human Services Interoperability Support (HSS)."
     )
 
 
@@ -1064,3 +1085,29 @@ def test_add_history_events_deduplicates_with_different_ops_event_ids(loaded_db,
     loaded_db.delete(event_1)
     loaded_db.delete(event_2)
     loaded_db.commit()
+
+
+class TestGetProjectDisplayName:
+    def test_returns_none_string_when_project_is_none(self):
+        assert get_project_display_name(None) == "None"
+
+    def test_returns_title_when_no_short_title(self):
+        class FakeProject:
+            title = "Child Welfare Research"
+            short_title = None
+
+        assert get_project_display_name(FakeProject()) == "Child Welfare Research"
+
+    def test_returns_title_with_short_title(self):
+        class FakeProject:
+            title = "Child Welfare Research"
+            short_title = "CWR"
+
+        assert get_project_display_name(FakeProject()) == "Child Welfare Research (CWR)"
+
+    def test_returns_title_when_short_title_is_empty_string(self):
+        class FakeProject:
+            title = "Child Welfare Research"
+            short_title = ""
+
+        assert get_project_display_name(FakeProject()) == "Child Welfare Research"
