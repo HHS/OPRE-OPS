@@ -395,7 +395,7 @@ class TestSimpleAgreementSchema:
             fee_percentage=5.0,
             procurement_shop_fees=[],
         )
-        project = types.SimpleNamespace(id=1, title="Test Project")
+        project = types.SimpleNamespace(id=1, title="Test Project", project_type=None)
         agreement = types.SimpleNamespace(
             id=100,
             agreement_type="CONTRACT",
@@ -421,7 +421,7 @@ class TestSimpleAgreementSchema:
     def test_simple_agreement_schema_dumps_with_null_procurement_shop(self):
         """Test serialization of an agreement where procurement_shop is None."""
         schema = SimpleAgreementSchema()
-        project = types.SimpleNamespace(id=1, title="Test Project")
+        project = types.SimpleNamespace(id=1, title="Test Project", project_type=None)
         agreement = types.SimpleNamespace(
             id=200,
             agreement_type="GRANT",
