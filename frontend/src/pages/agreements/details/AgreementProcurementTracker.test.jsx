@@ -1446,11 +1446,7 @@ describe("AgreementProcurementTracker", () => {
         it("should disable Step 2 when user is not authorized", () => {
             const agreementWithoutMeta = { id: 13, authorized_user_ids: [1] };
 
-            render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={agreementWithoutMeta} />
-                </Provider>
-            );
+            renderWithProviders(<AgreementProcurementTracker agreement={agreementWithoutMeta} />);
 
             const stepTwo = screen.getByTestId("procurement-step-two");
             // hasActiveTracker=true but isEditable=false => isDisabled=true
@@ -1464,11 +1460,7 @@ describe("AgreementProcurementTracker", () => {
                 _meta: { isEditable: true }
             };
 
-            render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={agreementWithMeta} />
-                </Provider>
-            );
+            renderWithProviders(<AgreementProcurementTracker agreement={agreementWithMeta} />);
 
             const stepTwo = screen.getByTestId("procurement-step-two");
             // hasActiveTracker=true && isEditable=true => isDisabled=false
@@ -1479,11 +1471,7 @@ describe("AgreementProcurementTracker", () => {
             useIsUserSuperUser.mockReturnValue(true);
             const agreementWithoutMeta = { id: 13, authorized_user_ids: [1] };
 
-            render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={agreementWithoutMeta} />
-                </Provider>
-            );
+            renderWithProviders(<AgreementProcurementTracker agreement={agreementWithoutMeta} />);
 
             const stepTwo = screen.getByTestId("procurement-step-two");
             // Super user bypasses authorization
@@ -1493,11 +1481,7 @@ describe("AgreementProcurementTracker", () => {
         it("should set isDisabled=true for Step 3 when user is not authorized", async () => {
             const agreementWithoutMeta = { id: 13, authorized_user_ids: [1] };
 
-            render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={agreementWithoutMeta} />
-                </Provider>
-            );
+            renderWithProviders(<AgreementProcurementTracker agreement={agreementWithoutMeta} />);
 
             // Open step 3 accordion
             const step3Heading = screen.getByTestId("step-builder-heading-3");
@@ -1516,11 +1500,7 @@ describe("AgreementProcurementTracker", () => {
                 _meta: { isEditable: true }
             };
 
-            render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={agreementWithMeta} />
-                </Provider>
-            );
+            renderWithProviders(<AgreementProcurementTracker agreement={agreementWithMeta} />);
 
             // Open step 3 accordion
             const step3Heading = screen.getByTestId("step-builder-heading-3");
@@ -1536,11 +1516,7 @@ describe("AgreementProcurementTracker", () => {
         it("should disable Step 4 when user is not authorized", async () => {
             const agreementWithoutMeta = { id: 13, authorized_user_ids: [1] };
 
-            render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={agreementWithoutMeta} />
-                </Provider>
-            );
+            renderWithProviders(<AgreementProcurementTracker agreement={agreementWithoutMeta} />);
 
             // Open step 4 accordion
             const step4Heading = screen.getByTestId("step-builder-heading-4");
@@ -1560,11 +1536,7 @@ describe("AgreementProcurementTracker", () => {
                 _meta: { isEditable: true }
             };
 
-            render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={agreementWithMeta} />
-                </Provider>
-            );
+            renderWithProviders(<AgreementProcurementTracker agreement={agreementWithMeta} />);
 
             // Open step 4 accordion
             const step4Heading = screen.getByTestId("step-builder-heading-4");
@@ -1584,11 +1556,7 @@ describe("AgreementProcurementTracker", () => {
                 _meta: {}
             };
 
-            render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={agreementWithEmptyMeta} />
-                </Provider>
-            );
+            renderWithProviders(<AgreementProcurementTracker agreement={agreementWithEmptyMeta} />);
 
             const stepTwo = screen.getByTestId("procurement-step-two");
             // Missing isEditable should default to false
