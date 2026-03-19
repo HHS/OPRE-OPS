@@ -1,7 +1,7 @@
 from flask import Response, current_app, request
 from typing_extensions import List
 
-from models import Project, ProjectType
+from models import AdministrativeAndSupportProject, Project, ProjectType, ResearchProject
 from models.base import BaseModel
 from models.events import OpsEventType
 from ops_api.ops.auth.auth_types import Permission, PermissionType
@@ -65,18 +65,28 @@ class ProjectListAPI(BaseListAPI):
     def get(self) -> Response:
         projects_service = ProjectsService(current_app.db_session)
         request_schema = ProjectListGetRequestSchema()
-        data = request_schema.load(request.args.to_dict(flat=False))
-        research_projects, admin_support_projects = projects_service.get_list(data)
+        val = request.args.to_dict(flat=False)
+        data = request_schema.load(val)
+        projects, metadata = projects_service.get_list(data)
+        research_schema = ResearchProjectListResponse()
+        admin_schema = ProjectListResponse()
 
         project_response: List[dict] = []
-        if research_projects:
-            schema = ResearchProjectListResponse()
-            project_response.extend(schema.dump(research_projects, many=True))
-        if admin_support_projects:
-            schema = ProjectListResponse()
-            project_response.extend(schema.dump(admin_support_projects, many=True))
+        for project in projects:
+            if isinstance(project, ResearchProject):
+                project_response.append(research_schema.dump(project))
+            elif isinstance(project, AdministrativeAndSupportProject):
+                project_response.append(admin_schema.dump(project))
 
-        return make_response_with_headers(project_response)
+        # Return wrapped response with pagination metadata
+        response_data = {
+            "data": project_response,
+            "count": metadata["count"],
+            "limit": metadata["limit"],
+            "offset": metadata["offset"],
+        }
+
+        return make_response_with_headers(response_data)
 
     @is_authorized(PermissionType.POST, Permission.RESEARCH_PROJECT)
     def post(self) -> Response:
