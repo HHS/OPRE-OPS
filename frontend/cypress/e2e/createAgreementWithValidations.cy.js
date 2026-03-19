@@ -67,15 +67,23 @@ const resolveProjectId = () => {
             failOnStatusCode: false
         })
         .then((response) => {
-            if (response.status !== 200 || !Array.isArray(response.body) || response.body.length === 0) {
+            if (
+                response.status !== 200 ||
+                !Array.isArray(response.body["data"]) ||
+                response.body["data"].length === 0
+            ) {
                 throw new Error(
-                    `Failed to resolve a project id. status=${response.status} body=${JSON.stringify(response.body)}`
+                    `Failed to resolve a project id. status=${response.status} body=${JSON.stringify(response.body["data"])}, Auth Headers: ${JSON.stringify(getAuthHeaders())}`
                 );
             }
 
-            const firstValidProject = response.body.find((project) => Number.isInteger(project?.id) && project.id > 0);
+            const firstValidProject = response.body["data"].find(
+                (project) => Number.isInteger(project?.id) && project.id > 0
+            );
             if (!firstValidProject) {
-                throw new Error(`No valid project id found in projects response: ${JSON.stringify(response.body)}`);
+                throw new Error(
+                    `No valid project id found in projects response: ${JSON.stringify(response.body["data"])}`
+                );
             }
 
             return firstValidProject.id;
@@ -124,6 +132,7 @@ const createServicesComponent = (agreementId, overrides = {}) => {
         .then((response) => {
             expect(response.status).to.eq(201);
             expect(response.body.id).to.exist;
+            console.log(`Created services component with id ${response.body.id} for agreement ${agreementId}`);
             return response.body.id;
         });
 };
@@ -214,10 +223,7 @@ const selectFirstRealOption = (selector) => {
 };
 
 const selectComboboxOption = (inputSelector, menuSelector, optionSelector, preferredText, fallbackIndex = 0) => {
-    cy.get(inputSelector, { timeout: 20000 })
-        .should("not.be.disabled")
-        .click()
-        .type(preferredText, { force: true });
+    cy.get(inputSelector, { timeout: 20000 }).should("not.be.disabled").click().type(preferredText, { force: true });
 
     cy.get(menuSelector, { timeout: 20000 })
         .should("be.visible")

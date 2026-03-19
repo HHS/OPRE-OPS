@@ -163,6 +163,7 @@ class CreateUpdateFundingBudgetSchema(Schema):
 class CreateUpdateFundingDetailsSchema(Schema):
     allotment = fields.String(allow_none=True, load_default=None)
     allowance = fields.String(allow_none=True, load_default=None)
+    appropriation = fields.String(allow_none=True, load_default=None)
     display_name = fields.String(allow_none=True, load_default=None)
     fiscal_year = fields.Integer(required=True)
     fund_code = fields.String(required=True)
@@ -188,6 +189,7 @@ class FundingDetailsListSchema(Schema):
     funding_type = fields.String(allow_none=True)
     allotment = fields.String(allow_none=True)
     allowance = fields.String(allow_none=True)
+    appropriation = fields.String(allow_none=True)
     display_name = fields.String(allow_none=True)
     funding_partner = fields.String(allow_none=True)
     funding_source = fields.Enum(CANFundingSource, allow_none=True)
@@ -205,6 +207,7 @@ class FundingDetailsSchema(Schema):
     funding_type = fields.String(allow_none=True)
     allotment = fields.String(allow_none=True)
     allowance = fields.String(allow_none=True)
+    appropriation = fields.String(allow_none=True)
     display_name = fields.String(allow_none=True)
     fiscal_year = fields.Integer(required=True)
     fund_code = fields.String(required=True)

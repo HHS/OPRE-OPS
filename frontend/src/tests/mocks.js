@@ -16,29 +16,39 @@ export const handlers = [
     }),
 
     http.get(`https://localhost:8000/api/v1/projects*`, () => {
-        return HttpResponse.json([
-            { id: 1, name: "Research Project 1" },
-            { id: 2, name: "Research Project 2" }
-        ]);
+        return HttpResponse.json({
+            count: 2,
+            limit: 10,
+            offset: 0,
+            data: [
+                { id: 1, name: "Research Project 1" },
+                { id: 2, name: "Research Project 2" }
+            ]
+        });
     }),
 
     http.get(`https://localhost:8000/api/v1/projects/`, () => {
-        return HttpResponse.json([
-            {
-                id: 1,
-                title: "Child Care Research",
-                short_title: "CCR",
-                description: "Research project for child care outcomes.",
-                project_type: "RESEARCH"
-            },
-            {
-                id: 2,
-                title: "Operations Support",
-                short_title: "OPS",
-                description: "Administrative and support project.",
-                project_type: "ADMINISTRATIVE_AND_SUPPORT"
-            }
-        ]);
+        return HttpResponse.json({
+            count: 2,
+            limit: 10,
+            offset: 0,
+            data: [
+                {
+                    id: 1,
+                    title: "Child Care Research",
+                    short_title: "CCR",
+                    description: "Research project for child care outcomes.",
+                    project_type: "RESEARCH"
+                },
+                {
+                    id: 2,
+                    title: "Operations Support",
+                    short_title: "OPS",
+                    description: "Administrative and support project.",
+                    project_type: "ADMINISTRATIVE_AND_SUPPORT"
+                }
+            ]
+        });
     }),
 
     http.get(`https://localhost:8000/api/v1/change-requests/`, () => {
