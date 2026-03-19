@@ -234,7 +234,9 @@ const TeamMembers = ({ teamMembers, renderTerm }) => {
                                     key={member.id}
                                     className="grid-col-4"
                                 >
-                                    <span className="text-semibold margin-0">{member.full_name}</span>
+                                    <span className="text-semibold margin-0">
+                                        {member.display_name ?? member.full_name}
+                                    </span>
                                 </div>
                             ))}
                         </div>
@@ -253,7 +255,7 @@ const TeamMembers = ({ teamMembers, renderTerm }) => {
                     key={member.id}
                     className="text-semibold margin-0 margin-top-05 grid-col-12"
                 >
-                    {member.full_name}
+                    {member.display_name ?? member.full_name}
                 </dd>
             ))}
         </dl>

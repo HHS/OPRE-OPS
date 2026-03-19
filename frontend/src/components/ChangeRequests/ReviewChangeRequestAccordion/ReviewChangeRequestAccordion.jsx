@@ -41,7 +41,10 @@ function ReviewChangeRequestAccordion({ changeType, changeRequests, changeReques
                                 <ProcurementShopReviewCard
                                     changeRequestId={changeRequest.id}
                                     agreementId={changeRequest.agreement_id}
-                                    requesterName={changeRequest.created_by_user.full_name}
+                                    requesterName={
+                                        changeRequest.created_by_user.display_name ??
+                                        changeRequest.created_by_user.full_name
+                                    }
                                     requestDate={changeRequest.created_on}
                                     handleReviewChangeRequest={() => {}}
                                     oldAwardingEntityId={
@@ -59,7 +62,10 @@ function ReviewChangeRequestAccordion({ changeType, changeRequests, changeReques
                                 changeRequestId={changeRequest.id}
                                 agreementId={changeRequest.agreement_id}
                                 requestDate={changeRequest.created_on}
-                                requesterName={changeRequest.created_by_user?.full_name}
+                                requesterName={
+                                    changeRequest.created_by_user?.display_name ??
+                                    changeRequest.created_by_user?.full_name
+                                }
                                 bliId={changeRequest.budget_line_item_id ?? -1}
                                 changeTo={changeRequest.requested_change_diff}
                                 handleReviewChangeRequest={() => {}}
@@ -74,7 +80,10 @@ function ReviewChangeRequestAccordion({ changeType, changeRequests, changeReques
                                     changeRequestId={changeRequest.id}
                                     agreementId={changeRequest.agreement_id}
                                     requestDate={changeRequest.created_on}
-                                    requesterName={changeRequest.created_by_user?.full_name}
+                                    requesterName={
+                                        changeRequest.created_by_user?.display_name ??
+                                        changeRequest.created_by_user?.full_name
+                                    }
                                     bliId={changeRequest.budget_line_item_id ?? -1}
                                     changeTo={changeRequest.requested_change_diff}
                                     handleReviewChangeRequest={() => {}}

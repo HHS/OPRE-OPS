@@ -15,7 +15,7 @@ const TeamLeaders = ({ teamLeaders }) => {
                                 >
                                     <Tag
                                         tagStyle="primaryDarkTextLightBackground"
-                                        text={leader.full_name}
+                                        text={leader.display_name ?? leader.full_name}
                                     />
                                 </dd>
                             ))}
