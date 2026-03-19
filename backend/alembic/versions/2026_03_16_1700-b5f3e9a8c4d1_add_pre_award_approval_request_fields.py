@@ -1,7 +1,7 @@
 """Add pre_award approval request fields to procurement tracker step
 
 Revision ID: b5f3e9a8c4d1
-Revises: a5a4926761c6
+Revises: a3b4c5d6e7f8
 Create Date: 2026-03-16 17:00:00.000000+00:00
 
 """
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision: str = 'b5f3e9a8c4d1'
-down_revision: Union[str, None] = 'a5a4926761c6'
+down_revision: Union[str, None] = 'a3b4c5d6e7f8'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
