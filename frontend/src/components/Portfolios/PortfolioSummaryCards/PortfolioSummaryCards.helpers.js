@@ -43,9 +43,7 @@ export const sortPortfoliosByStaticOrder = (portfolios) => {
     if (process.env.NODE_ENV === "development") {
         const unknowns = portfolios.filter((p) => !PORTFOLIO_ORDER.some((c) => matchesConfig(p.abbreviation, c)));
         unknowns.forEach((p) => {
-            console.warn(
-                `Portfolio "${p.abbreviation}" (${p.name}) not found in PORTFOLIO_ORDER. Appending to end.`
-            );
+            console.warn(`Portfolio "${p.abbreviation}" (${p.name}) not found in PORTFOLIO_ORDER. Appending to end.`);
         });
     }
 

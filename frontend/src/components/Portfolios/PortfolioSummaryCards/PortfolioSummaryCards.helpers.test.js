@@ -373,9 +373,7 @@ describe("PortfolioSummaryCards.helpers", () => {
             expect(result).toHaveLength(16);
 
             // Only first 2 unknowns should be placed (2 placeholders in column 4)
-            const unknowns = result.filter(
-                (item) => ["UX", "UY", "UZ"].includes(item.abbreviation)
-            );
+            const unknowns = result.filter((item) => ["UX", "UY", "UZ"].includes(item.abbreviation));
             expect(unknowns).toHaveLength(2);
             expect(unknowns[0].abbreviation).toBe("UX");
             expect(unknowns[1].abbreviation).toBe("UY");
