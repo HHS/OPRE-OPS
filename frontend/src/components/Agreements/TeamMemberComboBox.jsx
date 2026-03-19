@@ -89,7 +89,7 @@ export const TeamMemberComboBox = ({
                     selectedData={selectedTeamMember}
                     setSelectedData={handleChange}
                     defaultString={defaultString}
-                    optionText={(user) => user.full_name || user.email}
+                    optionText={(user) => user.display_name || user.full_name || user.email}
                     overrideStyles={overrideStyles}
                     clearWhenSet={true}
                     messages={messages}

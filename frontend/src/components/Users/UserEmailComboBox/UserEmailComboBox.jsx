@@ -31,7 +31,7 @@ function UserEmailComboBox({ selectedUsers, setSelectedUsers }) {
                 namespace="user-email-combobox"
                 data={users}
                 defaultString="-- Select User --"
-                optionText={(user) => user.full_name || user.email}
+                optionText={(user) => user.display_name || user.full_name || user.email}
                 isMulti={true}
             />
         </div>

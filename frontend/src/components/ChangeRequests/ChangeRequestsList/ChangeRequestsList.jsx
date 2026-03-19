@@ -42,7 +42,10 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
                                 <ProcurementShopReviewCard
                                     changeRequestId={changeRequest.id}
                                     agreementId={changeRequest.agreement_id}
-                                    requesterName={changeRequest.created_by_user.full_name}
+                                    requesterName={
+                                        changeRequest.created_by_user.display_name ??
+                                        changeRequest.created_by_user.full_name
+                                    }
                                     requestDate={changeRequest.created_on}
                                     handleReviewChangeRequest={handleReviewChangeRequest}
                                     oldAwardingEntityId={
@@ -60,7 +63,10 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
                                 changeRequestId={changeRequest.id}
                                 agreementId={changeRequest.agreement_id}
                                 requestDate={changeRequest.created_on}
-                                requesterName={changeRequest.created_by_user?.full_name}
+                                requesterName={
+                                    changeRequest.created_by_user?.display_name ??
+                                    changeRequest.created_by_user?.full_name
+                                }
                                 bliId={changeRequest.budget_line_item_id ?? 0}
                                 changeTo={changeRequest.requested_change_diff}
                                 handleReviewChangeRequest={handleReviewChangeRequest}
@@ -72,7 +78,10 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
                                 changeRequestId={changeRequest.id}
                                 agreementId={changeRequest.agreement_id}
                                 requestDate={changeRequest.created_on}
-                                requesterName={changeRequest.created_by_user?.full_name}
+                                requesterName={
+                                    changeRequest.created_by_user?.display_name ??
+                                    changeRequest.created_by_user?.full_name
+                                }
                                 bliId={changeRequest.budget_line_item_id ?? 0}
                                 changeTo={changeRequest.requested_change_diff}
                                 handleReviewChangeRequest={handleReviewChangeRequest}
