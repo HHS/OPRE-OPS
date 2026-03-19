@@ -5,7 +5,7 @@ import typing
 from marshmallow import EXCLUDE, Schema, ValidationError, fields, validates_schema
 from marshmallow.experimental.context import Context
 
-from models import AgreementType, BudgetLineItemStatus, BudgetLineSortCondition
+from models import AgreementType, BudgetLineItemStatus, BudgetLineSortCondition, ProjectType
 from ops_api.ops.schemas.change_requests import GenericChangeRequestResponseSchema
 from ops_api.ops.schemas.pagination import PaginationListSchema
 
@@ -219,12 +219,7 @@ class BudgetLineItemCANSchema(Schema):
 class SimpleProjectSchema(Schema):
     id = fields.Int(required=True)
     title = fields.Str(required=True)
-    project_type = fields.Method("get_project_type")
-
-    def get_project_type(self, obj):
-        if obj.project_type is None:
-            return None
-        return obj.project_type.name.replace("_", " ").title()
+    project_type = fields.Enum(ProjectType, by_value=False, allow_none=True)
 
 
 class SimpleAgreementSchema(Schema):
