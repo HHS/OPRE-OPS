@@ -14,14 +14,19 @@ const budgetByStep = [
 
 const maxBudget = Math.max(...budgetByStep.map((d) => d.total));
 
-const ProcurementSummaryCards = () => {
+const ProcurementSummaryCards = ({ agreements = [], fiscalYear, isLoading, error }) => {
     return (
         <>
-            <ProcurementOverviewCard />
+            <ProcurementOverviewCard
+                agreements={agreements}
+                fiscalYear={fiscalYear}
+                isLoading={isLoading}
+                error={error}
+            />
             <div className="display-flex flex-justify margin-top-2 gap-2">
                 <ProcurementStepSummaryCard />
                 <Card
-                    title="FY 2026 Budget Lines By Procurement Step"
+                    title={`FY ${fiscalYear} Budget Lines By Procurement Step`}
                     dataCy="budget-lines-by-step-card"
                 >
                     {budgetByStep.map((item, i) => (

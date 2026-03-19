@@ -7,7 +7,7 @@ const ProcurementDashboardTabs = () => {
 
     const paths = [
         {
-            name: "",
+            name: "?filter=first-award",
             label: "First Award"
         },
         {
@@ -15,7 +15,7 @@ const ProcurementDashboardTabs = () => {
             label: "Modifications"
         },
         {
-            name: "?filter=all-procurement",
+            name: "",
             label: "All Procurement"
         }
     ];
