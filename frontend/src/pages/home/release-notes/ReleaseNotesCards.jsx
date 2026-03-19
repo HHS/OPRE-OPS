@@ -1,7 +1,5 @@
 import RoundedBox from "../../../components/UI/RoundedBox";
 import Tag from "../../../components/UI/Tag";
-import { LAST_DATA_UPDATE } from "../../../constants";
-import { formatDateToMonthDayYear } from "../../../helpers/utils";
 
 /**
  * @typedef ReleaseNotesCardProps
@@ -45,19 +43,15 @@ const ReleaseNotesCards = ({
 };
 
 /**
- * @component -  Displays a card showing the last data update date and a descriptive note.
+ * @component - Displays a card noting that data is now updated directly in OPS.
  * @private
- * @returns {React.ReactElement} The rendered right card with the last data update information.
+ * @returns {React.ReactElement} The rendered right card.
  */
 function RightCard() {
     return (
         <RoundedBox id="project-agreement-bli-card">
-            <h2 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">Last Data Update *</h2>
-            <p className="font-sans-xl text-bold line-height-sans-1">{formatDateToMonthDayYear(LAST_DATA_UPDATE)}</p>
-            <p className="margin-top-6 font-12px text-base-dark text-normal">
-                * The date the budget team’s spreadsheet was synced into OPS. All changes submitted to the budget team
-                before this date should be included.
-            </p>
+            <h2 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">Last Data Update</h2>
+            <p className="font-sans-lg text-bold line-height-sans-1">All data should now be updated directly in OPS</p>
         </RoundedBox>
     );
 }

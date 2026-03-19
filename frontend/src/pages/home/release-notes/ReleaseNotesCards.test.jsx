@@ -81,7 +81,7 @@ describe("ReleaseNotesCards Component", () => {
     it("renders the last data update heading", () => {
         render(<ReleaseNotesCards {...mockProps} />);
 
-        expect(screen.getByText("Last Data Update *")).toBeInTheDocument();
+        expect(screen.getByText("Last Data Update")).toBeInTheDocument();
     });
 
     it("renders the last release heading", () => {
@@ -102,9 +102,9 @@ describe("ReleaseNotesCards Component", () => {
         expect(screen.getByText("Release Changes")).toBeInTheDocument();
     });
 
-    it("renders the data sync explanation text", () => {
+    it("renders the data updated in OPS message", () => {
         render(<ReleaseNotesCards {...mockProps} />);
 
-        expect(screen.getByText(/budget team.*spreadsheet.*synced/)).toBeInTheDocument();
+        expect(screen.getByText("All data should now be updated directly in OPS")).toBeInTheDocument();
     });
 });
