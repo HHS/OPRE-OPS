@@ -2,6 +2,7 @@ from models import (
     CAN,
     Agreement,
     AgreementAgency,
+    AgreementHistory,
     BudgetLineItem,
     CANFundingBudget,
     CANFundingDetails,
@@ -11,7 +12,6 @@ from models import (
     Division,
     Document,
     Notification,
-    OpsDBHistory,
     Portfolio,
     PortfolioStatus,
     PortfolioUrl,
@@ -22,7 +22,6 @@ from models import (
     ProductServiceCode,
     Project,
     ResearchMethodology,
-    ResearchProject,
     ResearchType,
     ServicesComponent,
     SpecialTopic,
@@ -109,9 +108,6 @@ from ops_api.ops.resources.research_methodology import (
     ResearchMethodologyItemAPI,
     ResearchMethodologyListAPI,
 )
-from ops_api.ops.resources.research_project_funding_summary import (
-    ResearchProjectFundingSummaryListAPI,
-)
 from ops_api.ops.resources.research_type import ResearchTypeListAPI
 from ops_api.ops.resources.services_component import (
     ServicesComponentItemAPI,
@@ -128,8 +124,8 @@ from ops_api.ops.utils.version import VersionAPI
 AGREEMENT_ITEM_API_VIEW_FUNC = AgreementItemAPI.as_view("agreements-item", Agreement)
 AGREEMENT_LIST_API_VIEW_FUNC = AgreementListAPI.as_view("agreements-group", Agreement)
 
-# Agreement History Endpoint - specialized from OpsDBHistory
-AGREEMENT_HISTORY_LIST_API_VIEW_FUNC = AgreementHistoryListAPI.as_view("agreement-history", OpsDBHistory)
+# Agreement History Endpoint
+AGREEMENT_HISTORY_LIST_API_VIEW_FUNC = AgreementHistoryListAPI.as_view("agreement-history", AgreementHistory)
 
 # AGREEMENT FILTER OPTIONS ENDPOINT
 AGREEMENT_LIST_FILTER_OPTION_API_VIEW_FUNC = AgreementListFilterOptionAPI.as_view("agreements-filters", Agreement)
@@ -214,9 +210,6 @@ PORTFOLIO_FUNDING_SUMMARY_ITEM_API_VIEW_FUNC = PortfolioFundingSummaryItemAPI.as
 )
 PORTFOLIO_FUNDING_SUMMARY_LIST_API_VIEW_FUNC = PortfolioFundingSummaryListAPI.as_view(
     "portfolio-funding-summary-list", Portfolio
-)
-RESEARCH_PROJECT_FUNDING_SUMMARY_LIST_API_VIEW_FUNC = ResearchProjectFundingSummaryListAPI.as_view(
-    "research-project-funding-summary-group", ResearchProject
 )
 REPORTING_SUMMARY_LIST_API_VIEW_FUNC = ReportingSummaryListAPI.as_view("reporting-summary-list", Agreement)
 

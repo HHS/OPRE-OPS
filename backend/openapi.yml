@@ -3110,6 +3110,37 @@ paths:
         "500":
           description: Internal Server Error
 
+  /projects/{id}/funding/:
+    get:
+      tags:
+        - Projects
+      operationId: getProjectFunding
+      description: Get funding summary for a project by ID
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: id
+          description: Project ID
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectFunding"
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not Found
+
   /projects-filters/:
     get:
       tags:
@@ -3197,50 +3228,6 @@ paths:
         "500":
           description: Internal Server Error
 
-  /research-project-funding-summary/:
-    get:
-      tags:
-        - Projects
-      operationId: getResearchProjectFundingSummary
-      description: ""
-      parameters:
-        - $ref: "#/components/parameters/simulatedError"
-        - name: portfolioId
-          in: query
-          schema:
-            type: integer
-          example: 5
-        - name: fiscalYear
-          in: query
-          schema:
-            type: integer
-          example: 2023
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResearchProjectFundingSummary"
-              example:
-                total_funding: 1000000.01
-        "400":
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  portfolio_id:
-                    type: array
-                    items:
-                      type: string
-                      example: Must be greater than or equal to 1.
-                  fiscal_year:
-                    type: array
-                    items:
-                      type: string
-                      example: Must be greater than or equal to 1900.
   /reporting-summary/:
     get:
       tags:
@@ -5100,6 +5087,8 @@ components:
           type: string
         allowance:
           type: string
+        appropriation:
+          type: string
         display_name:
           type: string
         fiscal_year:
@@ -5147,6 +5136,8 @@ components:
         allotment:
           type: string
         allowance:
+          type: string
+        appropriation:
           type: string
         display_name:
           type: string
@@ -5533,12 +5524,111 @@ components:
             - PROCUREMENT_TEAM
         is_superuser:
           type: boolean
-    ResearchProjectFundingSummary:
-      description: Research Project funding data for a Portfolio
+    ProjectFunding:
+      description: Funding summary for a project
       type: object
       properties:
-        total_funding:
+        funding_by_portfolio:
+          type: array
+          items:
+            type: object
+            required:
+              - portfolio_id
+              - portfolio
+              - amount
+            properties:
+              portfolio_id:
+                type: integer
+                example: 1
+              portfolio:
+                type: string
+                example: "Child Welfare"
+              amount:
+                type: number
+                format: double
+                example: 123.456
+        funding_by_can:
+          type: object
+          required:
+            - total
+            - carry_forward_funding
+            - new_funding
+          properties:
+            total:
+              type: number
+              format: double
+              example: 246.912
+            carry_forward_funding:
+              type: number
+              format: double
+              example: 0
+            new_funding:
+              type: number
+              format: double
+              example: 246.912
+        funding_by_fiscal_year:
+          type: array
+          items:
+            type: object
+            required:
+              - fiscal_year
+              - amount
+            properties:
+              fiscal_year:
+                type: integer
+                example: 2024
+              amount:
+                type: number
+                format: double
+                example: 123.456
+        cans:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProjectFundingCAN"
+    ProjectFundingCAN:
+      description: CAN funding detail within a project funding summary
+      type: object
+      required:
+        - id
+        - number
+        - portfolio_id
+        - portfolio
+        - active_period
+        - amount
+        - fy_funding
+        - lifetime_funding
+      properties:
+        id:
+          type: integer
+          example: 1
+        number:
+          type: string
+          example: "CAN123"
+        portfolio_id:
+          type: integer
+          example: 1
+        portfolio:
+          type: string
+          example: "Child Welfare"
+        active_period:
+          type: integer
+          description: Active period in years
+          example: 1
+        amount:
           type: number
+          format: double
+          description: Amount obligated to this project from this CAN
+          example: 123.456
+        fy_funding:
+          type: number
+          format: double
+          description: Funding received in the current fiscal year
+          example: 123.456
+        lifetime_funding:
+          type: number
+          format: double
+          description: Total funding over the lifetime of the CAN
+          example: 123.456
     TeamLeader:
       type: object
       properties:

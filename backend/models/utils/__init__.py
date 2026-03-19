@@ -13,11 +13,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import get_history
 
 from models import (
-    Agreement,
-    AgreementChangeRequest,
-    AgreementOpsDbHistory,
     BaseModel,
-    BudgetLineItem,
     OpsDBHistory,
     OpsDBHistoryType,
     OpsEvent,
@@ -148,7 +144,7 @@ def add_obj_to_db_history(objs: IdentitySet, event_type: OpsDBHistoryType, user:
     result = []
 
     for obj in objs:
-        if not isinstance(obj, (OpsEvent, OpsDBHistory, AgreementOpsDbHistory)):  # not interested in tracking these
+        if not isinstance(obj, (OpsEvent, OpsDBHistory)):  # not interested in tracking these
             db_audit = build_audit(obj, event_type)
             if event_type == OpsDBHistoryType.UPDATED and not db_audit.changes:
                 logger.debug(
@@ -168,26 +164,7 @@ def add_obj_to_db_history(objs: IdentitySet, event_type: OpsDBHistoryType, user:
 
             result.append(ops_db)
 
-            result += create_agreement_history_relations(obj, ops_db)
-
     return result
-
-
-def create_agreement_history_relations(obj, ops_db) -> list[AgreementOpsDbHistory]:
-    objs = []
-    if isinstance(obj, Agreement):
-        agreement_ops_db_history = AgreementOpsDbHistory(
-            agreement_id=obj.id,
-            ops_db_history=ops_db,
-        )
-        objs.append(agreement_ops_db_history)
-    elif isinstance(obj, (BudgetLineItem, AgreementChangeRequest)):
-        agreement_ops_db_history = AgreementOpsDbHistory(
-            agreement_id=obj.agreement_id,
-            ops_db_history=ops_db,
-        )
-        objs.append(agreement_ops_db_history)
-    return objs
 
 
 def generate_events_update(old_serialized_obj, new_serialized_obj, owner_id, updated_by_id):
