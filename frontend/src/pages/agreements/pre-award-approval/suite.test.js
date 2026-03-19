@@ -6,17 +6,16 @@ describe("Request Pre-Award Approval validation suite", () => {
         expect(suite).toBeDefined();
         expect(typeof suite.reset).toBe("function");
         expect(typeof suite.get).toBe("function");
+        expect(typeof suite.run).toBe("function");
     });
 
     it("should not have errors for empty data", () => {
-        suite({});
-        const result = suite.get();
+        const result = suite.run({});
         expect(result.hasErrors()).toBe(false);
     });
 
     it("should not have errors with notes", () => {
-        suite({ notes: "Test notes" });
-        const result = suite.get();
+        const result = suite.run({ notes: "Test notes" });
         expect(result.hasErrors()).toBe(false);
     });
 });
