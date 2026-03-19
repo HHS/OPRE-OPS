@@ -219,7 +219,12 @@ class BudgetLineItemCANSchema(Schema):
 class SimpleProjectSchema(Schema):
     id = fields.Int(required=True)
     title = fields.Str(required=True)
-    project_type = fields.String(allow_none=True)
+    project_type = fields.Method("get_project_type")
+
+    def get_project_type(self, obj):
+        if obj.project_type is None:
+            return None
+        return obj.project_type.name.replace("_", " ").title()
 
 
 class SimpleAgreementSchema(Schema):

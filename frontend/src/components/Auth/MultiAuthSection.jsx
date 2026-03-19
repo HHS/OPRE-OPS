@@ -6,7 +6,7 @@ import { useLoginMutation } from "../../api/opsAuthAPI";
 import ContainerModal from "../UI/Modals/ContainerModal";
 import { getAuthorizationCode, setActiveUser } from "./auth";
 import { login, logout } from "./authSlice";
-import PacmanLoader from "react-spinners/PacmanLoader";
+import { PacmanLoader } from "react-spinners";
 
 /**
  * Component that handles multiple authentication methods
