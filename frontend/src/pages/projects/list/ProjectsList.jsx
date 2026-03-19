@@ -5,6 +5,7 @@ import App from "../../../App";
 import DebugCode from "../../../components/DebugCode";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import ProjectsTable from "../../../components/Projects/ProjectsTable";
+import ProjectsTableLoading from "../../../components/Projects/ProjectsTable/ProjectsTableLoading";
 import FiscalYear from "../../../components/UI/FiscalYear/FiscalYear";
 import PaginationNav from "../../../components/UI/PaginationNav/PaginationNav";
 import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
@@ -26,6 +27,7 @@ const ProjectsList = () => {
     const {
         data: projectsResponse,
         isLoading,
+        isFetching,
         isError
     } = useGetProjectsQuery({
         sortConditions: sortCondition,
@@ -38,6 +40,7 @@ const ProjectsList = () => {
     const projects = projectsResponse?.projects ?? [];
     const totalCount = projectsResponse?.count ?? 0;
     const totalPages = Math.ceil(totalCount / pageSize);
+    const isTableLoading = isLoading || isFetching;
 
     // Reset to page 1 when sort or fiscal year changes
     React.useEffect(() => {
@@ -50,10 +53,28 @@ const ProjectsList = () => {
         }
     }, [isError, navigate]);
 
-    if (isLoading) {
+    const handleChangeFiscalYear = (newValue) => {
+        setSelectedFiscalYear(newValue);
+    };
+
+    if (isTableLoading) {
         return (
-            <App>
-                <h1>Loading...</h1>
+            <App breadCrumbName="Projects">
+                <TablePageLayout
+                    title="Projects"
+                    subtitle="All Projects"
+                    details="This is a list of all projects across OPRE for the selected fiscal year. Draft budget lines are not included in the Totals."
+                    TabsSection={
+                        <div className="margin-left-auto">
+                            <FiscalYear
+                                fiscalYear={selectedFiscalYear}
+                                handleChangeFiscalYear={handleChangeFiscalYear}
+                                showAllOption={true}
+                            />
+                        </div>
+                    }
+                    TableSection={<ProjectsTableLoading />}
+                />
             </App>
         );
     }
@@ -61,10 +82,6 @@ const ProjectsList = () => {
     if (isError) {
         return null;
     }
-
-    const handleChangeFiscalYear = (newValue) => {
-        setSelectedFiscalYear(newValue);
-    };
 
     return (
         <App breadCrumbName="Projects">

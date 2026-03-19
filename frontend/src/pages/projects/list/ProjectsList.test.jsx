@@ -92,16 +92,31 @@ describe("ProjectsList", () => {
             </Provider>
         );
 
-    it("renders loading state when projects are loading", () => {
+    it("renders skeleton loading state when projects are loading", () => {
         mockUseGetProjectsQuery.mockReturnValue({
             data: undefined,
             isLoading: true,
+            isFetching: false,
             isError: false
         });
 
         renderComponent();
 
-        expect(screen.getByText("Loading...")).toBeInTheDocument();
+        expect(screen.getByRole("table", { name: "Loading projects" })).toBeInTheDocument();
+        expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
+    });
+
+    it("renders skeleton loading state when refetching (sort/FY change)", () => {
+        mockUseGetProjectsQuery.mockReturnValue({
+            data: undefined,
+            isLoading: false,
+            isFetching: true,
+            isError: false
+        });
+
+        renderComponent();
+
+        expect(screen.getByRole("table", { name: "Loading projects" })).toBeInTheDocument();
     });
 
     it("renders the projects page with all column headers on success", () => {
@@ -244,9 +259,7 @@ describe("ProjectsList", () => {
         await user.selectOptions(fySelect, "2025");
 
         // Verify the query was called with the new FY value
-        expect(mockUseGetProjectsQuery).toHaveBeenCalledWith(
-            expect.objectContaining({ fiscalYear: "2025" })
-        );
+        expect(mockUseGetProjectsQuery).toHaveBeenCalledWith(expect.objectContaining({ fiscalYear: "2025" }));
     });
 
     it("does not render pagination when total pages is 1", () => {

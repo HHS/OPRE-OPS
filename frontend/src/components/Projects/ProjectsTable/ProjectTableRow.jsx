@@ -45,9 +45,7 @@ const ProjectTableRow = ({ project, selectedFiscalYear }) => {
             : null;
     const fyTotal = fyTotalRaw !== null ? Number(fyTotalRaw) : null;
     const projectTotal =
-        project.project_total !== null && project.project_total !== undefined
-            ? Number(project.project_total)
-            : null;
+        project.project_total !== null && project.project_total !== undefined ? Number(project.project_total) : null;
 
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
