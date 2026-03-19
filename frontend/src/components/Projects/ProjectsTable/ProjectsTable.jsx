@@ -1,11 +1,7 @@
 import { faArrowDown, faArrowUp } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import CurrencyFormat from "react-currency-format";
-import { Link } from "react-router-dom";
-import { NO_DATA } from "../../../constants";
-import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
-import { convertCodeForDisplay } from "../../../helpers/utils";
-import { formatProjectDate, PROJECT_SORT_CODES } from "../../../pages/projects/list/ProjectsList.helpers";
+import { PROJECT_SORT_CODES } from "../../../pages/projects/list/ProjectsList.helpers";
+import ProjectTableRow from "./ProjectTableRow";
 
 /**
  * Reusable sortable header cell for the projects list table.
@@ -107,63 +103,13 @@ const ProjectsTable = ({ projects, sortConditions, sortDescending, setSortCondit
                 </tr>
             </thead>
             <tbody>
-                {projects.map((project) => {
-                    const fyTotalRaw =
-                        selectedFiscalYear !== "All" && project.fiscal_year_totals
-                            ? (project.fiscal_year_totals[Number(selectedFiscalYear)] ?? null)
-                            : null;
-                    const fyTotal = fyTotalRaw !== null ? Number(fyTotalRaw) : null;
-                    const projectTotal =
-                        project.project_total !== null && project.project_total !== undefined
-                            ? Number(project.project_total)
-                            : null;
-
-                    return (
-                        <tr key={project.id}>
-                            <td>
-                                <Link
-                                    className="text-ink text-no-underline"
-                                    to={`/projects/${project.id}`}
-                                >
-                                    {project.title}
-                                </Link>
-                            </td>
-                            <td>{convertCodeForDisplay("project", project.project_type)}</td>
-                            <td>{formatProjectDate(project.start_date)}</td>
-                            <td>{formatProjectDate(project.end_date)}</td>
-                            <td>
-                                {fyTotal !== null ? (
-                                    <CurrencyFormat
-                                        value={fyTotal}
-                                        displayType={"text"}
-                                        thousandSeparator={true}
-                                        prefix={"$"}
-                                        decimalScale={getDecimalScale(fyTotal)}
-                                        fixedDecimalScale={true}
-                                        renderText={(value) => value}
-                                    />
-                                ) : (
-                                    NO_DATA
-                                )}
-                            </td>
-                            <td>
-                                {projectTotal !== null && projectTotal > 0 ? (
-                                    <CurrencyFormat
-                                        value={projectTotal}
-                                        displayType={"text"}
-                                        thousandSeparator={true}
-                                        prefix={"$"}
-                                        decimalScale={getDecimalScale(projectTotal)}
-                                        fixedDecimalScale={true}
-                                        renderText={(value) => value}
-                                    />
-                                ) : (
-                                    NO_DATA
-                                )}
-                            </td>
-                        </tr>
-                    );
-                })}
+                {projects.map((project) => (
+                    <ProjectTableRow
+                        key={project.id}
+                        project={project}
+                        selectedFiscalYear={selectedFiscalYear}
+                    />
+                ))}
             </tbody>
         </table>
     );
