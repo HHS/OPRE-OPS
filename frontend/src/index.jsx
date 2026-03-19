@@ -44,6 +44,9 @@ import { IS_PROJECTS_LIST_READY, IS_PROJECT_DETAIL_READY } from "./constants";
 //  USWDS
 import "./uswds/css/styles.css";
 
+// Cross-platform font rendering fixes (loaded after USWDS)
+import "./index.css";
+
 // NOTE: Uncomment the following line to include the USWDS JavaScript but breaks DatePicker
 // import "./uswds/js/uswds.min.js";
 

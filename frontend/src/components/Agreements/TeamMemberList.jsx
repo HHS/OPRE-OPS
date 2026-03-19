@@ -19,7 +19,7 @@ const TeamMemberList = ({ selectedTeamMembers, removeTeamMember }) => {
             className="font-12px height-205 radius-md bg-brand-primary-light display-flex flex-align-center"
             style={{ width: "fit-content", padding: "5px" }}
         >
-            {teamMember.full_name}
+            {teamMember.display_name ?? teamMember.full_name}
             <svg
                 className="height-2 width-2 text-primary-dark margin-left-05 cursor-pointer"
                 onClick={() => removeTeamMember(teamMember)}
