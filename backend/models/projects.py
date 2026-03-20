@@ -149,8 +149,9 @@ class Project(BaseModel):
             else:
                 agreement_name_list.append({"id": agreement.id, "name": agreement.name})
 
-            # Add BLI amounts by fiscal year (only non-DRAFT or OBE BLIs)
             for bli in agreement.budget_line_items:
+                # Include BLIs that are: (1) OBE items (regardless of status), OR (2) non-DRAFT items
+                # AND must have a fiscal_year assigned
                 if (bli.is_obe or bli.status != BudgetLineItemStatus.DRAFT) and bli.fiscal_year is not None:
                     # Include amount + fees for the BLI
                     bli_total = (bli.amount or Decimal("0")) + (bli.fees or Decimal("0"))

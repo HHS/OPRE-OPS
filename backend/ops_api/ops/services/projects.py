@@ -236,6 +236,9 @@ class ProjectsService(OpsService[Project]):
             .options(
                 selectinload(ResearchProject.agreements).selectinload(Agreement.services_components),
                 selectinload(ResearchProject.agreements).selectinload(Agreement.budget_line_items),
+                selectinload(ResearchProject.agreements).selectinload(Agreement.special_topics),
+                selectinload(ResearchProject.agreements).selectinload(Agreement.research_methodologies),
+                selectinload(ResearchProject.agreements).selectinload(Agreement.team_members),
             )
         )
 
@@ -298,8 +301,11 @@ class ProjectsService(OpsService[Project]):
             .join(CANFundingDetails, isouter=True)
             .join(CANFundingBudget, isouter=True)
             .options(
-                selectinload(AdministrativeAndSupportProject.agreements).selectinload(Agreement.services_components),
-                selectinload(AdministrativeAndSupportProject.agreements).selectinload(Agreement.budget_line_items),
+                selectinload(ResearchProject.agreements).selectinload(Agreement.services_components),
+                selectinload(ResearchProject.agreements).selectinload(Agreement.budget_line_items),
+                selectinload(ResearchProject.agreements).selectinload(Agreement.special_topics),
+                selectinload(ResearchProject.agreements).selectinload(Agreement.research_methodologies),
+                selectinload(ResearchProject.agreements).selectinload(Agreement.team_members),
             )
         )
 
