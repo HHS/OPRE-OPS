@@ -262,6 +262,23 @@ describe("ProjectsList", () => {
         expect(mockUseGetProjectsQuery).toHaveBeenCalledWith(expect.objectContaining({ fiscalYear: "2025" }));
     });
 
+    it("renders FYAll in the table header when All is selected", async () => {
+        const user = userEvent.setup();
+
+        mockUseGetProjectsQuery.mockReturnValue({
+            data: { projects: [MOCK_PROJECT_1], count: 1, limit: 10, offset: 0 },
+            isLoading: false,
+            isError: false
+        });
+
+        renderComponent();
+
+        const fySelect = screen.getByLabelText("Fiscal Year");
+        await user.selectOptions(fySelect, "All");
+
+        expect(screen.getByRole("columnheader", { name: /fyall total/i })).toBeInTheDocument();
+    });
+
     it("does not render pagination when total pages is 1", () => {
         mockUseGetProjectsQuery.mockReturnValue({
             data: { projects: [MOCK_PROJECT_1], count: 1, limit: 10, offset: 0 },
