@@ -112,12 +112,12 @@ class Project(BaseModel):
                     end_dates.append(sc.period_end)
 
         return {
-            "special_topics": special_topics_set,
-            "research_methodologies": research_methodologies_set,
+            "special_topics": sorted(list(special_topics_set)),
+            "research_methodologies": sorted(list(research_methodologies_set)),
             "project_start": min(start_dates) if start_dates else None,
             "project_end": max(end_dates) if end_dates else None,
-            "team_members": list(team_members_dict.values()),
-            "division_directors": list(division_directors_set),
+            "team_members": sorted(team_members_dict.values(), key=lambda x: x.full_name),
+            "division_directors": sorted(list(division_directors_set)),
         }
 
     @property

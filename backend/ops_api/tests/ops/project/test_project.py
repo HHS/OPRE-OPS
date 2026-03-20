@@ -1404,13 +1404,28 @@ class TestProjectMetadata:
         assert methodologies.count("Survey") == 1
         assert methodologies.count("Field Study") == 1
 
-    def test_project_dates_from_services_components(self, auth_client, loaded_db, test_project):
+    def test_project_dates_from_services_components(self, auth_client, loaded_db):
         """Test that project_start and project_end are calculated from services components."""
         from models import ServicesComponent
 
-        # Add services components with different date ranges
-        agreement = test_project.agreements[0]
+        # Create a test project
+        project = ResearchProject(
+            project_type=ProjectType.RESEARCH,
+            title="Test Project Dates",
+            short_title="TPD",
+        )
+        loaded_db.add(project)
+        loaded_db.commit()
 
+        # Create an agreement for the project
+        agreement = ContractAgreement(
+            name="Test Agreement for Dates",
+            project_id=project.id,
+        )
+        loaded_db.add(agreement)
+        loaded_db.commit()
+
+        # Add services components with different date ranges
         sc1 = ServicesComponent(
             agreement_id=agreement.id,
             period_start=date.fromisoformat("2023-01-15"),
@@ -1433,7 +1448,7 @@ class TestProjectMetadata:
         loaded_db.commit()
 
         # Call API
-        response = auth_client.get(url_for("api.projects-item", id=test_project.id))
+        response = auth_client.get(url_for("api.projects-item", id=project.id))
         assert response.status_code == 200
 
         project_data = response.json
@@ -1442,7 +1457,7 @@ class TestProjectMetadata:
         assert project_data["project_start"] == "2022-10-01"
 
         # project_end should be latest period_end
-        assert project_data["project_end"] == "2045-06-13"
+        assert project_data["project_end"] == "2024-12-31"
 
     def test_project_dates_none_when_no_services_components(self, auth_client, loaded_db, project_with_no_agreements):
         """Test that project_start and project_end are None when there are no services components."""
@@ -1520,7 +1535,7 @@ class TestProjectMetadata:
     def test_division_directors_aggregation(self, auth_client, loaded_db, test_project):
         """Test that division_directors aggregates unique division directors from all agreements."""
         # Get a CAN with a division director
-        can = loaded_db.query(CAN).first()
+        can = loaded_db.get(CAN, 500)
 
         # Create BLIs associated with agreements to get division directors
         agreement1 = test_project.agreements[0]
