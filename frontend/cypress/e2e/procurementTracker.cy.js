@@ -903,16 +903,15 @@ describe("Procurement Tracker Step 5: Pre-Award", () => {
         });
     });
 
-    it("displays Request Pre-Award Approval button as disabled", () => {
+    it("displays Request Pre-Award Approval button as enabled by default", () => {
         cy.visit(`/agreements/${ISOLATED_ACTIVE_TRACKER_AGREEMENT_ID}/procurement-tracker`);
         openTrackerStep(5);
 
         cy.get("body").then(($body) => {
             const isPending = $body.find("#step-5-checkbox").length > 0;
             if (isPending) {
-                cy.contains("button", "Request Pre-Award Approval").should("exist");
-                cy.contains("button", "Request Pre-Award Approval").should("be.disabled");
-                cy.contains("button", "Request Pre-Award Approval").should("have.attr", "title", "Feature coming soon");
+                cy.get('[data-cy="request-pre-award-approval-btn"]').should("exist");
+                cy.get('[data-cy="request-pre-award-approval-btn"]').should("not.be.disabled");
             }
         });
     });
