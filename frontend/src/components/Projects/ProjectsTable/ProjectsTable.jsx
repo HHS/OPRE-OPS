@@ -52,7 +52,7 @@ const SortableHeader = ({ label, sortCode, selectedHeader, sortDescending, onCli
  * @returns {React.ReactElement}
  */
 const ProjectsTable = ({ projects, sortConditions, sortDescending, setSortConditions, selectedFiscalYear }) => {
-    const fyLabel = selectedFiscalYear === "All" ? "FYAll Total" : `FY${String(selectedFiscalYear).slice(-2)} Total`;
+    const fyLabel = selectedFiscalYear === "All" ? "FY Total" : `FY${String(selectedFiscalYear).slice(-2)} Total`;
 
     return (
         <table className="usa-table usa-table--borderless width-full">
