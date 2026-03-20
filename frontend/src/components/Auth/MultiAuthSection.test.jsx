@@ -150,7 +150,11 @@ describe("MultiAuthSection", () => {
             });
 
             // Set URL with query params before rendering
-            window.history.pushState({}, "", `/login?state=${encodeURIComponent(stateWithProvider)}&code=AUTH_CODE_123`);
+            window.history.pushState(
+                {},
+                "",
+                `/login?state=${encodeURIComponent(stateWithProvider)}&code=AUTH_CODE_123`
+            );
 
             renderWithProviders(<MultiAuthSection />);
 
@@ -172,7 +176,11 @@ describe("MultiAuthSection", () => {
                 refresh_token: "test-refresh-token"
             });
 
-            window.history.pushState({}, "", `/login?state=${encodeURIComponent(stateWithProvider)}&code=AUTH_CODE_123`);
+            window.history.pushState(
+                {},
+                "",
+                `/login?state=${encodeURIComponent(stateWithProvider)}&code=AUTH_CODE_123`
+            );
 
             renderWithProviders(<MultiAuthSection />);
 
