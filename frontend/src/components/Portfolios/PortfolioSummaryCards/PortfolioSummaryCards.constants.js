@@ -1,30 +1,38 @@
+export const ROWS_PER_COLUMN = 4;
+export const NUM_COLUMNS = 4;
+export const UNKNOWN_PORTFOLIO_COLUMN = 4;
+
 /**
  * Static order for portfolios by division and abbreviation
  * This defines the display order for the portfolio budget summary card
- * Arranged in 4-column grid: [CC, CWR, HS, OTIP] [ADR, HMRF, HV, DV] [WR, DO, OD] [Non-OPRE, OCDO]
+ * Each entry includes a `column` (1-4) for explicit grid placement.
  */
 export const PORTFOLIO_ORDER = [
     // Column 1 - DCFD Division
     {
         abbreviation: "CC",
         division: "DCFD",
-        color: "var(--portfolio-bar-graph-cc)"
+        color: "var(--portfolio-bar-graph-cc)",
+        column: 1
     },
     {
         abbreviation: "CWR",
         division: "DCFD",
         color: "var(--portfolio-bar-graph-cw)", // Bright Blue
-        aliases: ["CW"] // Handle alternative abbreviations
+        aliases: ["CW"],
+        column: 1
     },
     {
         abbreviation: "HS",
         division: "DCFD",
-        color: "var(--portfolio-bar-graph-hs)" // Light Blue
+        color: "var(--portfolio-bar-graph-hs)", // Light Blue
+        column: 1
     },
     {
         abbreviation: "OTIP",
         division: "DCFD",
-        color: "var(--portfolio-bar-graph-otip)" // Light Blue
+        color: "var(--portfolio-bar-graph-otip)", // Light Blue
+        column: 1
     },
 
     // Column 2 - DFS Division
@@ -32,40 +40,47 @@ export const PORTFOLIO_ORDER = [
         abbreviation: "ADR",
         division: "DFS",
         color: "var(--portfolio-bar-graph-ad)", // Red
-        aliases: ["AD"] // Handle alternative abbreviations
+        aliases: ["AD"],
+        column: 2
     },
     {
         abbreviation: "HMRF",
         division: "DFS",
-        color: "var(--portfolio-bar-graph-hmrf)" // Coral
+        color: "var(--portfolio-bar-graph-hmrf)", // Coral
+        column: 2
     },
     {
         abbreviation: "HV",
         division: "DFS",
-        color: "var(--portfolio-bar-graph-hv)" // Light Coral
+        color: "var(--portfolio-bar-graph-hv)", // Light Coral
+        column: 2
     },
     {
         abbreviation: "DV",
         division: "DFS",
-        color: "var(--portfolio-bar-graph-dv)" // Light Coral
+        color: "var(--portfolio-bar-graph-dv)", // Light Coral
+        column: 2
     },
 
     // Column 3 - DEI Division & OD
     {
         abbreviation: "WR",
         division: "DEI",
-        color: "var(--portfolio-bar-graph-wr)" // Dark Green
+        color: "var(--portfolio-bar-graph-wr)", // Dark Green
+        column: 3
     },
     {
         abbreviation: "DO",
         division: "DECONI",
         color: "var(--portfolio-bar-graph-dd)", // Gold
-        aliases: ["DD"]
+        aliases: ["DD"],
+        column: 3
     },
     {
         abbreviation: "OD",
         division: "OD",
-        color: "var(--portfolio-bar-graph-od)" // Gold
+        color: "var(--portfolio-bar-graph-od)", // Gold
+        column: 3
     },
 
     // Column 4 - Non-OPRE & OCDO
@@ -73,12 +88,14 @@ export const PORTFOLIO_ORDER = [
         abbreviation: "Non-OPRE",
         division: "OD",
         color: "var(--portfolio-bar-graph-none-opre)", // Gray
-        aliases: ["NON-OPRE"] // Handle case variations
+        aliases: ["NON-OPRE"],
+        column: 4
     },
     {
         abbreviation: "OCDO",
         division: "OCDO",
-        color: "var(--portfolio-bar-graph-ocdo)" // Dark Gray
+        color: "var(--portfolio-bar-graph-ocdo)", // Dark Gray
+        column: 4
     }
 ];
 

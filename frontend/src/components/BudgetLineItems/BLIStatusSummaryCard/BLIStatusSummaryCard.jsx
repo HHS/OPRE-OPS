@@ -81,8 +81,8 @@ const BLIStatusSummaryCard = ({
                     <div className="display-flex flex-align-center">
                         <FontAwesomeIcon
                             icon={faCircle}
-                            className={`height-1 width-1 margin-right-05`}
-                            style={{ color: color }}
+                            className="margin-right-05"
+                            style={{ color: color, width: "var(--legend-dot-size)", height: "var(--legend-dot-size)" }}
                             aria-label={`${label} indicator`}
                             role="img"
                         />

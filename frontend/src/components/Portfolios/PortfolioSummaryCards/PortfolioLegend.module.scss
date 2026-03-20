@@ -23,8 +23,8 @@
 }
 
 .colorDot {
-    width: 0.75rem;
-    height: 0.75rem;
+    width: var(--legend-dot-size);
+    height: var(--legend-dot-size);
     flex-shrink: 0;
 }
 

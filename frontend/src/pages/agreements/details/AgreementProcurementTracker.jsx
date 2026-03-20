@@ -11,7 +11,7 @@ import DebugCode from "../../../components/DebugCode";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import StepIndicator from "../../../components/UI/StepIndicator";
 import { IS_PROCUREMENT_TRACKER_READY_MAP } from "../../../constants";
-import { useIsUserSuperUser } from "../../../hooks/user.hooks";
+import { useIsUserSuperUser, useIsUserOnlyProcurementTeam } from "../../../hooks/user.hooks";
 
 /**
  * @typedef {Object} AgreementProcurementTrackerProps
@@ -53,6 +53,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
         }
     }, [location.state]);
     const isSuperUser = useIsUserSuperUser();
+    const isProcurementTeamOnly = useIsUserOnlyProcurementTeam();
     const isEditable = isSuperUser || (agreement?._meta?.isEditable ?? false);
     const { data, isLoading, isError } = useGetProcurementTrackersByAgreementIdQuery(agreementId, {
         skip: !agreementId,
@@ -158,7 +159,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                         step={step}
                         totalSteps={WIZARD_STEPS.length}
                         activeStepNumber={hasActiveTracker ? currentStep : undefined}
-                        isReadOnly={!hasActiveTracker}
+                        isReadOnly={!hasActiveTracker || isProcurementTeamOnly}
                         // Keep the completed step and active step open after form submission, all others closed
                         isClosed={
                             completedStepNumber !== null
@@ -179,6 +180,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 handleSetCompletedStepNumber={handleSetCompletedStepNumber}
                                 authorizedUsers={authorizedUsers}
                                 isDisabled={isStepDisabled}
+                                isReadOnly={isProcurementTeamOnly}
                             />
                         )}
                         {IS_PROCUREMENT_TRACKER_READY_MAP.STEP_2 && step.step_number === 2 && (
@@ -189,6 +191,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 isActiveStep={activeTracker?.active_step_number === step.step_number}
                                 handleSetCompletedStepNumber={handleSetCompletedStepNumber}
                                 isDisabled={isStepDisabled}
+                                isReadOnly={isProcurementTeamOnly}
                             />
                         )}
                         {!IS_PROCUREMENT_TRACKER_READY_MAP.STEP_2 && step.step_number === 2 && (
@@ -209,6 +212,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 isDisabled={isStepDisabled}
                                 handleSetCompletedStepNumber={handleSetCompletedStepNumber}
                                 isActiveStep={activeTracker?.active_step_number === step.step_number}
+                                isReadOnly={isProcurementTeamOnly}
                             />
                         )}
                         {!IS_PROCUREMENT_TRACKER_READY_MAP.STEP_3 && step.step_number === 3 && (
@@ -229,6 +233,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 isDisabled={isStepDisabled}
                                 isActiveStep={activeTracker?.active_step_number === step.step_number}
                                 handleSetCompletedStepNumber={handleSetCompletedStepNumber}
+                                isReadOnly={isProcurementTeamOnly}
                             />
                         )}
                         {!IS_PROCUREMENT_TRACKER_READY_MAP.STEP_4 && step.step_number === 4 && (
@@ -251,6 +256,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 agreementId={agreement?.id}
                                 budgetLineItems={agreement?.budget_line_items}
                                 handleSetCompletedStepNumber={handleSetCompletedStepNumber}
+                                isReadOnly={isProcurementTeamOnly}
                             />
                         )}
                         {!IS_PROCUREMENT_TRACKER_READY_MAP.STEP_5 && step.step_number === 5 && (

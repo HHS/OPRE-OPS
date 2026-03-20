@@ -68,11 +68,13 @@ describe("Procurement Tracker Step 1", () => {
                 return;
             }
 
-            cy.get("dl").first().within(() => {
-                cy.get("dd").eq(0).should("not.be.empty");
-                cy.get("dd").eq(1).should("not.be.empty");
-                cy.get("dd").eq(2).should("not.be.empty");
-            });
+            cy.get("dl")
+                .first()
+                .within(() => {
+                    cy.get("dd").eq(0).should("not.be.empty");
+                    cy.get("dd").eq(1).should("not.be.empty");
+                    cy.get("dd").eq(2).should("not.be.empty");
+                });
         });
     });
 
@@ -183,14 +185,16 @@ describe("Procurement Tracker Step 2", () => {
             // Verify all Step 2-specific fields are present with values
             // Find the dl that contains "Target Completion Date" (Step 2 specific field)
             cy.contains("dt", "Target Completion Date").should("exist");
-            cy.contains("dt", "Target Completion Date").parents("dl").within(() => {
-                // Standard completion fields
-                cy.contains("dt", "Completed By").next("dd").should("not.be.empty");
-                cy.contains("dt", "Date Completed").next("dd").should("not.be.empty");
+            cy.contains("dt", "Target Completion Date")
+                .parents("dl")
+                .within(() => {
+                    // Standard completion fields
+                    cy.contains("dt", "Completed By").next("dd").should("not.be.empty");
+                    cy.contains("dt", "Date Completed").next("dd").should("not.be.empty");
 
-                // Draft Solicitation Date (Step 2 specific, may be "None")
-                cy.contains("dt", "Draft Solicitation Date").should("exist");
-            });
+                    // Draft Solicitation Date (Step 2 specific, may be "None")
+                    cy.contains("dt", "Draft Solicitation Date").should("exist");
+                });
         });
     });
 
@@ -515,14 +519,16 @@ describe("Procurement Tracker Step 3: Solicitation", () => {
             // Verify all Step 3-specific fields are present with values
             // Find the dl that contains "Solicitation Period - Start" (Step 3 specific field)
             cy.contains("dt", "Solicitation Period - Start").should("exist");
-            cy.contains("dt", "Solicitation Period - Start").parents("dl").within(() => {
-                // Solicitation Period End date (Step 3 specific)
-                cy.contains("dt", "Solicitation Period - End").should("exist");
+            cy.contains("dt", "Solicitation Period - Start")
+                .parents("dl")
+                .within(() => {
+                    // Solicitation Period End date (Step 3 specific)
+                    cy.contains("dt", "Solicitation Period - End").should("exist");
 
-                // Standard completion fields
-                cy.contains("dt", "Completed By").next("dd").should("not.be.empty");
-                cy.contains("dt", "Date Completed").next("dd").should("not.be.empty");
-            });
+                    // Standard completion fields
+                    cy.contains("dt", "Completed By").next("dd").should("not.be.empty");
+                    cy.contains("dt", "Date Completed").next("dd").should("not.be.empty");
+                });
         });
     });
 
@@ -811,14 +817,16 @@ describe("Procurement Tracker Step 5: Pre-Award", () => {
             // Verify all Step 5-specific fields are present with values
             // Find the dl that contains "Target Completion Date" (Step 5 specific field)
             cy.contains("dt", "Target Completion Date").should("exist");
-            cy.contains("dt", "Target Completion Date").parents("dl").within(() => {
-                // Standard completion fields
-                cy.contains("dt", "Completed By").next("dd").should("not.be.empty");
-                cy.contains("dt", "Date Completed").next("dd").should("not.be.empty");
+            cy.contains("dt", "Target Completion Date")
+                .parents("dl")
+                .within(() => {
+                    // Standard completion fields
+                    cy.contains("dt", "Completed By").next("dd").should("not.be.empty");
+                    cy.contains("dt", "Date Completed").next("dd").should("not.be.empty");
 
-                // Notes field (may be "None")
-                cy.contains("dt", "Notes").should("exist");
-            });
+                    // Notes field (may be "None")
+                    cy.contains("dt", "Notes").should("exist");
+                });
         });
     });
 

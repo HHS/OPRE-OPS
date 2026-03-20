@@ -73,7 +73,9 @@ def _accumulate_agreement_spending(agreement, fiscal_year, totals, portfolio_ids
     key = "new" if classification == AgreementClassification.NEW.name else "continuing"
     for bli in agreement.budget_line_items:
         if bli.fiscal_year == fiscal_year and bli.status in SPENDING_STATUSES:
-            if portfolio_id_set and (not bli.can or bli.can.portfolio_id not in portfolio_id_set):
+            if not bli.can:
+                continue
+            if portfolio_id_set and bli.can.portfolio_id not in portfolio_id_set:
                 continue
             totals[bucket_type][key] += bli.total or Decimal(0)
 

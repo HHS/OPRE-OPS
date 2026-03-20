@@ -166,7 +166,8 @@ vi.mock("../../../constants", () => ({
 // Mock user hooks
 vi.mock("../../../hooks/user.hooks", () => ({
     default: vi.fn(),
-    useIsUserSuperUser: vi.fn()
+    useIsUserSuperUser: vi.fn(),
+    useIsUserOnlyProcurementTeam: vi.fn().mockReturnValue(false)
 }));
 
 // Mock vest suite for Step One

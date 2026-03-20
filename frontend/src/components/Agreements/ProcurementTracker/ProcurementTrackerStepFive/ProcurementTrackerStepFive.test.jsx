@@ -1536,6 +1536,93 @@ describe("ProcurementTrackerStepFive", () => {
         });
     });
 
+    describe("Read-Only Mode", () => {
+        it("renders TermTags and no form controls when isReadOnly is true and PENDING", () => {
+            render(
+                <ProcurementTrackerStepFive
+                    stepStatus="PENDING"
+                    stepFiveData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    isActiveStep={true}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    isReadOnly={true}
+                />
+            );
+
+            expect(screen.getAllByTestId("term-tag").length).toBeGreaterThan(0);
+            expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
+            expect(screen.queryByRole("button", { name: /complete step 5/i })).not.toBeInTheDocument();
+            expect(screen.queryByTestId("users-combobox")).not.toBeInTheDocument();
+        });
+
+        it("shows TBD for empty fields in read-only PENDING mode", () => {
+            useProcurementTrackerStepFive.mockReturnValue({
+                ...defaultHookReturn,
+                step5CompletedByUserName: "",
+                step5DateCompletedLabel: "",
+                step5TargetCompletionDateLabel: "",
+                step5NotesLabel: ""
+            });
+
+            render(
+                <ProcurementTrackerStepFive
+                    stepStatus="PENDING"
+                    stepFiveData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    isActiveStep={true}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    isReadOnly={true}
+                />
+            );
+
+            const termTags = screen.getAllByTestId("term-tag");
+            const tagTexts = termTags.map((tag) => tag.textContent);
+            expect(tagTexts.some((text) => text.includes("TBD"))).toBe(true);
+            expect(screen.getByText("None")).toBeInTheDocument();
+        });
+
+        it("shows checkmark icon when COMPLETED and read-only", () => {
+            render(
+                <ProcurementTrackerStepFive
+                    stepStatus="COMPLETED"
+                    stepFiveData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    isActiveStep={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    isReadOnly={true}
+                />
+            );
+
+            expect(
+                screen.getByText(
+                    /The Agreement was edited to match the Vendor Price Sheet and any final Budget Changes were approved/i
+                )
+            ).toBeInTheDocument();
+            expect(screen.getAllByTestId("term-tag").length).toBeGreaterThan(0);
+        });
+
+        it("renders form controls when isReadOnly is false and PENDING", () => {
+            render(
+                <ProcurementTrackerStepFive
+                    stepStatus="PENDING"
+                    stepFiveData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    isActiveStep={true}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    isReadOnly={false}
+                />
+            );
+
+            expect(screen.getByRole("checkbox")).toBeInTheDocument();
+            expect(screen.getByText("Complete Step 5")).toBeInTheDocument();
+            expect(screen.getByTestId("users-combobox")).toBeInTheDocument();
+        });
+    });
+
     describe("Edge Cases", () => {
         it("handles undefined stepFiveData gracefully", () => {
             render(
