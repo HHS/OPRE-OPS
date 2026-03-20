@@ -453,7 +453,9 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                                     dataCy="project-officer-tag"
                                     tagStyle="primaryDarkTextLightBackground"
                                     text={
-                                        projectOfficer && projectOfficer.id !== 0 ? projectOfficer?.full_name : NO_DATA
+                                        projectOfficer && projectOfficer.id !== 0
+                                            ? (projectOfficer?.display_name ?? projectOfficer?.full_name)
+                                            : NO_DATA
                                     }
                                 />
                             </dd>
@@ -466,7 +468,8 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                                     tagStyle="primaryDarkTextLightBackground"
                                     text={
                                         alternateProjectOfficer && alternateProjectOfficer.id !== 0
-                                            ? alternateProjectOfficer?.full_name
+                                            ? (alternateProjectOfficer?.display_name ??
+                                              alternateProjectOfficer?.full_name)
                                             : NO_DATA
                                     }
                                 />
@@ -488,7 +491,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                                             <Tag
                                                 dataCy={`team-member-tag-${member.id}`}
                                                 tagStyle="primaryDarkTextLightBackground"
-                                                text={member.full_name}
+                                                text={member.display_name ?? member.full_name}
                                             />
                                         </dd>
                                     ))}
