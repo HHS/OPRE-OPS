@@ -156,10 +156,11 @@ class ProcurementTrackerStepService:
             else:
                 logger.warning(f"Field {model_field} does not exist on ProcurementTrackerStep")
 
-        # Auto-set approval_requested_by to current user when approval is requested
-        if data.get("approval_requested") is True and "approval_requested_by" not in data:
+        # Always set approval_requested_by to current user when approval is requested
+        # This is server-controlled and never accepted from the client
+        if data.get("approval_requested") is True:
             step.pre_award_approval_requested_by = current_user.id
-            logger.debug(f"Auto-set pre_award_approval_requested_by = {current_user.id}")
+            logger.debug(f"Set pre_award_approval_requested_by = {current_user.id} (server-controlled)")
 
         # Handle COMPLETED status
         self._advance_active_step_if_needed(step, data, current_user)

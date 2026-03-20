@@ -31,6 +31,7 @@ export default function useRequestPreAwardApproval(agreementId) {
     const [selectedFile, setSelectedFile] = useState(null);
     const [isUploading, setIsUploading] = useState(false);
     const [uploadError, setUploadError] = useState("");
+    const [submitError, setSubmitError] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const { data: agreement, isLoading } = useGetAgreementByIdQuery(agreementId);
@@ -138,6 +139,7 @@ export default function useRequestPreAwardApproval(agreementId) {
         }
 
         setIsSubmitting(true);
+        setSubmitError("");
 
         try {
             await updateProcurementTrackerStep({
@@ -155,6 +157,7 @@ export default function useRequestPreAwardApproval(agreementId) {
             });
         } catch (error) {
             console.error("Failed to submit approval request:", error);
+            setSubmitError("Failed to submit approval request. Please try again.");
             setIsSubmitting(false);
         }
     };
@@ -180,6 +183,7 @@ export default function useRequestPreAwardApproval(agreementId) {
         handleFileUpload,
         isUploading,
         uploadError,
+        submitError,
         preAwardMemoDocuments,
         isSubmitting,
         hasApprovalBeenRequested,

@@ -43,6 +43,7 @@ export const RequestPreAwardApproval = () => {
         handleFileUpload,
         isUploading,
         uploadError,
+        submitError,
         preAwardMemoDocuments,
         isSubmitting,
         hasApprovalBeenRequested,
@@ -258,6 +259,17 @@ export const RequestPreAwardApproval = () => {
                     </div>
                 )}
             </Accordion>
+
+            {/* Submit Error Alert */}
+            {submitError && (
+                <SimpleAlert
+                    type="error"
+                    heading="Submission Failed"
+                    className="margin-top-3"
+                >
+                    {submitError}
+                </SimpleAlert>
+            )}
 
             {/* Notes */}
             <div className="margin-top-5">

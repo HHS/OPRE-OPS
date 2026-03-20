@@ -76,7 +76,7 @@ const ProcurementTrackerStepFive = ({
     const isUsersComboBoxDisabled = isDisabled || !isPreAwardComplete || authorizedUsers.length === 0;
     const isPreAwardFieldsDisabled = isDisabled || !isPreAwardComplete;
     const hasBLIInReview = budgetLineItems?.some((bli) => bli.in_review) ?? false;
-    const isRequestBtnDisabled = !!stepFiveData?.approval_requested || hasBLIInReview;
+    const isRequestBtnDisabled = isDisabled || !isActiveStep || !!stepFiveData?.approval_requested || hasBLIInReview;
     const isStep5SubmitDisabled = Boolean(
         isDisabled ||
         !isPreAwardComplete ||

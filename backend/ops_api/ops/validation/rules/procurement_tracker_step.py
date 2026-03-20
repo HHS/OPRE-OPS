@@ -443,11 +443,12 @@ class PreAwardApprovalRequestAuthorizationRule(ValidationRule):
         updated_fields = context.updated_fields
 
         # Only validate if approval_requested fields are being updated
+        # Use unprefixed field names as they appear in the API request before mapping
+        # Note: approval_requested_by is server-controlled and not in this list
         approval_fields = [
-            "pre_award_approval_requested",
-            "pre_award_approval_requested_date",
-            "pre_award_approval_requested_by",
-            "pre_award_requestor_notes",
+            "approval_requested",
+            "approval_requested_date",
+            "requestor_notes",
         ]
         if not any(field in updated_fields for field in approval_fields):
             return

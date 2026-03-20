@@ -1,6 +1,6 @@
 """Schemas for procurement tracker steps."""
 
-from marshmallow import EXCLUDE, Schema, fields, post_dump, pre_dump
+from marshmallow import EXCLUDE, Schema, fields, post_dump, pre_dump, validate
 
 from models.procurement_tracker import (
     ProcurementTrackerStepStatus,
@@ -239,8 +239,8 @@ class ProcurementTrackerStepPatchRequestSchema(Schema):
     # Pre-Award approval request fields
     approval_requested = fields.Boolean(required=False, allow_none=True)
     approval_requested_date = fields.Date(required=False, allow_none=True)
-    approval_requested_by = fields.Integer(required=False, allow_none=True)
-    requestor_notes = fields.String(required=False, allow_none=True)
+    # approval_requested_by is server-controlled and derived from current_user - not accepted from client
+    requestor_notes = fields.String(required=False, allow_none=True, validate=validate.Length(max=150))
 
 
 class ProcurementTrackerStepSchema(Schema):

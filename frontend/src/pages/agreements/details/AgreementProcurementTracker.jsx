@@ -1,5 +1,5 @@
 import React from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useGetProcurementTrackersByAgreementIdQuery, useGetUsersQuery } from "../../../api/opsAPI";
 import ProcurementTrackerStepOne from "../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepOne";
 import ProcurementTrackerStepTwo from "../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepTwo";
@@ -26,6 +26,7 @@ import { useIsUserSuperUser, useIsUserOnlyProcurementTeam } from "../../../hooks
 
 const AgreementProcurementTracker = ({ agreement }) => {
     const location = useLocation();
+    const navigate = useNavigate();
     const [showSuccessAlert, setShowSuccessAlert] = React.useState(false);
     const [showInReviewAlert, setShowInReviewAlert] = React.useState(false);
 
@@ -49,9 +50,9 @@ const AgreementProcurementTracker = ({ agreement }) => {
             setShowSuccessAlert(true);
             setShowInReviewAlert(false);
             // Clear the location state to avoid showing alert on refresh/revisit
-            window.history.replaceState({}, document.title);
+            navigate(location.pathname, { replace: true, state: {} });
         }
-    }, [location.state]);
+    }, [location.state, location.pathname, navigate]);
     const isSuperUser = useIsUserSuperUser();
     const isProcurementTeamOnly = useIsUserOnlyProcurementTeam();
     const isEditable = isSuperUser || (agreement?._meta?.isEditable ?? false);
