@@ -49,8 +49,8 @@ const ReleaseNotesCards = ({
  */
 function RightCard() {
     return (
-        <RoundedBox id="project-agreement-bli-card">
-            <h2 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">Last Data Update</h2>
+        <RoundedBox>
+            <h2 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">Data updates</h2>
             <p className="font-sans-lg text-bold line-height-sans-1">All data should now be updated directly in OPS</p>
         </RoundedBox>
     );
@@ -64,7 +64,7 @@ function RightCard() {
  */
 function LeftCard({ releaseDate, lastVersion, totalReleaseChanges, totalNewFeatures, totalFixes, totalImprovements }) {
     return (
-        <RoundedBox id="project-agreement-bli-card">
+        <RoundedBox>
             <div className="display-flex flex-justify">
                 <article>
                     <h2 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">Last Release</h2>

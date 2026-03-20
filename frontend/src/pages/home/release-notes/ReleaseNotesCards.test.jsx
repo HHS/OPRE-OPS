@@ -78,10 +78,10 @@ describe("ReleaseNotesCards Component", () => {
         expect(screen.queryByText(/Improvement/)).not.toBeInTheDocument();
     });
 
-    it("renders the last data update heading", () => {
+    it("renders the data updates heading", () => {
         render(<ReleaseNotesCards {...mockProps} />);
 
-        expect(screen.getByText("Last Data Update")).toBeInTheDocument();
+        expect(screen.getByText("Data updates")).toBeInTheDocument();
     });
 
     it("renders the last release heading", () => {
