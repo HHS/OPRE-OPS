@@ -1,18 +1,12 @@
 /*
- * Global application styles — loaded after USWDS to layer on
- * cross-platform font rendering consistency.
+ * Global application styles loaded after USWDS for cross-platform typography
+ * tuning.
  *
- * Problem:
- *   macOS applies subpixel antialiasing that makes web fonts look heavier and
- *   smoother.  Windows ClearType / DirectWrite renders the same glyphs thinner
- *   and sharper, so Public Sans looks noticeably different on customer GFE
- *   laptops (Windows + Edge/Chrome) compared to developer Macs.
- *
- * Strategy:
- *   Keep macOS rendering unchanged.  On Windows, apply a subtle text stroke
- *   to thicken glyph outlines, closing the visual weight gap.
- *   An OS-detection script in index.html adds .os-windows / .os-mac to <html>
- *   before first paint so these rules apply without FOUC.
+ * Small Public Sans text renders noticeably thinner on some Windows setups at
+ * default zoom. Rather than using stroke compensation, keep macOS unchanged and
+ * slightly increase the effective weight of the smallest UI text on Windows.
+ * An OS-detection script in index.html adds .os-windows / .os-mac to <html>
+ * before first paint so these rules apply without FOUC.
  */
 
 /* ---------- Improve text rendering quality on all platforms ---------- */
@@ -20,7 +14,16 @@ body {
     text-rendering: optimizeLegibility;
 }
 
-/* ---------- Windows: thicken strokes to approximate macOS weight ---------- */
-.os-windows body {
-    -webkit-text-stroke: 0.35px;
+/* ---------- Windows: strengthen the smallest UI text only ---------- */
+.os-windows .font-sans-3xs,
+.os-windows .font-sans-2xs,
+.os-windows .font-12px,
+.os-windows .usa-label,
+.os-windows .usa-hint,
+.os-windows .usa-checkbox__label,
+.os-windows .usa-radio__label,
+.os-windows small,
+.os-windows .usa-table th,
+.os-windows .usa-table td {
+    font-weight: 500;
 }
