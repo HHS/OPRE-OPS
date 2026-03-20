@@ -15,16 +15,17 @@ body {
 }
 
 /* ---------- Windows: strengthen the smallest UI text only ---------- */
-.os-windows :is(
-    .font-sans-3xs,
-    .font-sans-2xs,
-    .font-12px,
-    .usa-label,
-    .usa-hint,
-    .usa-checkbox__label,
-    .usa-radio__label,
-    small,
-    .usa-table td
-) {
+.os-windows
+    :is(
+        .font-sans-3xs,
+        .font-sans-2xs,
+        .font-12px,
+        .usa-label,
+        .usa-hint,
+        .usa-checkbox__label,
+        .usa-radio__label,
+        small,
+        .usa-table td
+    ) {
     font-weight: 500;
 }
