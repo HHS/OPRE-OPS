@@ -20,6 +20,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
  * @property {Function} handleSetCompletedStepNumber - Function to set the completed step number
  * @property {SafeUser[]} authorizedUsers - List of users authorized for this agreement
  * @property {boolean} isDisabled - Whether step controls should be disabled
+ * @property {boolean} [isReadOnly] - Whether to render in read-only mode (plain text, no form controls)
  */
 
 /**
@@ -33,7 +34,8 @@ const ProcurementTrackerStepOne = ({
     isActiveStep,
     handleSetCompletedStepNumber,
     authorizedUsers,
-    isDisabled
+    isDisabled,
+    isReadOnly = false
 }) => {
     const {
         isPreSolicitationPackageSent,
@@ -69,7 +71,43 @@ const ProcurementTrackerStepOne = ({
                     handleConfirm={modalProps.handleConfirm}
                 />
             )}
-            {stepStatus === "PENDING" && (
+            {isReadOnly && (
+                <div>
+                    <p>
+                        Once the pre-solicitation package is sufficiently drafted and signed by all parties, send it to
+                        the Procurement Shop and check this step as complete.
+                    </p>
+                    {stepStatus === "COMPLETED" && (
+                        <div className="display-flex flex-align-center margin-top-5">
+                            <FontAwesomeIcon
+                                icon={faCircleCheck}
+                                size="lg"
+                                className="margin-right-1 flex-shrink-0 text-primary-darker"
+                                aria-hidden="true"
+                            />
+                            <p className="margin-y-0">
+                                The pre-solicitation package has been sent to the Procurement Shop for review
+                            </p>
+                        </div>
+                    )}
+                    <dl className="display-flex flex-wrap">
+                        <TermTag
+                            term="Completed By"
+                            description={step1CompletedByUserName || "TBD"}
+                            className="margin-right-4"
+                        />
+                        <TermTag
+                            term="Date Completed"
+                            description={step1DateCompletedLabel || "TBD"}
+                        />
+                        <div className="width-full">
+                            <dt className="margin-0 text-base-dark margin-top-3 font-12px">Notes</dt>
+                            <dd className="margin-0 margin-top-1">{step1NotesLabel || "None"}</dd>
+                        </div>
+                    </dl>
+                </div>
+            )}
+            {!isReadOnly && stepStatus === "PENDING" && (
                 <fieldset className="usa-fieldset">
                     <p>
                         Once the pre-solicitation package is sufficiently drafted and signed by all parties, send it to
@@ -152,7 +190,7 @@ const ProcurementTrackerStepOne = ({
                 </fieldset>
             )}
 
-            {stepStatus === "COMPLETED" && (
+            {!isReadOnly && stepStatus === "COMPLETED" && (
                 <div>
                     <p>
                         When the pre-solicitation package has been sufficiently drafted and signed by all parties, send
@@ -162,8 +200,7 @@ const ProcurementTrackerStepOne = ({
                         <FontAwesomeIcon
                             icon={faCircleCheck}
                             size="lg"
-                            className="margin-right-1 flex-shrink-0"
-                            style={{ color: "#162e51" }}
+                            className="margin-right-1 flex-shrink-0 text-primary-darker"
                             aria-hidden="true"
                         />
                         <p className="margin-y-0">

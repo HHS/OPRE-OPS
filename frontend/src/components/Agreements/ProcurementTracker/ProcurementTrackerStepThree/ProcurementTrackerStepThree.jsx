@@ -20,6 +20,7 @@ import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
  * @property {boolean} isDisabled - Whether step controls should be disabled
  * @property {Function} handleSetCompletedStepNumber - Callback to update completed step state
  * @property {boolean} isActiveStep - Whether this is the currently active step
+ * @property {boolean} [isReadOnly] - Whether to render in read-only mode (plain text, no form controls)
  */
 
 /**
@@ -33,7 +34,8 @@ const ProcurementTrackerStepThree = ({
     authorizedUsers,
     isDisabled,
     handleSetCompletedStepNumber,
-    isActiveStep
+    isActiveStep,
+    isReadOnly = false
 }) => {
     const {
         selectedUser,
@@ -100,7 +102,54 @@ const ProcurementTrackerStepThree = ({
                     setShowModal={setShowModal}
                 />
             )}
-            {stepStatus === "PENDING" && (
+            {isReadOnly && (
+                <div>
+                    <p>
+                        Once the Procurement Shop has posted the Solicitation and it&apos;s &quot;on the street&quot;,
+                        enter the Solicitation Start and End Dates. After all proposals are received, vendor questions
+                        have been answered, and evaluations are starting, check this step as complete.
+                    </p>
+                    {stepStatus === "COMPLETED" && (
+                        <div className="display-flex flex-align-center margin-top-5">
+                            <FontAwesomeIcon
+                                icon={faCircleCheck}
+                                size="lg"
+                                className="margin-right-1 flex-shrink-0 text-primary-darker"
+                                aria-hidden="true"
+                            />
+                            <p className="margin-y-0">
+                                The Solicitation is closed to vendors, vendor questions have been answered, and
+                                evaluations can start
+                            </p>
+                        </div>
+                    )}
+                    <dl className="display-flex flex-wrap">
+                        <TermTag
+                            term="Solicitation Period - Start"
+                            description={solicitationStartDateLabel || "TBD"}
+                            className="margin-right-4"
+                        />
+                        <TermTag
+                            term="Solicitation Period - End"
+                            description={solicitationEndDateLabel || "TBD"}
+                        />
+                        <TermTag
+                            term="Completed By"
+                            description={step3CompletedByUserName || "TBD"}
+                            className="margin-right-4"
+                        />
+                        <TermTag
+                            term="Date Completed"
+                            description={step3DateCompletedLabel || "TBD"}
+                        />
+                        <div className="width-full">
+                            <dt className="margin-0 text-base-dark margin-top-3 font-12px">Notes</dt>
+                            <dd className="margin-0 margin-top-1">{step3NotesLabel || "None"}</dd>
+                        </div>
+                    </dl>
+                </div>
+            )}
+            {!isReadOnly && stepStatus === "PENDING" && (
                 <fieldset className="usa-fieldset">
                     <p>
                         Once the Procurement Shop has posted the Solicitation and it’s “on the street”, enter the
@@ -266,7 +315,7 @@ const ProcurementTrackerStepThree = ({
                 </fieldset>
             )}
 
-            {stepStatus === "COMPLETED" && (
+            {!isReadOnly && stepStatus === "COMPLETED" && (
                 <div>
                     <p>
                         The Procurement Shop posts the solicitation on the street for vendors to respond. Track the
@@ -277,8 +326,7 @@ const ProcurementTrackerStepThree = ({
                         <FontAwesomeIcon
                             icon={faCircleCheck}
                             size="lg"
-                            className="margin-right-1 flex-shrink-0"
-                            style={{ color: "#162e51" }}
+                            className="margin-right-1 flex-shrink-0 text-primary-darker"
                             aria-hidden="true"
                         />
                         <p className="margin-y-0">
