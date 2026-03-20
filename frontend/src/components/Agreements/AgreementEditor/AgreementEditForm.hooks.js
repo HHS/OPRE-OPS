@@ -127,7 +127,7 @@ const useAgreementEditForm = (
         error: errorProjects,
         isLoading: isLoadingProjects
     } = useGetProjectsQuery(
-        { limit: 1000 },
+        {},
         {
             skip: isWizardMode
         }

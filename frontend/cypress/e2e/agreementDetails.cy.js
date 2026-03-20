@@ -3,7 +3,10 @@ import { terminalLog, testLogin } from "./utils";
 import { NO_DATA } from "../../src/constants";
 
 const selectDifferentContractType = (selector = "#contract-type") => {
-    cy.get(selector)
+    cy.contains("Loading...", { timeout: 30000 }).should("not.exist");
+    cy.get(selector, { timeout: 30000 })
+        .should("be.visible")
+        .and("not.be.disabled")
         .find(":selected")
         .invoke("val")
         .then((currentValue) => {
@@ -220,6 +223,8 @@ describe("agreement details", () => {
         cy.visit("/agreements/9");
         // Agreement Details Tab
         cy.get("#edit").click();
+        cy.contains("Loading...", { timeout: 30000 }).should("not.exist");
+        cy.get("#contract-type", { timeout: 30000 }).should("be.visible").and("not.be.disabled");
         cy.get("#contract-type").select("Firm Fixed Price (FFP)");
         cy.get('[data-cy="cancel-button"]').click();
         cy.get("#ops-modal-heading").contains(
