@@ -15,6 +15,7 @@ from models import (
 )
 from models.agreements import AgreementClassification
 from ops_api.ops.utils.reporting_summary import (
+    _accumulate_agreement_spending,
     classify_agreement_for_fy,
     get_agreement_spending_by_type,
 )
@@ -370,3 +371,66 @@ def test_portfolio_filter_excludes_other_portfolio_blis(app, db_with_cross_portf
     type_map_b = {at["type"]: at for at in result_b["agreement_types"]}
     # Should only include the 2M BLI from portfolio B
     assert type_map_b["CONTRACT"]["total"] == data["bli_b_amount"]
+
+
+class TestAccumulateAgreementSpendingNoCan:
+    """Tests for _accumulate_agreement_spending when BLIs have no CAN."""
+
+    def _make_totals(self):
+        return {
+            "CONTRACT": {"new": Decimal(0), "continuing": Decimal(0)},
+            "PARTNER": {"new": Decimal(0), "continuing": Decimal(0)},
+            "GRANT": {"new": Decimal(0), "continuing": Decimal(0)},
+            "DIRECT_OBLIGATION": {"new": Decimal(0), "continuing": Decimal(0)},
+        }
+
+    def test_skips_bli_with_no_can(self):
+        """A BLI with can=None should not contribute to totals."""
+        agreement = MagicMock()
+        agreement.agreement_type = AgreementType.CONTRACT
+        agreement.is_awarded = False
+
+        bli = MagicMock()
+        bli.fiscal_year = 2025
+        bli.status = BudgetLineItemStatus.PLANNED
+        bli.can = None
+        bli.total = Decimal("10000")
+
+        planned_bli = MagicMock()
+        planned_bli.status = BudgetLineItemStatus.PLANNED
+        agreement.budget_line_items = [bli, planned_bli]
+
+        totals = self._make_totals()
+        _accumulate_agreement_spending(agreement, 2025, totals)
+
+        assert totals["CONTRACT"]["new"] == Decimal(0)
+        assert totals["CONTRACT"]["continuing"] == Decimal(0)
+
+    def test_processes_mix_of_blis_with_and_without_can(self):
+        """Only BLIs with a CAN should contribute to totals."""
+        agreement = MagicMock()
+        agreement.agreement_type = AgreementType.CONTRACT
+        agreement.is_awarded = False
+
+        bli_no_can = MagicMock()
+        bli_no_can.fiscal_year = 2025
+        bli_no_can.status = BudgetLineItemStatus.PLANNED
+        bli_no_can.can = None
+        bli_no_can.total = Decimal("5000")
+
+        bli_with_can = MagicMock()
+        bli_with_can.fiscal_year = 2025
+        bli_with_can.status = BudgetLineItemStatus.PLANNED
+        bli_with_can.can = MagicMock()
+        bli_with_can.can.portfolio_id = 1
+        bli_with_can.total = Decimal("8000")
+
+        planned_bli = MagicMock()
+        planned_bli.status = BudgetLineItemStatus.PLANNED
+        agreement.budget_line_items = [bli_no_can, bli_with_can, planned_bli]
+
+        totals = self._make_totals()
+        _accumulate_agreement_spending(agreement, 2025, totals)
+
+        assert totals["CONTRACT"]["new"] == Decimal("8000")
+        assert totals["CONTRACT"]["continuing"] == Decimal(0)
