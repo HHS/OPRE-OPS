@@ -1,5 +1,3 @@
-import { LAST_DATA_UPDATE } from "../../../constants";
-import { formatDateToMonthDayYear } from "../../../helpers/utils";
 import useAlert from "../../../hooks/use-alert.hooks";
 import Alert from "../../UI/Alert";
 import SlimAlert from "../../UI/Alert/SlimAlert";
@@ -21,12 +19,6 @@ const DefaultLayout = ({ children, breadCrumbName }) => {
     return (
         <div className="bg-base-lightest">
             <div className="usa-overlay"></div>
-            {import.meta.env.PROD && (
-                <SlimAlert
-                    type="last-data-update"
-                    updateDate={formatDateToMonthDayYear(LAST_DATA_UPDATE)}
-                />
-            )}
             {!import.meta.env.PROD && (
                 <SlimAlert
                     type="warning"
