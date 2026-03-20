@@ -911,7 +911,7 @@ describe("Procurement Tracker Step 5: Pre-Award", () => {
         });
     });
 
-    it("displays Request Pre-Award Approval button as enabled by default", () => {
+    it("displays Request Pre-Award Approval button and respects BLI in-review validation", () => {
         cy.visit(`/agreements/${ISOLATED_ACTIVE_TRACKER_AGREEMENT_ID}/procurement-tracker`);
         openTrackerStep(5);
 
@@ -919,7 +919,24 @@ describe("Procurement Tracker Step 5: Pre-Award", () => {
             const isPending = $body.find("#step-5-checkbox").length > 0;
             if (isPending) {
                 cy.get('[data-cy="request-pre-award-approval-btn"]').should("exist");
-                cy.get('[data-cy="request-pre-award-approval-btn"]').should("not.be.disabled");
+
+                // Verify that no BLIs are in review for agreement 14 via API
+                cy.request(`http://localhost:8080/api/v1/agreements/${ISOLATED_ACTIVE_TRACKER_AGREEMENT_ID}`)
+                    .then((response) => {
+                        const blis = response.body.budget_line_items || [];
+                        const inReviewBlis = blis.filter((bli) => bli.in_review);
+
+                        cy.log(`Total BLIs: ${blis.length}, BLIs in review: ${inReviewBlis.length}`);
+
+                        if (inReviewBlis.length > 0) {
+                            cy.log("WARNING: BLIs found with in_review=true:", inReviewBlis.map(b => b.id));
+                            // If BLIs are in review, button should be disabled
+                            cy.get('[data-cy="request-pre-award-approval-btn"]').should("be.disabled");
+                        } else {
+                            // No BLIs in review - button should be enabled (not disabled)
+                            cy.get('[data-cy="request-pre-award-approval-btn"]').should("not.be.disabled");
+                        }
+                    });
             }
         });
     });
