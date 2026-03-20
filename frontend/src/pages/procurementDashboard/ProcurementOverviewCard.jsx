@@ -1,7 +1,6 @@
 import { useMemo } from "react";
-import { faCircle } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import CurrencyFormat from "react-currency-format";
+import LegendItem from "../../components/UI/Cards/LineGraphWithLegendCard/LegendItem";
 import HorizontalStackedBar from "../../components/UI/DataViz/HorizontalStackedBar/HorizontalStackedBar";
 import RoundedBox from "../../components/UI/RoundedBox";
 import Tag from "../../components/UI/Tag/Tag";
@@ -20,7 +19,11 @@ const formatPercent = (value, total) => {
 
 const computeOverviewData = (agreements, fiscalYear) => {
     const amountByStatus = { [BLI_STATUS.PLANNED]: 0, [BLI_STATUS.EXECUTING]: 0, [BLI_STATUS.OBLIGATED]: 0 };
-    const agreementsByStatus = { [BLI_STATUS.PLANNED]: new Set(), [BLI_STATUS.EXECUTING]: new Set(), [BLI_STATUS.OBLIGATED]: new Set() };
+    const agreementsByStatus = {
+        [BLI_STATUS.PLANNED]: new Set(),
+        [BLI_STATUS.EXECUTING]: new Set(),
+        [BLI_STATUS.OBLIGATED]: new Set()
+    };
 
     for (const agreement of agreements) {
         const blis = (agreement.budget_line_items || []).filter((bli) => bli.fiscal_year === fiscalYear);
@@ -55,9 +58,11 @@ const computeOverviewData = (agreements, fiscalYear) => {
 };
 
 const ProcurementOverviewCard = ({ agreements = [], fiscalYear, isLoading, error }) => {
-    const { statusData, totalAmount, totalAgreements } = useMemo(() => computeOverviewData(agreements, fiscalYear), [agreements, fiscalYear]);
+    const { statusData, totalAmount, totalAgreements } = useMemo(
+        () => computeOverviewData(agreements, fiscalYear),
+        [agreements, fiscalYear]
+    );
     const fyShort = String(fiscalYear).slice(-2);
-
 
     if (isLoading) {
         return (
@@ -98,57 +103,39 @@ const ProcurementOverviewCard = ({ agreements = [], fiscalYear, isLoading, error
                     fixedDecimalScale={true}
                     renderText={(value) => <span className="text-bold margin-bottom-0 font-sans-xl">{value}</span>}
                 />
-                <span className="font-sans-xs margin-left-1 margin-bottom-05">total for FY {fyShort} procurement across</span>
+                <span className="font-sans-xs margin-left-1 margin-bottom-05">
+                    total for FY {fyShort} procurement across
+                </span>
                 <span className="font-sans-xl text-bold margin-left-1">{totalAgreements} agreements</span>
             </div>
             <HorizontalStackedBar data={statusData} />
-            <div className="display-flex flex-justify margin-top-2">
+            <div className="display-flex flex-justify-space-between margin-top-2">
                 {statusData.map((item) => (
-                    <LegendItem
+                    <div
                         key={item.label}
-                        {...item}
-                    />
+                        className="font-12px"
+                        style={{ width: "25%" }}
+                    >
+                        <LegendItem
+                            id={item.id}
+                            label={item.label}
+                            value={item.amount}
+                            color={item.color}
+                            percent={parseInt(item.amountPercent)}
+                            tagStyleActive="darkTextWhiteBackground"
+                        />
+                        <div className="display-flex flex-align-center flex-justify-end">
+                            <span>{item.agreements} agreements</span>
+                            <Tag
+                                tagStyle="darkTextWhiteBackground"
+                                text={item.agreementsPercent}
+                                className="margin-left-1"
+                            />
+                        </div>
+                    </div>
                 ))}
             </div>
         </RoundedBox>
-    );
-};
-
-
-const LegendItem = ({ label, color, amount, amountPercent, agreements, agreementsPercent }) => {
-    return (
-        <div className="font-12px">
-            <div className="display-flex flex-align-center margin-bottom-05">
-                <FontAwesomeIcon
-                    icon={faCircle}
-                    className="height-1 width-1 margin-right-05"
-                    style={{ color }}
-                />
-                <span className="text">{label}</span>
-                <CurrencyFormat
-                    value={amount}
-                    displayType="text"
-                    thousandSeparator={true}
-                    prefix="$"
-                    decimalScale={2}
-                    fixedDecimalScale={true}
-                    renderText={(val) => <span className="margin-left-2">{val}</span>}
-                />
-                <Tag
-                    tagStyle="darkTextWhiteBackground"
-                    text={amountPercent}
-                    className="margin-left-1"
-                />
-            </div>
-            <div className="display-flex flex-align-center flex-justify-end padding-left-205">
-                <span>{agreements} agreements</span>
-                <Tag
-                    tagStyle="darkTextWhiteBackground"
-                    text={agreementsPercent}
-                    className="margin-left-1"
-                />
-            </div>
-        </div>
     );
 };
 
