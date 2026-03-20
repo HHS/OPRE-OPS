@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 import icons from "../../uswds/img/sprite.svg";
 import App from "../../App";
 import TablePageLayout from "../../components/Layouts/TablePageLayout";
-import { useGetAgreementsQuery } from "../../api/opsAPI";
+import { useGetAgreementsQuery, useGetProcurementTrackersByAgreementIdsQuery } from "../../api/opsAPI";
 import ProcShopFilter from "./ProcShopFilter";
 import ProcurementDashboardTabs from "./ProcurementDashboardTabs";
 import ProcurementSummaryCards from "./ProcurementSummaryCards";
@@ -37,6 +37,12 @@ const ProcurementDashboard = () => {
         return allAgreements.filter((agreement) => agreement.award_type === awardTypeFilter);
     }, [allAgreements, awardTypeFilter]);
 
+    const agreementIds = useMemo(() => agreements.map((a) => a.id), [agreements]);
+
+    const { data: procurementTrackers = [] } = useGetProcurementTrackersByAgreementIdsQuery(agreementIds, {
+        skip: agreementIds.length === 0
+    });
+
     return (
         <App breadCrumbName="Procurement Dashboard">
             <TablePageLayout
@@ -69,6 +75,7 @@ const ProcurementDashboard = () => {
                 SummaryCardsSection={
                     <ProcurementSummaryCards
                         agreements={agreements}
+                        procurementTrackers={procurementTrackers}
                         fiscalYear={CURRENT_FISCAL_YEAR}
                         isLoading={isLoading}
                         error={error}

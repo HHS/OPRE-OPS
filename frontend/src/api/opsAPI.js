@@ -990,6 +990,14 @@ export const opsApi = createApi({
             query: (agreement_id) => `/procurement-trackers/?agreement_id=${agreement_id}`,
             providesTags: ["ProcurementTrackers"]
         }),
+        getProcurementTrackersByAgreementIds: builder.query({
+            query: (agreementIds) => {
+                const params = agreementIds.map((id) => `agreement_id=${id}`).join("&");
+                return `/procurement-trackers/?${params}&limit=${agreementIds.length || 1}`;
+            },
+            transformResponse: (response) => response?.data || [],
+            providesTags: ["ProcurementTrackers"]
+        }),
         updateProcurementTrackerStep: builder.mutation({
             query: ({ stepId, data }) => {
                 return {
@@ -1100,5 +1108,6 @@ export const {
     useGetResearchMethodologiesQuery,
     useGetSpecialTopicsQuery,
     useGetProcurementTrackersByAgreementIdQuery,
+    useGetProcurementTrackersByAgreementIdsQuery,
     useUpdateProcurementTrackerStepMutation
 } = opsApi;
