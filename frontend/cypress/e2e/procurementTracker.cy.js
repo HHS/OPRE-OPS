@@ -920,7 +920,7 @@ describe("Procurement Tracker Step 5: Pre-Award", () => {
             if (isPending) {
                 cy.get('[data-cy="request-pre-award-approval-btn"]').should("exist");
 
-                // Verify that no BLIs are in review for agreement 14 via API
+                // Verify button state matches API data (BLIs in review + approval status)
                 const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
                 cy.request({
                     method: "GET",
@@ -932,15 +932,21 @@ describe("Procurement Tracker Step 5: Pre-Award", () => {
                 }).then((response) => {
                         const blis = response.body.budget_line_items || [];
                         const inReviewBlis = blis.filter((bli) => bli.in_review);
+                        const approvalRequested = response.body.procurement_tracker_workflow_steps?.some(
+                            (step) => step.step_number === 5 && step.pre_award_approval_requested
+                        ) || false;
 
                         cy.log(`Total BLIs: ${blis.length}, BLIs in review: ${inReviewBlis.length}`);
+                        cy.log(`Pre-award approval requested: ${approvalRequested}`);
 
-                        if (inReviewBlis.length > 0) {
-                            cy.log("WARNING: BLIs found with in_review=true:", inReviewBlis.map(b => b.id));
-                            // If BLIs are in review, button should be disabled
+                        // Button should be disabled if EITHER condition is true
+                        if (inReviewBlis.length > 0 || approvalRequested) {
+                            if (inReviewBlis.length > 0) {
+                                cy.log("BLIs found with in_review=true:", inReviewBlis.map(b => b.id));
+                            }
                             cy.get('[data-cy="request-pre-award-approval-btn"]').should("be.disabled");
                         } else {
-                            // No BLIs in review - button should be enabled (not disabled)
+                            // No BLIs in review AND no approval requested - button enabled
                             cy.get('[data-cy="request-pre-award-approval-btn"]').should("not.be.disabled");
                         }
                     });
