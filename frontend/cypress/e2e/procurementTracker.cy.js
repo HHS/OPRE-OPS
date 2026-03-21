@@ -933,7 +933,7 @@ describe("Procurement Tracker Step 5: Pre-Award", () => {
                         const blis = response.body.budget_line_items || [];
                         const inReviewBlis = blis.filter((bli) => bli.in_review);
                         const approvalRequested = response.body.procurement_tracker_workflow_steps?.some(
-                            (step) => step.step_number === 5 && step.pre_award_approval_requested
+                            (step) => step.step_number === 5 && step.approval_requested
                         ) || false;
 
                         cy.log(`Total BLIs: ${blis.length}, BLIs in review: ${inReviewBlis.length}`);
