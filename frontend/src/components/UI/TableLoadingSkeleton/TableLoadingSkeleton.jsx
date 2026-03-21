@@ -74,7 +74,11 @@ const TableLoadingSkeleton = ({
                             {heading}
                         </th>
                     ))}
-                    {hasExpandableRows && <th scope="col" />}
+                    {hasExpandableRows && (
+                        <th scope="col">
+                            <span className="usa-sr-only">Expand row</span>
+                        </th>
+                    )}
                 </tr>
             </thead>
             <tbody>

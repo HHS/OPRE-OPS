@@ -68,10 +68,10 @@ describe("TableLoadingSkeleton", () => {
         expect(within(bodyRow).getAllByRole("cell")).toHaveLength(HEADINGS.length + 1);
     });
 
-    it("renders an empty <th> in the header when hasExpandableRows is true", () => {
+    it("renders an accessible expand-row header when hasExpandableRows is true", () => {
         renderSkeleton({ hasExpandableRows: true });
-        // HEADINGS + 1 empty th
         expect(screen.getAllByRole("columnheader")).toHaveLength(HEADINGS.length + 1);
+        expect(screen.getByRole("columnheader", { name: "Expand row" })).toBeInTheDocument();
     });
 
     it("uses 80% width for all cells when columnWidths is not supplied", () => {
