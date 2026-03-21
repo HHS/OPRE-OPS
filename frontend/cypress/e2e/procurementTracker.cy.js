@@ -921,8 +921,15 @@ describe("Procurement Tracker Step 5: Pre-Award", () => {
                 cy.get('[data-cy="request-pre-award-approval-btn"]').should("exist");
 
                 // Verify that no BLIs are in review for agreement 14 via API
-                cy.request(`http://localhost:8080/api/v1/agreements/${ISOLATED_ACTIVE_TRACKER_AGREEMENT_ID}`)
-                    .then((response) => {
+                const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
+                cy.request({
+                    method: "GET",
+                    url: `http://localhost:8080/api/v1/agreements/${ISOLATED_ACTIVE_TRACKER_AGREEMENT_ID}`,
+                    headers: {
+                        Authorization: bearer_token,
+                        Accept: "application/json"
+                    }
+                }).then((response) => {
                         const blis = response.body.budget_line_items || [];
                         const inReviewBlis = blis.filter((bli) => bli.in_review);
 
