@@ -197,19 +197,21 @@ describe("PortfolioLegend", () => {
     it("renders color indicators with correct colors", () => {
         render(<PortfolioLegend {...defaultProps} />);
 
-        const colorIndicators = screen.getAllByRole("img");
+        const colorIndicators = screen.getAllByRole("img", { hidden: true });
 
         expect(colorIndicators[0]).toHaveStyle({ color: "var(--portfolio-budget-1)" });
         expect(colorIndicators[1]).toHaveStyle({ color: "var(--portfolio-budget-2)" });
         expect(colorIndicators[2]).toHaveStyle({ color: "var(--portfolio-budget-9)" });
     });
 
-    it("renders accessibility labels for color indicators", () => {
+    it("hides decorative color indicators from assistive tech", () => {
         render(<PortfolioLegend {...defaultProps} />);
 
-        expect(screen.getByLabelText("CC indicator")).toBeInTheDocument();
-        expect(screen.getByLabelText("CW indicator")).toBeInTheDocument();
-        expect(screen.getByLabelText("OD indicator")).toBeInTheDocument();
+        const colorIndicators = screen.getAllByRole("img", { hidden: true });
+
+        colorIndicators.forEach((indicator) => {
+            expect(indicator).toHaveAttribute("aria-hidden", "true");
+        });
     });
 
     it("handles large values correctly", () => {

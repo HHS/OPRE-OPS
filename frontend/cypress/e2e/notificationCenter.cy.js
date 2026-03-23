@@ -1,9 +1,14 @@
 /// <reference types="cypress" />
-import { testLogin } from "./utils";
+import { terminalLog, testLogin } from "./utils";
 
 beforeEach(() => {
     testLogin("system-owner");
     cy.visit("/");
+});
+
+afterEach(() => {
+    cy.injectAxe();
+    cy.checkA11y(null, null, terminalLog);
 });
 
 it("Notification Center appears when you click the bell icon and has 1 item in list", () => {

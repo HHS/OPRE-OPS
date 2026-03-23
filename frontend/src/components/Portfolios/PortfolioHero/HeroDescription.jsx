@@ -65,6 +65,7 @@ const HeroDescription = ({ label, description, url }) => {
                         <FontAwesomeIcon
                             icon={faUpRightFromSquare}
                             className="width-105 margin-left-1"
+                            aria-hidden="true"
                         />
                     </a>
                 )}
