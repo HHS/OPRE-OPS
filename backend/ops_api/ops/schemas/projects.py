@@ -196,7 +196,7 @@ class ProjectListFilterOptionResponseSchema(Schema):
 
 
 class ProjectFundingRequestSchema(Schema):
-    fiscal_year = fields.List(fields.Integer(), required=False, load_default=[])
+    fiscal_year = fields.Integer(required=False, load_default=None)
 
 
 class ProjectFundingByPortfolioSchema(Schema):

@@ -129,9 +129,8 @@ class ProjectFundingAPI(BaseItemAPI):
     @is_authorized(PermissionType.GET, Permission.RESEARCH_PROJECT)
     def get(self, id: int) -> Response:
         request_schema = ProjectFundingRequestSchema()
-        data = request_schema.load(request.args.to_dict(flat=False))
-        fiscal_year_list = data.get("fiscal_year", [])
-        fiscal_year = fiscal_year_list[0] if fiscal_year_list else get_current_fiscal_year()
+        data = request_schema.load(request.args.to_dict())
+        fiscal_year = data.get("fiscal_year") or get_current_fiscal_year()
 
         service = ProjectsService(current_app.db_session)
         funding = service.get_project_funding(id, fiscal_year)
