@@ -174,3 +174,41 @@ class ProjectListFilterOptionResponseSchema(Schema):
     project_titles = fields.List(fields.Dict(keys=fields.String(), values=fields.Raw()), required=True)
     project_types = fields.List(fields.String(), required=True)
     agreement_names = fields.List(fields.String(), required=True)
+
+
+class ProjectFundingRequestSchema(Schema):
+    fiscal_year = fields.List(fields.Integer(), required=False, load_default=[])
+
+
+class ProjectFundingByPortfolioSchema(Schema):
+    portfolio_id = fields.Int(required=True)
+    portfolio = fields.String(required=True)
+    amount = fields.Float(required=True)
+
+
+class ProjectFundingByCANSchema(Schema):
+    total = fields.Float(required=True)
+    carry_forward_funding = fields.Float(required=True)
+    new_funding = fields.Float(required=True)
+
+
+class ProjectFundingByFiscalYearSchema(Schema):
+    fiscal_year = fields.Int(required=True)
+    amount = fields.Float(required=True)
+
+
+class ProjectFundingCANSchema(Schema):
+    id = fields.Int(required=True)
+    number = fields.String(required=True)
+    portfolio_id = fields.Int(required=True)
+    portfolio = fields.String(required=True, allow_none=True)
+    active_period = fields.Int(required=True, allow_none=True)
+    fy_funding = fields.Float(required=True)
+    lifetime_funding = fields.Float(required=True)
+
+
+class ProjectFundingResponseSchema(Schema):
+    funding_by_portfolio = fields.List(fields.Nested(ProjectFundingByPortfolioSchema))
+    funding_by_can = fields.Nested(ProjectFundingByCANSchema)
+    funding_by_fiscal_year = fields.List(fields.Nested(ProjectFundingByFiscalYearSchema))
+    cans = fields.List(fields.Nested(ProjectFundingCANSchema))

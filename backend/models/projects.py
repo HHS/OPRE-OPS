@@ -121,6 +121,113 @@ class Project(BaseModel):
             "agreement_name_list": agreement_name_list,
         }
 
+    def get_project_funding(self, fiscal_year: int) -> dict:
+        """
+        Calculate project funding summary based on CANFundingBudget records.
+
+        Collects unique CANs associated with this project (via agreements → BLIs → CAN),
+        then aggregates their funding budgets.
+
+        Args:
+            fiscal_year: The fiscal year to scope carry-forward/new classification and FY-specific funding.
+
+        Returns a dict with:
+        - funding_by_portfolio: CANFundingBudget totals grouped by CAN portfolio for the given FY
+        - funding_by_can: Carry-forward vs new funding breakdown for the given FY
+        - funding_by_fiscal_year: CANFundingBudget totals grouped by fiscal year (all years)
+        - cans: Per-CAN detail with FY funding and lifetime funding
+        """
+        from collections import defaultdict
+
+        # Step 0: Collect unique CANs across all project agreements
+        unique_cans: set = set()
+        for agreement in self.agreements:
+            for bli in agreement.budget_line_items:
+                if bli.can:
+                    unique_cans.add(bli.can)
+
+        # --- funding_by_portfolio ---
+        portfolio_totals: dict[int, Decimal] = defaultdict(lambda: Decimal("0"))
+        portfolio_names: dict[int, str] = {}
+        for can in unique_cans:
+            if can.portfolio:
+                for fb in can.funding_budgets:
+                    if fb.fiscal_year == fiscal_year:
+                        portfolio_totals[can.portfolio_id] += fb.budget or Decimal("0")
+                        portfolio_names[can.portfolio_id] = can.portfolio.name
+
+        funding_by_portfolio = [
+            {"portfolio_id": pid, "portfolio": portfolio_names[pid], "amount": float(amt)}
+            for pid, amt in portfolio_totals.items()
+        ]
+
+        # --- funding_by_can (carry-forward vs new classification) ---
+        # Logic inlined from get_can_funding_summary in ops_api/ops/utils/cans.py
+        new_funding = Decimal("0")
+        carry_forward_funding = Decimal("0")
+        for can in unique_cans:
+            if not can.funding_details:
+                continue
+            for fb in can.funding_budgets:
+                if fb.fiscal_year == fiscal_year:
+                    budget = fb.budget or Decimal("0")
+                    if can.active_period == 1:
+                        # 1-year CANs: all budget is new funding
+                        new_funding += budget
+                    elif fiscal_year == can.funding_details.fiscal_year:
+                        # Multi-year CAN in its appropriation year: new funding
+                        new_funding += budget
+                    else:
+                        # Multi-year CAN past its appropriation year: carry-forward
+                        carry_forward_funding += budget
+
+        total_funding = carry_forward_funding + new_funding
+        funding_by_can = {
+            "total": float(total_funding),
+            "carry_forward_funding": float(carry_forward_funding),
+            "new_funding": float(new_funding),
+        }
+
+        # --- funding_by_fiscal_year (all years, not filtered by parameter) ---
+        fy_totals: dict[int, Decimal] = defaultdict(lambda: Decimal("0"))
+        for can in unique_cans:
+            for fb in can.funding_budgets:
+                fy_totals[fb.fiscal_year] += fb.budget or Decimal("0")
+
+        funding_by_fiscal_year = [
+            {"fiscal_year": fy, "amount": float(amt)}
+            for fy, amt in sorted(fy_totals.items())
+        ]
+
+        # --- cans ---
+        cans_list = []
+        for can in sorted(unique_cans, key=lambda c: c.id):
+            fy_funding = sum(
+                (fb.budget or Decimal("0"))
+                for fb in can.funding_budgets
+                if fb.fiscal_year == fiscal_year
+            )
+            lifetime_funding = sum(
+                (fb.budget or Decimal("0"))
+                for fb in can.funding_budgets
+            )
+            cans_list.append({
+                "id": can.id,
+                "number": can.number,
+                "portfolio_id": can.portfolio_id,
+                "portfolio": can.portfolio.name if can.portfolio else None,
+                "active_period": can.active_period,
+                "fy_funding": float(fy_funding),
+                "lifetime_funding": float(lifetime_funding),
+            })
+
+        return {
+            "funding_by_portfolio": funding_by_portfolio,
+            "funding_by_can": funding_by_can,
+            "funding_by_fiscal_year": funding_by_fiscal_year,
+            "cans": cans_list,
+        }
+
 
 class ResearchProject(Project):
     __tablename__ = "research_project"

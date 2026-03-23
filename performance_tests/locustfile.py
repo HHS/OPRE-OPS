@@ -193,6 +193,27 @@ class OPSAPIUser(HttpUser):
             project_id = random.choice(SHARED_CACHE["project_ids"])
             self.client.get(f"/api/v1/projects/{project_id}", name="/api/v1/projects/[id]")
 
+    @task(3)
+    def get_project_funding(self):
+        """GET /api/v1/projects/{id}/funding/ - Get project funding summary (current FY)."""
+        if SHARED_CACHE["project_ids"]:
+            project_id = random.choice(SHARED_CACHE["project_ids"])
+            self.client.get(
+                f"/api/v1/projects/{project_id}/funding/",
+                name="/api/v1/projects/[id]/funding/",
+            )
+
+    @task(2)
+    def get_project_funding_with_fiscal_year(self):
+        """GET /api/v1/projects/{id}/funding/?fiscal_year={fy} - Get project funding for specific FY."""
+        if SHARED_CACHE["project_ids"]:
+            project_id = random.choice(SHARED_CACHE["project_ids"])
+            fiscal_year = random.choice([2023, 2024, 2025, 2026])
+            self.client.get(
+                f"/api/v1/projects/{project_id}/funding/?fiscal_year={fiscal_year}",
+                name="/api/v1/projects/[id]/funding/?fiscal_year=[fy]",
+            )
+
     # === Portfolio Tasks ===
 
     @task(6)

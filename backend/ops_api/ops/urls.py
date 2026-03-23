@@ -53,6 +53,7 @@ from ops_api.ops.views import (
     PROCUREMENT_TRACKER_STEP_LIST_API_VIEW_FUNC,
     PRODUCT_SERVICE_CODE_ITEM_API_VIEW_FUNC,
     PRODUCT_SERVICE_CODE_LIST_API_VIEW_FUNC,
+    PROJECT_FUNDING_API_VIEW_FUNC,
     PROJECT_ITEM_API_VIEW_FUNC,
     PROJECT_LIST_API_VIEW_FUNC,
     PROJECT_LIST_FILTER_OPTION_API_VIEW_FUNC,
@@ -224,6 +225,10 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/projects/",
         view_func=PROJECT_LIST_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/projects/<int:id>/funding/",
+        view_func=PROJECT_FUNDING_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
         "/projects-filters/",
