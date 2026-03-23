@@ -65,7 +65,9 @@ class ProcurementTrackerStepService:
         else:
             raise ResourceNotFoundError("ProcurementTrackerStep", id)
 
-    def update(self, id: int, data: Dict[str, Any], current_user: User) -> Tuple[ProcurementTrackerStep, int]:
+    def update(  # noqa: C901
+        self, id: int, data: Dict[str, Any], current_user: User
+    ) -> Tuple[ProcurementTrackerStep, int]:
         """
         Update a procurement tracker step.
 
@@ -126,6 +128,10 @@ class ProcurementTrackerStepService:
                 "approval_requested_date": "pre_award_approval_requested_date",
                 "approval_requested_by": "pre_award_approval_requested_by",
                 "requestor_notes": "pre_award_requestor_notes",
+                "approval_status": "pre_award_approval_status",
+                "approval_responded_by": "pre_award_approval_responded_by",
+                "approval_responded_date": "pre_award_approval_responded_date",
+                "reviewer_notes": "pre_award_approval_reviewer_notes",
             },
         }
 
@@ -161,6 +167,16 @@ class ProcurementTrackerStepService:
         if data.get("approval_requested") is True:
             step.pre_award_approval_requested_by = current_user.id
             logger.debug(f"Set pre_award_approval_requested_by = {current_user.id} (server-controlled)")
+
+        # Always set approval_responded_by and date when approval_status is set
+        # These are server-controlled and never accepted from the client
+        if data.get("approval_status") in ["APPROVED", "DECLINED"]:
+            step.pre_award_approval_responded_by = current_user.id
+            step.pre_award_approval_responded_date = date.today()
+            logger.debug(
+                f"Set pre_award_approval_responded_by = {current_user.id}, "
+                f"pre_award_approval_responded_date = {date.today()} (server-controlled)"
+            )
 
         # Handle COMPLETED status
         self._advance_active_step_if_needed(step, data, current_user)
