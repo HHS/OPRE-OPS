@@ -2,6 +2,7 @@ import { faClone } from "@fortawesome/free-regular-svg-icons";
 import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { getTooltipLabel } from "../../../helpers/budgetLines.helpers";
+import { CHANGE_REQUESTS_TOOLTIP_LOADING } from "../../../hooks/useChangeRequests.hooks";
 import icons from "../../../uswds/img/sprite.svg";
 import Tooltip from "../../UI/USWDS/Tooltip";
 import { DISABLED_ICON_CLASSES } from "./DisabledChangeIcons.constants";
@@ -39,7 +40,7 @@ const ChangeIcons = ({
 
     const notEditableOrDeletableMsg = getTooltipLabel(item);
     const tooltipLabel =
-        lockedMessage === "Loading..." && notEditableOrDeletableMsg
+        lockedMessage === CHANGE_REQUESTS_TOOLTIP_LOADING && notEditableOrDeletableMsg
             ? notEditableOrDeletableMsg
             : lockedMessage || notEditableOrDeletableMsg;
 

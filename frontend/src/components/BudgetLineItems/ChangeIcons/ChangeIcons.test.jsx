@@ -1,6 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi } from "vitest";
+import { CHANGE_REQUESTS_TOOLTIP_LOADING } from "../../../hooks/useChangeRequests.hooks";
 import ChangeIcons from "./ChangeIcons";
 import { DISABLED_ICON_CLASSES } from "./DisabledChangeIcons.constants";
 
@@ -76,7 +77,7 @@ describe("ChangeIcons", () => {
                 {...defaultProps}
                 isItemEditable={false}
                 item={{ ...mockItem, status: "IN_EXECUTION" }}
-                lockedMessage="Loading..."
+                lockedMessage={CHANGE_REQUESTS_TOOLTIP_LOADING}
             />
         );
 
@@ -91,11 +92,11 @@ describe("ChangeIcons", () => {
             <ChangeIcons
                 {...defaultProps}
                 isItemEditable={false}
-                lockedMessage="Loading..."
+                lockedMessage={CHANGE_REQUESTS_TOOLTIP_LOADING}
             />
         );
 
-        expect(getEditTooltip()).toHaveAttribute("data-label", "Loading...");
+        expect(getEditTooltip()).toHaveAttribute("data-label", CHANGE_REQUESTS_TOOLTIP_LOADING);
     });
 
     it("calls handleSetItemForEditing when edit button is clicked", async () => {
