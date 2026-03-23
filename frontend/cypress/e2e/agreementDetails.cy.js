@@ -12,6 +12,17 @@ const selectDifferentContractType = (selector = "#contract-type") => {
         });
 };
 
+const getDescribedByText = ($element) => {
+    const describedBy = $element.attr("aria-describedby") || "";
+
+    return describedBy
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean)
+        .map((id) => Cypress.$(`#${id}`).text().trim())
+        .join(" ");
+};
+
 beforeEach(() => {
     testLogin("system-owner");
 });
@@ -160,12 +171,13 @@ describe("agreement details", () => {
             .next("[data-testid='expanded-data']")
             .find("[data-cy='edit-row']")
             .should("be.disabled")
-            .should("have.attr", "aria-describedby")
-            .then((descId) => {
-                const firstId = descId.trim().split(/\s+/)[0];
-                cy.get(`#${firstId}`, { timeout: 10000 })
-                    .should("contain", "Executing Status")
-                    .and("contain", "budget team");
+            .should(($button) => {
+                expect($button.attr("aria-describedby")).to.be.a("string").and.not.be.empty;
+
+                const tooltipText = getDescribedByText($button);
+
+                expect(tooltipText).to.contain("Executing Status");
+                expect(tooltipText).to.contain("budget team");
             });
     });
 
