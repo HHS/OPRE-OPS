@@ -236,6 +236,9 @@ class ProjectsService(OpsService[Project]):
             .options(
                 selectinload(ResearchProject.agreements).selectinload(Agreement.services_components),
                 selectinload(ResearchProject.agreements).selectinload(Agreement.budget_line_items),
+                selectinload(ResearchProject.agreements).selectinload(Agreement.special_topics),
+                selectinload(ResearchProject.agreements).selectinload(Agreement.research_methodologies),
+                selectinload(ResearchProject.agreements).selectinload(Agreement.team_members),
             )
         )
 
@@ -298,8 +301,11 @@ class ProjectsService(OpsService[Project]):
             .join(CANFundingDetails, isouter=True)
             .join(CANFundingBudget, isouter=True)
             .options(
-                selectinload(AdministrativeAndSupportProject.agreements).selectinload(Agreement.services_components),
-                selectinload(AdministrativeAndSupportProject.agreements).selectinload(Agreement.budget_line_items),
+                selectinload(ResearchProject.agreements).selectinload(Agreement.services_components),
+                selectinload(ResearchProject.agreements).selectinload(Agreement.budget_line_items),
+                selectinload(ResearchProject.agreements).selectinload(Agreement.special_topics),
+                selectinload(ResearchProject.agreements).selectinload(Agreement.research_methodologies),
+                selectinload(ResearchProject.agreements).selectinload(Agreement.team_members),
             )
         )
 
@@ -530,7 +536,7 @@ class ProjectsService(OpsService[Project]):
             .where(Project.id.in_(project_ids_subquery))
         )
         portfolios = [{"id": p_id, "name": p_name} for p_id, p_name in self.db_session.execute(portfolios_query).all()]
-        portfolios = sorted(portfolios, key=lambda x: x["name"])
+        portfolios = sorted(portfolios, key=lambda x: x["name"] if x["name"] else "")
 
         # Step 4: Project titles
         projects_query = select(distinct(Project.id), Project.title).where(Project.title.isnot(None))
