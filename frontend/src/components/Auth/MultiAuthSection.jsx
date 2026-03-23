@@ -6,7 +6,7 @@ import { useLoginMutation } from "../../api/opsAuthAPI";
 import ContainerModal from "../UI/Modals/ContainerModal";
 import { getAuthorizationCode, setActiveUser } from "./auth";
 import { login, logout } from "./authSlice";
-import PacmanLoader from "react-spinners/PacmanLoader";
+import { PacmanLoader } from "react-spinners";
 
 /**
  * Component that handles multiple authentication methods
@@ -25,13 +25,14 @@ const MultiAuthSection = () => {
     /**
      * Handles the authentication code callback from the provider
      * @param {string} authCode - The authorization code from the provider
+     * @param {string|null} provider - The auth provider name (extracted from OAuth state), falls back to localStorage
      */
     const callBackend = useCallback(
-        async (authCode) => {
+        async (authCode, provider = null) => {
             setIsAuthenticating(true);
             try {
                 console.log(`Received Authentication Code = ${authCode}`);
-                const activeProvider = localStorage.getItem("activeProvider");
+                const activeProvider = provider || localStorage.getItem("activeProvider");
                 if (!activeProvider) {
                     console.error("API Login Failed! No Active Provider");
                     navigate("/login");
@@ -93,8 +94,12 @@ const MultiAuthSection = () => {
                 console.error("State mismatch:", { localStateString, returnedState });
                 throw new Error("Response from OIDC provider is invalid.");
             } else if (authCode) {
+                // Extract provider from the state parameter (format: "randomString|provider")
+                const pipeIndex = returnedState.lastIndexOf("|");
+                const provider = pipeIndex !== -1 ? returnedState.substring(pipeIndex + 1) : null;
+
                 // Handle the code immediately, no need to check tokens first
-                callBackend(authCode).catch((error) => {
+                callBackend(authCode, provider).catch((error) => {
                     console.error("Error in callBackend:", error);
                     dispatch(logout());
                     navigate("/login");
@@ -135,7 +140,11 @@ const MultiAuthSection = () => {
         localStorage.setItem("activeProvider", provider);
         const stateKey = localStorage.getItem("ops-state-key");
         if (stateKey) {
-            const authUrl = getAuthorizationCode(provider, stateKey);
+            // Encode provider in the state so it survives the OAuth round-trip
+            // independent of localStorage (which can be cleared by a race with postRefresh/logout)
+            const stateWithProvider = `${stateKey}|${provider}`;
+            localStorage.setItem("ops-state-key", stateWithProvider);
+            const authUrl = getAuthorizationCode(provider, stateWithProvider);
             window.location.href = authUrl.toString();
         } else {
             console.error("No state key found for SSO login");

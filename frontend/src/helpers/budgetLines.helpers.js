@@ -1,6 +1,6 @@
 import { NO_DATA } from "../constants";
 import { getTypesCounts } from "../pages/cans/detail/Can.helpers";
-import { formatDateNeeded, formatDateToMonthDayYear } from "./utils";
+import { convertCodeForDisplay, formatDateNeeded, formatDateToMonthDayYear } from "./utils";
 import { setAlert } from "../components/UI/Alert/alertSlice.js";
 /** @typedef {import("../types/BudgetLineTypes").BudgetLine} BudgetLine */
 
@@ -387,6 +387,7 @@ export const handleExport = async (
             "BL ID #",
             "Portfolio",
             "Project",
+            "Project Type",
             "Agreement",
             "SC",
             "Agreement Type",
@@ -418,6 +419,9 @@ export const handleExport = async (
                         budgetLine.id,
                         budgetLinesDataMap[budgetLine.id]?.portfolio_name,
                         budgetLine.agreement?.project?.title ?? NO_DATA,
+                        budgetLine.agreement?.project?.project_type
+                            ? convertCodeForDisplay("project", budgetLine.agreement.project.project_type)
+                            : NO_DATA,
                         budgetLine.agreement?.name ?? NO_DATA,
                         budgetLinesDataMap[budgetLine.id]?.service_component_name,
                         budgetLine.agreement?.agreement_type ?? NO_DATA,
@@ -434,7 +438,7 @@ export const handleExport = async (
                     ];
                 },
             filename: "budget_lines",
-            currencyColumns: [10, 12]
+            currencyColumns: [11, 13]
         });
     } catch (error) {
         console.error("Failed to export data:", error);
