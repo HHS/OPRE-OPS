@@ -185,6 +185,9 @@ class ProcurementTrackerStepService:
         self.db_session.commit()
         self.db_session.refresh(step)
 
+        # Handle approval notifications after commit
+        self._handle_approval_notifications(step, data, current_user)
+
         logger.debug(f"Successfully updated procurement tracker step {id}")
 
         return step, 200
@@ -266,6 +269,101 @@ class ProcurementTrackerStepService:
             f"Created UPDATE_PROCUREMENT_TRACKER event for tracker {procurement_tracker.id} "
             f"(agreement {procurement_tracker.agreement_id})"
         )
+
+    def _handle_approval_notifications(
+        self, step: ProcurementTrackerStep, data: Dict[str, Any], current_user: User
+    ) -> None:
+        """
+        Send notifications when approval is requested or responded to.
+
+        Args:
+            step: The updated procurement tracker step
+            data: The update data
+            current_user: User making the update
+        """
+        from models import NotificationType
+        from ops_api.ops.services.notifications import NotificationService
+
+        notification_service = NotificationService(self.db_session)
+        agreement = step.procurement_tracker.agreement
+
+        # Case 1: Approval was just requested - notify reviewers
+        if data.get("approval_requested") is True and step.pre_award_approval_requested:
+            recipient_ids = self._get_approval_reviewers(agreement)
+
+            fe_url = current_app.config.get("OPS_FRONTEND_URL", "http://localhost:3000")
+            agreement_url = f"{fe_url}/agreements/{agreement.id}?procurementTracker=true"
+
+            for recipient_id in recipient_ids:
+                notification_service.create(
+                    {
+                        "title": "Pre-Award Approval Request",
+                        "message": (
+                            f"A pre-award approval has been requested for Agreement {agreement.display_name}. "
+                            f"Please review and respond.\n\n[View Agreement]({agreement_url})"
+                        ),
+                        "is_read": False,
+                        "recipient_id": recipient_id,
+                        "notification_type": NotificationType.NOTIFICATION,
+                    }
+                )
+            logger.debug(f"Created {len(recipient_ids)} pre-award approval request notifications")
+
+        # Case 2: Approval was approved/declined - notify submitter
+        elif data.get("approval_status") in ["APPROVED", "DECLINED"]:
+            status_text = "approved" if data["approval_status"] == "APPROVED" else "declined"
+
+            if step.pre_award_approval_requested_by:
+                notification_service.create(
+                    {
+                        "title": f"Pre-Award Approval {status_text.capitalize()}",
+                        "message": (
+                            f"Your pre-award approval request for Agreement {agreement.display_name} "
+                            f"has been {status_text} by {current_user.full_name}."
+                        ),
+                        "is_read": False,
+                        "recipient_id": step.pre_award_approval_requested_by,
+                        "notification_type": NotificationType.NOTIFICATION,
+                    }
+                )
+                logger.debug(f"Created pre-award approval {status_text} notification for submitter")
+
+    def _get_approval_reviewers(self, agreement) -> set[int]:
+        """
+        Get user IDs who can approve pre-award requests.
+
+        Returns IDs of Division Directors, Deputy Division Directors,
+        Budget Team, and System Owners.
+
+        Args:
+            agreement: The agreement to get reviewers for
+
+        Returns:
+            Set of user IDs authorized to review
+        """
+        from sqlalchemy import select
+
+        from models import Role
+        from ops_api.ops.utils.agreements_helpers import get_division_directors_for_agreement
+
+        reviewer_ids = set()
+
+        # Get division directors for the agreement
+        directors, deputies = get_division_directors_for_agreement(agreement)
+        reviewer_ids.update(directors)
+        reviewer_ids.update(deputies)
+
+        # Get BUDGET_TEAM and SYSTEM_OWNER users
+        role_based_users = (
+            self.db_session.execute(
+                select(User.id).where(User.roles.any(Role.name.in_(["BUDGET_TEAM", "SYSTEM_OWNER"])))
+            )
+            .scalars()
+            .all()
+        )
+        reviewer_ids.update(role_based_users)
+
+        return reviewer_ids
 
     def _apply_agreement_filter(self, stmt: Select[tuple[ProcurementTrackerStep]], agreement_id: list[int] | int):
         """Apply agreement_id filter to the query."""
