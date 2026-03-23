@@ -2,7 +2,7 @@ services:
 
   db:
     image: "postgres:16"
-    container_name: ops-db
+
     security_opt:
       - no-new-privileges:true  # Resolve semgrep https://sg.run/0n8q
     environment:
@@ -12,7 +12,7 @@ services:
     volumes:
       - ./backend/data_tools/ops_db_sql_init:/docker-entrypoint-initdb.d
     ports:
-      - "5432:5432"
+      - "${DB_PORT:-5432}:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
@@ -23,7 +23,7 @@ services:
     build:
       context: ./backend/
       dockerfile: Dockerfile.data-tools
-    container_name: ops-data-import
+    profiles: [setup]
     environment:
       - ENV=local
       - SQLALCHEMY_DATABASE_URI=postgresql://ops:ops@db:5432/postgres
@@ -41,7 +41,7 @@ services:
     build:
       context: ./backend/
       dockerfile: Dockerfile.data-tools
-    container_name: disable-users
+    profiles: [setup]
     environment:
       - ENV=local
       - SQLALCHEMY_DATABASE_URI=postgresql://ops:ops@db:5432/postgres
@@ -56,9 +56,9 @@ services:
     build:
       context: ./backend/
       dockerfile: Dockerfile.ops-api
-    container_name: ops-backend
+
     ports:
-      - "8080:8080"
+      - "${BACKEND_PORT:-8080}:8080"
     command: /bin/sh -c " . .venv/bin/activate && python -m flask run --debug --host=0.0.0.0 --port=8080"
     environment:
       - JWT_PRIVATE_KEY
@@ -69,8 +69,6 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      data-import:
-        condition: service_completed_successfully
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8080" ]
       interval: 10s
@@ -82,10 +80,10 @@ services:
       context: ./frontend/
       dockerfile: Dockerfile.azure
       args:
-        VITE_BACKEND_DOMAIN: http://localhost:8080
+        VITE_BACKEND_DOMAIN: ${BACKEND_DOMAIN:-http://localhost:8080}
         MODE: dev  # set this to production to create a production build
-    container_name: ops-frontend
+
     ports:
-      - "3000:3000"
+      - "${FRONTEND_PORT:-3000}:3000"
     depends_on:
       - backend

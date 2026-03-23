@@ -5711,10 +5711,10 @@ components:
             "2023": "1000.00"
             "2024": "2000.00"
         project_total:
-          type: integer
+          type: string
           nullable: true
           description: Total value of all agreements in the project (sum of agreement_total for each)
-          example: 3000
+          example: "3000.00"
         agreement_name_list:
           type: array
           nullable: true
@@ -5794,10 +5794,10 @@ components:
             "2023": "1000.00"
             "2024": "2000.00"
         project_total:
-          type: integer
+          type: string
           nullable: true
           description: Total value of all agreements in the project (sum of agreement_total for each)
-          example: 3000
+          example: "3000.00"
         agreement_name_list:
           type: array
           nullable: true

@@ -1,7 +1,7 @@
 services:
   unittest_db:
     image: "postgres:16"
-    container_name: unit-test-db
+
     command: -c 'max_connections=400'
     security_opt:
       - no-new-privileges:true  # Resolve semgrep https://sg.run/0n8q
@@ -12,7 +12,7 @@ services:
     volumes:
       - ../../data_tools/ops_db_sql_init:/docker-entrypoint-initdb.d
     ports:
-      - "5432:5432"
+      - "${DB_PORT:-5432}:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
@@ -24,6 +24,7 @@ services:
       context: ../../../backend
       dockerfile: Dockerfile.data-tools
     container_name: pytest-data-import
+
     environment:
       - ENV=pytest
       - SQLALCHEMY_DATABASE_URI=postgresql://ops:ops@unittest_db:5432/postgres
