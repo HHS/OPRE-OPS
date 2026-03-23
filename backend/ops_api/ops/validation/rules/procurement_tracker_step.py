@@ -569,3 +569,104 @@ class Step4CompletionRequiredForApprovalRequestRule(ValidationRule):
                     "approval_requested": f"Cannot request pre-award approval: Step 4 (Evaluation) must be completed first. Current status: {step_4.status}"
                 }
             )
+
+
+class PreAwardApprovalResponseAuthorizationRule(ValidationRule):
+    """
+    Validates that the user responding to pre-award approval is authorized.
+    Only checks when approval_status is being updated for PRE_AWARD steps.
+
+    Authorized users are:
+    - Division Directors and Deputy Directors (for divisions linked to the agreement)
+    - BUDGET_TEAM role members
+    - SYSTEM_OWNER role members
+    """
+
+    @property
+    def name(self) -> str:
+        return "PRE_AWARD Approval Response Authorization"
+
+    def validate(self, procurement_tracker_step: ProcurementTrackerStep, context: ValidationContext) -> None:
+        from ops_api.ops.utils.agreements_helpers import get_division_directors_for_agreement
+
+        # Only validate if step type is PRE_AWARD
+        if procurement_tracker_step.step_type != ProcurementTrackerStepType.PRE_AWARD:
+            return
+
+        updated_fields = context.updated_fields
+
+        # Only validate if approval_status is being updated
+        if "approval_status" not in updated_fields:
+            return
+
+        # Get the agreement
+        if (
+            not procurement_tracker_step.procurement_tracker
+            or not procurement_tracker_step.procurement_tracker.agreement
+        ):
+            raise ValidationError({"agreement": "Procurement tracker step is not linked to a valid agreement."})
+
+        agreement = procurement_tracker_step.procurement_tracker.agreement
+        user_id = context.user.id
+
+        # Check if user is a division director or deputy
+        directors, deputies = get_division_directors_for_agreement(agreement)
+        if user_id in directors or user_id in deputies:
+            return
+
+        # Check if user has BUDGET_TEAM or SYSTEM_OWNER role
+        user = context.db_session.get(User, user_id)
+        if user:
+            user_role_names = {role.name for role in user.roles}
+            if "BUDGET_TEAM" in user_role_names or "SYSTEM_OWNER" in user_role_names:
+                return
+
+        raise AuthorizationError(
+            f"User {user_id} is not authorized to respond to pre-award approval requests for procurement tracker step {procurement_tracker_step.id}.",
+            "ProcurementTrackerStep",
+        )
+
+
+class PreAwardApprovalResponseValidationRule(ValidationRule):
+    """
+    Validates that approval responses are valid:
+    - Can only respond if approval has been requested
+    - Cannot respond if already responded
+    - Reviewer notes required when declining
+    """
+
+    @property
+    def name(self) -> str:
+        return "PRE_AWARD Approval Response Validation"
+
+    def validate(self, procurement_tracker_step: ProcurementTrackerStep, context: ValidationContext) -> None:
+        # Only validate if step type is PRE_AWARD
+        if procurement_tracker_step.step_type != ProcurementTrackerStepType.PRE_AWARD:
+            return
+
+        updated_fields = context.updated_fields
+
+        # Only validate if approval_status is being updated
+        if "approval_status" not in updated_fields:
+            return
+
+        # Check if approval was requested
+        if not procurement_tracker_step.pre_award_approval_requested:
+            raise ValidationError(
+                {"approval_status": "Cannot respond to approval request that has not been submitted."}
+            )
+
+        # Check if already responded
+        if procurement_tracker_step.pre_award_approval_status:
+            raise ValidationError(
+                {
+                    "approval_status": f"This approval request has already been {procurement_tracker_step.pre_award_approval_status.lower()}."
+                }
+            )
+
+        # Require reviewer notes when declining
+        if updated_fields["approval_status"] == "DECLINED":
+            if not updated_fields.get("reviewer_notes") or not updated_fields["reviewer_notes"].strip():
+                raise ValidationError(
+                    {"reviewer_notes": "Reviewer notes are required when declining an approval request."}
+                )
