@@ -36,6 +36,10 @@ const AllBLIRow = ({ budgetLine }) => {
     const { data: budgetLinePortfolio, isLoading: isPortfolioLoading } = useGetPortfolioByIdQuery(
         budgetLine?.portfolio_id
     );
+    const agreementName = budgetLine?.agreement?.name?.trim() || NO_DATA;
+    const agreementLinkLabel =
+        budgetLine?.agreement?.name?.trim() ||
+        (budgetLine?.agreement?.id ? `Agreement ${budgetLine.agreement.id}` : "Agreement details");
 
     const TableRowData = (
         <>
@@ -51,15 +55,23 @@ const AllBLIRow = ({ budgetLine }) => {
                 style={bgExpandedStyles}
                 data-cy="agreement-name"
             >
-                <Link
-                    to={`/agreements/${budgetLine?.agreement?.id}`}
-                    className="text-ink text-no-underline"
-                >
+                {budgetLine?.agreement?.id ? (
+                    <Link
+                        to={`/agreements/${budgetLine.agreement.id}`}
+                        className="text-ink text-no-underline"
+                        aria-label={agreementLinkLabel}
+                    >
+                        <TextClip
+                            text={agreementName}
+                            maxLines={1}
+                        />
+                    </Link>
+                ) : (
                     <TextClip
-                        text={budgetLine?.agreement?.name}
+                        text={agreementName}
                         maxLines={1}
                     />
-                </Link>
+                )}
             </td>
             <td
                 className={borderExpandedStyles}

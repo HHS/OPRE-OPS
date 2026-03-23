@@ -58,8 +58,7 @@ const PortfolioLegend = ({ data, activeId = 0 }) => {
                                 icon={faCircle}
                                 className={styles.colorDot}
                                 style={{ color: item.color }}
-                                aria-label={`${item.abbreviation} indicator`}
-                                role="img"
+                                aria-hidden="true"
                             />
                             <span className={`${styles.abbreviation} ${isActive ? "fake-bold" : ""}`}>
                                 {item.abbreviation}

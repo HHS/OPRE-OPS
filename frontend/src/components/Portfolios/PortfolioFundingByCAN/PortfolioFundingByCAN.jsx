@@ -96,6 +96,7 @@ const PortfolioFundingByCAN = () => {
                                     <FontAwesomeIcon
                                         icon={faSquare}
                                         style={{ color: item.color }}
+                                        aria-hidden="true"
                                     />
                                 </span>
                                 <span>{item.number}</span>

@@ -83,8 +83,7 @@ const BLIStatusSummaryCard = ({
                             icon={faCircle}
                             className="margin-right-05"
                             style={{ color: color, width: "var(--legend-dot-size)", height: "var(--legend-dot-size)" }}
-                            aria-label={`${label} indicator`}
-                            role="img"
+                            aria-hidden="true"
                         />
                         <span className={isGraphActive ? "fake-bold" : ""}>{label}</span>
                     </div>

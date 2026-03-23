@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import PacmanLoader from "react-spinners/PacmanLoader";
+import { PacmanLoader } from "react-spinners";
 import {
     useGetAgreementsFilterOptionsQuery,
     useGetAgreementsQuery,

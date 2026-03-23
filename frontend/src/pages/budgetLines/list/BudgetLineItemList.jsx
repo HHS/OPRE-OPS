@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import PacmanLoader from "react-spinners/PacmanLoader";
+import { PacmanLoader } from "react-spinners";
 import App from "../../../App";
 import {
     useGetBudgetLineItemsQuery,

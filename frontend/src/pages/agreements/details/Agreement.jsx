@@ -161,7 +161,11 @@ const Agreement = () => {
     }, [agreement]);
 
     if (isLoadingAgreement) {
-        return <div>Loading...</div>;
+        return (
+            <App breadCrumbName="Agreement">
+                <h1>Loading...</h1>
+            </App>
+        );
     }
     if (errorAgreement) {
         navigate("/error");
@@ -197,7 +201,6 @@ const Agreement = () => {
                         className="usa-icon margin-left-05"
                         aria-hidden="true"
                         focusable="false"
-                        role="img"
                     >
                         <use href={`${icons}#verified`}></use>
                     </svg>
