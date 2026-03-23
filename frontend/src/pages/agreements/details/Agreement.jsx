@@ -201,7 +201,6 @@ const Agreement = () => {
                         className="usa-icon margin-left-05"
                         aria-hidden="true"
                         focusable="false"
-                        role="img"
                     >
                         <use href={`${icons}#verified`}></use>
                     </svg>
