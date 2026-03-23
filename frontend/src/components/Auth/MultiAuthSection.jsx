@@ -17,7 +17,10 @@ const MultiAuthSection = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [showModal, setShowModal] = useState(false);
-    const [isAuthenticating, setIsAuthenticating] = useState(false);
+    const [isAuthenticating, setIsAuthenticating] = useState(() => {
+        const params = new URLSearchParams(window.location.search);
+        return params.has("code") && params.has("state");
+    });
 
     // Get the RTK Query login mutation hook
     const [loginMutation] = useLoginMutation();
