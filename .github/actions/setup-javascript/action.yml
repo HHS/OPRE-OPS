@@ -23,7 +23,7 @@ runs:
         while [ "$attempt" -le "$max_attempts" ]; do
           echo "bun install attempt ${attempt}/${max_attempts}"
           if bun install --frozen-lockfile; then
-            exit 0
+            break
           fi
 
           if [ "$attempt" -eq "$max_attempts" ]; then
@@ -35,3 +35,6 @@ runs:
           echo "Retrying bun install in 5s..."
           sleep 5
         done
+
+        bunx cypress install
+        bunx cypress verify

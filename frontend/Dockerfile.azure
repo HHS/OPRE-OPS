@@ -1,5 +1,5 @@
 # ---- Dependency Installation Stage ----
-FROM oven/bun@sha256:7ed9f74c326d1c260abe247ac423ccbf5ac92af62bb442d515d1f92f21e8ea9b as deps
+FROM oven/bun@sha256:0733e50325078969732ebe3b15ce4c4be5082f18c4ac1a0f0ca4839c2e4e42a7 as deps
 
 WORKDIR /home/bun/app
 

@@ -92,7 +92,11 @@ export const ReviewAgreement = () => {
     }, [isLoadingAgreement, errorAgreement, agreement, canUserEditAgreement, navigate]);
 
     if (isLoadingAgreement) {
-        return <h1>Loading...</h1>;
+        return (
+            <App breadCrumbName="Request BL Status Change">
+                <h1>Loading...</h1>
+            </App>
+        );
     }
 
     return (

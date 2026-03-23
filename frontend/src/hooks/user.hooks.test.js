@@ -3,7 +3,7 @@ import { Provider } from "react-redux";
 import { MemoryRouter } from "react-router-dom";
 import { setupStore } from "../store";
 import { setupListeners } from "@reduxjs/toolkit/query/react";
-import { useIsUserSuperUser, useGetLoggedInUserFullName } from "./user.hooks";
+import { useIsUserSuperUser, useGetLoggedInUserFullName, useIsUserOnlyProcurementTeam } from "./user.hooks";
 import { USER_ROLES } from "../components/Users/User.constants";
 
 // Helper function to create wrapper with Redux provider
@@ -121,6 +121,120 @@ describe("useIsUserSuperUser", () => {
         const { Wrapper } = createWrapper({});
 
         const { result } = renderHook(() => useIsUserSuperUser(), {
+            wrapper: Wrapper
+        });
+
+        expect(result.current).toBe(false);
+    });
+});
+
+describe("useIsUserOnlyProcurementTeam", () => {
+    it("returns true when user has only PROCUREMENT_TEAM role", () => {
+        const { Wrapper } = createWrapper({
+            auth: {
+                activeUser: {
+                    id: 1,
+                    full_name: "Test User",
+                    email: "test@example.com",
+                    roles: [{ id: 6, name: USER_ROLES.PROCUREMENT_TEAM }]
+                }
+            }
+        });
+
+        const { result } = renderHook(() => useIsUserOnlyProcurementTeam(), {
+            wrapper: Wrapper
+        });
+
+        expect(result.current).toBe(true);
+    });
+
+    it("returns false when user has PROCUREMENT_TEAM and another role", () => {
+        const { Wrapper } = createWrapper({
+            auth: {
+                activeUser: {
+                    id: 1,
+                    full_name: "Test User",
+                    email: "test@example.com",
+                    roles: [
+                        { id: 6, name: USER_ROLES.PROCUREMENT_TEAM },
+                        { id: 3, name: USER_ROLES.VIEWER_EDITOR }
+                    ]
+                }
+            }
+        });
+
+        const { result } = renderHook(() => useIsUserOnlyProcurementTeam(), {
+            wrapper: Wrapper
+        });
+
+        expect(result.current).toBe(false);
+    });
+
+    it("returns false when user has a different single role", () => {
+        const { Wrapper } = createWrapper({
+            auth: {
+                activeUser: {
+                    id: 1,
+                    full_name: "Test User",
+                    email: "test@example.com",
+                    roles: [{ id: 3, name: USER_ROLES.VIEWER_EDITOR }]
+                }
+            }
+        });
+
+        const { result } = renderHook(() => useIsUserOnlyProcurementTeam(), {
+            wrapper: Wrapper
+        });
+
+        expect(result.current).toBe(false);
+    });
+
+    it("returns false when user has no roles", () => {
+        const { Wrapper } = createWrapper({
+            auth: {
+                activeUser: {
+                    id: 1,
+                    full_name: "Test User",
+                    email: "test@example.com",
+                    roles: []
+                }
+            }
+        });
+
+        const { result } = renderHook(() => useIsUserOnlyProcurementTeam(), {
+            wrapper: Wrapper
+        });
+
+        expect(result.current).toBe(false);
+    });
+
+    it("returns false when roles is null", () => {
+        const { Wrapper } = createWrapper({
+            auth: {
+                activeUser: {
+                    id: 1,
+                    full_name: "Test User",
+                    email: "test@example.com",
+                    roles: null
+                }
+            }
+        });
+
+        const { result } = renderHook(() => useIsUserOnlyProcurementTeam(), {
+            wrapper: Wrapper
+        });
+
+        expect(result.current).toBe(false);
+    });
+
+    it("returns false when no active user exists", () => {
+        const { Wrapper } = createWrapper({
+            auth: {
+                activeUser: null
+            }
+        });
+
+        const { result } = renderHook(() => useIsUserOnlyProcurementTeam(), {
             wrapper: Wrapper
         });
 
