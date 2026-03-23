@@ -89,7 +89,10 @@ bun run format
 ### Docker Commands
 
 ```bash
-# Run application with development server (hot reload)
+# First run or data reset — starts the full stack including setup services that seed the database
+docker compose --profile setup up --build
+
+# Subsequent runs — starts db + backend + frontend only (faster, no setup containers)
 docker compose up --build
 
 # Run in detached mode
@@ -99,17 +102,34 @@ docker compose up --build -d
 docker compose up --build --watch
 
 # Run with production server configuration
-docker compose -f docker-compose.static.yml up --build
+docker compose -f docker-compose.static.yml --profile setup up --build
 
 # Run with demo data
-docker compose -f docker-compose.demo.yml up --build
+docker compose -f docker-compose.demo.yml --profile setup up --build
 
-# Start just database and data import
-docker compose up db data-import --build
+# Start just database and seed data (e.g. before running migrations)
+docker compose --profile setup up db data-import --build
 
 # Clean up for fresh E2E test runs
 docker system prune --volumes
+
+# Run a second worktree on alternate ports (avoids host-port collisions)
+COMPOSE_PROJECT_NAME=ops_feature_xyz \
+DB_PORT=55432 \
+BACKEND_PORT=58080 \
+FRONTEND_PORT=53000 \
+BACKEND_DOMAIN=http://localhost:58080 \
+docker compose --profile setup up --build
 ```
+
+Port variables and their defaults:
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `DB_PORT` | `5432` | PostgreSQL host port |
+| `BACKEND_PORT` | `8080` | Flask API host port |
+| `FRONTEND_PORT` | `3000` | Frontend host port |
+| `BACKEND_DOMAIN` | `http://localhost:8080` | Backend URL used by the frontend container |
 
 ### RSA Key Generation (Required Setup)
 
