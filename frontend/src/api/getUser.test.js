@@ -10,11 +10,14 @@ test("successfully gets a User from the backend by user_id", async () => {
         first_name: "User"
     };
     TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
-        return [mockBackendResponse];
+        return mockBackendResponse;
     });
 
     const actualGetUser = await getUser(userId);
-    expect(actualGetUser).toStrictEqual([mockBackendResponse]);
+    expect(actualGetUser).toStrictEqual({
+        ...mockBackendResponse,
+        display_name: "User"
+    });
 });
 
 test("successfully gets a User from the backend by user_oidc_id", async () => {
@@ -30,5 +33,10 @@ test("successfully gets a User from the backend by user_oidc_id", async () => {
     });
 
     const actualGetUser = await getUserByOidc(oidcId);
-    expect(actualGetUser).toStrictEqual([mockBackendResponse]);
+    expect(actualGetUser).toStrictEqual([
+        {
+            ...mockBackendResponse,
+            display_name: "User"
+        }
+    ]);
 });

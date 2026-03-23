@@ -61,6 +61,7 @@ const ChangeIcons = ({
                                     title="Edit"
                                     icon={faPen}
                                     className="text-primary height-2 width-2 margin-right-1 cursor-pointer"
+                                    aria-hidden="true"
                                 />
                             </button>
                         </Tooltip>
@@ -90,6 +91,7 @@ const ChangeIcons = ({
                                     className={`text-primary height-2 width-2 margin-right-1 cursor-pointer ${
                                         !isItemDeletable ? DISABLED_ICON_CLASSES : ""
                                     }`}
+                                    aria-hidden="true"
                                 />
                             </button>
                         </Tooltip>
@@ -113,6 +115,7 @@ const ChangeIcons = ({
                                 <FontAwesomeIcon
                                     icon={faPen}
                                     className={disabledClasses}
+                                    aria-hidden="true"
                                 />
                             </button>
                         </Tooltip>
@@ -132,6 +135,7 @@ const ChangeIcons = ({
                                 <FontAwesomeIcon
                                     icon={faTrash}
                                     className={disabledClasses}
+                                    aria-hidden="true"
                                 />
                             </button>
                         </Tooltip>
@@ -155,6 +159,7 @@ const ChangeIcons = ({
                             <FontAwesomeIcon
                                 icon={faClone}
                                 className="text-primary height-2 width-2 cursor-pointer margin-left-0"
+                                aria-hidden="true"
                             />
                         </button>
                     </Tooltip>
@@ -178,6 +183,7 @@ const ChangeIcons = ({
                             <FontAwesomeIcon
                                 icon={faClone}
                                 className={disabledClasses}
+                                aria-hidden="true"
                             />
                         </button>
                     </Tooltip>
@@ -196,7 +202,11 @@ const ChangeIcons = ({
                             data-testid="submit-row"
                             onClick={() => handleSubmitItemForApproval(item.id)}
                         >
-                            <svg className="usa-icon text-primary height-205 width-205 cursor-pointer margin-left-0">
+                            <svg
+                                className="usa-icon text-primary height-205 width-205 cursor-pointer margin-left-0"
+                                aria-hidden="true"
+                                focusable="false"
+                            >
                                 <use href={`${icons}#send`}></use>
                             </svg>
                         </button>
@@ -222,6 +232,8 @@ const ChangeIcons = ({
                         >
                             <svg
                                 className={`usa-icon text-primary height-205 width-205 cursor-pointer margin-left-0 ${DISABLED_ICON_CLASSES}`}
+                                aria-hidden="true"
+                                focusable="false"
                             >
                                 <use href={`${icons}#send`}></use>
                             </svg>

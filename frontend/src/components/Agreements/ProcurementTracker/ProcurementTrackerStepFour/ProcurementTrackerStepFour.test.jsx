@@ -461,4 +461,55 @@ describe("ProcurementTrackerStepFour", () => {
             expect(checkbox).toBeDisabled();
         });
     });
+
+    describe("Read-Only Mode", () => {
+        it("renders TermTags and no form controls when isReadOnly is true and PENDING", () => {
+            render(
+                <ProcurementTrackerStepFour
+                    {...defaultProps}
+                    isReadOnly={true}
+                />
+            );
+
+            expect(screen.getAllByTestId("term-tag").length).toBeGreaterThan(0);
+            expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
+            expect(screen.queryByRole("button", { name: /complete step 4/i })).not.toBeInTheDocument();
+            expect(screen.queryByTestId("users-combobox")).not.toBeInTheDocument();
+        });
+
+        it("shows TBD for empty fields in read-only PENDING mode", () => {
+            useProcurementTrackerStepFour.mockReturnValue({
+                ...defaultHookReturn,
+                step4CompletedByUserName: "",
+                step4DateCompletedLabel: "",
+                step4TargetCompletionDateLabel: "",
+                step4NotesLabel: ""
+            });
+
+            render(
+                <ProcurementTrackerStepFour
+                    {...defaultProps}
+                    isReadOnly={true}
+                />
+            );
+
+            const termTags = screen.getAllByTestId("term-tag");
+            const tagTexts = termTags.map((tag) => tag.textContent);
+            expect(tagTexts.some((text) => text.includes("TBD"))).toBe(true);
+            expect(screen.getByText("None")).toBeInTheDocument();
+        });
+
+        it("shows checkmark icon when COMPLETED and read-only", () => {
+            render(
+                <ProcurementTrackerStepFour
+                    {...defaultProps}
+                    stepStatus="COMPLETED"
+                    isReadOnly={true}
+                />
+            );
+
+            expect(screen.getByText(/Evaluations are complete and OPRE has internally selected/i)).toBeInTheDocument();
+            expect(screen.getAllByTestId("term-tag").length).toBeGreaterThan(0);
+        });
+    });
 });
