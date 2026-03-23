@@ -2,7 +2,7 @@
 
 _Described what changes in this PR, at a high level_
 
-> **Web UI contributors:** If you edited files via the GitHub web interface, CI will automatically apply any needed formatting fixes and commit them to this branch. No local setup required for small changes — see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+> **Web UI contributors:** If you edited files via the GitHub web interface on a branch in this repository, CI can automatically apply any needed formatting fixes and commit them back to your PR branch. Fork-based PRs may still need local formatting — see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 ## Issue
 

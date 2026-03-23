@@ -17,7 +17,7 @@ Thank you for contributing to OPRE OPS! This guide covers everything you need to
 
 If you're making small changes (doc fixes, typo corrections, minor edits) directly through GitHub's web interface, here's what to expect:
 
-**Formatting is auto-fixed for you.** When CI detects a commit made via the GitHub web UI, it automatically runs the formatters (Prettier, Black, isort) and commits the fixes. You'll see a bot comment on your PR if this happens.
+**Formatting is auto-fixed for same-repo PRs.** When CI detects a commit made via the GitHub web UI on a pull request branch in this repository, it automatically runs the formatters (Prettier, Black, isort) and commits the fixes. Fork-based PRs still need to run the formatters locally. You'll see a bot comment on your PR if CI applies fixes.
 
 **Linting errors still require attention.** Auto-formatting only fixes code style (whitespace, import order, etc.). If your code has logical linting errors, you'll need to fix those manually.
 
@@ -31,7 +31,7 @@ If you're making small changes (doc fixes, typo corrections, minor edits) direct
 
 - [Docker](https://docs.docker.com/get-docker/) — required for running the full stack
 - [Bun](https://bun.sh/) — JavaScript runtime and package manager (frontend)
-- [Python 3.12+](https://www.python.org/downloads/) — backend
+- [Python 3.14+](https://www.python.org/downloads/) — backend
 - [pipenv](https://pipenv.pypa.io/) — Python dependency manager
 
 ### RSA Keys (required for JWT)

@@ -115,10 +115,17 @@ jobs:
       contents: write
       pull-requests: write
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - name: Check out PR head commit
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
-          ref: ${{ github.head_ref || github.ref }}
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
           token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check out push commit
+        if: github.event_name != 'pull_request'
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Detect commit source
         id: detect
@@ -134,6 +141,22 @@ jobs:
             echo "Local commit detected — will check formatting"
           fi
 
+      - name: Determine formatting strategy
+        id: strategy
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name || '' }}
+          CURRENT_REPO: ${{ github.repository }}
+          SOURCE: ${{ steps.detect.outputs.source }}
+        run: |
+          if [[ "$EVENT_NAME" == "pull_request" && "$SOURCE" == "web-ui" && "$HEAD_REPO" == "$CURRENT_REPO" ]]; then
+            echo "mode=auto-fix" >> $GITHUB_OUTPUT
+            echo "Same-repo web UI PR detected — will auto-format and push fixes"
+          else
+            echo "mode=check" >> $GITHUB_OUTPUT
+            echo "Formatting will run in check mode"
+          fi
+
       - uses: ./.github/actions/setup-python
 
       - name: Lint backend
@@ -142,12 +165,12 @@ jobs:
 
       # --- For local commits: check formatting (fail build if wrong) ---
       - name: Check backend formatting (Black)
-        if: steps.detect.outputs.source != 'web-ui'
+        if: steps.strategy.outputs.mode == 'check'
         working-directory: ./backend/ops_api
         run: pipenv run black --config ./pyproject.toml --check ops tests ./noxfile.py ../../performance_tests/locustfile.py
 
       - name: Check backend import sorting (isort)
-        if: steps.detect.outputs.source != 'web-ui'
+        if: steps.strategy.outputs.mode == 'check'
         working-directory: ./backend/ops_api
         run: pipenv run isort --settings-file ./pyproject.toml --check-only --filter-files ops tests ./noxfile.py ../../performance_tests/locustfile.py
 
@@ -156,12 +179,12 @@ jobs:
         run: pipenv install --dev
 
       - name: Check data_tools formatting (Black)
-        if: steps.detect.outputs.source != 'web-ui'
+        if: steps.strategy.outputs.mode == 'check'
         working-directory: ./backend/data_tools
         run: pipenv run black --config ./pyproject.toml --check .
 
       - name: Check data_tools import sorting (isort)
-        if: steps.detect.outputs.source != 'web-ui'
+        if: steps.strategy.outputs.mode == 'check'
         working-directory: ./backend/data_tools
         run: pipenv run isort --settings-file ./pyproject.toml --check-only --filter-files .
 
@@ -172,39 +195,39 @@ jobs:
         run: bun lint
 
       - name: Check frontend formatting
-        if: steps.detect.outputs.source != 'web-ui'
+        if: steps.strategy.outputs.mode == 'check'
         working-directory: ./frontend
         run: bun run prettier --check --ignore-unknown 'src/**/*' '!src/uswds/**'
 
       # --- For web UI commits: auto-fix formatting instead of failing ---
       - name: Auto-fix backend formatting (Black)
-        if: steps.detect.outputs.source == 'web-ui'
+        if: steps.strategy.outputs.mode == 'auto-fix'
         working-directory: ./backend/ops_api
         run: pipenv run black --config ./pyproject.toml ops tests ./noxfile.py ../../performance_tests/locustfile.py
 
       - name: Auto-fix backend import sorting (isort)
-        if: steps.detect.outputs.source == 'web-ui'
+        if: steps.strategy.outputs.mode == 'auto-fix'
         working-directory: ./backend/ops_api
         run: pipenv run isort --settings-file ./pyproject.toml --filter-files ops tests ./noxfile.py ../../performance_tests/locustfile.py
 
       - name: Auto-fix data_tools formatting (Black)
-        if: steps.detect.outputs.source == 'web-ui'
+        if: steps.strategy.outputs.mode == 'auto-fix'
         working-directory: ./backend/data_tools
         run: pipenv run black --config ./pyproject.toml .
 
       - name: Auto-fix data_tools import sorting (isort)
-        if: steps.detect.outputs.source == 'web-ui'
+        if: steps.strategy.outputs.mode == 'auto-fix'
         working-directory: ./backend/data_tools
         run: pipenv run isort --settings-file ./pyproject.toml --filter-files .
 
       - name: Auto-fix frontend formatting (Prettier)
-        if: steps.detect.outputs.source == 'web-ui'
+        if: steps.strategy.outputs.mode == 'auto-fix'
         working-directory: ./frontend
         run: bun run prettier --write --ignore-unknown 'src/**/*' '!src/uswds/**'
 
       - name: Commit and push formatting fixes
         id: auto-commit
-        if: steps.detect.outputs.source == 'web-ui'
+        if: steps.strategy.outputs.mode == 'auto-fix'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -214,13 +237,9 @@ jobs:
             echo "No formatting changes needed"
           else
             git commit -m "style: auto-format code (web UI commit)"
-            if git push; then
-              echo "committed=true" >> $GITHUB_OUTPUT
-              echo "Formatting fixes committed and pushed"
-            else
-              echo "committed=false" >> $GITHUB_OUTPUT
-              echo "Could not push formatting fixes (check permissions, branch protection, or fork restrictions)"
-            fi
+            git push
+            echo "committed=true" >> $GITHUB_OUTPUT
+            echo "Formatting fixes committed and pushed"
           fi
 
       - name: Comment on PR — formatting auto-fixed
@@ -231,35 +250,17 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
+          CONTRIBUTING_URL: ${{ github.server_url }}/${{ github.repository }}/blob/${{ github.event.pull_request.head.sha }}/CONTRIBUTING.md
         run: |
-          BODY='🤖 **Auto-formatting applied!**
+          BODY=$(cat <<EOF
+          🤖 **Auto-formatting applied!**
 
           I detected that this PR was edited via the GitHub web UI and had some formatting issues. I automatically applied fixes using:
 
           - **Prettier** (frontend)
           - **Black** + **isort** (backend)
 
-          The fixes have been committed to this branch. For future contributions, consider setting up the [local development environment](https://github.com/HHS/OPRE-OPS/blob/main/CONTRIBUTING.md) to run formatters before pushing — it avoids this extra round-trip.'
-          gh pr comment "$PR_NUMBER" --body "$BODY"
-
-      - name: Comment on PR — formatting could not be auto-fixed
-        if: |
-          steps.detect.outputs.source == 'web-ui' &&
-          steps.auto-commit.outputs.committed == 'false' &&
-          github.event_name == 'pull_request'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: |
-          BODY='🤖 **Formatting note for web UI contributors**
-
-          I detected that this PR was edited via the GitHub web UI and may have formatting issues. I was unable to auto-fix them automatically (this can happen with fork PRs, branch protection rules, or network issues).
-
-          Please run the formatters locally before pushing:
-
-          - **Frontend:** `cd frontend && bun run format`
-          - **Backend (ops_api):** `cd backend/ops_api && pipenv run black --config ./pyproject.toml ops tests ./noxfile.py && pipenv run isort --settings-file ./pyproject.toml --filter-files ops tests ./noxfile.py`
-          - **Backend (data_tools):** `cd backend/data_tools && pipenv run black --config ./pyproject.toml . && pipenv run isort --settings-file ./pyproject.toml --filter-files .`
-
-          See [CONTRIBUTING.md](https://github.com/HHS/OPRE-OPS/blob/main/CONTRIBUTING.md) for full setup instructions.'
+          The fixes have been committed to this branch. For future contributions, consider setting up the [local development environment]($CONTRIBUTING_URL) to run formatters before pushing - it avoids this extra round-trip.
+          EOF
+          )
           gh pr comment "$PR_NUMBER" --body "$BODY"
