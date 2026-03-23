@@ -12,17 +12,6 @@ const selectDifferentContractType = (selector = "#contract-type") => {
         });
 };
 
-const getDescribedByText = ($element) => {
-    const describedBy = $element.attr("aria-describedby") || "";
-
-    return describedBy
-        .trim()
-        .split(/\s+/)
-        .filter(Boolean)
-        .map((id) => Cypress.$(`#${id}`).text().trim())
-        .join(" ");
-};
-
 beforeEach(() => {
     testLogin("system-owner");
 });
@@ -169,16 +158,15 @@ describe("agreement details", () => {
         cy.get("@executingRow").find("[data-cy='expand-row']").click();
         cy.get("@executingRow")
             .next("[data-testid='expanded-data']")
+            .as("executingExpandedRow");
+        cy.get("@executingExpandedRow").should("not.contain", "Loading...");
+        cy.get("@executingExpandedRow")
             .find("[data-cy='edit-row']")
             .should("be.disabled")
-            .should(($button) => {
-                expect($button.attr("aria-describedby")).to.be.a("string").and.not.be.empty;
-
-                const tooltipText = getDescribedByText($button);
-
-                expect(tooltipText).to.contain("Executing Status");
-                expect(tooltipText).to.contain("budget team");
-            });
+            .closest(".usa-tooltip")
+            .find(".usa-tooltip__body")
+            .should("contain", "Executing Status")
+            .and("contain", "budget team");
     });
 
     it("Should allow the user to export BLIs for an agreement", () => {
