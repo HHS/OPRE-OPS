@@ -9,8 +9,8 @@ runs:
       run: |
         set -x
         export JWT_PRIVATE_KEY="${{ env.JWT_PRIVATE_KEY }}"
-        docker compose -f docker-compose.static.yml down -v
-        docker compose -f docker-compose.static.yml up --build -d
+        docker compose -f docker-compose.static.yml --profile setup down -v
+        docker compose -f docker-compose.static.yml --profile setup up --build -d
 
     - name: Wait for services to be healthy
       shell: bash
