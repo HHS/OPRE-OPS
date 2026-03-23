@@ -46,6 +46,12 @@ class ProcurementTrackerStepResponseSchema(Schema):
     approval_requested_by = fields.Integer(allow_none=True)
     requestor_notes = fields.String(allow_none=True)
 
+    # PRE_AWARD approval response fields
+    approval_status = fields.String(allow_none=True, validate=validate.OneOf(["APPROVED", "DECLINED"]))
+    approval_responded_by = fields.Integer(allow_none=True)
+    approval_responded_date = fields.Date(allow_none=True)
+    reviewer_notes = fields.String(allow_none=True)
+
     # BaseModel fields
     display_name = fields.String(dump_only=True)
     created_on = fields.DateTime(dump_only=True)
@@ -192,6 +198,10 @@ class ProcurementTrackerStepResponseSchema(Schema):
                 "approval_requested_date",
                 "approval_requested_by",
                 "requestor_notes",
+                "approval_status",
+                "approval_responded_by",
+                "approval_responded_date",
+                "reviewer_notes",
             }
             # Remove PRE_SOLICITATION-only fields
             data.pop("draft_solicitation_date", None)
@@ -213,6 +223,10 @@ class ProcurementTrackerStepResponseSchema(Schema):
                 "approval_requested_date",
                 "approval_requested_by",
                 "requestor_notes",
+                "approval_status",
+                "approval_responded_by",
+                "approval_responded_date",
+                "reviewer_notes",
             ]:
                 data.pop(field, None)
 
@@ -242,6 +256,11 @@ class ProcurementTrackerStepPatchRequestSchema(Schema):
     approval_requested_date = fields.Date(required=False, allow_none=True)
     # approval_requested_by is server-controlled and derived from current_user - not accepted from client
     requestor_notes = fields.String(required=False, allow_none=True, validate=validate.Length(max=150))
+
+    # Pre-Award approval response fields
+    approval_status = fields.String(required=False, allow_none=True, validate=validate.OneOf(["APPROVED", "DECLINED"]))
+    # approval_responded_by and approval_responded_date are server-controlled - not accepted from client
+    reviewer_notes = fields.String(required=False, allow_none=True, validate=validate.Length(max=150))
 
 
 class ProcurementTrackerStepSchema(Schema):
@@ -273,6 +292,12 @@ class ProcurementTrackerStepSchema(Schema):
     approval_requested_date = fields.Date(allow_none=True)
     approval_requested_by = fields.Integer(allow_none=True)
     requestor_notes = fields.String(allow_none=True)
+
+    # PRE_AWARD approval response fields
+    approval_status = fields.String(allow_none=True)
+    approval_responded_by = fields.Integer(allow_none=True)
+    approval_responded_date = fields.Date(allow_none=True)
+    reviewer_notes = fields.String(allow_none=True)
 
     @pre_dump
     def map_step_specific_fields(self, obj, **_kwargs):
@@ -418,6 +443,10 @@ class ProcurementTrackerStepSchema(Schema):
                 "approval_requested_date",
                 "approval_requested_by",
                 "requestor_notes",
+                "approval_status",
+                "approval_responded_by",
+                "approval_responded_date",
+                "reviewer_notes",
             }
             preserve_keys = base_fields | pre_award_fields
             # Remove PRE_SOLICITATION-only fields
@@ -440,6 +469,10 @@ class ProcurementTrackerStepSchema(Schema):
                 "approval_requested_date",
                 "approval_requested_by",
                 "requestor_notes",
+                "approval_status",
+                "approval_responded_by",
+                "approval_responded_date",
+                "reviewer_notes",
             ]:
                 data.pop(field, None)
 
