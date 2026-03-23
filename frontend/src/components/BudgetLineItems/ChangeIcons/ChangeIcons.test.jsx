@@ -4,6 +4,17 @@ import { describe, it, expect, vi } from "vitest";
 import ChangeIcons from "./ChangeIcons";
 import { DISABLED_ICON_CLASSES } from "./DisabledChangeIcons.constants";
 
+vi.mock("../../UI/USWDS/Tooltip", () => ({
+    default: ({ label, children }) => (
+        <div
+            data-testid="tooltip"
+            data-label={label}
+        >
+            {children}
+        </div>
+    )
+}));
+
 describe("ChangeIcons", () => {
     const mockItem = {
         agreement_id: 1,
@@ -33,6 +44,9 @@ describe("ChangeIcons", () => {
         handleSubmitItemForApproval: vi.fn()
     };
 
+    const getEditTooltip = () =>
+        screen.getAllByTestId("tooltip").find((tooltip) => within(tooltip).queryByTestId("edit-row"));
+
     it("renders edit, delete, and duplicate icons when item is editable", () => {
         render(<ChangeIcons {...defaultProps} />);
 
@@ -54,6 +68,34 @@ describe("ChangeIcons", () => {
 
         expect(editButton).toBeDisabled();
         expect(deleteButton).toBeDisabled();
+    });
+
+    it("falls back to the static tooltip while locked message data is loading", () => {
+        render(
+            <ChangeIcons
+                {...defaultProps}
+                isItemEditable={false}
+                item={{ ...mockItem, status: "IN_EXECUTION" }}
+                lockedMessage="Loading..."
+            />
+        );
+
+        expect(getEditTooltip()).toHaveAttribute(
+            "data-label",
+            "If you need to edit a budget line in Executing Status, please contact the budget team"
+        );
+    });
+
+    it("keeps the loading tooltip when no static fallback exists", () => {
+        render(
+            <ChangeIcons
+                {...defaultProps}
+                isItemEditable={false}
+                lockedMessage="Loading..."
+            />
+        );
+
+        expect(getEditTooltip()).toHaveAttribute("data-label", "Loading...");
     });
 
     it("calls handleSetItemForEditing when edit button is clicked", async () => {

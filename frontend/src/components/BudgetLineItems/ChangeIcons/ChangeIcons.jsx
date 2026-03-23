@@ -38,6 +38,10 @@ const ChangeIcons = ({
     const disabledClasses = `text-primary height-2 width-2 margin-right-1 cursor-pointer ${DISABLED_ICON_CLASSES}`;
 
     const notEditableOrDeletableMsg = getTooltipLabel(item);
+    const tooltipLabel =
+        lockedMessage === "Loading..." && notEditableOrDeletableMsg
+            ? notEditableOrDeletableMsg
+            : lockedMessage || notEditableOrDeletableMsg;
 
     return (
         <>
@@ -101,7 +105,7 @@ const ChangeIcons = ({
                     <>
                         <Tooltip
                             position="left"
-                            label={lockedMessage ? lockedMessage : notEditableOrDeletableMsg}
+                            label={tooltipLabel}
                             className="line-height-body-1"
                         >
                             <button
@@ -121,7 +125,7 @@ const ChangeIcons = ({
                         </Tooltip>
                         <Tooltip
                             position="left"
-                            label={`${lockedMessage ? lockedMessage : notEditableOrDeletableMsg}`}
+                            label={tooltipLabel}
                             className="line-height-body-1"
                         >
                             <button

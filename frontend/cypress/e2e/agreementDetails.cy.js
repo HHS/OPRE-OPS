@@ -159,7 +159,6 @@ describe("agreement details", () => {
         cy.get("@executingRow")
             .next("[data-testid='expanded-data']")
             .as("executingExpandedRow");
-        cy.get("@executingExpandedRow").should("not.contain", "Loading...");
         cy.get("@executingExpandedRow")
             .find("[data-cy='edit-row']")
             .should("be.disabled")
