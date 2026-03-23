@@ -1,5 +1,11 @@
 import { calculatePercent } from "../../../helpers/utils";
-import { PORTFOLIO_ORDER, FALLBACK_COLOR } from "./PortfolioSummaryCards.constants";
+import {
+    PORTFOLIO_ORDER,
+    FALLBACK_COLOR,
+    ROWS_PER_COLUMN,
+    NUM_COLUMNS,
+    UNKNOWN_PORTFOLIO_COLUMN
+} from "./PortfolioSummaryCards.constants";
 
 /**
  * Calculates total budget across all portfolios
@@ -18,22 +24,10 @@ export const calculateTotalBudget = (portfolios) => {
 };
 
 /**
- * Finds the portfolio order configuration for a given abbreviation
- * Handles aliases (e.g., "ADR" -> "AD")
- * @param {string} abbreviation - Portfolio abbreviation
- * @returns {Object|null} Portfolio order config or null if not found
+ * Returns true if abbreviation matches config's primary abbreviation or aliases
  */
-const findPortfolioOrderConfig = (abbreviation) => {
-    return PORTFOLIO_ORDER.find((config) => {
-        if (config.abbreviation === abbreviation) {
-            return true;
-        }
-        if (config.aliases && config.aliases.includes(abbreviation)) {
-            return true;
-        }
-        return false;
-    });
-};
+const matchesConfig = (abbreviation, config) =>
+    config.abbreviation === abbreviation || (config.aliases && config.aliases.includes(abbreviation));
 
 /**
  * Sorts portfolios according to static PORTFOLIO_ORDER
@@ -46,43 +40,21 @@ export const sortPortfoliosByStaticOrder = (portfolios) => {
         return [];
     }
 
-    // Create a copy to avoid mutating original array
-    const portfoliosCopy = [...portfolios];
+    if (process.env.NODE_ENV === "development") {
+        const unknowns = portfolios.filter((p) => !PORTFOLIO_ORDER.some((c) => matchesConfig(p.abbreviation, c)));
+        unknowns.forEach((p) => {
+            console.warn(`Portfolio "${p.abbreviation}" (${p.name}) not found in PORTFOLIO_ORDER. Appending to end.`);
+        });
+    }
 
-    // Separate portfolios into those in order and those not
-    const inOrder = [];
-    const notInOrder = [];
-
-    portfoliosCopy.forEach((portfolio) => {
-        const config = findPortfolioOrderConfig(portfolio.abbreviation);
-        if (config) {
-            inOrder.push(portfolio);
-        } else {
-            notInOrder.push(portfolio);
-            // Log warning in development
-            if (process.env.NODE_ENV === "development") {
-                console.warn(
-                    `Portfolio "${portfolio.abbreviation}" (${portfolio.name}) not found in PORTFOLIO_ORDER. Appending to end.`
-                );
-            }
-        }
+    return [...portfolios].sort((a, b) => {
+        const idxA = PORTFOLIO_ORDER.findIndex((c) => matchesConfig(a.abbreviation, c));
+        const idxB = PORTFOLIO_ORDER.findIndex((c) => matchesConfig(b.abbreviation, c));
+        if (idxA === -1 && idxB === -1) return 0;
+        if (idxA === -1) return 1;
+        if (idxB === -1) return -1;
+        return idxA - idxB;
     });
-
-    // Sort portfolios that are in PORTFOLIO_ORDER
-    inOrder.sort((a, b) => {
-        const indexA = PORTFOLIO_ORDER.findIndex(
-            (config) =>
-                config.abbreviation === a.abbreviation || (config.aliases && config.aliases.includes(a.abbreviation))
-        );
-        const indexB = PORTFOLIO_ORDER.findIndex(
-            (config) =>
-                config.abbreviation === b.abbreviation || (config.aliases && config.aliases.includes(b.abbreviation))
-        );
-        return indexA - indexB;
-    });
-
-    // Return sorted portfolios with unknown ones at the end
-    return [...inOrder, ...notInOrder];
 };
 
 /**
@@ -97,90 +69,74 @@ export const transformPortfoliosToChartData = (sortedPortfolios, totalBudget) =>
         return [];
     }
 
-    // Create a map of abbreviation -> portfolio for quick lookup
+    // Build a map of abbreviation -> portfolio for quick lookup
     const portfolioMap = new Map();
     sortedPortfolios.forEach((portfolio) => {
         portfolioMap.set(portfolio.abbreviation, portfolio);
     });
 
-    // Define column boundaries based on PORTFOLIO_ORDER (4 columns with 4 rows max)
-    // Column 1: indices 0-3, Column 2: 4-7, Column 3: 8-10, Column 4: 11-12
-    const columnBoundaries = [
-        { start: 0, end: 4 }, // Column 1: CC, CWR, HS, OTIP
-        { start: 4, end: 8 }, // Column 2: ADR, HMRF, HV, DV
-        { start: 8, end: 11 }, // Column 3: WR, DO, OD
-        { start: 11, end: 13 } // Column 4: Non-OPRE, OCDO
-    ];
+    // Track which abbreviations we've matched to known configs
+    const matchedAbbreviations = new Set();
 
-    const ROWS_PER_COLUMN = 4;
-    const result = [];
-    const processedAbbreviations = new Set();
+    // Build columns 1..NUM_COLUMNS from PORTFOLIO_ORDER configs
+    const columns = Array.from({ length: NUM_COLUMNS }, () => []);
 
-    // Process each column separately
-    columnBoundaries.forEach((boundary) => {
-        const columnItems = [];
-
-        // Collect existing portfolios for this column
-        for (let i = boundary.start; i < boundary.end; i++) {
-            const config = PORTFOLIO_ORDER[i];
-
-            // Check for portfolio using abbreviation or aliases
-            let portfolio = portfolioMap.get(config.abbreviation);
-            if (!portfolio && config.aliases) {
-                // Check aliases
-                for (const alias of config.aliases) {
-                    portfolio = portfolioMap.get(alias);
-                    if (portfolio) break;
-                }
-            }
-
-            if (portfolio) {
-                const value = portfolio?.fundingSummary?.total_funding?.amount || 0;
-                const percent = calculatePercent(value, totalBudget);
-
-                columnItems.push({
-                    id: portfolio.id || i,
-                    label: portfolio.name || portfolio.abbreviation,
-                    abbreviation: portfolio.abbreviation,
-                    value: Number(value),
-                    color: config.color,
-                    percent
-                });
-                processedAbbreviations.add(portfolio.abbreviation);
+    for (const config of PORTFOLIO_ORDER) {
+        let portfolio = portfolioMap.get(config.abbreviation);
+        if (!portfolio && config.aliases) {
+            for (const alias of config.aliases) {
+                portfolio = portfolioMap.get(alias);
+                if (portfolio) break;
             }
         }
 
-        // Add the existing items to result
-        result.push(...columnItems);
+        if (portfolio) {
+            const value = portfolio?.fundingSummary?.total_funding?.amount || 0;
+            const percent = calculatePercent(value, totalBudget);
 
-        // Pad the column with placeholders to maintain grid alignment (always 4 rows)
-        const placeholdersNeeded = ROWS_PER_COLUMN - columnItems.length;
-        for (let i = 0; i < placeholdersNeeded; i++) {
+            columns[config.column - 1].push({
+                id: portfolio.id || PORTFOLIO_ORDER.indexOf(config),
+                label: portfolio.name || portfolio.abbreviation,
+                abbreviation: portfolio.abbreviation,
+                value: Number(value),
+                color: config.color,
+                percent
+            });
+            matchedAbbreviations.add(portfolio.abbreviation);
+        }
+    }
+
+    // Collect unknowns and append to the unknown portfolio column
+    const unknowns = sortedPortfolios.filter((p) => !matchedAbbreviations.has(p.abbreviation));
+    const unknownCol = columns[UNKNOWN_PORTFOLIO_COLUMN - 1];
+    unknowns.forEach((portfolio, idx) => {
+        if (unknownCol.length >= ROWS_PER_COLUMN) return;
+        const value = portfolio?.fundingSummary?.total_funding?.amount || 0;
+        const percent = calculatePercent(value, totalBudget);
+
+        unknownCol.push({
+            id: portfolio.id || `unknown-${idx}`,
+            label: portfolio.name || portfolio.abbreviation,
+            abbreviation: portfolio.abbreviation,
+            value: Number(value),
+            color: FALLBACK_COLOR,
+            percent
+        });
+    });
+
+    // Pad each column to ROWS_PER_COLUMN with placeholders and flatten
+    const result = [];
+    columns.forEach((col, colIdx) => {
+        result.push(...col);
+        for (let i = col.length; i < ROWS_PER_COLUMN; i++) {
             result.push({
-                id: `placeholder-col${boundary.start}-${i}`,
+                id: `placeholder-${colIdx + 1}-${i}`,
                 label: "",
                 abbreviation: "",
                 value: 0,
                 color: "",
                 percent: 0,
                 isPlaceholder: true
-            });
-        }
-    });
-
-    // Handle unknown portfolios (not in PORTFOLIO_ORDER) - append at the end
-    sortedPortfolios.forEach((portfolio, index) => {
-        if (!processedAbbreviations.has(portfolio.abbreviation)) {
-            const value = portfolio?.fundingSummary?.total_funding?.amount || 0;
-            const percent = calculatePercent(value, totalBudget);
-
-            result.push({
-                id: portfolio.id || `unknown-${index}`,
-                label: portfolio.name || portfolio.abbreviation,
-                abbreviation: portfolio.abbreviation,
-                value: Number(value),
-                color: FALLBACK_COLOR,
-                percent
             });
         }
     });

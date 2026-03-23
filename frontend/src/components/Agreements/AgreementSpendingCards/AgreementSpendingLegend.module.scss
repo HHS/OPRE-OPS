@@ -1,0 +1,51 @@
+.legendGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 63px;
+    margin-top: 1rem;
+}
+
+.legendColumn {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.legendHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 12px;
+}
+
+.colorDot {
+    width: var(--legend-dot-size);
+    height: var(--legend-dot-size);
+    flex-shrink: 0;
+}
+
+.typeLabel {
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.totalValue {
+    font-weight: bold;
+    font-size: 12px;
+    margin-left: auto;
+}
+
+.subRow {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 12px;
+}
+
+.subValue {
+    font-size: 12px;
+
+    &:last-child {
+        margin-left: auto;
+    }
+}

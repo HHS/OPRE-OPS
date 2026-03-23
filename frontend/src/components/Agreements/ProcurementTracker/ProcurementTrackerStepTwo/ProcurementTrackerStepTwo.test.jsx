@@ -1216,4 +1216,67 @@ describe("ProcurementTrackerStepTwo", () => {
             expect(dateInput).toBeDisabled();
         });
     });
+
+    describe("Read-Only Mode", () => {
+        it("renders TermTags and no form controls when isReadOnly is true and PENDING", () => {
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="PENDING"
+                    stepTwoData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    isReadOnly={true}
+                />
+            );
+
+            expect(screen.getAllByTestId("term-tag").length).toBeGreaterThan(0);
+            expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
+            expect(screen.queryByRole("button", { name: /complete step 2/i })).not.toBeInTheDocument();
+            expect(screen.queryByTestId("users-combobox")).not.toBeInTheDocument();
+        });
+
+        it("shows TBD for empty fields in read-only PENDING mode", () => {
+            useProcurementTrackerStepTwo.mockReturnValue({
+                ...defaultHookReturn,
+                step2CompletedByUserName: "",
+                step2DateCompletedLabel: "",
+                step2TargetCompletionDateLabel: "",
+                step2DraftSolicitationDateLabel: "",
+                step2NotesLabel: ""
+            });
+
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="PENDING"
+                    stepTwoData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    isReadOnly={true}
+                />
+            );
+
+            const termTags = screen.getAllByTestId("term-tag");
+            const tagTexts = termTags.map((tag) => tag.textContent);
+            expect(tagTexts.some((text) => text.includes("TBD"))).toBe(true);
+            expect(screen.getByText("None")).toBeInTheDocument();
+        });
+
+        it("shows checkmark icon when COMPLETED and read-only", () => {
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="COMPLETED"
+                    stepTwoData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    isReadOnly={true}
+                />
+            );
+
+            expect(screen.getByText(/pre-solicitation package has been finalized/i)).toBeInTheDocument();
+            expect(screen.getAllByTestId("term-tag").length).toBeGreaterThan(0);
+        });
+    });
 });

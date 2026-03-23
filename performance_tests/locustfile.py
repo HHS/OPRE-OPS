@@ -419,16 +419,6 @@ class OPSAPIUser(HttpUser):
                 name="/api/v1/research-projects/[id]",
             )
 
-    @task(3)
-    def get_research_project_funding_summary(self):
-        """GET /api/v1/research-project-funding-summary/ - Get research project funding summary."""
-        if SHARED_CACHE["portfolio_ids"]:
-            portfolio_id = random.choice(SHARED_CACHE["portfolio_ids"])
-            self.client.get(
-                f"/api/v1/research-project-funding-summary/?portfolioId={portfolio_id}&fiscalYear=2023",
-                name="/api/v1/research-project-funding-summary/?portfolioId=[id]&fiscalYear=2023",
-            )
-
     # === Administrative and Support Projects Tasks ===
 
     @task(4)

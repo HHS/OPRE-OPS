@@ -43,6 +43,18 @@ jobs:
       # Install and cache NPM dependencies
       - uses: ./.github/actions/setup-javascript
 
+      - name: Cache Cypress binary
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ~/.cache/Cypress
+          key: cypress-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('frontend/bun.lock') }}
+
+      - name: Install Cypress binary
+        working-directory: frontend
+        run: |
+          bunx cypress install
+          bunx cypress verify
+
       # Stand up the system stack, to have something to poke
       - name: Launch Stack
         uses: ./.github/actions/run-full-stack

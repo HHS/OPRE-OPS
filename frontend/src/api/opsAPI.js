@@ -3,6 +3,7 @@ import { getAccessToken } from "../components/Auth/auth";
 import { postRefresh } from "./postRefresh.js";
 import { logout } from "../components/Auth/authSlice.js";
 import store from "../store";
+import { normalizeUser } from "../helpers/users.helpers";
 
 const BACKEND_DOMAIN =
     (typeof window !== "undefined" && window.__RUNTIME_CONFIG__?.REACT_APP_BACKEND_DOMAIN) ||
@@ -411,18 +412,37 @@ export const opsApi = createApi({
         }),
         getUserById: builder.query({
             query: (id) => `/users/${id}`,
+            transformResponse: (response) => normalizeUser(response),
             providesTags: ["Users"]
         }),
         getUserByOIDCId: builder.query({
             query: (id) => `/users/?oidc_id=${id}`,
+            transformResponse: (response) =>
+                Array.isArray(response) ? response.map(normalizeUser) : normalizeUser(response),
             providesTags: ["Users"]
         }),
         getResearchProjects: builder.query({
             query: () => `/projects/?project_type=RESEARCH`,
+            transformResponse: (response) => {
+                // New wrapped format with data key
+                if (response.data) {
+                    return response.data;
+                }
+                // Legacy array format (no wrapper) - for backward compatibility during transition
+                return response;
+            },
             providesTags: ["ResearchProjects"]
         }),
         getProjects: builder.query({
             query: () => `/projects/`,
+            transformResponse: (response) => {
+                // New wrapped format with data key
+                if (response.data) {
+                    return response.data;
+                }
+                // Legacy array format (no wrapper) - for backward compatibility during transition
+                return response;
+            },
             providesTags: ["ResearchProjects"]
         }),
         getProjectById: builder.query({
@@ -444,6 +464,14 @@ export const opsApi = createApi({
                 const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
                 return `/projects/${queryString}`;
             },
+            transformResponse: (response) => {
+                // New wrapped format with data key
+                if (response.data) {
+                    return response.data;
+                }
+                // Legacy array format (no wrapper) - for backward compatibility during transition
+                return response;
+            },
             providesTags: ["ResearchProjects"]
         }),
         getResearchProjectsByPortfolio: builder.query({
@@ -461,6 +489,14 @@ export const opsApi = createApi({
                 queryParams.push(`project_type=RESEARCH`);
                 const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
                 return `/projects/${queryString}`;
+            },
+            transformResponse: (response) => {
+                // New wrapped format with data key
+                if (response.data) {
+                    return response.data;
+                }
+                // Legacy array format (no wrapper) - for backward compatibility during transition
+                return response;
             },
             providesTags: ["ResearchProjects"]
         }),
@@ -503,14 +539,18 @@ export const opsApi = createApi({
         }),
         getUsers: builder.query({
             query: () => `/users/`,
+            transformResponse: (response) => (Array.isArray(response) ? response.map(normalizeUser) : response),
             providesTags: ["Users"]
         }),
         getUser: builder.query({
             query: (id) => `/users/${id}`,
+            transformResponse: (response) => normalizeUser(response),
             providesTags: ["User"]
         }),
         getUserByOidc: builder.query({
             query: (oidc_id) => `/users/?oidc_id=${oidc_id}`,
+            transformResponse: (response) =>
+                Array.isArray(response) ? response.map(normalizeUser) : normalizeUser(response),
             providesTags: ["User"]
         }),
         addUser: builder.mutation({
@@ -789,6 +829,22 @@ export const opsApi = createApi({
             },
             providesTags: ["Portfolios"]
         }),
+        getReportingSummary: builder.query({
+            query: ({ fiscalYear, portfolioIds }) => {
+                const queryParams = [];
+                if (fiscalYear) {
+                    queryParams.push(`fiscal_year=${fiscalYear}`);
+                }
+                if (portfolioIds && portfolioIds.length > 0) {
+                    portfolioIds.forEach((id) => {
+                        queryParams.push(`portfolio_ids=${id}`);
+                    });
+                }
+                const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
+                return `/reporting-summary/${queryString}`;
+            },
+            providesTags: ["Agreements"]
+        }),
         getPortfolioFundingSummaryBatch: builder.query({
             query: ({ fiscalYear, portfolioIds, budgetMin, budgetMax, availablePct }) => {
                 const queryParams = [];
@@ -962,6 +1018,7 @@ export const createResetApiOnLogoutMiddleware = (api) => (store) => (next) => (a
 export const resetApiOnLogoutMiddleware = createResetApiOnLogoutMiddleware(opsApi);
 
 export const {
+    useGetReportingSummaryQuery,
     useGetAgreementsQuery,
     useGetAgreementByIdQuery,
     useLazyGetAgreementByIdQuery,

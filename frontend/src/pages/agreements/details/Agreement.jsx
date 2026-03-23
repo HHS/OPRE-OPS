@@ -19,7 +19,7 @@ import { hasBlIsInReview } from "../../../helpers/budgetLines.helpers";
 import { getAwardingEntityIds } from "../../../helpers/procurementShop.helpers";
 import { convertToCurrency } from "../../../helpers/utils";
 import { useChangeRequestsForAgreement } from "../../../hooks/useChangeRequests.hooks";
-import { useIsUserSuperUser } from "../../../hooks/user.hooks";
+import { useIsUserSuperUser, useIsUserOnlyProcurementTeam } from "../../../hooks/user.hooks";
 import icons from "../../../uswds/img/sprite.svg";
 import { AgreementType } from "../agreements.constants";
 import AgreementBudgetLines from "./AgreementBudgetLines";
@@ -127,7 +127,9 @@ const Agreement = () => {
 
     const isAgreementNotDeveloped = isNotDevelopedYet(agreement?.agreement_type ?? "");
     const isSuperUser = useIsUserSuperUser();
-    const isEditableForProcurementTracker = isSuperUser || (agreement?._meta?.isEditable ?? false);
+    const isProcurementTeamOnly = useIsUserOnlyProcurementTeam();
+    const isEditableForProcurementTracker =
+        isSuperUser || isProcurementTeamOnly || (agreement?._meta?.isEditable ?? false);
 
     useEffect(() => {
         /**
@@ -206,7 +208,9 @@ const Agreement = () => {
                 </Tag>
             )}
             <h1 className={`font-sans-2xl margin-0 text-brand-primary`}>{agreement?.name}</h1>
-            <h2 className={`font-sans-3xs text-normal margin-top-1 margin-bottom-2`}>{agreement?.project?.title}</h2>
+            <h2 className={`font-sans-3xs text-normal margin-top-1 margin-bottom-2`}>
+                {`${agreement?.project?.title ?? ""}${agreement?.project?.short_title ? ` (${agreement.project.short_title})` : ""}`}
+            </h2>
 
             {user_agreement_notifications?.length > 0 && (
                 <AgreementChangesResponseAlert

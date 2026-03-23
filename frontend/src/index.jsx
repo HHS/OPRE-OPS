@@ -27,6 +27,7 @@ import PortfolioList from "./pages/portfolios/list/PortfolioList";
 import ProjectsList from "./pages/projects/list/ProjectsList";
 import ResearchProjectDetail from "./pages/researchProjects/detail/ResearchProjectDetail";
 import ReleaseNotes from "./pages/home/release-notes";
+import ReportingPage from "./pages/reporting/ReportingPage";
 import UserAdmin from "./pages/users/admin/UserAdmin.jsx";
 import ReviewAgreement from "./pages/agreements/review/ReviewAgreement";
 import UserDetail from "./pages/users/detail/UserDetail";
@@ -41,6 +42,9 @@ import { IS_PROJECTS_LIST_READY, IS_PROJECT_DETAIL_READY } from "./constants";
 
 //  USWDS
 import "./uswds/css/styles.css";
+
+// Cross-platform font rendering fixes (loaded after USWDS)
+import "./index.css";
 
 // NOTE: Uncomment the following line to include the USWDS JavaScript but breaks DatePicker
 // import "./uswds/js/uswds.min.js";
@@ -266,6 +270,10 @@ const router = createBrowserRouter(
                 <Route
                     path="/cans"
                     element={<CanList />}
+                />
+                <Route
+                    path="/reporting"
+                    element={<ReportingPage />}
                 />
                 <Route
                     path="/cans/:id/*"

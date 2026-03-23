@@ -100,6 +100,12 @@ class ProcurementTrackerStepResponseSchema(Schema):
             data["notes"] = obj.evaluation_notes
             data["target_completion_date"] = obj.evaluation_target_completion_date
 
+        elif obj.step_type == ProcurementTrackerStepType.PRE_AWARD:
+            data["task_completed_by"] = obj.pre_award_task_completed_by
+            data["date_completed"] = obj.pre_award_date_completed
+            data["notes"] = obj.pre_award_notes
+            data["target_completion_date"] = obj.pre_award_target_completion_date
+
         return data
 
     @post_dump
@@ -154,6 +160,18 @@ class ProcurementTrackerStepResponseSchema(Schema):
             data.pop("target_completion_date", None)
             data.pop("draft_solicitation_date", None)
         elif step_type in ("EVALUATION", ProcurementTrackerStepType.EVALUATION):
+            preserve_keys = base_fields | {
+                "target_completion_date",
+                "task_completed_by",
+                "date_completed",
+                "notes",
+            }
+            # Remove PRE_SOLICITATION-only fields
+            data.pop("draft_solicitation_date", None)
+            # Remove SOLICITATION-only fields
+            data.pop("solicitation_period_start_date", None)
+            data.pop("solicitation_period_end_date", None)
+        elif step_type in ("PRE_AWARD", ProcurementTrackerStepType.PRE_AWARD):
             preserve_keys = base_fields | {
                 "target_completion_date",
                 "task_completed_by",
@@ -276,6 +294,12 @@ class ProcurementTrackerStepSchema(Schema):
             data["notes"] = obj.evaluation_notes
             data["target_completion_date"] = obj.evaluation_target_completion_date
 
+        elif obj.step_type == ProcurementTrackerStepType.PRE_AWARD:
+            data["task_completed_by"] = obj.pre_award_task_completed_by
+            data["date_completed"] = obj.pre_award_date_completed
+            data["notes"] = obj.pre_award_notes
+            data["target_completion_date"] = obj.pre_award_target_completion_date
+
         return data
 
     @post_dump
@@ -343,6 +367,19 @@ class ProcurementTrackerStepSchema(Schema):
                 "notes",
             }
             preserve_keys = base_fields | evaluation_fields
+            # Remove PRE_SOLICITATION-only fields
+            data.pop("draft_solicitation_date", None)
+            # Remove SOLICITATION-only fields
+            data.pop("solicitation_period_start_date", None)
+            data.pop("solicitation_period_end_date", None)
+        elif step_type in ("PRE_AWARD", ProcurementTrackerStepType.PRE_AWARD):
+            pre_award_fields = {
+                "target_completion_date",
+                "task_completed_by",
+                "date_completed",
+                "notes",
+            }
+            preserve_keys = base_fields | pre_award_fields
             # Remove PRE_SOLICITATION-only fields
             data.pop("draft_solicitation_date", None)
             # Remove SOLICITATION-only fields

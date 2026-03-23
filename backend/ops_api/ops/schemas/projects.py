@@ -1,15 +1,17 @@
 from datetime import date, datetime
 from typing import Optional
 
-from marshmallow import Schema, fields
+from marshmallow import Schema, fields, pre_dump
 
-from models import ProjectType
+from models import ProjectSortCondition, ProjectType
+from ops_api.ops.schemas.pagination import PaginationListSchema
 
 
-class ProjectListGetRequestSchema(Schema):
+class ProjectListGetRequestSchema(PaginationListSchema):
     """Schema for validating ProjectListAPI GET request query parameters.
 
     All filter parameters accept lists to enable filtering by multiple values.
+    Inherits pagination parameters (limit, offset) from PaginationListSchema.
     """
 
     fiscal_year = fields.List(fields.Integer(), required=False, load_default=[])
@@ -17,12 +19,20 @@ class ProjectListGetRequestSchema(Schema):
     project_search = fields.List(fields.String(), required=False, load_default=[])
     agreement_search = fields.List(fields.String(), required=False, load_default=[])
     project_type = fields.List(fields.Enum(ProjectType), required=False, load_default=[])
+    sort_field = fields.List(fields.Enum(ProjectSortCondition), required=False, load_default=[])
+    sort_descending = fields.List(fields.Boolean(), required=False, load_default=[])
+    sort_fiscal_year = fields.List(fields.Integer(), required=False, load_default=[])
 
 
 class TeamLeaders(Schema):
     id: int = fields.Int(required=True)
     full_name: Optional[str] = fields.String()
     email: Optional[str] = fields.String()
+
+
+class AgreementNameListItem(Schema):
+    id: int = fields.Int(required=True)
+    name: str = fields.String(required=True)
 
 
 class ProjectCreationRequestSchema(Schema):
@@ -103,23 +113,6 @@ class ResearchProjectResponse(Schema):
     project_type: ProjectType = fields.Enum(ProjectType)
 
 
-class ResearchProjectListResponse(Schema):
-    """Lightweight schema for list endpoint with only fields used by frontend.
-
-    Excludes expensive nested relationships (team_leaders) to eliminate N+1 query problems.
-    """
-
-    id: int = fields.Int()
-    title: str = fields.String()
-    short_title: str = fields.String()
-    description: Optional[str] = fields.String(allow_none=True)
-    url: Optional[str] = fields.String(allow_none=True)
-    origination_date: Optional[date] = fields.Date(format="%Y-%m-%d", dump_default=None)
-    created_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ")
-    updated_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ")
-    project_type: ProjectType = fields.Enum(ProjectType)
-
-
 class ProjectListResponse(Schema):
     """Lightweight schema for list endpoint with only fields used by frontend.
 
@@ -134,6 +127,43 @@ class ProjectListResponse(Schema):
     created_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ")
     updated_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ")
     project_type: ProjectType = fields.Enum(ProjectType)
+    start_date: Optional[date] = fields.Date(format="%Y-%m-%d", dump_default=None)
+    end_date: Optional[date] = fields.Date(format="%Y-%m-%d", dump_default=None)
+    fiscal_year_totals: Optional[dict] = fields.Dict(
+        keys=fields.Int(), values=fields.Decimal(as_string=True), allow_none=True
+    )
+    project_total: Optional[int] = fields.Decimal(allow_none=True)
+    agreement_name_list: Optional[list[dict]] = fields.List(
+        fields.Nested(AgreementNameListItem), dump_default=[], allow_none=True
+    )
+
+    @pre_dump
+    def extract_metadata(self, data, **kwargs):
+        """Extract fields from project_list_metadata property and map to schema fields."""
+        if hasattr(data, "project_list_metadata"):
+            metadata = data.project_list_metadata
+
+            # Map total to project_total (convert Decimal to int)
+            data.project_total = metadata["total"] if metadata["total"] is not None else None
+
+            # Map date ranges
+            data.start_date = metadata["project_start"]
+            data.end_date = metadata["project_end"]
+
+            # Map fiscal year breakdown
+            data.fiscal_year_totals = metadata["by_fiscal_year"]
+            data.agreement_name_list = metadata.get("agreement_name_list", [])
+
+        return data
+
+
+class ResearchProjectListResponse(ProjectListResponse):
+    """Lightweight schema for list endpoint with only fields used by frontend.
+
+    Excludes expensive nested relationships (team_leaders) to eliminate N+1 query problems.
+    """
+
+    origination_date: Optional[date] = fields.Date(format="%Y-%m-%d", dump_default=None)
 
 
 class ProjectListFilterOptionResponseSchema(Schema):

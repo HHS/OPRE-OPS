@@ -2735,10 +2735,10 @@ class TestAgreementsPaginationAPI:
         assert response.status_code == 200
         assert len(response.json["data"]) > 0
 
-        # Verify results are in sorted order (by name)
+        # Verify results are in sorted order (by name, case-insensitive)
         names = [agr.get("name") for agr in response.json["data"] if agr.get("name")]
         if len(names) > 1:
-            assert names == sorted(names)
+            assert names == sorted(names, key=str.casefold)
 
     def test_pagination_with_sort_descending(self, auth_client, loaded_db, app_ctx):
         """Descending sort + pagination"""

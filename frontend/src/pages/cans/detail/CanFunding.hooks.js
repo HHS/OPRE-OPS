@@ -87,7 +87,8 @@ export default function useCanFunding(
     const [updateCanFundingReceived] = useUpdateCanFundingReceivedMutation();
     const [deleteCanFundingReceived] = useDeleteCanFundingReceivedMutation();
     const { setAlert } = useAlert();
-    const activeUserFullName = useSelector((state) => state.auth?.activeUser?.full_name) || "";
+    const activeUserFullName =
+        useSelector((state) => state.auth?.activeUser?.display_name ?? state.auth?.activeUser?.full_name) || "";
 
     React.useEffect(() => {
         setTotalReceived(receivedFunding);

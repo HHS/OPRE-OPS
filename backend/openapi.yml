@@ -822,7 +822,7 @@ paths:
           description: Not Found
         "500":
           description: Internal Server Error
-  /procurement-tracker-steps:
+  /procurement-tracker-steps/:
     get:
       tags:
         - Procurement Tracker Steps
@@ -1997,7 +1997,7 @@ paths:
         "403":
           description: Forbidden
 
-  /portfolios:
+  /portfolios/:
     get:
       tags:
         - Portfolios
@@ -2038,7 +2038,7 @@ paths:
                 "0":
                   $ref: "#/components/examples/Portfolio"
 
-  /portfolios-url:
+  /portfolios-url/:
     get:
       tags:
         - Portfolio Url
@@ -2474,7 +2474,7 @@ paths:
           description: Portfolio not found
         "500":
           description: Internal Server Error
-  /can-funding-summary:
+  /can-funding-summary/:
     get:
       tags:
         - CAN Funding Summary
@@ -2814,7 +2814,7 @@ paths:
       tags:
         - Projects
       operationId: getProjects
-      description: Get Projects with optional filtering
+      description: Get Projects with optional filtering and pagination
       parameters:
         - $ref: "#/components/parameters/simulatedError"
         - name: fiscal_year
@@ -2839,24 +2839,24 @@ paths:
           example: [1, 5]
         - name: project_search
           in: query
-          description: Search project titles (can specify multiple terms, AND logic - all terms must match)
+          description: Filter by exact project title or short_title (can specify multiple values, OR logic - matches if any value equals the title or short_title)
           schema:
             type: array
             items:
               type: string
           style: form
           explode: true
-          example: ["research", "child"]
+          example: ["HSS", "RFH", "Human Services Interoperability Support"]
         - name: agreement_search
           in: query
-          description: Search agreement names and nicknames associated with projects (can match either name or nickname, )
+          description: Filter by exact agreement name or nickname (can specify multiple values, OR logic - matches projects that have agreements with exactly matching names or nicknames)
           schema:
             type: array
             items:
               type: string
           style: form
           explode: true
-          example: ["contract", "2023"]
+          example: ["Contract #1: African American Child and Family Research Center", "Grant Beta"]
         - name: project_type
           in: query
           description: Filter projects by type (can specify multiple, OR logic)
@@ -2868,19 +2868,95 @@ paths:
           style: form
           explode: true
           example: [RESEARCH]
+        - name: limit
+          in: query
+          description: Maximum number of projects to return (1-50, default 10)
+          schema:
+            type: array
+            items:
+              type: integer
+              minimum: 1
+              maximum: 50
+              default: 10
+          style: form
+          explode: true
+          example: [10]
+        - name: offset
+          in: query
+          description: Number of projects to skip (default 0)
+          schema:
+            type: array
+            items:
+              type: integer
+              minimum: 0
+              default: 0
+          style: form
+          explode: true
+          example: [0]
+        - name: sort_field
+          in: query
+          description: Field to sort projects by
+          schema:
+            type: array
+            items:
+              type: string
+              enum: [TITLE, PROJECT_TYPE, PROJECT_START, PROJECT_END, FY_TOTAL, PROJECT_TOTAL]
+          style: form
+          explode: true
+          example: [TITLE]
+        - name: sort_descending
+          in: query
+          description: Sort order - true for descending, false for ascending
+          schema:
+            type: array
+            items:
+              type: boolean
+          style: form
+          explode: true
+          example: [false]
+        - name: sort_fiscal_year
+          in: query
+          description: Fiscal year to use when sorting by FY_TOTAL (required when sort_field includes FY_TOTAL)
+          schema:
+            type: array
+            items:
+              type: integer
+          style: form
+          explode: true
+          example: [2023]
       responses:
         "200":
-          description: OK - Returns array of projects matching the filter criteria
+          description: OK - Returns paginated list of projects with metadata
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  oneOf:
-                    - $ref: "#/components/schemas/ResearchProject"
-                    - $ref: "#/components/schemas/Project"
-                  discriminator:
-                    propertyName: project_type
+                type: object
+                required:
+                  - data
+                  - count
+                  - limit
+                  - offset
+                properties:
+                  data:
+                    type: array
+                    items:
+                      oneOf:
+                        - $ref: "#/components/schemas/ResearchProjectListItem"
+                        - $ref: "#/components/schemas/ProjectListItem"
+                      discriminator:
+                        propertyName: project_type
+                  count:
+                    type: integer
+                    description: Total number of projects matching the filter criteria (before pagination)
+                    example: 42
+                  limit:
+                    type: integer
+                    description: Maximum number of projects returned in this response
+                    example: 10
+                  offset:
+                    type: integer
+                    description: Number of projects skipped
+                    example: 0
         "400":
           description: Bad Request
         "401":
@@ -3019,9 +3095,12 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: "#/components/schemas/ResearchProject"
-                  - $ref: "#/components/schemas/Project"
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    description: The ID of the updated project
+                    example: 1
         "400":
           description: Bad Request - Invalid input or validation error
         "401":
@@ -3030,6 +3109,37 @@ paths:
           description: Not Found - Project does not exist
         "500":
           description: Internal Server Error
+
+  /projects/{id}/funding/:
+    get:
+      tags:
+        - Projects
+      operationId: getProjectFunding
+      description: Get funding summary for a project by ID
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: id
+          description: Project ID
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectFunding"
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not Found
 
   /projects-filters/:
     get:
@@ -3118,50 +3228,84 @@ paths:
         "500":
           description: Internal Server Error
 
-  /research-project-funding-summary/:
+  /reporting-summary/:
     get:
       tags:
-        - Projects
-      operationId: getResearchProjectFundingSummary
-      description: ""
+        - Reporting Summary
+      summary: Get consolidated reporting summary
+      operationId: getReportingSummary
+      description: >
+        Retrieve a consolidated reporting summary for the reporting page including spending
+        by agreement type and counts of projects, agreements, and budget lines for a given fiscal year.
       parameters:
         - $ref: "#/components/parameters/simulatedError"
-        - name: portfolioId
+        - name: fiscal_year
           in: query
+          description: Fiscal year for which the summary is requested. Defaults to the current fiscal year if not provided.
           schema:
             type: integer
-          example: 5
-        - name: fiscalYear
+            example: 2025
+        - name: portfolio_ids
           in: query
+          description: Filter results to only include data from budget line items associated with the specified portfolio IDs.
           schema:
-            type: integer
-          example: 2023
+            type: array
+            items:
+              type: integer
+          style: form
+          explode: true
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ResearchProjectFundingSummary"
-              example:
-                total_funding: 1000000.01
-        "400":
-          description: Bad Request
-          content:
-            application/json:
-              schema:
                 type: object
                 properties:
-                  portfolio_id:
-                    type: array
-                    items:
-                      type: string
-                      example: Must be greater than or equal to 1.
-                  fiscal_year:
-                    type: array
-                    items:
-                      type: string
-                      example: Must be greater than or equal to 1900.
+                  spending:
+                    type: object
+                    properties:
+                      total_spending:
+                        type: number
+                        format: float
+                      agreement_types:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            type:
+                              type: string
+                              enum: [CONTRACT, PARTNER, GRANT, DIRECT_OBLIGATION]
+                            label:
+                              type: string
+                            total:
+                              type: number
+                              format: float
+                            percent:
+                              type: integer
+                            new:
+                              type: number
+                              format: float
+                            continuing:
+                              type: number
+                              format: float
+                  counts:
+                    type: object
+                    properties:
+                      projects:
+                        $ref: "#/components/schemas/CountGroup"
+                      agreements:
+                        $ref: "#/components/schemas/CountGroup"
+                      new_agreements:
+                        $ref: "#/components/schemas/CountGroup"
+                      continuing_agreements:
+                        $ref: "#/components/schemas/CountGroup"
+                      budget_lines:
+                        $ref: "#/components/schemas/CountGroup"
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
   /procurement-shops/:
     get:
       tags:
@@ -3533,7 +3677,7 @@ paths:
         "500":
           description: Internal Server Error
 
-  /budget-line-items/{id}/:
+  /budget-line-items/{id}:
     parameters:
       - in: path
         name: id
@@ -4371,6 +4515,184 @@ paths:
                 example: IN_PROCESS
         "401":
           description: Unauthorized
+  /divisions/:
+    get:
+      tags:
+        - Divisions
+      operationId: getAllDivisions
+      summary: Get all Divisions
+      description: Get a list of all divisions
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Division"
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not Found
+  /divisions/{id}:
+    get:
+      tags:
+        - Divisions
+      operationId: getDivisionById
+      summary: Get a Division by ID
+      description: Get a single division by its ID
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: id
+          description: Division ID
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Division"
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not Found
+  /product-service-codes/:
+    get:
+      tags:
+        - Product Service Codes
+      operationId: getAllProductServiceCodes
+      summary: Get all Product Service Codes
+      description: Get a list of all product service codes
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProductServiceCode"
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not Found
+  /product-service-codes/{id}:
+    get:
+      tags:
+        - Product Service Codes
+      operationId: getProductServiceCodeById
+      summary: Get a Product Service Code by ID
+      description: Get a single product service code by its ID
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: id
+          description: Product Service Code ID
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductServiceCode"
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not Found
+  /health/:
+    get:
+      tags:
+        - Infrastructure
+      operationId: getHealthCheck
+      summary: Health check
+      description: Returns the health status of the API and its dependencies
+      security: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                      - OK
+                      - Maybe problems
+                      - BAD
+                  alarm_level:
+                    type: integer
+                  checks:
+                    type: object
+                    additionalProperties:
+                      type: object
+                      properties:
+                        alarm_level:
+                          type: integer
+                example:
+                  status: OK
+                  alarm_level: 0
+                  checks:
+                    database:
+                      alarm_level: 0
+  /version/:
+    get:
+      tags:
+        - Infrastructure
+      operationId: getVersion
+      summary: Get API version
+      description: Returns the current API version from the OpenAPI spec
+      security: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  version:
+                    type: string
+                example:
+                  version: "1.0.0"
+  /azure/sas-token/:
+    get:
+      tags:
+        - Infrastructure
+      operationId: getAzureSasToken
+      summary: Get Azure Blob Storage SAS token
+      description: Generates a short-lived SAS token for uploading files to Azure Blob Storage
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sas_token:
+                    type: string
+                example:
+                  sas_token: "se=2026-03-11T10%3A00%3A00Z&sp=w&sv=2021-08-06&sr=b&sig=..."
+        "401":
+          description: Unauthorized
 components:
   parameters:
     created_by:
@@ -4426,6 +4748,20 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
+    CountGroup:
+      type: object
+      properties:
+        total:
+          type: integer
+        types:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+              count:
+                type: integer
     BasicCAN:
       description: >-
         A simple version of the Common Accounting Number (CAN) Object.
@@ -4751,6 +5087,8 @@ components:
           type: string
         allowance:
           type: string
+        appropriation:
+          type: string
         display_name:
           type: string
         fiscal_year:
@@ -4798,6 +5136,8 @@ components:
         allotment:
           type: string
         allowance:
+          type: string
+        appropriation:
           type: string
         display_name:
           type: string
@@ -5184,12 +5524,111 @@ components:
             - PROCUREMENT_TEAM
         is_superuser:
           type: boolean
-    ResearchProjectFundingSummary:
-      description: Research Project funding data for a Portfolio
+    ProjectFunding:
+      description: Funding summary for a project
       type: object
       properties:
-        total_funding:
+        funding_by_portfolio:
+          type: array
+          items:
+            type: object
+            required:
+              - portfolio_id
+              - portfolio
+              - amount
+            properties:
+              portfolio_id:
+                type: integer
+                example: 1
+              portfolio:
+                type: string
+                example: "Child Welfare"
+              amount:
+                type: number
+                format: double
+                example: 123.456
+        funding_by_can:
+          type: object
+          required:
+            - total
+            - carry_forward_funding
+            - new_funding
+          properties:
+            total:
+              type: number
+              format: double
+              example: 246.912
+            carry_forward_funding:
+              type: number
+              format: double
+              example: 0
+            new_funding:
+              type: number
+              format: double
+              example: 246.912
+        funding_by_fiscal_year:
+          type: array
+          items:
+            type: object
+            required:
+              - fiscal_year
+              - amount
+            properties:
+              fiscal_year:
+                type: integer
+                example: 2024
+              amount:
+                type: number
+                format: double
+                example: 123.456
+        cans:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProjectFundingCAN"
+    ProjectFundingCAN:
+      description: CAN funding detail within a project funding summary
+      type: object
+      required:
+        - id
+        - number
+        - portfolio_id
+        - portfolio
+        - active_period
+        - amount
+        - fy_funding
+        - lifetime_funding
+      properties:
+        id:
+          type: integer
+          example: 1
+        number:
+          type: string
+          example: "CAN123"
+        portfolio_id:
+          type: integer
+          example: 1
+        portfolio:
+          type: string
+          example: "Child Welfare"
+        active_period:
+          type: integer
+          description: Active period in years
+          example: 1
+        amount:
           type: number
+          format: double
+          description: Amount obligated to this project from this CAN
+          example: 123.456
+        fy_funding:
+          type: number
+          format: double
+          description: Funding received in the current fiscal year
+          example: 123.456
+        lifetime_funding:
+          type: number
+          format: double
+          description: Total funding over the lifetime of the CAN
+          example: 123.456
     TeamLeader:
       type: object
       properties:
@@ -5255,6 +5694,138 @@ components:
           type: string
           enum: [RESEARCH, ADMINISTRATIVE_AND_SUPPORT]
           example: RESEARCH
+        start_date:
+          type: string
+          format: date
+          nullable: true
+          description: Earliest period_start across all services_components in all agreements
+          example: "2023-01-01"
+        end_date:
+          type: string
+          format: date
+          nullable: true
+          description: Latest period_end across all services_components in all agreements
+          example: "2024-12-31"
+        fiscal_year_totals:
+          type: object
+          nullable: true
+          description: Dictionary mapping fiscal year to total BLI value for that year (non-DRAFT BLIs only)
+          additionalProperties:
+            type: string
+          example:
+            "2023": "1000.00"
+            "2024": "2000.00"
+        project_total:
+          type: integer
+          nullable: true
+          description: Total value of all agreements in the project (sum of agreement_total for each)
+          example: 3000
+        agreement_name_list:
+          type: array
+          nullable: true
+          description: List of agreements associated with this project (id and name, where name prefers nick_name over title)
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                description: Agreement ID
+                example: 1
+              name:
+                type: string
+                description: Agreement name (nick_name if available, otherwise title)
+                example: "HSS-2023"
+            required:
+              - id
+              - name
+          example:
+            - id: 1
+              name: "Contract #1: African American Child and Family Research Center"
+            - id: 2
+              name: "HSS-2023"
+      required:
+        - title
+    ProjectListItem:
+      type: object
+      description: Lightweight schema for list endpoint (Administrative/Support projects)
+      properties:
+        id:
+          type: integer
+          example: 2
+        title:
+          type: string
+          example: IT Infrastructure Support
+        short_title:
+          type: string
+          example: IT-INFRA
+        description:
+          type: string
+          example: Infrastructure support project
+        url:
+          type: string
+          nullable: true
+          example: https://example.com
+        created_on:
+          type: string
+          format: date-time
+          example: "2023-04-06T20:33:38.292475Z"
+        updated_on:
+          type: string
+          format: date-time
+          example: "2023-04-06T20:33:38.292475Z"
+        project_type:
+          type: string
+          enum: [RESEARCH, ADMINISTRATIVE_AND_SUPPORT]
+          example: ADMINISTRATIVE_AND_SUPPORT
+        start_date:
+          type: string
+          format: date
+          nullable: true
+          description: Earliest period_start across all services_components in all agreements
+          example: "2023-01-01"
+        end_date:
+          type: string
+          format: date
+          nullable: true
+          description: Latest period_end across all services_components in all agreements
+          example: "2024-12-31"
+        fiscal_year_totals:
+          type: object
+          nullable: true
+          description: Dictionary mapping fiscal year to total BLI value for that year (non-DRAFT BLIs only)
+          additionalProperties:
+            type: string
+          example:
+            "2023": "1000.00"
+            "2024": "2000.00"
+        project_total:
+          type: integer
+          nullable: true
+          description: Total value of all agreements in the project (sum of agreement_total for each)
+          example: 3000
+        agreement_name_list:
+          type: array
+          nullable: true
+          description: List of agreements associated with this project (id and name, where name prefers nick_name over title)
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                description: Agreement ID
+                example: 1
+              name:
+                type: string
+                description: Agreement name (nick_name if available, otherwise title)
+                example: "Admin Contract 2024"
+            required:
+              - id
+              - name
+          example:
+            - id: 3
+              name: "IT-Support-2024"
+            - id: 4
+              name: "Infrastructure Contract"
       required:
         - title
     ResearchProject:
@@ -6697,6 +7268,7 @@ components:
         - name
     Project:
       type: object
+      description: Full schema for Administrative/Support projects (detail endpoint)
       properties:
         id:
           type: integer
@@ -6706,6 +7278,7 @@ components:
           enum:
             - RESEARCH
             - ADMINISTRATIVE_AND_SUPPORT
+          example: ADMINISTRATIVE_AND_SUPPORT
         title:
           type: string
           example: Example Project Title
@@ -6717,7 +7290,34 @@ components:
           example: A short description about the project
         url:
           type: string
+          nullable: true
           example: www.example.com
+        created_by:
+          type: integer
+          example: 1
+        team_leaders:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              full_name:
+                type: string
+              email:
+                type: string
+          example:
+            - id: 500
+              full_name: "Jane Smith"
+              email: "jane.smith@example.com"
+        created_on:
+          type: string
+          format: date-time
+          example: "2023-04-06T20:33:38.292475Z"
+        updated_on:
+          type: string
+          format: date-time
+          example: "2023-04-06T20:33:38.292475Z"
       required:
         - id
         - project_type

@@ -6,168 +6,196 @@
       fund_code: "AAXXXX20231DAD",
       funding_source: "OPRE",
       method_of_transfer: "DIRECT",
+      appropriation: "75-23-1552",
     },
     {
       // 2
       fiscal_year: 2021,
       fund_code: "BBXXXX20215DAD",
       method_of_transfer: "COST_SHARE",
+      appropriation: "75-2125-1552",
     },
     {
       // 3
       fiscal_year: 2022,
       fund_code: "CCXXXX20225DAD",
       method_of_transfer: "IDDA",
+      appropriation: "75-2226-1552",
     },
     {
       // 4
       fiscal_year: 2021,
       fund_code: "DDXXXX20215DAD",
       method_of_transfer: "IAA",
+      appropriation: "75-2125-1552",
     },
     {
       // 5
       fiscal_year: 2021,
       fund_code: "EEXXXX20215DAD",
       method_of_transfer: "IDDA",
+      appropriation: "75-2125-1552",
     },
     {
       // 6
       fiscal_year: 2021,
       fund_code: "FFXXXX20215DAD",
       method_of_transfer: "DIRECT",
+      appropriation: "75-2125-1552",
     },
     {
       // 7
       fiscal_year: 2023,
       fund_code: "GGXXXX20231DAD",
       method_of_transfer: "DIRECT",
+      appropriation: "75-23-1552",
     },
     {
       // 8
       fiscal_year: 2023,
       fund_code: "HHXXXX20231DAD",
       method_of_transfer: "IDDA",
+      appropriation: "75-23-1552",
     },
     {
       // 9
       fiscal_year: 2023,
       fund_code: "IIXXXX20231DAD",
       method_of_transfer: "IAA",
+      appropriation: "75-23-1552",
     },
     {
       // 10
       fiscal_year: 2023,
       fund_code: "JJXXXX20231DAD",
       method_of_transfer: "DIRECT",
+      appropriation: "75-23-1552",
     },
     {
       // 11
       fiscal_year: 2023,
       fund_code: "KKXXXX20235DAD",
       method_of_transfer: "IDDA",
+      appropriation: "75-2327-1552",
     },
     {
       // 12
       fiscal_year: 2022,
       fund_code: "LLXXXX20225DAD",
       method_of_transfer: "IAA",
+      appropriation: "75-2226-1552",
     },
     {
       // 13
       fiscal_year: 2023,
       fund_code: "MMXXXX20235DAD",
       method_of_transfer: "DIRECT",
+      appropriation: "75-2327-1552",
     },
     {
       // 14
       fiscal_year: 2023,
       fund_code: "NNXXXX20231DAD",
       method_of_transfer: "IDDA",
+      appropriation: "75-23-1552",
     },
     {
       // 15
       fiscal_year: 2023,
       fund_code: "OOXXXX20235DAD",
       method_of_transfer: "DIRECT",
+      appropriation: "75-2327-1552",
     },
     {
       // 16
       fiscal_year: 2023,
       fund_code: "PPXXXX20235DAD",
       method_of_transfer: "DIRECT",
+      appropriation: "75-2327-1552",
     },
     {
       // 17
       fiscal_year: 2023,
       fund_code: "QQXXXX20235DAD",
       method_of_transfer: "IDDA",
+      appropriation: "75-2327-1552",
     },
     {
       // 18
       fiscal_year: 2023,
       fund_code: "0GXXXX20241DAD",
       method_of_transfer: "DIRECT",
+      appropriation: "75-23-1552",
     },
     {
       // 19
       fiscal_year: 2023,
       fund_code: "0GXXXX20241RAD",
       method_of_transfer: "IDDA",
+      appropriation: "75-23-1552",
     },
     {
       // 20
       fiscal_year: 2044,
       fund_code: "BBXXXX20445DAD",
       method_of_transfer: "COST_SHARE",
+      appropriation: "75-4448-1552",
     },
     {
       // 21
       fiscal_year: 2022,
       fund_code: "BBXXXX20225RAD",
-      method_of_transfer: "IDDA"
+      method_of_transfer: "IDDA",
+      appropriation: "75-2226-1552",
     },
     {
       // 22
       fiscal_year: 2022,
       fund_code: "WR259820225DBM",
-      method_of_transfer: "COST_SHARE"
+      method_of_transfer: "COST_SHARE",
+      appropriation: "75-2226-1552",
     },
     {
       // 23
       fiscal_year: 2023,
       fund_code: "SN820420235DBM",
-      method_of_transfer: "COST_SHARE"
+      method_of_transfer: "COST_SHARE",
+      appropriation: "75-2327-1552",
     },
     {
       // 24
       fiscal_year: 2024,
       fund_code: "SN820420245DBM",
-      method_of_transfer: "COST_SHARE"
+      method_of_transfer: "COST_SHARE",
+      appropriation: "75-2428-1552",
     },
     {
       // 25
       fiscal_year: 2025,
       fund_code: "SN820420255DBM",
-      method_of_transfer: "COST_SHARE"
+      method_of_transfer: "COST_SHARE",
+      appropriation: "75-2529-1552",
     },
     {
       // 26
       fiscal_year: 2025,
       fund_code: "RW501820251DAD",
-      method_of_transfer: "DIRECT"
+      method_of_transfer: "DIRECT",
+      appropriation: "75-25-1552",
     },
     {
       // 27
       fiscal_year: 2025,
       fund_code: "UG349120251DBD",
-      method_of_transfer: "DIRECT"
+      method_of_transfer: "DIRECT",
+      appropriation: "75-25-1552",
     },
     {
       // 28
       fiscal_year: 2025,
       fund_code: "UG349120250DBD",
-      method_of_transfer: "DIRECT"
+      method_of_transfer: "DIRECT",
+      appropriation: "75-X-1552",
     }
 
   ],

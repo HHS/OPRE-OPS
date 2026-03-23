@@ -1,20 +1,14 @@
-import os
 from csv import DictReader
 from dataclasses import dataclass
 from typing import List
 
 from loguru import logger
-from sqlalchemy import inspect
 from sqlalchemy.orm import Session
 
-from data_tools.src.common.utils import convert_budget_line_item_type, get_bli_class_from_type, get_cig_type_mapping
+from data_tools.src.common.utils import convert_budget_line_item_type, get_cig_type_mapping
 from models import (
     AgreementType,
     BudgetLineItem,
-    ContractBudgetLineItem,
-    DirectObligationBudgetLineItem,
-    GrantBudgetLineItem,
-    IAABudgetLineItem,
     OpsEvent,
     OpsEventStatus,
     OpsEventType,
@@ -126,7 +120,7 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
 
     # Create a new budget line item with the correct type
     new_budget_line_item, old_budget_line_item = convert_budget_line_item_type(
-        getattr(budget_line_item, "id"), data.CIG_TYPE, session
+        budget_line_item.id, data.CIG_TYPE, session
     )
     session.delete(old_budget_line_item)
     session.commit()

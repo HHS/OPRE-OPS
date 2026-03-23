@@ -1,4 +1,3 @@
-from ast import dump
 from csv import DictReader
 from dataclasses import dataclass, field
 from typing import List, Optional

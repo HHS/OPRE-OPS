@@ -58,9 +58,13 @@ html {
     --data-viz-bl-by-fy-4: #f492bd;
     --data-viz-bl-by-fy-5: #d393b3;
     --data-viz-agreement-contract: #11305C;
+    --data-viz-agreement-contract-continuing: #5C87C4;
     --data-viz-agreement-partner: #4AA487;
+    --data-viz-agreement-partner-continuing: #5FD6B0;
     --data-viz-agreement-grant: #E38356;
+    --data-viz-agreement-grant-continuing: #EC9F7C;
     --data-viz-agreement-direct-obligation: #C54878;
+    --data-viz-agreement-direct-obligation-continuing: #E26998;
     --data-viz-bl-by-status-1: #a9aeb1;
     --data-viz-bl-by-status-2: #336a90;
     --data-viz-bl-by-status-3: #e5a000;
@@ -95,6 +99,7 @@ html {
     --portfolio-bar-graph-otip: #1975aa;
     --portfolio-bar-graph-dv: #619ad8;
     --release-changes-fixes: #6cd4ff;
+    --legend-dot-size: 8px;
 }
 
 $themeColors: (
@@ -147,9 +152,13 @@ $themeColors: (
     "data-viz-bl-by-fy-4": var(--data-viz-bl-by-fy-4),
     "data-viz-bl-by-fy-5": var(--data-viz-bl-by-fy-5),
     "data-viz-agreement-contract": var(--data-viz-agreement-contract),
+    "data-viz-agreement-contract-continuing": var(--data-viz-agreement-contract-continuing),
     "data-viz-agreement-partner": var(--data-viz-agreement-partner),
+    "data-viz-agreement-partner-continuing": var(--data-viz-agreement-partner-continuing),
     "data-viz-agreement-grant": var(--data-viz-agreement-grant),
+    "data-viz-agreement-grant-continuing": var(--data-viz-agreement-grant-continuing),
     "data-viz-agreement-direct-obligation": var(--data-viz-agreement-direct-obligation),
+    "data-viz-agreement-direct-obligation-continuing": var(--data-viz-agreement-direct-obligation-continuing),
     "data-viz-bl-by-status-1": var(--data-viz-bl-by-status-1),
     "data-viz-bl-by-status-2": var(--data-viz-bl-by-status-2),
     "data-viz-bl-by-status-3": var(--data-viz-bl-by-status-3),
