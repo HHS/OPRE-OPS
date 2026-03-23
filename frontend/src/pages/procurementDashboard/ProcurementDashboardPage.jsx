@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 import icons from "../../uswds/img/sprite.svg";
 import App from "../../App";
@@ -9,7 +9,7 @@ import ProcurementDashboardTabs from "./ProcurementDashboardTabs";
 import ProcurementSummaryCards from "./ProcurementSummaryCards";
 
 // TODO: Replace with 2026 once test data is available for that fiscal year
-const CURRENT_FISCAL_YEAR = 2043;
+const CURRENT_FISCAL_YEAR = 2044;
 
 const FILTER_TO_AWARD_TYPE = {
     "first-award": "NEW",
@@ -31,11 +31,25 @@ const ProcurementDashboard = () => {
         }
     });
 
+    const [selectedProcShop, setSelectedProcShop] = useState("all");
+
     const allAgreements = agreementsResponse?.agreements || [];
+
+    const procShopOptions = useMemo(
+        () => [...new Set(allAgreements.map((a) => a.procurement_shop?.abbr).filter(Boolean))].sort(),
+        [allAgreements]
+    );
+
     const agreements = useMemo(() => {
-        if (!awardTypeFilter) return allAgreements;
-        return allAgreements.filter((agreement) => agreement.award_type === awardTypeFilter);
-    }, [allAgreements, awardTypeFilter]);
+        let filtered = allAgreements;
+        if (awardTypeFilter) {
+            filtered = filtered.filter((agreement) => agreement.award_type === awardTypeFilter);
+        }
+        if (selectedProcShop !== "all") {
+            filtered = filtered.filter((agreement) => agreement.procurement_shop?.abbr === selectedProcShop);
+        }
+        return filtered;
+    }, [allAgreements, awardTypeFilter, selectedProcShop]);
 
     const agreementIds = useMemo(() => agreements.map((a) => a.id), [agreements]);
 
@@ -52,8 +66,9 @@ const ProcurementDashboard = () => {
                 TabsSection={<ProcurementDashboardTabs />}
                 FYSelect={
                     <ProcShopFilter
-                        value="all"
-                        onChange={() => {}}
+                        value={selectedProcShop}
+                        onChange={setSelectedProcShop}
+                        options={procShopOptions}
                     />
                 }
                 FilterButton={

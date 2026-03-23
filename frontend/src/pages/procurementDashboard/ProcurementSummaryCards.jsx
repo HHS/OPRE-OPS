@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import Card from "../../components/UI/Cards/Card";
 import LineBar from "../../components/UI/DataViz/LineBar";
+import { BLI_STATUS } from "../../helpers/budgetLines.helpers";
 import ProcurementOverviewCard from "./ProcurementOverviewCard";
 import ProcurementStepSummaryCard from "./ProcurementStepSummaryCard";
 
@@ -27,9 +28,13 @@ const computeStepData = (agreements, procurementTrackers, fiscalYear) => {
         const stepNumber = tracker?.active_step_number;
         if (!stepNumber || stepNumber < 1 || stepNumber > 6) continue;
 
+        const blis = (agreement.budget_line_items || []).filter(
+            (bli) => bli.fiscal_year === fiscalYear && bli.status === BLI_STATUS.EXECUTING
+        );
+        if (blis.length === 0) continue;
+
         agreementsByStep[stepNumber] += 1;
 
-        const blis = (agreement.budget_line_items || []).filter((bli) => bli.fiscal_year === fiscalYear);
         for (const bli of blis) {
             amountByStep[stepNumber] += (bli.amount || 0) + (bli.fees || 0);
         }

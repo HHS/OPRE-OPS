@@ -1,4 +1,4 @@
-const ProcShopFilter = ({ value, onChange }) => {
+const ProcShopFilter = ({ value, onChange, options = [] }) => {
     return (
         <div
             className="display-flex flex-justify flex-align-center"
@@ -18,6 +18,14 @@ const ProcShopFilter = ({ value, onChange }) => {
                 value={value}
             >
                 <option value="all">All</option>
+                {options.map((abbr) => (
+                    <option
+                        key={abbr}
+                        value={abbr}
+                    >
+                        {abbr}
+                    </option>
+                ))}
             </select>
         </div>
     );
