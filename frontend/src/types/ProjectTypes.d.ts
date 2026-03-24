@@ -18,6 +18,11 @@ export type ResearchProject = {
     updated_by_user: any;
 };
 
+export type AgreementNameListItem = {
+    id: number;
+    name: string;
+};
+
 export type Project = {
     id: number;
     project_type: "RESEARCH" | "ADMINISTRATIVE_AND_SUPPORT";
@@ -26,6 +31,11 @@ export type Project = {
     description: string;
     url?: string;
     origination_date?: string;
+    start_date?: string | null;
+    end_date?: string | null;
+    fiscal_year_totals?: Record<number, string> | null;
+    project_total?: string | null;
+    agreement_name_list?: AgreementNameListItem[];
     team_leaders?: SafeUser[];
     methodologies?: string[];
     populations?: string[];

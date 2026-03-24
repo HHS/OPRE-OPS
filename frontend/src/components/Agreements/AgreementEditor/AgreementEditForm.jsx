@@ -121,8 +121,7 @@ const AgreementEditForm = ({
         showBlockerModal,
         setShowBlockerModal,
         blockerModalProps,
-        isLoadingProductServiceCodes,
-        isLoadingProjects
+        isLoadingProductServiceCodes
     } = useAgreementEditForm(
         isAgreementAwarded,
         areAnyBudgetLinesPlanned,
@@ -138,7 +137,7 @@ const AgreementEditForm = ({
 
     const awardedImmutableFieldsTooltipMsg = "This information cannot be edited on awarded agreements";
 
-    if (isLoadingProductServiceCodes || isLoadingProjects) {
+    if (isLoadingProductServiceCodes) {
         return <div>Loading...</div>;
     }
 

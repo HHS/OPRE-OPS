@@ -22,7 +22,7 @@ jobs:
           fetch-depth: 0
       - name: TruffleHog OSS
         id: trufflehog
-        uses: trufflesecurity/trufflehog@6c05c4a00b91aa542267d8e32a8254774799d68d # v3.93.8
+        uses: trufflesecurity/trufflehog@6c64db94d5b2e09d7e0948fb6bd3166cc6fffbc7 # v3.94.0
         env:
           GITHUB_HEAD_REF_SAFE: ${{ github.head_ref }}
         continue-on-error: true
@@ -55,7 +55,7 @@ jobs:
       - uses: ./.github/actions/setup-javascript
 
       - name: Cache Cypress binary
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           path: ~/.cache/Cypress
           key: cypress-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('frontend/bun.lock') }}
