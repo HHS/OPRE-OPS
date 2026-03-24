@@ -63,9 +63,9 @@ export const RequestPreAwardApproval = () => {
 
             {hasApprovalBeenRequested && (
                 <SimpleAlert
-                    type="info"
-                    heading="Pre-Award Approval Already Requested"
-                    message="A pre-award approval request has already been submitted for this agreement. You cannot submit another request."
+                    type="warning"
+                    heading="Pre-Award Approval In Review"
+                    message="This agreement is In Review for Pre-Award Approval. Edits or changes cannot be made at this time."
                     isClosable={false}
                 />
             )}
@@ -140,7 +140,7 @@ export const RequestPreAwardApproval = () => {
                 afterApproval={false}
                 setAfterApproval={() => {}}
                 action=""
-                changeRequestType=""
+                changeRequestType={agreement?.change_request_type}
             />
 
             {/* Upload Final Consensus Memo */}
@@ -171,16 +171,26 @@ export const RequestPreAwardApproval = () => {
                             </div>
                             <label
                                 htmlFor="consensus-memo-upload"
-                                className="cursor-pointer"
+                                className={
+                                    hasApprovalBeenRequested || hasBLIInReview ? "cursor-not-allowed" : "cursor-pointer"
+                                }
                                 style={{
                                     display: "flex",
                                     alignItems: "center",
                                     justifyContent: "end",
                                     gap: "0.5rem",
-                                    color: "#757575",
+                                    color: hasApprovalBeenRequested || hasBLIInReview ? "#c9c9c9" : "#757575",
                                     fontSize: "0.875rem",
-                                    marginTop: "0.5rem"
+                                    marginTop: "0.5rem",
+                                    pointerEvents: hasApprovalBeenRequested || hasBLIInReview ? "none" : "auto"
                                 }}
+                                title={
+                                    hasApprovalBeenRequested
+                                        ? "Cannot upload documents - Pre-Award approval has already been requested"
+                                        : hasBLIInReview
+                                          ? "Cannot upload documents while budget lines have pending change requests"
+                                          : ""
+                                }
                             >
                                 <svg
                                     className="usa-icon"
@@ -200,7 +210,7 @@ export const RequestPreAwardApproval = () => {
                                 name="consensus-memo-upload"
                                 accept=".pdf,.doc,.docx,.xls,.xlsx"
                                 onChange={handleFileChange}
-                                disabled={isUploading}
+                                disabled={isUploading || hasApprovalBeenRequested || hasBLIInReview}
                                 style={{ display: "none" }}
                             />
                         </div>
@@ -230,6 +240,14 @@ export const RequestPreAwardApproval = () => {
                         <button
                             className="usa-button"
                             onClick={handleFileUpload}
+                            disabled={isSubmitting || hasApprovalBeenRequested || hasBLIInReview}
+                            title={
+                                hasApprovalBeenRequested
+                                    ? "Pre-Award approval has already been requested"
+                                    : hasBLIInReview
+                                      ? "Cannot upload documents while budget lines have pending change requests"
+                                      : ""
+                            }
                         >
                             Confirm Upload
                         </button>
@@ -280,6 +298,7 @@ export const RequestPreAwardApproval = () => {
                     maxLength={150}
                     value={notes}
                     onChange={(name, value) => setNotes(value)}
+                    disabled={hasApprovalBeenRequested || hasBLIInReview}
                 />
             </div>
 

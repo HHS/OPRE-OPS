@@ -203,6 +203,11 @@ const ProcurementTrackerStepFive = ({
                                 className="usa-button"
                                 onClick={() => navigate(`/agreements/${agreementId}/pre-award-approval`)}
                                 disabled={isRequestBtnDisabled}
+                                title={
+                                    isRequestBtnDisabled
+                                        ? "Pre-Award Approval cannot be requested right now. Ensure this step is unlocked, Pre-Award Approval has not already been requested, and that no Budget Line Items are currently in review."
+                                        : undefined
+                                }
                                 data-cy="request-pre-award-approval-btn"
                             >
                                 Request Pre-Award Approval

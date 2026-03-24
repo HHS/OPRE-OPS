@@ -135,6 +135,7 @@ export default function useRequestPreAwardApproval(agreementId) {
     const handleSubmit = async () => {
         if (!step5?.id) {
             console.error("Step 5 not found");
+            setSubmitError("Unable to submit approval request because required tracker information is missing.");
             return;
         }
 
