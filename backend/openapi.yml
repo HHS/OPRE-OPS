@@ -5594,7 +5594,6 @@ components:
         - portfolio_id
         - portfolio
         - active_period
-        - amount
         - fy_funding
         - lifetime_funding
       properties:
