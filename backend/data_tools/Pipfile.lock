@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "f6868f598ed58098b879c4a2116523d8d33f451d2f00e2ff5703d48160fed40b"
+            "sha256": "9a22f8c4171ae677c618991e592456cd083ccc7c26abbded45866feabcc1674a"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -2895,12 +2895,12 @@
         },
         "pytest-cov": {
             "hashes": [
-                "sha256:33c97eda2e049a0c5298e91f519302a1334c26ac65c1a483d6206fd458361af1",
-                "sha256:3b8e9558b16cc1479da72058bdecf8073661c7f57f7d3c5f22a1c23507f2d861"
+                "sha256:30674f2b5f6351aa09702a9c8c364f6a01c27aae0c1366ae8016160d1efc56b2",
+                "sha256:a0461110b7865f9a271aa1b51e516c9a95de9d696734a2f71e3e78f46e1d4678"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.9'",
-            "version": "==7.0.0"
+            "version": "==7.1.0"
         },
         "pytest-docker": {
             "extras": [
