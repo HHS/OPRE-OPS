@@ -127,6 +127,31 @@ class CAN(BaseModel):
         can_status = CANStatus.INACTIVE if available_funding <= 0 and self.is_expired else CANStatus.ACTIVE
         return can_status
 
+    def classify_funding(self, fiscal_year: int) -> tuple:
+        """Return (new_funding, carry_forward_funding) Decimal totals for the given fiscal year.
+
+        Classification rules:
+        - 1-year CANs: all funding is new
+        - Multi-year CANs in their appropriation year: new
+        - Multi-year CANs past their appropriation year: carry-forward
+        - Multi-year CANs before their appropriation year: excluded
+        """
+        new_funding = Decimal("0")
+        carry_forward_funding = Decimal("0")
+        if not self.funding_details:
+            return new_funding, carry_forward_funding
+        for fb in self.funding_budgets:
+            if fb.fiscal_year != fiscal_year:
+                continue
+            budget = fb.budget or Decimal("0")
+            if self.active_period == 1:
+                new_funding += budget
+            elif fiscal_year == self.funding_details.fiscal_year:
+                new_funding += budget
+            elif fiscal_year > self.funding_details.fiscal_year:
+                carry_forward_funding += budget
+        return new_funding, carry_forward_funding
+
     @property
     def active_period(self):
         if self.funding_details is None:

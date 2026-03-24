@@ -46,6 +46,7 @@ def mock_can():
         active_period=5,
         obligate_by=2026,
     )
+    can.classify_funding = lambda fy: CAN.classify_funding(can, fy)
 
     return can
 
@@ -976,7 +977,9 @@ def test_get_can_funding_summary_with_null_bli_amounts(loaded_db, app_ctx) -> No
         funding_details=funding_details,
         funding_budgets=funding_budgets,
         budget_line_items=[mock_bli_1, mock_bli_2, mock_bli_3, mock_bli_4, mock_bli_5],
+        active_period=1,
     )
+    can.classify_funding = lambda fy: CAN.classify_funding(can, fy)
 
     # Test the function
     result = get_can_funding_summary(can, 2023)
