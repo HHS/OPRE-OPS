@@ -9,6 +9,11 @@ from models import (
     AgreementReason,
     AgreementType,
     AwardType,
+    BudgetLineItem,
+    BudgetLineItemChangeRequest,
+    BudgetLineItemStatus,
+    ChangeRequestStatus,
+    ChangeRequestType,
     ContractAgreement,
     ContractType,
     DefaultProcurementTracker,
@@ -28,46 +33,40 @@ def context():
     return {}
 
 
+def _delete_entity(loaded_db, context, key, table_name):
+    """Helper to delete a single entity from the database."""
+    if key not in context or context[key].id is None:
+        return
+    entity_id = context[key].id
+    if isinstance(entity_id, int):
+        loaded_db.execute(text(f"DELETE FROM {table_name} WHERE id = :id"), {"id": entity_id})
+
+
 def cleanup(loaded_db, context):
     """Clean up all resources created during the test using raw SQL to bypass ORM versioning."""
     try:
-        # Use raw SQL to delete, bypassing SQLAlchemy Continuum versioning
-        # This prevents StaleDataError when version tables are out of sync
         # Delete in reverse order of foreign key dependencies
+        _delete_entity(loaded_db, context, "change_request", "change_request")
+        _delete_entity(loaded_db, context, "budget_line_item", "budget_line_item")
+        _delete_entity(loaded_db, context, "procurement_tracker_step", "procurement_tracker_step")
 
-        # Delete ProcurementTrackerStep first (has FK to ProcurementTracker)
-        if "procurement_tracker_step" in context and context["procurement_tracker_step"].id is not None:
-            step_id = context["procurement_tracker_step"].id
-            # Ensure tracker_id is an int before using it in the query for safety reasons
-            if isinstance(step_id, int):
-                loaded_db.execute(text("DELETE FROM procurement_tracker_step WHERE id = :id"), {"id": step_id})
-
-        # Delete ProcurementTracker (has FK to Agreement)
-        # Uses joined-table inheritance: default_procurement_tracker -> procurement_tracker
+        # Delete ProcurementTracker (joined-table inheritance)
         if "procurement_tracker" in context and context["procurement_tracker"].id is not None:
             tracker_id = context["procurement_tracker"].id
-            # Ensure tracker_id is an int before using it in the query for safety reasons
             if isinstance(tracker_id, int):
-                # Delete from child table first
                 loaded_db.execute(text("DELETE FROM default_procurement_tracker WHERE id = :id"), {"id": tracker_id})
-                # Then from parent table
                 loaded_db.execute(text("DELETE FROM procurement_tracker WHERE id = :id"), {"id": tracker_id})
 
-        # Delete ContractAgreement last
-        # Uses joined-table inheritance: contract_agreement -> agreement
+        # Delete ContractAgreement (joined-table inheritance)
         if "agreement" in context and context["agreement"].id is not None:
             agreement_id = context["agreement"].id
-            # Ensure tracker_id is an int before using it in the query for safety reasons
             if isinstance(agreement_id, int):
-                # Delete from child table first (contract_agreement)
                 loaded_db.execute(text("DELETE FROM contract_agreement WHERE id = :id"), {"id": agreement_id})
-                # Then from parent table (agreement)
                 loaded_db.execute(text("DELETE FROM agreement WHERE id = :id"), {"id": agreement_id})
 
         loaded_db.commit()
     except Exception as e:
         loaded_db.rollback()
-        # Don't raise during cleanup to avoid masking test failures
         print(f"Error during cleanup: {e}")
 
 
@@ -207,6 +206,13 @@ def test_cannot_invalidate_solicitation_start_date_with_update(): ...
 def test_cannot_invalidate_solicitation_end_date_with_update(): ...
 
 
+@scenario(
+    "validate_procurement_tracker_steps.feature",
+    "Cannot request pre-award approval when BLIs are in review",
+)
+def test_cannot_request_pre_award_approval_when_blis_in_review(): ...
+
+
 @pytest.fixture()
 def setup_and_teardown(loaded_db, context):
     ...
@@ -288,6 +294,52 @@ def agreement_without_ops_user(bdd_client, test_non_admin_user, loaded_db, conte
 
     context["agreement"] = contract_agreement
     context["user_id"] = test_non_admin_user.id
+
+
+@given("I have a Contract Agreement with OPS user as a team member and a BLI in review")
+def agreement_with_ops_user_and_bli_in_review(bdd_client, test_non_admin_user, loaded_db, context):
+    contract_agreement = ContractAgreement(
+        name=str(uuid.uuid4()),
+        contract_number="CT1234",
+        contract_type=ContractType.FIRM_FIXED_PRICE,
+        product_service_code_id=2,
+        agreement_type=AgreementType.CONTRACT,
+        description="Test Contract Agreement",
+        awarding_entity_id=1,
+        agreement_reason=AgreementReason.NEW_REQ,
+        project_officer_id=test_non_admin_user.id,
+    )
+    loaded_db.add(contract_agreement)
+    loaded_db.commit()
+    loaded_db.flush()
+
+    # Create a budget line item
+    budget_line_item = BudgetLineItem(
+        agreement_id=contract_agreement.id,
+        can_id=1,  # Assuming CAN with id 1 exists in test fixtures
+        amount=10000.00,
+        status=BudgetLineItemStatus.PLANNED,
+    )
+    loaded_db.add(budget_line_item)
+    loaded_db.commit()
+    loaded_db.flush()
+
+    # Create a change request in review status for the budget line item
+    change_request = BudgetLineItemChangeRequest(
+        budget_line_item_id=budget_line_item.id,
+        agreement_id=contract_agreement.id,
+        change_request_type=ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST,
+        status=ChangeRequestStatus.IN_REVIEW,
+        requested_change_data={"amount": 20000.00},
+        created_by=test_non_admin_user.id,
+    )
+    loaded_db.add(change_request)
+    loaded_db.commit()
+
+    context["agreement"] = contract_agreement
+    context["user_id"] = test_non_admin_user.id
+    context["budget_line_item"] = budget_line_item
+    context["change_request"] = change_request
 
 
 @given("I have a procurement tracker")
@@ -443,6 +495,17 @@ def working_with_solicitation_step_with_valid_dates(loaded_db, context):
     step_3.solicitation_period_start_date = date.today()
     step_3.solicitation_period_end_date = date.today() + timedelta(days=30)
     context["procurement_tracker_step"] = step_3
+    loaded_db.commit()
+    loaded_db.refresh(procurement_tracker)
+
+
+@given("I am working with a pre-award procurement tracker step")
+def working_with_pre_award_step(loaded_db, context):
+    """Set the context's procurement_tracker_step to step 5 (pre-award)."""
+    procurement_tracker = context["procurement_tracker"]
+    procurement_tracker.active_step_number = 5
+    step_5 = next((step for step in procurement_tracker.steps if step.step_number == 5), None)
+    context["procurement_tracker_step"] = step_5
     loaded_db.commit()
     loaded_db.refresh(procurement_tracker)
 
@@ -704,6 +767,17 @@ def have_solicitation_step_with_end_date_in_past(context):
     data = {
         "status": "ACTIVE",
         "solicitation_period_end_date": past_date,
+    }
+
+    context["request_body"] = data
+
+
+@when("I request pre-award approval")
+def request_pre_award_approval(context):
+    data = {
+        "approval_requested": True,
+        "approval_requested_date": date.today().isoformat(),
+        "requestor_notes": "Please approve this pre-award request",
     }
 
     context["request_body"] = data

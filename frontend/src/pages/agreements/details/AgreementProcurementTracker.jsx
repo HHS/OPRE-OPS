@@ -29,6 +29,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
     const navigate = useNavigate();
     const [showSuccessAlert, setShowSuccessAlert] = React.useState(false);
     const [showInReviewAlert, setShowInReviewAlert] = React.useState(false);
+    const [successSubmittedAt, setSuccessSubmittedAt] = React.useState(null);
 
     const WIZARD_STEPS = [
         "Acquisition Planning",
@@ -49,6 +50,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
         if (location.state?.success) {
             setShowSuccessAlert(true);
             setShowInReviewAlert(false);
+            setSuccessSubmittedAt(Date.now());
             // Clear the location state to avoid showing alert on refresh/revisit
             navigate(location.pathname, { replace: true, state: {} });
         }
@@ -87,13 +89,29 @@ const AgreementProcurementTracker = ({ agreement }) => {
 
     // Show "In Review" alert when approval is requested but not just submitted
     React.useEffect(() => {
-        if (stepFiveData?.approval_requested && !location.state?.success) {
-            setShowInReviewAlert(true);
-            setShowSuccessAlert(false);
+        if (stepFiveData?.approval_requested) {
+            // If success was just submitted, wait 5 seconds before showing in-review alert
+            const timeSinceSuccess = successSubmittedAt ? Date.now() - successSubmittedAt : Infinity;
+            const SUCCESS_DISPLAY_DURATION = 5000; // 5 seconds
+
+            if (timeSinceSuccess < SUCCESS_DISPLAY_DURATION) {
+                // Success alert should still be visible, delay showing in-review alert
+                const timeoutId = setTimeout(() => {
+                    setShowSuccessAlert(false);
+                    setShowInReviewAlert(true);
+                    setSuccessSubmittedAt(null);
+                }, SUCCESS_DISPLAY_DURATION - timeSinceSuccess);
+
+                return () => clearTimeout(timeoutId);
+            } else {
+                // Success period has passed, show in-review alert immediately
+                setShowInReviewAlert(true);
+                setShowSuccessAlert(false);
+            }
         } else if (!stepFiveData?.approval_requested) {
             setShowInReviewAlert(false);
         }
-    }, [stepFiveData?.approval_requested, location.state?.success]);
+    }, [stepFiveData?.approval_requested, successSubmittedAt]);
 
     // Handle loading state
     if (isLoading) {
