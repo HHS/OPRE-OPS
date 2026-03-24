@@ -29,7 +29,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
     const navigate = useNavigate();
     const [showSuccessAlert, setShowSuccessAlert] = React.useState(false);
     const [showInReviewAlert, setShowInReviewAlert] = React.useState(false);
-    const [successSubmittedAt, setSuccessSubmittedAt] = React.useState(null);
+    const isJustSubmittedRef = React.useRef(false);
 
     const WIZARD_STEPS = [
         "Acquisition Planning",
@@ -45,14 +45,23 @@ const AgreementProcurementTracker = ({ agreement }) => {
     };
     const agreementId = agreement?.id;
 
-    // Check for success message from location state
+    // Check for success message from location state (runs once on mount)
     React.useEffect(() => {
         if (location.state?.success) {
+            isJustSubmittedRef.current = true;
             setShowSuccessAlert(true);
             setShowInReviewAlert(false);
-            setSuccessSubmittedAt(Date.now());
             // Clear the location state to avoid showing alert on refresh/revisit
             navigate(location.pathname, { replace: true, state: {} });
+
+            // After 5 seconds, transition to in-review alert
+            const timeoutId = setTimeout(() => {
+                isJustSubmittedRef.current = false;
+                setShowSuccessAlert(false);
+                setShowInReviewAlert(true);
+            }, 5000);
+
+            return () => clearTimeout(timeoutId);
         }
     }, [location.state, location.pathname, navigate]);
     const isSuperUser = useIsUserSuperUser();
@@ -87,31 +96,14 @@ const AgreementProcurementTracker = ({ agreement }) => {
     const stepFourData = activeTracker?.steps.find((step) => step.step_number === 4);
     const stepFiveData = activeTracker?.steps.find((step) => step.step_number === 5);
 
-    // Show "In Review" alert when approval is requested but not just submitted
+    // Show "In Review" alert when approval is requested and not in the "just submitted" state
     React.useEffect(() => {
-        if (stepFiveData?.approval_requested) {
-            // If success was just submitted, wait 5 seconds before showing in-review alert
-            const timeSinceSuccess = successSubmittedAt ? Date.now() - successSubmittedAt : Infinity;
-            const SUCCESS_DISPLAY_DURATION = 5000; // 5 seconds
-
-            if (timeSinceSuccess < SUCCESS_DISPLAY_DURATION) {
-                // Success alert should still be visible, delay showing in-review alert
-                const timeoutId = setTimeout(() => {
-                    setShowSuccessAlert(false);
-                    setShowInReviewAlert(true);
-                    setSuccessSubmittedAt(null);
-                }, SUCCESS_DISPLAY_DURATION - timeSinceSuccess);
-
-                return () => clearTimeout(timeoutId);
-            } else if (!showSuccessAlert) {
-                // Success period has passed AND success alert is not showing, show in-review alert
-                setShowInReviewAlert(true);
-                setShowSuccessAlert(false);
-            }
+        if (stepFiveData?.approval_requested && !isJustSubmittedRef.current) {
+            setShowInReviewAlert(true);
         } else if (!stepFiveData?.approval_requested) {
             setShowInReviewAlert(false);
         }
-    }, [stepFiveData?.approval_requested, successSubmittedAt, showSuccessAlert]);
+    }, [stepFiveData?.approval_requested]);
 
     // Handle loading state
     if (isLoading) {
