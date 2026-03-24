@@ -33,7 +33,7 @@ flake8-import-order = "==0.19.2"
 flake8-bugbear = "==25.11.29"
 flake8-bandit = "==4.1.1"
 pytest = "==9.0.2"
-pytest-cov = "==7.0.0"
+pytest-cov = "==7.1.0"
 pytest-mock = "==3.15.1"
 ipython = "==9.11.0"
 pytest-docker = {extras = ["docker-compose-v2"], version = "==3.2.5"}
