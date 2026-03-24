@@ -202,7 +202,7 @@ describe("RequestPreAwardApproval", () => {
 
         render(<RequestPreAwardApproval />);
 
-        expect(screen.getByText("Pre-Award Approval Already Requested")).toBeInTheDocument();
+        expect(screen.getByText("Pre-Award Approval In Review")).toBeInTheDocument();
     });
 
     it("disables submit button when BLI is in review", () => {
