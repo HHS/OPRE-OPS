@@ -30,7 +30,7 @@ import ReleaseNotes from "./pages/home/release-notes";
 import ReportingPage from "./pages/reporting/ReportingPage";
 import UserAdmin from "./pages/users/admin/UserAdmin.jsx";
 import ReviewAgreement from "./pages/agreements/review/ReviewAgreement";
-import { RequestPreAwardApproval } from "./pages/agreements/pre-award-approval";
+import { RequestPreAwardApproval, ApprovePreAwardApproval } from "./pages/agreements/pre-award-approval";
 import UserDetail from "./pages/users/detail/UserDetail";
 import UploadDocument from "./components/Agreements/Documents/UploadDocument.jsx";
 import EditUser from "./pages/users/edit/EditUser";
@@ -266,6 +266,20 @@ const router = createBrowserRouter(
                 <Route
                     path="/agreements/:id/pre-award-approval"
                     element={<RequestPreAwardApproval />}
+                    handle={{
+                        crumb: () => (
+                            <Link
+                                to="/agreements"
+                                className="text-primary"
+                            >
+                                Agreements
+                            </Link>
+                        )
+                    }}
+                />
+                <Route
+                    path="/agreements/:id/review-pre-award"
+                    element={<ApprovePreAwardApproval />}
                     handle={{
                         crumb: () => (
                             <Link
