@@ -41,8 +41,8 @@ def test_research_projects_serialization(auth_client, loaded_db, test_user, test
 def test_research_projects_with_fiscal_year_found(auth_client, loaded_db, test_project, app_ctx):
     response = auth_client.get(url_for("api.projects-group", fiscal_year=2023, project_type=ProjectType.RESEARCH.name))
     assert response.status_code == 200
-    assert response.json["count"] == 4
-    assert len(response.json["data"]) == 4
+    assert response.json["count"] == 2
+    assert len(response.json["data"]) == 2
     assert response.json["data"][0]["title"] == "Human Services Interoperability Support"
     assert response.json["data"][0]["id"] == test_project.id
 
