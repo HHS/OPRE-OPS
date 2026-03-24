@@ -142,7 +142,7 @@ describe("PortfolioList", () => {
 
         renderWithProviders(<PortfolioList />);
 
-        expect(screen.getByText("Loading...")).toBeInTheDocument();
+        expect(screen.getByRole("table", { name: "Loading portfolios" })).toBeInTheDocument();
     });
 
     it("renders main page structure when loaded", () => {
