@@ -30,6 +30,7 @@ import React from "react";
  * @property {boolean} [readOnly] - Whether the user is in read only mode.
  * @property {Function} [setSelectedBLIs] - The function to set the selected budget line items.
  * @property {string} action
+ * @property {boolean} [showCheckbox] - Whether to show the checkbox for selection.
  */
 
 /**
@@ -37,7 +38,7 @@ import React from "react";
  * @param {BLIReviewRowProps} props - The props of the BLIRow component.
  * @returns {JSX.Element} The BLIRow component.
  **/
-const BLIReviewRow = ({ budgetLine, isReviewMode = false, setSelectedBLIs, action }) => {
+const BLIReviewRow = ({ budgetLine, isReviewMode = false, setSelectedBLIs, action, showCheckbox = true }) => {
     const { isExpanded, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const loggedInUserFullName = useGetLoggedInUserFullName();
@@ -83,6 +84,17 @@ const BLIReviewRow = ({ budgetLine, isReviewMode = false, setSelectedBLIs, actio
     }, [budgetLine, action]);
 
     const renderCheckboxCell = () => {
+        if (!showCheckbox) {
+            return (
+                <td
+                    className={borderExpandedStyles}
+                    style={bgExpandedStyles}
+                >
+                    {budgetLine?.id}
+                </td>
+            );
+        }
+
         const checkboxId = budgetLine?.id.toString();
         const isDisabled = !budgetLine?.actionable;
 

@@ -45,7 +45,9 @@ const AgreementBLIReviewTable = ({
     copiedBudgetLines = useSortData(copiedBudgetLines, sortDescending, sortCondition, SORT_TYPES.BLI_REVIEW);
 
     const areSomeBudgetLinesActionable = budgetLines.some((budgetLine) => budgetLine.actionable);
-    const firstHeadingSlot = (
+    const showCheckboxes = !!setSelectedBLIs;
+
+    const firstHeadingSlot = showCheckboxes ? (
         <th>
             <input
                 className="usa-checkbox__input"
@@ -71,6 +73,8 @@ const AgreementBLIReviewTable = ({
                 BL ID #
             </label>
         </th>
+    ) : (
+        <th className="text-bold">BL ID #</th>
     );
 
     return (
@@ -89,6 +93,7 @@ const AgreementBLIReviewTable = ({
                         isReviewMode={isReviewMode}
                         setSelectedBLIs={setSelectedBLIs}
                         action={action}
+                        showCheckbox={showCheckboxes}
                     />
                 ))}
             </Table>
