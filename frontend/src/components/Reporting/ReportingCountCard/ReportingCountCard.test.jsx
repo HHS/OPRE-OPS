@@ -82,8 +82,7 @@ describe("ReportingCountCard", () => {
         );
         expect(screen.getByText("34")).toBeInTheDocument();
         expect(screen.getByText("40")).toBeInTheDocument();
-        expect(screen.getByText("17")).toBeInTheDocument();
-        expect(screen.getByText("15")).toBeInTheDocument();
+        expect(screen.getAllByText("TBD")).toHaveLength(2);
         expect(screen.getByText("80")).toBeInTheDocument();
     });
 
@@ -138,6 +137,7 @@ describe("ReportingCountCard", () => {
             />
         );
         expect(screen.getByText("FY 2025 Projects")).toBeInTheDocument();
-        expect(screen.getAllByText("0")).toHaveLength(5);
+        expect(screen.getAllByText("0")).toHaveLength(3);
+        expect(screen.getAllByText("TBD")).toHaveLength(2);
     });
 });

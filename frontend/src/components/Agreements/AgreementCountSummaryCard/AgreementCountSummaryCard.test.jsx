@@ -50,7 +50,7 @@ describe("AgreementCountSummaryCard", () => {
         expect(screen.getByText("7")).toBeInTheDocument();
     });
 
-    it("displays 0 when totals is null", () => {
+    it("displays 0 for total and TBD for new/continuing when totals is null", () => {
         render(
             <AgreementCountSummaryCard
                 title="2025 Agreements"
@@ -58,8 +58,8 @@ describe("AgreementCountSummaryCard", () => {
                 totals={null}
             />
         );
-        const zeros = screen.getAllByText("0");
-        expect(zeros).toHaveLength(3); // total, new, continuing
+        expect(screen.getByText("0")).toBeInTheDocument();
+        expect(screen.getAllByText("TBD")).toHaveLength(2);
     });
 
     it("defaults gracefully when totals prop is omitted", () => {
@@ -69,8 +69,8 @@ describe("AgreementCountSummaryCard", () => {
                 fiscalYear="2025"
             />
         );
-        const zeros = screen.getAllByText("0");
-        expect(zeros).toHaveLength(3);
+        expect(screen.getByText("0")).toBeInTheDocument();
+        expect(screen.getAllByText("TBD")).toHaveLength(2);
     });
 
     it("dynamically counts agreements by type and renders a tag for each", () => {
@@ -112,7 +112,7 @@ describe("AgreementCountSummaryCard", () => {
         expect(screen.getByText("2 Grant")).toBeInTheDocument();
     });
 
-    it("displays new and continuing agreement counts from totals", () => {
+    it("displays TBD for new and continuing columns regardless of data", () => {
         const totalsWithAwardTypes = {
             ...mockTotals,
             total_agreements_count: 5,
@@ -133,47 +133,11 @@ describe("AgreementCountSummaryCard", () => {
 
         // Total count
         expect(screen.getByText("5")).toBeInTheDocument();
-        // New count
-        expect(screen.getByText("3")).toBeInTheDocument();
-        // Continuing count
-        expect(screen.getByText("2")).toBeInTheDocument();
+        // New and Continuing show TBD
+        expect(screen.getAllByText("TBD")).toHaveLength(2);
     });
 
-    it("displays type breakdown tags under new and continuing columns", () => {
-        const totalsWithAwardTypes = {
-            ...mockTotals,
-            total_agreements_count: 5,
-            type_counts: { CONTRACT: 3, GRANT: 1, AA: 1 },
-            new_count: 3,
-            new_type_counts: { CONTRACT: 2, GRANT: 1 },
-            continuing_count: 2,
-            continuing_type_counts: { CONTRACT: 1, AA: 1 }
-        };
-
-        render(
-            <AgreementCountSummaryCard
-                title="2025 Agreements"
-                fiscalYear="2025"
-                totals={totalsWithAwardTypes}
-            />
-        );
-
-        // Total column tags: 3 Contract, 1 Grant, 1 Partner
-        // New column tags: 2 Contract, 1 Grant
-        // Continuing column tags: 1 Contract, 1 Partner
-        const contractTags = screen.getAllByText(/Contract/);
-        expect(contractTags).toHaveLength(3); // total, new, continuing
-
-        // Grant only in total and new
-        const grantTags = screen.getAllByText(/Grant/);
-        expect(grantTags).toHaveLength(2);
-
-        // Partner only in total and continuing
-        const partnerTags = screen.getAllByText(/Partner/);
-        expect(partnerTags).toHaveLength(2);
-    });
-
-    it("displays 0 for new and continuing when totals has zero counts", () => {
+    it("displays TBD for new and continuing when totals has zero counts", () => {
         render(
             <AgreementCountSummaryCard
                 title="2025 Agreements"
@@ -182,9 +146,8 @@ describe("AgreementCountSummaryCard", () => {
             />
         );
 
-        // Total is 7, new and continuing are both 0
+        // Total is 7, new and continuing show TBD
         expect(screen.getByText("7")).toBeInTheDocument();
-        const zeros = screen.getAllByText("0");
-        expect(zeros).toHaveLength(2); // new and continuing
+        expect(screen.getAllByText("TBD")).toHaveLength(2);
     });
 });

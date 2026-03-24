@@ -43,14 +43,6 @@ const AgreementCountSummaryCard = ({ title, fiscalYear, totals }) => {
     const totalCount = totals?.total_agreements_count ?? 0;
     const typeCounts = totals?.type_counts ? convertTypeCountsObjToArray(totals.type_counts) : [];
 
-    const newCount = totals?.new_count ?? 0;
-    const newTypeCounts = totals?.new_type_counts ? convertTypeCountsObjToArray(totals.new_type_counts) : [];
-
-    const continuingCount = totals?.continuing_count ?? 0;
-    const continuingTypeCounts = totals?.continuing_type_counts
-        ? convertTypeCountsObjToArray(totals.continuing_type_counts)
-        : [];
-
     return (
         <RoundedBox
             id="agreement-count-summary-card"
@@ -74,22 +66,13 @@ const AgreementCountSummaryCard = ({ title, fiscalYear, totals }) => {
                     </div>
                 </article>
 
+                {/* NOTE: New and Continuing counts display "TBD" because this data is not yet available in production. */}
                 <article>
                     <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">
                         {`${fiscalYear} New`}
                     </h3>
                     <div>
-                        <span className="font-sans-xl text-bold line-height-sans-1">{newCount}</span>
-                        <div className="display-flex flex-column grid-gap margin-top-1">
-                            {newTypeCounts.map(({ type, count }, index) => (
-                                <Tag
-                                    key={type}
-                                    tagStyle="primaryDarkTextLightBackground"
-                                    className={`${index > 0 ? "margin-top-1" : ""}`}
-                                    text={`${count} ${type === "Partner" ? "Partner" : convertCodeForDisplay("agreementType", type)}`}
-                                />
-                            ))}
-                        </div>
+                        <span className="font-sans-xl text-bold line-height-sans-1">TBD</span>
                     </div>
                 </article>
 
@@ -98,17 +81,7 @@ const AgreementCountSummaryCard = ({ title, fiscalYear, totals }) => {
                         {`${fiscalYear} Continuing`}
                     </h3>
                     <div>
-                        <span className="font-sans-xl text-bold line-height-sans-1">{continuingCount}</span>
-                        <div className="display-flex flex-column grid-gap margin-top-1">
-                            {continuingTypeCounts.map(({ type, count }, index) => (
-                                <Tag
-                                    key={type}
-                                    tagStyle="primaryDarkTextLightBackground"
-                                    className={`${index > 0 ? "margin-top-1" : ""}`}
-                                    text={`${count} ${type === "Partner" ? "Partner" : convertCodeForDisplay("agreementType", type)}`}
-                                />
-                            ))}
-                        </div>
+                        <span className="font-sans-xl text-bold line-height-sans-1">TBD</span>
                     </div>
                 </article>
             </div>

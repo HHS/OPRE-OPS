@@ -28,6 +28,14 @@ const AGREEMENT_TYPE_COLORS = {
     DIRECT_OBLIGATION: "var(--data-viz-agreement-direct-obligation)"
 };
 
+// NOTE: TbdColumn is used for FY New and FY Continuing because this data is not yet available in production.
+const TbdColumn = ({ title }) => (
+    <div className={styles.column}>
+        <h3 className={styles.columnHeader}>{title}</h3>
+        <p className={styles.total}>TBD</p>
+    </div>
+);
+
 const CountColumn = ({ title, total, types, labelMap, getTagProps }) => (
     <div className={styles.column}>
         <h3 className={styles.columnHeader}>{title}</h3>
@@ -61,8 +69,6 @@ const agreementTagProps = (type) => ({
     style: { backgroundColor: AGREEMENT_TYPE_COLORS[type], color: AGREEMENT_TYPE_TEXT_COLORS[type] ?? "black" }
 });
 
-const newContinuingTagProps = () => ({ tagStyle: "primaryDarkTextLightBackground" });
-
 const budgetLineTagProps = (type) => ({
     active: true,
     label: STATUS_LABELS[type]
@@ -91,20 +97,8 @@ const ReportingCountCard = ({ fiscalYear, counts }) => {
                     labelMap={AGREEMENT_TYPE_LABELS}
                     getTagProps={agreementTagProps}
                 />
-                <CountColumn
-                    title={`FY ${fiscalYear} New`}
-                    total={counts.new_agreements?.total ?? 0}
-                    types={counts.new_agreements?.types ?? []}
-                    labelMap={AGREEMENT_TYPE_LABELS}
-                    getTagProps={newContinuingTagProps}
-                />
-                <CountColumn
-                    title={`FY ${fiscalYear} Continuing`}
-                    total={counts.continuing_agreements?.total ?? 0}
-                    types={counts.continuing_agreements?.types ?? []}
-                    labelMap={AGREEMENT_TYPE_LABELS}
-                    getTagProps={newContinuingTagProps}
-                />
+                <TbdColumn title={`FY ${fiscalYear} New`} />
+                <TbdColumn title={`FY ${fiscalYear} Continuing`} />
                 <CountColumn
                     title={`FY ${fiscalYear} Budget Lines`}
                     total={counts.budget_lines?.total ?? 0}

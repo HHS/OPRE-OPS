@@ -26,13 +26,16 @@ describe("AgreementSpendingLegend", () => {
         expect(screen.getByText("Direct Oblig.")).toBeInTheDocument();
     });
 
-    it("renders New and Cont. sub-rows", () => {
+    it("renders New and Cont. sub-rows with TBD values", () => {
         render(<AgreementSpendingLegend agreementTypes={mockAgreementTypes} />);
 
         const newLabels = screen.getAllByText("New");
         const contLabels = screen.getAllByText("Cont.");
         expect(newLabels).toHaveLength(4);
         expect(contLabels).toHaveLength(4);
+
+        const tbdLabels = screen.getAllByText("TBD");
+        expect(tbdLabels).toHaveLength(8);
     });
 
     it("renders currency formatted total amounts with decimals", () => {

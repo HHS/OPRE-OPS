@@ -17,8 +17,6 @@ const AgreementSpendingLegend = ({ agreementTypes = [] }) => {
             {AGREEMENT_TYPE_ORDER.map((config) => {
                 const typeData = agreementTypes.find((at) => at.type === config.type);
                 const total = typeData?.total || 0;
-                const newAmount = typeData?.new || 0;
-                const continuingAmount = typeData?.continuing || 0;
 
                 return (
                     <div
@@ -38,6 +36,7 @@ const AgreementSpendingLegend = ({ agreementTypes = [] }) => {
                                 renderText={(value) => <span className={styles.totalValue}>{value}</span>}
                             />
                         </div>
+                        {/* NOTE: New and Continuing amounts display "TBD" because this data is not yet available in production. */}
                         <div className={styles.subRow}>
                             <FontAwesomeIcon
                                 icon={faCircle}
@@ -45,15 +44,7 @@ const AgreementSpendingLegend = ({ agreementTypes = [] }) => {
                                 style={{ color: config.color }}
                             />
                             <span className={styles.subValue}>New</span>
-                            <CurrencyFormat
-                                value={newAmount}
-                                displayType={"text"}
-                                thousandSeparator={true}
-                                prefix={"$"}
-                                decimalScale={2}
-                                fixedDecimalScale
-                                renderText={(value) => <span className={styles.subValue}>{value}</span>}
-                            />
+                            <span className={styles.subValue}>TBD</span>
                         </div>
                         <div className={styles.subRow}>
                             <FontAwesomeIcon
@@ -62,15 +53,7 @@ const AgreementSpendingLegend = ({ agreementTypes = [] }) => {
                                 style={{ color: config.continuingColor }}
                             />
                             <span className={styles.subValue}>Cont.</span>
-                            <CurrencyFormat
-                                value={continuingAmount}
-                                displayType={"text"}
-                                thousandSeparator={true}
-                                prefix={"$"}
-                                decimalScale={2}
-                                fixedDecimalScale
-                                renderText={(value) => <span className={styles.subValue}>{value}</span>}
-                            />
+                            <span className={styles.subValue}>TBD</span>
                         </div>
                     </div>
                 );
