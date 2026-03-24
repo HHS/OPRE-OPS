@@ -116,7 +116,7 @@ describe("handleProjectsExport", () => {
                 "Type",
                 "Start Date",
                 "End Date",
-                "FY 26 Total",
+                "FY26 Total",
                 "Project Total",
                 "Total Agreements",
                 "Agreements"
@@ -241,6 +241,50 @@ describe("handleProjectsExport", () => {
         const result = rowMapper(mockProjects[1]);
         expect(result[2]).toBe("TBD");
         expect(result[3]).toBe("TBD");
+    });
+
+    it("should export empty string for zero project_total", async () => {
+        await handleProjectsExport(
+            mockExportTableToXlsx,
+            mockSetIsExporting,
+            mockSetAlert,
+            mockTrigger,
+            2026,
+            "TITLE",
+            false,
+            2
+        );
+
+        const callArgs = mockExportTableToXlsx.mock.calls[0][0];
+        const rowMapper = callArgs.rowMapper;
+
+        // mockProjects[1] has project_total: "0"
+        const result = rowMapper(mockProjects[1]);
+        expect(result[5]).toBe("");
+    });
+
+    it("should preserve zero FY total as 0 (not blank)", async () => {
+        const projectWithZeroFY = {
+            ...mockProjects[0],
+            fiscal_year_totals: { 2026: "0" }
+        };
+
+        await handleProjectsExport(
+            mockExportTableToXlsx,
+            mockSetIsExporting,
+            mockSetAlert,
+            mockTrigger,
+            2026,
+            "TITLE",
+            false,
+            2
+        );
+
+        const callArgs = mockExportTableToXlsx.mock.calls[0][0];
+        const rowMapper = callArgs.rowMapper;
+
+        const result = rowMapper(projectWithZeroFY);
+        expect(result[4]).toBe(0);
     });
 
     it("should display error alert when export fails", async () => {

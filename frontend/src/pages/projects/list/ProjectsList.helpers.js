@@ -51,6 +51,7 @@ export const handleProjectsExport = async (
     try {
         setIsExporting(true);
 
+        // Backend max page size is 50
         const maxLimit = 50;
         const totalPages = Math.ceil(totalCount / maxLimit);
         const fetchPromises = [];
@@ -71,7 +72,7 @@ export const handleProjectsExport = async (
         const allProjects = allResponses.flatMap((response) => response?.projects || []);
 
         const isSpecificFY = selectedFiscalYear && selectedFiscalYear !== "All";
-        const fyLabel = isSpecificFY ? `FY ${String(selectedFiscalYear).slice(-2)} Total` : "FY Total";
+        const fyLabel = isSpecificFY ? `FY${String(selectedFiscalYear).slice(-2)} Total` : "FY Total";
 
         const tableHeaders = [
             "Project",
@@ -92,14 +93,15 @@ export const handleProjectsExport = async (
                 const type = convertCodeForDisplay("project", project.project_type);
                 const startDate = formatProjectDate(project.start_date);
                 const endDate = formatProjectDate(project.end_date);
-                const fyTotal =
+                const rawFyTotal =
                     isSpecificFY && project.fiscal_year_totals
-                        ? Number(project.fiscal_year_totals[Number(selectedFiscalYear)]) || ""
-                        : "";
+                        ? project.fiscal_year_totals[Number(selectedFiscalYear)]
+                        : null;
+                const fyTotal = rawFyTotal != null ? Number(rawFyTotal) : "";
                 const projectTotal =
-                    project.project_total !== null && project.project_total !== undefined
+                    project.project_total != null && Number(project.project_total) > 0
                         ? Number(project.project_total)
-                        : 0;
+                        : "";
                 const agreementList = project.agreement_name_list ?? [];
                 const totalAgreements = agreementList.length;
                 const agreementNames = agreementList.map((a) => a.name).join(", ");
