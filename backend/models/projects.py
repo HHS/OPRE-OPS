@@ -212,24 +212,12 @@ class Project(BaseModel):
         ]
 
         # --- funding_by_can (carry-forward vs new classification) ---
-        # Logic inlined from get_can_funding_summary in ops_api/ops/utils/cans.py
         new_funding = Decimal("0")
         carry_forward_funding = Decimal("0")
         for can in unique_cans:
-            if not can.funding_details:
-                continue
-            for fb in can.funding_budgets:
-                if fb.fiscal_year == fiscal_year:
-                    budget = fb.budget or Decimal("0")
-                    if can.active_period == 1:
-                        # 1-year CANs: all budget is new funding
-                        new_funding += budget
-                    elif fiscal_year == can.funding_details.fiscal_year:
-                        # Multi-year CAN in its appropriation year: new funding
-                        new_funding += budget
-                    else:
-                        # Multi-year CAN past its appropriation year: carry-forward
-                        carry_forward_funding += budget
+            can_new, can_cf = can.classify_funding(fiscal_year)
+            new_funding += can_new
+            carry_forward_funding += can_cf
 
         total_funding = carry_forward_funding + new_funding
         funding_by_can = {
