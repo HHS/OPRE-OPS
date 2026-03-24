@@ -83,7 +83,16 @@ const baseHookResult = () => ({
     alternateProjectOfficerName: "Jane Smith",
     hasApprovalBeenRequested: false,
     hasBLIInReview: false,
-    isSubmitting: false
+    isSubmitting: false,
+    servicesComponents: [],
+    groupedBudgetLinesByServicesComponent: [],
+    selectedFile: null,
+    handleFileChange: vi.fn(),
+    handleFileUpload: vi.fn(),
+    isUploading: false,
+    uploadError: "",
+    submitError: "",
+    preAwardMemoDocuments: []
 });
 
 describe("RequestPreAwardApproval", () => {
