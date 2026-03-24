@@ -103,15 +103,15 @@ const AgreementProcurementTracker = ({ agreement }) => {
                 }, SUCCESS_DISPLAY_DURATION - timeSinceSuccess);
 
                 return () => clearTimeout(timeoutId);
-            } else {
-                // Success period has passed, show in-review alert immediately
+            } else if (!showSuccessAlert) {
+                // Success period has passed AND success alert is not showing, show in-review alert
                 setShowInReviewAlert(true);
                 setShowSuccessAlert(false);
             }
         } else if (!stepFiveData?.approval_requested) {
             setShowInReviewAlert(false);
         }
-    }, [stepFiveData?.approval_requested, successSubmittedAt]);
+    }, [stepFiveData?.approval_requested, successSubmittedAt, showSuccessAlert]);
 
     // Handle loading state
     if (isLoading) {
