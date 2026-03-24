@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { useGetProjectsQuery } from "../../../api/opsAPI";
+import { PacmanLoader } from "react-spinners";
+import { useGetProjectsQuery, useLazyGetProjectsQuery } from "../../../api/opsAPI";
 import App from "../../../App";
 import DebugCode from "../../../components/DebugCode";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
@@ -10,8 +11,11 @@ import FiscalYear from "../../../components/UI/FiscalYear/FiscalYear";
 import PaginationNav from "../../../components/UI/PaginationNav/PaginationNav";
 import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
 import { ITEMS_PER_PAGE } from "../../../constants";
+import { exportTableToXlsx } from "../../../helpers/tableExport.helpers";
 import { getCurrentFiscalYear } from "../../../helpers/utils";
-import { PROJECT_SORT_CODES } from "./ProjectsList.helpers";
+import useAlert from "../../../hooks/use-alert.hooks";
+import icons from "../../../uswds/img/sprite.svg";
+import { handleProjectsExport, PROJECT_SORT_CODES } from "./ProjectsList.helpers";
 
 /**
  * Page component for the projects list with server-side pagination, sorting, and fiscal year filtering.
@@ -22,6 +26,9 @@ const ProjectsList = () => {
     const [currentPage, setCurrentPage] = React.useState(1);
     const [pageSize] = React.useState(ITEMS_PER_PAGE);
     const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(getCurrentFiscalYear());
+    const [isExporting, setIsExporting] = React.useState(false);
+    const { setAlert } = useAlert();
+    const [getAllProjectsTrigger] = useLazyGetProjectsQuery();
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions(PROJECT_SORT_CODES.TITLE, false);
 
     const {
@@ -57,6 +64,19 @@ const ProjectsList = () => {
         setSelectedFiscalYear(newValue);
     };
 
+    if (isExporting) {
+        return (
+            <div className="bg-white display-flex flex-column flex-align-center flex-justify-center padding-y-4 height-viewport">
+                <h1 className="margin-bottom-2">Exporting...</h1>
+                <PacmanLoader
+                    size={25}
+                    aria-label="Loading Spinner"
+                    data-testid="loader"
+                />
+            </div>
+        );
+    }
+
     if (isTableLoading) {
         return (
             <App breadCrumbName="Projects">
@@ -89,6 +109,37 @@ const ProjectsList = () => {
                 title="Projects"
                 subtitle="All Projects"
                 details="This is a list of all projects across OPRE for the selected fiscal year. Draft budget lines are not included in the Totals."
+                FilterButton={
+                    <div>
+                        {totalCount > 0 && (
+                            <button
+                                style={{ fontSize: "16px" }}
+                                className="usa-button--unstyled text-primary display-flex flex-align-end cursor-pointer"
+                                data-cy="projects-export"
+                                onClick={() =>
+                                    handleProjectsExport(
+                                        exportTableToXlsx,
+                                        setIsExporting,
+                                        setAlert,
+                                        getAllProjectsTrigger,
+                                        selectedFiscalYear,
+                                        sortCondition,
+                                        sortDescending,
+                                        totalCount
+                                    )
+                                }
+                            >
+                                <svg
+                                    className="height-2 width-2 margin-right-05"
+                                    style={{ fill: "#005EA2", height: "24px", width: "24px" }}
+                                >
+                                    <use href={`${icons}#save_alt`}></use>
+                                </svg>
+                                <span>Export</span>
+                            </button>
+                        )}
+                    </div>
+                }
                 TabsSection={
                     <div className="margin-left-auto">
                         <FiscalYear
