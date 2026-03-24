@@ -2,6 +2,7 @@ import { faClone } from "@fortawesome/free-regular-svg-icons";
 import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { getTooltipLabel } from "../../../helpers/budgetLines.helpers";
+import { CHANGE_REQUESTS_TOOLTIP_LOADING } from "../../../hooks/useChangeRequests.hooks";
 import icons from "../../../uswds/img/sprite.svg";
 import Tooltip from "../../UI/USWDS/Tooltip";
 import { DISABLED_ICON_CLASSES } from "./DisabledChangeIcons.constants";
@@ -38,6 +39,10 @@ const ChangeIcons = ({
     const disabledClasses = `text-primary height-2 width-2 margin-right-1 cursor-pointer ${DISABLED_ICON_CLASSES}`;
 
     const notEditableOrDeletableMsg = getTooltipLabel(item);
+    const tooltipLabel =
+        lockedMessage === CHANGE_REQUESTS_TOOLTIP_LOADING && notEditableOrDeletableMsg
+            ? notEditableOrDeletableMsg
+            : lockedMessage || notEditableOrDeletableMsg;
 
     return (
         <>
@@ -101,7 +106,7 @@ const ChangeIcons = ({
                     <>
                         <Tooltip
                             position="left"
-                            label={lockedMessage ? lockedMessage : notEditableOrDeletableMsg}
+                            label={tooltipLabel}
                             className="line-height-body-1"
                         >
                             <button
@@ -121,7 +126,7 @@ const ChangeIcons = ({
                         </Tooltip>
                         <Tooltip
                             position="left"
-                            label={`${lockedMessage ? lockedMessage : notEditableOrDeletableMsg}`}
+                            label={tooltipLabel}
                             className="line-height-body-1"
                         >
                             <button
