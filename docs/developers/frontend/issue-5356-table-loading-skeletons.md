@@ -1,4 +1,4 @@
-# Issue 4665 table loading skeleton rollout
+# Issue 5356 table loading skeleton rollout
 
 ## Objective
 
@@ -88,5 +88,5 @@ Standardize API-backed table loading states so list pages show `TableLoadingSkel
 
 ## Working Agreement
 
-- Use this doc as the implementation tracker for issue `#4665`
+- Use this doc as the implementation tracker for issue `#5356`
 - Keep ticket comments lightweight or optional; update this file as work progresses
