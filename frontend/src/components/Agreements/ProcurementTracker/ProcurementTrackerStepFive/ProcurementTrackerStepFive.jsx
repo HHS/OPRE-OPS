@@ -20,6 +20,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
  * @property {boolean} isActiveStep - Whether step is the active step
  * @property {SafeUser[]} authorizedUsers - List of users authorized for this agreement
  * @property {((stepNumber: number) => void) | undefined} [handleSetCompletedStepNumber] - Optional callback to set completed step number
+ * @property {boolean} [isReadOnly] - Whether to render in read-only mode (plain text, no form controls)
  */
 
 /**
@@ -33,7 +34,8 @@ const ProcurementTrackerStepFive = ({
     stepFiveData,
     isActiveStep,
     authorizedUsers,
-    handleSetCompletedStepNumber
+    handleSetCompletedStepNumber,
+    isReadOnly = false
 }) => {
     const {
         isPreAwardComplete,
@@ -86,7 +88,54 @@ const ProcurementTrackerStepFive = ({
                     handleConfirm={modalProps.handleConfirm}
                 />
             )}
-            {stepStatus === "PENDING" && (
+            {isReadOnly && (
+                <div>
+                    <p>
+                        Edit the Agreement to match the Vendor Price Sheet and ensure any final Budget Changes are
+                        approved, if needed. Request Pre-Award Approval from the Procurement Shop. If you have a target
+                        completion date for when the Final Consensus Memo will be sent, enter it below. Once you receive
+                        Pre-Award Approval and send the Final Consensus Memo to the Procurement Shop, check this task as
+                        complete.
+                    </p>
+                    {stepStatus === "COMPLETED" && (
+                        <div className="display-flex flex-align-center margin-top-5">
+                            <FontAwesomeIcon
+                                icon={faCircleCheck}
+                                size="lg"
+                                className="margin-right-1 flex-shrink-0 text-primary-darker"
+                                aria-hidden="true"
+                            />
+                            <p className="margin-y-0">
+                                The Agreement was edited to match the Vendor Price Sheet and any final Budget Changes
+                                were approved, if needed. Pre-Award Approval was received and the Final Consensus Memo
+                                has been sent to the Procurement Shop.
+                            </p>
+                        </div>
+                    )}
+                    <dl className="display-flex flex-wrap">
+                        <div className="width-full">
+                            <TermTag
+                                term="Target Completion Date"
+                                description={step5TargetCompletionDateLabel || "TBD"}
+                            />
+                        </div>
+                        <TermTag
+                            term="Completed By"
+                            description={step5CompletedByUserName || "TBD"}
+                            className="margin-right-4"
+                        />
+                        <TermTag
+                            term="Date Completed"
+                            description={step5DateCompletedLabel || "TBD"}
+                        />
+                        <div className="width-full">
+                            <dt className="margin-0 text-base-dark margin-top-3 font-12px">Notes</dt>
+                            <dd className="margin-0 margin-top-1">{step5NotesLabel || "None"}</dd>
+                        </div>
+                    </dl>
+                </div>
+            )}
+            {!isReadOnly && stepStatus === "PENDING" && (
                 <fieldset className="usa-fieldset">
                     <p>
                         Edit the Agreement to match the Vendor Price Sheet and ensure any final Budget Changes are
@@ -227,7 +276,7 @@ const ProcurementTrackerStepFive = ({
                 </fieldset>
             )}
 
-            {stepStatus === "COMPLETED" && (
+            {!isReadOnly && stepStatus === "COMPLETED" && (
                 <div>
                     <p>
                         OPRE edits the Agreement to match the Vendor Price Sheet and ensures any final Budget Changes

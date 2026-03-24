@@ -2,6 +2,7 @@ import React from "react";
 import { useSelector } from "react-redux";
 import { useGetUserByIdQuery } from "../api/opsAPI";
 import { NO_DATA } from "../constants";
+import { USER_ROLES } from "../components/Users/User.constants";
 
 /**
  * Returns the display name of a user given their id.
@@ -49,6 +50,11 @@ export const useGetLoggedInUserFullName = () => {
  */
 export const useIsUserSuperUser = () => {
     return useSelector((state) => state.auth?.activeUser?.is_superuser) ?? false;
+};
+
+export const useIsUserOnlyProcurementTeam = () => {
+    const roles = useSelector((state) => state.auth?.activeUser?.roles) ?? [];
+    return roles.length === 1 && roles[0]?.name === USER_ROLES.PROCUREMENT_TEAM;
 };
 
 export default useGetUserFullNameFromId;

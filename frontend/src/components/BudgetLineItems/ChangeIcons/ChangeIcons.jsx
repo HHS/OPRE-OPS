@@ -2,6 +2,7 @@ import { faClone } from "@fortawesome/free-regular-svg-icons";
 import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { getTooltipLabel } from "../../../helpers/budgetLines.helpers";
+import { CHANGE_REQUESTS_TOOLTIP_LOADING } from "../../../hooks/useChangeRequests.hooks";
 import icons from "../../../uswds/img/sprite.svg";
 import Tooltip from "../../UI/USWDS/Tooltip";
 import { DISABLED_ICON_CLASSES } from "./DisabledChangeIcons.constants";
@@ -38,6 +39,10 @@ const ChangeIcons = ({
     const disabledClasses = `text-primary height-2 width-2 margin-right-1 cursor-pointer ${DISABLED_ICON_CLASSES}`;
 
     const notEditableOrDeletableMsg = getTooltipLabel(item);
+    const tooltipLabel =
+        lockedMessage === CHANGE_REQUESTS_TOOLTIP_LOADING && notEditableOrDeletableMsg
+            ? notEditableOrDeletableMsg
+            : lockedMessage || notEditableOrDeletableMsg;
 
     return (
         <>
@@ -61,6 +66,7 @@ const ChangeIcons = ({
                                     title="Edit"
                                     icon={faPen}
                                     className="text-primary height-2 width-2 margin-right-1 cursor-pointer"
+                                    aria-hidden="true"
                                 />
                             </button>
                         </Tooltip>
@@ -90,6 +96,7 @@ const ChangeIcons = ({
                                     className={`text-primary height-2 width-2 margin-right-1 cursor-pointer ${
                                         !isItemDeletable ? DISABLED_ICON_CLASSES : ""
                                     }`}
+                                    aria-hidden="true"
                                 />
                             </button>
                         </Tooltip>
@@ -99,7 +106,7 @@ const ChangeIcons = ({
                     <>
                         <Tooltip
                             position="left"
-                            label={lockedMessage ? lockedMessage : notEditableOrDeletableMsg}
+                            label={tooltipLabel}
                             className="line-height-body-1"
                         >
                             <button
@@ -113,12 +120,13 @@ const ChangeIcons = ({
                                 <FontAwesomeIcon
                                     icon={faPen}
                                     className={disabledClasses}
+                                    aria-hidden="true"
                                 />
                             </button>
                         </Tooltip>
                         <Tooltip
                             position="left"
-                            label={`${lockedMessage ? lockedMessage : notEditableOrDeletableMsg}`}
+                            label={tooltipLabel}
                             className="line-height-body-1"
                         >
                             <button
@@ -132,6 +140,7 @@ const ChangeIcons = ({
                                 <FontAwesomeIcon
                                     icon={faTrash}
                                     className={disabledClasses}
+                                    aria-hidden="true"
                                 />
                             </button>
                         </Tooltip>
@@ -155,6 +164,7 @@ const ChangeIcons = ({
                             <FontAwesomeIcon
                                 icon={faClone}
                                 className="text-primary height-2 width-2 cursor-pointer margin-left-0"
+                                aria-hidden="true"
                             />
                         </button>
                     </Tooltip>
@@ -178,6 +188,7 @@ const ChangeIcons = ({
                             <FontAwesomeIcon
                                 icon={faClone}
                                 className={disabledClasses}
+                                aria-hidden="true"
                             />
                         </button>
                     </Tooltip>
@@ -196,7 +207,11 @@ const ChangeIcons = ({
                             data-testid="submit-row"
                             onClick={() => handleSubmitItemForApproval(item.id)}
                         >
-                            <svg className="usa-icon text-primary height-205 width-205 cursor-pointer margin-left-0">
+                            <svg
+                                className="usa-icon text-primary height-205 width-205 cursor-pointer margin-left-0"
+                                aria-hidden="true"
+                                focusable="false"
+                            >
                                 <use href={`${icons}#send`}></use>
                             </svg>
                         </button>
@@ -222,6 +237,8 @@ const ChangeIcons = ({
                         >
                             <svg
                                 className={`usa-icon text-primary height-205 width-205 cursor-pointer margin-left-0 ${DISABLED_ICON_CLASSES}`}
+                                aria-hidden="true"
+                                focusable="false"
                             >
                                 <use href={`${icons}#send`}></use>
                             </svg>

@@ -34,7 +34,7 @@ import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/
 import { useIsUserSuperUser } from "../../../hooks/user.hooks";
 import { handleExport } from "../../../helpers/budgetLines.helpers";
 import { exportTableToXlsx } from "../../../helpers/tableExport.helpers.js";
-import PacmanLoader from "react-spinners/PacmanLoader";
+import { PacmanLoader } from "react-spinners";
 import icons from "../../../uswds/img/sprite.svg";
 
 /**

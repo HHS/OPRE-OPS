@@ -78,10 +78,10 @@ describe("ReleaseNotesCards Component", () => {
         expect(screen.queryByText(/Improvement/)).not.toBeInTheDocument();
     });
 
-    it("renders the last data update heading", () => {
+    it("renders the data updates heading", () => {
         render(<ReleaseNotesCards {...mockProps} />);
 
-        expect(screen.getByText("Last Data Update *")).toBeInTheDocument();
+        expect(screen.getByText("Data updates")).toBeInTheDocument();
     });
 
     it("renders the last release heading", () => {
@@ -102,9 +102,9 @@ describe("ReleaseNotesCards Component", () => {
         expect(screen.getByText("Release Changes")).toBeInTheDocument();
     });
 
-    it("renders the data sync explanation text", () => {
+    it("renders the data updated in OPS message", () => {
         render(<ReleaseNotesCards {...mockProps} />);
 
-        expect(screen.getByText(/budget team.*spreadsheet.*synced/)).toBeInTheDocument();
+        expect(screen.getByText("All data should now be updated directly in OPS")).toBeInTheDocument();
     });
 });
