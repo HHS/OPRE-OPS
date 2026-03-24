@@ -56,9 +56,10 @@ export default function useRequestPreAwardApproval(agreementId) {
         servicesComponents || []
     );
 
-    // Get Step 5 (Pre-Award) from procurement tracker
+    // Get Step 4 and Step 5 from procurement tracker
     const trackers = procurementTrackersData?.data || [];
     const activeTracker = trackers.find((tracker) => tracker.status === "ACTIVE");
+    const step4 = activeTracker?.steps?.find((step) => step.step_number === 4);
     const step5 = activeTracker?.steps?.find((step) => step.step_number === 5);
 
     // Get existing Pre-Award Consensus Memo documents
@@ -70,6 +71,9 @@ export default function useRequestPreAwardApproval(agreementId) {
 
     // Check if any BLI is in review status
     const hasBLIInReview = agreement?.budget_line_items?.some((bli) => bli.in_review) ?? false;
+
+    // Check if Step 4 (Evaluation) is completed
+    const isStep4Completed = step4?.completed === true;
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
@@ -188,6 +192,7 @@ export default function useRequestPreAwardApproval(agreementId) {
         preAwardMemoDocuments,
         isSubmitting,
         hasApprovalBeenRequested,
-        hasBLIInReview
+        hasBLIInReview,
+        isStep4Completed
     };
 }

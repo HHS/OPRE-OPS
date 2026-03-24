@@ -50,7 +50,8 @@ export const RequestPreAwardApproval = () => {
         preAwardMemoDocuments,
         isSubmitting,
         hasApprovalBeenRequested,
-        hasBLIInReview
+        hasBLIInReview,
+        isStep4Completed
     } = useRequestPreAwardApproval(agreementId);
 
     if (isLoading) {
@@ -78,6 +79,15 @@ export const RequestPreAwardApproval = () => {
                     type="warning"
                     heading="Budget Line In Review"
                     message="One or more budget lines have pending change requests that are currently in review. You cannot request pre-award approval until all change requests are resolved."
+                    isClosable={false}
+                />
+            )}
+
+            {!isStep4Completed && (
+                <SimpleAlert
+                    type="warning"
+                    heading="Step 4 Not Completed"
+                    message="You must complete Step 4 (Evaluation) in the Procurement Tracker before requesting pre-award approval."
                     isClosable={false}
                 />
             )}
@@ -179,6 +189,7 @@ export const RequestPreAwardApproval = () => {
                                 htmlFor="consensus-memo-upload"
                                 className={
                                     !ENABLE_UPLOAD_CONSENSUS_MEMO ||
+                                    !isStep4Completed ||
                                     isUploading ||
                                     hasApprovalBeenRequested ||
                                     hasBLIInReview
@@ -192,6 +203,7 @@ export const RequestPreAwardApproval = () => {
                                     gap: "0.5rem",
                                     color:
                                         !ENABLE_UPLOAD_CONSENSUS_MEMO ||
+                                        !isStep4Completed ||
                                         isUploading ||
                                         hasApprovalBeenRequested ||
                                         hasBLIInReview
@@ -204,13 +216,15 @@ export const RequestPreAwardApproval = () => {
                                 title={
                                     !ENABLE_UPLOAD_CONSENSUS_MEMO
                                         ? "Document upload functionality is currently unavailable"
-                                        : isUploading
-                                          ? "Upload in progress"
-                                          : hasApprovalBeenRequested
-                                            ? "Cannot upload documents - Pre-Award approval has already been requested"
-                                            : hasBLIInReview
-                                              ? "Cannot upload documents while budget lines have pending change requests"
-                                              : ""
+                                        : !isStep4Completed
+                                          ? "Step 4 (Evaluation) must be completed before uploading documents"
+                                          : isUploading
+                                            ? "Upload in progress"
+                                            : hasApprovalBeenRequested
+                                              ? "Cannot upload documents - Pre-Award approval has already been requested"
+                                              : hasBLIInReview
+                                                ? "Cannot upload documents while budget lines have pending change requests"
+                                                : ""
                                 }
                             >
                                 <svg
@@ -233,6 +247,7 @@ export const RequestPreAwardApproval = () => {
                                 onChange={handleFileChange}
                                 disabled={
                                     !ENABLE_UPLOAD_CONSENSUS_MEMO ||
+                                    !isStep4Completed ||
                                     isUploading ||
                                     hasApprovalBeenRequested ||
                                     hasBLIInReview
@@ -268,6 +283,7 @@ export const RequestPreAwardApproval = () => {
                             onClick={handleFileUpload}
                             disabled={
                                 !ENABLE_UPLOAD_CONSENSUS_MEMO ||
+                                !isStep4Completed ||
                                 isUploading ||
                                 isSubmitting ||
                                 hasApprovalBeenRequested ||
@@ -276,11 +292,13 @@ export const RequestPreAwardApproval = () => {
                             title={
                                 !ENABLE_UPLOAD_CONSENSUS_MEMO
                                     ? "Document upload functionality is currently unavailable"
-                                    : hasApprovalBeenRequested
-                                      ? "Pre-Award approval has already been requested"
-                                      : hasBLIInReview
-                                        ? "Cannot upload documents while budget lines have pending change requests"
-                                        : ""
+                                    : !isStep4Completed
+                                      ? "Step 4 (Evaluation) must be completed before uploading documents"
+                                      : hasApprovalBeenRequested
+                                        ? "Pre-Award approval has already been requested"
+                                        : hasBLIInReview
+                                          ? "Cannot upload documents while budget lines have pending change requests"
+                                          : ""
                             }
                         >
                             Confirm Upload
@@ -333,7 +351,7 @@ export const RequestPreAwardApproval = () => {
                     maxLength={150}
                     value={notes}
                     onChange={(_name, value) => setNotes(value)}
-                    isDisabled={hasApprovalBeenRequested || hasBLIInReview}
+                    isDisabled={!isStep4Completed || hasApprovalBeenRequested || hasBLIInReview}
                 />
             </div>
 
@@ -349,13 +367,15 @@ export const RequestPreAwardApproval = () => {
                 <button
                     className="usa-button"
                     onClick={handleSubmit}
-                    disabled={isSubmitting || hasApprovalBeenRequested || hasBLIInReview}
+                    disabled={isSubmitting || hasApprovalBeenRequested || hasBLIInReview || !isStep4Completed}
                     title={
-                        hasApprovalBeenRequested
-                            ? "Pre-Award approval has already been requested"
-                            : hasBLIInReview
-                              ? "Cannot request approval while budget lines have pending change requests"
-                              : ""
+                        !isStep4Completed
+                            ? "Step 4 (Evaluation) must be completed before requesting pre-award approval"
+                            : hasApprovalBeenRequested
+                              ? "Pre-Award approval has already been requested"
+                              : hasBLIInReview
+                                ? "Cannot request approval while budget lines have pending change requests"
+                                : ""
                     }
                 >
                     {isSubmitting ? "Submitting..." : "Request Pre-Award Approval"}

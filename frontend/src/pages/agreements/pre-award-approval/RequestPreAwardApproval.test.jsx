@@ -92,7 +92,8 @@ const baseHookResult = () => ({
     isUploading: false,
     uploadError: "",
     submitError: "",
-    preAwardMemoDocuments: []
+    preAwardMemoDocuments: [],
+    isStep4Completed: true
 });
 
 describe("RequestPreAwardApproval", () => {
@@ -245,12 +246,39 @@ describe("RequestPreAwardApproval", () => {
             ...baseHookResult(),
             hasApprovalBeenRequested: false,
             hasBLIInReview: false,
-            isSubmitting: false
+            isSubmitting: false,
+            isStep4Completed: true
         });
 
         render(<RequestPreAwardApproval />);
 
         const submitButton = screen.getByRole("button", { name: "Request Pre-Award Approval" });
         expect(submitButton).not.toBeDisabled();
+    });
+
+    it("disables submit button when step 4 is not completed", () => {
+        requestPreAwardApprovalHookMock.mockReturnValue({
+            ...baseHookResult(),
+            isStep4Completed: false
+        });
+
+        render(<RequestPreAwardApproval />);
+
+        const submitButton = screen.getByRole("button", { name: "Request Pre-Award Approval" });
+        expect(submitButton).toBeDisabled();
+    });
+
+    it("shows alert when step 4 is not completed", () => {
+        requestPreAwardApprovalHookMock.mockReturnValue({
+            ...baseHookResult(),
+            isStep4Completed: false
+        });
+
+        render(<RequestPreAwardApproval />);
+
+        expect(screen.getByText("Step 4 Not Completed")).toBeInTheDocument();
+        expect(
+            screen.getByText(/You must complete Step 4 \(Evaluation\) in the Procurement Tracker/)
+        ).toBeInTheDocument();
     });
 });
