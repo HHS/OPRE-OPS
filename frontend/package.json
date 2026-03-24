@@ -36,7 +36,7 @@
         "remark-gfm": "4.0.1",
         "sass": "1.98.0",
         "styled-components": "6.3.12",
-        "vest": "6.2.7",
+        "vest": "6.2.8",
         "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
     },
     "overrides": {
@@ -61,7 +61,7 @@
         "cypress-localstorage-commands": "2.3.0",
         "eslint": "10.1.0",
         "eslint-config-prettier": "10.1.8",
-        "eslint-plugin-cypress": "6.2.0",
+        "eslint-plugin-cypress": "6.2.1",
         "eslint-plugin-import": "2.32.0",
         "eslint-plugin-jsx-a11y": "6.10.2",
         "eslint-plugin-prettier": "5.5.5",
