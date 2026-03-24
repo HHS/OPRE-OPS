@@ -4,6 +4,8 @@ import { useGetAllCans } from "./useGetAllCans";
 import { convertToCurrency, renderField } from "../helpers/utils";
 import { calculateAgreementTotal } from "../helpers/agreement.helpers";
 import { getChangeRequestMessages } from "../helpers/changeRequests.helpers";
+
+export const CHANGE_REQUESTS_TOOLTIP_LOADING = "Loading...";
 /**
  * @typedef {import ('../types/ChangeRequestsTypes').ChangeRequest} ChangeRequest
  * @typedef {import ('../types/BudgetLineTypes').BudgetLine} BudgetLine
@@ -110,7 +112,7 @@ export const useChangeRequestsForTooltip = (budgetLine, title) => {
     const { change_requests_in_review: changeRequests, in_review: isBLIInReview } = budgetLine || {};
 
     if (isCansLoading || isProcurementShopLoading) {
-        return "Loading...";
+        return CHANGE_REQUESTS_TOOLTIP_LOADING;
     }
 
     if (!cansSuccess || !procurementShopsSuccess) {

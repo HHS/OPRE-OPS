@@ -158,15 +158,14 @@ describe("agreement details", () => {
         cy.get("@executingRow").find("[data-cy='expand-row']").click();
         cy.get("@executingRow")
             .next("[data-testid='expanded-data']")
+            .as("executingExpandedRow");
+        cy.get("@executingExpandedRow")
             .find("[data-cy='edit-row']")
             .should("be.disabled")
-            .should("have.attr", "aria-describedby")
-            .then((descId) => {
-                const firstId = descId.trim().split(/\s+/)[0];
-                cy.get(`#${firstId}`, { timeout: 10000 })
-                    .should("contain", "Executing Status")
-                    .and("contain", "budget team");
-            });
+            .closest(".usa-tooltip")
+            .find(".usa-tooltip__body")
+            .should("contain", "Executing Status")
+            .and("contain", "budget team");
     });
 
     it("Should allow the user to export BLIs for an agreement", () => {
