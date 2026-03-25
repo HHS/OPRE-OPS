@@ -75,8 +75,7 @@ const ProjectDetailsView = ({ project }) => {
                             />
                         </dd>
 
-                        <dt className="margin-0 text-base-dark margin-top-3">Project Dates</dt>
-                        <dd className="margin-0 margin-top-1">
+                        <dd className="margin-0 margin-top-3">
                             <div
                                 className="grid-row grid-gap-4"
                                 style={{ maxWidth: "420px" }}
