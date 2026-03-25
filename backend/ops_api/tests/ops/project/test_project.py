@@ -401,9 +401,7 @@ def test_projects_summary_amounts_by_type_structure(auth_client, loaded_db):
 
 def test_projects_summary_with_project_type_filter(auth_client, loaded_db):
     """Test that summary projects_by_type has zero for non-filtered type."""
-    response = auth_client.get(
-        url_for("api.projects-group", project_type=[ProjectType.RESEARCH.name], limit=50)
-    )
+    response = auth_client.get(url_for("api.projects-group", project_type=[ProjectType.RESEARCH.name], limit=50))
     assert response.status_code == 200
 
     summary = response.json["summary"]
