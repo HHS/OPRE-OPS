@@ -319,6 +319,7 @@ def agreement_with_ops_user_and_bli_in_review(bdd_client, test_non_admin_user, l
         can_id=1,  # Assuming CAN with id 1 exists in test fixtures
         amount=10000.00,
         status=BudgetLineItemStatus.PLANNED,
+        budget_line_item_type=AgreementType.CONTRACT,
     )
     loaded_db.add(budget_line_item)
     loaded_db.commit()
