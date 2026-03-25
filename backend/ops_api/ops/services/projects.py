@@ -417,7 +417,7 @@ class ProjectsService(OpsService[Project]):
         elif sort_condition == ProjectSortCondition.FY_TOTAL:
             metadata = metadata_cache[project.id]
             # Get fiscal year total, defaulting to 0 if not present
-            fy_total = metadata["by_fiscal_year"].get(sort_fiscal_year, 0) if sort_fiscal_year else 0
+            fy_total = metadata["total_by_fiscal_year"].get(sort_fiscal_year, 0) if sort_fiscal_year else 0
             return fy_total
         elif sort_condition == ProjectSortCondition.PROJECT_TOTAL:
             metadata = metadata_cache[project.id]

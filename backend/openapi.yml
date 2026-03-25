@@ -3141,6 +3141,74 @@ paths:
         "404":
           description: Not Found
 
+  /projects/{id}/spending/:
+    get:
+      tags:
+        - Projects
+      operationId: getProjectSpending
+      summary: Get spending metadata for a project
+      description: |
+        Returns project spending metadata including:
+        - Total spending across all agreements
+        - Spending totals by fiscal year
+        - Spending breakdown by type (contract, grant, partner, direct_obligation) per fiscal year
+        - Project start and end dates (derived from services components)
+        - List of agreements with spending
+        - Agreements grouped by fiscal year
+
+        Only includes non-DRAFT budget line items (or OBE items regardless of status).
+        Totals include both BLI amounts and fees.
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: id
+          description: Project ID
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            example: 1002
+      responses:
+        "200":
+          description: OK - Successfully retrieved project spending metadata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectSpendingMetadata"
+              example:
+                total: "150000.00"
+                total_by_fiscal_year:
+                  "2023": "50000.00"
+                  "2024": "75000.00"
+                  "2025": "25000.00"
+                project_start: "2023-01-15"
+                project_end: "2025-12-31"
+                agreement_name_list:
+                  - id: 1
+                    name: "Research Agreement 2023"
+                  - id: 2
+                    name: "SUPPORT-2024"
+                spending_type_by_fiscal_year:
+                  "2023":
+                    contract: "30000.00"
+                    grant: "20000.00"
+                    partner: "0.00"
+                    direct_obligation: "0.00"
+                  "2024":
+                    contract: "75000.00"
+                    grant: "0.00"
+                    partner: "0.00"
+                    direct_obligation: "0.00"
+                agreements_by_fy:
+                  "2023": [1, 2]
+                  "2024": [1]
+                  "2025": [2]
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not Found - Project does not exist
+
   /projects-filters/:
     get:
       tags:
@@ -5629,6 +5697,116 @@ components:
           format: double
           description: Total funding over the lifetime of the CAN
           example: 123.456
+    ProjectSpendingMetadata:
+      description: Project spending metadata including totals, fiscal year breakdowns, and agreement information
+      type: object
+      required:
+        - total
+        - total_by_fiscal_year
+        - project_start
+        - project_end
+        - agreement_name_list
+        - spending_type_by_fiscal_year
+        - agreements_by_fy
+      properties:
+        total:
+          type: string
+          description: Total spending across all agreements (Decimal as string for precision)
+          example: "150000.00"
+        total_by_fiscal_year:
+          type: object
+          description: Spending totals by fiscal year
+          additionalProperties:
+            type: string
+            description: Decimal amount as string
+          example:
+            "2023": "50000.00"
+            "2024": "75000.00"
+            "2025": "25000.00"
+        project_start:
+          type: string
+          format: date
+          nullable: true
+          description: Earliest period_start from all services components
+          example: "2023-01-15"
+        project_end:
+          type: string
+          format: date
+          nullable: true
+          description: Latest period_end from all services components
+          example: "2025-12-31"
+        agreement_name_list:
+          type: array
+          description: List of agreements with their IDs and names
+          items:
+            $ref: "#/components/schemas/AgreementName"
+        spending_type_by_fiscal_year:
+          type: object
+          description: Spending breakdown by type (contract, grant, partner, direct_obligation) for each fiscal year
+          additionalProperties:
+            $ref: "#/components/schemas/SpendingTypeBreakdown"
+          example:
+            "2023":
+              contract: "30000.00"
+              grant: "20000.00"
+              partner: "0.00"
+              direct_obligation: "0.00"
+            "2024":
+              contract: "75000.00"
+              grant: "0.00"
+              partner: "0.00"
+              direct_obligation: "0.00"
+        agreements_by_fy:
+          type: object
+          description: Agreement IDs grouped by fiscal year
+          additionalProperties:
+            type: array
+            items:
+              type: integer
+          example:
+            "2023": [1, 2]
+            "2024": [1]
+            "2025": [2]
+    AgreementName:
+      description: Agreement identifier with ID and name (nick_name preferred over title)
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+          description: Agreement ID
+          example: 1
+        name:
+          type: string
+          description: Agreement name (nick_name if available, otherwise title)
+          example: "Research Agreement 2023"
+    SpendingTypeBreakdown:
+      description: Spending amounts by agreement type for a fiscal year
+      type: object
+      required:
+        - contract
+        - grant
+        - partner
+        - direct_obligation
+      properties:
+        contract:
+          type: string
+          description: Contract spending (Decimal as string)
+          example: "30000.00"
+        grant:
+          type: string
+          description: Grant spending (Decimal as string)
+          example: "20000.00"
+        partner:
+          type: string
+          description: Partner agreement spending - AA and IAA (Decimal as string)
+          example: "0.00"
+        direct_obligation:
+          type: string
+          description: Direct obligation spending (Decimal as string)
+          example: "0.00"
     TeamLeader:
       type: object
       properties:
