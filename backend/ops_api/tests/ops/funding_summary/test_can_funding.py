@@ -55,7 +55,10 @@ class TestCANFundingSingleEndpoint:
         data = response.json
 
         assert data["fiscal_year"] == 2023
-        assert data["funding"]["total_funding"] == data["funding"]["carry_forward_funding"] + data["funding"]["new_funding"]
+        assert (
+            data["funding"]["total_funding"]
+            == data["funding"]["carry_forward_funding"] + data["funding"]["new_funding"]
+        )
 
     def test_get_can_funding_defaults_fiscal_year(self, auth_client: FlaskClient, test_can: CAN) -> None:
         response = auth_client.get(url_for("api.can-funding", id=test_can.id))
@@ -76,9 +79,7 @@ class TestCANFundingSingleEndpoint:
             assert isinstance(entry["fiscal_year"], int)
             assert isinstance(entry["amount"], (int, float))
 
-    def test_get_can_funding_total_equals_new_plus_carry_forward(
-        self, auth_client: FlaskClient, test_can: CAN
-    ) -> None:
+    def test_get_can_funding_total_equals_new_plus_carry_forward(self, auth_client: FlaskClient, test_can: CAN) -> None:
         response = auth_client.get(url_for("api.can-funding", id=test_can.id), query_string={"fiscal_year": 2023})
         assert response.status_code == 200
         funding = response.json["funding"]
@@ -110,9 +111,7 @@ class TestCANsFundingAggregateEndpoint:
         assert data["fiscal_year"] == 2023
         assert len(data["cans"]) == 15  # Matches old endpoint test
 
-    def test_get_cans_funding_aggregate_no_match(
-        self, auth_client: FlaskClient, test_cans: list[Type[CAN]]
-    ) -> None:
+    def test_get_cans_funding_aggregate_no_match(self, auth_client: FlaskClient, test_cans: list[Type[CAN]]) -> None:
         response = auth_client.get(url_for("api.can-funding-aggregate"), query_string={"fiscal_year": 2044})
         assert response.status_code == 200
         data = response.json

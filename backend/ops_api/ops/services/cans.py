@@ -636,7 +636,11 @@ class CANService:
                     "number": can_data.get("number"),
                     "nick_name": can_data.get("nick_name"),
                     "portfolio_id": can_data.get("portfolio_id"),
-                    "portfolio": can_data.get("portfolio", {}).get("abbreviation") if isinstance(can_data.get("portfolio"), dict) else None,
+                    "portfolio": (
+                        can_data.get("portfolio", {}).get("abbreviation")
+                        if isinstance(can_data.get("portfolio"), dict)
+                        else None
+                    ),
                     "active_period": can_data.get("active_period"),
                     "carry_forward_label": can_entry.get("carry_forward_label"),
                     "expiration_date": can_entry.get("expiration_date"),
