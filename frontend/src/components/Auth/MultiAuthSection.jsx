@@ -111,6 +111,10 @@ const MultiAuthSection = () => {
                 // Exit early - don't run the ensureActiveUser logic during auth callback
                 return;
             }
+        } else if (queryParams.has("state") && queryParams.has("code")) {
+            // OAuth params present but ops-state-key missing — can't process callback.
+            // Reset loader so the user sees the login form instead of being stuck.
+            setIsAuthenticating(false);
         }
 
         // Set state token if none exists

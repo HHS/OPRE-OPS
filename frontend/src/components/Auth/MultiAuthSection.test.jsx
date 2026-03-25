@@ -192,6 +192,38 @@ describe("MultiAuthSection", () => {
             });
         });
 
+        it("shows PacmanLoader immediately on OAuth callback", async () => {
+            const stateWithProvider = "abc123|hhsams";
+            storage.set("ops-state-key", stateWithProvider);
+
+            // Keep the mutation pending so the loader stays visible
+            mockUnwrap.mockReturnValue(new Promise(() => {}));
+
+            window.history.pushState(
+                {},
+                "",
+                `/login?state=${encodeURIComponent(stateWithProvider)}&code=AUTH_CODE_123`
+            );
+
+            renderWithProviders(<MultiAuthSection />);
+
+            // Loader should be visible on first render (no waitFor needed)
+            expect(screen.getByTestId("loader")).toBeInTheDocument();
+            expect(screen.queryByText("Sign in to your account")).not.toBeInTheDocument();
+        });
+
+        it("resets loader when ops-state-key is missing during OAuth callback", async () => {
+            // Do NOT set ops-state-key — simulates it being cleared
+            window.history.pushState({}, "", "/login?state=abc123&code=AUTH_CODE_123");
+
+            renderWithProviders(<MultiAuthSection />);
+
+            await waitFor(() => {
+                expect(screen.getByText("Sign in to your account")).toBeInTheDocument();
+            });
+            expect(screen.queryByTestId("loader")).not.toBeInTheDocument();
+        });
+
         it("falls back to localStorage when state has no provider (backward compat)", async () => {
             const stateWithoutProvider = "abc123nopipe";
             storage.set("ops-state-key", stateWithoutProvider);
