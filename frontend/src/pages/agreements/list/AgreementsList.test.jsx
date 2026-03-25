@@ -195,7 +195,8 @@ describe("AgreementsList - Pagination", () => {
             useGetAgreementsQuery.mockReturnValue({
                 data: undefined,
                 error: undefined,
-                isLoading: true
+                isLoading: true,
+                isFetching: false
             });
 
             render(
@@ -206,14 +207,35 @@ describe("AgreementsList - Pagination", () => {
                 </Provider>
             );
 
-            expect(screen.getByText("Loading...")).toBeInTheDocument();
+            expect(screen.getByRole("table", { name: "Loading agreements" })).toBeInTheDocument();
+            expect(screen.getByRole("columnheader", { name: /agreement/i })).toBeInTheDocument();
+        });
+
+        it("should render skeleton while refetching", () => {
+            useGetAgreementsQuery.mockReturnValue({
+                data: mockAgreementsResponse,
+                error: undefined,
+                isLoading: false,
+                isFetching: true
+            });
+
+            render(
+                <Provider store={store}>
+                    <BrowserRouter>
+                        <AgreementsList />
+                    </BrowserRouter>
+                </Provider>
+            );
+
+            expect(screen.getByRole("table", { name: "Loading agreements" })).toBeInTheDocument();
         });
 
         it("should display agreements when data is loaded", async () => {
             useGetAgreementsQuery.mockReturnValue({
                 data: mockAgreementsResponse,
                 error: undefined,
-                isLoading: false
+                isLoading: false,
+                isFetching: false
             });
 
             render(
@@ -235,7 +257,8 @@ describe("AgreementsList - Pagination", () => {
             useGetAgreementsQuery.mockReturnValue({
                 data: mockAgreementsResponse,
                 error: undefined,
-                isLoading: false
+                isLoading: false,
+                isFetching: false
             });
 
             render(
@@ -266,7 +289,8 @@ describe("AgreementsList - Pagination", () => {
             useGetAgreementsQuery.mockReturnValue({
                 data: emptyResponse,
                 error: undefined,
-                isLoading: false
+                isLoading: false,
+                isFetching: false
             });
 
             render(
@@ -291,7 +315,8 @@ describe("AgreementsList - Pagination", () => {
             useGetAgreementsQuery.mockReturnValue({
                 data: mockAgreementsResponse, // count: 50, limit: 10 = 5 pages
                 error: undefined,
-                isLoading: false
+                isLoading: false,
+                isFetching: false
             });
 
             render(
@@ -319,7 +344,8 @@ describe("AgreementsList - Pagination", () => {
             useGetAgreementsQuery.mockReturnValue({
                 data: singlePageResponse,
                 error: undefined,
-                isLoading: false
+                isLoading: false,
+                isFetching: false
             });
 
             render(
@@ -345,7 +371,8 @@ describe("AgreementsList - Pagination", () => {
             useGetAgreementsQuery.mockReturnValue({
                 data: mockAgreementsResponse,
                 error: undefined,
-                isLoading: false
+                isLoading: false,
+                isFetching: false
             });
 
             render(
@@ -372,7 +399,8 @@ describe("AgreementsList - Pagination", () => {
             useGetAgreementsQuery.mockReturnValue({
                 data: emptyResponse,
                 error: undefined,
-                isLoading: false
+                isLoading: false,
+                isFetching: false
             });
 
             render(
@@ -403,7 +431,8 @@ describe("AgreementsList - Pagination", () => {
             useGetAgreementsQuery.mockReturnValue({
                 data: largeDataResponse,
                 error: undefined,
-                isLoading: false
+                isLoading: false,
+                isFetching: false
             });
 
             const mockGetAllAgreementsTrigger = vi.fn((params) => ({
@@ -490,7 +519,8 @@ describe("AgreementsList - Pagination", () => {
             useGetAgreementsQuery.mockReturnValue({
                 data: wrappedResponse,
                 error: undefined,
-                isLoading: false
+                isLoading: false,
+                isFetching: false
             });
 
             render(
@@ -553,7 +583,8 @@ describe("AgreementsList - Fiscal Year Filtering", () => {
         useGetAgreementsQuery.mockReturnValue({
             data: mockAgreementsResponse,
             error: undefined,
-            isLoading: false
+            isLoading: false,
+            isFetching: false
         });
     });
 
@@ -618,7 +649,8 @@ describe("AgreementsList - Fiscal Year Filtering", () => {
             return {
                 data: mockAgreementsResponse,
                 error: undefined,
-                isLoading: false
+                isLoading: false,
+                isFetching: false
             };
         });
 
@@ -716,7 +748,8 @@ describe("AgreementsList - Fiscal Year Filtering", () => {
             return {
                 data: mockAgreementsResponse,
                 error: undefined,
-                isLoading: false
+                isLoading: false,
+                isFetching: false
             };
         });
 
@@ -752,7 +785,8 @@ describe("AgreementsList - Fiscal Year Filtering", () => {
             return {
                 data: mockAgreementsResponse,
                 error: undefined,
-                isLoading: false
+                isLoading: false,
+                isFetching: false
             };
         });
 

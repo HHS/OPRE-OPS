@@ -1,6 +1,5 @@
 import CurrencyFormat from "react-currency-format";
 import { Link } from "react-router-dom";
-import { useGetCanFundingSummaryQuery } from "../../../api/opsAPI";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import Tooltip from "../../UI/USWDS/Tooltip";
 import { displayActivePeriod } from "./CANTableRow.helpers";
@@ -13,34 +12,17 @@ import { NO_DATA } from "../../../constants";
  * @param {number} props.activePeriod - Active Period in years
  * @param {number} props.canId - CAN ID
  * @param {number} props.fiscalYear - Selected Fiscal Year
+ * @param {{available_funding?: number, received_funding?: number, total_funding?: number}} [props.fundingSummary] - Funding summary for this CAN
  * @param {string} props.name - CAN name
  * @param {string} props.nickname - CAN nickname
  * @param {string} props.obligateBy - Obligate By Date
  * @param {string} props.portfolio - Portfolio abbreviation
  * @returns {JSX.Element}
  */
-const CANTableRow = ({ activePeriod, canId, fiscalYear, name, nickname, obligateBy, portfolio }) => {
-    const {
-        data: fundingSummary,
-        isError,
-        isLoading
-    } = useGetCanFundingSummaryQuery({ ids: [canId], fiscalYear: fiscalYear }, { refetchOnMountOrArgChange: true });
+const CANTableRow = ({ activePeriod, canId, fundingSummary, name, nickname, obligateBy, portfolio }) => {
     const totalFunding = fundingSummary?.total_funding ?? 0;
     const fundingReceived = fundingSummary?.received_funding ?? 0;
     const availableFunds = fundingSummary?.available_funding ?? 0;
-
-    if (isLoading)
-        return (
-            <tr>
-                <td colSpan={8}>Loading...</td>
-            </tr>
-        );
-    if (isError)
-        return (
-            <tr>
-                <td colSpan={8}>Error: {isError.valueOf()}</td>
-            </tr>
-        );
 
     return (
         <tr>
