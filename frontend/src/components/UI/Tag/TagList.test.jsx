@@ -30,17 +30,18 @@ describe("TagList", () => {
         expect(columns).toHaveLength(2);
     });
 
-    it("caps at two columns and alternates items when more than ten exist", () => {
+    it("caps at two columns and keeps vertical-first ordering when more than ten exist", () => {
         const items = Array.from({ length: 11 }, (_, index) => `Item ${index + 1}`);
         render(<TagList items={items} />);
         const columns = screen.getAllByTestId("tag-list-column");
 
         expect(columns).toHaveLength(2);
         expect(columns[0]).toHaveTextContent("Item 1");
-        expect(columns[0]).toHaveTextContent("Item 3");
-        expect(columns[0]).toHaveTextContent("Item 11");
-        expect(columns[1]).toHaveTextContent("Item 2");
-        expect(columns[1]).toHaveTextContent("Item 4");
+        expect(columns[0]).toHaveTextContent("Item 5");
+        expect(columns[0]).not.toHaveTextContent("Item 6");
+        expect(columns[1]).toHaveTextContent("Item 6");
+        expect(columns[1]).toHaveTextContent("Item 9");
         expect(columns[1]).toHaveTextContent("Item 10");
+        expect(columns[1]).not.toHaveTextContent("Item 11");
     });
 });

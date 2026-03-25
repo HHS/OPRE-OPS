@@ -11,21 +11,6 @@ const chunkItems = (items, chunkSize) => {
     return chunks;
 };
 
-const splitAlternatingIntoTwoColumns = (items) => {
-    const leftColumn = [];
-    const rightColumn = [];
-
-    items.forEach((item, index) => {
-        if (index % 2 === 0) {
-            leftColumn.push(item);
-        } else {
-            rightColumn.push(item);
-        }
-    });
-
-    return [leftColumn, rightColumn].filter((column) => column.length > 0);
-};
-
 /**
  * Renders a list of tags in vertical-first columns.
  * @param {Object} props
@@ -46,10 +31,7 @@ const TagList = ({ items, dataCy, getKey = (item) => item, maxRowsPerColumn = 5 
         );
     }
 
-    const columns =
-        items.length > maxRowsPerColumn * 2
-            ? splitAlternatingIntoTwoColumns(items)
-            : chunkItems(items, maxRowsPerColumn);
+    const columns = chunkItems(items, maxRowsPerColumn).slice(0, 2);
 
     return (
         <div

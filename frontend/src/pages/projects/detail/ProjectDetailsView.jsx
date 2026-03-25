@@ -2,25 +2,7 @@ import Tag from "../../../components/UI/Tag/Tag";
 import { TagList } from "../../../components/UI/Tag";
 import { NO_DATA } from "../../../constants";
 import { convertCodeForDisplay } from "../../../helpers/utils";
-
-/**
- * Renders a formatted date value or TBD when absent.
- * @param {Object} props
- * @param {string | null | undefined} props.value
- * @returns {React.ReactElement}
- */
-const formatProjectDate = (value) => {
-    if (!value) {
-        return NO_DATA;
-    }
-
-    const date = new Date(value);
-    const month = `${date.getUTCMonth() + 1}`.padStart(2, "0");
-    const day = `${date.getUTCDate()}`.padStart(2, "0");
-    const year = date.getUTCFullYear();
-
-    return `${month}/${day}/${year}`;
-};
+import { formatProjectDate } from "../list/ProjectsList.helpers";
 
 const DateValue = ({ value }) => (
     <Tag

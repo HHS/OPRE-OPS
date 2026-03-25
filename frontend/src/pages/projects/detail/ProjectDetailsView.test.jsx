@@ -75,8 +75,8 @@ describe("ProjectDetailsView", () => {
 
     it("renders project dates using the shared formatter", () => {
         renderComponent(baseProject);
-        expect(screen.getByText("06/13/2043")).toBeInTheDocument();
-        expect(screen.getByText("06/13/2045")).toBeInTheDocument();
+        expect(screen.getByText("6/13/2043")).toBeInTheDocument();
+        expect(screen.getByText("6/13/2045")).toBeInTheDocument();
     });
 
     it("renders TBD tags for empty collections", () => {
