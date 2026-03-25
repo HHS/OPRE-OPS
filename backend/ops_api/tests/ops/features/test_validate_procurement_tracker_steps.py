@@ -297,7 +297,7 @@ def agreement_without_ops_user(bdd_client, test_non_admin_user, loaded_db, conte
 
 
 @given("I have a Contract Agreement with OPS user as a team member and a BLI in review")
-def agreement_with_ops_user_and_bli_in_review(bdd_client, test_non_admin_user, loaded_db, context):
+def agreement_with_ops_user_and_bli_in_review(bdd_client, test_non_admin_user, loaded_db, context, test_can):
     contract_agreement = ContractAgreement(
         name=str(uuid.uuid4()),
         contract_number="CT1234",
@@ -316,7 +316,7 @@ def agreement_with_ops_user_and_bli_in_review(bdd_client, test_non_admin_user, l
     # Create a budget line item
     budget_line_item = BudgetLineItem(
         agreement_id=contract_agreement.id,
-        can_id=1,  # Assuming CAN with id 1 exists in test fixtures
+        can_id=test_can.id,
         amount=10000.00,
         status=BudgetLineItemStatus.PLANNED,
         budget_line_item_type=AgreementType.CONTRACT,
