@@ -1,37 +1,33 @@
 import Tag from "../../../components/UI/Tag/Tag";
+import { TagList } from "../../../components/UI/Tag";
 import { NO_DATA } from "../../../constants";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 
 /**
- * Renders one Tag per item in a list, or a single TBD tag when the list is empty.
+ * Renders a formatted date value or TBD when absent.
  * @param {Object} props
- * @param {string[]} props.items
- * @param {string} props.dataCy
+ * @param {string | null | undefined} props.value
  * @returns {React.ReactElement}
  */
-const TagList = ({ items, dataCy }) => {
-    if (!items?.length) {
-        return (
-            <Tag
-                tagStyle="primaryDarkTextLightBackground"
-                text={NO_DATA}
-                dataCy={dataCy}
-            />
-        );
+const formatProjectDate = (value) => {
+    if (!value) {
+        return NO_DATA;
     }
-    return (
-        <div className="display-flex flex-wrap gap-1">
-            {items.map((item) => (
-                <Tag
-                    key={item}
-                    tagStyle="primaryDarkTextLightBackground"
-                    text={item}
-                    dataCy={dataCy}
-                />
-            ))}
-        </div>
-    );
+
+    const date = new Date(value);
+    const month = `${date.getUTCMonth() + 1}`.padStart(2, "0");
+    const day = `${date.getUTCDate()}`.padStart(2, "0");
+    const year = date.getUTCFullYear();
+
+    return `${month}/${day}/${year}`;
 };
+
+const DateValue = ({ value }) => (
+    <Tag
+        tagStyle="primaryDarkTextLightBackground"
+        text={formatProjectDate(value)}
+    />
+);
 
 /**
  * Read-only details view for a project, mirroring the two-column layout of AgreementDetailsView.
@@ -47,8 +43,10 @@ const ProjectDetailsView = ({ project }) => {
     const projectTypeLabel = convertCodeForDisplay("project", project.project_type);
 
     const teamLeaderNames = project.team_leaders?.map((tl) => tl.display_name ?? tl.full_name) ?? [];
-    const methodologies = project.methodologies ?? [];
-    const populations = project.populations ?? [];
+    const methodologies = project.research_methodologies ?? [];
+    const specialTopics = project.special_topics ?? [];
+    const divisionDirectors = project.division_directors ?? [];
+    const teamMemberNames = project.team_members?.map((member) => member.display_name ?? member.full_name) ?? [];
 
     return (
         <section>
@@ -95,7 +93,17 @@ const ProjectDetailsView = ({ project }) => {
                             />
                         </dd>
 
-                        <dt className="margin-0 text-base-dark margin-top-3">Methodologies</dt>
+                        <dt className="margin-0 text-base-dark margin-top-3">Project Start</dt>
+                        <dd className="margin-0 margin-top-05 wrap-text">
+                            <DateValue value={project.project_start} />
+                        </dd>
+
+                        <dt className="margin-0 text-base-dark margin-top-3">Project End</dt>
+                        <dd className="margin-0 margin-top-05 wrap-text">
+                            <DateValue value={project.project_end} />
+                        </dd>
+
+                        <dt className="margin-0 text-base-dark margin-top-3">Research Methodologies</dt>
                         <dd className="margin-0 margin-top-1">
                             <TagList
                                 items={methodologies}
@@ -103,28 +111,35 @@ const ProjectDetailsView = ({ project }) => {
                             />
                         </dd>
 
-                        <dt className="margin-0 text-base-dark margin-top-3">Special Topic/Population Studied</dt>
+                        <dt className="margin-0 text-base-dark margin-top-3">Special Topics</dt>
                         <dd className="margin-0 margin-top-1">
                             <TagList
-                                items={populations}
-                                dataCy="project-populations-tag"
+                                items={specialTopics}
+                                dataCy="project-special-topics-tag"
                             />
                         </dd>
 
-                        <dt className="margin-0 text-base-dark margin-top-3">Project Officer</dt>
+                        <dt className="margin-0 text-base-dark margin-top-3">Division Director(s)</dt>
                         <dd className="margin-0 margin-top-1">
-                            <Tag
-                                tagStyle="primaryDarkTextLightBackground"
-                                text={NO_DATA}
-                                dataCy="project-officer-tag"
+                            <TagList
+                                items={divisionDirectors}
+                                dataCy="project-division-directors-tag"
                             />
                         </dd>
 
-                        <dt className="margin-0 text-base-dark margin-top-3">Team Leaders</dt>
+                        <dt className="margin-0 text-base-dark margin-top-3">Team Leader(s)</dt>
                         <dd className="margin-0 margin-top-1">
                             <TagList
                                 items={teamLeaderNames}
                                 dataCy="project-team-leaders-tag"
+                            />
+                        </dd>
+
+                        <dt className="margin-0 text-base-dark margin-top-3">Team Members</dt>
+                        <dd className="margin-0 margin-top-1">
+                            <TagList
+                                items={teamMemberNames}
+                                dataCy="project-team-members-tag"
                             />
                         </dd>
                     </dl>
