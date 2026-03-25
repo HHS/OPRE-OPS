@@ -156,9 +156,10 @@ def update_award_date(data: AwardDateData, sys_user: User, session: Session) -> 
             logger.info(
                 f"Updated award date to {data.award_date} for Agreement '{data.agreement_name}' (id={agreement.id})"
             )
-    except Exception as e:
-        logger.error(f"Error updating award date for {data}")
-        raise e
+    except Exception:
+        logger.exception(f"Error updating award date for {data}")
+        session.rollback()
+        raise
 
 
 def update_all_award_dates(data: List[AwardDateData], sys_user: User, session: Session) -> None:
