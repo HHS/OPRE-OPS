@@ -28,7 +28,6 @@ format = (
 # Configure logger with global level set to INFO by default
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 logger.remove()  # Remove default handlers
-logger.configure(handlers=[{"sink": sys.stdout, "format": format, "level": LOG_LEVEL}])
 logger.add(sys.stderr, format=format, level=LOG_LEVEL)
 
 
@@ -62,6 +61,7 @@ logger.add(sys.stderr, format=format, level=LOG_LEVEL)
             "ops_contracts",
             "roles",
             "master_spreadsheet_budget_lines_v2",
+            "award_date",
         ],
         case_sensitive=False,
     ),
@@ -163,6 +163,8 @@ def main(
                     from data_tools.src.load_roles.utils import transform
                 case "master_spreadsheet_budget_lines_v2":
                     from data_tools.src.load_master_spreadsheet_budget_lines_v2.utils import transform
+                case "award_date":
+                    from data_tools.src.load_award_date.utils import transform
                 case _:
                     raise ValueError(f"Unsupported data type: {type}")
 
