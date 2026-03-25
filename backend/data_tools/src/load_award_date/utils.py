@@ -42,7 +42,9 @@ class AwardDateData:
         self.agreement_type = self.agreement_type.strip() if self.agreement_type else None
         self.agreement_id = int(self.agreement_id) if self.agreement_id else None
         self.award_date = (
-            datetime.strptime(self.award_date, "%Y-%m-%d").date() if isinstance(self.award_date, str) else self.award_date
+            datetime.strptime(self.award_date, "%Y-%m-%d").date()
+            if isinstance(self.award_date, str)
+            else self.award_date
         )
 
 
@@ -151,7 +153,9 @@ def update_award_date(data: AwardDateData, sys_user: User, session: Session) -> 
             session.rollback()
         else:
             session.commit()
-            logger.info(f"Updated award date to {data.award_date} for Agreement '{data.agreement_name}' (id={agreement.id})")
+            logger.info(
+                f"Updated award date to {data.award_date} for Agreement '{data.agreement_name}' (id={agreement.id})"
+            )
     except Exception as e:
         logger.error(f"Error updating award date for {data}")
         raise e

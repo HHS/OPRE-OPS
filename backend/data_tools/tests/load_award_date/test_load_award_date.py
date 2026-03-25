@@ -220,9 +220,7 @@ def test_update_award_date(db_for_award_date):
 
     # Verify ops_db_history record was created
     history_objs = (
-        db_for_award_date.execute(
-            select(OpsDBHistory).where(OpsDBHistory.class_name == "ProcurementAction")
-        )
+        db_for_award_date.execute(select(OpsDBHistory).where(OpsDBHistory.class_name == "ProcurementAction"))
         .scalars()
         .all()
     )
@@ -230,9 +228,7 @@ def test_update_award_date(db_for_award_date):
 
     # Verify OpsEvent was created
     ops_events = (
-        db_for_award_date.execute(
-            select(OpsEvent).where(OpsEvent.event_type == OpsEventType.UPDATE_AGREEMENT)
-        )
+        db_for_award_date.execute(select(OpsEvent).where(OpsEvent.event_type == OpsEventType.UPDATE_AGREEMENT))
         .scalars()
         .all()
     )
