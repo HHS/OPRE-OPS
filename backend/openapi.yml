@@ -5594,7 +5594,6 @@ components:
         - portfolio_id
         - portfolio
         - active_period
-        - amount
         - fy_funding
         - lifetime_funding
       properties:
@@ -5614,11 +5613,6 @@ components:
           type: integer
           description: Active period in years
           example: 1
-        amount:
-          type: number
-          format: double
-          description: Amount obligated to this project from this CAN
-          example: 123.456
         fy_funding:
           type: number
           format: double
