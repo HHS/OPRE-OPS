@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from decimal import Decimal
 from typing import Any, Optional, Sequence
 
 from loguru import logger
@@ -518,6 +519,35 @@ class ProjectsService(OpsService[Project]):
         # Calculate total count before pagination
         total_count = len(sorted_projects)
 
+        # Compute summary over full filtered set
+        selected_fy = filters.fiscal_year[0] if filters.fiscal_year and len(filters.fiscal_year) == 1 else None
+
+        projects_by_type = {t.name: 0 for t in ProjectType}
+        amounts_by_type = {t.name: Decimal("0") for t in ProjectType}
+
+        for project in all_projects:
+            type_name = project.project_type.name
+            projects_by_type[type_name] += 1
+            pm = metadata_cache[project.id]
+            if selected_fy:
+                if selected_fy in pm["by_fiscal_year"]:
+                    amounts_by_type[type_name] += pm["by_fiscal_year"][selected_fy]
+            else:
+                amounts_by_type[type_name] += pm["total"]
+
+        total_amount = sum(amounts_by_type.values())
+        summary = {
+            "total_projects": total_count,
+            "projects_by_type": dict(projects_by_type),
+            "amounts_by_type": {
+                k: {
+                    "amount": float(v),
+                    "percent": round(float(v / total_amount * 100), 1) if total_amount else 0.0,
+                }
+                for k, v in amounts_by_type.items()
+            },
+        }
+
         # Apply pagination
         limit_value = filters.limit[0] if filters.limit else 10
         offset_value = filters.offset[0] if filters.offset else 0
@@ -528,6 +558,7 @@ class ProjectsService(OpsService[Project]):
             "count": total_count,
             "limit": limit_value,
             "offset": offset_value,
+            "summary": summary,
         }
 
         return paginated_projects, metadata

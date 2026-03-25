@@ -345,6 +345,76 @@ def test_project_type_filter_single_type(auth_client, loaded_db):
     assert len(response_research.json["data"]) + len(response_admin.json["data"]) == len(response_all.json["data"])
 
 
+def test_projects_get_all_includes_summary(auth_client, loaded_db):
+    """Test that GET /projects/ includes summary with total_projects, projects_by_type, and amounts_by_type."""
+    response = auth_client.get(url_for("api.projects-group"))
+    assert response.status_code == 200
+
+    summary = response.json["summary"]
+    assert "total_projects" in summary
+    assert "projects_by_type" in summary
+    assert "amounts_by_type" in summary
+    assert summary["total_projects"] == response.json["count"]
+
+    # projects_by_type values should sum to total_projects
+    assert sum(summary["projects_by_type"].values()) == summary["total_projects"]
+
+    # All keys should be valid project type names
+    valid_types = {t.name for t in ProjectType}
+    for key in summary["projects_by_type"]:
+        assert key in valid_types
+
+
+def test_projects_summary_with_fiscal_year(auth_client, loaded_db):
+    """Test that summary amounts_by_type reflects FY-specific totals when a fiscal year is specified."""
+    response = auth_client.get(url_for("api.projects-group", fiscal_year=[2023]))
+    assert response.status_code == 200
+
+    summary = response.json["summary"]
+    assert "amounts_by_type" in summary
+    assert summary["total_projects"] == response.json["count"]
+
+
+def test_projects_summary_amounts_by_type_structure(auth_client, loaded_db):
+    """Test that amounts_by_type values contain amount and percent fields."""
+    # With FY (FY-specific amounts)
+    response = auth_client.get(url_for("api.projects-group", fiscal_year=[2023]))
+    summary = response.json["summary"]
+    for entry in summary["amounts_by_type"].values():
+        assert "amount" in entry
+        assert "percent" in entry
+        assert isinstance(entry["amount"], (int, float))
+        assert isinstance(entry["percent"], (int, float))
+
+    # Without FY (lifetime amounts)
+    response = auth_client.get(url_for("api.projects-group"))
+    summary = response.json["summary"]
+    total_percent = 0.0
+    for entry in summary["amounts_by_type"].values():
+        assert isinstance(entry["amount"], (int, float))
+        assert isinstance(entry["percent"], (int, float))
+        total_percent += entry["percent"]
+    # Percentages should sum to 100 (when there are amounts)
+    if total_percent > 0:
+        assert abs(total_percent - 100.0) < 0.5
+
+
+def test_projects_summary_with_project_type_filter(auth_client, loaded_db):
+    """Test that summary projects_by_type has zero for non-filtered type."""
+    response = auth_client.get(
+        url_for("api.projects-group", project_type=[ProjectType.RESEARCH.name], limit=50)
+    )
+    assert response.status_code == 200
+
+    summary = response.json["summary"]
+    # Both types always present
+    assert ProjectType.RESEARCH.name in summary["projects_by_type"]
+    assert ProjectType.ADMINISTRATIVE_AND_SUPPORT.name in summary["projects_by_type"]
+    # Filtered-out type should be 0
+    assert summary["projects_by_type"][ProjectType.ADMINISTRATIVE_AND_SUPPORT.name] == 0
+    assert summary["total_projects"] == summary["projects_by_type"][ProjectType.RESEARCH.name]
+
+
 def test_projects_get_by_id_auth(client):
     response = client.get(url_for("api.projects-item", id="1"))
     assert response.status_code == 401
