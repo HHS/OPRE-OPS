@@ -128,8 +128,8 @@ describe("ProjectDetail", () => {
 
         // Right column fields from the current API response
         expect(screen.getByText("Research")).toBeInTheDocument();
-        expect(screen.getByText("06/13/2043")).toBeInTheDocument();
-        expect(screen.getByText("06/13/2045")).toBeInTheDocument();
+        expect(screen.getByText("6/13/2043")).toBeInTheDocument();
+        expect(screen.getByText("6/13/2045")).toBeInTheDocument();
         expect(screen.getByText("Descriptive Study")).toBeInTheDocument();
         expect(screen.getByText("Special Topic 1")).toBeInTheDocument();
         expect(screen.getByText("Dave Director")).toBeInTheDocument();

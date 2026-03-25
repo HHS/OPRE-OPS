@@ -75,14 +75,25 @@ const ProjectDetailsView = ({ project }) => {
                             />
                         </dd>
 
-                        <dt className="margin-0 text-base-dark margin-top-3">Project Start</dt>
-                        <dd className="margin-0 margin-top-05 wrap-text">
-                            <DateValue value={project.project_start} />
-                        </dd>
-
-                        <dt className="margin-0 text-base-dark margin-top-3">Project End</dt>
-                        <dd className="margin-0 margin-top-05 wrap-text">
-                            <DateValue value={project.project_end} />
+                        <dt className="margin-0 text-base-dark margin-top-3">Project Dates</dt>
+                        <dd className="margin-0 margin-top-1">
+                            <div
+                                className="grid-row grid-gap-4"
+                                style={{ maxWidth: "420px" }}
+                            >
+                                <div className="grid-col">
+                                    <div className="text-base-dark">Project Start</div>
+                                    <div className="margin-top-05 wrap-text">
+                                        <DateValue value={project.project_start} />
+                                    </div>
+                                </div>
+                                <div className="grid-col">
+                                    <div className="text-base-dark">Project End</div>
+                                    <div className="margin-top-05 wrap-text">
+                                        <DateValue value={project.project_end} />
+                                    </div>
+                                </div>
+                            </div>
                         </dd>
 
                         <dt className="margin-0 text-base-dark margin-top-3">Research Methodologies</dt>
