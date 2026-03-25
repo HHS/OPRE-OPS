@@ -1,9 +1,13 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitForElementToBeRemoved } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-import { describe, expect, it, vi } from "vitest";
-import { useGetCanFundingSummaryQuery, useGetCansQuery } from "../../../api/opsAPI";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { cans } from "../../../tests/data";
 import CANTable from "./CANTable";
+
+const { dispatchMock, initiateMock } = vi.hoisted(() => ({
+    dispatchMock: vi.fn(),
+    initiateMock: vi.fn()
+}));
 
 // Mock the PaginationNav component
 vi.mock("../../UI/PaginationNav", () => ({
@@ -14,26 +18,37 @@ vi.mock("../../UI/PaginationNav", () => ({
 vi.mock("../../UI/USWDS/Tooltip", () => ({
     default: ({ children }) => <div data-testid="tooltip">{children}</div>
 }));
-vi.mock("../../../api/opsAPI");
 
-describe("CANTable", () => {
-    useGetCansQuery.mockReturnValue({
-        data: {
-            cans: cans,
-            count: cans.length,
-            limit: 10,
-            offset: 0
-        }
-    });
-    useGetCanFundingSummaryQuery.mockReturnValue({
-        data: {
-            fundingSummary: {
-                available_funding: 1000,
-                received_funding: 500,
-                total_funding: 1500
+vi.mock("react-redux", () => ({
+    useDispatch: () => dispatchMock
+}));
+
+vi.mock("../../../api/opsAPI", () => ({
+    opsApi: {
+        endpoints: {
+            getCanFundingSummary: {
+                initiate: initiateMock
             }
         }
+    }
+}));
+
+describe("CANTable", () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+
+        initiateMock.mockImplementation((args) => args);
+        dispatchMock.mockImplementation(() => ({
+            unwrap: () =>
+                Promise.resolve({
+                    available_funding: 1000,
+                    received_funding: 500,
+                    total_funding: 1500
+                }),
+            unsubscribe: vi.fn()
+        }));
     });
+
     it("renders the table with correct headers", () => {
         render(
             <MemoryRouter>
@@ -49,16 +64,33 @@ describe("CANTable", () => {
         expect(screen.getByText("Available Budget")).toBeInTheDocument();
     });
 
-    it("renders the correct number of rows", () => {
+    it("renders the correct number of rows", async () => {
         render(
             <MemoryRouter>
                 <CANTable cans={cans} />
             </MemoryRouter>
         );
 
+        await waitForElementToBeRemoved(() => screen.queryByRole("table", { name: "Loading CANs" }));
+
         const rows = screen.getAllByRole("row");
         // +1 for the header row
         expect(rows.length).toBe(cans.length + 1);
+    });
+
+    it("keeps the skeleton visible while row funding is loading", () => {
+        dispatchMock.mockImplementation(() => ({
+            unwrap: () => new Promise(() => {}),
+            unsubscribe: vi.fn()
+        }));
+
+        render(
+            <MemoryRouter>
+                <CANTable cans={cans} />
+            </MemoryRouter>
+        );
+
+        expect(screen.getByRole("table", { name: "Loading CANs" })).toBeInTheDocument();
     });
 
     it('displays "No CANs found" when cans array is empty', () => {

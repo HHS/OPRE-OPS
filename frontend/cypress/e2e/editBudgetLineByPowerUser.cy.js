@@ -764,44 +764,25 @@ describe("Power User tests", () => {
         cy.visit("http://localhost:3000/agreements");
         cy.get("#fiscal-year-select").select("2044");
 
-        // Wait until at least one fully loaded row is visible
-        cy.get("tbody tr").should(($rows) => {
-            // At least one row should not have "loading"
-            expect(
-                $rows.filter((i, element) => !element.innerText.toLowerCase().includes("loading")).length
-            ).to.be.greaterThan(0);
-        });
+        cy.get("table[aria-label='Loading agreements']", { timeout: 30000 }).should("not.exist");
+        cy.get("tbody tr", { timeout: 30000 }).should("have.length.greaterThan", 0);
 
-        cy.get("tbody").children().as("table-rows").should("have.length.greaterThan", 0);
+        cy.get("tbody tr")
+            .filter((_, row) => !row.innerText.toLowerCase().includes("loading"))
+            .then(($rows) => {
+                expect($rows.length).to.be.greaterThan(0);
 
-        // Get the total number of rows first
-        cy.get("@table-rows").then(($rows) => {
-            const rowCount = $rows.length;
+                Cypress._.times($rows.length, (i) => {
+                    cy.get("tbody tr")
+                        .filter((_, row) => !row.innerText.toLowerCase().includes("loading"))
+                        .eq(i)
+                        .as(`current-row-${i}`);
 
-            // Check each row by index to avoid DOM detachment issues
-            for (let i = 0; i < rowCount; i++) {
-                // Re-query the table rows each time to avoid stale element references
-                cy.get("tbody").children().eq(i).as(`current-row-${i}`);
-
-                // Skips agreement 1 because it's still loading due to BLIs
-                cy.get(`@current-row-${i}`).then(($row) => {
-                    const rowText = $row.text().toLowerCase();
-
-                    if (rowText.includes("loading")) {
-                        return;
-                    }
-
-                    // Expand the row to reveal edit button
                     cy.get(`@current-row-${i}`).find("[data-cy='expand-row']").should("exist").click();
-
-                    // Check edit button exists and is not disabled
-                    cy.get("[data-cy='edit-row']").should("exist").should("not.be.disabled");
-
-                    // Collapse the row after checking
+                    cy.get("[data-cy='edit-row']").should("exist").and("not.be.disabled");
                     cy.get(`@current-row-${i}`).find("[data-cy='expand-row']").click();
                 });
-            }
-        });
+            });
     });
 });
 

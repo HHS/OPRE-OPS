@@ -6,6 +6,7 @@ import App from "../../../App";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
 import PortfolioTable from "../../../components/Portfolios/PortfolioTable";
+import PortfolioTableLoading from "../../../components/Portfolios/PortfolioTable/PortfolioTableLoading";
 import PortfolioSummaryCards from "../../../components/Portfolios/PortfolioSummaryCards";
 import { exportTableToXlsx } from "../../../helpers/tableExport.helpers";
 import icons from "../../../uswds/img/sprite.svg";
@@ -65,15 +66,6 @@ const PortfolioList = () => {
         }
     }, [isError, navigate]);
 
-    // Handle loading state
-    if (isLoading) {
-        return (
-            <App>
-                <h1>Loading...</h1>
-            </App>
-        );
-    }
-
     if (isError) {
         return null;
     }
@@ -117,7 +109,7 @@ const PortfolioList = () => {
                     />
                 }
                 SummaryCardsSection={
-                    activeTab === "all" ? (
+                    !isLoading && activeTab === "all" ? (
                         <PortfolioSummaryCards
                             fiscalYear={fiscalYear}
                             filteredPortfolios={filteredPortfolios}
@@ -169,13 +161,17 @@ const PortfolioList = () => {
                     />
                 }
                 TableSection={
-                    <PortfolioTable
-                        portfolios={filteredPortfolios}
-                        fiscalYear={fiscalYear}
-                        sortConditions={sortCondition}
-                        sortDescending={sortDescending}
-                        setSortConditions={setSortConditions}
-                    />
+                    isLoading ? (
+                        <PortfolioTableLoading fiscalYear={fiscalYear} />
+                    ) : (
+                        <PortfolioTable
+                            portfolios={filteredPortfolios}
+                            fiscalYear={fiscalYear}
+                            sortConditions={sortCondition}
+                            sortDescending={sortDescending}
+                            setSortConditions={setSortConditions}
+                        />
+                    )
                 }
             />
         </App>
