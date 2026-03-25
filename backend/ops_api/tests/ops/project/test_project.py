@@ -6,15 +6,18 @@ import pytest
 from flask import url_for
 
 from models import (
+    CAN,
     AgreementType,
     BudgetLineItem,
     BudgetLineItemStatus,
     ContractAgreement,
+    Portfolio,
     Project,
     ProjectType,
     ResearchProject,
     ServicesComponent,
 )
+from models.cans import CANFundingBudget, CANFundingDetails
 from models.projects import ResearchType
 from ops_api.ops.services.ops_service import ResourceNotFoundError, ValidationError
 from ops_api.ops.services.projects import ProjectsService
@@ -1274,3 +1277,600 @@ class TestProjectFilterOptions:
         agreement_names = response.json["agreement_names"]
         names = [a for a in agreement_names]
         assert names == sorted(names)
+
+
+# Tests for project_metadata property
+class TestProjectMetadata:
+    """Test the project_metadata property returned via the API."""
+
+    def test_project_metadata_includes_all_fields(self, auth_client, loaded_db, test_project):
+        """Test that project detail endpoint includes all metadata fields from project_metadata."""
+        response = auth_client.get(url_for("api.projects-item", id=test_project.id))
+        assert response.status_code == 200
+
+        project_data = response.json
+
+        # Verify all project_metadata fields are present
+        assert "special_topics" in project_data
+        assert "research_methodologies" in project_data
+        assert "project_start" in project_data
+        assert "project_end" in project_data
+        assert "team_members" in project_data
+        assert "division_directors" in project_data
+
+    def test_project_metadata_field_types(self, auth_client, loaded_db, test_project):
+        """Test that project_metadata fields have correct types in API response."""
+        response = auth_client.get(url_for("api.projects-item", id=test_project.id))
+        assert response.status_code == 200
+
+        project_data = response.json
+
+        # Verify types
+        assert isinstance(project_data["special_topics"], list)
+        assert isinstance(project_data["research_methodologies"], list)
+        assert isinstance(project_data["team_members"], list)
+        assert isinstance(project_data["division_directors"], list)
+        # Dates can be strings or None
+        assert project_data["project_start"] is None or isinstance(project_data["project_start"], str)
+        assert project_data["project_end"] is None or isinstance(project_data["project_end"], str)
+
+    def test_special_topics_aggregation(self, auth_client, loaded_db, test_project):
+        """Test that special_topics aggregates unique topics from all agreements."""
+        from models import SpecialTopic
+
+        # Get or create special topics
+        topic1 = loaded_db.query(SpecialTopic).filter(SpecialTopic.name == "Child Welfare").first()
+        topic2 = loaded_db.query(SpecialTopic).filter(SpecialTopic.name == "Early Care and Education").first()
+
+        if not topic1:
+            topic1 = SpecialTopic(name="Child Welfare")
+            loaded_db.add(topic1)
+        if not topic2:
+            topic2 = SpecialTopic(name="Early Care and Education")
+            loaded_db.add(topic2)
+        loaded_db.commit()
+
+        # Add special topics to the first agreement
+        agreement1 = test_project.agreements[0]
+        agreement1.special_topics.append(topic1)
+
+        # Create a second agreement with overlapping and unique topics
+        agreement2 = ContractAgreement(
+            name="Second Agreement for Topics",
+            project_id=test_project.id,
+        )
+        loaded_db.add(agreement2)
+        loaded_db.commit()
+
+        agreement2.special_topics.append(topic1)  # Duplicate
+        agreement2.special_topics.append(topic2)  # Unique
+        loaded_db.commit()
+
+        # Call API
+        response = auth_client.get(url_for("api.projects-item", id=test_project.id))
+        assert response.status_code == 200
+
+        special_topics = response.json["special_topics"]
+
+        # Should contain unique topics
+        assert isinstance(special_topics, list)
+        assert "Child Welfare" in special_topics
+        assert "Early Care and Education" in special_topics
+        # Each topic should appear only once
+        assert special_topics.count("Child Welfare") == 1
+        assert special_topics.count("Early Care and Education") == 1
+
+    def test_research_methodologies_aggregation(self, auth_client, loaded_db, test_project):
+        """Test that research_methodologies aggregates unique methodologies from all agreements."""
+        from models import ResearchMethodology
+
+        # Get or create research methodologies
+        method1 = loaded_db.query(ResearchMethodology).filter(ResearchMethodology.name == "Survey").first()
+        method2 = loaded_db.query(ResearchMethodology).filter(ResearchMethodology.name == "Field Study").first()
+
+        if not method1:
+            method1 = ResearchMethodology(name="Survey")
+            loaded_db.add(method1)
+        if not method2:
+            method2 = ResearchMethodology(name="Field Study")
+            loaded_db.add(method2)
+        loaded_db.commit()
+
+        # Add methodologies to the first agreement
+        agreement1 = test_project.agreements[0]
+        agreement1.research_methodologies.append(method1)
+
+        # Create a second agreement with overlapping and unique methodologies
+        agreement2 = ContractAgreement(
+            name="Second Agreement for Methodologies",
+            project_id=test_project.id,
+        )
+        loaded_db.add(agreement2)
+        loaded_db.commit()
+
+        agreement2.research_methodologies.append(method1)  # Duplicate
+        agreement2.research_methodologies.append(method2)  # Unique
+        loaded_db.commit()
+
+        # Call API
+        response = auth_client.get(url_for("api.projects-item", id=test_project.id))
+        assert response.status_code == 200
+
+        methodologies = response.json["research_methodologies"]
+
+        # Should contain unique methodologies
+        assert isinstance(methodologies, list)
+        assert "Survey" in methodologies
+        assert "Field Study" in methodologies
+        # Each methodology should appear only once
+        assert methodologies.count("Survey") == 1
+        assert methodologies.count("Field Study") == 1
+
+    def test_project_dates_from_services_components(self, auth_client, loaded_db):
+        """Test that project_start and project_end are calculated from services components."""
+        from models import ServicesComponent
+
+        # Create a test project
+        project = ResearchProject(
+            project_type=ProjectType.RESEARCH,
+            title="Test Project Dates",
+            short_title="TPD",
+        )
+        loaded_db.add(project)
+        loaded_db.commit()
+
+        # Create an agreement for the project
+        agreement = ContractAgreement(
+            name="Test Agreement for Dates",
+            project_id=project.id,
+        )
+        loaded_db.add(agreement)
+        loaded_db.commit()
+
+        # Add services components with different date ranges
+        sc1 = ServicesComponent(
+            agreement_id=agreement.id,
+            period_start=date.fromisoformat("2023-01-15"),
+            period_end=date.fromisoformat("2023-06-30"),
+            number=31,
+        )
+        sc2 = ServicesComponent(
+            agreement_id=agreement.id,
+            period_start=date.fromisoformat("2022-10-01"),  # Earliest
+            period_end=date.fromisoformat("2023-03-31"),
+            number=32,
+        )
+        sc3 = ServicesComponent(
+            agreement_id=agreement.id,
+            period_start=date.fromisoformat("2023-07-01"),
+            period_end=date.fromisoformat("2024-12-31"),  # Latest
+            number=33,
+        )
+        loaded_db.add_all([sc1, sc2, sc3])
+        loaded_db.commit()
+
+        # Call API
+        response = auth_client.get(url_for("api.projects-item", id=project.id))
+        assert response.status_code == 200
+
+        project_data = response.json
+
+        # project_start should be earliest period_start
+        assert project_data["project_start"] == "2022-10-01"
+
+        # project_end should be latest period_end
+        assert project_data["project_end"] == "2024-12-31"
+
+    def test_project_dates_none_when_no_services_components(self, auth_client, loaded_db, project_with_no_agreements):
+        """Test that project_start and project_end are None when there are no services components."""
+        # Call API
+        response = auth_client.get(url_for("api.projects-item", id=project_with_no_agreements.id))
+        assert response.status_code == 200
+
+        project_data = response.json
+
+        assert project_data["project_start"] is None
+        assert project_data["project_end"] is None
+
+    def test_team_members_aggregation(self, auth_client, loaded_db):
+        """Test that team_members aggregates unique team members from all agreements."""
+        from models import User
+
+        # Create a new project
+        project = ResearchProject(
+            project_type=ProjectType.RESEARCH,
+            title="Team Members Aggregation Test Project",
+            short_title="TMATP",
+            description="Test project for team members aggregation",
+        )
+        loaded_db.add(project)
+        loaded_db.commit()
+
+        # Get test users
+        user1 = loaded_db.get(User, 500)
+        user2 = loaded_db.get(User, 501)
+        user3 = loaded_db.get(User, 502)
+
+        # Create first agreement with team members
+        agreement1 = ContractAgreement(
+            name="First Agreement for Team",
+            project_id=project.id,
+        )
+        loaded_db.add(agreement1)
+        loaded_db.commit()
+
+        agreement1.team_members.append(user1)
+        agreement1.team_members.append(user2)
+
+        # Create a second agreement with overlapping and unique team members
+        agreement2 = ContractAgreement(
+            name="Second Agreement for Team",
+            project_id=project.id,
+        )
+        loaded_db.add(agreement2)
+        loaded_db.commit()
+
+        agreement2.team_members.append(user2)  # Duplicate
+        agreement2.team_members.append(user3)  # Unique
+        loaded_db.commit()
+
+        # Call API
+        response = auth_client.get(url_for("api.projects-item", id=project.id))
+        assert response.status_code == 200
+
+        team_members = response.json["team_members"]
+
+        # Should be a list with unique team members
+        assert isinstance(team_members, list)
+        assert len(team_members) == 3  # 3 unique team members
+
+        team_member_ids = [tm["id"] for tm in team_members]
+        assert 500 in team_member_ids
+        assert 501 in team_member_ids
+        assert 502 in team_member_ids
+
+        # Verify each team member has expected fields
+        for tm in team_members:
+            assert "id" in tm
+            assert "full_name" in tm
+
+    def test_division_directors_aggregation(self, auth_client, loaded_db, test_project):
+        """Test that division_directors aggregates unique division directors from all agreements."""
+        # Get a CAN with a division director
+        can = loaded_db.get(CAN, 500)
+
+        # Create BLIs associated with agreements to get division directors
+        agreement1 = test_project.agreements[0]
+
+        bli1 = BudgetLineItem(
+            budget_line_item_type=AgreementType.CONTRACT,
+            agreement_id=agreement1.id,
+            can_id=can.id,
+            amount=Decimal("1000.00"),
+            date_needed=date.fromisoformat("2023-03-15"),
+            status=BudgetLineItemStatus.PLANNED,
+        )
+        loaded_db.add(bli1)
+        loaded_db.commit()
+
+        # Call API
+        response = auth_client.get(url_for("api.projects-item", id=test_project.id))
+        assert response.status_code == 200
+
+        division_directors = response.json["division_directors"]
+
+        # Should be a list of unique division director names
+        assert isinstance(division_directors, list)
+        assert len(division_directors) > 0
+        # Each director should be a string (full name)
+        for director in division_directors:
+            assert isinstance(director, str)
+
+    def test_empty_metadata_when_no_agreements(self, auth_client, loaded_db, project_with_no_agreements):
+        """Test that project_metadata returns empty collections when project has no agreements."""
+        # Call API
+        response = auth_client.get(url_for("api.projects-item", id=project_with_no_agreements.id))
+        assert response.status_code == 200
+
+        project_data = response.json
+
+        assert isinstance(project_data["special_topics"], list)
+        assert len(project_data["special_topics"]) == 0
+
+        assert isinstance(project_data["research_methodologies"], list)
+        assert len(project_data["research_methodologies"]) == 0
+
+        assert project_data["project_start"] is None
+        assert project_data["project_end"] is None
+
+        assert isinstance(project_data["team_members"], list)
+        assert len(project_data["team_members"]) == 0
+
+        assert isinstance(project_data["division_directors"], list)
+        assert len(project_data["division_directors"]) == 0
+
+    def test_team_members_no_duplicates(self, auth_client, loaded_db):
+        """Test that team_members list contains no duplicate users."""
+        from models import User
+
+        # Create a new project
+        project = ResearchProject(
+            project_type=ProjectType.RESEARCH,
+            title="Team Members No Duplicates Test Project",
+            short_title="TMNDTP",
+            description="Test project for team members deduplication",
+        )
+        loaded_db.add(project)
+        loaded_db.commit()
+
+        user1 = loaded_db.get(User, 500)
+        user2 = loaded_db.get(User, 501)
+
+        # Create first agreement with team members
+        agreement1 = ContractAgreement(
+            name="First Duplicate Team Test",
+            project_id=project.id,
+        )
+        loaded_db.add(agreement1)
+        loaded_db.commit()
+
+        agreement1.team_members.append(user1)
+        agreement1.team_members.append(user2)
+
+        # Create second agreement with same team members
+        agreement2 = ContractAgreement(
+            name="Second Duplicate Team Test",
+            project_id=project.id,
+        )
+        loaded_db.add(agreement2)
+        loaded_db.commit()
+
+        agreement2.team_members.append(user1)  # Same as agreement1
+        agreement2.team_members.append(user2)  # Same as agreement1
+        loaded_db.commit()
+
+        # Call API
+        response = auth_client.get(url_for("api.projects-item", id=project.id))
+        assert response.status_code == 200
+
+        team_members = response.json["team_members"]
+        team_member_ids = [tm["id"] for tm in team_members]
+
+        # Each user should appear only once
+        assert len(team_members) == 2
+        assert team_member_ids.count(500) == 1
+        assert team_member_ids.count(501) == 1
+
+
+class TestProjectFunding:
+    """Tests for the get_project_funding method and /projects/{id}/funding/ endpoint."""
+
+    @pytest.fixture
+    def funding_test_data(self, loaded_db):
+        """Create a project with two CANs in different portfolios, with funding budgets."""
+        portfolio_1 = loaded_db.get(Portfolio, 1)
+        portfolio_6 = loaded_db.get(Portfolio, 6)
+        unique = uuid.uuid4().hex[:8]
+
+        # CAN 1: 1-year CAN in portfolio 1, appropriation year 2025
+        # fund_code position 10 = "1" (1-year active period)
+        can1_details = CANFundingDetails(fiscal_year=2025, fund_code="AAXXXX20251DAD")
+        loaded_db.add(can1_details)
+        loaded_db.flush()
+
+        can1 = CAN(number=f"G99A{unique}", portfolio_id=portfolio_1.id)
+        can1.funding_details = can1_details
+        loaded_db.add(can1)
+        loaded_db.flush()
+
+        can1_budget_2025 = CANFundingBudget(can_id=can1.id, fiscal_year=2025, budget=Decimal("1000000.00"))
+        loaded_db.add(can1_budget_2025)
+
+        # CAN 2: 5-year CAN in portfolio 6, appropriation year 2022
+        # fund_code position 10 = "5" (5-year active period)
+        can2_details = CANFundingDetails(fiscal_year=2022, fund_code="BBXXXX20225DAD")
+        loaded_db.add(can2_details)
+        loaded_db.flush()
+
+        can2 = CAN(number=f"G99B{unique}", portfolio_id=portfolio_6.id)
+        can2.funding_details = can2_details
+        loaded_db.add(can2)
+        loaded_db.flush()
+
+        can2_budget_2022 = CANFundingBudget(can_id=can2.id, fiscal_year=2022, budget=Decimal("500000.00"))
+        can2_budget_2025 = CANFundingBudget(can_id=can2.id, fiscal_year=2025, budget=Decimal("300000.00"))
+        loaded_db.add_all([can2_budget_2022, can2_budget_2025])
+
+        # Project with agreement and BLIs referencing both CANs
+        project = ResearchProject(
+            title=f"Funding Test Project {unique}",
+            short_title="FTP",
+            description="Project for testing funding calculations",
+        )
+        loaded_db.add(project)
+        loaded_db.flush()
+
+        agreement = ContractAgreement(name=f"Funding Test Agreement {unique}", project_id=project.id)
+        loaded_db.add(agreement)
+        loaded_db.flush()
+
+        bli1 = BudgetLineItem(
+            budget_line_item_type=AgreementType.CONTRACT,
+            agreement_id=agreement.id,
+            can_id=can1.id,
+            amount=Decimal("100000.00"),
+            status=BudgetLineItemStatus.PLANNED,
+            date_needed=date(2025, 3, 15),
+        )
+        bli2 = BudgetLineItem(
+            budget_line_item_type=AgreementType.CONTRACT,
+            agreement_id=agreement.id,
+            can_id=can2.id,
+            amount=Decimal("50000.00"),
+            status=BudgetLineItemStatus.OBLIGATED,
+            date_needed=date(2025, 6, 1),
+        )
+        loaded_db.add_all([bli1, bli2])
+        loaded_db.commit()
+
+        return {
+            "project": project,
+            "can1": can1,
+            "can2": can2,
+            "portfolio_1": portfolio_1,
+            "portfolio_6": portfolio_6,
+        }
+
+    def test_get_project_funding_empty_project(self, loaded_db):
+        """A project with no agreements returns empty/zero results."""
+        project = ResearchProject(
+            title="Empty Funding Project",
+            short_title="EFP",
+            description="No agreements",
+        )
+        loaded_db.add(project)
+        loaded_db.commit()
+
+        result = project.get_project_funding(2025)
+
+        assert result["funding_by_portfolio"] == []
+        assert result["funding_by_can"] == {"total": 0.0, "carry_forward_funding": 0.0, "new_funding": 0.0}
+        assert result["funding_by_fiscal_year"] == []
+        assert result["cans"] == []
+
+    def test_get_project_funding_by_portfolio(self, loaded_db, funding_test_data):
+        """funding_by_portfolio groups CANFundingBudget by CAN portfolio for the given FY."""
+        project = funding_test_data["project"]
+        result = project.get_project_funding(2025)
+
+        by_portfolio = {item["portfolio_id"]: item for item in result["funding_by_portfolio"]}
+
+        # Portfolio 1: CAN1 has $1,000,000 budget in FY 2025
+        p1 = by_portfolio[funding_test_data["portfolio_1"].id]
+        assert p1["amount"] == 1000000.00
+        assert p1["portfolio"] == funding_test_data["portfolio_1"].name
+
+        # Portfolio 6: CAN2 has $300,000 budget in FY 2025
+        p6 = by_portfolio[funding_test_data["portfolio_6"].id]
+        assert p6["amount"] == 300000.00
+        assert p6["portfolio"] == funding_test_data["portfolio_6"].name
+
+    def test_get_project_funding_by_can_classification(self, loaded_db, funding_test_data):
+        """funding_by_can correctly classifies carry-forward vs new funding."""
+        project = funding_test_data["project"]
+        result = project.get_project_funding(2025)
+
+        funding_by_can = result["funding_by_can"]
+
+        # CAN1: 1-year CAN → all budget is new_funding ($1,000,000)
+        # CAN2: 5-year CAN, appropriation year 2022, querying FY 2025 → carry_forward ($300,000)
+        assert funding_by_can["new_funding"] == 1000000.00
+        assert funding_by_can["carry_forward_funding"] == 300000.00
+        assert funding_by_can["total"] == 1300000.00
+
+    def test_get_project_funding_by_fiscal_year_all_years(self, loaded_db, funding_test_data):
+        """funding_by_fiscal_year returns all years, not filtered by the parameter."""
+        project = funding_test_data["project"]
+        result = project.get_project_funding(2025)
+
+        by_fy = {item["fiscal_year"]: item["amount"] for item in result["funding_by_fiscal_year"]}
+
+        # CAN1: $1,000,000 in FY 2025
+        # CAN2: $500,000 in FY 2022, $300,000 in FY 2025
+        assert by_fy[2022] == 500000.00
+        assert by_fy[2025] == 1300000.00  # 1,000,000 + 300,000
+
+    def test_get_project_funding_by_fiscal_year_sorted(self, loaded_db, funding_test_data):
+        """funding_by_fiscal_year is sorted by fiscal year ascending."""
+        project = funding_test_data["project"]
+        result = project.get_project_funding(2025)
+
+        fiscal_years = [item["fiscal_year"] for item in result["funding_by_fiscal_year"]]
+        assert fiscal_years == sorted(fiscal_years)
+
+    def test_get_project_funding_cans_detail(self, loaded_db, funding_test_data):
+        """cans list returns per-CAN detail with fy_funding and lifetime_funding."""
+        project = funding_test_data["project"]
+        can1 = funding_test_data["can1"]
+        can2 = funding_test_data["can2"]
+        result = project.get_project_funding(2025)
+
+        cans_by_id = {c["id"]: c for c in result["cans"]}
+
+        # CAN1: 1-year, FY 2025 budget = $1,000,000, lifetime = $1,000,000
+        c1 = cans_by_id[can1.id]
+        assert c1["number"] == can1.number
+        assert c1["portfolio_id"] == funding_test_data["portfolio_1"].id
+        assert c1["active_period"] == 1
+        assert c1["fy_funding"] == 1000000.00
+        assert c1["lifetime_funding"] == 1000000.00
+
+        # CAN2: 5-year, FY 2025 budget = $300,000, lifetime = $500,000 + $300,000 = $800,000
+        c2 = cans_by_id[can2.id]
+        assert c2["number"] == can2.number
+        assert c2["portfolio_id"] == funding_test_data["portfolio_6"].id
+        assert c2["active_period"] == 5
+        assert c2["fy_funding"] == 300000.00
+        assert c2["lifetime_funding"] == 800000.00
+
+    def test_get_project_funding_cans_sorted_by_id(self, loaded_db, funding_test_data):
+        """cans list is sorted by CAN id."""
+        project = funding_test_data["project"]
+        result = project.get_project_funding(2025)
+
+        can_ids = [c["id"] for c in result["cans"]]
+        assert can_ids == sorted(can_ids)
+
+    def test_get_project_funding_different_fiscal_year(self, loaded_db, funding_test_data):
+        """Querying a different FY scopes fy_funding and carry-forward classification."""
+        project = funding_test_data["project"]
+        result = project.get_project_funding(2022)
+
+        # FY 2022: CAN1 has no budget, CAN2 has $500,000
+        funding_by_can = result["funding_by_can"]
+        # CAN2: 5-year, appropriation year 2022, querying FY 2022 → new_funding
+        assert funding_by_can["new_funding"] == 500000.00
+        assert funding_by_can["carry_forward_funding"] == 0.0
+        assert funding_by_can["total"] == 500000.00
+
+        # fy_funding scoped to FY 2022
+        cans_by_id = {c["id"]: c for c in result["cans"]}
+        assert cans_by_id[funding_test_data["can1"].id]["fy_funding"] == 0.0
+        assert cans_by_id[funding_test_data["can2"].id]["fy_funding"] == 500000.00
+
+    def test_get_project_funding_endpoint(self, auth_client, loaded_db, funding_test_data):
+        """GET /projects/{id}/funding/ returns 200 with correct schema structure."""
+        project = funding_test_data["project"]
+        response = auth_client.get(url_for("api.projects-funding", id=project.id, fiscal_year=2025))
+        assert response.status_code == 200
+
+        data = response.json
+        assert "funding_by_portfolio" in data
+        assert "funding_by_can" in data
+        assert "funding_by_fiscal_year" in data
+        assert "cans" in data
+
+        # Verify funding_by_can structure
+        assert "total" in data["funding_by_can"]
+        assert "carry_forward_funding" in data["funding_by_can"]
+        assert "new_funding" in data["funding_by_can"]
+
+        # Verify cans structure
+        assert len(data["cans"]) == 2
+        can_keys = {"id", "number", "portfolio_id", "portfolio", "active_period", "fy_funding", "lifetime_funding"}
+        for can in data["cans"]:
+            assert set(can.keys()) == can_keys
+
+    def test_get_project_funding_endpoint_with_fiscal_year_param(self, auth_client, loaded_db, funding_test_data):
+        """Endpoint accepts fiscal_year query param and scopes results."""
+        project = funding_test_data["project"]
+        response = auth_client.get(url_for("api.projects-funding", id=project.id, fiscal_year=2022))
+        assert response.status_code == 200
+
+        data = response.json
+        assert data["funding_by_can"]["total"] == 500000.00
+
+    def test_get_project_funding_endpoint_404(self, auth_client, loaded_db):
+        """GET /projects/{id}/funding/ returns 404 for non-existent project."""
+        response = auth_client.get(url_for("api.projects-funding", id=999999, fiscal_year=2025))
+        assert response.status_code == 404

@@ -44,7 +44,7 @@ import { IS_PROJECTS_LIST_READY, IS_PROJECT_DETAIL_READY } from "./constants";
 import "./uswds/css/styles.css";
 import ProcurementDashboard from "./pages/procurementDashboard/ProcurementDashboardPage";
 
-// Cross-platform font rendering fixes (loaded after USWDS)
+// Cross-platform typography fixes (loaded after USWDS)
 import "./index.css";
 
 // NOTE: Uncomment the following line to include the USWDS JavaScript but breaks DatePicker

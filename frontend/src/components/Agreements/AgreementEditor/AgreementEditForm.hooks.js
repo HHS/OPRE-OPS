@@ -123,7 +123,7 @@ const useAgreementEditForm = (
     } = agreement;
 
     const {
-        data: projects = [],
+        data: projectsResponse,
         error: errorProjects,
         isLoading: isLoadingProjects
     } = useGetProjectsQuery(
@@ -132,6 +132,8 @@ const useAgreementEditForm = (
             skip: isWizardMode
         }
     );
+
+    const projects = projectsResponse?.projects ?? [];
 
     const {
         data: productServiceCodes = [],

@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useSelector } from "react-redux";
-import PacmanLoader from "react-spinners/PacmanLoader";
+import { PacmanLoader } from "react-spinners";
 import App from "../../../App";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";

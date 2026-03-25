@@ -236,6 +236,9 @@ class ProjectsService(OpsService[Project]):
             .options(
                 selectinload(ResearchProject.agreements).selectinload(Agreement.services_components),
                 selectinload(ResearchProject.agreements).selectinload(Agreement.budget_line_items),
+                selectinload(ResearchProject.agreements).selectinload(Agreement.special_topics),
+                selectinload(ResearchProject.agreements).selectinload(Agreement.research_methodologies),
+                selectinload(ResearchProject.agreements).selectinload(Agreement.team_members),
             )
         )
 
@@ -298,8 +301,11 @@ class ProjectsService(OpsService[Project]):
             .join(CANFundingDetails, isouter=True)
             .join(CANFundingBudget, isouter=True)
             .options(
-                selectinload(AdministrativeAndSupportProject.agreements).selectinload(Agreement.services_components),
-                selectinload(AdministrativeAndSupportProject.agreements).selectinload(Agreement.budget_line_items),
+                selectinload(ResearchProject.agreements).selectinload(Agreement.services_components),
+                selectinload(ResearchProject.agreements).selectinload(Agreement.budget_line_items),
+                selectinload(ResearchProject.agreements).selectinload(Agreement.special_topics),
+                selectinload(ResearchProject.agreements).selectinload(Agreement.research_methodologies),
+                selectinload(ResearchProject.agreements).selectinload(Agreement.team_members),
             )
         )
 
@@ -361,6 +367,40 @@ class ProjectsService(OpsService[Project]):
         if not project:
             raise ResourceNotFoundError("Project", id)
         return project
+
+    def get_project_funding(self, id: int, fiscal_year: int) -> dict:
+        """
+        Get funding summary for a project, with relationships eager-loaded to prevent N+1 queries.
+
+        Args:
+            id: Project ID
+            fiscal_year: Fiscal year to scope carry-forward/new classification and FY-specific funding.
+
+        Returns:
+            Dict with funding_by_portfolio, funding_by_can, funding_by_fiscal_year, and cans.
+
+        Raises:
+            ResourceNotFoundError: If the project doesn't exist.
+        """
+        stmt = (
+            select(Project)
+            .where(Project.id == id)
+            .options(
+                selectinload(Project.agreements)
+                .selectinload(Agreement.budget_line_items)
+                .selectinload(BudgetLineItem.can)
+                .options(
+                    selectinload(CAN.funding_budgets),
+                    selectinload(CAN.funding_details),
+                    selectinload(CAN.portfolio),
+                )
+            )
+        )
+        project = self.db_session.scalar(stmt)
+        if not project:
+            raise ResourceNotFoundError("Project", id)
+
+        return project.get_project_funding(fiscal_year)
 
     @staticmethod
     def _get_project_sort_key(
@@ -530,7 +570,7 @@ class ProjectsService(OpsService[Project]):
             .where(Project.id.in_(project_ids_subquery))
         )
         portfolios = [{"id": p_id, "name": p_name} for p_id, p_name in self.db_session.execute(portfolios_query).all()]
-        portfolios = sorted(portfolios, key=lambda x: x["name"])
+        portfolios = sorted(portfolios, key=lambda x: x["name"] if x["name"] else "")
 
         # Step 4: Project titles
         projects_query = select(distinct(Project.id), Project.title).where(Project.title.isnot(None))

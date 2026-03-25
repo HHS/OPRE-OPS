@@ -4,11 +4,14 @@ from typing_extensions import List
 from models import AdministrativeAndSupportProject, Project, ProjectType, ResearchProject
 from models.base import BaseModel
 from models.events import OpsEventType
+from models.utils.fiscal_year import get_current_fiscal_year
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.schemas.projects import (
     ProjectCreationRequestSchema,
+    ProjectFundingRequestSchema,
+    ProjectFundingResponseSchema,
     ProjectListFilterOptionResponseSchema,
     ProjectListGetRequestSchema,
     ProjectListResponse,
@@ -117,3 +120,20 @@ class ProjectListFilterOptionAPI(BaseItemAPI):
         serialized_filters = schema.dump(filters)
         # The service already returns a dict in the correct format, so we can return it directly
         return make_response_with_headers(serialized_filters)
+
+
+class ProjectFundingAPI(BaseItemAPI):
+    def __init__(self, model: BaseModel = Project):
+        super().__init__(model)
+
+    @is_authorized(PermissionType.GET, Permission.RESEARCH_PROJECT)
+    def get(self, id: int) -> Response:
+        request_schema = ProjectFundingRequestSchema()
+        data = request_schema.load(request.args.to_dict())
+        fiscal_year = data.get("fiscal_year") or get_current_fiscal_year()
+
+        service = ProjectsService(current_app.db_session)
+        funding = service.get_project_funding(id, fiscal_year)
+
+        response_schema = ProjectFundingResponseSchema()
+        return make_response_with_headers(response_schema.dump(funding))
