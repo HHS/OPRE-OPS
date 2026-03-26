@@ -2,15 +2,17 @@
 import { terminalLog, testLogin } from "./utils";
 
 const validateBudgetColumn = (expectedValues, columnIndex = 6) => {
-    cy.get("tbody tr").each(($row, index) => {
-        cy.wrap($row)
-            .find("td")
-            .eq(columnIndex)
-            .invoke("text")
-            .then((text) => {
-                const cleanedText = text.trim();
-                expect(cleanedText).to.equal(expectedValues[index]);
-            });
+    cy.get("body").then(($body) => {
+        if ($body.find('table[aria-label="Loading CANs"]').length > 0) {
+            cy.get('table[aria-label="Loading CANs"]').should("not.exist");
+        }
+    });
+
+    cy.get("tbody tr").should("have.length", expectedValues.length);
+
+    cy.get(`tbody tr td:nth-child(${columnIndex + 1})`).should(($cells) => {
+        const cleanedValues = [...$cells].map((cell) => cell.textContent.trim());
+        expect(cleanedValues).to.deep.equal(expectedValues);
     });
 };
 

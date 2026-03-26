@@ -9,6 +9,7 @@ import { opsApi } from "../../../api/opsAPI";
 
 const mockNavigate = vi.fn();
 const mockUseGetProjectsQuery = vi.fn();
+const mockLazyTrigger = vi.fn().mockReturnValue({ unwrap: () => Promise.resolve({ projects: [] }) });
 
 vi.mock("react-router-dom", async () => {
     const actual = await vi.importActual("react-router-dom");
@@ -22,7 +23,8 @@ vi.mock("../../../api/opsAPI", async () => {
     const actual = await vi.importActual("../../../api/opsAPI");
     return {
         ...actual,
-        useGetProjectsQuery: (args) => mockUseGetProjectsQuery(args)
+        useGetProjectsQuery: (args) => mockUseGetProjectsQuery(args),
+        useLazyGetProjectsQuery: () => [mockLazyTrigger]
     };
 });
 
@@ -353,5 +355,29 @@ describe("ProjectsList", () => {
         await waitFor(() => {
             expect(mockNavigate).toHaveBeenCalledWith("/error");
         });
+    });
+
+    it("renders the Export button when there are projects", () => {
+        mockUseGetProjectsQuery.mockReturnValue({
+            data: { projects: [MOCK_PROJECT_1], count: 1, limit: 10, offset: 0 },
+            isLoading: false,
+            isError: false
+        });
+
+        renderComponent();
+
+        expect(screen.getByText("Export")).toBeInTheDocument();
+    });
+
+    it("does not render the Export button when there are zero projects", () => {
+        mockUseGetProjectsQuery.mockReturnValue({
+            data: { projects: [], count: 0, limit: 10, offset: 0 },
+            isLoading: false,
+            isError: false
+        });
+
+        renderComponent();
+
+        expect(screen.queryByText("Export")).not.toBeInTheDocument();
     });
 });

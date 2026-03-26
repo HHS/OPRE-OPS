@@ -462,7 +462,8 @@ export const opsApi = createApi({
                         projects: response.data,
                         count: response.count,
                         limit: response.limit,
-                        offset: response.offset
+                        offset: response.offset,
+                        summary: response.summary
                     };
                 }
                 // Legacy array format (no wrapper) - for backward compatibility during transition
@@ -1072,6 +1073,7 @@ export const {
     useLazyGetUserByIdQuery,
     useGetUserByOIDCIdQuery,
     useGetProjectsQuery,
+    useLazyGetProjectsQuery,
     useGetProjectByIdQuery,
     useGetProjectsByPortfolioQuery,
     useGetResearchProjectsQuery,

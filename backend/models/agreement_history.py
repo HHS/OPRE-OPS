@@ -733,6 +733,26 @@ def create_agreement_update_history_event(
                     timestamp=updated_on,
                     history_type=AgreementHistoryType.AGREEMENT_UPDATED,
                 )
+            case "date_awarded_obligated":
+                old_date = "None"
+                new_date = "None"
+                if old_value:
+                    old_date = datetime.strftime(datetime.strptime(old_value, "%Y-%m-%d"), "%m/%d/%Y")
+                if new_value:
+                    new_date = datetime.strftime(datetime.strptime(new_value, "%Y-%m-%d"), "%m/%d/%Y")
+                return AgreementHistory(
+                    agreement_id=get_agreement_id_from_agreement(agreement),
+                    agreement_id_record=agreement_id,
+                    ops_event_id=ops_event_id,
+                    history_title="Change to Award Date",
+                    history_message=(
+                        f"Changes made to the OPRE budget spreadsheet changed the Award Date from {old_date} to {new_date}."
+                        if updated_by_system_user
+                        else f"{updated_by_user.full_name} changed the Award Date from {old_date} to {new_date}."
+                    ),
+                    timestamp=updated_on,
+                    history_type=AgreementHistoryType.AGREEMENT_UPDATED,
+                )
             case "agreement_reason":
                 old_value_str = fix_stringified_enum_values(old_value)
                 new_value_str = fix_stringified_enum_values(new_value)

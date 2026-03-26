@@ -8,6 +8,7 @@ import {
     useLazyGetServicesComponentByIdQuery
 } from "../../../api/opsAPI";
 import AllBudgetLinesTable from "../../../components/BudgetLineItems/AllBudgetLinesTable";
+import AllBudgetLinesTableLoading from "../../../components/BudgetLineItems/AllBudgetLinesTable/AllBudgetLinesTableLoading";
 import SummaryCardsSection from "../../../components/BudgetLineItems/SummaryCardsSection";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
@@ -114,7 +115,8 @@ const BudgetLineItemList = () => {
     const {
         data: budgetLineItems,
         isError: budgetLineItemsError,
-        isLoading: budgetLineItemsIsLoading
+        isLoading: budgetLineItemsIsLoading,
+        isFetching: budgetLineItemsIsFetching
     } = useGetBudgetLineItemsQuery({
         filters: resolvedFilters,
         page: currentPage - 1,
@@ -130,18 +132,12 @@ const BudgetLineItemList = () => {
     const [serviceComponentTrigger] = useLazyGetServicesComponentByIdQuery();
     const [budgetLineTrigger] = useLazyGetBudgetLineItemsQuery();
     const [portfolioTrigger] = useLazyGetPortfolioByIdQuery();
+    const isTableLoading = budgetLineItemsIsLoading || budgetLineItemsIsFetching;
 
     useEffect(() => {
         setCurrentPage(1);
     }, [filters]);
 
-    if (budgetLineItemsIsLoading) {
-        return (
-            <App>
-                <h1>Loading...</h1>
-            </App>
-        );
-    }
     if (budgetLineItemsError) {
         return (
             <App>
@@ -177,7 +173,9 @@ const BudgetLineItemList = () => {
                     />
                 }
                 TableSection={
-                    <>
+                    isTableLoading ? (
+                        <AllBudgetLinesTableLoading />
+                    ) : (
                         <AllBudgetLinesTable
                             currentPage={currentPage}
                             setCurrentPage={setCurrentPage}
@@ -188,7 +186,7 @@ const BudgetLineItemList = () => {
                             sortDescending={sortDescending}
                             setSortConditions={setSortConditions}
                         />
-                    </>
+                    )
                 }
                 FilterButton={
                     <>
@@ -239,6 +237,7 @@ const BudgetLineItemList = () => {
                     />
                 }
                 SummaryCardsSection={
+                    !isTableLoading &&
                     budgetLineItems &&
                     budgetLineItems?.length > 0 && (
                         <SummaryCardsSection
