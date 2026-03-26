@@ -50,6 +50,15 @@ def cleanup(loaded_db, context):
         _delete_entity(loaded_db, context, "budget_line_item", "budget_line_item")
         _delete_entity(loaded_db, context, "procurement_tracker_step", "procurement_tracker_step")
 
+        # Delete CAN and its related records
+        if "can" in context and context["can"].id is not None:
+            can_id = context["can"].id
+            if isinstance(can_id, int):
+                loaded_db.execute(text("DELETE FROM can_funding_received WHERE can_id = :id"), {"id": can_id})
+                loaded_db.execute(text("DELETE FROM can_funding_budget WHERE can_id = :id"), {"id": can_id})
+                loaded_db.execute(text("DELETE FROM can_funding_details WHERE id = (SELECT funding_details_id FROM can WHERE id = :id)"), {"id": can_id})
+                loaded_db.execute(text("DELETE FROM can WHERE id = :id"), {"id": can_id})
+
         # Delete ProcurementTracker (joined-table inheritance)
         if "procurement_tracker" in context and context["procurement_tracker"].id is not None:
             tracker_id = context["procurement_tracker"].id
@@ -297,7 +306,27 @@ def agreement_without_ops_user(bdd_client, test_non_admin_user, loaded_db, conte
 
 
 @given("I have a Contract Agreement with OPS user as a team member and a BLI in review")
-def agreement_with_ops_user_and_bli_in_review(bdd_client, test_non_admin_user, loaded_db, context, test_can):
+def agreement_with_ops_user_and_bli_in_review(bdd_client, test_non_admin_user, loaded_db, context):
+    # Create a dedicated CAN for this test to avoid polluting other tests
+    from models.cans import CAN, CANFundingDetails
+
+    can_funding_details = CANFundingDetails(
+        fiscal_year=2023,
+        fund_code="TESTXX20231TST",
+        funding_source="OPRE",
+        method_of_transfer="DIRECT",
+    )
+    can = CAN(
+        number="T99TEST1",
+        description="Test CAN for BLI in review",
+        nick_name="TEST-BLI-REVIEW",
+        portfolio_id=6,
+        funding_details=can_funding_details,
+    )
+    loaded_db.add(can)
+    loaded_db.commit()
+    loaded_db.flush()
+
     contract_agreement = ContractAgreement(
         name=str(uuid.uuid4()),
         contract_number="CT1234",
@@ -316,7 +345,7 @@ def agreement_with_ops_user_and_bli_in_review(bdd_client, test_non_admin_user, l
     # Create a budget line item
     budget_line_item = BudgetLineItem(
         agreement_id=contract_agreement.id,
-        can_id=test_can.id,
+        can_id=can.id,
         amount=10000.00,
         status=BudgetLineItemStatus.PLANNED,
         budget_line_item_type=AgreementType.CONTRACT,
@@ -337,6 +366,7 @@ def agreement_with_ops_user_and_bli_in_review(bdd_client, test_non_admin_user, l
     loaded_db.add(change_request)
     loaded_db.commit()
 
+    context["can"] = can
     context["agreement"] = contract_agreement
     context["user_id"] = test_non_admin_user.id
     context["budget_line_item"] = budget_line_item
