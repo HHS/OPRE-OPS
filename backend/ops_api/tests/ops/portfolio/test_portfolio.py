@@ -35,7 +35,7 @@ def test_portfolio_get_by_project_id(auth_client, loaded_db, app_ctx):
     assert len(response.json) > 0
     portfolio_ids = {p["id"] for p in response.json}
     # Project 1000 links to portfolios through Agreement → BLI → CAN → Portfolio
-    assert 1 in portfolio_ids  # Child Welfare Research
+    assert portfolio_ids == {1, 2, 3, 6, 8, 9}
 
 
 def test_portfolio_get_by_project_id_no_results(auth_client, loaded_db, app_ctx):
