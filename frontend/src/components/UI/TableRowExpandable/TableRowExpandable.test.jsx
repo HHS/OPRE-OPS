@@ -49,7 +49,14 @@ describe("TableRowExpandable", () => {
             <table>
                 <tbody>
                     <TableRowExpandable
-                        tableRowData={<td data-testid="colored-cell" style={{ backgroundColor: "rgb(255, 0, 0)" }}>Red</td>}
+                        tableRowData={
+                            <td
+                                data-testid="colored-cell"
+                                style={{ backgroundColor: "rgb(255, 0, 0)" }}
+                            >
+                                Red
+                            </td>
+                        }
                         expandedData={<td colSpan={2}>Expanded</td>}
                         isExpanded={false}
                         setIsExpanded={() => {}}
