@@ -4,7 +4,9 @@ import { terminalLog, testLogin } from "./utils";
 beforeEach(() => {
     testLogin("budget-team");
     cy.visit("/portfolios");
-    cy.contains("h1", "Loading...", { timeout: 30000 }).should("not.exist");
+    cy.contains("h1", "Portfolios", { timeout: 30000 }).should("exist");
+    cy.get("table[aria-label='Loading portfolios']", { timeout: 30000 }).should("not.exist");
+    cy.get("table tbody tr", { timeout: 30000 }).should("have.length.greaterThan", 0);
 });
 
 afterEach(() => {
