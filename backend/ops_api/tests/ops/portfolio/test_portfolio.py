@@ -27,3 +27,18 @@ def test_portfolio_get_by_id(auth_client, loaded_db, app_ctx):
 def test_portfolio_get_by_id_404(auth_client, loaded_db, app_ctx):
     response = auth_client.get("/api/v1/portfolios/10000000")
     assert response.status_code == 404
+
+
+def test_portfolio_get_by_project_id(auth_client, loaded_db, app_ctx):
+    response = auth_client.get("/api/v1/portfolios/?project_id=1000")
+    assert response.status_code == 200
+    assert len(response.json) > 0
+    portfolio_ids = {p["id"] for p in response.json}
+    # Project 1000 links to portfolios through Agreement → BLI → CAN → Portfolio
+    assert 1 in portfolio_ids  # Child Welfare Research
+
+
+def test_portfolio_get_by_project_id_no_results(auth_client, loaded_db, app_ctx):
+    response = auth_client.get("/api/v1/portfolios/?project_id=999999")
+    assert response.status_code == 200
+    assert len(response.json) == 0

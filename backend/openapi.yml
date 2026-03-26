@@ -2005,6 +2005,13 @@ paths:
       operationId: getAllPortfolios
       parameters:
         - $ref: "#/components/parameters/simulatedError"
+        - in: query
+          name: project_id
+          required: false
+          schema:
+            type: integer
+            format: int32
+          description: Filter portfolios by project ID. Returns only portfolios associated with the given project through the Agreement → BudgetLineItem → CAN chain.
       description: Get Portfolios
       responses:
         "200":
