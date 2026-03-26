@@ -5,11 +5,7 @@ import { NO_DATA } from "../../../constants";
 import { calculatePercent, formatDateToMonthDayYear } from "../../../helpers/utils";
 import ChangeIcons from "../../BudgetLineItems/ChangeIcons";
 import TableRowExpandable from "../../UI/TableRowExpandable";
-import {
-    changeBgColorIfExpanded,
-    expandedRowBGColor,
-    removeBorderBottomIfExpanded
-} from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
+import { expandedRowBGColor } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 
 /**
@@ -39,8 +35,6 @@ const CANFundingReceivedTableRow = ({
     deleteFundingReceived
 }) => {
     const { isRowActive, isExpanded, setIsExpanded, setIsRowActive } = useTableRow();
-    const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
-    const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
     const tempRowId = (fundingReceived.id?.toString() === NO_DATA ? fundingReceived.tempId : fundingReceived.id) ?? -1;
 
     /**
@@ -102,22 +96,9 @@ const CANFundingReceivedTableRow = ({
      */
     const TableRowData = ({ rowId, fiscalYear, funding = 0, totalFunding }) => (
         <>
-            <td
-                className={`${borderExpandedStyles}`}
-                style={bgExpandedStyles}
-            >
-                {rowId}
-            </td>
-            <td
-                className={borderExpandedStyles}
-                style={bgExpandedStyles}
-            >
-                {fiscalYear}
-            </td>
-            <td
-                className={borderExpandedStyles}
-                style={bgExpandedStyles}
-            >
+            <td>{rowId}</td>
+            <td>{fiscalYear}</td>
+            <td>
                 <CurrencyFormat
                     value={funding}
                     displayType={"text"}
@@ -127,17 +108,9 @@ const CANFundingReceivedTableRow = ({
                     fixedDecimalScale
                 />
             </td>
-            <td
-                className={borderExpandedStyles}
-                style={bgExpandedStyles}
-            >
-                {calculatePercent(funding, totalFunding)}%
-            </td>
+            <td>{calculatePercent(funding, totalFunding)}%</td>
             {isRowActive && isEditMode ? (
-                <td
-                    className={borderExpandedStyles}
-                    style={bgExpandedStyles}
-                >
+                <td>
                     <ChangeIcons
                         item={{ id: tempRowId, display_name: "Funding Received Item" }}
                         handleDeleteItem={() => {
@@ -153,8 +126,6 @@ const CANFundingReceivedTableRow = ({
                 </td>
             ) : (
                 <td
-                    className={borderExpandedStyles}
-                    style={bgExpandedStyles}
                     width="113px"
                     aria-label="Actions column"
                 ></td> // empty cell to maintain alignment

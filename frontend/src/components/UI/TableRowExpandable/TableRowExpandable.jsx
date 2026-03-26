@@ -3,6 +3,34 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { changeBgColorIfExpanded, removeBorderBottomIfExpanded } from "./TableRowExpandable.helpers";
 
+const mergeClassNames = (...classNames) => classNames.filter(Boolean).join(" ");
+
+const applyExpandedCellStyles = (node, isExpanded) => {
+    if (!React.isValidElement(node)) {
+        return node;
+    }
+
+    if (node.type === React.Fragment) {
+        return (
+            <React.Fragment>
+                {React.Children.map(node.props.children, (child) => applyExpandedCellStyles(child, isExpanded))}
+            </React.Fragment>
+        );
+    }
+
+    if (node.type !== "td" && node.type !== "th") {
+        return node;
+    }
+
+    return React.cloneElement(node, {
+        className: mergeClassNames(node.props.className, removeBorderBottomIfExpanded(isExpanded)),
+        style: {
+            ...node.props.style,
+            ...changeBgColorIfExpanded(isExpanded)
+        }
+    });
+};
+
 /**
     @typedef {Object} TableRowExpandableProps
     @property {React.ReactNode} tableRowData - The data for the row.
@@ -21,8 +49,9 @@ import { changeBgColorIfExpanded, removeBorderBottomIfExpanded } from "./TableRo
  */
 const TableRowExpandable = ({ tableRowData, expandedData, isExpanded, setIsExpanded, setIsRowActive, ...rest }) => {
     const trId = React.useId();
-    const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
-    const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
+    const expandedTableRowData = React.Children.map(tableRowData, (child) =>
+        applyExpandedCellStyles(child, isExpanded)
+    );
 
     return (
         <>
@@ -31,10 +60,10 @@ const TableRowExpandable = ({ tableRowData, expandedData, isExpanded, setIsExpan
                 onMouseEnter={() => setIsRowActive(true)}
                 onMouseLeave={() => !isExpanded && setIsRowActive(false)}
             >
-                {tableRowData}
+                {expandedTableRowData}
                 <td
-                    className={borderExpandedStyles}
-                    style={bgExpandedStyles}
+                    className={removeBorderBottomIfExpanded(isExpanded)}
+                    style={changeBgColorIfExpanded(isExpanded)}
                 >
                     <FontAwesomeIcon
                         id={`expand-${trId}`}

@@ -2,7 +2,6 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import WhatsNextTableRow from "./WhatsNextTableRow";
 import { useTableRow } from "../../../components/UI/TableRowExpandable/TableRowExpandable.hooks";
-import * as helpers from "../../../components/UI/TableRowExpandable/TableRowExpandable.helpers";
 
 // Mock the TableRowExpandable component
 vi.mock("../../../components/UI/TableRowExpandable", () => ({
@@ -25,13 +24,9 @@ vi.mock("../../../components/UI/TableRowExpandable", () => ({
     )
 }));
 
-// Mock the helper functions
+// Mock the helper module for expanded row styling
 vi.mock("../../../components/UI/TableRowExpandable/TableRowExpandable.helpers", () => ({
-    changeBgColorIfExpanded: vi.fn((isExpanded) => ({
-        backgroundColor: isExpanded ? "var(--base-light-variant)" : ""
-    })),
-    expandedRowBGColor: { backgroundColor: "var(--base-light-variant)" },
-    removeBorderBottomIfExpanded: vi.fn((isExpanded) => (isExpanded ? "border-bottom-none" : ""))
+    expandedRowBGColor: { backgroundColor: "var(--base-light-variant)" }
 }));
 
 // Mock the useTableRow hook
@@ -131,7 +126,7 @@ describe("WhatsNextTableRow Component", () => {
         expect(screen.getByTestId("expanded-data")).toBeInTheDocument();
     });
 
-    it("applies correct styling for expanded state", () => {
+    it("renders expanded row styling from shared helper", () => {
         vi.mocked(useTableRow).mockReturnValue({
             trId: "test-id",
             isExpanded: true,
@@ -142,9 +137,8 @@ describe("WhatsNextTableRow Component", () => {
 
         render(<WhatsNextTableRow item={mockItem} />);
 
-        // Verify that helper functions are called with the expanded state
-        expect(vi.mocked(helpers.changeBgColorIfExpanded)).toHaveBeenCalledWith(true);
-        expect(vi.mocked(helpers.removeBorderBottomIfExpanded)).toHaveBeenCalledWith(true);
+        const expandedContent = screen.getByTestId("expanded-data");
+        expect(expandedContent.innerHTML).toContain("base-light-variant");
     });
 
     it("handles expandable functionality correctly", () => {
