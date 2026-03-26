@@ -735,13 +735,16 @@ export const opsApi = createApi({
             }),
             invalidatesTags: ["Cans", "CanFunding"]
         }),
-        getCanFundingSummary: builder.query({
-            query: ({ ids, fiscalYear, activePeriod, transfer, portfolio, fyBudgets }) => {
+        getCanFunding: builder.query({
+            query: ({ id, fiscalYear }) => {
+                const params = fiscalYear ? `?fiscal_year=${fiscalYear}` : "";
+                return `/cans/${id}/funding/${params}`;
+            },
+            providesTags: (result, error, { id }) => [{ type: "CanFunding", id }, "CanFunding"]
+        }),
+        getCansFunding: builder.query({
+            query: ({ fiscalYear, activePeriod, transfer, portfolio, fyBudgets } = {}) => {
                 const queryParams = [];
-
-                if (ids && ids.length > 0) {
-                    ids.forEach((id) => queryParams.push(`can_ids=${id}`));
-                }
 
                 if (fiscalYear) {
                     queryParams.push(`fiscal_year=${fiscalYear}`);
@@ -765,7 +768,7 @@ export const opsApi = createApi({
                 }
 
                 const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
-                return `/can-funding-summary/${queryString}`;
+                return `/cans/funding/${queryString}`;
             },
             providesTags: ["Cans", "CanFunding"]
         }),
@@ -1101,7 +1104,8 @@ export const {
     useAddCanFundingReceivedMutation,
     useUpdateCanFundingReceivedMutation,
     useDeleteCanFundingReceivedMutation,
-    useGetCanFundingSummaryQuery,
+    useGetCanFundingQuery,
+    useGetCansFundingQuery,
     useGetCanHistoryQuery,
     useGetNotificationsByUserIdQuery,
     useGetNotificationsByUserIdAndAgreementIdQuery,

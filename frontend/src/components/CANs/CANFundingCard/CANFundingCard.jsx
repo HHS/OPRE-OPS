@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useGetCanFundingSummaryQuery } from "../../../api/opsAPI";
+import { useGetCanFundingQuery } from "../../../api/opsAPI";
 import BudgetCard from "../../UI/Cards/BudgetCard";
 
 /**  @typedef {import("../../../types/CANTypes").CAN} CAN */
@@ -18,8 +18,8 @@ const CANFundingCard = ({ can, pendingAmount, afterApproval }) => {
     const navigate = useNavigate();
     const adjustAmount = afterApproval ? pendingAmount : 0;
     const canId = can?.id;
-    /** @type {{data?: import("../../../types/CANTypes").FundingSummary | undefined, error?: Object, isLoading: boolean}} */
-    const { data, error, isLoading } = useGetCanFundingSummaryQuery({ ids: [canId] });
+    /** @type {{data?: import("../../../types/CANTypes").CANFundingResponse | undefined, error?: Object, isLoading: boolean}} */
+    const { data, error, isLoading } = useGetCanFundingQuery({ id: canId });
 
     if (isLoading) {
         return <div>Loading...</div>;
@@ -29,9 +29,9 @@ const CANFundingCard = ({ can, pendingAmount, afterApproval }) => {
         return;
     }
 
-    const title = `${data?.cans?.[0]?.can?.number}-${data?.cans?.[0]?.can?.active_period}Y`;
-    const totalFunding = Number(data?.total_funding);
-    const availableFunding = Number(data?.available_funding);
+    const title = `${data?.can?.number}-${data?.can?.active_period}Y`;
+    const totalFunding = Number(data?.funding?.total_funding);
+    const availableFunding = Number(data?.funding?.available_funding);
     const totalAccountedFor = totalFunding - availableFunding; // same as adding planned, obligated, in_execution
     const totalSpending = totalAccountedFor + adjustAmount;
 

@@ -51,7 +51,7 @@ const CANTable = ({ cans, fiscalYear, sortConditions, sortDescending, setSortCon
 
         const requests = missingFundingCanIds.map((canId) =>
             dispatch(
-                opsApi.endpoints.getCanFundingSummary.initiate({ ids: [canId], fiscalYear }, { forceRefetch: true })
+                opsApi.endpoints.getCanFunding.initiate({ id: canId, fiscalYear }, { forceRefetch: true })
             )
         );
 
@@ -107,7 +107,7 @@ const CANTable = ({ cans, fiscalYear, sortConditions, sortDescending, setSortCon
                             nickname={can.nick_name ?? NO_DATA}
                             portfolio={can.portfolio.abbreviation}
                             fiscalYear={fiscalYear}
-                            fundingSummary={fundingSummariesByCanId[getFundingCacheKey(can.id)]}
+                            fundingSummary={fundingSummariesByCanId[getFundingCacheKey(can.id)]?.funding}
                             activePeriod={can.active_period ?? 0}
                             obligateBy={formatObligateBy(can.obligate_by)}
                         />
