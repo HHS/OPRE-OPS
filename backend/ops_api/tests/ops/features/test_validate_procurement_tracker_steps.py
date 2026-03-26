@@ -313,13 +313,13 @@ def agreement_without_ops_user(bdd_client, test_non_admin_user, loaded_db, conte
 @given("I have a Contract Agreement with OPS user as a team member and a BLI in review")
 def agreement_with_ops_user_and_bli_in_review(bdd_client, test_non_admin_user, loaded_db, context):
     # Create a dedicated CAN for this test to avoid polluting other tests
-    from models.cans import CAN, CANFundingDetails
+    from models.cans import CAN, CANFundingDetails, CANMethodOfTransfer
 
     can_funding_details = CANFundingDetails(
         fiscal_year=2023,
         fund_code="TESTXX20231TST",
         funding_source="OPRE",
-        method_of_transfer="DIRECT",
+        method_of_transfer=CANMethodOfTransfer.DIRECT,
     )
     can = CAN(
         number="T99TEST1",
