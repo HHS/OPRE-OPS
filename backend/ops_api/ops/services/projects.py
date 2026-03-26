@@ -253,9 +253,7 @@ class ProjectsService(OpsService[Project]):
                 query_helper.add_column_equals(BudgetLineItem.fiscal_year, fiscal_year)
             else:
                 # Multiple fiscal years - use IN clause
-                query_helper.add_column_in_list(CANFundingBudget.fiscal_year, filters.fiscal_year)
-                # For multiple years, we'll just ensure funding budget exists for one of those years
-                # The obligate_by range check becomes complex with multiple years, so we skip it
+                query_helper.add_column_in_list(BudgetLineItem.fiscal_year, filters.fiscal_year)
 
         # Apply project search filter on project title (OR logic, exact match on title/short title)
         if filters.project_search:
