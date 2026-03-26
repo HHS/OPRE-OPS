@@ -1,8 +1,20 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi } from "vitest";
+import { CHANGE_REQUESTS_TOOLTIP_LOADING } from "../../../hooks/useChangeRequests.hooks";
 import ChangeIcons from "./ChangeIcons";
 import { DISABLED_ICON_CLASSES } from "./DisabledChangeIcons.constants";
+
+vi.mock("../../UI/USWDS/Tooltip", () => ({
+    default: ({ label, children }) => (
+        <div
+            data-testid="tooltip"
+            data-label={label}
+        >
+            {children}
+        </div>
+    )
+}));
 
 describe("ChangeIcons", () => {
     const mockItem = {
@@ -33,6 +45,9 @@ describe("ChangeIcons", () => {
         handleSubmitItemForApproval: vi.fn()
     };
 
+    const getEditTooltip = () =>
+        screen.getAllByTestId("tooltip").find((tooltip) => within(tooltip).queryByTestId("edit-row"));
+
     it("renders edit, delete, and duplicate icons when item is editable", () => {
         render(<ChangeIcons {...defaultProps} />);
 
@@ -54,6 +69,34 @@ describe("ChangeIcons", () => {
 
         expect(editButton).toBeDisabled();
         expect(deleteButton).toBeDisabled();
+    });
+
+    it("falls back to the static tooltip while locked message data is loading", () => {
+        render(
+            <ChangeIcons
+                {...defaultProps}
+                isItemEditable={false}
+                item={{ ...mockItem, status: "IN_EXECUTION" }}
+                lockedMessage={CHANGE_REQUESTS_TOOLTIP_LOADING}
+            />
+        );
+
+        expect(getEditTooltip()).toHaveAttribute(
+            "data-label",
+            "If you need to edit a budget line in Executing Status, please contact the budget team"
+        );
+    });
+
+    it("keeps the loading tooltip when no static fallback exists", () => {
+        render(
+            <ChangeIcons
+                {...defaultProps}
+                isItemEditable={false}
+                lockedMessage={CHANGE_REQUESTS_TOOLTIP_LOADING}
+            />
+        );
+
+        expect(getEditTooltip()).toHaveAttribute("data-label", CHANGE_REQUESTS_TOOLTIP_LOADING);
     });
 
     it("calls handleSetItemForEditing when edit button is clicked", async () => {

@@ -1,6 +1,7 @@
 import { renderHook } from "@testing-library/react";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import {
+    CHANGE_REQUESTS_TOOLTIP_LOADING,
     useChangeRequestTotal,
     useChangeRequestsForAgreement,
     useChangeRequestsForBudgetLines,
@@ -227,7 +228,7 @@ describe("useChangeRequestsForTooltip", () => {
 
         const { result } = renderHook(() => useChangeRequestsForTooltip(tooltipBudgetLine));
 
-        expect(result.current).toBe("Loading...");
+        expect(result.current).toBe(CHANGE_REQUESTS_TOOLTIP_LOADING);
     });
 
     it("returns loading text when hooks report loading despite success", () => {
@@ -240,7 +241,7 @@ describe("useChangeRequestsForTooltip", () => {
 
         const { result } = renderHook(() => useChangeRequestsForTooltip(tooltipBudgetLine));
 
-        expect(result.current).toBe("Loading...");
+        expect(result.current).toBe(CHANGE_REQUESTS_TOOLTIP_LOADING);
     });
 
     it("returns empty message when budget line is not in review", () => {
