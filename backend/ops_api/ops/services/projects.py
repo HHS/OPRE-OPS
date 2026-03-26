@@ -12,8 +12,6 @@ from models import (
     Agreement,
     BudgetLineItem,
     BudgetLineItemStatus,
-    CANFundingBudget,
-    CANFundingDetails,
     Portfolio,
     Project,
     ProjectSortCondition,
@@ -233,8 +231,6 @@ class ProjectsService(OpsService[Project]):
             .join(Agreement, isouter=True)
             .join(BudgetLineItem, isouter=True)
             .join(CAN, isouter=True)
-            .join(CANFundingDetails, isouter=True)
-            .join(CANFundingBudget, isouter=True)
             .options(
                 selectinload(ResearchProject.agreements).selectinload(Agreement.services_components),
                 selectinload(ResearchProject.agreements)
@@ -256,17 +252,10 @@ class ProjectsService(OpsService[Project]):
         if filters.fiscal_year:
             if len(filters.fiscal_year) == 1:
                 fiscal_year = filters.fiscal_year[0]
-                query_helper.add_column_equals(CANFundingBudget.fiscal_year, fiscal_year)
-                query_helper.add_column_in_range(
-                    CANFundingDetails.fiscal_year,
-                    CANFundingDetails.obligate_by,
-                    fiscal_year,
-                )
+                query_helper.add_column_equals(BudgetLineItem.fiscal_year, fiscal_year)
             else:
                 # Multiple fiscal years - use IN clause
-                query_helper.add_column_in_list(CANFundingBudget.fiscal_year, filters.fiscal_year)
-                # For multiple years, we'll just ensure funding budget exists for one of those years
-                # The obligate_by range check becomes complex with multiple years, so we skip it
+                query_helper.add_column_in_list(BudgetLineItem.fiscal_year, filters.fiscal_year)
 
         # Apply project search filter on project title (OR logic, exact match on title/short title)
         if filters.project_search:
@@ -302,8 +291,6 @@ class ProjectsService(OpsService[Project]):
             .join(Agreement, isouter=True)
             .join(BudgetLineItem, isouter=True)
             .join(CAN, isouter=True)
-            .join(CANFundingDetails, isouter=True)
-            .join(CANFundingBudget, isouter=True)
             .options(
                 selectinload(ResearchProject.agreements).selectinload(Agreement.services_components),
                 selectinload(ResearchProject.agreements)
@@ -325,17 +312,10 @@ class ProjectsService(OpsService[Project]):
         if filters.fiscal_year:
             if len(filters.fiscal_year) == 1:
                 fiscal_year = filters.fiscal_year[0]
-                query_helper.add_column_equals(CANFundingBudget.fiscal_year, fiscal_year)
-                query_helper.add_column_in_range(
-                    CANFundingDetails.fiscal_year,
-                    CANFundingDetails.obligate_by,
-                    fiscal_year,
-                )
+                query_helper.add_column_equals(BudgetLineItem.fiscal_year, fiscal_year)
             else:
                 # Multiple fiscal years - use IN clause
-                query_helper.add_column_in_list(CANFundingBudget.fiscal_year, filters.fiscal_year)
-                # For multiple years, we'll just ensure funding budget exists for one of those years
-                # The obligate_by range check becomes complex with multiple years, so we skip it
+                query_helper.add_column_in_list(BudgetLineItem.fiscal_year, filters.fiscal_year)
 
         # Apply project search filter on project title (AND logic - must match all search terms)
         if filters.project_search:
