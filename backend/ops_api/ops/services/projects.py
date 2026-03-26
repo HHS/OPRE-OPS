@@ -12,8 +12,6 @@ from models import (
     Agreement,
     BudgetLineItem,
     BudgetLineItemStatus,
-    CANFundingBudget,
-    CANFundingDetails,
     Portfolio,
     Project,
     ProjectSortCondition,
