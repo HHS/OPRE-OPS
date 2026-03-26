@@ -251,9 +251,7 @@ def test_update_award_date_creates_agreement_history(db_for_award_date):
     update_award_date(data, sys_user, db_for_award_date)
 
     history_entries = (
-        db_for_award_date.execute(
-            select(AgreementHistory).where(AgreementHistory.agreement_id_record == 1)
-        )
+        db_for_award_date.execute(select(AgreementHistory).where(AgreementHistory.agreement_id_record == 1))
         .scalars()
         .all()
     )
@@ -282,9 +280,7 @@ def test_update_award_date_overwrites_creates_agreement_history(db_for_award_dat
     update_award_date(data, sys_user, db_for_award_date)
 
     history_entries = (
-        db_for_award_date.execute(
-            select(AgreementHistory).where(AgreementHistory.agreement_id_record == 4)
-        )
+        db_for_award_date.execute(select(AgreementHistory).where(AgreementHistory.agreement_id_record == 4))
         .scalars()
         .all()
     )
