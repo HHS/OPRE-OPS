@@ -6,6 +6,7 @@ from pytest_bdd import given, scenario, then, when
 from sqlalchemy import text
 
 from models import (
+    CAN,
     AgreementReason,
     AgreementType,
     AwardType,
@@ -49,20 +50,6 @@ def cleanup(loaded_db, context):
         _delete_entity(loaded_db, context, "change_request", "change_request")
         _delete_entity(loaded_db, context, "budget_line_item", "budget_line_item")
         _delete_entity(loaded_db, context, "procurement_tracker_step", "procurement_tracker_step")
-
-        # Delete CAN and its related records
-        if "can" in context and context["can"].id is not None:
-            can_id = context["can"].id
-            if isinstance(can_id, int):
-                loaded_db.execute(text("DELETE FROM can_funding_received WHERE can_id = :id"), {"id": can_id})
-                loaded_db.execute(text("DELETE FROM can_funding_budget WHERE can_id = :id"), {"id": can_id})
-                loaded_db.execute(
-                    text(
-                        "DELETE FROM can_funding_details WHERE id = (SELECT funding_details_id FROM can WHERE id = :id)"
-                    ),
-                    {"id": can_id},
-                )
-                loaded_db.execute(text("DELETE FROM can WHERE id = :id"), {"id": can_id})
 
         # Delete ProcurementTracker (joined-table inheritance)
         if "procurement_tracker" in context and context["procurement_tracker"].id is not None:
@@ -312,25 +299,9 @@ def agreement_without_ops_user(bdd_client, test_non_admin_user, loaded_db, conte
 
 @given("I have a Contract Agreement with OPS user as a team member and a BLI in review")
 def agreement_with_ops_user_and_bli_in_review(bdd_client, test_non_admin_user, loaded_db, context):
-    # Create a dedicated CAN for this test to avoid polluting other tests
-    from models.cans import CAN, CANFundingDetails, CANFundingSource, CANMethodOfTransfer
-
-    can_funding_details = CANFundingDetails(
-        fiscal_year=2023,
-        fund_code="TESTXX20231TST",
-        funding_source=CANFundingSource.OPRE,
-        method_of_transfer=CANMethodOfTransfer.DIRECT,
-    )
-    can = CAN(
-        number="T99TEST1",
-        description="Test CAN for BLI in review",
-        nick_name="TEST-BLI-REVIEW",
-        portfolio_id=6,
-        funding_details=can_funding_details,
-    )
-    loaded_db.add(can)
-    loaded_db.commit()
-    loaded_db.flush()
+    # Use existing CAN 501 to avoid polluting CAN 500 (used in funding summary tests)
+    # and to avoid creating a new CAN that persists in the test database
+    can = loaded_db.get(CAN, 501)
 
     contract_agreement = ContractAgreement(
         name=str(uuid.uuid4()),
@@ -370,7 +341,6 @@ def agreement_with_ops_user_and_bli_in_review(bdd_client, test_non_admin_user, l
     loaded_db.add(change_request)
     loaded_db.commit()
 
-    context["can"] = can
     context["agreement"] = contract_agreement
     context["user_id"] = test_non_admin_user.id
     context["budget_line_item"] = budget_line_item
