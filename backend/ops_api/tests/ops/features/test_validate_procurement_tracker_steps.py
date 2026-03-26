@@ -9,12 +9,12 @@ from models import (
     AgreementReason,
     AgreementType,
     AwardType,
-    BudgetLineItem,
     BudgetLineItemChangeRequest,
     BudgetLineItemStatus,
     ChangeRequestStatus,
     ChangeRequestType,
     ContractAgreement,
+    ContractBudgetLineItem,
     ContractType,
     DefaultProcurementTracker,
     ProcurementAction,
@@ -348,12 +348,11 @@ def agreement_with_ops_user_and_bli_in_review(bdd_client, test_non_admin_user, l
     loaded_db.flush()
 
     # Create a budget line item
-    budget_line_item = BudgetLineItem(
+    budget_line_item = ContractBudgetLineItem(
         agreement_id=contract_agreement.id,
         can_id=can.id,
         amount=10000.00,
         status=BudgetLineItemStatus.PLANNED,
-        budget_line_item_type=AgreementType.CONTRACT,
     )
     loaded_db.add(budget_line_item)
     loaded_db.commit()
