@@ -3,6 +3,7 @@ import { useOutletContext } from "react-router-dom";
 import { useGetPortfolioCansByIdQuery, useLazyGetBudgetLineItemQuery } from "../../../api/opsAPI";
 import { getTypesCounts } from "../../../pages/cans/detail/Can.helpers";
 import CANBudgetLineTable from "../../CANs/CANBudgetLineTable";
+import PortfolioSpendingTableLoading from "./PortfolioSpendingTableLoading";
 import PortfolioBudgetSummary from "../PortfolioBudgetSummary";
 import { getAgreementTypesCount } from "../../../helpers/budgetLines.helpers";
 
@@ -22,7 +23,11 @@ const PortfolioSpending = () => {
         plannedFunding
     } = useOutletContext();
 
-    const { data: portfolioCans, isLoading: isCansLoading } = useGetPortfolioCansByIdQuery(
+    const {
+        data: portfolioCans,
+        isLoading: isCansLoading,
+        isFetching: isCansFetching
+    } = useGetPortfolioCansByIdQuery(
         {
             portfolioId,
             budgetFiscalYear: fiscalYear,
@@ -64,6 +69,7 @@ const PortfolioSpending = () => {
     const isBudgetLineItemLoadingOnRemount = budgetLineItems.length === 0 && budgetLineIds.length > 0;
 
     const isLoading = isCansLoading || isBudgetLineItemLoading || isBudgetLineItemLoadingOnRemount;
+    const isTableLoading = isLoading || isCansFetching;
 
     useEffect(() => {
         // Reset states when fiscal year changes
@@ -75,10 +81,6 @@ const PortfolioSpending = () => {
             fetchBudgetLineItems();
         }
     }, [budgetLineIds, fiscalYear, fetchBudgetLineItems]);
-
-    if (isLoading) {
-        return <div>Loading...</div>;
-    }
 
     return (
         <>
@@ -104,12 +106,16 @@ const PortfolioSpending = () => {
                     selected fiscal year.
                 </p>
             </section>
-            <CANBudgetLineTable
-                budgetLines={budgetLineItems}
-                totalFunding={totalFunding}
-                fiscalYear={fiscalYear}
-                tableType="portfolio"
-            />
+            {isTableLoading ? (
+                <PortfolioSpendingTableLoading />
+            ) : (
+                <CANBudgetLineTable
+                    budgetLines={budgetLineItems}
+                    totalFunding={totalFunding}
+                    fiscalYear={fiscalYear}
+                    tableType="portfolio"
+                />
+            )}
         </>
     );
 };

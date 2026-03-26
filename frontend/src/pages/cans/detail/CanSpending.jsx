@@ -1,4 +1,5 @@
 import CANBudgetLineTable from "../../../components/CANs/CANBudgetLineTable";
+import CANBudgetLineTableLoading from "../../../components/CANs/CANBudgetLineTable/CANBudgetLineTableLoading";
 import BigBudgetCard from "../../../components/UI/Cards/BudgetCard/BigBudgetCard";
 import DonutGraphWithLegendCard from "../../../components/UI/Cards/DonutGraphWithLegendCard";
 import ProjectAgreementBLICard from "../../../components/UI/Cards/ProjectAgreementBLICard";
@@ -27,6 +28,7 @@ import { calculatePercent } from "../../../helpers/utils";
  * @property {number} inDraftFunding
  * @property {number} obligatedFunding
  * @property {number} totalFunding
+ * @property {boolean} [isTableLoading]
  */
 
 /**
@@ -44,7 +46,8 @@ const CanSpending = ({
     inExecutionFunding,
     inDraftFunding,
     obligatedFunding,
-    totalFunding
+    totalFunding,
+    isTableLoading = false
 }) => {
     const totalSpending = Number(plannedFunding) + Number(obligatedFunding) + Number(inExecutionFunding);
 
@@ -103,11 +106,15 @@ const CanSpending = ({
             </div>
             <h2>CAN Budget Lines</h2>
             <p>This is a list of all budget lines allocating funding from this CAN for the selected fiscal year.</p>
-            <CANBudgetLineTable
-                budgetLines={budgetLines}
-                totalFunding={totalFunding}
-                fiscalYear={fiscalYear}
-            />
+            {isTableLoading ? (
+                <CANBudgetLineTableLoading ariaLabel="Loading CAN budget lines" />
+            ) : (
+                <CANBudgetLineTable
+                    budgetLines={budgetLines}
+                    totalFunding={totalFunding}
+                    fiscalYear={fiscalYear}
+                />
+            )}
         </article>
     );
 };

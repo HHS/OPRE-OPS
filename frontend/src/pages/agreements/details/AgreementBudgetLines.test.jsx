@@ -10,12 +10,11 @@ import { USER_ROLES } from "../../../components/Users/User.constants";
 
 const history = createMemoryHistory();
 const mockFn = TestApplicationContext.helpers().mockFn;
+const useGetServicesComponentsListQueryMock = vi.fn();
 
 // Mock the hooks and API calls
 vi.mock("../../../api/opsAPI", () => ({
-    useGetServicesComponentsListQuery: () => ({
-        data: []
-    }),
+    useGetServicesComponentsListQuery: (...args) => useGetServicesComponentsListQueryMock(...args),
     useLazyGetServicesComponentByIdQuery: () => [vi.fn(), { data: [], isLoading: false }],
     useLazyGetBudgetLineItemsQuery: () => [vi.fn(), { data: [], isLoading: false }],
     useLazyGetPortfolioByIdQuery: () => [vi.fn(), { data: null, isLoading: false }],
@@ -36,6 +35,13 @@ vi.mock("react-router-dom", async () => {
 // This will reset all mocks after each test
 afterEach(() => {
     vi.resetAllMocks();
+});
+
+beforeEach(() => {
+    useGetServicesComponentsListQueryMock.mockReturnValue({
+        data: [],
+        isLoading: false
+    });
 });
 
 describe("AgreementBudgetLines", () => {
@@ -99,6 +105,62 @@ describe("AgreementBudgetLines", () => {
 
         // Should render the component without errors
         expect(screen.getByText("Budget Lines")).toBeInTheDocument();
+    });
+
+    test("shows the grouped table skeleton while services components are loading", () => {
+        useGetServicesComponentsListQueryMock.mockReturnValue({
+            data: undefined,
+            isLoading: true
+        });
+
+        const testStore = configureStore({
+            reducer: {
+                auth: () => ({
+                    activeUser: {
+                        id: 1,
+                        full_name: "Regular User",
+                        email: "user@example.com",
+                        roles: [USER_ROLES.VIEWER_EDITOR]
+                    }
+                })
+            }
+        });
+
+        render(
+            <Provider store={testStore}>
+                <Router
+                    location={history.location}
+                    navigator={history}
+                >
+                    <AgreementBudgetLines
+                        {...defaultProps}
+                        agreement={{
+                            ...mockAgreement,
+                            budget_line_items: [
+                                {
+                                    id: 1,
+                                    amount: 100,
+                                    fees: 5,
+                                    date_needed: "2026-02-01",
+                                    status: "PLANNED",
+                                    services_component_id: 101,
+                                    line_description: "Test budget line",
+                                    can: { number: "CAN-001" },
+                                    _meta: { isEditable: true }
+                                }
+                            ]
+                        }}
+                        isAgreementNotDeveloped={false}
+                        isAgreementAwarded={false}
+                        isEditMode={false}
+                        setIsEditMode={vi.fn()}
+                    />
+                </Router>
+            </Provider>
+        );
+
+        expect(screen.getByRole("table", { name: "Loading budget lines" })).toBeInTheDocument();
+        expect(screen.queryByText("You have not added any Budget Lines yet.")).not.toBeInTheDocument();
     });
 
     test("super user can edit budget lines when agreement is not editable", () => {

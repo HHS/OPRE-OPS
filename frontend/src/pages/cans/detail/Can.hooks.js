@@ -35,13 +35,21 @@ export default function useCan() {
         fundingPage: false
     });
 
-    /** @type {{data?: CAN | undefined, isLoading: boolean}} */
-    const { data: can, isLoading } = useGetCanByIdQuery(canId, {
+    /** @type {{data?: CAN | undefined, isLoading: boolean, isFetching: boolean}} */
+    const {
+        data: can,
+        isLoading,
+        isFetching: isCanFetching
+    } = useGetCanByIdQuery(canId, {
         refetchOnMountOrArgChange: true
     });
 
-    /** @type {{data?: FundingSummary | undefined, isLoading: boolean}} */
-    const { data: CANFunding, isLoading: CANFundingLoading } = useGetCanFundingSummaryQuery({
+    /** @type {{data?: FundingSummary | undefined, isLoading: boolean, isFetching: boolean}} */
+    const {
+        data: CANFunding,
+        isLoading: CANFundingLoading,
+        isFetching: isCANFundingFetching
+    } = useGetCanFundingSummaryQuery({
         ids: [canId],
         fiscalYear: fiscalYear,
         refetchOnMountOrArgChange: true
@@ -109,15 +117,18 @@ export default function useCan() {
     };
 
     const currentFiscalYearFundingId = can?.funding_budgets?.find((funding) => funding.fiscal_year === fiscalYear)?.id;
+    const isPageLoading = (isLoading && !can) || (CANFundingLoading && !CANFunding);
+    const isTableLoading = (isCanFetching ?? false) || (isCANFundingFetching ?? false);
 
     return {
         can: can ?? null,
         currentFiscalYearFundingId,
-        isLoading,
+        isLoading: isPageLoading,
         canId,
         fiscalYear,
         setSelectedFiscalYear,
         CANFundingLoading,
+        isTableLoading,
         budgetLineItemsByFiscalYear,
         canNumber: can?.number ?? NO_DATA,
         description: can?.description,
