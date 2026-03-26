@@ -14,6 +14,7 @@ from data_tools.src.load_award_date.utils import (
 )
 from data_tools.src.load_data import main
 from models import *  # noqa: F403, F401
+from models.agreement_history import AgreementHistory
 
 
 def test_create_award_date_data():
@@ -233,6 +234,64 @@ def test_update_award_date(db_for_award_date):
         .all()
     )
     assert len(ops_events) >= 1
+
+
+def test_update_award_date_creates_agreement_history(db_for_award_date):
+    """Test that updating an award date creates an AgreementHistory entry."""
+    sys_user = get_or_create_sys_user(db_for_award_date)
+
+    data = AwardDateData(
+        agreement_name="Test Contract",
+        award_date="2042-10-01",
+        agreement_id=1,
+        project_title="Test Project",
+        agreement_type="CONTRACT",
+    )
+
+    update_award_date(data, sys_user, db_for_award_date)
+
+    history_entries = (
+        db_for_award_date.execute(
+            select(AgreementHistory).where(AgreementHistory.agreement_id_record == 1)
+        )
+        .scalars()
+        .all()
+    )
+    assert len(history_entries) >= 1
+
+    award_date_history = [h for h in history_entries if h.history_title == "Change to Award Date"]
+    assert len(award_date_history) == 1
+    assert "Award Date" in award_date_history[0].history_message
+    assert "10/01/2042" in award_date_history[0].history_message
+    assert "None" in award_date_history[0].history_message  # old value was None
+
+
+def test_update_award_date_overwrites_creates_agreement_history(db_for_award_date):
+    """Test that overwriting an existing award date creates an AgreementHistory with old and new dates."""
+    sys_user = get_or_create_sys_user(db_for_award_date)
+
+    # Agreement 4 already has date_awarded_obligated = 2040-01-01
+    data = AwardDateData(
+        agreement_name="Test Contract With Date",
+        award_date="2045-06-15",
+        agreement_id=4,
+        project_title="Test Project",
+        agreement_type="CONTRACT",
+    )
+
+    update_award_date(data, sys_user, db_for_award_date)
+
+    history_entries = (
+        db_for_award_date.execute(
+            select(AgreementHistory).where(AgreementHistory.agreement_id_record == 4)
+        )
+        .scalars()
+        .all()
+    )
+    award_date_history = [h for h in history_entries if h.history_title == "Change to Award Date"]
+    assert len(award_date_history) == 1
+    assert "01/01/2040" in award_date_history[0].history_message  # old value
+    assert "06/15/2045" in award_date_history[0].history_message  # new value
 
 
 def test_update_award_date_grant(db_for_award_date):
