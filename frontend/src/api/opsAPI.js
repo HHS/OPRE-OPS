@@ -823,7 +823,7 @@ export const opsApi = createApi({
         }),
         getPortfolios: builder.query({
             query: (arg) => {
-                if (arg?.projectId) {
+                if (arg?.projectId != null) {
                     return `/portfolios/?project_id=${arg.projectId}`;
                 }
                 return `/portfolios/`;
