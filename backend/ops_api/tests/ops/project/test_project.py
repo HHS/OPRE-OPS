@@ -66,12 +66,12 @@ def test_projects_serialization(auth_client, loaded_db, test_user, test_project)
     assert response.json["team_leaders"][0]["full_name"] == "Chris Fortunato"
 
 
-def test_projects_with_fiscal_year_found(auth_client, loaded_db, test_project):
-    response = auth_client.get(url_for("api.projects-group", fiscal_year=[2023]))
+def test_projects_with_fiscal_year_found(auth_client, loaded_db):
+    response = auth_client.get(url_for("api.projects-group", fiscal_year=[2045]))
     assert response.status_code == 200
     assert response.json["count"] == 1
     assert len(response.json["data"]) == 1
-    assert response.json["data"][0]["title"] == "Support Project #1"
+    assert response.json["data"][0]["title"] == "Human Services Interoperability Support"
 
 
 def test_projects_with_fiscal_year_not_found(auth_client, loaded_db):
