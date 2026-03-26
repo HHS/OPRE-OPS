@@ -124,24 +124,28 @@ const ProcurementTrackerStepThree = ({
                         </div>
                     )}
                     <dl className="display-flex flex-wrap">
-                        <TermTag
-                            term="Solicitation Period - Start"
-                            description={solicitationStartDateLabel || "TBD"}
-                            className="margin-right-4"
-                        />
-                        <TermTag
-                            term="Solicitation Period - End"
-                            description={solicitationEndDateLabel || "TBD"}
-                        />
-                        <TermTag
-                            term="Completed By"
-                            description={step3CompletedByUserName || "TBD"}
-                            className="margin-right-4"
-                        />
-                        <TermTag
-                            term="Date Completed"
-                            description={step3DateCompletedLabel || "TBD"}
-                        />
+                        <div>
+                            <TermTag
+                                term="Solicitation Period - Start"
+                                description={solicitationStartDateLabel || "TBD"}
+                                className="margin-right-4"
+                            />
+                            <TermTag
+                                term="Solicitation Period - End"
+                                description={solicitationEndDateLabel || "TBD"}
+                            />
+                        </div>
+                        <div>
+                            <TermTag
+                                term="Completed By"
+                                description={step3CompletedByUserName || "TBD"}
+                                className="margin-right-4"
+                            />
+                            <TermTag
+                                term="Date Completed"
+                                description={step3DateCompletedLabel || "TBD"}
+                            />
+                        </div>
                         <div className="width-full">
                             <dt className="margin-0 text-base-dark margin-top-3 font-12px">Notes</dt>
                             <dd className="margin-0 margin-top-1">{step3NotesLabel || "None"}</dd>

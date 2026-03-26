@@ -1072,6 +1072,7 @@ export const {
     useLazyGetUserByIdQuery,
     useGetUserByOIDCIdQuery,
     useGetProjectsQuery,
+    useLazyGetProjectsQuery,
     useGetProjectByIdQuery,
     useGetProjectsByPortfolioQuery,
     useGetResearchProjectsQuery,
