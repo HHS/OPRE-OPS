@@ -529,7 +529,7 @@ class CANService:
 
         return filtered
 
-    def get_can_funding(self, id: int, fiscal_year: int) -> dict:
+    def get_can_funding(self, id: int, fiscal_year: Optional[int] = None) -> dict:
         """Get funding summary for a single CAN."""
         stmt = (
             select(CAN)
@@ -578,10 +578,12 @@ class CANService:
             "can": {
                 "id": can.id,
                 "number": can.number,
+                "display_name": can.display_name,
                 "nick_name": can.nick_name,
                 "portfolio_id": can.portfolio_id,
                 "portfolio": can.portfolio.abbreviation if can.portfolio else None,
                 "active_period": can.active_period,
+                "appropriation_date": can.funding_details.fiscal_year if can.funding_details else None,
                 "carry_forward_label": can_detail["carry_forward_label"],
                 "expiration_date": can_detail["expiration_date"],
             },
@@ -634,6 +636,7 @@ class CANService:
                 {
                     "id": can_data.get("id"),
                     "number": can_data.get("number"),
+                    "display_name": can_data.get("display_name"),
                     "nick_name": can_data.get("nick_name"),
                     "portfolio_id": can_data.get("portfolio_id"),
                     "portfolio": (
@@ -642,6 +645,7 @@ class CANService:
                         else None
                     ),
                     "active_period": can_data.get("active_period"),
+                    "appropriation_date": can_data.get("appropriation_date"),
                     "carry_forward_label": can_entry.get("carry_forward_label"),
                     "expiration_date": can_entry.get("expiration_date"),
                 }

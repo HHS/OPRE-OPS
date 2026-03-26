@@ -5,7 +5,6 @@ from marshmallow import Schema, fields
 from models import CAN, OpsEventType
 from models.base import BaseModel
 from models.utils import generate_events_update
-from models.utils.fiscal_year import get_current_fiscal_year
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
@@ -206,7 +205,7 @@ class CANFundingAPI(BaseItemAPI):
     def get(self, id: int) -> Response:
         request_schema = CANFundingRequestSchema()
         data = request_schema.load(request.args.to_dict())
-        fiscal_year = data.get("fiscal_year") or get_current_fiscal_year()
+        fiscal_year = data.get("fiscal_year")
 
         service = CANService(current_app.db_session)
         funding = service.get_can_funding(id, fiscal_year)

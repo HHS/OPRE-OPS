@@ -305,16 +305,18 @@ class CANFundingByFiscalYearSchema(Schema):
 class CANFundingCANDetailSchema(Schema):
     id = fields.Int(required=True)
     number = fields.String(required=True)
+    display_name = fields.String(allow_none=True)
     nick_name = fields.String(allow_none=True)
     portfolio_id = fields.Int(required=True)
     portfolio = fields.String(allow_none=True)
     active_period = fields.Int(allow_none=True)
+    appropriation_date = fields.Int(allow_none=True)
     carry_forward_label = fields.String(allow_none=True)
     expiration_date = fields.String(allow_none=True)
 
 
 class CANFundingResponseSchema(Schema):
-    fiscal_year = fields.Int(required=True)
+    fiscal_year = fields.Int(allow_none=True)
     funding = fields.Nested(CANFundingAmountsSchema)
     funding_by_fiscal_year = fields.List(fields.Nested(CANFundingByFiscalYearSchema))
     can = fields.Nested(CANFundingCANDetailSchema)
