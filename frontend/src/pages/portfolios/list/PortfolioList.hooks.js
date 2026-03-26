@@ -16,6 +16,7 @@ export const usePortfolioList = ({ currentUserId, searchParams }) => {
     const {
         data: allPortfolios,
         isLoading: isLoadingPortfolios,
+        isFetching: isFetchingPortfolios,
         isError: isErrorPortfolios
     } = useGetPortfoliosQuery({});
 
@@ -67,6 +68,7 @@ export const usePortfolioList = ({ currentUserId, searchParams }) => {
     const {
         data: fundingData,
         isLoading: isLoadingFunding,
+        isFetching: isFetchingFunding,
         isError: isErrorFunding
     } = useGetPortfolioFundingSummaryBatchQuery({
         fiscalYear,
@@ -76,7 +78,7 @@ export const usePortfolioList = ({ currentUserId, searchParams }) => {
         availablePct: shouldApplyPctFilter ? availablePct : undefined
     });
 
-    const isLoading = isLoadingPortfolios || isLoadingFunding;
+    const isLoading = isLoadingPortfolios || isFetchingPortfolios || isLoadingFunding || isFetchingFunding;
     const isError = isErrorPortfolios || isErrorFunding;
 
     // Calculate budget range for filter components

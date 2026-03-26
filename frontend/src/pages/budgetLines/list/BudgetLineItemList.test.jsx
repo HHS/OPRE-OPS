@@ -155,6 +155,7 @@ describe("BudgetLineItemList", () => {
         useGetBudgetLineItemsQuery.mockReturnValue({
             data: undefined,
             isLoading: true,
+            isFetching: false,
             isError: false
         });
 
@@ -164,13 +165,14 @@ describe("BudgetLineItemList", () => {
             </Provider>
         );
 
-        expect(screen.getByText("Loading...")).toBeInTheDocument();
+        expect(screen.getByRole("table", { name: "Loading budget lines" })).toBeInTheDocument();
     });
 
     it("renders error state", () => {
         useGetBudgetLineItemsQuery.mockReturnValue({
             data: undefined,
             isLoading: false,
+            isFetching: false,
             isError: true
         });
 
@@ -187,6 +189,7 @@ describe("BudgetLineItemList", () => {
         useGetBudgetLineItemsQuery.mockReturnValue({
             data: mockBudgetLineItems,
             isLoading: false,
+            isFetching: false,
             isError: false
         });
 
@@ -214,6 +217,7 @@ describe("BudgetLineItemList", () => {
         useGetBudgetLineItemsQuery.mockReturnValue({
             data: mockBudgetLineItems,
             isLoading: false,
+            isFetching: false,
             isError: false
         });
 
@@ -241,6 +245,7 @@ describe("BudgetLineItemList", () => {
         useGetBudgetLineItemsQuery.mockReturnValue({
             data: mockBudgetLineItems,
             isLoading: false,
+            isFetching: false,
             isError: false
         });
 
@@ -272,6 +277,7 @@ describe("BudgetLineItemList", () => {
         useGetBudgetLineItemsQuery.mockReturnValue({
             data: mockBudgetLineItems,
             isLoading: false,
+            isFetching: false,
             isError: false
         });
 
@@ -299,6 +305,7 @@ describe("BudgetLineItemList", () => {
         useGetBudgetLineItemsQuery.mockReturnValue({
             data: mockBudgetLineItems,
             isLoading: false,
+            isFetching: false,
             isError: false
         });
 
@@ -321,6 +328,7 @@ describe("BudgetLineItemList", () => {
         useGetBudgetLineItemsQuery.mockReturnValue({
             data: [],
             isLoading: false,
+            isFetching: false,
             isError: false
         });
 
@@ -337,6 +345,7 @@ describe("BudgetLineItemList", () => {
         useGetBudgetLineItemsQuery.mockReturnValue({
             data: [],
             isLoading: false,
+            isFetching: false,
             isError: false
         });
 
@@ -353,6 +362,7 @@ describe("BudgetLineItemList", () => {
         useGetBudgetLineItemsQuery.mockReturnValue({
             data: mockBudgetLineItems,
             isLoading: false,
+            isFetching: false,
             isError: false
         });
 
@@ -375,6 +385,7 @@ describe("BudgetLineItemList", () => {
         useGetBudgetLineItemsQuery.mockReturnValue({
             data: mockBudgetLineItems,
             isLoading: false,
+            isFetching: false,
             isError: false
         });
 
@@ -397,6 +408,7 @@ describe("BudgetLineItemList", () => {
         useGetBudgetLineItemsQuery.mockReturnValue({
             data: mockBudgetLineItems,
             isLoading: false,
+            isFetching: false,
             isError: false
         });
 
@@ -413,6 +425,7 @@ describe("BudgetLineItemList", () => {
         useGetBudgetLineItemsQuery.mockReturnValue({
             data: null,
             isLoading: false,
+            isFetching: false,
             isError: false
         });
 
@@ -442,6 +455,7 @@ describe("BudgetLineItemList", () => {
         useGetBudgetLineItemsQuery.mockReturnValue({
             data: mockBudgetLineItems,
             isLoading: false,
+            isFetching: false,
             isError: false
         });
 
@@ -484,6 +498,7 @@ describe("BudgetLineItemList", () => {
         useGetBudgetLineItemsQuery.mockReturnValue({
             data: mockBudgetLineItems,
             isLoading: false,
+            isFetching: false,
             isError: false
         });
 
