@@ -2993,7 +2993,7 @@ paths:
                           properties:
                             amount:
                               type: number
-                              format: decimal
+                              format: float
                               description: Total amount for this project type
                             percent:
                               type: number

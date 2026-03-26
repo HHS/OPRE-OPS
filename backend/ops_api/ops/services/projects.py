@@ -11,6 +11,7 @@ from models import (
     AdministrativeAndSupportProject,
     Agreement,
     BudgetLineItem,
+    BudgetLineItemStatus,
     CANFundingBudget,
     CANFundingDetails,
     Portfolio,
@@ -236,7 +237,9 @@ class ProjectsService(OpsService[Project]):
             .join(CANFundingBudget, isouter=True)
             .options(
                 selectinload(ResearchProject.agreements).selectinload(Agreement.services_components),
-                selectinload(ResearchProject.agreements).selectinload(Agreement.budget_line_items),
+                selectinload(ResearchProject.agreements)
+                .selectinload(Agreement.budget_line_items)
+                .selectinload(BudgetLineItem.can),
                 selectinload(ResearchProject.agreements).selectinload(Agreement.special_topics),
                 selectinload(ResearchProject.agreements).selectinload(Agreement.research_methodologies),
                 selectinload(ResearchProject.agreements).selectinload(Agreement.team_members),
@@ -303,7 +306,9 @@ class ProjectsService(OpsService[Project]):
             .join(CANFundingBudget, isouter=True)
             .options(
                 selectinload(ResearchProject.agreements).selectinload(Agreement.services_components),
-                selectinload(ResearchProject.agreements).selectinload(Agreement.budget_line_items),
+                selectinload(ResearchProject.agreements)
+                .selectinload(Agreement.budget_line_items)
+                .selectinload(BudgetLineItem.can),
                 selectinload(ResearchProject.agreements).selectinload(Agreement.special_topics),
                 selectinload(ResearchProject.agreements).selectinload(Agreement.research_methodologies),
                 selectinload(ResearchProject.agreements).selectinload(Agreement.team_members),
@@ -460,6 +465,18 @@ class ProjectsService(OpsService[Project]):
         else:
             return project.id
 
+    @staticmethod
+    def _compute_scoped_amount(project: Project, portfolio_ids: set[int], fiscal_years: set[int] | None) -> Decimal:
+        """Compute the total BLI amount for a project scoped to the given portfolio(s) and optional fiscal years."""
+        total = Decimal("0")
+        for agreement in project.agreements:
+            for bli in agreement.budget_line_items:
+                if (bli.is_obe or bli.status != BudgetLineItemStatus.DRAFT) and bli.fiscal_year is not None:
+                    if bli.can and bli.can.portfolio_id in portfolio_ids:
+                        if fiscal_years is None or bli.fiscal_year in fiscal_years:
+                            total += (bli.amount or Decimal("0")) + (bli.fees or Decimal("0"))
+        return total
+
     def get_list(self, data: dict[str, Any] | None = None) -> tuple[Sequence[Project], dict[str, Any]]:
         """
         Get list of projects with optional filtering and pagination.
@@ -520,7 +537,8 @@ class ProjectsService(OpsService[Project]):
         total_count = len(sorted_projects)
 
         # Compute summary over full filtered set
-        selected_fy = filters.fiscal_year[0] if filters.fiscal_year and len(filters.fiscal_year) == 1 else None
+        selected_fiscal_years = set(filters.fiscal_year) if filters.fiscal_year else None
+        portfolio_id_set = set(filters.portfolio_id) if filters.portfolio_id else None
 
         projects_by_type = {t.name: 0 for t in ProjectType}
         amounts_by_type = {t.name: Decimal("0") for t in ProjectType}
@@ -528,12 +546,20 @@ class ProjectsService(OpsService[Project]):
         for project in all_projects:
             type_name = project.project_type.name
             projects_by_type[type_name] += 1
-            pm = metadata_cache[project.id]
-            if selected_fy:
-                if selected_fy in pm["by_fiscal_year"]:
-                    amounts_by_type[type_name] += pm["by_fiscal_year"][selected_fy]
+
+            if portfolio_id_set:
+                # Scope amounts to only BLIs whose CAN belongs to the filtered portfolio(s)
+                amounts_by_type[type_name] += self._compute_scoped_amount(
+                    project, portfolio_id_set, selected_fiscal_years
+                )
             else:
-                amounts_by_type[type_name] += pm["total"]
+                pm = metadata_cache[project.id]
+                if selected_fiscal_years:
+                    for fy in selected_fiscal_years:
+                        if fy in pm["by_fiscal_year"]:
+                            amounts_by_type[type_name] += pm["by_fiscal_year"][fy]
+                else:
+                    amounts_by_type[type_name] += pm["total"]
 
         total_amount = sum(amounts_by_type.values())
         summary = {

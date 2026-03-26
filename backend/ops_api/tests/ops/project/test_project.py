@@ -399,6 +399,19 @@ def test_projects_summary_amounts_by_type_structure(auth_client, loaded_db):
         assert abs(total_percent - 100.0) < 0.5
 
 
+def test_projects_summary_ignores_pagination(auth_client, loaded_db):
+    """Summary aggregates should be computed over the full filtered set, ignoring limit/offset."""
+    response_all = auth_client.get(url_for("api.projects-group", limit=50))
+    assert response_all.status_code == 200
+    summary_all = response_all.json["summary"]
+
+    response_paginated = auth_client.get(url_for("api.projects-group", limit=1, offset=1))
+    assert response_paginated.status_code == 200
+    summary_paginated = response_paginated.json["summary"]
+
+    assert summary_paginated == summary_all
+
+
 def test_projects_summary_with_project_type_filter(auth_client, loaded_db):
     """Test that summary projects_by_type has zero for non-filtered type."""
     response = auth_client.get(url_for("api.projects-group", project_type=[ProjectType.RESEARCH.name], limit=50))
@@ -411,6 +424,96 @@ def test_projects_summary_with_project_type_filter(auth_client, loaded_db):
     # Filtered-out type should be 0
     assert summary["projects_by_type"][ProjectType.ADMINISTRATIVE_AND_SUPPORT.name] == 0
     assert summary["total_projects"] == summary["projects_by_type"][ProjectType.RESEARCH.name]
+
+
+def test_projects_summary_scoped_to_portfolio(auth_client, loaded_db):
+    """Summary amounts should only include BLIs whose CAN belongs to the filtered portfolio."""
+    unique = uuid.uuid4().hex[:8]
+
+    portfolio_1 = loaded_db.get(Portfolio, 1)
+    portfolio_6 = loaded_db.get(Portfolio, 6)
+
+    # Two CANs in different portfolios
+    can1_details = CANFundingDetails(fiscal_year=2025, fund_code="AAXXXX20251DAD")
+    loaded_db.add(can1_details)
+    loaded_db.flush()
+    can1 = CAN(number=f"G98A{unique}", portfolio_id=portfolio_1.id)
+    can1.funding_details = can1_details
+    loaded_db.add(can1)
+    loaded_db.flush()
+    can1_budget = CANFundingBudget(can_id=can1.id, fiscal_year=2025, budget=Decimal("1000000.00"))
+    loaded_db.add(can1_budget)
+
+    can2_details = CANFundingDetails(fiscal_year=2025, fund_code="BBXXXX20251DAD")
+    loaded_db.add(can2_details)
+    loaded_db.flush()
+    can2 = CAN(number=f"G98B{unique}", portfolio_id=portfolio_6.id)
+    can2.funding_details = can2_details
+    loaded_db.add(can2)
+    loaded_db.flush()
+    can2_budget = CANFundingBudget(can_id=can2.id, fiscal_year=2025, budget=Decimal("500000.00"))
+    loaded_db.add(can2_budget)
+
+    # Project with one agreement having BLIs in both portfolios
+    project = ResearchProject(
+        title=f"Multi Portfolio Project {unique}",
+        short_title="MPP",
+        description="Test portfolio scoping",
+    )
+    loaded_db.add(project)
+    loaded_db.flush()
+
+    agreement = ContractAgreement(name=f"Multi Portfolio Agreement {unique}", project_id=project.id)
+    loaded_db.add(agreement)
+    loaded_db.flush()
+
+    bli1 = BudgetLineItem(
+        budget_line_item_type=AgreementType.CONTRACT,
+        agreement_id=agreement.id,
+        can_id=can1.id,
+        amount=Decimal("200000.00"),
+        status=BudgetLineItemStatus.PLANNED,
+        date_needed=date(2025, 3, 15),
+    )
+    bli2 = BudgetLineItem(
+        budget_line_item_type=AgreementType.CONTRACT,
+        agreement_id=agreement.id,
+        can_id=can2.id,
+        amount=Decimal("100000.00"),
+        status=BudgetLineItemStatus.PLANNED,
+        date_needed=date(2025, 6, 1),
+    )
+    loaded_db.add_all([bli1, bli2])
+    loaded_db.commit()
+
+    # Filter by portfolio_1 — summary should only include the $200k BLI, not the $100k one
+    response = auth_client.get(
+        url_for("api.projects-group", portfolio_id=[portfolio_1.id], fiscal_year=[2025], limit=50)
+    )
+    assert response.status_code == 200
+    summary = response.json["summary"]
+
+    # Find the RESEARCH amount in the response
+    research_amount = summary["amounts_by_type"]["RESEARCH"]["amount"]
+
+    # Filter by portfolio_6 — should include the $100k BLI
+    response_p6 = auth_client.get(
+        url_for("api.projects-group", portfolio_id=[portfolio_6.id], fiscal_year=[2025], limit=50)
+    )
+    assert response_p6.status_code == 200
+    summary_p6 = response_p6.json["summary"]
+    research_amount_p6 = summary_p6["amounts_by_type"]["RESEARCH"]["amount"]
+
+    # Unfiltered request should have a higher or equal total than either portfolio-scoped request,
+    # proving that portfolio scoping excludes BLIs from other portfolios
+    response_unfiltered = auth_client.get(url_for("api.projects-group", fiscal_year=[2025], limit=50))
+    assert response_unfiltered.status_code == 200
+    unfiltered_research = response_unfiltered.json["summary"]["amounts_by_type"]["RESEARCH"]["amount"]
+
+    assert unfiltered_research >= research_amount
+    assert unfiltered_research >= research_amount_p6
+    # The two portfolio-scoped amounts must differ (our test project contributes $200k vs $100k)
+    assert research_amount != research_amount_p6
 
 
 def test_projects_get_by_id_auth(client):
