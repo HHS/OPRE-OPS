@@ -94,13 +94,13 @@ const CANFundingReceivedTableRow = ({
      * @param {number} props.totalFunding - The total funding available.
      * @returns {JSX.Element} The rendered table row data.
      */
-    const TableRowData = ({ rowId, fiscalYear, funding = 0, totalFunding }) => (
+    const tableRowData = (
         <>
-            <td>{rowId}</td>
-            <td>{fiscalYear}</td>
+            <td>{fundingReceived.id}</td>
+            <td>{fundingReceived.fiscal_year}</td>
             <td>
                 <CurrencyFormat
-                    value={funding}
+                    value={fundingReceived.funding ?? 0}
                     displayType={"text"}
                     thousandSeparator={true}
                     prefix={"$"}
@@ -108,7 +108,7 @@ const CANFundingReceivedTableRow = ({
                     fixedDecimalScale
                 />
             </td>
-            <td>{calculatePercent(funding, totalFunding)}%</td>
+            <td>{calculatePercent(fundingReceived.funding ?? 0, +totalFunding)}%</td>
             {isRowActive && isEditMode ? (
                 <td>
                     <ChangeIcons
@@ -132,16 +132,10 @@ const CANFundingReceivedTableRow = ({
             )}
         </>
     );
+
     return (
         <TableRowExpandable
-            tableRowData={
-                <TableRowData
-                    rowId={fundingReceived.id}
-                    fiscalYear={fundingReceived.fiscal_year}
-                    funding={fundingReceived.funding}
-                    totalFunding={+totalFunding}
-                />
-            }
+            tableRowData={tableRowData}
             expandedData={
                 <ExpandedData
                     createdBy={

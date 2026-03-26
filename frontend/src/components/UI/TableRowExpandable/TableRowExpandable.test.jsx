@@ -43,4 +43,23 @@ describe("TableRowExpandable", () => {
         expect(screen.getByTestId("fy-cell")).toHaveClass("table-item-error", "border-bottom-none");
         expect(screen.getByTestId("fy-cell")).toHaveStyle({ backgroundColor: "var(--base-light-variant)" });
     });
+
+    it("preserves existing inline background colors when collapsed", () => {
+        render(
+            <table>
+                <tbody>
+                    <TableRowExpandable
+                        tableRowData={<td data-testid="colored-cell" style={{ backgroundColor: "rgb(255, 0, 0)" }}>Red</td>}
+                        expandedData={<td colSpan={2}>Expanded</td>}
+                        isExpanded={false}
+                        setIsExpanded={() => {}}
+                        setIsRowActive={() => {}}
+                    />
+                </tbody>
+            </table>
+        );
+
+        expect(screen.getByTestId("colored-cell")).toHaveStyle({ backgroundColor: "rgb(255, 0, 0)" });
+        expect(screen.getByTestId("colored-cell")).not.toHaveClass("border-bottom-none");
+    });
 });

@@ -1,4 +1,5 @@
 import { render, screen, fireEvent } from "@testing-library/react";
+import { within } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import WhatsNextTableRow from "./WhatsNextTableRow";
 import { useTableRow } from "../../../components/UI/TableRowExpandable/TableRowExpandable.hooks";
@@ -7,12 +8,20 @@ import { useTableRow } from "../../../components/UI/TableRowExpandable/TableRowE
 vi.mock("../../../components/UI/TableRowExpandable", () => ({
     default: ({ tableRowData, expandedData, isExpanded, setIsExpanded }) => (
         <div data-testid="table-row-expandable">
-            <div data-testid="table-row-data">{tableRowData}</div>
+            <table>
+                <tbody>
+                    <tr data-testid="table-row-data">{tableRowData}</tr>
+                </tbody>
+            </table>
             <div
                 data-testid="expanded-data"
                 style={{ display: isExpanded ? "block" : "none" }}
             >
-                {expandedData}
+                <table>
+                    <tbody>
+                        <tr data-testid="expanded-row">{expandedData}</tr>
+                    </tbody>
+                </table>
             </div>
             <button
                 data-testid="toggle-button"
@@ -137,8 +146,8 @@ describe("WhatsNextTableRow Component", () => {
 
         render(<WhatsNextTableRow item={mockItem} />);
 
-        const expandedContent = screen.getByTestId("expanded-data");
-        expect(expandedContent.innerHTML).toContain("base-light-variant");
+        const styledCell = within(screen.getByTestId("expanded-row")).getByRole("cell");
+        expect(styledCell).toHaveStyle({ backgroundColor: "var(--base-light-variant)" });
     });
 
     it("handles expandable functionality correctly", () => {

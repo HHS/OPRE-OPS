@@ -24,10 +24,12 @@ const applyExpandedCellStyles = (node, isExpanded) => {
 
     return React.cloneElement(node, {
         className: mergeClassNames(node.props.className, removeBorderBottomIfExpanded(isExpanded)),
-        style: {
-            ...node.props.style,
-            ...changeBgColorIfExpanded(isExpanded)
-        }
+        style: isExpanded
+            ? {
+                  ...node.props.style,
+                  ...changeBgColorIfExpanded(true)
+              }
+            : node.props.style
     });
 };
 
