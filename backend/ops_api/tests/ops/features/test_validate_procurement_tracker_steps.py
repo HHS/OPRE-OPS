@@ -56,7 +56,12 @@ def cleanup(loaded_db, context):
             if isinstance(can_id, int):
                 loaded_db.execute(text("DELETE FROM can_funding_received WHERE can_id = :id"), {"id": can_id})
                 loaded_db.execute(text("DELETE FROM can_funding_budget WHERE can_id = :id"), {"id": can_id})
-                loaded_db.execute(text("DELETE FROM can_funding_details WHERE id = (SELECT funding_details_id FROM can WHERE id = :id)"), {"id": can_id})
+                loaded_db.execute(
+                    text(
+                        "DELETE FROM can_funding_details WHERE id = (SELECT funding_details_id FROM can WHERE id = :id)"
+                    ),
+                    {"id": can_id},
+                )
                 loaded_db.execute(text("DELETE FROM can WHERE id = :id"), {"id": can_id})
 
         # Delete ProcurementTracker (joined-table inheritance)
