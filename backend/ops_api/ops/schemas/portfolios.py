@@ -1,4 +1,4 @@
-from marshmallow import Schema, fields
+from marshmallow import EXCLUDE, Schema, fields
 
 
 class PortfolioCansRequestSchema(Schema):
@@ -8,4 +8,7 @@ class PortfolioCansRequestSchema(Schema):
 
 
 class PortfolioListRequestSchema(Schema):
+    class Meta:
+        unknown = EXCLUDE
+
     project_id = fields.Integer(required=False)
