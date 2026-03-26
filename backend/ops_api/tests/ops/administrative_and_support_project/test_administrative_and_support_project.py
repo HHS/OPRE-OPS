@@ -38,7 +38,11 @@ def test_administrative_and_support_projects_serialization(auth_client, loaded_d
 
 def test_administrative_and_support_projects_with_fiscal_year_found(auth_client, loaded_db):
     response = auth_client.get(
-        url_for("api.projects-group", fiscal_year=[2023], project_type=[ProjectType.ADMINISTRATIVE_AND_SUPPORT.name])
+        url_for(
+            "api.projects-group",
+            fiscal_year=[2044],
+            project_type=[ProjectType.ADMINISTRATIVE_AND_SUPPORT.name],
+        )
     )
     assert response.status_code == 200
     # Filter for administrative and support projects
