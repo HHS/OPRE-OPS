@@ -2,11 +2,7 @@ import CurrencyFormat from "react-currency-format";
 import { Link } from "react-router-dom";
 import TableRowExpandable from "../../UI/TableRowExpandable/TableRowExpandable";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
-import {
-    changeBgColorIfExpanded,
-    expandedRowBGColor,
-    removeBorderBottomIfExpanded
-} from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
+import { expandedRowBGColor } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { NO_DATA } from "../../../constants";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
@@ -47,17 +43,11 @@ const ProjectTableRow = ({ project, selectedFiscalYear }) => {
     const projectTotal =
         project.project_total !== null && project.project_total !== undefined ? Number(project.project_total) : null;
 
-    const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
-    const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
-
     const agreementList = project.agreement_name_list ?? [];
 
     const tableRowData = (
         <>
-            <td
-                className={borderExpandedStyles}
-                style={bgExpandedStyles}
-            >
+            <td>
                 <Link
                     className="text-ink text-no-underline"
                     to={`/projects/${project.id}`}
@@ -65,28 +55,10 @@ const ProjectTableRow = ({ project, selectedFiscalYear }) => {
                     {project.title}
                 </Link>
             </td>
-            <td
-                className={borderExpandedStyles}
-                style={bgExpandedStyles}
-            >
-                {convertCodeForDisplay("project", project.project_type)}
-            </td>
-            <td
-                className={borderExpandedStyles}
-                style={bgExpandedStyles}
-            >
-                {formatProjectDate(project.start_date)}
-            </td>
-            <td
-                className={borderExpandedStyles}
-                style={bgExpandedStyles}
-            >
-                {formatProjectDate(project.end_date)}
-            </td>
-            <td
-                className={borderExpandedStyles}
-                style={bgExpandedStyles}
-            >
+            <td>{convertCodeForDisplay("project", project.project_type)}</td>
+            <td>{formatProjectDate(project.start_date)}</td>
+            <td>{formatProjectDate(project.end_date)}</td>
+            <td>
                 {fyTotal !== null ? (
                     <CurrencyFormat
                         value={fyTotal}
@@ -101,10 +73,7 @@ const ProjectTableRow = ({ project, selectedFiscalYear }) => {
                     NO_DATA
                 )}
             </td>
-            <td
-                className={borderExpandedStyles}
-                style={bgExpandedStyles}
-            >
+            <td>
                 {projectTotal !== null && projectTotal > 0 ? (
                     <CurrencyFormat
                         value={projectTotal}
