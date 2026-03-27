@@ -82,6 +82,15 @@ export default function useRequestPreAwardApproval(agreementId) {
     // Disable editing when pending OR approved (but allow re-request when declined)
     const hasApprovalBeenRequested = isApprovalPending || isApprovalApproved;
 
+    console.log("🔍 Pre-Award Approval State:", {
+        step5_approval_requested: step5?.approval_requested,
+        step5_approval_status: step5?.approval_status,
+        step5_approval_responded_by: step5?.approval_responded_by,
+        isApprovalPending,
+        isApprovalApproved,
+        hasApprovalBeenRequested
+    });
+
     // Check if any BLI is in review status
     const hasBLIInReview = agreement?.budget_line_items?.some((bli) => bli.in_review) ?? false;
 
