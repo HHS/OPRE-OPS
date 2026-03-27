@@ -6,12 +6,12 @@ import TablePageLayout from "../../components/Layouts/TablePageLayout";
 import { useGetAgreementsQuery, useGetProcurementTrackersByAgreementIdsQuery } from "../../api/opsAPI";
 import { BLI_STATUS } from "../../helpers/budgetLines.helpers";
 import { exportMultiSheetToXlsx } from "../../helpers/tableExport.helpers";
+import { getCurrentFiscalYear } from "../../helpers/utils";
 import ProcShopFilter from "./ProcShopFilter";
 import ProcurementDashboardTabs from "./ProcurementDashboardTabs";
 import ProcurementSummaryCards from "./ProcurementSummaryCards";
 
-// TODO: Replace with 2026 once test data is available for that fiscal year
-const CURRENT_FISCAL_YEAR = 2044;
+const CURRENT_FISCAL_YEAR = Number(getCurrentFiscalYear());
 
 const FILTER_TO_AWARD_TYPE = {
     "first-award": "NEW",
@@ -76,8 +76,6 @@ const ProcurementDashboard = () => {
             "BLI ID",
             "Fiscal Year",
             "BLI Amount"
-            // "BLI Fees",
-            // "BLI Status"
         ];
         const currencyColumns = [8, 9];
 
@@ -102,9 +100,7 @@ const ProcurementDashboard = () => {
                         stepNumber,
                         bli.id,
                         bli.fiscal_year,
-                        bli.amount ?? 0,
-                        bli.fees ?? 0,
-                        bli.status ?? ""
+                        bli.amount ?? 0
                     ]);
                 }
             }
