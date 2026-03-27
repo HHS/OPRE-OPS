@@ -122,6 +122,10 @@ class ProcurementTrackerStepResponseSchema(Schema):
             data["approval_requested_date"] = getattr(obj, "pre_award_approval_requested_date", None)
             data["approval_requested_by"] = getattr(obj, "pre_award_approval_requested_by", None)
             data["requestor_notes"] = getattr(obj, "pre_award_requestor_notes", None)
+            data["approval_status"] = getattr(obj, "pre_award_approval_status", None)
+            data["approval_responded_by"] = getattr(obj, "pre_award_approval_responded_by", None)
+            data["approval_responded_date"] = getattr(obj, "pre_award_approval_responded_date", None)
+            data["reviewer_notes"] = getattr(obj, "pre_award_approval_reviewer_notes", None)
 
         return data
 
