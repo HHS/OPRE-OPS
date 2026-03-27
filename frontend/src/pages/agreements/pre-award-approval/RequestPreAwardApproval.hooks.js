@@ -70,8 +70,17 @@ export default function useRequestPreAwardApproval(agreementId) {
     const preAwardMemoDocuments =
         documentsData?.documents?.filter((doc) => doc.document_type === "PRE_AWARD_CONSENSUS_MEMO") || [];
 
-    // Check if approval has been requested but not yet responded to
-    const hasApprovalBeenRequested = step5?.approval_requested === true && !step5?.approval_responded_by;
+    // Check if approval is pending (requested but not yet approved or declined)
+    // This is used for both the banner and disabling buttons
+    const isApprovalPending =
+        step5?.approval_requested === true &&
+        (!step5?.approval_status || step5?.approval_status === "PENDING");
+
+    // Check if approval has been approved (prevents re-requesting)
+    const isApprovalApproved = step5?.approval_status === "APPROVED";
+
+    // Disable editing when pending OR approved (but allow re-request when declined)
+    const hasApprovalBeenRequested = isApprovalPending || isApprovalApproved;
 
     // Check if any BLI is in review status
     const hasBLIInReview = agreement?.budget_line_items?.some((bli) => bli.in_review) ?? false;
@@ -195,6 +204,7 @@ export default function useRequestPreAwardApproval(agreementId) {
         submitError,
         preAwardMemoDocuments,
         isSubmitting,
+        isApprovalPending,
         hasApprovalBeenRequested,
         hasBLIInReview,
         isStep4Completed

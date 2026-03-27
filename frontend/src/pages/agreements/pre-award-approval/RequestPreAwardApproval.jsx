@@ -49,6 +49,7 @@ export const RequestPreAwardApproval = () => {
         submitError,
         preAwardMemoDocuments,
         isSubmitting,
+        isApprovalPending,
         hasApprovalBeenRequested,
         hasBLIInReview,
         isStep4Completed
@@ -65,7 +66,7 @@ export const RequestPreAwardApproval = () => {
                 subTitle={agreement?.name}
             />
 
-            {hasApprovalBeenRequested && (
+            {isApprovalPending && (
                 <SimpleAlert
                     type="warning"
                     heading="Pre-Award Approval In Review"
