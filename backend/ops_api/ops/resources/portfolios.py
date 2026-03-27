@@ -66,7 +66,7 @@ class PortfolioListAPI(BaseListAPI):
                 .join(BudgetLineItem, BudgetLineItem.can_id == CAN.id)
                 .join(Agreement, Agreement.id == BudgetLineItem.agreement_id)
                 .where(Agreement.project_id == project_id)
-                .distinct()
+                .distinct(Portfolio.id)
             )
 
         result = current_app.db_session.scalars(stmt).all()
