@@ -94,8 +94,8 @@ describe("Budget Line Suite", () => {
     const validBudgetLine = {
         id: 1,
         amount: 1000,
-        can_id: "CAN123",
-        services_component_id: "SC1",
+        can_id: 502,
+        services_component_id: 6,
         date_needed: futureDate()
     };
 
@@ -112,13 +112,13 @@ describe("Budget Line Suite", () => {
     });
 
     it("fails if can_id is blank", () => {
-        const result = validateBudgetLineItem({ ...validBudgetLine, can_id: "" });
+        const result = validateBudgetLineItem({ ...validBudgetLine, can_id: null });
         expect(result.isValid).toBe(false);
         expect(result.errors).toHaveProperty("Budget Line CAN");
     });
 
     it("fails if services_component_id is blank", () => {
-        const result = validateBudgetLineItem({ ...validBudgetLine, services_component_id: "" });
+        const result = validateBudgetLineItem({ ...validBudgetLine, services_component_id: null });
         expect(result.isValid).toBe(false);
         expect(result.errors).toHaveProperty(
             "Budget lines need to be assigned to a services component to change their status"
@@ -151,8 +151,8 @@ describe("validateBudgetLineItems", () => {
     const validBudgetLine = {
         id: 1,
         amount: 100,
-        can_id: "CAN",
-        services_component_id: "SC",
+        can_id: 502,
+        services_component_id: 6,
         date_needed: (() => {
             const d = new Date();
             d.setDate(d.getDate() + 1);
