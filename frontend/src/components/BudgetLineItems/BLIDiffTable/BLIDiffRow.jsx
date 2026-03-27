@@ -9,11 +9,7 @@ import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.ho
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import { CHANGE_REQUEST_SLUG_TYPES, KEY_NAMES } from "../../ChangeRequests/ChangeRequests.constants";
 import TableRowExpandable from "../../UI/TableRowExpandable";
-import {
-    changeBgColorIfExpanded,
-    expandedRowBGColor,
-    removeBorderBottomIfExpanded
-} from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
+import { expandedRowBGColor } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import TableTag from "../../UI/TableTag";
 import Tooltip from "../../UI/USWDS/Tooltip";
@@ -45,8 +41,6 @@ const BLIDiffRow = ({ budgetLine, changeType, statusChangeTo = "" }) => {
     const lockedMessage = useChangeRequestsForTooltip(budgetLine, title);
     const feeTotal = budgetLine?.fees;
     const budgetLineTotalPlusFees = budgetLine?.total ?? 0;
-    const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
-    const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
     const changeRequestStatus = statusChangeTo === "EXECUTING" ? BLI_STATUS.EXECUTING : BLI_STATUS.PLANNED;
     const isBLIInReview = budgetLine?.in_review;
     const isBudgetChange = changeType === CHANGE_REQUEST_SLUG_TYPES.BUDGET;
@@ -71,36 +65,15 @@ const BLIDiffRow = ({ budgetLine, changeType, statusChangeTo = "" }) => {
 
     const TableRowData = (
         <>
-            <td
-                className={`${borderExpandedStyles}`}
-                style={bgExpandedStyles}
-            >
-                {BLILabel(budgetLine)}
-            </td>
-            <td
-                className={`${addDiffClass(
-                    changeRequestTypes.includes(KEY_NAMES.DATE_NEEDED)
-                )} ${borderExpandedStyles}`}
-                style={bgExpandedStyles}
-            >
+            <td>{BLILabel(budgetLine)}</td>
+            <td className={addDiffClass(changeRequestTypes.includes(KEY_NAMES.DATE_NEEDED))}>
                 {formatDateNeeded(budgetLine?.date_needed || "")}
             </td>
-            <td
-                className={`${addDiffClass(doesDateNeededChangeFY(budgetLine))} ${borderExpandedStyles}`}
-                style={bgExpandedStyles}
-            >
+            <td className={addDiffClass(doesDateNeededChangeFY(budgetLine))}>
                 {fiscalYearFromDate(budgetLine?.date_needed || "")}
             </td>
-            <td
-                className={`${addDiffClass(changeRequestTypes.includes(KEY_NAMES.CAN))} ${borderExpandedStyles}`}
-                style={bgExpandedStyles}
-            >
-                {canLabel(budgetLine)}
-            </td>
-            <td
-                className={`${addDiffClass(changeRequestTypes.includes(KEY_NAMES.AMOUNT))} ${borderExpandedStyles}`}
-                style={bgExpandedStyles}
-            >
+            <td className={addDiffClass(changeRequestTypes.includes(KEY_NAMES.CAN))}>{canLabel(budgetLine)}</td>
+            <td className={addDiffClass(changeRequestTypes.includes(KEY_NAMES.AMOUNT))}>
                 <CurrencyFormat
                     value={budgetLine?.amount || 0}
                     displayType={"text"}
@@ -112,8 +85,10 @@ const BLIDiffRow = ({ budgetLine, changeType, statusChangeTo = "" }) => {
                 />
             </td>
             <td
-                className={`${addDiffClass(changeRequestTypes.includes(KEY_NAMES.AMOUNT)) || addDiffClass(changeRequestTypes.includes(KEY_NAMES.PROC_SHOP))} ${borderExpandedStyles}`}
-                style={bgExpandedStyles}
+                className={
+                    addDiffClass(changeRequestTypes.includes(KEY_NAMES.AMOUNT)) ||
+                    addDiffClass(changeRequestTypes.includes(KEY_NAMES.PROC_SHOP))
+                }
             >
                 <CurrencyFormat
                     value={feeTotal}
@@ -126,8 +101,10 @@ const BLIDiffRow = ({ budgetLine, changeType, statusChangeTo = "" }) => {
                 />
             </td>
             <td
-                className={`${addDiffClass(changeRequestTypes.includes(KEY_NAMES.AMOUNT)) || addDiffClass(changeRequestTypes.includes(KEY_NAMES.PROC_SHOP))} ${borderExpandedStyles}`}
-                style={bgExpandedStyles}
+                className={
+                    addDiffClass(changeRequestTypes.includes(KEY_NAMES.AMOUNT)) ||
+                    addDiffClass(changeRequestTypes.includes(KEY_NAMES.PROC_SHOP))
+                }
             >
                 <CurrencyFormat
                     value={budgetLineTotalPlusFees}
@@ -139,10 +116,7 @@ const BLIDiffRow = ({ budgetLine, changeType, statusChangeTo = "" }) => {
                     renderText={(value) => value}
                 />
             </td>
-            <td
-                className={`${isActionable ? addDiffClass(changeRequestTypes.includes(KEY_NAMES.STATUS)) : ""} ${borderExpandedStyles}`}
-                style={bgExpandedStyles}
-            >
+            <td className={isActionable ? addDiffClass(changeRequestTypes.includes(KEY_NAMES.STATUS)) : ""}>
                 {isActionable ? (
                     <TableTag
                         status={budgetLine?.status}
