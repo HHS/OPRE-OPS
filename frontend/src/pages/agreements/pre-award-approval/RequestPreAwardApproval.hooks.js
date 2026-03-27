@@ -73,7 +73,7 @@ export default function useRequestPreAwardApproval(agreementId) {
     const hasBLIInReview = agreement?.budget_line_items?.some((bli) => bli.in_review) ?? false;
 
     // Check if Step 4 (Evaluation) is completed
-    const isStep4Completed = step4?.completed === true;
+    const isStep4Completed = step4?.status === "COMPLETED";
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];

@@ -6,7 +6,11 @@ import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import { fiscalYearFromDate, formatDateNeeded } from "../../../helpers/utils";
 import useGetUserFullNameFromId, { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
 import TableRowExpandable from "../../UI/TableRowExpandable";
-import { expandedRowBGColor } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
+import {
+    expandedRowBGColor,
+    removeBorderBottomIfExpanded,
+    changeBgColorIfExpanded
+} from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import TableTag from "../../UI/TableTag";
 import { addErrorClassIfNotFound, futureDateErrorClass } from "../BudgetLinesTable/BLIRow.helpers";
@@ -79,8 +83,8 @@ const BLIReviewRow = ({ budgetLine, isReviewMode = false, setSelectedBLIs, actio
         if (!showCheckbox) {
             return (
                 <td
-                    className={borderExpandedStyles}
-                    style={bgExpandedStyles}
+                    className={removeBorderBottomIfExpanded(isExpanded)}
+                    style={changeBgColorIfExpanded(isExpanded)}
                 >
                     {budgetLine?.id}
                 </td>
