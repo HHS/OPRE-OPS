@@ -7,11 +7,7 @@ import { convertCodeForDisplay, formatDateNeeded } from "../../../helpers/utils"
 import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
 import { useGetServicesComponentDisplayName } from "../../../hooks/useServicesComponents.hooks";
 import TableRowExpandable from "../../UI/TableRowExpandable";
-import {
-    changeBgColorIfExpanded,
-    expandedRowBGColor,
-    removeBorderBottomIfExpanded
-} from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
+import { expandedRowBGColor } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import TableTag from "../../UI/TableTag";
 import TextClip from "../../UI/Text/TextClip";
@@ -29,8 +25,6 @@ const AllBLIRow = ({ budgetLine }) => {
     const feeTotal = budgetLine?.fees;
     const budgetLineTotalPlusFees = budgetLine?.total ?? 0;
     const { isExpanded, setIsRowActive, setIsExpanded } = useTableRow();
-    const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
-    const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
     const serviceComponentName = useGetServicesComponentDisplayName(budgetLine?.services_component_id ?? 0);
     const lockedMessage = useChangeRequestsForTooltip(budgetLine);
     const { data: budgetLinePortfolio, isLoading: isPortfolioLoading } = useGetPortfolioByIdQuery(
@@ -43,18 +37,8 @@ const AllBLIRow = ({ budgetLine }) => {
 
     const TableRowData = (
         <>
-            <td
-                className={borderExpandedStyles}
-                style={bgExpandedStyles}
-                data-cy="bli-id"
-            >
-                {budgetLine.id}
-            </td>
-            <td
-                className={borderExpandedStyles}
-                style={bgExpandedStyles}
-                data-cy="agreement-name"
-            >
+            <td data-cy="bli-id">{budgetLine.id}</td>
+            <td data-cy="agreement-name">
                 {budgetLine?.agreement?.id ? (
                     <Link
                         to={`/agreements/${budgetLine.agreement.id}`}
@@ -73,52 +57,22 @@ const AllBLIRow = ({ budgetLine }) => {
                     />
                 )}
             </td>
-            <td
-                className={borderExpandedStyles}
-                style={bgExpandedStyles}
-                data-cy="agreement-type"
-            >
+            <td data-cy="agreement-type">
                 <TextClip
                     text={convertCodeForDisplay("agreementType", budgetLine?.agreement?.agreement_type) || NO_DATA}
                     maxLines={1}
                 />
             </td>
-            <td
-                className={borderExpandedStyles}
-                style={bgExpandedStyles}
-                data-cy="service-component"
-            >
-                {serviceComponentName}
-            </td>
-            <td
-                className={borderExpandedStyles}
-                style={bgExpandedStyles}
-                data-cy="date-needed"
-            >
-                {formatDateNeeded(budgetLine?.date_needed ?? "")}
-            </td>
-            <td
-                className={borderExpandedStyles}
-                style={bgExpandedStyles}
-                data-cy="can"
-            >
-                {budgetLine?.can?.display_name}
-            </td>
-            <td
-                className={borderExpandedStyles}
-                style={bgExpandedStyles}
-                data-cy="portfolio-name"
-            >
+            <td data-cy="service-component">{serviceComponentName}</td>
+            <td data-cy="date-needed">{formatDateNeeded(budgetLine?.date_needed ?? "")}</td>
+            <td data-cy="can">{budgetLine?.can?.display_name}</td>
+            <td data-cy="portfolio-name">
                 <TextClip
                     text={isPortfolioLoading ? "Loading..." : (budgetLinePortfolio?.abbreviation ?? NO_DATA)}
                     maxLines={1}
                 />
             </td>
-            <td
-                className={borderExpandedStyles}
-                style={bgExpandedStyles}
-                data-cy="amount"
-            >
+            <td data-cy="amount">
                 <CurrencyFormat
                     value={budgetLineTotalPlusFees}
                     displayType={"text"}
@@ -128,11 +82,7 @@ const AllBLIRow = ({ budgetLine }) => {
                     fixedDecimalScale={true}
                 />
             </td>
-            <td
-                className={borderExpandedStyles}
-                style={bgExpandedStyles}
-                data-cy="status"
-            >
+            <td data-cy="status">
                 <TableTag
                     inReview={isBudgetLineInReview}
                     status={budgetLine?.status}
