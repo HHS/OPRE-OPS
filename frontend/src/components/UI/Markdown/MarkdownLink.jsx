@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
 import { getInternalPath } from "./getInternalPath";
 
-const MarkdownLink = ({ href, children, ...props }) => {
+const MarkdownLink = ({ href, children, node, ...props }) => {
+    void node;
     const internalPath = getInternalPath(href);
 
     if (internalPath) {

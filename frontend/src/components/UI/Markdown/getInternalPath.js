@@ -3,6 +3,10 @@ export const getInternalPath = (href) => {
         return null;
     }
 
+    if (href.startsWith("//")) {
+        return null;
+    }
+
     if (href.startsWith("/")) {
         return href;
     }
