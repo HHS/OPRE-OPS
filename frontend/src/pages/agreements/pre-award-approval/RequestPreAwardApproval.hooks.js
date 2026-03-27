@@ -70,8 +70,8 @@ export default function useRequestPreAwardApproval(agreementId) {
     const preAwardMemoDocuments =
         documentsData?.documents?.filter((doc) => doc.document_type === "PRE_AWARD_CONSENSUS_MEMO") || [];
 
-    // Check if approval has already been requested
-    const hasApprovalBeenRequested = step5?.approval_requested === true;
+    // Check if approval has been requested but not yet responded to
+    const hasApprovalBeenRequested = step5?.approval_requested === true && !step5?.approval_responded_by;
 
     // Check if any BLI is in review status
     const hasBLIInReview = agreement?.budget_line_items?.some((bli) => bli.in_review) ?? false;
