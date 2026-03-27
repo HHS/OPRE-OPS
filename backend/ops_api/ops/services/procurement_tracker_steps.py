@@ -292,7 +292,7 @@ class ProcurementTrackerStepService:
             recipient_ids = self._get_approval_reviewers(agreement)
 
             fe_url = current_app.config.get("OPS_FRONTEND_URL", "http://localhost:3000")
-            agreement_url = f"{fe_url}/agreements/{agreement.id}?procurementTracker=true"
+            review_url = f"{fe_url}/agreements/{agreement.id}/review-pre-award"
 
             for recipient_id in recipient_ids:
                 notification_service.create(
@@ -300,7 +300,7 @@ class ProcurementTrackerStepService:
                         "title": "Pre-Award Approval Request",
                         "message": (
                             f"A pre-award approval has been requested for Agreement {agreement.display_name}. "
-                            f"Please review and respond.\n\n[View Agreement]({agreement_url})"
+                            f"Please review and respond.\n\n[Review Request]({review_url})"
                         ),
                         "is_read": False,
                         "recipient_id": recipient_id,
