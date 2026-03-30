@@ -1,9 +1,5 @@
 import TableRowExpandable from "../../../components/UI/TableRowExpandable";
-import {
-    changeBgColorIfExpanded,
-    expandedRowBGColor,
-    removeBorderBottomIfExpanded
-} from "../../../components/UI/TableRowExpandable/TableRowExpandable.helpers";
+import { expandedRowBGColor } from "../../../components/UI/TableRowExpandable/TableRowExpandable.helpers";
 import { useTableRow } from "../../../components/UI/TableRowExpandable/TableRowExpandable.hooks";
 
 /**
@@ -23,35 +19,13 @@ import { useTableRow } from "../../../components/UI/TableRowExpandable/TableRowE
  */
 const WhatsNextTableRow = ({ item }) => {
     const { isExpanded, setIsExpanded, setIsRowActive } = useTableRow();
-    // styles for the table row
-    const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
-    const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
+
     const TableRowData = (
         <>
-            <td
-                className={borderExpandedStyles}
-                style={bgExpandedStyles}
-            >
-                {item.priority}
-            </td>
-            <td
-                className={borderExpandedStyles}
-                style={bgExpandedStyles}
-            >
-                {item.title}
-            </td>
-            <td
-                className={borderExpandedStyles}
-                style={bgExpandedStyles}
-            >
-                {item.levelOfEffort}
-            </td>
-            <td
-                className={borderExpandedStyles}
-                style={bgExpandedStyles}
-            >
-                {item.status}
-            </td>
+            <td>{item.priority}</td>
+            <td>{item.title}</td>
+            <td>{item.levelOfEffort}</td>
+            <td>{item.status}</td>
         </>
     );
 
