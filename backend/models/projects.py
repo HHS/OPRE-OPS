@@ -132,10 +132,16 @@ class Project(BaseModel):
             "project_start": min(start_dates) if start_dates else None,
             "project_end": max(end_dates) if end_dates else None,
             "team_members": sorted(team_members_dict.values(), key=lambda x: x.full_name if x.full_name else x.email),
-            "division_directors": sorted([(d.id, d.full_name if d.full_name else d.email) for d in division_directors_set], key=lambda x: x[1]),
-            "project_officers": sorted([(id, name) for id, name in project_officer_dict.items()], key=lambda x: x[1]),
+            "division_directors": sorted(
+                [{"id": d.id, "name": d.full_name if d.full_name else d.email} for d in division_directors_set],
+                key=lambda x: x["name"],
+            ),
+            "project_officers": sorted(
+                [{"id": user_id, "name": name} for user_id, name in project_officer_dict.items()], key=lambda x: x["name"]
+            ),
             "alternate_project_officers": sorted(
-                [(id, name) for id, name in alternate_project_officer_dict.items()], key=lambda x: x[1]
+                [{"id": user_id, "name": name} for user_id, name in alternate_project_officer_dict.items()],
+                key=lambda x: x["name"],
             ),
         }
 

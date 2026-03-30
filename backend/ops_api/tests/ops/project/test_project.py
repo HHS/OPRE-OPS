@@ -1733,15 +1733,14 @@ class TestProjectMetadata:
 
         division_directors = response.json["division_directors"]
 
-        # Should be a list of tuples (id, name)
+        # Should be a list of dicts {id, name}
         assert isinstance(division_directors, list)
         assert len(division_directors) > 0
-        # Each director should be a tuple (id, name)
+        # Each director should be a dict {id, name}
         for director in division_directors:
-            assert isinstance(director, list)  # JSON serializes tuples as lists
-            assert len(director) == 2
-            assert isinstance(director[0], int)  # id
-            assert isinstance(director[1], str)  # name
+            assert isinstance(director, dict)
+            assert isinstance(director["id"], int)  # id
+            assert isinstance(director["name"], str)  # name
 
     def test_project_officers_aggregation(self, auth_client, loaded_db):
         """Test that project_officers aggregates unique project officers from all agreements."""
@@ -1785,18 +1784,17 @@ class TestProjectMetadata:
 
         project_officers = response.json["project_officers"]
 
-        # Should be a list of tuples (id, name)
+        # Should be a list of dicts {id, name}
         assert isinstance(project_officers, list)
         assert len(project_officers) == 2
-        # Each officer should be a tuple (id, name)
+        # Each officer should be a dict {id, name}
         for officer in project_officers:
-            assert isinstance(officer, list)  # JSON serializes tuples as lists
-            assert len(officer) == 2
-            assert isinstance(officer[0], int)  # id
-            assert isinstance(officer[1], str)  # name
+            assert isinstance(officer, dict)
+            assert isinstance(officer["id"], int)
+            assert isinstance(officer["name"], str)
 
         # Verify the officers are sorted by name
-        names = [officer[1] for officer in project_officers]
+        names = [officer["name"] for officer in project_officers]
         assert names == sorted(names)
 
     def test_alternate_project_officers_aggregation(self, auth_client, loaded_db):
@@ -1841,18 +1839,17 @@ class TestProjectMetadata:
 
         alternate_project_officers = response.json["alternate_project_officers"]
 
-        # Should be a list of tuples (id, name)
+        # Should be a list of dicts {id, name}
         assert isinstance(alternate_project_officers, list)
         assert len(alternate_project_officers) == 2
-        # Each officer should be a tuple (id, name)
+        # Each officer should be a dict {id, name}
         for officer in alternate_project_officers:
-            assert isinstance(officer, list)  # JSON serializes tuples as lists
-            assert len(officer) == 2
-            assert isinstance(officer[0], int)  # id
-            assert isinstance(officer[1], str)  # name
+            assert isinstance(officer, dict)
+            assert isinstance(officer["id"], int)
+            assert isinstance(officer["name"], str)
 
         # Verify the officers are sorted by name
-        names = [officer[1] for officer in alternate_project_officers]
+        names = [officer["name"] for officer in alternate_project_officers]
         assert names == sorted(names)
 
     def test_project_officers_deduplication(self, auth_client, loaded_db):
@@ -1893,7 +1890,7 @@ class TestProjectMetadata:
 
         # Should be deduplicated
         assert len(project_officers) == 1
-        assert project_officers[0][0] == user1.id
+        assert project_officers[0]["name"] == user1.full_name
 
     def test_empty_metadata_when_no_agreements(self, auth_client, loaded_db, project_with_no_agreements):
         """Test that project_metadata returns empty collections when project has no agreements."""

@@ -392,11 +392,15 @@ class Agreement(BaseModel):
                 and bli.can.portfolio
                 and hasattr(bli.can.portfolio, "division")
                 and bli.can.portfolio.division
-                and hasattr(bli.can.portfolio.division, "division_director_id")
+                and hasattr(bli.can.portfolio.division, "division_director")
             ):
-                users.add(bli.can.portfolio.division.division_director)
+                if (
+                    bli.can.portfolio.division.division_director_id
+                    and bli.can.portfolio.division.division_director_full_name
+                ):
+                    users.add(bli.can.portfolio.division.division_director)
 
-        return sorted(users, key=lambda u: u.full_name)
+        return sorted(users, key=lambda u: u.full_name or u.email)
 
     @property
     def change_requests_in_review(self):

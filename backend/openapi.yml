@@ -5914,44 +5914,56 @@ components:
           type: array
           description: List of division directors from all agreements in the project
           items:
-            type: array
-            minItems: 2
-            maxItems: 2
-            items:
-              oneOf:
-                - type: integer
-                - type: string
+            type: object
+            required:
+              - id
+              - name
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
           example:
-            - [500, "Jane Smith"]
-            - [501, "John Doe"]
+            - id: 500
+              name: "Jane Smith"
+            - id: 501
+              name: "John Doe"
         project_officers:
           type: array
           description: List of project officers from all agreements in the project
           items:
-            type: array
-            minItems: 2
-            maxItems: 2
-            items:
-              oneOf:
-                - type: integer
-                - type: string
+            type: object
+            required:
+              - id
+              - name
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
           example:
-            - [500, "Jane Smith"]
-            - [501, "John Doe"]
+            - id: 500
+              name: "Jane Smith"
+            - id: 501
+              name: "John Doe"
         alternate_project_officers:
           type: array
           description: List of alternate project officers from all agreements in the project
           items:
-            type: array
-            minItems: 2
-            maxItems: 2
-            items:
-              oneOf:
-                - type: integer
-                - type: string
+            type: object
+            required:
+              - id
+              - name
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
           example:
-            - [500, "Jane Smith"]
-            - [501, "John Doe"]
+            - id: 500
+              name: "Jane Smith"
+            - id: 501
+              name: "John Doe"
         created_on:
           type: string
           format: date-time
@@ -7399,44 +7411,56 @@ components:
           type: array
           description: List of division directors from all agreements in the project
           items:
-            type: array
-            minItems: 2
-            maxItems: 2
-            items:
-              oneOf:
-                - type: integer
-                - type: string
+            type: object
+            required:
+              - id
+              - name
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
           example:
-            - [500, "Jane Smith"]
-            - [501, "John Doe"]
+            - id: 500
+              name: "Jane Smith"
+            - id: 501
+              name: "John Doe"
         project_officers:
           type: array
           description: List of project officers from all agreements in the project
           items:
-            type: array
-            minItems: 2
-            maxItems: 2
-            items:
-              oneOf:
-                - type: integer
-                - type: string
+            type: object
+            required:
+              - id
+              - name
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
           example:
-            - [500, "Jane Smith"]
-            - [501, "John Doe"]
+            - id: 500
+              name: "Jane Smith"
+            - id: 501
+              name: "John Doe"
         alternate_project_officers:
           type: array
           description: List of alternate project officers from all agreements in the project
           items:
-            type: array
-            minItems: 2
-            maxItems: 2
-            items:
-              oneOf:
-                - type: integer
-                - type: string
+            type: object
+            required:
+              - id
+              - name
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
           example:
-            - [500, "Jane Smith"]
-            - [501, "John Doe"]
+            - id: 500
+              name: "Jane Smith"
+            - id: 501
+              name: "John Doe"
         created_on:
           type: string
           format: date-time
