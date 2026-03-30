@@ -2,6 +2,7 @@
 
 from typing import Type
 
+import pytest
 from flask import url_for
 from flask.testing import FlaskClient
 
@@ -173,3 +174,103 @@ class TestCANsFundingAggregateEndpoint:
             assert "number" in can
             assert "portfolio_id" in can
             assert "active_period" in can
+
+    def test_get_cans_funding_aggregate_fy_budget_reversed_bounds(self, auth_client: FlaskClient) -> None:
+        """fy_budget with min > max should be normalized and still return results."""
+        response = auth_client.get(
+            url_for("api.can-funding-aggregate"),
+            query_string={"fy_budget": [1000000, 0]},
+        )
+        assert response.status_code == 200
+        # Same as [0, 1000000] after normalization
+        normal_response = auth_client.get(
+            url_for("api.can-funding-aggregate"),
+            query_string={"fy_budget": [0, 1000000]},
+        )
+        assert len(response.json["cans"]) == len(normal_response.json["cans"])
+
+    def test_get_cans_funding_aggregate_fy_budget_three_values(self, auth_client: FlaskClient) -> None:
+        """fy_budget with wrong number of values should return 400."""
+        response = auth_client.get(
+            url_for("api.can-funding-aggregate"),
+            query_string={"fy_budget": [0, 500000, 1000000]},
+        )
+        assert response.status_code == 400
+
+
+class TestCANFundingErrorCases:
+    """Tests for error handling and edge cases."""
+
+    def test_get_can_funding_invalid_id(self, auth_client: FlaskClient) -> None:
+        response = auth_client.get(url_for("api.can-funding", id=99999))
+        assert response.status_code == 404
+
+    def test_get_can_funding_invalid_fiscal_year_type(self, auth_client: FlaskClient, test_can: CAN) -> None:
+        """Non-numeric fiscal_year should fail schema validation."""
+        response = auth_client.get(
+            url_for("api.can-funding", id=test_can.id),
+            query_string={"fiscal_year": "not_a_number"},
+        )
+        assert response.status_code == 400
+
+    def test_get_cans_funding_aggregate_invalid_transfer_value(self, auth_client: FlaskClient) -> None:
+        response = auth_client.get(
+            url_for("api.can-funding-aggregate"),
+            query_string={"transfer": ["NONEXISTENT"]},
+        )
+        assert response.status_code == 400
+
+    def test_get_cans_funding_aggregate_multiple_invalid_transfers(self, auth_client: FlaskClient) -> None:
+        response = auth_client.get(
+            url_for("api.can-funding-aggregate"),
+            query_string={"transfer": ["DIRECT", "INVALID"]},
+        )
+        assert response.status_code == 400
+
+
+class TestCANFundingAuthorization:
+    """Tests for authorization on funding endpoints."""
+
+    def test_can_funding_requires_auth(self, client: FlaskClient) -> None:
+        """Unauthenticated requests should be rejected."""
+        response = client.get(url_for("api.can-funding", id=500))
+        assert response.status_code in (401, 422)
+
+    def test_cans_funding_aggregate_requires_auth(self, client: FlaskClient) -> None:
+        """Unauthenticated requests should be rejected."""
+        response = client.get(url_for("api.can-funding-aggregate"))
+        assert response.status_code in (401, 422)
+
+
+class TestCANListPaginationEdgeCases:
+    """Tests for pagination edge cases on the CAN list endpoint."""
+
+    def test_can_list_offset_beyond_total(self, auth_client: FlaskClient) -> None:
+        """Offset beyond total count should return empty data."""
+        response = auth_client.get(
+            url_for("api.can-group"),
+            query_string={"limit": 10, "offset": 99999},
+        )
+        assert response.status_code == 200
+        assert response.json["data"] == []
+        assert response.json["count"] > 0  # total count is still accurate
+
+    def test_can_list_limit_zero_rejected(self, auth_client: FlaskClient) -> None:
+        """Limit of 0 should be rejected by schema validation (min is 1)."""
+        response = auth_client.get(
+            url_for("api.can-group"),
+            query_string={"limit": 0, "offset": 0},
+        )
+        assert response.status_code == 400
+
+    @pytest.mark.parametrize("limit,offset", [(10, 0), (5, 5), (1, 0)])
+    def test_can_list_pagination_metadata(self, auth_client: FlaskClient, limit: int, offset: int) -> None:
+        """Pagination metadata should reflect requested limit and offset."""
+        response = auth_client.get(
+            url_for("api.can-group"),
+            query_string={"limit": limit, "offset": offset},
+        )
+        assert response.status_code == 200
+        assert response.json["limit"] == limit
+        assert response.json["offset"] == offset
+        assert len(response.json["data"]) <= limit
