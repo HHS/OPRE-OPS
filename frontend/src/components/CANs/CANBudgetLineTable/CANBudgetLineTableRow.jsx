@@ -6,11 +6,7 @@ import { formatDateToMonthDayYear } from "../../../helpers/utils";
 import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import TableRowExpandable from "../../UI/TableRowExpandable";
-import {
-    changeBgColorIfExpanded,
-    expandedRowBGColor,
-    removeBorderBottomIfExpanded
-} from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
+import { expandedRowBGColor } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import TableTag from "../../UI/TableTag";
 import TextClip from "../../UI/Text/TextClip";
@@ -58,8 +54,6 @@ const CANBudgetLineTableRow = ({
 }) => {
     const lockedMessage = useChangeRequestsForTooltip(budgetLine);
     const { isExpanded, setIsRowActive, setIsExpanded } = useTableRow();
-    const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
-    const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
     const budgetLineCreatorName = useGetUserFullNameFromId(creatorId);
     const feeTotal = budgetLine.fees;
     const displayCreatedDate = formatDateToMonthDayYear(creationDate);
@@ -70,16 +64,8 @@ const CANBudgetLineTableRow = ({
 
     const TableRowData = (
         <>
-            <td
-                className={borderExpandedStyles}
-                style={bgExpandedStyles}
-            >
-                {blId}
-            </td>
-            <td
-                className={`${borderExpandedStyles}`}
-                style={bgExpandedStyles}
-            >
+            <td>{blId}</td>
+            <td>
                 {budgetLine.agreement ? (
                     <Link
                         className="text-ink"
@@ -96,22 +82,9 @@ const CANBudgetLineTableRow = ({
                     <span className="text-ink">{agreementName}</span>
                 )}
             </td>
-            <td
-                className={borderExpandedStyles}
-                style={bgExpandedStyles}
-            >
-                {obligateDate}
-            </td>
-            <td
-                className={borderExpandedStyles}
-                style={bgExpandedStyles}
-            >
-                {fiscalYear}
-            </td>
-            <td
-                className={borderExpandedStyles}
-                style={bgExpandedStyles}
-            >
+            <td>{obligateDate}</td>
+            <td>{fiscalYear}</td>
+            <td>
                 <CurrencyFormat
                     value={budgetLine.total ?? 0}
                     displayType={"text"}
@@ -121,16 +94,8 @@ const CANBudgetLineTableRow = ({
                     fixedDecimalScale={true}
                 />
             </td>
-            <td
-                className={borderExpandedStyles}
-                style={bgExpandedStyles}
-            >
-                {percentOfCAN}%
-            </td>
-            <td
-                className={borderExpandedStyles}
-                style={bgExpandedStyles}
-            >
+            <td>{percentOfCAN}%</td>
+            <td>
                 <TableTag
                     status={status}
                     inReview={inReview}

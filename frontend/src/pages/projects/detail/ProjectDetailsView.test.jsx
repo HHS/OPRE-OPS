@@ -14,6 +14,15 @@ const baseProject = {
     short_title: "HSS",
     description: "Interoperability activities description.",
     project_type: "RESEARCH",
+    project_start: "2043-06-13",
+    project_end: "2045-06-13",
+    division_directors: ["Dave Director", "Director Derrek"],
+    research_methodologies: ["Descriptive Study", "Impact Study"],
+    special_topics: ["Special Topic 1", "Special Topic 2"],
+    team_members: [
+        { id: 503, full_name: "Amelia Popham", email: "amelia@example.com" },
+        { id: 520, full_name: "System Owner", email: "system.owner@example.com" }
+    ],
     team_leaders: [{ id: 500, full_name: "Chris Fortunato", email: "chris.fortunato@example.com" }]
 };
 
@@ -37,10 +46,13 @@ describe("ProjectDetailsView", () => {
         expect(screen.getByText("Interoperability activities description.")).toBeInTheDocument();
         expect(screen.getByText("Project Nickname")).toBeInTheDocument();
         expect(screen.getByText("Project Type")).toBeInTheDocument();
-        expect(screen.getByText("Methodologies")).toBeInTheDocument();
-        expect(screen.getByText("Special Topic/Population Studied")).toBeInTheDocument();
-        expect(screen.getByText("Project Officer")).toBeInTheDocument();
-        expect(screen.getByText("Team Leaders")).toBeInTheDocument();
+        expect(screen.getByText("Project Start")).toBeInTheDocument();
+        expect(screen.getByText("Project End")).toBeInTheDocument();
+        expect(screen.getByText("Research Methodologies")).toBeInTheDocument();
+        expect(screen.getByText("Special Topics")).toBeInTheDocument();
+        expect(screen.getByText("Division Director(s)")).toBeInTheDocument();
+        expect(screen.getByText("Team Leader(s)")).toBeInTheDocument();
+        expect(screen.getByText("Team Members")).toBeInTheDocument();
     });
 
     it("renders 'Research' tag for RESEARCH project type", () => {
@@ -48,7 +60,7 @@ describe("ProjectDetailsView", () => {
         expect(screen.getByText("Research")).toBeInTheDocument();
     });
 
-    it("renders one tag per team member", () => {
+    it("renders one tag per team leader", () => {
         const project = {
             ...baseProject,
             team_leaders: [
@@ -61,22 +73,42 @@ describe("ProjectDetailsView", () => {
         expect(screen.getByText("Jane Smith")).toBeInTheDocument();
     });
 
-    it("renders TBD tags for empty methodologies and populations", () => {
-        renderComponent({ ...baseProject, methodologies: [], populations: [] });
-        // TBD appears for methodologies, populations, and project officer — at least 3
-        expect(screen.getAllByText("TBD").length).toBeGreaterThanOrEqual(3);
+    it("renders project dates using the shared formatter", () => {
+        renderComponent(baseProject);
+        expect(screen.getByText("6/13/2043")).toBeInTheDocument();
+        expect(screen.getByText("6/13/2045")).toBeInTheDocument();
+    });
+
+    it("renders TBD tags for empty collections", () => {
+        renderComponent({
+            ...baseProject,
+            research_methodologies: [],
+            special_topics: [],
+            division_directors: [],
+            team_leaders: [],
+            team_members: []
+        });
+        expect(screen.getAllByText("TBD").length).toBeGreaterThanOrEqual(5);
     });
 
     it("renders one tag per methodology when provided", () => {
-        renderComponent({ ...baseProject, methodologies: ["Qualitative", "Quantitative"] });
+        renderComponent({ ...baseProject, research_methodologies: ["Qualitative", "Quantitative"] });
         expect(screen.getByText("Qualitative")).toBeInTheDocument();
         expect(screen.getByText("Quantitative")).toBeInTheDocument();
     });
 
-    it("renders one tag per population when provided", () => {
-        renderComponent({ ...baseProject, populations: ["Children", "Families"] });
+    it("renders one tag per special topic when provided", () => {
+        renderComponent({ ...baseProject, special_topics: ["Children", "Families"] });
         expect(screen.getByText("Children")).toBeInTheDocument();
         expect(screen.getByText("Families")).toBeInTheDocument();
+    });
+
+    it("renders division directors and team members", () => {
+        renderComponent(baseProject);
+        expect(screen.getByText("Dave Director")).toBeInTheDocument();
+        expect(screen.getByText("Director Derrek")).toBeInTheDocument();
+        expect(screen.getByText("Amelia Popham")).toBeInTheDocument();
+        expect(screen.getByText("System Owner")).toBeInTheDocument();
     });
 
     it("renders History placeholder", () => {
@@ -90,9 +122,14 @@ describe("ProjectDetailsView", () => {
         expect(screen.getByText("Admin & Support")).toBeInTheDocument();
     });
 
-    it("renders TBD for missing description and short_title", () => {
-        renderComponent({ ...baseProject, description: null, short_title: null });
-        // NO_DATA ("TBD") appears for short_title, description, methodologies, populations, project officer
-        expect(screen.getAllByText("TBD").length).toBeGreaterThanOrEqual(2);
+    it("renders TBD for missing scalar values", () => {
+        renderComponent({
+            ...baseProject,
+            description: null,
+            short_title: null,
+            project_start: null,
+            project_end: null
+        });
+        expect(screen.getAllByText("TBD").length).toBeGreaterThanOrEqual(4);
     });
 });
