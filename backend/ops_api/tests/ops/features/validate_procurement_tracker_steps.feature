@@ -254,3 +254,14 @@ Scenario: Valid Task Completed By Step 2
     And I submit a procurement step update
 
     Then I should get a validation error
+
+  Scenario: Cannot request pre-award approval when Step 4 is not completed
+    Given I am logged in as an OPS user
+    And I have a Contract Agreement with OPS user as a team member
+    And I have a procurement tracker with incomplete Step 4
+    And I am working with a pre-award procurement tracker step
+
+    When I request pre-award approval
+    And I submit a procurement step update
+
+    Then I should get a validation error

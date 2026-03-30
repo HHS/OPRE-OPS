@@ -86,6 +86,7 @@ class ProcurementTrackerStepsValidator:
             PreSolicitationCompletionRequiredFieldsRule,
             ResourceExistsRule,
             SolicitationPeriodDateOrderRule,
+            Step4CompletionRequiredForApprovalRequestRule,
             UserAssociationRule,
         )
 
@@ -134,6 +135,7 @@ class ProcurementTrackerStepsValidator:
                 UserAssociationRule(),
                 PreAwardApprovalRequestAuthorizationRule(),
                 NoBLIsInReviewForApprovalRequestRule(),
+                Step4CompletionRequiredForApprovalRequestRule(),
                 PreAwardCompletionRequiredFieldsRule(),
                 CompletedByUpdateAuthorizationRule(),
                 NoUpdatingCompletedProcurementStepRule(),

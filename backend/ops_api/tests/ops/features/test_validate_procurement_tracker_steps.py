@@ -214,6 +214,13 @@ def test_cannot_invalidate_solicitation_end_date_with_update(): ...
 def test_cannot_request_pre_award_approval_when_blis_in_review(): ...
 
 
+@scenario(
+    "validate_procurement_tracker_steps.feature",
+    "Cannot request pre-award approval when Step 4 is not completed",
+)
+def test_cannot_request_pre_award_approval_when_step_4_is_not_completed(): ...
+
+
 @pytest.fixture()
 def setup_and_teardown(loaded_db, context):
     ...
@@ -345,6 +352,43 @@ def agreement_with_ops_user_and_bli_in_review(bdd_client, test_non_admin_user, l
     context["user_id"] = test_non_admin_user.id
     context["budget_line_item"] = budget_line_item
     context["change_request"] = change_request
+
+
+@given("I have a procurement tracker with incomplete Step 4")
+def procurement_tracker_with_incomplete_step_4(loaded_db, context):
+    """Create procurement tracker with Step 4 in PENDING status"""
+    agreement = context["agreement"]
+
+    procurement_tracker = ProcurementTracker(
+        agreement_id=agreement.id,
+        status=ProcurementTrackerStatus.ACTIVE,
+        tracker_type="DEFAULT",
+        active_step_number=5
+    )
+    loaded_db.add(procurement_tracker)
+    loaded_db.flush()
+
+    # Create Step 4 with PENDING status (not completed)
+    step_4 = ProcurementTrackerStep(
+        procurement_tracker_id=procurement_tracker.id,
+        step_number=4,
+        step_type=ProcurementTrackerStepType.EVALUATION,
+        status=ProcurementTrackerStepStatus.PENDING  # Key: Not COMPLETED
+    )
+    loaded_db.add(step_4)
+
+    # Create Step 5 (Pre-Award)
+    step_5 = ProcurementTrackerStep(
+        procurement_tracker_id=procurement_tracker.id,
+        step_number=5,
+        step_type=ProcurementTrackerStepType.PRE_AWARD,
+        status=ProcurementTrackerStepStatus.ACTIVE
+    )
+    loaded_db.add(step_5)
+    loaded_db.commit()
+
+    context["procurement_tracker"] = procurement_tracker
+    context["procurement_tracker_step"] = step_5
 
 
 @given("I have a procurement tracker")

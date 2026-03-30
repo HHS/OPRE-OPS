@@ -518,3 +518,57 @@ class NoBLIsInReviewForApprovalRequestRule(ValidationRule):
                         "approval_requested": f"Cannot request pre-award approval while budget line items are in review. Budget line items in review: {bli_ids}"
                     }
                 )
+
+
+class Step4CompletionRequiredForApprovalRequestRule(ValidationRule):
+    """
+    Validates that Step 4 (Evaluation) is completed before allowing pre-award approval requests.
+    Only checks when approval_requested is being set to true for PRE_AWARD steps.
+    """
+
+    @property
+    def name(self) -> str:
+        return "Step 4 Completion Required For Pre-Award Approval Request"
+
+    def validate(self, procurement_tracker_step: ProcurementTrackerStep, context: ValidationContext) -> None:
+        # Only validate if step type is PRE_AWARD
+        if procurement_tracker_step.step_type != ProcurementTrackerStepType.PRE_AWARD:
+            return
+
+        updated_fields = context.updated_fields
+
+        # Only validate if approval_requested is being set to true
+        if updated_fields.get("approval_requested") is not True:
+            return
+
+        # Check if procurement tracker step has a valid tracker
+        if not procurement_tracker_step.procurement_tracker:
+            raise ValidationError(
+                {
+                    "procurement_tracker": f"Procurement tracker step {procurement_tracker_step.id} is not linked to a valid procurement tracker."
+                }
+            )
+
+        procurement_tracker = procurement_tracker_step.procurement_tracker
+
+        # Find Step 4 (Evaluation) in the tracker
+        step_4 = next(
+            (step for step in procurement_tracker.steps if step.step_number == 4),
+            None
+        )
+
+        # Step 4 must exist
+        if not step_4:
+            raise ValidationError(
+                {
+                    "approval_requested": "Cannot request pre-award approval: Step 4 (Evaluation) is missing from the procurement tracker."
+                }
+            )
+
+        # Step 4 must be completed
+        if step_4.status != ProcurementTrackerStepStatus.COMPLETED:
+            raise ValidationError(
+                {
+                    "approval_requested": f"Cannot request pre-award approval: Step 4 (Evaluation) must be completed first. Current status: {step_4.status}"
+                }
+            )
