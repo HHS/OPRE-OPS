@@ -18,6 +18,7 @@ const useGetAllCansMock = vi.fn();
 const useChangeRequestsForBudgetLinesMock = vi.fn();
 const useChangeRequestsForProcurementShopMock = vi.fn();
 const getUserFullNameFromIdMock = vi.fn();
+const checkAuthMock = vi.fn();
 
 vi.mock("react-redux", () => ({
     useSelector: (selector) => useSelectorMock(selector)
@@ -57,6 +58,10 @@ vi.mock("../../../hooks/useChangeRequests.hooks", () => ({
 vi.mock("../../../hooks/user.hooks", () => ({
     __esModule: true,
     default: (...args) => getUserFullNameFromIdMock(...args)
+}));
+
+vi.mock("../../../components/Auth/auth", () => ({
+    CheckAuth: () => checkAuthMock()
 }));
 
 const baseAgreement = {
@@ -117,6 +122,7 @@ describe("useApproveAgreement", () => {
 
         useParamsMock.mockReturnValue({ id: "1" });
         useSearchParamsMock.mockReturnValue([new URLSearchParams("type=status-change&to=EXECUTING")]);
+        checkAuthMock.mockReturnValue(false);
 
         useGetAgreementByIdQueryMock.mockReturnValue({
             data: baseAgreement,
@@ -156,6 +162,35 @@ describe("useApproveAgreement", () => {
 
         expect(result.current.changeRequestType).toBe("budget-change");
         expect(result.current.checkBoxText).toContain("affect my CANs balance");
+    });
+
+    it("skips services components query until agreement data exists", () => {
+        useGetAgreementByIdQueryMock.mockReturnValue({
+            data: undefined,
+            error: null,
+            isLoading: true,
+            isSuccess: false
+        });
+
+        renderHook(() => useApproveAgreement());
+
+        expect(useGetServicesComponentsListQueryMock).toHaveBeenCalledWith(undefined, { skip: true });
+    });
+
+    it("keeps loading while auth token exists but active user is not hydrated", () => {
+        checkAuthMock.mockReturnValue(true);
+        useSelectorMock.mockImplementation((selector) =>
+            selector({
+                auth: {
+                    activeUser: null
+                }
+            })
+        );
+
+        const { result } = renderHook(() => useApproveAgreement());
+
+        expect(result.current.isHydratingActiveUser).toBe(true);
+        expect(result.current.hasPermissionToViewPage).toBe(false);
     });
 
     it("opens cancel modal and navigates on confirm", () => {

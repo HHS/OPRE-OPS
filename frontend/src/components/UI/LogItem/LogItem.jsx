@@ -1,6 +1,7 @@
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import ReactMarkdown from "react-markdown";
+import MarkdownLink from "../Markdown/MarkdownLink";
 import { timeAgo } from "../../../helpers/utils.js";
 import styles from "./LogItem.module.css";
 
@@ -42,7 +43,13 @@ export const LogItem = ({ title, message, createdOn, variant, withSeparator = fa
                     data-cy="log-item-message"
                 >
                     <div className="margin-top-neg-1 margin-bottom-neg-1">
-                        <ReactMarkdown>{message}</ReactMarkdown>
+                        <ReactMarkdown
+                            components={{
+                                a: MarkdownLink
+                            }}
+                        >
+                            {message}
+                        </ReactMarkdown>
                     </div>
                 </article>
             )}
