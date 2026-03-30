@@ -612,7 +612,15 @@ class CANService:
         portfolio: Optional[list] = None,
         fy_budget: Optional[list] = None,
     ) -> dict:
-        """Get aggregated funding summary across all CANs, with optional filters."""
+        """Get aggregated funding summary across all CANs, with optional filters.
+
+        Raises:
+            ValueError: Invalid ``transfer`` enum name or ``fy_budget`` length.
+                Caught by the resource layer and returned as 400.
+
+        Other exceptions (e.g. database errors) propagate to the global
+        Flask error handlers registered in ``error_handlers.py``.
+        """
         # Validate transfer values
         if transfer:
             try:
@@ -623,6 +631,8 @@ class CANService:
 
         if fy_budget and len(fy_budget) != 2:
             raise ValueError("'fy_budget' must be two values for min and max budget.")
+        if fy_budget and len(fy_budget) == 2:
+            fy_budget = [min(fy_budget), max(fy_budget)]
 
         # Load all CANs with relationships (including nested BLI→Agreement→Project
         # needed by get_can_funding_summary → can.to_dict() → can.projects)
