@@ -23,6 +23,7 @@ import {
 import { useGetAllCans } from "../../../hooks/useGetAllCans";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import useToggle from "../../../hooks/useToggle";
+import { CheckAuth } from "../../../components/Auth/auth";
 import { getTotalByCans } from "../review/ReviewAgreement.helpers";
 
 /**
@@ -53,7 +54,9 @@ const useApproveAgreement = () => {
     const agreementId = +urlPathParams.id;
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
+    const activeUser = useSelector((state) => state.auth?.activeUser) ?? null;
     const userId = useSelector((state) => state.auth?.activeUser?.id) ?? null;
+    const isHydratingActiveUser = CheckAuth() && !activeUser;
     /**
      * @typeof {CHANGE_REQUEST_SLUG_TYPES}
      */
@@ -103,7 +106,7 @@ const useApproveAgreement = () => {
 
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
     const alternateProjectOfficerName = useGetUserFullNameFromId(agreement?.alternate_project_officer_id);
-    const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id);
+    const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id, { skip: !agreement });
     const { data: procurementShops } = useGetProcurementShopsQuery({});
 
     const budgetLinesInReview =
@@ -544,6 +547,7 @@ const useApproveAgreement = () => {
         handleCancel,
         hasPermissionToViewPage: userIsDivisionDirector,
         isLoadingAgreement,
+        isHydratingActiveUser,
         isAgreementAwarded,
         modalProps,
         notes,
