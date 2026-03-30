@@ -50,9 +50,7 @@ const CANTable = ({ cans, fiscalYear, sortConditions, sortDescending, setSortCon
         setHasFundingError(false);
 
         const requests = missingFundingCanIds.map((canId) =>
-            dispatch(
-                opsApi.endpoints.getCanFunding.initiate({ id: canId, fiscalYear }, { forceRefetch: true })
-            )
+            dispatch(opsApi.endpoints.getCanFunding.initiate({ id: canId, fiscalYear }, { forceRefetch: true }))
         );
 
         Promise.all(

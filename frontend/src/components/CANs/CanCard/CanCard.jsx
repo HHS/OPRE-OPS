@@ -27,7 +27,10 @@ const CanCard = ({ canId, fiscalYear }) => {
     const expirationDate = new Date(canFundingData?.can?.expiration_date);
     const obligateBy = new Date(expirationDate);
 
-    const receivedPercent = calculatePercent(canFundingData?.funding?.received_funding, canFundingData?.funding?.total_funding);
+    const receivedPercent = calculatePercent(
+        canFundingData?.funding?.received_funding,
+        canFundingData?.funding?.total_funding
+    );
     const receivedExpectedData = [
         {
             id: 1,
@@ -44,7 +47,9 @@ const CanCard = ({ canId, fiscalYear }) => {
     ];
 
     const spendingAmount =
-        canFundingData?.funding?.planned_funding + canFundingData?.funding?.in_execution_funding + canFundingData?.funding?.obligated_funding;
+        canFundingData?.funding?.planned_funding +
+        canFundingData?.funding?.in_execution_funding +
+        canFundingData?.funding?.obligated_funding;
 
     const spendingPercent = calculatePercent(spendingAmount, canFundingData?.funding?.total_funding);
     const spendingAvailableData = [
