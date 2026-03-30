@@ -552,10 +552,7 @@ class Step4CompletionRequiredForApprovalRequestRule(ValidationRule):
         procurement_tracker = procurement_tracker_step.procurement_tracker
 
         # Find Step 4 (Evaluation) in the tracker
-        step_4 = next(
-            (step for step in procurement_tracker.steps if step.step_number == 4),
-            None
-        )
+        step_4 = next((step for step in procurement_tracker.steps if step.step_number == 4), None)
 
         # Step 4 must exist
         if not step_4:

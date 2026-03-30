@@ -360,10 +360,7 @@ def procurement_tracker_with_incomplete_step_4(loaded_db, context):
     agreement = context["agreement"]
 
     procurement_tracker = ProcurementTracker(
-        agreement_id=agreement.id,
-        status=ProcurementTrackerStatus.ACTIVE,
-        tracker_type="DEFAULT",
-        active_step_number=5
+        agreement_id=agreement.id, status=ProcurementTrackerStatus.ACTIVE, tracker_type="DEFAULT", active_step_number=5
     )
     loaded_db.add(procurement_tracker)
     loaded_db.flush()
@@ -373,7 +370,7 @@ def procurement_tracker_with_incomplete_step_4(loaded_db, context):
         procurement_tracker_id=procurement_tracker.id,
         step_number=4,
         step_type=ProcurementTrackerStepType.EVALUATION,
-        status=ProcurementTrackerStepStatus.PENDING  # Key: Not COMPLETED
+        status=ProcurementTrackerStepStatus.PENDING,  # Key: Not COMPLETED
     )
     loaded_db.add(step_4)
 
@@ -382,7 +379,7 @@ def procurement_tracker_with_incomplete_step_4(loaded_db, context):
         procurement_tracker_id=procurement_tracker.id,
         step_number=5,
         step_type=ProcurementTrackerStepType.PRE_AWARD,
-        status=ProcurementTrackerStepStatus.ACTIVE
+        status=ProcurementTrackerStepStatus.ACTIVE,
     )
     loaded_db.add(step_5)
     loaded_db.commit()
