@@ -101,9 +101,15 @@ class ProjectResponse(Schema):
     project_start: Optional[date] = fields.Date(format="%Y-%m-%d", dump_default=None)
     project_end: Optional[date] = fields.Date(format="%Y-%m-%d", dump_default=None)
     team_members: Optional[list[TeamLeaders]] = fields.List(fields.Nested(TeamLeaders), dump_default=[])
-    division_directors: Optional[list[tuple[int, str]]] = fields.List(fields.Tuple((fields.Int(), fields.String())), dump_default=[])
-    project_officers: Optional[list[tuple[int, str]]] = fields.List(fields.Tuple((fields.Int(), fields.String())), dump_default=[])
-    alternate_project_officers: Optional[list[tuple[int, str]]] = fields.List(fields.Tuple((fields.Int(), fields.String())), dump_default=[])
+    division_directors: Optional[list[tuple[int, str]]] = fields.List(
+        fields.Tuple((fields.Int(), fields.String())), dump_default=[]
+    )
+    project_officers: Optional[list[tuple[int, str]]] = fields.List(
+        fields.Tuple((fields.Int(), fields.String())), dump_default=[]
+    )
+    alternate_project_officers: Optional[list[tuple[int, str]]] = fields.List(
+        fields.Tuple((fields.Int(), fields.String())), dump_default=[]
+    )
 
     @pre_dump
     def extract_metadata(self, data, **kwargs):
