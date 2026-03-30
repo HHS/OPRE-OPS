@@ -638,9 +638,7 @@ class CANService:
         # needed by get_can_funding_summary → can.to_dict() → can.projects)
         stmt = select(CAN).options(
             *CAN_EAGER_LOAD_OPTIONS,
-            selectinload(CAN.budget_line_items)
-            .selectinload(BudgetLineItem.agreement)
-            .selectinload(Agreement.project),
+            selectinload(CAN.budget_line_items).selectinload(BudgetLineItem.agreement).selectinload(Agreement.project),
         )
         all_cans = self.db_session.execute(stmt).scalars().all()
 
