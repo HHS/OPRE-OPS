@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from decimal import Decimal
 from typing import Any, Optional, Sequence
 
 from loguru import logger
@@ -10,8 +11,7 @@ from models import (
     AdministrativeAndSupportProject,
     Agreement,
     BudgetLineItem,
-    CANFundingBudget,
-    CANFundingDetails,
+    BudgetLineItemStatus,
     Portfolio,
     Project,
     ProjectSortCondition,
@@ -231,11 +231,11 @@ class ProjectsService(OpsService[Project]):
             .join(Agreement, isouter=True)
             .join(BudgetLineItem, isouter=True)
             .join(CAN, isouter=True)
-            .join(CANFundingDetails, isouter=True)
-            .join(CANFundingBudget, isouter=True)
             .options(
                 selectinload(ResearchProject.agreements).selectinload(Agreement.services_components),
-                selectinload(ResearchProject.agreements).selectinload(Agreement.budget_line_items),
+                selectinload(ResearchProject.agreements)
+                .selectinload(Agreement.budget_line_items)
+                .selectinload(BudgetLineItem.can),
                 selectinload(ResearchProject.agreements).selectinload(Agreement.special_topics),
                 selectinload(ResearchProject.agreements).selectinload(Agreement.research_methodologies),
                 selectinload(ResearchProject.agreements).selectinload(Agreement.team_members),
@@ -252,17 +252,10 @@ class ProjectsService(OpsService[Project]):
         if filters.fiscal_year:
             if len(filters.fiscal_year) == 1:
                 fiscal_year = filters.fiscal_year[0]
-                query_helper.add_column_equals(CANFundingBudget.fiscal_year, fiscal_year)
-                query_helper.add_column_in_range(
-                    CANFundingDetails.fiscal_year,
-                    CANFundingDetails.obligate_by,
-                    fiscal_year,
-                )
+                query_helper.add_column_equals(BudgetLineItem.fiscal_year, fiscal_year)
             else:
                 # Multiple fiscal years - use IN clause
-                query_helper.add_column_in_list(CANFundingBudget.fiscal_year, filters.fiscal_year)
-                # For multiple years, we'll just ensure funding budget exists for one of those years
-                # The obligate_by range check becomes complex with multiple years, so we skip it
+                query_helper.add_column_in_list(BudgetLineItem.fiscal_year, filters.fiscal_year)
 
         # Apply project search filter on project title (OR logic, exact match on title/short title)
         if filters.project_search:
@@ -298,11 +291,11 @@ class ProjectsService(OpsService[Project]):
             .join(Agreement, isouter=True)
             .join(BudgetLineItem, isouter=True)
             .join(CAN, isouter=True)
-            .join(CANFundingDetails, isouter=True)
-            .join(CANFundingBudget, isouter=True)
             .options(
                 selectinload(ResearchProject.agreements).selectinload(Agreement.services_components),
-                selectinload(ResearchProject.agreements).selectinload(Agreement.budget_line_items),
+                selectinload(ResearchProject.agreements)
+                .selectinload(Agreement.budget_line_items)
+                .selectinload(BudgetLineItem.can),
                 selectinload(ResearchProject.agreements).selectinload(Agreement.special_topics),
                 selectinload(ResearchProject.agreements).selectinload(Agreement.research_methodologies),
                 selectinload(ResearchProject.agreements).selectinload(Agreement.team_members),
@@ -319,17 +312,10 @@ class ProjectsService(OpsService[Project]):
         if filters.fiscal_year:
             if len(filters.fiscal_year) == 1:
                 fiscal_year = filters.fiscal_year[0]
-                query_helper.add_column_equals(CANFundingBudget.fiscal_year, fiscal_year)
-                query_helper.add_column_in_range(
-                    CANFundingDetails.fiscal_year,
-                    CANFundingDetails.obligate_by,
-                    fiscal_year,
-                )
+                query_helper.add_column_equals(BudgetLineItem.fiscal_year, fiscal_year)
             else:
                 # Multiple fiscal years - use IN clause
-                query_helper.add_column_in_list(CANFundingBudget.fiscal_year, filters.fiscal_year)
-                # For multiple years, we'll just ensure funding budget exists for one of those years
-                # The obligate_by range check becomes complex with multiple years, so we skip it
+                query_helper.add_column_in_list(BudgetLineItem.fiscal_year, filters.fiscal_year)
 
         # Apply project search filter on project title (AND logic - must match all search terms)
         if filters.project_search:
@@ -367,6 +353,40 @@ class ProjectsService(OpsService[Project]):
         if not project:
             raise ResourceNotFoundError("Project", id)
         return project
+
+    def get_project_funding(self, id: int, fiscal_year: int) -> dict:
+        """
+        Get funding summary for a project, with relationships eager-loaded to prevent N+1 queries.
+
+        Args:
+            id: Project ID
+            fiscal_year: Fiscal year to scope carry-forward/new classification and FY-specific funding.
+
+        Returns:
+            Dict with funding_by_portfolio, funding_by_can, funding_by_fiscal_year, and cans.
+
+        Raises:
+            ResourceNotFoundError: If the project doesn't exist.
+        """
+        stmt = (
+            select(Project)
+            .where(Project.id == id)
+            .options(
+                selectinload(Project.agreements)
+                .selectinload(Agreement.budget_line_items)
+                .selectinload(BudgetLineItem.can)
+                .options(
+                    selectinload(CAN.funding_budgets),
+                    selectinload(CAN.funding_details),
+                    selectinload(CAN.portfolio),
+                )
+            )
+        )
+        project = self.db_session.scalar(stmt)
+        if not project:
+            raise ResourceNotFoundError("Project", id)
+
+        return project.get_project_funding(fiscal_year)
 
     @staticmethod
     def _get_project_sort_key(
@@ -424,6 +444,18 @@ class ProjectsService(OpsService[Project]):
             return metadata["total"]
         else:
             return project.id
+
+    @staticmethod
+    def _compute_scoped_amount(project: Project, portfolio_ids: set[int], fiscal_years: set[int] | None) -> Decimal:
+        """Compute the total BLI amount for a project scoped to the given portfolio(s) and optional fiscal years."""
+        total = Decimal("0")
+        for agreement in project.agreements:
+            for bli in agreement.budget_line_items:
+                if (bli.is_obe or bli.status != BudgetLineItemStatus.DRAFT) and bli.fiscal_year is not None:
+                    if bli.can and bli.can.portfolio_id in portfolio_ids:
+                        if fiscal_years is None or bli.fiscal_year in fiscal_years:
+                            total += (bli.amount or Decimal("0")) + (bli.fees or Decimal("0"))
+        return total
 
     def get_list(self, data: dict[str, Any] | None = None) -> tuple[Sequence[Project], dict[str, Any]]:
         """
@@ -484,6 +516,44 @@ class ProjectsService(OpsService[Project]):
         # Calculate total count before pagination
         total_count = len(sorted_projects)
 
+        # Compute summary over full filtered set
+        selected_fiscal_years = set(filters.fiscal_year) if filters.fiscal_year else None
+        portfolio_id_set = set(filters.portfolio_id) if filters.portfolio_id else None
+
+        projects_by_type = {t.name: 0 for t in ProjectType}
+        amounts_by_type = {t.name: Decimal("0") for t in ProjectType}
+
+        for project in all_projects:
+            type_name = project.project_type.name
+            projects_by_type[type_name] += 1
+
+            if portfolio_id_set:
+                # Scope amounts to only BLIs whose CAN belongs to the filtered portfolio(s)
+                amounts_by_type[type_name] += self._compute_scoped_amount(
+                    project, portfolio_id_set, selected_fiscal_years
+                )
+            else:
+                pm = metadata_cache[project.id]
+                if selected_fiscal_years:
+                    for fy in selected_fiscal_years:
+                        if fy in pm["by_fiscal_year"]:
+                            amounts_by_type[type_name] += pm["by_fiscal_year"][fy]
+                else:
+                    amounts_by_type[type_name] += pm["total"]
+
+        total_amount = sum(amounts_by_type.values())
+        summary = {
+            "total_projects": total_count,
+            "projects_by_type": dict(projects_by_type),
+            "amounts_by_type": {
+                k: {
+                    "amount": float(v),
+                    "percent": round(float(v / total_amount * 100), 1) if total_amount else 0.0,
+                }
+                for k, v in amounts_by_type.items()
+            },
+        }
+
         # Apply pagination
         limit_value = filters.limit[0] if filters.limit else 10
         offset_value = filters.offset[0] if filters.offset else 0
@@ -494,6 +564,7 @@ class ProjectsService(OpsService[Project]):
             "count": total_count,
             "limit": limit_value,
             "offset": offset_value,
+            "summary": summary,
         }
 
         return paginated_projects, metadata

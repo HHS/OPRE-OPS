@@ -434,14 +434,45 @@ export const opsApi = createApi({
             providesTags: ["ResearchProjects"]
         }),
         getProjects: builder.query({
-            query: () => `/projects/`,
+            query: ({ sortConditions, sortDescending, page, limit, fiscalYear } = {}) => {
+                const queryParams = [];
+                if (fiscalYear && fiscalYear !== "All") {
+                    queryParams.push(`fiscal_year=${fiscalYear}`);
+                }
+                if (sortConditions) {
+                    queryParams.push(`sort_field=${sortConditions}`);
+                    queryParams.push(`sort_descending=${sortDescending}`);
+                    // FY_TOTAL sort requires a fiscal year to sort by
+                    if (sortConditions === "FY_TOTAL" && fiscalYear && fiscalYear !== "All") {
+                        queryParams.push(`sort_fiscal_year=${fiscalYear}`);
+                    }
+                }
+                if (limit !== undefined && limit !== null) {
+                    queryParams.push(`limit=${limit}`);
+                    const offset = page !== undefined && page !== null ? page * limit : 0;
+                    queryParams.push(`offset=${offset}`);
+                }
+                const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
+                return `/projects/${queryString}`;
+            },
             transformResponse: (response) => {
                 // New wrapped format with data key
                 if (response.data) {
-                    return response.data;
+                    return {
+                        projects: response.data,
+                        count: response.count,
+                        limit: response.limit,
+                        offset: response.offset,
+                        summary: response.summary
+                    };
                 }
                 // Legacy array format (no wrapper) - for backward compatibility during transition
-                return response;
+                return {
+                    projects: Array.isArray(response) ? response : [],
+                    count: Array.isArray(response) ? response.length : 0,
+                    limit: 0,
+                    offset: 0
+                };
             },
             providesTags: ["ResearchProjects"]
         }),
@@ -1042,6 +1073,7 @@ export const {
     useLazyGetUserByIdQuery,
     useGetUserByOIDCIdQuery,
     useGetProjectsQuery,
+    useLazyGetProjectsQuery,
     useGetProjectByIdQuery,
     useGetProjectsByPortfolioQuery,
     useGetResearchProjectsQuery,

@@ -4,6 +4,7 @@ import { useGetCanFilterOptionsQuery, useGetCanFundingSummaryQuery, useGetCansQu
 import App from "../../../App";
 import CANSummaryCards from "../../../components/CANs/CANSummaryCards";
 import CANTable from "../../../components/CANs/CANTable";
+import CANTableLoading from "../../../components/CANs/CANTable/CANTableLoading";
 import CANTags from "../../../components/CANs/CanTabs";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import PaginationNav from "../../../components/UI/PaginationNav/PaginationNav";
@@ -51,7 +52,8 @@ const CanList = () => {
     const {
         data: cansResponse,
         isError,
-        isLoading
+        isLoading,
+        isFetching
     } = useGetCansQuery({
         fiscalYear: selectedFiscalYear,
         sortConditions: sortCondition,
@@ -68,7 +70,11 @@ const CanList = () => {
     });
 
     // Fetch filter options from dedicated endpoint
-    const { data: filterOptionsData, isLoading: filterOptionsLoading } = useGetCanFilterOptionsQuery({
+    const {
+        data: filterOptionsData,
+        isLoading: filterOptionsLoading,
+        isFetching: filterOptionsFetching
+    } = useGetCanFilterOptionsQuery({
         fiscalYear: selectedFiscalYear
     });
 
@@ -82,7 +88,11 @@ const CanList = () => {
         setCurrentPage(1);
     }, [selectedFiscalYear, sortCondition, sortDescending, filters]);
 
-    const { data: fundingSummaryData, isLoading: fundingSummaryIsLoading } = useGetCanFundingSummaryQuery({
+    const {
+        data: fundingSummaryData,
+        isLoading: fundingSummaryIsLoading,
+        isFetching: fundingSummaryIsFetching
+    } = useGetCanFundingSummaryQuery({
         ids: [0],
         fiscalYear: fiscalYear,
         activePeriod: activePeriodIds,
@@ -90,6 +100,14 @@ const CanList = () => {
         portfolio: portfolioAbbreviations,
         fyBudgets: filters.budget
     });
+
+    const isTableLoading =
+        isLoading ||
+        isFetching ||
+        fundingSummaryIsLoading ||
+        fundingSummaryIsFetching ||
+        filterOptionsLoading ||
+        filterOptionsFetching;
 
     // Derive filter options from the backend filter options endpoint
     const portfolioOptions = React.useMemo(() => {
@@ -118,13 +136,6 @@ const CanList = () => {
         return [min, max];
     }, [filterOptionsData?.fy_budget_range]);
 
-    if (isLoading || fundingSummaryIsLoading || filterOptionsLoading) {
-        return (
-            <App>
-                <h1>Loading...</h1>
-            </App>
-        );
-    }
     if (isError) {
         navigate("/error");
         return;
@@ -138,24 +149,28 @@ const CanList = () => {
                 details="This is a list of all CANs across OPRE that are or were active within the selected Fiscal Year."
                 TabsSection={<CANTags />}
                 TableSection={
-                    <>
-                        <CANTable
-                            cans={canList}
-                            fiscalYear={fiscalYear}
-                            sortConditions={sortCondition}
-                            sortDescending={sortDescending}
-                            setSortConditions={setSortConditions}
-                        />
-                        {totalPages > 1 && (
-                            <div className="margin-top-3">
-                                <PaginationNav
-                                    currentPage={currentPage}
-                                    totalPages={totalPages}
-                                    setCurrentPage={setCurrentPage}
-                                />
-                            </div>
-                        )}
-                    </>
+                    isTableLoading ? (
+                        <CANTableLoading />
+                    ) : (
+                        <>
+                            <CANTable
+                                cans={canList}
+                                fiscalYear={fiscalYear}
+                                sortConditions={sortCondition}
+                                sortDescending={sortDescending}
+                                setSortConditions={setSortConditions}
+                            />
+                            {totalPages > 1 && (
+                                <div className="margin-top-3">
+                                    <PaginationNav
+                                        currentPage={currentPage}
+                                        totalPages={totalPages}
+                                        setCurrentPage={setCurrentPage}
+                                    />
+                                </div>
+                            )}
+                        </>
+                    )
                 }
                 FilterButton={
                     <CANFilterButton
@@ -181,15 +196,17 @@ const CanList = () => {
                     />
                 }
                 SummaryCardsSection={
-                    <CANSummaryCards
-                        fiscalYear={fiscalYear}
-                        totalBudget={fundingSummaryData?.total_funding}
-                        newFunding={fundingSummaryData?.new_funding}
-                        carryForward={fundingSummaryData?.carry_forward_funding}
-                        plannedFunding={fundingSummaryData?.planned_funding}
-                        obligatedFunding={fundingSummaryData?.obligated_funding}
-                        inExecutionFunding={fundingSummaryData?.in_execution_funding}
-                    />
+                    !isTableLoading && (
+                        <CANSummaryCards
+                            fiscalYear={fiscalYear}
+                            totalBudget={fundingSummaryData?.total_funding}
+                            newFunding={fundingSummaryData?.new_funding}
+                            carryForward={fundingSummaryData?.carry_forward_funding}
+                            plannedFunding={fundingSummaryData?.planned_funding}
+                            obligatedFunding={fundingSummaryData?.obligated_funding}
+                            inExecutionFunding={fundingSummaryData?.in_execution_funding}
+                        />
+                    )
                 }
             />
         </App>

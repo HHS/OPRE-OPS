@@ -6,11 +6,7 @@ import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import { fiscalYearFromDate, formatDateNeeded } from "../../../helpers/utils";
 import useGetUserFullNameFromId, { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
 import TableRowExpandable from "../../UI/TableRowExpandable";
-import {
-    changeBgColorIfExpanded,
-    expandedRowBGColor,
-    removeBorderBottomIfExpanded
-} from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
+import { expandedRowBGColor } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import TableTag from "../../UI/TableTag";
 import { addErrorClassIfNotFound, futureDateErrorClass } from "../BudgetLinesTable/BLIRow.helpers";
@@ -43,10 +39,6 @@ const BLIReviewRow = ({ budgetLine, isReviewMode = false, setSelectedBLIs, actio
     const loggedInUserFullName = useGetLoggedInUserFullName();
     const feeTotal = budgetLine?.fees;
     const budgetLineTotalPlusFees = budgetLine?.total ?? 0;
-
-    // styles for the table row
-    const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
-    const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
 
     const toolTipMsg = React.useMemo(() => {
         if (budgetLine?.actionable) return "";
@@ -121,10 +113,7 @@ const BLIReviewRow = ({ budgetLine, isReviewMode = false, setSelectedBLIs, actio
         );
 
         return (
-            <td
-                className={borderExpandedStyles}
-                style={bgExpandedStyles}
-            >
+            <td>
                 {input}
                 {label}
             </td>
@@ -136,17 +125,17 @@ const BLIReviewRow = ({ budgetLine, isReviewMode = false, setSelectedBLIs, actio
         const dateNeededFormatted = formatDateNeeded(dateNeeded);
         const dateNeededErrorValue = dateNeededFormatted === NO_DATA ? null : dateNeededFormatted;
         const dateErrorClasses = `${futureDateErrorClass(dateNeededErrorValue, isReviewMode)} ${addErrorClassIfNotFound(dateNeededErrorValue, isReviewMode)}`;
-        const dateNeededClasses = `${budgetLine.selected ? dateErrorClasses : ""} ${borderExpandedStyles}`;
+        const dateNeededClasses = budgetLine.selected ? dateErrorClasses : "";
 
         const fiscalYear = fiscalYearFromDate(dateNeeded || "") ?? NO_DATA;
 
         const canNumber = budgetLine?.can?.number ?? NO_DATA;
         const canNumberErrorClasses = `${addErrorClassIfNotFound(canNumber, isReviewMode)}`;
-        const canNumberClasses = `${budgetLine.selected ? canNumberErrorClasses : ""} ${borderExpandedStyles}`;
+        const canNumberClasses = budgetLine.selected ? canNumberErrorClasses : "";
 
         const amount = budgetLine?.amount ?? 0;
         const amountErrorClasses = `${addErrorClassIfNotFound(amount, isReviewMode)}`;
-        const amountClasses = `${budgetLine.selected ? amountErrorClasses : ""} ${borderExpandedStyles}`;
+        const amountClasses = budgetLine.selected ? amountErrorClasses : "";
 
         const feeValue = feeTotal || 0;
         const totalWithFees = budgetLineTotalPlusFees || 0;
@@ -154,23 +143,10 @@ const BLIReviewRow = ({ budgetLine, isReviewMode = false, setSelectedBLIs, actio
         return (
             <>
                 {renderCheckboxCell()}
-                <td
-                    className={dateNeededClasses}
-                    style={bgExpandedStyles}
-                >
-                    {dateNeededFormatted}
-                </td>
-                <td style={bgExpandedStyles}>{fiscalYear}</td>
-                <td
-                    className={canNumberClasses}
-                    style={bgExpandedStyles}
-                >
-                    {canNumber}
-                </td>
-                <td
-                    className={amountClasses}
-                    style={bgExpandedStyles}
-                >
+                <td className={dateNeededClasses}>{dateNeededFormatted}</td>
+                <td>{fiscalYear}</td>
+                <td className={canNumberClasses}>{canNumber}</td>
+                <td className={amountClasses}>
                     <CurrencyFormat
                         value={amount}
                         displayType="text"
@@ -181,10 +157,7 @@ const BLIReviewRow = ({ budgetLine, isReviewMode = false, setSelectedBLIs, actio
                         renderText={(value) => value}
                     />
                 </td>
-                <td
-                    className={borderExpandedStyles}
-                    style={bgExpandedStyles}
-                >
+                <td>
                     <CurrencyFormat
                         value={feeValue}
                         displayType="text"
@@ -195,10 +168,7 @@ const BLIReviewRow = ({ budgetLine, isReviewMode = false, setSelectedBLIs, actio
                         renderText={(value) => value}
                     />
                 </td>
-                <td
-                    className={borderExpandedStyles}
-                    style={bgExpandedStyles}
-                >
+                <td>
                     <CurrencyFormat
                         value={totalWithFees}
                         displayType="text"
@@ -209,10 +179,7 @@ const BLIReviewRow = ({ budgetLine, isReviewMode = false, setSelectedBLIs, actio
                         renderText={(value) => value}
                     />
                 </td>
-                <td
-                    className={borderExpandedStyles}
-                    style={bgExpandedStyles}
-                >
+                <td>
                     <TableTag
                         status={budgetLine?.status}
                         inReview={budgetLine?.in_review}

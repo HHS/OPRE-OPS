@@ -11,11 +11,13 @@ from models import (
     BudgetLineItem,
     BudgetLineItemStatus,
     ContractAgreement,
+    Portfolio,
     Project,
     ProjectType,
     ResearchProject,
     ServicesComponent,
 )
+from models.cans import CANFundingBudget, CANFundingDetails
 from models.projects import ResearchType
 from ops_api.ops.services.ops_service import ResourceNotFoundError, ValidationError
 from ops_api.ops.services.projects import ProjectsService
@@ -66,13 +68,12 @@ def test_projects_serialization(auth_client, loaded_db, test_user, test_project)
     assert response.json["team_leaders"][0]["full_name"] == "Chris Fortunato"
 
 
-def test_projects_with_fiscal_year_found(auth_client, loaded_db, test_project):
-    response = auth_client.get(url_for("api.projects-group", fiscal_year=[2023]))
+def test_projects_with_fiscal_year_found(auth_client, loaded_db):
+    response = auth_client.get(url_for("api.projects-group", fiscal_year=[2045]))
     assert response.status_code == 200
-    assert response.json["count"] == 5
-    assert len(response.json["data"]) == 5
+    assert response.json["count"] == 1
+    assert len(response.json["data"]) == 1
     assert response.json["data"][0]["title"] == "Human Services Interoperability Support"
-    assert response.json["data"][0]["id"] == test_project.id
 
 
 def test_projects_with_fiscal_year_not_found(auth_client, loaded_db):
@@ -341,6 +342,177 @@ def test_project_type_filter_single_type(auth_client, loaded_db):
     response_all = auth_client.get(url_for("api.projects-group", limit=50))
     assert response_all.status_code == 200
     assert len(response_research.json["data"]) + len(response_admin.json["data"]) == len(response_all.json["data"])
+
+
+def test_projects_get_all_includes_summary(auth_client, loaded_db):
+    """Test that GET /projects/ includes summary with total_projects, projects_by_type, and amounts_by_type."""
+    response = auth_client.get(url_for("api.projects-group"))
+    assert response.status_code == 200
+
+    summary = response.json["summary"]
+    assert "total_projects" in summary
+    assert "projects_by_type" in summary
+    assert "amounts_by_type" in summary
+    assert summary["total_projects"] == response.json["count"]
+
+    # projects_by_type values should sum to total_projects
+    assert sum(summary["projects_by_type"].values()) == summary["total_projects"]
+
+    # All keys should be valid project type names
+    valid_types = {t.name for t in ProjectType}
+    for key in summary["projects_by_type"]:
+        assert key in valid_types
+
+
+def test_projects_summary_with_fiscal_year(auth_client, loaded_db):
+    """Test that summary amounts_by_type reflects FY-specific totals when a fiscal year is specified."""
+    response = auth_client.get(url_for("api.projects-group", fiscal_year=[2023]))
+    assert response.status_code == 200
+
+    summary = response.json["summary"]
+    assert "amounts_by_type" in summary
+    assert summary["total_projects"] == response.json["count"]
+
+
+def test_projects_summary_amounts_by_type_structure(auth_client, loaded_db):
+    """Test that amounts_by_type values contain amount and percent fields."""
+    # With FY (FY-specific amounts)
+    response = auth_client.get(url_for("api.projects-group", fiscal_year=[2023]))
+    summary = response.json["summary"]
+    for entry in summary["amounts_by_type"].values():
+        assert "amount" in entry
+        assert "percent" in entry
+        assert isinstance(entry["amount"], (int, float))
+        assert isinstance(entry["percent"], (int, float))
+
+    # Without FY (lifetime amounts)
+    response = auth_client.get(url_for("api.projects-group"))
+    summary = response.json["summary"]
+    total_percent = 0.0
+    for entry in summary["amounts_by_type"].values():
+        assert isinstance(entry["amount"], (int, float))
+        assert isinstance(entry["percent"], (int, float))
+        total_percent += entry["percent"]
+    # Percentages should sum to 100 (when there are amounts)
+    if total_percent > 0:
+        assert abs(total_percent - 100.0) < 0.5
+
+
+def test_projects_summary_ignores_pagination(auth_client, loaded_db):
+    """Summary aggregates should be computed over the full filtered set, ignoring limit/offset."""
+    response_all = auth_client.get(url_for("api.projects-group", limit=50))
+    assert response_all.status_code == 200
+    summary_all = response_all.json["summary"]
+
+    response_paginated = auth_client.get(url_for("api.projects-group", limit=1, offset=1))
+    assert response_paginated.status_code == 200
+    summary_paginated = response_paginated.json["summary"]
+
+    assert summary_paginated == summary_all
+
+
+def test_projects_summary_with_project_type_filter(auth_client, loaded_db):
+    """Test that summary projects_by_type has zero for non-filtered type."""
+    response = auth_client.get(url_for("api.projects-group", project_type=[ProjectType.RESEARCH.name], limit=50))
+    assert response.status_code == 200
+
+    summary = response.json["summary"]
+    # Both types always present
+    assert ProjectType.RESEARCH.name in summary["projects_by_type"]
+    assert ProjectType.ADMINISTRATIVE_AND_SUPPORT.name in summary["projects_by_type"]
+    # Filtered-out type should be 0
+    assert summary["projects_by_type"][ProjectType.ADMINISTRATIVE_AND_SUPPORT.name] == 0
+    assert summary["total_projects"] == summary["projects_by_type"][ProjectType.RESEARCH.name]
+
+
+def test_projects_summary_scoped_to_portfolio(auth_client, loaded_db):
+    """Summary amounts should only include BLIs whose CAN belongs to the filtered portfolio."""
+    unique = uuid.uuid4().hex[:8]
+
+    portfolio_1 = loaded_db.get(Portfolio, 1)
+    portfolio_6 = loaded_db.get(Portfolio, 6)
+
+    # Two CANs in different portfolios
+    can1_details = CANFundingDetails(fiscal_year=2025, fund_code="AAXXXX20251DAD")
+    loaded_db.add(can1_details)
+    loaded_db.flush()
+    can1 = CAN(number=f"G98A{unique}", portfolio_id=portfolio_1.id)
+    can1.funding_details = can1_details
+    loaded_db.add(can1)
+    loaded_db.flush()
+    can1_budget = CANFundingBudget(can_id=can1.id, fiscal_year=2025, budget=Decimal("1000000.00"))
+    loaded_db.add(can1_budget)
+
+    can2_details = CANFundingDetails(fiscal_year=2025, fund_code="BBXXXX20251DAD")
+    loaded_db.add(can2_details)
+    loaded_db.flush()
+    can2 = CAN(number=f"G98B{unique}", portfolio_id=portfolio_6.id)
+    can2.funding_details = can2_details
+    loaded_db.add(can2)
+    loaded_db.flush()
+    can2_budget = CANFundingBudget(can_id=can2.id, fiscal_year=2025, budget=Decimal("500000.00"))
+    loaded_db.add(can2_budget)
+
+    # Project with one agreement having BLIs in both portfolios
+    project = ResearchProject(
+        title=f"Multi Portfolio Project {unique}",
+        short_title="MPP",
+        description="Test portfolio scoping",
+    )
+    loaded_db.add(project)
+    loaded_db.flush()
+
+    agreement = ContractAgreement(name=f"Multi Portfolio Agreement {unique}", project_id=project.id)
+    loaded_db.add(agreement)
+    loaded_db.flush()
+
+    bli1 = BudgetLineItem(
+        budget_line_item_type=AgreementType.CONTRACT,
+        agreement_id=agreement.id,
+        can_id=can1.id,
+        amount=Decimal("200000.00"),
+        status=BudgetLineItemStatus.PLANNED,
+        date_needed=date(2025, 3, 15),
+    )
+    bli2 = BudgetLineItem(
+        budget_line_item_type=AgreementType.CONTRACT,
+        agreement_id=agreement.id,
+        can_id=can2.id,
+        amount=Decimal("100000.00"),
+        status=BudgetLineItemStatus.PLANNED,
+        date_needed=date(2025, 6, 1),
+    )
+    loaded_db.add_all([bli1, bli2])
+    loaded_db.commit()
+
+    # Filter by portfolio_1 — summary should only include the $200k BLI, not the $100k one
+    response = auth_client.get(
+        url_for("api.projects-group", portfolio_id=[portfolio_1.id], fiscal_year=[2025], limit=50)
+    )
+    assert response.status_code == 200
+    summary = response.json["summary"]
+
+    # Find the RESEARCH amount in the response
+    research_amount = summary["amounts_by_type"]["RESEARCH"]["amount"]
+
+    # Filter by portfolio_6 — should include the $100k BLI
+    response_p6 = auth_client.get(
+        url_for("api.projects-group", portfolio_id=[portfolio_6.id], fiscal_year=[2025], limit=50)
+    )
+    assert response_p6.status_code == 200
+    summary_p6 = response_p6.json["summary"]
+    research_amount_p6 = summary_p6["amounts_by_type"]["RESEARCH"]["amount"]
+
+    # Unfiltered request should have a higher or equal total than either portfolio-scoped request,
+    # proving that portfolio scoping excludes BLIs from other portfolios
+    response_unfiltered = auth_client.get(url_for("api.projects-group", fiscal_year=[2025], limit=50))
+    assert response_unfiltered.status_code == 200
+    unfiltered_research = response_unfiltered.json["summary"]["amounts_by_type"]["RESEARCH"]["amount"]
+
+    assert unfiltered_research >= research_amount
+    assert unfiltered_research >= research_amount_p6
+    # The two portfolio-scoped amounts must differ (our test project contributes $200k vs $100k)
+    assert research_amount != research_amount_p6
 
 
 def test_projects_get_by_id_auth(client):
@@ -1638,3 +1810,237 @@ class TestProjectMetadata:
         assert len(team_members) == 2
         assert team_member_ids.count(500) == 1
         assert team_member_ids.count(501) == 1
+
+
+class TestProjectFunding:
+    """Tests for the get_project_funding method and /projects/{id}/funding/ endpoint."""
+
+    @pytest.fixture
+    def funding_test_data(self, loaded_db):
+        """Create a project with two CANs in different portfolios, with funding budgets."""
+        portfolio_1 = loaded_db.get(Portfolio, 1)
+        portfolio_6 = loaded_db.get(Portfolio, 6)
+        unique = uuid.uuid4().hex[:8]
+
+        # CAN 1: 1-year CAN in portfolio 1, appropriation year 2025
+        # fund_code position 10 = "1" (1-year active period)
+        can1_details = CANFundingDetails(fiscal_year=2025, fund_code="AAXXXX20251DAD")
+        loaded_db.add(can1_details)
+        loaded_db.flush()
+
+        can1 = CAN(number=f"G99A{unique}", portfolio_id=portfolio_1.id)
+        can1.funding_details = can1_details
+        loaded_db.add(can1)
+        loaded_db.flush()
+
+        can1_budget_2025 = CANFundingBudget(can_id=can1.id, fiscal_year=2025, budget=Decimal("1000000.00"))
+        loaded_db.add(can1_budget_2025)
+
+        # CAN 2: 5-year CAN in portfolio 6, appropriation year 2022
+        # fund_code position 10 = "5" (5-year active period)
+        can2_details = CANFundingDetails(fiscal_year=2022, fund_code="BBXXXX20225DAD")
+        loaded_db.add(can2_details)
+        loaded_db.flush()
+
+        can2 = CAN(number=f"G99B{unique}", portfolio_id=portfolio_6.id)
+        can2.funding_details = can2_details
+        loaded_db.add(can2)
+        loaded_db.flush()
+
+        can2_budget_2022 = CANFundingBudget(can_id=can2.id, fiscal_year=2022, budget=Decimal("500000.00"))
+        can2_budget_2025 = CANFundingBudget(can_id=can2.id, fiscal_year=2025, budget=Decimal("300000.00"))
+        loaded_db.add_all([can2_budget_2022, can2_budget_2025])
+
+        # Project with agreement and BLIs referencing both CANs
+        project = ResearchProject(
+            title=f"Funding Test Project {unique}",
+            short_title="FTP",
+            description="Project for testing funding calculations",
+        )
+        loaded_db.add(project)
+        loaded_db.flush()
+
+        agreement = ContractAgreement(name=f"Funding Test Agreement {unique}", project_id=project.id)
+        loaded_db.add(agreement)
+        loaded_db.flush()
+
+        bli1 = BudgetLineItem(
+            budget_line_item_type=AgreementType.CONTRACT,
+            agreement_id=agreement.id,
+            can_id=can1.id,
+            amount=Decimal("100000.00"),
+            status=BudgetLineItemStatus.PLANNED,
+            date_needed=date(2025, 3, 15),
+        )
+        bli2 = BudgetLineItem(
+            budget_line_item_type=AgreementType.CONTRACT,
+            agreement_id=agreement.id,
+            can_id=can2.id,
+            amount=Decimal("50000.00"),
+            status=BudgetLineItemStatus.OBLIGATED,
+            date_needed=date(2025, 6, 1),
+        )
+        loaded_db.add_all([bli1, bli2])
+        loaded_db.commit()
+
+        return {
+            "project": project,
+            "can1": can1,
+            "can2": can2,
+            "portfolio_1": portfolio_1,
+            "portfolio_6": portfolio_6,
+        }
+
+    def test_get_project_funding_empty_project(self, loaded_db):
+        """A project with no agreements returns empty/zero results."""
+        project = ResearchProject(
+            title="Empty Funding Project",
+            short_title="EFP",
+            description="No agreements",
+        )
+        loaded_db.add(project)
+        loaded_db.commit()
+
+        result = project.get_project_funding(2025)
+
+        assert result["funding_by_portfolio"] == []
+        assert result["funding_by_can"] == {"total": 0.0, "carry_forward_funding": 0.0, "new_funding": 0.0}
+        assert result["funding_by_fiscal_year"] == []
+        assert result["cans"] == []
+
+    def test_get_project_funding_by_portfolio(self, loaded_db, funding_test_data):
+        """funding_by_portfolio groups CANFundingBudget by CAN portfolio for the given FY."""
+        project = funding_test_data["project"]
+        result = project.get_project_funding(2025)
+
+        by_portfolio = {item["portfolio_id"]: item for item in result["funding_by_portfolio"]}
+
+        # Portfolio 1: CAN1 has $1,000,000 budget in FY 2025
+        p1 = by_portfolio[funding_test_data["portfolio_1"].id]
+        assert p1["amount"] == 1000000.00
+        assert p1["portfolio"] == funding_test_data["portfolio_1"].name
+
+        # Portfolio 6: CAN2 has $300,000 budget in FY 2025
+        p6 = by_portfolio[funding_test_data["portfolio_6"].id]
+        assert p6["amount"] == 300000.00
+        assert p6["portfolio"] == funding_test_data["portfolio_6"].name
+
+    def test_get_project_funding_by_can_classification(self, loaded_db, funding_test_data):
+        """funding_by_can correctly classifies carry-forward vs new funding."""
+        project = funding_test_data["project"]
+        result = project.get_project_funding(2025)
+
+        funding_by_can = result["funding_by_can"]
+
+        # CAN1: 1-year CAN → all budget is new_funding ($1,000,000)
+        # CAN2: 5-year CAN, appropriation year 2022, querying FY 2025 → carry_forward ($300,000)
+        assert funding_by_can["new_funding"] == 1000000.00
+        assert funding_by_can["carry_forward_funding"] == 300000.00
+        assert funding_by_can["total"] == 1300000.00
+
+    def test_get_project_funding_by_fiscal_year_all_years(self, loaded_db, funding_test_data):
+        """funding_by_fiscal_year returns all years, not filtered by the parameter."""
+        project = funding_test_data["project"]
+        result = project.get_project_funding(2025)
+
+        by_fy = {item["fiscal_year"]: item["amount"] for item in result["funding_by_fiscal_year"]}
+
+        # CAN1: $1,000,000 in FY 2025
+        # CAN2: $500,000 in FY 2022, $300,000 in FY 2025
+        assert by_fy[2022] == 500000.00
+        assert by_fy[2025] == 1300000.00  # 1,000,000 + 300,000
+
+    def test_get_project_funding_by_fiscal_year_sorted(self, loaded_db, funding_test_data):
+        """funding_by_fiscal_year is sorted by fiscal year ascending."""
+        project = funding_test_data["project"]
+        result = project.get_project_funding(2025)
+
+        fiscal_years = [item["fiscal_year"] for item in result["funding_by_fiscal_year"]]
+        assert fiscal_years == sorted(fiscal_years)
+
+    def test_get_project_funding_cans_detail(self, loaded_db, funding_test_data):
+        """cans list returns per-CAN detail with fy_funding and lifetime_funding."""
+        project = funding_test_data["project"]
+        can1 = funding_test_data["can1"]
+        can2 = funding_test_data["can2"]
+        result = project.get_project_funding(2025)
+
+        cans_by_id = {c["id"]: c for c in result["cans"]}
+
+        # CAN1: 1-year, FY 2025 budget = $1,000,000, lifetime = $1,000,000
+        c1 = cans_by_id[can1.id]
+        assert c1["number"] == can1.number
+        assert c1["portfolio_id"] == funding_test_data["portfolio_1"].id
+        assert c1["active_period"] == 1
+        assert c1["fy_funding"] == 1000000.00
+        assert c1["lifetime_funding"] == 1000000.00
+
+        # CAN2: 5-year, FY 2025 budget = $300,000, lifetime = $500,000 + $300,000 = $800,000
+        c2 = cans_by_id[can2.id]
+        assert c2["number"] == can2.number
+        assert c2["portfolio_id"] == funding_test_data["portfolio_6"].id
+        assert c2["active_period"] == 5
+        assert c2["fy_funding"] == 300000.00
+        assert c2["lifetime_funding"] == 800000.00
+
+    def test_get_project_funding_cans_sorted_by_id(self, loaded_db, funding_test_data):
+        """cans list is sorted by CAN id."""
+        project = funding_test_data["project"]
+        result = project.get_project_funding(2025)
+
+        can_ids = [c["id"] for c in result["cans"]]
+        assert can_ids == sorted(can_ids)
+
+    def test_get_project_funding_different_fiscal_year(self, loaded_db, funding_test_data):
+        """Querying a different FY scopes fy_funding and carry-forward classification."""
+        project = funding_test_data["project"]
+        result = project.get_project_funding(2022)
+
+        # FY 2022: CAN1 has no budget, CAN2 has $500,000
+        funding_by_can = result["funding_by_can"]
+        # CAN2: 5-year, appropriation year 2022, querying FY 2022 → new_funding
+        assert funding_by_can["new_funding"] == 500000.00
+        assert funding_by_can["carry_forward_funding"] == 0.0
+        assert funding_by_can["total"] == 500000.00
+
+        # fy_funding scoped to FY 2022
+        cans_by_id = {c["id"]: c for c in result["cans"]}
+        assert cans_by_id[funding_test_data["can1"].id]["fy_funding"] == 0.0
+        assert cans_by_id[funding_test_data["can2"].id]["fy_funding"] == 500000.00
+
+    def test_get_project_funding_endpoint(self, auth_client, loaded_db, funding_test_data):
+        """GET /projects/{id}/funding/ returns 200 with correct schema structure."""
+        project = funding_test_data["project"]
+        response = auth_client.get(url_for("api.projects-funding", id=project.id, fiscal_year=2025))
+        assert response.status_code == 200
+
+        data = response.json
+        assert "funding_by_portfolio" in data
+        assert "funding_by_can" in data
+        assert "funding_by_fiscal_year" in data
+        assert "cans" in data
+
+        # Verify funding_by_can structure
+        assert "total" in data["funding_by_can"]
+        assert "carry_forward_funding" in data["funding_by_can"]
+        assert "new_funding" in data["funding_by_can"]
+
+        # Verify cans structure
+        assert len(data["cans"]) == 2
+        can_keys = {"id", "number", "portfolio_id", "portfolio", "active_period", "fy_funding", "lifetime_funding"}
+        for can in data["cans"]:
+            assert set(can.keys()) == can_keys
+
+    def test_get_project_funding_endpoint_with_fiscal_year_param(self, auth_client, loaded_db, funding_test_data):
+        """Endpoint accepts fiscal_year query param and scopes results."""
+        project = funding_test_data["project"]
+        response = auth_client.get(url_for("api.projects-funding", id=project.id, fiscal_year=2022))
+        assert response.status_code == 200
+
+        data = response.json
+        assert data["funding_by_can"]["total"] == 500000.00
+
+    def test_get_project_funding_endpoint_404(self, auth_client, loaded_db):
+        """GET /projects/{id}/funding/ returns 404 for non-existent project."""
+        response = auth_client.get(url_for("api.projects-funding", id=999999, fiscal_year=2025))
+        assert response.status_code == 404

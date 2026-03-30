@@ -2936,6 +2936,7 @@ paths:
                   - count
                   - limit
                   - offset
+                  - summary
                 properties:
                   data:
                     type: array
@@ -2957,6 +2958,54 @@ paths:
                     type: integer
                     description: Number of projects skipped
                     example: 0
+                  summary:
+                    type: object
+                    description: Aggregated summary data computed over the full filtered result set (ignoring pagination)
+                    required:
+                      - total_projects
+                      - projects_by_type
+                      - amounts_by_type
+                    properties:
+                      total_projects:
+                        type: integer
+                        description: Total number of projects matching the filter criteria
+                        example: 20
+                      projects_by_type:
+                        type: object
+                        description: Count of projects grouped by project type. Always includes both RESEARCH and ADMINISTRATIVE_AND_SUPPORT keys (0 if none match).
+                        additionalProperties:
+                          type: integer
+                        example:
+                          RESEARCH: 15
+                          ADMINISTRATIVE_AND_SUPPORT: 5
+                      amounts_by_type:
+                        type: object
+                        description: >
+                          Total amounts and percentages grouped by project type. Always includes both
+                          RESEARCH and ADMINISTRATIVE_AND_SUPPORT keys (0 if none match). When a specific
+                          fiscal year is selected, contains FY-specific totals. When no fiscal year is
+                          selected (FY = All), contains lifetime totals.
+                        additionalProperties:
+                          type: object
+                          required:
+                            - amount
+                            - percent
+                          properties:
+                            amount:
+                              type: number
+                              format: float
+                              description: Total amount for this project type
+                            percent:
+                              type: number
+                              format: float
+                              description: Percentage of total amount across all project types
+                        example:
+                          RESEARCH:
+                            amount: 7000000.00
+                            percent: 70.0
+                          ADMINISTRATIVE_AND_SUPPORT:
+                            amount: 3000000.00
+                            percent: 30.0
         "400":
           description: Bad Request
         "401":
@@ -5662,7 +5711,6 @@ components:
         - portfolio_id
         - portfolio
         - active_period
-        - amount
         - fy_funding
         - lifetime_funding
       properties:
@@ -5682,11 +5730,6 @@ components:
           type: integer
           description: Active period in years
           example: 1
-        amount:
-          type: number
-          format: double
-          description: Amount obligated to this project from this CAN
-          example: 123.456
         fy_funding:
           type: number
           format: double

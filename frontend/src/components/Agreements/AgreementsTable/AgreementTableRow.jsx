@@ -8,11 +8,7 @@ import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import ChangeIcons from "../../BudgetLineItems/ChangeIcons";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 import TableRowExpandable from "../../UI/TableRowExpandable";
-import {
-    changeBgColorIfExpanded,
-    expandedRowBGColor,
-    removeBorderBottomIfExpanded
-} from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
+import { expandedRowBGColor } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import TextClip from "../../UI/Text/TextClip";
 import {
@@ -56,8 +52,6 @@ export const AgreementTableRow = ({ agreement }) => {
     const awardType = AWARD_TYPE_LABELS[agreement?.award_type] ?? NO_DATA;
     const vendor = isSuccess ? (agreement?.vendor ?? NO_DATA) : NO_DATA;
 
-    const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
-    const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
     const areAllBudgetLinesInDraftStatus = isSuccess ? areAllBudgetLinesInStatus(agreement, BLI_STATUS.DRAFT) : false;
     const isSuperUser = useSelector((state) => state.auth?.activeUser?.is_superuser) ?? false;
 
@@ -110,11 +104,7 @@ export const AgreementTableRow = ({ agreement }) => {
 
     const TableRowData = (
         <>
-            <td
-                className={borderExpandedStyles}
-                style={bgExpandedStyles}
-                data-cy="agreement-name"
-            >
+            <td data-cy="agreement-name">
                 <Link
                     className="text-ink text-no-underline"
                     to={`/agreements/${agreement?.id}`}
@@ -127,32 +117,10 @@ export const AgreementTableRow = ({ agreement }) => {
                     />
                 </Link>
             </td>
-            <td
-                className={borderExpandedStyles}
-                style={bgExpandedStyles}
-                data-cy="agreement-type"
-            >
-                {agreementType || ""}
-            </td>
-            <td
-                className={borderExpandedStyles}
-                style={bgExpandedStyles}
-                data-cy="agreement-start-date"
-            >
-                {agreementStartDate}
-            </td>
-            <td
-                className={borderExpandedStyles}
-                style={bgExpandedStyles}
-                data-cy="agreement-end-date"
-            >
-                {agreementEndDate}
-            </td>
-            <td
-                className={borderExpandedStyles}
-                style={bgExpandedStyles}
-                data-cy="agreement-total"
-            >
+            <td data-cy="agreement-type">{agreementType || ""}</td>
+            <td data-cy="agreement-start-date">{agreementStartDate}</td>
+            <td data-cy="agreement-end-date">{agreementEndDate}</td>
+            <td data-cy="agreement-total">
                 <CurrencyFormat
                     value={agreementTotal}
                     displayType={"text"}
@@ -163,11 +131,7 @@ export const AgreementTableRow = ({ agreement }) => {
                     renderText={(value) => value}
                 />
             </td>
-            <td
-                className={borderExpandedStyles}
-                style={bgExpandedStyles}
-                data-cy="fy-obligated-amount"
-            >
+            <td data-cy="fy-obligated-amount">
                 {isRowActive && !isExpanded ? (
                     <div>{changeIcons}</div>
                 ) : (

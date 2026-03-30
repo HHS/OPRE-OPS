@@ -132,6 +132,17 @@ The frontend makes API calls to `http://localhost:8080/api/v1/`. Key integration
 
 When backend API responses change, update the corresponding RTK Query endpoints in `src/api/opsAPI.js`.
 
+### Internal Notification Links and Auth Hydration
+
+Notification messages are rendered from markdown in `src/components/UI/LogItem/LogItem.jsx`.
+
+- Internal OPS links in markdown must use client-side routing via `react-router-dom` `Link`, not plain `<a>` tags.
+- Same-origin absolute URLs (for example `http://localhost:3000/agreements/approve/...`) should also be converted to SPA routes.
+- Plain anchors can trigger a full page reload, which may re-enter protected routes before `auth.activeUser` has been restored.
+- Pages that gate access on `activeUser` should avoid redirecting or denying access until auth hydration is complete.
+
+This pattern matters for notification-center links into protected pages like agreement review and approval flows.
+
 ### Vest v6 Form Validation Patterns
 
 **CRITICAL**: This project uses **vest v6** for form validation. Vest v6 has significant breaking changes from v5. When writing or editing suite files (`suite.js`) or validation hooks, follow these rules:

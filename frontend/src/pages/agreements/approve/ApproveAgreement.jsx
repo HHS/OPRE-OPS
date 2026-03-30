@@ -22,7 +22,7 @@ import {
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { agreement, document } from "../../../tests/data";
 import useApproveAgreement from "./ApproveAgreement.hooks";
-import { useNavigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 
 const ApproveAgreement = () => {
     const {
@@ -42,6 +42,7 @@ const ApproveAgreement = () => {
         handleCancel,
         hasPermissionToViewPage,
         isLoadingAgreement,
+        isHydratingActiveUser,
         isAgreementAwarded,
         modalProps,
         notes,
@@ -62,13 +63,16 @@ const ApproveAgreement = () => {
         urlChangeToStatus
     } = useApproveAgreement();
 
-    const navigate = useNavigate();
-    if (isLoadingAgreement) {
+    if (isLoadingAgreement || isHydratingActiveUser) {
         return <div>Loading...</div>;
     }
     if (!hasPermissionToViewPage || errorAgreement || !agreement) {
-        navigate("/error");
-        return;
+        return (
+            <Navigate
+                to="/error"
+                replace
+            />
+        );
     }
 
     return (
