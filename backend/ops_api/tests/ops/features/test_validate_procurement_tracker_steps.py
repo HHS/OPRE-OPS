@@ -360,7 +360,10 @@ def procurement_tracker_with_incomplete_step_4(loaded_db, context):
     agreement = context["agreement"]
 
     procurement_tracker = ProcurementTracker(
-        agreement_id=agreement.id, status=ProcurementTrackerStatus.ACTIVE, tracker_type=ProcurementTrackerType.DEFAULT, active_step_number=5
+        agreement_id=agreement.id,
+        status=ProcurementTrackerStatus.ACTIVE,
+        tracker_type=ProcurementTrackerType.DEFAULT,
+        active_step_number=5,
     )
     loaded_db.add(procurement_tracker)
     loaded_db.flush()
