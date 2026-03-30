@@ -64,9 +64,7 @@ describe("LogItem", () => {
         expect.hasAssertions();
         const user = userEvent.setup();
 
-        renderLogItem(
-            `[Open](${window.location.origin}/agreements/approve/9?type=status-change&to=executing)`
-        );
+        renderLogItem(`[Open](${window.location.origin}/agreements/approve/9?type=status-change&to=executing)`);
 
         const link = await screen.findByRole("link", { name: "Open" });
 
