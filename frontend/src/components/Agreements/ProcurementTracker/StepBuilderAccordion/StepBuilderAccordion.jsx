@@ -1,11 +1,11 @@
 import Accordion from "../../../UI/Accordion";
 import { fromUpperCaseToTitleCase } from "../../../../helpers/utils";
-import { PROCUREMENT_STEP_STATUS } from "../ProcurementTracker.constants";
+import { ProcurementTrackerStepStatus } from "../ProcurementTracker.constants";
 import "./StepBuilderAccordion.css";
 
 const STEP_STATUS_MAP = {
-    [PROCUREMENT_STEP_STATUS.COMPLETED]: "completed",
-    [PROCUREMENT_STEP_STATUS.ACTIVE]: "active"
+    [ProcurementTrackerStepStatus.COMPLETED]: "completed",
+    [ProcurementTrackerStepStatus.ACTIVE]: "active"
 };
 
 const formatStepLabel = (stepType) => {

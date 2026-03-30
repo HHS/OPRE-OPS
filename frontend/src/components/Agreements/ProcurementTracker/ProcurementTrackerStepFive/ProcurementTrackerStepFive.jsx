@@ -7,6 +7,7 @@ import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepFive from "./ProcurementTrackerStepFive.hooks";
 import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { ProcurementTrackerPreAwardApprovalStatus } from "../ProcurementTracker.constants";
 
 /**
  * @typedef {import("../../../../types/UserTypes").SafeUser} SafeUser
@@ -84,7 +85,7 @@ const ProcurementTrackerStepFive = ({
         !step5DateCompleted ||
         validatorRes.hasErrors() ||
         !stepFiveData?.id ||
-        stepFiveData?.approval_requested
+        stepFiveData?.approval_status !== ProcurementTrackerPreAwardApprovalStatus.APPROVED
     );
     return (
         <>

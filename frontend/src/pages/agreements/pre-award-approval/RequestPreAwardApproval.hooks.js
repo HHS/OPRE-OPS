@@ -19,10 +19,7 @@ import {
     uploadDocumentToBlob,
     uploadDocumentToInMemory
 } from "../../../components/Agreements/Documents/Document";
-import {
-    PROCUREMENT_STEP_STATUS,
-    PROCUREMENT_TRACKER_STATUS
-} from "../../../components/Agreements/ProcurementTracker/ProcurementTracker.constants";
+import { ProcurementTrackerStepStatus, ProcurementTrackerStatus } from "../../../components/Agreements/ProcurementTracker/ProcurementTracker.constants";
 
 /**
  * Custom hook for the Request Pre-Award Approval page
@@ -62,7 +59,7 @@ export default function useRequestPreAwardApproval(agreementId) {
 
     // Get Step 4 and Step 5 from procurement tracker
     const trackers = procurementTrackersData?.data || [];
-    const activeTracker = trackers.find((tracker) => tracker.status === PROCUREMENT_TRACKER_STATUS.ACTIVE);
+    const activeTracker = trackers.find((tracker) => tracker.status === ProcurementTrackerStatus.ACTIVE);
     const step4 = activeTracker?.steps?.find((step) => step.step_number === 4);
     const step5 = activeTracker?.steps?.find((step) => step.step_number === 5);
 
@@ -73,8 +70,7 @@ export default function useRequestPreAwardApproval(agreementId) {
     // Check if approval is pending (requested but not yet approved or declined)
     // This is used for both the banner and disabling buttons
     const isApprovalPending =
-        step5?.approval_requested === true &&
-        (!step5?.approval_status || step5?.approval_status === "PENDING");
+        step5?.approval_requested === true && (!step5?.approval_status || step5?.approval_status === "PENDING");
 
     // Check if approval has been approved (prevents re-requesting)
     const isApprovalApproved = step5?.approval_status === "APPROVED";
@@ -95,7 +91,7 @@ export default function useRequestPreAwardApproval(agreementId) {
     const hasBLIInReview = agreement?.budget_line_items?.some((bli) => bli.in_review) ?? false;
 
     // Check if Step 4 (Evaluation) is completed
-    const isStep4Completed = step4?.status === PROCUREMENT_STEP_STATUS.COMPLETED;
+    const isStep4Completed = step4?.status === ProcurementTrackerStepStatus.COMPLETED;
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];

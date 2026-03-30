@@ -1,4 +1,5 @@
 import React from "react";
+import { useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useGetProcurementTrackersByAgreementIdQuery, useGetUsersQuery } from "../../../api/opsAPI";
 import ProcurementTrackerStepOne from "../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepOne";
@@ -12,6 +13,7 @@ import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import StepIndicator from "../../../components/UI/StepIndicator";
 import { IS_PROCUREMENT_TRACKER_READY_MAP } from "../../../constants";
 import { useIsUserSuperUser, useIsUserOnlyProcurementTeam } from "../../../hooks/user.hooks";
+import { ProcurementTrackerPreAwardApprovalStatus } from "../../../components/Agreements/ProcurementTracker/ProcurementTracker.constants";
 
 /**
  * @typedef {Object} AgreementProcurementTrackerProps
@@ -29,6 +31,8 @@ const AgreementProcurementTracker = ({ agreement }) => {
     const navigate = useNavigate();
     const [showSuccessAlert, setShowSuccessAlert] = React.useState(false);
     const [showInReviewAlert, setShowInReviewAlert] = React.useState(false);
+    const [showApprovedAlert, setShowApprovedAlert] = React.useState(false);
+    const [showDeclinedAlert, setShowDeclinedAlert] = React.useState(false);
     const isJustSubmittedRef = React.useRef(false);
 
     const WIZARD_STEPS = [
@@ -44,6 +48,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
         setCompletedStepNumber(stepNumber);
     };
     const agreementId = agreement?.id;
+    const currentUserId = useSelector((state) => state.auth?.activeUser?.id);
 
     // Check for success message from location state (runs once on mount)
     React.useEffect(() => {
@@ -97,13 +102,33 @@ const AgreementProcurementTracker = ({ agreement }) => {
     const stepFiveData = activeTracker?.steps.find((step) => step.step_number === 5);
 
     // Show "In Review" alert when approval is requested and not in the "just submitted" state
+    // Hide alert when pre-award has been approved
     React.useEffect(() => {
-        if (stepFiveData?.approval_requested && !isJustSubmittedRef.current) {
+        const isApproved = stepFiveData?.approval_status === ProcurementTrackerPreAwardApprovalStatus.APPROVED;
+
+        if (stepFiveData?.approval_requested && !isJustSubmittedRef.current && !isApproved) {
             setShowInReviewAlert(true);
-        } else if (!stepFiveData?.approval_requested) {
+        } else if (!stepFiveData?.approval_requested || isApproved) {
             setShowInReviewAlert(false);
         }
-    }, [stepFiveData?.approval_requested]);
+    }, [stepFiveData?.approval_requested, stepFiveData?.approval_status]);
+
+    // Show approved/declined alerts only to the user who requested approval
+    React.useEffect(() => {
+        const isRequester = currentUserId && stepFiveData?.approval_requested_by === currentUserId;
+        const approvalStatus = stepFiveData?.approval_status;
+
+        if (isRequester && approvalStatus === ProcurementTrackerPreAwardApprovalStatus.APPROVED) {
+            setShowApprovedAlert(true);
+            setShowDeclinedAlert(false);
+        } else if (isRequester && approvalStatus === ProcurementTrackerPreAwardApprovalStatus.DECLINED) {
+            setShowApprovedAlert(false);
+            setShowDeclinedAlert(true);
+        } else {
+            setShowApprovedAlert(false);
+            setShowDeclinedAlert(false);
+        }
+    }, [currentUserId, stepFiveData?.approval_requested_by, stepFiveData?.approval_status]);
 
     // Handle loading state
     if (isLoading) {
@@ -137,6 +162,26 @@ const AgreementProcurementTracker = ({ agreement }) => {
 
     return (
         <>
+            {showApprovedAlert && (
+                <SimpleAlert
+                    type="success"
+                    heading="Pre-Award Approved"
+                    message="This agreement has been approved for Pre-Award. Please send the Final Consensus Memo to the Procurement Shop and continue your progress in the Procurement Tracker."
+                    isClosable={true}
+                    setIsAlertVisible={setShowApprovedAlert}
+                />
+            )}
+            {showDeclinedAlert && (
+                <SimpleAlert
+                    type="error"
+                    heading="Pre-Award Declined"
+                    message={`This agreement has been declined for Pre-Award. Please do not send the Final Consensus Memo until changes have been made and re-submitted for approval.${
+                        stepFiveData?.reviewer_notes ? `\n\nNotes: ${stepFiveData.reviewer_notes}` : ""
+                    }`}
+                    isClosable={true}
+                    setIsAlertVisible={setShowDeclinedAlert}
+                />
+            )}
             {showInReviewAlert && (
                 <SimpleAlert
                     type="warning"
