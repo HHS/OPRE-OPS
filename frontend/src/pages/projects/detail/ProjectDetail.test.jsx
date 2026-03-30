@@ -36,9 +36,18 @@ const mockProject = {
     description: "This contract will conduct interoperability activities.",
     project_type: "RESEARCH",
     origination_date: "2021-01-01",
+    project_start: "2043-06-13",
+    project_end: "2045-06-13",
+    division_directors: ["Dave Director", "Director Derrek"],
+    research_methodologies: ["Descriptive Study", "Impact Study", "Knowledge Development"],
+    special_topics: ["Special Topic 1", "Special Topic 2"],
     team_leaders: [
         { id: 500, full_name: "Chris Fortunato", email: "chris.fortunato@example.com" },
         { id: 501, full_name: "Jane Smith", email: "jane.smith@example.com" }
+    ],
+    team_members: [
+        { id: 500, full_name: "Chris Fortunato", email: "chris.fortunato@example.com" },
+        { id: 503, full_name: "Amelia Popham", email: "amelia@example.com" }
     ]
 };
 
@@ -117,10 +126,16 @@ describe("ProjectDetail", () => {
         // Description
         expect(screen.getByText("This contract will conduct interoperability activities.")).toBeInTheDocument();
 
-        // Right column tags — each team member gets their own tag
+        // Right column fields from the current API response
         expect(screen.getByText("Research")).toBeInTheDocument();
-        expect(screen.getByText("Chris Fortunato")).toBeInTheDocument();
+        expect(screen.getByText("6/13/2043")).toBeInTheDocument();
+        expect(screen.getByText("6/13/2045")).toBeInTheDocument();
+        expect(screen.getByText("Descriptive Study")).toBeInTheDocument();
+        expect(screen.getByText("Special Topic 1")).toBeInTheDocument();
+        expect(screen.getByText("Dave Director")).toBeInTheDocument();
+        expect(screen.getAllByText("Chris Fortunato")).toHaveLength(2);
         expect(screen.getByText("Jane Smith")).toBeInTheDocument();
+        expect(screen.getByText("Amelia Popham")).toBeInTheDocument();
     });
 
     it("renders a not-found message on a 404 error", () => {
