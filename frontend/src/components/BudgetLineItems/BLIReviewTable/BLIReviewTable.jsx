@@ -31,7 +31,8 @@ const AgreementBLIReviewTable = ({
     mainToggleSelected,
     setMainToggleSelected = () => {},
     servicesComponentNumber,
-    action
+    action,
+    readOnly = false
 }) => {
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
 
@@ -94,6 +95,7 @@ const AgreementBLIReviewTable = ({
                         setSelectedBLIs={setSelectedBLIs}
                         action={action}
                         showCheckbox={showCheckboxes}
+                        readOnly={readOnly}
                     />
                 ))}
             </Table>

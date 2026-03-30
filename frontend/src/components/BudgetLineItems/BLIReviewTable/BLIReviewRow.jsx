@@ -38,7 +38,7 @@ import React from "react";
  * @param {BLIReviewRowProps} props - The props of the BLIRow component.
  * @returns {JSX.Element} The BLIRow component.
  **/
-const BLIReviewRow = ({ budgetLine, isReviewMode = false, setSelectedBLIs, action, showCheckbox = true }) => {
+const BLIReviewRow = ({ budgetLine, isReviewMode = false, setSelectedBLIs, action, showCheckbox = true, readOnly = false }) => {
     const { isExpanded, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const loggedInUserFullName = useGetLoggedInUserFullName();
@@ -109,7 +109,7 @@ const BLIReviewRow = ({ budgetLine, isReviewMode = false, setSelectedBLIs, actio
 
         const labelContent = (
             <label
-                className={`usa-checkbox__label ${isDisabled ? "text-gray-50 checkbox-disabled" : ""}`}
+                className={`usa-checkbox__label ${isDisabled && !readOnly ? "text-gray-50 checkbox-disabled" : ""}`}
                 htmlFor={checkboxId}
                 style={isDisabled ? { cursor: "not-allowed" } : undefined}
             >
@@ -251,7 +251,7 @@ const BLIReviewRow = ({ budgetLine, isReviewMode = false, setSelectedBLIs, actio
             isExpanded={isExpanded}
             setIsExpanded={setIsExpanded}
             setIsRowActive={setIsRowActive}
-            className={`${!budgetLine.actionable ? "text-gray-50" : ""}`}
+            className={`${!readOnly && !budgetLine.actionable ? "text-gray-50" : ""}`}
         />
     );
 };
