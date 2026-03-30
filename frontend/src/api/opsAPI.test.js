@@ -935,6 +935,74 @@ describe("opsAPI - Wave 2 high-yield endpoint coverage", () => {
         expect(capturedUrl).toContain("enable_obe=true");
     });
 
+    it("builds getProcurementTrackersByAgreementIds query with agreement IDs", async () => {
+        let capturedUrl = "";
+        server.use(
+            http.get("*/api/v1/procurement-trackers/*", ({ request }) => {
+                capturedUrl = request.url;
+                return HttpResponse.json({ data: [{ id: 1 }, { id: 2 }] });
+            })
+        );
+
+        const storeRef = setupApiStore(opsApi);
+        const result = await storeRef.store.dispatch(
+            opsApi.endpoints.getProcurementTrackersByAgreementIds.initiate([10, 20, 30])
+        );
+
+        expect(capturedUrl).toContain("agreement_id=10");
+        expect(capturedUrl).toContain("agreement_id=20");
+        expect(capturedUrl).toContain("agreement_id=30");
+        expect(capturedUrl).toContain("limit=3");
+        expect(result.data).toEqual([{ id: 1 }, { id: 2 }]);
+    });
+
+    it("handles empty response for getProcurementTrackersByAgreementIds", async () => {
+        server.use(
+            http.get("*/api/v1/procurement-trackers/*", () => {
+                return HttpResponse.json({ data: [] });
+            })
+        );
+
+        const storeRef = setupApiStore(opsApi);
+        const result = await storeRef.store.dispatch(
+            opsApi.endpoints.getProcurementTrackersByAgreementIds.initiate([1])
+        );
+
+        expect(result.data).toEqual([]);
+    });
+
+    it("falls back to empty array when response has no data key", async () => {
+        server.use(
+            http.get("*/api/v1/procurement-trackers/*", () => {
+                return HttpResponse.json({});
+            })
+        );
+
+        const storeRef = setupApiStore(opsApi);
+        const result = await storeRef.store.dispatch(
+            opsApi.endpoints.getProcurementTrackersByAgreementIds.initiate([1])
+        );
+
+        expect(result.data).toEqual([]);
+    });
+
+    it("sets limit to 1 when empty agreement IDs array is passed", async () => {
+        let capturedUrl = "";
+        server.use(
+            http.get("*/api/v1/procurement-trackers/*", ({ request }) => {
+                capturedUrl = request.url;
+                return HttpResponse.json({ data: [] });
+            })
+        );
+
+        const storeRef = setupApiStore(opsApi);
+        await storeRef.store.dispatch(
+            opsApi.endpoints.getProcurementTrackersByAgreementIds.initiate([])
+        );
+
+        expect(capturedUrl).toContain("limit=1");
+    });
+
     it("sends POST payload for addAgreement mutation", async () => {
         let method = "";
         let payload = null;
