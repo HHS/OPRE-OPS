@@ -53,11 +53,13 @@ const budgetLineSuite = create((budgetLine = {}, fieldName) => {
     });
 
     test("Budget Line CAN", "This information is required to submit for approval", () => {
-        enforce(budgetLine.can_id).isNotNullish().greaterThan(0);
+        const canId = Number(budgetLine.can_id ?? 0);
+        enforce(canId).greaterThan(0);
     });
 
     test("Budget lines need to be assigned to a services component to change their status", () => {
-        enforce(budgetLine.services_component_id).isNotNullish().greaterThan(0);
+        const servicesComponentId = Number(budgetLine.services_component_id ?? 0);
+        enforce(servicesComponentId).greaterThan(0);
     });
 
     test("Budget Line Obligate By Date", "This information is required to submit for approval", () => {
