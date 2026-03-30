@@ -1997,6 +1997,131 @@ paths:
         "403":
           description: Forbidden
 
+  /cans/{id}/funding/:
+    get:
+      tags:
+        - CANs
+      operationId: getCanFunding
+      summary: Get funding summary for a single CAN
+      description: Returns funding totals, funding breakdown by fiscal year, and CAN metadata. When no fiscal_year is provided, returns data across all fiscal years.
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: id
+          description: CAN Id
+          required: true
+          schema:
+            type: integer
+          example: 500
+        - name: fiscal_year
+          in: query
+          description: Fiscal year to filter funding data (optional, returns all FY data when omitted)
+          schema:
+            type: integer
+          example: 2023
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  fiscal_year:
+                    type: integer
+                    nullable: true
+                  funding:
+                    $ref: "#/components/schemas/CANFundingAmounts"
+                  funding_by_fiscal_year:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        fiscal_year:
+                          type: integer
+                        amount:
+                          type: number
+                          format: float
+                  can:
+                    $ref: "#/components/schemas/CANFundingDetail"
+        "404":
+          description: CAN not found
+
+  /cans/funding/:
+    get:
+      tags:
+        - CANs
+      operationId: getCansFundingAggregate
+      summary: Get aggregated funding summary across all CANs
+      description: Returns aggregated funding totals and per-CAN detail for all CANs matching the optional filters.
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - name: fiscal_year
+          in: query
+          description: Fiscal year to filter funding data (optional)
+          schema:
+            type: integer
+          example: 2023
+        - name: active_period
+          in: query
+          description: List of active periods to filter by (optional)
+          schema:
+            type: array
+            items:
+              type: integer
+          example: [1, 5]
+        - name: transfer
+          in: query
+          description: List of CAN method of transfer values to filter by (optional)
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - DIRECT
+                - COST_SHARE
+                - IAA
+                - IDDA
+                - OTHER
+          example: ["DIRECT", "IAA"]
+        - name: portfolio
+          in: query
+          description: List of portfolio abbreviations to filter by (optional)
+          schema:
+            type: array
+            items:
+              type: string
+          example: ["HS", "HMRF", "CC"]
+        - name: fy_budget
+          in: query
+          description: Min and max fiscal year budget range (exactly 2 values)
+          schema:
+            type: array
+            items:
+              type: number
+            minItems: 2
+            maxItems: 2
+          example: [50000, 100000]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  fiscal_year:
+                    type: integer
+                    nullable: true
+                  funding:
+                    $ref: "#/components/schemas/CANFundingAmounts"
+                  cans:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/CANFundingDetail"
+        "400":
+          description: Invalid filter parameter (e.g. invalid transfer value or fy_budget length)
+
   /portfolios/:
     get:
       tags:
@@ -2474,165 +2599,6 @@ paths:
           description: Portfolio not found
         "500":
           description: Internal Server Error
-  /can-funding-summary/:
-    get:
-      tags:
-        - CAN Funding Summary
-      operationId: getFundingSummary
-      description: Get Funding Summary
-      parameters:
-        - $ref: "#/components/parameters/simulatedError"
-        - name: can_ids
-          in: query
-          description: List of CAN Ids (required), Use an integer of 0 to get funding summary for all CANs.
-          required: true
-          schema:
-            type: array
-            items:
-              type: integer
-            example: [12345, 12346, 12347]
-        - name: fiscal_year
-          in: query
-          description: Fiscal year (optional)
-          schema:
-            type: string
-            example: "2023"
-        - name: active_period
-          in: query
-          description: List of active periods (optional)
-          schema:
-            type: array
-            items:
-              type: integer
-            example: [1, 5]
-        - name: transfer
-          in: query
-          description: List of CAN Method of Transfers (optional)
-          schema:
-            type: array
-            items:
-              type: string
-              enum:
-                - DIRECT
-                - COST_SHARE
-                - IAA
-                - IDDA
-                - OTHER
-            example: ["DIRECT", "IAA"]
-        - name: portfolio
-          in: query
-          description: List of portfolio abbreviations (optional)
-          schema:
-            type: array
-            items:
-              type: string
-            example: ["HS", "HMRF", "CC"]
-        - name: fy_budget
-          in: query
-          description: List of two values representing the min and max fiscal year budget (optional)
-          schema:
-            type: array
-            items:
-              type: integer
-            minItems: 2
-            maxItems: 2
-            example: [50000, 100000]
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  available_funding:
-                    type: number
-                    format: float
-                  carry_forward_funding:
-                    type: number
-                    format: float
-                  cans:
-                    type: array
-                    properties:
-                      can:
-                        properties:
-                          active_period:
-                            type: integer
-                          description:
-                            type: string
-                          display_name:
-                            type: string
-                          id:
-                            type: integer
-                          nick_name:
-                            type: string
-                          number:
-                            type: string
-                          portfolio_id:
-                            type: integer
-                          projects:
-                            type: array
-                      carry_forward_label:
-                        type: string
-                      expiration_date:
-                        type: string
-                  expected_funding:
-                    type: number
-                    format: float
-                  in_draft_funding:
-                    type: number
-                    format: float
-                  in_execution_funding:
-                    type: number
-                    format: float
-                  new_funding:
-                    type: number
-                    format: float
-                  obligated_funding:
-                    type: number
-                    format: float
-                  planned_funding:
-                    type: number
-                    format: float
-                  received_funding:
-                    type: number
-                    format: float
-                  total_funding:
-                    type: number
-                    format: float
-              examples:
-                "0":
-                  value: |
-                    {
-                      "available_funding": 8000000.00,
-                      "carry_forward_funding": 8000000.00,
-                      "cans": [{
-                        "can":{
-                          "appropriation_date": "01/10/2022",
-                          "appropriation_term": 1,
-                          "arrangement_type_id": 4,
-                          "authorizer_id": 26,
-                          "description": "Child Development Research Fellowship Grant Program",
-                          "expiration_date": "01/09/2023",
-                          "id": 4,
-                          "managing_portfolio_id": 1,
-                          "managing_project_id": 1,
-                          "nickname": "ASPE SRCD-IDDA",
-                          "number": "G990136",
-                          "purpose": ""
-                        },
-                        "carry_forward_label": "Carry-Forward",
-                        "expiration_date": "09/01/2023",
-                      }],
-                      "expected_funding": 4000000.00,
-                      "in_draft_funding": 500000.00,
-                      "in_execution_funding": 2000000.00,
-                      "new_funding": 2000000.00,
-                      "obligated_funding": 0,
-                      "planned_funding": 0,
-                      "received_funding": 6000000.00,
-                      "total_funding": 10000000.00
-                    }
   /users/:
     get:
       tags:
@@ -4811,6 +4777,71 @@ components:
                 type: string
               count:
                 type: integer
+    CANFundingAmounts:
+      type: object
+      description: Funding totals for a CAN or aggregate of CANs
+      properties:
+        total_funding:
+          type: number
+          format: float
+        available_funding:
+          type: number
+          format: float
+        carry_forward_funding:
+          type: number
+          format: float
+        new_funding:
+          type: number
+          format: float
+        expected_funding:
+          type: number
+          format: float
+        received_funding:
+          type: number
+          format: float
+        planned_funding:
+          type: number
+          format: float
+        obligated_funding:
+          type: number
+          format: float
+        in_execution_funding:
+          type: number
+          format: float
+        in_draft_funding:
+          type: number
+          format: float
+    CANFundingDetail:
+      type: object
+      description: CAN metadata returned in funding responses
+      properties:
+        id:
+          type: integer
+        number:
+          type: string
+        display_name:
+          type: string
+          nullable: true
+        nick_name:
+          type: string
+          nullable: true
+        portfolio_id:
+          type: integer
+        portfolio:
+          type: string
+          nullable: true
+        active_period:
+          type: integer
+          nullable: true
+        appropriation_date:
+          type: integer
+          nullable: true
+        carry_forward_label:
+          type: string
+          nullable: true
+        expiration_date:
+          type: string
+          nullable: true
     BasicCAN:
       description: >-
         A simple version of the Common Accounting Number (CAN) Object.
