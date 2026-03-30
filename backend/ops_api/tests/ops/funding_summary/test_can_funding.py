@@ -60,11 +60,11 @@ class TestCANFundingSingleEndpoint:
             == data["funding"]["carry_forward_funding"] + data["funding"]["new_funding"]
         )
 
-    def test_get_can_funding_defaults_fiscal_year(self, auth_client: FlaskClient, test_can: CAN) -> None:
+    def test_get_can_funding_no_fiscal_year_returns_all(self, auth_client: FlaskClient, test_can: CAN) -> None:
         response = auth_client.get(url_for("api.can-funding", id=test_can.id))
         assert response.status_code == 200
-        # fiscal_year should be set to current FY
-        assert response.json["fiscal_year"] is not None
+        # When no fiscal_year is provided, it should be None (returns all FY data)
+        assert response.json["fiscal_year"] is None
 
     def test_get_can_funding_not_found(self, auth_client: FlaskClient) -> None:
         response = auth_client.get(url_for("api.can-funding", id=99999))

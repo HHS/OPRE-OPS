@@ -8,6 +8,8 @@ from sqlalchemy.orm import selectinload
 from werkzeug.exceptions import NotFound
 
 from models import CAN, CANMethodOfTransfer, CANSortCondition
+from models.agreements import Agreement
+from models.budget_line_items import BudgetLineItem
 from models.cans import CANFundingBudget, CANFundingDetails
 from models.portfolios import Portfolio
 from ops_api.ops.schemas.cans import CANListFilterOptionResponseSchema
@@ -19,6 +21,15 @@ from ops_api.ops.utils.cans import (
     get_filtered_cans,
 )
 from ops_api.ops.utils.query_helpers import QueryHelper
+
+# Common eager-loading options to avoid N+1 queries when accessing CAN relationships.
+CAN_EAGER_LOAD_OPTIONS = (
+    selectinload(CAN.funding_budgets),
+    selectinload(CAN.funding_details),
+    selectinload(CAN.funding_received),
+    selectinload(CAN.budget_line_items),
+    selectinload(CAN.portfolio),
+)
 
 
 class CANService:
@@ -167,7 +178,11 @@ class CANService:
             cursor_results = [can for item in results for can in item]
         else:
             # Execute three separate queries and combine results
-            base_stmt = select(CAN).join(CANFundingDetails, CAN.funding_details_id == CANFundingDetails.id)
+            base_stmt = (
+                select(CAN)
+                .join(CANFundingDetails, CAN.funding_details_id == CANFundingDetails.id)
+                .options(*CAN_EAGER_LOAD_OPTIONS)
+            )
             one_year_cans = self._get_one_year_cans(base_stmt, fiscal_year_value, search_value)
             multiple_year_cans = self._get_multiple_year_cans(base_stmt, fiscal_year_value, search_value)
             zero_year_cans = self._get_zero_year_cans(base_stmt, fiscal_year_value, search_value)
@@ -410,7 +425,7 @@ class CANService:
         """
         Construct a search query that can be used to retrieve a list of CANs.
         """
-        stmt = select(CAN).order_by(CAN.id)
+        stmt = select(CAN).options(*CAN_EAGER_LOAD_OPTIONS).order_by(CAN.id)
 
         query_helper = QueryHelper(stmt)
 
@@ -609,13 +624,13 @@ class CANService:
         if fy_budget and len(fy_budget) != 2:
             raise ValueError("'fy_budget' must be two values for min and max budget.")
 
-        # Load all CANs with relationships
+        # Load all CANs with relationships (including nested BLI→Agreement→Project
+        # needed by get_can_funding_summary → can.to_dict() → can.projects)
         stmt = select(CAN).options(
-            selectinload(CAN.funding_budgets),
-            selectinload(CAN.funding_details),
-            selectinload(CAN.funding_received),
-            selectinload(CAN.budget_line_items),
-            selectinload(CAN.portfolio),
+            *CAN_EAGER_LOAD_OPTIONS,
+            selectinload(CAN.budget_line_items)
+            .selectinload(BudgetLineItem.agreement)
+            .selectinload(Agreement.project),
         )
         all_cans = self.db_session.execute(stmt).scalars().all()
 
