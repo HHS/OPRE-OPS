@@ -51,7 +51,8 @@ export default defineConfig({
             "cypress/e2e/saveChangesToEdits.cy.js",
             "cypress/e2e/procurementTracker.cy.js",
             "cypress/e2e/procurementTrackerReadOnly.cy.js",
-            "cypress/e2e/reportingPage.cy.js"
+            "cypress/e2e/reportingPage.cy.js",
+            "cypress/e2e/procurementDashboard.cy.js"
         ],
         // Adding custom task logging, for better a11y output
         // ref: https://docs.cypress.io/api/commands/task#Usage
