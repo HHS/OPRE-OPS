@@ -10,6 +10,7 @@ import {
 import App from "../../../App";
 import AgreementSummaryCardsSection from "../../../components/Agreements/AgreementSummaryCardsSection";
 import AgreementsTable from "../../../components/Agreements/AgreementsTable";
+import AgreementsTableLoading from "../../../components/Agreements/AgreementsTable/AgreementsTableLoading";
 import {
     getAgreementContractNumber,
     getAgreementName,
@@ -105,10 +106,13 @@ const AgreementsList = () => {
     const {
         data: agreementsResponse,
         error: errorAgreement,
-        isLoading: isLoadingAgreement
+        isLoading: isLoadingAgreement,
+        isFetching: isFetchingAgreement
     } = useGetAgreementsQuery(queryParams, {
         refetchOnMountOrArgChange: true
     });
+
+    const isTableLoading = isLoadingAgreement || isFetchingAgreement;
 
     // Extract agreements array and metadata from wrapped response
     const agreements = agreementsResponse?.agreements || [];
@@ -150,7 +154,7 @@ const AgreementsList = () => {
     const [trigger] = useLazyGetUserQuery();
     const [getAllAgreementsTrigger] = useLazyGetAgreementsQuery();
 
-    if (isLoadingAgreement) {
+    if (isLoadingAgreement && changeRequestUrl) {
         return (
             <App>
                 <h1>Loading...</h1>
@@ -368,6 +372,7 @@ const AgreementsList = () => {
                         />
                     }
                     SummaryCardsSection={
+                        !isTableLoading &&
                         totalCount > 0 && (
                             <AgreementSummaryCardsSection
                                 fiscalYear={selectedFiscalYear === "All" ? "All FYs" : `FY ${selectedFiscalYear}`}
@@ -376,24 +381,28 @@ const AgreementsList = () => {
                         )
                     }
                     TableSection={
-                        <>
-                            <AgreementsTable
-                                agreements={agreements}
-                                sortConditions={sortCondition}
-                                sortDescending={sortDescending}
-                                setSortConditions={setSortConditions}
-                                selectedFiscalYear={selectedFiscalYear}
-                            />
-                            {totalPages > 1 && (
-                                <div className="margin-top-3">
-                                    <PaginationNav
-                                        currentPage={currentPage}
-                                        setCurrentPage={setCurrentPage}
-                                        totalPages={totalPages}
-                                    />
-                                </div>
-                            )}
-                        </>
+                        isTableLoading ? (
+                            <AgreementsTableLoading selectedFiscalYear={selectedFiscalYear} />
+                        ) : (
+                            <>
+                                <AgreementsTable
+                                    agreements={agreements}
+                                    sortConditions={sortCondition}
+                                    sortDescending={sortDescending}
+                                    setSortConditions={setSortConditions}
+                                    selectedFiscalYear={selectedFiscalYear}
+                                />
+                                {totalPages > 1 && (
+                                    <div className="margin-top-3">
+                                        <PaginationNav
+                                            currentPage={currentPage}
+                                            setCurrentPage={setCurrentPage}
+                                            totalPages={totalPages}
+                                        />
+                                    </div>
+                                )}
+                            </>
+                        )
                     }
                 />
             )}

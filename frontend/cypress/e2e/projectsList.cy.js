@@ -4,6 +4,7 @@ import { terminalLog, testLogin } from "./utils";
 beforeEach(() => {
     testLogin("budget-team");
     cy.visit("/projects");
+    cy.get("#fiscal-year-select").select("2044");
     // Wait for real table data — avoids asserting on skeleton state
     cy.get("table tbody tr", { timeout: 30000 }).should("have.length.greaterThan", 0);
 });

@@ -110,8 +110,7 @@ const deleteAgreementByName = (name) => {
     // get the modal and cancel
     cy.get("#ops-modal-heading").should("have.text", `Are you sure you want to delete Agreement ${name}?`);
     cy.get('[data-cy="confirm-action"]').click();
-    // close the row
-    cy.get("@agreement-row").find('[data-cy="expand-row"]').click();
+    cy.contains("tbody tr", name).should("not.exist");
 };
 
 const deleteAgreementByRowAndFail = (row) => {

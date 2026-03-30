@@ -87,6 +87,7 @@ class ProjectListAPI(BaseListAPI):
             "count": metadata["count"],
             "limit": metadata["limit"],
             "offset": metadata["offset"],
+            "summary": metadata["summary"],
         }
 
         return make_response_with_headers(response_data)

@@ -67,11 +67,13 @@ describe("usePortfolioList", () => {
         opsAPI.useGetPortfoliosQuery.mockReturnValue({
             data: undefined,
             isLoading: true,
+            isFetching: false,
             isError: false
         });
         opsAPI.useGetPortfolioFundingSummaryBatchQuery.mockReturnValue({
             data: undefined,
             isLoading: true,
+            isFetching: false,
             isError: false
         });
 
@@ -85,11 +87,13 @@ describe("usePortfolioList", () => {
         opsAPI.useGetPortfoliosQuery.mockReturnValue({
             data: undefined,
             isLoading: false,
+            isFetching: false,
             isError: true
         });
         opsAPI.useGetPortfolioFundingSummaryBatchQuery.mockReturnValue({
             data: undefined,
             isLoading: false,
+            isFetching: false,
             isError: false
         });
 
@@ -103,11 +107,13 @@ describe("usePortfolioList", () => {
         opsAPI.useGetPortfoliosQuery.mockReturnValue({
             data: mockAllPortfolios,
             isLoading: false,
+            isFetching: false,
             isError: false
         });
         opsAPI.useGetPortfolioFundingSummaryBatchQuery.mockReturnValue({
             data: mockFundingData,
             isLoading: false,
+            isFetching: false,
             isError: false
         });
 
@@ -123,11 +129,13 @@ describe("usePortfolioList", () => {
         opsAPI.useGetPortfoliosQuery.mockReturnValue({
             data: mockAllPortfolios,
             isLoading: false,
+            isFetching: false,
             isError: false
         });
         opsAPI.useGetPortfolioFundingSummaryBatchQuery.mockReturnValue({
             data: mockFundingData,
             isLoading: false,
+            isFetching: false,
             isError: false
         });
 
@@ -145,11 +153,13 @@ describe("usePortfolioList", () => {
         opsAPI.useGetPortfoliosQuery.mockReturnValue({
             data: mockAllPortfolios,
             isLoading: false,
+            isFetching: false,
             isError: false
         });
         opsAPI.useGetPortfolioFundingSummaryBatchQuery.mockReturnValue({
             data: mockFundingData,
             isLoading: false,
+            isFetching: false,
             isError: false
         });
 
@@ -162,11 +172,13 @@ describe("usePortfolioList", () => {
         opsAPI.useGetPortfoliosQuery.mockReturnValue({
             data: mockAllPortfolios,
             isLoading: false,
+            isFetching: false,
             isError: false
         });
         opsAPI.useGetPortfolioFundingSummaryBatchQuery.mockReturnValue({
             data: mockFundingData,
             isLoading: false,
+            isFetching: false,
             isError: false
         });
 
@@ -183,11 +195,13 @@ describe("usePortfolioList", () => {
         opsAPI.useGetPortfoliosQuery.mockReturnValue({
             data: mockAllPortfolios,
             isLoading: false,
+            isFetching: false,
             isError: false
         });
         opsAPI.useGetPortfolioFundingSummaryBatchQuery.mockReturnValue({
             data: mockFundingData,
             isLoading: false,
+            isFetching: false,
             isError: false
         });
 
@@ -202,11 +216,13 @@ describe("usePortfolioList", () => {
         opsAPI.useGetPortfoliosQuery.mockReturnValue({
             data: mockAllPortfolios,
             isLoading: false,
+            isFetching: false,
             isError: false
         });
         opsAPI.useGetPortfolioFundingSummaryBatchQuery.mockReturnValue({
             data: mockFundingData,
             isLoading: false,
+            isFetching: false,
             isError: false
         });
 
@@ -219,11 +235,13 @@ describe("usePortfolioList", () => {
         opsAPI.useGetPortfoliosQuery.mockReturnValue({
             data: mockAllPortfolios,
             isLoading: false,
+            isFetching: false,
             isError: false
         });
         opsAPI.useGetPortfolioFundingSummaryBatchQuery.mockReturnValue({
             data: mockFundingData,
             isLoading: false,
+            isFetching: false,
             isError: false
         });
 
@@ -238,11 +256,13 @@ describe("usePortfolioList", () => {
         opsAPI.useGetPortfoliosQuery.mockReturnValue({
             data: [mockAllPortfolios[0]], // Only portfolio 1
             isLoading: false,
+            isFetching: false,
             isError: false
         });
         opsAPI.useGetPortfolioFundingSummaryBatchQuery.mockReturnValue({
             data: mockFundingData, // Contains portfolios 1, 2, 3
             isLoading: false,
+            isFetching: false,
             isError: false
         });
 
@@ -257,11 +277,13 @@ describe("usePortfolioList", () => {
         opsAPI.useGetPortfoliosQuery.mockReturnValue({
             data: mockAllPortfolios,
             isLoading: false,
+            isFetching: false,
             isError: false
         });
         opsAPI.useGetPortfolioFundingSummaryBatchQuery.mockReturnValue({
             data: { portfolios: [] },
             isLoading: false,
+            isFetching: false,
             isError: false
         });
 
@@ -274,6 +296,7 @@ describe("usePortfolioList", () => {
         opsAPI.useGetPortfoliosQuery.mockReturnValue({
             data: mockAllPortfolios,
             isLoading: false,
+            isFetching: false,
             isError: false
         });
 
@@ -299,6 +322,7 @@ describe("usePortfolioList", () => {
                 ]
             },
             isLoading: false,
+            isFetching: false,
             isError: false
         });
 
@@ -313,6 +337,7 @@ describe("usePortfolioList", () => {
         opsAPI.useGetPortfoliosQuery.mockReturnValue({
             data: mockAllPortfolios,
             isLoading: false,
+            isFetching: false,
             isError: false
         });
 
@@ -338,6 +363,7 @@ describe("usePortfolioList", () => {
                 ]
             },
             isLoading: false,
+            isFetching: false,
             isError: false
         });
 
@@ -352,11 +378,13 @@ describe("usePortfolioList", () => {
         opsAPI.useGetPortfoliosQuery.mockReturnValue({
             data: mockAllPortfolios,
             isLoading: false,
+            isFetching: false,
             isError: false
         });
         opsAPI.useGetPortfolioFundingSummaryBatchQuery.mockReturnValue({
             data: mockFundingData,
             isLoading: false,
+            isFetching: false,
             isError: false
         });
 

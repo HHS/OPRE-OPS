@@ -14,11 +14,7 @@ import { fiscalYearFromDate, formatDateNeeded } from "../../../helpers/utils";
 import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
 import useGetUserFullNameFromId, { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
 import TableRowExpandable from "../../UI/TableRowExpandable";
-import {
-    changeBgColorIfExpanded,
-    expandedRowBGColor,
-    removeBorderBottomIfExpanded
-} from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
+import { expandedRowBGColor } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import TableTag from "../../UI/TableTag";
 import Tooltip from "../../UI/USWDS/Tooltip";
@@ -57,8 +53,6 @@ const BLIRow = ({
     const budgetLineTotalPlusFees = (budgetLine?.amount ?? 0) + (budgetLine?.fees ?? 0);
     const isBudgetLineEditable = budgetLine._meta?.isEditable;
     const location = useLocation();
-    const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
-    const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
     const isApprovePage = location.pathname.includes("approve");
     const isBLIInReview = budgetLine?.in_review || false;
     const isBudgetLineObe = budgetLine?.is_obe;
@@ -82,10 +76,7 @@ const BLIRow = ({
 
     const TableRowData = (
         <>
-            <td
-                className={`${borderExpandedStyles}`}
-                style={bgExpandedStyles}
-            >
+            <td>
                 {isApprovePageAndBLIIsNotInPacket ? (
                     <Tooltip
                         label="This budget line was not sent for approval"
@@ -101,25 +92,15 @@ const BLIRow = ({
                 className={`${futureDateErrorClass(
                     formatDateNeeded(budgetLine?.date_needed),
                     isReviewMode
-                )} ${addErrorClassIfNotFound(
-                    formatDateNeeded(budgetLine?.date_needed),
-                    isReviewMode
-                )} ${borderExpandedStyles}`}
-                style={bgExpandedStyles}
+                )} ${addErrorClassIfNotFound(formatDateNeeded(budgetLine?.date_needed), isReviewMode)}`}
             >
                 {formatDateNeeded(budgetLine?.date_needed, budgetLine.is_obe)}
             </td>
-            <td style={bgExpandedStyles}>{fiscalYearFromDate(budgetLine?.date_needed)}</td>
-            <td
-                className={`${addErrorClassIfNotFound(budgetLine?.can?.number, isReviewMode)} ${borderExpandedStyles}`}
-                style={bgExpandedStyles}
-            >
+            <td>{fiscalYearFromDate(budgetLine?.date_needed)}</td>
+            <td className={addErrorClassIfNotFound(budgetLine?.can?.number, isReviewMode)}>
                 {isBudgetLineObe ? "None" : canLabel(budgetLine)}
             </td>
-            <td
-                className={`${addErrorClassIfNotFound(budgetLine?.amount, isReviewMode)} ${borderExpandedStyles}`}
-                style={bgExpandedStyles}
-            >
+            <td className={addErrorClassIfNotFound(budgetLine?.amount, isReviewMode)}>
                 <CurrencyFormat
                     value={budgetLine?.amount || 0}
                     displayType={"text"}
@@ -130,10 +111,7 @@ const BLIRow = ({
                     renderText={(value) => value}
                 />
             </td>
-            <td
-                className={borderExpandedStyles}
-                style={bgExpandedStyles}
-            >
+            <td>
                 <Tooltip
                     label={getProcurementShopFeeTooltip(budgetLine)}
                     position="left"
@@ -151,10 +129,7 @@ const BLIRow = ({
                     </span>
                 </Tooltip>
             </td>
-            <td
-                className={borderExpandedStyles}
-                style={bgExpandedStyles}
-            >
+            <td>
                 <CurrencyFormat
                     value={budgetLineTotalPlusFees}
                     displayType={"text"}
@@ -165,10 +140,7 @@ const BLIRow = ({
                     renderText={(value) => value}
                 />
             </td>
-            <td
-                className={borderExpandedStyles}
-                style={bgExpandedStyles}
-            >
+            <td>
                 {isRowActive && !isExpanded && !readOnly ? (
                     <div>{changeIcons}</div>
                 ) : (
