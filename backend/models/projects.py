@@ -88,6 +88,8 @@ class Project(BaseModel):
         start_dates = []
         end_dates = []
         team_members_dict = {}
+        project_officer_dict = {}
+        alternate_project_officer_dict = {}
         division_directors_set = set()
 
         for agreement in self.agreements:
@@ -101,7 +103,7 @@ class Project(BaseModel):
                 team_members_dict[team_member.id] = team_member
 
             # Collect division directors
-            for director in agreement.division_directors:
+            for director in agreement.division_director_user_list:
                 division_directors_set.add(director)
 
             # Collect all services_component dates
@@ -110,13 +112,31 @@ class Project(BaseModel):
                     start_dates.append(sc.period_start)
                 if sc.period_end is not None:
                     end_dates.append(sc.period_end)
+            # Collect all project officers
+            if agreement.project_officer is not None:
+                project_officer_dict[agreement.project_officer.id] = (
+                    agreement.project_officer.full_name
+                    if agreement.project_officer.full_name
+                    else agreement.project_officer.email
+                )
+            # Collect all alternate project officers
+            if agreement.alternate_project_officer is not None:
+                alternate_project_officer_dict[agreement.alternate_project_officer.id] = (
+                    agreement.alternate_project_officer.full_name
+                    if agreement.alternate_project_officer.full_name
+                    else agreement.alternate_project_officer.email
+                )
         return {
             "special_topics": sorted(list(special_topics_set)),
             "research_methodologies": sorted(list(research_methodologies_set)),
             "project_start": min(start_dates) if start_dates else None,
             "project_end": max(end_dates) if end_dates else None,
             "team_members": sorted(team_members_dict.values(), key=lambda x: x.full_name if x.full_name else x.email),
-            "division_directors": sorted(list(division_directors_set)),
+            "division_directors": sorted([(d.id, d.full_name if d.full_name else d.email) for d in division_directors_set], key=lambda x: x[1]),
+            "project_officers": sorted([(id, name) for id, name in project_officer_dict.items()], key=lambda x: x[1]),
+            "alternate_project_officers": sorted(
+                [(id, name) for id, name in alternate_project_officer_dict.items()], key=lambda x: x[1]
+            ),
         }
 
     @property
@@ -232,32 +252,24 @@ class Project(BaseModel):
             for fb in can.funding_budgets:
                 fy_totals[fb.fiscal_year] += fb.budget or Decimal("0")
 
-        funding_by_fiscal_year = [
-            {"fiscal_year": fy, "amount": float(amt)}
-            for fy, amt in sorted(fy_totals.items())
-        ]
+        funding_by_fiscal_year = [{"fiscal_year": fy, "amount": float(amt)} for fy, amt in sorted(fy_totals.items())]
 
         # --- cans ---
         cans_list = []
         for can in sorted(unique_cans, key=lambda c: c.id):
-            fy_funding = sum(
-                (fb.budget or Decimal("0"))
-                for fb in can.funding_budgets
-                if fb.fiscal_year == fiscal_year
+            fy_funding = sum((fb.budget or Decimal("0")) for fb in can.funding_budgets if fb.fiscal_year == fiscal_year)
+            lifetime_funding = sum((fb.budget or Decimal("0")) for fb in can.funding_budgets)
+            cans_list.append(
+                {
+                    "id": can.id,
+                    "number": can.number,
+                    "portfolio_id": can.portfolio_id,
+                    "portfolio": can.portfolio.name if can.portfolio else None,
+                    "active_period": can.active_period,
+                    "fy_funding": float(fy_funding),
+                    "lifetime_funding": float(lifetime_funding),
+                }
             )
-            lifetime_funding = sum(
-                (fb.budget or Decimal("0"))
-                for fb in can.funding_budgets
-            )
-            cans_list.append({
-                "id": can.id,
-                "number": can.number,
-                "portfolio_id": can.portfolio_id,
-                "portfolio": can.portfolio.name if can.portfolio else None,
-                "active_period": can.active_period,
-                "fy_funding": float(fy_funding),
-                "lifetime_funding": float(lifetime_funding),
-            })
 
         return {
             "funding_by_portfolio": funding_by_portfolio,

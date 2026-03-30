@@ -1467,6 +1467,8 @@ class TestProjectMetadata:
         assert "project_end" in project_data
         assert "team_members" in project_data
         assert "division_directors" in project_data
+        assert "project_officers" in project_data
+        assert "alternate_project_officers" in project_data
 
     def test_project_metadata_field_types(self, auth_client, loaded_db, test_project):
         """Test that project_metadata fields have correct types in API response."""
@@ -1480,6 +1482,8 @@ class TestProjectMetadata:
         assert isinstance(project_data["research_methodologies"], list)
         assert isinstance(project_data["team_members"], list)
         assert isinstance(project_data["division_directors"], list)
+        assert isinstance(project_data["project_officers"], list)
+        assert isinstance(project_data["alternate_project_officers"], list)
         # Dates can be strings or None
         assert project_data["project_start"] is None or isinstance(project_data["project_start"], str)
         assert project_data["project_end"] is None or isinstance(project_data["project_end"], str)
@@ -1729,12 +1733,167 @@ class TestProjectMetadata:
 
         division_directors = response.json["division_directors"]
 
-        # Should be a list of unique division director names
+        # Should be a list of tuples (id, name)
         assert isinstance(division_directors, list)
         assert len(division_directors) > 0
-        # Each director should be a string (full name)
+        # Each director should be a tuple (id, name)
         for director in division_directors:
-            assert isinstance(director, str)
+            assert isinstance(director, list)  # JSON serializes tuples as lists
+            assert len(director) == 2
+            assert isinstance(director[0], int)  # id
+            assert isinstance(director[1], str)  # name
+
+    def test_project_officers_aggregation(self, auth_client, loaded_db):
+        """Test that project_officers aggregates unique project officers from all agreements."""
+        from models import User
+
+        # Create a new project
+        project = ResearchProject(
+            project_type=ProjectType.RESEARCH,
+            title="Project Officers Test Project",
+            short_title="POTP",
+            description="Test project for project officers aggregation",
+        )
+        loaded_db.add(project)
+        loaded_db.commit()
+
+        # Get test users
+        user1 = loaded_db.get(User, 500)
+        user2 = loaded_db.get(User, 501)
+
+        # Create first agreement with project officer
+        agreement1 = ContractAgreement(
+            name="First Agreement with PO",
+            project_id=project.id,
+            project_officer_id=user1.id,
+        )
+        loaded_db.add(agreement1)
+        loaded_db.commit()
+
+        # Create second agreement with different project officer
+        agreement2 = ContractAgreement(
+            name="Second Agreement with PO",
+            project_id=project.id,
+            project_officer_id=user2.id,
+        )
+        loaded_db.add(agreement2)
+        loaded_db.commit()
+
+        # Call API
+        response = auth_client.get(url_for("api.projects-item", id=project.id))
+        assert response.status_code == 200
+
+        project_officers = response.json["project_officers"]
+
+        # Should be a list of tuples (id, name)
+        assert isinstance(project_officers, list)
+        assert len(project_officers) == 2
+        # Each officer should be a tuple (id, name)
+        for officer in project_officers:
+            assert isinstance(officer, list)  # JSON serializes tuples as lists
+            assert len(officer) == 2
+            assert isinstance(officer[0], int)  # id
+            assert isinstance(officer[1], str)  # name
+
+        # Verify the officers are sorted by name
+        names = [officer[1] for officer in project_officers]
+        assert names == sorted(names)
+
+    def test_alternate_project_officers_aggregation(self, auth_client, loaded_db):
+        """Test that alternate_project_officers aggregates unique alternate project officers from all agreements."""
+        from models import User
+
+        # Create a new project
+        project = ResearchProject(
+            project_type=ProjectType.RESEARCH,
+            title="Alternate Project Officers Test Project",
+            short_title="APOTP",
+            description="Test project for alternate project officers aggregation",
+        )
+        loaded_db.add(project)
+        loaded_db.commit()
+
+        # Get test users
+        user1 = loaded_db.get(User, 502)
+        user2 = loaded_db.get(User, 503)
+
+        # Create first agreement with alternate project officer
+        agreement1 = ContractAgreement(
+            name="First Agreement with Alt PO",
+            project_id=project.id,
+            alternate_project_officer_id=user1.id,
+        )
+        loaded_db.add(agreement1)
+        loaded_db.commit()
+
+        # Create second agreement with different alternate project officer
+        agreement2 = ContractAgreement(
+            name="Second Agreement with Alt PO",
+            project_id=project.id,
+            alternate_project_officer_id=user2.id,
+        )
+        loaded_db.add(agreement2)
+        loaded_db.commit()
+
+        # Call API
+        response = auth_client.get(url_for("api.projects-item", id=project.id))
+        assert response.status_code == 200
+
+        alternate_project_officers = response.json["alternate_project_officers"]
+
+        # Should be a list of tuples (id, name)
+        assert isinstance(alternate_project_officers, list)
+        assert len(alternate_project_officers) == 2
+        # Each officer should be a tuple (id, name)
+        for officer in alternate_project_officers:
+            assert isinstance(officer, list)  # JSON serializes tuples as lists
+            assert len(officer) == 2
+            assert isinstance(officer[0], int)  # id
+            assert isinstance(officer[1], str)  # name
+
+        # Verify the officers are sorted by name
+        names = [officer[1] for officer in alternate_project_officers]
+        assert names == sorted(names)
+
+    def test_project_officers_deduplication(self, auth_client, loaded_db):
+        """Test that project_officers list contains no duplicate users."""
+        from models import User
+
+        # Create a new project
+        project = ResearchProject(
+            project_type=ProjectType.RESEARCH,
+            title="PO Deduplication Test Project",
+            short_title="PODTP",
+            description="Test project for project officers deduplication",
+        )
+        loaded_db.add(project)
+        loaded_db.commit()
+
+        user1 = loaded_db.get(User, 500)
+
+        # Create two agreements with the same project officer
+        agreement1 = ContractAgreement(
+            name="First Agreement Same PO",
+            project_id=project.id,
+            project_officer_id=user1.id,
+        )
+        agreement2 = ContractAgreement(
+            name="Second Agreement Same PO",
+            project_id=project.id,
+            project_officer_id=user1.id,
+        )
+        loaded_db.add_all([agreement1, agreement2])
+        loaded_db.commit()
+
+        # Call API
+        response = auth_client.get(url_for("api.projects-item", id=project.id))
+        assert response.status_code == 200
+
+        project_officers = response.json["project_officers"]
+
+        # Should be deduplicated
+        assert len(project_officers) == 1
+        assert project_officers[0][0] == user1.id
 
     def test_empty_metadata_when_no_agreements(self, auth_client, loaded_db, project_with_no_agreements):
         """Test that project_metadata returns empty collections when project has no agreements."""
@@ -1758,6 +1917,12 @@ class TestProjectMetadata:
 
         assert isinstance(project_data["division_directors"], list)
         assert len(project_data["division_directors"]) == 0
+
+        assert isinstance(project_data["project_officers"], list)
+        assert len(project_data["project_officers"]) == 0
+
+        assert isinstance(project_data["alternate_project_officers"], list)
+        assert len(project_data["alternate_project_officers"]) == 0
 
     def test_team_members_no_duplicates(self, auth_client, loaded_db):
         """Test that team_members list contains no duplicate users."""
