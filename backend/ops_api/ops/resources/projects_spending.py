@@ -19,7 +19,7 @@ class ProjectSpendingItemAPI(BaseItemAPI):
     @is_authorized(PermissionType.GET, Permission.RESEARCH_PROJECT)
     def get(self, id: int) -> Response:
         """
-        GET /projects-spending/<int:id>
+        GET /projects/<int:id>/spending/
 
         Returns project spending metadata including:
         - Total spending across all agreements

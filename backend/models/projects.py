@@ -194,7 +194,7 @@ class Project(BaseModel):
             "project_end": max(end_dates) if end_dates else None,
             "agreement_name_list": agreement_name_list,
             "spending_type_by_fiscal_year": dict(spending_type_by_fiscal_year),
-            "agreements_by_fy": {fy: list(agreement_ids) for fy, agreement_ids in agreements_by_fy.items()},
+            "agreements_by_fy": {fy: sorted(list(agreement_ids)) for fy, agreement_ids in agreements_by_fy.items()},
         }
 
     def get_project_funding(self, fiscal_year: int) -> dict:
@@ -258,32 +258,24 @@ class Project(BaseModel):
             for fb in can.funding_budgets:
                 fy_totals[fb.fiscal_year] += fb.budget or Decimal("0")
 
-        funding_by_fiscal_year = [
-            {"fiscal_year": fy, "amount": float(amt)}
-            for fy, amt in sorted(fy_totals.items())
-        ]
+        funding_by_fiscal_year = [{"fiscal_year": fy, "amount": float(amt)} for fy, amt in sorted(fy_totals.items())]
 
         # --- cans ---
         cans_list = []
         for can in sorted(unique_cans, key=lambda c: c.id):
-            fy_funding = sum(
-                (fb.budget or Decimal("0"))
-                for fb in can.funding_budgets
-                if fb.fiscal_year == fiscal_year
+            fy_funding = sum((fb.budget or Decimal("0")) for fb in can.funding_budgets if fb.fiscal_year == fiscal_year)
+            lifetime_funding = sum((fb.budget or Decimal("0")) for fb in can.funding_budgets)
+            cans_list.append(
+                {
+                    "id": can.id,
+                    "number": can.number,
+                    "portfolio_id": can.portfolio_id,
+                    "portfolio": can.portfolio.name if can.portfolio else None,
+                    "active_period": can.active_period,
+                    "fy_funding": float(fy_funding),
+                    "lifetime_funding": float(lifetime_funding),
+                }
             )
-            lifetime_funding = sum(
-                (fb.budget or Decimal("0"))
-                for fb in can.funding_budgets
-            )
-            cans_list.append({
-                "id": can.id,
-                "number": can.number,
-                "portfolio_id": can.portfolio_id,
-                "portfolio": can.portfolio.name if can.portfolio else None,
-                "active_period": can.active_period,
-                "fy_funding": float(fy_funding),
-                "lifetime_funding": float(lifetime_funding),
-            })
 
         return {
             "funding_by_portfolio": funding_by_portfolio,

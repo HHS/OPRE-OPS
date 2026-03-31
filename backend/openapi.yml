@@ -3201,8 +3201,6 @@ paths:
         - Total spending across all agreements
         - Spending totals by fiscal year
         - Spending breakdown by type (contract, grant, partner, direct_obligation) per fiscal year
-        - Project start and end dates (derived from services components)
-        - List of agreements with spending
         - Agreements grouped by fiscal year
 
         Only includes non-DRAFT budget line items (or OBE items regardless of status).
@@ -3231,13 +3229,6 @@ paths:
                   "2023": "50000.00"
                   "2024": "75000.00"
                   "2025": "25000.00"
-                project_start: "2023-01-15"
-                project_end: "2025-12-31"
-                agreement_name_list:
-                  - id: 1
-                    name: "Research Agreement 2023"
-                  - id: 2
-                    name: "SUPPORT-2024"
                 spending_type_by_fiscal_year:
                   "2023":
                     contract: "30000.00"
@@ -5741,14 +5732,11 @@ components:
           description: Total funding over the lifetime of the CAN
           example: 123.456
     ProjectSpendingMetadata:
-      description: Project spending metadata including totals, fiscal year breakdowns, and agreement information
+      description: Project spending metadata including totals and fiscal year breakdowns
       type: object
       required:
         - total
         - total_by_fiscal_year
-        - project_start
-        - project_end
-        - agreement_name_list
         - spending_type_by_fiscal_year
         - agreements_by_fy
       properties:
@@ -5766,23 +5754,6 @@ components:
             "2023": "50000.00"
             "2024": "75000.00"
             "2025": "25000.00"
-        project_start:
-          type: string
-          format: date
-          nullable: true
-          description: Earliest period_start from all services components
-          example: "2023-01-15"
-        project_end:
-          type: string
-          format: date
-          nullable: true
-          description: Latest period_end from all services components
-          example: "2025-12-31"
-        agreement_name_list:
-          type: array
-          description: List of agreements with their IDs and names
-          items:
-            $ref: "#/components/schemas/AgreementName"
         spending_type_by_fiscal_year:
           type: object
           description: Spending breakdown by type (contract, grant, partner, direct_obligation) for each fiscal year
