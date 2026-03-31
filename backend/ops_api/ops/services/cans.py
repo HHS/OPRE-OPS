@@ -647,9 +647,7 @@ class CANService:
             stmt = stmt.where(CANFundingDetails.method_of_transfer.in_(transfer))
 
         if portfolio:
-            stmt = stmt.join(Portfolio, CAN.portfolio_id == Portfolio.id).where(
-                Portfolio.abbreviation.in_(portfolio)
-            )
+            stmt = stmt.join(Portfolio, CAN.portfolio_id == Portfolio.id).where(Portfolio.abbreviation.in_(portfolio))
 
         if fy_budget:
             budget_subq = select(CANFundingBudget.can_id).where(
@@ -689,9 +687,7 @@ class CANService:
 
         stmt = select(CAN).options(
             *CAN_EAGER_LOAD_OPTIONS,
-            selectinload(CAN.budget_line_items)
-            .selectinload(BudgetLineItem.agreement)
-            .selectinload(Agreement.project),
+            selectinload(CAN.budget_line_items).selectinload(BudgetLineItem.agreement).selectinload(Agreement.project),
         )
         stmt = self._apply_aggregate_filters(stmt, fiscal_year, active_period, transfer, portfolio, fy_budget)
         filtered_cans = self.db_session.execute(stmt).scalars().unique().all()
