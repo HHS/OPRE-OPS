@@ -36,6 +36,8 @@ const ProcurementDashboard = () => {
     const [selectedProcShop, setSelectedProcShop] = useState("all");
 
     const allAgreements = agreementsResponse?.agreements || [];
+    const procurementOverview = agreementsResponse?.procurement_overview ?? null;
+    const procurementStepSummary = agreementsResponse?.procurement_step_summary ?? null;
 
     const procShopOptions = useMemo(
         () => [...new Set(allAgreements.map((a) => a.procurement_shop?.abbr).filter(Boolean))].sort(),
@@ -157,8 +159,8 @@ const ProcurementDashboard = () => {
                 }
                 SummaryCardsSection={
                     <ProcurementSummaryCards
-                        agreements={agreements}
-                        procurementTrackers={procurementTrackers}
+                        procurementOverview={procurementOverview}
+                        procurementStepSummary={procurementStepSummary}
                         fiscalYear={CURRENT_FISCAL_YEAR}
                         isLoading={isLoading}
                         error={error}

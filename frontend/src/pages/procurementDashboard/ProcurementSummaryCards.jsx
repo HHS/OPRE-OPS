@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 import Card from "../../components/UI/Cards/Card";
 import LineBar from "../../components/UI/DataViz/LineBar";
-import { BLI_STATUS } from "../../helpers/budgetLines.helpers";
 import ProcurementOverviewCard from "./ProcurementOverviewCard";
 import ProcurementStepSummaryCard from "./ProcurementStepSummaryCard";
 
@@ -14,63 +13,58 @@ const STEP_CONFIG = [
     { stepNumber: 6, label: "Step 6", color: "var(--procurement-step-6)" }
 ];
 
-const computeStepData = (agreements, procurementTrackers, fiscalYear) => {
-    const trackerByAgreementId = {};
-    for (const tracker of procurementTrackers) {
-        trackerByAgreementId[tracker.agreement_id] = tracker;
+const buildStepData = (procurementStepSummary) => {
+    if (!procurementStepSummary) {
+        return {
+            stepData: STEP_CONFIG.map(({ stepNumber, label, color }) => ({
+                id: stepNumber,
+                label,
+                color,
+                value: 0,
+                percent: 0
+            })),
+            budgetByStep: STEP_CONFIG.map(({ label, color }) => ({
+                step: label,
+                total: 0,
+                color
+            }))
+        };
     }
 
-    const amountByStep = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
-    const agreementsByStep = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
+    const { step_data } = procurementStepSummary;
 
-    for (const agreement of agreements) {
-        const tracker = trackerByAgreementId[agreement.id];
-        const stepNumber = tracker?.active_step_number;
-        if (!stepNumber || stepNumber < 1 || stepNumber > 6) continue;
+    const stepData = step_data.map((item) => {
+        const config = STEP_CONFIG.find((s) => s.stepNumber === item.step);
+        return {
+            id: item.step,
+            label: config?.label ?? `Step ${item.step}`,
+            color: config?.color ?? "var(--procurement-step-1)",
+            value: item.agreements,
+            percent: item.agreements_percent
+        };
+    });
 
-        const blis = (agreement.budget_line_items || []).filter(
-            (bli) => bli.fiscal_year === fiscalYear && bli.status === BLI_STATUS.EXECUTING
-        );
-        if (blis.length === 0) continue;
-
-        agreementsByStep[stepNumber] += 1;
-
-        for (const bli of blis) {
-            amountByStep[stepNumber] += (bli.amount || 0) + (bli.fees || 0);
-        }
-    }
-
-    const totalAgreementCount = Object.values(agreementsByStep).reduce((sum, val) => sum + val, 0);
-
-    const stepData = STEP_CONFIG.map(({ stepNumber, label, color }) => ({
-        id: stepNumber,
-        label,
-        color,
-        value: agreementsByStep[stepNumber],
-        percent: totalAgreementCount > 0 ? Math.round((agreementsByStep[stepNumber] / totalAgreementCount) * 100) : 0
-    }));
-
-    const budgetByStep = STEP_CONFIG.map(({ stepNumber, label, color }) => ({
-        step: label,
-        total: amountByStep[stepNumber],
-        color
-    }));
+    const budgetByStep = step_data.map((item) => {
+        const config = STEP_CONFIG.find((s) => s.stepNumber === item.step);
+        return {
+            step: config?.label ?? `Step ${item.step}`,
+            total: item.amount,
+            color: config?.color ?? "var(--procurement-step-1)"
+        };
+    });
 
     return { stepData, budgetByStep };
 };
 
-const ProcurementSummaryCards = ({ agreements = [], procurementTrackers = [], fiscalYear, isLoading, error }) => {
-    const { stepData, budgetByStep } = useMemo(
-        () => computeStepData(agreements, procurementTrackers, fiscalYear),
-        [agreements, procurementTrackers, fiscalYear]
-    );
+const ProcurementSummaryCards = ({ procurementOverview, procurementStepSummary, fiscalYear, isLoading, error }) => {
+    const { stepData, budgetByStep } = useMemo(() => buildStepData(procurementStepSummary), [procurementStepSummary]);
 
     const maxBudget = Math.max(...budgetByStep.map((d) => d.total), 1);
 
     return (
         <>
             <ProcurementOverviewCard
-                agreements={agreements}
+                procurementOverview={procurementOverview}
                 fiscalYear={fiscalYear}
                 isLoading={isLoading}
                 error={error}

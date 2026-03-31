@@ -4,63 +4,40 @@ import LegendItem from "../../components/UI/Cards/LineGraphWithLegendCard/Legend
 import HorizontalStackedBar from "../../components/UI/DataViz/HorizontalStackedBar/HorizontalStackedBar";
 import RoundedBox from "../../components/UI/RoundedBox";
 import Tag from "../../components/UI/Tag/Tag";
-import { BLI_STATUS } from "../../helpers/budgetLines.helpers";
 
-const STATUS_CONFIG = [
-    { key: BLI_STATUS.PLANNED, label: "Planned", color: "var(--data-viz-bl-by-status-2)" },
-    { key: BLI_STATUS.EXECUTING, label: "Executing", color: "var(--data-viz-bl-by-status-3)" },
-    { key: BLI_STATUS.OBLIGATED, label: "Obligated", color: "var(--data-viz-bl-by-status-4)" }
-];
-
-const formatPercent = (value, total) => {
-    if (total === 0) return "0%";
-    return `${Math.round((value / total) * 100)}%`;
+const STATUS_COLORS = {
+    PLANNED: "var(--data-viz-bl-by-status-2)",
+    IN_EXECUTION: "var(--data-viz-bl-by-status-3)",
+    OBLIGATED: "var(--data-viz-bl-by-status-4)"
 };
 
-const computeOverviewData = (agreements, fiscalYear) => {
-    const amountByStatus = { [BLI_STATUS.PLANNED]: 0, [BLI_STATUS.EXECUTING]: 0, [BLI_STATUS.OBLIGATED]: 0 };
-    const agreementsByStatus = {
-        [BLI_STATUS.PLANNED]: new Set(),
-        [BLI_STATUS.EXECUTING]: new Set(),
-        [BLI_STATUS.OBLIGATED]: new Set()
-    };
-
-    for (const agreement of agreements) {
-        const blis = (agreement.budget_line_items || []).filter((bli) => bli.fiscal_year === fiscalYear);
-        for (const bli of blis) {
-            if (bli.status in amountByStatus) {
-                amountByStatus[bli.status] += (bli.amount || 0) + (bli.fees || 0);
-                agreementsByStatus[bli.status].add(agreement.id);
-            }
-        }
+const buildStatusData = (procurementOverview) => {
+    if (!procurementOverview) {
+        return { statusData: [], totalAmount: 0, totalAgreements: 0 };
     }
 
-    const totalAmount = Object.values(amountByStatus).reduce((sum, val) => sum + val, 0);
-    const totalAgreements = agreements.length;
+    const { status_data, total_amount, total_agreements } = procurementOverview;
 
-    const statusData = STATUS_CONFIG.map(({ key, label, color }, index) => {
-        const amount = amountByStatus[key];
-        return {
-            id: index + 1,
-            label,
-            color,
-            amount,
-            amountPercent: formatPercent(amount, totalAmount),
-            agreements: agreementsByStatus[key].size,
-            agreementsPercent: formatPercent(agreementsByStatus[key].size, totalAgreements),
-            percent: totalAmount > 0 ? (amount / totalAmount) * 100 : 0,
-            abbreviation: label,
-            value: amount
-        };
-    });
+    const statusData = status_data.map((item, index) => ({
+        id: index + 1,
+        label: item.label,
+        color: STATUS_COLORS[item.status] || "var(--data-viz-bl-by-status-2)",
+        amount: item.amount,
+        amountPercent: `${item.amount_percent}%`,
+        agreements: item.agreements,
+        agreementsPercent: `${item.agreements_percent}%`,
+        percent: total_amount > 0 ? (item.amount / total_amount) * 100 : 0,
+        abbreviation: item.label,
+        value: item.amount
+    }));
 
-    return { statusData, totalAmount, totalAgreements };
+    return { statusData, totalAmount: total_amount, totalAgreements: total_agreements };
 };
 
-const ProcurementOverviewCard = ({ agreements = [], fiscalYear, isLoading, error }) => {
+const ProcurementOverviewCard = ({ procurementOverview, fiscalYear, isLoading, error }) => {
     const { statusData, totalAmount, totalAgreements } = useMemo(
-        () => computeOverviewData(agreements, fiscalYear),
-        [agreements, fiscalYear]
+        () => buildStatusData(procurementOverview),
+        [procurementOverview]
     );
     const fyShort = String(fiscalYear).slice(-2);
 
