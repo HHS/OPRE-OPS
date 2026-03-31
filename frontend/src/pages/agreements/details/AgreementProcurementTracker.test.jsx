@@ -2,6 +2,7 @@ import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { Provider } from "react-redux";
+import { MemoryRouter } from "react-router-dom";
 import { setupStore } from "../../../store";
 import AgreementProcurementTracker from "./AgreementProcurementTracker";
 
@@ -169,6 +170,20 @@ vi.mock("../../../hooks/user.hooks", () => ({
     useIsUserOnlyProcurementTeam: vi.fn().mockReturnValue(false)
 }));
 
+// Mock vest suite for Step One
+vi.mock("../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepOne/suite", () => ({
+    default: {
+        run: vi.fn(),
+        get: vi.fn(() => ({
+            hasErrors: () => false,
+            getErrors: () => ({}),
+            hasWarnings: () => false,
+            getWarnings: () => ({})
+        })),
+        reset: vi.fn()
+    }
+}));
+
 // Mock formatDateToMonthDayYear helper
 vi.mock("../../../helpers/utils", async (importOriginal) => {
     const actual = await importOriginal();
@@ -232,6 +247,15 @@ describe("AgreementProcurementTracker", () => {
         ]
     };
 
+    // Helper to render component with required wrappers
+    const renderWithProviders = (component) => {
+        return render(
+            <Provider store={setupStore()}>
+                <MemoryRouter>{component}</MemoryRouter>
+            </Provider>
+        );
+    };
+
     beforeEach(() => {
         vi.clearAllMocks();
         // Reset console.log mock
@@ -268,11 +292,7 @@ describe("AgreementProcurementTracker", () => {
             isError: false
         });
 
-        render(
-            <Provider store={setupStore()}>
-                <AgreementProcurementTracker agreement={mockAgreement} />
-            </Provider>
-        );
+        renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
 
         expect(screen.getByText("Loading procurement tracker...")).toBeInTheDocument();
     });
@@ -284,11 +304,7 @@ describe("AgreementProcurementTracker", () => {
             isError: true
         });
 
-        render(
-            <Provider store={setupStore()}>
-                <AgreementProcurementTracker agreement={mockAgreement} />
-            </Provider>
-        );
+        renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
 
         expect(screen.getByText("Error loading procurement tracker data")).toBeInTheDocument();
     });
@@ -315,11 +331,7 @@ describe("AgreementProcurementTracker", () => {
             isError: false
         });
 
-        render(
-            <Provider store={setupStore()}>
-                <AgreementProcurementTracker agreement={mockAgreement} />
-            </Provider>
-        );
+        renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
 
         // Should render the tracker UI
         expect(screen.getByText("Procurement Tracker")).toBeInTheDocument();
@@ -354,11 +366,7 @@ describe("AgreementProcurementTracker", () => {
             isError: false
         });
 
-        render(
-            <Provider store={setupStore()}>
-                <AgreementProcurementTracker agreement={mockAgreement} />
-            </Provider>
-        );
+        renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
 
         const firstAccordionHeading = screen.getAllByTestId("accordion-heading")[0];
         if (firstAccordionHeading.getAttribute("aria-expanded") === "false") {
@@ -378,11 +386,7 @@ describe("AgreementProcurementTracker", () => {
             isError: false
         });
 
-        render(
-            <Provider store={setupStore()}>
-                <AgreementProcurementTracker agreement={mockAgreement} />
-            </Provider>
-        );
+        renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
 
         expect(screen.getByText("Procurement Tracker")).toBeInTheDocument();
         expect(
@@ -413,11 +417,7 @@ describe("AgreementProcurementTracker", () => {
             isError: false
         });
 
-        render(
-            <Provider store={setupStore()}>
-                <AgreementProcurementTracker agreement={mockAgreement} />
-            </Provider>
-        );
+        renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
 
         expect(screen.getByText("Step 1 of 6")).toBeInTheDocument();
     });
@@ -430,11 +430,7 @@ describe("AgreementProcurementTracker", () => {
         });
         useGetProcurementTrackersByAgreementIdQuery.mockImplementation(mockQueryFn);
 
-        render(
-            <Provider store={setupStore()}>
-                <AgreementProcurementTracker agreement={{ id: null }} />
-            </Provider>
-        );
+        renderWithProviders(<AgreementProcurementTracker agreement={{ id: null }} />);
 
         expect(mockQueryFn).toHaveBeenCalledWith(null, {
             skip: true,
@@ -453,11 +449,7 @@ describe("AgreementProcurementTracker", () => {
             isError: false
         });
 
-        render(
-            <Provider store={setupStore()}>
-                <AgreementProcurementTracker agreement={mockAgreement} />
-            </Provider>
-        );
+        renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
 
         // Should render the tracker UI
         expect(screen.getByText("Procurement Tracker")).toBeInTheDocument();
@@ -487,11 +479,7 @@ describe("AgreementProcurementTracker", () => {
             isError: false
         });
 
-        render(
-            <Provider store={setupStore()}>
-                <AgreementProcurementTracker agreement={mockAgreement} />
-            </Provider>
-        );
+        renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
 
         // StepIndicator should not show an active/current step for read-only no-active-tracker mode
         expect(screen.getByText("Step 0 of 6")).toBeInTheDocument();
@@ -508,11 +496,7 @@ describe("AgreementProcurementTracker", () => {
             isError: false
         });
 
-        render(
-            <Provider store={setupStore()}>
-                <AgreementProcurementTracker agreement={mockAgreement} />
-            </Provider>
-        );
+        renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
 
         expect(screen.getByTestId("debug-code")).toBeInTheDocument();
     });
@@ -576,11 +560,7 @@ describe("AgreementProcurementTracker", () => {
                 isError: false
             });
 
-            render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={mockAgreement} />
-                </Provider>
-            );
+            renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
 
             const accordions = screen.getAllByTestId("accordion");
             expect(accordions).toHaveLength(2);
@@ -593,11 +573,7 @@ describe("AgreementProcurementTracker", () => {
                 isError: false
             });
 
-            render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={mockAgreement} />
-                </Provider>
-            );
+            renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
 
             const heading = screen.getByTestId("step-builder-heading-101");
             expect(heading).toBeInTheDocument();
@@ -636,11 +612,7 @@ describe("AgreementProcurementTracker", () => {
                 isError: false
             });
 
-            render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={mockAgreement} />
-                </Provider>
-            );
+            renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
 
             const headings = screen.getAllByTestId("accordion-heading");
             // Step 1 is COMPLETED so it shows a check icon instead of "1"
@@ -655,11 +627,7 @@ describe("AgreementProcurementTracker", () => {
                 isError: false
             });
 
-            render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={mockAgreement} />
-                </Provider>
-            );
+            renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
 
             expect(
                 screen.getByText(/Once the pre-solicitation package is sufficiently drafted and signed by all parties/)
@@ -677,11 +645,7 @@ describe("AgreementProcurementTracker", () => {
                 isError: false
             });
 
-            render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={mockAgreement} />
-                </Provider>
-            );
+            renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
 
             const checkbox = screen.getByRole("checkbox");
             expect(checkbox).toHaveAttribute("id", "step-1-checkbox");
@@ -697,11 +661,7 @@ describe("AgreementProcurementTracker", () => {
                 isError: false
             });
 
-            render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={mockAgreement} />
-                </Provider>
-            );
+            renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
 
             const checkbox = screen.getByRole("checkbox");
             expect(checkbox).not.toBeChecked();
@@ -717,11 +677,7 @@ describe("AgreementProcurementTracker", () => {
                 isError: false
             });
 
-            render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={mockAgreement} />
-                </Provider>
-            );
+            renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
 
             const checkbox = screen.getByRole("checkbox");
             fireEvent.click(checkbox);
@@ -739,11 +695,7 @@ describe("AgreementProcurementTracker", () => {
                 isError: false
             });
 
-            const { rerender } = render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={mockAgreement} />
-                </Provider>
-            );
+            const { rerender } = renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
 
             const checkbox = screen.getByRole("checkbox");
             const dateInput = screen.getByTestId("datepicker-input");
@@ -755,7 +707,9 @@ describe("AgreementProcurementTracker", () => {
             // Force a re-render to pick up state changes
             rerender(
                 <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={mockAgreement} />
+                    <MemoryRouter>
+                        <AgreementProcurementTracker agreement={mockAgreement} />
+                    </MemoryRouter>
                 </Provider>
             );
 
@@ -771,11 +725,7 @@ describe("AgreementProcurementTracker", () => {
                 isError: false
             });
 
-            const { rerender } = render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={mockAgreement} />
-                </Provider>
-            );
+            const { rerender } = renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
 
             const checkbox = screen.getByRole("checkbox");
             const textarea = screen.getByTestId("textarea-input");
@@ -787,7 +737,9 @@ describe("AgreementProcurementTracker", () => {
             // Force a re-render to pick up state changes
             rerender(
                 <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={mockAgreement} />
+                    <MemoryRouter>
+                        <AgreementProcurementTracker agreement={mockAgreement} />
+                    </MemoryRouter>
                 </Provider>
             );
 
@@ -803,11 +755,7 @@ describe("AgreementProcurementTracker", () => {
                 isError: false
             });
 
-            render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={mockAgreement} />
-                </Provider>
-            );
+            renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
 
             expect(screen.getByText("Cancel")).toBeInTheDocument();
             expect(screen.getByText("Complete Step 1")).toBeInTheDocument();
@@ -826,11 +774,7 @@ describe("AgreementProcurementTracker", () => {
                 isError: false
             });
 
-            render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={mockAgreement} />
-                </Provider>
-            );
+            renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
 
             // Enable the form by checking the checkbox first
             const checkbox = screen.getByRole("checkbox");
@@ -865,11 +809,7 @@ describe("AgreementProcurementTracker", () => {
                 isError: false
             });
 
-            render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={mockAgreement} />
-                </Provider>
-            );
+            renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
 
             // Step 1 content should be present (accordion is open for active step)
             expect(screen.getByRole("checkbox")).toBeInTheDocument();
@@ -886,11 +826,7 @@ describe("AgreementProcurementTracker", () => {
                 isError: false
             });
 
-            render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={mockAgreement} />
-                </Provider>
-            );
+            renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
 
             expect(screen.getByText("Task Completed By")).toBeInTheDocument();
         });
@@ -902,11 +838,7 @@ describe("AgreementProcurementTracker", () => {
                 isError: false
             });
 
-            render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={mockAgreement} />
-                </Provider>
-            );
+            renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
 
             expect(screen.getByText("Date Completed")).toBeInTheDocument();
         });
@@ -918,11 +850,7 @@ describe("AgreementProcurementTracker", () => {
                 isError: false
             });
 
-            render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={mockAgreement} />
-                </Provider>
-            );
+            renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
 
             expect(screen.getByText("Notes (optional)")).toBeInTheDocument();
         });
@@ -934,11 +862,7 @@ describe("AgreementProcurementTracker", () => {
                 isError: false
             });
 
-            render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={mockAgreement} />
-                </Provider>
-            );
+            renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
 
             const completeButton = screen.getByText("Complete Step 1");
             expect(completeButton).toBeDisabled();
@@ -978,11 +902,7 @@ describe("AgreementProcurementTracker", () => {
                 isError: false
             });
 
-            render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={mockAgreement} />
-                </Provider>
-            );
+            renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
 
             expect(screen.getByTestId("procurement-step-two")).toHaveTextContent("Step Two Form");
             expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
@@ -1022,11 +942,7 @@ describe("AgreementProcurementTracker", () => {
                 isError: false
             });
 
-            render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={mockAgreement} />
-                </Provider>
-            );
+            renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
 
             expect(screen.getByTestId("procurement-step-four")).toHaveTextContent("Step Four Form");
         });
@@ -1071,11 +987,7 @@ describe("AgreementProcurementTracker", () => {
                     isError: false
                 });
 
-                render(
-                    <Provider store={setupStore()}>
-                        <AgreementProcurementTracker agreement={mockAgreement} />
-                    </Provider>
-                );
+                renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
 
                 expect(screen.getByText(expectedInstructionalText)).toBeInTheDocument();
 
@@ -1130,11 +1042,7 @@ describe("AgreementProcurementTracker", () => {
                 isError: false
             });
 
-            render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={mockAgreement} />
-                </Provider>
-            );
+            renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
 
             expect(
                 screen.getByText(/When the pre-solicitation package has been sufficiently drafted and signed/)
@@ -1151,11 +1059,7 @@ describe("AgreementProcurementTracker", () => {
                 isError: false
             });
 
-            render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={mockAgreement} />
-                </Provider>
-            );
+            renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
 
             expect(screen.getByText("Completed By")).toBeInTheDocument();
             const tags = screen.getAllByTestId("tag");
@@ -1169,11 +1073,7 @@ describe("AgreementProcurementTracker", () => {
                 isError: false
             });
 
-            render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={mockAgreement} />
-                </Provider>
-            );
+            renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
 
             expect(screen.getByText("Date Completed")).toBeInTheDocument();
             const tags = screen.getAllByTestId("tag");
@@ -1190,11 +1090,7 @@ describe("AgreementProcurementTracker", () => {
                 isError: false
             });
 
-            render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={mockAgreement} />
-                </Provider>
-            );
+            renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
 
             expect(screen.getByText("Notes")).toBeInTheDocument();
             expect(screen.getByText("Pre-solicitation package sent successfully")).toBeInTheDocument();
@@ -1207,11 +1103,7 @@ describe("AgreementProcurementTracker", () => {
                 isError: false
             });
 
-            render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={mockAgreement} />
-                </Provider>
-            );
+            renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
 
             expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
             expect(screen.queryByTestId("users-combobox")).not.toBeInTheDocument();
@@ -1228,11 +1120,7 @@ describe("AgreementProcurementTracker", () => {
                 isError: false
             });
 
-            render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={mockAgreement} />
-                </Provider>
-            );
+            renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
 
             const tags = screen.getAllByTestId("tag");
             tags.forEach((tag) => {
@@ -1274,11 +1162,7 @@ describe("AgreementProcurementTracker", () => {
                 isError: false
             });
 
-            render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={mockAgreement} />
-                </Provider>
-            );
+            renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
 
             expect(screen.getByText("Step 2 of 6")).toBeInTheDocument();
             expect(screen.getByTestId("procurement-step-two")).toHaveTextContent("Step Two Form");
@@ -1317,11 +1201,7 @@ describe("AgreementProcurementTracker", () => {
                 isError: false
             });
 
-            render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={mockAgreement} />
-                </Provider>
-            );
+            renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
 
             expect(screen.getByTestId("procurement-step-two")).toHaveAttribute("data-step-data-id", "102");
             expect(screen.getByTestId("procurement-step-two")).toHaveAttribute("data-step-status", "PENDING");
@@ -1359,11 +1239,7 @@ describe("AgreementProcurementTracker", () => {
                 isError: false
             });
 
-            render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={mockAgreement} />
-                </Provider>
-            );
+            renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
 
             expect(screen.getByTestId("procurement-step-two")).toHaveTextContent("Step Two Completed");
             expect(screen.getByTestId("procurement-step-two")).toHaveAttribute("data-step-status", "COMPLETED");
@@ -1416,11 +1292,7 @@ describe("AgreementProcurementTracker", () => {
                 authorized_user_ids: [1, 3, 5] // Only Amy, Jane, and Alice are authorized
             };
 
-            render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={mockAgreementWithAuthorizedUsers} />
-                </Provider>
-            );
+            renderWithProviders(<AgreementProcurementTracker agreement={mockAgreementWithAuthorizedUsers} />);
 
             // Verify that UsersComboBox is rendered (which receives the filtered users)
             expect(screen.getByTestId("users-combobox")).toBeInTheDocument();
@@ -1458,11 +1330,7 @@ describe("AgreementProcurementTracker", () => {
                 authorized_user_ids: null
             };
 
-            render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={mockAgreementNullAuthorizedUsers} />
-                </Provider>
-            );
+            renderWithProviders(<AgreementProcurementTracker agreement={mockAgreementNullAuthorizedUsers} />);
 
             // UsersComboBox should still render (but will receive empty array)
             expect(screen.getByTestId("users-combobox")).toBeInTheDocument();
@@ -1490,11 +1358,7 @@ describe("AgreementProcurementTracker", () => {
                 // authorized_user_ids is undefined
             };
 
-            render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={mockAgreementUndefinedAuthorizedUsers} />
-                </Provider>
-            );
+            renderWithProviders(<AgreementProcurementTracker agreement={mockAgreementUndefinedAuthorizedUsers} />);
 
             // UsersComboBox should still render (but will receive empty array)
             expect(screen.getByTestId("users-combobox")).toBeInTheDocument();
@@ -1517,11 +1381,7 @@ describe("AgreementProcurementTracker", () => {
                 error: undefined
             });
 
-            render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={null} />
-                </Provider>
-            );
+            renderWithProviders(<AgreementProcurementTracker agreement={null} />);
 
             // Component should handle null agreement gracefully
             expect(screen.getByText("Error loading procurement tracker data")).toBeInTheDocument();
@@ -1545,11 +1405,7 @@ describe("AgreementProcurementTracker", () => {
                 authorized_user_ids: [1, 3, 5]
             };
 
-            render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={mockAgreementWithAuthorizedUsers} />
-                </Provider>
-            );
+            renderWithProviders(<AgreementProcurementTracker agreement={mockAgreementWithAuthorizedUsers} />);
 
             // UsersComboBox should still render (but will receive empty array until users load)
             expect(screen.getByTestId("users-combobox")).toBeInTheDocument();
@@ -1591,11 +1447,7 @@ describe("AgreementProcurementTracker", () => {
         it("should disable Step 2 when user is not authorized", () => {
             const agreementWithoutMeta = { id: 13, authorized_user_ids: [1] };
 
-            render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={agreementWithoutMeta} />
-                </Provider>
-            );
+            renderWithProviders(<AgreementProcurementTracker agreement={agreementWithoutMeta} />);
 
             const stepTwo = screen.getByTestId("procurement-step-two");
             // hasActiveTracker=true but isEditable=false => isDisabled=true
@@ -1609,11 +1461,7 @@ describe("AgreementProcurementTracker", () => {
                 _meta: { isEditable: true }
             };
 
-            render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={agreementWithMeta} />
-                </Provider>
-            );
+            renderWithProviders(<AgreementProcurementTracker agreement={agreementWithMeta} />);
 
             const stepTwo = screen.getByTestId("procurement-step-two");
             // hasActiveTracker=true && isEditable=true => isDisabled=false
@@ -1624,11 +1472,7 @@ describe("AgreementProcurementTracker", () => {
             useIsUserSuperUser.mockReturnValue(true);
             const agreementWithoutMeta = { id: 13, authorized_user_ids: [1] };
 
-            render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={agreementWithoutMeta} />
-                </Provider>
-            );
+            renderWithProviders(<AgreementProcurementTracker agreement={agreementWithoutMeta} />);
 
             const stepTwo = screen.getByTestId("procurement-step-two");
             // Super user bypasses authorization
@@ -1638,11 +1482,7 @@ describe("AgreementProcurementTracker", () => {
         it("should set isDisabled=true for Step 3 when user is not authorized", async () => {
             const agreementWithoutMeta = { id: 13, authorized_user_ids: [1] };
 
-            render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={agreementWithoutMeta} />
-                </Provider>
-            );
+            renderWithProviders(<AgreementProcurementTracker agreement={agreementWithoutMeta} />);
 
             // Open step 3 accordion
             const step3Heading = screen.getByTestId("step-builder-heading-3");
@@ -1661,11 +1501,7 @@ describe("AgreementProcurementTracker", () => {
                 _meta: { isEditable: true }
             };
 
-            render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={agreementWithMeta} />
-                </Provider>
-            );
+            renderWithProviders(<AgreementProcurementTracker agreement={agreementWithMeta} />);
 
             // Open step 3 accordion
             const step3Heading = screen.getByTestId("step-builder-heading-3");
@@ -1681,11 +1517,7 @@ describe("AgreementProcurementTracker", () => {
         it("should disable Step 4 when user is not authorized", async () => {
             const agreementWithoutMeta = { id: 13, authorized_user_ids: [1] };
 
-            render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={agreementWithoutMeta} />
-                </Provider>
-            );
+            renderWithProviders(<AgreementProcurementTracker agreement={agreementWithoutMeta} />);
 
             // Open step 4 accordion
             const step4Heading = screen.getByTestId("step-builder-heading-4");
@@ -1705,11 +1537,7 @@ describe("AgreementProcurementTracker", () => {
                 _meta: { isEditable: true }
             };
 
-            render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={agreementWithMeta} />
-                </Provider>
-            );
+            renderWithProviders(<AgreementProcurementTracker agreement={agreementWithMeta} />);
 
             // Open step 4 accordion
             const step4Heading = screen.getByTestId("step-builder-heading-4");
@@ -1729,11 +1557,7 @@ describe("AgreementProcurementTracker", () => {
                 _meta: {}
             };
 
-            render(
-                <Provider store={setupStore()}>
-                    <AgreementProcurementTracker agreement={agreementWithEmptyMeta} />
-                </Provider>
-            );
+            renderWithProviders(<AgreementProcurementTracker agreement={agreementWithEmptyMeta} />);
 
             const stepTwo = screen.getByTestId("procurement-step-two");
             // Missing isEditable should default to false

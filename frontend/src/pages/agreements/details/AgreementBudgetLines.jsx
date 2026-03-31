@@ -11,6 +11,7 @@ import AgreementTotalCard from "../../../components/Agreements/AgreementDetailsC
 import BLIsByFYSummaryCard from "../../../components/Agreements/AgreementDetailsCards/BLIsByFYSummaryCard";
 import { EditAgreementProvider } from "../../../components/Agreements/AgreementEditor/AgreementEditorContext";
 import BudgetLinesTable from "../../../components/BudgetLineItems/BudgetLinesTable";
+import BudgetLinesTableLoading from "../../../components/BudgetLineItems/BudgetLinesTable/BudgetLinesTableLoading";
 import CreateBLIsAndSCs from "../../../components/BudgetLineItems/CreateBLIsAndSCs";
 import ServicesComponentAccordion from "../../../components/ServicesComponents/ServicesComponentAccordion";
 import Tooltip from "../../../components/UI/USWDS/Tooltip";
@@ -61,7 +62,9 @@ const AgreementBudgetLines = ({
     const [includeDrafts, setIncludeDrafts] = React.useState(false);
     const isSuperUser = useIsUserSuperUser();
     const canUserEditAgreement = isSuperUser || (agreement?._meta.isEditable && !isAgreementNotDeveloped);
-    const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id);
+    const { data: servicesComponents, isLoading: isServicesComponentsLoading } = useGetServicesComponentsListQuery(
+        agreement?.id
+    );
     const allBudgetLinesInReview = areAllBudgetLinesInReview(agreement?.budget_line_items ?? []);
     const filters = { agreementIds: [agreement?.id] };
 
@@ -249,7 +252,10 @@ const AgreementBudgetLines = ({
                 </EditAgreementProvider>
             )}
 
+            {!isEditMode && isServicesComponentsLoading && <BudgetLinesTableLoading />}
+
             {!isEditMode &&
+                !isServicesComponentsLoading &&
                 groupedBudgetLinesByServicesComponent.length > 0 &&
                 groupedBudgetLinesByServicesComponent.map((group, index) => {
                     const budgetLineScGroupingLabel = group.serviceComponentGroupingLabel
@@ -284,7 +290,7 @@ const AgreementBudgetLines = ({
                     );
                 })}
 
-            {!isEditMode && groupedBudgetLinesByServicesComponent.length === 0 && (
+            {!isEditMode && !isServicesComponentsLoading && groupedBudgetLinesByServicesComponent.length === 0 && (
                 <p className="text-center">You have not added any Budget Lines yet.</p>
             )}
 
