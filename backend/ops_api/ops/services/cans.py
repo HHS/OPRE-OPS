@@ -16,8 +16,11 @@ from ops_api.ops.schemas.cans import CANListFilterOptionResponseSchema
 from ops_api.ops.services.ops_service import ResourceNotFoundError
 from ops_api.ops.utils.cans import (
     aggregate_funding_summaries,
+    calculate_can_funding,
     filter_active_cans,
     get_can_funding_summary,
+    get_carry_forward_label,
+    get_expiration_date,
 )
 from ops_api.ops.utils.query_helpers import QueryHelper
 
@@ -370,7 +373,7 @@ class CANService:
             case CANSortCondition.FY_BUDGET:
                 decorated_results = [
                     (
-                        get_can_funding_summary(can, fiscal_year).get("total_funding"),
+                        calculate_can_funding(can, fiscal_year).get("total_funding"),
                         i,
                         can,
                     )
@@ -394,7 +397,7 @@ class CANService:
             case CANSortCondition.AVAILABLE_BUDGET:
                 decorated_results = [
                     (
-                        get_can_funding_summary(can, fiscal_year).get("available_funding"),
+                        calculate_can_funding(can, fiscal_year).get("available_funding"),
                         i,
                         can,
                     )
@@ -416,8 +419,7 @@ class CANService:
 
     @staticmethod
     def get_can_available_budget(can: CAN, fiscal_year: Optional[int] = None):
-        can_funding_summary = get_can_funding_summary(can, fiscal_year)
-        return can_funding_summary.get("available_funding")
+        return calculate_can_funding(can, fiscal_year).get("available_funding")
 
     @staticmethod
     def _get_query(search=None):
@@ -560,7 +562,7 @@ class CANService:
         if not can:
             raise ResourceNotFoundError("CAN", id)
 
-        summary = get_can_funding_summary(can, fiscal_year)
+        funding = calculate_can_funding(can, fiscal_year)
 
         # Build funding_by_fiscal_year from funding_budgets
         fy_map: dict[int, float] = {}
@@ -571,23 +573,9 @@ class CANService:
             key=lambda x: x["fiscal_year"],
         )
 
-        # Build carry_forward_label from the existing summary
-        can_detail = summary["cans"][0]
-
         return {
             "fiscal_year": fiscal_year,
-            "funding": {
-                "total_funding": summary["total_funding"],
-                "available_funding": summary["available_funding"],
-                "carry_forward_funding": summary["carry_forward_funding"],
-                "new_funding": summary["new_funding"],
-                "expected_funding": summary["expected_funding"],
-                "received_funding": summary["received_funding"],
-                "planned_funding": summary["planned_funding"],
-                "obligated_funding": summary["obligated_funding"],
-                "in_execution_funding": summary["in_execution_funding"],
-                "in_draft_funding": summary["in_draft_funding"],
-            },
+            "funding": funding,
             "funding_by_fiscal_year": funding_by_fiscal_year,
             "can": {
                 "id": can.id,
@@ -598,8 +586,8 @@ class CANService:
                 "portfolio": can.portfolio.abbreviation if can.portfolio else None,
                 "active_period": can.active_period,
                 "appropriation_date": can.funding_details.fiscal_year if can.funding_details else None,
-                "carry_forward_label": can_detail["carry_forward_label"],
-                "expiration_date": can_detail["expiration_date"],
+                "carry_forward_label": get_carry_forward_label(can),
+                "expiration_date": get_expiration_date(can),
             },
         }
 
