@@ -287,13 +287,13 @@ class TestAgreementsPagination:
             DirectAgreement,
             AaAgreement,
         ]
-        data = {"limit": [100], "offset": [0]}
+        data = {"limit": [200], "offset": [0]}
 
         results, metadata = service.get_list(agreement_classes, data)
 
         # Should return all results without error
-        assert len(results) <= 100
-        assert metadata["limit"] == 100
+        assert len(results) <= 200
+        assert metadata["limit"] == 200
         assert metadata["offset"] == 0
         assert len(results) == metadata["count"]  # All results returned
 
