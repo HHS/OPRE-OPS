@@ -120,7 +120,7 @@ export const normalizeUser = (user) => {
 /**
  * Normalizes an array of user-like objects by attaching a formatted `display_name`.
  * @param {Array<Object> | null | undefined} users
- * @returns {Array<Object> | null | undefined}
+ * @returns {*} The normalized array, or the original non-array input unchanged.
  */
 export const normalizeUsers = (users) => {
     if (!Array.isArray(users)) return users;
@@ -130,7 +130,7 @@ export const normalizeUsers = (users) => {
 /**
  * Normalizes an array of raw name strings for display.
  * @param {Array<string> | null | undefined} names
- * @returns {Array<string> | null | undefined}
+ * @returns {*} The normalized array, or the original non-array input unchanged.
  */
 export const normalizeNameStrings = (names) => {
     if (!Array.isArray(names)) return names;

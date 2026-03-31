@@ -505,8 +505,11 @@ export const opsApi = createApi({
             },
             transformResponse: (response) => {
                 // New wrapped format with data key
-                if (response.data) {
+                if (Array.isArray(response.data)) {
                     return response.data.map(normalizeProjectUsers);
+                }
+                if (response.data) {
+                    return response.data;
                 }
                 // Legacy array format (no wrapper) - for backward compatibility during transition
                 return Array.isArray(response) ? response.map(normalizeProjectUsers) : response;
