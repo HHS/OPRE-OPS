@@ -38,7 +38,14 @@ import React from "react";
  * @param {BLIReviewRowProps} props - The props of the BLIRow component.
  * @returns {JSX.Element} The BLIRow component.
  **/
-const BLIReviewRow = ({ budgetLine, isReviewMode = false, setSelectedBLIs, action, showCheckbox = true, readOnly = false }) => {
+const BLIReviewRow = ({
+    budgetLine,
+    isReviewMode = false,
+    setSelectedBLIs,
+    action,
+    showCheckbox = true,
+    readOnly = false
+}) => {
     const { isExpanded, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const loggedInUserFullName = useGetLoggedInUserFullName();
