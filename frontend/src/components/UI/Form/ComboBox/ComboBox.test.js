@@ -147,4 +147,21 @@ describe("ComboBox", () => {
         const input = screen.getByDisplayValue("");
         expect(input).toBeDisabled();
     });
+
+    it("renders a loading skeleton in the dropdown menu", () => {
+        const { container } = render(
+            <ComboBox
+                namespace="test"
+                data={[]}
+                selectedData={null}
+                setSelectedData={mockSetSelectedProject}
+                isLoading={true}
+            />
+        );
+
+        // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
+        fireEvent.keyDown(container.querySelector("input"), { key: "ArrowDown", code: 40 });
+
+        expect(screen.getByTestId("combobox-loading-skeleton")).toBeInTheDocument();
+    });
 });

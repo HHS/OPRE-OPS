@@ -649,6 +649,33 @@ describe("opsAPI - Agreements Pagination", () => {
             expect(capturedUrl).toContain("offset=25");
         });
 
+        it("supports agreement name filters from prefetched option shape", async () => {
+            let capturedUrl = "";
+            server.use(
+                http.get("*/api/v1/agreements/", ({ request }) => {
+                    capturedUrl = request.url;
+                    return HttpResponse.json({ data: [], count: 0, limit: 10, offset: 0 });
+                })
+            );
+
+            const storeRef = setupApiStore(opsApi);
+            await storeRef.store.dispatch(
+                opsApi.endpoints.getAgreements.initiate({
+                    filters: {
+                        agreementName: [{ id: 10, name: "MIHOPE Check-In", title: "MIHOPE Check-In" }]
+                    },
+                    onlyMy: false,
+                    sortConditions: null,
+                    sortDescending: false,
+                    page: 0,
+                    limit: 10
+                })
+            );
+
+            expect(capturedUrl).toContain("name=MIHOPE%20Check-In");
+            expect(capturedUrl).not.toContain("name=undefined");
+        });
+
         it("omits optional params and trailing ? when all filters are empty", async () => {
             let capturedUrl = "";
             server.use(

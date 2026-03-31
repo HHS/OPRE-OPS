@@ -1,6 +1,23 @@
-import Select from "react-select";
+import Select, { components } from "react-select";
 import useComboBox from "./ComboBox.hooks";
 import Tooltip from "../../USWDS/Tooltip";
+import styles from "./ComboBox.module.css";
+
+const LoadingMessage = (props) => (
+    <components.LoadingMessage {...props}>
+        <div
+            className={styles.loadingMenu}
+            data-testid="combobox-loading-skeleton"
+        >
+            {Array.from({ length: 5 }, (_, index) => (
+                <div
+                    key={index}
+                    className={styles.loadingRow}
+                />
+            ))}
+        </div>
+    </components.LoadingMessage>
+);
 
 /**
  * @typedef {Object} DataProps
@@ -23,6 +40,7 @@ import Tooltip from "../../USWDS/Tooltip";
  * @param {boolean} [props.clearWhenSet] - Whether to clear the box when an option is selected. Used for TeamMemberComboBox. (optional).
  * @param {boolean} [props.isMulti] - Whether to allow multiple selections.
  * @param {boolean} [props.isDisabled]
+ * @param {boolean} [props.isLoading]
  * @param {string} [props.tooltipMsg] - Tooltip message to display (optional).
  * @returns {React.ReactElement} - The rendered component.
  */
@@ -38,6 +56,7 @@ const ComboBox = ({
     clearWhenSet = false,
     isMulti = false,
     isDisabled = false,
+    isLoading = false,
     tooltipMsg = ""
 }) => {
     const { selectedOption, options, customStyles, handleChange, defaultOption, shiftHeld } = useComboBox(
@@ -82,11 +101,13 @@ const ComboBox = ({
                     options={options}
                     placeholder={defaultString}
                     styles={customStyles}
+                    components={{ LoadingMessage }}
                     isSearchable={true}
                     isClearable={true}
                     isMulti={isMulti}
                     closeMenuOnSelect={isMulti ? !shiftHeld : true}
                     isDisabled={isDisabled}
+                    isLoading={isLoading}
                 />
             )}
         </div>

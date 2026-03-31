@@ -19,12 +19,19 @@ export const PortfoliosComboBox = ({
     legendClassname = "usa-label margin-top-0",
     defaultString = "",
     overrideStyles = {},
-    portfolioOptions = []
+    portfolioOptions = null,
+    isLoading = false
 }) => {
     const navigate = useNavigate();
-    const { data, error, isSuccess, isLoading } = useGetPortfoliosQuery({});
+    const shouldUsePrefetchedOptions = portfolioOptions !== null;
+    const {
+        data,
+        error,
+        isSuccess,
+        isLoading: isPortfoliosLoading
+    } = useGetPortfoliosQuery({}, { skip: shouldUsePrefetchedOptions });
 
-    const sourcePortfolioOptions = portfolioOptions.length === 0 && isSuccess ? data || [] : portfolioOptions;
+    const sourcePortfolioOptions = shouldUsePrefetchedOptions ? portfolioOptions : isSuccess ? data || [] : [];
     const newPortfolioOptions = sourcePortfolioOptions.map((portfolio) => {
         const portfolioOption = {
             id: portfolio.id,
@@ -34,9 +41,6 @@ export const PortfoliosComboBox = ({
         return portfolioOption;
     });
 
-    if (isLoading) {
-        return <h1>Loading...</h1>;
-    }
     if (error) {
         navigate("/error");
         return;
@@ -60,6 +64,7 @@ export const PortfoliosComboBox = ({
                         defaultString={defaultString}
                         overrideStyles={overrideStyles}
                         isMulti={true}
+                        isLoading={isLoading || (!shouldUsePrefetchedOptions && isPortfoliosLoading)}
                     />
                 </div>
             </div>

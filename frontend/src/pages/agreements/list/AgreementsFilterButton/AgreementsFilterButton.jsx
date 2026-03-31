@@ -18,7 +18,7 @@ import { FILTER_MODAL_FULL_WIDTH } from "../../../../constants";
  * @param {Object} props.agreementFilterOptions - The filter options from API.
  * @returns {JSX.Element} - The procurement shop select element.
  */
-export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOptions }) => {
+export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOptions, isLoadingOptions = false }) => {
     const {
         fiscalYear,
         setFiscalYear,
@@ -56,6 +56,7 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
                 budgetLinesFiscalYears={agreementFilterOptions?.fiscal_years || []}
                 label="Compare Fiscal Years"
                 includeAllOption={true}
+                isLoading={isLoadingOptions}
             />
         </fieldset>,
         <fieldset
@@ -63,11 +64,13 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
             className="usa-fieldset"
         >
             <PortfoliosComboBox
+                portfolioOptions={agreementFilterOptions?.portfolios ?? []}
                 selectedPortfolios={portfolio}
                 setSelectedPortfolios={setPortfolio}
                 legendClassname={legendStyles}
                 defaultString={""}
                 overrideStyles={FILTER_MODAL_FULL_WIDTH}
+                isLoading={isLoadingOptions}
             />
         </fieldset>,
         <fieldset
@@ -81,6 +84,7 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
                 legendClassname={legendStyles}
                 defaultString={""}
                 overrideStyles={FILTER_MODAL_FULL_WIDTH}
+                isLoading={isLoadingOptions}
             />
         </fieldset>,
         <fieldset
@@ -102,9 +106,11 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
             <AgreementNameComboBox
                 selectedAgreementNames={agreementName}
                 setSelectedAgreementNames={setAgreementName}
+                agreementNameOptions={agreementFilterOptions?.agreement_names ?? []}
                 legendClassname={legendStyles}
                 defaultString={""}
                 overrideStyles={FILTER_MODAL_FULL_WIDTH}
+                isLoading={isLoadingOptions}
             />
         </fieldset>,
         <fieldset
@@ -118,6 +124,7 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
                 legendClassname={legendStyles}
                 defaultString={""}
                 overrideStyles={FILTER_MODAL_FULL_WIDTH}
+                isLoading={isLoadingOptions}
             />
         </fieldset>,
         <fieldset
