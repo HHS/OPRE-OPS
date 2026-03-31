@@ -536,8 +536,8 @@ class ProjectsService(OpsService[Project]):
                 pm = metadata_cache[project.id]
                 if selected_fiscal_years:
                     for fy in selected_fiscal_years:
-                        if fy in pm["by_fiscal_year"]:
-                            amounts_by_type[type_name] += pm["by_fiscal_year"][fy]
+                        if fy in pm["total_by_fiscal_year"]:
+                            amounts_by_type[type_name] += pm["total_by_fiscal_year"][fy]
                 else:
                     amounts_by_type[type_name] += pm["total"]
 
