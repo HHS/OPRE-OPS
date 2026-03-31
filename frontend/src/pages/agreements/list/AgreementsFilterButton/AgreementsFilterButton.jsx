@@ -65,6 +65,7 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
         >
             <PortfoliosComboBox
                 portfolioOptions={agreementFilterOptions?.portfolios ?? []}
+                usePrefetchedOptions={true}
                 selectedPortfolios={portfolio}
                 setSelectedPortfolios={setPortfolio}
                 legendClassname={legendStyles}

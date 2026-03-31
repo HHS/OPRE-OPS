@@ -8,7 +8,10 @@ const LoadingMessage = (props) => (
         <div
             className={styles.loadingMenu}
             data-testid="combobox-loading-skeleton"
+            role="status"
+            aria-live="polite"
         >
+            <span className={styles.srOnly}>Loading options</span>
             {Array.from({ length: 5 }, (_, index) => (
                 <div
                     key={index}

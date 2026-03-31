@@ -113,7 +113,7 @@ describe("ChangeRequestList", () => {
         render(
             <Provider store={emptyUserStore}>
                 <BrowserRouter>
-                    <ChangeRequestList handleReviewChangeRequest={vi.mock} />
+                    <ChangeRequestList handleReviewChangeRequest={vi.fn()} />
                 </BrowserRouter>
             </Provider>
         );

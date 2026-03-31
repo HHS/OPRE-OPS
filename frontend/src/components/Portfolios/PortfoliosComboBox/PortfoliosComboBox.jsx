@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom";
  * @param {string} [props.defaultString] - Initial text to display in select (optional).
  * @param {Object} [props.overrideStyles] - Some CSS styles to override the default (optional).
  * @param {import("../../../types/PortfolioTypes").Portfolio[]} [props.portfolioOptions] - An array of portfolio options.
+ * @param {boolean} [props.usePrefetchedOptions] - Whether to use provided portfolio options instead of fetching.
  * @returns {React.ReactElement} - The rendered component.
  */
 export const PortfoliosComboBox = ({
@@ -20,10 +21,11 @@ export const PortfoliosComboBox = ({
     defaultString = "",
     overrideStyles = {},
     portfolioOptions = null,
+    usePrefetchedOptions = false,
     isLoading = false
 }) => {
     const navigate = useNavigate();
-    const shouldUsePrefetchedOptions = portfolioOptions !== null;
+    const shouldUsePrefetchedOptions = usePrefetchedOptions;
     const {
         data,
         error,
@@ -31,7 +33,7 @@ export const PortfoliosComboBox = ({
         isLoading: isPortfoliosLoading
     } = useGetPortfoliosQuery({}, { skip: shouldUsePrefetchedOptions });
 
-    const sourcePortfolioOptions = shouldUsePrefetchedOptions ? portfolioOptions : isSuccess ? data || [] : [];
+    const sourcePortfolioOptions = shouldUsePrefetchedOptions ? (portfolioOptions ?? []) : isSuccess ? data || [] : [];
     const newPortfolioOptions = sourcePortfolioOptions.map((portfolio) => {
         const portfolioOption = {
             id: portfolio.id,
