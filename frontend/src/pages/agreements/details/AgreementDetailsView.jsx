@@ -2,6 +2,7 @@ import AgreementHistoryPanel from "../../../components/Agreements/AgreementDetai
 import Tag from "../../../components/UI/Tag/Tag";
 import { NO_DATA } from "../../../constants";
 import { getAgreementType, getFundingMethod, getPartnerType, isFieldVisible } from "../../../helpers/agreement.helpers";
+import { formatUserName } from "../../../helpers/users.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { AGREEMENT_NICKNAME_LABEL, AgreementFields } from "../agreements.constants";
 
@@ -392,7 +393,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                                                     <Tag
                                                         dataCy="division-director-tag"
                                                         tagStyle="primaryDarkTextLightBackground"
-                                                        text={director}
+                                                        text={formatUserName(director)}
                                                     />
                                                 </dd>
                                             ))}
@@ -424,7 +425,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                                                     <Tag
                                                         dataCy="team-leader-tag"
                                                         tagStyle="primaryDarkTextLightBackground"
-                                                        text={leader}
+                                                        text={formatUserName(leader)}
                                                     />
                                                 </dd>
                                             ))}

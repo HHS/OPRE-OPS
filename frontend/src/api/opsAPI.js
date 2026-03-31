@@ -3,7 +3,13 @@ import { getAccessToken } from "../components/Auth/auth";
 import { postRefresh } from "./postRefresh.js";
 import { logout } from "../components/Auth/authSlice.js";
 import store from "../store";
-import { normalizeUser } from "../helpers/users.helpers";
+import {
+    normalizeAgreementUsers,
+    normalizeCanUsers,
+    normalizePortfolioUsers,
+    normalizeProjectUsers,
+    normalizeUser
+} from "../helpers/users.helpers";
 
 const BACKEND_DOMAIN =
     (typeof window !== "undefined" && window.__RUNTIME_CONFIG__?.REACT_APP_BACKEND_DOMAIN) ||
@@ -185,6 +191,7 @@ export const opsApi = createApi({
                 }
                 return `/agreements/${arg}`;
             },
+            transformResponse: (response) => normalizeAgreementUsers(response),
             providesTags: ["Agreements"]
         }),
         addAgreement: builder.mutation({
@@ -478,6 +485,7 @@ export const opsApi = createApi({
         }),
         getProjectById: builder.query({
             query: (id) => `/projects/${id}`,
+            transformResponse: (response) => normalizeProjectUsers(response),
             providesTags: ["ResearchProjects"]
         }),
         getProjectsByPortfolio: builder.query({
@@ -498,10 +506,10 @@ export const opsApi = createApi({
             transformResponse: (response) => {
                 // New wrapped format with data key
                 if (response.data) {
-                    return response.data;
+                    return response.data.map(normalizeProjectUsers);
                 }
                 // Legacy array format (no wrapper) - for backward compatibility during transition
-                return response;
+                return Array.isArray(response) ? response.map(normalizeProjectUsers) : response;
             },
             providesTags: ["ResearchProjects"]
         }),
@@ -681,6 +689,7 @@ export const opsApi = createApi({
         }),
         getCanById: builder.query({
             query: (id) => `/cans/${id}`,
+            transformResponse: (response) => normalizeCanUsers(response),
             providesTags: ["Cans"]
         }),
         updateCan: builder.mutation({
@@ -827,6 +836,7 @@ export const opsApi = createApi({
         }),
         getPortfolioById: builder.query({
             query: (id) => `/portfolios/${id}`,
+            transformResponse: (response) => normalizePortfolioUsers(response),
             providesTags: ["Portfolios"]
         }),
         getPortfolioCansById: builder.query({

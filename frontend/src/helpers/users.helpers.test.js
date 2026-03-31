@@ -1,5 +1,13 @@
 import { describe, it, expect } from "vitest";
-import { formatUserName, getUserDisplayName, normalizeUser } from "./users.helpers";
+import {
+    formatUserName,
+    getUserDisplayName,
+    normalizeAgreementUsers,
+    normalizeCanUsers,
+    normalizePortfolioUsers,
+    normalizeProjectUsers,
+    normalizeUser
+} from "./users.helpers";
 
 describe("formatUserName", () => {
     // Already mixed-case — leave untouched
@@ -132,5 +140,69 @@ describe("normalizeUser", () => {
         // Backend sends an all-caps display_name — frontend should still normalize it.
         const user = { id: 5, full_name: "JANE DOE", display_name: "JANE DOE", email: "jane@example.com" };
         expect(normalizeUser(user)).toEqual({ ...user, display_name: "Jane Doe" });
+    });
+});
+
+describe("embedded payload normalizers", () => {
+    it("normalizes agreement string name arrays and team members", () => {
+        expect(
+            normalizeAgreementUsers({
+                division_directors: ["DAVE DIRECTOR"],
+                team_leaders: ["CHRIS FORTUNATO"],
+                team_members: [{ id: 1, full_name: "AMELIA POPHAM", email: "amelia@example.com" }]
+            })
+        ).toEqual({
+            division_directors: ["Dave Director"],
+            team_leaders: ["Chris Fortunato"],
+            team_members: [
+                { id: 1, full_name: "AMELIA POPHAM", email: "amelia@example.com", display_name: "Amelia Popham" }
+            ]
+        });
+    });
+
+    it("normalizes project team leaders, team members, and division directors", () => {
+        expect(
+            normalizeProjectUsers({
+                division_directors: ["DIRECTOR DERREK"],
+                team_leaders: [{ id: 1, full_name: "CHRIS FORTUNATO", email: "chris@example.com" }],
+                team_members: [{ id: 2, full_name: "SYSTEM OWNER", email: "owner@example.com" }]
+            })
+        ).toEqual({
+            division_directors: ["Director Derrek"],
+            team_leaders: [
+                { id: 1, full_name: "CHRIS FORTUNATO", email: "chris@example.com", display_name: "Chris Fortunato" }
+            ],
+            team_members: [{ id: 2, full_name: "SYSTEM OWNER", email: "owner@example.com", display_name: "System Owner" }]
+        });
+    });
+
+    it("normalizes portfolio team leaders", () => {
+        expect(
+            normalizePortfolioUsers({
+                id: 1,
+                team_leaders: [{ id: 1, full_name: "JANE SMITH", email: "jane@example.com" }]
+            })
+        ).toEqual({
+            id: 1,
+            team_leaders: [{ id: 1, full_name: "JANE SMITH", email: "jane@example.com", display_name: "Jane Smith" }]
+        });
+    });
+
+    it("normalizes nested portfolio team leaders on CAN payloads", () => {
+        expect(
+            normalizeCanUsers({
+                id: 1,
+                portfolio: {
+                    id: 2,
+                    team_leaders: [{ id: 1, full_name: "JOHN DOE", email: "john@example.com" }]
+                }
+            })
+        ).toEqual({
+            id: 1,
+            portfolio: {
+                id: 2,
+                team_leaders: [{ id: 1, full_name: "JOHN DOE", email: "john@example.com", display_name: "John Doe" }]
+            }
+        });
     });
 });

@@ -77,4 +77,21 @@ describe("CANDetailView", () => {
         expect(screen.getByText("Test CAN Description")).toBeInTheDocument();
         expect(screen.getByText("Team Leader")).toBeInTheDocument();
     });
+
+    it("formats all-caps team leaders and division director", () => {
+        render(
+            <Provider store={store}>
+                <CANDetailView
+                    {...mockProps}
+                    teamLeaders={[{ id: 1, full_name: "JOHN DOE", email: "jdoe@example.com" }]}
+                    divisionDirectorFullName="DAVE DIRECTOR"
+                />
+            </Provider>
+        );
+
+        expect(screen.getByText("John Doe")).toBeInTheDocument();
+        expect(screen.getByText("Dave Director")).toBeInTheDocument();
+        expect(screen.queryByText("JOHN DOE")).not.toBeInTheDocument();
+        expect(screen.queryByText("DAVE DIRECTOR")).not.toBeInTheDocument();
+    });
 });

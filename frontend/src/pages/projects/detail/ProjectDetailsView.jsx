@@ -1,6 +1,7 @@
 import Tag from "../../../components/UI/Tag/Tag";
 import { TagList } from "../../../components/UI/Tag";
 import { NO_DATA } from "../../../constants";
+import { formatUserName } from "../../../helpers/users.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { formatProjectDate } from "../list/ProjectsList.helpers";
 
@@ -24,11 +25,11 @@ const ProjectDetailsView = ({ project }) => {
 
     const projectTypeLabel = convertCodeForDisplay("project", project.project_type);
 
-    const teamLeaderNames = project.team_leaders?.map((tl) => tl.display_name ?? tl.full_name) ?? [];
+    const teamLeaderNames = project.team_leaders?.map((tl) => formatUserName(tl.display_name ?? tl.full_name)) ?? [];
     const methodologies = project.research_methodologies ?? [];
     const specialTopics = project.special_topics ?? [];
-    const divisionDirectors = project.division_directors ?? [];
-    const teamMemberNames = project.team_members?.map((member) => member.display_name ?? member.full_name) ?? [];
+    const divisionDirectors = project.division_directors?.map((director) => formatUserName(director)) ?? [];
+    const teamMemberNames = project.team_members?.map((member) => formatUserName(member.display_name ?? member.full_name)) ?? [];
 
     return (
         <section>
