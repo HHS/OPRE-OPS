@@ -4,15 +4,14 @@ import Tag from "./Tag";
 
 describe("Tag", () => {
     it("applies wrapping-friendly layout styles for long content", () => {
-        render(<Tag text="Chris Fortunatoasdljkasjd" />);
+        render(<Tag text="ChrisFortunatoasdljkasjd" />);
 
-        expect(screen.getByText("Chris Fortunatoasdljkasjd")).toHaveStyle({
+        expect(screen.getByText("ChrisFortunatoasdljkasjd")).toHaveStyle({
             width: "auto",
             maxWidth: "100%",
             height: "auto",
             whiteSpace: "normal",
             overflowWrap: "anywhere",
-            wordBreak: "break-word",
             display: "inline-block"
         });
     });
@@ -20,8 +19,9 @@ describe("Tag", () => {
     it("preserves flex display for filter-style tags", () => {
         render(
             <Tag
-                className="bg-brand-primary-light text-brand-primary-dark display-flex flex-align-center"
+                className="bg-brand-primary-light text-brand-primary-dark flex-align-center"
                 dataTestId="filter-tag"
+                display="flex"
             >
                 <span>Long filter tag</span>
                 <button type="button">Remove</button>
@@ -34,7 +34,14 @@ describe("Tag", () => {
     });
 
     it("preserves inline-flex display when requested", () => {
-        render(<Tag className="bg-brand-secondary display-inline-flex">Active</Tag>);
+        render(
+            <Tag
+                className="bg-brand-secondary"
+                display="inline-flex"
+            >
+                Active
+            </Tag>
+        );
 
         expect(screen.getByText("Active")).toHaveStyle({
             display: "inline-flex"

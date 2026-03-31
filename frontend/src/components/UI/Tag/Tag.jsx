@@ -6,6 +6,7 @@
  * @property {boolean} [active] - Whether the tag is active or not.
  * @property {string} [label] - The label of the tag.
  * @property {string} [className] - Additional CSS classes.
+ * @property {string} [display] - Optional display override for the tag container.
  * @property {number} [dataTestId] - The data test id.
  * @property {Object} [rest] - Additional props.
  * @property {React.ReactNode} [children] - Child elements.
@@ -23,16 +24,11 @@ const Tag = ({
     active = false,
     label,
     className = "",
+    display = "inline-block",
     style = {},
     children,
     ...rest
 }) => {
-    const resolvedDisplay = className.includes("display-inline-flex")
-        ? "inline-flex"
-        : className.includes("display-flex")
-          ? "flex"
-          : "inline-block";
-
     let tagClasses = "font-12px height-205 radius-md text-center",
         activeClass = "";
     // OVERRIDES FOR DEFAULT CLASSES
@@ -150,8 +146,7 @@ const Tag = ({
         height: "auto",
         whiteSpace: "normal",
         overflowWrap: "anywhere",
-        wordBreak: "break-word",
-        display: resolvedDisplay,
+        display,
         padding: ".25em .5em", // Adds some space inside the tag for better readability
         ...style // Merge with custom inline styles
     });
