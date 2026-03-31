@@ -113,7 +113,7 @@ function AgreementBLIAccordion({
                     />
                 )}
             </div>
-            <div className="display-flex flex-justify">
+            <div className="display-flex flex-justify margin-bottom-3">
                 <AgreementTotalCard
                     total={totalsForCards}
                     subtotal={subTotalForCards}

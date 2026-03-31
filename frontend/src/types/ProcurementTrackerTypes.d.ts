@@ -56,6 +56,16 @@ export type ProcurementTrackerPreAwardStep = ProcurementTrackerStep & {
     task_completed_by?: number | null;
     date_completed?: string | null;
     notes?: string | null;
+    // Pre-Award approval request fields (generic names from API)
+    approval_requested?: boolean | null;
+    approval_requested_date?: string | null;
+    approval_requested_by?: number | null;
+    requestor_notes?: string | null;
+    // Pre-Award approval request fields (model-specific names)
+    pre_award_approval_requested?: boolean | null;
+    pre_award_approval_requested_date?: string | null;
+    pre_award_approval_requested_by?: number | null;
+    pre_award_requestor_notes?: string | null;
 };
 
 export type ProcurementTrackerResponseStep =

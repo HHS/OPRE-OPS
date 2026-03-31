@@ -6,6 +6,7 @@ import CANBudgetForm from "../../../components/CANs/CANBudgetForm";
 import CANFundingInfoCard from "../../../components/CANs/CANFundingInfoCard";
 import CANFundingReceivedForm from "../../../components/CANs/CANFundingReceivedForm";
 import CANFundingReceivedTable from "../../../components/CANs/CANFundingReceivedTable";
+import CANFundingReceivedTableLoading from "../../../components/CANs/CANFundingReceivedTable/CANFundingReceivedTableLoading";
 import Accordion from "../../../components/UI/Accordion";
 import ReceivedFundingCard from "../../../components/UI/Cards/BudgetCard/ReceivedFundingCard";
 import CurrencyCard from "../../../components/UI/Cards/CurrencyCard";
@@ -46,6 +47,7 @@ import useCanFunding from "./CanFunding.hooks.js";
  * @property {string} carryForwardFunding,
  * @property {welcomeModal} welcomeModal
  * @property {() => void} resetWelcomeModal
+ * @property {boolean} [isTableLoading]
  */
 
 /**
@@ -69,7 +71,8 @@ const CanFunding = ({
     carryForwardFunding,
     welcomeModal,
     resetWelcomeModal,
-    isExpired
+    isExpired,
+    isTableLoading = false
 }) => {
     const {
         handleAddBudget,
@@ -278,7 +281,9 @@ const CanFunding = ({
                 heading="Funding Received YTD"
                 level={2}
             >
-                {enteredFundingReceived.length === 0 ? (
+                {isTableLoading ? (
+                    <CANFundingReceivedTableLoading />
+                ) : enteredFundingReceived.length === 0 ? (
                     <p className="text-center">No funding received data available for this CAN.</p>
                 ) : (
                     <CANFundingReceivedTable
