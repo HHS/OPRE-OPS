@@ -241,14 +241,16 @@ describe("useCan", () => {
             isLoading: false,
             isFetching: true
         });
-        useGetCanFundingSummaryQueryMock.mockImplementation(() => ({
+        useGetCanFundingQueryMock.mockImplementation(() => ({
             data: {
-                total_funding: 1000,
-                planned_funding: 300,
-                obligated_funding: 100,
-                in_execution_funding: 200,
-                in_draft_funding: 400,
-                received_funding: 200
+                funding: {
+                    total_funding: 1000,
+                    planned_funding: 300,
+                    obligated_funding: 100,
+                    in_execution_funding: 200,
+                    in_draft_funding: 400,
+                    received_funding: 200
+                }
             },
             isLoading: false,
             isFetching: true
