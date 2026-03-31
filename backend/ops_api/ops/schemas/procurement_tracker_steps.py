@@ -81,24 +81,25 @@ class ProcurementTrackerStepResponseSchema(Schema):
         }
 
         # Map step-specific fields based on step type
+        # Use getattr() with None default for backward compatibility with test data
         if obj.step_type == ProcurementTrackerStepType.ACQUISITION_PLANNING:
-            data["task_completed_by"] = obj.acquisition_planning_task_completed_by
-            data["date_completed"] = obj.acquisition_planning_date_completed
-            data["notes"] = obj.acquisition_planning_notes
+            data["task_completed_by"] = getattr(obj, "acquisition_planning_task_completed_by", None)
+            data["date_completed"] = getattr(obj, "acquisition_planning_date_completed", None)
+            data["notes"] = getattr(obj, "acquisition_planning_notes", None)
 
         elif obj.step_type == ProcurementTrackerStepType.PRE_SOLICITATION:
-            data["task_completed_by"] = obj.pre_solicitation_task_completed_by
-            data["date_completed"] = obj.pre_solicitation_date_completed
-            data["notes"] = obj.pre_solicitation_notes
-            data["target_completion_date"] = obj.pre_solicitation_target_completion_date
-            data["draft_solicitation_date"] = obj.pre_solicitation_draft_solicitation_date
+            data["task_completed_by"] = getattr(obj, "pre_solicitation_task_completed_by", None)
+            data["date_completed"] = getattr(obj, "pre_solicitation_date_completed", None)
+            data["notes"] = getattr(obj, "pre_solicitation_notes", None)
+            data["target_completion_date"] = getattr(obj, "pre_solicitation_target_completion_date", None)
+            data["draft_solicitation_date"] = getattr(obj, "pre_solicitation_draft_solicitation_date", None)
 
         elif obj.step_type == ProcurementTrackerStepType.SOLICITATION:
-            data["task_completed_by"] = obj.solicitation_task_completed_by
-            data["date_completed"] = obj.solicitation_date_completed
-            data["notes"] = obj.solicitation_notes
-            data["solicitation_period_start_date"] = obj.solicitation_period_start_date
-            data["solicitation_period_end_date"] = obj.solicitation_period_end_date
+            data["task_completed_by"] = getattr(obj, "solicitation_task_completed_by", None)
+            data["date_completed"] = getattr(obj, "solicitation_date_completed", None)
+            data["notes"] = getattr(obj, "solicitation_notes", None)
+            data["solicitation_period_start_date"] = getattr(obj, "solicitation_period_start_date", None)
+            data["solicitation_period_end_date"] = getattr(obj, "solicitation_period_end_date", None)
 
         elif obj.step_type == ProcurementTrackerStepType.EVALUATION:
             data["task_completed_by"] = getattr(obj, "evaluation_task_completed_by", None)
@@ -107,14 +108,14 @@ class ProcurementTrackerStepResponseSchema(Schema):
             data["target_completion_date"] = getattr(obj, "evaluation_target_completion_date", None)
 
         elif obj.step_type == ProcurementTrackerStepType.PRE_AWARD:
-            data["task_completed_by"] = obj.pre_award_task_completed_by
-            data["date_completed"] = obj.pre_award_date_completed
-            data["notes"] = obj.pre_award_notes
-            data["target_completion_date"] = obj.pre_award_target_completion_date
-            data["approval_requested"] = obj.pre_award_approval_requested
-            data["approval_requested_date"] = obj.pre_award_approval_requested_date
-            data["approval_requested_by"] = obj.pre_award_approval_requested_by
-            data["requestor_notes"] = obj.pre_award_requestor_notes
+            data["task_completed_by"] = getattr(obj, "pre_award_task_completed_by", None)
+            data["date_completed"] = getattr(obj, "pre_award_date_completed", None)
+            data["notes"] = getattr(obj, "pre_award_notes", None)
+            data["target_completion_date"] = getattr(obj, "pre_award_target_completion_date", None)
+            data["approval_requested"] = getattr(obj, "pre_award_approval_requested", None)
+            data["approval_requested_date"] = getattr(obj, "pre_award_approval_requested_date", None)
+            data["approval_requested_by"] = getattr(obj, "pre_award_approval_requested_by", None)
+            data["requestor_notes"] = getattr(obj, "pre_award_requestor_notes", None)
 
         return data
 
@@ -299,24 +300,25 @@ class ProcurementTrackerStepSchema(Schema):
         }
 
         # Map step-specific fields based on step type
+        # Use getattr() with None default for backward compatibility with test data
         if obj.step_type == ProcurementTrackerStepType.ACQUISITION_PLANNING:
-            data["task_completed_by"] = obj.acquisition_planning_task_completed_by
-            data["date_completed"] = obj.acquisition_planning_date_completed
-            data["notes"] = obj.acquisition_planning_notes
+            data["task_completed_by"] = getattr(obj, "acquisition_planning_task_completed_by", None)
+            data["date_completed"] = getattr(obj, "acquisition_planning_date_completed", None)
+            data["notes"] = getattr(obj, "acquisition_planning_notes", None)
 
         elif obj.step_type == ProcurementTrackerStepType.PRE_SOLICITATION:
-            data["task_completed_by"] = obj.pre_solicitation_task_completed_by
-            data["date_completed"] = obj.pre_solicitation_date_completed
-            data["notes"] = obj.pre_solicitation_notes
-            data["target_completion_date"] = obj.pre_solicitation_target_completion_date
-            data["draft_solicitation_date"] = obj.pre_solicitation_draft_solicitation_date
+            data["task_completed_by"] = getattr(obj, "pre_solicitation_task_completed_by", None)
+            data["date_completed"] = getattr(obj, "pre_solicitation_date_completed", None)
+            data["notes"] = getattr(obj, "pre_solicitation_notes", None)
+            data["target_completion_date"] = getattr(obj, "pre_solicitation_target_completion_date", None)
+            data["draft_solicitation_date"] = getattr(obj, "pre_solicitation_draft_solicitation_date", None)
 
         elif obj.step_type == ProcurementTrackerStepType.SOLICITATION:
-            data["task_completed_by"] = obj.solicitation_task_completed_by
-            data["date_completed"] = obj.solicitation_date_completed
-            data["notes"] = obj.solicitation_notes
-            data["solicitation_period_start_date"] = obj.solicitation_period_start_date
-            data["solicitation_period_end_date"] = obj.solicitation_period_end_date
+            data["task_completed_by"] = getattr(obj, "solicitation_task_completed_by", None)
+            data["date_completed"] = getattr(obj, "solicitation_date_completed", None)
+            data["notes"] = getattr(obj, "solicitation_notes", None)
+            data["solicitation_period_start_date"] = getattr(obj, "solicitation_period_start_date", None)
+            data["solicitation_period_end_date"] = getattr(obj, "solicitation_period_end_date", None)
 
         elif obj.step_type == ProcurementTrackerStepType.EVALUATION:
             data["task_completed_by"] = getattr(obj, "evaluation_task_completed_by", None)
@@ -325,14 +327,14 @@ class ProcurementTrackerStepSchema(Schema):
             data["target_completion_date"] = getattr(obj, "evaluation_target_completion_date", None)
 
         elif obj.step_type == ProcurementTrackerStepType.PRE_AWARD:
-            data["task_completed_by"] = obj.pre_award_task_completed_by
-            data["date_completed"] = obj.pre_award_date_completed
-            data["notes"] = obj.pre_award_notes
-            data["target_completion_date"] = obj.pre_award_target_completion_date
-            data["approval_requested"] = obj.pre_award_approval_requested
-            data["approval_requested_date"] = obj.pre_award_approval_requested_date
-            data["approval_requested_by"] = obj.pre_award_approval_requested_by
-            data["requestor_notes"] = obj.pre_award_requestor_notes
+            data["task_completed_by"] = getattr(obj, "pre_award_task_completed_by", None)
+            data["date_completed"] = getattr(obj, "pre_award_date_completed", None)
+            data["notes"] = getattr(obj, "pre_award_notes", None)
+            data["target_completion_date"] = getattr(obj, "pre_award_target_completion_date", None)
+            data["approval_requested"] = getattr(obj, "pre_award_approval_requested", None)
+            data["approval_requested_date"] = getattr(obj, "pre_award_approval_requested_date", None)
+            data["approval_requested_by"] = getattr(obj, "pre_award_approval_requested_by", None)
+            data["requestor_notes"] = getattr(obj, "pre_award_requestor_notes", None)
 
         return data
 
