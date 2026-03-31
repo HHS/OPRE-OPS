@@ -143,6 +143,8 @@ describe("useCan", () => {
             { type: "IAA", count: 1 }
         ]);
         expect(result.current.carryForwardFunding).toBe(75);
+        expect(result.current.isLoading).toBe(false);
+        expect(result.current.isTableLoading).toBe(false);
     });
 
     it("updates filtered results when the selected fiscal year changes and toggles edit modes", async () => {
@@ -227,5 +229,30 @@ describe("useCan", () => {
         expect(result.current.totalFunding).toBe(0);
         expect(result.current.carryForwardFunding).toBe(0);
         expect(result.current.currentFiscalYearFundingId).toBeUndefined();
+    });
+
+    it("separates initial page loading from background table refetch loading", () => {
+        useGetCanByIdQueryMock.mockReturnValueOnce({
+            data: canFixture,
+            isLoading: false,
+            isFetching: true
+        });
+        useGetCanFundingSummaryQueryMock.mockImplementation(() => ({
+            data: {
+                total_funding: 1000,
+                planned_funding: 300,
+                obligated_funding: 100,
+                in_execution_funding: 200,
+                in_draft_funding: 400,
+                received_funding: 200
+            },
+            isLoading: false,
+            isFetching: true
+        }));
+
+        const { result } = renderHook(() => useCan());
+
+        expect(result.current.isLoading).toBe(false);
+        expect(result.current.isTableLoading).toBe(true);
     });
 });

@@ -57,7 +57,10 @@ const normalizeText = (text) => {
     if (!text) {
         return "";
     }
-    return text.replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
+    return text
+        .replace(/\u00a0/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
 };
 
 const parseCurrencyValue = (text) => {
@@ -155,9 +158,7 @@ const waitForElementToContainCurrencyValue = (selector, expectedValue, timeout =
 
 const extractReceivedTotals = (text) => {
     const normalized = normalizeText(text);
-    const match = normalized.match(
-        /Received\s*\$?\s*([\d,]+(?:\.\d{2})?)\s*of\s*\$?\s*([\d,]+(?:\.\d{2})?)/i
-    );
+    const match = normalized.match(/Received\s*\$?\s*([\d,]+(?:\.\d{2})?)\s*of\s*\$?\s*([\d,]+(?:\.\d{2})?)/i);
     if (match) {
         return {
             received: Number(match[1].replace(/,/g, "")),
@@ -339,6 +340,7 @@ describe("CAN spending page", () => {
     it("shows the CAN Spending page", () => {
         cy.visit("/cans/504/spending");
         cy.get("#fiscal-year-select").select("2043");
+        cy.get("table[aria-label='Loading CAN budget lines']", { timeout: 30000 }).should("not.exist");
         cy.get("h1").should("contain", "G994426"); // heading
         cy.get("p").should("contain", "HS"); // sub-heading
         // should contain the budget line table
@@ -348,8 +350,11 @@ describe("CAN spending page", () => {
         // all table rows should have FY 2043 in the FY column
         cy.get("tbody")
             .children()
-            .each(($el) => {
-                cy.wrap($el).should("contain", "2043");
+            .should(($rows) => {
+                expect($rows.length).to.eq(10);
+                [...$rows].forEach((row) => {
+                    expect(row.innerText).to.contain("2043");
+                });
             });
         cy.get("#big-budget-summary-card").should("exist");
         cy.get("#big-budget-summary-card").should("contain", "-$ 120,797,640.00");
@@ -369,6 +374,7 @@ describe("CAN spending page", () => {
             .and("contain", "$26,204,081.00")
             .and("contain", "$26,945,506.00");
         cy.get("#fiscal-year-select").select("2022");
+        cy.get("table[aria-label='Loading CAN budget lines']", { timeout: 30000 }).should("not.exist");
         // table should not exist
         cy.get("tbody").should("not.exist");
         cy.get("p").should("contain", "No budget lines have been added to this CAN.");
@@ -626,7 +632,7 @@ describe("CAN funding page", () => {
             cy.get("tbody").find("tr").eq(1).find('[data-cy="delete-row"]').click();
             cy.get("[data-cy=confirm-action]").click();
             cy.get("tbody").children().should("have.length", 1);
-             // make sure the funding received card on the right updates
+            // make sure the funding received card on the right updates
             waitForBudgetReceivedAmount(editAmount);
         });
         // click on save button at bottom of form
@@ -637,7 +643,10 @@ describe("CAN funding page", () => {
         // check that table and card are updated
         cy.get("@fundingAmounts").then(({ editAmount }) => {
             waitForBudgetReceivedAmount(editAmount);
-            cy.get("tbody").children().should("contain", currentFiscalYear).and("contain", formatCurrencyValue(editAmount));
+            cy.get("tbody")
+                .children()
+                .should("contain", currentFiscalYear)
+                .and("contain", formatCurrencyValue(editAmount));
         });
 
         // check can history for ADDING a funding received event

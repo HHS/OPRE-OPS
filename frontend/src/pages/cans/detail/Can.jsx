@@ -20,7 +20,7 @@ const Can = () => {
         canId,
         fiscalYear,
         setSelectedFiscalYear,
-        CANFundingLoading,
+        isTableLoading,
         budgetLineItemsByFiscalYear,
         canNumber,
         description,
@@ -51,7 +51,7 @@ const Can = () => {
         toggleFundingPageEditMode
     } = useCan();
 
-    if (isLoading || CANFundingLoading) {
+    if (isLoading) {
         return <p>Loading CAN...</p>;
     }
 
@@ -109,6 +109,7 @@ const Can = () => {
                             obligatedFunding={obligatedFunding}
                             plannedFunding={plannedFunding}
                             totalFunding={totalFunding}
+                            isTableLoading={isTableLoading}
                         />
                     }
                 />
@@ -132,6 +133,7 @@ const Can = () => {
                             toggleEditMode={toggleFundingPageEditMode}
                             carryForwardFunding={carryForwardFunding}
                             isExpired={can?.is_expired}
+                            isTableLoading={isTableLoading}
                         />
                     }
                 />

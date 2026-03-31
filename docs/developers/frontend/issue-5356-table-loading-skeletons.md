@@ -28,10 +28,10 @@ Standardize API-backed table loading states so list pages show `TableLoadingSkel
 
 ### Phase 2: detail and assembled-data tables
 
-- [ ] Portfolio spending table
-- [ ] CAN spending table
-- [ ] CAN funding received table area when parent data is refetching
-- [ ] Agreement budget lines grouped table area if service-component loading should block table rendering
+- [x] Portfolio spending table
+- [x] CAN spending table
+- [x] CAN funding received table area when parent data is refetching
+- [x] Agreement budget lines grouped table area if service-component loading should block table rendering
 
 ## Implementation Notes
 
@@ -65,6 +65,8 @@ Standardize API-backed table loading states so list pages show `TableLoadingSkel
 
 - [x] `bun run test --watch=false src/pages/agreements/list/AgreementsList.test.jsx src/pages/budgetLines/list/BudgetLineItemList.test.jsx src/pages/cans/list/CanList.test.jsx src/pages/portfolios/list/PortfolioList.test.jsx`
 - [x] `bun x eslint src/pages/agreements/list/AgreementsList.jsx src/pages/agreements/list/AgreementsList.test.jsx src/pages/budgetLines/list/BudgetLineItemList.jsx src/pages/budgetLines/list/BudgetLineItemList.test.jsx src/pages/cans/list/CanList.jsx src/pages/cans/list/CanList.test.jsx src/pages/portfolios/list/PortfolioList.jsx src/pages/portfolios/list/PortfolioList.hooks.js src/pages/portfolios/list/PortfolioList.test.jsx src/components/Agreements/AgreementsTable/AgreementsTableLoading.jsx src/components/BudgetLineItems/AllBudgetLinesTable/AllBudgetLinesTableLoading.jsx src/components/CANs/CANTable/CANTableLoading.jsx src/components/Portfolios/PortfolioTable/PortfolioTableLoading.jsx`
+- [x] `bun run test --watch=false src/components/Portfolios/PortfolioSpending/PortfolioSpending.test.jsx src/pages/cans/detail/CanSpending.test.jsx src/pages/cans/detail/CanFunding.test.jsx src/pages/cans/detail/Can.hooks.test.js src/pages/agreements/details/AgreementBudgetLines.test.jsx`
+- [x] `bun run lint:src src/components/CANs/CANBudgetLineTable/CANBudgetLineTableLoading.jsx src/components/CANs/CANFundingReceivedTable/CANFundingReceivedTableLoading.jsx src/components/BudgetLineItems/BudgetLinesTable/BudgetLinesTableLoading.jsx src/components/Portfolios/PortfolioSpending/PortfolioSpending.jsx src/components/Portfolios/PortfolioSpending/PortfolioSpendingTableLoading.jsx src/components/Portfolios/PortfolioSpending/PortfolioSpending.test.jsx src/pages/cans/detail/Can.hooks.js src/pages/cans/detail/Can.hooks.test.js src/pages/cans/detail/Can.jsx src/pages/cans/detail/CanSpending.jsx src/pages/cans/detail/CanSpending.test.jsx src/pages/cans/detail/CanFunding.jsx src/pages/cans/detail/CanFunding.test.jsx src/pages/agreements/details/AgreementBudgetLines.jsx src/pages/agreements/details/AgreementBudgetLines.test.jsx`
 
 ## Manual Test Checklist
 
@@ -85,6 +87,14 @@ Standardize API-backed table loading states so list pages show `TableLoadingSkel
 - Preserved dynamic headers in skeleton variants for agreement and portfolio FY columns
 - Added targeted unit coverage for the new loading behavior
 - Paused after phase 1 for manual QA before starting phase 2
+
+### 2026-03-26
+
+- Implemented phase 2 skeleton loading for portfolio spending, CAN spending, CAN funding received, and agreement budget line grouped tables
+- Added dedicated table-loading wrappers for CAN budget line, CAN funding received, agreement budget lines, and portfolio spending table areas
+- Split CAN detail loading so initial page load still blocks the page, while background detail refetches can swap only the relevant table areas to skeletons
+- Kept the agreement grouped-area change intentionally narrow by only showing the skeleton while services component data is still loading
+- Added targeted unit coverage for each new phase 2 loading branch and verified the touched files with ESLint
 
 ## Working Agreement
 
