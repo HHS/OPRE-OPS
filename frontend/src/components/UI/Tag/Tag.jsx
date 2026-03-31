@@ -27,6 +27,12 @@ const Tag = ({
     children,
     ...rest
 }) => {
+    const resolvedDisplay = className.includes("display-inline-flex")
+        ? "inline-flex"
+        : className.includes("display-flex")
+          ? "flex"
+          : "inline-block";
+
     let tagClasses = "font-12px height-205 radius-md text-center",
         activeClass = "";
     // OVERRIDES FOR DEFAULT CLASSES
@@ -139,7 +145,13 @@ const Tag = ({
      * @returns {Object} - The styles for the tag.
      */
     const handleLegendStyles = () => ({
-        width: "fit-content", // Ensures the tag's width adapts to its content
+        width: "auto",
+        maxWidth: "100%",
+        height: "auto",
+        whiteSpace: "normal",
+        overflowWrap: "anywhere",
+        wordBreak: "break-word",
+        display: resolvedDisplay,
         padding: ".25em .5em", // Adds some space inside the tag for better readability
         ...style // Merge with custom inline styles
     });
