@@ -4,6 +4,10 @@ import ProcurementTrackerStepFive from "./ProcurementTrackerStepFive";
 import useProcurementTrackerStepFive from "./ProcurementTrackerStepFive.hooks";
 import DatePicker from "../../../UI/USWDS/DatePicker";
 
+const mockNavigate = vi.fn();
+vi.mock("react-router-dom", () => ({
+    useNavigate: () => mockNavigate
+}));
 vi.mock("./ProcurementTrackerStepFive.hooks");
 vi.mock("../../../../helpers/utils", async (importOriginal) => {
     const actual = await importOriginal();
@@ -185,6 +189,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -203,6 +208,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -222,6 +228,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -232,7 +239,7 @@ describe("ProcurementTrackerStepFive", () => {
             ).toBeInTheDocument();
         });
 
-        it("renders Request Pre-Award Approval button as disabled", () => {
+        it("renders Request Pre-Award Approval button as enabled when no approval requested and no BLIs in review", () => {
             render(
                 <ProcurementTrackerStepFive
                     stepStatus="PENDING"
@@ -241,13 +248,52 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
+                    budgetLineItems={[]}
+                />
+            );
+
+            const requestButton = screen.getByText("Request Pre-Award Approval");
+            expect(requestButton).toBeInTheDocument();
+            expect(requestButton).not.toBeDisabled();
+        });
+
+        it("renders Request Pre-Award Approval button as disabled when approval already requested", () => {
+            render(
+                <ProcurementTrackerStepFive
+                    stepStatus="PENDING"
+                    stepFiveData={{ ...mockStepData, approval_requested: true }}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    isActiveStep={true}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
+                    budgetLineItems={[]}
                 />
             );
 
             const requestButton = screen.getByText("Request Pre-Award Approval");
             expect(requestButton).toBeInTheDocument();
             expect(requestButton).toBeDisabled();
-            expect(requestButton).toHaveAttribute("title", "Feature coming soon");
+        });
+
+        it("renders Request Pre-Award Approval button as disabled when BLI is in review", () => {
+            render(
+                <ProcurementTrackerStepFive
+                    stepStatus="PENDING"
+                    stepFiveData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    isActiveStep={true}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
+                    budgetLineItems={[{ id: 1, in_review: true }]}
+                />
+            );
+
+            const requestButton = screen.getByText("Request Pre-Award Approval");
+            expect(requestButton).toBeInTheDocument();
+            expect(requestButton).toBeDisabled();
         });
 
         it("Target Completion Date has correct props", () => {
@@ -259,6 +305,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -280,6 +327,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -302,6 +350,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -318,6 +367,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -335,6 +385,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={false}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -350,6 +401,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={false}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -369,6 +421,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={false}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -389,6 +442,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={false}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -404,6 +458,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={false}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -421,6 +476,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={false}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -439,6 +495,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -455,6 +512,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -473,6 +531,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={false}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -489,6 +548,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={true}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -507,6 +567,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -527,6 +588,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -551,6 +613,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -572,6 +635,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={true}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -599,6 +663,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -617,6 +682,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -632,6 +698,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={true}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -653,6 +720,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -678,6 +746,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -699,6 +768,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -722,6 +792,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -739,6 +810,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -755,6 +827,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -777,6 +850,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -799,6 +873,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -821,6 +896,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -839,6 +915,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -859,6 +936,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -883,6 +961,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -904,6 +983,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -930,6 +1010,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -953,6 +1034,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -969,6 +1051,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -985,6 +1068,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -1003,6 +1087,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -1024,6 +1109,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -1042,6 +1128,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -1057,6 +1144,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={true}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -1073,6 +1161,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -1095,6 +1184,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -1118,6 +1208,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -1145,6 +1236,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -1168,6 +1260,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -1191,6 +1284,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -1211,6 +1305,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -1226,6 +1321,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -1247,6 +1343,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -1268,6 +1365,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -1293,6 +1391,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -1313,6 +1412,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -1335,6 +1435,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -1351,6 +1452,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -1378,6 +1480,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -1401,6 +1504,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -1424,6 +1528,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -1528,6 +1633,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -1543,6 +1649,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 
@@ -1573,6 +1680,7 @@ describe("ProcurementTrackerStepFive", () => {
                     isDisabled={false}
                     isActiveStep={true}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
                 />
             );
 

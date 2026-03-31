@@ -482,3 +482,97 @@ def test_step_skipped_status(loaded_db):
 
     refreshed_tracker = loaded_db.get(DefaultProcurementTracker, tracker.id)
     assert refreshed_tracker.steps[1].status == ProcurementTrackerStepStatus.SKIPPED
+
+
+def test_pre_award_approval_request_fields_exist(loaded_db):
+    """Test that pre_award approval request fields exist on all steps."""
+    tracker = DefaultProcurementTracker.create_with_steps(agreement_id=1)
+    loaded_db.add(tracker)
+    loaded_db.commit()
+
+    # All steps have the prefixed approval request columns
+    for step in tracker.steps:
+        assert hasattr(step, "pre_award_approval_requested")
+        assert hasattr(step, "pre_award_approval_requested_date")
+        assert hasattr(step, "pre_award_approval_requested_by")
+        assert hasattr(step, "pre_award_requestor_notes")
+
+
+def test_pre_award_approval_request_fields_can_be_set(loaded_db, test_user):
+    """Test that pre_award approval request fields can be set and retrieved."""
+    tracker = DefaultProcurementTracker.create_with_steps(agreement_id=1)
+    loaded_db.add(tracker)
+    loaded_db.commit()
+
+    # Get step 5 (PRE_AWARD)
+    step_5 = tracker.steps[4]
+    step_5_id = step_5.id
+
+    # Set approval request fields
+    step_5.pre_award_approval_requested = True
+    step_5.pre_award_approval_requested_date = date(2026, 3, 15)
+    step_5.pre_award_approval_requested_by = test_user.id
+    step_5.pre_award_requestor_notes = "Please review and approve"
+    loaded_db.commit()
+
+    # Fetch it again by ID
+    from models import ProcurementTrackerStep
+
+    updated_step = loaded_db.get(ProcurementTrackerStep, step_5_id)
+    assert updated_step.pre_award_approval_requested is True
+    assert updated_step.pre_award_approval_requested_date == date(2026, 3, 15)
+    assert updated_step.pre_award_approval_requested_by == test_user.id
+    assert updated_step.pre_award_requestor_notes == "Please review and approve"
+
+
+def test_pre_award_requested_by_user_relationship(loaded_db, test_user):
+    """Test the relationship to ops_user via pre_award_requested_by_user."""
+    tracker = DefaultProcurementTracker.create_with_steps(agreement_id=1)
+    loaded_db.add(tracker)
+    loaded_db.commit()
+
+    # Get step 5 (PRE_AWARD)
+    step_5 = tracker.steps[4]
+
+    # Set approval request user
+    step_5.pre_award_approval_requested_by = test_user.id
+    loaded_db.commit()
+
+    # Refresh to load relationship
+    loaded_db.refresh(step_5)
+
+    # Verify relationship
+    assert step_5.pre_award_requested_by_user is not None
+    assert step_5.pre_award_requested_by_user.id == test_user.id
+
+
+def test_step_to_dict_maps_pre_award_approval_fields(loaded_db, test_user):
+    """Test that to_dict() maps approval request fields to API field names for PRE_AWARD."""
+    tracker = DefaultProcurementTracker.create_with_steps(agreement_id=1)
+    loaded_db.add(tracker)
+    loaded_db.commit()
+
+    # Update step 5 with approval request data
+    step_5 = tracker.steps[4]
+    step_5.pre_award_approval_requested = True
+    step_5.pre_award_approval_requested_date = date(2026, 3, 15)
+    step_5.pre_award_approval_requested_by = test_user.id
+    step_5.pre_award_requestor_notes = "Please review and approve"
+    loaded_db.commit()
+
+    # Step 5 (PRE_AWARD) should map to unprefixed names
+    step_5_dict = tracker.steps[4].to_dict()
+    assert "approval_requested" in step_5_dict
+    assert "approval_requested_date" in step_5_dict
+    assert "approval_requested_by" in step_5_dict
+    assert "requestor_notes" in step_5_dict
+    assert step_5_dict["approval_requested"] is True
+    assert step_5_dict["approval_requested_date"] == "2026-03-15"
+    assert step_5_dict["approval_requested_by"] == test_user.id
+    assert step_5_dict["requestor_notes"] == "Please review and approve"
+
+    # Prefixed versions should be removed
+    assert "pre_award_approval_requested" not in step_5_dict
+    assert "pre_award_approval_requested_date" not in step_5_dict
+    assert "pre_award_approval_requested_by" not in step_5_dict
+    assert "pre_award_requestor_notes" not in step_5_dict

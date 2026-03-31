@@ -6,7 +6,11 @@ import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import { fiscalYearFromDate, formatDateNeeded } from "../../../helpers/utils";
 import useGetUserFullNameFromId, { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
 import TableRowExpandable from "../../UI/TableRowExpandable";
-import { expandedRowBGColor } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
+import {
+    expandedRowBGColor,
+    removeBorderBottomIfExpanded,
+    changeBgColorIfExpanded
+} from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import TableTag from "../../UI/TableTag";
 import { addErrorClassIfNotFound, futureDateErrorClass } from "../BudgetLinesTable/BLIRow.helpers";
@@ -26,6 +30,7 @@ import React from "react";
  * @property {boolean} [readOnly] - Whether the user is in read only mode.
  * @property {Function} [setSelectedBLIs] - The function to set the selected budget line items.
  * @property {string} action
+ * @property {boolean} [showCheckbox] - Whether to show the checkbox for selection.
  */
 
 /**
@@ -33,7 +38,14 @@ import React from "react";
  * @param {BLIReviewRowProps} props - The props of the BLIRow component.
  * @returns {JSX.Element} The BLIRow component.
  **/
-const BLIReviewRow = ({ budgetLine, isReviewMode = false, setSelectedBLIs, action }) => {
+const BLIReviewRow = ({
+    budgetLine,
+    isReviewMode = false,
+    setSelectedBLIs,
+    action,
+    showCheckbox = true,
+    readOnly = false
+}) => {
     const { isExpanded, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const loggedInUserFullName = useGetLoggedInUserFullName();
@@ -75,6 +87,17 @@ const BLIReviewRow = ({ budgetLine, isReviewMode = false, setSelectedBLIs, actio
     }, [budgetLine, action]);
 
     const renderCheckboxCell = () => {
+        if (!showCheckbox) {
+            return (
+                <td
+                    className={removeBorderBottomIfExpanded(isExpanded)}
+                    style={changeBgColorIfExpanded(isExpanded)}
+                >
+                    {budgetLine?.id}
+                </td>
+            );
+        }
+
         const checkboxId = budgetLine?.id.toString();
         const isDisabled = !budgetLine?.actionable;
 
@@ -93,7 +116,7 @@ const BLIReviewRow = ({ budgetLine, isReviewMode = false, setSelectedBLIs, actio
 
         const labelContent = (
             <label
-                className={`usa-checkbox__label ${isDisabled ? "text-gray-50 checkbox-disabled" : ""}`}
+                className={`usa-checkbox__label ${isDisabled && !readOnly ? "text-gray-50 checkbox-disabled" : ""}`}
                 htmlFor={checkboxId}
                 style={isDisabled ? { cursor: "not-allowed" } : undefined}
             >
@@ -235,7 +258,7 @@ const BLIReviewRow = ({ budgetLine, isReviewMode = false, setSelectedBLIs, actio
             isExpanded={isExpanded}
             setIsExpanded={setIsExpanded}
             setIsRowActive={setIsRowActive}
-            className={`${!budgetLine.actionable ? "text-gray-50" : ""}`}
+            className={`${!readOnly && !budgetLine.actionable ? "text-gray-50" : ""}`}
         />
     );
 };
