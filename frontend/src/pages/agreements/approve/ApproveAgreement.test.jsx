@@ -1,18 +1,10 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { MemoryRouter, Route, Routes } from "react-router-dom";
 import ApproveAgreement from "./ApproveAgreement";
 
-const navigateMock = vi.fn();
 const approveAgreementMock = vi.fn();
-
-vi.mock("react-router-dom", async (importOriginal) => {
-    const actual = await importOriginal();
-    return {
-        ...actual,
-        useNavigate: () => navigateMock
-    };
-});
 
 vi.mock("./ApproveAgreement.hooks", () => ({
     __esModule: true,
@@ -100,6 +92,7 @@ const baseHookResult = () => ({
     handleCancel: vi.fn(),
     hasPermissionToViewPage: true,
     isLoadingAgreement: false,
+    isHydratingActiveUser: false,
     isAgreementAwarded: false,
     modalProps: {},
     notes: "",
@@ -126,32 +119,59 @@ describe("ApproveAgreement", () => {
         approveAgreementMock.mockReturnValue(baseHookResult());
     });
 
+    const renderWithRouter = () =>
+        render(
+            <MemoryRouter initialEntries={["/agreements/approve/1?type=status-change&to=executing"]}>
+                <Routes>
+                    <Route
+                        path="/agreements/approve/:id"
+                        element={<ApproveAgreement />}
+                    />
+                    <Route
+                        path="/error"
+                        element={<div>Error page</div>}
+                    />
+                </Routes>
+            </MemoryRouter>
+        );
+
     it("shows loading state", () => {
         approveAgreementMock.mockReturnValue({
             ...baseHookResult(),
             isLoadingAgreement: true
         });
-        render(<ApproveAgreement />);
+        renderWithRouter();
         expect(screen.getByText("Loading...")).toBeInTheDocument();
     });
 
-    it("navigates to /error when user cannot view", () => {
+    it("shows loading state while user context is hydrating", () => {
+        approveAgreementMock.mockReturnValue({
+            ...baseHookResult(),
+            isHydratingActiveUser: true,
+            agreement: null,
+            hasPermissionToViewPage: false
+        });
+        renderWithRouter();
+        expect(screen.getByText("Loading...")).toBeInTheDocument();
+    });
+
+    it("redirects to /error when user cannot view", () => {
         approveAgreementMock.mockReturnValue({
             ...baseHookResult(),
             hasPermissionToViewPage: false
         });
-        render(<ApproveAgreement />);
-        expect(navigateMock).toHaveBeenCalledWith("/error");
+        renderWithRouter();
+        expect(screen.getByText("Error page")).toBeInTheDocument();
     });
 
     it("renders page title and subtitle", () => {
-        render(<ApproveAgreement />);
+        renderWithRouter();
         expect(screen.getByText("Approval for Status Change - Executing")).toBeInTheDocument();
         expect(screen.getByText("Agreement 1")).toBeInTheDocument();
     });
 
     it("renders documents section for executing status", () => {
-        render(<ApproveAgreement />);
+        renderWithRouter();
         expect(screen.getByText("Review Documents")).toBeInTheDocument();
         expect(screen.getByTestId("docs-view")).toBeInTheDocument();
     });
@@ -164,7 +184,7 @@ describe("ApproveAgreement", () => {
             confirmation: true,
             handleApproveChangeRequests
         });
-        render(<ApproveAgreement />);
+        renderWithRouter();
 
         await user.click(screen.getByRole("button", { name: "Decline" }));
         await user.click(screen.getByRole("button", { name: "Approve Changes" }));

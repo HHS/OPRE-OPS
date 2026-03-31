@@ -54,6 +54,12 @@ const testBli = {
     proc_shop_fee_percentage: 0.005
 };
 
+const waitForBudgetLineFormReady = () => {
+    cy.get("#need-by-date", { timeout: 30000 }).should("be.visible").and("not.be.disabled");
+    cy.get("#enteredAmount", { timeout: 30000 }).should("be.visible").and("not.be.disabled");
+    cy.get("#can-combobox-input", { timeout: 30000 }).should("not.be.disabled");
+};
+
 beforeEach(() => {
     // append a unique identifier to the agreement name to avoid conflicts
     const uniqueId = Date.now();
@@ -134,6 +140,7 @@ describe("Power User tests", () => {
                         cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
                         cy.get("[data-cy='edit-row']").click();
                         cy.get("#allServicesComponentSelect").select("SC1");
+                        waitForBudgetLineFormReady();
                         cy.get("#need-by-date").clear();
                         cy.get("#need-by-date").type("02/02/2048");
                         cy.get("#can-combobox-input").clear();
@@ -230,6 +237,7 @@ describe("Power User tests", () => {
                         cy.get("tbody").children().as("table-rows").should("have.length", 1);
                         cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
                         cy.get("[data-cy='edit-row']").click();
+                        waitForBudgetLineFormReady();
                         cy.get("#need-by-date").clear();
                         cy.get("#need-by-date").type("02/02/2048");
                         cy.get("#can-combobox-input").clear();
@@ -338,6 +346,7 @@ describe("Power User tests", () => {
                         cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
                         cy.get("[data-cy='edit-row']").click();
                         cy.get("#allServicesComponentSelect").select("SC1");
+                        waitForBudgetLineFormReady();
                         cy.get("#need-by-date").clear();
                         cy.get("#need-by-date").type("02/02/2048");
                         cy.get("#can-combobox-input").clear();
@@ -435,6 +444,7 @@ describe("Power User tests", () => {
                         cy.get("tbody").children().as("table-rows").should("have.length", 1);
                         cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
                         cy.get("[data-cy='edit-row']").click();
+                        waitForBudgetLineFormReady();
                         cy.get("#need-by-date").clear();
                         cy.get("#need-by-date").type("02/02/2048");
                         cy.get("#can-combobox-input").clear();
@@ -530,6 +540,7 @@ describe("Power User tests", () => {
                         cy.get("tbody").children().as("table-rows").should("have.length", 1);
                         cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
                         cy.get("[data-cy='edit-row']").click();
+                        waitForBudgetLineFormReady();
                         cy.get("#need-by-date").clear();
                         cy.get("#need-by-date").type("02/02/2048");
                         cy.get("#can-combobox-input").clear();
@@ -612,6 +623,7 @@ describe("Power User tests", () => {
                 cy.get("[data-cy='add-services-component-btn']").click();
                 // create DRAFT budget line
                 cy.get("#allServicesComponentSelect").select("SC1");
+                waitForBudgetLineFormReady();
                 cy.get("#enteredAmount").type("2_222_222");
                 cy.get("#need-by-date").type("01/01/2048");
                 cy.get("#can-combobox-input").type("G99MVT3{enter}");
@@ -621,6 +633,7 @@ describe("Power User tests", () => {
                 cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
                 cy.get("[data-cy='edit-row']").click();
                 // edit DRAFT budget line
+                waitForBudgetLineFormReady();
                 cy.get("#need-by-date").clear();
                 cy.get("#need-by-date").type("02/02/2048");
                 cy.get("#enteredAmount").clear();
@@ -638,12 +651,12 @@ describe("Power User tests", () => {
                     })
                     .then(() => {
                         cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines`);
-                        // get the first row from table-row and store the data-testid to a variable
-                        // use the variable to delete the budget line below
-                        cy.get("@table-rows")
-                            .eq(0)
+                        cy.get("table[aria-label='Loading budget lines']", { timeout: 30000 }).should("not.exist");
+                        cy.get('[data-testid^="budget-line-row-"]', { timeout: 30000 })
+                            .first()
                             .invoke("attr", "data-testid")
                             .then((dataTestId) => {
+                                expect(dataTestId).to.match(/^budget-line-row-/);
                                 const bliId = dataTestId.replace("budget-line-row-", ""); // Clean extraction
                                 cy.request({
                                     method: "DELETE",
@@ -718,6 +731,7 @@ describe("Power User tests", () => {
                         cy.get("tbody").children().as("table-rows").should("have.length", 1);
                         cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
                         cy.get("[data-cy='edit-row']").click();
+                        waitForBudgetLineFormReady();
                         cy.get("#enteredAmount").clear();
                         cy.get("#enteredAmount").type("2_000_000");
                         cy.get('[data-cy="update-budget-line"]').click();

@@ -1,7 +1,7 @@
 """Drop agreement_ops_db_history tables
 
 Revision ID: a3b4c5d6e7f8
-Revises: 7c7efdb9d2da
+Revises: a5a4926761c6
 Create Date: 2026-03-12 12:00:00.000000+00:00
 
 """

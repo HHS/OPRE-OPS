@@ -17,7 +17,9 @@ class DocumentService:
         self.gateway = document_gateway
         self.repository = self.gateway.create_repository()
         self.current_user_id = current_user_id if current_user_id else current_user.id
-        self.is_system_owner = is_system_owner or ("SYSTEM_OWNER" in current_user.roles if current_user else False)
+        self.is_system_owner = is_system_owner or (
+            any(role.name == "SYSTEM_OWNER" for role in current_user.roles) if current_user else False
+        )
 
     def can_access_docs(self, agreement_id):
         """

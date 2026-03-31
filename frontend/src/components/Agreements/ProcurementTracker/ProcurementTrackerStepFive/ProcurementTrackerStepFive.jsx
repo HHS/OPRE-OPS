@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { getLocalISODate } from "../../../../helpers/utils";
 import TextArea from "../../../UI/Form/TextArea";
 import ConfirmationModal from "../../../UI/Modals/ConfirmationModal";
@@ -19,6 +20,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
  * @property {ProcurementTrackerPreAwardStep} stepFiveData - The data for step 5 of the procurement tracker
  * @property {boolean} isActiveStep - Whether step is the active step
  * @property {SafeUser[]} authorizedUsers - List of users authorized for this agreement
+ * @property {number} agreementId - The agreement ID
+ * @property {import("../../../../types/BudgetLineTypes").BudgetLine[] | undefined} [budgetLineItems] - Array of budget line items
  * @property {((stepNumber: number) => void) | undefined} [handleSetCompletedStepNumber] - Optional callback to set completed step number
  * @property {boolean} [isReadOnly] - Whether to render in read-only mode (plain text, no form controls)
  */
@@ -34,9 +37,12 @@ const ProcurementTrackerStepFive = ({
     stepFiveData,
     isActiveStep,
     authorizedUsers,
+    agreementId,
+    budgetLineItems,
     handleSetCompletedStepNumber,
     isReadOnly = false
 }) => {
+    const navigate = useNavigate();
     const {
         isPreAwardComplete,
         setIsPreAwardComplete,
@@ -69,14 +75,17 @@ const ProcurementTrackerStepFive = ({
     const isPreAwardCheckboxDisabled = isDisabled || !isActiveStep;
     const isUsersComboBoxDisabled = isDisabled || !isPreAwardComplete || authorizedUsers.length === 0;
     const isPreAwardFieldsDisabled = isDisabled || !isPreAwardComplete;
-    const disableStep5Buttons =
+    const hasBLIInReview = budgetLineItems?.some((bli) => bli.in_review) ?? false;
+    const isRequestBtnDisabled = isDisabled || !isActiveStep || !!stepFiveData?.approval_requested || hasBLIInReview;
+    const isStep5SubmitDisabled = Boolean(
         isDisabled ||
         !isPreAwardComplete ||
         !selectedUser?.id ||
         !step5DateCompleted ||
         validatorRes.hasErrors() ||
-        !stepFiveData?.id;
-
+        !stepFiveData?.id ||
+        stepFiveData?.approval_requested
+    );
     return (
         <>
             {showModal && (
@@ -144,6 +153,7 @@ const ProcurementTrackerStepFive = ({
                         Pre-Award Approval and send the Final Consensus Memo to the Procurement Shop, check this task as
                         complete.
                     </p>
+
                     <div className="display-flex flex-align-end margin-bottom-2">
                         {stepFiveData?.target_completion_date ? (
                             <TermTag
@@ -181,14 +191,30 @@ const ProcurementTrackerStepFive = ({
                             </>
                         )}
                     </div>
-                    <button
-                        type="button"
-                        className="usa-button margin-top-2"
-                        disabled={true}
-                        title="Feature coming soon"
-                    >
-                        Request Pre-Award Approval
-                    </button>
+
+                    {/* Pre-Award Approval Request Section */}
+                    {
+                        <div className="margin-bottom-3">
+                            <p>
+                                Before completing this step, you may request Pre-Award Approval from your Division
+                                Director.
+                            </p>
+                            <button
+                                className="usa-button"
+                                onClick={() => navigate(`/agreements/${agreementId}/pre-award-approval`)}
+                                disabled={isRequestBtnDisabled}
+                                title={
+                                    isRequestBtnDisabled
+                                        ? "Pre-Award Approval cannot be requested right now. Ensure this step is unlocked, Pre-Award Approval has not already been requested, and that no Budget Line Items are currently in review."
+                                        : undefined
+                                }
+                                data-cy="request-pre-award-approval-btn"
+                            >
+                                Request Pre-Award Approval
+                            </button>
+                        </div>
+                    }
+
                     <div className="usa-checkbox margin-top-3">
                         <input
                             className="usa-checkbox__input"
@@ -268,7 +294,7 @@ const ProcurementTrackerStepFive = ({
                             onClick={() => {
                                 handleStepFiveComplete(stepFiveData?.id);
                             }}
-                            disabled={disableStep5Buttons}
+                            disabled={isStep5SubmitDisabled}
                         >
                             Complete Step 5
                         </button>
