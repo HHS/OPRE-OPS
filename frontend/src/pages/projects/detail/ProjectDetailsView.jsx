@@ -29,7 +29,8 @@ const ProjectDetailsView = ({ project }) => {
     const methodologies = project.research_methodologies ?? [];
     const specialTopics = project.special_topics ?? [];
     const divisionDirectors = project.division_directors?.map((director) => formatUserName(director)) ?? [];
-    const teamMemberNames = project.team_members?.map((member) => formatUserName(member.display_name ?? member.full_name)) ?? [];
+    const teamMemberNames =
+        project.team_members?.map((member) => formatUserName(member.display_name ?? member.full_name)) ?? [];
 
     return (
         <section>

@@ -172,7 +172,9 @@ describe("embedded payload normalizers", () => {
             team_leaders: [
                 { id: 1, full_name: "CHRIS FORTUNATO", email: "chris@example.com", display_name: "Chris Fortunato" }
             ],
-            team_members: [{ id: 2, full_name: "SYSTEM OWNER", email: "owner@example.com", display_name: "System Owner" }]
+            team_members: [
+                { id: 2, full_name: "SYSTEM OWNER", email: "owner@example.com", display_name: "System Owner" }
+            ]
         });
     });
 
