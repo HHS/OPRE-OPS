@@ -18,7 +18,6 @@ from ops_api.ops.utils.cans import (
     aggregate_funding_summaries,
     filter_active_cans,
     get_can_funding_summary,
-    get_filtered_cans,
 )
 from ops_api.ops.utils.query_helpers import QueryHelper
 
@@ -604,6 +603,71 @@ class CANService:
             },
         }
 
+    @staticmethod
+    def _validate_aggregate_params(transfer, fy_budget):
+        """Validate and normalize transfer and fy_budget parameters.
+
+        Returns:
+            Tuple of (validated_transfer, normalized_fy_budget).
+        """
+        if transfer:
+            try:
+                transfer = [CANMethodOfTransfer[t] for t in transfer]
+            except KeyError:
+                valid_methods = list(CANMethodOfTransfer.__members__.keys())
+                raise ValueError(f"Invalid 'transfer' value. Must be one of: {', '.join(valid_methods)}.")
+
+        if fy_budget and len(fy_budget) != 2:
+            raise ValueError("'fy_budget' must be two values for min and max budget.")
+        if fy_budget and len(fy_budget) == 2:
+            fy_budget = [min(fy_budget), max(fy_budget)]
+
+        return transfer, fy_budget
+
+    @staticmethod
+    def _apply_aggregate_filters(stmt, fiscal_year, active_period, transfer, portfolio, fy_budget):
+        """Apply SQL-level WHERE/JOIN filters to the CAN query."""
+        joined_funding_details = False
+
+        if fiscal_year:
+            stmt = stmt.join(CANFundingBudget, CAN.id == CANFundingBudget.can_id).where(
+                CANFundingBudget.fiscal_year == fiscal_year
+            )
+
+        if active_period:
+            stmt = stmt.join(CANFundingDetails, CAN.funding_details_id == CANFundingDetails.id)
+            joined_funding_details = True
+            active_period_expr = cast(func.substr(CANFundingDetails.fund_code, 11, 1), Integer)
+            stmt = stmt.where(active_period_expr.in_(active_period))
+
+        if transfer:
+            if not joined_funding_details:
+                stmt = stmt.join(CANFundingDetails, CAN.funding_details_id == CANFundingDetails.id)
+                joined_funding_details = True
+            stmt = stmt.where(CANFundingDetails.method_of_transfer.in_(transfer))
+
+        if portfolio:
+            stmt = stmt.join(Portfolio, CAN.portfolio_id == Portfolio.id).where(
+                Portfolio.abbreviation.in_(portfolio)
+            )
+
+        if fy_budget:
+            budget_subq = select(CANFundingBudget.can_id).where(
+                CANFundingBudget.budget >= fy_budget[0],
+                CANFundingBudget.budget <= fy_budget[1],
+            )
+            if fiscal_year:
+                budget_subq = budget_subq.where(CANFundingBudget.fiscal_year == fiscal_year)
+                if not joined_funding_details:
+                    stmt = stmt.join(CANFundingDetails, CAN.funding_details_id == CANFundingDetails.id)
+                stmt = stmt.where(
+                    CANFundingDetails.fiscal_year <= fiscal_year,
+                    CANFundingDetails.obligate_by >= fiscal_year,
+                )
+            stmt = stmt.where(CAN.id.in_(budget_subq))
+
+        return stmt
+
     def get_cans_funding_aggregate(
         self,
         fiscal_year: Optional[int] = None,
@@ -621,29 +685,16 @@ class CANService:
         Other exceptions (e.g. database errors) propagate to the global
         Flask error handlers registered in ``error_handlers.py``.
         """
-        # Validate transfer values
-        if transfer:
-            try:
-                transfer = [CANMethodOfTransfer[t] for t in transfer]
-            except KeyError:
-                valid_methods = list(CANMethodOfTransfer.__members__.keys())
-                raise ValueError(f"Invalid 'transfer' value. Must be one of: {', '.join(valid_methods)}.")
+        transfer, fy_budget = self._validate_aggregate_params(transfer, fy_budget)
 
-        if fy_budget and len(fy_budget) != 2:
-            raise ValueError("'fy_budget' must be two values for min and max budget.")
-        if fy_budget and len(fy_budget) == 2:
-            fy_budget = [min(fy_budget), max(fy_budget)]
-
-        # Load all CANs with relationships (including nested BLI→Agreement→Project
-        # needed by get_can_funding_summary → can.to_dict() → can.projects)
         stmt = select(CAN).options(
             *CAN_EAGER_LOAD_OPTIONS,
-            selectinload(CAN.budget_line_items).selectinload(BudgetLineItem.agreement).selectinload(Agreement.project),
+            selectinload(CAN.budget_line_items)
+            .selectinload(BudgetLineItem.agreement)
+            .selectinload(Agreement.project),
         )
-        all_cans = self.db_session.execute(stmt).scalars().all()
-
-        # Apply filters
-        filtered_cans = get_filtered_cans(all_cans, fiscal_year, active_period, transfer, portfolio, fy_budget)
+        stmt = self._apply_aggregate_filters(stmt, fiscal_year, active_period, transfer, portfolio, fy_budget)
+        filtered_cans = self.db_session.execute(stmt).scalars().unique().all()
 
         # Generate per-CAN summaries
         can_summaries = [get_can_funding_summary(can, fiscal_year) for can in filtered_cans]
