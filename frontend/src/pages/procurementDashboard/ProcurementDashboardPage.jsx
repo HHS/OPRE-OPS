@@ -29,7 +29,8 @@ const ProcurementDashboard = () => {
         error
     } = useGetAgreementsQuery({
         filters: {
-            fiscalYear: [CURRENT_FISCAL_YEAR]
+            fiscalYear: [CURRENT_FISCAL_YEAR],
+            ...(awardTypeFilter ? { awardType: [{ awardType: awardTypeFilter }] } : {})
         }
     });
 
