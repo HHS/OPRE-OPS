@@ -1255,7 +1255,7 @@ describe("ProcurementTrackerStepFive", () => {
             render(
                 <ProcurementTrackerStepFive
                     stepStatus="PENDING"
-                    stepFiveData={mockStepData}
+                    stepFiveData={{ ...mockStepData, approval_status: "APPROVED" }}
                     authorizedUsers={mockAllUsers}
                     isDisabled={false}
                     isActiveStep={true}
@@ -1279,7 +1279,7 @@ describe("ProcurementTrackerStepFive", () => {
             render(
                 <ProcurementTrackerStepFive
                     stepStatus="PENDING"
-                    stepFiveData={mockStepData}
+                    stepFiveData={{ ...mockStepData, approval_status: "APPROVED" }}
                     authorizedUsers={mockAllUsers}
                     isDisabled={false}
                     isActiveStep={true}
