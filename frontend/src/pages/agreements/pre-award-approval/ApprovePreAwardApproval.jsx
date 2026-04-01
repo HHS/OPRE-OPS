@@ -239,36 +239,34 @@ export const ApprovePreAwardApproval = () => {
                 )}
             </Accordion>
 
-            {/* Notes Section */}
+            {/* Submitter's Notes Section */}
+            {requestorNotes && (
+                <Accordion
+                    heading="Submitter's Notes"
+                    level={2}
+                >
+                    <p
+                        className="maxw-mobile-lg"
+                        style={{ whiteSpace: "pre-wrap" }}
+                    >
+                        {requestorNotes}
+                    </p>
+                </Accordion>
+            )}
+
+            {/* Reviewer's Notes Section */}
             <Accordion
-                heading="Notes"
+                heading="Reviewer's Notes"
                 level={2}
             >
-                <p>Notes can be shared between the Submitter and Reviewer, if needed.</p>
-
-                {requestorNotes && (
-                    <>
-                        <h3 className="font-sans-lg text-semibold">Submitter&apos;s Notes</h3>
-                        <p
-                            className="maxw-mobile-lg"
-                            style={{ whiteSpace: "pre-wrap" }}
-                        >
-                            {requestorNotes}
-                        </p>
-                    </>
-                )}
-
-                <section className="margin-top-3">
-                    <h3 className="font-sans-lg text-semibold">Reviewer&apos;s Notes</h3>
-                    <TextArea
-                        name="reviewer-notes"
-                        label="Notes (optional)"
-                        maxLength={150}
-                        value={reviewerNotes}
-                        onChange={(name, value) => setReviewerNotes(value)}
-                        disabled={approvalAlreadyProcessed}
-                    />
-                </section>
+                <TextArea
+                    name="reviewer-notes"
+                    label="Notes (optional)"
+                    maxLength={150}
+                    value={reviewerNotes}
+                    onChange={(name, value) => setReviewerNotes(value)}
+                    disabled={approvalAlreadyProcessed}
+                />
             </Accordion>
 
             {/* Submit Error Alert */}
