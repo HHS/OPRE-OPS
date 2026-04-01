@@ -11,7 +11,7 @@ import Accordion from "../../../components/UI/Accordion";
 import TextArea from "../../../components/UI/Form/TextArea";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
-import { convertCodeForDisplay } from "../../../helpers/utils";
+import { convertCodeForDisplay, formatDateToMonthDayYear } from "../../../helpers/utils";
 import {
     findDescription,
     findIfOptional,
@@ -50,7 +50,9 @@ export const ApprovePreAwardApproval = () => {
         isSubmitting,
         submitError,
         hasPermission,
-        approvalAlreadyProcessed
+        approvalAlreadyProcessed,
+        preAwardRequestorName,
+        preAwardApprovalRequestedDate
     } = useApprovePreAwardApproval(agreementId);
 
     if (isLoading) {
@@ -192,7 +194,9 @@ export const ApprovePreAwardApproval = () => {
                                     {doc.document_name}
                                 </div>
                                 <div style={{ fontSize: "0.875rem", color: "#757575" }}>
-                                    Uploaded by Team Member on June 26, 2023 {doc.document_size} MB
+                                    Uploaded by {preAwardRequestorName || "Team Member"} on{" "}
+                                    {formatDateToMonthDayYear(preAwardApprovalRequestedDate) || "Unknown Date"}{" "}
+                                    {doc.document_size} MB
                                 </div>
                             </div>
                             <button

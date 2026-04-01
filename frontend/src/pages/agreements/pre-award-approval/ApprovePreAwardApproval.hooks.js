@@ -42,6 +42,7 @@ export default function useApprovePreAwardApproval(agreementId) {
 
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
     const alternateProjectOfficerName = useGetUserFullNameFromId(agreement?.alternate_project_officer_id);
+    const preAwardRequestorName = useGetUserFullNameFromId(step5?.approval_requested_by);
 
     // Get executing budget lines (memoized to prevent infinite loops in hasPermission)
     const executingBudgetLines = useMemo(
@@ -184,6 +185,8 @@ export default function useApprovePreAwardApproval(agreementId) {
         isSubmitting,
         submitError,
         hasPermission,
-        approvalAlreadyProcessed
+        approvalAlreadyProcessed,
+        preAwardRequestorName,
+        preAwardApprovalRequestedDate: step5?.approval_requested_date
     };
 }
