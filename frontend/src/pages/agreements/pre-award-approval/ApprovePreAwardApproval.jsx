@@ -173,8 +173,9 @@ export const ApprovePreAwardApproval = () => {
                     preAwardMemoDocuments.map((doc) => (
                         <div
                             key={doc.id}
-                            className="bg-base-lightest padding-3 margin-top-3"
+                            className="bg-base-lightest border-1px border-base-light padding-3 margin-top-3"
                             style={{
+                                maxWidth: "540px",
                                 display: "flex",
                                 justifyContent: "space-between",
                                 alignItems: "center"
@@ -216,12 +217,16 @@ export const ApprovePreAwardApproval = () => {
                     ))
                 ) : (
                     <div
-                        className="bg-base-lightest padding-3 margin-top-3"
+                        className="bg-base-lightest border-1px border-base-light padding-3 margin-top-3"
+                        style={{ maxWidth: "540px" }}
                     >
                         <div style={{ fontSize: "0.875rem", color: "#757575", marginBottom: "0.5rem" }}>
                             Final Consensus Memo
                         </div>
-                        <p className="margin-0" style={{ fontSize: "0.875rem", color: "#757575" }}>
+                        <p
+                            className="margin-0"
+                            style={{ fontSize: "0.875rem", color: "#757575" }}
+                        >
                             No documents uploaded
                         </p>
                     </div>
