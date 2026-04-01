@@ -16,11 +16,10 @@ import { Link } from "react-router-dom";
  * @returns {JSX.Element} - The CAN card
  */
 const CanCard = ({ canId, fiscalYear }) => {
-    const { data: canFundingData, isLoading } = useGetCanFundingQuery({
-        id: canId,
-        fiscalYear: fiscalYear,
-        refetchOnMountOrArgChange: true
-    });
+    const { data: canFundingData, isLoading } = useGetCanFundingQuery(
+        { id: canId, fiscalYear: fiscalYear },
+        { refetchOnMountOrArgChange: true }
+    );
 
     const can = canFundingData?.can;
     const appropriationYear = canFundingData?.can?.appropriation_date;
