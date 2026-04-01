@@ -173,10 +173,8 @@ export const ApprovePreAwardApproval = () => {
                     preAwardMemoDocuments.map((doc) => (
                         <div
                             key={doc.id}
-                            className="border-1px border-base-light margin-top-3"
+                            className="bg-base-lightest padding-3 margin-top-3"
                             style={{
-                                maxWidth: "540px",
-                                padding: "1rem",
                                 display: "flex",
                                 justifyContent: "space-between",
                                 alignItems: "center"
@@ -196,28 +194,29 @@ export const ApprovePreAwardApproval = () => {
                                     Uploaded by Team Member on June 26, 2023 {doc.document_size} MB
                                 </div>
                             </div>
-                            <div>
+                            <button
+                                type="button"
+                                className="usa-button--unstyled"
+                                style={{ padding: "0.5rem", cursor: "pointer" }}
+                                title="Download document"
+                                aria-label={`Download ${doc.document_name}`}
+                            >
                                 <svg
                                     className="usa-icon"
                                     aria-hidden="true"
                                     focusable="false"
                                     role="img"
                                     viewBox="0 0 24 24"
-                                    style={{ fill: "#005ea2", width: "32px", height: "32px", cursor: "pointer" }}
-                                    title="Download document"
+                                    style={{ fill: "#005ea2", width: "24px", height: "24px" }}
                                 >
                                     <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
                                 </svg>
-                            </div>
+                            </button>
                         </div>
                     ))
                 ) : (
                     <div
-                        className="border-1px border-base-light margin-top-3"
-                        style={{
-                            maxWidth: "540px",
-                            padding: "1rem"
-                        }}
+                        className="bg-base-lightest padding-3 margin-top-3"
                     >
                         <div style={{ fontSize: "0.875rem", color: "#757575", marginBottom: "0.5rem" }}>
                             Final Consensus Memo
