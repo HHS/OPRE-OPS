@@ -69,6 +69,10 @@ export const CONTRACT_TYPE_OPTIONS = [
     {
         label: "Cost Plus Award Fee (CPAF)",
         value: "COST_PLUS_AWARD_FEE"
+    },
+    {
+        label: "Hybrid (Any combination of the above)",
+        value: "HYBRID"
     }
 ];
 

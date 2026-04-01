@@ -37,6 +37,11 @@ test("codes are converted for display correctly", () => {
     expect(convertCodeForDisplay("changeToTypes", "date_needed")).toEqual("Obligate By Date");
     expect(convertCodeForDisplay("changeToTypes", "status")).toEqual("Status");
     expect(convertCodeForDisplay("budgetLineItemPropertyLabels", "services_component")).toEqual("Services Component");
+    expect(convertCodeForDisplay("contractType", "HYBRID")).toEqual("Hybrid");
+    expect(convertCodeForDisplay("contractType", "FIRM_FIXED_PRICE")).toEqual("Firm Fixed Price (FFP)");
+    expect(convertCodeForDisplay("contractType", "TIME_AND_MATERIALS")).toEqual("Time & Materials (T&M)");
+    expect(convertCodeForDisplay("contractType", "COST_PLUS_FIXED_FEE")).toEqual("Cost Plus Fixed Fee (CPFF)");
+    expect(convertCodeForDisplay("contractType", "COST_PLUS_AWARD_FEE")).toEqual("Cost Plus Award Fee (CPAF)");
 });
 
 test("fiscal year are calculated correctly", () => {
