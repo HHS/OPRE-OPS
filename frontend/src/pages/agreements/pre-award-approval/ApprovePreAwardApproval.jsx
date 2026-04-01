@@ -92,7 +92,7 @@ export const ApprovePreAwardApproval = () => {
                 subTitle={agreement?.name}
             />
 
-            <p className="margin-y-5">
+            <p className="margin-y-3">
                 Review the agreement details and Final Consensus Memo to make sure everything looks up to date. Once you
                 approve, the Budget Team will add the Requisition # and Requisition Date. Then the COR will send the
                 Final Consensus Memo to the Procurement Shop. The agreement will be locked from editing until the

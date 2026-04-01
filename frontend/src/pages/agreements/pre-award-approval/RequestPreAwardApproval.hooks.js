@@ -32,7 +32,7 @@ import {
 export default function useRequestPreAwardApproval(agreementId) {
     const navigate = useNavigate();
     const [notes, setNotes] = useState("");
-    const [selectedFile, setSelectedFile] = useState(null);
+    const [selectedFile, setSelectedFile] = useState(/** @type {File | null} */ (null));
     const [isUploading, setIsUploading] = useState(false);
     const [uploadError, setUploadError] = useState("");
     const [submitError, setSubmitError] = useState("");
@@ -52,7 +52,8 @@ export default function useRequestPreAwardApproval(agreementId) {
     const alternateProjectOfficerName = useGetUserFullNameFromId(agreement?.alternate_project_officer_id);
 
     // Get executing budget lines
-    const executingBudgetLines = agreement?.budget_line_items?.filter((bli) => bli.status === "IN_EXECUTION") || [];
+    const executingBudgetLines =
+        agreement?.budget_line_items?.filter((/** @type {any} */ bli) => bli.status === "IN_EXECUTION") || [];
 
     // Calculate total of executing budget lines
     const executingTotal = budgetLinesTotal(executingBudgetLines);
@@ -65,13 +66,17 @@ export default function useRequestPreAwardApproval(agreementId) {
 
     // Get Step 4 and Step 5 from procurement tracker
     const trackers = procurementTrackersData?.data || [];
-    const activeTracker = trackers.find((tracker) => tracker.status === ProcurementTrackerStatus.ACTIVE);
-    const step4 = activeTracker?.steps?.find((step) => step.step_number === 4);
-    const step5 = activeTracker?.steps?.find((step) => step.step_number === 5);
+    const activeTracker = trackers.find(
+        (/** @type {any} */ tracker) => tracker.status === ProcurementTrackerStatus.ACTIVE
+    );
+    const step4 = activeTracker?.steps?.find((/** @type {any} */ step) => step.step_number === 4);
+    const step5 = activeTracker?.steps?.find((/** @type {any} */ step) => step.step_number === 5);
 
     // Get existing Pre-Award Consensus Memo documents
     const preAwardMemoDocuments =
-        documentsData?.documents?.filter((doc) => doc.document_type === "PRE_AWARD_CONSENSUS_MEMO") || [];
+        documentsData?.documents?.filter(
+            (/** @type {any} */ doc) => doc.document_type === "PRE_AWARD_CONSENSUS_MEMO"
+        ) || [];
 
     // Check if approval is pending (requested but not yet approved or declined)
     // This is used for both the banner and disabling buttons
@@ -85,12 +90,12 @@ export default function useRequestPreAwardApproval(agreementId) {
     const hasApprovalBeenRequested = isApprovalPending || isApprovalApproved;
 
     // Check if any BLI is in review status
-    const hasBLIInReview = agreement?.budget_line_items?.some((bli) => bli.in_review) ?? false;
+    const hasBLIInReview = agreement?.budget_line_items?.some((/** @type {any} */ bli) => bli.in_review) ?? false;
 
     // Check if Step 4 (Evaluation) is completed
     const isStep4Completed = step4?.status === ProcurementTrackerStepStatus.COMPLETED;
 
-    const handleFileChange = (e) => {
+    const handleFileChange = (/** @type {any} */ e) => {
         const file = e.target.files[0];
         setUploadError("");
 
