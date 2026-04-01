@@ -17,8 +17,17 @@ const getAgreementCount = (dataCy) => {
         });
 };
 
+describe("Procurement Dashboard - Role-Based Access", () => {
+    it("redirects an unauthorized user to the error page", () => {
+        testLogin("basic");
+        cy.visit("/procurement-dashboard");
+        cy.url().should("include", "/error");
+        cy.contains("Procurement Dashboard").should("not.exist");
+    });
+});
+
 beforeEach(() => {
-    testLogin("system-owner");
+    testLogin("procurement-team");
     cy.visit("/procurement-dashboard");
     // Wait for the page to fully load
     cy.get("[data-cy='procurement-overview-card']", { timeout: 30000 }).should("exist");

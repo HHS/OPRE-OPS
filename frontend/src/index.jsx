@@ -37,6 +37,8 @@ import EditUser from "./pages/users/edit/EditUser";
 import VersionPage from "./pages/version/VersionPage";
 import WhatsNext from "./pages/home/whats-next";
 import ProcurementMocksDebug from "./pages/dev/ProcurementMocksDebug";
+import RoleProtectedRoute from "./components/Auth/RoleProtectedRoute/RoleProtectedRoute";
+import { USER_ROLES } from "./components/Users/User.constants";
 import { IS_PROJECTS_LIST_READY, IS_PROJECT_DETAIL_READY } from "./constants";
 
 // NOTE: store muse be imported after react-router-dom to avoid access lexical declaration 'opsApi' before initialization
@@ -292,9 +294,22 @@ const router = createBrowserRouter(
                     element={<ReportingPage />}
                 />
                 <Route
-                    path="/procurement-dashboard"
-                    element={<ProcurementDashboard />}
-                />
+                    element={
+                        <RoleProtectedRoute
+                            allowedRoles={[
+                                USER_ROLES.PROCUREMENT_TEAM,
+                                USER_ROLES.BUDGET_TEAM,
+                                USER_ROLES.REVIEWER_APPROVER,
+                                USER_ROLES.SUPER_USER
+                            ]}
+                        />
+                    }
+                >
+                    <Route
+                        path="/procurement-dashboard"
+                        element={<ProcurementDashboard />}
+                    />
+                </Route>
                 <Route
                     path="/cans/:id/*"
                     element={<Can />}
