@@ -5,8 +5,14 @@ import { AgreementFields, AgreementType } from "../pages/agreements/agreements.c
 import { BLI_STATUS } from "./budgetLines.helpers";
 import { convertCodeForDisplay } from "./utils";
 
-export const PARTNER_AGREEMENT_TYPES = ["AA", "IAA"];
-export const AGREEMENT_TYPE_ORDER = ["CONTRACT", "GRANT", "Partner", "DIRECT_OBLIGATION", "MISCELLANEOUS"];
+export const PARTNER_AGREEMENT_TYPES = [AGREEMENT_TYPES.AA, AGREEMENT_TYPES.IAA];
+export const AGREEMENT_TYPE_ORDER = [
+    AgreementType.CONTRACT,
+    AgreementType.GRANT,
+    AGREEMENT_TYPES.PARTNER,
+    AgreementType.DIRECT_OBLIGATION,
+    AgreementType.MISCELLANEOUS
+];
 
 /**
  * Validates if the given budget line is an object.
@@ -189,7 +195,7 @@ export const groupAndSortAgreementTypeCounts = (items) => {
     const merged = {};
 
     for (const { type, count } of items) {
-        const key = PARTNER_AGREEMENT_TYPES.includes(type) ? "Partner" : type;
+        const key = PARTNER_AGREEMENT_TYPES.includes(type) ? AGREEMENT_TYPES.PARTNER : type;
         merged[key] = (merged[key] || 0) + count;
     }
 

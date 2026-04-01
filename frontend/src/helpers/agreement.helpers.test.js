@@ -114,7 +114,7 @@ describe("groupAndSortAgreementTypeCounts", () => {
 
         expect(result).toEqual([
             { type: "CONTRACT", count: 3 },
-            { type: "Partner", count: 3 }
+            { type: AGREEMENT_TYPES.PARTNER, count: 3 }
         ]);
     });
 
@@ -130,7 +130,7 @@ describe("groupAndSortAgreementTypeCounts", () => {
         expect(result.map(({ type }) => type)).toEqual([
             "CONTRACT",
             "GRANT",
-            "Partner",
+            AGREEMENT_TYPES.PARTNER,
             "DIRECT_OBLIGATION",
             "MISCELLANEOUS"
         ]);

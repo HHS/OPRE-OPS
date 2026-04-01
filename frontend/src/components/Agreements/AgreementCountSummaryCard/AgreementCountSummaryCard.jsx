@@ -1,3 +1,4 @@
+import { AGREEMENT_TYPES } from "../../ServicesComponents/ServicesComponents.constants";
 import { groupAndSortAgreementTypeCounts } from "../../../helpers/agreement.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import RoundedBox from "../../UI/RoundedBox";
@@ -18,7 +19,7 @@ const agreementTypeStyles = {
     CONTRACT: { backgroundColor: "var(--data-viz-agreement-contract)", color: "white" },
     GRANT: { backgroundColor: "var(--data-viz-agreement-grant)", color: "black" },
     DIRECT_OBLIGATION: { backgroundColor: "var(--data-viz-agreement-direct-obligation)", color: "white" },
-    Partner: { backgroundColor: "var(--data-viz-agreement-partner)", color: "black" }
+    [AGREEMENT_TYPES.PARTNER]: { backgroundColor: "var(--data-viz-agreement-partner)", color: "black" }
 };
 
 const convertTypeCountsObjToArray = (countsObj) => {
@@ -49,13 +50,13 @@ const AgreementCountSummaryCard = ({ title, fiscalYear, totals }) => {
                         <span className="font-sans-xl text-bold line-height-sans-1">{totalCount}</span>
                         <div className="display-flex flex-column grid-gap margin-top-1">
                             {typeCounts.map(({ type, count }, index) => (
-                                <Tag
-                                    key={type}
-                                    className={`${index > 0 ? "margin-top-1" : ""}`}
-                                    style={agreementTypeStyles[type]}
-                                    text={`${count} ${type === "Partner" ? "Partner" : convertCodeForDisplay("agreementType", type)}`}
-                                />
-                            ))}
+                                    <Tag
+                                        key={type}
+                                        className={`${index > 0 ? "margin-top-1" : ""}`}
+                                        style={agreementTypeStyles[type]}
+                                        text={`${count} ${type === AGREEMENT_TYPES.PARTNER ? "Partner" : convertCodeForDisplay("agreementType", type)}`}
+                                    />
+                                ))}
                         </div>
                     </div>
                 </article>
@@ -68,13 +69,13 @@ const AgreementCountSummaryCard = ({ title, fiscalYear, totals }) => {
                         <span className="font-sans-xl text-bold line-height-sans-1">{newCount}</span>
                         <div className="display-flex flex-column grid-gap margin-top-1">
                             {newTypeCounts.map(({ type, count }, index) => (
-                                <Tag
-                                    key={type}
-                                    tagStyle="primaryDarkTextLightBackground"
-                                    className={`${index > 0 ? "margin-top-1" : ""}`}
-                                    text={`${count} ${type === "Partner" ? "Partner" : convertCodeForDisplay("agreementType", type)}`}
-                                />
-                            ))}
+                                    <Tag
+                                        key={type}
+                                        tagStyle="primaryDarkTextLightBackground"
+                                        className={`${index > 0 ? "margin-top-1" : ""}`}
+                                        text={`${count} ${type === AGREEMENT_TYPES.PARTNER ? "Partner" : convertCodeForDisplay("agreementType", type)}`}
+                                    />
+                                ))}
                         </div>
                     </div>
                 </article>
@@ -87,13 +88,13 @@ const AgreementCountSummaryCard = ({ title, fiscalYear, totals }) => {
                         <span className="font-sans-xl text-bold line-height-sans-1">{continuingCount}</span>
                         <div className="display-flex flex-column grid-gap margin-top-1">
                             {continuingTypeCounts.map(({ type, count }, index) => (
-                                <Tag
-                                    key={type}
-                                    tagStyle="primaryDarkTextLightBackground"
-                                    className={`${index > 0 ? "margin-top-1" : ""}`}
-                                    text={`${count} ${type === "Partner" ? "Partner" : convertCodeForDisplay("agreementType", type)}`}
-                                />
-                            ))}
+                                    <Tag
+                                        key={type}
+                                        tagStyle="primaryDarkTextLightBackground"
+                                        className={`${index > 0 ? "margin-top-1" : ""}`}
+                                        text={`${count} ${type === AGREEMENT_TYPES.PARTNER ? "Partner" : convertCodeForDisplay("agreementType", type)}`}
+                                    />
+                                ))}
                         </div>
                     </div>
                 </article>

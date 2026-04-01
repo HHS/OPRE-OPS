@@ -1,6 +1,7 @@
 import { BLI_STATUS } from "../../../../helpers/budgetLines.helpers";
 import { groupAndSortAgreementTypeCounts } from "../../../../helpers/agreement.helpers";
 import { convertCodeForDisplay } from "../../../../helpers/utils";
+import { AGREEMENT_TYPES } from "../../../ServicesComponents/ServicesComponents.constants";
 import RoundedBox from "../../RoundedBox";
 import Tag from "../../Tag";
 
@@ -91,7 +92,7 @@ const ProjectAgreementBLICard = ({ fiscalYear, projects, agreements, budgetLines
                                         className={`bg-brand-primary-light text-brand-primary-dark ${
                                             index > 0 ? "margin-top-1" : ""
                                         }`}
-                                        text={`${count} ${type === "Partner" ? "Partner" : convertCodeForDisplay("agreementType", type)}`}
+                                        text={`${count} ${type === AGREEMENT_TYPES.PARTNER ? "Partner" : convertCodeForDisplay("agreementType", type)}`}
                                     />
                                 ))}
                         </div>
