@@ -259,10 +259,10 @@ export const ApprovePreAwardApproval = () => {
                 )}
 
                 <section className={requestorNotes ? "margin-top-5" : "margin-top-3"}>
-                    <h3 className="font-sans-lg text-semibold margin-bottom-1">Reviewer&apos;s Notes</h3>
+                    <h3 className="font-sans-lg text-semibold margin-bottom-0">Reviewer&apos;s Notes</h3>
                     <TextArea
                         name="reviewer-notes"
-                        label=""
+                        label="Notes (optional)"
                         maxLength={150}
                         value={reviewerNotes}
                         onChange={(name, value) => setReviewerNotes(value)}
