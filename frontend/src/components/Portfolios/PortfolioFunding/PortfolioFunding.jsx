@@ -32,7 +32,7 @@ const PortfolioFunding = () => {
             /** @param {{id: number}} can */
             (can) => can.id
         ) ?? [];
-    /** @type {{data?: FundingSummary | undefined, isLoading: boolean}} */
+    /** @type {{data?: Object | undefined, isLoading: boolean}} */
 
     useEffect(() => {
         setFyBudgetChartData([]);

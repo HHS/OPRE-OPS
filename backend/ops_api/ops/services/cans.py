@@ -604,9 +604,8 @@ class CANService:
         joined_funding_details = False
 
         if fiscal_year:
-            stmt = stmt.join(CANFundingBudget, CAN.id == CANFundingBudget.can_id).where(
-                CANFundingBudget.fiscal_year == fiscal_year
-            )
+            fy_subq = select(CANFundingBudget.can_id).where(CANFundingBudget.fiscal_year == fiscal_year)
+            stmt = stmt.where(CAN.id.in_(fy_subq))
 
         if active_period:
             stmt = stmt.join(CANFundingDetails, CAN.funding_details_id == CANFundingDetails.id)

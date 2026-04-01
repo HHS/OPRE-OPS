@@ -223,12 +223,11 @@ class CANsFundingAggregateAPI(BaseItemAPI):
         request_schema = CANsFundingAggregateRequestSchema()
         data = request_schema.load(request.args)
         fiscal_year = data.get("fiscal_year")
-        fiscal_year_int = int(fiscal_year) if fiscal_year else None
 
         service = CANService(current_app.db_session)
         try:
             funding = service.get_cans_funding_aggregate(
-                fiscal_year=fiscal_year_int,
+                fiscal_year=fiscal_year,
                 active_period=data.get("active_period"),
                 transfer=data.get("transfer"),
                 portfolio=data.get("portfolio"),
