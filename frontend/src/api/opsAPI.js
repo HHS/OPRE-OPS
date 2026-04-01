@@ -825,7 +825,12 @@ export const opsApi = createApi({
             invalidatesTags: ["Notifications"]
         }),
         getPortfolios: builder.query({
-            query: () => `/portfolios/`,
+            query: (arg) => {
+                if (arg?.projectId != null) {
+                    return `/portfolios/?project_id=${arg.projectId}`;
+                }
+                return `/portfolios/`;
+            },
             providesTags: ["Portfolios"]
         }),
         getPortfolioById: builder.query({

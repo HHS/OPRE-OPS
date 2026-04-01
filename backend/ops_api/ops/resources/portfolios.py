@@ -1,13 +1,17 @@
-from flask import Response, current_app
+from flask import Response, current_app, request
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from typing_extensions import Any, List
 
 from models import Division, Portfolio
+from models.agreements import Agreement
 from models.base import BaseModel
+from models.budget_line_items import BudgetLineItem
+from models.cans import CAN
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
+from ops_api.ops.schemas.portfolios import PortfolioListRequestSchema
 from ops_api.ops.utils.response import make_response_with_headers
 
 
@@ -45,12 +49,26 @@ class PortfolioListAPI(BaseListAPI):
 
     @is_authorized(PermissionType.GET, Permission.PORTFOLIO)
     def get(self) -> Response:
+        schema = PortfolioListRequestSchema()
+        data = schema.load(request.args)
+        project_id = data.get("project_id")
+
         # Eager load all relationships to prevent N+1 queries
         stmt = select(Portfolio).options(
             selectinload(Portfolio.team_leaders),  # Many-to-many: portfolio -> users
             selectinload(Portfolio.urls),  # One-to-many: portfolio -> urls
             selectinload(Portfolio.division).selectinload(Division.division_director),  # Many-to-one with nested
         )
+
+        if project_id is not None:
+            stmt = (
+                stmt.join(CAN, CAN.portfolio_id == Portfolio.id)
+                .join(BudgetLineItem, BudgetLineItem.can_id == CAN.id)
+                .join(Agreement, Agreement.id == BudgetLineItem.agreement_id)
+                .where(Agreement.project_id == project_id)
+                .distinct(Portfolio.id)
+            )
+
         result = current_app.db_session.scalars(stmt).all()
 
         portfolio_response: List[dict] = []
