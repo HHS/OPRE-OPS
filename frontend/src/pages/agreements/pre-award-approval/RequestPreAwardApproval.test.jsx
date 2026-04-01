@@ -81,6 +81,7 @@ const baseHookResult = () => ({
     handleCancel: vi.fn(),
     projectOfficerName: "John Doe",
     alternateProjectOfficerName: "Jane Smith",
+    isApprovalPending: false,
     hasApprovalBeenRequested: false,
     hasBLIInReview: false,
     isSubmitting: false,
@@ -195,6 +196,7 @@ describe("RequestPreAwardApproval", () => {
     it("disables submit button when approval already requested", () => {
         requestPreAwardApprovalHookMock.mockReturnValue({
             ...baseHookResult(),
+            isApprovalPending: true,
             hasApprovalBeenRequested: true
         });
 
@@ -207,6 +209,7 @@ describe("RequestPreAwardApproval", () => {
     it("shows alert when approval already requested", () => {
         requestPreAwardApprovalHookMock.mockReturnValue({
             ...baseHookResult(),
+            isApprovalPending: true,
             hasApprovalBeenRequested: true
         });
 

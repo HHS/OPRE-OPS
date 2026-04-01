@@ -47,10 +47,9 @@ vi.mock("../../../components/UI/Accordion", () => ({
 }));
 
 vi.mock("../../../components/UI/Form/TextArea", () => ({
-    default: ({ value, onChange, disabled, maxLength }) => (
+    default: ({ onChange, disabled, maxLength }) => (
         <textarea
             data-testid="reviewer-notes-textarea"
-            value={value}
             onChange={(e) => onChange("reviewer-notes", e.target.value)}
             disabled={disabled}
             maxLength={maxLength}
@@ -59,10 +58,11 @@ vi.mock("../../../components/UI/Form/TextArea", () => ({
 }));
 
 vi.mock("../../../components/UI/Alert/SimpleAlert", () => ({
-    default: ({ type, heading, message }) => (
+    default: ({ type, heading, message, children }) => (
         <div data-testid={`alert-${type}`}>
             <h3>{heading}</h3>
-            <p>{message}</p>
+            {message && <p>{message}</p>}
+            {children && <p>{children}</p>}
         </div>
     )
 }));
@@ -173,7 +173,7 @@ describe("ApprovePreAwardApproval", () => {
         const textarea = screen.getByTestId("reviewer-notes-textarea");
         await user.type(textarea, "Looks good");
 
-        expect(setReviewerNotes).toHaveBeenCalledWith("Looks good");
+        expect(setReviewerNotes).toHaveBeenLastCalledWith("Looks good");
     });
 
     it("should disable reviewer notes input when already processed", () => {
@@ -228,7 +228,13 @@ describe("ApprovePreAwardApproval", () => {
         renderComponent({ ...mockHookData, isSubmitting: true });
 
         expect(screen.getByRole("button", { name: "Cancel" })).toBeDisabled();
-        expect(screen.getByRole("button", { name: "Processing..." })).toBeDisabled();
+
+        // Both Decline and Approve buttons show "Processing..." when submitting
+        const processingButtons = screen.getAllByRole("button", { name: "Processing..." });
+        expect(processingButtons).toHaveLength(2);
+        processingButtons.forEach(button => {
+            expect(button).toBeDisabled();
+        });
     });
 
     it("should disable approve and decline buttons when already processed", () => {
