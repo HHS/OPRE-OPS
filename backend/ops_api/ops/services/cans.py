@@ -547,11 +547,7 @@ class CANService:
 
     def get_can_funding(self, id: int, fiscal_year: Optional[int] = None) -> dict:
         """Get funding summary for a single CAN."""
-        stmt = (
-            select(CAN)
-            .where(CAN.id == id)
-            .options(*CAN_EAGER_LOAD_OPTIONS)
-        )
+        stmt = select(CAN).where(CAN.id == id).options(*CAN_EAGER_LOAD_OPTIONS)
         can = self.db_session.scalar(stmt)
         if not can:
             raise ResourceNotFoundError("CAN", id)
