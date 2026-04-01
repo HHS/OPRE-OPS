@@ -17,16 +17,19 @@ vi.mock("../../components/UI/DataViz/HorizontalStackedBar/HorizontalStackedBar",
     )
 }));
 
-const makeAgreement = (id, blis) => ({
-    id,
-    budget_line_items: blis
+const makeOverview = (statusItems, totalAmount, totalAgreements) => ({
+    status_data: statusItems,
+    total_amount: totalAmount,
+    total_agreements: totalAgreements
 });
 
-const makeBli = (status, amount, fees = 0, fiscalYear = 2025) => ({
+const makeStatusItem = (label, status, amount, amountPercent, agreements, agreementsPercent) => ({
+    label,
     status,
     amount,
-    fees,
-    fiscal_year: fiscalYear
+    amount_percent: amountPercent,
+    agreements,
+    agreements_percent: agreementsPercent
 });
 
 describe("ProcurementOverviewCard", () => {
@@ -35,7 +38,6 @@ describe("ProcurementOverviewCard", () => {
     it("renders loading state", () => {
         render(
             <ProcurementOverviewCard
-                agreements={[]}
                 fiscalYear={fiscalYear}
                 isLoading={true}
             />
@@ -46,7 +48,6 @@ describe("ProcurementOverviewCard", () => {
     it("renders error state", () => {
         render(
             <ProcurementOverviewCard
-                agreements={[]}
                 fiscalYear={fiscalYear}
                 error={{ message: "fail" }}
             />
@@ -55,17 +56,19 @@ describe("ProcurementOverviewCard", () => {
     });
 
     it("computes correct total amount across all statuses", () => {
-        const agreements = [
-            makeAgreement(1, [
-                makeBli("PLANNED", 100_000),
-                makeBli("IN_EXECUTION", 200_000),
-                makeBli("OBLIGATED", 50_000)
-            ])
-        ];
+        const overview = makeOverview(
+            [
+                makeStatusItem("Planned", "PLANNED", 100_000, 29, 1, 33),
+                makeStatusItem("Executing", "IN_EXECUTION", 200_000, 57, 1, 33),
+                makeStatusItem("Obligated", "OBLIGATED", 50_000, 14, 1, 33)
+            ],
+            350_000,
+            3
+        );
 
         render(
             <ProcurementOverviewCard
-                agreements={agreements}
+                procurementOverview={overview}
                 fiscalYear={fiscalYear}
             />
         );
@@ -74,30 +77,25 @@ describe("ProcurementOverviewCard", () => {
     });
 
     it("includes fees in the amount calculations", () => {
-        const agreements = [makeAgreement(1, [makeBli("IN_EXECUTION", 100_000, 5_000)])];
+        const overview = makeOverview([makeStatusItem("Executing", "IN_EXECUTION", 105_000, 100, 1, 100)], 105_000, 1);
 
         render(
             <ProcurementOverviewCard
-                agreements={agreements}
+                procurementOverview={overview}
                 fiscalYear={fiscalYear}
             />
         );
 
-        // Total should be amount + fees = 105,000
         expect(screen.getByText("$105,000")).toBeInTheDocument();
     });
 
     it("filters BLIs by fiscal year", () => {
-        const agreements = [
-            makeAgreement(1, [
-                makeBli("IN_EXECUTION", 100_000, 0, 2025),
-                makeBli("IN_EXECUTION", 999_999, 0, 2024) // different FY, should be excluded
-            ])
-        ];
+        // Backend already filters by FY; we just verify the total shown
+        const overview = makeOverview([makeStatusItem("Executing", "IN_EXECUTION", 100_000, 100, 1, 100)], 100_000, 1);
 
         render(
             <ProcurementOverviewCard
-                agreements={agreements}
+                procurementOverview={overview}
                 fiscalYear={fiscalYear}
             />
         );
@@ -106,15 +104,19 @@ describe("ProcurementOverviewCard", () => {
     });
 
     it("displays correct agreement count", () => {
-        const agreements = [
-            makeAgreement(1, [makeBli("PLANNED", 50_000)]),
-            makeAgreement(2, [makeBli("IN_EXECUTION", 75_000)]),
-            makeAgreement(3, [makeBli("OBLIGATED", 25_000)])
-        ];
+        const overview = makeOverview(
+            [
+                makeStatusItem("Planned", "PLANNED", 50_000, 33, 1, 33),
+                makeStatusItem("Executing", "IN_EXECUTION", 75_000, 50, 1, 33),
+                makeStatusItem("Obligated", "OBLIGATED", 25_000, 17, 1, 33)
+            ],
+            150_000,
+            3
+        );
 
         render(
             <ProcurementOverviewCard
-                agreements={agreements}
+                procurementOverview={overview}
                 fiscalYear={fiscalYear}
             />
         );
@@ -123,26 +125,23 @@ describe("ProcurementOverviewCard", () => {
     });
 
     it("computes correct dollar amounts per status", () => {
-        const agreements = [
-            makeAgreement(1, [
-                makeBli("PLANNED", 100_000),
-                makeBli("IN_EXECUTION", 200_000),
-                makeBli("OBLIGATED", 300_000)
-            ]),
-            makeAgreement(2, [makeBli("PLANNED", 50_000), makeBli("IN_EXECUTION", 100_000)])
-        ];
+        const overview = makeOverview(
+            [
+                makeStatusItem("Planned", "PLANNED", 150_000, 20, 2, 40),
+                makeStatusItem("Executing", "IN_EXECUTION", 300_000, 40, 1, 20),
+                makeStatusItem("Obligated", "OBLIGATED", 300_000, 40, 1, 20)
+            ],
+            750_000,
+            5
+        );
 
         render(
             <ProcurementOverviewCard
-                agreements={agreements}
+                procurementOverview={overview}
                 fiscalYear={fiscalYear}
             />
         );
 
-        // Planned: 100k + 50k = 150k
-        // Executing: 200k + 100k = 300k
-        // Obligated: 300k
-        // Total: 750k
         const valueContainers = screen.getAllByTestId("value-container");
         expect(valueContainers).toHaveLength(3);
         expect(valueContainers[0]).toHaveTextContent("$150,000.00"); // Planned
@@ -151,22 +150,23 @@ describe("ProcurementOverviewCard", () => {
     });
 
     it("computes correct percentages per status", () => {
-        const agreements = [
-            makeAgreement(1, [
-                makeBli("PLANNED", 250_000),
-                makeBli("IN_EXECUTION", 500_000),
-                makeBli("OBLIGATED", 250_000)
-            ])
-        ];
+        const overview = makeOverview(
+            [
+                makeStatusItem("Planned", "PLANNED", 250_000, 25, 1, 33),
+                makeStatusItem("Executing", "IN_EXECUTION", 500_000, 50, 1, 33),
+                makeStatusItem("Obligated", "OBLIGATED", 250_000, 25, 1, 33)
+            ],
+            1_000_000,
+            3
+        );
 
         render(
             <ProcurementOverviewCard
-                agreements={agreements}
+                procurementOverview={overview}
                 fiscalYear={fiscalYear}
             />
         );
 
-        // Planned: 250k/1M = 25%, Executing: 500k/1M = 50%, Obligated: 250k/1M = 25%
         const legendTags = screen.getAllByTestId("legend-tag");
         expect(legendTags).toHaveLength(3);
         expect(legendTags[0]).toHaveTextContent("25%");
@@ -175,59 +175,55 @@ describe("ProcurementOverviewCard", () => {
     });
 
     it("counts agreements per status correctly (an agreement can appear in multiple statuses)", () => {
-        const agreements = [
-            makeAgreement(1, [makeBli("PLANNED", 100_000), makeBli("IN_EXECUTION", 200_000)]),
-            makeAgreement(2, [makeBli("PLANNED", 50_000)]),
-            makeAgreement(3, [makeBli("OBLIGATED", 75_000)])
-        ];
+        const overview = makeOverview(
+            [
+                makeStatusItem("Planned", "PLANNED", 150_000, 43, 2, 50),
+                makeStatusItem("Executing", "IN_EXECUTION", 200_000, 57, 1, 25),
+                makeStatusItem("Obligated", "OBLIGATED", 75_000, 21, 1, 25)
+            ],
+            350_000,
+            3
+        );
 
         render(
             <ProcurementOverviewCard
-                agreements={agreements}
+                procurementOverview={overview}
                 fiscalYear={fiscalYear}
             />
         );
 
-        // Planned agreements: {1, 2} = 2, Executing: {1} = 1, Obligated: {3} = 1
-        // Agreement counts show as "X agreements" text within each legend section
-        const agreementTexts = screen.getAllByText(/\d+ agreement/);
         // Total "3 agreements" + per-status: "2 agreements", "1 agreements", "1 agreements"
+        const agreementTexts = screen.getAllByText(/\d+ agreement/);
         expect(agreementTexts).toHaveLength(4);
     });
 
-    it("handles empty agreements list", () => {
+    it("handles empty/null procurementOverview", () => {
         render(
             <ProcurementOverviewCard
-                agreements={[]}
+                procurementOverview={null}
                 fiscalYear={fiscalYear}
             />
         );
 
-        // Total amount header shows $0
+        // With null overview, buildStatusData returns empty arrays and 0 totals
         const allZeroDollars = screen.getAllByText("$0");
         expect(allZeroDollars.length).toBeGreaterThanOrEqual(1);
 
-        // All three status values should be $0
-        const valueContainers = screen.getAllByTestId("value-container");
-        expect(valueContainers).toHaveLength(3);
-        valueContainers.forEach((el) => expect(el).toHaveTextContent("$0"));
-
-        // Total header + 3 per-status = multiple "0 agreements" elements
         const agreementTexts = screen.getAllByText(/0 agreements/);
         expect(agreementTexts.length).toBeGreaterThanOrEqual(1);
     });
 
     it("ignores BLIs with statuses not in the tracked set (e.g. DRAFT)", () => {
-        const agreements = [makeAgreement(1, [makeBli("DRAFT", 999_999), makeBli("IN_EXECUTION", 100_000)])];
+        // Backend already filters these out; overview only contains tracked statuses
+        const overview = makeOverview([makeStatusItem("Executing", "IN_EXECUTION", 100_000, 100, 1, 100)], 100_000, 1);
 
         render(
             <ProcurementOverviewCard
-                agreements={agreements}
+                procurementOverview={overview}
                 fiscalYear={fiscalYear}
             />
         );
 
-        // Only executing amount should count toward total
         expect(screen.getByText("$100,000")).toBeInTheDocument();
     });
 });

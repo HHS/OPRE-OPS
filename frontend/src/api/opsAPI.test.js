@@ -214,7 +214,9 @@ describe("opsAPI - Agreements Pagination", () => {
                 count: 50,
                 limit: 10,
                 offset: 0,
-                totals: null
+                totals: null,
+                procurement_overview: null,
+                procurement_step_summary: null
             });
         });
 
@@ -260,7 +262,9 @@ describe("opsAPI - Agreements Pagination", () => {
                 count: 50,
                 limit: 10,
                 offset: 0,
-                totals: null
+                totals: null,
+                procurement_overview: null,
+                procurement_step_summary: null
             });
         });
 
@@ -299,7 +303,9 @@ describe("opsAPI - Agreements Pagination", () => {
                 count: 2,
                 limit: 2,
                 offset: 0,
-                totals: null
+                totals: null,
+                procurement_overview: null,
+                procurement_step_summary: null
             });
         });
 
@@ -339,7 +345,9 @@ describe("opsAPI - Agreements Pagination", () => {
                 count: 0,
                 limit: 10,
                 offset: 0,
-                totals: null
+                totals: null,
+                procurement_overview: null,
+                procurement_step_summary: null
             });
         });
 
@@ -700,7 +708,9 @@ describe("opsAPI - Agreements Pagination", () => {
                 count: 0,
                 limit: 0,
                 offset: 0,
-                totals: null
+                totals: null,
+                procurement_overview: null,
+                procurement_step_summary: null
             });
         });
     });
@@ -996,9 +1006,7 @@ describe("opsAPI - Wave 2 high-yield endpoint coverage", () => {
         );
 
         const storeRef = setupApiStore(opsApi);
-        await storeRef.store.dispatch(
-            opsApi.endpoints.getProcurementTrackersByAgreementIds.initiate([])
-        );
+        await storeRef.store.dispatch(opsApi.endpoints.getProcurementTrackersByAgreementIds.initiate([]));
 
         expect(capturedUrl).toContain("limit=1");
     });
