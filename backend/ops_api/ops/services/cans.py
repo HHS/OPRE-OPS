@@ -8,17 +8,13 @@ from sqlalchemy.orm import selectinload
 from werkzeug.exceptions import NotFound
 
 from models import CAN, CANMethodOfTransfer, CANSortCondition
-from models.agreements import Agreement
-from models.budget_line_items import BudgetLineItem
 from models.cans import CANFundingBudget, CANFundingDetails
 from models.portfolios import Portfolio
 from ops_api.ops.schemas.cans import CANListFilterOptionResponseSchema
 from ops_api.ops.services.ops_service import ResourceNotFoundError
 from ops_api.ops.utils.cans import (
-    aggregate_funding_summaries,
     calculate_can_funding,
     filter_active_cans,
-    get_can_funding_summary,
     get_carry_forward_label,
     get_expiration_date,
 )
@@ -663,55 +659,47 @@ class CANService:
         """
         transfer, fy_budget = self._validate_aggregate_params(transfer, fy_budget)
 
-        stmt = select(CAN).options(
-            *CAN_EAGER_LOAD_OPTIONS,
-            selectinload(CAN.budget_line_items).selectinload(BudgetLineItem.agreement).selectinload(Agreement.project),
-        )
+        stmt = select(CAN).options(*CAN_EAGER_LOAD_OPTIONS)
         stmt = self._apply_aggregate_filters(stmt, fiscal_year, active_period, transfer, portfolio, fy_budget)
         filtered_cans = self.db_session.execute(stmt).scalars().unique().all()
 
-        # Generate per-CAN summaries
-        can_summaries = [get_can_funding_summary(can, fiscal_year) for can in filtered_cans]
-
-        # Aggregate
-        aggregated = aggregate_funding_summaries(can_summaries)
-
-        # Build response in new shape
+        # Aggregate funding and build per-CAN detail in a single pass, using
+        # calculate_can_funding directly to avoid the overhead of can.to_dict()
+        # (which serializes every relationship and triggers N+1 on CAN.projects).
+        totals = {
+            "total_funding": 0.0,
+            "available_funding": 0.0,
+            "carry_forward_funding": 0.0,
+            "new_funding": 0.0,
+            "expected_funding": 0.0,
+            "received_funding": 0.0,
+            "planned_funding": 0.0,
+            "obligated_funding": 0.0,
+            "in_execution_funding": 0.0,
+            "in_draft_funding": 0.0,
+        }
         cans_detail = []
-        for can_entry in aggregated.get("cans", []):
-            can_data = can_entry["can"]
+        for can in filtered_cans:
+            amounts = calculate_can_funding(can, fiscal_year)
+            for key in totals:
+                totals[key] += float(amounts.get(key, 0))
             cans_detail.append(
                 {
-                    "id": can_data.get("id"),
-                    "number": can_data.get("number"),
-                    "display_name": can_data.get("display_name"),
-                    "nick_name": can_data.get("nick_name"),
-                    "portfolio_id": can_data.get("portfolio_id"),
-                    "portfolio": (
-                        can_data.get("portfolio", {}).get("abbreviation")
-                        if isinstance(can_data.get("portfolio"), dict)
-                        else None
-                    ),
-                    "active_period": can_data.get("active_period"),
-                    "appropriation_date": can_data.get("appropriation_date"),
-                    "carry_forward_label": can_entry.get("carry_forward_label"),
-                    "expiration_date": can_entry.get("expiration_date"),
+                    "id": can.id,
+                    "number": can.number,
+                    "display_name": can.display_name,
+                    "nick_name": can.nick_name,
+                    "portfolio_id": can.portfolio_id,
+                    "portfolio": can.portfolio.abbreviation if can.portfolio else None,
+                    "active_period": can.active_period,
+                    "appropriation_date": can.funding_details.fiscal_year if can.funding_details else None,
+                    "carry_forward_label": get_carry_forward_label(can),
+                    "expiration_date": get_expiration_date(can),
                 }
             )
 
         return {
             "fiscal_year": fiscal_year,
-            "funding": {
-                "total_funding": float(aggregated.get("total_funding", 0)),
-                "available_funding": float(aggregated.get("available_funding", 0)),
-                "carry_forward_funding": float(aggregated.get("carry_forward_funding", 0)),
-                "new_funding": float(aggregated.get("new_funding", 0)),
-                "expected_funding": float(aggregated.get("expected_funding", 0)),
-                "received_funding": float(aggregated.get("received_funding", 0)),
-                "planned_funding": float(aggregated.get("planned_funding", 0)),
-                "obligated_funding": float(aggregated.get("obligated_funding", 0)),
-                "in_execution_funding": float(aggregated.get("in_execution_funding", 0)),
-                "in_draft_funding": float(aggregated.get("in_draft_funding", 0)),
-            },
+            "funding": totals,
             "cans": cans_detail,
         }
