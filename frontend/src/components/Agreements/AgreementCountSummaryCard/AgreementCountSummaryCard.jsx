@@ -50,13 +50,13 @@ const AgreementCountSummaryCard = ({ title, fiscalYear, totals }) => {
                         <span className="font-sans-xl text-bold line-height-sans-1">{totalCount}</span>
                         <div className="display-flex flex-column grid-gap margin-top-1">
                             {typeCounts.map(({ type, count }, index) => (
-                                    <Tag
-                                        key={type}
-                                        className={`${index > 0 ? "margin-top-1" : ""}`}
-                                        style={agreementTypeStyles[type]}
-                                        text={`${count} ${type === AGREEMENT_TYPES.PARTNER ? "Partner" : convertCodeForDisplay("agreementType", type)}`}
-                                    />
-                                ))}
+                                <Tag
+                                    key={type}
+                                    className={`${index > 0 ? "margin-top-1" : ""}`}
+                                    style={agreementTypeStyles[type]}
+                                    text={`${count} ${type === AGREEMENT_TYPES.PARTNER ? "Partner" : convertCodeForDisplay("agreementType", type)}`}
+                                />
+                            ))}
                         </div>
                     </div>
                 </article>
@@ -69,13 +69,13 @@ const AgreementCountSummaryCard = ({ title, fiscalYear, totals }) => {
                         <span className="font-sans-xl text-bold line-height-sans-1">{newCount}</span>
                         <div className="display-flex flex-column grid-gap margin-top-1">
                             {newTypeCounts.map(({ type, count }, index) => (
-                                    <Tag
-                                        key={type}
-                                        tagStyle="primaryDarkTextLightBackground"
-                                        className={`${index > 0 ? "margin-top-1" : ""}`}
-                                        text={`${count} ${type === AGREEMENT_TYPES.PARTNER ? "Partner" : convertCodeForDisplay("agreementType", type)}`}
-                                    />
-                                ))}
+                                <Tag
+                                    key={type}
+                                    tagStyle="primaryDarkTextLightBackground"
+                                    className={`${index > 0 ? "margin-top-1" : ""}`}
+                                    text={`${count} ${type === AGREEMENT_TYPES.PARTNER ? "Partner" : convertCodeForDisplay("agreementType", type)}`}
+                                />
+                            ))}
                         </div>
                     </div>
                 </article>
@@ -88,13 +88,13 @@ const AgreementCountSummaryCard = ({ title, fiscalYear, totals }) => {
                         <span className="font-sans-xl text-bold line-height-sans-1">{continuingCount}</span>
                         <div className="display-flex flex-column grid-gap margin-top-1">
                             {continuingTypeCounts.map(({ type, count }, index) => (
-                                    <Tag
-                                        key={type}
-                                        tagStyle="primaryDarkTextLightBackground"
-                                        className={`${index > 0 ? "margin-top-1" : ""}`}
-                                        text={`${count} ${type === AGREEMENT_TYPES.PARTNER ? "Partner" : convertCodeForDisplay("agreementType", type)}`}
-                                    />
-                                ))}
+                                <Tag
+                                    key={type}
+                                    tagStyle="primaryDarkTextLightBackground"
+                                    className={`${index > 0 ? "margin-top-1" : ""}`}
+                                    text={`${count} ${type === AGREEMENT_TYPES.PARTNER ? "Partner" : convertCodeForDisplay("agreementType", type)}`}
+                                />
+                            ))}
                         </div>
                     </div>
                 </article>
