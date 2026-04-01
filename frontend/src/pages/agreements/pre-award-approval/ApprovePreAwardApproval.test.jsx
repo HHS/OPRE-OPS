@@ -138,7 +138,7 @@ describe("ApprovePreAwardApproval", () => {
         renderComponent();
 
         expect(screen.getByTestId("page-header")).toBeInTheDocument();
-        expect(screen.getByText("Review Pre-Award Approval Request")).toBeInTheDocument();
+        expect(screen.getByText("Approval for Pre-Award")).toBeInTheDocument();
         expect(screen.getByText("Test Agreement")).toBeInTheDocument();
         expect(screen.getByTestId("agreement-meta-accordion")).toBeInTheDocument();
         expect(screen.getByTestId("agreement-bli-accordion")).toBeInTheDocument();

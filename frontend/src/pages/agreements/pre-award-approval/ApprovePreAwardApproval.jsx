@@ -65,7 +65,7 @@ export const ApprovePreAwardApproval = () => {
 
     if (!hasPermission) {
         return (
-            <App breadCrumbName="Review Pre-Award Approval">
+            <App breadCrumbName="Approval for Pre-Award">
                 <SimpleAlert
                     type="error"
                     heading="Access Denied"
@@ -76,7 +76,7 @@ export const ApprovePreAwardApproval = () => {
     }
 
     return (
-        <App breadCrumbName="Review Pre-Award Approval">
+        <App breadCrumbName="Approval for Pre-Award">
             {showModal && (
                 <ConfirmationModal
                     heading={modalProps.heading}
@@ -88,9 +88,16 @@ export const ApprovePreAwardApproval = () => {
             )}
 
             <PageHeader
-                title="Review Pre-Award Approval Request"
+                title="Approval for Pre-Award"
                 subTitle={agreement?.name}
             />
+
+            <p className="margin-y-5">
+                Review the agreement details and Final Consensus Memo to make sure everything looks up to date. Once you
+                approve, the Budget Team will add the Requisition # and Requisition Date. Then the COR will send the
+                Final Consensus Memo to the Procurement Shop. The agreement will be locked from editing until the
+                contract is Awarded.
+            </p>
 
             {approvalAlreadyProcessed && (
                 <SimpleAlert
@@ -107,7 +114,7 @@ export const ApprovePreAwardApproval = () => {
                 projectOfficerName={projectOfficerName}
                 alternateProjectOfficerName={alternateProjectOfficerName}
                 convertCodeForDisplay={convertCodeForDisplay}
-                instructions="Review the agreement details to ensure all information is correct before approving the pre-award request."
+                instructions="Please review the agreement details below to ensure everything is up to date."
                 changeRequestType={agreement?.change_request_type}
             />
 
