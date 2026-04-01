@@ -1,4 +1,5 @@
 import React from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useGetProcurementTrackersByAgreementIdQuery, useGetUsersQuery } from "../../../api/opsAPI";
 import ProcurementTrackerStepOne from "../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepOne";
 import ProcurementTrackerStepTwo from "../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepTwo";
@@ -7,6 +8,7 @@ import ProcurementTrackerStepFour from "../../../components/Agreements/Procureme
 import ProcurementTrackerStepFive from "../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepFive";
 import StepBuilderAccordion from "../../../components/Agreements/ProcurementTracker/StepBuilderAccordion";
 import DebugCode from "../../../components/DebugCode";
+import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import StepIndicator from "../../../components/UI/StepIndicator";
 import { IS_PROCUREMENT_TRACKER_READY_MAP } from "../../../constants";
 import { useIsUserSuperUser, useIsUserOnlyProcurementTeam } from "../../../hooks/user.hooks";
@@ -23,6 +25,12 @@ import { useIsUserSuperUser, useIsUserOnlyProcurementTeam } from "../../../hooks
  */
 
 const AgreementProcurementTracker = ({ agreement }) => {
+    const location = useLocation();
+    const navigate = useNavigate();
+    const [showSuccessAlert, setShowSuccessAlert] = React.useState(false);
+    const [showInReviewAlert, setShowInReviewAlert] = React.useState(false);
+    const isJustSubmittedRef = React.useRef(false);
+
     const WIZARD_STEPS = [
         "Acquisition Planning",
         "Pre-Solicitation",
@@ -36,6 +44,26 @@ const AgreementProcurementTracker = ({ agreement }) => {
         setCompletedStepNumber(stepNumber);
     };
     const agreementId = agreement?.id;
+
+    // Check for success message from location state (runs once on mount)
+    React.useEffect(() => {
+        if (location.state?.success) {
+            isJustSubmittedRef.current = true;
+            setShowSuccessAlert(true);
+            setShowInReviewAlert(false);
+            // Clear the location state to avoid showing alert on refresh/revisit
+            navigate(location.pathname, { replace: true, state: {} });
+
+            // After 5 seconds, transition to in-review alert
+            const timeoutId = setTimeout(() => {
+                isJustSubmittedRef.current = false;
+                setShowSuccessAlert(false);
+                setShowInReviewAlert(true);
+            }, 5000);
+
+            return () => clearTimeout(timeoutId);
+        }
+    }, [location.state, location.pathname, navigate]);
     const isSuperUser = useIsUserSuperUser();
     const isProcurementTeamOnly = useIsUserOnlyProcurementTeam();
     const isEditable = isSuperUser || (agreement?._meta?.isEditable ?? false);
@@ -67,6 +95,15 @@ const AgreementProcurementTracker = ({ agreement }) => {
     const stepThreeData = activeTracker?.steps.find((step) => step.step_number === 3);
     const stepFourData = activeTracker?.steps.find((step) => step.step_number === 4);
     const stepFiveData = activeTracker?.steps.find((step) => step.step_number === 5);
+
+    // Show "In Review" alert when approval is requested and not in the "just submitted" state
+    React.useEffect(() => {
+        if (stepFiveData?.approval_requested && !isJustSubmittedRef.current) {
+            setShowInReviewAlert(true);
+        } else if (!stepFiveData?.approval_requested) {
+            setShowInReviewAlert(false);
+        }
+    }, [stepFiveData?.approval_requested]);
 
     // Handle loading state
     if (isLoading) {
@@ -100,6 +137,23 @@ const AgreementProcurementTracker = ({ agreement }) => {
 
     return (
         <>
+            {showInReviewAlert && (
+                <SimpleAlert
+                    type="warning"
+                    heading="Pre-Award Approval In Review"
+                    message="This agreement is In Review for Pre-Award Approval. Edits or changes cannot be made at this time."
+                    isClosable={false}
+                />
+            )}
+            {showSuccessAlert && (
+                <SimpleAlert
+                    type="success"
+                    heading="Agreement Sent to Pre-Award Approval"
+                    message="This agreement has been successfully sent to your Division Director to review. After it's approved, you can send the Final Consensus Memo and continue your progress in the Procurement Tracker."
+                    isClosable={true}
+                    setIsAlertVisible={setShowSuccessAlert}
+                />
+            )}
             <div className="display-flex flex-justify flex-align-center">
                 <h2 className="font-sans-lg">Procurement Tracker</h2>
             </div>
@@ -210,6 +264,8 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 stepFiveData={stepFiveData}
                                 isDisabled={isStepDisabled}
                                 isActiveStep={activeTracker?.active_step_number === step.step_number}
+                                agreementId={agreement?.id}
+                                budgetLineItems={agreement?.budget_line_items}
                                 handleSetCompletedStepNumber={handleSetCompletedStepNumber}
                                 isReadOnly={isProcurementTeamOnly}
                             />

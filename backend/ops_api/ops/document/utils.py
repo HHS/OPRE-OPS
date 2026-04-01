@@ -48,6 +48,7 @@ def map_document_type_to_enum(document_type):
         DocumentType.INDEPENDENT_GOVERNMENT_COST_ESTIMATE.name.lower(): DocumentType.INDEPENDENT_GOVERNMENT_COST_ESTIMATE,
         DocumentType.SECTION_508_EXCEPTION_DOCUMENTATION.name.lower(): DocumentType.SECTION_508_EXCEPTION_DOCUMENTATION,
         DocumentType.COR_NOMINATION_AND_CERTIFICATION_DOCUMENT.name.lower(): DocumentType.COR_NOMINATION_AND_CERTIFICATION_DOCUMENT,
+        DocumentType.PRE_AWARD_CONSENSUS_MEMO.name.lower(): DocumentType.PRE_AWARD_CONSENSUS_MEMO,
         DocumentType.ADDITIONAL_DOCUMENT.name.lower(): DocumentType.ADDITIONAL_DOCUMENT,
     }
 
@@ -112,7 +113,10 @@ def get_by_agreement_id(agreement_id):
     document_stmt = select(Document).where(Document.agreement_id == agreement_id)
     documents = current_app.db_session.execute(document_stmt).scalars().all()
 
-    if not documents:
-        raise DocumentNotFoundError(f"Agreement {agreement_id} has no documents.")
+    logger.debug(
+        f"Agreement {agreement_id} has {len(documents)} documents."
+        if documents
+        else f"Agreement {agreement_id} has no documents."
+    )
 
     return documents

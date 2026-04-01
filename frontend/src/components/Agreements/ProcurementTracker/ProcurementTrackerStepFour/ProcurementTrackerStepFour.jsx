@@ -6,6 +6,7 @@ import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepFour from "./ProcurementTrackerStepFour.hooks";
 import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { PROCUREMENT_STEP_STATUS } from "../ProcurementTracker.constants";
 
 /**
  * @typedef {import("../../../../types/UserTypes").SafeUser} SafeUser
@@ -96,7 +97,7 @@ const ProcurementTrackerStepFour = ({
                         select a vendor check this task as complete (Internally means internal to OPRE, before you send
                         the Final Consensus Memo to the Procurement Shop).
                     </p>
-                    {stepStatus === "COMPLETED" && (
+                    {stepStatus === PROCUREMENT_STEP_STATUS.COMPLETED && (
                         <div className="display-flex flex-align-center margin-top-5">
                             <FontAwesomeIcon
                                 icon={faCircleCheck}
@@ -133,7 +134,7 @@ const ProcurementTrackerStepFour = ({
                     </dl>
                 </div>
             )}
-            {!isReadOnly && stepStatus === "PENDING" && (
+            {!isReadOnly && stepStatus === PROCUREMENT_STEP_STATUS.PENDING && (
                 <fieldset className="usa-fieldset">
                     <p>
                         Complete the technical evaluations and any potential negotiations. If you have a target
@@ -264,7 +265,7 @@ const ProcurementTrackerStepFour = ({
                 </fieldset>
             )}
 
-            {!isReadOnly && stepStatus === "COMPLETED" && (
+            {!isReadOnly && stepStatus === PROCUREMENT_STEP_STATUS.COMPLETED && (
                 <div>
                     <p>
                         OPRE completes the technical evaluations and any potential negotiations. Once OPRE internally

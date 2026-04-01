@@ -207,7 +207,7 @@ export const ReviewAgreement = () => {
                             >
                                 {group.budgetLines.length > 0 ? (
                                     <AgreementBLIReviewTable
-                                        readOnly={true}
+                                        readOnly={false}
                                         budgetLines={group.budgetLines}
                                         isReviewMode={true}
                                         setSelectedBLIs={handleSelectBLI}

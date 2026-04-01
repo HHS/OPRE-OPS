@@ -423,3 +423,149 @@ class SolicitationPeriodDateOrderRule(ValidationRule):
                 raise ValidationError(
                     {"solicitation_period_start_date": "Solicitation period start date must be earlier than end date."}
                 )
+
+
+class PreAwardApprovalRequestAuthorizationRule(ValidationRule):
+    """
+    Validates that the user requesting pre-award approval is authorized.
+    Only checks when approval_requested fields are being updated for PRE_AWARD steps.
+    """
+
+    @property
+    def name(self) -> str:
+        return "PRE_AWARD Approval Request Authorization"
+
+    def validate(self, procurement_tracker_step: ProcurementTrackerStep, context: ValidationContext) -> None:
+        # Only validate if step type is PRE_AWARD
+        if procurement_tracker_step.step_type != ProcurementTrackerStepType.PRE_AWARD:
+            return
+
+        updated_fields = context.updated_fields
+
+        # Only validate if approval_requested fields are being updated
+        # Use unprefixed field names as they appear in the API request before mapping
+        # Note: approval_requested_by is server-controlled and not in this list
+        approval_fields = [
+            "approval_requested",
+            "approval_requested_date",
+            "requestor_notes",
+        ]
+        if not any(field in updated_fields for field in approval_fields):
+            return
+
+        # Check if procurement tracker step has a valid agreement
+        if (
+            not procurement_tracker_step.procurement_tracker
+            or not procurement_tracker_step.procurement_tracker.agreement
+        ):
+            raise ValidationError(
+                {
+                    "agreement": f"Procurement tracker step {procurement_tracker_step.id} is not linked to a valid agreement."
+                }
+            )
+
+        agreement = procurement_tracker_step.procurement_tracker.agreement
+
+        # Verify user is authorized for the agreement
+        if not check_user_association(agreement, context.user):
+            raise AuthorizationError(
+                f"User {context.user.id} is not authorized to request pre-award approval for procurement tracker step {procurement_tracker_step.id}.",
+                "ProcurementTrackerStep",
+            )
+
+
+class NoBLIsInReviewForApprovalRequestRule(ValidationRule):
+    """
+    Validates that no budget line items are in review when requesting pre-award approval.
+    Only checks when approval_requested is being set to true for PRE_AWARD steps.
+    """
+
+    @property
+    def name(self) -> str:
+        return "No BLIs In Review For Approval Request"
+
+    def validate(self, procurement_tracker_step: ProcurementTrackerStep, context: ValidationContext) -> None:
+        # Only validate if step type is PRE_AWARD
+        if procurement_tracker_step.step_type != ProcurementTrackerStepType.PRE_AWARD:
+            return
+
+        updated_fields = context.updated_fields
+
+        # Only validate if approval_requested is being set to true
+        if updated_fields.get("approval_requested") is not True:
+            return
+
+        # Check if procurement tracker step has a valid agreement
+        if (
+            not procurement_tracker_step.procurement_tracker
+            or not procurement_tracker_step.procurement_tracker.agreement
+        ):
+            raise ValidationError(
+                {
+                    "agreement": f"Procurement tracker step {procurement_tracker_step.id} is not linked to a valid agreement."
+                }
+            )
+
+        agreement = procurement_tracker_step.procurement_tracker.agreement
+
+        # Check if any budget line items are in review
+        if agreement.budget_line_items:
+            blis_in_review = [bli for bli in agreement.budget_line_items if bli.in_review]
+            if blis_in_review:
+                bli_ids = ", ".join(str(bli.id) for bli in blis_in_review)
+                raise ValidationError(
+                    {
+                        "approval_requested": f"Cannot request pre-award approval while budget line items are in review. Budget line items in review: {bli_ids}"
+                    }
+                )
+
+
+class Step4CompletionRequiredForApprovalRequestRule(ValidationRule):
+    """
+    Validates that Step 4 (Evaluation) is completed before allowing pre-award approval requests.
+    Only checks when approval_requested is being set to true for PRE_AWARD steps.
+    """
+
+    @property
+    def name(self) -> str:
+        return "Step 4 Completion Required For Pre-Award Approval Request"
+
+    def validate(self, procurement_tracker_step: ProcurementTrackerStep, context: ValidationContext) -> None:
+        # Only validate if step type is PRE_AWARD
+        if procurement_tracker_step.step_type != ProcurementTrackerStepType.PRE_AWARD:
+            return
+
+        updated_fields = context.updated_fields
+
+        # Only validate if approval_requested is being set to true
+        if updated_fields.get("approval_requested") is not True:
+            return
+
+        # Check if procurement tracker step has a valid tracker
+        if not procurement_tracker_step.procurement_tracker:
+            raise ValidationError(
+                {
+                    "procurement_tracker": f"Procurement tracker step {procurement_tracker_step.id} is not linked to a valid procurement tracker."
+                }
+            )
+
+        procurement_tracker = procurement_tracker_step.procurement_tracker
+
+        # Find Step 4 (Evaluation) in the tracker
+        step_4 = next((step for step in procurement_tracker.steps if step.step_number == 4), None)
+
+        # Step 4 must exist
+        if not step_4:
+            raise ValidationError(
+                {
+                    "approval_requested": "Cannot request pre-award approval: Step 4 (Evaluation) is missing from the procurement tracker."
+                }
+            )
+
+        # Step 4 must be completed
+        if step_4.status != ProcurementTrackerStepStatus.COMPLETED:
+            raise ValidationError(
+                {
+                    "approval_requested": f"Cannot request pre-award approval: Step 4 (Evaluation) must be completed first. Current status: {step_4.status}"
+                }
+            )

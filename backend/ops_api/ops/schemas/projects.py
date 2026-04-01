@@ -185,7 +185,7 @@ class ProjectListResponse(Schema):
             data.end_date = metadata["project_end"]
 
             # Map fiscal year breakdown
-            data.fiscal_year_totals = metadata["by_fiscal_year"]
+            data.fiscal_year_totals = metadata["total_by_fiscal_year"]
             data.agreement_name_list = metadata.get("agreement_name_list", [])
 
         return data
