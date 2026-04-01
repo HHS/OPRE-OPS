@@ -1,3 +1,4 @@
+import { groupAndSortAgreementTypeCounts } from "../../../helpers/agreement.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import RoundedBox from "../../UI/RoundedBox";
 import Tag from "../../UI/Tag";
@@ -20,23 +21,8 @@ const agreementTypeStyles = {
     Partner: { backgroundColor: "var(--data-viz-agreement-partner)", color: "black" }
 };
 
-const PARTNER_TYPES = ["AA", "IAA"];
-
-/**
- * Converts a backend type counts object (e.g. {"CONTRACT": 3, "AA": 1, "IAA": 2})
- * into an array format [{type, count}] with AA+IAA grouped as "Partner".
- * @param {Object} countsObj - Object with type keys and count values
- * @returns {{type: string, count: number}[]}
- */
-const TYPE_ORDER = ["CONTRACT", "Partner", "GRANT", "DIRECT_OBLIGATION"];
-
 const convertTypeCountsObjToArray = (countsObj) => {
-    const merged = {};
-    for (const [type, count] of Object.entries(countsObj)) {
-        const key = PARTNER_TYPES.includes(type) ? "Partner" : type;
-        merged[key] = (merged[key] || 0) + count;
-    }
-    return TYPE_ORDER.filter((type) => type in merged).map((type) => ({ type, count: merged[type] }));
+    return groupAndSortAgreementTypeCounts(Object.entries(countsObj).map(([type, count]) => ({ type, count })));
 };
 
 const AgreementCountSummaryCard = ({ title, fiscalYear, totals }) => {

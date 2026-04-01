@@ -1,4 +1,5 @@
 import { BLI_STATUS } from "../../../../helpers/budgetLines.helpers";
+import { groupAndSortAgreementTypeCounts } from "../../../../helpers/agreement.helpers";
 import { convertCodeForDisplay } from "../../../../helpers/utils";
 import RoundedBox from "../../RoundedBox";
 import Tag from "../../Tag";
@@ -84,13 +85,13 @@ const ProjectAgreementBLICard = ({ fiscalYear, projects, agreements, budgetLines
                         <div className="display-flex flex-column grid-gap margin-top-1">
                             {agreements &&
                                 agreements.length > 0 &&
-                                agreements.map(({ type, count }, index) => (
+                                groupAndSortAgreementTypeCounts(agreements).map(({ type, count }, index) => (
                                     <Tag
                                         key={type}
                                         className={`bg-brand-primary-light text-brand-primary-dark ${
                                             index > 0 ? "margin-top-1" : ""
                                         }`}
-                                        text={`${count} ${convertCodeForDisplay("agreement", type)}`}
+                                        text={`${count} ${type === "Partner" ? "Partner" : convertCodeForDisplay("agreementType", type)}`}
                                     />
                                 ))}
                         </div>

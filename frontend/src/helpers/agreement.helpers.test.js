@@ -4,6 +4,7 @@ import {
     getProcurementShopSubTotal,
     getProcurementShopFees,
     getAgreementType,
+    groupAndSortAgreementTypeCounts,
     getPartnerType,
     getFundingMethod,
     isFieldVisible,
@@ -100,6 +101,39 @@ describe("getAgreementType", () => {
     it("returns NO_DATA when agreementType is undefined", () => {
         const result = getAgreementType(undefined);
         expect(result).toBe(NO_DATA);
+    });
+});
+
+describe("groupAndSortAgreementTypeCounts", () => {
+    it("groups AA and IAA into Partner", () => {
+        const result = groupAndSortAgreementTypeCounts([
+            { type: "AA", count: 1 },
+            { type: "IAA", count: 2 },
+            { type: "CONTRACT", count: 3 }
+        ]);
+
+        expect(result).toEqual([
+            { type: "CONTRACT", count: 3 },
+            { type: "Partner", count: 3 }
+        ]);
+    });
+
+    it("sorts agreement types in display order", () => {
+        const result = groupAndSortAgreementTypeCounts([
+            { type: "DIRECT_OBLIGATION", count: 1 },
+            { type: "IAA", count: 1 },
+            { type: "GRANT", count: 1 },
+            { type: "CONTRACT", count: 1 },
+            { type: "MISCELLANEOUS", count: 1 }
+        ]);
+
+        expect(result.map(({ type }) => type)).toEqual([
+            "CONTRACT",
+            "GRANT",
+            "Partner",
+            "DIRECT_OBLIGATION",
+            "MISCELLANEOUS"
+        ]);
     });
 });
 
