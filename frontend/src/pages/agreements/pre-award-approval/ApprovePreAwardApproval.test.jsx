@@ -232,7 +232,7 @@ describe("ApprovePreAwardApproval", () => {
         // Both Decline and Approve buttons show "Processing..." when submitting
         const processingButtons = screen.getAllByRole("button", { name: "Processing..." });
         expect(processingButtons).toHaveLength(2);
-        processingButtons.forEach(button => {
+        processingButtons.forEach((button) => {
             expect(button).toBeDisabled();
         });
     });

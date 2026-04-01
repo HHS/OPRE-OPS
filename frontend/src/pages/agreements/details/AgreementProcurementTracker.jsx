@@ -120,7 +120,12 @@ const AgreementProcurementTracker = ({ agreement }) => {
             !(isDeclined && isRequester);
 
         setShowInReviewAlert(shouldShowInReview);
-    }, [stepFiveData?.approval_requested, stepFiveData?.approval_status, currentUserId, stepFiveData?.approval_requested_by]);
+    }, [
+        stepFiveData?.approval_requested,
+        stepFiveData?.approval_status,
+        currentUserId,
+        stepFiveData?.approval_requested_by
+    ]);
 
     // Show approved/declined alerts only to the user who requested approval
     React.useEffect(() => {

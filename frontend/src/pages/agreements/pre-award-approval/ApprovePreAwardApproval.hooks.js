@@ -45,7 +45,8 @@ export default function useApprovePreAwardApproval(agreementId) {
 
     // Get executing budget lines (memoized to prevent infinite loops in hasPermission)
     const executingBudgetLines = useMemo(
-        () => agreement?.budget_line_items?.filter(/** @param {any} bli */ (bli) => bli.status === "IN_EXECUTION") ?? [],
+        () =>
+            agreement?.budget_line_items?.filter(/** @param {any} bli */ (bli) => bli.status === "IN_EXECUTION") ?? [],
         [agreement?.budget_line_items]
     );
 
@@ -62,7 +63,9 @@ export default function useApprovePreAwardApproval(agreementId) {
 
     // Get existing Pre-Award Consensus Memo documents
     const preAwardMemoDocuments =
-        documentsData?.documents?.filter(/** @param {any} doc */ (doc) => doc.document_type === "PRE_AWARD_CONSENSUS_MEMO") || [];
+        documentsData?.documents?.filter(
+            /** @param {any} doc */ (doc) => doc.document_type === "PRE_AWARD_CONSENSUS_MEMO"
+        ) || [];
 
     // Get submitter's notes
     const requestorNotes = step5?.requestor_notes || "";
