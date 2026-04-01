@@ -193,7 +193,7 @@ describe("ApprovePreAwardApproval", () => {
 
         expect(screen.getByRole("button", { name: "Cancel" })).toBeInTheDocument();
         expect(screen.getByRole("button", { name: "Decline" })).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: "Approve" })).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "Approve pre-award" })).toBeInTheDocument();
     });
 
     it("should call handleApprove when Approve button is clicked", async () => {
@@ -201,7 +201,13 @@ describe("ApprovePreAwardApproval", () => {
         const handleApprove = vi.fn();
         renderComponent({ ...mockHookData, handleApprove });
 
-        const approveButton = screen.getByRole("button", { name: "Approve" });
+        // Check the confirmation checkbox first
+        const checkbox = screen.getByRole("checkbox", {
+            name: /I understand that approving for Pre-Award means the Requisition will be submitted/i
+        });
+        await user.click(checkbox);
+
+        const approveButton = screen.getByRole("button", { name: "Approve pre-award" });
         await user.click(approveButton);
 
         expect(handleApprove).toHaveBeenCalledTimes(1);
@@ -246,7 +252,7 @@ describe("ApprovePreAwardApproval", () => {
         renderComponent({ ...mockHookData, approvalAlreadyProcessed: true });
 
         expect(screen.getByRole("button", { name: "Decline" })).toBeDisabled();
-        expect(screen.getByRole("button", { name: "Approve" })).toBeDisabled();
+        expect(screen.getByRole("button", { name: "Approve pre-award" })).toBeDisabled();
         expect(screen.getByRole("button", { name: "Cancel" })).not.toBeDisabled();
     });
 
@@ -299,5 +305,47 @@ describe("ApprovePreAwardApproval", () => {
         renderComponent({ ...mockHookData, requestorNotes: "" });
 
         expect(screen.queryByText("Submitter's Notes")).not.toBeInTheDocument();
+    });
+
+    it("should render approval confirmation checkbox", () => {
+        renderComponent();
+
+        const checkbox = screen.getByRole("checkbox", {
+            name: /I understand that approving for Pre-Award means the Requisition will be submitted/i
+        });
+        expect(checkbox).toBeInTheDocument();
+        expect(checkbox).not.toBeChecked();
+    });
+
+    it("should disable approve button when checkbox is not checked", () => {
+        renderComponent();
+
+        const approveButton = screen.getByRole("button", { name: "Approve pre-award" });
+        expect(approveButton).toBeDisabled();
+    });
+
+    it("should enable approve button when checkbox is checked", async () => {
+        const user = userEvent.setup();
+        renderComponent();
+
+        const checkbox = screen.getByRole("checkbox", {
+            name: /I understand that approving for Pre-Award means the Requisition will be submitted/i
+        });
+        const approveButton = screen.getByRole("button", { name: "Approve pre-award" });
+
+        expect(approveButton).toBeDisabled();
+
+        await user.click(checkbox);
+
+        expect(approveButton).not.toBeDisabled();
+    });
+
+    it("should disable checkbox when approval already processed", () => {
+        renderComponent({ ...mockHookData, approvalAlreadyProcessed: true });
+
+        const checkbox = screen.getByRole("checkbox", {
+            name: /I understand that approving for Pre-Award means the Requisition will be submitted/i
+        });
+        expect(checkbox).toBeDisabled();
     });
 });

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useParams } from "react-router-dom";
 import App from "../../../App";
 import PageHeader from "../../../components/UI/PageHeader";
@@ -55,6 +56,8 @@ export const ApprovePreAwardApproval = () => {
         preAwardRequestorName,
         preAwardApprovalRequestedDate
     } = useApprovePreAwardApproval(agreementId);
+
+    const [understandsApproval, setUnderstandsApproval] = useState(false);
 
     if (isLoading) {
         return <h1>Loading...</h1>;
@@ -279,6 +282,28 @@ export const ApprovePreAwardApproval = () => {
                 </SimpleAlert>
             )}
 
+            {/* Approval Confirmation Checkbox */}
+            <div className="margin-top-5">
+                <div className="usa-checkbox">
+                    <input
+                        className="usa-checkbox__input"
+                        id="understand-approval"
+                        type="checkbox"
+                        name="understand-approval"
+                        checked={understandsApproval}
+                        onChange={(e) => setUnderstandsApproval(e.target.checked)}
+                        disabled={approvalAlreadyProcessed}
+                    />
+                    <label
+                        className="usa-checkbox__label"
+                        htmlFor="understand-approval"
+                    >
+                        I understand that approving for Pre-Award means the Requisition will be submitted and the Final
+                        Consensus Memo will be sent to the Procurement Shop
+                    </label>
+                </div>
+            </div>
+
             {/* Action Buttons */}
             <div className="grid-row flex-justify-end margin-top-8">
                 <button
@@ -302,10 +327,10 @@ export const ApprovePreAwardApproval = () => {
                 <button
                     className="usa-button"
                     onClick={handleApprove}
-                    disabled={isSubmitting || approvalAlreadyProcessed}
+                    disabled={isSubmitting || approvalAlreadyProcessed || !understandsApproval}
                     data-cy="approve-pre-award-btn"
                 >
-                    {isSubmitting ? "Processing..." : "Approve"}
+                    {isSubmitting ? "Processing..." : "Approve pre-award"}
                 </button>
             </div>
         </App>
