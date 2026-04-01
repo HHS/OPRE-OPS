@@ -162,26 +162,63 @@ export const ApprovePreAwardApproval = () => {
                 changeRequestType=""
             />
 
-            {/* Pre-Award Documents */}
-            {preAwardMemoDocuments && preAwardMemoDocuments.length > 0 && (
-                <Accordion
-                    heading="Final Consensus Memo"
-                    level={2}
-                >
-                    <p>The submitter uploaded the following documents:</p>
-                    {preAwardMemoDocuments.map((doc) => (
+            {/* Review Final Consensus Memo */}
+            <Accordion
+                heading="Review Final Consensus Memo"
+                level={2}
+            >
+                <p>Please review the Final Consensus Memo below to ensure everything is up to date.</p>
+
+                <div className="usa-form-group margin-top-3">
+                    <div className="display-flex flex-align-center">
                         <div
-                            key={doc.id}
-                            className="padding-2 bg-base-lightest margin-top-1"
+                            className="position-relative bg-white border-1px border-base-light"
+                            style={{
+                                maxWidth: "540px",
+                                flexGrow: 1,
+                                minHeight: "100px",
+                                display: "flex",
+                                flexDirection: "column",
+                                justifyContent: "space-between",
+                                padding: "1rem"
+                            }}
                         >
-                            <p className="margin-0">
-                                <span className="text-bold">{doc.document_name}</span>
-                                {doc.document_size && <span> ({doc.document_size} MB)</span>}
-                            </p>
+                            <div>
+                                <span style={{ fontSize: "0.875rem", color: "#757575" }}>
+                                    Final Consensus Memo
+                                </span>
+                            </div>
                         </div>
-                    ))}
-                </Accordion>
-            )}
+                        <div
+                            className="bg-base-darker text-white padding-2 border-radius-md margin-left-2"
+                            style={{
+                                maxWidth: "300px",
+                                fontSize: "0.875rem"
+                            }}
+                        >
+                            Upload Documents is coming soon! For now, please review within the OPRE preferred tool to
+                            share documents
+                        </div>
+                    </div>
+                </div>
+
+                {preAwardMemoDocuments && preAwardMemoDocuments.length > 0 && (
+                    <div className="margin-top-3">
+                        <p className="text-bold">Uploaded Documents:</p>
+                        {preAwardMemoDocuments.map((doc) => (
+                            <div
+                                key={doc.id}
+                                className="padding-2 bg-base-lightest margin-top-1"
+                            >
+                                <p className="margin-0">
+                                    <span className="text-bold">{doc.document_name}</span>
+                                    {doc.document_size && <span> ({doc.document_size} MB)</span>}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </Accordion>
 
             {/* Notes Section */}
             <Accordion

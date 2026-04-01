@@ -3,7 +3,6 @@ import App from "../../../App";
 import PageHeader from "../../../components/UI/PageHeader";
 import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
 import AgreementBLIAccordion from "../../../components/Agreements/AgreementBLIAccordion";
-import AgreementCANReviewAccordion from "../../../components/Agreements/AgreementCANReviewAccordion";
 import AgreementBLIReviewTable from "../../../components/BudgetLineItems/BLIReviewTable";
 import ReviewExecutingTotalAccordion from "../../../components/BudgetLineItems/ReviewExecutingTotalAccordion/ReviewExecutingTotalAccordion";
 import ServicesComponentAccordion from "../../../components/ServicesComponents/ServicesComponentAccordion";
@@ -154,16 +153,6 @@ export const RequestPreAwardApproval = () => {
 
             {/* Review Executing Total */}
             <ReviewExecutingTotalAccordion executingTotal={executingTotal} />
-
-            {/* CAN Impact */}
-            <AgreementCANReviewAccordion
-                instructions="Review the CAN budget impact for executing budget lines."
-                selectedBudgetLines={executingBudgetLines}
-                afterApproval={false}
-                setAfterApproval={() => {}}
-                action=""
-                changeRequestType={agreement?.change_request_type}
-            />
 
             {/* Upload Final Consensus Memo */}
             <Accordion

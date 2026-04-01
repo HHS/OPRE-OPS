@@ -35,11 +35,6 @@ vi.mock("../../../components/Agreements/AgreementBLIAccordion", () => ({
     default: ({ title }) => <div data-testid="bli-accordion">{title}</div>
 }));
 
-vi.mock("../../../components/Agreements/AgreementCANReviewAccordion", () => ({
-    __esModule: true,
-    default: () => <div data-testid="can-review-accordion" />
-}));
-
 vi.mock("../../../components/BudgetLineItems/ReviewExecutingTotalAccordion/ReviewExecutingTotalAccordion", () => ({
     __esModule: true,
     default: () => <div data-testid="review-executing-total-accordion" />
@@ -132,7 +127,6 @@ describe("RequestPreAwardApproval", () => {
 
         expect(screen.getByTestId("meta-accordion")).toBeInTheDocument();
         expect(screen.getByTestId("bli-accordion")).toBeInTheDocument();
-        expect(screen.getByTestId("can-review-accordion")).toBeInTheDocument();
         expect(screen.getByText("Notes")).toBeInTheDocument();
     });
 
