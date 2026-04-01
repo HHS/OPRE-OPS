@@ -205,7 +205,7 @@ def test_get_can_funding_summary_no_fiscal_year(loaded_db, test_can, app_ctx) ->
                     "updated_by": None,
                     "updated_by_user": None,
                 },
-                "carry_forward_label": " Carry-Forward",
+                "carry_forward_label": "Carry-Forward",
                 "expiration_date": "9/30/2023",
             }
         ],
@@ -349,7 +349,7 @@ def test_get_can_funding_summary_with_fiscal_year(loaded_db, test_can, app_ctx) 
                     "updated_by": None,
                     "updated_by_user": None,
                 },
-                "carry_forward_label": " Carry-Forward",
+                "carry_forward_label": "Carry-Forward",
                 "expiration_date": "9/30/2023",
             }
         ],

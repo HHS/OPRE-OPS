@@ -206,10 +206,20 @@ def calculate_can_funding(can: CAN, fiscal_year: Optional[int] = None) -> CanFun
 
 
 def get_carry_forward_label(can: CAN) -> str:
-    """Build carry-forward label from a CAN's funding budgets."""
-    if len(can.funding_budgets[1:]) == 1:
+    """Build carry-forward label from a CAN's funding budgets.
+
+    Carry-forward budgets are those whose fiscal_year differs from the
+    CAN's appropriation year (funding_details.fiscal_year).  The label
+    lists them sorted by fiscal year for deterministic output.
+    """
+    appropriation_year = can.funding_details.fiscal_year if can.funding_details else None
+    cf_budgets = sorted(
+        (fb for fb in can.funding_budgets if fb.fiscal_year != appropriation_year),
+        key=lambda fb: fb.fiscal_year,
+    )
+    if len(cf_budgets) <= 1:
         return "Carry-Forward"
-    return ", ".join(f"FY {c.fiscal_year}" for c in can.funding_budgets[1:]) + " Carry-Forward"
+    return ", ".join(f"FY {fb.fiscal_year}" for fb in cf_budgets) + " Carry-Forward"
 
 
 def get_expiration_date(can: CAN) -> str:

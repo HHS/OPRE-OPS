@@ -49,10 +49,7 @@ export default function useCan() {
         data: CANFunding,
         isLoading: CANFundingLoading,
         isFetching: isCANFundingFetching
-    } = useGetCanFundingQuery(
-        { id: canId, fiscalYear: fiscalYear },
-        { refetchOnMountOrArgChange: true }
-    );
+    } = useGetCanFundingQuery({ id: canId, fiscalYear: fiscalYear }, { refetchOnMountOrArgChange: true });
 
     const { data: previousFYfundingSummary } = useGetCanFundingQuery({
         id: canId,
