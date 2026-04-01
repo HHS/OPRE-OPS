@@ -9,7 +9,7 @@ import {
     useGetProcurementTrackersByAgreementIdQuery
 } from "../../../api/opsAPI";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
-import { groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
+import { groupByServicesComponent, budgetLinesTotal } from "../../../helpers/budgetLines.helpers";
 import useAlert from "../../../hooks/use-alert.hooks";
 
 /**
@@ -49,6 +49,9 @@ export default function useApprovePreAwardApproval(agreementId) {
             agreement?.budget_line_items?.filter(/** @param {any} bli */ (bli) => bli.status === "IN_EXECUTION") ?? [],
         [agreement?.budget_line_items]
     );
+
+    // Calculate total of executing budget lines
+    const executingTotal = useMemo(() => budgetLinesTotal(executingBudgetLines), [executingBudgetLines]);
 
     // Group budget lines by services component
     const groupedBudgetLinesByServicesComponent = groupByServicesComponent(
@@ -163,6 +166,7 @@ export default function useApprovePreAwardApproval(agreementId) {
         agreement,
         isLoading,
         executingBudgetLines,
+        executingTotal,
         reviewerNotes,
         setReviewerNotes,
         requestorNotes,

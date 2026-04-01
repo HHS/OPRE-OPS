@@ -24,7 +24,8 @@ vi.mock("../../../hooks/use-alert.hooks", () => ({
 }));
 
 vi.mock("../../../helpers/budgetLines.helpers", () => ({
-    groupByServicesComponent: vi.fn()
+    groupByServicesComponent: vi.fn(),
+    budgetLinesTotal: vi.fn()
 }));
 
 vi.mock("react-router-dom", async () => {
@@ -44,7 +45,7 @@ import {
 } from "../../../api/opsAPI";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import useAlert from "../../../hooks/use-alert.hooks";
-import { groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
+import { groupByServicesComponent, budgetLinesTotal } from "../../../helpers/budgetLines.helpers";
 
 // Helper to create test store with auth state
 const createTestStore = (authState = {}) => {
@@ -134,6 +135,8 @@ describe("useApprovePreAwardApproval", () => {
         });
 
         groupByServicesComponent.mockReturnValue([]);
+
+        budgetLinesTotal.mockReturnValue(0);
     });
 
     it("should return initial state correctly", () => {

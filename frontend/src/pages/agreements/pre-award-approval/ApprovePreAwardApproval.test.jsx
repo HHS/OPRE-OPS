@@ -37,6 +37,10 @@ vi.mock("../../../components/Agreements/AgreementCANReviewAccordion", () => ({
     default: () => <div data-testid="agreement-can-review-accordion">CAN Review</div>
 }));
 
+vi.mock("../../../components/BudgetLineItems/ReviewExecutingTotalAccordion/ReviewExecutingTotalAccordion", () => ({
+    default: () => <div data-testid="review-executing-total-accordion">Review Executing Total</div>
+}));
+
 vi.mock("../../../components/UI/Accordion", () => ({
     default: ({ heading, children }) => (
         <div data-testid={`accordion-${heading.toLowerCase().replace(/\s+/g, "-")}`}>
@@ -82,6 +86,7 @@ const mockHookData = {
     agreement: { id: 1, name: "Test Agreement", display_name: "Agreement 001" },
     isLoading: false,
     executingBudgetLines: [],
+    executingTotal: 0,
     reviewerNotes: "",
     setReviewerNotes: vi.fn(),
     requestorNotes: "Please review and approve",

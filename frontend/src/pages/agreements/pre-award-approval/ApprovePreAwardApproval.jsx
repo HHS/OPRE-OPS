@@ -5,6 +5,7 @@ import AgreementMetaAccordion from "../../../components/Agreements/AgreementMeta
 import AgreementBLIAccordion from "../../../components/Agreements/AgreementBLIAccordion";
 import AgreementCANReviewAccordion from "../../../components/Agreements/AgreementCANReviewAccordion";
 import AgreementBLIReviewTable from "../../../components/BudgetLineItems/BLIReviewTable";
+import ReviewExecutingTotalAccordion from "../../../components/BudgetLineItems/ReviewExecutingTotalAccordion/ReviewExecutingTotalAccordion";
 import ServicesComponentAccordion from "../../../components/ServicesComponents/ServicesComponentAccordion";
 import Accordion from "../../../components/UI/Accordion";
 import TextArea from "../../../components/UI/Form/TextArea";
@@ -31,6 +32,7 @@ export const ApprovePreAwardApproval = () => {
         agreement,
         isLoading,
         executingBudgetLines,
+        executingTotal,
         reviewerNotes,
         setReviewerNotes,
         requestorNotes,
@@ -146,6 +148,9 @@ export const ApprovePreAwardApproval = () => {
                         );
                     })}
             </AgreementBLIAccordion>
+
+            {/* Review Executing Total */}
+            <ReviewExecutingTotalAccordion executingTotal={executingTotal} />
 
             {/* CAN Impact */}
             <AgreementCANReviewAccordion
