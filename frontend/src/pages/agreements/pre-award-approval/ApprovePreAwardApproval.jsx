@@ -123,36 +123,40 @@ export const ApprovePreAwardApproval = () => {
             >
                 {groupedBudgetLinesByServicesComponent &&
                     groupedBudgetLinesByServicesComponent.length > 0 &&
-                    groupedBudgetLinesByServicesComponent.map((group, index) => {
-                        const budgetLineScGroupingLabel = group.serviceComponentGroupingLabel
-                            ? group.serviceComponentGroupingLabel
-                            : group.servicesComponentNumber;
-                        return (
-                            <ServicesComponentAccordion
-                                key={`${group.servicesComponentNumber}-${index}`}
-                                servicesComponentNumber={group.servicesComponentNumber}
-                                serviceComponentGroupingLabel={group.serviceComponentGroupingLabel}
-                                withMetadata={true}
-                                periodStart={findPeriodStart(servicesComponents, budgetLineScGroupingLabel)}
-                                periodEnd={findPeriodEnd(servicesComponents, budgetLineScGroupingLabel)}
-                                description={findDescription(servicesComponents, budgetLineScGroupingLabel)}
-                                optional={findIfOptional(servicesComponents, budgetLineScGroupingLabel)}
-                                serviceRequirementType={agreement?.service_requirement_type}
-                            >
-                                {group.budgetLines.length > 0 ? (
-                                    <AgreementBLIReviewTable
-                                        readOnly={true}
-                                        budgetLines={group.budgetLines}
-                                        isReviewMode={true}
-                                    />
-                                ) : (
-                                    <p className="text-center margin-y-7">
-                                        No budget lines in this services component.
-                                    </p>
-                                )}
-                            </ServicesComponentAccordion>
-                        );
-                    })}
+                    groupedBudgetLinesByServicesComponent.map(
+                        (/** @type {any} */ group, /** @type {number} */ index) => {
+                            const budgetLineScGroupingLabel = group.serviceComponentGroupingLabel
+                                ? group.serviceComponentGroupingLabel
+                                : group.servicesComponentNumber;
+                            return (
+                                <ServicesComponentAccordion
+                                    key={`${group.servicesComponentNumber}-${index}`}
+                                    servicesComponentNumber={group.servicesComponentNumber}
+                                    serviceComponentGroupingLabel={group.serviceComponentGroupingLabel}
+                                    withMetadata={true}
+                                    periodStart={findPeriodStart(servicesComponents, budgetLineScGroupingLabel)}
+                                    periodEnd={findPeriodEnd(servicesComponents, budgetLineScGroupingLabel)}
+                                    description={findDescription(servicesComponents, budgetLineScGroupingLabel)}
+                                    optional={findIfOptional(servicesComponents, budgetLineScGroupingLabel)}
+                                    serviceRequirementType={agreement?.service_requirement_type}
+                                >
+                                    {group.budgetLines.length > 0 ? (
+                                        <AgreementBLIReviewTable
+                                            readOnly={true}
+                                            budgetLines={group.budgetLines}
+                                            isReviewMode={true}
+                                            servicesComponentNumber={group.servicesComponentNumber}
+                                            action=""
+                                        />
+                                    ) : (
+                                        <p className="text-center margin-y-7">
+                                            No budget lines in this services component.
+                                        </p>
+                                    )}
+                                </ServicesComponentAccordion>
+                            );
+                        }
+                    )}
             </AgreementBLIAccordion>
 
             {/* Review Executing Total */}
@@ -176,7 +180,7 @@ export const ApprovePreAwardApproval = () => {
                 <p>Please review the Final Consensus Memo below to ensure everything is up to date.</p>
 
                 {preAwardMemoDocuments && preAwardMemoDocuments.length > 0 ? (
-                    preAwardMemoDocuments.map((doc) => (
+                    preAwardMemoDocuments.map((/** @type {any} */ doc) => (
                         <div
                             key={doc.id}
                             className="bg-base-lightest border-1px border-base-light padding-3 margin-top-3"
