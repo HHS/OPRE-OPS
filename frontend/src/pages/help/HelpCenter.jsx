@@ -3,14 +3,12 @@ import { Route, Routes, useNavigate } from "react-router-dom";
 import App from "../../App";
 import PageHeader from "../../components/UI/PageHeader";
 import Tabs from "../../components/UI/Tabs";
+import { HELP_CENTER_EXPORT_URL } from "../../constants";
 import icons from "../../uswds/img/sprite.svg";
 import FAQ from "./FAQ";
 import Feedback from "./Feedback";
 import Glossary from "./Glossary";
 import HowToGuides from "./HowToGuides";
-
-const HELP_CENTER_EXPORT_URL =
-    "https://hhsgov.sharepoint.com/:f:/s/OPREPortfoliomanagementSystemOCIO/IgAh8IKPYZVUSbtEG09m-yqrASNaVBLF-INQxBpoSOVdwtI?e=Qi7bj3";
 
 const HelpCenter = () => {
     // Remove trailing slash to default Help Center to auto select How-to Guides
@@ -103,5 +101,4 @@ const HelpTabs = ({ rightContent }) => {
     );
 };
 
-export { HELP_CENTER_EXPORT_URL };
 export default HelpCenter;

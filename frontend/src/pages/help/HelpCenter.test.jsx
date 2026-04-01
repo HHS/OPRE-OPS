@@ -1,7 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
-import HelpCenter, { HELP_CENTER_EXPORT_URL } from "./HelpCenter";
+import { HELP_CENTER_EXPORT_URL } from "../../constants";
+import HelpCenter from "./HelpCenter";
 
 vi.mock("../../App", () => ({
     default: ({ children }) => <div>{children}</div>
