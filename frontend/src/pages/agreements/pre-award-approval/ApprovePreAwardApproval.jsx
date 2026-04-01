@@ -267,6 +267,7 @@ export const ApprovePreAwardApproval = () => {
                         value={reviewerNotes}
                         onChange={(name, value) => setReviewerNotes(value)}
                         disabled={approvalAlreadyProcessed}
+                        className="maxw-tablet"
                     />
                 </section>
             </Accordion>
