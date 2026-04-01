@@ -267,7 +267,7 @@ export const ApprovePreAwardApproval = () => {
                         value={reviewerNotes}
                         onChange={(name, value) => setReviewerNotes(value)}
                         disabled={approvalAlreadyProcessed}
-                        className="maxw-tablet"
+                        textAreaStyle={{ height: "8.5rem", maxWidth: "40rem" }}
                     />
                 </section>
             </Accordion>
