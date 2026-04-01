@@ -342,14 +342,13 @@ class OPSAPIUser(HttpUser):
             )
 
     @task(3)
-    def get_can_funding_summary(self):
-        """GET /api/v1/can-funding-summary/ - Get CAN funding summary."""
+    def get_can_funding(self):
+        """GET /api/v1/cans/{id}/funding/ - Get CAN funding summary."""
         if SHARED_CACHE["can_ids"]:
-            can_id = str(random.choice(SHARED_CACHE["can_ids"]))  # Convert to string
+            can_id = random.choice(SHARED_CACHE["can_ids"])
             self.client.get(
-                "/api/v1/can-funding-summary/",
-                params={"can_ids": [can_id]},  # Pass as list
-                name="/api/v1/can-funding-summary/?can_ids=[id]",
+                f"/api/v1/cans/{can_id}/funding/",
+                name="/api/v1/cans/[id]/funding/",
             )
 
     @task(2)
