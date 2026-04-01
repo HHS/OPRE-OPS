@@ -670,3 +670,48 @@ class PreAwardApprovalResponseValidationRule(ValidationRule):
                 raise ValidationError(
                     {"reviewer_notes": "Reviewer notes are required when declining an approval request."}
                 )
+
+
+class NoBLIsInReviewForApprovalRequestRule(ValidationRule):
+    """
+    Validates that no budget line items are in review when requesting pre-award approval.
+    Only checks when approval_requested is being set to true for PRE_AWARD steps.
+    """
+
+    @property
+    def name(self) -> str:
+        return "No BLIs In Review For Approval Request"
+
+    def validate(self, procurement_tracker_step: ProcurementTrackerStep, context: ValidationContext) -> None:
+        # Only validate if step type is PRE_AWARD
+        if procurement_tracker_step.step_type != ProcurementTrackerStepType.PRE_AWARD:
+            return
+
+        updated_fields = context.updated_fields
+
+        # Only validate if approval_requested is being set to true
+        if updated_fields.get("approval_requested") is not True:
+            return
+
+        # Check if procurement tracker step has a valid agreement
+        if (
+            not procurement_tracker_step.procurement_tracker
+            or not procurement_tracker_step.procurement_tracker.agreement
+        ):
+            raise ValidationError(
+                {
+                    "agreement": f"Procurement tracker step {procurement_tracker_step.id} is not linked to a valid agreement."
+                }
+            )
+
+        agreement = procurement_tracker_step.procurement_tracker.agreement
+
+        # Check if any budget line items are in review
+        if agreement.budget_line_items:
+            blis_in_review = [bli for bli in agreement.budget_line_items if bli.in_review]
+            if blis_in_review:
+                bli_ids = ", ".join(str(bli.id) for bli in blis_in_review)
+>>>>>>> 492b1e083 (style: apply black formatting to validation rule)
+                raise ValidationError(
+                    {"reviewer_notes": "Reviewer notes are required when declining an approval request."}
+                )
