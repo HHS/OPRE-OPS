@@ -305,7 +305,7 @@ export const ApprovePreAwardApproval = () => {
             </div>
 
             {/* Action Buttons */}
-            <div className="grid-row flex-justify-end margin-top-8">
+            <div className="grid-row flex-justify-end margin-top-8 margin-bottom-8">
                 <button
                     className="usa-button usa-button--unstyled margin-right-2"
                     onClick={handleCancel}
