@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { MemoryRouter } from "react-router-dom";
-import store from "../../../store";
+import { setupStore } from "../../../store";
 import useApprovePreAwardApproval from "./ApprovePreAwardApproval.hooks";
 
 // Mock the API hooks
@@ -46,11 +46,25 @@ import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import useAlert from "../../../hooks/use-alert.hooks";
 import { groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
 
-const wrapper = ({ children }) => (
-    <Provider store={store}>
-        <MemoryRouter>{children}</MemoryRouter>
-    </Provider>
-);
+// Helper to create test store with auth state
+const createTestStore = (authState = {}) => {
+    return setupStore({
+        auth: {
+            activeUser: authState.activeUser || null,
+            ...authState
+        }
+    });
+};
+
+const createWrapper = (store) => {
+    const Wrapper = ({ children }) => (
+        <Provider store={store}>
+            <MemoryRouter>{children}</MemoryRouter>
+        </Provider>
+    );
+    Wrapper.displayName = "TestWrapper";
+    return Wrapper;
+};
 
 describe("useApprovePreAwardApproval", () => {
     const mockAgreement = {
@@ -123,6 +137,8 @@ describe("useApprovePreAwardApproval", () => {
     });
 
     it("should return initial state correctly", () => {
+        const store = createTestStore();
+        const wrapper = createWrapper(store);
         const { result } = renderHook(() => useApprovePreAwardApproval(1), { wrapper });
 
         expect(result.current.agreement).toEqual(mockAgreement);
@@ -134,6 +150,8 @@ describe("useApprovePreAwardApproval", () => {
     });
 
     it("should filter executing budget lines correctly", () => {
+        const store = createTestStore();
+        const wrapper = createWrapper(store);
         const { result } = renderHook(() => useApprovePreAwardApproval(1), { wrapper });
 
         expect(result.current.executingBudgetLines).toHaveLength(1);
@@ -141,12 +159,16 @@ describe("useApprovePreAwardApproval", () => {
     });
 
     it("should extract step 5 data correctly", () => {
+        const store = createTestStore();
+        const wrapper = createWrapper(store);
         const { result } = renderHook(() => useApprovePreAwardApproval(1), { wrapper });
 
         expect(result.current.requestorNotes).toBe("Please review");
     });
 
     it("should identify approval as not processed when status is null", () => {
+        const store = createTestStore();
+        const wrapper = createWrapper(store);
         const { result } = renderHook(() => useApprovePreAwardApproval(1), { wrapper });
 
         expect(result.current.approvalAlreadyProcessed).toBe(false);
@@ -165,128 +187,79 @@ describe("useApprovePreAwardApproval", () => {
             }
         });
 
+        const store = createTestStore();
+        const wrapper = createWrapper(store);
         const { result } = renderHook(() => useApprovePreAwardApproval(1), { wrapper });
 
         expect(result.current.approvalAlreadyProcessed).toBe(true);
     });
 
     it("should grant permission to BUDGET_TEAM users", () => {
-        // Mock Redux store state for BUDGET_TEAM user
-        const mockStore = {
-            ...store,
-            getState: () => ({
-                auth: {
-                    activeUser: {
-                        id: 200,
-                        roles: [{ name: "BUDGET_TEAM" }]
-                    }
-                }
-            })
-        };
+        const store = createTestStore({
+            activeUser: {
+                id: 200,
+                roles: [{ name: "BUDGET_TEAM" }]
+            }
+        });
+        const wrapper = createWrapper(store);
 
-        const customWrapper = ({ children }) => (
-            <Provider store={mockStore}>
-                <MemoryRouter>{children}</MemoryRouter>
-            </Provider>
-        );
-
-        const { result } = renderHook(() => useApprovePreAwardApproval(1), { wrapper: customWrapper });
+        const { result } = renderHook(() => useApprovePreAwardApproval(1), { wrapper });
 
         expect(result.current.hasPermission).toBe(true);
     });
 
     it("should grant permission to SYSTEM_OWNER users", () => {
-        const mockStore = {
-            ...store,
-            getState: () => ({
-                auth: {
-                    activeUser: {
-                        id: 200,
-                        roles: [{ name: "SYSTEM_OWNER" }]
-                    }
-                }
-            })
-        };
+        const store = createTestStore({
+            activeUser: {
+                id: 200,
+                roles: [{ name: "SYSTEM_OWNER" }]
+            }
+        });
+        const wrapper = createWrapper(store);
 
-        const customWrapper = ({ children }) => (
-            <Provider store={mockStore}>
-                <MemoryRouter>{children}</MemoryRouter>
-            </Provider>
-        );
-
-        const { result } = renderHook(() => useApprovePreAwardApproval(1), { wrapper: customWrapper });
+        const { result } = renderHook(() => useApprovePreAwardApproval(1), { wrapper });
 
         expect(result.current.hasPermission).toBe(true);
     });
 
     it("should grant permission to REVIEWER_APPROVER who is division director", () => {
-        const mockStore = {
-            ...store,
-            getState: () => ({
-                auth: {
-                    activeUser: {
-                        id: 100, // matches division_director_id
-                        roles: [{ name: "REVIEWER_APPROVER" }]
-                    }
-                }
-            })
-        };
+        const store = createTestStore({
+            activeUser: {
+                id: 100, // matches division_director_id
+                roles: [{ name: "REVIEWER_APPROVER" }]
+            }
+        });
+        const wrapper = createWrapper(store);
 
-        const customWrapper = ({ children }) => (
-            <Provider store={mockStore}>
-                <MemoryRouter>{children}</MemoryRouter>
-            </Provider>
-        );
-
-        const { result } = renderHook(() => useApprovePreAwardApproval(1), { wrapper: customWrapper });
+        const { result } = renderHook(() => useApprovePreAwardApproval(1), { wrapper });
 
         expect(result.current.hasPermission).toBe(true);
     });
 
     it("should grant permission to REVIEWER_APPROVER who is deputy division director", () => {
-        const mockStore = {
-            ...store,
-            getState: () => ({
-                auth: {
-                    activeUser: {
-                        id: 101, // matches deputy_division_director_id
-                        roles: [{ name: "REVIEWER_APPROVER" }]
-                    }
-                }
-            })
-        };
+        const store = createTestStore({
+            activeUser: {
+                id: 101, // matches deputy_division_director_id
+                roles: [{ name: "REVIEWER_APPROVER" }]
+            }
+        });
+        const wrapper = createWrapper(store);
 
-        const customWrapper = ({ children }) => (
-            <Provider store={mockStore}>
-                <MemoryRouter>{children}</MemoryRouter>
-            </Provider>
-        );
-
-        const { result } = renderHook(() => useApprovePreAwardApproval(1), { wrapper: customWrapper });
+        const { result } = renderHook(() => useApprovePreAwardApproval(1), { wrapper });
 
         expect(result.current.hasPermission).toBe(true);
     });
 
     it("should deny permission to users without required roles", () => {
-        const mockStore = {
-            ...store,
-            getState: () => ({
-                auth: {
-                    activeUser: {
-                        id: 999,
-                        roles: [{ name: "VIEWER" }]
-                    }
-                }
-            })
-        };
+        const store = createTestStore({
+            activeUser: {
+                id: 999,
+                roles: [{ name: "VIEWER" }]
+            }
+        });
+        const wrapper = createWrapper(store);
 
-        const customWrapper = ({ children }) => (
-            <Provider store={mockStore}>
-                <MemoryRouter>{children}</MemoryRouter>
-            </Provider>
-        );
-
-        const { result } = renderHook(() => useApprovePreAwardApproval(1), { wrapper: customWrapper });
+        const { result } = renderHook(() => useApprovePreAwardApproval(1), { wrapper });
 
         expect(result.current.hasPermission).toBe(false);
     });
@@ -301,6 +274,8 @@ describe("useApprovePreAwardApproval", () => {
             }
         });
 
+        const store = createTestStore();
+        const wrapper = createWrapper(store);
         const { result } = renderHook(() => useApprovePreAwardApproval(1), { wrapper });
 
         expect(result.current.preAwardMemoDocuments).toHaveLength(1);
@@ -308,6 +283,8 @@ describe("useApprovePreAwardApproval", () => {
     });
 
     it("should call groupByServicesComponent with executing budget lines", () => {
+        const store = createTestStore();
+        const wrapper = createWrapper(store);
         renderHook(() => useApprovePreAwardApproval(1), { wrapper });
 
         expect(groupByServicesComponent).toHaveBeenCalledWith(

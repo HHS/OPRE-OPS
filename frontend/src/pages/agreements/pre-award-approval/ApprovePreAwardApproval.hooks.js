@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, shallowEqual } from "react-redux";
 import {
     useGetAgreementByIdQuery,
     useGetServicesComponentsListQuery,
@@ -26,8 +26,11 @@ export default function useApprovePreAwardApproval(agreementId) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState("");
 
+    // Use separate selectors with shallowEqual to prevent infinite loops
+    // @ts-expect-error - Redux state typing in JS files
     const userId = useSelector((state) => state.auth?.activeUser?.id) ?? null;
-    const userRoles = useSelector((state) => state.auth?.activeUser?.roles) ?? [];
+    // @ts-expect-error - Redux state typing in JS files
+    const userRoles = useSelector((state) => state.auth?.activeUser?.roles ?? [], shallowEqual);
 
     const { data: agreement, isLoading } = useGetAgreementByIdQuery(agreementId);
     const [updateProcurementTrackerStep] = useUpdateProcurementTrackerStepMutation();
@@ -40,8 +43,11 @@ export default function useApprovePreAwardApproval(agreementId) {
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
     const alternateProjectOfficerName = useGetUserFullNameFromId(agreement?.alternate_project_officer_id);
 
-    // Get executing budget lines
-    const executingBudgetLines = agreement?.budget_line_items?.filter((bli) => bli.status === "IN_EXECUTION") || [];
+    // Get executing budget lines (memoized to prevent infinite loops in hasPermission)
+    const executingBudgetLines = useMemo(
+        () => agreement?.budget_line_items?.filter(/** @param {any} bli */ (bli) => bli.status === "IN_EXECUTION") ?? [],
+        [agreement?.budget_line_items]
+    );
 
     // Group budget lines by services component
     const groupedBudgetLinesByServicesComponent = groupByServicesComponent(
@@ -51,23 +57,23 @@ export default function useApprovePreAwardApproval(agreementId) {
 
     // Get Step 5 (Pre-Award) from procurement tracker
     const trackers = procurementTrackersData?.data || [];
-    const activeTracker = trackers.find((tracker) => tracker.status === "ACTIVE");
-    const step5 = activeTracker?.steps?.find((step) => step.step_number === 5);
+    const activeTracker = trackers.find(/** @param {any} tracker */ (tracker) => tracker.status === "ACTIVE");
+    const step5 = activeTracker?.steps?.find(/** @param {any} step */ (step) => step.step_number === 5);
 
     // Get existing Pre-Award Consensus Memo documents
     const preAwardMemoDocuments =
-        documentsData?.documents?.filter((doc) => doc.document_type === "PRE_AWARD_CONSENSUS_MEMO") || [];
+        documentsData?.documents?.filter(/** @param {any} doc */ (doc) => doc.document_type === "PRE_AWARD_CONSENSUS_MEMO") || [];
 
     // Get submitter's notes
     const requestorNotes = step5?.requestor_notes || "";
 
-    // Check if approval already processed
-    const approvalAlreadyProcessed = step5?.approval_status && step5.approval_status !== "PENDING";
+    // Check if approval already processed (returns boolean, not null)
+    const approvalAlreadyProcessed = Boolean(step5?.approval_status && step5.approval_status !== "PENDING");
 
     // Permission check: user is Division Director, Deputy Director, Budget Team, or System Owner
     const hasPermission = useMemo(() => {
-        // Check if user has required roles
-        const userRoleNames = userRoles.map((role) => role?.name);
+        const userRoleNames = userRoles.map(/** @param {any} role */ (role) => role?.name);
+
         const hasRequiredRole =
             userRoleNames.includes("BUDGET_TEAM") ||
             userRoleNames.includes("SYSTEM_OWNER") ||
@@ -83,7 +89,7 @@ export default function useApprovePreAwardApproval(agreementId) {
         // For REVIEWER_APPROVER, check if user is division director/deputy for any CAN in executing budget lines
         if (userRoleNames.includes("REVIEWER_APPROVER")) {
             return executingBudgetLines.some(
-                (bli) =>
+                /** @param {any} bli */ (bli) =>
                     bli.can?.portfolio?.division?.division_director_id === userId ||
                     bli.can?.portfolio?.division?.deputy_division_director_id === userId
             );
@@ -92,6 +98,9 @@ export default function useApprovePreAwardApproval(agreementId) {
         return false;
     }, [userRoles, userId, executingBudgetLines]);
 
+    /**
+     * @param {"APPROVED" | "DECLINED"} action
+     */
     const handleAction = async (action) => {
         if (!step5?.id) {
             setSubmitError("Step 5 not found. Cannot process approval request.");
@@ -131,6 +140,7 @@ export default function useApprovePreAwardApproval(agreementId) {
                 } catch (error) {
                     console.error(`Failed to ${actionText} approval request:`, error);
                     setSubmitError(
+                        // @ts-expect-error - RTK Query error has data property
                         error?.data?.error || `Failed to ${actionText} approval request. Please try again.`
                     );
                     setIsSubmitting(false);
