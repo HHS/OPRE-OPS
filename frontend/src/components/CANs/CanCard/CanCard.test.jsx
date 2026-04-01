@@ -20,7 +20,12 @@ vi.mock("../../UI/DataViz/LineGraph/ReverseLineGraph", () => ({
 }));
 vi.mock("../../UI/DataViz/LineGraph", () => ({
     __esModule: true,
-    default: ({ data }) => <div data-testid="mock-line-graph" data-graph-data={JSON.stringify(data)} />
+    default: ({ data }) => (
+        <div
+            data-testid="mock-line-graph"
+            data-graph-data={JSON.stringify(data)}
+        />
+    )
 }));
 
 describe("CanCard", () => {
