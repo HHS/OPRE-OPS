@@ -247,7 +247,7 @@ export const ApprovePreAwardApproval = () => {
                 <p>Notes can be shared between the Submitter and Reviewer, if needed.</p>
 
                 {requestorNotes && (
-                    <section className="margin-top-3">
+                    <section className="margin-top-5">
                         <h3 className="font-sans-lg text-semibold">Submitter&apos;s Notes</h3>
                         <p
                             className="maxw-mobile-lg"
@@ -259,10 +259,10 @@ export const ApprovePreAwardApproval = () => {
                 )}
 
                 <section className={requestorNotes ? "margin-top-5" : "margin-top-3"}>
-                    <h3 className="font-sans-lg text-semibold">Reviewer&apos;s Notes</h3>
+                    <h3 className="font-sans-lg text-semibold margin-bottom-1">Reviewer&apos;s Notes</h3>
                     <TextArea
                         name="reviewer-notes"
-                        label="Notes (optional)"
+                        label=""
                         maxLength={150}
                         value={reviewerNotes}
                         onChange={(name, value) => setReviewerNotes(value)}
