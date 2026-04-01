@@ -265,8 +265,8 @@ export const ApprovePreAwardApproval = () => {
                         label="Notes (optional)"
                         maxLength={150}
                         value={reviewerNotes}
-                        onChange={(name, value) => setReviewerNotes(value)}
-                        disabled={approvalAlreadyProcessed}
+                        onChange={(/** @type {string} */ _name, /** @type {string} */ value) => setReviewerNotes(value)}
+                        isDisabled={approvalAlreadyProcessed}
                         textAreaStyle={{ height: "8.5rem", maxWidth: "40rem" }}
                     />
                 </section>

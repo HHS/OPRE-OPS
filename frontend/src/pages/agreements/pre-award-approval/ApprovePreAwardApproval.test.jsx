@@ -51,11 +51,11 @@ vi.mock("../../../components/UI/Accordion", () => ({
 }));
 
 vi.mock("../../../components/UI/Form/TextArea", () => ({
-    default: ({ onChange, disabled, maxLength }) => (
+    default: ({ onChange, isDisabled, maxLength }) => (
         <textarea
             data-testid="reviewer-notes-textarea"
             onChange={(e) => onChange("reviewer-notes", e.target.value)}
-            disabled={disabled}
+            disabled={isDisabled}
             maxLength={maxLength}
         />
     )
