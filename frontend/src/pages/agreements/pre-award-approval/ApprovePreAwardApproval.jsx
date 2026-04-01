@@ -283,7 +283,7 @@ export const ApprovePreAwardApproval = () => {
             )}
 
             {/* Approval Confirmation Checkbox */}
-            <div className="margin-top-5">
+            <div className="margin-top-3">
                 <div className="usa-checkbox">
                     <input
                         className="usa-checkbox__input"
