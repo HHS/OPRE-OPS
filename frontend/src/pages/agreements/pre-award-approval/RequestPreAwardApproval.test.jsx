@@ -40,6 +40,11 @@ vi.mock("../../../components/Agreements/AgreementCANReviewAccordion", () => ({
     default: () => <div data-testid="can-review-accordion" />
 }));
 
+vi.mock("../../../components/BudgetLineItems/ReviewExecutingTotalAccordion/ReviewExecutingTotalAccordion", () => ({
+    __esModule: true,
+    default: () => <div data-testid="review-executing-total-accordion" />
+}));
+
 vi.mock("../../../components/UI/Accordion", () => ({
     __esModule: true,
     default: ({ heading, children }) => (
@@ -75,6 +80,7 @@ const baseHookResult = () => ({
     agreement: { name: "Test Agreement", id: 1 },
     isLoading: false,
     executingBudgetLines: [{ id: 1, status: "IN_EXECUTION" }],
+    executingTotal: 0,
     notes: "",
     setNotes: vi.fn(),
     handleSubmit: vi.fn(),

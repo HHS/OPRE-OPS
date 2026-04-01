@@ -11,7 +11,7 @@ import {
 } from "../../../api/opsAPI";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import { getLocalISODate } from "../../../helpers/utils";
-import { groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
+import { groupByServicesComponent, budgetLinesTotal } from "../../../helpers/budgetLines.helpers";
 import {
     convertFileSizeToMB,
     isFileValid,
@@ -53,6 +53,9 @@ export default function useRequestPreAwardApproval(agreementId) {
 
     // Get executing budget lines
     const executingBudgetLines = agreement?.budget_line_items?.filter((bli) => bli.status === "IN_EXECUTION") || [];
+
+    // Calculate total of executing budget lines
+    const executingTotal = budgetLinesTotal(executingBudgetLines);
 
     // Group budget lines by services component
     const groupedBudgetLinesByServicesComponent = groupByServicesComponent(
@@ -187,6 +190,7 @@ export default function useRequestPreAwardApproval(agreementId) {
         agreement,
         isLoading,
         executingBudgetLines,
+        executingTotal,
         notes,
         setNotes,
         handleSubmit,
