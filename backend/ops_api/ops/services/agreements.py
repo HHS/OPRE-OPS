@@ -922,14 +922,16 @@ def _compute_procurement_overview(all_results: list[Agreement], fiscal_year: int
     for status in tracked_statuses:
         amount = amount_by_status[status]
         agreement_count = len(agreements_by_status[status])
-        status_data.append({
-            "status": status.name,
-            "label": status.value,
-            "amount": float(amount),
-            "amount_percent": _percent(amount, total_amount),
-            "agreements": agreement_count,
-            "agreements_percent": _percent(agreement_count, total_agreements),
-        })
+        status_data.append(
+            {
+                "status": status.name,
+                "label": status.value,
+                "amount": float(amount),
+                "amount_percent": _percent(amount, total_amount),
+                "agreements": agreement_count,
+                "agreements_percent": _percent(agreement_count, total_agreements),
+            }
+        )
 
     return {
         "status_data": status_data,
@@ -962,7 +964,8 @@ def _compute_procurement_step_summary(all_results: list[Agreement], fiscal_year:
 
         # Filter BLIs to IN_EXECUTION for the fiscal year
         executing_blis = [
-            bli for bli in agreement.budget_line_items
+            bli
+            for bli in agreement.budget_line_items
             if bli.status == BudgetLineItemStatus.IN_EXECUTION
             and (fiscal_year is None or bli.fiscal_year == fiscal_year)
         ]
@@ -984,12 +987,14 @@ def _compute_procurement_step_summary(all_results: list[Agreement], fiscal_year:
 
     step_data = []
     for step in range(1, 7):
-        step_data.append({
-            "step": step,
-            "agreements": agreements_by_step[step],
-            "agreements_percent": _percent(agreements_by_step[step], total_agreement_count),
-            "amount": float(amount_by_step[step]),
-        })
+        step_data.append(
+            {
+                "step": step,
+                "agreements": agreements_by_step[step],
+                "agreements_percent": _percent(agreements_by_step[step], total_agreement_count),
+                "amount": float(amount_by_step[step]),
+            }
+        )
 
     return {
         "step_data": step_data,
