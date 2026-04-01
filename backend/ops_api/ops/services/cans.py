@@ -550,13 +550,7 @@ class CANService:
         stmt = (
             select(CAN)
             .where(CAN.id == id)
-            .options(
-                selectinload(CAN.funding_budgets),
-                selectinload(CAN.funding_details),
-                selectinload(CAN.funding_received),
-                selectinload(CAN.budget_line_items),
-                selectinload(CAN.portfolio),
-            )
+            .options(*CAN_EAGER_LOAD_OPTIONS)
         )
         can = self.db_session.scalar(stmt)
         if not can:
