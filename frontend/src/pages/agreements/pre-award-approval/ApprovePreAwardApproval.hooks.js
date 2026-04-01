@@ -15,7 +15,32 @@ import useAlert from "../../../hooks/use-alert.hooks";
 /**
  * Custom hook for the ApprovePreAwardApproval page.
  * @param {number} agreementId - The agreement ID.
- * @returns {object} Hook state and functions.
+ * @returns {{
+ *   agreement: any,
+ *   isLoading: boolean,
+ *   executingBudgetLines: any[],
+ *   executingTotal: number,
+ *   reviewerNotes: string,
+ *   setReviewerNotes: (value: string) => void,
+ *   requestorNotes: string,
+ *   handleApprove: () => void,
+ *   handleDecline: () => void,
+ *   handleCancel: () => void,
+ *   projectOfficerName: string,
+ *   alternateProjectOfficerName: string,
+ *   servicesComponents: any[],
+ *   groupedBudgetLinesByServicesComponent: any[],
+ *   preAwardMemoDocuments: any[],
+ *   showModal: boolean,
+ *   setShowModal: (value: boolean) => void,
+ *   modalProps: any,
+ *   isSubmitting: boolean,
+ *   submitError: string,
+ *   hasPermission: boolean,
+ *   approvalAlreadyProcessed: boolean,
+ *   preAwardRequestorName: string,
+ *   preAwardApprovalRequestedDate: string
+ * }} Hook state and functions.
  */
 export default function useApprovePreAwardApproval(agreementId) {
     const navigate = useNavigate();
