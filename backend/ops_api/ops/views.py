@@ -108,6 +108,7 @@ from ops_api.ops.resources.product_service_code import (
     ProductServiceCodeListAPI,
 )
 from ops_api.ops.resources.projects import ProjectFundingAPI, ProjectItemAPI, ProjectListAPI, ProjectListFilterOptionAPI
+from ops_api.ops.resources.projects_spending import ProjectSpendingItemAPI
 from ops_api.ops.resources.reporting_summary import ReportingSummaryListAPI
 from ops_api.ops.resources.research_methodology import (
     ResearchMethodologyItemAPI,
@@ -233,6 +234,7 @@ CAN_FUNDING_DETAILS_LIST_API_VIEW_FUNC = CANFundingDetailsListAPI.as_view(
 PROJECT_ITEM_API_VIEW_FUNC = ProjectItemAPI.as_view("projects-item", Project)
 PROJECT_LIST_API_VIEW_FUNC = ProjectListAPI.as_view("projects-group", Project)
 PROJECT_LIST_FILTER_OPTION_API_VIEW_FUNC = ProjectListFilterOptionAPI.as_view("projects-filters", Project)
+PROJECT_SPENDING_ITEM_API_VIEW_FUNC = ProjectSpendingItemAPI.as_view("projects-spending-item", Project)
 PROJECT_FUNDING_API_VIEW_FUNC = ProjectFundingAPI.as_view("projects-funding", Project)
 
 RESEARCH_METHODOLOGY_ITEM_API_VIEW_FUNC = ResearchMethodologyItemAPI.as_view(
