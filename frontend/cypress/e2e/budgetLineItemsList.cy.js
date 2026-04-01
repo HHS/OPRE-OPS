@@ -199,6 +199,6 @@ it("Should allow the user to export table", () => {
     cy.get("#fiscal-year-select").select("2044");
     cy.get('[data-cy="budget-line-export"]').should("exist");
 
-    cy.get("#fiscal-year-select").select("2026");
+    cy.get("#fiscal-year-select").select("2027");
     cy.get('[data-cy="budget-line-export"]').should("not.exist");
 });
