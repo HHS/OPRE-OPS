@@ -277,10 +277,8 @@ export const ApprovePreAwardApproval = () => {
                 <SimpleAlert
                     type="error"
                     heading="Action Failed"
-                    className="margin-top-3"
-                >
-                    {submitError}
-                </SimpleAlert>
+                    message={submitError}
+                />
             )}
 
             {/* Approval Confirmation Checkbox */}
