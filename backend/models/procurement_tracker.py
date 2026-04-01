@@ -504,6 +504,23 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
             data.pop("evaluation_notes", None)
             data.pop("evaluation_completed_by_user", None)
 
+            # Remove PRE_AWARD-specific fields
+            data.pop("pre_award_target_completion_date", None)
+            data.pop("pre_award_task_completed_by", None)
+            data.pop("pre_award_date_completed", None)
+            data.pop("pre_award_notes", None)
+            data.pop("pre_award_approval_requested", None)
+            data.pop("pre_award_approval_requested_date", None)
+            data.pop("pre_award_approval_requested_by", None)
+            data.pop("pre_award_requestor_notes", None)
+            data.pop("pre_award_approval_status", None)
+            data.pop("pre_award_approval_responded_by", None)
+            data.pop("pre_award_approval_responded_date", None)
+            data.pop("pre_award_approval_reviewer_notes", None)
+            data.pop("pre_award_completed_by_user", None)
+            data.pop("pre_award_requested_by_user", None)
+            data.pop("pre_award_approval_responded_by_user", None)
+
         # Handle PRE_SOLICITATION-specific fields
         elif self.step_type == ProcurementTrackerStepType.PRE_SOLICITATION:
             # Map prefixed columns to API field names
@@ -538,6 +555,23 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
             data.pop("evaluation_notes", None)
             data.pop("evaluation_completed_by_user", None)
 
+            # Remove PRE_AWARD-specific fields
+            data.pop("pre_award_target_completion_date", None)
+            data.pop("pre_award_task_completed_by", None)
+            data.pop("pre_award_date_completed", None)
+            data.pop("pre_award_notes", None)
+            data.pop("pre_award_approval_requested", None)
+            data.pop("pre_award_approval_requested_date", None)
+            data.pop("pre_award_approval_requested_by", None)
+            data.pop("pre_award_requestor_notes", None)
+            data.pop("pre_award_approval_status", None)
+            data.pop("pre_award_approval_responded_by", None)
+            data.pop("pre_award_approval_responded_date", None)
+            data.pop("pre_award_approval_reviewer_notes", None)
+            data.pop("pre_award_completed_by_user", None)
+            data.pop("pre_award_requested_by_user", None)
+            data.pop("pre_award_approval_responded_by_user", None)
+
         # Handle SOLICITATION-specific fields
         elif self.step_type == ProcurementTrackerStepType.SOLICITATION:
             # Map prefixed columns to API field names
@@ -571,6 +605,23 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
             data.pop("evaluation_date_completed", None)
             data.pop("evaluation_notes", None)
             data.pop("evaluation_completed_by_user", None)
+
+            # Remove PRE_AWARD-specific fields
+            data.pop("pre_award_target_completion_date", None)
+            data.pop("pre_award_task_completed_by", None)
+            data.pop("pre_award_date_completed", None)
+            data.pop("pre_award_notes", None)
+            data.pop("pre_award_approval_requested", None)
+            data.pop("pre_award_approval_requested_date", None)
+            data.pop("pre_award_approval_requested_by", None)
+            data.pop("pre_award_requestor_notes", None)
+            data.pop("pre_award_approval_status", None)
+            data.pop("pre_award_approval_responded_by", None)
+            data.pop("pre_award_approval_responded_date", None)
+            data.pop("pre_award_approval_reviewer_notes", None)
+            data.pop("pre_award_completed_by_user", None)
+            data.pop("pre_award_requested_by_user", None)
+            data.pop("pre_award_approval_responded_by_user", None)
 
         # Handle EVALUATION-specific fields
         elif self.step_type == ProcurementTrackerStepType.EVALUATION:
