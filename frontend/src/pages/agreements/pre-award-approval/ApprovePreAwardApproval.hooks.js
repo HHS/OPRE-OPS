@@ -42,7 +42,6 @@ export default function useApprovePreAwardApproval(agreementId) {
 
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
     const alternateProjectOfficerName = useGetUserFullNameFromId(agreement?.alternate_project_officer_id);
-    const preAwardRequestorName = useGetUserFullNameFromId(step5?.approval_requested_by);
 
     // Get executing budget lines (memoized to prevent infinite loops in hasPermission)
     const executingBudgetLines = useMemo(
@@ -64,6 +63,8 @@ export default function useApprovePreAwardApproval(agreementId) {
     const trackers = procurementTrackersData?.data || [];
     const activeTracker = trackers.find(/** @param {any} tracker */ (tracker) => tracker.status === "ACTIVE");
     const step5 = activeTracker?.steps?.find(/** @param {any} step */ (step) => step.step_number === 5);
+
+    const preAwardRequestorName = useGetUserFullNameFromId(step5?.approval_requested_by);
 
     // Get existing Pre-Award Consensus Memo documents
     const preAwardMemoDocuments =

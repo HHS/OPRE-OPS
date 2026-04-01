@@ -211,9 +211,10 @@ export const ApprovePreAwardApproval = () => {
                                     aria-hidden="true"
                                     focusable="false"
                                     role="img"
+                                    viewBox="0 0 24 24"
                                     style={{ fill: "#005ea2", width: "24px", height: "24px" }}
                                 >
-                                    <use href="/assets/img/sprite.svg#file_download"></use>
+                                    <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
                                 </svg>
                             </button>
                         </div>
