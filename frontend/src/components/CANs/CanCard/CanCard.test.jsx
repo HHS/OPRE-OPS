@@ -20,7 +20,7 @@ vi.mock("../../UI/DataViz/LineGraph/ReverseLineGraph", () => ({
 }));
 vi.mock("../../UI/DataViz/LineGraph", () => ({
     __esModule: true,
-    default: () => <div data-testid="mock-line-graph" />
+    default: ({ data }) => <div data-testid="mock-line-graph" data-graph-data={JSON.stringify(data)} />
 }));
 
 describe("CanCard", () => {
@@ -64,6 +64,65 @@ describe("CanCard", () => {
         // Check if chart sections are rendered
         expect(screen.getByTestId("mock-reverse-line-graph")).toBeInTheDocument();
         expect(screen.getByTestId("mock-line-graph")).toBeInTheDocument();
+    });
+
+    it("passes correct total_funding to the spending/available LineGraph", async () => {
+        render(
+            <BrowserRouter>
+                <CanCard
+                    canId={mockCan.id}
+                    fiscalYear={mockFiscalYear}
+                />
+            </BrowserRouter>
+        );
+
+        await waitFor(() => {
+            const lineGraph = screen.getByTestId("mock-line-graph");
+            const graphData = JSON.parse(lineGraph.getAttribute("data-graph-data"));
+
+            // The second segment (available) should use funding.total_funding, not top-level total_funding
+            expect(graphData[1].value).toBe(mockCanFundingData.funding.total_funding);
+            expect(graphData[1].value).not.toBeUndefined();
+        });
+    });
+
+    it("computes spending/available chart percentages correctly", async () => {
+        // Use numeric funding values to avoid string concatenation
+        const numericFundingData = {
+            ...mockCanFundingData,
+            funding: {
+                ...mockCanFundingData.funding,
+                planned_funding: 1000000,
+                in_execution_funding: 2000000,
+                obligated_funding: 0,
+                total_funding: 10000000
+            }
+        };
+
+        vi.mocked(useGetCanFundingQuery).mockReturnValue({
+            data: numericFundingData,
+            isLoading: false,
+            refetch: vi.fn()
+        });
+
+        render(
+            <BrowserRouter>
+                <CanCard
+                    canId={mockCan.id}
+                    fiscalYear={mockFiscalYear}
+                />
+            </BrowserRouter>
+        );
+
+        await waitFor(() => {
+            const lineGraph = screen.getByTestId("mock-line-graph");
+            const graphData = JSON.parse(lineGraph.getAttribute("data-graph-data"));
+
+            // spending = planned (1M) + in_execution (2M) + obligated (0) = 3M
+            // total = 10M, so spending percent = 30, available percent = 70
+            expect(graphData[0].percent).toBe(30);
+            expect(graphData[1].percent).toBe(70);
+        });
     });
 
     // Add more test cases as needed

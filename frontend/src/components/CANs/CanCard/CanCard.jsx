@@ -61,7 +61,7 @@ const CanCard = ({ canId, fiscalYear }) => {
         },
         {
             id: 2,
-            value: canFundingData?.total_funding,
+            value: canFundingData?.funding?.total_funding,
             percent: 100 - spendingPercent,
             color: "var(--data-viz-budget-graph-1)"
         }
