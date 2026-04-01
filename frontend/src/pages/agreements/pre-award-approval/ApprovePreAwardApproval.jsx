@@ -247,7 +247,7 @@ export const ApprovePreAwardApproval = () => {
                 <p>Notes can be shared between the Submitter and Reviewer, if needed.</p>
 
                 {requestorNotes && (
-                    <section>
+                    <section className="margin-top-3">
                         <h3 className="font-sans-lg text-semibold">Submitter&apos;s Notes</h3>
                         <p
                             className="maxw-mobile-lg"
@@ -258,7 +258,7 @@ export const ApprovePreAwardApproval = () => {
                     </section>
                 )}
 
-                <section className="margin-top-3">
+                <section className={requestorNotes ? "margin-top-5" : "margin-top-3"}>
                     <h3 className="font-sans-lg text-semibold">Reviewer&apos;s Notes</h3>
                     <TextArea
                         name="reviewer-notes"
