@@ -169,62 +169,53 @@ export const ApprovePreAwardApproval = () => {
             >
                 <p>Please review the Final Consensus Memo below to ensure everything is up to date.</p>
 
-                {preAwardMemoDocuments && preAwardMemoDocuments.length > 0 ? (
-                    preAwardMemoDocuments.map((doc) => (
+                <div className="usa-form-group margin-top-3">
+                    <div className="display-flex flex-align-center">
                         <div
-                            key={doc.id}
-                            className="border-1px border-base-light margin-top-3"
+                            className="position-relative bg-white border-1px border-base-light"
                             style={{
                                 maxWidth: "540px",
-                                padding: "1rem",
+                                flexGrow: 1,
+                                minHeight: "100px",
                                 display: "flex",
+                                flexDirection: "column",
                                 justifyContent: "space-between",
-                                alignItems: "center"
+                                padding: "1rem"
                             }}
                         >
-                            <div style={{ flexGrow: 1 }}>
-                                <div style={{ fontSize: "0.875rem", color: "#757575", marginBottom: "0.5rem" }}>
-                                    Final Consensus Memo
-                                </div>
-                                <div
-                                    className="text-bold"
-                                    style={{ marginBottom: "0.25rem" }}
-                                >
-                                    {doc.document_name}
-                                </div>
-                                <div style={{ fontSize: "0.875rem", color: "#757575" }}>
-                                    Uploaded by Team Member on June 26, 2023 {doc.document_size} MB
-                                </div>
-                            </div>
                             <div>
-                                <svg
-                                    className="usa-icon"
-                                    aria-hidden="true"
-                                    focusable="false"
-                                    role="img"
-                                    viewBox="0 0 24 24"
-                                    style={{ fill: "#005ea2", width: "32px", height: "32px", cursor: "pointer" }}
-                                    title="Download document"
-                                >
-                                    <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
-                                </svg>
+                                <span style={{ fontSize: "0.875rem", color: "#757575" }}>
+                                    Final Consensus Memo
+                                </span>
                             </div>
                         </div>
-                    ))
-                ) : (
-                    <div
-                        className="border-1px border-base-light margin-top-3"
-                        style={{
-                            maxWidth: "540px",
-                            padding: "1rem"
-                        }}
-                    >
-                        <div style={{ fontSize: "0.875rem", color: "#757575", marginBottom: "0.5rem" }}>
-                            Final Consensus Memo
+                        <div
+                            className="bg-base-darker text-white padding-2 border-radius-md margin-left-2"
+                            style={{
+                                maxWidth: "300px",
+                                fontSize: "0.875rem"
+                            }}
+                        >
+                            Upload Documents is coming soon! For now, please review within the OPRE preferred tool to
+                            share documents
                         </div>
-                        <p className="margin-0" style={{ fontSize: "0.875rem", color: "#757575" }}>
-                            No documents uploaded
-                        </p>
+                    </div>
+                </div>
+
+                {preAwardMemoDocuments && preAwardMemoDocuments.length > 0 && (
+                    <div className="margin-top-3">
+                        <p className="text-bold">Uploaded Documents:</p>
+                        {preAwardMemoDocuments.map((doc) => (
+                            <div
+                                key={doc.id}
+                                className="padding-2 bg-base-lightest margin-top-1"
+                            >
+                                <p className="margin-0">
+                                    <span className="text-bold">{doc.document_name}</span>
+                                    {doc.document_size && <span> ({doc.document_size} MB)</span>}
+                                </p>
+                            </div>
+                        ))}
                     </div>
                 )}
             </Accordion>

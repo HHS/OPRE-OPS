@@ -283,16 +283,16 @@ describe("ApprovePreAwardApproval", () => {
 
         expect(screen.getByTestId("accordion-review-final-consensus-memo")).toBeInTheDocument();
         expect(screen.getByText("Final Memo.pdf")).toBeInTheDocument();
-        expect(screen.getByText(/2\.5 MB/)).toBeInTheDocument();
+        expect(screen.getByText("(2.5 MB)")).toBeInTheDocument();
         expect(screen.getByText("Consensus.docx")).toBeInTheDocument();
-        expect(screen.getByText(/1\.2 MB/)).toBeInTheDocument();
+        expect(screen.getByText("(1.2 MB)")).toBeInTheDocument();
     });
 
     it("should display memo section even when no documents present", () => {
         renderComponent({ ...mockHookData, preAwardMemoDocuments: [] });
 
         expect(screen.getByTestId("accordion-review-final-consensus-memo")).toBeInTheDocument();
-        expect(screen.getByText("No documents uploaded")).toBeInTheDocument();
+        expect(screen.queryByText("Uploaded Documents:")).not.toBeInTheDocument();
     });
 
     it("should not display submitter notes section when notes are empty", () => {
