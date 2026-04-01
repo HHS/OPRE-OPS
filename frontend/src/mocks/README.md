@@ -15,6 +15,19 @@ MSW intercepts network requests at the network level, allowing you to mock API r
 - `handlers.js`: Contains the request handlers that define how MSW should respond to specific API requests
 - `browser.js`: Setup for MSW in the browser environment (used during development)
 - `server.js`: Setup for MSW in Node.js environment (used during testing with Vitest)
+- `frontend/public/mockServiceWorker.js`: Generated worker file copied from the installed `msw` package
+
+## Generated Worker Sync
+
+`frontend/public/mockServiceWorker.js` is a generated file and must stay in sync with the installed `msw` version in `frontend/package.json`.
+
+When `msw` changes, regenerate the worker and commit the updated file:
+
+```bash
+bun run msw:init
+```
+
+If `bun install` changes `frontend/public/mockServiceWorker.js`, treat that as generated artifact drift and include the regenerated worker in the dependency update that changed `msw`.
 
 ## Usage in Tests
 

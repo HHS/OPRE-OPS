@@ -87,6 +87,7 @@
         "start": "bunx --bun vite",
         "start:debug": "bunx --bun vite --inspect=0.0.0.0:9229",
         "build": "bunx --bun vite build",
+        "msw:init": "bunx msw init public --save",
         "format": "prettier --write --ignore-unknown 'src/**/*' '!src/uswds/**'",
         "test": "vitest",
         "test:coverage": "vitest run --coverage",
