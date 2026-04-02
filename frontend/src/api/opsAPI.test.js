@@ -1036,4 +1036,35 @@ describe("opsAPI - Wave 2 high-yield endpoint coverage", () => {
             agreement_type: "CONTRACT"
         });
     });
+
+    it("builds getPortfolios query without project_id when no arg provided", async () => {
+        let capturedUrl = "";
+        server.use(
+            http.get("*/api/v1/portfolios/", ({ request }) => {
+                capturedUrl = request.url;
+                return HttpResponse.json([]);
+            })
+        );
+
+        const storeRef = setupApiStore(opsApi);
+        await storeRef.store.dispatch(opsApi.endpoints.getPortfolios.initiate({}));
+
+        expect(capturedUrl).toContain("/api/v1/portfolios/");
+        expect(capturedUrl).not.toContain("project_id=");
+    });
+
+    it("builds getPortfolios query with project_id when projectId provided", async () => {
+        let capturedUrl = "";
+        server.use(
+            http.get("*/api/v1/portfolios/", ({ request }) => {
+                capturedUrl = request.url;
+                return HttpResponse.json([]);
+            })
+        );
+
+        const storeRef = setupApiStore(opsApi);
+        await storeRef.store.dispatch(opsApi.endpoints.getPortfolios.initiate({ projectId: 42 }));
+
+        expect(capturedUrl).toContain("project_id=42");
+    });
 });

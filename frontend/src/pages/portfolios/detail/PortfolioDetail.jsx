@@ -14,9 +14,6 @@ import { getTypesCounts } from "../../cans/detail/Can.helpers";
 import PortfolioHero from "../../../components/Portfolios/PortfolioHero";
 
 const PortfolioDetail = () => {
-    /**
-     * @typedef {import("../../../types/CANTypes").FundingSummary} FundingSummary
-     */
     const [searchParams] = useSearchParams();
     const fiscalYearFromUrl = searchParams.get("fy");
     const initialFiscalYear = fiscalYearFromUrl ? Number(fiscalYearFromUrl) : getCurrentFiscalYear();

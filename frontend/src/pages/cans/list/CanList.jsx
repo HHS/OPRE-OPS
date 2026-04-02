@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { useGetCanFilterOptionsQuery, useGetCanFundingSummaryQuery, useGetCansQuery } from "../../../api/opsAPI";
+import { useGetCanFilterOptionsQuery, useGetCansFundingQuery, useGetCansQuery } from "../../../api/opsAPI";
 import App from "../../../App";
 import CANSummaryCards from "../../../components/CANs/CANSummaryCards";
 import CANTable from "../../../components/CANs/CANTable";
@@ -92,8 +92,7 @@ const CanList = () => {
         data: fundingSummaryData,
         isLoading: fundingSummaryIsLoading,
         isFetching: fundingSummaryIsFetching
-    } = useGetCanFundingSummaryQuery({
-        ids: [0],
+    } = useGetCansFundingQuery({
         fiscalYear: fiscalYear,
         activePeriod: activePeriodIds,
         transfer: transferTitles,
@@ -199,12 +198,12 @@ const CanList = () => {
                     !isTableLoading && (
                         <CANSummaryCards
                             fiscalYear={fiscalYear}
-                            totalBudget={fundingSummaryData?.total_funding}
-                            newFunding={fundingSummaryData?.new_funding}
-                            carryForward={fundingSummaryData?.carry_forward_funding}
-                            plannedFunding={fundingSummaryData?.planned_funding}
-                            obligatedFunding={fundingSummaryData?.obligated_funding}
-                            inExecutionFunding={fundingSummaryData?.in_execution_funding}
+                            totalBudget={fundingSummaryData?.funding?.total_funding}
+                            newFunding={fundingSummaryData?.funding?.new_funding}
+                            carryForward={fundingSummaryData?.funding?.carry_forward_funding}
+                            plannedFunding={fundingSummaryData?.funding?.planned_funding}
+                            obligatedFunding={fundingSummaryData?.funding?.obligated_funding}
+                            inExecutionFunding={fundingSummaryData?.funding?.in_execution_funding}
                         />
                     )
                 }

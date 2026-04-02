@@ -1,4 +1,4 @@
-from marshmallow import Schema, fields
+from marshmallow import Schema, fields, pre_load
 
 from models import (
     CANFundingSource,
@@ -278,6 +278,76 @@ class CANSchema(BasicCANSchema):
     updated_by = fields.Integer(allow_none=True)
     created_by_user = fields.Nested(SafeUserSchema(), allow_none=True)
     updated_by_user = fields.Nested(SafeUserSchema(), allow_none=True)
+
+
+class CANFundingRequestSchema(Schema):
+    fiscal_year = fields.Integer(required=False, load_default=None)
+
+
+class CANFundingAmountsSchema(Schema):
+    total_funding = fields.Float(allow_none=True)
+    available_funding = fields.Float(allow_none=True)
+    carry_forward_funding = fields.Float(allow_none=True)
+    new_funding = fields.Float(allow_none=True)
+    expected_funding = fields.Float(allow_none=True)
+    received_funding = fields.Float(allow_none=True)
+    planned_funding = fields.Float(allow_none=True)
+    obligated_funding = fields.Float(allow_none=True)
+    in_execution_funding = fields.Float(allow_none=True)
+    in_draft_funding = fields.Float(allow_none=True)
+
+
+class CANFundingByFiscalYearSchema(Schema):
+    fiscal_year = fields.Int(required=True)
+    amount = fields.Float(required=True)
+
+
+class CANFundingCANDetailSchema(Schema):
+    id = fields.Int(required=True)
+    number = fields.String(required=True)
+    display_name = fields.String(allow_none=True)
+    nick_name = fields.String(allow_none=True)
+    portfolio_id = fields.Int(required=True)
+    portfolio = fields.String(allow_none=True)
+    active_period = fields.Int(allow_none=True)
+    appropriation_date = fields.Int(allow_none=True)
+    carry_forward_label = fields.String(allow_none=True)
+    expiration_date = fields.String(allow_none=True)
+
+
+class CANFundingResponseSchema(Schema):
+    fiscal_year = fields.Int(allow_none=True)
+    funding = fields.Nested(CANFundingAmountsSchema)
+    funding_by_fiscal_year = fields.List(fields.Nested(CANFundingByFiscalYearSchema))
+    can = fields.Nested(CANFundingCANDetailSchema)
+
+
+class CANsFundingAggregateRequestSchema(Schema):
+    fiscal_year = fields.Integer(required=False, load_default=None)
+    active_period = fields.List(fields.Integer(), allow_none=True, load_default=[], dump_default=[])
+    transfer = fields.List(fields.String(), allow_none=True, load_default=[], dump_default=[])
+    portfolio = fields.List(fields.String(), allow_none=True, load_default=[], dump_default=[])
+    fy_budget = fields.List(fields.Decimal(), allow_none=True, load_default=[], dump_default=[])
+
+    @pre_load
+    def process_flask_args(self, data, **kwargs):
+        """Convert Flask's ImmutableMultiDict to proper format for Marshmallow."""
+        if hasattr(data, "getlist"):
+            processed = {}
+            list_fields = ["active_period", "transfer", "portfolio", "fy_budget"]
+            for key in data.keys():
+                if key in list_fields:
+                    processed[key] = data.getlist(key)
+                else:
+                    processed[key] = data.get(key)
+            return processed
+        return data
+
+
+class CANsFundingAggregateResponseSchema(Schema):
+    fiscal_year = fields.Int(allow_none=True)
+    funding = fields.Nested(CANFundingAmountsSchema)
+    cans = fields.List(fields.Nested(CANFundingCANDetailSchema))
 
 
 class CANListSchema(BasicCANSchema):

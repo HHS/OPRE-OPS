@@ -4,14 +4,30 @@ from flask import current_app
 from loguru import logger
 from sqlalchemy import Integer, cast, func, select, union_all
 from sqlalchemy.exc import NoResultFound
+from sqlalchemy.orm import selectinload
 from werkzeug.exceptions import NotFound
 
-from models import CAN, CANSortCondition
+from models import CAN, CANMethodOfTransfer, CANSortCondition
 from models.cans import CANFundingBudget, CANFundingDetails
 from models.portfolios import Portfolio
 from ops_api.ops.schemas.cans import CANListFilterOptionResponseSchema
-from ops_api.ops.utils.cans import filter_active_cans, get_can_funding_summary
+from ops_api.ops.services.ops_service import ResourceNotFoundError
+from ops_api.ops.utils.cans import (
+    calculate_can_funding,
+    filter_active_cans,
+    get_carry_forward_label,
+    get_expiration_date,
+)
 from ops_api.ops.utils.query_helpers import QueryHelper
+
+# Common eager-loading options to avoid N+1 queries when accessing CAN relationships.
+CAN_EAGER_LOAD_OPTIONS = (
+    selectinload(CAN.funding_budgets),
+    selectinload(CAN.funding_details),
+    selectinload(CAN.funding_received),
+    selectinload(CAN.budget_line_items),
+    selectinload(CAN.portfolio),
+)
 
 
 class CANService:
@@ -160,7 +176,11 @@ class CANService:
             cursor_results = [can for item in results for can in item]
         else:
             # Execute three separate queries and combine results
-            base_stmt = select(CAN).join(CANFundingDetails, CAN.funding_details_id == CANFundingDetails.id)
+            base_stmt = (
+                select(CAN)
+                .join(CANFundingDetails, CAN.funding_details_id == CANFundingDetails.id)
+                .options(*CAN_EAGER_LOAD_OPTIONS)
+            )
             one_year_cans = self._get_one_year_cans(base_stmt, fiscal_year_value, search_value)
             multiple_year_cans = self._get_multiple_year_cans(base_stmt, fiscal_year_value, search_value)
             zero_year_cans = self._get_zero_year_cans(base_stmt, fiscal_year_value, search_value)
@@ -349,7 +369,7 @@ class CANService:
             case CANSortCondition.FY_BUDGET:
                 decorated_results = [
                     (
-                        get_can_funding_summary(can, fiscal_year).get("total_funding"),
+                        calculate_can_funding(can, fiscal_year).get("total_funding"),
                         i,
                         can,
                     )
@@ -373,7 +393,7 @@ class CANService:
             case CANSortCondition.AVAILABLE_BUDGET:
                 decorated_results = [
                     (
-                        get_can_funding_summary(can, fiscal_year).get("available_funding"),
+                        calculate_can_funding(can, fiscal_year).get("available_funding"),
                         i,
                         can,
                     )
@@ -395,15 +415,14 @@ class CANService:
 
     @staticmethod
     def get_can_available_budget(can: CAN, fiscal_year: Optional[int] = None):
-        can_funding_summary = get_can_funding_summary(can, fiscal_year)
-        return can_funding_summary.get("available_funding")
+        return calculate_can_funding(can, fiscal_year).get("available_funding")
 
     @staticmethod
     def _get_query(search=None):
         """
         Construct a search query that can be used to retrieve a list of CANs.
         """
-        stmt = select(CAN).order_by(CAN.id)
+        stmt = select(CAN).options(*CAN_EAGER_LOAD_OPTIONS).order_by(CAN.id)
 
         query_helper = QueryHelper(stmt)
 
@@ -521,3 +540,165 @@ class CANService:
                 break  # Only add CAN once
 
         return filtered
+
+    def get_can_funding(self, id: int, fiscal_year: Optional[int] = None) -> dict:
+        """Get funding summary for a single CAN."""
+        stmt = select(CAN).where(CAN.id == id).options(*CAN_EAGER_LOAD_OPTIONS)
+        can = self.db_session.scalar(stmt)
+        if not can:
+            raise ResourceNotFoundError("CAN", id)
+
+        funding = calculate_can_funding(can, fiscal_year)
+
+        # Build funding_by_fiscal_year from funding_budgets
+        fy_map: dict[int, float] = {}
+        for fb in can.funding_budgets:
+            fy_map[fb.fiscal_year] = fy_map.get(fb.fiscal_year, 0.0) + float(fb.budget or 0)
+        funding_by_fiscal_year = sorted(
+            [{"fiscal_year": fy, "amount": amt} for fy, amt in fy_map.items()],
+            key=lambda x: x["fiscal_year"],
+        )
+
+        return {
+            "fiscal_year": fiscal_year,
+            "funding": funding,
+            "funding_by_fiscal_year": funding_by_fiscal_year,
+            "can": {
+                "id": can.id,
+                "number": can.number,
+                "display_name": can.display_name,
+                "nick_name": can.nick_name,
+                "portfolio_id": can.portfolio_id,
+                "portfolio": can.portfolio.abbreviation if can.portfolio else None,
+                "active_period": can.active_period,
+                "appropriation_date": can.funding_details.fiscal_year if can.funding_details else None,
+                "carry_forward_label": get_carry_forward_label(can),
+                "expiration_date": get_expiration_date(can),
+            },
+        }
+
+    @staticmethod
+    def _validate_aggregate_params(transfer, fy_budget):
+        """Validate and normalize transfer and fy_budget parameters.
+
+        Returns:
+            Tuple of (validated_transfer, normalized_fy_budget).
+        """
+        if transfer:
+            try:
+                transfer = [CANMethodOfTransfer[t] for t in transfer]
+            except KeyError:
+                valid_methods = list(CANMethodOfTransfer.__members__.keys())
+                raise ValueError(f"Invalid 'transfer' value. Must be one of: {', '.join(valid_methods)}.")
+
+        if fy_budget and len(fy_budget) != 2:
+            raise ValueError("'fy_budget' must be two values for min and max budget.")
+        if fy_budget and len(fy_budget) == 2:
+            fy_budget = [min(fy_budget), max(fy_budget)]
+
+        return transfer, fy_budget
+
+    @staticmethod
+    def _apply_aggregate_filters(stmt, fiscal_year, active_period, transfer, portfolio, fy_budget):
+        """Apply SQL-level WHERE/JOIN filters to the CAN query."""
+        joined_funding_details = False
+
+        if fiscal_year:
+            fy_subq = select(CANFundingBudget.can_id).where(CANFundingBudget.fiscal_year == fiscal_year)
+            stmt = stmt.where(CAN.id.in_(fy_subq))
+
+        if active_period:
+            stmt = stmt.join(CANFundingDetails, CAN.funding_details_id == CANFundingDetails.id)
+            joined_funding_details = True
+            active_period_expr = cast(func.substr(CANFundingDetails.fund_code, 11, 1), Integer)
+            stmt = stmt.where(active_period_expr.in_(active_period))
+
+        if transfer:
+            if not joined_funding_details:
+                stmt = stmt.join(CANFundingDetails, CAN.funding_details_id == CANFundingDetails.id)
+                joined_funding_details = True
+            stmt = stmt.where(CANFundingDetails.method_of_transfer.in_(transfer))
+
+        if portfolio:
+            stmt = stmt.join(Portfolio, CAN.portfolio_id == Portfolio.id).where(Portfolio.abbreviation.in_(portfolio))
+
+        if fy_budget:
+            budget_subq = select(CANFundingBudget.can_id).where(
+                CANFundingBudget.budget >= fy_budget[0],
+                CANFundingBudget.budget <= fy_budget[1],
+            )
+            if fiscal_year:
+                budget_subq = budget_subq.where(CANFundingBudget.fiscal_year == fiscal_year)
+                if not joined_funding_details:
+                    stmt = stmt.join(CANFundingDetails, CAN.funding_details_id == CANFundingDetails.id)
+                stmt = stmt.where(
+                    CANFundingDetails.fiscal_year <= fiscal_year,
+                    CANFundingDetails.obligate_by >= fiscal_year,
+                )
+            stmt = stmt.where(CAN.id.in_(budget_subq))
+
+        return stmt
+
+    def get_cans_funding_aggregate(
+        self,
+        fiscal_year: Optional[int] = None,
+        active_period: Optional[list] = None,
+        transfer: Optional[list] = None,
+        portfolio: Optional[list] = None,
+        fy_budget: Optional[list] = None,
+    ) -> dict:
+        """Get aggregated funding summary across all CANs, with optional filters.
+
+        Raises:
+            ValueError: Invalid ``transfer`` enum name or ``fy_budget`` length.
+                Caught by the resource layer and returned as 400.
+
+        Other exceptions (e.g. database errors) propagate to the global
+        Flask error handlers registered in ``error_handlers.py``.
+        """
+        transfer, fy_budget = self._validate_aggregate_params(transfer, fy_budget)
+
+        stmt = select(CAN).options(*CAN_EAGER_LOAD_OPTIONS)
+        stmt = self._apply_aggregate_filters(stmt, fiscal_year, active_period, transfer, portfolio, fy_budget)
+        filtered_cans = self.db_session.execute(stmt).scalars().unique().all()
+
+        # Aggregate funding and build per-CAN detail in a single pass, using
+        # calculate_can_funding directly to avoid the overhead of can.to_dict()
+        # (which serializes every relationship and triggers N+1 on CAN.projects).
+        totals = {
+            "total_funding": 0.0,
+            "available_funding": 0.0,
+            "carry_forward_funding": 0.0,
+            "new_funding": 0.0,
+            "expected_funding": 0.0,
+            "received_funding": 0.0,
+            "planned_funding": 0.0,
+            "obligated_funding": 0.0,
+            "in_execution_funding": 0.0,
+            "in_draft_funding": 0.0,
+        }
+        cans_detail = []
+        for can in filtered_cans:
+            amounts = calculate_can_funding(can, fiscal_year)
+            for key in totals:
+                totals[key] += float(amounts.get(key, 0))
+            cans_detail.append(
+                {
+                    "id": can.id,
+                    "number": can.number,
+                    "display_name": can.display_name,
+                    "nick_name": can.nick_name,
+                    "portfolio_id": can.portfolio_id,
+                    "portfolio": can.portfolio.abbreviation if can.portfolio else None,
+                    "active_period": can.active_period,
+                    "appropriation_date": can.funding_details.fiscal_year if can.funding_details else None,
+                    "carry_forward_label": get_carry_forward_label(can),
+                    "expiration_date": get_expiration_date(can),
+                }
+            )
+
+        return {
+            "fiscal_year": fiscal_year,
+            "funding": totals,
+            "cans": cans_detail,
+        }

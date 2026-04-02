@@ -5,7 +5,7 @@ import useCan from "./Can.hooks";
 const useSelectorMock = vi.fn();
 const useParamsMock = vi.fn();
 const useGetCanByIdQueryMock = vi.fn();
-const useGetCanFundingSummaryQueryMock = vi.fn();
+const useGetCanFundingQueryMock = vi.fn();
 
 vi.mock("react-redux", () => ({
     useSelector: (selector) => useSelectorMock(selector)
@@ -21,7 +21,7 @@ vi.mock("react-router-dom", async (importOriginal) => {
 
 vi.mock("../../../api/opsAPI", () => ({
     useGetCanByIdQuery: (...args) => useGetCanByIdQueryMock(...args),
-    useGetCanFundingSummaryQuery: (...args) => useGetCanFundingSummaryQueryMock(...args)
+    useGetCanFundingQuery: (...args) => useGetCanFundingQueryMock(...args)
 }));
 
 vi.mock("../../../helpers/utils", async (importOriginal) => {
@@ -101,19 +101,21 @@ describe("useCan", () => {
             isLoading: false
         });
 
-        useGetCanFundingSummaryQueryMock.mockImplementation(({ fiscalYear }) => {
+        useGetCanFundingQueryMock.mockImplementation(({ fiscalYear }) => {
             if (fiscalYear === 2025) {
-                return { data: { available_funding: 75 }, isLoading: false };
+                return { data: { funding: { available_funding: 75 } }, isLoading: false };
             }
 
             return {
                 data: {
-                    total_funding: 1000,
-                    planned_funding: 300,
-                    obligated_funding: 100,
-                    in_execution_funding: 200,
-                    in_draft_funding: 400,
-                    received_funding: 200
+                    funding: {
+                        total_funding: 1000,
+                        planned_funding: 300,
+                        obligated_funding: 100,
+                        in_execution_funding: 200,
+                        in_draft_funding: 400,
+                        received_funding: 200
+                    }
                 },
                 isLoading: false
             };
@@ -173,19 +175,21 @@ describe("useCan", () => {
     });
 
     it("opens a welcome modal when the current fiscal year has no funding and enters edit mode on confirm", () => {
-        useGetCanFundingSummaryQueryMock.mockImplementation(({ fiscalYear }) => {
+        useGetCanFundingQueryMock.mockImplementation(({ fiscalYear }) => {
             if (fiscalYear === 2025) {
-                return { data: { available_funding: 10 }, isLoading: false };
+                return { data: { funding: { available_funding: 10 } }, isLoading: false };
             }
 
             return {
                 data: {
-                    total_funding: 0,
-                    planned_funding: 0,
-                    obligated_funding: 0,
-                    in_execution_funding: 0,
-                    in_draft_funding: 0,
-                    received_funding: 0
+                    funding: {
+                        total_funding: 0,
+                        planned_funding: 0,
+                        obligated_funding: 0,
+                        in_execution_funding: 0,
+                        in_draft_funding: 0,
+                        received_funding: 0
+                    }
                 },
                 isLoading: false
             };
@@ -218,7 +222,7 @@ describe("useCan", () => {
 
     it("returns safe defaults when CAN data is missing", () => {
         useGetCanByIdQueryMock.mockReturnValueOnce({ data: undefined, isLoading: false });
-        useGetCanFundingSummaryQueryMock.mockImplementation(() => ({ data: undefined, isLoading: false }));
+        useGetCanFundingQueryMock.mockImplementation(() => ({ data: undefined, isLoading: false }));
 
         const { result } = renderHook(() => useCan());
 
@@ -237,14 +241,16 @@ describe("useCan", () => {
             isLoading: false,
             isFetching: true
         });
-        useGetCanFundingSummaryQueryMock.mockImplementation(() => ({
+        useGetCanFundingQueryMock.mockImplementation(() => ({
             data: {
-                total_funding: 1000,
-                planned_funding: 300,
-                obligated_funding: 100,
-                in_execution_funding: 200,
-                in_draft_funding: 400,
-                received_funding: 200
+                funding: {
+                    total_funding: 1000,
+                    planned_funding: 300,
+                    obligated_funding: 100,
+                    in_execution_funding: 200,
+                    in_draft_funding: 400,
+                    received_funding: 200
+                }
             },
             isLoading: false,
             isFetching: true
