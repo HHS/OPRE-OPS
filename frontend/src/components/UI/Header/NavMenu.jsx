@@ -108,39 +108,29 @@ const NavMenu = () => {
                         CANs
                     </NavLink>
                 </li>
-                {hasProcurementAccess ? (
-                    <li className="usa-nav__primary-item">
-                        <button
-                            type="button"
-                            className="usa-accordion__button usa-nav__link"
-                            aria-expanded={isMenuOpen === "reporting"}
-                            aria-controls="reporting-nav-section"
-                            onClick={() => setIsMenuOpen(isMenuOpen === "reporting" ? null : "reporting")}
-                        >
-                            <span>Reporting</span>
-                        </button>
-                        <ul
-                            id="reporting-nav-section"
-                            className="usa-nav__submenu"
-                            style={{ display: isMenuOpen === "reporting" ? "block" : "none" }}
-                        >
-                            <li className="usa-nav__submenu-item">
-                                <NavLink to="/reporting">OPRE Budget Reporting</NavLink>
+                <li className="usa-nav__primary-item">
+                    <button
+                        type="button"
+                        className="usa-accordion__button usa-nav__link"
+                        aria-expanded={isMenuOpen === "reporting"}
+                        aria-controls="reporting-nav-section"
+                        onClick={() => setIsMenuOpen(isMenuOpen === "reporting" ? null : "reporting")}
+                    >
+                        <span>Reporting</span>
+                    </button>
+                    <ul
+                        id="reporting-nav-section"
+                        className="usa-nav__submenu"
+                        style={{ display: isMenuOpen === "reporting" ? "block" : "none" }}
+                    >
+                        <li className="usa-nav__submenu-item">
+                            <NavLink to="/reporting">OPRE Budget Reporting</NavLink>
+                            {hasProcurementAccess && (
                                 <NavLink to="/procurement-dashboard">Procurement Dashboard</NavLink>
-                            </li>
-                        </ul>
-                    </li>
-                ) : (
-                    <li className="usa-nav__primary-item">
-                        <NavLink
-                            to="/reporting"
-                            className={getNavLinkClass}
-                            end
-                        >
-                            Reporting
-                        </NavLink>
-                    </li>
-                )}
+                            )}
+                        </li>
+                    </ul>
+                </li>
                 {isUserAdmin && (
                     <li className="usa-nav__primary-item">
                         <NavLink

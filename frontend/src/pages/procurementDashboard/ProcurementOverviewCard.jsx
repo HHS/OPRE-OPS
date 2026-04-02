@@ -40,6 +40,7 @@ const ProcurementOverviewCard = ({ procurementOverview, fiscalYear, isLoading, e
         [procurementOverview]
     );
     const fyShort = String(fiscalYear).slice(-2);
+    const hasData = totalAmount > 0 || totalAgreements > 0;
 
     if (isLoading) {
         return (
@@ -66,12 +67,16 @@ const ProcurementOverviewCard = ({ procurementOverview, fiscalYear, isLoading, e
     return (
         <RoundedBox
             dataCy="procurement-overview-card"
-            style={{ padding: "20px 30px 30px 30px", width: "100%" }}
+            style={{
+                padding: hasData ? "20px 30px 30px 30px" : "20px 30px 20px 30px",
+                width: "100%",
+                ...(!hasData && { minHeight: "auto" })
+            }}
         >
             <h3 className="margin-0 margin-bottom-2 font-12px text-base-dark text-normal">
                 FY {fiscalYear} Procurement Overview
             </h3>
-            <div className="display-flex flex-align-end margin-bottom-3">
+            <div className={`display-flex flex-align-end${hasData ? " margin-bottom-3" : ""}`}>
                 <CurrencyFormat
                     value={totalAmount}
                     displayType="text"
@@ -85,33 +90,37 @@ const ProcurementOverviewCard = ({ procurementOverview, fiscalYear, isLoading, e
                 </span>
                 <span className="font-sans-xl text-bold margin-left-1">{totalAgreements} agreements</span>
             </div>
-            <HorizontalStackedBar data={statusData} />
-            <div className="display-flex flex-justify-space-between margin-top-2">
-                {statusData.map((item) => (
-                    <div
-                        key={item.label}
-                        className="font-12px"
-                        style={{ width: "25%" }}
-                    >
-                        <LegendItem
-                            id={item.id}
-                            label={item.label}
-                            value={item.amount}
-                            color={item.color}
-                            percent={parseInt(item.amountPercent)}
-                            tagStyleActive="darkTextWhiteBackground"
-                        />
-                        <div className="display-flex flex-align-center flex-justify-end">
-                            <span>{item.agreements} agreements</span>
-                            <Tag
-                                tagStyle="darkTextWhiteBackground"
-                                text={item.agreementsPercent}
-                                className="margin-left-1"
-                            />
-                        </div>
+            {hasData ? (
+                <>
+                    <HorizontalStackedBar data={statusData} />
+                    <div className="display-flex flex-justify-space-between margin-top-2">
+                        {statusData.map((item) => (
+                            <div
+                                key={item.label}
+                                className="font-12px"
+                                style={{ width: "25%" }}
+                            >
+                                <LegendItem
+                                    id={item.id}
+                                    label={item.label}
+                                    value={item.amount}
+                                    color={item.color}
+                                    percent={parseInt(item.amountPercent)}
+                                    tagStyleActive="darkTextWhiteBackground"
+                                />
+                                <div className="display-flex flex-align-center flex-justify-end">
+                                    <span>{item.agreements} agreements</span>
+                                    <Tag
+                                        tagStyle="darkTextWhiteBackground"
+                                        text={item.agreementsPercent}
+                                        className="margin-left-1"
+                                    />
+                                </div>
+                            </div>
+                        ))}
                     </div>
-                ))}
-            </div>
+                </>
+            ) : null}
         </RoundedBox>
     );
 };
