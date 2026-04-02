@@ -1,5 +1,8 @@
+import { faPen } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Tag from "../../../components/UI/Tag/Tag";
 import { TagList } from "../../../components/UI/Tag";
+import Tooltip from "../../../components/UI/USWDS/Tooltip";
 import { NO_DATA } from "../../../constants";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { formatProjectDate } from "../list/ProjectsList.helpers";
@@ -49,7 +52,28 @@ const ProjectDetailsView = ({ project }) => {
 
     return (
         <section>
-            <h2 className="font-sans-lg margin-top-4 margin-bottom-0">Project Details</h2>
+            <div className="display-flex flex-justify flex-align-center margin-top-4">
+                <h2 className="font-sans-lg margin-0">Project Details</h2>
+                <Tooltip
+                    label="Coming Soon"
+                    position="top"
+                >
+                    <button
+                        type="button"
+                        disabled
+                        aria-label="Edit Project Details coming soon"
+                        data-cy="project-details-edit-button"
+                        className="usa-button usa-button--unstyled display-flex flex-align-center text-gray-50 cursor-not-allowed"
+                    >
+                        <FontAwesomeIcon
+                            icon={faPen}
+                            size="lg"
+                            className="height-2 width-2"
+                        />
+                        <span>Edit</span>
+                    </button>
+                </Tooltip>
+            </div>
             <div
                 className="grid-row margin-top-2"
                 style={{ columnGap: "82px" }}
