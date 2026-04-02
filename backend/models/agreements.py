@@ -378,7 +378,14 @@ class Agreement(BaseModel):
 
     @property
     def division_directors(self) -> list[str]:
-        full_names = set()
+        division_directors = self.division_director_user_list
+        full_names = [d.full_name for d in division_directors if d.full_name]
+
+        return sorted(full_names)
+
+    @property
+    def division_director_user_list(self) -> list[User]:
+        users = set()
         for bli in self.budget_line_items:
             if (
                 bli.can
@@ -387,11 +394,13 @@ class Agreement(BaseModel):
                 and bli.can.portfolio.division
                 and hasattr(bli.can.portfolio.division, "division_director")
             ):
-                director = bli.can.portfolio.division.division_director_full_name
-                if director is not None:
-                    full_names.add(director)
+                if (
+                    bli.can.portfolio.division.division_director_id
+                    and bli.can.portfolio.division.division_director_full_name
+                ):
+                    users.add(bli.can.portfolio.division.division_director)
 
-        return sorted(full_names)
+        return sorted(users, key=lambda u: u.full_name or u.email)
 
     @property
     def change_requests_in_review(self):
@@ -828,7 +837,6 @@ class DirectAgreement(Agreement):
         N.B. These fields also apply to the immutability of an awarded agreement.
         """
         return []
-
 
 
 class AgreementMod(BaseModel):

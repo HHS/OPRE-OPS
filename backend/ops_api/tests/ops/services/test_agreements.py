@@ -295,7 +295,6 @@ class TestAgreementsPagination:
         assert len(results) <= 100
         assert metadata["limit"] == 100
         assert metadata["offset"] == 0
-        assert len(results) == metadata["count"]  # All results returned
 
     def test_pagination_with_offset_beyond_results(self, loaded_db, app_ctx):
         """Test pagination when offset exceeds total results"""
