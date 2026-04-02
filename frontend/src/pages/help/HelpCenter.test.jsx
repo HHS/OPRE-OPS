@@ -60,7 +60,7 @@ const renderWithRouter = (initialEntry = "/help-center") => {
 };
 
 describe("HelpCenter", () => {
-    it("renders the intro copy and export link", () => {
+    it("renders the intro copy and SharePoint link", () => {
         renderWithRouter();
 
         expect(screen.getByRole("heading", { level: 1, name: "Help Center" })).toBeInTheDocument();
@@ -69,10 +69,10 @@ describe("HelpCenter", () => {
             screen.getByText(/Welcome to the Help Center - your go-to resource for assisting you in OPS\./i)
         ).toBeInTheDocument();
 
-        const exportLink = screen.getByRole("link", { name: /export/i });
-        expect(exportLink).toHaveAttribute("href", HELP_CENTER_EXPORT_URL);
-        expect(exportLink).toHaveAttribute("target", "_blank");
-        expect(exportLink).toHaveAttribute("rel", "noopener noreferrer");
+        const sharePointLink = screen.getByRole("link", { name: /open in sharepoint/i });
+        expect(sharePointLink).toHaveAttribute("href", HELP_CENTER_EXPORT_URL);
+        expect(sharePointLink).toHaveAttribute("target", "_blank");
+        expect(sharePointLink).toHaveAttribute("rel", "noopener noreferrer");
     });
 
     it("renders the help center tabs and default route content", () => {
