@@ -19,6 +19,11 @@ const baseProject = {
     division_directors: ["Dave Director", "Director Derrek"],
     research_methodologies: ["Descriptive Study", "Impact Study"],
     special_topics: ["Special Topic 1", "Special Topic 2"],
+    project_officers: [
+        { id: 503, name: "Amelia Popham" },
+        { id: 500, name: "Chris Fortunato" }
+    ],
+    alternate_project_officers: [{ id: 522, name: "Dave Director" }],
     team_members: [
         { id: 503, full_name: "Amelia Popham", email: "amelia@example.com" },
         { id: 520, full_name: "System Owner", email: "system.owner@example.com" }
@@ -49,9 +54,11 @@ describe("ProjectDetailsView", () => {
         expect(screen.getByText("Project Start")).toBeInTheDocument();
         expect(screen.getByText("Project End")).toBeInTheDocument();
         expect(screen.getByText("Research Methodologies")).toBeInTheDocument();
-        expect(screen.getByText("Special Topics")).toBeInTheDocument();
+        expect(screen.getByText("Special Topic/Populations")).toBeInTheDocument();
         expect(screen.getByText("Division Director(s)")).toBeInTheDocument();
         expect(screen.getByText("Team Leader(s)")).toBeInTheDocument();
+        expect(screen.getByText("COR")).toBeInTheDocument();
+        expect(screen.getByText("Alternate COR")).toBeInTheDocument();
         expect(screen.getByText("Team Members")).toBeInTheDocument();
     });
 
@@ -69,7 +76,7 @@ describe("ProjectDetailsView", () => {
             ]
         };
         renderComponent(project);
-        expect(screen.getByText("Chris Fortunato")).toBeInTheDocument();
+        expect(screen.getAllByText("Chris Fortunato").length).toBeGreaterThanOrEqual(1);
         expect(screen.getByText("Jane Smith")).toBeInTheDocument();
     });
 
@@ -86,9 +93,11 @@ describe("ProjectDetailsView", () => {
             special_topics: [],
             division_directors: [],
             team_leaders: [],
+            project_officers: [],
+            alternate_project_officers: [],
             team_members: []
         });
-        expect(screen.getAllByText("TBD").length).toBeGreaterThanOrEqual(5);
+        expect(screen.getAllByText("TBD").length).toBeGreaterThanOrEqual(7);
     });
 
     it("renders one tag per methodology when provided", () => {
@@ -103,12 +112,47 @@ describe("ProjectDetailsView", () => {
         expect(screen.getByText("Families")).toBeInTheDocument();
     });
 
+    it("renders object-based methodologies, special topics, and division directors by name", () => {
+        renderComponent({
+            ...baseProject,
+            research_methodologies: [
+                { id: 1, name: "Qualitative" },
+                { id: 2, name: "Quantitative" }
+            ],
+            special_topics: [
+                { id: 3, name: "Children" },
+                { id: 4, name: "Families" }
+            ],
+            division_directors: [
+                { id: 5, name: "Dave Director" },
+                { id: 6, name: "Director Derrek" }
+            ]
+        });
+
+        expect(screen.getByText("Qualitative")).toBeInTheDocument();
+        expect(screen.getByText("Quantitative")).toBeInTheDocument();
+        expect(screen.getByText("Children")).toBeInTheDocument();
+        expect(screen.getByText("Families")).toBeInTheDocument();
+        expect(screen.getAllByText("Dave Director").length).toBeGreaterThanOrEqual(1);
+        expect(screen.getByText("Director Derrek")).toBeInTheDocument();
+    });
+
     it("renders division directors and team members", () => {
         renderComponent(baseProject);
-        expect(screen.getByText("Dave Director")).toBeInTheDocument();
+        expect(screen.getAllByText("Dave Director").length).toBeGreaterThanOrEqual(1);
         expect(screen.getByText("Director Derrek")).toBeInTheDocument();
-        expect(screen.getByText("Amelia Popham")).toBeInTheDocument();
+        expect(screen.getAllByText("Amelia Popham").length).toBeGreaterThanOrEqual(1);
         expect(screen.getByText("System Owner")).toBeInTheDocument();
+    });
+
+    it("renders COR and Alternate COR values from the API response", () => {
+        renderComponent(baseProject);
+
+        expect(screen.getByText("COR")).toBeInTheDocument();
+        expect(screen.getByText("Alternate COR")).toBeInTheDocument();
+        expect(screen.getAllByText("Amelia Popham").length).toBeGreaterThanOrEqual(1);
+        expect(screen.getAllByText("Chris Fortunato").length).toBeGreaterThanOrEqual(1);
+        expect(screen.getAllByText("Dave Director").length).toBeGreaterThanOrEqual(1);
     });
 
     it("renders History placeholder", () => {

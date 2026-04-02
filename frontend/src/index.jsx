@@ -37,7 +37,6 @@ import EditUser from "./pages/users/edit/EditUser";
 import VersionPage from "./pages/version/VersionPage";
 import WhatsNext from "./pages/home/whats-next";
 import ProcurementMocksDebug from "./pages/dev/ProcurementMocksDebug";
-import { IS_PROJECTS_LIST_READY, IS_PROJECT_DETAIL_READY } from "./constants";
 
 // NOTE: store muse be imported after react-router-dom to avoid access lexical declaration 'opsApi' before initialization
 
@@ -202,32 +201,28 @@ const router = createBrowserRouter(
                     path="/budget-lines"
                     element={<BudgetLineItemList />}
                 />
-                {IS_PROJECTS_LIST_READY && (
-                    <Route
-                        path="/projects"
-                        element={<ProjectsList />}
-                    />
-                )}
+                <Route
+                    path="/projects"
+                    element={<ProjectsList />}
+                />
                 <Route
                     path="/projects/create"
                     element={<CreateProject />}
                 />
-                {IS_PROJECT_DETAIL_READY && (
-                    <Route
-                        path="/projects/:id"
-                        element={<ProjectDetail />}
-                        handle={{
-                            crumb: () => (
-                                <Link
-                                    to="/projects"
-                                    className="text-primary"
-                                >
-                                    Projects
-                                </Link>
-                            )
-                        }}
-                    />
-                )}
+                <Route
+                    path="/projects/:id"
+                    element={<ProjectDetail />}
+                    handle={{
+                        crumb: () => (
+                            <Link
+                                to="/projects"
+                                className="text-primary"
+                            >
+                                Projects
+                            </Link>
+                        )
+                    }}
+                />
                 <Route
                     path="/agreements"
                     element={<AgreementsList />}
