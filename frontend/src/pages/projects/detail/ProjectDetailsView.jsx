@@ -92,13 +92,13 @@ const ProjectDetailsView = ({ project }) => {
                             >
                                 <div className="grid-col">
                                     <div className="text-base-dark">Project Start</div>
-                                    <div className="margin-top-05 wrap-text">
+                                    <div className="margin-top-1 wrap-text">
                                         <DateValue value={project.project_start} />
                                     </div>
                                 </div>
                                 <div className="grid-col">
                                     <div className="text-base-dark">Project End</div>
-                                    <div className="margin-top-05 wrap-text">
+                                    <div className="margin-top-1 wrap-text">
                                         <DateValue value={project.project_end} />
                                     </div>
                                 </div>
@@ -120,56 +120,52 @@ const ProjectDetailsView = ({ project }) => {
                                 dataCy="project-special-topics-tag"
                             />
                         </dd>
-                        <dd className="margin-0 margin-top-3">
-                            <div
-                                className="grid-row grid-gap-4"
-                                style={{ maxWidth: "420px" }}
-                            >
-                                <div className="grid-col">
-                                    <dt className="text-base-dark">Division Director(s)</dt>
-                                    <dd className="margin-0 margin-top-05 wrap-text">
-                                        <TagList
-                                            items={divisionDirectors}
-                                            dataCy="project-division-directors-tag"
-                                        />
-                                    </dd>
-                                </div>
-                                <div className="grid-col">
-                                    <dt className="text-base-dark">Team Leader(s)</dt>
-                                    <dd className="margin-0 margin-top-05 wrap-text">
-                                        <TagList
-                                            items={teamLeaderNames}
-                                            dataCy="project-team-leaders-tag"
-                                        />
-                                    </dd>
-                                </div>
+                        <div
+                            className="grid-row grid-gap-4 margin-top-3"
+                            style={{ maxWidth: "420px" }}
+                        >
+                            <div className="grid-col">
+                                <dt className="margin-0 text-base-dark">Division Director(s)</dt>
+                                <dd className="margin-0 margin-top-05 wrap-text">
+                                    <TagList
+                                        items={divisionDirectors}
+                                        dataCy="project-division-directors-tag"
+                                    />
+                                </dd>
                             </div>
-                        </dd>
-                        <dd className="margin-0 margin-top-3">
-                            <div
-                                className="grid-row grid-gap-4"
-                                style={{ maxWidth: "420px" }}
-                            >
-                                <div className="grid-col">
-                                    <div className="text-base-dark">COR</div>
-                                    <div className="margin-top-05 wrap-text">
-                                        <TagList
-                                            items={projectOfficers}
-                                            dataCy="project-officers-tag"
-                                        />
-                                    </div>
-                                </div>
-                                <div className="grid-col">
-                                    <div className="text-base-dark">Alternate COR</div>
-                                    <div className="margin-top-05 wrap-text">
-                                        <TagList
-                                            items={alternateProjectOfficers}
-                                            dataCy="alternate-project-officers-tag"
-                                        />
-                                    </div>
-                                </div>
+                            <div className="grid-col">
+                                <dt className="margin-0 text-base-dark">Team Leader(s)</dt>
+                                <dd className="margin-0 margin-top-1 wrap-text">
+                                    <TagList
+                                        items={teamLeaderNames}
+                                        dataCy="project-team-leaders-tag"
+                                    />
+                                </dd>
                             </div>
-                        </dd>
+                        </div>
+                        <div
+                            className="grid-row grid-gap-4 margin-top-3"
+                            style={{ maxWidth: "420px" }}
+                        >
+                            <div className="grid-col">
+                                <dt className="margin-0 text-base-dark">COR</dt>
+                                <dd className="margin-0 margin-top-05 wrap-text">
+                                    <TagList
+                                        items={projectOfficers}
+                                        dataCy="project-officers-tag"
+                                    />
+                                </dd>
+                            </div>
+                            <div className="grid-col">
+                                <dt className="margin-0 text-base-dark">Alternate COR</dt>
+                                <dd className="margin-0 margin-top-05 wrap-text">
+                                    <TagList
+                                        items={alternateProjectOfficers}
+                                        dataCy="alternate-project-officers-tag"
+                                    />
+                                </dd>
+                            </div>
+                        </div>
 
                         <dt className="margin-0 text-base-dark margin-top-3">Team Members</dt>
                         <dd className="margin-0 margin-top-1">
