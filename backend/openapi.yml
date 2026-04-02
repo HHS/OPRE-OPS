@@ -177,11 +177,39 @@ paths:
                   offset:
                     type: integer
                     description: Number of agreements skipped
+                  totals:
+                    type: object
+                    description: Aggregate totals across all matching agreements
+                    properties:
+                      count:
+                        type: integer
+                        description: Total count of agreements
+                      obligated:
+                        type: number
+                        format: float
+                        description: Total obligated amount
+                      fees:
+                        type: number
+                        format: float
+                        description: Total fees
+                      in_draft:
+                        type: number
+                        format: float
+                        description: Total in draft status
+                      planned:
+                        type: number
+                        format: float
+                        description: Total planned amount
+                      executing:
+                        type: number
+                        format: float
+                        description: Total executing amount
                 required:
                   - data
                   - count
                   - limit
                   - offset
+                  - totals
         "400":
           description: Bad Request
         "500":
@@ -284,58 +312,26 @@ paths:
         "500":
           description: Internal Server Error
 
-  /agreements/{agreement_id}:
+  /agreements/{id}:
     get:
       tags:
         - Agreements
       operationId: Get Agreement
-      description: Get a specific agreement by ID
+      description: Get a specific agreement by ID with fiscal year context
       parameters:
         - in: path
-          name: agreement_id
+          name: id
           required: true
           schema:
             type: integer
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                oneOf:
-                  - $ref: "#/components/schemas/AgreementResponse"
-                  - $ref: "#/components/schemas/ContractAgreementResponse"
-                  - $ref: "#/components/schemas/GrantAgreementResponse"
-                  - $ref: "#/components/schemas/DirectAgreementResponse"
-                  - $ref: "#/components/schemas/IaaAgreementResponse"
-                  - $ref: "#/components/schemas/AaAgreementResponse"
-        "404":
-          description: Not Found
-        "500":
-          description: Internal Server Error
-    patch:
-      tags:
-        - Agreements
-      operationId: Update Agreement
-      description: Update an existing agreement
-      parameters:
-        - in: path
-          name: agreement_id
-          required: true
+          description: Agreement ID
+        - in: query
+          name: fiscal_year
           schema:
             type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              oneOf:
-                - $ref: "#/components/schemas/AgreementData"
-                - $ref: "#/components/schemas/ContractAgreementData"
-                - $ref: "#/components/schemas/GrantAgreementData"
-                - $ref: "#/components/schemas/DirectAgreementData"
-                - $ref: "#/components/schemas/IaaAgreementData"
-                - $ref: "#/components/schemas/AaAgreementData"
+          description: |
+            Fiscal year for budget calculations and fiscal year-specific data.
+            If not provided, defaults to the current fiscal year.
       responses:
         "200":
           description: OK
@@ -350,10 +346,60 @@ paths:
                   - $ref: "#/components/schemas/IaaAgreementResponse"
                   - $ref: "#/components/schemas/AaAgreementResponse"
         "400":
+          description: Bad Request - Invalid fiscal_year parameter
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+    put:
+      tags:
+        - Agreements
+      operationId: Update Agreement (Full)
+      description: |
+        Fully replace an existing agreement. All fields must be provided.
+        Budget line items and services components cannot be included in update requests.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Agreement ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/AgreementData"
+                - $ref: "#/components/schemas/ContractAgreementData"
+                - $ref: "#/components/schemas/GrantAgreementData"
+                - $ref: "#/components/schemas/DirectAgreementData"
+                - $ref: "#/components/schemas/IaaAgreementData"
+                - $ref: "#/components/schemas/AaAgreementData"
+      responses:
+        "200":
+          description: Agreement updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                  - id
+                properties:
+                  message:
+                    type: string
+                    example: "Agreement updated"
+                  id:
+                    type: integer
+                    description: ID of the updated agreement
+        "400":
           description: |
             Bad Request - This error will be returned when:
             - The request contains invalid data
             - The request attempts to modify immutable fields on an awarded agreement (fields listed in _meta.immutable_awarded_fields cannot be changed once the agreement is awarded)
+            - The request includes budget_line_items or services_components (these cannot be updated via this endpoint)
           content:
             application/json:
               schema:
@@ -368,6 +414,108 @@ paths:
                       type: array
                       items:
                         type: string
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+    patch:
+      tags:
+        - Agreements
+      operationId: Update Agreement (Partial)
+      description: |
+        Partially update an existing agreement. Only provided fields are updated.
+        Budget line items and services components cannot be included in update requests.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Agreement ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/AgreementData"
+                - $ref: "#/components/schemas/ContractAgreementData"
+                - $ref: "#/components/schemas/GrantAgreementData"
+                - $ref: "#/components/schemas/DirectAgreementData"
+                - $ref: "#/components/schemas/IaaAgreementData"
+                - $ref: "#/components/schemas/AaAgreementData"
+      responses:
+        "200":
+          description: Agreement updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                  - id
+                properties:
+                  message:
+                    type: string
+                    example: "Agreement updated"
+                  id:
+                    type: integer
+                    description: ID of the updated agreement
+        "400":
+          description: |
+            Bad Request - This error will be returned when:
+            - The request contains invalid data
+            - The request attempts to modify immutable fields on an awarded agreement (fields listed in _meta.immutable_awarded_fields cannot be changed once the agreement is awarded)
+            - The request includes budget_line_items or services_components (these cannot be updated via this endpoint)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Cannot update immutable field 'contract_type' on awarded agreement"
+                  errors:
+                    type: object
+                    additionalProperties:
+                      type: array
+                      items:
+                        type: string
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+    delete:
+      tags:
+        - Agreements
+      operationId: Delete Agreement
+      description: Delete an existing agreement
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Agreement ID
+      responses:
+        "200":
+          description: Agreement deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                  - id
+                properties:
+                  message:
+                    type: string
+                    example: "Agreement deleted"
+                  id:
+                    type: integer
+                    description: ID of the deleted agreement
+        "400":
+          description: Bad Request - Validation error prevents deletion
         "404":
           description: Not Found
         "500":
@@ -6097,6 +6245,60 @@ components:
                 "full_name": "Chris Fortunato",
                 "email": "chris.fortunato@example.com"
               }
+        division_directors:
+          type: array
+          description: List of division directors from all agreements in the project
+          items:
+            type: object
+            required:
+              - id
+              - name
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+          example:
+            - id: 500
+              name: "Jane Smith"
+            - id: 501
+              name: "John Doe"
+        project_officers:
+          type: array
+          description: List of project officers from all agreements in the project
+          items:
+            type: object
+            required:
+              - id
+              - name
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+          example:
+            - id: 500
+              name: "Jane Smith"
+            - id: 501
+              name: "John Doe"
+        alternate_project_officers:
+          type: array
+          description: List of alternate project officers from all agreements in the project
+          items:
+            type: object
+            required:
+              - id
+              - name
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+          example:
+            - id: 500
+              name: "Jane Smith"
+            - id: 501
+              name: "John Doe"
         created_on:
           type: string
           format: date-time
@@ -7540,6 +7742,60 @@ components:
             - id: 500
               full_name: "Jane Smith"
               email: "jane.smith@example.com"
+        division_directors:
+          type: array
+          description: List of division directors from all agreements in the project
+          items:
+            type: object
+            required:
+              - id
+              - name
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+          example:
+            - id: 500
+              name: "Jane Smith"
+            - id: 501
+              name: "John Doe"
+        project_officers:
+          type: array
+          description: List of project officers from all agreements in the project
+          items:
+            type: object
+            required:
+              - id
+              - name
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+          example:
+            - id: 500
+              name: "Jane Smith"
+            - id: 501
+              name: "John Doe"
+        alternate_project_officers:
+          type: array
+          description: List of alternate project officers from all agreements in the project
+          items:
+            type: object
+            required:
+              - id
+              - name
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+          example:
+            - id: 500
+              name: "Jane Smith"
+            - id: 501
+              name: "John Doe"
         created_on:
           type: string
           format: date-time
@@ -7807,6 +8063,7 @@ components:
               type: string
             division_directors:
               type: array
+              description: List of division directors from budget line items (ID and name)
               items:
                 type: string
             team_leaders:
