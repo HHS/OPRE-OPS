@@ -46,7 +46,7 @@ const HelpCenter = () => {
                             >
                                 <use href={`${icons}#save_alt`}></use>
                             </svg>
-                            <span>Export</span>
+                            <span>Open in SharePoint</span>
                         </a>
                     }
                 />
