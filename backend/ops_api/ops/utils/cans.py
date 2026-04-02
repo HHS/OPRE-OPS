@@ -132,9 +132,24 @@ def get_funding_by_budget_line_item_status(
         return sum([bli.amount for bli in can.budget_line_items if bli.amount and bli.status == status]) or 0
 
 
-def get_can_funding_summary(can: CAN, fiscal_year: Optional[int] = None) -> CanFundingSummary:
+class CanFundingAmounts(TypedDict):
+    """Lightweight funding amounts without full CAN serialization."""
+
+    available_funding: float
+    carry_forward_funding: float
+    received_funding: float
+    expected_funding: float
+    in_draft_funding: float
+    in_execution_funding: float
+    new_funding: float
+    obligated_funding: float
+    planned_funding: float
+    total_funding: float
+
+
+def calculate_can_funding(can: CAN, fiscal_year: Optional[int] = None) -> CanFundingAmounts:
     """
-    Return a CanFundingSummary dictionary funding summary for the given CAN.
+    Calculate funding amounts for a CAN without serializing the CAN object.
     """
     if fiscal_year:
         received_funding = sum([c.funding for c in can.funding_received if c.fiscal_year == fiscal_year]) or 0
@@ -173,24 +188,11 @@ def get_can_funding_summary(can: CAN, fiscal_year: Optional[int] = None) -> CanF
             or 0
         )
 
-    carry_forward_label = (
-        "Carry-Forward"
-        if len(can.funding_budgets[1:]) == 1
-        else ", ".join(f"FY {c}" for c in [c.fiscal_year for c in can.funding_budgets[1:]]) + " Carry-Forward"
-    )
-
     total_funding = carry_forward_funding + new_funding
     available_funding = total_funding - sum([planned_funding, obligated_funding, in_execution_funding]) or 0
 
     return {
         "available_funding": available_funding,
-        "cans": [
-            {
-                "can": can.to_dict(),
-                "carry_forward_label": carry_forward_label,
-                "expiration_date": f"9/30/{can.obligate_by}" if can.obligate_by else "",
-            }
-        ],
         "carry_forward_funding": carry_forward_funding,
         "received_funding": received_funding,
         "expected_funding": total_funding - received_funding,
@@ -200,6 +202,46 @@ def get_can_funding_summary(can: CAN, fiscal_year: Optional[int] = None) -> CanF
         "obligated_funding": obligated_funding,
         "planned_funding": planned_funding,
         "total_funding": total_funding,
+    }
+
+
+def get_carry_forward_label(can: CAN) -> str:
+    """Build carry-forward label from a CAN's funding budgets.
+
+    Carry-forward budgets are those whose fiscal_year differs from the
+    CAN's appropriation year (funding_details.fiscal_year).  The label
+    lists them sorted by fiscal year for deterministic output.
+    """
+    appropriation_year = can.funding_details.fiscal_year if can.funding_details else None
+    cf_budgets = sorted(
+        (fb for fb in can.funding_budgets if fb.fiscal_year != appropriation_year),
+        key=lambda fb: fb.fiscal_year,
+    )
+    if len(cf_budgets) <= 1:
+        return "Carry-Forward"
+    return ", ".join(f"FY {fb.fiscal_year}" for fb in cf_budgets) + " Carry-Forward"
+
+
+def get_expiration_date(can: CAN) -> str:
+    """Get formatted expiration date for a CAN."""
+    return f"9/30/{can.obligate_by}" if can.obligate_by else ""
+
+
+def get_can_funding_summary(can: CAN, fiscal_year: Optional[int] = None) -> CanFundingSummary:
+    """
+    Return a CanFundingSummary dictionary funding summary for the given CAN.
+    """
+    amounts = calculate_can_funding(can, fiscal_year)
+
+    return {
+        **amounts,
+        "cans": [
+            {
+                "can": can.to_dict(),
+                "carry_forward_label": get_carry_forward_label(can),
+                "expiration_date": get_expiration_date(can),
+            }
+        ],
     }
 
 

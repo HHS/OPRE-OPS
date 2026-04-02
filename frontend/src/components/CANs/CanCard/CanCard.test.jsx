@@ -2,11 +2,11 @@ import { render, screen, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { BrowserRouter } from "react-router-dom";
 import CanCard from "./CanCard";
-import { useGetCanFundingSummaryQuery } from "../../../api/opsAPI";
+import { useGetCanFundingQuery } from "../../../api/opsAPI";
 
 // Mock the external dependencies
 vi.mock("../../../api/opsAPI", () => ({
-    useGetCanFundingSummaryQuery: vi.fn(),
+    useGetCanFundingQuery: vi.fn(),
     useLazyGetCansQuery: () => [
         vi.fn().mockResolvedValue({ unwrap: () => Promise.resolve({ cans: [], count: 0 }) }),
         { isLoading: false, isError: false }
@@ -20,12 +20,17 @@ vi.mock("../../UI/DataViz/LineGraph/ReverseLineGraph", () => ({
 }));
 vi.mock("../../UI/DataViz/LineGraph", () => ({
     __esModule: true,
-    default: () => <div data-testid="mock-line-graph" />
+    default: ({ data }) => (
+        <div
+            data-testid="mock-line-graph"
+            data-graph-data={JSON.stringify(data)}
+        />
+    )
 }));
 
 describe("CanCard", () => {
     beforeEach(() => {
-        vi.mocked(useGetCanFundingSummaryQuery).mockReturnValue({
+        vi.mocked(useGetCanFundingQuery).mockReturnValue({
             data: mockCanFundingData,
             isLoading: false,
             refetch: vi.fn()
@@ -66,6 +71,65 @@ describe("CanCard", () => {
         expect(screen.getByTestId("mock-line-graph")).toBeInTheDocument();
     });
 
+    it("passes correct total_funding to the spending/available LineGraph", async () => {
+        render(
+            <BrowserRouter>
+                <CanCard
+                    canId={mockCan.id}
+                    fiscalYear={mockFiscalYear}
+                />
+            </BrowserRouter>
+        );
+
+        await waitFor(() => {
+            const lineGraph = screen.getByTestId("mock-line-graph");
+            const graphData = JSON.parse(lineGraph.getAttribute("data-graph-data"));
+
+            // The second segment (available) should use funding.total_funding, not top-level total_funding
+            expect(graphData[1].value).toBe(mockCanFundingData.funding.total_funding);
+            expect(graphData[1].value).not.toBeUndefined();
+        });
+    });
+
+    it("computes spending/available chart percentages correctly", async () => {
+        // Use numeric funding values to avoid string concatenation
+        const numericFundingData = {
+            ...mockCanFundingData,
+            funding: {
+                ...mockCanFundingData.funding,
+                planned_funding: 1000000,
+                in_execution_funding: 2000000,
+                obligated_funding: 0,
+                total_funding: 10000000
+            }
+        };
+
+        vi.mocked(useGetCanFundingQuery).mockReturnValue({
+            data: numericFundingData,
+            isLoading: false,
+            refetch: vi.fn()
+        });
+
+        render(
+            <BrowserRouter>
+                <CanCard
+                    canId={mockCan.id}
+                    fiscalYear={mockFiscalYear}
+                />
+            </BrowserRouter>
+        );
+
+        await waitFor(() => {
+            const lineGraph = screen.getByTestId("mock-line-graph");
+            const graphData = JSON.parse(lineGraph.getAttribute("data-graph-data"));
+
+            // spending = planned (1M) + in_execution (2M) + obligated (0) = 3M
+            // total = 10M, so spending percent = 30, available percent = 70
+            expect(graphData[0].percent).toBe(30);
+            expect(graphData[1].percent).toBe(70);
+        });
+    });
+
     // Add more test cases as needed
 });
 
@@ -73,10 +137,10 @@ it("displays TBD when total_funding is 0", async () => {
     // Override the mock to return zero total funding
     const zeroFundingData = {
         ...mockCanFundingData,
-        total_funding: 0.0
+        funding: { ...mockCanFundingData.funding, total_funding: 0.0 }
     };
 
-    vi.mocked(useGetCanFundingSummaryQuery).mockReturnValue({
+    vi.mocked(useGetCanFundingQuery).mockReturnValue({
         data: zeroFundingData,
         isLoading: false,
         refetch: vi.fn()
@@ -133,21 +197,21 @@ const mockCan = {
 const mockFiscalYear = 2023;
 
 const mockCanFundingData = {
-    available_funding: "7000000.00",
-    cans: [
-        {
-            can: mockCan,
-            carry_forward_label: "Carry-Forward",
-            expiration_date: "09/01/2024"
-        }
-    ],
-    carry_forward_funding: "7000000.00",
-    expected_funding: "4000000.00",
-    in_draft_funding: 0,
-    in_execution_funding: "2000000.00",
-    new_funding: 0,
-    obligated_funding: 0,
-    planned_funding: "1000000.00",
-    received_funding: "6000000.00",
-    total_funding: "10000000.00"
+    can: {
+        ...mockCan,
+        carry_forward_label: "Carry-Forward",
+        expiration_date: "09/01/2024"
+    },
+    funding: {
+        available_funding: "7000000.00",
+        carry_forward_funding: "7000000.00",
+        expected_funding: "4000000.00",
+        in_draft_funding: 0,
+        in_execution_funding: "2000000.00",
+        new_funding: 0,
+        obligated_funding: 0,
+        planned_funding: "1000000.00",
+        received_funding: "6000000.00",
+        total_funding: "10000000.00"
+    }
 };

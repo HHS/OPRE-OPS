@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import CanList from "./CanList";
-import { useGetCanFilterOptionsQuery, useGetCanFundingSummaryQuery, useGetCansQuery } from "../../../api/opsAPI";
+import { useGetCanFilterOptionsQuery, useGetCansFundingQuery, useGetCansQuery } from "../../../api/opsAPI";
 
 vi.mock("../../../api/opsAPI");
 
@@ -73,14 +73,16 @@ describe("CanList", () => {
             isFetching: false
         });
 
-        useGetCanFundingSummaryQuery.mockReturnValue({
+        useGetCansFundingQuery.mockReturnValue({
             data: {
-                total_funding: 100,
-                new_funding: 10,
-                carry_forward_funding: 5,
-                planned_funding: 20,
-                obligated_funding: 30,
-                in_execution_funding: 40
+                funding: {
+                    total_funding: 100,
+                    new_funding: 10,
+                    carry_forward_funding: 5,
+                    planned_funding: 20,
+                    obligated_funding: 30,
+                    in_execution_funding: 40
+                }
             },
             isLoading: false,
             isFetching: false

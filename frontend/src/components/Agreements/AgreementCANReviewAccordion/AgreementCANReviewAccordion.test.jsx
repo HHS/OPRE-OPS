@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Provider } from "react-redux";
-import { useGetCanFundingSummaryQuery, useGetPortfoliosQuery } from "../../../api/opsAPI";
+import { useGetCanFundingQuery, useGetPortfoliosQuery } from "../../../api/opsAPI";
 import store from "../../../store";
 import AgreementCANReviewAccordion from "./AgreementCANReviewAccordion";
 import { CHANGE_REQUEST_SLUG_TYPES } from "../../ChangeRequests/ChangeRequests.constants";
@@ -20,7 +20,7 @@ describe("AgreementCANReview", () => {
         isApprovePage: false
     };
     it("should render from review page for PLANNED_TO_EXECUTING BLIS", () => {
-        useGetCanFundingSummaryQuery
+        useGetCanFundingQuery
             .mockReturnValueOnce({ data: canFundingCardData })
             .mockReturnValueOnce({ data: canFundingCardData2 });
         render(
@@ -48,7 +48,7 @@ describe("AgreementCANReview", () => {
     it("should render from review page for DRAFT_TO_PLANNED BLIS", async () => {
         const user = userEvent.setup();
         const mockSetAfterApproval = vi.fn(); // Create a mock function
-        useGetCanFundingSummaryQuery.mockReturnValueOnce({ data: canFundingCard_G994426 });
+        useGetCanFundingQuery.mockReturnValueOnce({ data: canFundingCard_G994426 });
         render(
             <MemoryRouter>
                 <Provider store={store}>
@@ -76,7 +76,7 @@ describe("AgreementCANReview", () => {
 
         await user.click(toggle);
         expect(mockSetAfterApproval).toHaveBeenCalled();
-        useGetCanFundingSummaryQuery.mockReturnValueOnce({ data: canFundingCard_G994426 });
+        useGetCanFundingQuery.mockReturnValueOnce({ data: canFundingCard_G994426 });
         render(
             <MemoryRouter>
                 <Provider store={store}>
@@ -101,7 +101,7 @@ describe("AgreementCANReview", () => {
     it("should render from approve page with a procurement change", async () => {
         const user = userEvent.setup();
         const mockSetAfterApproval = vi.fn(); // Create a mock function
-        useGetCanFundingSummaryQuery.mockReturnValueOnce({ data: canFundingCardG99SHARED });
+        useGetCanFundingQuery.mockReturnValueOnce({ data: canFundingCardG99SHARED });
         render(
             <MemoryRouter>
                 <Provider store={store}>
@@ -132,7 +132,7 @@ describe("AgreementCANReview", () => {
         expect(mockSetAfterApproval).toHaveBeenCalled();
 
         // Re-render with afterApproval true - this will replace the previous render
-        useGetCanFundingSummaryQuery.mockReturnValueOnce({ data: canFundingCardG99SHARED });
+        useGetCanFundingQuery.mockReturnValueOnce({ data: canFundingCardG99SHARED });
         render(
             <MemoryRouter>
                 <Provider store={store}>
@@ -162,7 +162,7 @@ describe("AgreementCANReview", () => {
     it("should render from approve page with budget change to amount", async () => {
         const user = userEvent.setup();
         const mockSetAfterApproval = vi.fn(); // Create a mock function
-        useGetCanFundingSummaryQuery
+        useGetCanFundingQuery
             .mockReturnValueOnce({ data: canFundingCardData })
             .mockReturnValueOnce({ data: canFundingCardData2 });
         render(
@@ -198,7 +198,7 @@ describe("AgreementCANReview", () => {
 
         await user.click(toggle);
         expect(mockSetAfterApproval).toHaveBeenCalled();
-        useGetCanFundingSummaryQuery
+        useGetCanFundingQuery
             .mockReturnValueOnce({ data: canFundingCardData })
             .mockReturnValueOnce({ data: canFundingCardData2 });
         render(
@@ -230,7 +230,7 @@ describe("AgreementCANReview", () => {
     it("should render from approve page with budget change to CAN", async () => {
         const mockSetAfterApproval = vi.fn();
         const user = userEvent.setup();
-        useGetCanFundingSummaryQuery
+        useGetCanFundingQuery
             .mockReturnValueOnce({ data: canFundingCardData })
             .mockReturnValueOnce({ data: canFundingCardData2 });
         render(
@@ -266,7 +266,7 @@ describe("AgreementCANReview", () => {
 
         await user.click(toggle);
         expect(mockSetAfterApproval).toHaveBeenCalled();
-        useGetCanFundingSummaryQuery
+        useGetCanFundingQuery
             .mockReturnValueOnce({ data: canFundingCardData })
             .mockReturnValueOnce({ data: canFundingCardData2 });
         render(
@@ -298,7 +298,7 @@ describe("AgreementCANReview", () => {
     it("should render from approve page with budget change to amount and CAN", async () => {
         const mockSetAfterApproval = vi.fn();
         const user = userEvent.setup();
-        useGetCanFundingSummaryQuery
+        useGetCanFundingQuery
             .mockReturnValueOnce({ data: canFundingCardData })
             .mockReturnValueOnce({ data: canFundingCardData2 });
         render(
@@ -334,7 +334,7 @@ describe("AgreementCANReview", () => {
 
         await user.click(toggle);
         expect(mockSetAfterApproval).toHaveBeenCalled();
-        useGetCanFundingSummaryQuery
+        useGetCanFundingQuery
             .mockReturnValueOnce({ data: canFundingCardData })
             .mockReturnValueOnce({ data: canFundingCardData2 });
         render(
@@ -366,7 +366,7 @@ describe("AgreementCANReview", () => {
     it("should render from approve page with status change to PLANNED", async () => {
         const user = userEvent.setup();
         const mockSetAfterApproval = vi.fn(); // Create a mock function
-        useGetCanFundingSummaryQuery.mockReturnValueOnce({ data: canFundingCard_G994426 });
+        useGetCanFundingQuery.mockReturnValueOnce({ data: canFundingCard_G994426 });
         render(
             <MemoryRouter>
                 <Provider store={store}>
@@ -396,7 +396,7 @@ describe("AgreementCANReview", () => {
 
         await user.click(toggle);
         expect(mockSetAfterApproval).toHaveBeenCalled();
-        useGetCanFundingSummaryQuery.mockReturnValueOnce({ data: canFundingCard_G994426 });
+        useGetCanFundingQuery.mockReturnValueOnce({ data: canFundingCard_G994426 });
         render(
             <MemoryRouter>
                 <Provider store={store}>
@@ -423,7 +423,7 @@ describe("AgreementCANReview", () => {
     it("should render from approve page with status change to EXECUTING", async () => {
         const user = userEvent.setup();
         const mockSetAfterApproval = vi.fn(); // Create a mock function
-        useGetCanFundingSummaryQuery
+        useGetCanFundingQuery
             .mockReturnValueOnce({ data: canFundingCardData })
             .mockReturnValueOnce({ data: canFundingCardData2 });
         render(
@@ -460,7 +460,7 @@ describe("AgreementCANReview", () => {
 
         await user.click(toggle);
         expect(mockSetAfterApproval).toHaveBeenCalled();
-        useGetCanFundingSummaryQuery
+        useGetCanFundingQuery
             .mockReturnValueOnce({ data: canFundingCardData })
             .mockReturnValueOnce({ data: canFundingCardData2 });
         render(
@@ -1326,206 +1326,95 @@ const canData = [
 ];
 
 const canFundingCardData = {
-    available_funding: 14300000.0,
-    cans: [
-        {
-            can: {
-                appropriation_date: "2023-10-01T00:00:00.000000Z",
-                active_period: 1,
-                arrangement_type: "OPRE_APPROPRIATION",
-                budget_line_items: [15011, 15017, 15020],
-                can_type: null,
-                created_by: null,
-                created_by_user: null,
-                created_on: "2024-07-29T14:44:58.757452Z",
-                description: "Social Science Research and Development",
-                display_name: "G99PHS9",
-                division_id: 6,
-                expiration_date: "2024-09-01T00:00:00.000000Z",
-                funding_sources: [26],
-                id: 502,
-                managing_portfolio: 8,
-                portfolio_id: 8,
-                nick_name: "SSRD",
-                number: "G99PHS9",
-                projects: [],
-                shared_portfolios: [],
-                updated_by: null,
-                updated_by_user: null,
-                updated_on: "2024-07-29T14:44:58.757452Z",
-                versions: [
-                    {
-                        id: 502,
-                        transaction_id: 208
-                    }
-                ]
-            },
-            carry_forward_label: "Carry-Forward",
-            expiration_date: "09/01/2024"
-        }
-    ],
-    carry_forward_funding: 14300000.0,
-    expected_funding: 5000000.0,
-    in_draft_funding: 0,
-    in_execution_funding: 2000000.0,
-    new_funding: 0,
-    obligated_funding: 0,
-    planned_funding: 7700000.0,
-    received_funding: 19000000.0,
-    total_funding: 24000000.0
+    can: {
+        active_period: 1,
+        id: 502,
+        portfolio_id: 8,
+        nick_name: "SSRD",
+        number: "G99PHS9",
+        carry_forward_label: "Carry-Forward",
+        expiration_date: "09/01/2024"
+    },
+    funding: {
+        available_funding: 14300000.0,
+        carry_forward_funding: 14300000.0,
+        expected_funding: 5000000.0,
+        in_draft_funding: 0,
+        in_execution_funding: 2000000.0,
+        new_funding: 0,
+        obligated_funding: 0,
+        planned_funding: 7700000.0,
+        received_funding: 19000000.0,
+        total_funding: 24000000.0
+    }
 };
 
 const canFundingCardData2 = {
-    available_funding: 1979500.0,
-    cans: [
-        {
-            can: {
-                appropriation_date: "2022-10-01T00:00:00.000000Z",
-                active_period: 1,
-                arrangement_type: "OPRE_APPROPRIATION",
-                budget_line_items: [15018, 15021],
-                can_type: null,
-                created_by: null,
-                created_by_user: null,
-                created_on: "2024-07-29T14:44:58.941288Z",
-                description: "Example CAN",
-                display_name: "G99XXX8",
-                division_id: 4,
-                expiration_date: "2023-09-01T00:00:00.000000Z",
-                funding_sources: [26],
-                id: 512,
-                managing_portfolio: 3,
-                portfolio_id: 3,
-                nick_name: "",
-                number: "G99XXX8",
-                projects: [1000],
-                shared_portfolios: [],
-                updated_by: null,
-                updated_by_user: null,
-                updated_on: "2024-07-29T14:44:58.941288Z",
-                versions: [
-                    {
-                        id: 512,
-                        transaction_id: 229
-                    }
-                ]
-            },
-            carry_forward_label: "Carry-Forward",
-            expiration_date: "09/01/2023"
-        }
-    ],
-    carry_forward_funding: 1979500.0,
-    expected_funding: 520000.0,
-    in_execution_funding: 0,
-    obligated_funding: 500.0,
-    planned_funding: 300000.0,
-    received_funding: 1760000.0,
-    total_funding: 2280000.0
+    can: {
+        active_period: 1,
+        id: 512,
+        portfolio_id: 3,
+        nick_name: "",
+        number: "G99XXX8",
+        carry_forward_label: "Carry-Forward",
+        expiration_date: "09/01/2023"
+    },
+    funding: {
+        available_funding: 1979500.0,
+        carry_forward_funding: 1979500.0,
+        expected_funding: 520000.0,
+        in_execution_funding: 0,
+        obligated_funding: 500.0,
+        planned_funding: 300000.0,
+        received_funding: 1760000.0,
+        total_funding: 2280000.0
+    }
 };
 
 const canFundingCardG99SHARED = {
-    available_funding: -221614865.0,
-    cans: [
-        {
-            can: {
-                active_period: 5,
-                appropriation_date: 2023,
-                description: "Shared CAN",
-                display_name: "G99SHARED",
-                expiration_date: 2028,
-                funding_budgets: [
-                    {
-                        budget: "500000.0",
-                        can_id: 516,
-                        display_name: "CANFundingBudget#31",
-                        fiscal_year: 2023,
-                        id: 31,
-                        notes: null
-                    }
-                ],
-                funding_details: {
-                    allotment: null,
-                    allowance: null,
-                    appropriation: null,
-                    display_name: "CANFundingDetails#17",
-                    fiscal_year: 2023,
-                    fund_code: "QQXXXX20235DAD",
-                    funding_partner: null,
-                    funding_source: null,
-                    id: 17,
-                    method_of_transfer: "IDDA",
-                    sub_allowance: null
-                },
-                funding_details_id: 17,
-                funding_received: [],
-                id: 516,
-                nick_name: "SHARED",
-                number: "G99SHARED",
-                portfolio: 3,
-                portfolio_id: 3,
-                projects: [{}, {}]
-            },
-            carry_forward_label: " Carry-Forward",
-            expiration_date: "10/01/2028"
-        }
-    ],
-    carry_forward_funding: 0.0,
-    expected_funding: 500000.0,
-    in_draft_funding: 50806571.0,
-    in_execution_funding: 60769953.0,
-    new_funding: 500000.0,
-    obligated_funding: 70454089.0,
-    planned_funding: 90890823.0,
-    received_funding: 0.0,
-    total_funding: 500000.0
+    can: {
+        active_period: 5,
+        id: 516,
+        nick_name: "SHARED",
+        number: "G99SHARED",
+        portfolio_id: 3,
+        carry_forward_label: " Carry-Forward",
+        expiration_date: "10/01/2028"
+    },
+    funding: {
+        available_funding: -221614865.0,
+        carry_forward_funding: 0.0,
+        expected_funding: 500000.0,
+        in_draft_funding: 50806571.0,
+        in_execution_funding: 60769953.0,
+        new_funding: 500000.0,
+        obligated_funding: 70454089.0,
+        planned_funding: 90890823.0,
+        received_funding: 0.0,
+        total_funding: 500000.0
+    }
 };
 
 const canFundingCard_G994426 = {
-    available_funding: 37000000.0,
-    cans: [
-        {
-            can: {
-                appropriation_date: "2023-10-01T00:00:00.000000Z",
-                active_period: 1,
-                arrangement_type: "OPRE_APPROPRIATION",
-                budget_line_items: [15000, 15001, 15012, 15022, 15023],
-                can_type: null,
-                created_by: null,
-                created_by_user: null,
-                created_on: "2024-08-02T13:45:56.155989Z",
-                description: "Head Start Research",
-                display_name: "G994426",
-                division_id: 4,
-                expiration_date: "2024-09-01T00:00:00.000000Z",
-                funding_sources: [26],
-                id: 504,
-                managing_portfolio: 2,
-                portfolio_id: 2,
-                nick_name: "HS",
-                number: "G994426",
-                projects: [],
-                shared_portfolios: [],
-                updated_by: null,
-                updated_by_user: null,
-                updated_on: "2024-08-02T13:45:56.155989Z",
-                versions: [
-                    {
-                        id: 504,
-                        transaction_id: 212
-                    }
-                ]
-            },
-            carry_forward_label: "Carry-Forward",
-            expiration_date: "09/01/2024"
-        }
-    ],
-    carry_forward_funding: 37000000.0,
-    expected_funding: 16000000.0,
-    in_execution_funding: 2000000.0,
-    obligated_funding: 0,
-    planned_funding: 1000000.0,
-    received_funding: 24000000.0,
-    total_funding: 40000000.0
+    can: {
+        active_period: 1,
+        id: 504,
+        portfolio_id: 2,
+        nick_name: "HS",
+        number: "G994426",
+        carry_forward_label: "Carry-Forward",
+        expiration_date: "09/01/2024"
+    },
+    funding: {
+        available_funding: 37000000.0,
+        carry_forward_funding: 37000000.0,
+        expected_funding: 16000000.0,
+        in_execution_funding: 2000000.0,
+        obligated_funding: 0,
+        planned_funding: 1000000.0,
+        received_funding: 24000000.0,
+        total_funding: 40000000.0
+    }
 };
 
 const selectedBudgetLinesToAmount = [
