@@ -92,6 +92,10 @@ class ProcurementTrackerStepService:
             updated_fields=data,
             db_session=self.db_session,
         )
+        # Capture old state of approval fields before any modifications
+        # Used to detect state transitions for notification logic
+        old_approval_requested = step.pre_award_approval_requested
+        old_approval_status = step.pre_award_approval_status
         # Map API field names to model field names for step-specific fields
         field_mapping = {
             "acquisition_planning": {
@@ -186,7 +190,9 @@ class ProcurementTrackerStepService:
         self.db_session.refresh(step)
 
         # Handle approval notifications after commit
-        self._handle_approval_notifications(step, data, current_user)
+        self._handle_approval_notifications(
+            step, data, current_user, old_approval_requested=old_approval_requested, old_approval_status=old_approval_status
+        )
 
         logger.debug(f"Successfully updated procurement tracker step {id}")
 
@@ -271,15 +277,26 @@ class ProcurementTrackerStepService:
         )
 
     def _handle_approval_notifications(
-        self, step: ProcurementTrackerStep, data: Dict[str, Any], current_user: User
+        self,
+        step: ProcurementTrackerStep,
+        data: Dict[str, Any],
+        current_user: User,
+        old_approval_requested: Optional[bool] = None,
+        old_approval_status: Optional[str] = None,
     ) -> None:
         """
         Send notifications when approval is requested or responded to.
+
+        Only sends notifications when state TRANSITIONS occur:
+        - Approval request: when pre_award_approval_requested changes from False/None → True
+        - Approval response: when pre_award_approval_status changes to APPROVED/DECLINED for first time
 
         Args:
             step: The updated procurement tracker step
             data: The update data
             current_user: User making the update
+            old_approval_requested: Previous value of pre_award_approval_requested before update
+            old_approval_status: Previous value of pre_award_approval_status before update
         """
         from models import NotificationType
         from ops_api.ops.services.notifications import NotificationService
@@ -288,7 +305,13 @@ class ProcurementTrackerStepService:
         agreement = step.procurement_tracker.agreement
 
         # Case 1: Approval was just requested - notify reviewers
-        if data.get("approval_requested") is True and step.pre_award_approval_requested:
+        # Only send if approval_requested changed from False/None → True
+        new_approval_requested = data.get("approval_requested") is True and step.pre_award_approval_requested
+        approval_request_transitioned = new_approval_requested and (
+            old_approval_requested is None or old_approval_requested is False
+        )
+
+        if approval_request_transitioned:
             recipient_ids = self._get_approval_reviewers(agreement)
 
             fe_url = current_app.config.get("OPS_FRONTEND_URL", "http://localhost:3000")
@@ -310,8 +333,14 @@ class ProcurementTrackerStepService:
             logger.debug(f"Created {len(recipient_ids)} pre-award approval request notifications")
 
         # Case 2: Approval was approved/declined - notify submitter
-        elif data.get("approval_status") in ["APPROVED", "DECLINED"]:
-            status_text = "approved" if data["approval_status"] == "APPROVED" else "declined"
+        # Only send if approval_status changed from None → APPROVED/DECLINED
+        new_approval_status = data.get("approval_status")
+        approval_response_transitioned = (
+            new_approval_status in ["APPROVED", "DECLINED"] and old_approval_status is None
+        )
+
+        if approval_response_transitioned:
+            status_text = "approved" if new_approval_status == "APPROVED" else "declined"
 
             if step.pre_award_approval_requested_by:
                 notification_service.create(
