@@ -1,5 +1,5 @@
 import CurrencyFormat from "react-currency-format";
-import { useGetCanFundingSummaryQuery } from "../../../api/opsAPI";
+import { useGetCanFundingQuery } from "../../../api/opsAPI";
 import { calculatePercent, formatDateNeeded } from "../../../helpers/utils";
 import LineGraph from "../../UI/DataViz/LineGraph";
 import ReverseLineGraph from "../../UI/DataViz/LineGraph/ReverseLineGraph";
@@ -16,37 +16,41 @@ import { Link } from "react-router-dom";
  * @returns {JSX.Element} - The CAN card
  */
 const CanCard = ({ canId, fiscalYear }) => {
-    const { data: canFundingData, isLoading } = useGetCanFundingSummaryQuery({
-        ids: [canId],
-        fiscalYear: fiscalYear,
-        refetchOnMountOrArgChange: true
-    });
+    const { data: canFundingData, isLoading } = useGetCanFundingQuery(
+        { id: canId, fiscalYear: fiscalYear },
+        { refetchOnMountOrArgChange: true }
+    );
 
-    const can = canFundingData?.cans[0].can;
-    const appropriationYear = canFundingData?.cans[0].can.appropriation_date;
-    const expirationDate = new Date(canFundingData?.cans[0].expiration_date);
+    const can = canFundingData?.can;
+    const appropriationYear = canFundingData?.can?.appropriation_date;
+    const expirationDate = new Date(canFundingData?.can?.expiration_date);
     const obligateBy = new Date(expirationDate);
 
-    const receivedPercent = calculatePercent(canFundingData?.received_funding, canFundingData?.total_funding);
+    const receivedPercent = calculatePercent(
+        canFundingData?.funding?.received_funding,
+        canFundingData?.funding?.total_funding
+    );
     const receivedExpectedData = [
         {
             id: 1,
-            value: canFundingData?.received_funding,
+            value: canFundingData?.funding?.received_funding,
             percent: receivedPercent,
             color: "var(--data-viz-budget-graph-1)"
         },
         {
             id: 2,
-            value: canFundingData?.total_funding,
+            value: canFundingData?.funding?.total_funding,
             percent: 100 - receivedPercent,
             color: "var(--data-viz-budget-graph-2)"
         }
     ];
 
     const spendingAmount =
-        canFundingData?.planned_funding + canFundingData?.in_execution_funding + canFundingData?.obligated_funding;
+        canFundingData?.funding?.planned_funding +
+        canFundingData?.funding?.in_execution_funding +
+        canFundingData?.funding?.obligated_funding;
 
-    const spendingPercent = calculatePercent(spendingAmount, canFundingData?.total_funding);
+    const spendingPercent = calculatePercent(spendingAmount, canFundingData?.funding?.total_funding);
     const spendingAvailableData = [
         {
             id: 1,
@@ -56,7 +60,7 @@ const CanCard = ({ canId, fiscalYear }) => {
         },
         {
             id: 2,
-            value: canFundingData?.total_funding,
+            value: canFundingData?.funding?.total_funding,
             percent: 100 - spendingPercent,
             color: "var(--data-viz-budget-graph-1)"
         }
@@ -103,7 +107,7 @@ const CanCard = ({ canId, fiscalYear }) => {
                         />
                     )}
                 </div>
-                {canFundingData?.total_funding === 0 ? (
+                {canFundingData?.funding?.total_funding === 0 ? (
                     <span
                         className="text-bold"
                         style={{ fontSize: "20px" }}
@@ -114,7 +118,7 @@ const CanCard = ({ canId, fiscalYear }) => {
                     <CurrencyFormat
                         className="text-bold"
                         style={{ fontSize: "20px" }}
-                        value={canFundingData?.total_funding}
+                        value={canFundingData?.funding?.total_funding}
                         displayType={"text"}
                         thousandSeparator={true}
                         prefix="$"
@@ -129,22 +133,22 @@ const CanCard = ({ canId, fiscalYear }) => {
                     <div className="display-flex flex-justify font-12px margin-bottom-05">
                         <div>
                             <CurrencyFormat
-                                value={canFundingData?.received_funding ?? 0}
+                                value={canFundingData?.funding?.received_funding ?? 0}
                                 displayType={"text"}
                                 thousandSeparator={true}
                                 prefix={"$"}
-                                decimalScale={canFundingData?.received_funding === 0 ? 0 : 2}
+                                decimalScale={canFundingData?.funding?.received_funding === 0 ? 0 : 2}
                                 fixedDecimalScale
                             />{" "}
                             <span>Received</span>
                         </div>
                         <div>
                             <CurrencyFormat
-                                value={canFundingData?.expected_funding ?? 0}
+                                value={canFundingData?.funding?.expected_funding ?? 0}
                                 displayType={"text"}
                                 thousandSeparator={true}
                                 prefix={"$"}
-                                decimalScale={canFundingData?.expected_funding === 0 ? 0 : 2}
+                                decimalScale={canFundingData?.funding?.expected_funding === 0 ? 0 : 2}
                                 fixedDecimalScale
                             />{" "}
                             <span>Expected</span>
@@ -170,11 +174,11 @@ const CanCard = ({ canId, fiscalYear }) => {
                         </div>
                         <div>
                             <CurrencyFormat
-                                value={canFundingData?.available_funding ?? 0}
+                                value={canFundingData?.funding?.available_funding ?? 0}
                                 displayType={"text"}
                                 thousandSeparator={true}
                                 prefix={"$"}
-                                decimalScale={canFundingData?.available_funding === 0 ? 0 : 2}
+                                decimalScale={canFundingData?.funding?.available_funding === 0 ? 0 : 2}
                                 fixedDecimalScale
                             />{" "}
                             <span>Available</span>

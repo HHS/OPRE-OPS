@@ -26,7 +26,7 @@ vi.mock("react-redux", () => ({
 vi.mock("../../../api/opsAPI", () => ({
     opsApi: {
         endpoints: {
-            getCanFundingSummary: {
+            getCanFunding: {
                 initiate: initiateMock
             }
         }
@@ -41,9 +41,11 @@ describe("CANTable", () => {
         dispatchMock.mockImplementation(() => ({
             unwrap: () =>
                 Promise.resolve({
-                    available_funding: 1000,
-                    received_funding: 500,
-                    total_funding: 1500
+                    funding: {
+                        available_funding: 1000,
+                        received_funding: 500,
+                        total_funding: 1500
+                    }
                 }),
             unsubscribe: vi.fn()
         }));

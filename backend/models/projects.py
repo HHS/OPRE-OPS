@@ -88,6 +88,8 @@ class Project(BaseModel):
         start_dates = []
         end_dates = []
         team_members_dict = {}
+        project_officer_dict = {}
+        alternate_project_officer_dict = {}
         division_directors_set = set()
 
         for agreement in self.agreements:
@@ -101,7 +103,7 @@ class Project(BaseModel):
                 team_members_dict[team_member.id] = team_member
 
             # Collect division directors
-            for director in agreement.division_directors:
+            for director in agreement.division_director_user_list:
                 division_directors_set.add(director)
 
             # Collect all services_component dates
@@ -110,13 +112,37 @@ class Project(BaseModel):
                     start_dates.append(sc.period_start)
                 if sc.period_end is not None:
                     end_dates.append(sc.period_end)
+            # Collect all project officers
+            if agreement.project_officer is not None:
+                project_officer_dict[agreement.project_officer.id] = (
+                    agreement.project_officer.full_name
+                    if agreement.project_officer.full_name
+                    else agreement.project_officer.email
+                )
+            # Collect all alternate project officers
+            if agreement.alternate_project_officer is not None:
+                alternate_project_officer_dict[agreement.alternate_project_officer.id] = (
+                    agreement.alternate_project_officer.full_name
+                    if agreement.alternate_project_officer.full_name
+                    else agreement.alternate_project_officer.email
+                )
         return {
             "special_topics": sorted(list(special_topics_set)),
             "research_methodologies": sorted(list(research_methodologies_set)),
             "project_start": min(start_dates) if start_dates else None,
             "project_end": max(end_dates) if end_dates else None,
             "team_members": sorted(team_members_dict.values(), key=lambda x: x.full_name if x.full_name else x.email),
-            "division_directors": sorted(list(division_directors_set)),
+            "division_directors": sorted(
+                [{"id": d.id, "name": d.full_name if d.full_name else d.email} for d in division_directors_set],
+                key=lambda x: x["name"],
+            ),
+            "project_officers": sorted(
+                [{"id": user_id, "name": name} for user_id, name in project_officer_dict.items()], key=lambda x: x["name"]
+            ),
+            "alternate_project_officers": sorted(
+                [{"id": user_id, "name": name} for user_id, name in alternate_project_officer_dict.items()],
+                key=lambda x: x["name"],
+            ),
         }
 
     @property
@@ -126,7 +152,7 @@ class Project(BaseModel):
 
         Returns a dict with:
         - total: Total value of all agreements (sum of agreement_total for each)
-        - by_fiscal_year: Dict mapping fiscal year to total BLI value for that year (non-DRAFT BLIs only)
+        - total_by_fiscal_year: Dict mapping fiscal year to total BLI value for that year (non-DRAFT BLIs only)
         - project_start: Earliest period_start across all services_components in all agreements
         - project_end: Latest period_end across all services_components in all agreements
         - agreement_name_list: List of dicts with agreement id and name (nick_name if available, otherwise title)
@@ -135,10 +161,20 @@ class Project(BaseModel):
         from models.budget_line_items import BudgetLineItemStatus
 
         total = Decimal("0")
-        by_fiscal_year = defaultdict(lambda: Decimal("0"))
+        total_by_fiscal_year = defaultdict(lambda: Decimal("0"))
+        spending_type_by_fiscal_year = defaultdict(
+            lambda: {
+                "contract": Decimal("0"),
+                "grant": Decimal("0"),
+                "partner": Decimal("0"),
+                "direct_obligation": Decimal("0"),
+            }
+        )
+
         start_dates = []
         end_dates = []
         agreement_name_list = []
+        agreements_by_fy = defaultdict(set)
 
         for agreement in self.agreements:
             # Add agreement total to overall total
@@ -154,7 +190,21 @@ class Project(BaseModel):
                 if (bli.is_obe or bli.status != BudgetLineItemStatus.DRAFT) and bli.fiscal_year is not None:
                     # Include amount + fees for the BLI
                     bli_total = (bli.amount or Decimal("0")) + (bli.fees or Decimal("0"))
-                    by_fiscal_year[bli.fiscal_year] += bli_total
+                    total_by_fiscal_year[bli.fiscal_year] += bli_total
+                    # Track which agreements have spending in a given fiscal year
+                    agreements_by_fy[bli.fiscal_year].add(agreement.id)
+                    # Track spending type breakdown by fiscal year
+                    match agreement.agreement_type.name:
+                        case "CONTRACT":
+                            spending_type_by_fiscal_year[bli.fiscal_year]["contract"] += bli_total
+                        case "GRANT":
+                            spending_type_by_fiscal_year[bli.fiscal_year]["grant"] += bli_total
+                        case "AA":
+                            spending_type_by_fiscal_year[bli.fiscal_year]["partner"] += bli_total
+                        case "IAA":
+                            spending_type_by_fiscal_year[bli.fiscal_year]["partner"] += bli_total
+                        case "DIRECT_OBLIGATION":
+                            spending_type_by_fiscal_year[bli.fiscal_year]["direct_obligation"] += bli_total
 
             # Collect all services_component dates
             for sc in agreement.services_components:
@@ -165,10 +215,12 @@ class Project(BaseModel):
 
         return {
             "total": total,
-            "by_fiscal_year": dict(by_fiscal_year),
+            "total_by_fiscal_year": dict(total_by_fiscal_year),
             "project_start": min(start_dates) if start_dates else None,
             "project_end": max(end_dates) if end_dates else None,
             "agreement_name_list": agreement_name_list,
+            "spending_type_by_fiscal_year": dict(spending_type_by_fiscal_year),
+            "agreements_by_fy": {fy: sorted(list(agreement_ids)) for fy, agreement_ids in agreements_by_fy.items()},
         }
 
     def get_project_funding(self, fiscal_year: int) -> dict:
@@ -232,32 +284,24 @@ class Project(BaseModel):
             for fb in can.funding_budgets:
                 fy_totals[fb.fiscal_year] += fb.budget or Decimal("0")
 
-        funding_by_fiscal_year = [
-            {"fiscal_year": fy, "amount": float(amt)}
-            for fy, amt in sorted(fy_totals.items())
-        ]
+        funding_by_fiscal_year = [{"fiscal_year": fy, "amount": float(amt)} for fy, amt in sorted(fy_totals.items())]
 
         # --- cans ---
         cans_list = []
         for can in sorted(unique_cans, key=lambda c: c.id):
-            fy_funding = sum(
-                (fb.budget or Decimal("0"))
-                for fb in can.funding_budgets
-                if fb.fiscal_year == fiscal_year
+            fy_funding = sum((fb.budget or Decimal("0")) for fb in can.funding_budgets if fb.fiscal_year == fiscal_year)
+            lifetime_funding = sum((fb.budget or Decimal("0")) for fb in can.funding_budgets)
+            cans_list.append(
+                {
+                    "id": can.id,
+                    "number": can.number,
+                    "portfolio_id": can.portfolio_id,
+                    "portfolio": can.portfolio.name if can.portfolio else None,
+                    "active_period": can.active_period,
+                    "fy_funding": float(fy_funding),
+                    "lifetime_funding": float(lifetime_funding),
+                }
             )
-            lifetime_funding = sum(
-                (fb.budget or Decimal("0"))
-                for fb in can.funding_budgets
-            )
-            cans_list.append({
-                "id": can.id,
-                "number": can.number,
-                "portfolio_id": can.portfolio_id,
-                "portfolio": can.portfolio.name if can.portfolio else None,
-                "active_period": can.active_period,
-                "fy_funding": float(fy_funding),
-                "lifetime_funding": float(lifetime_funding),
-            })
 
         return {
             "funding_by_portfolio": funding_by_portfolio,

@@ -177,11 +177,39 @@ paths:
                   offset:
                     type: integer
                     description: Number of agreements skipped
+                  totals:
+                    type: object
+                    description: Aggregate totals across all matching agreements
+                    properties:
+                      count:
+                        type: integer
+                        description: Total count of agreements
+                      obligated:
+                        type: number
+                        format: float
+                        description: Total obligated amount
+                      fees:
+                        type: number
+                        format: float
+                        description: Total fees
+                      in_draft:
+                        type: number
+                        format: float
+                        description: Total in draft status
+                      planned:
+                        type: number
+                        format: float
+                        description: Total planned amount
+                      executing:
+                        type: number
+                        format: float
+                        description: Total executing amount
                 required:
                   - data
                   - count
                   - limit
                   - offset
+                  - totals
         "400":
           description: Bad Request
         "500":
@@ -284,58 +312,26 @@ paths:
         "500":
           description: Internal Server Error
 
-  /agreements/{agreement_id}:
+  /agreements/{id}:
     get:
       tags:
         - Agreements
       operationId: Get Agreement
-      description: Get a specific agreement by ID
+      description: Get a specific agreement by ID with fiscal year context
       parameters:
         - in: path
-          name: agreement_id
+          name: id
           required: true
           schema:
             type: integer
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                oneOf:
-                  - $ref: "#/components/schemas/AgreementResponse"
-                  - $ref: "#/components/schemas/ContractAgreementResponse"
-                  - $ref: "#/components/schemas/GrantAgreementResponse"
-                  - $ref: "#/components/schemas/DirectAgreementResponse"
-                  - $ref: "#/components/schemas/IaaAgreementResponse"
-                  - $ref: "#/components/schemas/AaAgreementResponse"
-        "404":
-          description: Not Found
-        "500":
-          description: Internal Server Error
-    patch:
-      tags:
-        - Agreements
-      operationId: Update Agreement
-      description: Update an existing agreement
-      parameters:
-        - in: path
-          name: agreement_id
-          required: true
+          description: Agreement ID
+        - in: query
+          name: fiscal_year
           schema:
             type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              oneOf:
-                - $ref: "#/components/schemas/AgreementData"
-                - $ref: "#/components/schemas/ContractAgreementData"
-                - $ref: "#/components/schemas/GrantAgreementData"
-                - $ref: "#/components/schemas/DirectAgreementData"
-                - $ref: "#/components/schemas/IaaAgreementData"
-                - $ref: "#/components/schemas/AaAgreementData"
+          description: |
+            Fiscal year for budget calculations and fiscal year-specific data.
+            If not provided, defaults to the current fiscal year.
       responses:
         "200":
           description: OK
@@ -350,10 +346,60 @@ paths:
                   - $ref: "#/components/schemas/IaaAgreementResponse"
                   - $ref: "#/components/schemas/AaAgreementResponse"
         "400":
+          description: Bad Request - Invalid fiscal_year parameter
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+    put:
+      tags:
+        - Agreements
+      operationId: Update Agreement (Full)
+      description: |
+        Fully replace an existing agreement. All fields must be provided.
+        Budget line items and services components cannot be included in update requests.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Agreement ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/AgreementData"
+                - $ref: "#/components/schemas/ContractAgreementData"
+                - $ref: "#/components/schemas/GrantAgreementData"
+                - $ref: "#/components/schemas/DirectAgreementData"
+                - $ref: "#/components/schemas/IaaAgreementData"
+                - $ref: "#/components/schemas/AaAgreementData"
+      responses:
+        "200":
+          description: Agreement updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                  - id
+                properties:
+                  message:
+                    type: string
+                    example: "Agreement updated"
+                  id:
+                    type: integer
+                    description: ID of the updated agreement
+        "400":
           description: |
             Bad Request - This error will be returned when:
             - The request contains invalid data
             - The request attempts to modify immutable fields on an awarded agreement (fields listed in _meta.immutable_awarded_fields cannot be changed once the agreement is awarded)
+            - The request includes budget_line_items or services_components (these cannot be updated via this endpoint)
           content:
             application/json:
               schema:
@@ -368,6 +414,108 @@ paths:
                       type: array
                       items:
                         type: string
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+    patch:
+      tags:
+        - Agreements
+      operationId: Update Agreement (Partial)
+      description: |
+        Partially update an existing agreement. Only provided fields are updated.
+        Budget line items and services components cannot be included in update requests.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Agreement ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/AgreementData"
+                - $ref: "#/components/schemas/ContractAgreementData"
+                - $ref: "#/components/schemas/GrantAgreementData"
+                - $ref: "#/components/schemas/DirectAgreementData"
+                - $ref: "#/components/schemas/IaaAgreementData"
+                - $ref: "#/components/schemas/AaAgreementData"
+      responses:
+        "200":
+          description: Agreement updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                  - id
+                properties:
+                  message:
+                    type: string
+                    example: "Agreement updated"
+                  id:
+                    type: integer
+                    description: ID of the updated agreement
+        "400":
+          description: |
+            Bad Request - This error will be returned when:
+            - The request contains invalid data
+            - The request attempts to modify immutable fields on an awarded agreement (fields listed in _meta.immutable_awarded_fields cannot be changed once the agreement is awarded)
+            - The request includes budget_line_items or services_components (these cannot be updated via this endpoint)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Cannot update immutable field 'contract_type' on awarded agreement"
+                  errors:
+                    type: object
+                    additionalProperties:
+                      type: array
+                      items:
+                        type: string
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+    delete:
+      tags:
+        - Agreements
+      operationId: Delete Agreement
+      description: Delete an existing agreement
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Agreement ID
+      responses:
+        "200":
+          description: Agreement deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                  - id
+                properties:
+                  message:
+                    type: string
+                    example: "Agreement deleted"
+                  id:
+                    type: integer
+                    description: ID of the deleted agreement
+        "400":
+          description: Bad Request - Validation error prevents deletion
         "404":
           description: Not Found
         "500":
@@ -1997,6 +2145,131 @@ paths:
         "403":
           description: Forbidden
 
+  /cans/{id}/funding/:
+    get:
+      tags:
+        - CANs
+      operationId: getCanFunding
+      summary: Get funding summary for a single CAN
+      description: Returns funding totals, funding breakdown by fiscal year, and CAN metadata. When no fiscal_year is provided, returns data across all fiscal years.
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: id
+          description: CAN Id
+          required: true
+          schema:
+            type: integer
+          example: 500
+        - name: fiscal_year
+          in: query
+          description: Fiscal year to filter funding data (optional, returns all FY data when omitted)
+          schema:
+            type: integer
+          example: 2023
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  fiscal_year:
+                    type: integer
+                    nullable: true
+                  funding:
+                    $ref: "#/components/schemas/CANFundingAmounts"
+                  funding_by_fiscal_year:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        fiscal_year:
+                          type: integer
+                        amount:
+                          type: number
+                          format: float
+                  can:
+                    $ref: "#/components/schemas/CANFundingDetail"
+        "404":
+          description: CAN not found
+
+  /cans/funding/:
+    get:
+      tags:
+        - CANs
+      operationId: getCansFundingAggregate
+      summary: Get aggregated funding summary across all CANs
+      description: Returns aggregated funding totals and per-CAN detail for all CANs matching the optional filters.
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - name: fiscal_year
+          in: query
+          description: Fiscal year to filter funding data (optional)
+          schema:
+            type: integer
+          example: 2023
+        - name: active_period
+          in: query
+          description: List of active periods to filter by (optional)
+          schema:
+            type: array
+            items:
+              type: integer
+          example: [1, 5]
+        - name: transfer
+          in: query
+          description: List of CAN method of transfer values to filter by (optional)
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - DIRECT
+                - COST_SHARE
+                - IAA
+                - IDDA
+                - OTHER
+          example: ["DIRECT", "IAA"]
+        - name: portfolio
+          in: query
+          description: List of portfolio abbreviations to filter by (optional)
+          schema:
+            type: array
+            items:
+              type: string
+          example: ["HS", "HMRF", "CC"]
+        - name: fy_budget
+          in: query
+          description: Min and max fiscal year budget range (exactly 2 values)
+          schema:
+            type: array
+            items:
+              type: number
+            minItems: 2
+            maxItems: 2
+          example: [50000, 100000]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  fiscal_year:
+                    type: integer
+                    nullable: true
+                  funding:
+                    $ref: "#/components/schemas/CANFundingAmounts"
+                  cans:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/CANFundingDetail"
+        "400":
+          description: Invalid filter parameter (e.g. invalid transfer value or fy_budget length)
+
   /portfolios/:
     get:
       tags:
@@ -2005,6 +2278,13 @@ paths:
       operationId: getAllPortfolios
       parameters:
         - $ref: "#/components/parameters/simulatedError"
+        - in: query
+          name: project_id
+          required: false
+          schema:
+            type: integer
+            format: int32
+          description: Filter portfolios by project ID. Returns only portfolios associated with the given project through the Agreement → BudgetLineItem → CAN chain.
       description: Get Portfolios
       responses:
         "200":
@@ -2474,165 +2754,6 @@ paths:
           description: Portfolio not found
         "500":
           description: Internal Server Error
-  /can-funding-summary/:
-    get:
-      tags:
-        - CAN Funding Summary
-      operationId: getFundingSummary
-      description: Get Funding Summary
-      parameters:
-        - $ref: "#/components/parameters/simulatedError"
-        - name: can_ids
-          in: query
-          description: List of CAN Ids (required), Use an integer of 0 to get funding summary for all CANs.
-          required: true
-          schema:
-            type: array
-            items:
-              type: integer
-            example: [12345, 12346, 12347]
-        - name: fiscal_year
-          in: query
-          description: Fiscal year (optional)
-          schema:
-            type: string
-            example: "2023"
-        - name: active_period
-          in: query
-          description: List of active periods (optional)
-          schema:
-            type: array
-            items:
-              type: integer
-            example: [1, 5]
-        - name: transfer
-          in: query
-          description: List of CAN Method of Transfers (optional)
-          schema:
-            type: array
-            items:
-              type: string
-              enum:
-                - DIRECT
-                - COST_SHARE
-                - IAA
-                - IDDA
-                - OTHER
-            example: ["DIRECT", "IAA"]
-        - name: portfolio
-          in: query
-          description: List of portfolio abbreviations (optional)
-          schema:
-            type: array
-            items:
-              type: string
-            example: ["HS", "HMRF", "CC"]
-        - name: fy_budget
-          in: query
-          description: List of two values representing the min and max fiscal year budget (optional)
-          schema:
-            type: array
-            items:
-              type: integer
-            minItems: 2
-            maxItems: 2
-            example: [50000, 100000]
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  available_funding:
-                    type: number
-                    format: float
-                  carry_forward_funding:
-                    type: number
-                    format: float
-                  cans:
-                    type: array
-                    properties:
-                      can:
-                        properties:
-                          active_period:
-                            type: integer
-                          description:
-                            type: string
-                          display_name:
-                            type: string
-                          id:
-                            type: integer
-                          nick_name:
-                            type: string
-                          number:
-                            type: string
-                          portfolio_id:
-                            type: integer
-                          projects:
-                            type: array
-                      carry_forward_label:
-                        type: string
-                      expiration_date:
-                        type: string
-                  expected_funding:
-                    type: number
-                    format: float
-                  in_draft_funding:
-                    type: number
-                    format: float
-                  in_execution_funding:
-                    type: number
-                    format: float
-                  new_funding:
-                    type: number
-                    format: float
-                  obligated_funding:
-                    type: number
-                    format: float
-                  planned_funding:
-                    type: number
-                    format: float
-                  received_funding:
-                    type: number
-                    format: float
-                  total_funding:
-                    type: number
-                    format: float
-              examples:
-                "0":
-                  value: |
-                    {
-                      "available_funding": 8000000.00,
-                      "carry_forward_funding": 8000000.00,
-                      "cans": [{
-                        "can":{
-                          "appropriation_date": "01/10/2022",
-                          "appropriation_term": 1,
-                          "arrangement_type_id": 4,
-                          "authorizer_id": 26,
-                          "description": "Child Development Research Fellowship Grant Program",
-                          "expiration_date": "01/09/2023",
-                          "id": 4,
-                          "managing_portfolio_id": 1,
-                          "managing_project_id": 1,
-                          "nickname": "ASPE SRCD-IDDA",
-                          "number": "G990136",
-                          "purpose": ""
-                        },
-                        "carry_forward_label": "Carry-Forward",
-                        "expiration_date": "09/01/2023",
-                      }],
-                      "expected_funding": 4000000.00,
-                      "in_draft_funding": 500000.00,
-                      "in_execution_funding": 2000000.00,
-                      "new_funding": 2000000.00,
-                      "obligated_funding": 0,
-                      "planned_funding": 0,
-                      "received_funding": 6000000.00,
-                      "total_funding": 10000000.00
-                    }
   /users/:
     get:
       tags:
@@ -3189,6 +3310,65 @@ paths:
           description: Unauthorized
         "404":
           description: Not Found
+
+  /projects/{id}/spending/:
+    get:
+      tags:
+        - Projects
+      operationId: getProjectSpending
+      summary: Get spending metadata for a project
+      description: |
+        Returns project spending metadata including:
+        - Total spending across all agreements
+        - Spending totals by fiscal year
+        - Spending breakdown by type (contract, grant, partner, direct_obligation) per fiscal year
+        - Agreements grouped by fiscal year
+
+        Only includes non-DRAFT budget line items (or OBE items regardless of status).
+        Totals include both BLI amounts and fees.
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: id
+          description: Project ID
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            example: 1002
+      responses:
+        "200":
+          description: OK - Successfully retrieved project spending metadata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectSpendingMetadata"
+              example:
+                total: "150000.00"
+                total_by_fiscal_year:
+                  "2023": "50000.00"
+                  "2024": "75000.00"
+                  "2025": "25000.00"
+                spending_type_by_fiscal_year:
+                  "2023":
+                    contract: "30000.00"
+                    grant: "20000.00"
+                    partner: "0.00"
+                    direct_obligation: "0.00"
+                  "2024":
+                    contract: "75000.00"
+                    grant: "0.00"
+                    partner: "0.00"
+                    direct_obligation: "0.00"
+                agreements_by_fy:
+                  "2023": [1, 2]
+                  "2024": [1]
+                  "2025": [2]
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not Found - Project does not exist
 
   /projects-filters/:
     get:
@@ -4811,6 +4991,71 @@ components:
                 type: string
               count:
                 type: integer
+    CANFundingAmounts:
+      type: object
+      description: Funding totals for a CAN or aggregate of CANs
+      properties:
+        total_funding:
+          type: number
+          format: float
+        available_funding:
+          type: number
+          format: float
+        carry_forward_funding:
+          type: number
+          format: float
+        new_funding:
+          type: number
+          format: float
+        expected_funding:
+          type: number
+          format: float
+        received_funding:
+          type: number
+          format: float
+        planned_funding:
+          type: number
+          format: float
+        obligated_funding:
+          type: number
+          format: float
+        in_execution_funding:
+          type: number
+          format: float
+        in_draft_funding:
+          type: number
+          format: float
+    CANFundingDetail:
+      type: object
+      description: CAN metadata returned in funding responses
+      properties:
+        id:
+          type: integer
+        number:
+          type: string
+        display_name:
+          type: string
+          nullable: true
+        nick_name:
+          type: string
+          nullable: true
+        portfolio_id:
+          type: integer
+        portfolio:
+          type: string
+          nullable: true
+        active_period:
+          type: integer
+          nullable: true
+        appropriation_date:
+          type: integer
+          nullable: true
+        carry_forward_label:
+          type: string
+          nullable: true
+        expiration_date:
+          type: string
+          nullable: true
     BasicCAN:
       description: >-
         A simple version of the Common Accounting Number (CAN) Object.
@@ -5672,6 +5917,96 @@ components:
           format: double
           description: Total funding over the lifetime of the CAN
           example: 123.456
+    ProjectSpendingMetadata:
+      description: Project spending metadata including totals and fiscal year breakdowns
+      type: object
+      required:
+        - total
+        - total_by_fiscal_year
+        - spending_type_by_fiscal_year
+        - agreements_by_fy
+      properties:
+        total:
+          type: string
+          description: Total spending across all agreements (Decimal as string for precision)
+          example: "150000.00"
+        total_by_fiscal_year:
+          type: object
+          description: Spending totals by fiscal year
+          additionalProperties:
+            type: string
+            description: Decimal amount as string
+          example:
+            "2023": "50000.00"
+            "2024": "75000.00"
+            "2025": "25000.00"
+        spending_type_by_fiscal_year:
+          type: object
+          description: Spending breakdown by type (contract, grant, partner, direct_obligation) for each fiscal year
+          additionalProperties:
+            $ref: "#/components/schemas/SpendingTypeBreakdown"
+          example:
+            "2023":
+              contract: "30000.00"
+              grant: "20000.00"
+              partner: "0.00"
+              direct_obligation: "0.00"
+            "2024":
+              contract: "75000.00"
+              grant: "0.00"
+              partner: "0.00"
+              direct_obligation: "0.00"
+        agreements_by_fy:
+          type: object
+          description: Agreement IDs grouped by fiscal year
+          additionalProperties:
+            type: array
+            items:
+              type: integer
+          example:
+            "2023": [1, 2]
+            "2024": [1]
+            "2025": [2]
+    AgreementName:
+      description: Agreement identifier with ID and name (nick_name preferred over title)
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+          description: Agreement ID
+          example: 1
+        name:
+          type: string
+          description: Agreement name (nick_name if available, otherwise title)
+          example: "Research Agreement 2023"
+    SpendingTypeBreakdown:
+      description: Spending amounts by agreement type for a fiscal year
+      type: object
+      required:
+        - contract
+        - grant
+        - partner
+        - direct_obligation
+      properties:
+        contract:
+          type: string
+          description: Contract spending (Decimal as string)
+          example: "30000.00"
+        grant:
+          type: string
+          description: Grant spending (Decimal as string)
+          example: "20000.00"
+        partner:
+          type: string
+          description: Partner agreement spending - AA and IAA (Decimal as string)
+          example: "0.00"
+        direct_obligation:
+          type: string
+          description: Direct obligation spending (Decimal as string)
+          example: "0.00"
     TeamLeader:
       type: object
       properties:
@@ -5910,6 +6245,60 @@ components:
                 "full_name": "Chris Fortunato",
                 "email": "chris.fortunato@example.com"
               }
+        division_directors:
+          type: array
+          description: List of division directors from all agreements in the project
+          items:
+            type: object
+            required:
+              - id
+              - name
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+          example:
+            - id: 500
+              name: "Jane Smith"
+            - id: 501
+              name: "John Doe"
+        project_officers:
+          type: array
+          description: List of project officers from all agreements in the project
+          items:
+            type: object
+            required:
+              - id
+              - name
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+          example:
+            - id: 500
+              name: "Jane Smith"
+            - id: 501
+              name: "John Doe"
+        alternate_project_officers:
+          type: array
+          description: List of alternate project officers from all agreements in the project
+          items:
+            type: object
+            required:
+              - id
+              - name
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+          example:
+            - id: 500
+              name: "Jane Smith"
+            - id: 501
+              name: "John Doe"
         created_on:
           type: string
           format: date-time
@@ -7353,6 +7742,60 @@ components:
             - id: 500
               full_name: "Jane Smith"
               email: "jane.smith@example.com"
+        division_directors:
+          type: array
+          description: List of division directors from all agreements in the project
+          items:
+            type: object
+            required:
+              - id
+              - name
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+          example:
+            - id: 500
+              name: "Jane Smith"
+            - id: 501
+              name: "John Doe"
+        project_officers:
+          type: array
+          description: List of project officers from all agreements in the project
+          items:
+            type: object
+            required:
+              - id
+              - name
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+          example:
+            - id: 500
+              name: "Jane Smith"
+            - id: 501
+              name: "John Doe"
+        alternate_project_officers:
+          type: array
+          description: List of alternate project officers from all agreements in the project
+          items:
+            type: object
+            required:
+              - id
+              - name
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+          example:
+            - id: 500
+              name: "Jane Smith"
+            - id: 501
+              name: "John Doe"
         created_on:
           type: string
           format: date-time
@@ -7620,6 +8063,7 @@ components:
               type: string
             division_directors:
               type: array
+              description: List of division directors from budget line items (ID and name)
               items:
                 type: string
             team_leaders:

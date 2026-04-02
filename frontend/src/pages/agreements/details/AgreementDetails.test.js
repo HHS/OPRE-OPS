@@ -315,6 +315,46 @@ describe("AgreementDetails", () => {
         expect(screen.getByText("Ivelisse Martinez-Beck")).toBeInTheDocument();
     });
 
+    test("renders hybrid contract type as 'Hybrid' without subtitle", () => {
+        TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
+            return agreementHistoryData;
+        });
+        mockIntersectionObserver();
+
+        render(
+            <Provider store={store}>
+                <Router
+                    location={history.location}
+                    navigator={history}
+                >
+                    <AgreementDetails
+                        agreement={{
+                            ...agreement,
+                            contract_type: "HYBRID",
+                            procurement_shop: {
+                                id: 2,
+                                abbr: "GCS",
+                                fee_percentage: 0,
+                                name: "GCS",
+                                procurement_shop_fees: []
+                            }
+                        }}
+                        projectOfficer={projectOfficer}
+                        alternateProjectOfficer={projectOfficer}
+                        isEditMode={false}
+                        setIsEditMode={mockFn}
+                        setHasAgreementChanged={mockFn}
+                        isAgreementNotDeveloped={false}
+                        isAgreementAwarded={false}
+                    />
+                </Router>
+            </Provider>
+        );
+
+        expect(screen.getByText("Hybrid")).toBeInTheDocument();
+        expect(screen.queryByText(/any combination of the above/i)).not.toBeInTheDocument();
+    });
+
     test("allows super user to edit when isAgreementNotDeveloped is true", () => {
         TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
             return agreementHistoryData;

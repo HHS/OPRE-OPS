@@ -1,7 +1,7 @@
 import React from "react";
 import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
-import { useGetCanByIdQuery, useGetCanFundingSummaryQuery } from "../../../api/opsAPI";
+import { useGetCanByIdQuery, useGetCanFundingQuery } from "../../../api/opsAPI";
 import { USER_ROLES } from "../../../components/Users/User.constants";
 import { NO_DATA } from "../../../constants";
 import { getCurrentFiscalYear } from "../../../helpers/utils";
@@ -11,7 +11,7 @@ import { getAgreementTypesCount } from "../../../helpers/budgetLines.helpers";
 export default function useCan() {
     /**
      *  @typedef {import("../../../types/CANTypes").CAN} CAN
-     *  @typedef {import("../../../types/CANTypes").FundingSummary} FundingSummary
+     *  @typedef {import("../../../types/CANTypes").CANFundingResponse} CANFundingResponse
      */
 
     const urlPathParams = useParams();
@@ -44,19 +44,15 @@ export default function useCan() {
         refetchOnMountOrArgChange: true
     });
 
-    /** @type {{data?: FundingSummary | undefined, isLoading: boolean, isFetching: boolean}} */
+    /** @type {{data?: CANFundingResponse | undefined, isLoading: boolean, isFetching: boolean}} */
     const {
         data: CANFunding,
         isLoading: CANFundingLoading,
         isFetching: isCANFundingFetching
-    } = useGetCanFundingSummaryQuery({
-        ids: [canId],
-        fiscalYear: fiscalYear,
-        refetchOnMountOrArgChange: true
-    });
+    } = useGetCanFundingQuery({ id: canId, fiscalYear: fiscalYear }, { refetchOnMountOrArgChange: true });
 
-    const { data: previousFYfundingSummary } = useGetCanFundingSummaryQuery({
-        ids: [canId],
+    const { data: previousFYfundingSummary } = useGetCanFundingQuery({
+        id: canId,
         fiscalYear: fiscalYear - 1
     });
 
@@ -92,7 +88,7 @@ export default function useCan() {
     };
 
     const toggleFundingPageEditMode = () => {
-        if (CANFunding?.total_funding === 0) {
+        if (CANFunding?.funding?.total_funding === 0) {
             setModalProps({
                 heading: `Welcome to FY ${fiscalYear}! The new fiscal year started on October 1, ${fiscalYear - 1} and it's time to add the FY budget for this CAN.  Data from the previous fiscal year can no longer be edited, but can be viewed by changing the FY dropdown on the CAN details page.`,
                 actionButtonText: "Edit CAN",
@@ -141,13 +137,13 @@ export default function useCan() {
         teamLeaders: can?.portfolio?.team_leaders ?? [],
         portfolioName: can?.portfolio?.name,
         portfolioId: can?.portfolio_id ?? -1,
-        totalFunding: CANFunding?.total_funding ?? 0,
-        plannedFunding: CANFunding?.planned_funding ?? 0,
-        obligatedFunding: CANFunding?.obligated_funding ?? 0,
-        inExecutionFunding: CANFunding?.in_execution_funding ?? 0,
-        inDraftFunding: CANFunding?.in_draft_funding ?? 0,
-        receivedFunding: CANFunding?.received_funding ?? 0,
-        carryForwardFunding: previousFYfundingSummary?.available_funding ?? 0,
+        totalFunding: CANFunding?.funding?.total_funding ?? 0,
+        plannedFunding: CANFunding?.funding?.planned_funding ?? 0,
+        obligatedFunding: CANFunding?.funding?.obligated_funding ?? 0,
+        inExecutionFunding: CANFunding?.funding?.in_execution_funding ?? 0,
+        inDraftFunding: CANFunding?.funding?.in_draft_funding ?? 0,
+        receivedFunding: CANFunding?.funding?.received_funding ?? 0,
+        carryForwardFunding: previousFYfundingSummary?.funding?.available_funding ?? 0,
         subTitle: can?.nick_name ?? "",
         projectTypesCount,
         budgetLineTypesCount,

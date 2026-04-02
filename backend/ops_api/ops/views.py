@@ -58,9 +58,14 @@ from ops_api.ops.resources.can_funding_received import (
     CANFundingReceivedItemAPI,
     CANFundingReceivedListAPI,
 )
-from ops_api.ops.resources.can_funding_summary import CANFundingSummaryListAPI
 from ops_api.ops.resources.can_history import CANHistoryListAPI
-from ops_api.ops.resources.cans import CANItemAPI, CANListAPI, CANListFilterOptionAPI
+from ops_api.ops.resources.cans import (
+    CANFundingAPI,
+    CANItemAPI,
+    CANListAPI,
+    CANListFilterOptionAPI,
+    CANsFundingAggregateAPI,
+)
 from ops_api.ops.resources.change_requests import (
     ChangeRequestItemAPI,
     ChangeRequestListAPI,
@@ -103,6 +108,7 @@ from ops_api.ops.resources.product_service_code import (
     ProductServiceCodeListAPI,
 )
 from ops_api.ops.resources.projects import ProjectFundingAPI, ProjectItemAPI, ProjectListAPI, ProjectListFilterOptionAPI
+from ops_api.ops.resources.projects_spending import ProjectSpendingItemAPI
 from ops_api.ops.resources.reporting_summary import ReportingSummaryListAPI
 from ops_api.ops.resources.research_methodology import (
     ResearchMethodologyItemAPI,
@@ -152,6 +158,8 @@ CAN_FUNDING_RECEIVED_LIST_API_VIEW_FUNC = CANFundingReceivedListAPI.as_view(
 CAN_FUNDING_RECEIVED_ITEM_API_VIEW_FUNC = CANFundingReceivedItemAPI.as_view(
     "can-funding-received-item", CANFundingReceived
 )
+CAN_FUNDING_API_VIEW_FUNC = CANFundingAPI.as_view("can-funding", CAN)
+CAN_FUNDING_AGGREGATE_API_VIEW_FUNC = CANsFundingAggregateAPI.as_view("can-funding-aggregate", CAN)
 CAN_HISTORY_LIST_API_VIEW_FUNC = CANHistoryListAPI.as_view("can-history", CANHistory)
 
 # BUDGET LINE ITEM ENDPOINTS
@@ -204,7 +212,6 @@ USERS_ITEM_API_VIEW_FUNC = UsersItemAPI.as_view("users-item", User)
 USERS_LIST_API_VIEW_FUNC = UsersListAPI.as_view("users-group", User)
 
 # FUNDING SUMMARY ENDPOINTS
-CAN_FUNDING_SUMMARY_LIST_API_VIEW_FUNC = CANFundingSummaryListAPI.as_view("can-funding-summary-list", CAN)
 PORTFOLIO_FUNDING_SUMMARY_ITEM_API_VIEW_FUNC = PortfolioFundingSummaryItemAPI.as_view(
     "portfolio-funding-summary-item", Portfolio
 )
@@ -227,6 +234,7 @@ CAN_FUNDING_DETAILS_LIST_API_VIEW_FUNC = CANFundingDetailsListAPI.as_view(
 PROJECT_ITEM_API_VIEW_FUNC = ProjectItemAPI.as_view("projects-item", Project)
 PROJECT_LIST_API_VIEW_FUNC = ProjectListAPI.as_view("projects-group", Project)
 PROJECT_LIST_FILTER_OPTION_API_VIEW_FUNC = ProjectListFilterOptionAPI.as_view("projects-filters", Project)
+PROJECT_SPENDING_ITEM_API_VIEW_FUNC = ProjectSpendingItemAPI.as_view("projects-spending-item", Project)
 PROJECT_FUNDING_API_VIEW_FUNC = ProjectFundingAPI.as_view("projects-funding", Project)
 
 RESEARCH_METHODOLOGY_ITEM_API_VIEW_FUNC = ResearchMethodologyItemAPI.as_view(

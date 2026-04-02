@@ -2,16 +2,21 @@ from flask import Response, current_app, request
 from flask_jwt_extended import jwt_required
 from marshmallow import Schema, fields
 
-from models import OpsEventType
+from models import CAN, OpsEventType
+from models.base import BaseModel
 from models.utils import generate_events_update
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.schemas.cans import (
     CANFiltersQueryParametersSchema,
+    CANFundingRequestSchema,
+    CANFundingResponseSchema,
     CANListFilterOptionResponseSchema,
     CANListSchema,
     CANSchema,
+    CANsFundingAggregateRequestSchema,
+    CANsFundingAggregateResponseSchema,
     CreateUpdateCANRequestSchema,
     GetCANListRequestSchema,
 )
@@ -190,3 +195,46 @@ class CANListFilterOptionAPI(BaseItemAPI):
         service = CANService(current_app.db_session)
         filter_options = service.get_filter_options(data)
         return make_response_with_headers(filter_options)
+
+
+class CANFundingAPI(BaseItemAPI):
+    def __init__(self, model: BaseModel = CAN):
+        super().__init__(model)
+
+    @is_authorized(PermissionType.GET, Permission.CAN)
+    def get(self, id: int) -> Response:
+        request_schema = CANFundingRequestSchema()
+        data = request_schema.load(request.args.to_dict())
+        fiscal_year = data.get("fiscal_year")
+
+        service = CANService(current_app.db_session)
+        funding = service.get_can_funding(id, fiscal_year)
+
+        response_schema = CANFundingResponseSchema()
+        return make_response_with_headers(response_schema.dump(funding))
+
+
+class CANsFundingAggregateAPI(BaseItemAPI):
+    def __init__(self, model: BaseModel = CAN):
+        super().__init__(model)
+
+    @is_authorized(PermissionType.GET, Permission.CAN)
+    def get(self) -> Response:
+        request_schema = CANsFundingAggregateRequestSchema()
+        data = request_schema.load(request.args)
+        fiscal_year = data.get("fiscal_year")
+
+        service = CANService(current_app.db_session)
+        try:
+            funding = service.get_cans_funding_aggregate(
+                fiscal_year=fiscal_year,
+                active_period=data.get("active_period"),
+                transfer=data.get("transfer"),
+                portfolio=data.get("portfolio"),
+                fy_budget=data.get("fy_budget"),
+            )
+        except ValueError as e:
+            return make_response_with_headers({"Error": str(e)}, 400)
+
+        response_schema = CANsFundingAggregateResponseSchema()
+        return make_response_with_headers(response_schema.dump(funding))
