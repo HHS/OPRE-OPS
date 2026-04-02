@@ -3,7 +3,11 @@ import { useLocation } from "react-router-dom";
 import icons from "../../uswds/img/sprite.svg";
 import App from "../../App";
 import TablePageLayout from "../../components/Layouts/TablePageLayout";
-import { useGetAgreementsQuery, useGetProcurementTrackersByAgreementIdsQuery } from "../../api/opsAPI";
+import {
+    useGetAgreementsQuery,
+    useGetProcurementShopsQuery,
+    useGetProcurementTrackersByAgreementIdsQuery
+} from "../../api/opsAPI";
 import { BLI_STATUS } from "../../helpers/budgetLines.helpers";
 import { exportMultiSheetToXlsx } from "../../helpers/tableExport.helpers";
 import { getCurrentFiscalYear } from "../../helpers/utils";
@@ -23,6 +27,22 @@ const ProcurementDashboard = () => {
     const filterParam = new URLSearchParams(search).get("filter");
     const awardTypeFilter = FILTER_TO_AWARD_TYPE[filterParam] ?? null;
 
+    const [selectedProcShop, setSelectedProcShop] = useState("all");
+
+    const { data: procurementShops = [] } = useGetProcurementShopsQuery();
+
+    const procShopIdMap = useMemo(() => {
+        const map = {};
+        for (const shop of procurementShops) {
+            map[shop.abbr] = shop.id;
+        }
+        return map;
+    }, [procurementShops]);
+
+    const procShopOptions = useMemo(() => procurementShops.map((s) => s.abbr).sort(), [procurementShops]);
+
+    const selectedProcShopId = selectedProcShop !== "all" ? procShopIdMap[selectedProcShop] : null;
+
     const {
         data: agreementsResponse,
         isLoading,
@@ -30,31 +50,16 @@ const ProcurementDashboard = () => {
     } = useGetAgreementsQuery({
         filters: {
             fiscalYear: [CURRENT_FISCAL_YEAR],
-            ...(awardTypeFilter ? { awardType: [{ awardType: awardTypeFilter }] } : {})
+            ...(awardTypeFilter ? { awardType: [{ awardType: awardTypeFilter }] } : {}),
+            ...(selectedProcShopId ? { awardingEntityId: [selectedProcShopId] } : {})
         }
     });
-
-    const [selectedProcShop, setSelectedProcShop] = useState("all");
 
     const allAgreements = agreementsResponse?.agreements || [];
     const procurementOverview = agreementsResponse?.procurement_overview ?? null;
     const procurementStepSummary = agreementsResponse?.procurement_step_summary ?? null;
 
-    const procShopOptions = useMemo(
-        () => [...new Set(allAgreements.map((a) => a.procurement_shop?.abbr).filter(Boolean))].sort(),
-        [allAgreements]
-    );
-
-    const agreements = useMemo(() => {
-        let filtered = allAgreements;
-        if (awardTypeFilter) {
-            filtered = filtered.filter((agreement) => agreement.award_type === awardTypeFilter);
-        }
-        if (selectedProcShop !== "all") {
-            filtered = filtered.filter((agreement) => agreement.procurement_shop?.abbr === selectedProcShop);
-        }
-        return filtered;
-    }, [allAgreements, awardTypeFilter, selectedProcShop]);
+    const agreements = allAgreements;
 
     const agreementIds = useMemo(() => agreements.map((a) => a.id), [agreements]);
 
