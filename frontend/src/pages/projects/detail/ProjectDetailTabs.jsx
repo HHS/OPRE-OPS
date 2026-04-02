@@ -8,13 +8,13 @@ const TABS = [
         name: "/spending",
         label: "Project Spending",
         disabled: true,
-        disabledTooltip: "Project Spending tab is coming soon!"
+        disabledTooltip: "Coming Soon"
     },
     {
         name: "/funding",
         label: "Project Funding",
         disabled: true,
-        disabledTooltip: "Project Funding tab is coming soon!"
+        disabledTooltip: "Coming Soon"
     }
 ];
 
@@ -57,7 +57,7 @@ const ProjectDetailTabs = ({ projectId }) => {
                         <Tooltip
                             key={pathName}
                             label={tab.disabledTooltip}
-                            position="bottom"
+                            position="top"
                         >
                             {button}
                         </Tooltip>

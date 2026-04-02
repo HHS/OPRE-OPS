@@ -56,9 +56,13 @@ describe("ProjectDetailTabs", () => {
         renderComponent();
 
         const tooltips = screen.getAllByRole("tooltip", { hidden: true });
+        const spendingTab = screen.getByRole("button", { name: "Project Spending" });
+        const fundingTab = screen.getByRole("button", { name: "Project Funding" });
 
         expect(tooltips).toHaveLength(2);
-        expect(tooltips[0]).toHaveTextContent("Project Spending tab is coming soon!");
-        expect(tooltips[1]).toHaveTextContent("Project Funding tab is coming soon!");
+        expect(tooltips[0]).toHaveTextContent("Coming Soon");
+        expect(tooltips[1]).toHaveTextContent("Coming Soon");
+        expect(spendingTab).toHaveAttribute("data-position", "top");
+        expect(fundingTab).toHaveAttribute("data-position", "top");
     });
 });
