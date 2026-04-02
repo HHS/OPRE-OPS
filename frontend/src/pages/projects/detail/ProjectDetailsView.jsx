@@ -19,6 +19,13 @@ const DateValue = ({ value }) => (
     />
 );
 
+const Field = ({ label, children, topMargin = "margin-top-3" }) => (
+    <div className={topMargin}>
+        <div className="margin-0 text-base-dark">{label}</div>
+        <div className="margin-0 margin-top-1 wrap-text">{children}</div>
+    </div>
+);
+
 /**
  * Read-only details view for a project, mirroring the two-column layout of AgreementDetailsView.
  * @param {Object} props
@@ -52,10 +59,14 @@ const ProjectDetailsView = ({ project }) => {
                     className="grid-col"
                     data-cy="project-details-left-col"
                 >
-                    <dl className="margin-0 font-12px">
-                        <dt className="margin-0 text-base-dark margin-top-3">Description</dt>
-                        <dd className="margin-0 margin-top-05 wrap-text">{project.description ?? NO_DATA}</dd>
-                    </dl>
+                    <div className="margin-0 font-12px">
+                        <Field
+                            label="Description"
+                            topMargin="margin-top-3"
+                        >
+                            {project.description ?? NO_DATA}
+                        </Field>
+                    </div>
 
                     <h3 className="text-base-dark margin-top-5 margin-bottom-0 text-normal font-12px">History</h3>
                     <p className="font-12px text-base margin-top-1">History coming soon.</p>
@@ -66,81 +77,78 @@ const ProjectDetailsView = ({ project }) => {
                     className="grid-col"
                     data-cy="project-details-right-col"
                 >
-                    <dl className="margin-0 font-12px">
-                        <dt className="margin-0 text-base-dark margin-top-3">Project Nickname</dt>
-                        <dd className="margin-0 margin-top-1">
+                    <div className="margin-0 font-12px">
+                        <Field
+                            label="Project Nickname"
+                            topMargin="margin-top-3"
+                        >
                             <Tag
                                 tagStyle="primaryDarkTextLightBackground"
                                 text={project.short_title ?? NO_DATA}
                                 dataCy="project-nickname-tag"
                             />
-                        </dd>
+                        </Field>
 
-                        <dt className="margin-0 text-base-dark margin-top-3">Project Type</dt>
-                        <dd className="margin-0 margin-top-1">
+                        <Field label="Project Type">
                             <Tag
                                 tagStyle="primaryDarkTextLightBackground"
                                 text={projectTypeLabel}
                                 dataCy="project-type-tag"
                             />
-                        </dd>
+                        </Field>
 
-                        <dd className="margin-0 margin-top-3">
-                            <div
-                                className="grid-row grid-gap-4"
-                                style={{ maxWidth: "420px" }}
-                            >
-                                <div className="grid-col">
-                                    <div className="text-base-dark">Project Start</div>
-                                    <div className="margin-top-1 wrap-text">
-                                        <DateValue value={project.project_start} />
-                                    </div>
-                                </div>
-                                <div className="grid-col">
-                                    <div className="text-base-dark">Project End</div>
-                                    <div className="margin-top-1 wrap-text">
-                                        <DateValue value={project.project_end} />
-                                    </div>
+                        <div
+                            className="grid-row grid-gap-4 margin-top-3"
+                            style={{ maxWidth: "420px" }}
+                        >
+                            <div className="grid-col">
+                                <div className="text-base-dark">Project Start</div>
+                                <div className="margin-top-1 wrap-text">
+                                    <DateValue value={project.project_start} />
                                 </div>
                             </div>
-                        </dd>
+                            <div className="grid-col">
+                                <div className="text-base-dark">Project End</div>
+                                <div className="margin-top-1 wrap-text">
+                                    <DateValue value={project.project_end} />
+                                </div>
+                            </div>
+                        </div>
 
-                        <dt className="margin-0 text-base-dark margin-top-3">Research Methodologies</dt>
-                        <dd className="margin-0 margin-top-1">
+                        <Field label="Research Methodologies">
                             <TagList
                                 items={methodologies}
                                 dataCy="project-methodologies-tag"
                             />
-                        </dd>
+                        </Field>
 
-                        <dt className="margin-0 text-base-dark margin-top-3">Special Topic/Populations</dt>
-                        <dd className="margin-0 margin-top-1">
+                        <Field label="Special Topic/Populations">
                             <TagList
                                 items={specialTopics}
                                 dataCy="project-special-topics-tag"
                             />
-                        </dd>
+                        </Field>
                         <div
                             className="grid-row grid-gap-4 margin-top-3"
                             style={{ maxWidth: "420px" }}
                         >
                             <div className="grid-col">
-                                <dt className="margin-0 text-base-dark">Division Director(s)</dt>
-                                <dd className="margin-0 margin-top-05 wrap-text">
+                                <div className="margin-0 text-base-dark">Division Director(s)</div>
+                                <div className="margin-0 margin-top-1 wrap-text">
                                     <TagList
                                         items={divisionDirectors}
                                         dataCy="project-division-directors-tag"
                                     />
-                                </dd>
+                                </div>
                             </div>
                             <div className="grid-col">
-                                <dt className="margin-0 text-base-dark">Team Leader(s)</dt>
-                                <dd className="margin-0 margin-top-1 wrap-text">
+                                <div className="margin-0 text-base-dark">Team Leader(s)</div>
+                                <div className="margin-0 margin-top-1 wrap-text">
                                     <TagList
                                         items={teamLeaderNames}
                                         dataCy="project-team-leaders-tag"
                                     />
-                                </dd>
+                                </div>
                             </div>
                         </div>
                         <div
@@ -148,33 +156,32 @@ const ProjectDetailsView = ({ project }) => {
                             style={{ maxWidth: "420px" }}
                         >
                             <div className="grid-col">
-                                <dt className="margin-0 text-base-dark">COR</dt>
-                                <dd className="margin-0 margin-top-05 wrap-text">
+                                <div className="margin-0 text-base-dark">COR</div>
+                                <div className="margin-0 margin-top-1 wrap-text">
                                     <TagList
                                         items={projectOfficers}
                                         dataCy="project-officers-tag"
                                     />
-                                </dd>
+                                </div>
                             </div>
                             <div className="grid-col">
-                                <dt className="margin-0 text-base-dark">Alternate COR</dt>
-                                <dd className="margin-0 margin-top-05 wrap-text">
+                                <div className="margin-0 text-base-dark">Alternate COR</div>
+                                <div className="margin-0 margin-top-1 wrap-text">
                                     <TagList
                                         items={alternateProjectOfficers}
                                         dataCy="alternate-project-officers-tag"
                                     />
-                                </dd>
+                                </div>
                             </div>
                         </div>
 
-                        <dt className="margin-0 text-base-dark margin-top-3">Team Members</dt>
-                        <dd className="margin-0 margin-top-1">
+                        <Field label="Team Members">
                             <TagList
                                 items={teamMemberNames}
                                 dataCy="project-team-members-tag"
                             />
-                        </dd>
-                    </dl>
+                        </Field>
+                    </div>
                 </div>
             </div>
         </section>
