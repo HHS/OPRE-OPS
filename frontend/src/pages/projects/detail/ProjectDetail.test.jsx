@@ -137,10 +137,10 @@ describe("ProjectDetail", () => {
         expect(screen.getByText("6/13/2045")).toBeInTheDocument();
         expect(screen.getByText("Descriptive Study")).toBeInTheDocument();
         expect(screen.getByText("Special Topic 1")).toBeInTheDocument();
-        expect(screen.getAllByText("Dave Director").length).toBeGreaterThanOrEqual(1);
-        expect(screen.getAllByText("Chris Fortunato")).toHaveLength(3);
+        expect(screen.getByText("Dave Director", { selector: "[data-cy='project-division-directors-tag']" })).toBeInTheDocument();
+        expect(screen.getByText("Chris Fortunato", { selector: "[data-cy='project-team-leaders-tag']" })).toBeInTheDocument();
         expect(screen.getByText("Jane Smith")).toBeInTheDocument();
-        expect(screen.getAllByText("Amelia Popham")).toHaveLength(2);
+        expect(screen.getByText("Amelia Popham", { selector: "[data-cy='project-officers-tag']" })).toBeInTheDocument();
         expect(screen.getByText("COR")).toBeInTheDocument();
         expect(screen.getByText("Alternate COR")).toBeInTheDocument();
     });

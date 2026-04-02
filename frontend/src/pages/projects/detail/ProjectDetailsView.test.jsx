@@ -47,7 +47,10 @@ describe("ProjectDetailsView", () => {
     it("renders the description and right-column labels", () => {
         renderComponent(baseProject);
 
-        expect(screen.getByRole("button", { name: "Edit Project Details coming soon" })).toBeDisabled();
+        expect(screen.getByRole("button", { name: "Edit Project Details coming soon" })).toHaveAttribute(
+            "aria-disabled",
+            "true"
+        );
         expect(screen.getByRole("tooltip", { hidden: true })).toHaveTextContent("Coming Soon");
         expect(screen.getByText("Description")).toBeInTheDocument();
         expect(screen.getByText("Interoperability activities description.")).toBeInTheDocument();

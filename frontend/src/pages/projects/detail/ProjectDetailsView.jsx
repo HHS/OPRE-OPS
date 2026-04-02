@@ -23,10 +23,10 @@ const DateValue = ({ value }) => (
 );
 
 const Field = ({ label, children, topMargin = "margin-top-3" }) => (
-    <div className={topMargin}>
-        <div className="margin-0 text-base-dark">{label}</div>
-        <div className="margin-0 margin-top-1 wrap-text">{children}</div>
-    </div>
+    <dl className={`margin-0 ${topMargin}`}>
+        <dt className="margin-0 text-base-dark">{label}</dt>
+        <dd className="margin-0 margin-top-1 wrap-text">{children}</dd>
+    </dl>
 );
 
 /**
@@ -58,20 +58,25 @@ const ProjectDetailsView = ({ project }) => {
                     label="Coming Soon"
                     position="top"
                 >
-                    <button
-                        type="button"
-                        disabled
-                        aria-label="Edit Project Details coming soon"
-                        data-cy="project-details-edit-button"
-                        className="usa-button usa-button--unstyled display-flex flex-align-center text-gray-50 cursor-not-allowed"
-                    >
-                        <FontAwesomeIcon
-                            icon={faPen}
-                            size="lg"
-                            className="height-2 width-2"
-                        />
-                        <span>Edit</span>
-                    </button>
+                    <span className="display-inline-flex">
+                        <button
+                            type="button"
+                            aria-disabled={true}
+                            aria-label="Edit Project Details coming soon"
+                            data-cy="project-details-edit-button"
+                            className="usa-button usa-button--unstyled display-flex flex-align-center text-gray-50 cursor-not-allowed"
+                            onClick={(event) => {
+                                event.preventDefault();
+                            }}
+                        >
+                            <FontAwesomeIcon
+                                icon={faPen}
+                                size="lg"
+                                className="height-2 width-2"
+                            />
+                            <span>Edit</span>
+                        </button>
+                    </span>
                 </Tooltip>
             </div>
             <div
