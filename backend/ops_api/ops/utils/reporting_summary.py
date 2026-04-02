@@ -1,5 +1,4 @@
 from decimal import Decimal
-from typing import Optional
 
 from sqlalchemy import and_, func, select
 from sqlalchemy.orm import Session, joinedload
@@ -25,32 +24,6 @@ AGREEMENT_TYPE_CONFIG = [
 ]
 
 
-def classify_agreement_for_fy(agreement: Agreement, fiscal_year: int) -> Optional[str]:
-    """
-    Classify agreement as NEW, CONTINUING, or None for a given fiscal year.
-
-    Replicates Agreement.award_type property logic but accepts explicit fiscal year.
-    """
-    has_non_draft_blis = any(
-        bli.status is not None and bli.status != BudgetLineItemStatus.DRAFT for bli in agreement.budget_line_items
-    )
-
-    if not has_non_draft_blis:
-        return None
-
-    if not agreement.is_awarded:
-        return AgreementClassification.NEW.name
-
-    award_fy = agreement.award_fiscal_year
-    if award_fy is None:
-        return AgreementClassification.NEW.name
-
-    if fiscal_year <= award_fy:
-        return AgreementClassification.NEW.name
-
-    return AgreementClassification.CONTINUING.name
-
-
 def _find_bucket_type(agreement_type):
     """Find the spending bucket type for a given agreement type."""
     for config in AGREEMENT_TYPE_CONFIG:
@@ -65,7 +38,7 @@ def _accumulate_agreement_spending(agreement, fiscal_year, totals, portfolio_ids
     if bucket_type is None:
         return
 
-    classification = classify_agreement_for_fy(agreement, fiscal_year)
+    classification = agreement.award_type  # Use award_type property which has same logic but is cached for efficiency
     if classification is None:
         return
 
@@ -205,7 +178,7 @@ def get_reporting_counts(session: Session, fiscal_year: int, portfolio_ids=None)
             continue
         agreement_counts[bucket_type] += 1
 
-        classification = classify_agreement_for_fy(agreement, fiscal_year)
+        classification = agreement.award_type
         if classification == AgreementClassification.NEW.name:
             new_counts[bucket_type] += 1
         elif classification == AgreementClassification.CONTINUING.name:
