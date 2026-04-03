@@ -1,6 +1,7 @@
 import Tag from "../../UI/Tag";
 import Term from "../../UI/Term";
 import TermTag from "../../UI/Term/TermTag";
+import { formatUserName } from "../../../helpers/users.helpers";
 import CanHistoryPanel from "../CANHistoryPanel";
 /**
  * @typedef {Object} CANDetailViewProps
@@ -92,13 +93,13 @@ const CANDetailView = ({
                             >
                                 <Tag
                                     tagStyle="primaryDarkTextLightBackground"
-                                    text={teamLeader.display_name ?? teamLeader.full_name}
+                                    text={formatUserName(teamLeader.display_name ?? teamLeader.full_name)}
                                 />
                             </dd>
                         ))}
                     <TermTag
                         term="Division Director"
-                        description={divisionDirectorFullName}
+                        description={formatUserName(divisionDirectorFullName)}
                     />
                 </dl>
             </div>
