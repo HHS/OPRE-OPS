@@ -25,7 +25,6 @@ import PortfolioFunding from "./components/Portfolios/PortfolioFunding";
 import PortfolioSpending from "./components/Portfolios/PortfolioSpending";
 import PortfolioList from "./pages/portfolios/list/PortfolioList";
 import ProjectsList from "./pages/projects/list/ProjectsList";
-import ResearchProjectDetail from "./pages/researchProjects/detail/ResearchProjectDetail";
 import ReleaseNotes from "./pages/home/release-notes";
 import ReportingPage from "./pages/reporting/ReportingPage";
 import UserAdmin from "./pages/users/admin/UserAdmin.jsx";
@@ -119,22 +118,6 @@ const router = createBrowserRouter(
                     />
                 </Route>
 
-                <Route
-                    path="/research-projects/:id/*"
-                    element={<ResearchProjectDetail />}
-                    handle={{
-                        crumb: () => (
-                            <div>
-                                <Link
-                                    to="/"
-                                    className="text-primary"
-                                >
-                                    Research Projects
-                                </Link>
-                            </div>
-                        )
-                    }}
-                />
                 <Route
                     path="/users/:id/*"
                     element={<UserDetail />}
