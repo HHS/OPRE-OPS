@@ -5,7 +5,6 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from models import (
-    Agreement,
     AgreementType,
     BudgetLineItemStatus,
     ContractAgreement,
@@ -13,82 +12,10 @@ from models import (
     GrantAgreement,
     GrantBudgetLineItem,
 )
-from models.agreements import AgreementClassification
 from ops_api.ops.utils.reporting_summary import (
     _accumulate_agreement_spending,
-    classify_agreement_for_fy,
     get_agreement_spending_by_type,
 )
-
-
-class TestClassifyAgreementForFy:
-    def test_no_non_draft_blis_returns_none(self):
-        agreement = MagicMock(spec=Agreement)
-        draft_bli = MagicMock()
-        draft_bli.status = BudgetLineItemStatus.DRAFT
-        agreement.budget_line_items = [draft_bli]
-
-        result = classify_agreement_for_fy(agreement, 2025)
-        assert result is None
-
-    def test_empty_blis_returns_none(self):
-        agreement = MagicMock(spec=Agreement)
-        agreement.budget_line_items = []
-
-        result = classify_agreement_for_fy(agreement, 2025)
-        assert result is None
-
-    def test_not_awarded_returns_new(self):
-        agreement = MagicMock(spec=Agreement)
-        planned_bli = MagicMock()
-        planned_bli.status = BudgetLineItemStatus.PLANNED
-        agreement.budget_line_items = [planned_bli]
-        agreement.is_awarded = False
-
-        result = classify_agreement_for_fy(agreement, 2025)
-        assert result == AgreementClassification.NEW.name
-
-    def test_awarded_no_award_date_returns_new(self):
-        agreement = MagicMock(spec=Agreement)
-        planned_bli = MagicMock()
-        planned_bli.status = BudgetLineItemStatus.PLANNED
-        agreement.budget_line_items = [planned_bli]
-        agreement.is_awarded = True
-        agreement.award_fiscal_year = None
-
-        result = classify_agreement_for_fy(agreement, 2025)
-        assert result == AgreementClassification.NEW.name
-
-    def test_awarded_current_fy_lte_award_fy_returns_new(self):
-        agreement = MagicMock(spec=Agreement)
-        planned_bli = MagicMock()
-        planned_bli.status = BudgetLineItemStatus.PLANNED
-        agreement.budget_line_items = [planned_bli]
-        agreement.is_awarded = True
-        agreement.award_fiscal_year = 2025
-
-        result = classify_agreement_for_fy(agreement, 2025)
-        assert result == AgreementClassification.NEW.name
-
-    def test_awarded_current_fy_gt_award_fy_returns_continuing(self):
-        agreement = MagicMock(spec=Agreement)
-        planned_bli = MagicMock()
-        planned_bli.status = BudgetLineItemStatus.PLANNED
-        agreement.budget_line_items = [planned_bli]
-        agreement.is_awarded = True
-        agreement.award_fiscal_year = 2024
-
-        result = classify_agreement_for_fy(agreement, 2025)
-        assert result == AgreementClassification.CONTINUING.name
-
-    def test_bli_with_none_status_ignored(self):
-        agreement = MagicMock(spec=Agreement)
-        none_bli = MagicMock()
-        none_bli.status = None
-        agreement.budget_line_items = [none_bli]
-
-        result = classify_agreement_for_fy(agreement, 2025)
-        assert result is None
 
 
 @pytest.fixture()
