@@ -9,6 +9,22 @@ from models.procurement_tracker import (
 from ops_api.ops.schemas.pagination import PaginationListSchema
 
 
+class NestedAgreementSchema(Schema):
+    """Minimal agreement schema for nested responses."""
+
+    id = fields.Integer(required=True)
+    name = fields.String(allow_none=True)
+    display_name = fields.String(dump_only=True)
+
+
+class NestedProcurementTrackerSchema(Schema):
+    """Minimal procurement tracker schema for nested responses."""
+
+    id = fields.Integer(required=True)
+    agreement_id = fields.Integer(required=True)
+    agreement = fields.Nested(NestedAgreementSchema, allow_none=True)
+
+
 class ProcurementTrackerStepResponseSchema(Schema):
     """Schema for procurement tracker step responses.
 
@@ -19,6 +35,7 @@ class ProcurementTrackerStepResponseSchema(Schema):
 
     id = fields.Integer(required=True)
     procurement_tracker_id = fields.Integer(required=True)
+    procurement_tracker = fields.Nested(NestedProcurementTrackerSchema, allow_none=True)
     step_number = fields.Integer(required=True)
     step_class = fields.String(required=True)
     step_type = fields.Enum(ProcurementTrackerStepType, required=True, by_value=False)
@@ -47,7 +64,7 @@ class ProcurementTrackerStepResponseSchema(Schema):
     requestor_notes = fields.String(allow_none=True)
 
     # PRE_AWARD approval response fields
-    approval_status = fields.String(allow_none=True, validate=validate.OneOf(["APPROVED", "DECLINED"]))
+    approval_status = fields.String(allow_none=True, validate=validate.OneOf(["APPROVED", "DECLINED", "PENDING"]))
     approval_responded_by = fields.Integer(allow_none=True)
     approval_responded_date = fields.Date(allow_none=True)
     reviewer_notes = fields.String(allow_none=True)
@@ -75,6 +92,7 @@ class ProcurementTrackerStepResponseSchema(Schema):
         data = {
             "id": obj.id,
             "procurement_tracker_id": obj.procurement_tracker_id,
+            "procurement_tracker": obj.procurement_tracker if hasattr(obj, "procurement_tracker") else None,
             "step_number": obj.step_number,
             "step_class": obj.step_class,
             "step_type": obj.step_type,  # Keep as enum
@@ -262,9 +280,11 @@ class ProcurementTrackerStepPatchRequestSchema(Schema):
     requestor_notes = fields.String(required=False, allow_none=True, validate=validate.Length(max=150))
 
     # Pre-Award approval response fields
-    approval_status = fields.String(required=False, allow_none=True, validate=validate.OneOf(["APPROVED", "DECLINED"]))
+    approval_status = fields.String(
+        required=False, allow_none=True, validate=validate.OneOf(["APPROVED", "DECLINED", "PENDING"])
+    )
     # approval_responded_by and approval_responded_date are server-controlled - not accepted from client
-    reviewer_notes = fields.String(required=False, allow_none=True, validate=validate.Length(max=150))
+    reviewer_notes = fields.String(required=False, allow_none=True, validate=validate.Length(max=500))
 
 
 class ProcurementTrackerStepSchema(Schema):

@@ -191,7 +191,11 @@ class ProcurementTrackerStepService:
 
         # Handle approval notifications after commit
         self._handle_approval_notifications(
-            step, data, current_user, old_approval_requested=old_approval_requested, old_approval_status=old_approval_status
+            step,
+            data,
+            current_user,
+            old_approval_requested=old_approval_requested,
+            old_approval_status=old_approval_status,
         )
 
         logger.debug(f"Successfully updated procurement tracker step {id}")
@@ -335,9 +339,7 @@ class ProcurementTrackerStepService:
         # Case 2: Approval was approved/declined - notify submitter
         # Only send if approval_status changed from None → APPROVED/DECLINED
         new_approval_status = data.get("approval_status")
-        approval_response_transitioned = (
-            new_approval_status in ["APPROVED", "DECLINED"] and old_approval_status is None
-        )
+        approval_response_transitioned = new_approval_status in ["APPROVED", "DECLINED"] and old_approval_status is None
 
         if approval_response_transitioned:
             status_text = "approved" if new_approval_status == "APPROVED" else "declined"
@@ -466,3 +468,81 @@ class ProcurementTrackerStepService:
         }
 
         return list(results), metadata
+
+    def get_pending_approvals_for_user(self, user_id: int) -> list[ProcurementTrackerStep]:
+        """
+        Get all pending pre-award approval requests that a user can review.
+
+        Args:
+            user_id: The user ID to check permissions for
+
+        Returns:
+            List of ProcurementTrackerStep objects with pending approvals
+        """
+        from sqlalchemy import and_, or_
+
+        from models import (
+            CAN,
+            Agreement,
+            BudgetLineItem,
+            DefaultProcurementTrackerStep,
+            Division,
+            Portfolio,
+            ProcurementTracker,
+        )
+
+        # Get user roles first
+        user = self.db_session.get(User, user_id)
+        if not user:
+            return []
+
+        user_role_names = [role.name for role in user.roles]
+
+        # Build base query for steps with pending pre-award approvals
+        # Use DefaultProcurementTrackerStep since pre_award_approval_requested is on the subclass
+        stmt = (
+            select(DefaultProcurementTrackerStep)
+            .join(DefaultProcurementTrackerStep.procurement_tracker)
+            .join(ProcurementTracker.agreement)
+            .options(
+                selectinload(DefaultProcurementTrackerStep.procurement_tracker).selectinload(
+                    ProcurementTracker.agreement
+                ),
+            )
+            .where(
+                and_(
+                    DefaultProcurementTrackerStep.step_type == ProcurementTrackerStepType.PRE_AWARD,
+                    DefaultProcurementTrackerStep.pre_award_approval_requested.is_(True),
+                    or_(
+                        DefaultProcurementTrackerStep.pre_award_approval_status.is_(None),
+                        DefaultProcurementTrackerStep.pre_award_approval_status == "PENDING",
+                    ),
+                )
+            )
+        )
+
+        # If user is BUDGET_TEAM or SYSTEM_OWNER, they can see all pending approvals
+        if "BUDGET_TEAM" in user_role_names or "SYSTEM_OWNER" in user_role_names:
+            results = self.db_session.execute(stmt.distinct()).scalars().all()
+            return list(results)
+
+        # For REVIEWER_APPROVER role, filter by division director/deputy
+        if "REVIEWER_APPROVER" in user_role_names:
+            # Add joins to reach division table
+            stmt = (
+                stmt.outerjoin(Agreement.budget_line_items)
+                .outerjoin(BudgetLineItem.can)
+                .outerjoin(CAN.portfolio)
+                .outerjoin(Portfolio.division)
+                .where(
+                    or_(
+                        Division.division_director_id == user_id,
+                        Division.deputy_division_director_id == user_id,
+                    )
+                )
+            )
+            results = self.db_session.execute(stmt.distinct()).scalars().all()
+            return list(results)
+
+        # User has no review permissions
+        return []

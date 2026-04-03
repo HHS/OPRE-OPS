@@ -102,30 +102,18 @@ const AgreementProcurementTracker = ({ agreement }) => {
     const stepFiveData = activeTracker?.steps.find((step) => step.step_number === 5);
 
     // Show "In Review" alert when approval is requested and not in the "just submitted" state
-    // Hide alert when pre-award has been approved or when declined for the requester
+    // Hide alert when pre-award has been approved or declined
     React.useEffect(() => {
-        const isApproved = stepFiveData?.approval_status === ProcurementTrackerPreAwardApprovalStatus.APPROVED;
-        const isDeclined = stepFiveData?.approval_status === ProcurementTrackerPreAwardApprovalStatus.DECLINED;
-        const isRequester = currentUserId && stepFiveData?.approval_requested_by === currentUserId;
-
-        // Show "In Review" alert when:
-        // - Approval is requested
-        // - Not just submitted (5 second grace period)
-        // - NOT approved (approved = done, no alert for anyone)
-        // - If declined, only show for non-requesters (requester sees declined alert instead)
+        // Show "In Review" alert only when approval is truly pending (requested but not yet processed)
+        // This matches the logic in RequestPreAwardApproval.hooks.js
         const shouldShowInReview =
             stepFiveData?.approval_requested &&
             !isJustSubmittedRef.current &&
-            !isApproved &&
-            !(isDeclined && isRequester);
+            (!stepFiveData?.approval_status ||
+                stepFiveData?.approval_status === ProcurementTrackerPreAwardApprovalStatus.PENDING);
 
         setShowInReviewAlert(shouldShowInReview);
-    }, [
-        stepFiveData?.approval_requested,
-        stepFiveData?.approval_status,
-        currentUserId,
-        stepFiveData?.approval_requested_by
-    ]);
+    }, [stepFiveData?.approval_requested, stepFiveData?.approval_status]);
 
     // Show approved/declined alerts only to the user who requested approval
     React.useEffect(() => {

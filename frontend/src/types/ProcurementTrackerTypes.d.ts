@@ -62,8 +62,12 @@ export type ProcurementTrackerPreAwardStep = ProcurementTrackerStep & {
     approval_requested?: boolean | null;
     approval_requested_date?: string | null;
     approval_requested_by?: number | null;
-    approval_status?: ProcurementTrackerPreAwardApprovalStatus | null;
     requestor_notes?: string | null;
+    // Pre-Award approval response fields
+    approval_status?: ProcurementTrackerPreAwardApprovalStatus | null;
+    approval_responded_by?: number | null;
+    approval_responded_date?: string | null;
+    reviewer_notes?: string | null;
 };
 
 export type ProcurementTrackerResponseStep =

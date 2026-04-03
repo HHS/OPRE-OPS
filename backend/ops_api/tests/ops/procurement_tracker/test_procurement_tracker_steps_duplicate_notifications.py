@@ -15,6 +15,20 @@ def test_pre_award_step(app_ctx, loaded_db):
     # Get the procurement tracker first to ensure the relationship is valid
     tracker = loaded_db.get(ProcurementTracker, 1)
 
+    # Ensure Step 4 (Evaluation) exists and is completed (required for pre-award approval)
+    step_4 = next((step for step in tracker.steps if step.step_number == 4), None)
+    if not step_4:
+        step_4 = DefaultProcurementTrackerStep(
+            procurement_tracker=tracker,
+            step_number=4,
+            step_type=ProcurementTrackerStepType.EVALUATION,
+            status=ProcurementTrackerStepStatus.COMPLETED,
+        )
+        loaded_db.add(step_4)
+    else:
+        step_4.status = ProcurementTrackerStepStatus.COMPLETED
+    loaded_db.commit()
+
     # Create a new PRE_AWARD step for testing
     step = DefaultProcurementTrackerStep(
         procurement_tracker=tracker,  # Use object reference to preload the relationship
@@ -61,7 +75,9 @@ def test_initial_approval_request_sends_notification(auth_client, test_pre_award
 
     # Verify notifications were created (should send to multiple reviewers)
     final_notification_count = loaded_db.scalar(select(func.count()).select_from(Notification))
-    assert final_notification_count > initial_notification_count, "Notifications should be sent on first approval request"
+    assert (
+        final_notification_count > initial_notification_count
+    ), "Notifications should be sent on first approval request"
 
 
 def test_duplicate_approval_request_no_notification(auth_client, test_pre_award_step, loaded_db):

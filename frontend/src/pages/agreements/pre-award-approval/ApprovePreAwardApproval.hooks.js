@@ -75,6 +75,9 @@ export default function useApprovePreAwardApproval(agreementId) {
         [agreement?.budget_line_items]
     );
 
+    // Get all budget lines for permission check (pre-award happens before IN_EXECUTION status)
+    const allBudgetLines = useMemo(() => agreement?.budget_line_items ?? [], [agreement?.budget_line_items]);
+
     // Calculate total of executing budget lines
     const executingTotal = useMemo(() => budgetLinesTotal(executingBudgetLines), [executingBudgetLines]);
 
@@ -119,9 +122,10 @@ export default function useApprovePreAwardApproval(agreementId) {
             return true;
         }
 
-        // For REVIEWER_APPROVER, check if user is division director/deputy for any CAN in executing budget lines
+        // For REVIEWER_APPROVER, check if user is division director/deputy for any CAN in ALL budget lines
+        // (Pre-award approval happens before budget lines reach IN_EXECUTION status)
         if (userRoleNames.includes("REVIEWER_APPROVER")) {
-            return executingBudgetLines.some(
+            return allBudgetLines.some(
                 /** @param {any} bli */ (bli) =>
                     bli.can?.portfolio?.division?.division_director_id === userId ||
                     bli.can?.portfolio?.division?.deputy_division_director_id === userId
@@ -129,7 +133,7 @@ export default function useApprovePreAwardApproval(agreementId) {
         }
 
         return false;
-    }, [userRoles, userId, executingBudgetLines]);
+    }, [userRoles, userId, allBudgetLines]);
 
     /**
      * @param {"APPROVED" | "DECLINED"} action
@@ -144,7 +148,10 @@ export default function useApprovePreAwardApproval(agreementId) {
 
         setShowModal(true);
         setModalProps({
-            heading: `Are you sure you want to ${actionText} this pre-award request?`,
+            heading:
+                action === "APPROVED"
+                    ? "Are you sure you want to approve this Pre-Award Requisition? The COR will send the Final Consensus Memo to the Procurement Shop and the agreement will be locked from editing until after it's awarded."
+                    : "Are you sure you want to decline this agreement for Pre-Award? The COR will not send the Final Consensus Memo to the Procurement Shop until changes have been addressed and re-submitted for approval.",
             actionButtonText: action === "APPROVED" ? "Approve" : "Decline",
             secondaryButtonText: "Cancel",
             handleConfirm: async () => {
@@ -161,14 +168,14 @@ export default function useApprovePreAwardApproval(agreementId) {
                         }
                     }).unwrap();
 
-                    // Show success alert and navigate
+                    // Show alert and navigate back to For Review tab
                     setAlert({
-                        type: "success",
+                        type: action === "APPROVED" ? "success" : "error",
                         heading: `Pre-Award ${action === "APPROVED" ? "Approved" : "Declined"}`,
                         message: `You have successfully ${actionText}d the pre-award approval request for ${agreement.display_name}.${
                             reviewerNotes ? `\n\nNotes: ${reviewerNotes}` : ""
                         }`,
-                        redirectUrl: "/agreements"
+                        redirectUrl: "/agreements?filter=change-requests"
                     });
                 } catch (error) {
                     console.error(`Failed to ${actionText} approval request:`, error);
@@ -186,7 +193,17 @@ export default function useApprovePreAwardApproval(agreementId) {
     const handleDecline = () => handleAction("DECLINED");
 
     const handleCancel = () => {
-        navigate(-1);
+        setShowModal(true);
+        setModalProps({
+            heading:
+                "Are you sure you want to cancel? This will exit the review process and you can come back to it later.",
+            actionButtonText: "Cancel",
+            secondaryButtonText: "Continue Reviewing",
+            handleConfirm: () => {
+                setShowModal(false);
+                navigate("/agreements?filter=change-requests");
+            }
+        });
     };
 
     return {

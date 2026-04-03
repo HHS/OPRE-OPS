@@ -117,3 +117,33 @@ class ProcurementTrackerStepListAPI(BaseListAPI):
         }
 
         return make_response_with_headers(response_data)
+
+
+class ProcurementTrackerStepPendingApprovalsAPI(BaseListAPI):
+    """
+    GET /api/v1/procurement-tracker-steps/pending-approvals
+
+    List pending pre-award approval requests for the current user.
+    """
+
+    def __init__(self, model: BaseModel = ProcurementTrackerStep):
+        super().__init__(model)
+
+    @error_simulator
+    @is_authorized(PermissionType.GET, Permission.AGREEMENT)
+    def get(self) -> Response:
+        """Get list of pending pre-award approvals for the current user."""
+        user_id = request.args.get("userId")
+
+        if not user_id:
+            return make_response_with_headers({"error": "Missing required parameter: userId"}, 400)
+
+        logger.debug(f"Getting pending pre-award approvals for user {user_id}")
+        service = ProcurementTrackerStepService(current_app.db_session)
+        pending_approvals = service.get_pending_approvals_for_user(int(user_id))
+
+        # Serialize response
+        response_schema = ProcurementTrackerStepResponseSchema(many=True)
+        serialized_data = response_schema.dump(pending_approvals)
+
+        return make_response_with_headers(serialized_data)
