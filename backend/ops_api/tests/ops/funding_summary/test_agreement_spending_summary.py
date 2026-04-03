@@ -359,5 +359,5 @@ class TestAccumulateAgreementSpendingNoCan:
         totals = self._make_totals()
         _accumulate_agreement_spending(agreement, 2025, totals)
 
-        assert totals["CONTRACT"]["new"] == Decimal("8000")
-        assert totals["CONTRACT"]["continuing"] == Decimal(0)
+        assert totals["CONTRACT"]["new"] == Decimal(0)
+        assert totals["CONTRACT"]["continuing"] == Decimal("8000")
