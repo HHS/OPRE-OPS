@@ -116,3 +116,79 @@ export const normalizeUser = (user) => {
         display_name: getUserDisplayName(user)
     };
 };
+
+/**
+ * Normalizes an array of user-like objects by attaching a formatted `display_name`.
+ * @param {Array<Object> | null | undefined} users
+ * @returns {*} The normalized array, or the original non-array input unchanged.
+ */
+export const normalizeUsers = (users) => {
+    if (!Array.isArray(users)) return users;
+    return users.map(normalizeUser);
+};
+
+/**
+ * Normalizes an array of raw name strings for display.
+ * @param {Array<string> | null | undefined} names
+ * @returns {*} The normalized array, or the original non-array input unchanged.
+ */
+export const normalizeNameStrings = (names) => {
+    if (!Array.isArray(names)) return names;
+    return names.map((name) => formatUserName(name));
+};
+
+/**
+ * Normalizes embedded agreement people fields used by the UI.
+ * @param {Object | null | undefined} agreement
+ * @returns {Object | null | undefined}
+ */
+export const normalizeAgreementUsers = (agreement) => {
+    if (!agreement || typeof agreement !== "object") return agreement;
+    return {
+        ...agreement,
+        team_members: normalizeUsers(agreement.team_members),
+        team_leaders: normalizeNameStrings(agreement.team_leaders),
+        division_directors: normalizeNameStrings(agreement.division_directors)
+    };
+};
+
+/**
+ * Normalizes embedded project people fields used by the UI.
+ * @param {Object | null | undefined} project
+ * @returns {Object | null | undefined}
+ */
+export const normalizeProjectUsers = (project) => {
+    if (!project || typeof project !== "object") return project;
+    return {
+        ...project,
+        team_leaders: normalizeUsers(project.team_leaders),
+        team_members: normalizeUsers(project.team_members),
+        division_directors: normalizeNameStrings(project.division_directors)
+    };
+};
+
+/**
+ * Normalizes embedded portfolio people fields used by the UI.
+ * @param {Object | null | undefined} portfolio
+ * @returns {Object | null | undefined}
+ */
+export const normalizePortfolioUsers = (portfolio) => {
+    if (!portfolio || typeof portfolio !== "object") return portfolio;
+    return {
+        ...portfolio,
+        team_leaders: normalizeUsers(portfolio.team_leaders)
+    };
+};
+
+/**
+ * Normalizes embedded CAN people fields used by the UI.
+ * @param {Object | null | undefined} can
+ * @returns {Object | null | undefined}
+ */
+export const normalizeCanUsers = (can) => {
+    if (!can || typeof can !== "object") return can;
+    return {
+        ...can,
+        portfolio: normalizePortfolioUsers(can.portfolio)
+    };
+};

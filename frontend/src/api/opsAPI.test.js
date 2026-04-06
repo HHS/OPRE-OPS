@@ -836,6 +836,30 @@ describe("opsAPI - Wave 2 high-yield endpoint coverage", () => {
         expect(capturedUrl).toContain("/agreements/999");
     });
 
+    it("does not try to map wrapped non-array project responses", async () => {
+        server.use(
+            http.get("*/api/v1/projects/", () => {
+                return HttpResponse.json({
+                    data: {
+                        projects: [{ id: 1, title: "Wrapped Project" }]
+                    }
+                });
+            })
+        );
+
+        const storeRef = setupApiStore(opsApi);
+        const result = await storeRef.store.dispatch(
+            opsApi.endpoints.getProjectsByPortfolio.initiate({
+                fiscal_year: 2026,
+                portfolio_id: 1
+            })
+        );
+
+        expect(result.data).toEqual({
+            projects: [{ id: 1, title: "Wrapped Project" }]
+        });
+    });
+
     it("builds getAgreementsFilterOptions with only_my", async () => {
         let capturedUrl = "";
         server.use(
