@@ -51,18 +51,18 @@ export default function useRequestPreAwardApproval(agreementId) {
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
     const alternateProjectOfficerName = useGetUserFullNameFromId(agreement?.alternate_project_officer_id);
 
-    // Get executing budget lines
+    // Get all budget lines for display (pre-award happens before IN_EXECUTION status)
+    const allBudgetLines = agreement?.budget_line_items || [];
+
+    // Get executing budget lines for total calculation
     const executingBudgetLines =
         agreement?.budget_line_items?.filter((/** @type {any} */ bli) => bli.status === "IN_EXECUTION") || [];
 
-    // Calculate total of executing budget lines
+    // Calculate total of executing budget lines only
     const executingTotal = budgetLinesTotal(executingBudgetLines);
 
-    // Group budget lines by services component
-    const groupedBudgetLinesByServicesComponent = groupByServicesComponent(
-        executingBudgetLines,
-        servicesComponents || []
-    );
+    // Group all budget lines by services component for display
+    const groupedBudgetLinesByServicesComponent = groupByServicesComponent(allBudgetLines, servicesComponents || []);
 
     // Get Step 4 and Step 5 from procurement tracker
     const trackers = procurementTrackersData?.data || [];
@@ -197,8 +197,8 @@ export default function useRequestPreAwardApproval(agreementId) {
     return {
         agreement,
         isLoading,
-        executingBudgetLines,
-        executingTotal,
+        executingBudgetLines: allBudgetLines, // Return all budget lines for display
+        executingTotal, // Total calculated from executing budget lines only
         notes,
         setNotes,
         handleSubmit,
