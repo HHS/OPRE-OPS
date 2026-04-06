@@ -121,7 +121,7 @@ export const ApprovePreAwardApproval = () => {
             {/* Budget Lines (Executing Status) */}
             <AgreementBLIAccordion
                 title="Review Budget Lines"
-                instructions="Review all executing budget lines for this agreement."
+                instructions="Please review the Services Components and Budget Lines below to ensure everything is up to date."
                 budgetLineItems={executingBudgetLines}
                 agreement={agreement}
                 afterApproval={false}
@@ -171,7 +171,7 @@ export const ApprovePreAwardApproval = () => {
 
             {/* CAN Impact */}
             <AgreementCANReviewAccordion
-                instructions="Review the CAN budget impact for executing budget lines."
+                instructions="The budget lines on this agreement have allocated funds from the CANs displayed below. Review to confirm everything looks good and click on each CAN to view more details."
                 selectedBudgetLines={executingBudgetLines}
                 afterApproval={false}
                 setAfterApproval={() => {}}
@@ -340,7 +340,7 @@ export const ApprovePreAwardApproval = () => {
                     disabled={isSubmitting || approvalAlreadyProcessed || !understandsApproval}
                     data-cy="approve-pre-award-btn"
                 >
-                    {isSubmitting ? "Processing..." : "Approve pre-award"}
+                    {isSubmitting ? "Processing..." : "Approve Pre-Award"}
                 </button>
             </div>
         </App>

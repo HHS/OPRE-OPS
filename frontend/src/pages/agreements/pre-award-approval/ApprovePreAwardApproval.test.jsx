@@ -193,7 +193,7 @@ describe("ApprovePreAwardApproval", () => {
 
         expect(screen.getByRole("button", { name: "Cancel" })).toBeInTheDocument();
         expect(screen.getByRole("button", { name: "Decline" })).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: "Approve pre-award" })).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "Approve Pre-Award" })).toBeInTheDocument();
     });
 
     it("should call handleApprove when Approve button is clicked", async () => {
@@ -207,7 +207,7 @@ describe("ApprovePreAwardApproval", () => {
         });
         await user.click(checkbox);
 
-        const approveButton = screen.getByRole("button", { name: "Approve pre-award" });
+        const approveButton = screen.getByRole("button", { name: "Approve Pre-Award" });
         await user.click(approveButton);
 
         expect(handleApprove).toHaveBeenCalledTimes(1);
@@ -252,7 +252,7 @@ describe("ApprovePreAwardApproval", () => {
         renderComponent({ ...mockHookData, approvalAlreadyProcessed: true });
 
         expect(screen.getByRole("button", { name: "Decline" })).toBeDisabled();
-        expect(screen.getByRole("button", { name: "Approve pre-award" })).toBeDisabled();
+        expect(screen.getByRole("button", { name: "Approve Pre-Award" })).toBeDisabled();
         expect(screen.getByRole("button", { name: "Cancel" })).not.toBeDisabled();
     });
 
@@ -320,7 +320,7 @@ describe("ApprovePreAwardApproval", () => {
     it("should disable approve button when checkbox is not checked", () => {
         renderComponent();
 
-        const approveButton = screen.getByRole("button", { name: "Approve pre-award" });
+        const approveButton = screen.getByRole("button", { name: "Approve Pre-Award" });
         expect(approveButton).toBeDisabled();
     });
 
@@ -331,7 +331,7 @@ describe("ApprovePreAwardApproval", () => {
         const checkbox = screen.getByRole("checkbox", {
             name: /I understand that approving for Pre-Award means the Requisition will be submitted/i
         });
-        const approveButton = screen.getByRole("button", { name: "Approve pre-award" });
+        const approveButton = screen.getByRole("button", { name: "Approve Pre-Award" });
 
         expect(approveButton).toBeDisabled();
 

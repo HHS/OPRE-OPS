@@ -68,24 +68,21 @@ export default function useApprovePreAwardApproval(agreementId) {
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
     const alternateProjectOfficerName = useGetUserFullNameFromId(agreement?.alternate_project_officer_id);
 
-    // Get executing budget lines (memoized to prevent infinite loops in hasPermission)
+    // Get all budget lines for display (pre-award happens before IN_EXECUTION status)
+    const allBudgetLines = useMemo(() => agreement?.budget_line_items ?? [], [agreement?.budget_line_items]);
+
+    // Get executing budget lines for total calculation
     const executingBudgetLines = useMemo(
         () =>
             agreement?.budget_line_items?.filter(/** @param {any} bli */ (bli) => bli.status === "IN_EXECUTION") ?? [],
         [agreement?.budget_line_items]
     );
 
-    // Get all budget lines for permission check (pre-award happens before IN_EXECUTION status)
-    const allBudgetLines = useMemo(() => agreement?.budget_line_items ?? [], [agreement?.budget_line_items]);
-
-    // Calculate total of executing budget lines
+    // Calculate total of executing budget lines only
     const executingTotal = useMemo(() => budgetLinesTotal(executingBudgetLines), [executingBudgetLines]);
 
-    // Group budget lines by services component
-    const groupedBudgetLinesByServicesComponent = groupByServicesComponent(
-        executingBudgetLines,
-        servicesComponents || []
-    );
+    // Group all budget lines by services component for display
+    const groupedBudgetLinesByServicesComponent = groupByServicesComponent(allBudgetLines, servicesComponents || []);
 
     // Get Step 5 (Pre-Award) from procurement tracker
     const trackers = procurementTrackersData?.data || [];
@@ -209,8 +206,8 @@ export default function useApprovePreAwardApproval(agreementId) {
     return {
         agreement,
         isLoading,
-        executingBudgetLines,
-        executingTotal,
+        executingBudgetLines: allBudgetLines, // Return all budget lines for display
+        executingTotal, // Total calculated from executing budget lines only
         reviewerNotes,
         setReviewerNotes,
         requestorNotes,
