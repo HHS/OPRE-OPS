@@ -163,10 +163,11 @@ const CanFunding = ({
                     ? "The summary below shows the funding for this CAN for the select fiscal year."
                     : "Review the new FY Funding Information for this CAN."}
             </p>
-            <CANFundingInfoCard
-                funding={funding}
-                fiscalYear={fiscalYear}
-            />
+            <CANFundingInfoCard funding={funding} />
+            <p className="font-12px text-base-dark">
+                * CAN Funding Information contains the latest CANBACs data, and does not reference historical changes if
+                there were any
+            </p>
             {!isEditMode ? (
                 <section
                     id="cards"
