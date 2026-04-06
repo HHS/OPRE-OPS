@@ -158,7 +158,7 @@ describe("RequestPreAwardApproval", () => {
         render(<RequestPreAwardApproval />);
 
         expect(screen.getByRole("button", { name: "Cancel" })).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: "Request Pre-Award Approval" })).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "Send to Approval" })).toBeInTheDocument();
     });
 
     it("calls handleCancel when cancel button is clicked", async () => {
@@ -187,7 +187,7 @@ describe("RequestPreAwardApproval", () => {
         const user = userEvent.setup();
         render(<RequestPreAwardApproval />);
 
-        const submitButton = screen.getByRole("button", { name: "Request Pre-Award Approval" });
+        const submitButton = screen.getByRole("button", { name: "Send to Approval" });
         await user.click(submitButton);
 
         expect(handleSubmitMock).toHaveBeenCalledTimes(1);
@@ -202,7 +202,7 @@ describe("RequestPreAwardApproval", () => {
 
         render(<RequestPreAwardApproval />);
 
-        const submitButton = screen.getByRole("button", { name: "Request Pre-Award Approval" });
+        const submitButton = screen.getByRole("button", { name: "Send to Approval" });
         expect(submitButton).toBeDisabled();
     });
 
@@ -226,7 +226,7 @@ describe("RequestPreAwardApproval", () => {
 
         render(<RequestPreAwardApproval />);
 
-        const submitButton = screen.getByRole("button", { name: "Request Pre-Award Approval" });
+        const submitButton = screen.getByRole("button", { name: "Send to Approval" });
         expect(submitButton).toBeDisabled();
     });
 
@@ -255,7 +255,7 @@ describe("RequestPreAwardApproval", () => {
 
         render(<RequestPreAwardApproval />);
 
-        const submitButton = screen.getByRole("button", { name: "Request Pre-Award Approval" });
+        const submitButton = screen.getByRole("button", { name: "Send to Approval" });
         expect(submitButton).not.toBeDisabled();
     });
 
@@ -267,7 +267,7 @@ describe("RequestPreAwardApproval", () => {
 
         render(<RequestPreAwardApproval />);
 
-        const submitButton = screen.getByRole("button", { name: "Request Pre-Award Approval" });
+        const submitButton = screen.getByRole("button", { name: "Send to Approval" });
         expect(submitButton).toBeDisabled();
     });
 
@@ -296,7 +296,7 @@ describe("RequestPreAwardApproval", () => {
 
         render(<RequestPreAwardApproval />);
 
-        const submitButton = screen.getByRole("button", { name: "Request Pre-Award Approval" });
+        const submitButton = screen.getByRole("button", { name: "Send to Approval" });
         expect(submitButton).not.toBeDisabled();
     });
 
@@ -308,7 +308,7 @@ describe("RequestPreAwardApproval", () => {
 
         render(<RequestPreAwardApproval />);
 
-        const submitButton = screen.getByRole("button", { name: "Request Pre-Award Approval" });
+        const submitButton = screen.getByRole("button", { name: "Send to Approval" });
         expect(submitButton).toBeDisabled();
     });
 });

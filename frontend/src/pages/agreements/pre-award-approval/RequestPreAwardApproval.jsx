@@ -23,7 +23,7 @@ export const RequestPreAwardApproval = () => {
     const {
         agreement,
         isLoading,
-        executingBudgetLines,
+        allBudgetLines,
         executingTotal,
         notes,
         setNotes,
@@ -58,6 +58,14 @@ export const RequestPreAwardApproval = () => {
                 subTitle={agreement?.name}
             />
 
+            <p className="margin-y-3">
+                Review the agreement details to make sure everything looks up to date and upload the Final Consensus
+                Memo. If you need to make changes, Cancel the Pre-Award Request and edit from the Agreement Details
+                Page. Once you receive Pre-Award approval from the Division Director(s), the Budget Team will add the
+                Requisition # and Requisition Date. Then you can send the Final Consensus Memo to the Procurement Shop.
+                The agreement will be locked from editing until the contract is Awarded.
+            </p>
+
             {isApprovalPending && (
                 <SimpleAlert
                     type="warning"
@@ -91,13 +99,13 @@ export const RequestPreAwardApproval = () => {
                 projectOfficerName={projectOfficerName}
                 alternateProjectOfficerName={alternateProjectOfficerName}
                 convertCodeForDisplay={convertCodeForDisplay}
-                instructions="Review the agreement details below before requesting pre-award approval."
+                instructions="Please review the agreement details below to ensure everything is up to date."
                 changeRequestType={agreement?.change_request_type}
             />
 
             {/* Budget Lines and Executing Total */}
             <PreAwardBudgetLinesReviewAccordion
-                budgetLineItems={executingBudgetLines}
+                budgetLineItems={allBudgetLines}
                 agreement={agreement}
                 servicesComponents={servicesComponents}
                 groupedBudgetLines={groupedBudgetLinesByServicesComponent}
@@ -323,7 +331,7 @@ export const RequestPreAwardApproval = () => {
                                 : ""
                     }
                 >
-                    {isSubmitting ? "Submitting..." : "Request Pre-Award Approval"}
+                    {isSubmitting ? "Submitting..." : "Send to Approval"}
                 </button>
             </div>
         </App>

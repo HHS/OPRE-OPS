@@ -152,13 +152,13 @@ describe("useApprovePreAwardApproval", () => {
         expect(result.current.submitError).toBe("");
     });
 
-    it("should filter executing budget lines correctly", () => {
+    it("should return all budget lines regardless of status", () => {
         const store = createTestStore();
         const wrapper = createWrapper(store);
         const { result } = renderHook(() => useApprovePreAwardApproval(1), { wrapper });
 
-        expect(result.current.executingBudgetLines).toHaveLength(1);
-        expect(result.current.executingBudgetLines[0].status).toBe("IN_EXECUTION");
+        expect(result.current.allBudgetLines).toHaveLength(1);
+        expect(result.current.allBudgetLines[0].status).toBe("IN_EXECUTION");
     });
 
     it("should extract step 5 data correctly", () => {
@@ -285,7 +285,7 @@ describe("useApprovePreAwardApproval", () => {
         expect(result.current.preAwardMemoDocuments[0].document_type).toBe("PRE_AWARD_CONSENSUS_MEMO");
     });
 
-    it("should call groupByServicesComponent with executing budget lines", () => {
+    it("should call groupByServicesComponent with all budget lines", () => {
         const store = createTestStore();
         const wrapper = createWrapper(store);
         renderHook(() => useApprovePreAwardApproval(1), { wrapper });

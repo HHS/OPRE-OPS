@@ -1,17 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-    useGetAgreementByIdQuery,
-    useGetServicesComponentsListQuery,
     useUpdateProcurementTrackerStepMutation,
     useAddDocumentMutation,
     useUpdateDocumentStatusMutation,
-    useGetDocumentsByAgreementIdQuery,
     useGetProcurementTrackersByAgreementIdQuery
 } from "../../../api/opsAPI";
-import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import { getLocalISODate } from "../../../helpers/utils";
-import { groupByServicesComponent, budgetLinesTotal } from "../../../helpers/budgetLines.helpers";
 import {
     convertFileSizeToMB,
     isFileValid,
@@ -23,6 +18,7 @@ import {
     ProcurementTrackerStepStatus,
     ProcurementTrackerStatus
 } from "../../../components/Agreements/ProcurementTracker/ProcurementTracker.constants";
+import usePreAwardApprovalData from "./usePreAwardApprovalData";
 
 /**
  * Custom hook for the Request Pre-Award Approval page
@@ -38,45 +34,33 @@ export default function useRequestPreAwardApproval(agreementId) {
     const [submitError, setSubmitError] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const { data: agreement, isLoading } = useGetAgreementByIdQuery(agreementId);
     const [updateProcurementTrackerStep] = useUpdateProcurementTrackerStepMutation();
-    const { data: servicesComponents } = useGetServicesComponentsListQuery(agreementId, { skip: !agreementId });
     const [addDocument] = useAddDocumentMutation();
     const [updateDocumentStatus] = useUpdateDocumentStatusMutation();
-    const { data: documentsData } = useGetDocumentsByAgreementIdQuery(agreementId, { skip: !agreementId });
+
+    // Use shared data fetching and processing hook
+    const {
+        agreement,
+        isLoading,
+        allBudgetLines,
+        executingTotal,
+        projectOfficerName,
+        alternateProjectOfficerName,
+        servicesComponents,
+        groupedBudgetLinesByServicesComponent,
+        preAwardMemoDocuments,
+        step5
+    } = usePreAwardApprovalData(agreementId);
+
+    // Get Step 4 from procurement tracker (step5 comes from shared hook)
     const { data: procurementTrackersData } = useGetProcurementTrackersByAgreementIdQuery(agreementId, {
         skip: !agreementId
     });
-
-    const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
-    const alternateProjectOfficerName = useGetUserFullNameFromId(agreement?.alternate_project_officer_id);
-
-    // Get all budget lines for display (pre-award happens before IN_EXECUTION status)
-    const allBudgetLines = agreement?.budget_line_items || [];
-
-    // Get executing budget lines for total calculation
-    const executingBudgetLines =
-        agreement?.budget_line_items?.filter((/** @type {any} */ bli) => bli.status === "IN_EXECUTION") || [];
-
-    // Calculate total of executing budget lines only
-    const executingTotal = budgetLinesTotal(executingBudgetLines);
-
-    // Group all budget lines by services component for display
-    const groupedBudgetLinesByServicesComponent = groupByServicesComponent(allBudgetLines, servicesComponents || []);
-
-    // Get Step 4 and Step 5 from procurement tracker
     const trackers = procurementTrackersData?.data || [];
     const activeTracker = trackers.find(
         (/** @type {any} */ tracker) => tracker.status === ProcurementTrackerStatus.ACTIVE
     );
     const step4 = activeTracker?.steps?.find((/** @type {any} */ step) => step.step_number === 4);
-    const step5 = activeTracker?.steps?.find((/** @type {any} */ step) => step.step_number === 5);
-
-    // Get existing Pre-Award Consensus Memo documents
-    const preAwardMemoDocuments =
-        documentsData?.documents?.filter(
-            (/** @type {any} */ doc) => doc.document_type === "PRE_AWARD_CONSENSUS_MEMO"
-        ) || [];
 
     // Check if approval is pending (requested but not yet approved or declined)
     // This is used for both the banner and disabling buttons
@@ -197,7 +181,7 @@ export default function useRequestPreAwardApproval(agreementId) {
     return {
         agreement,
         isLoading,
-        executingBudgetLines: allBudgetLines, // Return all budget lines for display
+        allBudgetLines, // All budget lines for display (pre-award happens before IN_EXECUTION)
         executingTotal, // Total calculated from executing budget lines only
         notes,
         setNotes,

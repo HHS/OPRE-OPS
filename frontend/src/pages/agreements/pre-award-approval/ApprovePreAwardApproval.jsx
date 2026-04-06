@@ -24,7 +24,7 @@ export const ApprovePreAwardApproval = () => {
     const {
         agreement,
         isLoading,
-        executingBudgetLines,
+        allBudgetLines,
         executingTotal,
         reviewerNotes,
         setReviewerNotes,
@@ -111,7 +111,7 @@ export const ApprovePreAwardApproval = () => {
 
             {/* Budget Lines and Executing Total */}
             <PreAwardBudgetLinesReviewAccordion
-                budgetLineItems={executingBudgetLines}
+                budgetLineItems={allBudgetLines}
                 agreement={agreement}
                 servicesComponents={servicesComponents}
                 groupedBudgetLines={groupedBudgetLinesByServicesComponent}
@@ -121,7 +121,7 @@ export const ApprovePreAwardApproval = () => {
             {/* CAN Impact */}
             <AgreementCANReviewAccordion
                 instructions="The budget lines on this agreement have allocated funds from the CANs displayed below. Review to confirm everything looks good and click on each CAN to view more details."
-                selectedBudgetLines={executingBudgetLines}
+                selectedBudgetLines={allBudgetLines}
                 afterApproval={false}
                 setAfterApproval={() => {}}
                 action=""

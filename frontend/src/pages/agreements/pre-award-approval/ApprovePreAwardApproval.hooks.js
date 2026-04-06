@@ -1,16 +1,9 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, shallowEqual } from "react-redux";
-import {
-    useGetAgreementByIdQuery,
-    useGetServicesComponentsListQuery,
-    useUpdateProcurementTrackerStepMutation,
-    useGetDocumentsByAgreementIdQuery,
-    useGetProcurementTrackersByAgreementIdQuery
-} from "../../../api/opsAPI";
-import useGetUserFullNameFromId from "../../../hooks/user.hooks";
-import { groupByServicesComponent, budgetLinesTotal } from "../../../helpers/budgetLines.helpers";
+import { useUpdateProcurementTrackerStepMutation } from "../../../api/opsAPI";
 import useAlert from "../../../hooks/use-alert.hooks";
+import usePreAwardApprovalData from "./usePreAwardApprovalData";
 
 /**
  * Custom hook for the ApprovePreAwardApproval page.
@@ -57,45 +50,23 @@ export default function useApprovePreAwardApproval(agreementId) {
     // @ts-expect-error - Redux state typing in JS files
     const userRoles = useSelector((state) => state.auth?.activeUser?.roles ?? [], shallowEqual);
 
-    const { data: agreement, isLoading } = useGetAgreementByIdQuery(agreementId);
     const [updateProcurementTrackerStep] = useUpdateProcurementTrackerStepMutation();
-    const { data: servicesComponents } = useGetServicesComponentsListQuery(agreementId, { skip: !agreementId });
-    const { data: documentsData } = useGetDocumentsByAgreementIdQuery(agreementId, { skip: !agreementId });
-    const { data: procurementTrackersData } = useGetProcurementTrackersByAgreementIdQuery(agreementId, {
-        skip: !agreementId
-    });
 
-    const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
-    const alternateProjectOfficerName = useGetUserFullNameFromId(agreement?.alternate_project_officer_id);
-
-    // Get all budget lines for display (pre-award happens before IN_EXECUTION status)
-    const allBudgetLines = useMemo(() => agreement?.budget_line_items ?? [], [agreement?.budget_line_items]);
-
-    // Get executing budget lines for total calculation
-    const executingBudgetLines = useMemo(
-        () =>
-            agreement?.budget_line_items?.filter(/** @param {any} bli */ (bli) => bli.status === "IN_EXECUTION") ?? [],
-        [agreement?.budget_line_items]
-    );
-
-    // Calculate total of executing budget lines only
-    const executingTotal = useMemo(() => budgetLinesTotal(executingBudgetLines), [executingBudgetLines]);
-
-    // Group all budget lines by services component for display
-    const groupedBudgetLinesByServicesComponent = groupByServicesComponent(allBudgetLines, servicesComponents || []);
-
-    // Get Step 5 (Pre-Award) from procurement tracker
-    const trackers = procurementTrackersData?.data || [];
-    const activeTracker = trackers.find(/** @param {any} tracker */ (tracker) => tracker.status === "ACTIVE");
-    const step5 = activeTracker?.steps?.find(/** @param {any} step */ (step) => step.step_number === 5);
-
-    const preAwardRequestorName = useGetUserFullNameFromId(step5?.approval_requested_by);
-
-    // Get existing Pre-Award Consensus Memo documents
-    const preAwardMemoDocuments =
-        documentsData?.documents?.filter(
-            /** @param {any} doc */ (doc) => doc.document_type === "PRE_AWARD_CONSENSUS_MEMO"
-        ) || [];
+    // Use shared data fetching and processing hook
+    const {
+        agreement,
+        isLoading,
+        allBudgetLines,
+        executingTotal,
+        projectOfficerName,
+        alternateProjectOfficerName,
+        servicesComponents,
+        groupedBudgetLinesByServicesComponent,
+        preAwardMemoDocuments,
+        step5,
+        preAwardRequestorName,
+        preAwardApprovalRequestedDate
+    } = usePreAwardApprovalData(agreementId);
 
     // Get submitter's notes
     const requestorNotes = step5?.requestor_notes || "";
@@ -216,7 +187,7 @@ export default function useApprovePreAwardApproval(agreementId) {
     return {
         agreement,
         isLoading,
-        executingBudgetLines: allBudgetLines, // Return all budget lines for display
+        allBudgetLines, // All budget lines for display (pre-award happens before IN_EXECUTION)
         executingTotal, // Total calculated from executing budget lines only
         reviewerNotes,
         setReviewerNotes,
@@ -237,6 +208,6 @@ export default function useApprovePreAwardApproval(agreementId) {
         hasPermission,
         approvalAlreadyProcessed,
         preAwardRequestorName,
-        preAwardApprovalRequestedDate: step5?.approval_requested_date
+        preAwardApprovalRequestedDate
     };
 }
