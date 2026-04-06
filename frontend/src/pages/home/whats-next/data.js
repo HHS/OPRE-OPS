@@ -12,7 +12,7 @@ export const data = [
         priority: 1,
         title: "Updating FY26 Spend Plans",
         levelOfEffort: "Medium",
-        status: "In-Progress-Development",
+        status: "In Progress-Development",
         expandedHeading: "Description",
         expandedDescription:
             "The budget team is working with each OPRE Division to update their FY26 spend plans in OPS."
@@ -32,7 +32,7 @@ export const data = [
         priority: 3,
         title: "Procurement Dashboard",
         levelOfEffort: "Medium",
-        status: "In Progress-Design",
+        status: "In Progress-Development",
         expandedHeading: "Description",
         expandedDescription:
             "This will enable the Procurement Team to view a procurement overview or summary across all agreements."

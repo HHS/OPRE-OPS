@@ -32,7 +32,11 @@ const PortfolioTableRow = ({ portfolio, fiscalYear }) => {
                     className="text-ink text-no-underline"
                 >
                     {portfolio.name || portfolio.abbreviation
-                        ? `${portfolio.name || NO_DATA} (${portfolio.abbreviation || NO_DATA})`
+                        ? portfolio.name &&
+                          portfolio.abbreviation &&
+                          portfolio.name.toLowerCase() !== portfolio.abbreviation.toLowerCase()
+                            ? `${portfolio.name} (${portfolio.abbreviation})`
+                            : portfolio.name || portfolio.abbreviation || NO_DATA
                         : NO_DATA}
                 </Link>
             </td>

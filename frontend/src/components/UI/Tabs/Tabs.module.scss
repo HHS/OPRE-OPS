@@ -1,3 +1,28 @@
+.tabsContainer {
+    display: flex;
+    flex-direction: column;
+}
+
+.tabsNav {
+    flex: 1;
+}
+
+.tabsRightContent {
+    align-self: flex-start;
+}
+
+@media (min-width: 40em) {
+    .tabsContainer {
+        flex-direction: row;
+        align-items: flex-start;
+    }
+
+    .tabsRightContent {
+        margin-top: 15px;
+        margin-left: 1rem;
+    }
+}
+
 .tabsList {
     padding-left: 0;
     align-items: center;

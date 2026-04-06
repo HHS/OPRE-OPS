@@ -3,6 +3,8 @@ import { Route, Routes, useNavigate } from "react-router-dom";
 import App from "../../App";
 import PageHeader from "../../components/UI/PageHeader";
 import Tabs from "../../components/UI/Tabs";
+import { HELP_CENTER_EXPORT_URL } from "../../constants";
+import icons from "../../uswds/img/sprite.svg";
 import FAQ from "./FAQ";
 import Feedback from "./Feedback";
 import Glossary from "./Glossary";
@@ -24,8 +26,30 @@ const HelpCenter = () => {
                 title="Help Center"
                 subTitle="OPS Guides & Information"
             />
-            <section className="display-flex flex-justify margin-top-3">
-                <HelpTabs />
+            <p className="font-sans-md line-height-sans-5 margin-top-0 margin-bottom-6">
+                Welcome to the Help Center - your go-to resource for assisting you in OPS. Whether you&apos;re just
+                getting started or looking to deepen your expertise or learn something new, check out the tabs below.
+            </p>
+            <section className="margin-top-3">
+                <HelpTabs
+                    rightContent={
+                        <a
+                            className="usa-link text-bold display-flex flex-align-center"
+                            href={HELP_CENTER_EXPORT_URL}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            <svg
+                                className="height-2 width-2 margin-right-05"
+                                aria-hidden="true"
+                                style={{ fill: "#005EA2", height: "24px", width: "24px" }}
+                            >
+                                <use href={`${icons}#save_alt`}></use>
+                            </svg>
+                            <span>Open in SharePoint</span>
+                        </a>
+                    }
+                />
             </section>
             <Routes>
                 <Route
@@ -49,7 +73,7 @@ const HelpCenter = () => {
     );
 };
 
-const HelpTabs = () => {
+const HelpTabs = ({ rightContent }) => {
     const paths = [
         {
             label: "How-to Guides",
@@ -69,7 +93,12 @@ const HelpTabs = () => {
         }
     ];
 
-    return <Tabs paths={paths} />;
+    return (
+        <Tabs
+            paths={paths}
+            rightContent={rightContent}
+        />
+    );
 };
 
 export default HelpCenter;

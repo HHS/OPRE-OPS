@@ -21,6 +21,13 @@ describe("TeamLeaders", () => {
         expect(screen.getByText("TBD")).toBeInTheDocument();
     });
 
+    it("should format all-caps team leader names", () => {
+        render(<TeamLeaders teamLeaders={[{ id: 1, full_name: "JANE SMITH" }]} />);
+
+        expect(screen.getByText("Jane Smith")).toBeInTheDocument();
+        expect(screen.queryByText("JANE SMITH")).not.toBeInTheDocument();
+    });
+
     it("should not render anything when teamLeaders is undefined", () => {
         const { container } = render(<TeamLeaders teamLeaders={undefined} />);
         expect(container).toBeEmptyDOMElement();

@@ -10,6 +10,7 @@ import styles from "./Tabs.module.scss";
 /**
  * @typedef {Object} TabsProps
  * @property {Path[]} paths - The paths to render as tabs.
+ * @property {React.ReactNode} [rightContent] - Optional content rendered on the right side of tabs.
  */
 
 /**
@@ -17,7 +18,7 @@ import styles from "./Tabs.module.scss";
  * @param {TabsProps} props - The properties passed to the component.
  * @returns {JSX.Element} - The rendered JSX element.
  */
-const Tabs = ({ paths }) => {
+const Tabs = ({ paths, rightContent }) => {
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -48,15 +49,16 @@ const Tabs = ({ paths }) => {
     });
 
     return (
-        <>
+        <div className={styles.tabsContainer}>
             <nav
-                className={`margin-bottom-4 ${styles.tabsList}`}
+                className={`margin-bottom-4 ${styles.tabsList} ${styles.tabsNav}`}
                 aria-label={"Tab Sections"}
                 role={"navigation"}
             >
                 {links}
             </nav>
-        </>
+            {rightContent && <div className={styles.tabsRightContent}>{rightContent}</div>}
+        </div>
     );
 };
 
