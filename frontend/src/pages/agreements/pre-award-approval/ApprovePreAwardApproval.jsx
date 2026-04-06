@@ -3,24 +3,15 @@ import { useParams } from "react-router-dom";
 import App from "../../../App";
 import PageHeader from "../../../components/UI/PageHeader";
 import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
-import AgreementBLIAccordion from "../../../components/Agreements/AgreementBLIAccordion";
 import AgreementCANReviewAccordion from "../../../components/Agreements/AgreementCANReviewAccordion";
-import AgreementBLIReviewTable from "../../../components/BudgetLineItems/BLIReviewTable";
-import ReviewExecutingTotalAccordion from "../../../components/BudgetLineItems/ReviewExecutingTotalAccordion/ReviewExecutingTotalAccordion";
-import ServicesComponentAccordion from "../../../components/ServicesComponents/ServicesComponentAccordion";
 import Accordion from "../../../components/UI/Accordion";
 import TextArea from "../../../components/UI/Form/TextArea";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
 import { convertCodeForDisplay, formatDateToMonthDayYear } from "../../../helpers/utils";
-import {
-    findDescription,
-    findIfOptional,
-    findPeriodEnd,
-    findPeriodStart
-} from "../../../helpers/servicesComponent.helpers";
 import icons from "../../../uswds/img/sprite.svg";
 import useApprovePreAwardApproval from "./ApprovePreAwardApproval.hooks";
+import { PreAwardBudgetLinesReviewAccordion } from "./PreAwardBudgetLinesReviewAccordion";
 
 /**
  * @component - Renders a page for Division Directors to approve/decline pre-award approval requests.
@@ -118,56 +109,14 @@ export const ApprovePreAwardApproval = () => {
                 changeRequestType={agreement?.change_request_type}
             />
 
-            {/* Budget Lines (Executing Status) */}
-            <AgreementBLIAccordion
-                title="Review Budget Lines"
-                instructions="Please review the Services Components and Budget Lines below to ensure everything is up to date."
+            {/* Budget Lines and Executing Total */}
+            <PreAwardBudgetLinesReviewAccordion
                 budgetLineItems={executingBudgetLines}
                 agreement={agreement}
-                afterApproval={false}
-                setAfterApproval={() => {}}
-                action=""
-            >
-                {groupedBudgetLinesByServicesComponent &&
-                    groupedBudgetLinesByServicesComponent.length > 0 &&
-                    groupedBudgetLinesByServicesComponent.map(
-                        (/** @type {any} */ group, /** @type {number} */ index) => {
-                            const budgetLineScGroupingLabel = group.serviceComponentGroupingLabel
-                                ? group.serviceComponentGroupingLabel
-                                : group.servicesComponentNumber;
-                            return (
-                                <ServicesComponentAccordion
-                                    key={`${group.servicesComponentNumber}-${index}`}
-                                    servicesComponentNumber={group.servicesComponentNumber}
-                                    serviceComponentGroupingLabel={group.serviceComponentGroupingLabel}
-                                    withMetadata={true}
-                                    periodStart={findPeriodStart(servicesComponents, budgetLineScGroupingLabel)}
-                                    periodEnd={findPeriodEnd(servicesComponents, budgetLineScGroupingLabel)}
-                                    description={findDescription(servicesComponents, budgetLineScGroupingLabel)}
-                                    optional={findIfOptional(servicesComponents, budgetLineScGroupingLabel)}
-                                    serviceRequirementType={agreement?.service_requirement_type}
-                                >
-                                    {group.budgetLines.length > 0 ? (
-                                        <AgreementBLIReviewTable
-                                            readOnly={true}
-                                            budgetLines={group.budgetLines}
-                                            isReviewMode={true}
-                                            servicesComponentNumber={group.servicesComponentNumber}
-                                            action=""
-                                        />
-                                    ) : (
-                                        <p className="text-center margin-y-7">
-                                            No budget lines in this services component.
-                                        </p>
-                                    )}
-                                </ServicesComponentAccordion>
-                            );
-                        }
-                    )}
-            </AgreementBLIAccordion>
-
-            {/* Review Executing Total */}
-            <ReviewExecutingTotalAccordion executingTotal={executingTotal} />
+                servicesComponents={servicesComponents}
+                groupedBudgetLines={groupedBudgetLinesByServicesComponent}
+                executingTotal={executingTotal}
+            />
 
             {/* CAN Impact */}
             <AgreementCANReviewAccordion
