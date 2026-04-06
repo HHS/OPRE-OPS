@@ -5,6 +5,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from models import (
+    AgreementClassification,
     AgreementType,
     BudgetLineItemStatus,
     ContractAgreement,
@@ -337,7 +338,7 @@ class TestAccumulateAgreementSpendingNoCan:
         """Only BLIs with a CAN should contribute to totals."""
         agreement = MagicMock()
         agreement.agreement_type = AgreementType.CONTRACT
-        agreement.is_awarded = False
+        agreement.award_type = AgreementClassification.NEW.name
 
         bli_no_can = MagicMock()
         bli_no_can.fiscal_year = 2025
@@ -359,5 +360,5 @@ class TestAccumulateAgreementSpendingNoCan:
         totals = self._make_totals()
         _accumulate_agreement_spending(agreement, 2025, totals)
 
-        assert totals["CONTRACT"]["new"] == Decimal(0)
-        assert totals["CONTRACT"]["continuing"] == Decimal("8000")
+        assert totals["CONTRACT"]["new"] == Decimal("8000")
+        assert totals["CONTRACT"]["continuing"] == Decimal(0)

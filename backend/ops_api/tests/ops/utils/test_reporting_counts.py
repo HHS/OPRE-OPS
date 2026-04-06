@@ -1,16 +1,23 @@
 from datetime import date
 from decimal import Decimal
+from unittest.mock import patch
 
 import pytest
 
 from models import (
+    CAN,
     AgreementType,
     BudgetLineItemStatus,
+    CANFundingBudget,
+    CANFundingDetails,
     ContractAgreement,
     ContractBudgetLineItem,
     GrantAgreement,
     GrantBudgetLineItem,
+    Portfolio,
+    ResearchProject,
 )
+from models.utils.fiscal_year import get_current_fiscal_year
 from ops_api.ops.utils.reporting_summary import get_reporting_counts
 
 
@@ -202,3 +209,132 @@ def test_get_reporting_counts_empty_fy(app, loaded_db, app_ctx):
     assert result["new_agreements"]["total"] == 0
     assert result["continuing_agreements"]["total"] == 0
     assert result["budget_lines"]["total"] == 0
+
+
+@pytest.fixture()
+def db_with_2024_data(app, loaded_db, app_ctx):
+    """Fixture with FY 2024 data for testing with mocked get_current_fiscal_year."""
+
+    portfolio = Portfolio(name="FY2024 TEST PORTFOLIO", division_id=1)
+    can = CAN(number="FY2024_TEST_CAN")
+    portfolio.cans.append(can)
+    loaded_db.add(portfolio)
+    loaded_db.commit()
+
+    can_funding_details = CANFundingDetails(fiscal_year=2024, fund_code="FY2024TEST")
+    can.funding_details = can_funding_details
+    loaded_db.add(can_funding_details)
+    loaded_db.commit()
+
+    can_funding_budget = CANFundingBudget(can_id=can.id, fiscal_year=2024, budget=Decimal(30000000))
+    loaded_db.add(can_funding_budget)
+    loaded_db.commit()
+
+    # Research project
+    project = ResearchProject(title="FY2024 Test Project", short_title="FY24TP", description="Test project for FY 2024")
+    loaded_db.add(project)
+    loaded_db.commit()
+
+    # Contract agreement with PLANNED BLI in FY 2024
+    contract = ContractAgreement(name="FY2024 Contract", agreement_type=AgreementType.CONTRACT, project_id=project.id)
+    loaded_db.add(contract)
+    loaded_db.commit()
+
+    bli_planned = ContractBudgetLineItem(
+        line_description="FY2024 Planned BLI",
+        amount=Decimal("8000000"),
+        status=BudgetLineItemStatus.PLANNED,
+        can_id=can.id,
+        date_needed=date(2024, 3, 15),
+        agreement_id=contract.id,
+    )
+    loaded_db.add(bli_planned)
+    loaded_db.commit()
+
+    # Grant agreement with OBLIGATED BLI in FY 2024
+    grant = GrantAgreement(name="FY2024 Grant", agreement_type=AgreementType.GRANT, project_id=project.id)
+    loaded_db.add(grant)
+    loaded_db.commit()
+
+    bli_obligated = GrantBudgetLineItem(
+        line_description="FY2024 Obligated BLI",
+        amount=Decimal("3000000"),
+        status=BudgetLineItemStatus.OBLIGATED,
+        can_id=can.id,
+        date_needed=date(2024, 8, 1),
+        agreement_id=grant.id,
+    )
+    loaded_db.add(bli_obligated)
+    loaded_db.commit()
+
+    # Contract with IN_EXECUTION BLI in FY 2024
+    contract_exec = ContractAgreement(
+        name="FY2024 Executing Contract", agreement_type=AgreementType.CONTRACT, project_id=project.id
+    )
+    loaded_db.add(contract_exec)
+    loaded_db.commit()
+
+    bli_in_execution = ContractBudgetLineItem(
+        line_description="FY2024 In Execution BLI",
+        amount=Decimal("2000000"),
+        status=BudgetLineItemStatus.IN_EXECUTION,
+        can_id=can.id,
+        date_needed=date(2024, 5, 1),
+        agreement_id=contract_exec.id,
+    )
+    loaded_db.add(bli_in_execution)
+    loaded_db.commit()
+
+    yield loaded_db
+
+    loaded_db.rollback()
+    for obj in [
+        bli_in_execution,
+        contract_exec,
+        bli_obligated,
+        grant,
+        bli_planned,
+        contract,
+        project,
+        can_funding_budget,
+        can_funding_details,
+        can,
+        portfolio,
+    ]:
+        loaded_db.delete(obj)
+    loaded_db.commit()
+
+
+@patch("models.utils.fiscal_year.get_current_fiscal_year", return_value=2024)
+def test_get_reporting_counts_with_mocked_fy_2024(mock_fy, app, db_with_2024_data, app_ctx):
+    """Test get_reporting_counts with mocked get_current_fiscal_year returning 2024."""
+    # Verify the mock is working
+    assert get_current_fiscal_year() == 2024
+
+    # Get reporting counts for FY 2024
+    result = get_reporting_counts(app.db_session, 2024)
+
+    # Verify structure
+    assert "projects" in result
+    assert "agreements" in result
+    assert "new_agreements" in result
+    assert "continuing_agreements" in result
+    assert "budget_lines" in result
+
+    # Verify project counts - we created 1 research project
+    assert result["projects"]["total"] >= 1
+    project_types = {t["type"]: t["count"] for t in result["projects"]["types"]}
+    assert project_types.get("RESEARCH", 0) >= 1
+
+    # Verify agreement counts - we created 2 contracts and 1 grant with non-DRAFT BLIs
+    assert result["agreements"]["total"] >= 3
+    agreement_types = {t["type"]: t["count"] for t in result["agreements"]["types"]}
+    assert agreement_types.get("CONTRACT", 0) >= 2  # 2 contracts
+    assert agreement_types.get("GRANT", 0) >= 1  # 1 grant
+
+    # Verify budget line counts - we created 3 BLIs: PLANNED, OBLIGATED, IN_EXECUTION
+    assert result["budget_lines"]["total"] >= 3
+    bli_types = {t["type"]: t["count"] for t in result["budget_lines"]["types"]}
+    assert bli_types.get("PLANNED", 0) >= 1
+    assert bli_types.get("OBLIGATED", 0) >= 1
+    assert bli_types.get("IN_EXECUTION", 0) >= 1

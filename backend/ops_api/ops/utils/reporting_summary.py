@@ -38,7 +38,7 @@ def _accumulate_agreement_spending(agreement, fiscal_year, totals, portfolio_ids
     if bucket_type is None:
         return
 
-    classification = agreement.award_type  # Use award_type property which has same logic but is cached for efficiency
+    classification = agreement.award_type  # Use award_type property for consistency with Agreements list
     if classification is None:
         return
 
