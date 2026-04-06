@@ -73,6 +73,22 @@ describe("ProjectDetailsView", () => {
         expect(screen.getByText("Jane Smith")).toBeInTheDocument();
     });
 
+    it("formats all-caps division directors, team leaders, and team members", () => {
+        renderComponent({
+            ...baseProject,
+            division_directors: ["DAVE DIRECTOR", "DIRECTOR DERREK"],
+            team_leaders: [{ id: 500, full_name: "CHRIS FORTUNATO", email: "chris@example.com" }],
+            team_members: [{ id: 503, full_name: "SYSTEM OWNER", email: "owner@example.com" }]
+        });
+
+        expect(screen.getByText("Dave Director")).toBeInTheDocument();
+        expect(screen.getByText("Director Derrek")).toBeInTheDocument();
+        expect(screen.getByText("Chris Fortunato")).toBeInTheDocument();
+        expect(screen.getByText("System Owner")).toBeInTheDocument();
+        expect(screen.queryByText("DAVE DIRECTOR")).not.toBeInTheDocument();
+        expect(screen.queryByText("CHRIS FORTUNATO")).not.toBeInTheDocument();
+    });
+
     it("renders project dates using the shared formatter", () => {
         renderComponent(baseProject);
         expect(screen.getByText("6/13/2043")).toBeInTheDocument();

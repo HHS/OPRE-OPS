@@ -65,11 +65,9 @@ def db_with_active_user_session(loaded_db, test_user):
     loaded_db.commit()
 
 
-@pytest.mark.skip(
-    reason="""
+@pytest.mark.skip(reason="""
 This test should only be run manually as it is dependent on timing and the JWT token expiration.
-"""
-)
+""")
 def test_refresh_token(app, client, loaded_db, mocker):
     app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(seconds=30)
     app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(minutes=10)

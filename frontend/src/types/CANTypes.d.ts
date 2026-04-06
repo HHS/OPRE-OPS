@@ -98,24 +98,48 @@ export type FundingReceived = {
     updated_on?: string;
 };
 
-export type FundingSummary = {
-    available_funding: number;
-    cans: FundingSummaryCAN[];
-    carry_forward_funding: number;
-    expected_funding: number;
-    in_draft_funding: number;
-    in_execution_funding: number;
-    new_funding: number;
-    obligated_funding: number;
-    planned_funding: number;
-    received_funding: number;
+export type CANFundingAmounts = {
     total_funding: number;
+    available_funding: number;
+    carry_forward_funding: number;
+    new_funding: number;
+    expected_funding: number;
+    received_funding: number;
+    planned_funding: number;
+    obligated_funding: number;
+    in_execution_funding: number;
+    in_draft_funding: number;
 };
 
-export type FundingSummaryCAN = {
-    can: BasicCAN;
-    carry_forward_label: string;
-    expiration_date: string;
+export type CANFundingCANDetail = {
+    id: number;
+    number: string;
+    display_name: string | null;
+    nick_name: string | null;
+    portfolio_id: number;
+    portfolio: string | null;
+    active_period: number | null;
+    appropriation_date: number | null;
+    carry_forward_label: string | null;
+    expiration_date: string | null;
+};
+
+export type CANFundingByFiscalYear = {
+    fiscal_year: number;
+    amount: number;
+};
+
+export type CANFundingResponse = {
+    fiscal_year: number;
+    funding: CANFundingAmounts;
+    funding_by_fiscal_year: CANFundingByFiscalYear[];
+    can: CANFundingCANDetail;
+};
+
+export type CANsFundingAggregateResponse = {
+    fiscal_year: number | null;
+    funding: CANFundingAmounts;
+    cans: CANFundingCANDetail[];
 };
 
 export type CanHistoryItem = {

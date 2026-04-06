@@ -192,7 +192,7 @@ export const codesToDisplayText = {
         TIME_AND_MATERIALS: "Time & Materials (T&M)",
         COST_PLUS_FIXED_FEE: "Cost Plus Fixed Fee (CPFF)",
         COST_PLUS_AWARD_FEE: "Cost Plus Award Fee (CPAF)",
-        HYBRID: "Hybrid (Any combination of the above)"
+        HYBRID: "Hybrid"
     },
     serviceRequirementType: {
         SEVERABLE: "Severable",

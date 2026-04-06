@@ -3,7 +3,13 @@ import { getAccessToken } from "../components/Auth/auth";
 import { postRefresh } from "./postRefresh.js";
 import { logout } from "../components/Auth/authSlice.js";
 import store from "../store";
-import { normalizeUser } from "../helpers/users.helpers";
+import {
+    normalizeAgreementUsers,
+    normalizeCanUsers,
+    normalizePortfolioUsers,
+    normalizeProjectUsers,
+    normalizeUser
+} from "../helpers/users.helpers";
 
 const BACKEND_DOMAIN =
     (typeof window !== "undefined" && window.__RUNTIME_CONFIG__?.REACT_APP_BACKEND_DOMAIN) ||
@@ -185,6 +191,7 @@ export const opsApi = createApi({
                 }
                 return `/agreements/${arg}`;
             },
+            transformResponse: (response) => normalizeAgreementUsers(response),
             providesTags: ["Agreements"]
         }),
         addAgreement: builder.mutation({
@@ -478,6 +485,7 @@ export const opsApi = createApi({
         }),
         getProjectById: builder.query({
             query: (id) => `/projects/${id}`,
+            transformResponse: (response) => normalizeProjectUsers(response),
             providesTags: ["ResearchProjects"]
         }),
         getProjectsByPortfolio: builder.query({
@@ -497,11 +505,14 @@ export const opsApi = createApi({
             },
             transformResponse: (response) => {
                 // New wrapped format with data key
+                if (Array.isArray(response.data)) {
+                    return response.data.map(normalizeProjectUsers);
+                }
                 if (response.data) {
                     return response.data;
                 }
                 // Legacy array format (no wrapper) - for backward compatibility during transition
-                return response;
+                return Array.isArray(response) ? response.map(normalizeProjectUsers) : response;
             },
             providesTags: ["ResearchProjects"]
         }),
@@ -681,6 +692,7 @@ export const opsApi = createApi({
         }),
         getCanById: builder.query({
             query: (id) => `/cans/${id}`,
+            transformResponse: (response) => normalizeCanUsers(response),
             providesTags: ["Cans"]
         }),
         updateCan: builder.mutation({
@@ -735,13 +747,16 @@ export const opsApi = createApi({
             }),
             invalidatesTags: ["Cans", "CanFunding"]
         }),
-        getCanFundingSummary: builder.query({
-            query: ({ ids, fiscalYear, activePeriod, transfer, portfolio, fyBudgets }) => {
+        getCanFunding: builder.query({
+            query: ({ id, fiscalYear }) => {
+                const params = fiscalYear ? `?fiscal_year=${fiscalYear}` : "";
+                return `/cans/${id}/funding/${params}`;
+            },
+            providesTags: (result, error, { id }) => [{ type: "CanFunding", id }, "CanFunding"]
+        }),
+        getCansFunding: builder.query({
+            query: ({ fiscalYear, activePeriod, transfer, portfolio, fyBudgets } = {}) => {
                 const queryParams = [];
-
-                if (ids && ids.length > 0) {
-                    ids.forEach((id) => queryParams.push(`can_ids=${id}`));
-                }
 
                 if (fiscalYear) {
                     queryParams.push(`fiscal_year=${fiscalYear}`);
@@ -765,7 +780,7 @@ export const opsApi = createApi({
                 }
 
                 const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
-                return `/can-funding-summary/${queryString}`;
+                return `/cans/funding/${queryString}`;
             },
             providesTags: ["Cans", "CanFunding"]
         }),
@@ -822,11 +837,17 @@ export const opsApi = createApi({
             invalidatesTags: ["Notifications"]
         }),
         getPortfolios: builder.query({
-            query: () => `/portfolios/`,
+            query: (arg) => {
+                if (arg?.projectId != null) {
+                    return `/portfolios/?project_id=${arg.projectId}`;
+                }
+                return `/portfolios/`;
+            },
             providesTags: ["Portfolios"]
         }),
         getPortfolioById: builder.query({
             query: (id) => `/portfolios/${id}`,
+            transformResponse: (response) => normalizePortfolioUsers(response),
             providesTags: ["Portfolios"]
         }),
         getPortfolioCansById: builder.query({
@@ -1101,7 +1122,8 @@ export const {
     useAddCanFundingReceivedMutation,
     useUpdateCanFundingReceivedMutation,
     useDeleteCanFundingReceivedMutation,
-    useGetCanFundingSummaryQuery,
+    useGetCanFundingQuery,
+    useGetCansFundingQuery,
     useGetCanHistoryQuery,
     useGetNotificationsByUserIdQuery,
     useGetNotificationsByUserIdAndAgreementIdQuery,

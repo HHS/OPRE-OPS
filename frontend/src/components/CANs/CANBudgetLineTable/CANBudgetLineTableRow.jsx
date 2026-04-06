@@ -68,7 +68,7 @@ const CANBudgetLineTableRow = ({
             <td>
                 {budgetLine.agreement ? (
                     <Link
-                        className="text-ink"
+                        className="text-ink text-no-underline"
                         to={`/agreements/${budgetLine.agreement.id}`}
                         aria-label={resolvedAgreementName}
                     >

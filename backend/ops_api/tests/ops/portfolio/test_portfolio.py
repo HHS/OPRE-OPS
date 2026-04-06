@@ -27,3 +27,24 @@ def test_portfolio_get_by_id(auth_client, loaded_db, app_ctx):
 def test_portfolio_get_by_id_404(auth_client, loaded_db, app_ctx):
     response = auth_client.get("/api/v1/portfolios/10000000")
     assert response.status_code == 404
+
+
+def test_portfolio_get_by_project_id(auth_client, loaded_db, app_ctx):
+    all_response = auth_client.get("/api/v1/portfolios/")
+    assert all_response.status_code == 200
+    all_ids = {p["id"] for p in all_response.json}
+
+    response = auth_client.get("/api/v1/portfolios/?project_id=1000")
+    assert response.status_code == 200
+    assert len(response.json) > 0
+    portfolio_ids = {p["id"] for p in response.json}
+    # Verify filtering is applied: result is a proper subset of all portfolios
+    assert portfolio_ids < all_ids
+    # Verify known seed-data links are present
+    assert {2, 3, 6, 8, 9}.issubset(portfolio_ids)
+
+
+def test_portfolio_get_by_project_id_no_results(auth_client, loaded_db, app_ctx):
+    response = auth_client.get("/api/v1/portfolios/?project_id=999999")
+    assert response.status_code == 200
+    assert len(response.json) == 0

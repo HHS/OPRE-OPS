@@ -836,6 +836,30 @@ describe("opsAPI - Wave 2 high-yield endpoint coverage", () => {
         expect(capturedUrl).toContain("/agreements/999");
     });
 
+    it("does not try to map wrapped non-array project responses", async () => {
+        server.use(
+            http.get("*/api/v1/projects/", () => {
+                return HttpResponse.json({
+                    data: {
+                        projects: [{ id: 1, title: "Wrapped Project" }]
+                    }
+                });
+            })
+        );
+
+        const storeRef = setupApiStore(opsApi);
+        const result = await storeRef.store.dispatch(
+            opsApi.endpoints.getProjectsByPortfolio.initiate({
+                fiscal_year: 2026,
+                portfolio_id: 1
+            })
+        );
+
+        expect(result.data).toEqual({
+            projects: [{ id: 1, title: "Wrapped Project" }]
+        });
+    });
+
     it("builds getAgreementsFilterOptions with only_my", async () => {
         let capturedUrl = "";
         server.use(
@@ -959,5 +983,36 @@ describe("opsAPI - Wave 2 high-yield endpoint coverage", () => {
             name: "New Agreement",
             agreement_type: "CONTRACT"
         });
+    });
+
+    it("builds getPortfolios query without project_id when no arg provided", async () => {
+        let capturedUrl = "";
+        server.use(
+            http.get("*/api/v1/portfolios/", ({ request }) => {
+                capturedUrl = request.url;
+                return HttpResponse.json([]);
+            })
+        );
+
+        const storeRef = setupApiStore(opsApi);
+        await storeRef.store.dispatch(opsApi.endpoints.getPortfolios.initiate({}));
+
+        expect(capturedUrl).toContain("/api/v1/portfolios/");
+        expect(capturedUrl).not.toContain("project_id=");
+    });
+
+    it("builds getPortfolios query with project_id when projectId provided", async () => {
+        let capturedUrl = "";
+        server.use(
+            http.get("*/api/v1/portfolios/", ({ request }) => {
+                capturedUrl = request.url;
+                return HttpResponse.json([]);
+            })
+        );
+
+        const storeRef = setupApiStore(opsApi);
+        await storeRef.store.dispatch(opsApi.endpoints.getPortfolios.initiate({ projectId: 42 }));
+
+        expect(capturedUrl).toContain("project_id=42");
     });
 });

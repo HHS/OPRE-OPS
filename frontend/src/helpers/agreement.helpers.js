@@ -5,6 +5,15 @@ import { AgreementFields, AgreementType } from "../pages/agreements/agreements.c
 import { BLI_STATUS } from "./budgetLines.helpers";
 import { convertCodeForDisplay } from "./utils";
 
+export const PARTNER_AGREEMENT_TYPES = [AGREEMENT_TYPES.AA, AGREEMENT_TYPES.IAA];
+export const AGREEMENT_TYPE_ORDER = [
+    AgreementType.CONTRACT,
+    AgreementType.GRANT,
+    AGREEMENT_TYPES.PARTNER,
+    AgreementType.DIRECT_OBLIGATION,
+    AgreementType.MISCELLANEOUS
+];
+
 /**
  * Validates if the given budget line is an object.
  * @param {Object} agreement - The agreement object.
@@ -171,6 +180,35 @@ export const getAgreementType = (agreementType, showAllPartners = true) => {
     }
 
     return agreementTypeLabel;
+};
+
+/**
+ * Merges AA and IAA into a single Partner bucket and sorts agreement types for display.
+ * @param {Array<{type: string, count: number}>} items
+ * @returns {Array<{type: string, count: number}>}
+ */
+export const groupAndSortAgreementTypeCounts = (items) => {
+    if (!items || items.length === 0) {
+        return [];
+    }
+
+    const merged = {};
+
+    for (const { type, count } of items) {
+        const key = PARTNER_AGREEMENT_TYPES.includes(type) ? AGREEMENT_TYPES.PARTNER : type;
+        merged[key] = (merged[key] || 0) + count;
+    }
+
+    return Object.entries(merged)
+        .map(([type, count]) => ({ type, count }))
+        .sort((a, b) => {
+            const aIndex = AGREEMENT_TYPE_ORDER.indexOf(a.type);
+            const bIndex = AGREEMENT_TYPE_ORDER.indexOf(b.type);
+
+            return (
+                (aIndex === -1 ? Number.MAX_SAFE_INTEGER : aIndex) - (bIndex === -1 ? Number.MAX_SAFE_INTEGER : bIndex)
+            );
+        });
 };
 
 /**

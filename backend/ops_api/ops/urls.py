@@ -11,13 +11,14 @@ from ops_api.ops.views import (
     BUDGET_LINE_ITEMS_ITEM_API_VIEW_FUNC,
     BUDGET_LINE_ITEMS_LIST_API_VIEW_FUNC,
     BUDGET_LINE_ITEMS_LIST_FILTER_OPTION_API_VIEW_FUNC,
+    CAN_FUNDING_AGGREGATE_API_VIEW_FUNC,
+    CAN_FUNDING_API_VIEW_FUNC,
     CAN_FUNDING_BUDGET_ITEM_API_VIEW_FUNC,
     CAN_FUNDING_BUDGET_LIST_API_VIEW_FUNC,
     CAN_FUNDING_DETAILS_ITEM_API_VIEW_FUNC,
     CAN_FUNDING_DETAILS_LIST_API_VIEW_FUNC,
     CAN_FUNDING_RECEIVED_ITEM_API_VIEW_FUNC,
     CAN_FUNDING_RECEIVED_LIST_API_VIEW_FUNC,
-    CAN_FUNDING_SUMMARY_LIST_API_VIEW_FUNC,
     CAN_HISTORY_LIST_API_VIEW_FUNC,
     CAN_ITEM_API_VIEW_FUNC,
     CAN_LIST_API_VIEW_FUNC,
@@ -103,6 +104,14 @@ def register_api(api_bp: Blueprint) -> None:
         view_func=PORTFOLIO_URL_LIST_API_VIEW_FUNC,
     )
 
+    api_bp.add_url_rule(
+        "/cans/funding/",
+        view_func=CAN_FUNDING_AGGREGATE_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/cans/<int:id>/funding/",
+        view_func=CAN_FUNDING_API_VIEW_FUNC,
+    )
     api_bp.add_url_rule(
         "/cans/<int:id>",
         view_func=CAN_ITEM_API_VIEW_FUNC,
@@ -198,11 +207,6 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/users/",
         view_func=USERS_LIST_API_VIEW_FUNC,
-    )
-
-    api_bp.add_url_rule(
-        "/can-funding-summary/",
-        view_func=CAN_FUNDING_SUMMARY_LIST_API_VIEW_FUNC,
     )
 
     api_bp.add_url_rule("/cans/<int:id>/history/", view_func=CAN_HISTORY_LIST_API_VIEW_FUNC)
