@@ -77,7 +77,10 @@ const ProcurementTrackerStepFive = ({
     const isUsersComboBoxDisabled = isDisabled || !isPreAwardComplete || authorizedUsers.length === 0;
     const isPreAwardFieldsDisabled = isDisabled || !isPreAwardComplete;
     const hasBLIInReview = budgetLineItems?.some((bli) => bli.in_review) ?? false;
-    const isRequestBtnDisabled = isDisabled || !isActiveStep || !!stepFiveData?.approval_requested || hasBLIInReview;
+    // Allow re-requesting when approval is declined, even if approval_requested was previously true
+    const isApprovalDeclined = stepFiveData?.approval_status === "DECLINED";
+    const isRequestBtnDisabled =
+        isDisabled || !isActiveStep || (!!stepFiveData?.approval_requested && !isApprovalDeclined) || hasBLIInReview;
     const isStep5SubmitDisabled = Boolean(
         isDisabled ||
         !isPreAwardComplete ||

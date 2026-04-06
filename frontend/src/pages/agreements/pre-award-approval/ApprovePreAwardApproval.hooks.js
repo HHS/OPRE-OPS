@@ -157,12 +157,22 @@ export default function useApprovePreAwardApproval(agreementId) {
                 setSubmitError("");
 
                 try {
+                    // When declining, reset approval_requested to allow re-requesting
+                    const updateData =
+                        action === "DECLINED"
+                            ? {
+                                  approval_status: action,
+                                  reviewer_notes: reviewerNotes.trim() || null,
+                                  approval_requested: false
+                              }
+                            : {
+                                  approval_status: action,
+                                  reviewer_notes: reviewerNotes.trim() || null
+                              };
+
                     await updateProcurementTrackerStep({
                         stepId: step5.id,
-                        data: {
-                            approval_status: action,
-                            reviewer_notes: reviewerNotes.trim() || null
-                        }
+                        data: updateData
                     }).unwrap();
 
                     // Show alert and navigate back to For Review tab

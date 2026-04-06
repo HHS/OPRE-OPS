@@ -296,6 +296,25 @@ describe("ProcurementTrackerStepFive", () => {
             expect(requestButton).toBeDisabled();
         });
 
+        it("renders Request Pre-Award Approval button as enabled when approval is declined", () => {
+            render(
+                <ProcurementTrackerStepFive
+                    stepStatus="PENDING"
+                    stepFiveData={{ ...mockStepData, approval_requested: false, approval_status: "DECLINED" }}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    isActiveStep={true}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
+                    budgetLineItems={[]}
+                />
+            );
+
+            const requestButton = screen.getByText("Request Pre-Award Approval");
+            expect(requestButton).toBeInTheDocument();
+            expect(requestButton).not.toBeDisabled();
+        });
+
         it("Target Completion Date has correct props", () => {
             render(
                 <ProcurementTrackerStepFive

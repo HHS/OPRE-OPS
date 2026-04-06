@@ -151,7 +151,7 @@ const procurementTrackers = [
 ];
 
 const procurementTrackerSteps = [
-    // Tracker 1 - Agreement 9
+    // Tracker 1 - Agreement 9 - Example of declined approval (can re-request)
     {
         id: 101,
         procurement_tracker_id: 1,
@@ -162,8 +162,13 @@ const procurementTrackerSteps = [
         status: "ACTIVE",
         step_start_date: "2024-01-20",
         step_completed_date: null,
+        approval_requested: false, // Reset after decline
+        approval_status: "DECLINED", // Status after decline
+        approval_requested_date: "2024-01-22T10:00:00.000Z",
+        requestor_notes: "Please review the updated budget lines",
+        reviewer_notes: "Budget allocation needs adjustment before approval",
         created_on: "2024-01-15T10:00:00.000Z",
-        updated_on: "2024-01-20T14:30:00.000Z"
+        updated_on: "2024-01-23T14:30:00.000Z"
     },
     {
         id: 102,
@@ -466,4 +471,21 @@ export const userHandlers = [
     })
 ];
 
-export const handlers = [...authHandlers, ...procurementHandlers, ...userHandlers];
+export const documentHandlers = [
+    http.get(`${BACKEND_DOMAIN}/api/v1/agreements/:id/documents`, () => {
+        return HttpResponse.json({
+            documents: [
+                {
+                    id: 1,
+                    document_name: "Final_Consensus_Memo_2026.pdf",
+                    document_type: "PRE_AWARD_CONSENSUS_MEMO",
+                    document_size: "2.5",
+                    uploaded_by: 18,
+                    uploaded_date: "2026-04-01T10:30:00Z"
+                }
+            ]
+        });
+    })
+];
+
+export const handlers = [...authHandlers, ...procurementHandlers, ...userHandlers, ...documentHandlers];

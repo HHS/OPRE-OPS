@@ -284,4 +284,31 @@ describe("RequestPreAwardApproval", () => {
             screen.getByText(/You must complete Step 4 \(Evaluation\) in the Procurement Tracker/)
         ).toBeInTheDocument();
     });
+
+    it("enables submit button when approval is declined", () => {
+        requestPreAwardApprovalHookMock.mockReturnValue({
+            ...baseHookResult(),
+            hasApprovalBeenRequested: false, // Should be false when declined
+            hasBLIInReview: false,
+            isSubmitting: false,
+            isStep4Completed: true
+        });
+
+        render(<RequestPreAwardApproval />);
+
+        const submitButton = screen.getByRole("button", { name: "Request Pre-Award Approval" });
+        expect(submitButton).not.toBeDisabled();
+    });
+
+    it("disables submit button when approval is approved", () => {
+        requestPreAwardApprovalHookMock.mockReturnValue({
+            ...baseHookResult(),
+            hasApprovalBeenRequested: true
+        });
+
+        render(<RequestPreAwardApproval />);
+
+        const submitButton = screen.getByRole("button", { name: "Request Pre-Award Approval" });
+        expect(submitButton).toBeDisabled();
+    });
 });
