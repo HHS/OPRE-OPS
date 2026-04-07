@@ -83,4 +83,16 @@ describe("SimpleAlert", () => {
             expect(screen.queryByRole("status", { name: "alert" })).not.toBeInTheDocument();
         });
     });
+    it("should preserve line breaks in multi-line messages", () => {
+        render(
+            <SimpleAlert
+                heading="Test Heading"
+                message="Line 1\n\nLine 2"
+                type="success"
+            />
+        );
+        const message = screen.getByText(/Line 1/);
+        expect(message).toBeInTheDocument();
+        expect(message).toHaveStyle({ whiteSpace: "pre-wrap" });
+    });
 });

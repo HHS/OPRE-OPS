@@ -168,7 +168,9 @@ const AgreementProcurementTracker = ({ agreement }) => {
                 <SimpleAlert
                     type="success"
                     heading="Pre-Award Approved"
-                    message="This agreement has been approved for Pre-Award. Please send the Final Consensus Memo to the Procurement Shop and continue your progress in the Procurement Tracker."
+                    message={`This agreement has been approved for Pre-Award. Please send the Final Consensus Memo to the Procurement Shop and continue your progress in the Procurement Tracker.${
+                        stepFiveData?.reviewer_notes ? `\n\nNotes: ${stepFiveData.reviewer_notes}` : ""
+                    }`}
                     isClosable={true}
                     setIsAlertVisible={setShowApprovedAlert}
                 />
@@ -189,7 +191,8 @@ const AgreementProcurementTracker = ({ agreement }) => {
                     type="warning"
                     heading="Pre-Award Approval In Review"
                     message="This agreement is In Review for Pre-Award Approval. Edits or changes cannot be made at this time."
-                    isClosable={false}
+                    isClosable={true}
+                    setIsAlertVisible={setShowInReviewAlert}
                 />
             )}
             {showSuccessAlert && (

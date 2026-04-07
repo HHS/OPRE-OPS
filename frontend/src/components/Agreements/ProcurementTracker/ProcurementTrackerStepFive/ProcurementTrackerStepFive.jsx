@@ -71,14 +71,16 @@ const ProcurementTrackerStepFive = ({
     } = useProcurementTrackerStepFive(stepFiveData, handleSetCompletedStepNumber);
 
     // Disabled flags for form controls
+    const isApprovalDeclined = stepFiveData?.approval_status === "DECLINED";
+    const isApprovalApproved = stepFiveData?.approval_status === "APPROVED";
     const isTargetCompletionDateSaveDisabled =
         isDisabled || validatorRes.hasErrors("targetCompletionDate") || !targetCompletionDate || !stepFiveData?.id;
-    const isPreAwardCheckboxDisabled = isDisabled || !isActiveStep;
+    const isPreAwardCheckboxDisabled = isDisabled || !isActiveStep || !isApprovalApproved;
     const isUsersComboBoxDisabled = isDisabled || !isPreAwardComplete || authorizedUsers.length === 0;
     const isPreAwardFieldsDisabled = isDisabled || !isPreAwardComplete;
     const hasBLIInReview = budgetLineItems?.some((bli) => bli.in_review) ?? false;
     // Allow re-requesting when approval is declined, even if approval_requested was previously true
-    const isApprovalDeclined = stepFiveData?.approval_status === "DECLINED";
+
     const isRequestBtnDisabled =
         isDisabled || !isActiveStep || (!!stepFiveData?.approval_requested && !isApprovalDeclined) || hasBLIInReview;
     const isStep5SubmitDisabled = Boolean(
