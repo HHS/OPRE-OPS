@@ -195,4 +195,24 @@ describe("AgreementDetailsView", () => {
         expect(screen.getByText("IS_AWARDED_TEST")).toBeInTheDocument();
         expect(screen.getByText("Contract #")).toBeInTheDocument();
     });
+
+    it("formats all-caps division directors and team leaders for display", () => {
+        render(
+            <AgreementDetailsView
+                agreement={{
+                    ...agreement,
+                    division_directors: ["DAVE DIRECTOR"],
+                    team_leaders: ["CHRIS FORTUNATO"]
+                }}
+                projectOfficer={mockProjectOfficer}
+                alternateProjectOfficer={null}
+                isAgreementAwarded={false}
+            />
+        );
+
+        expect(screen.getAllByText("Dave Director").length).toBeGreaterThan(0);
+        expect(screen.getAllByText("Chris Fortunato").length).toBeGreaterThan(0);
+        expect(screen.queryByText("DAVE DIRECTOR")).not.toBeInTheDocument();
+        expect(screen.queryByText("CHRIS FORTUNATO")).not.toBeInTheDocument();
+    });
 });

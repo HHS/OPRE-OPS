@@ -1,4 +1,5 @@
 import Tag from "../Tag";
+import { formatUserName } from "../../../helpers/users.helpers";
 
 const TeamLeaders = ({ teamLeaders }) => {
     if (teamLeaders) {
@@ -15,7 +16,7 @@ const TeamLeaders = ({ teamLeaders }) => {
                                 >
                                     <Tag
                                         tagStyle="primaryDarkTextLightBackground"
-                                        text={leader.display_name ?? leader.full_name}
+                                        text={formatUserName(leader.display_name ?? leader.full_name)}
                                     />
                                 </dd>
                             ))}

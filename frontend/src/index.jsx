@@ -25,7 +25,6 @@ import PortfolioFunding from "./components/Portfolios/PortfolioFunding";
 import PortfolioSpending from "./components/Portfolios/PortfolioSpending";
 import PortfolioList from "./pages/portfolios/list/PortfolioList";
 import ProjectsList from "./pages/projects/list/ProjectsList";
-import ResearchProjectDetail from "./pages/researchProjects/detail/ResearchProjectDetail";
 import ReleaseNotes from "./pages/home/release-notes";
 import ReportingPage from "./pages/reporting/ReportingPage";
 import UserAdmin from "./pages/users/admin/UserAdmin.jsx";
@@ -123,22 +122,6 @@ const router = createBrowserRouter(
                 </Route>
 
                 <Route
-                    path="/research-projects/:id/*"
-                    element={<ResearchProjectDetail />}
-                    handle={{
-                        crumb: () => (
-                            <div>
-                                <Link
-                                    to="/"
-                                    className="text-primary"
-                                >
-                                    Research Projects
-                                </Link>
-                            </div>
-                        )
-                    }}
-                />
-                <Route
                     path="/users/:id/*"
                     element={<UserDetail />}
                     handle={{
@@ -205,32 +188,28 @@ const router = createBrowserRouter(
                     path="/budget-lines"
                     element={<BudgetLineItemList />}
                 />
-                {IS_PROJECTS_LIST_READY && (
-                    <Route
-                        path="/projects"
-                        element={<ProjectsList />}
-                    />
-                )}
+                <Route
+                    path="/projects"
+                    element={<ProjectsList />}
+                />
                 <Route
                     path="/projects/create"
                     element={<CreateProject />}
                 />
-                {IS_PROJECT_DETAIL_READY && (
-                    <Route
-                        path="/projects/:id"
-                        element={<ProjectDetail />}
-                        handle={{
-                            crumb: () => (
-                                <Link
-                                    to="/projects"
-                                    className="text-primary"
-                                >
-                                    Projects
-                                </Link>
-                            )
-                        }}
-                    />
-                )}
+                <Route
+                    path="/projects/:id"
+                    element={<ProjectDetail />}
+                    handle={{
+                        crumb: () => (
+                            <Link
+                                to="/projects"
+                                className="text-primary"
+                            >
+                                Projects
+                            </Link>
+                        )
+                    }}
+                />
                 <Route
                     path="/agreements"
                     element={<AgreementsList />}

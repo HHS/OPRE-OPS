@@ -16,7 +16,10 @@ import Tag from "../Tag";
  * @returns {JSX.Element} - The filter tag component. (A pill with an 'x' to remove it)
  */
 const FilterTag = ({ tag, tagIndex, removeFilter }) => (
-    <Tag className="bg-brand-primary-light text-brand-primary-dark display-flex flex-align-center">
+    <Tag
+        className="bg-brand-primary-light text-brand-primary-dark flex-align-center"
+        display="flex"
+    >
         {tag.tagText}
         <button
             type="button"

@@ -144,6 +144,24 @@ describe("PortfolioTableRow", () => {
         expect(tbdElements.length).toBeGreaterThan(0);
     });
 
+    it("does not repeat the abbreviation when it only differs by case", () => {
+        const nonOprePortfolio = {
+            ...mockPortfolio,
+            name: "Non-OPRE",
+            abbreviation: "NON-OPRE"
+        };
+
+        renderWithRouter(
+            <PortfolioTableRow
+                portfolio={nonOprePortfolio}
+                fiscalYear={2025}
+            />
+        );
+
+        expect(screen.getByRole("link", { name: "Non-OPRE" })).toBeInTheDocument();
+        expect(screen.queryByRole("link", { name: "Non-OPRE (NON-OPRE)" })).not.toBeInTheDocument();
+    });
+
     it("handles missing name with TBD", () => {
         const portfolioWithoutName = {
             ...mockPortfolio,

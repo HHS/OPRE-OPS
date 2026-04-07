@@ -18,7 +18,8 @@ export const ProjectTitleComboBox = ({
     agreementFilterOptions,
     legendClassname = "usa-label margin-top-0",
     defaultString = "",
-    overrideStyles = { minWidth: "22.7rem" }
+    overrideStyles = { minWidth: "22.7rem" },
+    isLoading = false
 }) => {
     // Transform project_titles data to ComboBox format
     const projectOptions = useMemo(() => {
@@ -48,6 +49,7 @@ export const ProjectTitleComboBox = ({
                         defaultString={defaultString}
                         overrideStyles={overrideStyles}
                         isMulti={true}
+                        isLoading={isLoading}
                     />
                 </div>
             </div>

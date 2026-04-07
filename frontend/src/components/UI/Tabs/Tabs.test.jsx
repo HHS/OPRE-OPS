@@ -88,6 +88,17 @@ describe("Tabs", () => {
         expect(buttons).toHaveLength(mockPaths.length);
     });
 
+    it("renders right-side content when provided", () => {
+        render(
+            <Tabs
+                paths={mockPaths}
+                rightContent={<a href="/export">Export</a>}
+            />
+        );
+
+        expect(screen.getByRole("link", { name: "Export" })).toBeInTheDocument();
+    });
+
     // Test empty paths array
     it("renders no buttons when paths array is empty", () => {
         render(<Tabs paths={[]} />);

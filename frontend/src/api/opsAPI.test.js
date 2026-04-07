@@ -657,6 +657,33 @@ describe("opsAPI - Agreements Pagination", () => {
             expect(capturedUrl).toContain("offset=25");
         });
 
+        it("supports agreement name filters from prefetched option shape", async () => {
+            let capturedUrl = "";
+            server.use(
+                http.get("*/api/v1/agreements/", ({ request }) => {
+                    capturedUrl = request.url;
+                    return HttpResponse.json({ data: [], count: 0, limit: 10, offset: 0 });
+                })
+            );
+
+            const storeRef = setupApiStore(opsApi);
+            await storeRef.store.dispatch(
+                opsApi.endpoints.getAgreements.initiate({
+                    filters: {
+                        agreementName: [{ id: 10, name: "MIHOPE Check-In", title: "MIHOPE Check-In" }]
+                    },
+                    onlyMy: false,
+                    sortConditions: null,
+                    sortDescending: false,
+                    page: 0,
+                    limit: 10
+                })
+            );
+
+            expect(capturedUrl).toContain("name=MIHOPE%20Check-In");
+            expect(capturedUrl).not.toContain("name=undefined");
+        });
+
         it("omits optional params and trailing ? when all filters are empty", async () => {
             let capturedUrl = "";
             server.use(
@@ -844,6 +871,30 @@ describe("opsAPI - Wave 2 high-yield endpoint coverage", () => {
         await storeRef.store.dispatch(opsApi.endpoints.getAgreementById.initiate(999));
 
         expect(capturedUrl).toContain("/agreements/999");
+    });
+
+    it("does not try to map wrapped non-array project responses", async () => {
+        server.use(
+            http.get("*/api/v1/projects/", () => {
+                return HttpResponse.json({
+                    data: {
+                        projects: [{ id: 1, title: "Wrapped Project" }]
+                    }
+                });
+            })
+        );
+
+        const storeRef = setupApiStore(opsApi);
+        const result = await storeRef.store.dispatch(
+            opsApi.endpoints.getProjectsByPortfolio.initiate({
+                fiscal_year: 2026,
+                portfolio_id: 1
+            })
+        );
+
+        expect(result.data).toEqual({
+            projects: [{ id: 1, title: "Wrapped Project" }]
+        });
     });
 
     it("builds getAgreementsFilterOptions with only_my", async () => {

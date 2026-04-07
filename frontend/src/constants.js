@@ -48,13 +48,13 @@ export const NO_DATA = "TBD";
 //NOTE: import.meta.env.PROD ? 25 : 10 is not supported in all environments yet
 export const ITEMS_PER_PAGE = process.env.NODE_ENV === "production" ? 25 : 10;
 export const SUPPORT_URL = "https://opre-orbit.zendesk.com/";
+export const HELP_CENTER_EXPORT_URL =
+    "https://hhsgov.sharepoint.com/:f:/s/OPREPortfoliomanagementSystemOCIO/IgAh8IKPYZVUSbtEG09m-yqrASNaVBLF-INQxBpoSOVdwtI?e=Qi7bj3";
 export const DEFAULT_PORTFOLIO_BUDGET_RANGE = [0, 100_000_000];
 export const FILTER_MODAL_FULL_WIDTH = { width: "26.2rem" };
 // FEATURE FLAGS
 export const IS_AWARDED_TAB_READY = false;
 export const IS_DOCUMENTS_TAB_READY = false;
-export const IS_PROJECTS_LIST_READY = process.env.NODE_ENV !== "production";
-export const IS_PROJECT_DETAIL_READY = process.env.NODE_ENV !== "production";
 export const IS_PROCUREMENT_TRACKER_READY_MAP = {
     STEP_1: true,
     STEP_2: true,

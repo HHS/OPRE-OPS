@@ -59,28 +59,13 @@ const NavMenu = () => {
                     </NavLink>
                 </li>
                 <li className="usa-nav__primary-item">
-                    {IS_PROJECTS_LIST_READY ? (
-                        <NavLink
-                            to="/projects"
-                            className={getNavLinkClass}
-                            end
-                        >
-                            Projects
-                        </NavLink>
-                    ) : (
-                        <Tooltip
-                            className="text-base cursor-default"
-                            label="Coming soon!"
-                            position="bottom"
-                        >
-                            <span
-                                className="usa-nav__link text-bold text-base cursor-default"
-                                style={{ display: "flex", alignItems: "center", height: "100%" }}
-                            >
-                                Projects
-                            </span>
-                        </Tooltip>
-                    )}
+                    <NavLink
+                        to="/projects"
+                        className={getNavLinkClass}
+                        end
+                    >
+                        Projects
+                    </NavLink>
                 </li>
                 <li className="usa-nav__primary-item">
                     <NavLink

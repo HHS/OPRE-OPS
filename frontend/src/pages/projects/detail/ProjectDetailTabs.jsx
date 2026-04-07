@@ -1,10 +1,21 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import styles from "../../../components/Agreements/DetailsTabs/DetailsTabs.module.scss";
+import Tooltip from "../../../components/UI/USWDS/Tooltip";
 
 const TABS = [
     { name: "", label: "Project Details" },
-    { name: "/spending", label: "Project Spending", disabled: true },
-    { name: "/funding", label: "Project Funding", disabled: true }
+    {
+        name: "/spending",
+        label: "Project Spending",
+        disabled: true,
+        disabledTooltip: "Coming Soon"
+    },
+    {
+        name: "/funding",
+        label: "Project Funding",
+        disabled: true,
+        disabledTooltip: "Coming Soon"
+    }
 ];
 
 /**
@@ -29,8 +40,7 @@ const ProjectDetailTabs = ({ projectId }) => {
             {TABS.map((tab) => {
                 const pathName = `/projects/${projectId}${tab.name}`;
                 const isSelected = location.pathname === pathName;
-
-                return (
+                const button = (
                     <button
                         key={pathName}
                         className={`${isSelected ? selected : notSelected} ${tab.disabled ? styles.btnDisabled : ""}`}
@@ -41,6 +51,20 @@ const ProjectDetailTabs = ({ projectId }) => {
                         {tab.label}
                     </button>
                 );
+
+                if (tab.disabled && tab.disabledTooltip) {
+                    return (
+                        <Tooltip
+                            key={pathName}
+                            label={tab.disabledTooltip}
+                            position="top"
+                        >
+                            {button}
+                        </Tooltip>
+                    );
+                }
+
+                return button;
             })}
         </nav>
     );

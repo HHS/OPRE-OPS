@@ -1,6 +1,10 @@
+import { faPen } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Tag from "../../../components/UI/Tag/Tag";
 import { TagList } from "../../../components/UI/Tag";
+import Tooltip from "../../../components/UI/USWDS/Tooltip";
 import { NO_DATA } from "../../../constants";
+import { formatUserName } from "../../../helpers/users.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { formatProjectDate } from "../list/ProjectsList.helpers";
 
@@ -24,15 +28,60 @@ const ProjectDetailsView = ({ project }) => {
 
     const projectTypeLabel = convertCodeForDisplay("project", project.project_type);
 
-    const teamLeaderNames = project.team_leaders?.map((tl) => tl.display_name ?? tl.full_name) ?? [];
-    const methodologies = project.research_methodologies ?? [];
-    const specialTopics = project.special_topics ?? [];
-    const divisionDirectors = project.division_directors ?? [];
-    const teamMemberNames = project.team_members?.map((member) => member.display_name ?? member.full_name) ?? [];
+    const teamLeaderNames = project.team_leaders?.map((tl) => formatUserName(tl.display_name ?? tl.full_name)) ?? [];
+    const methodologies =
+        project.research_methodologies?.map((item) => (typeof item === "string" ? item : (item?.name ?? NO_DATA))) ??
+        [];
+    const specialTopics =
+        project.special_topics?.map((item) => (typeof item === "string" ? item : (item?.name ?? NO_DATA))) ?? [];
+    const divisionDirectors =
+        project.division_directors?.map((director) =>
+            formatUserName(
+                typeof director === "string"
+                    ? director
+                    : (director?.name ?? director?.display_name ?? director?.full_name ?? NO_DATA)
+            )
+        ) ?? [];
+    const projectOfficers =
+        project.project_officers?.map((officer) =>
+            formatUserName(officer.name ?? officer.display_name ?? officer.full_name)
+        ) ?? [];
+    const alternateProjectOfficers =
+        project.alternate_project_officers?.map((officer) =>
+            formatUserName(officer.name ?? officer.display_name ?? officer.full_name)
+        ) ?? [];
+    const teamMemberNames =
+        project.team_members?.map((member) => formatUserName(member.display_name ?? member.full_name)) ?? [];
 
     return (
         <section>
-            <h2 className="font-sans-lg margin-top-4 margin-bottom-0">Project Details</h2>
+            <div className="display-flex flex-justify flex-align-center margin-top-4">
+                <h2 className="font-sans-lg margin-0">Project Details</h2>
+                <Tooltip
+                    label="Coming Soon"
+                    position="top"
+                >
+                    <span className="display-inline-flex">
+                        <button
+                            type="button"
+                            aria-disabled={true}
+                            aria-label="Edit Project Details coming soon"
+                            data-cy="project-details-edit-button"
+                            className="usa-button usa-button--unstyled display-flex flex-align-center text-gray-50 cursor-not-allowed"
+                            onClick={(event) => {
+                                event.preventDefault();
+                            }}
+                        >
+                            <FontAwesomeIcon
+                                icon={faPen}
+                                size="lg"
+                                className="height-2 width-2"
+                            />
+                            <span>Edit</span>
+                        </button>
+                    </span>
+                </Tooltip>
+            </div>
             <div
                 className="grid-row margin-top-2"
                 style={{ columnGap: "82px" }}
@@ -82,13 +131,13 @@ const ProjectDetailsView = ({ project }) => {
                             >
                                 <div className="grid-col">
                                     <div className="text-base-dark">Project Start</div>
-                                    <div className="margin-top-05 wrap-text">
+                                    <div className="margin-top-1 wrap-text">
                                         <DateValue value={project.project_start} />
                                     </div>
                                 </div>
                                 <div className="grid-col">
                                     <div className="text-base-dark">Project End</div>
-                                    <div className="margin-top-05 wrap-text">
+                                    <div className="margin-top-1 wrap-text">
                                         <DateValue value={project.project_end} />
                                     </div>
                                 </div>
@@ -124,6 +173,22 @@ const ProjectDetailsView = ({ project }) => {
                             <TagList
                                 items={teamLeaderNames}
                                 dataCy="project-team-leaders-tag"
+                            />
+                        </dd>
+
+                        <dt className="margin-0 text-base-dark margin-top-3">COR</dt>
+                        <dd className="margin-0 margin-top-1">
+                            <TagList
+                                items={projectOfficers}
+                                dataCy="project-officers-tag"
+                            />
+                        </dd>
+
+                        <dt className="margin-0 text-base-dark margin-top-3">Alternate COR</dt>
+                        <dd className="margin-0 margin-top-1">
+                            <TagList
+                                items={alternateProjectOfficers}
+                                dataCy="alternate-project-officers-tag"
                             />
                         </dd>
 

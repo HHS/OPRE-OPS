@@ -195,7 +195,10 @@ const Agreement = () => {
                 />
             )}
             {isAgreementAwarded && agreement?.agreement_type !== AgreementType.DIRECT_OBLIGATION && (
-                <Tag className="bg-brand-secondary display-inline-flex margin-top-105 margin-bottom-1">
+                <Tag
+                    className="bg-brand-secondary margin-top-105 margin-bottom-1"
+                    display="inline-flex"
+                >
                     Awarded
                     <svg
                         className="usa-icon margin-left-05"

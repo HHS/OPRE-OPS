@@ -94,4 +94,69 @@ describe("PortfoliosComboBox", () => {
             { id: 2, name: "Portfolio2", title: "Portfolio2" }
         ]);
     });
+
+    it("uses prefetched portfolio options when provided", () => {
+        useGetPortfoliosQuery.mockReturnValue({ data: [{ id: 999, name: "Ignore Me" }], isSuccess: true });
+
+        const { container } = render(
+            <MemoryRouter>
+                <PortfoliosComboBox
+                    selectedPortfolios={[]}
+                    setSelectedPortfolios={mockSetSelectedPortfolios}
+                    portfolioOptions={samplePortfolios}
+                    usePrefetchedOptions={true}
+                />
+            </MemoryRouter>
+        );
+
+        expect(useGetPortfoliosQuery).toHaveBeenCalledWith({}, { skip: true });
+
+        // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
+        fireEvent.keyDown(container.querySelector("input"), { key: "ArrowDown", code: 40 });
+
+        expect(screen.getByText("Portfolio1")).toBeInTheDocument();
+        expect(screen.queryByText("Ignore Me")).not.toBeInTheDocument();
+    });
+
+    it("renders a loading skeleton when options are still loading", () => {
+        useGetPortfoliosQuery.mockReturnValue({ data: [], isSuccess: false, isLoading: false });
+
+        const { container } = render(
+            <MemoryRouter>
+                <PortfoliosComboBox
+                    selectedPortfolios={[]}
+                    setSelectedPortfolios={mockSetSelectedPortfolios}
+                    portfolioOptions={[]}
+                    usePrefetchedOptions={true}
+                    isLoading={true}
+                />
+            </MemoryRouter>
+        );
+
+        // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
+        fireEvent.keyDown(container.querySelector("input"), { key: "ArrowDown", code: 40 });
+
+        expect(screen.getByTestId("combobox-loading-skeleton")).toBeInTheDocument();
+    });
+
+    it("keeps fetching portfolios by default when an empty options array is passed", () => {
+        useGetPortfoliosQuery.mockReturnValue({ data: samplePortfolios, isSuccess: true, isLoading: false });
+
+        const { container } = render(
+            <MemoryRouter>
+                <PortfoliosComboBox
+                    selectedPortfolios={[]}
+                    setSelectedPortfolios={mockSetSelectedPortfolios}
+                    portfolioOptions={[]}
+                />
+            </MemoryRouter>
+        );
+
+        expect(useGetPortfoliosQuery).toHaveBeenCalledWith({}, { skip: false });
+
+        // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
+        fireEvent.keyDown(container.querySelector("input"), { key: "ArrowDown", code: 40 });
+
+        expect(screen.getByText("Portfolio1")).toBeInTheDocument();
+    });
 });
