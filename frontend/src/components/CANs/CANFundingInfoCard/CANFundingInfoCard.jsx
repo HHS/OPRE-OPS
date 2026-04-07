@@ -32,8 +32,8 @@ const CANFundingInfoCard = ({ funding }) => {
             >
                 CAN Funding Information
             </h3>
-            <div className="grid-row grid-gap">
-                <div className="grid-col">
+            <div className="grid-row grid-gap-sm">
+                <div className="grid-col-2">
                     <dl>
                         <TermTag
                             term="Appropriation FY"
