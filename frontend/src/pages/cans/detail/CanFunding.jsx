@@ -160,7 +160,7 @@ const CanFunding = ({
             </div>
             <p>
                 {!isEditMode
-                    ? "The summary below shows the funding for this CAN for the select fiscal year."
+                    ? "The summary below shows the funding for this CAN for the selected fiscal year."
                     : "Review the new FY Funding Information for this CAN."}
             </p>
             <CANFundingInfoCard funding={funding} />
