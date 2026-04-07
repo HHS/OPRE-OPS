@@ -115,7 +115,12 @@ export const opsApi = createApi({
                     portfolio.forEach((portfolio) => queryParams.push(`portfolio=${portfolio.id}`));
                 }
                 if (agreementName) {
-                    agreementName.forEach((name) => queryParams.push(`name=${encodeURIComponent(name.display_name)}`));
+                    agreementName.forEach((name) => {
+                        const agreementDisplayName = name.display_name ?? name.name ?? name.title;
+                        if (agreementDisplayName) {
+                            queryParams.push(`name=${encodeURIComponent(agreementDisplayName)}`);
+                        }
+                    });
                 }
                 if (agreementType) {
                     agreementType.forEach((type) =>

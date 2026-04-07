@@ -54,6 +54,10 @@ describe("ChangeRequestList", () => {
                 </BrowserRouter>
             </Provider>
         );
+        expect(useGetChangeRequestsListQuery).toHaveBeenCalledWith(
+            { userId: 500 },
+            { refetchOnMountOrArgChange: true, skip: false }
+        );
         expect(screen.getByText(/no changes/i)).toBeInTheDocument();
     });
     it("renders with change requests", async () => {
@@ -85,7 +89,39 @@ describe("ChangeRequestList", () => {
             </Provider>
         );
 
+        expect(useGetChangeRequestsListQuery).toHaveBeenCalledWith(
+            { userId: 500 },
+            { refetchOnMountOrArgChange: true, skip: false }
+        );
+
         const headings = await screen.findAllByText(/budget change/i);
         expect(headings).toHaveLength(3);
+    });
+
+    it("skips change request fetch when active user is not available", () => {
+        const emptyUserStore = mockStore({
+            auth: {
+                activeUser: null
+            },
+            alert: {
+                isActive: false
+            }
+        });
+
+        useGetChangeRequestsListQuery.mockReturnValue({ data: undefined, isLoading: false, isError: false });
+
+        render(
+            <Provider store={emptyUserStore}>
+                <BrowserRouter>
+                    <ChangeRequestList handleReviewChangeRequest={vi.fn()} />
+                </BrowserRouter>
+            </Provider>
+        );
+
+        expect(useGetChangeRequestsListQuery).toHaveBeenCalledWith(
+            { userId: null },
+            { refetchOnMountOrArgChange: true, skip: true }
+        );
+        expect(screen.getByText(/no changes/i)).toBeInTheDocument();
     });
 });

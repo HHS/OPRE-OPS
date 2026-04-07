@@ -42,7 +42,14 @@ vi.mock("./AgreementsTabs", () => ({
 }));
 
 vi.mock("./AgreementsFilterButton/AgreementsFilterButton", () => ({
-    default: () => <button data-testid="filter-button">Filter</button>
+    default: ({ isLoadingOptions }) => (
+        <button
+            data-testid="filter-button"
+            data-loading-options={String(isLoadingOptions)}
+        >
+            Filter
+        </button>
+    )
 }));
 
 vi.mock("./AgreementsFilterTags/AgreementsFilterTags", () => ({
@@ -248,6 +255,33 @@ describe("AgreementsList - Pagination", () => {
 
             await waitFor(() => {
                 expect(screen.getByTestId("agreement-tabs")).toBeInTheDocument();
+            });
+        });
+
+        it("passes filter option loading state to the filter button", async () => {
+            useGetAgreementsFilterOptionsQuery.mockReturnValue({
+                data: undefined,
+                error: undefined,
+                isLoading: true
+            });
+
+            useGetAgreementsQuery.mockReturnValue({
+                data: mockAgreementsResponse,
+                error: undefined,
+                isLoading: false,
+                isFetching: false
+            });
+
+            render(
+                <Provider store={store}>
+                    <BrowserRouter>
+                        <AgreementsList />
+                    </BrowserRouter>
+                </Provider>
+            );
+
+            await waitFor(() => {
+                expect(screen.getByTestId("filter-button")).toHaveAttribute("data-loading-options", "true");
             });
         });
     });
