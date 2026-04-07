@@ -119,6 +119,7 @@ describe("Portfolio Detail Page", () => {
             .should("contain", "100%")
             .should("contain", "0%")
             .should("contain", "0%");
+        cy.get('[data-testid="skeleton-cell-pill"]').should("not.exist");
         // check table for more than 3 rows
         cy.get("tbody").children().should("have.length.greaterThan", 3);
         // table should only have 2022 or TBD in the FY column
