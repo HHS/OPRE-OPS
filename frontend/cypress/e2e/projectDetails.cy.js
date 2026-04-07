@@ -31,7 +31,7 @@ describe("Project Details Page", () => {
         cy.contains("Project Nickname").should("be.visible");
         cy.contains("Project Type").should("be.visible");
         cy.contains("Research Methodologies").should("be.visible");
-        cy.contains("Special Topic/Populations").should("be.visible");
+        cy.contains("Special Topics").should("be.visible");
         cy.contains("Division Director(s)").should("be.visible");
         cy.contains("Team Leader(s)").should("be.visible");
         cy.contains("COR").should("be.visible");
