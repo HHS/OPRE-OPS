@@ -17,6 +17,8 @@ import ProcurementSummaryCards from "./ProcurementSummaryCards";
 
 const CURRENT_FISCAL_YEAR = Number(getCurrentFiscalYear());
 
+// TODO: Currently unused — the "First Award" and "Modifications" tabs are disabled.
+// This mapping will be active once those tabs are enabled.
 const FILTER_TO_AWARD_TYPE = {
     "first-award": "NEW",
     modifications: "CONTINUING"
@@ -52,14 +54,14 @@ const ProcurementDashboard = () => {
             fiscalYear: [CURRENT_FISCAL_YEAR],
             ...(awardTypeFilter ? { awardType: [{ awardType: awardTypeFilter }] } : {}),
             ...(selectedProcShopId ? { awardingEntityId: [selectedProcShopId] } : {})
-        }
+        },
+        page: 0,
+        limit: 50
     });
 
-    const allAgreements = agreementsResponse?.agreements || [];
+    const agreements = useMemo(() => agreementsResponse?.agreements || [], [agreementsResponse]);
     const procurementOverview = agreementsResponse?.procurement_overview ?? null;
     const procurementStepSummary = agreementsResponse?.procurement_step_summary ?? null;
-
-    const agreements = allAgreements;
 
     const agreementIds = useMemo(() => agreements.map((a) => a.id), [agreements]);
 
@@ -85,7 +87,7 @@ const ProcurementDashboard = () => {
             "Fiscal Year",
             "BLI Amount"
         ];
-        const currencyColumns = [8, 9];
+        const currencyColumns = [8];
 
         // Map each agreement + BLI combination into a flat row
         const mapAgreementRows = (agreementList) => {

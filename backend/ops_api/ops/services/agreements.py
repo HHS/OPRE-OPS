@@ -8,7 +8,7 @@ from flask_jwt_extended import get_current_user
 from loguru import logger
 from sqlalchemy import Select, distinct, func, or_, select, union
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from models import (
     CAN,
@@ -33,6 +33,7 @@ from models import (
     Vendor,
 )
 from models.agreements import AgreementType
+from models.procurement_tracker import ProcurementTrackerStatus
 from models.utils.fiscal_year import get_current_fiscal_year
 from ops_api.ops.schemas.agreements import AgreementListFilterOptionResponseSchema
 from ops_api.ops.services.change_requests import ChangeRequestService
@@ -950,9 +951,13 @@ def _compute_procurement_step_summary(all_results: list[Agreement], fiscal_year:
     agreements_by_step: dict[int, int] = {s: 0 for s in range(1, 7)}
 
     for agreement in all_results:
-        # Find active tracker for this agreement
+        # Find the active tracker for this agreement
         tracker = next(
-            (t for t in agreement.procurement_trackers if t.active_step_number is not None),
+            (
+                t
+                for t in agreement.procurement_trackers
+                if t.status == ProcurementTrackerStatus.ACTIVE and t.active_step_number is not None
+            ),
             None,
         )
         if tracker is None:
@@ -1018,6 +1023,10 @@ def _build_base_query(agreement_cls: Type[Agreement]) -> Select[tuple[Agreement]
         .distinct()
         .join(BudgetLineItem, isouter=True)
         .join(CAN, isouter=True)
+        .options(
+            selectinload(agreement_cls.budget_line_items),
+            selectinload(agreement_cls.procurement_trackers),
+        )
         .order_by(agreement_cls.id)
     )
 

@@ -125,10 +125,12 @@ const NavMenu = () => {
                     >
                         <li className="usa-nav__submenu-item">
                             <NavLink to="/reporting">OPRE Budget Reporting</NavLink>
-                            {hasProcurementAccess && (
-                                <NavLink to="/procurement-dashboard">Procurement Dashboard</NavLink>
-                            )}
                         </li>
+                        {hasProcurementAccess && (
+                            <li className="usa-nav__submenu-item">
+                                <NavLink to="/procurement-dashboard">Procurement Dashboard</NavLink>
+                            </li>
+                        )}
                     </ul>
                 </li>
                 {isUserAdmin && (
@@ -158,6 +160,8 @@ const NavMenu = () => {
                     >
                         <li className="usa-nav__submenu-item">
                             <NavLink to="/projects/create">Project</NavLink>
+                        </li>
+                        <li className="usa-nav__submenu-item">
                             <NavLink to="/agreements/create">Agreement</NavLink>
                         </li>
                     </ul>

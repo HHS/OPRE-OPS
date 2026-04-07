@@ -20,7 +20,12 @@ from models import (
     ProcurementAction,
     ProcurementActionStatus,
 )
-from ops_api.ops.services.agreements import AgreementsService, _compute_agreement_totals
+from ops_api.ops.services.agreements import (
+    AgreementsService,
+    _compute_agreement_totals,
+    _compute_procurement_overview,
+    _compute_procurement_step_summary,
+)
 from ops_api.ops.services.ops_service import ValidationError
 
 
@@ -1555,3 +1560,237 @@ class TestComputeAgreementTotals:
         result = _compute_agreement_totals(agreements)
         assert result["total_contract_amount"] == 123.45
         assert isinstance(result["total_contract_amount"], float)
+
+
+def _make_mock_bli(status, fiscal_year=2025, amount=None, fees=None):
+    """Helper to create a mock BLI for procurement overview/step summary tests."""
+    bli = MagicMock()
+    bli.status = status
+    bli.fiscal_year = fiscal_year
+    bli.amount = amount
+    bli.fees = fees
+    return bli
+
+
+def _make_mock_tracker(active_step_number, status=None):
+    """Helper to create a mock procurement tracker."""
+    from models.procurement_tracker import ProcurementTrackerStatus
+
+    tracker = MagicMock()
+    tracker.active_step_number = active_step_number
+    tracker.status = status if status is not None else ProcurementTrackerStatus.ACTIVE
+    return tracker
+
+
+def _make_mock_procurement_agreement(blis=None, trackers=None, agreement_id=1):
+    """Helper to create a mock agreement for procurement tests."""
+    ag = MagicMock()
+    ag.id = agreement_id
+    ag.budget_line_items = blis or []
+    ag.procurement_trackers = trackers or []
+    return ag
+
+
+class TestComputeProcurementOverview:
+    def test_empty_list(self):
+        result = _compute_procurement_overview([], fiscal_year=2025)
+        assert result["total_amount"] == 0.0
+        assert result["total_agreements"] == 0
+        assert len(result["status_data"]) == 3
+
+    def test_single_planned_bli(self):
+        from decimal import Decimal
+
+        bli = _make_mock_bli(BudgetLineItemStatus.PLANNED, 2025, Decimal("100000"), Decimal("5000"))
+        ag = _make_mock_procurement_agreement(blis=[bli])
+        result = _compute_procurement_overview([ag], fiscal_year=2025)
+
+        assert result["total_amount"] == 105000.0
+        assert result["total_agreements"] == 1
+        planned = next(s for s in result["status_data"] if s["status"] == "PLANNED")
+        assert planned["amount"] == 105000.0
+        assert planned["agreements"] == 1
+        assert planned["amount_percent"] == 100
+
+    def test_multiple_statuses(self):
+        from decimal import Decimal
+
+        bli_planned = _make_mock_bli(BudgetLineItemStatus.PLANNED, 2025, Decimal("200000"), Decimal("0"))
+        bli_exec = _make_mock_bli(BudgetLineItemStatus.IN_EXECUTION, 2025, Decimal("300000"), Decimal("0"))
+        ag1 = _make_mock_procurement_agreement(blis=[bli_planned], agreement_id=1)
+        ag2 = _make_mock_procurement_agreement(blis=[bli_exec], agreement_id=2)
+
+        result = _compute_procurement_overview([ag1, ag2], fiscal_year=2025)
+
+        assert result["total_amount"] == 500000.0
+        assert result["total_agreements"] == 2
+        planned = next(s for s in result["status_data"] if s["status"] == "PLANNED")
+        assert planned["amount"] == 200000.0
+        assert planned["amount_percent"] == 40
+        executing = next(s for s in result["status_data"] if s["status"] == "IN_EXECUTION")
+        assert executing["amount"] == 300000.0
+        assert executing["amount_percent"] == 60
+
+    def test_filters_by_fiscal_year(self):
+        from decimal import Decimal
+
+        bli_current = _make_mock_bli(BudgetLineItemStatus.IN_EXECUTION, 2025, Decimal("100000"), Decimal("0"))
+        bli_other = _make_mock_bli(BudgetLineItemStatus.IN_EXECUTION, 2024, Decimal("999999"), Decimal("0"))
+        ag = _make_mock_procurement_agreement(blis=[bli_current, bli_other])
+
+        result = _compute_procurement_overview([ag], fiscal_year=2025)
+        assert result["total_amount"] == 100000.0
+
+    def test_ignores_draft_status(self):
+        from decimal import Decimal
+
+        bli_draft = _make_mock_bli(BudgetLineItemStatus.DRAFT, 2025, Decimal("50000"), Decimal("0"))
+        bli_exec = _make_mock_bli(BudgetLineItemStatus.IN_EXECUTION, 2025, Decimal("100000"), Decimal("0"))
+        ag = _make_mock_procurement_agreement(blis=[bli_draft, bli_exec])
+
+        result = _compute_procurement_overview([ag], fiscal_year=2025)
+        assert result["total_amount"] == 100000.0
+
+    def test_null_amounts_treated_as_zero(self):
+        bli = _make_mock_bli(BudgetLineItemStatus.PLANNED, 2025, None, None)
+        ag = _make_mock_procurement_agreement(blis=[bli])
+
+        result = _compute_procurement_overview([ag], fiscal_year=2025)
+        assert result["total_amount"] == 0.0
+        planned = next(s for s in result["status_data"] if s["status"] == "PLANNED")
+        assert planned["amount"] == 0.0
+
+    def test_zero_division_guard(self):
+        result = _compute_procurement_overview([], fiscal_year=2025)
+        for status in result["status_data"]:
+            assert status["amount_percent"] == 0.0
+            assert status["agreements_percent"] == 0.0
+
+
+class TestComputeProcurementStepSummary:
+    def test_empty_list(self):
+        result = _compute_procurement_step_summary([], fiscal_year=2025)
+        assert result["total_agreement_count"] == 0
+        assert len(result["step_data"]) == 6
+        assert all(s["agreements"] == 0 for s in result["step_data"])
+
+    def test_single_agreement_at_step_3(self):
+        from decimal import Decimal
+
+        bli = _make_mock_bli(BudgetLineItemStatus.IN_EXECUTION, 2025, Decimal("50000"), Decimal("2500"))
+        tracker = _make_mock_tracker(3)
+        ag = _make_mock_procurement_agreement(blis=[bli], trackers=[tracker])
+
+        result = _compute_procurement_step_summary([ag], fiscal_year=2025)
+
+        assert result["total_agreement_count"] == 1
+        step3 = next(s for s in result["step_data"] if s["step"] == 3)
+        assert step3["agreements"] == 1
+        assert step3["amount"] == 52500.0
+        assert step3["agreements_percent"] == 100
+
+    def test_multiple_steps(self):
+        from decimal import Decimal
+
+        bli1 = _make_mock_bli(BudgetLineItemStatus.IN_EXECUTION, 2025, Decimal("100000"), Decimal("0"))
+        bli2 = _make_mock_bli(BudgetLineItemStatus.IN_EXECUTION, 2025, Decimal("200000"), Decimal("0"))
+        ag1 = _make_mock_procurement_agreement(blis=[bli1], trackers=[_make_mock_tracker(1)], agreement_id=1)
+        ag2 = _make_mock_procurement_agreement(blis=[bli2], trackers=[_make_mock_tracker(5)], agreement_id=2)
+
+        result = _compute_procurement_step_summary([ag1, ag2], fiscal_year=2025)
+
+        assert result["total_agreement_count"] == 2
+        step1 = next(s for s in result["step_data"] if s["step"] == 1)
+        assert step1["agreements"] == 1
+        assert step1["amount"] == 100000.0
+        step5 = next(s for s in result["step_data"] if s["step"] == 5)
+        assert step5["agreements"] == 1
+        assert step5["amount"] == 200000.0
+
+    def test_skips_agreement_without_tracker(self):
+        from decimal import Decimal
+
+        bli = _make_mock_bli(BudgetLineItemStatus.IN_EXECUTION, 2025, Decimal("100000"), Decimal("0"))
+        ag = _make_mock_procurement_agreement(blis=[bli], trackers=[])
+
+        result = _compute_procurement_step_summary([ag], fiscal_year=2025)
+        assert result["total_agreement_count"] == 0
+
+    def test_skips_agreement_with_no_executing_blis(self):
+        from decimal import Decimal
+
+        bli = _make_mock_bli(BudgetLineItemStatus.PLANNED, 2025, Decimal("100000"), Decimal("0"))
+        tracker = _make_mock_tracker(2)
+        ag = _make_mock_procurement_agreement(blis=[bli], trackers=[tracker])
+
+        result = _compute_procurement_step_summary([ag], fiscal_year=2025)
+        assert result["total_agreement_count"] == 0
+
+    def test_filters_blis_by_fiscal_year(self):
+        from decimal import Decimal
+
+        bli_current = _make_mock_bli(BudgetLineItemStatus.IN_EXECUTION, 2025, Decimal("100000"), Decimal("0"))
+        bli_other = _make_mock_bli(BudgetLineItemStatus.IN_EXECUTION, 2024, Decimal("999999"), Decimal("0"))
+        tracker = _make_mock_tracker(4)
+        ag = _make_mock_procurement_agreement(blis=[bli_current, bli_other], trackers=[tracker])
+
+        result = _compute_procurement_step_summary([ag], fiscal_year=2025)
+        step4 = next(s for s in result["step_data"] if s["step"] == 4)
+        assert step4["amount"] == 100000.0
+
+    def test_skips_out_of_range_steps(self):
+        from decimal import Decimal
+
+        bli = _make_mock_bli(BudgetLineItemStatus.IN_EXECUTION, 2025, Decimal("100000"), Decimal("0"))
+        tracker = _make_mock_tracker(7)
+        ag = _make_mock_procurement_agreement(blis=[bli], trackers=[tracker])
+
+        result = _compute_procurement_step_summary([ag], fiscal_year=2025)
+        assert result["total_agreement_count"] == 0
+
+    def test_null_amounts_treated_as_zero(self):
+        bli = _make_mock_bli(BudgetLineItemStatus.IN_EXECUTION, 2025, None, None)
+        tracker = _make_mock_tracker(1)
+        ag = _make_mock_procurement_agreement(blis=[bli], trackers=[tracker])
+
+        result = _compute_procurement_step_summary([ag], fiscal_year=2025)
+        step1 = next(s for s in result["step_data"] if s["step"] == 1)
+        assert step1["amount"] == 0.0
+        assert step1["agreements"] == 1
+
+    def test_uses_active_tracker_ignores_completed(self):
+        """When an agreement has both a completed and an active tracker,
+        only the active tracker's step should be used."""
+        from decimal import Decimal
+
+        from models.procurement_tracker import ProcurementTrackerStatus
+
+        bli = _make_mock_bli(BudgetLineItemStatus.IN_EXECUTION, 2025, Decimal("100000"), Decimal("0"))
+        completed_tracker = _make_mock_tracker(2, status=ProcurementTrackerStatus.COMPLETED)
+        active_tracker = _make_mock_tracker(5, status=ProcurementTrackerStatus.ACTIVE)
+        ag = _make_mock_procurement_agreement(blis=[bli], trackers=[completed_tracker, active_tracker])
+
+        result = _compute_procurement_step_summary([ag], fiscal_year=2025)
+
+        step5 = next(s for s in result["step_data"] if s["step"] == 5)
+        assert step5["agreements"] == 1
+        step2 = next(s for s in result["step_data"] if s["step"] == 2)
+        assert step2["agreements"] == 0
+
+    def test_skips_agreement_with_only_inactive_trackers(self):
+        """An agreement with only inactive/completed trackers should be skipped."""
+        from decimal import Decimal
+
+        from models.procurement_tracker import ProcurementTrackerStatus
+
+        bli = _make_mock_bli(BudgetLineItemStatus.IN_EXECUTION, 2025, Decimal("100000"), Decimal("0"))
+        inactive_tracker = _make_mock_tracker(3, status=ProcurementTrackerStatus.INACTIVE)
+        ag = _make_mock_procurement_agreement(blis=[bli], trackers=[inactive_tracker])
+
+        result = _compute_procurement_step_summary([ag], fiscal_year=2025)
+        assert result["total_agreement_count"] == 0
+
+    def test_zero_division_guard(self):
+        result = _compute_procurement_step_summary([], fiscal_year=2025)
+        for step in result["step_data"]:
+            assert step["agreements_percent"] == 0.0

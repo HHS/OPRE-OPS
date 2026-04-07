@@ -88,7 +88,12 @@ const ProcurementOverviewCard = ({ procurementOverview, fiscalYear, isLoading, e
                 <span className="font-sans-xs margin-left-1 margin-bottom-05">
                     total for FY {fyShort} procurement across
                 </span>
-                <span className="font-sans-xl text-bold margin-left-1">{totalAgreements} agreements</span>
+                <span
+                    data-cy="procurement-overview-total-agreements"
+                    className="font-sans-xl text-bold margin-left-1"
+                >
+                    {totalAgreements} agreements
+                </span>
             </div>
             {hasData ? (
                 <>

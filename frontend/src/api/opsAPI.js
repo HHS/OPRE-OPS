@@ -1041,8 +1041,9 @@ export const opsApi = createApi({
         }),
         getProcurementTrackersByAgreementIds: builder.query({
             query: (agreementIds) => {
-                const params = agreementIds.map((id) => `agreement_id=${id}`).join("&");
-                return `/procurement-trackers/?${params}&limit=${agreementIds.length || 1}`;
+                const queryParams = agreementIds.map((id) => `agreement_id=${id}`);
+                queryParams.push(`limit=${agreementIds.length || 1}`);
+                return `/procurement-trackers/?${queryParams.join("&")}`;
             },
             transformResponse: (response) => response?.data || [],
             providesTags: ["ProcurementTrackers"]
