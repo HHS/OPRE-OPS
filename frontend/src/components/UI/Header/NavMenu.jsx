@@ -1,8 +1,6 @@
 import React from "react";
 import { useSelector } from "react-redux";
 import { NavLink, useLocation } from "react-router-dom";
-import { IS_PROJECTS_LIST_READY } from "../../../constants";
-import Tooltip from "../USWDS/Tooltip";
 
 const NavMenu = () => {
     const activeUser = useSelector((state) => state.auth?.activeUser);
@@ -50,28 +48,13 @@ const NavMenu = () => {
                     </NavLink>
                 </li>
                 <li className="usa-nav__primary-item">
-                    {IS_PROJECTS_LIST_READY ? (
-                        <NavLink
-                            to="/projects"
-                            className={getNavLinkClass}
-                            end
-                        >
-                            Projects
-                        </NavLink>
-                    ) : (
-                        <Tooltip
-                            className="text-base cursor-default"
-                            label="Coming soon!"
-                            position="bottom"
-                        >
-                            <span
-                                className="usa-nav__link text-bold text-base cursor-default"
-                                style={{ display: "flex", alignItems: "center", height: "100%" }}
-                            >
-                                Projects
-                            </span>
-                        </Tooltip>
-                    )}
+                    <NavLink
+                        to="/projects"
+                        className={getNavLinkClass}
+                        end
+                    >
+                        Projects
+                    </NavLink>
                 </li>
                 <li className="usa-nav__primary-item">
                     <NavLink

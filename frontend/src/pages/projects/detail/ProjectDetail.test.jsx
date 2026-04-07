@@ -41,6 +41,11 @@ const mockProject = {
     division_directors: ["Dave Director", "Director Derrek"],
     research_methodologies: ["Descriptive Study", "Impact Study", "Knowledge Development"],
     special_topics: ["Special Topic 1", "Special Topic 2"],
+    project_officers: [
+        { id: 503, name: "Amelia Popham" },
+        { id: 500, name: "Chris Fortunato" }
+    ],
+    alternate_project_officers: [{ id: 522, name: "Dave Director" }],
     team_leaders: [
         { id: 500, full_name: "Chris Fortunato", email: "chris.fortunato@example.com" },
         { id: 501, full_name: "Jane Smith", email: "jane.smith@example.com" }
@@ -132,10 +137,16 @@ describe("ProjectDetail", () => {
         expect(screen.getByText("6/13/2045")).toBeInTheDocument();
         expect(screen.getByText("Descriptive Study")).toBeInTheDocument();
         expect(screen.getByText("Special Topic 1")).toBeInTheDocument();
-        expect(screen.getByText("Dave Director")).toBeInTheDocument();
-        expect(screen.getAllByText("Chris Fortunato")).toHaveLength(2);
+        expect(
+            screen.getByText("Dave Director", { selector: "[data-cy='project-division-directors-tag']" })
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText("Chris Fortunato", { selector: "[data-cy='project-team-leaders-tag']" })
+        ).toBeInTheDocument();
         expect(screen.getByText("Jane Smith")).toBeInTheDocument();
-        expect(screen.getByText("Amelia Popham")).toBeInTheDocument();
+        expect(screen.getByText("Amelia Popham", { selector: "[data-cy='project-officers-tag']" })).toBeInTheDocument();
+        expect(screen.getByText("COR")).toBeInTheDocument();
+        expect(screen.getByText("Alternate COR")).toBeInTheDocument();
     });
 
     it("renders a not-found message on a 404 error", () => {
