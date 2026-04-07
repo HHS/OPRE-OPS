@@ -85,6 +85,22 @@ describe("ProjectDetailsView", () => {
         expect(screen.getByText("Jane Smith")).toBeInTheDocument();
     });
 
+    it("formats all-caps division directors, team leaders, and team members", () => {
+        renderComponent({
+            ...baseProject,
+            division_directors: ["DAVE DIRECTOR", "DIRECTOR DERREK"],
+            team_leaders: [{ id: 500, full_name: "CHRIS FORTUNATO", email: "chris@example.com" }],
+            team_members: [{ id: 503, full_name: "SYSTEM OWNER", email: "owner@example.com" }]
+        });
+
+        expect(screen.getAllByText("Dave Director").length).toBeGreaterThanOrEqual(1);
+        expect(screen.getAllByText("Director Derrek").length).toBeGreaterThanOrEqual(1);
+        expect(screen.getAllByText("Chris Fortunato").length).toBeGreaterThanOrEqual(1);
+        expect(screen.getByText("System Owner")).toBeInTheDocument();
+        expect(screen.queryByText("DAVE DIRECTOR")).not.toBeInTheDocument();
+        expect(screen.queryByText("CHRIS FORTUNATO")).not.toBeInTheDocument();
+    });
+
     it("renders project dates using the shared formatter", () => {
         renderComponent(baseProject);
         expect(screen.getByText("6/13/2043")).toBeInTheDocument();
@@ -140,22 +156,6 @@ describe("ProjectDetailsView", () => {
         expect(screen.getAllByText("Families").length).toBeGreaterThanOrEqual(1);
         expect(screen.getAllByText("Dave Director").length).toBeGreaterThanOrEqual(1);
         expect(screen.getAllByText("Director Derrek").length).toBeGreaterThanOrEqual(1);
-    });
-
-    it("formats all-caps division directors, team leaders, and team members", () => {
-        renderComponent({
-            ...baseProject,
-            division_directors: ["DAVE DIRECTOR", "DIRECTOR DERREK"],
-            team_leaders: [{ id: 500, full_name: "CHRIS FORTUNATO", email: "chris@example.com" }],
-            team_members: [{ id: 503, full_name: "SYSTEM OWNER", email: "owner@example.com" }]
-        });
-
-        expect(screen.getAllByText("Dave Director").length).toBeGreaterThanOrEqual(1);
-        expect(screen.getAllByText("Director Derrek").length).toBeGreaterThanOrEqual(1);
-        expect(screen.getAllByText("Chris Fortunato").length).toBeGreaterThanOrEqual(1);
-        expect(screen.getByText("System Owner")).toBeInTheDocument();
-        expect(screen.queryByText("DAVE DIRECTOR")).not.toBeInTheDocument();
-        expect(screen.queryByText("CHRIS FORTUNATO")).not.toBeInTheDocument();
     });
 
     it("renders division directors and team members", () => {
