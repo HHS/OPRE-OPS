@@ -22,7 +22,8 @@ export const FiscalYearComboBox = ({
     overrideStyles = {},
     budgetLinesFiscalYears = [],
     label = "Fiscal Year",
-    includeAllOption = false
+    includeAllOption = false,
+    isLoading = false
 }) => {
     const fiscalYears = useMemo(() => {
         const years = budgetLinesFiscalYears
@@ -73,6 +74,7 @@ export const FiscalYearComboBox = ({
                         defaultString={defaultString}
                         overrideStyles={overrideStyles}
                         isMulti={true}
+                        isLoading={isLoading}
                     />
                 </div>
             </div>

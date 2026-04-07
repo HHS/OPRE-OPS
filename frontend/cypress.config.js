@@ -38,6 +38,7 @@ export default defineConfig({
             "cypress/e2e/portfolioList.cy.js",
             "cypress/e2e/projectsList.cy.js",
             "cypress/e2e/procurementShopChangeRequest.cy.js",
+            "cypress/e2e/projectDetails.cy.js",
             "cypress/e2e/reviewChangeRequestResponse.cy.js",
             "cypress/e2e/reviewChangeRequestsAtCardLevel.cy.js",
             "cypress/e2e/statusChangeRequest.cy.js",

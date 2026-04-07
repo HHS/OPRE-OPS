@@ -159,7 +159,7 @@ describe("AgreementNameComboBox", () => {
             error: null
         });
 
-        render(
+        const { container } = render(
             <MemoryRouter>
                 <AgreementNameComboBox
                     selectedAgreementNames={null}
@@ -168,7 +168,10 @@ describe("AgreementNameComboBox", () => {
             </MemoryRouter>
         );
 
-        expect(screen.getByText("Loading...")).toBeInTheDocument();
+        // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
+        fireEvent.keyDown(container.querySelector("input"), { key: "ArrowDown", code: 40 });
+
+        expect(screen.getByTestId("combobox-loading-skeleton")).toBeInTheDocument();
     });
 
     it("navigates to error page when there is an error", async () => {
@@ -235,6 +238,110 @@ describe("AgreementNameComboBox", () => {
         );
 
         expect(screen.getByText("Select an Agreement")).toBeInTheDocument();
+    });
+
+    it("uses prefetched agreement name options when provided", () => {
+        useGetAllAgreements.mockReturnValue({
+            agreements: [{ id: 999, display_name: "Ignore Me" }],
+            isLoading: false,
+            isError: false,
+            error: null
+        });
+
+        const prefetchedAgreementNames = [
+            { id: 10, name: "Agreement Alpha" },
+            { id: 11, name: "Agreement Beta" }
+        ];
+
+        const { container } = render(
+            <MemoryRouter>
+                <AgreementNameComboBox
+                    selectedAgreementNames={[]}
+                    setSelectedAgreementNames={mockSetSelectedAgreementNames}
+                    agreementNameOptions={prefetchedAgreementNames}
+                />
+            </MemoryRouter>
+        );
+
+        expect(useGetAllAgreements).toHaveBeenCalledWith(
+            {
+                filters: {},
+                onlyMy: false,
+                sortConditions: "",
+                sortDescending: false
+            },
+            { skip: true }
+        );
+
+        // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
+        fireEvent.keyDown(container.querySelector("input"), { key: "ArrowDown", code: 40 });
+
+        expect(screen.getByText("Agreement Alpha")).toBeInTheDocument();
+        expect(screen.getByText("Agreement Beta")).toBeInTheDocument();
+        expect(screen.queryByText("Ignore Me")).not.toBeInTheDocument();
+    });
+
+    it("preserves display_name when selecting prefetched agreement name options", () => {
+        useGetAllAgreements.mockReturnValue({
+            agreements: [],
+            isLoading: false,
+            isError: false,
+            error: null
+        });
+
+        const setSelectedAgreementNames = mockFn;
+        const prefetchedAgreementNames = [{ id: 10, name: "MIHOPE Check-In" }];
+
+        const { container } = render(
+            <MemoryRouter>
+                <AgreementNameComboBox
+                    selectedAgreementNames={[]}
+                    setSelectedAgreementNames={setSelectedAgreementNames}
+                    agreementNameOptions={prefetchedAgreementNames}
+                />
+            </MemoryRouter>
+        );
+
+        // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
+        fireEvent.focus(container.querySelector("input"));
+        // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
+        fireEvent.keyDown(container.querySelector("input"), { key: "ArrowDown", code: 40 });
+
+        fireEvent.click(screen.getByText("MIHOPE Check-In"));
+
+        expect(setSelectedAgreementNames).toHaveBeenCalledWith([
+            {
+                id: 10,
+                name: "MIHOPE Check-In",
+                display_name: "MIHOPE Check-In",
+                title: "MIHOPE Check-In"
+            }
+        ]);
+    });
+
+    it("renders a loading skeleton while prefetched options are still loading", () => {
+        useGetAllAgreements.mockReturnValue({
+            agreements: [],
+            isLoading: false,
+            isError: false,
+            error: null
+        });
+
+        const { container } = render(
+            <MemoryRouter>
+                <AgreementNameComboBox
+                    selectedAgreementNames={[]}
+                    setSelectedAgreementNames={mockSetSelectedAgreementNames}
+                    agreementNameOptions={[]}
+                    isLoading={true}
+                />
+            </MemoryRouter>
+        );
+
+        // eslint-disable-next-line testing-library/no-container,testing-library/no-node-access
+        fireEvent.keyDown(container.querySelector("input"), { key: "ArrowDown", code: 40 });
+
+        expect(screen.getByTestId("combobox-loading-skeleton")).toBeInTheDocument();
     });
 
     it("handles agreements with null or undefined display_name", () => {

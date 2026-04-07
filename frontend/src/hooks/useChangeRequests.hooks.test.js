@@ -71,7 +71,7 @@ describe("useChangeRequestTotal", () => {
 
         const { result } = renderHook(() => useChangeRequestTotal());
 
-        expect(useGetChangeRequestsListQueryMock).toHaveBeenCalledWith({ userId: 8 });
+        expect(useGetChangeRequestsListQueryMock).toHaveBeenCalledWith({ userId: 8 }, { skip: false });
         expect(result.current).toBe(2);
     });
 
@@ -81,7 +81,7 @@ describe("useChangeRequestTotal", () => {
 
         const { result } = renderHook(() => useChangeRequestTotal());
 
-        expect(useGetChangeRequestsListQueryMock).toHaveBeenCalledWith({ userId: null });
+        expect(useGetChangeRequestsListQueryMock).toHaveBeenCalledWith({ userId: null }, { skip: true });
         expect(result.current).toBe(0);
     });
 });

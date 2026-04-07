@@ -18,7 +18,8 @@ export const ContractNumberComboBox = ({
     agreementFilterOptions,
     legendClassname = "usa-label margin-top-0",
     defaultString = "",
-    overrideStyles = { minWidth: "22.7rem" }
+    overrideStyles = { minWidth: "22.7rem" },
+    isLoading = false
 }) => {
     // Transform contract_numbers string array to ComboBox format
     const contractNumberOptions = useMemo(() => {
@@ -48,6 +49,7 @@ export const ContractNumberComboBox = ({
                         defaultString={defaultString}
                         overrideStyles={overrideStyles}
                         isMulti={true}
+                        isLoading={isLoading}
                     />
                 </div>
             </div>

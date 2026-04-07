@@ -111,7 +111,7 @@ describe("Agreement List", () => {
         cy.get(".fiscal-year-combobox__menu").contains(".fiscal-year-combobox__option", "FY 2044").click();
 
         cy.get(".portfolios-combobox__control").click();
-        cy.get(".portfolios-combobox__menu").find(".portfolios-combobox__option").first().click();
+        cy.get(".portfolios-combobox__menu").contains(".portfolios-combobox__option", "Child Care Research").click();
 
         // Note: BLI status filter was removed in OPS-4928
 
@@ -121,7 +121,7 @@ describe("Agreement List", () => {
         // check that the correct tags are displayed
         getAppliedFilters().within(() => {
             cy.contains("FY 2044").should("exist");
-            cy.contains("Adolescent Development Research").should("exist");
+            cy.contains("Child Care Research").should("exist");
         });
 
         // Verify filters were applied — table shows results or zero-results message
@@ -276,10 +276,7 @@ describe("Agreement List", () => {
         cy.get("tbody tr[data-testid^='agreement-table-row-']", { timeout: 30000 }).should("have.length.at.least", 1);
 
         // Expand first result row and verify Award Type shows "New Award"
-        cy.get("tbody tr[data-testid^='agreement-table-row-']")
-            .first()
-            .find('[data-cy="expand-row"]')
-            .click();
+        cy.get("tbody tr[data-testid^='agreement-table-row-']").first().find('[data-cy="expand-row"]').click();
         cy.get('[data-cy="expanded-data"]', { timeout: 10000 }).should("exist");
         cy.get('[data-cy="expanded-data"]').should("contain.text", "Award Type");
         cy.get('[data-cy="expanded-data"]').should("contain.text", "New Award");
@@ -308,13 +305,15 @@ describe("Agreement List", () => {
     it("Should allow the user to export table", () => {
         cy.get('[data-cy="agreement-export"]').should("exist");
         cy.get("button").contains("Filter").click();
-        cy.get(".portfolios-combobox__control")
-            .click()
-            .get(".portfolios-combobox__menu")
-            .find(".portfolios-combobox__option")
-            .contains("Home Visiting")
-            .click();
+
+        cy.get(".agreement-name-combobox__control").click();
+        cy.get(".agreement-name-combobox__menu").contains("Interoperability Initiatives").click();
+
+        cy.get(".agreement-type-combobox__control").click();
+        cy.get(".agreement-type-combobox__menu").contains("Grant").click();
+
         cy.get("button").contains("Apply").click();
+
         // Wait for zero results message to appear
         cy.get("div[id='agreements-table-zero-results']").should("exist");
         cy.get('[data-cy="agreement-export"]').should("not.exist");
