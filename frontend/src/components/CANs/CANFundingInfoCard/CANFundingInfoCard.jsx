@@ -9,7 +9,6 @@ import { formatObligateBy } from "../CANTable/CANTable.helpers";
 /**
  * @typedef {Object} CANFundingInfoCard
  * @property {FundingDetails} [funding]
- * @property {number} fiscalYear
  */
 
 /**
@@ -17,7 +16,7 @@ import { formatObligateBy } from "../CANTable/CANTable.helpers";
  * @param {CANFundingInfoCard} props
  * @returns  {JSX.Element} - The component JSX.
  */
-const CANFundingInfoCard = ({ funding, fiscalYear }) => {
+const CANFundingInfoCard = ({ funding }) => {
     if (!funding) {
         return <div>No funding information available for this CAN.</div>;
     }
@@ -31,10 +30,10 @@ const CANFundingInfoCard = ({ funding, fiscalYear }) => {
                 className="margin-0 margin-bottom-2 font-12px text-base-dark text-normal"
                 style={{ whiteSpace: "pre-line", lineHeight: "20px" }}
             >
-                {`FY ${fiscalYear} CAN Funding Information`}
+                CAN Funding Information
             </h3>
-            <div className="grid-row grid-gap">
-                <div className="grid-col">
+            <div className="grid-row grid-gap-sm">
+                <div className="grid-col-2">
                     <dl>
                         <TermTag
                             term="Appropriation FY"

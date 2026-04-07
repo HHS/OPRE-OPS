@@ -53,7 +53,7 @@ export default defineConfig({
         // Adding custom task logging, for better a11y output
         // ref: https://docs.cypress.io/api/commands/task#Usage
         // https://github.com/component-driven/cypress-axe#using-the-violationcallback-argument
-        setupNodeEvents(on, config) {
+        setupNodeEvents(on) {
             on("task", {
                 log(message) {
                     console.log(message);
