@@ -4,29 +4,15 @@ import Tag from "../../../components/UI/Tag/Tag";
 import { TagList } from "../../../components/UI/Tag";
 import Tooltip from "../../../components/UI/USWDS/Tooltip";
 import { NO_DATA } from "../../../constants";
+import { formatUserName } from "../../../helpers/users.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { formatProjectDate } from "../list/ProjectsList.helpers";
-
-const getDisplayName = (item) => {
-    if (typeof item === "string") {
-        return item;
-    }
-
-    return item?.name ?? item?.display_name ?? item?.full_name ?? NO_DATA;
-};
 
 const DateValue = ({ value }) => (
     <Tag
         tagStyle="primaryDarkTextLightBackground"
         text={formatProjectDate(value)}
     />
-);
-
-const Field = ({ label, children, topMargin = "margin-top-3" }) => (
-    <dl className={`margin-0 ${topMargin}`}>
-        <dt className="margin-0 text-base-dark">{label}</dt>
-        <dd className="margin-0 margin-top-1 wrap-text">{children}</dd>
-    </dl>
 );
 
 /**
@@ -42,13 +28,30 @@ const ProjectDetailsView = ({ project }) => {
 
     const projectTypeLabel = convertCodeForDisplay("project", project.project_type);
 
-    const teamLeaderNames = project.team_leaders?.map((tl) => tl.display_name ?? tl.full_name) ?? [];
-    const methodologies = project.research_methodologies?.map(getDisplayName) ?? [];
-    const specialTopics = project.special_topics?.map(getDisplayName) ?? [];
-    const divisionDirectors = project.division_directors?.map(getDisplayName) ?? [];
-    const projectOfficers = project.project_officers?.map(getDisplayName) ?? [];
-    const alternateProjectOfficers = project.alternate_project_officers?.map(getDisplayName) ?? [];
-    const teamMemberNames = project.team_members?.map((member) => member.display_name ?? member.full_name) ?? [];
+    const teamLeaderNames = project.team_leaders?.map((tl) => formatUserName(tl.display_name ?? tl.full_name)) ?? [];
+    const methodologies =
+        project.research_methodologies?.map((item) => (typeof item === "string" ? item : (item?.name ?? NO_DATA))) ??
+        [];
+    const specialTopics =
+        project.special_topics?.map((item) => (typeof item === "string" ? item : (item?.name ?? NO_DATA))) ?? [];
+    const divisionDirectors =
+        project.division_directors?.map((director) =>
+            formatUserName(
+                typeof director === "string"
+                    ? director
+                    : (director?.name ?? director?.display_name ?? director?.full_name ?? NO_DATA)
+            )
+        ) ?? [];
+    const projectOfficers =
+        project.project_officers?.map((officer) =>
+            formatUserName(officer.name ?? officer.display_name ?? officer.full_name)
+        ) ?? [];
+    const alternateProjectOfficers =
+        project.alternate_project_officers?.map((officer) =>
+            formatUserName(officer.name ?? officer.display_name ?? officer.full_name)
+        ) ?? [];
+    const teamMemberNames =
+        project.team_members?.map((member) => formatUserName(member.display_name ?? member.full_name)) ?? [];
 
     return (
         <section>
@@ -88,14 +91,10 @@ const ProjectDetailsView = ({ project }) => {
                     className="grid-col"
                     data-cy="project-details-left-col"
                 >
-                    <div className="margin-0 font-12px">
-                        <Field
-                            label="Description"
-                            topMargin="margin-top-3"
-                        >
-                            {project.description ?? NO_DATA}
-                        </Field>
-                    </div>
+                    <dl className="margin-0 font-12px">
+                        <dt className="margin-0 text-base-dark margin-top-3">Description</dt>
+                        <dd className="margin-0 margin-top-05 wrap-text">{project.description ?? NO_DATA}</dd>
+                    </dl>
 
                     <h3 className="text-base-dark margin-top-5 margin-bottom-0 text-normal font-12px">History</h3>
                     <p className="font-12px text-base margin-top-1">History coming soon.</p>
@@ -106,111 +105,101 @@ const ProjectDetailsView = ({ project }) => {
                     className="grid-col"
                     data-cy="project-details-right-col"
                 >
-                    <div className="margin-0 font-12px">
-                        <Field
-                            label="Project Nickname"
-                            topMargin="margin-top-3"
-                        >
+                    <dl className="margin-0 font-12px">
+                        <dt className="margin-0 text-base-dark margin-top-3">Project Nickname</dt>
+                        <dd className="margin-0 margin-top-1">
                             <Tag
                                 tagStyle="primaryDarkTextLightBackground"
                                 text={project.short_title ?? NO_DATA}
                                 dataCy="project-nickname-tag"
                             />
-                        </Field>
+                        </dd>
 
-                        <Field label="Project Type">
+                        <dt className="margin-0 text-base-dark margin-top-3">Project Type</dt>
+                        <dd className="margin-0 margin-top-1">
                             <Tag
                                 tagStyle="primaryDarkTextLightBackground"
                                 text={projectTypeLabel}
                                 dataCy="project-type-tag"
                             />
-                        </Field>
+                        </dd>
 
-                        <div
-                            className="grid-row grid-gap-4 margin-top-3"
-                            style={{ maxWidth: "420px" }}
-                        >
-                            <div className="grid-col">
-                                <div className="text-base-dark">Project Start</div>
-                                <div className="margin-top-1 wrap-text">
-                                    <DateValue value={project.project_start} />
+                        <dd className="margin-0 margin-top-3">
+                            <div
+                                className="grid-row grid-gap-4"
+                                style={{ maxWidth: "420px" }}
+                            >
+                                <div className="grid-col">
+                                    <div className="text-base-dark">Project Start</div>
+                                    <div className="margin-top-1 wrap-text">
+                                        <DateValue value={project.project_start} />
+                                    </div>
+                                </div>
+                                <div className="grid-col">
+                                    <div className="text-base-dark">Project End</div>
+                                    <div className="margin-top-1 wrap-text">
+                                        <DateValue value={project.project_end} />
+                                    </div>
                                 </div>
                             </div>
-                            <div className="grid-col">
-                                <div className="text-base-dark">Project End</div>
-                                <div className="margin-top-1 wrap-text">
-                                    <DateValue value={project.project_end} />
-                                </div>
-                            </div>
-                        </div>
+                        </dd>
 
-                        <Field label="Research Methodologies">
+                        <dt className="margin-0 text-base-dark margin-top-3">Research Methodologies</dt>
+                        <dd className="margin-0 margin-top-1">
                             <TagList
                                 items={methodologies}
                                 dataCy="project-methodologies-tag"
                             />
-                        </Field>
+                        </dd>
 
-                        <Field label="Special Topic/Populations">
+                        <dt className="margin-0 text-base-dark margin-top-3">Special Topics</dt>
+                        <dd className="margin-0 margin-top-1">
                             <TagList
                                 items={specialTopics}
                                 dataCy="project-special-topics-tag"
                             />
-                        </Field>
-                        <div
-                            className="grid-row grid-gap-4 margin-top-3"
-                            style={{ maxWidth: "420px" }}
-                        >
-                            <div className="grid-col">
-                                <div className="margin-0 text-base-dark">Division Director(s)</div>
-                                <div className="margin-0 margin-top-1 wrap-text">
-                                    <TagList
-                                        items={divisionDirectors}
-                                        dataCy="project-division-directors-tag"
-                                    />
-                                </div>
-                            </div>
-                            <div className="grid-col">
-                                <div className="margin-0 text-base-dark">Team Leader(s)</div>
-                                <div className="margin-0 margin-top-1 wrap-text">
-                                    <TagList
-                                        items={teamLeaderNames}
-                                        dataCy="project-team-leaders-tag"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                        <div
-                            className="grid-row grid-gap-4 margin-top-3"
-                            style={{ maxWidth: "420px" }}
-                        >
-                            <div className="grid-col">
-                                <div className="margin-0 text-base-dark">COR</div>
-                                <div className="margin-0 margin-top-1 wrap-text">
-                                    <TagList
-                                        items={projectOfficers}
-                                        dataCy="project-officers-tag"
-                                    />
-                                </div>
-                            </div>
-                            <div className="grid-col">
-                                <div className="margin-0 text-base-dark">Alternate COR</div>
-                                <div className="margin-0 margin-top-1 wrap-text">
-                                    <TagList
-                                        items={alternateProjectOfficers}
-                                        dataCy="alternate-project-officers-tag"
-                                    />
-                                </div>
-                            </div>
-                        </div>
+                        </dd>
 
-                        <Field label="Team Members">
+                        <dt className="margin-0 text-base-dark margin-top-3">Division Director(s)</dt>
+                        <dd className="margin-0 margin-top-1">
+                            <TagList
+                                items={divisionDirectors}
+                                dataCy="project-division-directors-tag"
+                            />
+                        </dd>
+
+                        <dt className="margin-0 text-base-dark margin-top-3">Team Leader(s)</dt>
+                        <dd className="margin-0 margin-top-1">
+                            <TagList
+                                items={teamLeaderNames}
+                                dataCy="project-team-leaders-tag"
+                            />
+                        </dd>
+
+                        <dt className="margin-0 text-base-dark margin-top-3">COR</dt>
+                        <dd className="margin-0 margin-top-1">
+                            <TagList
+                                items={projectOfficers}
+                                dataCy="project-officers-tag"
+                            />
+                        </dd>
+
+                        <dt className="margin-0 text-base-dark margin-top-3">Alternate COR</dt>
+                        <dd className="margin-0 margin-top-1">
+                            <TagList
+                                items={alternateProjectOfficers}
+                                dataCy="alternate-project-officers-tag"
+                            />
+                        </dd>
+
+                        <dt className="margin-0 text-base-dark margin-top-3">Team Members</dt>
+                        <dd className="margin-0 margin-top-1">
                             <TagList
                                 items={teamMemberNames}
                                 dataCy="project-team-members-tag"
                             />
-                        </Field>
-                    </div>
+                        </dd>
+                    </dl>
                 </div>
             </div>
         </section>

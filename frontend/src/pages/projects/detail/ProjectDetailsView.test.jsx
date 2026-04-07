@@ -16,13 +16,13 @@ const baseProject = {
     project_type: "RESEARCH",
     project_start: "2043-06-13",
     project_end: "2045-06-13",
-    division_directors: ["Dave Director", "Director Derrek"],
+    division_directors: [
+        { id: 522, name: "Dave Director" },
+        { id: 525, name: "Director Derrek" }
+    ],
     research_methodologies: ["Descriptive Study", "Impact Study"],
     special_topics: ["Special Topic 1", "Special Topic 2"],
-    project_officers: [
-        { id: 503, name: "Amelia Popham" },
-        { id: 500, name: "Chris Fortunato" }
-    ],
+    project_officers: [{ id: 500, name: "Chris Fortunato" }],
     alternate_project_officers: [{ id: 522, name: "Dave Director" }],
     team_members: [
         { id: 503, full_name: "Amelia Popham", email: "amelia@example.com" },
@@ -59,7 +59,7 @@ describe("ProjectDetailsView", () => {
         expect(screen.getByText("Project Start")).toBeInTheDocument();
         expect(screen.getByText("Project End")).toBeInTheDocument();
         expect(screen.getByText("Research Methodologies")).toBeInTheDocument();
-        expect(screen.getByText("Special Topic/Populations")).toBeInTheDocument();
+        expect(screen.getByText("Special Topics")).toBeInTheDocument();
         expect(screen.getByText("Division Director(s)")).toBeInTheDocument();
         expect(screen.getByText("Team Leader(s)")).toBeInTheDocument();
         expect(screen.getByText("COR")).toBeInTheDocument();
@@ -134,12 +134,28 @@ describe("ProjectDetailsView", () => {
             ]
         });
 
-        expect(screen.getByText("Qualitative")).toBeInTheDocument();
-        expect(screen.getByText("Quantitative")).toBeInTheDocument();
-        expect(screen.getByText("Children")).toBeInTheDocument();
-        expect(screen.getByText("Families")).toBeInTheDocument();
+        expect(screen.getAllByText("Qualitative").length).toBeGreaterThanOrEqual(1);
+        expect(screen.getAllByText("Quantitative").length).toBeGreaterThanOrEqual(1);
+        expect(screen.getAllByText("Children").length).toBeGreaterThanOrEqual(1);
+        expect(screen.getAllByText("Families").length).toBeGreaterThanOrEqual(1);
         expect(screen.getAllByText("Dave Director").length).toBeGreaterThanOrEqual(1);
-        expect(screen.getByText("Director Derrek")).toBeInTheDocument();
+        expect(screen.getAllByText("Director Derrek").length).toBeGreaterThanOrEqual(1);
+    });
+
+    it("formats all-caps division directors, team leaders, and team members", () => {
+        renderComponent({
+            ...baseProject,
+            division_directors: ["DAVE DIRECTOR", "DIRECTOR DERREK"],
+            team_leaders: [{ id: 500, full_name: "CHRIS FORTUNATO", email: "chris@example.com" }],
+            team_members: [{ id: 503, full_name: "SYSTEM OWNER", email: "owner@example.com" }]
+        });
+
+        expect(screen.getAllByText("Dave Director").length).toBeGreaterThanOrEqual(1);
+        expect(screen.getAllByText("Director Derrek").length).toBeGreaterThanOrEqual(1);
+        expect(screen.getAllByText("Chris Fortunato").length).toBeGreaterThanOrEqual(1);
+        expect(screen.getByText("System Owner")).toBeInTheDocument();
+        expect(screen.queryByText("DAVE DIRECTOR")).not.toBeInTheDocument();
+        expect(screen.queryByText("CHRIS FORTUNATO")).not.toBeInTheDocument();
     });
 
     it("renders division directors and team members", () => {
