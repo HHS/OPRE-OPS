@@ -23,21 +23,30 @@ def db_with_agreements(loaded_db):
     loaded_db.add(project)
     loaded_db.commit()
 
+    # Procurement shop for awarding_entity_id
+    proc_shop = ProcurementShop(id=9000, name="Test PSC", abbr="TPSC", created_by=uid)
+    loaded_db.add(proc_shop)
+    loaded_db.commit()
+
     # Agreement 9001: IN_EXECUTION BLI, no tracker, no action → should be backfilled
     contract_1 = ContractAgreement(
-        id=9001, name="Contract Missing Both", project_id=9000, created_by=uid, updated_by=uid
+        id=9001, name="Contract Missing Both", project_id=9000,
+        awarding_entity_id=9000, created_by=uid, updated_by=uid
     )
-    # Agreement 9002: IN_EXECUTION BLI, has tracker, has action → should be skipped
+    # Agreement 9002: IN_EXECUTION BLI, has tracker, has action (no shop) → shop should be set
     contract_2 = ContractAgreement(
-        id=9002, name="Contract Has Both", project_id=9000, created_by=uid, updated_by=uid
+        id=9002, name="Contract Has Both", project_id=9000,
+        awarding_entity_id=9000, created_by=uid, updated_by=uid
     )
     # Agreement 9003: IN_EXECUTION BLI, has tracker, no action → should get action only
     contract_3 = ContractAgreement(
-        id=9003, name="Contract Missing Action", project_id=9000, created_by=uid, updated_by=uid
+        id=9003, name="Contract Missing Action", project_id=9000,
+        awarding_entity_id=9000, created_by=uid, updated_by=uid
     )
     # Agreement 9004: IN_EXECUTION BLI, no tracker, has action → should get tracker only
     contract_4 = ContractAgreement(
-        id=9004, name="Contract Missing Tracker", project_id=9000, created_by=uid, updated_by=uid
+        id=9004, name="Contract Missing Tracker", project_id=9000,
+        awarding_entity_id=9000, created_by=uid, updated_by=uid
     )
     # Agreement 9005: PLANNED BLI only, no tracker, no action → should NOT be backfilled
     contract_5 = ContractAgreement(
@@ -119,6 +128,10 @@ def db_with_agreements(loaded_db):
     loaded_db.execute(text("DELETE FROM contract_agreement_version"))
     loaded_db.execute(text("DELETE FROM agreement"))
     loaded_db.execute(text("DELETE FROM agreement_version"))
+    loaded_db.execute(text("DELETE FROM procurement_shop_fee"))
+    loaded_db.execute(text("DELETE FROM procurement_shop_fee_version"))
+    loaded_db.execute(text("DELETE FROM procurement_shop"))
+    loaded_db.execute(text("DELETE FROM procurement_shop_version"))
     loaded_db.execute(text("DELETE FROM research_project"))
     loaded_db.execute(text("DELETE FROM research_project_version"))
     loaded_db.execute(text("DELETE FROM project"))
@@ -410,3 +423,63 @@ def test_backfill_links_blis_when_tracker_and_action_already_exist(db_with_agree
         )
     ).scalar_one()
     assert bli.procurement_action_id == action.id
+
+
+def test_backfill_sets_procurement_shop_on_new_action(db_with_agreements):
+    """New ProcurementActions should get procurement_shop_id from agreement.awarding_entity_id."""
+    sys_user = get_or_create_sys_user(db_with_agreements)
+    backfill_procurement_records(db_with_agreements, sys_user)
+
+    # Agreement 9001 had no action — new one should have shop set
+    action = db_with_agreements.execute(
+        select(ProcurementAction).where(
+            ProcurementAction.agreement_id == 9001,
+            ProcurementAction.award_type == AwardType.NEW_AWARD,
+        )
+    ).scalar_one()
+    assert action.procurement_shop_id == 9000
+
+
+def test_backfill_sets_procurement_shop_on_existing_action(db_with_agreements):
+    """Existing ProcurementActions missing procurement_shop_id should get it from the agreement."""
+    sys_user = get_or_create_sys_user(db_with_agreements)
+
+    # Agreement 9002 already has an action but without procurement_shop_id
+    existing_action = db_with_agreements.execute(
+        select(ProcurementAction).where(
+            ProcurementAction.agreement_id == 9002,
+            ProcurementAction.award_type == AwardType.NEW_AWARD,
+        )
+    ).scalar_one()
+    assert existing_action.procurement_shop_id is None
+
+    backfill_procurement_records(db_with_agreements, sys_user)
+
+    db_with_agreements.refresh(existing_action)
+    assert existing_action.procurement_shop_id == 9000
+
+
+def test_backfill_does_not_overwrite_procurement_shop_with_none(db_with_agreements):
+    """If agreement has no awarding_entity_id, don't clear an existing procurement_shop_id."""
+    sys_user = get_or_create_sys_user(db_with_agreements)
+
+    # Set agreement 9004's awarding_entity_id to None
+    agreement = db_with_agreements.get(Agreement, 9004)
+    agreement.awarding_entity_id = None
+    db_with_agreements.flush()
+
+    # Agreement 9004's existing action already has no shop — set one manually
+    existing_action = db_with_agreements.execute(
+        select(ProcurementAction).where(
+            ProcurementAction.agreement_id == 9004,
+            ProcurementAction.award_type == AwardType.NEW_AWARD,
+        )
+    ).scalar_one()
+    existing_action.procurement_shop_id = 9000
+    db_with_agreements.flush()
+
+    backfill_procurement_records(db_with_agreements, sys_user)
+
+    db_with_agreements.refresh(existing_action)
+    # Should NOT be overwritten to None
+    assert existing_action.procurement_shop_id == 9000

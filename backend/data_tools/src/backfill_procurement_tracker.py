@@ -113,7 +113,7 @@ def link_in_execution_blis_to_action(
 def backfill_procurement_records(session: Session, sys_user: User) -> None:
     """
     For each agreement with IN_EXECUTION BLIs, ensure it has:
-    1. A ProcurementAction with award_type=NEW_AWARD
+    1. A ProcurementAction with award_type=NEW_AWARD and procurement_shop from agreement
     2. A DefaultProcurementTracker with 6 steps
     3. All IN_EXECUTION BLIs linked to the ProcurementAction
     """
@@ -147,6 +147,7 @@ def backfill_procurement_records(session: Session, sys_user: User) -> None:
                     agreement_id=agreement.id,
                     award_type=AwardType.NEW_AWARD,
                     status=ProcurementActionStatus.PLANNED,
+                    procurement_shop_id=agreement.awarding_entity_id,
                     created_by=sys_user.id,
                 )
                 session.add(procurement_action)
@@ -154,7 +155,7 @@ def backfill_procurement_records(session: Session, sys_user: User) -> None:
                 created_actions += 1
                 logger.info(
                     f"Created ProcurementAction (NEW_AWARD) for Agreement {agreement.id} "
-                    f"('{agreement.name}')"
+                    f"('{agreement.name}') with procurement_shop_id={agreement.awarding_entity_id}"
                 )
 
                 session.add(
@@ -169,6 +170,19 @@ def backfill_procurement_records(session: Session, sys_user: User) -> None:
                         },
                     )
                 )
+            else:
+                # Ensure existing action has procurement_shop from agreement
+                if (
+                    procurement_action.procurement_shop_id != agreement.awarding_entity_id
+                    and agreement.awarding_entity_id is not None
+                ):
+                    old_shop_id = procurement_action.procurement_shop_id
+                    procurement_action.procurement_shop_id = agreement.awarding_entity_id
+                    logger.info(
+                        f"Updated ProcurementAction {procurement_action.id} procurement_shop_id "
+                        f"from {old_shop_id} to {agreement.awarding_entity_id} "
+                        f"for Agreement {agreement.id} ('{agreement.name}')"
+                    )
 
             if not existing_tracker:
                 tracker = DefaultProcurementTracker.create_with_steps(
