@@ -38,7 +38,6 @@ import WhatsNext from "./pages/home/whats-next";
 import ProcurementMocksDebug from "./pages/dev/ProcurementMocksDebug";
 import RoleProtectedRoute from "./components/Auth/RoleProtectedRoute/RoleProtectedRoute";
 import { USER_ROLES } from "./components/Users/User.constants";
-import { IS_PROJECTS_LIST_READY, IS_PROJECT_DETAIL_READY } from "./constants";
 
 // NOTE: store muse be imported after react-router-dom to avoid access lexical declaration 'opsApi' before initialization
 

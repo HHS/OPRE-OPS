@@ -1,9 +1,7 @@
 import React from "react";
 import { useSelector } from "react-redux";
 import { NavLink, useLocation } from "react-router-dom";
-import { IS_PROJECTS_LIST_READY } from "../../../constants";
 import { USER_ROLES } from "../../Users/User.constants";
-import Tooltip from "../USWDS/Tooltip";
 
 const PROCUREMENT_DASHBOARD_ROLES = [
     USER_ROLES.PROCUREMENT_TEAM,
