@@ -7,6 +7,7 @@ const navigateMock = vi.fn();
 const requestPreAwardApprovalHookMock = vi.fn();
 
 vi.mock("react-router-dom", async (importOriginal) => {
+    /** @type {any} */
     const actual = await importOriginal();
     return {
         ...actual,
@@ -22,7 +23,9 @@ vi.mock("./RequestPreAwardApproval.hooks", () => ({
 
 vi.mock("../../../App", () => ({
     __esModule: true,
-    default: ({ children }) => <div data-testid="app">{children}</div>
+    default: (/** @type {{ children: React.ReactNode }} */ { children }) => (
+        <div data-testid="app">{children}</div>
+    )
 }));
 
 vi.mock("../../../components/Agreements/AgreementMetaAccordion", () => ({
@@ -32,7 +35,7 @@ vi.mock("../../../components/Agreements/AgreementMetaAccordion", () => ({
 
 vi.mock("../../../components/Agreements/AgreementBLIAccordion", () => ({
     __esModule: true,
-    default: ({ title }) => <div data-testid="bli-accordion">{title}</div>
+    default: (/** @type {{ title: string }} */ { title }) => <div data-testid="bli-accordion">{title}</div>
 }));
 
 vi.mock("../../../components/BudgetLineItems/ReviewExecutingTotalAccordion/ReviewExecutingTotalAccordion", () => ({
@@ -42,7 +45,7 @@ vi.mock("../../../components/BudgetLineItems/ReviewExecutingTotalAccordion/Revie
 
 vi.mock("../../../components/UI/Accordion", () => ({
     __esModule: true,
-    default: ({ heading, children }) => (
+    default: (/** @type {{ heading: string; children: React.ReactNode }} */ { heading, children }) => (
         <section data-testid="accordion">
             <h2>{heading}</h2>
             {children}
@@ -52,7 +55,9 @@ vi.mock("../../../components/UI/Accordion", () => ({
 
 vi.mock("../../../components/UI/Form/TextArea", () => ({
     __esModule: true,
-    default: ({ value, onChange }) => (
+    default: (
+        /** @type {{ value: string; onChange: (name: string, value: string) => void }} */ { value, onChange }
+    ) => (
         <textarea
             data-testid="notes-textarea"
             value={value}
@@ -63,7 +68,7 @@ vi.mock("../../../components/UI/Form/TextArea", () => ({
 
 vi.mock("../../../components/UI/PageHeader", () => ({
     __esModule: true,
-    default: ({ title, subTitle }) => (
+    default: (/** @type {{ title: string; subTitle: string }} */ { title, subTitle }) => (
         <header data-testid="page-header">
             <h1>{title}</h1>
             <h2>{subTitle}</h2>
@@ -112,7 +117,9 @@ describe("RequestPreAwardApproval", () => {
 
         render(<RequestPreAwardApproval />);
 
-        expect(screen.getByText("Loading...")).toBeInTheDocument();
+        const loadingElement = screen.getByText("Loading...");
+        expect(loadingElement).toBeInTheDocument();
+        expect(loadingElement.tagName).toBe("P");
     });
 
     it("renders page header with agreement name", () => {

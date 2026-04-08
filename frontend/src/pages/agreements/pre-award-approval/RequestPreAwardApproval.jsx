@@ -48,7 +48,7 @@ export const RequestPreAwardApproval = () => {
     } = useRequestPreAwardApproval(agreementId);
 
     if (isLoading) {
-        return <h1>Loading...</h1>;
+        return <p>Loading...</p>;
     }
 
     return (
@@ -72,6 +72,7 @@ export const RequestPreAwardApproval = () => {
                     heading="Pre-Award Approval In Review"
                     message="This agreement is In Review for Pre-Award Approval. Edits or changes cannot be made at this time."
                     isClosable={false}
+                    headingLevel={2}
                 />
             )}
 
@@ -81,6 +82,7 @@ export const RequestPreAwardApproval = () => {
                     heading="Budget Line In Review"
                     message="One or more budget lines have pending change requests that are currently in review. You cannot request pre-award approval until all change requests are resolved."
                     isClosable={false}
+                    headingLevel={2}
                 />
             )}
 
@@ -90,6 +92,7 @@ export const RequestPreAwardApproval = () => {
                     heading="Step 4 Not Completed"
                     message="You must complete Step 4 (Evaluation) in the Procurement Tracker before requesting pre-award approval."
                     isClosable={false}
+                    headingLevel={2}
                 />
             )}
 
@@ -289,6 +292,7 @@ export const RequestPreAwardApproval = () => {
                     <SimpleAlert
                         type="error"
                         heading="Submission Failed"
+                        headingLevel={2}
                     >
                         {submitError}
                     </SimpleAlert>

@@ -13,11 +13,13 @@ vi.mock("./ApprovePreAwardApproval.hooks", () => ({
 
 // Mock child components
 vi.mock("../../../App", () => ({
-    default: ({ children }) => <div data-testid="app">{children}</div>
+    default: (/** @type {{ children: React.ReactNode }} */ { children }) => (
+        <div data-testid="app">{children}</div>
+    )
 }));
 
 vi.mock("../../../components/UI/PageHeader", () => ({
-    default: ({ title, subTitle }) => (
+    default: (/** @type {{ title: string; subTitle?: string }} */ { title, subTitle }) => (
         <div data-testid="page-header">
             <h1>{title}</h1>
             {subTitle && <p>{subTitle}</p>}
@@ -30,7 +32,9 @@ vi.mock("../../../components/Agreements/AgreementMetaAccordion", () => ({
 }));
 
 vi.mock("../../../components/Agreements/AgreementBLIAccordion", () => ({
-    default: ({ children }) => <div data-testid="agreement-bli-accordion">{children}</div>
+    default: (/** @type {{ children: React.ReactNode }} */ { children }) => (
+        <div data-testid="agreement-bli-accordion">{children}</div>
+    )
 }));
 
 vi.mock("../../../components/Agreements/AgreementCANReviewAccordion", () => ({
@@ -42,7 +46,7 @@ vi.mock("../../../components/BudgetLineItems/ReviewExecutingTotalAccordion/Revie
 }));
 
 vi.mock("../../../components/UI/Accordion", () => ({
-    default: ({ heading, children }) => (
+    default: (/** @type {{ heading: string; children: React.ReactNode }} */ { heading, children }) => (
         <div data-testid={`accordion-${heading.toLowerCase().replace(/\s+/g, "-")}`}>
             <h2>{heading}</h2>
             {children}
@@ -51,7 +55,13 @@ vi.mock("../../../components/UI/Accordion", () => ({
 }));
 
 vi.mock("../../../components/UI/Form/TextArea", () => ({
-    default: ({ onChange, isDisabled, maxLength }) => (
+    default: (
+        /** @type {{ onChange: (name: string, value: string) => void; isDisabled?: boolean; maxLength?: number }} */ {
+            onChange,
+            isDisabled,
+            maxLength
+        }
+    ) => (
         <textarea
             data-testid="reviewer-notes-textarea"
             onChange={(e) => onChange("reviewer-notes", e.target.value)}
@@ -62,7 +72,14 @@ vi.mock("../../../components/UI/Form/TextArea", () => ({
 }));
 
 vi.mock("../../../components/UI/Alert/SimpleAlert", () => ({
-    default: ({ type, heading, message, children }) => (
+    default: (
+        /** @type {{ type: string; heading?: string; message?: string; children?: React.ReactNode }} */ {
+            type,
+            heading,
+            message,
+            children
+        }
+    ) => (
         <div data-testid={`alert-${type}`}>
             <h3>{heading}</h3>
             {message && <p>{message}</p>}
@@ -72,7 +89,13 @@ vi.mock("../../../components/UI/Alert/SimpleAlert", () => ({
 }));
 
 vi.mock("../../../components/UI/Modals/ConfirmationModal", () => ({
-    default: ({ heading, actionButtonText, handleConfirm }) => (
+    default: (
+        /** @type {{ heading: string; actionButtonText: string; handleConfirm: () => void }} */ {
+            heading,
+            actionButtonText,
+            handleConfirm
+        }
+    ) => (
         <div data-testid="confirmation-modal">
             <h3>{heading}</h3>
             <button onClick={handleConfirm}>{actionButtonText}</button>
@@ -85,7 +108,7 @@ import useApprovePreAwardApproval from "./ApprovePreAwardApproval.hooks";
 const mockHookData = {
     agreement: { id: 1, name: "Test Agreement", display_name: "Agreement 001" },
     isLoading: false,
-    executingBudgetLines: [],
+    allBudgetLines: [],
     executingTotal: 0,
     reviewerNotes: "",
     setReviewerNotes: vi.fn(),
@@ -97,14 +120,16 @@ const mockHookData = {
     alternateProjectOfficerName: "Jane Smith",
     servicesComponents: [],
     groupedBudgetLinesByServicesComponent: [],
-    preAwardMemoDocuments: [],
+    preAwardMemoDocuments: /** @type {Array<{ id: number; document_name: string; document_size: string }>} */ ([]),
     showModal: false,
     setShowModal: vi.fn(),
     modalProps: {},
     isSubmitting: false,
     submitError: "",
     hasPermission: true,
-    approvalAlreadyProcessed: false
+    approvalAlreadyProcessed: false,
+    preAwardRequestorName: "",
+    preAwardApprovalRequestedDate: ""
 };
 
 describe("ApprovePreAwardApproval", () => {
@@ -113,6 +138,7 @@ describe("ApprovePreAwardApproval", () => {
     });
 
     const renderComponent = (hookData = mockHookData) => {
+        // @ts-expect-error - Mock function
         useApprovePreAwardApproval.mockReturnValue(hookData);
 
         return render(
@@ -131,7 +157,9 @@ describe("ApprovePreAwardApproval", () => {
 
     it("should render loading state", () => {
         renderComponent({ ...mockHookData, isLoading: true });
-        expect(screen.getByText("Loading...")).toBeInTheDocument();
+        const loadingElement = screen.getByText("Loading...");
+        expect(loadingElement).toBeInTheDocument();
+        expect(loadingElement.tagName).toBe("P");
     });
 
     it("should render page with agreement details", () => {

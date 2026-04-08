@@ -81,11 +81,13 @@ function PreAwardReviewCard({
                     <FontAwesomeIcon
                         icon={faClock}
                         className="height-2 width-2 margin-right-1"
+                        aria-hidden="true"
                     />
                     {formatDateToMonthDayYear(requestDate)}
                 </div>
                 {!isCondensed && (
                     <button
+                        type="button"
                         onClick={handleViewClick}
                         className="usa-button--unstyled text-primary font-12px cursor-pointer"
                         data-cy="review-pre-award"

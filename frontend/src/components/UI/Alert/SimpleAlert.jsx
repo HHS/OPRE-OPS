@@ -1,3 +1,4 @@
+import React from "react";
 import { faClose } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
@@ -10,12 +11,13 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
     @property {boolean} [isClosable] - Whether the alert is closable. - optional
     @property {boolean} [isAlertVisible] - Whether the alert is visible.
     @property {Function} [setIsAlertVisible] - The function to set the alert visibility.
+    @property {number} [headingLevel=4] - Heading level (1-6), defaults to 4
 */
 
 /**
  * @component - A simple alert component.
  * @param {SimpleAlertProps} props - The props for the component.
- * @returns {JSX.Element | null} - The rendered alert component.
+ * @returns {React.ReactElement | null} - The rendered alert component.
  */
 const SimpleAlert = ({
     children,
@@ -24,8 +26,14 @@ const SimpleAlert = ({
     type,
     isClosable = false,
     isAlertVisible = true,
-    setIsAlertVisible = () => {}
+    setIsAlertVisible = () => {},
+    headingLevel = 4
 }) => {
+    // Validate heading level (1-6)
+    const parsedLevel = typeof headingLevel === "number" ? headingLevel : parseInt(headingLevel);
+    const level = isNaN(parsedLevel) ? 4 : Math.max(1, Math.min(6, parsedLevel));
+    const headingTag = `h${level}`;
+
     let classNames = "usa-alert margin-left-neg-4 margin-right-neg-4 margin-top-2 margin-bottom-2";
 
     switch (type) {
@@ -69,7 +77,12 @@ const SimpleAlert = ({
                 style={{ flexDirection: "row", justifyContent: "space-between" }}
             >
                 <div>
-                    {heading && <h1 className="usa-alert__heading">{heading}</h1>}
+                    {heading &&
+                        React.createElement(
+                            headingTag,
+                            { className: "usa-alert__heading" },
+                            heading
+                        )}
                     <p
                         className="usa-alert__text"
                         style={{ whiteSpace: "pre-wrap" }}
@@ -82,7 +95,7 @@ const SimpleAlert = ({
                     <FontAwesomeIcon
                         icon={faClose}
                         className="height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
-                        title="close"
+                        aria-label="close"
                         data-position="top"
                         data-cy="close-alert"
                         onClick={() => {

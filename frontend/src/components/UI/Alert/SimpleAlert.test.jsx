@@ -11,7 +11,7 @@ describe("SimpleAlert", () => {
                 type="success"
             />
         );
-        const heading = screen.getByRole("heading", { name: "Test Heading" });
+        const heading = screen.getByRole("heading", { name: "Test Heading", level: 4 });
         const message = screen.getByText("Test Message");
         expect(heading).toBeInTheDocument();
         expect(message).toBeInTheDocument();
@@ -63,9 +63,9 @@ describe("SimpleAlert", () => {
                 setIsAlertVisible={setIsAlertVisible}
             />
         );
-        const close = screen.getByRole("img", { name: "close" });
-        expect(close).toBeInTheDocument();
-        fireEvent.click(close);
+        const closeButton = screen.getByLabelText("close");
+        expect(closeButton).toBeInTheDocument();
+        fireEvent.click(closeButton);
         expect(setIsAlertVisible).toHaveBeenCalledWith(false);
         // Rerender the component with the updated prop
         rerender(
@@ -94,5 +94,40 @@ describe("SimpleAlert", () => {
         const message = screen.getByText(/Line 1/);
         expect(message).toBeInTheDocument();
         expect(message).toHaveStyle({ whiteSpace: "pre-wrap" });
+    });
+    it("should render with custom heading level", () => {
+        render(
+            <SimpleAlert
+                heading="Test Heading"
+                message="Test Message"
+                type="success"
+                headingLevel={2}
+            />
+        );
+        const heading = screen.getByRole("heading", { name: "Test Heading", level: 2 });
+        expect(heading).toBeInTheDocument();
+    });
+    it("should validate heading level within range 1-6", () => {
+        const { rerender } = render(
+            <SimpleAlert
+                heading="Test Heading"
+                message="Test Message"
+                type="success"
+                headingLevel={0}
+            />
+        );
+        let heading = screen.getByRole("heading", { name: "Test Heading" });
+        expect(heading.tagName).toBe("H1");
+
+        rerender(
+            <SimpleAlert
+                heading="Test Heading"
+                message="Test Message"
+                type="success"
+                headingLevel={7}
+            />
+        );
+        heading = screen.getByRole("heading", { name: "Test Heading" });
+        expect(heading.tagName).toBe("H6");
     });
 });

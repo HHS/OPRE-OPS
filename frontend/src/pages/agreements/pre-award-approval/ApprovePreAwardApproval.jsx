@@ -51,7 +51,7 @@ export const ApprovePreAwardApproval = () => {
     const [understandsApproval, setUnderstandsApproval] = useState(false);
 
     if (isLoading) {
-        return <h1>Loading...</h1>;
+        return <p>Loading...</p>;
     }
 
     if (!hasPermission) {
@@ -61,6 +61,7 @@ export const ApprovePreAwardApproval = () => {
                     type="error"
                     heading="Access Denied"
                     message="You do not have permission to review this pre-award approval request."
+                    headingLevel={2}
                 />
             </App>
         );
@@ -96,6 +97,7 @@ export const ApprovePreAwardApproval = () => {
                     heading="Already Processed"
                     message="This pre-award approval request has already been processed."
                     isClosable={false}
+                    headingLevel={2}
                 />
             )}
 
@@ -248,7 +250,7 @@ export const ApprovePreAwardApproval = () => {
 
                 {requestorNotes && (
                     <section className="margin-top-5">
-                        <h3 className="font-sans-lg text-semibold">Submitter&apos;s Notes</h3>
+                        <h2 className="font-sans-lg text-semibold">Submitter&apos;s Notes</h2>
                         <p
                             className="maxw-mobile-lg"
                             style={{ whiteSpace: "pre-wrap" }}
@@ -259,7 +261,7 @@ export const ApprovePreAwardApproval = () => {
                 )}
 
                 <section className={requestorNotes ? "margin-top-5" : "margin-top-3"}>
-                    <h3 className="font-sans-lg text-semibold margin-bottom-0">Reviewer&apos;s Notes</h3>
+                    <h2 className="font-sans-lg text-semibold margin-bottom-0">Reviewer&apos;s Notes</h2>
                     <TextArea
                         name="reviewer-notes"
                         label="Notes (optional)"
@@ -278,6 +280,7 @@ export const ApprovePreAwardApproval = () => {
                     type="error"
                     heading="Action Failed"
                     message={submitError}
+                    headingLevel={2}
                 />
             )}
 
