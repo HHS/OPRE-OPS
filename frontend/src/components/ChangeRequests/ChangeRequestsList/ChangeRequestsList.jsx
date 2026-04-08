@@ -29,7 +29,7 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
         data: preAwardApprovals,
         isLoading: loadingPreAwardApprovals,
         isError: errorPreAwardApprovals
-    } = useGetPendingPreAwardApprovalsQuery({ userId }, { skip: !userId, refetchOnMountOrArgChange: true });
+    } = useGetPendingPreAwardApprovalsQuery(undefined, { refetchOnMountOrArgChange: true });
 
     // Handle navigation to error page in useEffect to avoid setState during render
     React.useEffect(() => {
@@ -55,9 +55,9 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
                 <PreAwardReviewCard
                     key={`pre-award-${step.id}`}
                     agreementId={step.procurement_tracker?.agreement?.id}
-                    requestorId={step.pre_award_approval_requested_by}
-                    requestDate={step.pre_award_approval_requested_date}
-                    requestorNotes={step.pre_award_requestor_notes}
+                    requestorId={step.approval_requested_by}
+                    requestDate={step.approval_requested_date}
+                    requestorNotes={step.requestor_notes}
                 />
             ))}
 

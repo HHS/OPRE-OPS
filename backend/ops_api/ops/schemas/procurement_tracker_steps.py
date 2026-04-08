@@ -281,7 +281,7 @@ class ProcurementTrackerStepPatchRequestSchema(Schema):
 
     # Pre-Award approval response fields
     approval_status = fields.String(
-        required=False, allow_none=True, validate=validate.OneOf(["APPROVED", "DECLINED", "PENDING"])
+        required=False, allow_none=True, validate=validate.OneOf(["APPROVED", "DECLINED"])
     )
     # approval_responded_by and approval_responded_date are server-controlled - not accepted from client
     reviewer_notes = fields.String(required=False, allow_none=True, validate=validate.Length(max=500))

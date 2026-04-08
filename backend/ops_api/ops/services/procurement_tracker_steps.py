@@ -169,6 +169,13 @@ class ProcurementTrackerStepService:
         # Always set approval_requested_by to current user when approval is requested
         # This is server-controlled and never accepted from the client
         if data.get("approval_requested") is True:
+            # Clear previous response fields to allow new review cycle (e.g., after decline)
+            step.pre_award_approval_status = None
+            step.pre_award_approval_responded_by = None
+            step.pre_award_approval_responded_date = None
+            step.pre_award_approval_reviewer_notes = None
+            logger.debug("Cleared previous approval response fields for new request")
+
             step.pre_award_approval_requested_by = current_user.id
             logger.debug(f"Set pre_award_approval_requested_by = {current_user.id} (server-controlled)")
 
