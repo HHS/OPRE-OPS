@@ -139,6 +139,7 @@ const AuthSection = () => {
             {!isLoggedIn && (
                 <div id="auth-section">
                     <button
+                        type="button"
                         className="usa-button usa-button--unstyled margin-105"
                         onClick={() => {
                             const stateKey = localStorage.getItem("ops-state-key");
@@ -165,6 +166,7 @@ const AuthSection = () => {
                         </div>
                         <span className="text-brand-primary">|</span>
                         <button
+                            type="button"
                             className="usa-button usa-button--unstyled margin-105"
                             onClick={logoutHandler}
                             data-cy="sign-out"

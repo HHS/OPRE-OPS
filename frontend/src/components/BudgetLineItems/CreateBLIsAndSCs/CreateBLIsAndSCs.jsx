@@ -284,6 +284,7 @@ export const CreateBLIsAndSCs = ({
                 {workflow === "agreement" && <GoBackButton handleGoBack={handleGoBack} />}
                 <div className={workflow === "agreement" ? "" : "margin-left-auto"}>
                     <button
+                        type="button"
                         className="usa-button usa-button--unstyled margin-right-2"
                         data-cy="cancel-button"
                         onClick={handleCancel}
@@ -291,6 +292,7 @@ export const CreateBLIsAndSCs = ({
                         Cancel
                     </button>
                     <button
+                        type="button"
                         className="usa-button"
                         data-cy="continue-btn"
                         onClick={() => {

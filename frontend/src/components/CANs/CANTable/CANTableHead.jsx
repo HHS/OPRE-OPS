@@ -35,6 +35,7 @@ and it's available to plan from`;
                     }
                 >
                     <button
+                        type="button"
                         className="usa-table__header__button cursor-pointer"
                         title={`Click to sort by ${CAN_TABLE_HEADERS.CAN_NAME} in ascending or descending order`}
                         onClick={() => {

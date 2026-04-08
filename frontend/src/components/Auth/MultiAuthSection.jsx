@@ -177,6 +177,7 @@ const MultiAuthSection = () => {
                 {import.meta.env.MODE === "development" && (
                     <p>
                         <button
+                            type="button"
                             className="usa-button usa-button--outline width-full"
                             onClick={() => handleSSOLogin("logingov")}
                             disabled={isAuthenticating}
@@ -187,6 +188,7 @@ const MultiAuthSection = () => {
                 )}
                 <p>
                     <button
+                        type="button"
                         className="usa-button usa-button--outline width-full"
                         onClick={() => handleSSOLogin("hhsams")}
                         disabled={isAuthenticating}
@@ -197,6 +199,7 @@ const MultiAuthSection = () => {
                 {!import.meta.env.PROD && (
                     <p>
                         <button
+                            type="button"
                             className="usa-button usa-button--outline width-full"
                             onClick={() => setShowModal(true)}
                             disabled={isAuthenticating}

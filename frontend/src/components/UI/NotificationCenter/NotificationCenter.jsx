@@ -75,6 +75,7 @@ const NotificationCenter = ({ user }) => {
                         <div className={customStyles.headerSection}>
                             <h1 className="font-sans-lg">Notifications</h1>
                             <button
+                                type="button"
                                 id="clear-all-button"
                                 className="usa-button usa-button--unstyled padding-right-2 text-no-underline display-flex align-items-center flex-align-center"
                                 onClick={dismissAll}

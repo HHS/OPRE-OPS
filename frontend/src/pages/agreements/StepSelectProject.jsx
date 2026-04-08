@@ -136,6 +136,7 @@ export const StepSelectProject = ({
             />
             <div className="grid-row flex-justify-end margin-top-8">
                 <button
+                    type="button"
                     className="usa-button usa-button--unstyled margin-right-2"
                     data-cy="cancel-button"
                     onClick={handleCancel}
@@ -143,6 +144,7 @@ export const StepSelectProject = ({
                     Cancel
                 </button>
                 <button
+                    type="button"
                     id={"continue"}
                     className="usa-button"
                     onClick={handleContinue}
@@ -158,6 +160,7 @@ export const StepSelectProject = ({
             </div>
             <div className="grid-row flex-justify-center">
                 <button
+                    type="button"
                     className="usa-button usa-button--outline margin-top-6 margin-bottom-6"
                     onClick={handleAddProject}
                 >

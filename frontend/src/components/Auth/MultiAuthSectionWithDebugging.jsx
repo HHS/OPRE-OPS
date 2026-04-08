@@ -121,6 +121,7 @@ const MultiAuthSectionWithDebugging = () => {
                 {import.meta.env.MODE === "development" && ( // login.gov is only configured to work locally at the moment
                     <p>
                         <button
+                            type="button"
                             className="usa-button usa-button--outline width-full"
                             onClick={() => handleSSOLogin("logingov")}
                         >
@@ -130,6 +131,7 @@ const MultiAuthSectionWithDebugging = () => {
                 )}
                 <p>
                     <button
+                        type="button"
                         className="usa-button usa-button--outline width-full"
                         onClick={() => handleSSOLogin("hhsams")}
                     >
@@ -139,6 +141,7 @@ const MultiAuthSectionWithDebugging = () => {
                 {!import.meta.env.PROD && (
                     <p>
                         <button
+                            type="button"
                             className="usa-button usa-button--outline width-full"
                             onClick={() => setShowModal(true)}
                         >
@@ -155,6 +158,7 @@ const MultiAuthSectionWithDebugging = () => {
                         <div className="usa-prose">
                             <p>
                                 <button
+                                    type="button"
                                     className="usa-button  usa-button--outline width-full"
                                     onClick={() => handleFakeAuthLogin("system_owner")}
                                 >
@@ -163,6 +167,7 @@ const MultiAuthSectionWithDebugging = () => {
                             </p>
                             <p>
                                 <button
+                                    type="button"
                                     className="usa-button  usa-button--outline width-full"
                                     onClick={() => handleFakeAuthLogin("budget_team")}
                                 >
@@ -171,6 +176,7 @@ const MultiAuthSectionWithDebugging = () => {
                             </p>
                             <p>
                                 <button
+                                    type="button"
                                     className="usa-button  usa-button--outline width-full"
                                     onClick={() => handleFakeAuthLogin("division_director")}
                                 >
@@ -179,6 +185,7 @@ const MultiAuthSectionWithDebugging = () => {
                             </p>
                             <p>
                                 <button
+                                    type="button"
                                     className="usa-button  usa-button--outline width-full"
                                     onClick={() => handleFakeAuthLogin("basic_user")}
                                 >

@@ -205,6 +205,7 @@ const ApproveAgreement = () => {
             </div>
             <div className="grid-row flex-justify-end flex-align-center margin-top-8">
                 <button
+                    type="button"
                     name="cancel"
                     className={`usa-button usa-button--unstyled margin-right-2`}
                     data-cy="cancel-approval-btn"
@@ -214,6 +215,7 @@ const ApproveAgreement = () => {
                 </button>
 
                 <button
+                    type="button"
                     className={`usa-button usa-button--outline margin-right-2`}
                     data-cy="decline-approval-btn"
                     onClick={() => handleApproveChangeRequests(CHANGE_REQUEST_ACTION.REJECT)}
@@ -221,6 +223,7 @@ const ApproveAgreement = () => {
                     Decline
                 </button>
                 <button
+                    type="button"
                     className="usa-button"
                     data-cy="send-to-approval-btn"
                     onClick={() => handleApproveChangeRequests(CHANGE_REQUEST_ACTION.APPROVE)}

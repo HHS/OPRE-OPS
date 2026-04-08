@@ -32,6 +32,7 @@ export const FilterButton = ({ applyFilter, resetFilter, fieldsetList, disabled 
             id="filter-container"
         >
             <button
+                type="button"
                 style={{ fontSize: "16px" }}
                 className={`usa-button--unstyled display-flex flex-align-end margin-right-0 cursor-pointer ${
                     !showModal ? "text-primary" : "text-semibold"
@@ -71,12 +72,14 @@ export const FilterButton = ({ applyFilter, resetFilter, fieldsetList, disabled 
                 </div>
                 <div className="display-flex flex-justify-end padding-right-205 padding-bottom-205">
                     <button
+                        type="button"
                         className="usa-button usa-button--outline"
                         onClick={handleResetFilter}
                     >
                         <span className="">Reset</span>
                     </button>
                     <button
+                        type="button"
                         className="usa-button usa-button--primary margin-right-0"
                         onClick={handleApplyFilter}
                     >
