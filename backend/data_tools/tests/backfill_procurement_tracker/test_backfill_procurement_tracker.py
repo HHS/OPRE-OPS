@@ -3,7 +3,8 @@ from sqlalchemy import select, text
 
 from data_tools.src.backfill_procurement_tracker import (
     backfill_procurement_records,
-    get_agreements_in_execution_missing_tracker_or_action,
+    get_agreements_with_in_execution_blis,
+    link_in_execution_blis_to_action,
 )
 from data_tools.src.common.utils import get_or_create_sys_user
 from models import *  # noqa: F403, F401
@@ -127,32 +128,34 @@ def db_with_agreements(loaded_db):
     loaded_db.commit()
 
 
-def test_query_finds_agreements_missing_tracker_or_action(db_with_agreements):
-    """Only agreements with IN_EXECUTION BLIs missing a tracker and/or action are returned."""
-    results = get_agreements_in_execution_missing_tracker_or_action(db_with_agreements)
+def test_query_finds_all_agreements_with_in_execution_blis(db_with_agreements):
+    """Returns all agreements with IN_EXECUTION BLIs, regardless of tracker/action state."""
+    results = get_agreements_with_in_execution_blis(db_with_agreements)
     result_ids = {a.id for a in results}
 
-    # Agreement 9001: missing both → included
+    # Agreements 9001-9004 all have IN_EXECUTION BLIs → included
     assert 9001 in result_ids
-    # Agreement 9003: missing action → included
+    assert 9002 in result_ids
     assert 9003 in result_ids
-    # Agreement 9004: missing tracker → included
     assert 9004 in result_ids
-    # Agreement 9002: has both → excluded
-    assert 9002 not in result_ids
     # Agreement 9005: only PLANNED BLIs → excluded
     assert 9005 not in result_ids
     # Agreement 9006: only DRAFT BLIs → excluded
     assert 9006 not in result_ids
 
 
-def test_query_returns_empty_when_all_have_records(db_with_agreements):
-    """After backfill, the query should return no results."""
+def test_query_still_returns_agreements_after_backfill(db_with_agreements):
+    """The query returns all IN_EXECUTION agreements regardless of backfill state."""
     sys_user = get_or_create_sys_user(db_with_agreements)
     backfill_procurement_records(db_with_agreements, sys_user)
 
-    results = get_agreements_in_execution_missing_tracker_or_action(db_with_agreements)
-    assert len(results) == 0
+    results = get_agreements_with_in_execution_blis(db_with_agreements)
+    result_ids = {a.id for a in results}
+    # All 4 agreements with IN_EXECUTION BLIs are still returned
+    assert 9001 in result_ids
+    assert 9002 in result_ids
+    assert 9003 in result_ids
+    assert 9004 in result_ids
 
 
 def test_backfill_creates_tracker_and_action_when_both_missing(db_with_agreements):
@@ -300,13 +303,16 @@ def test_backfill_creates_ops_events(db_with_agreements):
 
 
 def test_backfill_is_idempotent(db_with_agreements):
-    """Running backfill twice should not create duplicate records."""
+    """Running backfill twice should not create duplicate records or duplicate BLI links."""
     sys_user = get_or_create_sys_user(db_with_agreements)
     backfill_procurement_records(db_with_agreements, sys_user)
 
     trackers_after_first = db_with_agreements.execute(select(ProcurementTracker)).scalars().all()
     actions_after_first = db_with_agreements.execute(
         select(ProcurementAction).where(ProcurementAction.award_type == AwardType.NEW_AWARD)
+    ).scalars().all()
+    linked_blis_first = db_with_agreements.execute(
+        select(BudgetLineItem).where(BudgetLineItem.procurement_action_id.isnot(None))
     ).scalars().all()
 
     backfill_procurement_records(db_with_agreements, sys_user)
@@ -315,6 +321,92 @@ def test_backfill_is_idempotent(db_with_agreements):
     actions_after_second = db_with_agreements.execute(
         select(ProcurementAction).where(ProcurementAction.award_type == AwardType.NEW_AWARD)
     ).scalars().all()
+    linked_blis_second = db_with_agreements.execute(
+        select(BudgetLineItem).where(BudgetLineItem.procurement_action_id.isnot(None))
+    ).scalars().all()
 
     assert len(trackers_after_second) == len(trackers_after_first)
     assert len(actions_after_second) == len(actions_after_first)
+    assert len(linked_blis_second) == len(linked_blis_first)
+
+
+def test_backfill_links_in_execution_blis_to_action(db_with_agreements):
+    """All IN_EXECUTION BLIs should be linked to the NEW_AWARD ProcurementAction."""
+    sys_user = get_or_create_sys_user(db_with_agreements)
+    backfill_procurement_records(db_with_agreements, sys_user)
+
+    for agreement_id in [9001, 9002, 9003, 9004]:
+        action = db_with_agreements.execute(
+            select(ProcurementAction).where(
+                ProcurementAction.agreement_id == agreement_id,
+                ProcurementAction.award_type == AwardType.NEW_AWARD,
+            )
+        ).scalar_one()
+
+        in_exec_blis = db_with_agreements.execute(
+            select(BudgetLineItem).where(
+                BudgetLineItem.agreement_id == agreement_id,
+                BudgetLineItem.status == BudgetLineItemStatus.IN_EXECUTION,
+            )
+        ).scalars().all()
+
+        for bli in in_exec_blis:
+            assert bli.procurement_action_id == action.id, (
+                f"BLI {bli.id} on Agreement {agreement_id} should be linked to "
+                f"ProcurementAction {action.id}"
+            )
+
+
+def test_backfill_does_not_link_non_executing_blis(db_with_agreements):
+    """PLANNED and DRAFT BLIs should not be linked to any ProcurementAction."""
+    sys_user = get_or_create_sys_user(db_with_agreements)
+    backfill_procurement_records(db_with_agreements, sys_user)
+
+    for bli_id in [90005, 90006]:
+        bli = db_with_agreements.get(BudgetLineItem, bli_id)
+        assert bli.procurement_action_id is None, (
+            f"BLI {bli_id} (status={bli.status}) should not be linked to a ProcurementAction"
+        )
+
+
+def test_link_blis_does_not_create_duplicates(db_with_agreements):
+    """Calling link_in_execution_blis_to_action twice should not double-link BLIs."""
+    sys_user = get_or_create_sys_user(db_with_agreements)
+
+    # Create action for agreement 9001
+    action = ProcurementAction(
+        agreement_id=9001, award_type=AwardType.NEW_AWARD,
+        status=ProcurementActionStatus.PLANNED, created_by=sys_user.id,
+    )
+    db_with_agreements.add(action)
+    db_with_agreements.flush()
+
+    agreement = db_with_agreements.get(Agreement, 9001)
+
+    first_count = link_in_execution_blis_to_action(db_with_agreements, agreement, action)
+    db_with_agreements.flush()
+    second_count = link_in_execution_blis_to_action(db_with_agreements, agreement, action)
+
+    assert first_count == 1  # one IN_EXECUTION BLI on agreement 9001
+    assert second_count == 0  # already linked, no new links
+
+
+def test_backfill_links_blis_when_tracker_and_action_already_exist(db_with_agreements):
+    """Agreement 9002 already has both tracker and action — BLIs should still get linked."""
+    sys_user = get_or_create_sys_user(db_with_agreements)
+
+    # Verify BLI is not linked before backfill
+    bli = db_with_agreements.get(BudgetLineItem, 90002)
+    assert bli.procurement_action_id is None
+
+    backfill_procurement_records(db_with_agreements, sys_user)
+
+    # Now it should be linked
+    db_with_agreements.refresh(bli)
+    action = db_with_agreements.execute(
+        select(ProcurementAction).where(
+            ProcurementAction.agreement_id == 9002,
+            ProcurementAction.award_type == AwardType.NEW_AWARD,
+        )
+    ).scalar_one()
+    assert bli.procurement_action_id == action.id

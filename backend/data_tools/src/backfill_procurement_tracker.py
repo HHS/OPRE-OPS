@@ -53,12 +53,10 @@ logger.configure(handlers=[{"sink": sys.stdout, "format": format, "level": LOG_L
 logger.add(sys.stderr, format=format, level=LOG_LEVEL)
 
 
-def get_agreements_in_execution_missing_tracker_or_action(session: Session) -> list[Agreement]:
+def get_agreements_with_in_execution_blis(session: Session) -> list[Agreement]:
     """
-    Find agreements that have at least one BLI in IN_EXECUTION status
-    and are missing a ProcurementTracker and/or a NEW_AWARD ProcurementAction.
+    Find all agreements that have at least one BLI in IN_EXECUTION status.
     """
-    # Subquery: agreement IDs with at least one IN_EXECUTION BLI
     in_execution_agreement_ids = (
         select(BudgetLineItem.agreement_id)
         .where(BudgetLineItem.status == BudgetLineItemStatus.IN_EXECUTION)
@@ -67,49 +65,60 @@ def get_agreements_in_execution_missing_tracker_or_action(session: Session) -> l
         .subquery()
     )
 
-    # Subquery: agreement IDs that already have a ProcurementTracker
-    has_tracker = (
-        select(ProcurementTracker.agreement_id)
-        .distinct()
-        .subquery()
-    )
-
-    # Subquery: agreement IDs that already have a NEW_AWARD ProcurementAction
-    has_new_award_action = (
-        select(ProcurementAction.agreement_id)
-        .where(ProcurementAction.award_type == AwardType.NEW_AWARD)
-        .distinct()
-        .subquery()
-    )
-
-    agreements = (
+    return (
         session.execute(
             select(Agreement)
             .where(Agreement.id.in_(select(in_execution_agreement_ids.c.agreement_id)))
+        )
+        .scalars()
+        .all()
+    )
+
+
+def link_in_execution_blis_to_action(
+    session: Session, agreement: Agreement, procurement_action: ProcurementAction
+) -> int:
+    """
+    Ensure all IN_EXECUTION BLIs on the agreement are linked to the ProcurementAction.
+    Returns the number of BLIs that were newly linked.
+    """
+    unlinked_blis = (
+        session.execute(
+            select(BudgetLineItem)
+            .where(BudgetLineItem.agreement_id == agreement.id)
+            .where(BudgetLineItem.status == BudgetLineItemStatus.IN_EXECUTION)
             .where(
-                (Agreement.id.not_in(select(has_tracker.c.agreement_id)))
-                | (Agreement.id.not_in(select(has_new_award_action.c.agreement_id)))
+                (BudgetLineItem.procurement_action_id.is_(None))
+                | (BudgetLineItem.procurement_action_id != procurement_action.id)
             )
         )
         .scalars()
         .all()
     )
 
-    return agreements
+    linked_count = 0
+    for bli in unlinked_blis:
+        bli.procurement_action_id = procurement_action.id
+        linked_count += 1
+
+    if linked_count:
+        logger.info(
+            f"Linked {linked_count} IN_EXECUTION BLI(s) to ProcurementAction {procurement_action.id} "
+            f"for Agreement {agreement.id} ('{agreement.name}')"
+        )
+
+    return linked_count
 
 
 def backfill_procurement_records(session: Session, sys_user: User) -> None:
     """
-    For each qualifying agreement, ensure it has:
+    For each agreement with IN_EXECUTION BLIs, ensure it has:
     1. A ProcurementAction with award_type=NEW_AWARD
     2. A DefaultProcurementTracker with 6 steps
+    3. All IN_EXECUTION BLIs linked to the ProcurementAction
     """
-    agreements = get_agreements_in_execution_missing_tracker_or_action(session)
-    logger.info(
-        f"Found {len(agreements)} agreements with IN_EXECUTION BLIs "
-        f"missing a tracker and/or action."
-    )
-    # also log the IDs and names and types of these agreements for easier debugging
+    agreements = get_agreements_with_in_execution_blis(session)
+    logger.info(f"Found {len(agreements)} agreements with IN_EXECUTION BLIs.")
     for agreement in agreements:
         logger.info(
             f"Agreement ID {agreement.id}, Name '{agreement.name}', Type '{agreement.agreement_type}'"
@@ -117,9 +126,9 @@ def backfill_procurement_records(session: Session, sys_user: User) -> None:
 
     created_trackers = 0
     created_actions = 0
+    total_linked_blis = 0
 
     for agreement in agreements:
-        # Check individually so we only create what's missing
         existing_tracker = session.execute(
             select(ProcurementTracker).where(ProcurementTracker.agreement_id == agreement.id)
         ).scalar_one_or_none()
@@ -188,6 +197,11 @@ def backfill_procurement_records(session: Session, sys_user: User) -> None:
                     )
                 )
 
+            # Link any unlinked IN_EXECUTION BLIs to the procurement action
+            total_linked_blis += link_in_execution_blis_to_action(
+                session, agreement, procurement_action
+            )
+
             if os.getenv("DRY_RUN"):
                 logger.info(f"Dry run: rolling back changes for Agreement {agreement.id}.")
                 session.rollback()
@@ -200,7 +214,8 @@ def backfill_procurement_records(session: Session, sys_user: User) -> None:
             raise
 
     logger.info(
-        f"Backfill complete. Created {created_trackers} trackers and {created_actions} actions."
+        f"Backfill complete. Created {created_trackers} trackers, "
+        f"{created_actions} actions, linked {total_linked_blis} BLIs."
     )
 
 
