@@ -3,8 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
     useUpdateProcurementTrackerStepMutation,
     useAddDocumentMutation,
-    useUpdateDocumentStatusMutation,
-    useGetProcurementTrackersByAgreementIdQuery
+    useUpdateDocumentStatusMutation
 } from "../../../api/opsAPI";
 import { getLocalISODate } from "../../../helpers/utils";
 import {
@@ -14,10 +13,7 @@ import {
     uploadDocumentToBlob,
     uploadDocumentToInMemory
 } from "../../../components/Agreements/Documents/Document";
-import {
-    ProcurementTrackerStepStatus,
-    ProcurementTrackerStatus
-} from "../../../components/Agreements/ProcurementTracker/ProcurementTracker.constants";
+import { ProcurementTrackerStepStatus } from "../../../components/Agreements/ProcurementTracker/ProcurementTracker.constants";
 import usePreAwardApprovalData from "./usePreAwardApprovalData";
 
 /**
@@ -49,18 +45,9 @@ export default function useRequestPreAwardApproval(agreementId) {
         servicesComponents,
         groupedBudgetLinesByServicesComponent,
         preAwardMemoDocuments,
+        step4,
         step5
     } = usePreAwardApprovalData(agreementId);
-
-    // Get Step 4 from procurement tracker (step5 comes from shared hook)
-    const { data: procurementTrackersData } = useGetProcurementTrackersByAgreementIdQuery(agreementId, {
-        skip: !agreementId
-    });
-    const trackers = procurementTrackersData?.data || [];
-    const activeTracker = trackers.find(
-        (/** @type {any} */ tracker) => tracker.status === ProcurementTrackerStatus.ACTIVE
-    );
-    const step4 = activeTracker?.steps?.find((/** @type {any} */ step) => step.step_number === 4);
 
     // Check if approval is pending (requested but not yet approved or declined)
     // This is used for both the banner and disabling buttons

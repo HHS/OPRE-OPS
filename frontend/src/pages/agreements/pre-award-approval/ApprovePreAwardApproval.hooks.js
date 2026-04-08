@@ -156,7 +156,7 @@ export default function useApprovePreAwardApproval(agreementId) {
                         redirectUrl: "/agreements?filter=change-requests"
                     });
                 } catch (error) {
-                    console.error(`Failed to ${actionText} approval request:`, error);
+                    console.error("Failed to", actionText, "approval request:", error);
                     setSubmitError(
                         // @ts-expect-error - RTK Query error has data property
                         error?.data?.error || `Failed to ${actionText} approval request. Please try again.`

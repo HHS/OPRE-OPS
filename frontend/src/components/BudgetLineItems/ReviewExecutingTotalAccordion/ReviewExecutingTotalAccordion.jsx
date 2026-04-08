@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import Accordion from "../../UI/Accordion/Accordion";
+import Accordion from "../../UI/Accordion";
 import BudgetLineTotalSummaryCard from "../BudgetLinesTotalSummaryCard/BudgetLinesTotalSummaryCard";
 
 /**

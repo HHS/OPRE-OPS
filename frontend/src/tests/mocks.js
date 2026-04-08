@@ -139,7 +139,14 @@ export const handlers = [
     }),
 
     // Mock documents endpoint for pre-award approval
-    http.get("https://localhost:8000/api/v1/agreements/:id/documents", () => {
+    http.get("https://localhost:8000/api/v1/documents/", ({ request }) => {
+        const url = new URL(request.url);
+        const agreementId = url.searchParams.get("agreement_id");
+
+        if (!agreementId) {
+            return HttpResponse.json({ documents: [] });
+        }
+
         return HttpResponse.json({
             documents: [
                 {

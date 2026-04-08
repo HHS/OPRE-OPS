@@ -472,7 +472,14 @@ export const userHandlers = [
 ];
 
 export const documentHandlers = [
-    http.get(`${BACKEND_DOMAIN}/api/v1/agreements/:id/documents`, () => {
+    http.get(`${BACKEND_DOMAIN}/api/v1/documents/`, ({ request }) => {
+        const url = new URL(request.url);
+        const agreementId = url.searchParams.get("agreement_id");
+
+        if (!agreementId) {
+            return HttpResponse.json({ documents: [] });
+        }
+
         return HttpResponse.json({
             documents: [
                 {

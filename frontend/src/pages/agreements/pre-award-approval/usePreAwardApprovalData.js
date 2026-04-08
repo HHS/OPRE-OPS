@@ -43,9 +43,10 @@ export default function usePreAwardApprovalData(agreementId) {
     // Group all budget lines by services component for display
     const groupedBudgetLinesByServicesComponent = groupByServicesComponent(allBudgetLines, servicesComponents || []);
 
-    // Get Step 5 (Pre-Award) from procurement tracker
+    // Get active tracker and steps from procurement tracker
     const trackers = procurementTrackersData?.data || [];
     const activeTracker = trackers.find(/** @param {any} tracker */ (tracker) => tracker.status === "ACTIVE");
+    const step4 = activeTracker?.steps?.find(/** @param {any} step */ (step) => step.step_number === 4);
     const step5 = activeTracker?.steps?.find(/** @param {any} step */ (step) => step.step_number === 5);
 
     const preAwardRequestorName = useGetUserFullNameFromId(step5?.approval_requested_by);
@@ -66,6 +67,8 @@ export default function usePreAwardApprovalData(agreementId) {
         servicesComponents,
         groupedBudgetLinesByServicesComponent,
         preAwardMemoDocuments,
+        activeTracker,
+        step4,
         step5,
         preAwardRequestorName,
         preAwardApprovalRequestedDate: step5?.approval_requested_date

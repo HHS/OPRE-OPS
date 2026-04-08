@@ -80,8 +80,7 @@ vi.mock("../../../components/UI/Alert/SimpleAlert", () => ({
     ) => (
         <div data-testid={`alert-${type}`}>
             <h3>{heading}</h3>
-            {message && <p>{message}</p>}
-            {children && <p>{children}</p>}
+            <p>{children || message}</p>
         </div>
     )
 }));
