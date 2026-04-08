@@ -77,12 +77,7 @@ const SimpleAlert = ({
                 style={{ flexDirection: "row", justifyContent: "space-between" }}
             >
                 <div>
-                    {heading &&
-                        React.createElement(
-                            headingTag,
-                            { className: "usa-alert__heading" },
-                            heading
-                        )}
+                    {heading && React.createElement(headingTag, { className: "usa-alert__heading" }, heading)}
                     <p
                         className="usa-alert__text"
                         style={{ whiteSpace: "pre-wrap" }}

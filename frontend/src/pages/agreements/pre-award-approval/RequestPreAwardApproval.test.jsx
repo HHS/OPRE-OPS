@@ -23,9 +23,7 @@ vi.mock("./RequestPreAwardApproval.hooks", () => ({
 
 vi.mock("../../../App", () => ({
     __esModule: true,
-    default: (/** @type {{ children: React.ReactNode }} */ { children }) => (
-        <div data-testid="app">{children}</div>
-    )
+    default: (/** @type {{ children: React.ReactNode }} */ { children }) => <div data-testid="app">{children}</div>
 }));
 
 vi.mock("../../../components/Agreements/AgreementMetaAccordion", () => ({

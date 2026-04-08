@@ -13,9 +13,7 @@ vi.mock("./ApprovePreAwardApproval.hooks", () => ({
 
 // Mock child components
 vi.mock("../../../App", () => ({
-    default: (/** @type {{ children: React.ReactNode }} */ { children }) => (
-        <div data-testid="app">{children}</div>
-    )
+    default: (/** @type {{ children: React.ReactNode }} */ { children }) => <div data-testid="app">{children}</div>
 }));
 
 vi.mock("../../../components/UI/PageHeader", () => ({
