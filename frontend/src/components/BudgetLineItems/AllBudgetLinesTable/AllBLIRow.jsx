@@ -1,11 +1,15 @@
+import { faClock } from "@fortawesome/free-regular-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import CurrencyFormat from "react-currency-format";
 import { Link } from "react-router-dom";
 import { NO_DATA } from "../../../constants";
-import { getProcurementShopLabel } from "../../../helpers/budgetLines.helpers";
+import { getBudgetLineCreatedDate, getProcurementShopLabel } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import { convertCodeForDisplay, formatDateNeeded } from "../../../helpers/utils";
 import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
 import { useGetServicesComponentDisplayName } from "../../../hooks/useServicesComponents.hooks";
+import useGetUserFullNameFromId from "../../../hooks/user.hooks";
+import { AWARD_TYPE_LABELS } from "../../../pages/agreements/agreements.constants";
 import TableRowExpandable from "../../UI/TableRowExpandable";
 import { expandedRowBGColor } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
@@ -30,6 +34,9 @@ const AllBLIRow = ({ budgetLine }) => {
     const { data: budgetLinePortfolio, isLoading: isPortfolioLoading } = useGetPortfolioByIdQuery(
         budgetLine?.portfolio_id
     );
+    const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
+    const awardType = AWARD_TYPE_LABELS[budgetLine?.agreement?.award_type] ?? NO_DATA;
+    const vendor = budgetLine?.agreement?.vendor ?? NO_DATA;
     const agreementName = budgetLine?.agreement?.name?.trim() || NO_DATA;
     const agreementLinkLabel =
         budgetLine?.agreement?.name?.trim() ||
@@ -99,7 +106,23 @@ const AllBLIRow = ({ budgetLine }) => {
             style={expandedRowBGColor}
         >
             <div className="display-flex flex-justify padding-right-10">
-                <dl className="font-12px">
+                <dl className="font-12px margin-top-0">
+                    <dt className="margin-0 text-base-dark">Created by</dt>
+                    <dd
+                        id={`created-by-name-${budgetLine?.id}`}
+                        className="margin-0"
+                    >
+                        {budgetLineCreatorName}
+                    </dd>
+                    <dt className="margin-0 text-base-dark display-flex flex-align-center margin-top-2">
+                        <FontAwesomeIcon
+                            icon={faClock}
+                            className="height-2 width-2 margin-right-1"
+                        />
+                        {getBudgetLineCreatedDate(budgetLine)}
+                    </dt>
+                </dl>
+                <dl className="font-12px margin-left-2 margin-top-0">
                     <dt className="margin-0 text-base-dark">Description</dt>
                     <dd
                         className="margin-0 wrap-text"
@@ -108,7 +131,7 @@ const AllBLIRow = ({ budgetLine }) => {
                         {budgetLine?.line_description}
                     </dd>
                 </dl>
-                <dl className="font-12px margin-left-2">
+                <dl className="font-12px margin-left-2 margin-top-0">
                     <dt className="margin-0 text-base-dark">Procurement Shop</dt>
                     <dd
                         className="margin-0"
@@ -117,8 +140,8 @@ const AllBLIRow = ({ budgetLine }) => {
                         {getProcurementShopLabel(budgetLine)}
                     </dd>
                 </dl>
-                <dl className="font-12px margin-left-2">
-                    <dt className="margin-0 text-base-dark">SubTotal</dt>
+                <dl className="font-12px margin-left-2 margin-top-0">
+                    <dt className="margin-0 text-base-dark">Subtotal</dt>
                     <dd className="margin-0">
                         <CurrencyFormat
                             value={budgetLine?.amount ?? 0}
@@ -130,7 +153,7 @@ const AllBLIRow = ({ budgetLine }) => {
                         />
                     </dd>
                 </dl>
-                <dl className="margin-left-2 font-12px">
+                <dl className="margin-left-2 font-12px margin-top-0">
                     <dt className="margin-0 text-base-dark">Fees</dt>
                     <dd className="margin-0">
                         <CurrencyFormat
@@ -144,8 +167,11 @@ const AllBLIRow = ({ budgetLine }) => {
                     </dd>
                 </dl>
             </div>
-            <div className="display-flex flex-justify padding-right-10">
-                <dl className="font-12px">
+            <p className="font-12px margin-0 margin-top-1 text-base-dark">
+                Agreement data associated to this budget line
+            </p>
+            <div className="display-flex flex-justify padding-right-10 ">
+                <dl className="font-12px margin-top-0">
                     <dt className="margin-0 text-base-dark">Project</dt>
                     <dd
                         className="margin-0 wrap-text"
@@ -153,6 +179,18 @@ const AllBLIRow = ({ budgetLine }) => {
                     >
                         {budgetLine.agreement?.project?.title ?? NO_DATA}
                     </dd>
+                </dl>
+                <dl className="font-12px margin-left-2 margin-top-0">
+                    <dt className="margin-0 text-base-dark">Award Type</dt>
+                    <dd className="margin-0">{awardType}</dd>
+                </dl>
+                <dl className="font-12px margin-left-2 margin-top-0">
+                    <dt className="margin-0 text-base-dark">Research Type</dt>
+                    <dd className="margin-0">{NO_DATA}</dd>
+                </dl>
+                <dl className="font-12px margin-left-2 margin-top-0">
+                    <dt className="margin-0 text-base-dark">Vendor</dt>
+                    <dd className="margin-0">{vendor}</dd>
                 </dl>
             </div>
         </td>
