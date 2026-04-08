@@ -370,7 +370,10 @@ class TestSimpleAgreementSchema:
     def test_simple_agreement_schema_has_all_expected_fields(self):
         """Test the schema contains exactly the expected fields."""
         schema = SimpleAgreementSchema()
-        expected_fields = {"id", "agreement_type", "name", "awarding_entity_id", "project", "procurement_shop"}
+        expected_fields = {
+            "id", "agreement_type", "name", "awarding_entity_id",
+            "project", "procurement_shop", "award_type", "vendor",
+        }
         assert set(schema.fields.keys()) == expected_fields
 
     def test_simple_agreement_schema_procurement_shop_allows_none(self):
@@ -396,6 +399,7 @@ class TestSimpleAgreementSchema:
             procurement_shop_fees=[],
         )
         project = types.SimpleNamespace(id=1, title="Test Project", project_type=None)
+        vendor = types.SimpleNamespace(name="Acme Corp")
         agreement = types.SimpleNamespace(
             id=100,
             agreement_type="CONTRACT",
@@ -403,6 +407,8 @@ class TestSimpleAgreementSchema:
             awarding_entity_id=42,
             project=project,
             procurement_shop=procurement_shop,
+            award_type="NEW",
+            vendor=vendor,
         )
 
         result = schema.dump(agreement)
@@ -417,6 +423,8 @@ class TestSimpleAgreementSchema:
         # Fields not in 'only' should be excluded
         assert "fee_percentage" not in result["procurement_shop"]
         assert "procurement_shop_fees" not in result["procurement_shop"]
+        assert result["award_type"] == "NEW"
+        assert result["vendor"] == "Acme Corp"
 
     def test_simple_agreement_schema_dumps_with_null_procurement_shop(self):
         """Test serialization of an agreement where procurement_shop is None."""
@@ -429,9 +437,51 @@ class TestSimpleAgreementSchema:
             awarding_entity_id=None,
             project=project,
             procurement_shop=None,
+            award_type=None,
         )
 
         result = schema.dump(agreement)
 
         assert result["id"] == 200
         assert result["procurement_shop"] is None
+        assert result["award_type"] is None
+        assert result["vendor"] is None
+
+    def test_simple_agreement_schema_dumps_vendor_for_contract(self):
+        """Test that vendor name is serialized for contract agreements."""
+        schema = SimpleAgreementSchema()
+        project = types.SimpleNamespace(id=1, title="Test Project", project_type=None)
+        vendor = types.SimpleNamespace(name="Test Vendor Inc")
+        agreement = types.SimpleNamespace(
+            id=300,
+            agreement_type="CONTRACT",
+            name="Contract With Vendor",
+            awarding_entity_id=1,
+            project=project,
+            procurement_shop=None,
+            award_type="CONTINUING",
+            vendor=vendor,
+        )
+
+        result = schema.dump(agreement)
+
+        assert result["vendor"] == "Test Vendor Inc"
+        assert result["award_type"] == "CONTINUING"
+
+    def test_simple_agreement_schema_dumps_vendor_none_for_non_contract(self):
+        """Test that vendor is None for agreement types without vendor attribute."""
+        schema = SimpleAgreementSchema()
+        project = types.SimpleNamespace(id=1, title="Test Project", project_type=None)
+        agreement = types.SimpleNamespace(
+            id=400,
+            agreement_type="GRANT",
+            name="Grant Without Vendor",
+            awarding_entity_id=None,
+            project=project,
+            procurement_shop=None,
+            award_type=None,
+        )
+
+        result = schema.dump(agreement)
+
+        assert result["vendor"] is None
