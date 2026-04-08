@@ -49,7 +49,6 @@ format = (
 )
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 logger.remove()
-logger.configure(handlers=[{"sink": sys.stdout, "format": format, "level": LOG_LEVEL}])
 logger.add(sys.stderr, format=format, level=LOG_LEVEL)
 
 
