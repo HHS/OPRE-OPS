@@ -68,6 +68,7 @@ def get_agreements_with_in_execution_blis(session: Session) -> list[Agreement]:
         session.execute(
             select(Agreement)
             .where(Agreement.id.in_(select(in_execution_agreement_ids.c.agreement_id)))
+            .order_by(Agreement.id)
         )
         .scalars()
         .all()
