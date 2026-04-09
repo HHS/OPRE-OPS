@@ -54,9 +54,7 @@ const ProcurementDashboard = () => {
             fiscalYear: [CURRENT_FISCAL_YEAR],
             ...(awardTypeFilter ? { awardType: [{ awardType: awardTypeFilter }] } : {}),
             ...(selectedProcShopId ? { awardingEntityId: [selectedProcShopId] } : {})
-        },
-        page: 0,
-        limit: 50
+        }
     });
 
     const agreements = useMemo(() => agreementsResponse?.agreements || [], [agreementsResponse]);
