@@ -120,13 +120,15 @@ const CANBudgetLineTableRow = ({
                     >
                         {budgetLineCreatorName}
                     </dd>
-                    <dt className="margin-0 text-base-dark display-flex flex-align-center margin-top-2">
+                    <dt className="margin-0 text-base-dark margin-top-2">Created on</dt>
+                    <dd className="margin-0 display-flex flex-align-center">
                         <FontAwesomeIcon
                             icon={faClock}
                             className="height-2 width-2 margin-right-1"
+                            aria-hidden={true}
                         />
                         {displayCreatedDate}
-                    </dt>
+                    </dd>
                 </dl>
                 <dl
                     className="font-12px"

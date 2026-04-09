@@ -143,6 +143,7 @@ function ReviewCard({
                     <FontAwesomeIcon
                         icon={faClock}
                         className="height-2 width-2 margin-right-1"
+                        aria-hidden={true}
                     />
                     {formatDateToMonthDayYear(requestDate)}
                 </div>
