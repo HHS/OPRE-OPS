@@ -123,8 +123,7 @@ export default function useRequestPreAwardApproval(agreementId) {
             // Reset file selection
             setSelectedFile(null);
             setIsUploading(false);
-        } catch (error) {
-            console.error("Error uploading document:", error);
+        } catch {
             setUploadError("Failed to upload document. Please try again.");
             setIsUploading(false);
         }
@@ -132,7 +131,6 @@ export default function useRequestPreAwardApproval(agreementId) {
 
     const handleSubmit = async () => {
         if (!step5?.id) {
-            console.error("Step 5 not found");
             setSubmitError("Unable to submit approval request because required tracker information is missing.");
             return;
         }
@@ -154,8 +152,7 @@ export default function useRequestPreAwardApproval(agreementId) {
             navigate(`/agreements/${agreementId}/procurement-tracker`, {
                 state: { success: true }
             });
-        } catch (error) {
-            console.error("Failed to submit approval request:", error);
+        } catch {
             setSubmitError("Failed to submit approval request. Please try again.");
             setIsSubmitting(false);
         }

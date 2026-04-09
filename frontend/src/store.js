@@ -44,8 +44,9 @@ const store = configureStore({
         )
 });
 
-// Export RootState type for use with useSelector
 /**
+ * RootState type for use with useSelector via JSDoc imports.
+ * Usage: @type {import('./store').RootState}
  * @typedef {ReturnType<typeof store.getState>} RootState
  */
 
