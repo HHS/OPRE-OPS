@@ -6,7 +6,8 @@ import {
     BLILabel,
     canLabel,
     getBudgetLineCreatedDate,
-    getProcurementShopFeeTooltip
+    getProcurementShopFeeTooltip,
+    getProcurementShopLabel
 } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import { scrollToCenter } from "../../../helpers/scrollToCenter.helper";
@@ -190,6 +191,13 @@ const BLIRow = ({
                     >
                         {budgetLine?.line_description}
                     </dd>
+                </dl>
+                <dl
+                    className="font-12px"
+                    style={{ marginLeft: "9.0625rem" }}
+                >
+                    <dt className="margin-0 text-base-dark">Procurement Shop</dt>
+                    <dd className="margin-0">{getProcurementShopLabel(budgetLine)}</dd>
                 </dl>
                 <div className="flex-align-self-end margin-left-auto margin-bottom-1">{!readOnly && changeIcons}</div>
             </div>
