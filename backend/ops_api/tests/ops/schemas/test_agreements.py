@@ -371,8 +371,14 @@ class TestSimpleAgreementSchema:
         """Test the schema contains exactly the expected fields."""
         schema = SimpleAgreementSchema()
         expected_fields = {
-            "id", "agreement_type", "name", "awarding_entity_id",
-            "project", "procurement_shop", "award_type", "vendor",
+            "id",
+            "agreement_type",
+            "name",
+            "awarding_entity_id",
+            "project",
+            "procurement_shop",
+            "award_type",
+            "vendor",
         }
         assert set(schema.fields.keys()) == expected_fields
 
