@@ -155,6 +155,7 @@ it("click on chevron down should open row and see budgetline data", () => {
     cy.get("@expandedRow").contains("Created by");
     cy.get("@expandedRow").contains("Description");
     cy.get("@expandedRow").contains("Procurement Shop");
+    cy.get("@expandedRow").contains("Subtotal");
     cy.get("@expandedRow").contains("Fees");
     cy.get("@expandedRow").contains("Project");
     cy.get("@expandedRow").contains("Award Type");
