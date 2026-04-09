@@ -1,10 +1,15 @@
+from datetime import date
+
 import pytest
 from sqlalchemy import select, text
 
 from data_tools.src.backfill_procurement_tracker import (
     backfill_procurement_records,
+    ensure_action_and_tracker,
     get_agreements_with_in_execution_blis,
-    link_in_execution_blis_to_action,
+    get_earliest_obligated_fiscal_year,
+    has_obligated_blis,
+    link_blis_to_action,
 )
 from data_tools.src.common.utils import get_or_create_sys_user
 from models import *  # noqa: F403, F401
@@ -38,7 +43,7 @@ def db_with_agreements(loaded_db):
         id=9002, name="Contract Has Both", project_id=9000,
         awarding_entity_id=9000, created_by=uid, updated_by=uid
     )
-    # Agreement 9003: IN_EXECUTION BLI, has tracker, no action → should get action only
+    # Agreement 9003: IN_EXECUTION BLI, has tracker (unlinked), no action → should get both
     contract_3 = ContractAgreement(
         id=9003, name="Contract Missing Action", project_id=9000,
         awarding_entity_id=9000, created_by=uid, updated_by=uid
@@ -56,10 +61,18 @@ def db_with_agreements(loaded_db):
     contract_6 = ContractAgreement(
         id=9006, name="Contract Only Draft", project_id=9000, created_by=uid, updated_by=uid
     )
-    loaded_db.add_all([contract_1, contract_2, contract_3, contract_4, contract_5, contract_6])
+    # Agreement 9007: IN_EXECUTION + OBLIGATED BLIs (mod scenario)
+    contract_7 = ContractAgreement(
+        id=9007, name="Contract Mod Scenario", project_id=9000,
+        awarding_entity_id=9000, created_by=uid, updated_by=uid
+    )
+    loaded_db.add_all([
+        contract_1, contract_2, contract_3, contract_4,
+        contract_5, contract_6, contract_7,
+    ])
     loaded_db.commit()
 
-    # BLIs
+    # BLIs for agreements 9001-9006 (non-mod scenarios)
     bli_1 = ContractBudgetLineItem(
         id=90001, agreement_id=9001, amount=100, status=BudgetLineItemStatus.IN_EXECUTION, created_by=uid
     )
@@ -78,7 +91,28 @@ def db_with_agreements(loaded_db):
     bli_6 = ContractBudgetLineItem(
         id=90006, agreement_id=9006, amount=600, status=BudgetLineItemStatus.DRAFT, created_by=uid
     )
-    loaded_db.add_all([bli_1, bli_2, bli_3, bli_4, bli_5, bli_6])
+
+    # BLIs for agreement 9007 (mod scenario): OBLIGATED across 2 fiscal years + IN_EXECUTION
+    # FY 2024 (earliest): date_needed in Jan 2024 → month < 10 → FY = 2024
+    bli_7 = ContractBudgetLineItem(
+        id=90007, agreement_id=9007, amount=700, status=BudgetLineItemStatus.OBLIGATED,
+        date_needed=date(2024, 1, 15), created_by=uid,
+    )
+    # FY 2025 (later): date_needed in Mar 2025 → month < 10 → FY = 2025
+    bli_8 = ContractBudgetLineItem(
+        id=90008, agreement_id=9007, amount=800, status=BudgetLineItemStatus.OBLIGATED,
+        date_needed=date(2025, 3, 1), created_by=uid,
+    )
+    # IN_EXECUTION BLIs for agreement 9007
+    bli_9 = ContractBudgetLineItem(
+        id=90009, agreement_id=9007, amount=900, status=BudgetLineItemStatus.IN_EXECUTION,
+        date_needed=date(2025, 6, 1), created_by=uid,
+    )
+    bli_10 = ContractBudgetLineItem(
+        id=90010, agreement_id=9007, amount=1000, status=BudgetLineItemStatus.IN_EXECUTION,
+        date_needed=date(2025, 9, 1), created_by=uid,
+    )
+    loaded_db.add_all([bli_1, bli_2, bli_3, bli_4, bli_5, bli_6, bli_7, bli_8, bli_9, bli_10])
     loaded_db.commit()
 
     # Agreement 9002: already has both tracker and action
@@ -94,7 +128,7 @@ def db_with_agreements(loaded_db):
     loaded_db.add(tracker_2)
     loaded_db.commit()
 
-    # Agreement 9003: has tracker only (no NEW_AWARD action)
+    # Agreement 9003: has tracker only (no NEW_AWARD action) — tracker is unlinked
     tracker_3 = DefaultProcurementTracker.create_with_steps(agreement_id=9003, created_by=uid)
     loaded_db.add(tracker_3)
     loaded_db.commit()
@@ -141,20 +175,31 @@ def db_with_agreements(loaded_db):
     loaded_db.commit()
 
 
+# ---- Query tests ----
+
+
 def test_query_finds_all_agreements_with_in_execution_blis(db_with_agreements):
     """Returns all agreements with IN_EXECUTION BLIs, regardless of tracker/action state."""
     results = get_agreements_with_in_execution_blis(db_with_agreements)
     result_ids = {a.id for a in results}
 
-    # Agreements 9001-9004 all have IN_EXECUTION BLIs → included
+    # Agreements 9001-9004 and 9007 all have IN_EXECUTION BLIs → included
     assert 9001 in result_ids
     assert 9002 in result_ids
     assert 9003 in result_ids
     assert 9004 in result_ids
+    assert 9007 in result_ids
     # Agreement 9005: only PLANNED BLIs → excluded
     assert 9005 not in result_ids
     # Agreement 9006: only DRAFT BLIs → excluded
     assert 9006 not in result_ids
+
+
+def test_query_results_ordered_by_id(db_with_agreements):
+    """Results should be ordered by agreement ID."""
+    results = get_agreements_with_in_execution_blis(db_with_agreements)
+    result_ids = [a.id for a in results]
+    assert result_ids == sorted(result_ids)
 
 
 def test_query_still_returns_agreements_after_backfill(db_with_agreements):
@@ -164,11 +209,42 @@ def test_query_still_returns_agreements_after_backfill(db_with_agreements):
 
     results = get_agreements_with_in_execution_blis(db_with_agreements)
     result_ids = {a.id for a in results}
-    # All 4 agreements with IN_EXECUTION BLIs are still returned
+    # All 5 agreements with IN_EXECUTION BLIs are still returned
     assert 9001 in result_ids
     assert 9002 in result_ids
     assert 9003 in result_ids
     assert 9004 in result_ids
+    assert 9007 in result_ids
+
+
+# ---- Helper function tests ----
+
+
+def test_has_obligated_blis_true(db_with_agreements):
+    """Agreement 9007 has OBLIGATED BLIs → True."""
+    assert has_obligated_blis(db_with_agreements, 9007) is True
+
+
+def test_has_obligated_blis_false(db_with_agreements):
+    """Agreement 9001 has only IN_EXECUTION BLIs → False."""
+    assert has_obligated_blis(db_with_agreements, 9001) is False
+
+
+def test_get_earliest_obligated_fiscal_year(db_with_agreements):
+    """Should return the earliest fiscal year among OBLIGATED BLIs for agreement 9007."""
+    # BLI 90007: date_needed=2024-01-15 → FY 2024
+    # BLI 90008: date_needed=2025-03-01 → FY 2025
+    result = get_earliest_obligated_fiscal_year(db_with_agreements, 9007)
+    assert result == 2024
+
+
+def test_get_earliest_obligated_fiscal_year_no_obligated(db_with_agreements):
+    """Should return None when agreement has no OBLIGATED BLIs."""
+    result = get_earliest_obligated_fiscal_year(db_with_agreements, 9001)
+    assert result is None
+
+
+# ---- Non-mod backfill tests ----
 
 
 def test_backfill_creates_tracker_and_action_when_both_missing(db_with_agreements):
@@ -195,15 +271,17 @@ def test_backfill_creates_tracker_and_action_when_both_missing(db_with_agreement
     assert tracker.procurement_action == action.id
 
 
-def test_backfill_creates_action_only_when_tracker_exists(db_with_agreements):
-    """Agreement 9003 has a tracker but no action — backfill should create only the action."""
+def test_backfill_creates_action_and_linked_tracker_when_existing_tracker_unlinked(db_with_agreements):
+    """Agreement 9003 has an unlinked tracker but no action — backfill creates both action and
+    a new linked tracker (old unlinked tracker is left as-is)."""
     sys_user = get_or_create_sys_user(db_with_agreements)
 
     # Count trackers before
     trackers_before = db_with_agreements.execute(
         select(ProcurementTracker).where(ProcurementTracker.agreement_id == 9003)
     ).scalars().all()
-    tracker_count_before = len(trackers_before)
+    assert len(trackers_before) == 1
+    assert trackers_before[0].procurement_action is None  # unlinked
 
     backfill_procurement_records(db_with_agreements, sys_user)
 
@@ -217,11 +295,13 @@ def test_backfill_creates_action_only_when_tracker_exists(db_with_agreements):
     assert action is not None
     assert action.status == ProcurementActionStatus.PLANNED
 
-    # Tracker count should not have changed
+    # A new tracker linked to the action should also exist
     trackers_after = db_with_agreements.execute(
         select(ProcurementTracker).where(ProcurementTracker.agreement_id == 9003)
     ).scalars().all()
-    assert len(trackers_after) == tracker_count_before
+    linked_trackers = [t for t in trackers_after if t.procurement_action == action.id]
+    assert len(linked_trackers) == 1
+    assert len(linked_trackers[0].steps) == 6
 
 
 def test_backfill_creates_tracker_only_when_action_exists(db_with_agreements):
@@ -241,7 +321,10 @@ def test_backfill_creates_tracker_only_when_action_exists(db_with_agreements):
 
     # Tracker should now exist
     tracker = db_with_agreements.execute(
-        select(ProcurementTracker).where(ProcurementTracker.agreement_id == 9004)
+        select(ProcurementTracker).where(
+            ProcurementTracker.agreement_id == 9004,
+            ProcurementTracker.procurement_action == actions_before[0].id,
+        )
     ).scalar_one()
     assert tracker is not None
     assert len(tracker.steps) == 6
@@ -310,9 +393,10 @@ def test_backfill_creates_ops_events(db_with_agreements):
         select(OpsEvent).where(OpsEvent.event_type == OpsEventType.CREATE_PROCUREMENT_ACTION)
     ).scalars().all()
 
-    # Agreements 1, 4 need trackers; agreements 1, 3 need actions
-    assert len(tracker_events) >= 2
-    assert len(action_events) >= 2
+    # Trackers created: 9001, 9003 (new linked), 9004, 9007(NEW_AWARD), 9007(MOD) = 5
+    assert len(tracker_events) >= 4
+    # Actions created: 9001, 9003, 9007(NEW_AWARD), 9007(MOD) = 4
+    assert len(action_events) >= 3
 
 
 def test_backfill_is_idempotent(db_with_agreements):
@@ -321,9 +405,7 @@ def test_backfill_is_idempotent(db_with_agreements):
     backfill_procurement_records(db_with_agreements, sys_user)
 
     trackers_after_first = db_with_agreements.execute(select(ProcurementTracker)).scalars().all()
-    actions_after_first = db_with_agreements.execute(
-        select(ProcurementAction).where(ProcurementAction.award_type == AwardType.NEW_AWARD)
-    ).scalars().all()
+    actions_after_first = db_with_agreements.execute(select(ProcurementAction)).scalars().all()
     linked_blis_first = db_with_agreements.execute(
         select(BudgetLineItem).where(BudgetLineItem.procurement_action_id.isnot(None))
     ).scalars().all()
@@ -331,9 +413,7 @@ def test_backfill_is_idempotent(db_with_agreements):
     backfill_procurement_records(db_with_agreements, sys_user)
 
     trackers_after_second = db_with_agreements.execute(select(ProcurementTracker)).scalars().all()
-    actions_after_second = db_with_agreements.execute(
-        select(ProcurementAction).where(ProcurementAction.award_type == AwardType.NEW_AWARD)
-    ).scalars().all()
+    actions_after_second = db_with_agreements.execute(select(ProcurementAction)).scalars().all()
     linked_blis_second = db_with_agreements.execute(
         select(BudgetLineItem).where(BudgetLineItem.procurement_action_id.isnot(None))
     ).scalars().all()
@@ -343,8 +423,11 @@ def test_backfill_is_idempotent(db_with_agreements):
     assert len(linked_blis_second) == len(linked_blis_first)
 
 
+# ---- BLI linking tests (non-mod) ----
+
+
 def test_backfill_links_in_execution_blis_to_action(db_with_agreements):
-    """All IN_EXECUTION BLIs should be linked to the NEW_AWARD ProcurementAction."""
+    """Non-mod agreements: IN_EXECUTION BLIs should be linked to the NEW_AWARD ProcurementAction."""
     sys_user = get_or_create_sys_user(db_with_agreements)
     backfill_procurement_records(db_with_agreements, sys_user)
 
@@ -383,7 +466,7 @@ def test_backfill_does_not_link_non_executing_blis(db_with_agreements):
 
 
 def test_link_blis_does_not_create_duplicates(db_with_agreements):
-    """Calling link_in_execution_blis_to_action twice should not double-link BLIs."""
+    """Calling link_blis_to_action twice should not double-link BLIs."""
     sys_user = get_or_create_sys_user(db_with_agreements)
 
     # Create action for agreement 9001
@@ -396,9 +479,13 @@ def test_link_blis_does_not_create_duplicates(db_with_agreements):
 
     agreement = db_with_agreements.get(Agreement, 9001)
 
-    first_count = link_in_execution_blis_to_action(db_with_agreements, agreement, action)
+    first_count = link_blis_to_action(
+        db_with_agreements, agreement, action, BudgetLineItemStatus.IN_EXECUTION,
+    )
     db_with_agreements.flush()
-    second_count = link_in_execution_blis_to_action(db_with_agreements, agreement, action)
+    second_count = link_blis_to_action(
+        db_with_agreements, agreement, action, BudgetLineItemStatus.IN_EXECUTION,
+    )
 
     assert first_count == 1  # one IN_EXECUTION BLI on agreement 9001
     assert second_count == 0  # already linked, no new links
@@ -423,6 +510,9 @@ def test_backfill_links_blis_when_tracker_and_action_already_exist(db_with_agree
         )
     ).scalar_one()
     assert bli.procurement_action_id == action.id
+
+
+# ---- Procurement shop tests ----
 
 
 def test_backfill_sets_procurement_shop_on_new_action(db_with_agreements):
@@ -483,3 +573,131 @@ def test_backfill_does_not_overwrite_procurement_shop_with_none(db_with_agreemen
     db_with_agreements.refresh(existing_action)
     # Should NOT be overwritten to None
     assert existing_action.procurement_shop_id == 9000
+
+
+# ---- Mod scenario tests ----
+
+
+def test_mod_scenario_creates_two_actions_and_trackers(db_with_agreements):
+    """Agreement 9007 has OBLIGATED + IN_EXECUTION BLIs — should get 2 actions and 2 trackers."""
+    sys_user = get_or_create_sys_user(db_with_agreements)
+    backfill_procurement_records(db_with_agreements, sys_user)
+
+    actions = db_with_agreements.execute(
+        select(ProcurementAction).where(ProcurementAction.agreement_id == 9007)
+    ).scalars().all()
+    assert len(actions) == 2
+
+    award_types = {a.award_type for a in actions}
+    assert AwardType.NEW_AWARD in award_types
+    assert AwardType.MODIFICATION in award_types
+
+    trackers = db_with_agreements.execute(
+        select(ProcurementTracker).where(ProcurementTracker.agreement_id == 9007)
+    ).scalars().all()
+    assert len(trackers) == 2
+
+    # Each tracker should be linked to one of the actions
+    tracker_action_ids = {t.procurement_action for t in trackers}
+    action_ids = {a.id for a in actions}
+    assert tracker_action_ids == action_ids
+
+
+def test_mod_scenario_links_earliest_fy_obligated_blis_to_new_award(db_with_agreements):
+    """Only OBLIGATED BLIs from the earliest fiscal year should be linked to the NEW_AWARD action."""
+    sys_user = get_or_create_sys_user(db_with_agreements)
+    backfill_procurement_records(db_with_agreements, sys_user)
+
+    new_award_action = db_with_agreements.execute(
+        select(ProcurementAction).where(
+            ProcurementAction.agreement_id == 9007,
+            ProcurementAction.award_type == AwardType.NEW_AWARD,
+        )
+    ).scalar_one()
+
+    # BLI 90007 (FY 2024, OBLIGATED) should be linked to NEW_AWARD
+    bli_fy2024 = db_with_agreements.get(BudgetLineItem, 90007)
+    assert bli_fy2024.procurement_action_id == new_award_action.id
+
+
+def test_mod_scenario_does_not_link_later_fy_obligated_blis(db_with_agreements):
+    """OBLIGATED BLIs from later fiscal years should NOT be linked to any action."""
+    sys_user = get_or_create_sys_user(db_with_agreements)
+    backfill_procurement_records(db_with_agreements, sys_user)
+
+    # BLI 90008 (FY 2025, OBLIGATED) should remain unlinked
+    bli_fy2025 = db_with_agreements.get(BudgetLineItem, 90008)
+    assert bli_fy2025.procurement_action_id is None
+
+
+def test_mod_scenario_links_in_execution_blis_to_modification(db_with_agreements):
+    """IN_EXECUTION BLIs should be linked to the MODIFICATION action in a mod scenario."""
+    sys_user = get_or_create_sys_user(db_with_agreements)
+    backfill_procurement_records(db_with_agreements, sys_user)
+
+    mod_action = db_with_agreements.execute(
+        select(ProcurementAction).where(
+            ProcurementAction.agreement_id == 9007,
+            ProcurementAction.award_type == AwardType.MODIFICATION,
+        )
+    ).scalar_one()
+
+    for bli_id in [90009, 90010]:
+        bli = db_with_agreements.get(BudgetLineItem, bli_id)
+        assert bli.procurement_action_id == mod_action.id, (
+            f"BLI {bli_id} (IN_EXECUTION) should be linked to MODIFICATION action {mod_action.id}"
+        )
+
+
+def test_mod_scenario_sets_procurement_shop_on_both_actions(db_with_agreements):
+    """Both NEW_AWARD and MODIFICATION actions should get procurement_shop_id from the agreement."""
+    sys_user = get_or_create_sys_user(db_with_agreements)
+    backfill_procurement_records(db_with_agreements, sys_user)
+
+    actions = db_with_agreements.execute(
+        select(ProcurementAction).where(ProcurementAction.agreement_id == 9007)
+    ).scalars().all()
+
+    for action in actions:
+        assert action.procurement_shop_id == 9000, (
+            f"ProcurementAction {action.id} ({action.award_type.name}) should have "
+            f"procurement_shop_id=9000"
+        )
+
+
+def test_mod_scenario_idempotent(db_with_agreements):
+    """Running backfill twice should not create duplicate mod records."""
+    sys_user = get_or_create_sys_user(db_with_agreements)
+    backfill_procurement_records(db_with_agreements, sys_user)
+
+    actions_first = db_with_agreements.execute(
+        select(ProcurementAction).where(ProcurementAction.agreement_id == 9007)
+    ).scalars().all()
+    trackers_first = db_with_agreements.execute(
+        select(ProcurementTracker).where(ProcurementTracker.agreement_id == 9007)
+    ).scalars().all()
+    linked_blis_first = db_with_agreements.execute(
+        select(BudgetLineItem).where(
+            BudgetLineItem.agreement_id == 9007,
+            BudgetLineItem.procurement_action_id.isnot(None),
+        )
+    ).scalars().all()
+
+    backfill_procurement_records(db_with_agreements, sys_user)
+
+    actions_second = db_with_agreements.execute(
+        select(ProcurementAction).where(ProcurementAction.agreement_id == 9007)
+    ).scalars().all()
+    trackers_second = db_with_agreements.execute(
+        select(ProcurementTracker).where(ProcurementTracker.agreement_id == 9007)
+    ).scalars().all()
+    linked_blis_second = db_with_agreements.execute(
+        select(BudgetLineItem).where(
+            BudgetLineItem.agreement_id == 9007,
+            BudgetLineItem.procurement_action_id.isnot(None),
+        )
+    ).scalars().all()
+
+    assert len(actions_second) == len(actions_first)
+    assert len(trackers_second) == len(trackers_first)
+    assert len(linked_blis_second) == len(linked_blis_first)

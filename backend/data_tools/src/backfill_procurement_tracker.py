@@ -75,26 +75,31 @@ def get_agreements_with_in_execution_blis(session: Session) -> list[Agreement]:
     )
 
 
-def link_in_execution_blis_to_action(
-    session: Session, agreement: Agreement, procurement_action: ProcurementAction
+def link_blis_to_action(
+    session: Session,
+    agreement: Agreement,
+    procurement_action: ProcurementAction,
+    bli_status: BudgetLineItemStatus,
+    fiscal_year: int | None = None,
 ) -> int:
     """
-    Ensure all IN_EXECUTION BLIs on the agreement are linked to the ProcurementAction.
+    Link BLIs of the given status to a ProcurementAction. Optionally filter by fiscal year.
     Returns the number of BLIs that were newly linked.
     """
-    unlinked_blis = (
-        session.execute(
-            select(BudgetLineItem)
-            .where(BudgetLineItem.agreement_id == agreement.id)
-            .where(BudgetLineItem.status == BudgetLineItemStatus.IN_EXECUTION)
-            .where(
-                (BudgetLineItem.procurement_action_id.is_(None))
-                | (BudgetLineItem.procurement_action_id != procurement_action.id)
-            )
+    query = (
+        select(BudgetLineItem)
+        .where(BudgetLineItem.agreement_id == agreement.id)
+        .where(BudgetLineItem.status == bli_status)
+        .where(
+            (BudgetLineItem.procurement_action_id.is_(None))
+            | (BudgetLineItem.procurement_action_id != procurement_action.id)
         )
-        .scalars()
-        .all()
     )
+
+    if fiscal_year is not None:
+        query = query.where(BudgetLineItem.fiscal_year == fiscal_year)
+
+    unlinked_blis = session.execute(query).scalars().all()
 
     linked_count = 0
     for bli in unlinked_blis:
@@ -102,20 +107,150 @@ def link_in_execution_blis_to_action(
         linked_count += 1
 
     if linked_count:
+        fy_msg = f" (FY {fiscal_year})" if fiscal_year else ""
         logger.info(
-            f"Linked {linked_count} IN_EXECUTION BLI(s) to ProcurementAction {procurement_action.id} "
+            f"Linked {linked_count} {bli_status.name} BLI(s){fy_msg} to "
+            f"ProcurementAction {procurement_action.id} ({procurement_action.award_type.name}) "
             f"for Agreement {agreement.id} ('{agreement.name}')"
         )
 
     return linked_count
 
 
+def has_obligated_blis(session: Session, agreement_id: int) -> bool:
+    """Check if an agreement has any OBLIGATED budget line items."""
+    return (
+        session.execute(
+            select(BudgetLineItem.id)
+            .where(BudgetLineItem.agreement_id == agreement_id)
+            .where(BudgetLineItem.status == BudgetLineItemStatus.OBLIGATED)
+            .limit(1)
+        ).scalar_one_or_none()
+        is not None
+    )
+
+
+def get_earliest_obligated_fiscal_year(session: Session, agreement_id: int) -> int | None:
+    """Get the earliest fiscal year among OBLIGATED BLIs for an agreement."""
+    from sqlalchemy import func
+
+    result = session.execute(
+        select(func.min(BudgetLineItem.fiscal_year))
+        .where(BudgetLineItem.agreement_id == agreement_id)
+        .where(BudgetLineItem.status == BudgetLineItemStatus.OBLIGATED)
+    ).scalar_one_or_none()
+
+    return int(result) if result is not None else None
+
+
+def ensure_action_and_tracker(
+    session: Session,
+    agreement: Agreement,
+    sys_user: User,
+    award_type: AwardType,
+) -> tuple[ProcurementAction, bool, bool]:
+    """
+    Ensure a ProcurementAction and ProcurementTracker exist for the given agreement and award type.
+    Returns (procurement_action, action_created, tracker_created).
+    """
+    existing_action = session.execute(
+        select(ProcurementAction).where(
+            ProcurementAction.agreement_id == agreement.id,
+            ProcurementAction.award_type == award_type,
+        )
+    ).scalar_one_or_none()
+
+    action_created = False
+    procurement_action = existing_action
+
+    if not existing_action:
+        procurement_action = ProcurementAction(
+            agreement_id=agreement.id,
+            award_type=award_type,
+            status=ProcurementActionStatus.PLANNED,
+            procurement_shop_id=agreement.awarding_entity_id,
+            created_by=sys_user.id,
+        )
+        session.add(procurement_action)
+        session.flush()
+        action_created = True
+        logger.info(
+            f"Created ProcurementAction ({award_type.name}) for Agreement {agreement.id} "
+            f"('{agreement.name}') with procurement_shop_id={agreement.awarding_entity_id}"
+        )
+        session.add(
+            OpsEvent(
+                event_type=OpsEventType.CREATE_PROCUREMENT_ACTION,
+                event_status=OpsEventStatus.SUCCESS,
+                created_by=sys_user.id,
+                event_details={
+                    "procurement_action_id": procurement_action.id,
+                    "agreement_id": agreement.id,
+                    "message": f"Backfill: created {award_type.name} action",
+                },
+            )
+        )
+    else:
+        # Ensure existing action has procurement_shop from agreement
+        if (
+            procurement_action.procurement_shop_id != agreement.awarding_entity_id
+            and agreement.awarding_entity_id is not None
+        ):
+            old_shop_id = procurement_action.procurement_shop_id
+            procurement_action.procurement_shop_id = agreement.awarding_entity_id
+            logger.info(
+                f"Updated ProcurementAction {procurement_action.id} procurement_shop_id "
+                f"from {old_shop_id} to {agreement.awarding_entity_id} "
+                f"for Agreement {agreement.id} ('{agreement.name}')"
+            )
+
+    # Check for a tracker linked to this action
+    existing_tracker = session.execute(
+        select(ProcurementTracker).where(
+            ProcurementTracker.agreement_id == agreement.id,
+            ProcurementTracker.procurement_action == procurement_action.id,
+        )
+    ).scalar_one_or_none()
+
+    tracker_created = False
+    if not existing_tracker:
+        tracker = DefaultProcurementTracker.create_with_steps(
+            agreement_id=agreement.id,
+            procurement_action=procurement_action.id,
+            created_by=sys_user.id,
+        )
+        session.add(tracker)
+        session.flush()
+        tracker_created = True
+        logger.info(
+            f"Created DefaultProcurementTracker for Agreement {agreement.id} "
+            f"('{agreement.name}') — {award_type.name} with {len(tracker.steps)} steps"
+        )
+        session.add(
+            OpsEvent(
+                event_type=OpsEventType.CREATE_PROCUREMENT_TRACKER,
+                event_status=OpsEventStatus.SUCCESS,
+                created_by=sys_user.id,
+                event_details={
+                    "procurement_tracker_id": tracker.id,
+                    "agreement_id": agreement.id,
+                    "message": f"Backfill: created tracker for {award_type.name}",
+                },
+            )
+        )
+
+    return procurement_action, action_created, tracker_created
+
+
 def backfill_procurement_records(session: Session, sys_user: User) -> None:
     """
-    For each agreement with IN_EXECUTION BLIs, ensure it has:
-    1. A ProcurementAction with award_type=NEW_AWARD and procurement_shop from agreement
-    2. A DefaultProcurementTracker with 6 steps
-    3. All IN_EXECUTION BLIs linked to the ProcurementAction
+    For each agreement with IN_EXECUTION BLIs, ensure it has the correct
+    ProcurementAction(s) and ProcurementTracker(s):
+
+    - IN_EXECUTION only: 1 NEW_AWARD action/tracker, link IN_EXECUTION BLIs
+    - IN_EXECUTION + OBLIGATED (mod): 2 actions/trackers:
+        - NEW_AWARD: link OBLIGATED BLIs from the earliest fiscal year
+        - MODIFICATION: link IN_EXECUTION BLIs
     """
     agreements = get_agreements_with_in_execution_blis(session)
     logger.info(f"Found {len(agreements)} agreements with IN_EXECUTION BLIs.")
@@ -129,92 +264,49 @@ def backfill_procurement_records(session: Session, sys_user: User) -> None:
     total_linked_blis = 0
 
     for agreement in agreements:
-        existing_tracker = session.execute(
-            select(ProcurementTracker).where(ProcurementTracker.agreement_id == agreement.id)
-        ).scalar_one_or_none()
-
-        existing_action = session.execute(
-            select(ProcurementAction).where(
-                ProcurementAction.agreement_id == agreement.id,
-                ProcurementAction.award_type == AwardType.NEW_AWARD,
-            )
-        ).scalar_one_or_none()
-
         try:
-            procurement_action = existing_action
-            if not existing_action:
-                procurement_action = ProcurementAction(
-                    agreement_id=agreement.id,
-                    award_type=AwardType.NEW_AWARD,
-                    status=ProcurementActionStatus.PLANNED,
-                    procurement_shop_id=agreement.awarding_entity_id,
-                    created_by=sys_user.id,
-                )
-                session.add(procurement_action)
-                session.flush()
-                created_actions += 1
+            is_mod = has_obligated_blis(session, agreement.id)
+
+            if is_mod:
                 logger.info(
-                    f"Created ProcurementAction (NEW_AWARD) for Agreement {agreement.id} "
-                    f"('{agreement.name}') with procurement_shop_id={agreement.awarding_entity_id}"
+                    f"Agreement {agreement.id} has both OBLIGATED and IN_EXECUTION BLIs — treating as mod."
                 )
 
-                session.add(
-                    OpsEvent(
-                        event_type=OpsEventType.CREATE_PROCUREMENT_ACTION,
-                        event_status=OpsEventStatus.SUCCESS,
-                        created_by=sys_user.id,
-                        event_details={
-                            "procurement_action_id": procurement_action.id,
-                            "agreement_id": agreement.id,
-                            "message": "Backfill: created NEW_AWARD action for IN_EXECUTION agreement",
-                        },
+                # NEW_AWARD: action + tracker + earliest-FY OBLIGATED BLIs
+                new_award_action, ac, tc = ensure_action_and_tracker(
+                    session, agreement, sys_user, AwardType.NEW_AWARD
+                )
+                created_actions += int(ac)
+                created_trackers += int(tc)
+
+                earliest_fy = get_earliest_obligated_fiscal_year(session, agreement.id)
+                if earliest_fy:
+                    total_linked_blis += link_blis_to_action(
+                        session, agreement, new_award_action,
+                        BudgetLineItemStatus.OBLIGATED, fiscal_year=earliest_fy,
                     )
+
+                # MODIFICATION: action + tracker + IN_EXECUTION BLIs
+                mod_action, ac, tc = ensure_action_and_tracker(
+                    session, agreement, sys_user, AwardType.MODIFICATION
+                )
+                created_actions += int(ac)
+                created_trackers += int(tc)
+
+                total_linked_blis += link_blis_to_action(
+                    session, agreement, mod_action, BudgetLineItemStatus.IN_EXECUTION,
                 )
             else:
-                # Ensure existing action has procurement_shop from agreement
-                if (
-                    procurement_action.procurement_shop_id != agreement.awarding_entity_id
-                    and agreement.awarding_entity_id is not None
-                ):
-                    old_shop_id = procurement_action.procurement_shop_id
-                    procurement_action.procurement_shop_id = agreement.awarding_entity_id
-                    logger.info(
-                        f"Updated ProcurementAction {procurement_action.id} procurement_shop_id "
-                        f"from {old_shop_id} to {agreement.awarding_entity_id} "
-                        f"for Agreement {agreement.id} ('{agreement.name}')"
-                    )
-
-            if not existing_tracker:
-                tracker = DefaultProcurementTracker.create_with_steps(
-                    agreement_id=agreement.id,
-                    procurement_action=procurement_action.id,
-                    created_by=sys_user.id,
+                # NEW_AWARD only: action + tracker + IN_EXECUTION BLIs
+                new_award_action, ac, tc = ensure_action_and_tracker(
+                    session, agreement, sys_user, AwardType.NEW_AWARD
                 )
-                session.add(tracker)
-                session.flush()
-                created_trackers += 1
-                logger.info(
-                    f"Created DefaultProcurementTracker for Agreement {agreement.id} "
-                    f"('{agreement.name}') with {len(tracker.steps)} steps"
-                )
+                created_actions += int(ac)
+                created_trackers += int(tc)
 
-                session.add(
-                    OpsEvent(
-                        event_type=OpsEventType.CREATE_PROCUREMENT_TRACKER,
-                        event_status=OpsEventStatus.SUCCESS,
-                        created_by=sys_user.id,
-                        event_details={
-                            "procurement_tracker_id": tracker.id,
-                            "agreement_id": agreement.id,
-                            "message": "Backfill: created tracker for IN_EXECUTION agreement",
-                        },
-                    )
+                total_linked_blis += link_blis_to_action(
+                    session, agreement, new_award_action, BudgetLineItemStatus.IN_EXECUTION,
                 )
-
-            # Link any unlinked IN_EXECUTION BLIs to the procurement action
-            total_linked_blis += link_in_execution_blis_to_action(
-                session, agreement, procurement_action
-            )
 
             if os.getenv("DRY_RUN"):
                 logger.info(f"Dry run: rolling back changes for Agreement {agreement.id}.")
