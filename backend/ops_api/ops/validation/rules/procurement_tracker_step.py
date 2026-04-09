@@ -656,12 +656,11 @@ class PreAwardApprovalResponseValidationRule(ValidationRule):
                 {"approval_status": "Cannot respond to approval request that has not been submitted."}
             )
 
-        # Check if already responded
-        if procurement_tracker_step.pre_award_approval_status:
+        # Check if already responded (only terminal states block re-response)
+        current_approval_status = procurement_tracker_step.pre_award_approval_status
+        if current_approval_status in ["APPROVED", "DECLINED"]:
             raise ValidationError(
-                {
-                    "approval_status": f"This approval request has already been {procurement_tracker_step.pre_award_approval_status.lower()}."
-                }
+                {"approval_status": f"This approval request has already been {current_approval_status.lower()}."}
             )
 
         # Require reviewer notes when declining

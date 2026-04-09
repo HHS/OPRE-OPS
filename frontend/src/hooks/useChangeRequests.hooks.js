@@ -42,7 +42,7 @@ export const useChangeRequestsForAgreement = (agreementId) => {
 export const useChangeRequestTotal = () => {
     const userId = useSelector((state) => state.auth?.activeUser?.id) ?? null;
     const { data: changeRequests } = useGetChangeRequestsListQuery({ userId }, { skip: !userId });
-    const { data: preAwardApprovals } = useGetPendingPreAwardApprovalsQuery();
+    const { data: preAwardApprovals } = useGetPendingPreAwardApprovalsQuery(undefined, { skip: !userId });
 
     const changeRequestsCount = changeRequests?.length || 0;
     const preAwardApprovalsCount = preAwardApprovals?.length || 0;

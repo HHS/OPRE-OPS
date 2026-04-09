@@ -78,29 +78,19 @@ export default function useApprovePreAwardApproval(agreementId) {
     const hasPermission = useMemo(() => {
         const userRoleNames = userRoles.map(/** @param {any} role */ (role) => role?.name);
 
-        const hasRequiredRole =
-            userRoleNames.includes("BUDGET_TEAM") ||
-            userRoleNames.includes("SYSTEM_OWNER") ||
-            userRoleNames.includes("REVIEWER_APPROVER");
-
-        if (!hasRequiredRole) return false;
-
-        // For BUDGET_TEAM and SYSTEM_OWNER, permission granted
+        // For BUDGET_TEAM and SYSTEM_OWNER, permission granted regardless of division
         if (userRoleNames.includes("BUDGET_TEAM") || userRoleNames.includes("SYSTEM_OWNER")) {
             return true;
         }
 
-        // For REVIEWER_APPROVER, check if user is division director/deputy for any CAN in ALL budget lines
-        // (Pre-award approval happens before budget lines reach IN_EXECUTION status)
-        if (userRoleNames.includes("REVIEWER_APPROVER")) {
-            return allBudgetLines.some(
-                /** @param {any} bli */ (bli) =>
-                    bli.can?.portfolio?.division?.division_director_id === userId ||
-                    bli.can?.portfolio?.division?.deputy_division_director_id === userId
-            );
-        }
-
-        return false;
+        // For all other users (including REVIEWER_APPROVER or no specific role),
+        // check if user is division director/deputy for any CAN in the budget lines.
+        // This aligns with backend authorization and notification recipient logic.
+        return allBudgetLines.some(
+            /** @param {any} bli */ (bli) =>
+                bli.can?.portfolio?.division?.division_director_id === userId ||
+                bli.can?.portfolio?.division?.deputy_division_director_id === userId
+        );
     }, [userRoles, userId, allBudgetLines]);
 
     /**

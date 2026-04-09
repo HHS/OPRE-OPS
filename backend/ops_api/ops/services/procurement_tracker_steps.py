@@ -533,7 +533,7 @@ class ProcurementTrackerStepService:
             results = self.db_session.execute(stmt.distinct()).scalars().all()
             return list(results)
 
-        # For REVIEWER_APPROVER role, filter by division director/deputy
+        # For REVIEWER_APPROVER role or division directors/deputies, filter by division
         if "REVIEWER_APPROVER" in user_role_names:
             # Add joins to reach division table
             stmt = (
@@ -551,5 +551,20 @@ class ProcurementTrackerStepService:
             results = self.db_session.execute(stmt.distinct()).scalars().all()
             return list(results)
 
-        # User has no review permissions
-        return []
+        # For all other users, allow access when they are the division director/deputy
+        # for the related agreement. This keeps the pending approvals list aligned
+        # with reviewer notification recipients.
+        stmt = (
+            stmt.outerjoin(Agreement.budget_line_items)
+            .outerjoin(BudgetLineItem.can)
+            .outerjoin(CAN.portfolio)
+            .outerjoin(Portfolio.division)
+            .where(
+                or_(
+                    Division.division_director_id == user_id,
+                    Division.deputy_division_director_id == user_id,
+                )
+            )
+        )
+        results = self.db_session.execute(stmt.distinct()).scalars().all()
+        return list(results)
