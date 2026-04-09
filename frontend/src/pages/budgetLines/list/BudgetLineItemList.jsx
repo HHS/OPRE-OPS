@@ -83,7 +83,7 @@ const BudgetLineItemList = () => {
         setFiscalYearShortcut(newValue);
     };
 
-    /** @type {Array<{id: number | string, title: number | string}> | null | undefined} */
+    /** @type {Array<{id: number | string, title: number | string}> | null} */
     const resolvedFiscalYears = useMemo(() => {
         const currentFiscalYear = getCurrentFiscalYear();
         if (filters.fiscalYears === null) {
