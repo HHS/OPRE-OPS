@@ -74,9 +74,9 @@ const ProcurementTrackerStepTwo = ({
 
     // Disabled flags for form controls
     const isTargetCompletionDateSaveDisabled =
-        isDisabled || validatorRes.hasErrors("targetCompletionDate") || !targetCompletionDate;
+        isDisabled || validatorRes.hasErrors("targetCompletionDate") || !targetCompletionDate || !stepTwoData?.id;
     const isRevisedTargetDateSaveDisabled =
-        isDisabled || validatorRes.hasErrors("revisedTargetDate") || !revisedTargetDate;
+        isDisabled || validatorRes.hasErrors("revisedTargetDate") || !revisedTargetDate || !stepTwoData?.id;
     const isPreSolicitationCheckboxDisabled = isDisabled || !isActiveStep;
     const isUsersComboBoxDisabled = isDisabled || !isPreSolicitationPackageFinalized || authorizedUsers.length === 0;
     const isPackageFinalizedFieldsDisabled = isDisabled || !isPreSolicitationPackageFinalized;
@@ -85,7 +85,8 @@ const ProcurementTrackerStepTwo = ({
         validatorRes.hasErrors() ||
         !selectedUser?.id ||
         !step2DateCompleted ||
-        (!stepTwoData?.target_completion_date && !targetCompletionDate);
+        (!stepTwoData?.target_completion_date && !targetCompletionDate) ||
+        !stepTwoData?.id;
 
     return (
         <>
