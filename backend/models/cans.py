@@ -223,7 +223,7 @@ class CANFundingDetails(BaseModel):
     allowance: Mapped[Optional[str]]
     sub_allowance: Mapped[Optional[str]]
     allotment: Mapped[Optional[str]]
-    appropriation: Mapped[Optional[str]]
+    appropriation: Mapped[Optional[str]]  # The Treasury Account Symbol (TAS)
     method_of_transfer: Mapped[CANMethodOfTransfer] = mapped_column(ENUM(CANMethodOfTransfer), nullable=True)
     funding_source: Mapped[CANFundingSource] = mapped_column(ENUM(CANFundingSource), nullable=True)
     funding_partner: Mapped[Optional[str]]

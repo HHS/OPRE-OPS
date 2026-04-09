@@ -82,13 +82,15 @@ describe("CanCard", () => {
         );
 
         await waitFor(() => {
-            const lineGraph = screen.getByTestId("mock-line-graph");
-            const graphData = JSON.parse(lineGraph.getAttribute("data-graph-data"));
-
-            // The second segment (available) should use funding.total_funding, not top-level total_funding
-            expect(graphData[1].value).toBe(mockCanFundingData.funding.total_funding);
-            expect(graphData[1].value).not.toBeUndefined();
+            expect(screen.getByTestId("mock-line-graph")).toBeInTheDocument();
         });
+
+        const lineGraph = screen.getByTestId("mock-line-graph");
+        const graphData = JSON.parse(lineGraph.getAttribute("data-graph-data"));
+
+        // The second segment (available) should use funding.total_funding, not top-level total_funding
+        expect(graphData[1].value).toBe(mockCanFundingData.funding.total_funding);
+        expect(graphData[1].value).not.toBeUndefined();
     });
 
     it("computes spending/available chart percentages correctly", async () => {
@@ -120,14 +122,16 @@ describe("CanCard", () => {
         );
 
         await waitFor(() => {
-            const lineGraph = screen.getByTestId("mock-line-graph");
-            const graphData = JSON.parse(lineGraph.getAttribute("data-graph-data"));
-
-            // spending = planned (1M) + in_execution (2M) + obligated (0) = 3M
-            // total = 10M, so spending percent = 30, available percent = 70
-            expect(graphData[0].percent).toBe(30);
-            expect(graphData[1].percent).toBe(70);
+            expect(screen.getByTestId("mock-line-graph")).toBeInTheDocument();
         });
+
+        const lineGraph = screen.getByTestId("mock-line-graph");
+        const graphData = JSON.parse(lineGraph.getAttribute("data-graph-data"));
+
+        // spending = planned (1M) + in_execution (2M) + obligated (0) = 3M
+        // total = 10M, so spending percent = 30, available percent = 70
+        expect(graphData[0].percent).toBe(30);
+        expect(graphData[1].percent).toBe(70);
     });
 
     // Add more test cases as needed
