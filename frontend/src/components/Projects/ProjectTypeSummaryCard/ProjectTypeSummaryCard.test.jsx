@@ -108,12 +108,20 @@ describe("ProjectTypeSummaryCard", () => {
         );
         const chart = screen.getByTestId("donut-chart");
         const chartValues = JSON.parse(chart.getAttribute("data-chart-values"));
-        const total = tinySliceSummary.amounts_by_type.RESEARCH.amount + tinySliceSummary.amounts_by_type.ADMINISTRATIVE_AND_SUPPORT.amount;
+        const researchAmount = tinySliceSummary.amounts_by_type.RESEARCH.amount;
+        const adminAmount = tinySliceSummary.amounts_by_type.ADMINISTRATIVE_AND_SUPPORT.amount;
+        const total = researchAmount + adminAmount;
         const minValue = total * 0.01;
+
         // Admin & Support real value (301500) is less than 1% of total — chart value should be floored to minValue
-        expect(chartValues[1]).toBeGreaterThanOrEqual(minValue);
-        // Research value should be unchanged
-        expect(chartValues[0]).toBe(tinySliceSummary.amounts_by_type.RESEARCH.amount);
+        expect(chartValues[1]).toBeCloseTo(minValue, 0);
+
+        // Chart total should be preserved — sum of chart values equals the original total
+        const chartTotal = chartValues[0] + chartValues[1];
+        expect(chartTotal).toBeCloseTo(total, 0);
+
+        // Research should be slightly reduced to compensate for the floored Admin & Support slice
+        expect(chartValues[0]).toBeLessThan(researchAmount);
     });
 
     it("does not alter chart values when all slices are already above the minimum", () => {

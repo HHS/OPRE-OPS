@@ -1,8 +1,8 @@
 import React from "react";
 import {
-    PROJECT_TYPE_ADMIN_SUPPORT,
     PROJECT_TYPE_COLORS,
-    PROJECT_TYPE_RESEARCH,
+    PROJECT_TYPE_LABELS,
+    PROJECT_TYPE_ORDER,
     PROJECT_TYPE_TAG_STYLE_ACTIVE
 } from "../ProjectTypes.constants";
 import LegendItem from "../../UI/Cards/LineGraphWithLegendCard/LegendItem";
@@ -10,20 +10,13 @@ import ResponsiveDonutWithInnerPercent from "../../UI/DataViz/ResponsiveDonutWit
 import CustomLayerComponent from "../../UI/DataViz/ResponsiveDonutWithInnerPercent/CustomLayerComponent";
 import RoundedBox from "../../UI/RoundedBox";
 
-const PROJECT_TYPE_CONFIG = [
-    {
-        type: PROJECT_TYPE_RESEARCH,
-        label: "Research",
-        color: PROJECT_TYPE_COLORS[PROJECT_TYPE_RESEARCH],
-        tagStyleActive: PROJECT_TYPE_TAG_STYLE_ACTIVE[PROJECT_TYPE_RESEARCH]
-    },
-    {
-        type: PROJECT_TYPE_ADMIN_SUPPORT,
-        label: "Admin & Support",
-        color: PROJECT_TYPE_COLORS[PROJECT_TYPE_ADMIN_SUPPORT],
-        tagStyleActive: PROJECT_TYPE_TAG_STYLE_ACTIVE[PROJECT_TYPE_ADMIN_SUPPORT]
-    }
-];
+// Build config from shared constants — single source of truth for labels, colors, and tag styles
+const PROJECT_TYPE_CONFIG = PROJECT_TYPE_ORDER.map((type) => ({
+    type,
+    label: PROJECT_TYPE_LABELS[type],
+    color: PROJECT_TYPE_COLORS[type],
+    tagStyleActive: PROJECT_TYPE_TAG_STYLE_ACTIVE[type]
+}));
 
 /**
  * Computes a display-friendly percent string.
@@ -41,19 +34,48 @@ const computeDisplayPercent = (value, total) => {
 
 /**
  * Ensures every non-zero slice is at least 1% of the total so it remains
- * visible in the donut chart. Only affects the chart rendering — legend
- * values and percents always reflect the real amounts.
+ * visible in the donut chart, while preserving the original total used to
+ * compute arc proportions by reducing the added amount from larger slices.
+ * Only affects the chart rendering — legend values and percents always
+ * reflect the real amounts.
  * @param {Array} items - Array of { id, value, ... } data items
  * @param {number} total - Sum of all real values
  * @returns {Array} - Items with chart-safe values applied
  */
 const applyMinimumArcValue = (items, total) => {
     if (total === 0) return items;
+
     const minValue = total * 0.01;
-    return items.map((item) => ({
+
+    // Floor any non-zero slice that is below the minimum
+    const adjustedItems = items.map((item) => ({
         ...item,
         value: item.value > 0 && item.value < minValue ? minValue : item.value
     }));
+
+    // How much was added in total by flooring
+    const addedValue = adjustedItems.reduce((sum, item, index) => sum + (item.value - items[index].value), 0);
+
+    if (addedValue <= 0) return adjustedItems;
+
+    // Subtract the added amount proportionally from slices that are above the minimum
+    const reducibleTotal = adjustedItems.reduce(
+        (sum, item) => (item.value > minValue ? sum + (item.value - minValue) : sum),
+        0
+    );
+
+    // If we cannot redistribute without pushing other slices below minimum, return as-is
+    if (reducibleTotal < addedValue) return adjustedItems;
+
+    let remaining = addedValue;
+
+    return adjustedItems.map((item) => {
+        if (item.value <= minValue || remaining <= 0) return item;
+        const reducible = item.value - minValue;
+        const reduction = Math.min(reducible, (reducible / reducibleTotal) * addedValue, remaining);
+        remaining -= reduction;
+        return { ...item, value: item.value - reduction };
+    });
 };
 
 /**
@@ -90,7 +112,8 @@ const ProjectTypeSummaryCard = ({ title, summary }) => {
         percent: computeDisplayPercent(item.value, totalAmount)
     }));
 
-    // Chart data: floor tiny slices so every non-zero slice is visible
+    // Chart data: floor tiny slices so every non-zero slice is visible,
+    // redistributing the added amount from larger slices to preserve the total
     const chartData = applyMinimumArcValue(legendData, totalAmount);
 
     return (
@@ -121,8 +144,6 @@ const ProjectTypeSummaryCard = ({ title, summary }) => {
                     <div
                         id="project-type-chart"
                         className="width-card height-card margin-top-neg-1"
-                        aria-label="This is a Donut Chart that displays the percent by project type in the center."
-                        role="img"
                     >
                         <ResponsiveDonutWithInnerPercent
                             data={chartData}
@@ -133,7 +154,7 @@ const ProjectTypeSummaryCard = ({ title, summary }) => {
                             setHoverId={setHoverId}
                             CustomLayerComponent={CustomLayerComponent(percent ? `${percent}%` : "")}
                             container_id="project-type-chart"
-                            ariaLabel="This is a Donut Chart that displays the percent by project type in the center."
+                            ariaLabel="Donut chart showing project budget by type"
                         />
                     </div>
                 )}

@@ -154,7 +154,7 @@ const ProjectsList = () => {
                     </div>
                 }
                 SummaryCardsSection={
-                    totalCount > 0 && (
+                    totalCount > 0 && summary && (
                         <ProjectSummaryCardsSection
                             fiscalYear={fiscalYearDisplay}
                             summary={summary}

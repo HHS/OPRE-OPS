@@ -1,3 +1,1 @@
-import ProjectCountSummaryCard from "./ProjectCountSummaryCard";
-
-export default ProjectCountSummaryCard;
+export { default } from "./ProjectCountSummaryCard";

@@ -1,3 +1,1 @@
-import ProjectTypeSummaryCard from "./ProjectTypeSummaryCard";
-
-export default ProjectTypeSummaryCard;
+export { default } from "./ProjectTypeSummaryCard";
