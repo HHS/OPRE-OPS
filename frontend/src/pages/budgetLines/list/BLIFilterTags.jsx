@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import _ from "lodash";
 import FilterTags from "../../../components/UI/FilterTags/FilterTags";
 import FilterTagsWrapper from "../../../components/UI/FilterTags/FilterTagsWrapper";
@@ -11,30 +11,23 @@ import FilterTagsWrapper from "../../../components/UI/FilterTags/FilterTagsWrapp
  * @returns {React.JSX.Element} - The procurement shop select element.
  */
 export const BLIFilterTags = ({ filters, setFilters }) => {
-    const [tagsList, setTagsList] = useState([]);
-
+    // Tag removal is a quick action - immediately updates filters
     const removeFilter = (tag) => {
-        const filteredTagsList = tagsList.filter((t) => t.tagText !== tag.tagText);
-        setTagsList(filteredTagsList);
         switch (tag.filter) {
             case "fiscalYears":
                 setFilters((prevState) => {
-                    if (tag.tagText === "All FYs") {
-                        return {
-                            ...prevState,
-                            fiscalYears: []
-                        };
-                    }
                     const yearValue = Number(tag.tagText.replace("FY ", ""));
+                    const remaining = (prevState.fiscalYears ?? []).filter((fy) => {
+                        const fyId = typeof fy.id === "number" ? fy.id : Number(fy.id);
+                        if (!Number.isNaN(yearValue) && !Number.isNaN(fyId)) {
+                            return fyId !== yearValue;
+                        }
+                        return fy.title.toString() !== tag.tagText.replace("FY ", "");
+                    });
+                    // If removal leaves 0 years, set to null ("All")
                     return {
                         ...prevState,
-                        fiscalYears: (prevState.fiscalYears ?? []).filter((fy) => {
-                            const fyId = typeof fy.id === "number" ? fy.id : Number(fy.id);
-                            if (!Number.isNaN(yearValue) && !Number.isNaN(fyId)) {
-                                return fyId !== yearValue;
-                            }
-                            return fy.title.toString() !== tag.tagText.replace("FY ", "");
-                        })
+                        fiscalYears: remaining.length === 0 ? null : remaining
                     };
                 });
                 break;
@@ -91,125 +84,111 @@ export const BLIFilterTags = ({ filters, setFilters }) => {
         }
     };
 
-    useEffect(() => {
-        const selectedFiscalYears = [];
-        if (filters.fiscalYears === null) {
-            selectedFiscalYears.push({ tagText: "All FYs", filter: "fiscalYears" });
-        }
+    // Derive tags from filters (pure function, no state)
+    const fiscalYearTags = useMemo(() => {
+        if (filters.fiscalYears === null) return []; // "All" has no tags
+        if (!Array.isArray(filters.fiscalYears)) return [];
 
-        Array.isArray(filters.fiscalYears) &&
-            filters.fiscalYears.forEach((fiscalYear) => {
-                if (fiscalYear?.id === "ALL") {
-                    selectedFiscalYears.push({ tagText: "All FYs", filter: "fiscalYears" });
-                    return;
-                }
-                const tag = fiscalYear.title.toString().startsWith("FY ") ? fiscalYear.title : `FY ${fiscalYear.title}`;
-                selectedFiscalYears.push({ tagText: tag, filter: "fiscalYears" });
-            });
-        setTagsList((prevState) => prevState.filter((t) => t.filter !== "fiscalYears"));
-        setTagsList((prevState) => {
-            return [...prevState, ...selectedFiscalYears];
+        return filters.fiscalYears.map((fiscalYear) => {
+            const tag = fiscalYear.title.toString().startsWith("FY ") ? fiscalYear.title : `FY ${fiscalYear.title}`;
+            return { tagText: tag, filter: "fiscalYears" };
         });
     }, [filters.fiscalYears]);
 
-    useEffect(() => {
-        const selectedPortfolios = [];
-        Array.isArray(filters.portfolios) &&
-            filters.portfolios.forEach((portfolio) => {
-                selectedPortfolios.push({ tagText: portfolio.name, filter: "portfolios" });
-            });
-        setTagsList((prevState) => prevState.filter((t) => t.filter !== "portfolios"));
-        setTagsList((prevState) => {
-            return [...prevState, ...selectedPortfolios];
-        });
+    const portfolioTags = useMemo(() => {
+        if (!Array.isArray(filters.portfolios)) return [];
+        return filters.portfolios.map((portfolio) => ({
+            tagText: portfolio.name,
+            filter: "portfolios"
+        }));
     }, [filters.portfolios]);
 
-    useEffect(() => {
-        const selectedBLIStatus = [];
-        Array.isArray(filters.bliStatus) &&
-            filters.bliStatus.forEach((status) => {
-                selectedBLIStatus.push({ tagText: status.title, filter: "bliStatus" });
-            });
-        setTagsList((prevState) => prevState.filter((t) => t.filter !== "bliStatus"));
-        setTagsList((prevState) => {
-            return [...prevState, ...selectedBLIStatus];
-        });
+    const bliStatusTags = useMemo(() => {
+        if (!Array.isArray(filters.bliStatus)) return [];
+        return filters.bliStatus.map((status) => ({
+            tagText: status.title,
+            filter: "bliStatus"
+        }));
     }, [filters.bliStatus]);
 
-    useEffect(() => {
-        if (filters.budgetRange) {
-            const [min, max] = filters.budgetRange;
-            const formatter = new Intl.NumberFormat("en-US", {
-                style: "currency",
-                currency: "USD",
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0
-            });
-            const tag = `${formatter.format(min)} - ${formatter.format(max)}`;
-            setTagsList((prevState) => prevState.filter((t) => t.filter !== "budgetRange"));
-            setTagsList((prevState) => {
-                return [...prevState, { tagText: tag, filter: "budgetRange" }];
-            });
-        } else {
-            setTagsList((prevState) => prevState.filter((t) => t.filter !== "budgetRange"));
-        }
+    const budgetRangeTags = useMemo(() => {
+        if (!filters.budgetRange) return [];
+        const [min, max] = filters.budgetRange;
+        const formatter = new Intl.NumberFormat("en-US", {
+            style: "currency",
+            currency: "USD",
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        });
+        const tag = `${formatter.format(min)} - ${formatter.format(max)}`;
+        return [{ tagText: tag, filter: "budgetRange" }];
     }, [filters.budgetRange]);
 
-    useEffect(() => {
-        const selectedAgreementTypes = [];
-        Array.isArray(filters.agreementTypes) &&
-            filters.agreementTypes.forEach((type) => {
-                selectedAgreementTypes.push({ tagText: type.title, filter: "agreementTypes" });
-            });
-        setTagsList((prevState) => prevState.filter((t) => t.filter !== "agreementTypes"));
-        setTagsList((prevState) => {
-            return [...prevState, ...selectedAgreementTypes];
-        });
+    const agreementTypeTags = useMemo(() => {
+        if (!Array.isArray(filters.agreementTypes)) return [];
+        return filters.agreementTypes.map((type) => ({
+            tagText: type.title,
+            filter: "agreementTypes"
+        }));
     }, [filters.agreementTypes]);
 
-    useEffect(() => {
-        const selectedAgreementTitles = [];
-        Array.isArray(filters.agreementTitles) &&
-            filters.agreementTitles.forEach((title) => {
-                selectedAgreementTitles.push({ tagText: title.name, filter: "agreementTitles" });
-            });
-        setTagsList((prevState) => prevState.filter((t) => t.filter !== "agreementTitles"));
-        setTagsList((prevState) => {
-            return [...prevState, ...selectedAgreementTitles];
-        });
+    const agreementTitleTags = useMemo(() => {
+        if (!Array.isArray(filters.agreementTitles)) return [];
+        return filters.agreementTitles.map((title) => ({
+            tagText: title.name,
+            filter: "agreementTitles"
+        }));
     }, [filters.agreementTitles]);
 
-    useEffect(() => {
-        const selectedCanActivePeriods = [];
-        Array.isArray(filters.canActivePeriods) &&
-            filters.canActivePeriods.forEach((period) => {
-                selectedCanActivePeriods.push({ tagText: period.title, filter: "canActivePeriods" });
-            });
-        setTagsList((prevState) => prevState.filter((t) => t.filter !== "canActivePeriods"));
-        setTagsList((prevState) => {
-            return [...prevState, ...selectedCanActivePeriods];
-        });
+    const canActivePeriodTags = useMemo(() => {
+        if (!Array.isArray(filters.canActivePeriods)) return [];
+        return filters.canActivePeriods.map((period) => ({
+            tagText: period.title,
+            filter: "canActivePeriods"
+        }));
     }, [filters.canActivePeriods]);
 
-    const tagsListByFilter = _.groupBy(tagsList, "filter");
-    const tagsListByFilterMerged = [];
-    Array.isArray(tagsListByFilter.fiscalYears) && tagsListByFilterMerged.push(...tagsListByFilter.fiscalYears.sort());
-    Array.isArray(tagsListByFilter.portfolios) && tagsListByFilterMerged.push(...tagsListByFilter.portfolios.sort());
-    Array.isArray(tagsListByFilter.bliStatus) && tagsListByFilterMerged.push(...tagsListByFilter.bliStatus.sort());
-    Array.isArray(tagsListByFilter.budgetRange) && tagsListByFilterMerged.push(...tagsListByFilter.budgetRange);
-    Array.isArray(tagsListByFilter.agreementTypes) &&
-        tagsListByFilterMerged.push(...tagsListByFilter.agreementTypes.sort());
-    Array.isArray(tagsListByFilter.agreementTitles) &&
-        tagsListByFilterMerged.push(...tagsListByFilter.agreementTitles.sort());
-    Array.isArray(tagsListByFilter.canActivePeriods) &&
-        tagsListByFilterMerged.push(...tagsListByFilter.canActivePeriods.sort());
+    // Combine all tags
+    const tagsList = useMemo(() => {
+        return [
+            ...fiscalYearTags,
+            ...portfolioTags,
+            ...bliStatusTags,
+            ...budgetRangeTags,
+            ...agreementTypeTags,
+            ...agreementTitleTags,
+            ...canActivePeriodTags
+        ];
+    }, [
+        fiscalYearTags,
+        portfolioTags,
+        bliStatusTags,
+        budgetRangeTags,
+        agreementTypeTags,
+        agreementTitleTags,
+        canActivePeriodTags
+    ]);
+
+    // Group and sort tags by filter type for consistent display order
+    const sortedTagsList = useMemo(() => {
+        const tagsListByFilter = _.groupBy(tagsList, "filter");
+        const merged = [];
+        Array.isArray(tagsListByFilter.fiscalYears) && merged.push(...tagsListByFilter.fiscalYears.sort());
+        Array.isArray(tagsListByFilter.portfolios) && merged.push(...tagsListByFilter.portfolios.sort());
+        Array.isArray(tagsListByFilter.bliStatus) && merged.push(...tagsListByFilter.bliStatus.sort());
+        Array.isArray(tagsListByFilter.budgetRange) && merged.push(...tagsListByFilter.budgetRange);
+        Array.isArray(tagsListByFilter.agreementTypes) && merged.push(...tagsListByFilter.agreementTypes.sort());
+        Array.isArray(tagsListByFilter.agreementTitles) && merged.push(...tagsListByFilter.agreementTitles.sort());
+        Array.isArray(tagsListByFilter.canActivePeriods) && merged.push(...tagsListByFilter.canActivePeriods.sort());
+        return merged;
+    }, [tagsList]);
 
     return (
-        !_.isEmpty(tagsList) && (
+        !_.isEmpty(sortedTagsList) && (
             <FilterTagsWrapper>
                 <FilterTags
                     removeFilter={removeFilter}
-                    tagsList={tagsListByFilterMerged}
+                    tagsList={sortedTagsList}
                 />
             </FilterTagsWrapper>
         )

@@ -32,7 +32,6 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
     const [agreementTitles, setAgreementTitles] = React.useState([]);
     const [canActivePeriods, setCanActivePeriods] = React.useState([]);
     const [searchParams] = useSearchParams();
-    const isResetting = React.useRef(false);
     const allFiscalYearsOption = React.useMemo(() => ({ id: "ALL", title: "All FYs" }), []);
 
     const myBudgetLineItemsUrl = searchParams.get("filter") === "my-budget-lines";
@@ -66,19 +65,15 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
         return [allFiscalYearsOption, ...options];
     }, [filterOptions?.fiscal_years, filters.fiscalYears, selectedFiscalYear, allFiscalYearsOption]);
 
-    // The useEffect() hook calls below are used to set the state appropriately when the filter tags (X) are clicked.
-    // Also pre-populates with the selected fiscal year when no filters are applied
+    // Sync local fiscal years state from filters (for external changes like tag removal)
+    // Modal's local state is the editing buffer - syncs from filters when they change externally
     React.useEffect(() => {
-        if (isResetting.current) {
-            // Don't pre-populate if user just reset the filters
-            setFiscalYears(filters.fiscalYears ?? []);
-            isResetting.current = false;
-        } else if (filters.fiscalYears === null) {
+        if (filters.fiscalYears === null) {
             setFiscalYears([allFiscalYearsOption]);
         } else {
             setFiscalYears(filters.fiscalYears ?? []);
         }
-    }, [filters.fiscalYears, selectedFiscalYear, allFiscalYearsOption]);
+    }, [filters.fiscalYears, allFiscalYearsOption]);
 
     const handleFiscalYearsChange = (nextFiscalYears) => {
         if (!Array.isArray(nextFiscalYears)) {
@@ -154,24 +149,16 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
         });
     };
 
+    // Reset restores local state to current filters (before modal opened)
     const resetFilter = () => {
-        isResetting.current = true;
-        setFilters({
-            fiscalYears: [],
-            portfolios: [],
-            bliStatus: [],
-            budgetRange: null,
-            agreementTypes: [],
-            agreementTitles: [],
-            canActivePeriods: []
-        });
-        setFiscalYears([]);
-        setPortfolios([]);
-        setBLIStatus([]);
-        setBudgetRange(null);
-        setAgreementTypes([]);
-        setAgreementTitles([]);
-        setCanActivePeriods([]);
+        // Sync local state back to current parent filters
+        setFiscalYears(filters.fiscalYears === null ? [allFiscalYearsOption] : (filters.fiscalYears ?? []));
+        setPortfolios(filters.portfolios ?? []);
+        setBLIStatus(filters.bliStatus ?? []);
+        setBudgetRange(filters.budgetRange);
+        setAgreementTypes(filters.agreementTypes ?? []);
+        setAgreementTitles(filters.agreementTitles ?? []);
+        setCanActivePeriods(filters.canActivePeriods ?? []);
     };
 
     const fieldStyles = "usa-fieldset margin-bottom-205";

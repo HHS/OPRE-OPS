@@ -21,7 +21,6 @@ import BLIFilterTags from "./BLIFilterTags";
 import BLITags from "./BLITabs";
 import { useBudgetLinesList } from "./BudgetLinesItems.hooks";
 import FiscalYear from "../../../components/UI/FiscalYear";
-import React from "react";
 import { getCurrentFiscalYear } from "../../../helpers/utils";
 
 /**
@@ -31,69 +30,44 @@ import { getCurrentFiscalYear } from "../../../helpers/utils";
 const BudgetLineItemList = () => {
     const [isExporting, setIsExporting] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
-    const [fiscalYearShortcut, setFiscalYearShortcut] = React.useState(getCurrentFiscalYear());
-    const [isFiscalYearShortcutActive, setIsFiscalYearShortcutActive] = React.useState(false);
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
     const { myBudgetLineItemsUrl, filters, setFilters } = useBudgetLinesList();
-    const previousFiscalYearsRef = React.useRef(filters.fiscalYears);
 
-    useEffect(() => {
-        if (filters.fiscalYears === null) {
-            setIsFiscalYearShortcutActive(false);
-            setFiscalYearShortcut("All");
-        } else if ((filters.fiscalYears ?? []).length > 1) {
-            setIsFiscalYearShortcutActive(false);
-            setFiscalYearShortcut("Multi");
-        } else if ((filters.fiscalYears ?? []).length === 1) {
-            setIsFiscalYearShortcutActive(false);
-            setFiscalYearShortcut(filters.fiscalYears[0].id);
-        } else if ((filters.fiscalYears ?? []).length === 0 && !isFiscalYearShortcutActive) {
-            setFiscalYearShortcut(getCurrentFiscalYear());
-        } else if (fiscalYearShortcut === "Multi" || fiscalYearShortcut === "All") {
-            // Reset to current fiscal year when filters are cleared
-            setFiscalYearShortcut(getCurrentFiscalYear());
-        }
-    }, [filters.fiscalYears, fiscalYearShortcut, isFiscalYearShortcutActive]);
-
-    useEffect(() => {
-        const previousFiscalYears = previousFiscalYearsRef.current;
-        previousFiscalYearsRef.current = filters.fiscalYears;
-
-        const hadSelections = Array.isArray(previousFiscalYears) && previousFiscalYears.length > 0;
-        const isCleared = Array.isArray(filters.fiscalYears) && filters.fiscalYears.length === 0;
-
-        if (hadSelections && isCleared) {
-            setIsFiscalYearShortcutActive(false);
-            setFiscalYearShortcut(getCurrentFiscalYear());
-        }
+    // Derive dropdown display value from filters (no state sync needed)
+    // "All" = null, "Multi" = length > 1, single = show year, empty/undefined = fallback to current FY
+    const fiscalYearDropdownValue = useMemo(() => {
+        if (filters.fiscalYears === null) return "All";
+        if (!filters.fiscalYears || filters.fiscalYears.length === 0) return getCurrentFiscalYear();
+        if (filters.fiscalYears.length === 1) return filters.fiscalYears[0].id;
+        return "Multi"; // display only, not selectable
     }, [filters.fiscalYears]);
 
-    // Handle fiscal year change - clear filters if changing from "Multi" to a specific year
-    const handleChangeFiscalYear = (newValue) => {
-        setFilters({
-            fiscalYears: newValue === "All" ? null : [],
-            portfolios: [],
-            bliStatus: [],
-            budgetRange: null,
-            agreementTypes: [],
-            agreementTitles: [],
-            canActivePeriods: []
-        });
-        setIsFiscalYearShortcutActive(true);
-        setFiscalYearShortcut(newValue);
+    // Handle fiscal year change (quick actions: single year or "All")
+    // Does NOT reset other filters (portfolios, bliStatus, etc.)
+    const handleChangeFiscalYear = (selectedValue) => {
+        if (selectedValue === "All") {
+            setFilters((prev) => ({ ...prev, fiscalYears: null }));
+        } else {
+            // Single year quick action
+            const yearId = Number(selectedValue);
+            setFilters((prev) => ({
+                ...prev,
+                fiscalYears: [{ id: yearId, title: yearId }]
+            }));
+        }
     };
 
+    // Derive fiscal years for API query (pure function)
     /** @type {Array<{id: number | string, title: number | string}> | null} */
     const resolvedFiscalYears = useMemo(() => {
-        const currentFiscalYear = getCurrentFiscalYear();
-        if (filters.fiscalYears === null) {
-            return null;
-        } else if ((filters.fiscalYears ?? []).length === 0) {
-            const fallbackFiscalYear = isFiscalYearShortcutActive ? fiscalYearShortcut : currentFiscalYear;
-            return [{ id: Number(fallbackFiscalYear), title: Number(fallbackFiscalYear) }];
+        if (filters.fiscalYears === null) return null; // "All"
+        if (!filters.fiscalYears || filters.fiscalYears.length === 0) {
+            // Fallback to current FY
+            const currentFY = getCurrentFiscalYear();
+            return [{ id: currentFY, title: currentFY }];
         }
         return filters.fiscalYears;
-    }, [filters.fiscalYears, isFiscalYearShortcutActive, fiscalYearShortcut]);
+    }, [filters.fiscalYears]);
 
     // Resolve filters for both UI query and export - single source of truth
     const resolvedFilters = useMemo(
@@ -218,7 +192,7 @@ const BudgetLineItemList = () => {
                                 <BLIFilterButton
                                     filters={filters}
                                     setFilters={setFilters}
-                                    selectedFiscalYear={fiscalYearShortcut}
+                                    selectedFiscalYear={fiscalYearDropdownValue}
                                 />
                             </div>
                         </div>
@@ -226,9 +200,9 @@ const BudgetLineItemList = () => {
                 }
                 FYSelect={
                     <FiscalYear
-                        fiscalYear={fiscalYearShortcut}
+                        fiscalYear={fiscalYearDropdownValue}
                         handleChangeFiscalYear={handleChangeFiscalYear}
-                        showAllOption={fiscalYearShortcut !== "All"}
+                        showAllOption={fiscalYearDropdownValue !== "All"}
                     />
                 }
                 SummaryCardsSection={
@@ -241,7 +215,7 @@ const BudgetLineItemList = () => {
                             totalPlannedAmount={budgetLineItems?.[0]?._meta?.total_planned_amount ?? 0}
                             totalExecutingAmount={budgetLineItems?.[0]?._meta?.total_in_execution_amount ?? 0}
                             totalObligatedAmount={budgetLineItems?.[0]?._meta?.total_obligated_amount ?? 0}
-                            fiscalYear={fiscalYearShortcut === "All" ? "All FYs" : fiscalYearShortcut}
+                            fiscalYear={fiscalYearDropdownValue === "All" ? "All FYs" : fiscalYearDropdownValue}
                         />
                     )
                 }
