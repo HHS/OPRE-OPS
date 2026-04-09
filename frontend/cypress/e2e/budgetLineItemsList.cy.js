@@ -147,6 +147,23 @@ it("filter button works as expected", () => {
     cy.get("button[id='filter-tag-canActivePeriods-5']").should("not.exist");
 });
 
+it("filter button does not reset fiscal year dropdown when fiscal year shortcut is active", () => {
+    cy.get("#fiscal-year-select").select("2044");
+    cy.get("button").contains("Filter").click();
+
+    // set a number of filters
+
+    cy.get(".bli-status-combobox__control")
+        .click()
+        .get(".bli-status-combobox__menu")
+        .find(".bli-status-combobox__option")
+        .contains("Draft")
+        .click();
+
+    // click the button that has text Apply
+    cy.get("button").contains("Apply").click();
+});
+
 it("click on chevron down should open row and see budgetline data", () => {
     cy.get("#fiscal-year-select").select("2044");
     cy.get("tbody").find('[data-cy="expanded-data"]').should("not.exist");
