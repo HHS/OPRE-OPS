@@ -496,6 +496,33 @@ describe("ProcurementTrackerStepTwo", () => {
         });
     });
 
+    describe("Undefined stepTwoData guard", () => {
+        it("buttons are disabled when stepTwoData is undefined", () => {
+            useProcurementTrackerStepTwo.mockReturnValue({
+                ...defaultHookReturn,
+                isPreSolicitationPackageFinalized: true,
+                targetCompletionDate: "2024-03-20"
+            });
+
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="ACTIVE"
+                    stepTwoData={undefined}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    isActiveStep={true}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                />
+            );
+
+            const saveButton = screen.getByRole("button", { name: /save/i });
+            const completeButton = screen.getByRole("button", { name: /complete step 2/i });
+
+            expect(saveButton).toBeDisabled();
+            expect(completeButton).toBeDisabled();
+        });
+    });
+
     describe("COMPLETED State Rendering", () => {
         it("renders read-only display with instructional paragraph", () => {
             render(

@@ -536,10 +536,13 @@ describe("ProcurementTrackerStepOne", () => {
                     stepOneData={mockStepOneData}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                     authorizedUsers={mockAllUsers}
+                    isActiveStep={true}
+                    isDisabled={false}
                 />
             );
 
             expect(screen.getByRole("checkbox")).toBeInTheDocument();
+            expect(screen.getByRole("checkbox")).not.toBeDisabled();
             expect(screen.getByTestId("users-combobox")).toBeInTheDocument();
             expect(screen.getByTestId("date-picker")).toBeInTheDocument();
             expect(screen.getByTestId("text-area")).toBeInTheDocument();
@@ -559,9 +562,12 @@ describe("ProcurementTrackerStepOne", () => {
                     stepOneData={mockStepOneData}
                     authorizedUsers={mockAllUsers}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    isActiveStep={true}
+                    isDisabled={false}
                 />
             );
 
+            const checkbox = screen.getByRole("checkbox");
             // eslint-disable-next-line testing-library/no-node-access
             const select = screen.getByTestId("users-combobox").querySelector("select");
             // eslint-disable-next-line testing-library/no-node-access
@@ -569,6 +575,7 @@ describe("ProcurementTrackerStepOne", () => {
             // eslint-disable-next-line testing-library/no-node-access
             const textarea = screen.getByTestId("text-area").querySelector("textarea");
 
+            expect(checkbox).not.toBeDisabled();
             expect(select).not.toBeDisabled();
             expect(dateInput).not.toBeDisabled();
             expect(textarea).not.toBeDisabled();
