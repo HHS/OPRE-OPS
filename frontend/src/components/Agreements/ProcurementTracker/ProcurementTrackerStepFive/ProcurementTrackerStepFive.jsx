@@ -7,6 +7,7 @@ import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepFive from "./ProcurementTrackerStepFive.hooks";
 import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { PROCUREMENT_STEP_STATUS } from "../ProcurementTracker.constants";
 
 /**
  * @typedef {import("../../../../types/UserTypes").SafeUser} SafeUser
@@ -106,7 +107,7 @@ const ProcurementTrackerStepFive = ({
                         Pre-Award Approval and send the Final Consensus Memo to the Procurement Shop, check this task as
                         complete.
                     </p>
-                    {stepStatus === "COMPLETED" && (
+                    {stepStatus === PROCUREMENT_STEP_STATUS.COMPLETED && (
                         <div className="display-flex flex-align-center margin-top-5">
                             <FontAwesomeIcon
                                 icon={faCircleCheck}
@@ -144,165 +145,166 @@ const ProcurementTrackerStepFive = ({
                     </dl>
                 </div>
             )}
-            {!isReadOnly && (stepStatus === "PENDING" || stepStatus === "ACTIVE") && (
-                <fieldset className="usa-fieldset">
-                    <p>
-                        Edit the Agreement to match the Vendor Price Sheet and ensure any final Budget Changes are
-                        approved, if needed. Request Pre-Award Approval from the Procurement Shop. If you have a target
-                        completion date for when the Final Consensus Memo will be sent, enter it below. Once you receive
-                        Pre-Award Approval and send the Final Consensus Memo to the Procurement Shop, check this task as
-                        complete.
-                    </p>
+            {!isReadOnly &&
+                (stepStatus === PROCUREMENT_STEP_STATUS.PENDING || stepStatus === PROCUREMENT_STEP_STATUS.ACTIVE) && (
+                    <fieldset className="usa-fieldset">
+                        <p>
+                            Edit the Agreement to match the Vendor Price Sheet and ensure any final Budget Changes are
+                            approved, if needed. Request Pre-Award Approval from the Procurement Shop. If you have a
+                            target completion date for when the Final Consensus Memo will be sent, enter it below. Once
+                            you receive Pre-Award Approval and send the Final Consensus Memo to the Procurement Shop,
+                            check this task as complete.
+                        </p>
 
-                    <div className="display-flex flex-align-end margin-bottom-2">
-                        {stepFiveData?.target_completion_date ? (
-                            <TermTag
-                                term="Target Completion Date"
-                                description={step5TargetCompletionDateLabel}
-                            />
-                        ) : (
-                            <>
-                                <MemoizedDatePicker
-                                    id="target-completion-date"
-                                    name="targetCompletionDate"
-                                    label="Target Completion Date (optional)"
-                                    messages={validatorRes.getErrors("targetCompletionDate") || []}
-                                    hint="mm/dd/yyyy"
-                                    value={targetCompletionDate}
-                                    onChange={
-                                        /** @param {any} e */ (e) => {
-                                            runValidate("targetCompletionDate", e.target.value);
-                                            setTargetCompletionDate(e.target.value);
-                                        }
-                                    }
-                                    minDate={getLocalISODate()}
-                                    isDisabled={isDisabled}
+                        <div className="display-flex flex-align-end margin-bottom-2">
+                            {stepFiveData?.target_completion_date ? (
+                                <TermTag
+                                    term="Target Completion Date"
+                                    description={step5TargetCompletionDateLabel}
                                 />
-                                <button
-                                    className="usa-button usa-button--unstyled margin-bottom-1 margin-left-2"
-                                    data-cy="step-5-target-completion-save-btn"
-                                    disabled={isTargetCompletionDateSaveDisabled}
-                                    onClick={() => {
-                                        handleTargetCompletionDateSubmit(stepFiveData?.id);
-                                    }}
-                                >
-                                    Save
-                                </button>
-                            </>
-                        )}
-                    </div>
-
-                    {/* Pre-Award Approval Request Section */}
-                    {
-                        <div className="margin-bottom-3">
-                            <p>
-                                Before completing this step, you may request Pre-Award Approval from your Division
-                                Director.
-                            </p>
-                            <button
-                                className="usa-button"
-                                onClick={() => navigate(`/agreements/${agreementId}/pre-award-approval`)}
-                                disabled={isRequestBtnDisabled}
-                                title={
-                                    isRequestBtnDisabled
-                                        ? "Pre-Award Approval cannot be requested right now. Ensure this step is unlocked, Pre-Award Approval has not already been requested, and that no Budget Line Items are currently in review."
-                                        : undefined
-                                }
-                                data-cy="request-pre-award-approval-btn"
-                            >
-                                Request Pre-Award Approval
-                            </button>
+                            ) : (
+                                <>
+                                    <MemoizedDatePicker
+                                        id="target-completion-date"
+                                        name="targetCompletionDate"
+                                        label="Target Completion Date (optional)"
+                                        messages={validatorRes.getErrors("targetCompletionDate") || []}
+                                        hint="mm/dd/yyyy"
+                                        value={targetCompletionDate}
+                                        onChange={
+                                            /** @param {any} e */ (e) => {
+                                                runValidate("targetCompletionDate", e.target.value);
+                                                setTargetCompletionDate(e.target.value);
+                                            }
+                                        }
+                                        minDate={getLocalISODate()}
+                                        isDisabled={isDisabled}
+                                    />
+                                    <button
+                                        className="usa-button usa-button--unstyled margin-bottom-1 margin-left-2"
+                                        data-cy="step-5-target-completion-save-btn"
+                                        disabled={isTargetCompletionDateSaveDisabled}
+                                        onClick={() => {
+                                            handleTargetCompletionDateSubmit(stepFiveData?.id);
+                                        }}
+                                    >
+                                        Save
+                                    </button>
+                                </>
+                            )}
                         </div>
-                    }
 
-                    <div className="usa-checkbox margin-top-3">
-                        <input
-                            className="usa-checkbox__input"
-                            id="step-5-checkbox"
-                            type="checkbox"
-                            name="step-5-checkbox"
-                            value="step-5-checkbox"
-                            checked={isPreAwardComplete}
-                            onChange={() => setIsPreAwardComplete(!isPreAwardComplete)}
-                            disabled={isPreAwardCheckboxDisabled}
-                        />
-                        <label
-                            className="usa-checkbox__label"
-                            htmlFor="step-5-checkbox"
-                        >
-                            The Agreement was edited to match the Vendor Price Sheet and any final Budget Changes were
-                            approved, if needed. I received Pre-Award Approval and the Final Consensus Memo has been
-                            sent to the Procurement Shop.
-                        </label>
-                    </div>
-                    <div className="display-flex flex-align-center">
-                        <UsersComboBox
-                            className="width-card-lg margin-top-5"
-                            label={"Task Completed By"}
-                            selectedUser={selectedUser}
-                            setSelectedUser={setSelectedUser}
-                            users={authorizedUsers}
-                            isDisabled={isUsersComboBoxDisabled}
-                            messages={validatorRes.getErrors("users") || []}
-                            onChange={
-                                /** @param {any} name @param {any} value */ (name, value) => {
-                                    runValidate(name, value);
-                                }
-                            }
-                        />
+                        {/* Pre-Award Approval Request Section */}
+                        {
+                            <div className="margin-bottom-3">
+                                <p>
+                                    Before completing this step, you may request Pre-Award Approval from your Division
+                                    Director.
+                                </p>
+                                <button
+                                    className="usa-button"
+                                    onClick={() => navigate(`/agreements/${agreementId}/pre-award-approval`)}
+                                    disabled={isRequestBtnDisabled}
+                                    title={
+                                        isRequestBtnDisabled
+                                            ? "Pre-Award Approval cannot be requested right now. Ensure this step is unlocked, Pre-Award Approval has not already been requested, and that no Budget Line Items are currently in review."
+                                            : undefined
+                                    }
+                                    data-cy="request-pre-award-approval-btn"
+                                >
+                                    Request Pre-Award Approval
+                                </button>
+                            </div>
+                        }
 
-                        <MemoizedDatePicker
-                            id="step-5-date-completed"
-                            name="dateCompleted"
-                            className="margin-left-4"
-                            label="Date Completed"
-                            hint="mm/dd/yyyy"
-                            value={step5DateCompleted}
-                            messages={validatorRes.getErrors("dateCompleted") || []}
-                            onChange={
-                                /** @param {any} e */ (e) => {
-                                    runValidate("dateCompleted", e.target.value);
-                                    setStep5DateCompleted(e.target.value);
+                        <div className="usa-checkbox margin-top-3">
+                            <input
+                                className="usa-checkbox__input"
+                                id="step-5-checkbox"
+                                type="checkbox"
+                                name="step-5-checkbox"
+                                value="step-5-checkbox"
+                                checked={isPreAwardComplete}
+                                onChange={() => setIsPreAwardComplete(!isPreAwardComplete)}
+                                disabled={isPreAwardCheckboxDisabled}
+                            />
+                            <label
+                                className="usa-checkbox__label"
+                                htmlFor="step-5-checkbox"
+                            >
+                                The Agreement was edited to match the Vendor Price Sheet and any final Budget Changes
+                                were approved, if needed. I received Pre-Award Approval and the Final Consensus Memo has
+                                been sent to the Procurement Shop.
+                            </label>
+                        </div>
+                        <div className="display-flex flex-align-center">
+                            <UsersComboBox
+                                className="width-card-lg margin-top-5"
+                                label={"Task Completed By"}
+                                selectedUser={selectedUser}
+                                setSelectedUser={setSelectedUser}
+                                users={authorizedUsers}
+                                isDisabled={isUsersComboBoxDisabled}
+                                messages={validatorRes.getErrors("users") || []}
+                                onChange={
+                                    /** @param {any} name @param {any} value */ (name, value) => {
+                                        runValidate(name, value);
+                                    }
                                 }
-                            }
-                            maxDate={getLocalISODate()}
+                            />
+
+                            <MemoizedDatePicker
+                                id="step-5-date-completed"
+                                name="dateCompleted"
+                                className="margin-left-4"
+                                label="Date Completed"
+                                hint="mm/dd/yyyy"
+                                value={step5DateCompleted}
+                                messages={validatorRes.getErrors("dateCompleted") || []}
+                                onChange={
+                                    /** @param {any} e */ (e) => {
+                                        runValidate("dateCompleted", e.target.value);
+                                        setStep5DateCompleted(e.target.value);
+                                    }
+                                }
+                                maxDate={getLocalISODate()}
+                                isDisabled={isPreAwardFieldsDisabled}
+                            />
+                        </div>
+                        <TextArea
+                            name="notes"
+                            label="Notes (optional)"
+                            className="margin-top-2"
+                            maxLength={750}
+                            value={step5Notes}
+                            onChange={/** @param {any} _ @param {any} value */ (_, value) => setStep5Notes(value)}
                             isDisabled={isPreAwardFieldsDisabled}
                         />
-                    </div>
-                    <TextArea
-                        name="notes"
-                        label="Notes (optional)"
-                        className="margin-top-2"
-                        maxLength={750}
-                        value={step5Notes}
-                        onChange={/** @param {any} _ @param {any} value */ (_, value) => setStep5Notes(value)}
-                        isDisabled={isPreAwardFieldsDisabled}
-                    />
 
-                    <div className="margin-top-2 display-flex flex-justify-end">
-                        <button
-                            className="usa-button usa-button--unstyled margin-right-2"
-                            data-cy="cancel-button"
-                            onClick={cancelModalStep5}
-                            disabled={isPreAwardFieldsDisabled}
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            className="usa-button"
-                            data-cy="continue-btn"
-                            onClick={() => {
-                                handleStepFiveComplete(stepFiveData?.id);
-                            }}
-                            disabled={isStep5SubmitDisabled}
-                        >
-                            Complete Step 5
-                        </button>
-                    </div>
-                </fieldset>
-            )}
+                        <div className="margin-top-2 display-flex flex-justify-end">
+                            <button
+                                className="usa-button usa-button--unstyled margin-right-2"
+                                data-cy="cancel-button"
+                                onClick={cancelModalStep5}
+                                disabled={isPreAwardFieldsDisabled}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className="usa-button"
+                                data-cy="continue-btn"
+                                onClick={() => {
+                                    handleStepFiveComplete(stepFiveData?.id);
+                                }}
+                                disabled={isStep5SubmitDisabled}
+                            >
+                                Complete Step 5
+                            </button>
+                        </div>
+                    </fieldset>
+                )}
 
-            {!isReadOnly && stepStatus === "COMPLETED" && (
+            {!isReadOnly && stepStatus === PROCUREMENT_STEP_STATUS.COMPLETED && (
                 <div>
                     <p>
                         OPRE edits the Agreement to match the Vendor Price Sheet and ensures any final Budget Changes
