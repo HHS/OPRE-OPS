@@ -134,7 +134,9 @@ const ProcurementTrackerStepFour = ({
                     </dl>
                 </div>
             )}
-            {!isReadOnly && stepStatus === PROCUREMENT_STEP_STATUS.PENDING && (
+            {!isReadOnly &&
+                (stepStatus === PROCUREMENT_STEP_STATUS.PENDING ||
+                    stepStatus === PROCUREMENT_STEP_STATUS.ACTIVE) && (
                 <fieldset className="usa-fieldset">
                     <p>
                         Complete the technical evaluations and any potential negotiations. If you have a target

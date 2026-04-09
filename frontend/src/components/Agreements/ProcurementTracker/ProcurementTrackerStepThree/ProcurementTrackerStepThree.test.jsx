@@ -512,6 +512,58 @@ describe("ProcurementTrackerStepThree", () => {
         });
     });
 
+    describe("ACTIVE State Rendering", () => {
+        it("renders all form fields in ACTIVE state", () => {
+            render(
+                <ProcurementTrackerStepThree
+                    stepStatus="ACTIVE"
+                    stepThreeData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    isActiveStep={true}
+                />
+            );
+
+            expect(screen.getByText("Task Completed By")).toBeInTheDocument();
+            expect(screen.getByText("Date Completed")).toBeInTheDocument();
+            expect(screen.getByText("Solicitation Period - Start")).toBeInTheDocument();
+            expect(screen.getByText("Solicitation Period - End")).toBeInTheDocument();
+            expect(screen.getByRole("checkbox")).toBeInTheDocument();
+        });
+
+        it("form fields are interactive when checkbox checked in ACTIVE state", () => {
+            useProcurementTrackerStepThree.mockReturnValue({
+                ...defaultHookReturn,
+                isSolicitationClosed: true
+            });
+
+            render(
+                <ProcurementTrackerStepThree
+                    stepStatus="ACTIVE"
+                    stepThreeData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    isActiveStep={true}
+                />
+            );
+
+            // eslint-disable-next-line testing-library/no-node-access
+            const usersSelect = screen.getByTestId("users-combobox").querySelector("select");
+            const datePickers = screen.getAllByTestId("date-picker");
+            const completedDatePicker = datePickers.find(
+                (picker) => picker.getAttribute("data-picker-id") === "step-3-date-completed"
+            );
+            // eslint-disable-next-line testing-library/no-node-access
+            const completedInput = completedDatePicker.querySelector("input");
+            // eslint-disable-next-line testing-library/no-node-access
+            const notesInput = screen.getByTestId("text-area").querySelector("textarea");
+
+            expect(usersSelect).not.toBeDisabled();
+            expect(completedInput).not.toBeDisabled();
+            expect(notesInput).not.toBeDisabled();
+        });
+    });
+
     describe("Disable Logic", () => {
         it("controlled fields disabled when checkbox unchecked", () => {
             render(

@@ -107,7 +107,7 @@ const ProcurementTrackerStepOne = ({
                     </dl>
                 </div>
             )}
-            {!isReadOnly && stepStatus === "PENDING" && (
+            {!isReadOnly && (stepStatus === "PENDING" || stepStatus === "ACTIVE") && (
                 <fieldset className="usa-fieldset">
                     <p>
                         Once the pre-solicitation package is sufficiently drafted and signed by all parties, send it to

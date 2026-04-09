@@ -148,7 +148,7 @@ const ProcurementTrackerStepTwo = ({
                     </dl>
                 </div>
             )}
-            {!isReadOnly && stepStatus === "PENDING" && (
+            {!isReadOnly && (stepStatus === "PENDING" || stepStatus === "ACTIVE") && (
                 <fieldset className="usa-fieldset">
                     <p>
                         Edit the pre-solicitation package in collaboration with the Procurement Shop. Once the documents

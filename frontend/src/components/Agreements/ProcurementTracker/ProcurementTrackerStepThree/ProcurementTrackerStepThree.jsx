@@ -153,7 +153,7 @@ const ProcurementTrackerStepThree = ({
                     </dl>
                 </div>
             )}
-            {!isReadOnly && stepStatus === "PENDING" && (
+            {!isReadOnly && (stepStatus === "PENDING" || stepStatus === "ACTIVE") && (
                 <fieldset className="usa-fieldset">
                     <p>
                         Once the Procurement Shop has posted the Solicitation and it’s “on the street”, enter the

@@ -372,7 +372,7 @@ describe("ProcurementTrackerStepTwo", () => {
         it("renders all form fields in ACTIVE state", () => {
             render(
                 <ProcurementTrackerStepTwo
-                    stepStatus="PENDING"
+                    stepStatus="ACTIVE"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
                     isDisabled={false}
@@ -389,7 +389,7 @@ describe("ProcurementTrackerStepTwo", () => {
         it("form fields are disabled until package is finalized in ACTIVE state", () => {
             render(
                 <ProcurementTrackerStepTwo
-                    stepStatus="PENDING"
+                    stepStatus="ACTIVE"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
                     isDisabled={false}
@@ -435,7 +435,7 @@ describe("ProcurementTrackerStepTwo", () => {
 
             render(
                 <ProcurementTrackerStepTwo
-                    stepStatus="PENDING"
+                    stepStatus="ACTIVE"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
                     isDisabled={false}
@@ -482,7 +482,7 @@ describe("ProcurementTrackerStepTwo", () => {
 
             render(
                 <ProcurementTrackerStepTwo
-                    stepStatus="PENDING"
+                    stepStatus="ACTIVE"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
                     isDisabled={false}

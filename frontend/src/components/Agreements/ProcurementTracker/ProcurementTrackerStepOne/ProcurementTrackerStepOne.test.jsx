@@ -532,7 +532,7 @@ describe("ProcurementTrackerStepOne", () => {
         it("renders all form fields: checkbox, UsersComboBox, DatePicker, TextArea, buttons", () => {
             render(
                 <ProcurementTrackerStepOne
-                    stepStatus="PENDING"
+                    stepStatus="ACTIVE"
                     stepOneData={mockStepOneData}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
                     authorizedUsers={mockAllUsers}
@@ -555,7 +555,7 @@ describe("ProcurementTrackerStepOne", () => {
 
             render(
                 <ProcurementTrackerStepOne
-                    stepStatus="PENDING"
+                    stepStatus="ACTIVE"
                     stepOneData={mockStepOneData}
                     authorizedUsers={mockAllUsers}
                     handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}

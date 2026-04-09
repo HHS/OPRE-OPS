@@ -144,7 +144,7 @@ const ProcurementTrackerStepFive = ({
                     </dl>
                 </div>
             )}
-            {!isReadOnly && stepStatus === "PENDING" && (
+            {!isReadOnly && (stepStatus === "PENDING" || stepStatus === "ACTIVE") && (
                 <fieldset className="usa-fieldset">
                     <p>
                         Edit the Agreement to match the Vendor Price Sheet and ensure any final Budget Changes are
