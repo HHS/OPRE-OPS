@@ -498,7 +498,12 @@ const useCreateBLIsAndSCs = (
             can: selectedCan || null,
             canDisplayName: selectedCan?.display_name || null,
             agreement_id: selectedAgreement?.id || null,
-            agreement: { procurement_shop: selectedProcurementShop },
+            agreement: {
+                procurement_shop: {
+                    ...selectedProcurementShop,
+                    current_fee: { fee: selectedProcurementShop?.fee_percentage ?? 0 }
+                }
+            },
             amount: enteredAmount || 0,
             status: BLI_STATUS.DRAFT,
             date_needed: formatDateForApi(needByDate),
@@ -586,7 +591,13 @@ const useCreateBLIsAndSCs = (
             can: selectedCan || null,
             canDisplayName: selectedCan?.display_name || null,
             agreement_id: selectedAgreement?.id || null,
-            agreement: { ...currentBudgetLine.agreement, procurement_shop: selectedProcurementShop },
+            agreement: {
+                ...currentBudgetLine.agreement,
+                procurement_shop: {
+                    ...selectedProcurementShop,
+                    current_fee: { fee: selectedProcurementShop?.fee_percentage ?? 0 }
+                }
+            },
             amount: enteredAmount || 0,
             status: currentBudgetLine.status || BLI_STATUS.DRAFT,
             date_needed: formatDateForApi(needByDate),
