@@ -1,9 +1,9 @@
 import { useMemo } from "react";
 import CurrencyFormat from "react-currency-format";
-import LegendItem from "../../components/UI/Cards/LineGraphWithLegendCard/LegendItem";
-import HorizontalStackedBar from "../../components/UI/DataViz/HorizontalStackedBar/HorizontalStackedBar";
-import RoundedBox from "../../components/UI/RoundedBox";
-import Tag from "../../components/UI/Tag/Tag";
+import LegendItem from "../../../components/UI/Cards/LineGraphWithLegendCard/LegendItem";
+import HorizontalStackedBar from "../../../components/UI/DataViz/HorizontalStackedBar/HorizontalStackedBar";
+import RoundedBox from "../../../components/UI/RoundedBox";
+import Tag from "../../../components/UI/Tag/Tag";
 
 const STATUS_COLORS = {
     PLANNED: "var(--data-viz-bl-by-status-2)",
