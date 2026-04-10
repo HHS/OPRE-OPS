@@ -15,7 +15,7 @@ export const data = [
         status: "In Progress-Development",
         expandedHeading: "Description",
         expandedDescription:
-            "The Procurement Tracker is available up through pre-award / step 5. We are still finishing up the pre-award requisition for the budget team, and then will continue onto award/step 6 which will complete the procurement tracker."
+            "Continue Procurement Tracker through pre-award / step 5 and award / step 6."
     },
     {
         id: 2,
