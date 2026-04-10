@@ -40,9 +40,10 @@ import { useState, useEffect, useCallback } from "react";
 /**
  * Custom hook for managing tags list
  * @param {Filters} filters
+ * @param {Object} fyHelpers - Fiscal year helper functions (approach-specific)
  * @returns {Tag[]}
  */
-export const useTagsList = (filters) => {
+export const useTagsList = (filters, fyHelpers) => {
     const [tagsList, setTagsList] = useState([]);
 
     /**
@@ -59,11 +60,10 @@ export const useTagsList = (filters) => {
                     })) ?? [];
                 setTagsList((prevState) => [...prevState.filter((t) => t.filter !== filterName), ...selectedTags]);
             } else if (filterKey == "fiscalYear") {
-                const selectedTags =
-                    filters[filterKey]?.map((item) => ({
-                        tagText: "FY " + item.title,
-                        filter: filterName
-                    })) ?? [];
+                // ============================================
+                // TEMPORARY: A/B Testing - Use approach-specific tag derivation
+                // ============================================
+                const selectedTags = fyHelpers ? fyHelpers.deriveTags(filters[filterKey]) : [];
                 setTagsList((prevState) => [...prevState.filter((t) => t.filter !== filterName), ...selectedTags]);
             } else {
                 const selectedTags =
@@ -74,7 +74,7 @@ export const useTagsList = (filters) => {
                 setTagsList((prevState) => [...prevState.filter((t) => t.filter !== filterName), ...selectedTags]);
             }
         },
-        [filters]
+        [filters, fyHelpers]
     );
 
     useEffect(() => {
@@ -112,13 +112,17 @@ export const useTagsList = (filters) => {
  * Removes a filter tag
  * @param {Tag} tag - The tag to remove
  * @param {function(function(Filters): Filters): void} setFilters - Function to update filters
+ * @param {Object} fyHelpers - Fiscal year helper functions (approach-specific)
  */
-export const removeFilter = (tag, setFilters) => {
+export const removeFilter = (tag, setFilters, fyHelpers) => {
     switch (tag.filter) {
         case "fiscalYear":
+            // ============================================
+            // TEMPORARY: A/B Testing - Use approach-specific tag removal
+            // ============================================
             setFilters((prevState) => ({
                 ...prevState,
-                fiscalYear: prevState.fiscalYear.filter((fiscalYear) => "FY " + fiscalYear.title !== tag.tagText)
+                fiscalYear: fyHelpers.handleTagRemoval(prevState.fiscalYear, tag.tagText)
             }));
             break;
         case "portfolio":

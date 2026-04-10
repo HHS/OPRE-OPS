@@ -7,10 +7,11 @@ import { removeFilter, useTagsList } from "./AgreementsFilterTags.hooks";
  * @param {Object} props - The component props.
  * @param {import("./AgreementsFilterTags.hooks").Filters} props.filters - The current filters.
  * @param {Function} props.setFilters - A function to call to set the filters.
+ * @param {Object} props.fyHelpers - Fiscal year helper functions (approach-specific).
  * @returns {JSX.Element} - The procurement shop select element.
  */
-export const AgreementsFilterTags = ({ filters, setFilters }) => {
-    const tagsList = useTagsList(filters);
+export const AgreementsFilterTags = ({ filters, setFilters, fyHelpers }) => {
+    const tagsList = useTagsList(filters, fyHelpers);
 
     const tagsListByFilter = groupBy(tagsList, "filter");
     const tagsListByFilterMerged = Object.values(tagsListByFilter).flat();
@@ -19,7 +20,7 @@ export const AgreementsFilterTags = ({ filters, setFilters }) => {
         !isEmpty(tagsList) && (
             <FilterTagsWrapper>
                 <FilterTags
-                    removeFilter={(tag) => removeFilter(tag, setFilters)}
+                    removeFilter={(tag) => removeFilter(tag, setFilters, fyHelpers)}
                     tagsList={tagsListByFilterMerged}
                 />
             </FilterTagsWrapper>

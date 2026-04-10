@@ -30,6 +30,7 @@ import icons from "../../../uswds/img/sprite.svg";
 import AgreementsFilterButton from "./AgreementsFilterButton/AgreementsFilterButton";
 import AgreementsFilterTags from "./AgreementsFilterTags/AgreementsFilterTags";
 import AgreementTabs from "./AgreementsTabs";
+import { getFiscalYearHelpers } from "./fiscalYearFilterHelpers";
 
 /**
  * @typedef {import('../../../types/AgreementTypes').Agreement} Agreement
@@ -42,9 +43,17 @@ const AgreementsList = () => {
     const navigate = useNavigate();
     const [isExporting, setIsExporting] = useState(false);
     const [searchParams] = useSearchParams();
+
+    // ============================================
+    // TEMPORARY: A/B Testing Fiscal Year Filter
+    // Query param: ?filterMode=explicit-all
+    // ============================================
+    const useApproachB = searchParams.get("filterMode") === "explicit-all";
+    const fyHelpers = getFiscalYearHelpers(useApproachB);
+
     const [filters, setFilters] = useState({
         portfolio: [],
-        fiscalYear: [],
+        fiscalYear: fyHelpers.getInitialState(),
         projectTitle: [],
         agreementType: [],
         agreementName: [],
@@ -54,7 +63,7 @@ const AgreementsList = () => {
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
     const [currentPage, setCurrentPage] = useState(1); // 1-indexed for UI
     const [pageSize] = useState(ITEMS_PER_PAGE);
-    const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(getCurrentFiscalYear());
+    const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(fyHelpers.getInitialSelectedFiscalYear());
 
     const myAgreementsUrl = searchParams.get("filter") === "my-agreements";
     const changeRequestUrl = searchParams.get("filter") === "change-requests";
@@ -71,25 +80,11 @@ const AgreementsList = () => {
         filters.contractNumber.length > 0 ||
         filters.awardType.length > 0;
 
+    // ============================================
+    // TEMPORARY: A/B Testing - Use approach-specific resolver
+    // ============================================
     const getFiscalYearFilter = () => {
-        // If explicit filters are set via filter modal, use those
-        if ((filters.fiscalYear ?? []).length > 0) {
-            // "All FYs" means no fiscal year filter
-            if (filters.fiscalYear.some((fy) => fy.id === "all")) {
-                return [];
-            }
-            return filters.fiscalYear;
-        }
-        // If other filters are active but no fiscal year was selected, don't default
-        if (hasOtherFilters) {
-            return [];
-        }
-        // If "All" is selected from the page dropdown, no fiscal year filter
-        if (selectedFiscalYear === "All") {
-            return [];
-        }
-        // Otherwise, use the selected fiscal year
-        return [{ id: Number(selectedFiscalYear), title: Number(selectedFiscalYear) }];
+        return fyHelpers.resolveForAPI(filters.fiscalYear, selectedFiscalYear, hasOtherFilters);
     };
 
     const queryParams = {
@@ -138,11 +133,16 @@ const AgreementsList = () => {
         }
     }, [filters.fiscalYear, selectedFiscalYear]);
 
+    // ============================================
+    // TEMPORARY: A/B Testing - Approach-specific "All" handling
     // Handle fiscal year change - clear filters when changing fiscal year selection
+    // ============================================
     const handleChangeFiscalYear = (newValue) => {
+        const fiscalYearUpdate = newValue === "All" ? fyHelpers.handleDropdownAll() : { fiscalYear: [] };
+
         setFilters({
             portfolio: [],
-            fiscalYear: [],
+            ...fiscalYearUpdate,
             projectTitle: [],
             agreementType: [],
             agreementName: [],
@@ -332,6 +332,7 @@ const AgreementsList = () => {
                         <AgreementsFilterTags
                             filters={filters}
                             setFilters={setFilters}
+                            fyHelpers={fyHelpers}
                         />
                     }
                     FilterButton={
@@ -361,6 +362,7 @@ const AgreementsList = () => {
                                         setFilters={setFilters}
                                         agreementFilterOptions={agreementFilterOptions}
                                         isLoadingOptions={isLoadingAgreementFilterOptions}
+                                        useApproachB={useApproachB}
                                     />
                                 </div>
                             </div>

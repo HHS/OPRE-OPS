@@ -18,7 +18,13 @@ import { FILTER_MODAL_FULL_WIDTH } from "../../../../constants";
  * @param {Object} props.agreementFilterOptions - The filter options from API.
  * @returns {JSX.Element} - The procurement shop select element.
  */
-export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOptions, isLoadingOptions = false }) => {
+export const AgreementsFilterButton = ({
+    filters,
+    setFilters,
+    agreementFilterOptions,
+    isLoadingOptions = false,
+    useApproachB = false
+}) => {
     const {
         fiscalYear,
         setFiscalYear,
@@ -37,7 +43,7 @@ export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOpt
         applyFilter,
         resetFilter,
         currentFiscalYear
-    } = useAgreementsFilterButton(filters, setFilters);
+    } = useAgreementsFilterButton(filters, setFilters, useApproachB);
 
     const fieldStyles = "usa-fieldset margin-bottom-205";
     const legendStyles = `usa-legend font-sans-3xs margin-top-0 padding-bottom-1 ${customStyles.legendColor}`;

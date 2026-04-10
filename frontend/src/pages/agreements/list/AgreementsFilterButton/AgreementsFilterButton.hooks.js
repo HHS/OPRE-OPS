@@ -5,8 +5,9 @@ import { getCurrentFiscalYear } from "../../../../helpers/utils";
  * A filter for CANs list.
  * @param {import ('./AgreementsFilterTypes').Filters} filters - The current filters.
  * @param {Function} setFilters - A function to call to set the filters.
+ * @param {boolean} useApproachB - Whether to use Approach B (UX requested) reset behavior.
  */
-export const useAgreementsFilterButton = (filters, setFilters) => {
+export const useAgreementsFilterButton = (filters, setFilters, useApproachB = false) => {
     const [fiscalYear, setFiscalYear] = React.useState([]);
     const [portfolio, setPortfolio] = React.useState([]);
     const [projectTitle, setProjectTitle] = React.useState([]);
@@ -74,16 +75,31 @@ export const useAgreementsFilterButton = (filters, setFilters) => {
         });
     };
 
+    // ============================================
+    // TEMPORARY: A/B Testing - Different Reset behaviors
+    // Approach A: Reset restores to current filters (NOT CURRENT - needs fix)
+    // Approach B: Reset clears all selections (CURRENT behavior)
+    // ============================================
     const resetFilter = () => {
-        setFilters({
-            fiscalYear: [],
-            portfolio: [],
-            projectTitle: [],
-            agreementType: [],
-            agreementName: [],
-            contractNumber: [],
-            awardType: []
-        });
+        if (useApproachB) {
+            // Approach B: Clear all selections (current behavior)
+            setFiscalYear([]);
+            setPortfolio([]);
+            setProjectTitle([]);
+            setAgreementType([]);
+            setAgreementName([]);
+            setContractNumber([]);
+            setAwardType([]);
+        } else {
+            // Approach A: Restore to current filters
+            setFiscalYear(filters.fiscalYear || []);
+            setPortfolio(filters.portfolio || []);
+            setProjectTitle(filters.projectTitle || []);
+            setAgreementType(filters.agreementType || []);
+            setAgreementName(filters.agreementName || []);
+            setContractNumber(filters.contractNumber || []);
+            setAwardType(filters.awardType || []);
+        }
     };
 
     return {
