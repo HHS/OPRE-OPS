@@ -132,8 +132,13 @@ jobs:
         run: |
           COMMITTER_NAME=$(git log -1 --pretty=format:'%cn')
           COMMITTER_EMAIL=$(git log -1 --pretty=format:'%ce')
+          AUTHOR_NAME=$(git log -1 --pretty=format:'%an')
           echo "Last committer: $COMMITTER_NAME <$COMMITTER_EMAIL>"
-          if [[ "$COMMITTER_NAME" == "GitHub" && "$COMMITTER_EMAIL" == *"noreply@github.com"* ]]; then
+          echo "Last author: $AUTHOR_NAME"
+          if [[ "$AUTHOR_NAME" == *"[bot]"* ]]; then
+            echo "source=bot" >> $GITHUB_OUTPUT
+            echo "Bot commit detected — will check formatting (no auto-fix)"
+          elif [[ "$COMMITTER_NAME" == "GitHub" && "$COMMITTER_EMAIL" == *"noreply@github.com"* ]]; then
             echo "source=web-ui" >> $GITHUB_OUTPUT
             echo "Web UI commit detected — will auto-format if needed"
           else

@@ -292,7 +292,7 @@ describe("BudgetLineItemList", () => {
         expect(screen.getByText("Budget Lines")).toBeInTheDocument();
     });
 
-    it("uses current fiscal year when fiscalYears is undefined", () => {
+    it("uses current fiscal year when fiscalYears is undefined and fiscalYearShortcut is inactive", () => {
         vi.spyOn(hooks, "useBudgetLinesList").mockReturnValue({
             myBudgetLineItemsUrl: false,
             filters: {
