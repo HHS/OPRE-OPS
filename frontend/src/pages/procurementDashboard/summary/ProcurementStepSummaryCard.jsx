@@ -1,7 +1,7 @@
 import React from "react";
-import ResponsiveDonutWithInnerPercent from "../../components/UI/DataViz/ResponsiveDonutWithInnerPercent";
-import CustomLayerComponent from "../../components/UI/DataViz/ResponsiveDonutWithInnerPercent/CustomLayerComponent";
-import RoundedBox from "../../components/UI/RoundedBox";
+import ResponsiveDonutWithInnerPercent from "../../../components/UI/DataViz/ResponsiveDonutWithInnerPercent";
+import CustomLayerComponent from "../../../components/UI/DataViz/ResponsiveDonutWithInnerPercent/CustomLayerComponent";
+import RoundedBox from "../../../components/UI/RoundedBox";
 import StepLegendItem from "./StepLegendItem";
 
 const ProcurementStepSummaryCard = ({ stepData = [], fiscalYear }) => {

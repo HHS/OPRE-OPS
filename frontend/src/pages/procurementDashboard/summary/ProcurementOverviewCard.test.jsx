@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import ProcurementOverviewCard from "./ProcurementOverviewCard";
 
-vi.mock("../../components/UI/DataViz/HorizontalStackedBar/HorizontalStackedBar", () => ({
+vi.mock("../../../components/UI/DataViz/HorizontalStackedBar/HorizontalStackedBar", () => ({
     default: ({ data }) => (
         <div data-testid="stacked-bar">
             {data.map((d) => (

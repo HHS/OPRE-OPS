@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import Card from "../../components/UI/Cards/Card";
-import LineBar from "../../components/UI/DataViz/LineBar";
+import Card from "../../../components/UI/Cards/Card";
+import LineBar from "../../../components/UI/DataViz/LineBar";
 import ProcurementOverviewCard from "./ProcurementOverviewCard";
 import ProcurementStepSummaryCard from "./ProcurementStepSummaryCard";
 

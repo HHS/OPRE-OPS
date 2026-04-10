@@ -35,15 +35,15 @@ vi.mock("../../helpers/utils", () => ({
     getCurrentFiscalYear: () => "2025"
 }));
 
-vi.mock("./ProcurementSummaryCards", () => ({
+vi.mock("./summary/ProcurementSummaryCards", () => ({
     default: () => <div data-testid="summary-cards" />
 }));
 
-vi.mock("./ProcurementDashboardTabs", () => ({
+vi.mock("./summary/ProcurementDashboardTabs", () => ({
     default: () => <div data-testid="dashboard-tabs" />
 }));
 
-vi.mock("./ProcShopFilter", () => ({
+vi.mock("./summary/ProcShopFilter", () => ({
     default: ({ value, onChange, options }) => (
         <select
             data-testid="proc-shop-filter"

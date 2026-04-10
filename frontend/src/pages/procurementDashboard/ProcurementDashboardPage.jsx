@@ -11,9 +11,10 @@ import {
 import { BLI_STATUS } from "../../helpers/budgetLines.helpers";
 import { exportMultiSheetToXlsx } from "../../helpers/tableExport.helpers";
 import { getCurrentFiscalYear } from "../../helpers/utils";
-import ProcShopFilter from "./ProcShopFilter";
-import ProcurementDashboardTabs from "./ProcurementDashboardTabs";
-import ProcurementSummaryCards from "./ProcurementSummaryCards";
+import ProcShopFilter from "./summary/ProcShopFilter";
+import ProcurementDashboardTabs from "./summary/ProcurementDashboardTabs";
+import ProcurementSummaryCards from "./summary/ProcurementSummaryCards";
+import ProcurementDetails from "./details/ProcurementDetails";
 
 const CURRENT_FISCAL_YEAR = Number(getCurrentFiscalYear());
 
@@ -172,6 +173,9 @@ const ProcurementDashboard = () => {
                         error={error}
                     />
                 }
+            />
+            <ProcurementDetails
+            fiscalYear={CURRENT_FISCAL_YEAR}
             />
         </App>
     );

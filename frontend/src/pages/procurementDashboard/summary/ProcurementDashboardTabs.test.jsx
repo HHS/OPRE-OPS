@@ -3,7 +3,7 @@ import { describe, it, expect, vi } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 import ProcurementDashboardTabs from "./ProcurementDashboardTabs";
 
-vi.mock("../../components/UI/USWDS/Tooltip", () => ({
+vi.mock("../../../components/UI/USWDS/Tooltip", () => ({
     default: ({ children, label }) => (
         <div
             data-testid="tooltip"
@@ -14,7 +14,7 @@ vi.mock("../../components/UI/USWDS/Tooltip", () => ({
     )
 }));
 
-vi.mock("../../components/UI/TabsSection", () => ({
+vi.mock("../../../components/UI/TabsSection", () => ({
     default: ({ links, label }) => <nav aria-label={label}>{links}</nav>
 }));
 

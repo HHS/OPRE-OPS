@@ -1,6 +1,6 @@
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import Tag from "../../components/UI/Tag/Tag";
+import Tag from "../../../components/UI/Tag/Tag";
 
 const StepLegendItem = ({ id, activeId, label, value, color, percent }) => {
     const isActive = activeId === id;

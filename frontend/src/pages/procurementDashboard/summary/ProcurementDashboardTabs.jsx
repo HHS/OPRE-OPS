@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
-import styles from "../../components/Agreements/DetailsTabs/DetailsTabs.module.scss";
-import Tooltip from "../../components/UI/USWDS/Tooltip";
-import TabsSection from "../../components/UI/TabsSection";
+import styles from "../../../components/Agreements/DetailsTabs/DetailsTabs.module.scss";
+import Tooltip from "../../../components/UI/USWDS/Tooltip";
+import TabsSection from "../../../components/UI/TabsSection";
 
 const ProcurementDashboardTabs = () => {
     const { search } = useLocation();

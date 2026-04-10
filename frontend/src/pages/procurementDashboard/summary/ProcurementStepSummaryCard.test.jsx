@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import ProcurementStepSummaryCard from "./ProcurementStepSummaryCard";
 
-vi.mock("../../components/UI/DataViz/ResponsiveDonutWithInnerPercent", () => ({
+vi.mock("../../../components/UI/DataViz/ResponsiveDonutWithInnerPercent", () => ({
     default: ({ data }) => (
         <div data-testid="donut-chart">
             {data.map((d) => (
@@ -17,7 +17,7 @@ vi.mock("../../components/UI/DataViz/ResponsiveDonutWithInnerPercent", () => ({
     )
 }));
 
-vi.mock("../../components/UI/DataViz/ResponsiveDonutWithInnerPercent/CustomLayerComponent", () => ({
+vi.mock("../../../components/UI/DataViz/ResponsiveDonutWithInnerPercent/CustomLayerComponent", () => ({
     default: () => () => null
 }));
 
