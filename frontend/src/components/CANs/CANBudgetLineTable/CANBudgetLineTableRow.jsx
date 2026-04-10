@@ -111,8 +111,8 @@ const CANBudgetLineTableRow = ({
             className="border-top-none"
             style={expandedRowBGColor}
         >
-            <div className="display-flex padding-right-9">
-                <dl className="font-12px">
+            <div className="grid-row grid-gap-4">
+                <dl className="grid-col font-12px">
                     <dt className="margin-0 text-base-dark">Created By</dt>
                     <dd
                         id={`created-by-name-${blId}`}
@@ -128,60 +128,42 @@ const CANBudgetLineTableRow = ({
                         {displayCreatedDate}
                     </dt>
                 </dl>
-                <dl
-                    className="font-12px"
-                    style={{ marginLeft: "9.0625rem" }}
-                >
+                <dl className="grid-col-4 font-12px">
                     <dt className="margin-0 text-base-dark">Description</dt>
-                    <dd
-                        className="margin-0 wrap-text"
-                        style={{ maxWidth: "25rem" }}
-                    >
-                        {description}
+                    <dd className="margin-0 wrap-text">{description}</dd>
+                </dl>
+
+                <dl className="grid-col-auto font-12px text-no-wrap">
+                    <dt className="margin-0 text-base-dark">Procurement Shop</dt>
+                    <dd className="margin-0">{`${procShopLabel}`}</dd>
+                </dl>
+
+                <dl className="grid-col font-12px">
+                    <dt className="margin-0 text-base-dark">SubTotal</dt>
+                    <dd className="margin-0">
+                        <CurrencyFormat
+                            value={amount}
+                            displayType={"text"}
+                            thousandSeparator={true}
+                            prefix={"$"}
+                            decimalScale={2}
+                            fixedDecimalScale={true}
+                        />
                     </dd>
                 </dl>
-                <div
-                    className="font-12px"
-                    style={{ marginLeft: "15rem" }}
-                >
-                    <dl className="margin-bottom-0">
-                        <dt className="margin-0 text-base-dark">Procurement Shop</dt>
-                        <dd
-                            className="margin-0"
-                            style={{ maxWidth: "25rem" }}
-                        >
-                            {`${procShopLabel}`}
-                        </dd>
-                    </dl>
-                    <div className="font-12px display-flex margin-top-1">
-                        <dl className="margin-0">
-                            <dt className="margin-0 text-base-dark">SubTotal</dt>
-                            <dd className="margin-0">
-                                <CurrencyFormat
-                                    value={amount}
-                                    displayType={"text"}
-                                    thousandSeparator={true}
-                                    prefix={"$"}
-                                    decimalScale={2}
-                                    fixedDecimalScale={true}
-                                />
-                            </dd>
-                        </dl>
-                        <dl className=" margin-0 margin-left-2">
-                            <dt className="margin-0 text-base-dark">Fees</dt>
-                            <dd className="margin-0">
-                                <CurrencyFormat
-                                    value={feeTotal}
-                                    displayType={"text"}
-                                    thousandSeparator={true}
-                                    prefix={"$"}
-                                    decimalScale={2}
-                                    fixedDecimalScale={true}
-                                />
-                            </dd>
-                        </dl>
-                    </div>
-                </div>
+                <dl className="grid-col font-12px">
+                    <dt className="margin-0 text-base-dark">Fees</dt>
+                    <dd className="margin-0">
+                        <CurrencyFormat
+                            value={feeTotal}
+                            displayType={"text"}
+                            thousandSeparator={true}
+                            prefix={"$"}
+                            decimalScale={2}
+                            fixedDecimalScale={true}
+                        />
+                    </dd>
+                </dl>
             </div>
         </td>
     );
