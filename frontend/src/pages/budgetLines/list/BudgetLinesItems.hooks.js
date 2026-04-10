@@ -1,12 +1,20 @@
 import React from "react";
 import { useSearchParams } from "react-router-dom";
-import { getCurrentFiscalYear } from "../../../helpers/utils";
+import { getFiscalYearHelpers } from "./fiscalYearFilterHelpers";
 
 export const useBudgetLinesList = () => {
-    // Initialize with current fiscal year as default
-    const currentFY = getCurrentFiscalYear();
+    const [searchParams] = useSearchParams();
+
+    // ============================================
+    // TEMPORARY: A/B Testing Fiscal Year Filter
+    // Query param: ?filterMode=explicit-all
+    // ============================================
+    const useApproachB = searchParams.get("filterMode") === "explicit-all";
+    const fyHelpers = getFiscalYearHelpers(useApproachB);
+
+    // Initialize with approach-specific initial state
     const [filters, setFilters] = React.useState({
-        fiscalYears: [{ id: currentFY, title: currentFY }],
+        fiscalYears: fyHelpers.getInitialState(),
         portfolios: [],
         bliStatus: [],
         budgetRange: null,
@@ -14,11 +22,12 @@ export const useBudgetLinesList = () => {
         agreementTitles: [],
         canActivePeriods: []
     });
-    const [searchParams] = useSearchParams();
 
     return {
         myBudgetLineItemsUrl: searchParams.get("filter") === "my-budget-lines",
         filters,
-        setFilters
+        setFilters,
+        useApproachB,
+        fyHelpers
     };
 };

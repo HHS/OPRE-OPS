@@ -20,9 +20,10 @@ import { FILTER_MODAL_FULL_WIDTH } from "../../../constants";
  * @param {Object} props.filters - The current filters.
  * @param {Function} props.setFilters - A function to call to set the filters.
  * @param {string|number} props.selectedFiscalYear - The current fiscal year shortcut value from the dropdown.
+ * @param {boolean} props.useApproachB - Whether to use Approach B (UX requested) with "All FYs" option.
  * @returns {React.ReactElement} - The procurement shop select element.
  */
-export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => {
+export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear, useApproachB }) => {
     const [fiscalYears, setFiscalYears] = React.useState([]);
     const [portfolios, setPortfolios] = React.useState([]);
     const [bliStatus, setBLIStatus] = React.useState([]);
@@ -135,17 +136,31 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
         });
     };
 
-    // Reset restores local state to current filters (before modal opened)
+    // ============================================
+    // TEMPORARY: A/B Testing - Different Reset behaviors
+    // Approach A: Reset restores to current filters
+    // Approach B: Reset clears all selections (empty state)
+    // ============================================
     const resetFilter = () => {
-        // Sync local state back to current parent filters
-        // null in filters means "All" → empty array in modal
-        setFiscalYears(filters.fiscalYears === null ? [] : (filters.fiscalYears ?? []));
-        setPortfolios(filters.portfolios ?? []);
-        setBLIStatus(filters.bliStatus ?? []);
-        setBudgetRange(filters.budgetRange);
-        setAgreementTypes(filters.agreementTypes ?? []);
-        setAgreementTitles(filters.agreementTitles ?? []);
-        setCanActivePeriods(filters.canActivePeriods ?? []);
+        if (useApproachB) {
+            // Approach B: Clear all selections
+            setFiscalYears([]);
+            setPortfolios([]);
+            setBLIStatus([]);
+            setBudgetRange(budgetRangeOptions);
+            setAgreementTypes([]);
+            setAgreementTitles([]);
+            setCanActivePeriods([]);
+        } else {
+            // Approach A: Restore to current filters
+            setFiscalYears(filters.fiscalYears === null ? [] : (filters.fiscalYears ?? []));
+            setPortfolios(filters.portfolios ?? []);
+            setBLIStatus(filters.bliStatus ?? []);
+            setBudgetRange(filters.budgetRange);
+            setAgreementTypes(filters.agreementTypes ?? []);
+            setAgreementTitles(filters.agreementTitles ?? []);
+            setCanActivePeriods(filters.canActivePeriods ?? []);
+        }
     };
 
     const fieldStyles = "usa-fieldset margin-bottom-205";
@@ -170,6 +185,7 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
                 overrideStyles={FILTER_MODAL_FULL_WIDTH}
                 budgetLinesFiscalYears={fiscalYearOptions}
                 label="Compare Fiscal Years"
+                includeAllOption={useApproachB}
             />
         </fieldset>,
         <fieldset

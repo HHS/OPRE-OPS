@@ -21,7 +21,6 @@ import BLIFilterTags from "./BLIFilterTags";
 import BLITags from "./BLITabs";
 import { useBudgetLinesList } from "./BudgetLinesItems.hooks";
 import FiscalYear from "../../../components/UI/FiscalYear";
-import { getCurrentFiscalYear } from "../../../helpers/utils";
 
 /**
  * @component Page for the Budget Line Item List.
@@ -31,22 +30,34 @@ const BudgetLineItemList = () => {
     const [isExporting, setIsExporting] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
-    const { myBudgetLineItemsUrl, filters, setFilters } = useBudgetLinesList();
+    const { myBudgetLineItemsUrl, filters, setFilters, useApproachB, fyHelpers } = useBudgetLinesList();
 
-    // Derive dropdown display value from filters (no state sync needed)
-    // "All" = null, "Multi" = length > 1, single = show year, empty/undefined = fallback to current FY
-    const fiscalYearDropdownValue = useMemo(() => {
-        if (filters.fiscalYears === null) return "All";
-        if (!filters.fiscalYears || filters.fiscalYears.length === 0) return getCurrentFiscalYear();
-        if (filters.fiscalYears.length === 1) return filters.fiscalYears[0].id;
-        return "Multi"; // display only, not selectable
-    }, [filters.fiscalYears]);
+    // ============================================
+    // TEMPORARY: A/B Testing Fiscal Year Filter
+    // Derive dropdown display value from filters using approach-specific helper
+    // ============================================
+    const fiscalYearDropdownValue = useMemo(
+        () => fyHelpers.deriveDropdownValue(filters.fiscalYears),
+        [filters.fiscalYears, fyHelpers]
+    );
 
-    // Handle fiscal year change (quick actions: single year or "All")
-    // Does NOT reset other filters (portfolios, bliStatus, etc.)
+    // ============================================
+    // TEMPORARY: A/B Testing - Different "All" handling
+    // Approach A: "All" sets fiscalYears to null
+    // Approach B: "All" sets fiscalYears to [{id: "all"}] (explicit selection)
+    // ============================================
     const handleChangeFiscalYear = (selectedValue) => {
         if (selectedValue === "All") {
-            setFilters((prev) => ({ ...prev, fiscalYears: null }));
+            if (useApproachB) {
+                // Approach B: Explicit "All FYs" selection
+                setFilters((prev) => ({
+                    ...prev,
+                    fiscalYears: [{ id: "all", title: "All FYs" }]
+                }));
+            } else {
+                // Approach A: null = "All"
+                setFilters((prev) => ({ ...prev, fiscalYears: null }));
+            }
         } else {
             // Single year quick action
             const yearId = Number(selectedValue);
@@ -57,17 +68,12 @@ const BudgetLineItemList = () => {
         }
     };
 
-    // Derive fiscal years for API query (pure function)
+    // Derive fiscal years for API query using approach-specific helper
     /** @type {Array<{id: number | string, title: number | string}> | null} */
-    const resolvedFiscalYears = useMemo(() => {
-        if (filters.fiscalYears === null) return null; // "All"
-        if (!filters.fiscalYears || filters.fiscalYears.length === 0) {
-            // Fallback to current FY
-            const currentFY = getCurrentFiscalYear();
-            return [{ id: currentFY, title: currentFY }];
-        }
-        return filters.fiscalYears;
-    }, [filters.fiscalYears]);
+    const resolvedFiscalYears = useMemo(
+        () => fyHelpers.resolveForAPI(filters.fiscalYears),
+        [filters.fiscalYears, fyHelpers]
+    );
 
     // Resolve filters for both UI query and export - single source of truth
     const resolvedFilters = useMemo(
@@ -139,6 +145,7 @@ const BudgetLineItemList = () => {
                     <BLIFilterTags
                         filters={filters}
                         setFilters={setFilters}
+                        fyHelpers={fyHelpers}
                     />
                 }
                 TableSection={
@@ -193,6 +200,7 @@ const BudgetLineItemList = () => {
                                     filters={filters}
                                     setFilters={setFilters}
                                     selectedFiscalYear={fiscalYearDropdownValue}
+                                    useApproachB={useApproachB}
                                 />
                             </div>
                         </div>

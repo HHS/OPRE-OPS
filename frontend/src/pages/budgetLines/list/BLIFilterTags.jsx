@@ -8,26 +8,22 @@ import FilterTagsWrapper from "../../../components/UI/FilterTags/FilterTagsWrapp
  * @param {Object} props - The component props.
  * @param {Object} props.filters - The current filters.
  * @param {Function} props.setFilters - A function to call to set the filters.
+ * @param {Object} props.fyHelpers - Fiscal year helper functions (approach-specific).
  * @returns {React.JSX.Element} - The procurement shop select element.
  */
-export const BLIFilterTags = ({ filters, setFilters }) => {
+export const BLIFilterTags = ({ filters, setFilters, fyHelpers }) => {
     // Tag removal is a quick action - immediately updates filters
     const removeFilter = (tag) => {
         switch (tag.filter) {
             case "fiscalYears":
+                // ============================================
+                // TEMPORARY: A/B Testing - Use approach-specific tag removal
+                // ============================================
                 setFilters((prevState) => {
-                    const yearValue = Number(tag.tagText.replace("FY ", ""));
-                    const remaining = (prevState.fiscalYears ?? []).filter((fy) => {
-                        const fyId = typeof fy.id === "number" ? fy.id : Number(fy.id);
-                        if (!Number.isNaN(yearValue) && !Number.isNaN(fyId)) {
-                            return fyId !== yearValue;
-                        }
-                        return fy.title.toString() !== tag.tagText.replace("FY ", "");
-                    });
-                    // If removal leaves 0 years, set to null ("All")
+                    const updated = fyHelpers.handleTagRemoval(prevState.fiscalYears, tag.tagText);
                     return {
                         ...prevState,
-                        fiscalYears: remaining.length === 0 ? null : remaining
+                        fiscalYears: updated
                     };
                 });
                 break;
@@ -84,16 +80,10 @@ export const BLIFilterTags = ({ filters, setFilters }) => {
         }
     };
 
-    // Derive tags from filters (pure function, no state)
-    const fiscalYearTags = useMemo(() => {
-        if (filters.fiscalYears === null) return []; // "All" has no tags
-        if (!Array.isArray(filters.fiscalYears)) return [];
-
-        return filters.fiscalYears.map((fiscalYear) => {
-            const tag = fiscalYear.title.toString().startsWith("FY ") ? fiscalYear.title : `FY ${fiscalYear.title}`;
-            return { tagText: tag, filter: "fiscalYears" };
-        });
-    }, [filters.fiscalYears]);
+    // ============================================
+    // TEMPORARY: A/B Testing - Derive tags using approach-specific helper
+    // ============================================
+    const fiscalYearTags = useMemo(() => fyHelpers.deriveTags(filters.fiscalYears), [filters.fiscalYears, fyHelpers]);
 
     const portfolioTags = useMemo(() => {
         if (!Array.isArray(filters.portfolios)) return [];

@@ -1,6 +1,7 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import BLIFilterTags from "./BLIFilterTags";
+import { getFiscalYearHelpers } from "./fiscalYearFilterHelpers";
 
 // Mock child components
 vi.mock("../../../components/UI/FilterTags/FilterTags", () => ({
@@ -25,6 +26,8 @@ vi.mock("../../../components/UI/FilterTags/FilterTagsWrapper", () => ({
 
 describe("BLIFilterTags", () => {
     const mockSetFilters = vi.fn();
+    // Use Approach A (default) for tests - same behavior as current PR
+    const mockFyHelpers = getFiscalYearHelpers(false);
 
     const defaultFilters = {
         fiscalYears: [],
@@ -45,6 +48,7 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={defaultFilters}
                 setFilters={mockSetFilters}
+                fyHelpers={mockFyHelpers}
             />
         );
 
@@ -64,6 +68,7 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={filters}
                 setFilters={mockSetFilters}
+                fyHelpers={mockFyHelpers}
             />
         );
 
@@ -81,6 +86,7 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={filters}
                 setFilters={mockSetFilters}
+                fyHelpers={mockFyHelpers}
             />
         );
 
@@ -99,6 +105,7 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={filters}
                 setFilters={mockSetFilters}
+                fyHelpers={mockFyHelpers}
             />
         );
 
@@ -125,6 +132,7 @@ describe("BLIFilterTags", () => {
                 <BLIFilterTags
                     filters={filtersWithNullish}
                     setFilters={mockSetFilters}
+                    fyHelpers={mockFyHelpers}
                 />
             );
         }).not.toThrow();
@@ -143,6 +151,7 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={filters}
                 setFilters={mockSetFilters}
+                fyHelpers={mockFyHelpers}
             />
         );
 
@@ -176,6 +185,7 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={filters}
                 setFilters={mockSetFilters}
+                fyHelpers={mockFyHelpers}
             />
         );
 
@@ -211,6 +221,7 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={filters}
                 setFilters={mockSetFilters}
+                fyHelpers={mockFyHelpers}
             />
         );
 
@@ -243,6 +254,7 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={filters}
                 setFilters={mockSetFilters}
+                fyHelpers={mockFyHelpers}
             />
         );
 
@@ -263,6 +275,7 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={filters}
                 setFilters={mockSetFilters}
+                fyHelpers={mockFyHelpers}
             />
         );
 
@@ -280,6 +293,7 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={filters}
                 setFilters={mockSetFilters}
+                fyHelpers={mockFyHelpers}
             />
         );
 
@@ -296,6 +310,7 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={filters}
                 setFilters={mockSetFilters}
+                fyHelpers={mockFyHelpers}
             />
         );
 
@@ -320,6 +335,7 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={filters}
                 setFilters={mockSetFilters}
+                fyHelpers={mockFyHelpers}
             />
         );
 
@@ -340,6 +356,7 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={filters}
                 setFilters={mockSetFilters}
+                fyHelpers={mockFyHelpers}
             />
         );
 
@@ -360,6 +377,7 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={filters}
                 setFilters={mockSetFilters}
+                fyHelpers={mockFyHelpers}
             />
         );
 
@@ -383,6 +401,7 @@ describe("BLIFilterTags", () => {
                 <BLIFilterTags
                     filters={allNullFilters}
                     setFilters={mockSetFilters}
+                    fyHelpers={mockFyHelpers}
                 />
             );
         }).not.toThrow();
@@ -403,6 +422,7 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={filters}
                 setFilters={mockSetFilters}
+                fyHelpers={mockFyHelpers}
             />
         );
 

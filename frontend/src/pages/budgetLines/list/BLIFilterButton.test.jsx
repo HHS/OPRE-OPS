@@ -259,12 +259,13 @@ describe("BLIFilterButton", () => {
         expect(result.fiscalYears).toBeNull();
     });
 
-    it("reset button restores local state to current filters (does not call setFilters)", () => {
+    it("reset button restores local state to current filters - Approach A (does not call setFilters)", () => {
         render(
             <BLIFilterButton
                 filters={defaultFilters}
                 setFilters={mockSetFilters}
                 selectedFiscalYear={2024}
+                useApproachB={false}
             />
         );
 
@@ -278,6 +279,39 @@ describe("BLIFilterButton", () => {
 
         // Reset doesn't call setFilters - it just restores local modal state
         expect(mockSetFilters).not.toHaveBeenCalled();
+    });
+
+    it("reset button clears all selections - Approach B (does not call setFilters)", () => {
+        const filtersWithSelections = {
+            ...defaultFilters,
+            fiscalYears: [{ id: 2024, title: "FY 2024" }],
+            portfolios: [{ id: 1, name: "Portfolio 1" }]
+        };
+
+        render(
+            <BLIFilterButton
+                filters={filtersWithSelections}
+                setFilters={mockSetFilters}
+                selectedFiscalYear={2024}
+                useApproachB={true}
+            />
+        );
+
+        // Reset clears all selections (not restore to current filters)
+        const resetButton = screen.getByTestId("reset-filter-btn");
+        fireEvent.click(resetButton);
+
+        // Reset doesn't call setFilters - it just clears local modal state
+        expect(mockSetFilters).not.toHaveBeenCalled();
+
+        // After reset, applying empty selections should revert to default
+        fireEvent.click(screen.getByTestId("apply-filter-btn"));
+        expect(mockSetFilters).toHaveBeenCalled();
+
+        const setFiltersCallback = mockSetFilters.mock.calls[0][0];
+        const result = setFiltersCallback(filtersWithSelections);
+        // Empty selections after reset → null (reverts to default)
+        expect(result.fiscalYears).toBeNull();
     });
 
     it("handles missing filter options data", () => {
