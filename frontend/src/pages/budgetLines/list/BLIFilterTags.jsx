@@ -165,13 +165,17 @@ export const BLIFilterTags = ({ filters, setFilters, fyHelpers }) => {
 
         const tagsListByFilter = _.groupBy(tagsList, "filter");
         const merged = [];
-        Array.isArray(tagsListByFilter.fiscalYears) && merged.push(...sortTagsByText([...tagsListByFilter.fiscalYears]));
+        Array.isArray(tagsListByFilter.fiscalYears) &&
+            merged.push(...sortTagsByText([...tagsListByFilter.fiscalYears]));
         Array.isArray(tagsListByFilter.portfolios) && merged.push(...sortTagsByText([...tagsListByFilter.portfolios]));
         Array.isArray(tagsListByFilter.bliStatus) && merged.push(...sortTagsByText([...tagsListByFilter.bliStatus]));
         Array.isArray(tagsListByFilter.budgetRange) && merged.push(...tagsListByFilter.budgetRange);
-        Array.isArray(tagsListByFilter.agreementTypes) && merged.push(...sortTagsByText([...tagsListByFilter.agreementTypes]));
-        Array.isArray(tagsListByFilter.agreementTitles) && merged.push(...sortTagsByText([...tagsListByFilter.agreementTitles]));
-        Array.isArray(tagsListByFilter.canActivePeriods) && merged.push(...sortTagsByText([...tagsListByFilter.canActivePeriods]));
+        Array.isArray(tagsListByFilter.agreementTypes) &&
+            merged.push(...sortTagsByText([...tagsListByFilter.agreementTypes]));
+        Array.isArray(tagsListByFilter.agreementTitles) &&
+            merged.push(...sortTagsByText([...tagsListByFilter.agreementTitles]));
+        Array.isArray(tagsListByFilter.canActivePeriods) &&
+            merged.push(...sortTagsByText([...tagsListByFilter.canActivePeriods]));
         return merged;
     }, [tagsList]);
 
