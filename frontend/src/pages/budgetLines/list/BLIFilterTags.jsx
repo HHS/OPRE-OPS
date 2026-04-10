@@ -161,15 +161,17 @@ export const BLIFilterTags = ({ filters, setFilters, fyHelpers }) => {
 
     // Group and sort tags by filter type for consistent display order
     const sortedTagsList = useMemo(() => {
+        const sortTagsByText = (tags) => tags.sort((a, b) => (a.tagText || "").localeCompare(b.tagText || ""));
+
         const tagsListByFilter = _.groupBy(tagsList, "filter");
         const merged = [];
-        Array.isArray(tagsListByFilter.fiscalYears) && merged.push(...tagsListByFilter.fiscalYears.sort());
-        Array.isArray(tagsListByFilter.portfolios) && merged.push(...tagsListByFilter.portfolios.sort());
-        Array.isArray(tagsListByFilter.bliStatus) && merged.push(...tagsListByFilter.bliStatus.sort());
+        Array.isArray(tagsListByFilter.fiscalYears) && merged.push(...sortTagsByText([...tagsListByFilter.fiscalYears]));
+        Array.isArray(tagsListByFilter.portfolios) && merged.push(...sortTagsByText([...tagsListByFilter.portfolios]));
+        Array.isArray(tagsListByFilter.bliStatus) && merged.push(...sortTagsByText([...tagsListByFilter.bliStatus]));
         Array.isArray(tagsListByFilter.budgetRange) && merged.push(...tagsListByFilter.budgetRange);
-        Array.isArray(tagsListByFilter.agreementTypes) && merged.push(...tagsListByFilter.agreementTypes.sort());
-        Array.isArray(tagsListByFilter.agreementTitles) && merged.push(...tagsListByFilter.agreementTitles.sort());
-        Array.isArray(tagsListByFilter.canActivePeriods) && merged.push(...tagsListByFilter.canActivePeriods.sort());
+        Array.isArray(tagsListByFilter.agreementTypes) && merged.push(...sortTagsByText([...tagsListByFilter.agreementTypes]));
+        Array.isArray(tagsListByFilter.agreementTitles) && merged.push(...sortTagsByText([...tagsListByFilter.agreementTitles]));
+        Array.isArray(tagsListByFilter.canActivePeriods) && merged.push(...sortTagsByText([...tagsListByFilter.canActivePeriods]));
         return merged;
     }, [tagsList]);
 

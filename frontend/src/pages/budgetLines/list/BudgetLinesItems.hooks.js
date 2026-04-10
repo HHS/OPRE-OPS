@@ -10,10 +10,11 @@ export const useBudgetLinesList = () => {
     // Query param: ?filterMode=explicit-all
     // ============================================
     const useApproachB = searchParams.get("filterMode") === "explicit-all";
-    const fyHelpers = getFiscalYearHelpers(useApproachB);
+    // Memoize helpers to avoid unnecessary re-renders
+    const fyHelpers = React.useMemo(() => getFiscalYearHelpers(useApproachB), [useApproachB]);
 
     // Initialize with approach-specific initial state
-    const [filters, setFilters] = React.useState({
+    const [filters, setFilters] = React.useState(() => ({
         fiscalYears: fyHelpers.getInitialState(),
         portfolios: [],
         bliStatus: [],
@@ -21,7 +22,7 @@ export const useBudgetLinesList = () => {
         agreementTypes: [],
         agreementTitles: [],
         canActivePeriods: []
-    });
+    }));
 
     return {
         myBudgetLineItemsUrl: searchParams.get("filter") === "my-budget-lines",

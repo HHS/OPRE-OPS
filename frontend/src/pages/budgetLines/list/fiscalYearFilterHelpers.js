@@ -61,11 +61,10 @@ export const deriveTagsApproachA = (fiscalYears) => {
 
 /**
  * Get initial filter state (Approach A)
- * @returns {Array} - Initial fiscal years filter
+ * @returns {null} - null = "All FYs" (no filter, no tags shown by default)
  */
 export const getInitialStateApproachA = () => {
-    const currentFY = getCurrentFiscalYear();
-    return [{ id: currentFY, title: currentFY }]; // Default to current year
+    return null; // Default to "All FYs" (no filter applied, no tags shown)
 };
 
 /**
@@ -108,13 +107,19 @@ export const deriveDropdownValueApproachB = (fiscalYears) => {
  * @returns {Array|null} - Resolved fiscal years for API
  */
 export const resolveForAPIApproachB = (fiscalYears) => {
-    if (fiscalYears === null) {
-        // Default = current FY filter
+    // Default = current FY filter
+    if (fiscalYears === null || fiscalYears === undefined) {
         const currentFY = getCurrentFiscalYear();
         return [{ id: currentFY, title: currentFY }];
     }
+    // Treat non-arrays as default
+    if (!Array.isArray(fiscalYears)) {
+        const currentFY = getCurrentFiscalYear();
+        return [{ id: currentFY, title: currentFY }];
+    }
+    // "All FYs" explicit selection = no filter
     if (fiscalYears.length === 1 && fiscalYears[0].id === "all") {
-        return null; // "All FYs" explicit selection = no filter
+        return null;
     }
     return fiscalYears;
 };

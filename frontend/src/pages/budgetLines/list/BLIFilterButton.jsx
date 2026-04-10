@@ -141,7 +141,7 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear, useAp
         setFiscalYears([]);
         setPortfolios([]);
         setBLIStatus([]);
-        setBudgetRange(budgetRangeOptions);
+        setBudgetRange(null); // null = no budget range filter
         setAgreementTypes([]);
         setAgreementTitles([]);
         setCanActivePeriods([]);

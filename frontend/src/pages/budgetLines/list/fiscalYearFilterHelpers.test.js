@@ -100,9 +100,9 @@ describe("Fiscal Year Filter Helpers", () => {
         });
 
         describe("getInitialStateApproachA", () => {
-            it("returns current FY as initial state", () => {
+            it("returns null for 'All FYs' default state", () => {
                 const result = getInitialStateApproachA();
-                expect(result).toEqual([{ id: "2026", title: "2026" }]);
+                expect(result).toBeNull();
             });
         });
 
