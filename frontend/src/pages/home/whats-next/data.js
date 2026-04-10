@@ -14,8 +14,7 @@ export const data = [
         levelOfEffort: "Medium",
         status: "In Progress-Development",
         expandedHeading: "Description",
-        expandedDescription:
-            "Continue Procurement Tracker through pre-award / step 5 and award / step 6."
+        expandedDescription: "Continue Procurement Tracker through pre-award / step 5 and award / step 6."
     },
     {
         id: 2,
