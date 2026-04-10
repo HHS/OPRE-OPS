@@ -136,31 +136,15 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear, useAp
         });
     };
 
-    // ============================================
-    // TEMPORARY: A/B Testing - Different Reset behaviors
-    // Approach A: Reset restores to current filters
-    // Approach B: Reset clears all selections (empty state)
-    // ============================================
+    // Reset clears all modal selections (not part of A/B test)
     const resetFilter = () => {
-        if (useApproachB) {
-            // Approach B: Clear all selections
-            setFiscalYears([]);
-            setPortfolios([]);
-            setBLIStatus([]);
-            setBudgetRange(budgetRangeOptions);
-            setAgreementTypes([]);
-            setAgreementTitles([]);
-            setCanActivePeriods([]);
-        } else {
-            // Approach A: Restore to current filters
-            setFiscalYears(filters.fiscalYears === null ? [] : (filters.fiscalYears ?? []));
-            setPortfolios(filters.portfolios ?? []);
-            setBLIStatus(filters.bliStatus ?? []);
-            setBudgetRange(filters.budgetRange);
-            setAgreementTypes(filters.agreementTypes ?? []);
-            setAgreementTitles(filters.agreementTitles ?? []);
-            setCanActivePeriods(filters.canActivePeriods ?? []);
-        }
+        setFiscalYears([]);
+        setPortfolios([]);
+        setBLIStatus([]);
+        setBudgetRange(budgetRangeOptions);
+        setAgreementTypes([]);
+        setAgreementTitles([]);
+        setCanActivePeriods([]);
     };
 
     const fieldStyles = "usa-fieldset margin-bottom-205";
