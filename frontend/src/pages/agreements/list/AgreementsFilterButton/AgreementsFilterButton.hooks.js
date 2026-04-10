@@ -74,15 +74,16 @@ export const useAgreementsFilterButton = (filters, setFilters) => {
         });
     };
 
-    // Reset clears all modal selections (not part of A/B test)
     const resetFilter = () => {
-        setFiscalYear([]);
-        setPortfolio([]);
-        setProjectTitle([]);
-        setAgreementType([]);
-        setAgreementName([]);
-        setContractNumber([]);
-        setAwardType([]);
+        setFilters({
+            fiscalYear: [],
+            portfolio: [],
+            projectTitle: [],
+            agreementType: [],
+            agreementName: [],
+            contractNumber: [],
+            awardType: []
+        });
     };
 
     return {

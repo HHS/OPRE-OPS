@@ -18,13 +18,7 @@ import { FILTER_MODAL_FULL_WIDTH } from "../../../../constants";
  * @param {Object} props.agreementFilterOptions - The filter options from API.
  * @returns {JSX.Element} - The procurement shop select element.
  */
-export const AgreementsFilterButton = ({
-    filters,
-    setFilters,
-    agreementFilterOptions,
-    isLoadingOptions = false,
-    useApproachB = false
-}) => {
+export const AgreementsFilterButton = ({ filters, setFilters, agreementFilterOptions, isLoadingOptions = false }) => {
     const {
         fiscalYear,
         setFiscalYear,
@@ -61,7 +55,7 @@ export const AgreementsFilterButton = ({
                 overrideStyles={FILTER_MODAL_FULL_WIDTH}
                 budgetLinesFiscalYears={agreementFilterOptions?.fiscal_years || []}
                 label="Compare Fiscal Years"
-                includeAllOption={useApproachB}
+                includeAllOption={true}
                 isLoading={isLoadingOptions}
             />
         </fieldset>,
