@@ -129,7 +129,7 @@ function ReviewCard({
                 </header>
             )}
             <section
-                className="display-flex flex-justify margin-y-1"
+                className="display-flex flex-justify flex-align-start margin-y-1"
                 style={{ maxWidth: "50rem", ...wrapperStyles }}
             >
                 <dl className="font-12px grid-col-2">
