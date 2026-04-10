@@ -10,22 +10,22 @@ export const data = [
     {
         id: 1,
         priority: 1,
-        title: "Updating FY26 Spend Plans",
+        title: "Continue Procurement Tracker",
         levelOfEffort: "Medium",
         status: "In Progress-Development",
         expandedHeading: "Description",
         expandedDescription:
-            "The budget team is working with each OPRE Division to update their FY26 spend plans in OPS."
+            "The Procurement Tracker is available up through pre-award / step 5. We are still finishing up the pre-award requisition for the budget team, and then will continue onto award/step 6 which will complete the procurement tracker."
     },
     {
         id: 2,
         priority: 2,
-        title: "Procurement Tracker",
-        levelOfEffort: "Large",
+        title: "Projects Spending & Funding",
+        levelOfEffort: "Medium",
         status: "In Progress-Development",
         expandedHeading: "Description",
         expandedDescription:
-            "This will enable users to track/update the procurement process within OPS instead of using the Procurement Tracker Spreadsheet"
+            "Each project now has its own page that will include a tab for details, spending and funding. The spending and funding tabs are currently in-progress to display what agreements are included within each project and where the funding is coming from."
     },
     {
         id: 3,
@@ -35,6 +35,6 @@ export const data = [
         status: "In Progress-Development",
         expandedHeading: "Description",
         expandedDescription:
-            "This will enable the Procurement Team to view a procurement overview or summary across all agreements."
+            "The procurement dashboard will enable the procurement team to monitor procurement progress across all agreements and procurement steps."
     }
 ];
