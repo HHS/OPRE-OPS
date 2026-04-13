@@ -16,22 +16,18 @@ NEW_PERMISSIONS = [
     "DELETE_SERVICES_COMPONENT",
 ]
 
-UPGRADE_SQL = text(
-    """
+UPGRADE_SQL = text("""
     UPDATE ops.role
     SET permissions = array_append(permissions, :perm)
     WHERE name = 'REVIEWER_APPROVER'
       AND NOT (:perm = ANY(permissions))
-    """
-)
+    """)
 
-DOWNGRADE_SQL = text(
-    """
+DOWNGRADE_SQL = text("""
     UPDATE ops.role
     SET permissions = array_remove(permissions, :perm)
     WHERE name = 'REVIEWER_APPROVER'
-    """
-)
+    """)
 
 
 def test_get_roles(auth_client, app_ctx):
@@ -124,9 +120,7 @@ def test_reviewer_approver_can_get_budget_line_items(division_6_director_auth_cl
     assert response.status_code == 200
 
 
-def test_reviewer_approver_can_patch_budget_line_item(
-    division_6_director_auth_client, loaded_db, test_can, app_ctx
-):
+def test_reviewer_approver_can_patch_budget_line_item(division_6_director_auth_client, loaded_db, test_can, app_ctx):
     bli = ContractBudgetLineItem(
         line_description="Reviewer Test BLI",
         comments="test",
@@ -141,9 +135,7 @@ def test_reviewer_approver_can_patch_budget_line_item(
     loaded_db.commit()
 
     data = {"line_description": "Updated by Reviewer"}
-    response = division_6_director_auth_client.patch(
-        url_for("api.budget-line-items-item", id=bli.id), json=data
-    )
+    response = division_6_director_auth_client.patch(url_for("api.budget-line-items-item", id=bli.id), json=data)
     assert response.status_code == 200
     assert response.json["line_description"] == "Updated by Reviewer"
 
@@ -151,9 +143,7 @@ def test_reviewer_approver_can_patch_budget_line_item(
     loaded_db.commit()
 
 
-def test_reviewer_approver_can_post_budget_line_item(
-    division_6_director_auth_client, loaded_db, test_can, app_ctx
-):
+def test_reviewer_approver_can_post_budget_line_item(division_6_director_auth_client, loaded_db, test_can, app_ctx):
     data = {
         "line_description": "New BLI by Reviewer",
         "comments": "test",
@@ -172,9 +162,7 @@ def test_reviewer_approver_can_post_budget_line_item(
     loaded_db.commit()
 
 
-def test_reviewer_approver_can_delete_budget_line_item(
-    division_6_director_auth_client, loaded_db, test_can, app_ctx
-):
+def test_reviewer_approver_can_delete_budget_line_item(division_6_director_auth_client, loaded_db, test_can, app_ctx):
     bli = ContractBudgetLineItem(
         line_description="BLI to delete",
         comments="test",
@@ -188,9 +176,7 @@ def test_reviewer_approver_can_delete_budget_line_item(
     loaded_db.add(bli)
     loaded_db.commit()
 
-    response = division_6_director_auth_client.delete(
-        url_for("api.budget-line-items-item", id=bli.id)
-    )
+    response = division_6_director_auth_client.delete(url_for("api.budget-line-items-item", id=bli.id))
     assert response.status_code == 200
 
 
