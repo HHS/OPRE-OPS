@@ -250,6 +250,7 @@ const UploadDocument = () => {
 
                     {/* Action Button for Upload */}
                     <button
+                        type="button"
                         onClick={handleUpload}
                         style={{
                             width: "100%",
@@ -301,6 +302,7 @@ const UploadDocument = () => {
 
                     {/* Action Button for Get Documents by Agreement ID */}
                     <button
+                        type="button"
                         onClick={handleGetDocumentByAgreementId}
                         style={{
                             width: "100%",

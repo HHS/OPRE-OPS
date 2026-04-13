@@ -12,7 +12,6 @@ export const StepIndicator = ({ steps, currentStep }) => {
     return (
         <div
             className="usa-step-indicator usa-step-indicator--counters"
-            aria-label="progress"
             data-cy="step-indicator"
         >
             <ol className="usa-step-indicator__segments">

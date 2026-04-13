@@ -33,6 +33,7 @@ const ProcurementMocksDebug = () => {
             <p>Use these buttons to hit the mocked procurement tracker endpoints.</p>
             <div className="display-flex flex-wrap">
                 <button
+                    type="button"
                     className="usa-button margin-right-1 margin-bottom-1"
                     onClick={() => runRequest("List trackers", `${BACKEND_DOMAIN}/api/v1/procurement-trackers/`)}
                     disabled={isLoading}
@@ -40,6 +41,7 @@ const ProcurementMocksDebug = () => {
                     GET /api/v1/procurement-trackers/
                 </button>
                 <button
+                    type="button"
                     className="usa-button margin-right-1 margin-bottom-1"
                     onClick={() => runRequest("Get tracker 1", `${BACKEND_DOMAIN}/api/v1/procurement-trackers/1`)}
                     disabled={isLoading}
@@ -47,6 +49,7 @@ const ProcurementMocksDebug = () => {
                     GET /api/v1/procurement-trackers/1
                 </button>
                 <button
+                    type="button"
                     className="usa-button margin-right-1 margin-bottom-1"
                     onClick={() =>
                         runRequest(
@@ -59,6 +62,7 @@ const ProcurementMocksDebug = () => {
                     GET /api/v1/procurement-tracker-steps?agreement_id=9
                 </button>
                 <button
+                    type="button"
                     className="usa-button margin-right-1 margin-bottom-1"
                     onClick={() => runRequest("Get step 101", `${BACKEND_DOMAIN}/api/v1/procurement-tracker-steps/101`)}
                     disabled={isLoading}
@@ -66,6 +70,7 @@ const ProcurementMocksDebug = () => {
                     GET /api/v1/procurement-tracker-steps/101
                 </button>
                 <button
+                    type="button"
                     className="usa-button margin-right-1 margin-bottom-1"
                     onClick={() =>
                         runRequest("Patch step 101", `${BACKEND_DOMAIN}/api/v1/procurement-tracker-steps/101`, {
