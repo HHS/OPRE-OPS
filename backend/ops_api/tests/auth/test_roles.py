@@ -1,9 +1,37 @@
 import datetime
 
 from flask import url_for
-from sqlalchemy import select
+from sqlalchemy import select, text
 
 from models import BudgetLineItemStatus, ContractBudgetLineItem, Role
+
+NEW_PERMISSIONS = [
+    "PUT_BUDGET_LINE_ITEM",
+    "PATCH_BUDGET_LINE_ITEM",
+    "POST_BUDGET_LINE_ITEM",
+    "DELETE_BUDGET_LINE_ITEM",
+    "PUT_SERVICES_COMPONENT",
+    "PATCH_SERVICES_COMPONENT",
+    "POST_SERVICES_COMPONENT",
+    "DELETE_SERVICES_COMPONENT",
+]
+
+UPGRADE_SQL = text(
+    """
+    UPDATE ops.role
+    SET permissions = array_append(permissions, :perm)
+    WHERE name = 'REVIEWER_APPROVER'
+      AND NOT (:perm = ANY(permissions))
+    """
+)
+
+DOWNGRADE_SQL = text(
+    """
+    UPDATE ops.role
+    SET permissions = array_remove(permissions, :perm)
+    WHERE name = 'REVIEWER_APPROVER'
+    """
+)
 
 
 def test_get_roles(auth_client, app_ctx):
@@ -169,3 +197,60 @@ def test_reviewer_approver_can_delete_budget_line_item(
 def test_reviewer_approver_can_get_services_components(division_6_director_auth_client, app_ctx):
     response = division_6_director_auth_client.get("/api/v1/services-components/")
     assert response.status_code == 200
+
+
+def test_migration_upgrade_adds_missing_permissions(loaded_db):
+    """Simulate pre-migration state by removing permissions, then verify upgrade adds them."""
+    # Remove the new permissions to simulate pre-migration state
+    for perm in NEW_PERMISSIONS:
+        loaded_db.execute(DOWNGRADE_SQL, {"perm": perm})
+    loaded_db.commit()
+
+    role = loaded_db.execute(select(Role).where(Role.name == "REVIEWER_APPROVER")).scalar_one()
+    loaded_db.refresh(role)
+    for perm in NEW_PERMISSIONS:
+        assert perm not in role.permissions
+
+    # Run upgrade SQL
+    for perm in NEW_PERMISSIONS:
+        loaded_db.execute(UPGRADE_SQL, {"perm": perm})
+    loaded_db.commit()
+
+    loaded_db.refresh(role)
+    for perm in NEW_PERMISSIONS:
+        assert perm in role.permissions
+
+
+def test_migration_upgrade_is_idempotent(loaded_db):
+    """Verify running upgrade when permissions already exist is a no-op."""
+    role = loaded_db.execute(select(Role).where(Role.name == "REVIEWER_APPROVER")).scalar_one()
+    perms_before = list(role.permissions)
+
+    # Run upgrade again — permissions already exist from JSON5 seed data
+    for perm in NEW_PERMISSIONS:
+        loaded_db.execute(UPGRADE_SQL, {"perm": perm})
+    loaded_db.commit()
+
+    loaded_db.refresh(role)
+    assert role.permissions == perms_before
+
+
+def test_migration_downgrade_removes_permissions(loaded_db):
+    """Verify downgrade removes the added permissions."""
+    role = loaded_db.execute(select(Role).where(Role.name == "REVIEWER_APPROVER")).scalar_one()
+    for perm in NEW_PERMISSIONS:
+        assert perm in role.permissions
+
+    # Run downgrade SQL
+    for perm in NEW_PERMISSIONS:
+        loaded_db.execute(DOWNGRADE_SQL, {"perm": perm})
+    loaded_db.commit()
+
+    loaded_db.refresh(role)
+    for perm in NEW_PERMISSIONS:
+        assert perm not in role.permissions
+
+    # Restore for other tests
+    for perm in NEW_PERMISSIONS:
+        loaded_db.execute(UPGRADE_SQL, {"perm": perm})
+    loaded_db.commit()
