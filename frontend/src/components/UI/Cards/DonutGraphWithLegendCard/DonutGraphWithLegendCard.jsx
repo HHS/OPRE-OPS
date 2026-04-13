@@ -62,7 +62,7 @@ const DonutGraphWithLegendCard = ({ data, title }) => {
                         margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
                         setPercent={setPercent}
                         setHoverId={setHoverId}
-                        CustomLayerComponent={CustomLayerComponent(percent)}
+                        CustomLayerComponent={CustomLayerComponent(percent ? `${percent}%` : "")}
                         container_id={`donutGraphWithLegendCard-${id}`}
                     />
                 </div>
