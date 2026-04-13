@@ -7,6 +7,7 @@ import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepTwo from "./ProcurementTrackerStepTwo.hooks";
 import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { PROCUREMENT_STEP_STATUS } from "../ProcurementTracker.constants";
 
 /**
  * @typedef {import("../../../../types/UserTypes").SafeUser} SafeUser
@@ -73,9 +74,9 @@ const ProcurementTrackerStepTwo = ({
 
     // Disabled flags for form controls
     const isTargetCompletionDateSaveDisabled =
-        isDisabled || validatorRes.hasErrors("targetCompletionDate") || !targetCompletionDate;
+        isDisabled || validatorRes.hasErrors("targetCompletionDate") || !targetCompletionDate || !stepTwoData?.id;
     const isRevisedTargetDateSaveDisabled =
-        isDisabled || validatorRes.hasErrors("revisedTargetDate") || !revisedTargetDate;
+        isDisabled || validatorRes.hasErrors("revisedTargetDate") || !revisedTargetDate || !stepTwoData?.id;
     const isPreSolicitationCheckboxDisabled = isDisabled || !isActiveStep;
     const isUsersComboBoxDisabled = isDisabled || !isPreSolicitationPackageFinalized || authorizedUsers.length === 0;
     const isPackageFinalizedFieldsDisabled = isDisabled || !isPreSolicitationPackageFinalized;
@@ -84,7 +85,8 @@ const ProcurementTrackerStepTwo = ({
         validatorRes.hasErrors() ||
         !selectedUser?.id ||
         !step2DateCompleted ||
-        (!stepTwoData?.target_completion_date && !targetCompletionDate);
+        (!stepTwoData?.target_completion_date && !targetCompletionDate) ||
+        !stepTwoData?.id;
 
     return (
         <>
@@ -105,7 +107,7 @@ const ProcurementTrackerStepTwo = ({
                         step as complete. If you have a target completion date for when the package will be finalized,
                         enter it below.
                     </p>
-                    {stepStatus === "COMPLETED" && (
+                    {stepStatus === PROCUREMENT_STEP_STATUS.COMPLETED && (
                         <div className="display-flex flex-align-center margin-top-5">
                             <FontAwesomeIcon
                                 icon={faCircleCheck}
@@ -148,188 +150,191 @@ const ProcurementTrackerStepTwo = ({
                     </dl>
                 </div>
             )}
-            {!isReadOnly && stepStatus === "PENDING" && (
-                <fieldset className="usa-fieldset">
-                    <p>
-                        Edit the pre-solicitation package in collaboration with the Procurement Shop. Once the documents
-                        are finalized, go to the Documents Tab, upload the final and signed versions, and check this
-                        step as complete. If you have a target completion date for when the package will be finalized,
-                        enter it below.
-                    </p>
-                    <div className="display-flex flex-align-end margin-bottom-2">
-                        {stepTwoData?.target_completion_date ? (
-                            <TermTag
-                                term="Target Completion Date"
-                                description={step2TargetCompletionDateLabel}
-                            />
-                        ) : (
-                            <>
-                                <MemoizedDatePicker
-                                    id="target-completion-date"
-                                    name="targetCompletionDate"
-                                    label="Target Completion Date"
-                                    messages={validatorRes.getErrors("targetCompletionDate") || []}
-                                    hint="mm/dd/yyyy"
-                                    value={targetCompletionDate}
-                                    onChange={(e) => {
-                                        runValidate("targetCompletionDate", e.target.value);
-                                        setTargetCompletionDate(e.target.value);
-                                    }}
-                                    minDate={getLocalISODate()}
-                                    isDisabled={isDisabled}
+            {!isReadOnly &&
+                (stepStatus === PROCUREMENT_STEP_STATUS.PENDING || stepStatus === PROCUREMENT_STEP_STATUS.ACTIVE) && (
+                    <fieldset className="usa-fieldset">
+                        <p>
+                            Edit the pre-solicitation package in collaboration with the Procurement Shop. Once the
+                            documents are finalized, go to the Documents Tab, upload the final and signed versions, and
+                            check this step as complete. If you have a target completion date for when the package will
+                            be finalized, enter it below.
+                        </p>
+                        <div className="display-flex flex-align-end margin-bottom-2">
+                            {stepTwoData?.target_completion_date ? (
+                                <TermTag
+                                    term="Target Completion Date"
+                                    description={step2TargetCompletionDateLabel}
                                 />
-                                <button
-                                    className="usa-button usa-button--unstyled margin-bottom-1 margin-left-2"
-                                    data-cy="target-completion-save-btn"
-                                    disabled={isTargetCompletionDateSaveDisabled}
-                                    onClick={() => {
-                                        handleTargetCompletionDateSubmit(stepTwoData?.id);
-                                    }}
-                                >
-                                    Save
-                                </button>
+                            ) : (
+                                <>
+                                    <MemoizedDatePicker
+                                        id="target-completion-date"
+                                        name="targetCompletionDate"
+                                        label="Target Completion Date"
+                                        messages={validatorRes.getErrors("targetCompletionDate") || []}
+                                        hint="mm/dd/yyyy"
+                                        value={targetCompletionDate}
+                                        onChange={(e) => {
+                                            runValidate("targetCompletionDate", e.target.value);
+                                            setTargetCompletionDate(e.target.value);
+                                        }}
+                                        minDate={getLocalISODate()}
+                                        isDisabled={isDisabled}
+                                    />
+                                    <button
+                                        className="usa-button usa-button--unstyled margin-bottom-1 margin-left-2"
+                                        data-cy="target-completion-save-btn"
+                                        disabled={isTargetCompletionDateSaveDisabled}
+                                        onClick={() => {
+                                            handleTargetCompletionDateSubmit(stepTwoData?.id);
+                                        }}
+                                    >
+                                        Save
+                                    </button>
+                                </>
+                            )}
+                        </div>
+                        {isPastDue && (
+                            <>
+                                <div className="margin-x-4">
+                                    <SimpleAlert
+                                        type="warning"
+                                        message="The Target Completion Date is past due. Please enter a Revised Target Date below."
+                                    />
+                                </div>
+                                <div className="display-flex flex-align-end margin-bottom-2">
+                                    <MemoizedDatePicker
+                                        id="revised-target-date"
+                                        name="revisedTargetDate"
+                                        label="Revised Target Completion Date"
+                                        messages={validatorRes.getErrors("revisedTargetDate") || []}
+                                        hint="mm/dd/yyyy"
+                                        value={revisedTargetDate}
+                                        onChange={(e) => {
+                                            runValidate("revisedTargetDate", e.target.value);
+                                            setRevisedTargetDate(e.target.value);
+                                        }}
+                                        minDate={getLocalISODate()}
+                                        isDisabled={isDisabled}
+                                    />
+                                    <button
+                                        className="usa-button usa-button--unstyled margin-bottom-1 margin-left-2"
+                                        data-cy="revised-target-save-btn"
+                                        disabled={isRevisedTargetDateSaveDisabled}
+                                        onClick={() => {
+                                            handleRevisedTargetDateSubmit(stepTwoData?.id);
+                                        }}
+                                    >
+                                        Save
+                                    </button>
+                                </div>
                             </>
                         )}
-                    </div>
-                    {isPastDue && (
-                        <>
-                            <div className="margin-x-4">
-                                <SimpleAlert
-                                    type="warning"
-                                    message="The Target Completion Date is past due. Please enter a Revised Target Date below."
-                                />
-                            </div>
-                            <div className="display-flex flex-align-end margin-bottom-2">
-                                <MemoizedDatePicker
-                                    id="revised-target-date"
-                                    name="revisedTargetDate"
-                                    label="Revised Target Completion Date"
-                                    messages={validatorRes.getErrors("revisedTargetDate") || []}
-                                    hint="mm/dd/yyyy"
-                                    value={revisedTargetDate}
-                                    onChange={(e) => {
-                                        runValidate("revisedTargetDate", e.target.value);
-                                        setRevisedTargetDate(e.target.value);
-                                    }}
-                                    minDate={getLocalISODate()}
-                                    isDisabled={isDisabled}
-                                />
-                                <button
-                                    className="usa-button usa-button--unstyled margin-bottom-1 margin-left-2"
-                                    data-cy="revised-target-save-btn"
-                                    disabled={isRevisedTargetDateSaveDisabled}
-                                    onClick={() => {
-                                        handleRevisedTargetDateSubmit(stepTwoData?.id);
-                                    }}
-                                >
-                                    Save
-                                </button>
-                            </div>
-                        </>
-                    )}
-                    <div className="usa-checkbox margin-top-3">
-                        <input
-                            className="usa-checkbox__input"
-                            id="step-2-checkbox"
-                            type="checkbox"
-                            name="step-2-checkbox"
-                            value="step-2-checkbox"
-                            checked={isPreSolicitationPackageFinalized}
-                            onChange={() => setIsPreSolicitationPackageFinalized(!isPreSolicitationPackageFinalized)}
-                            disabled={isPreSolicitationCheckboxDisabled}
-                        />
-                        <label
-                            className="usa-checkbox__label"
-                            htmlFor="step-2-checkbox"
-                        >
-                            The pre-solicitation package has been finalized between the Procurement Shop and OPRE and
-                            the final version has been uploaded
-                        </label>
-                    </div>
-                    <div className="display-flex flex-align-center">
-                        <UsersComboBox
-                            className="width-card-lg margin-top-5"
-                            label={"Task Completed By"}
-                            selectedUser={selectedUser}
-                            setSelectedUser={setSelectedUser}
-                            users={authorizedUsers}
-                            isDisabled={isUsersComboBoxDisabled}
-                            messages={validatorRes.getErrors("users") || []}
-                            onChange={(name, value) => {
-                                runValidate(name, value);
-                            }}
-                        />
+                        <div className="usa-checkbox margin-top-3">
+                            <input
+                                className="usa-checkbox__input"
+                                id="step-2-checkbox"
+                                type="checkbox"
+                                name="step-2-checkbox"
+                                value="step-2-checkbox"
+                                checked={isPreSolicitationPackageFinalized}
+                                onChange={() =>
+                                    setIsPreSolicitationPackageFinalized(!isPreSolicitationPackageFinalized)
+                                }
+                                disabled={isPreSolicitationCheckboxDisabled}
+                            />
+                            <label
+                                className="usa-checkbox__label"
+                                htmlFor="step-2-checkbox"
+                            >
+                                The pre-solicitation package has been finalized between the Procurement Shop and OPRE
+                                and the final version has been uploaded
+                            </label>
+                        </div>
+                        <div className="display-flex flex-align-center">
+                            <UsersComboBox
+                                className="width-card-lg margin-top-5"
+                                label={"Task Completed By"}
+                                selectedUser={selectedUser}
+                                setSelectedUser={setSelectedUser}
+                                users={authorizedUsers}
+                                isDisabled={isUsersComboBoxDisabled}
+                                messages={validatorRes.getErrors("users") || []}
+                                onChange={(name, value) => {
+                                    runValidate(name, value);
+                                }}
+                            />
 
-                        <MemoizedDatePicker
-                            id="step-2-date-completed"
-                            name="dateCompleted"
-                            className="margin-left-4"
-                            label="Date Completed"
-                            hint="mm/dd/yyyy"
-                            value={step2DateCompleted}
-                            messages={validatorRes.getErrors("dateCompleted") || []}
-                            onChange={(e) => {
-                                runValidate("dateCompleted", e.target.value);
-                                setStep2DateCompleted(e.target.value);
-                            }}
-                            maxDate={getLocalISODate()}
+                            <MemoizedDatePicker
+                                id="step-2-date-completed"
+                                name="dateCompleted"
+                                className="margin-left-4"
+                                label="Date Completed"
+                                hint="mm/dd/yyyy"
+                                value={step2DateCompleted}
+                                messages={validatorRes.getErrors("dateCompleted") || []}
+                                onChange={(e) => {
+                                    runValidate("dateCompleted", e.target.value);
+                                    setStep2DateCompleted(e.target.value);
+                                }}
+                                maxDate={getLocalISODate()}
+                                isDisabled={isPackageFinalizedFieldsDisabled}
+                            />
+                        </div>
+                        <TextArea
+                            name="notes"
+                            label="Notes (optional)"
+                            className="margin-top-2"
+                            maxLength={750}
+                            value={step2Notes}
+                            onChange={(_, value) => setStep2Notes(value)}
                             isDisabled={isPackageFinalizedFieldsDisabled}
                         />
-                    </div>
-                    <TextArea
-                        name="notes"
-                        label="Notes (optional)"
-                        className="margin-top-2"
-                        maxLength={750}
-                        value={step2Notes}
-                        onChange={(_, value) => setStep2Notes(value)}
-                        isDisabled={isPackageFinalizedFieldsDisabled}
-                    />
-                    <p
-                        className={`margin-top-4 margin-bottom-0 ${isPackageFinalizedFieldsDisabled ? "text-base" : "text-base-dark"}`}
-                    >
-                        After the package is finalized, enter the Draft Solicitation date below (if applicable).
-                    </p>
-                    <div className="display-flex">
-                        <MemoizedDatePicker
-                            id="step-2-draft-solicitation-date"
-                            name="draftSolicitationDate"
-                            label="Draft Solicitation Date (optional)"
-                            hint="mm/dd/yyyy"
-                            value={draftSolicitationDate}
-                            messages={validatorRes.getErrors("draftSolicitationDate") || []}
-                            onChange={(e) => {
-                                runValidate("draftSolicitationDate", e.target.value);
-                                setDraftSolicitationDate(e.target.value);
-                            }}
-                            isDisabled={isPackageFinalizedFieldsDisabled}
-                        />
-                    </div>
-
-                    <div className="margin-top-2 display-flex flex-justify-end">
-                        <button
-                            className="usa-button usa-button--unstyled margin-right-2"
-                            data-cy="cancel-button"
-                            onClick={cancelModalStep2}
-                            disabled={isPackageFinalizedFieldsDisabled}
+                        <p
+                            className={`margin-top-4 margin-bottom-0 ${isPackageFinalizedFieldsDisabled ? "text-base" : "text-base-dark"}`}
                         >
-                            Cancel
-                        </button>
-                        <button
-                            className="usa-button"
-                            data-cy="continue-btn"
-                            onClick={() => {
-                                handleStepTwoComplete(stepTwoData?.id);
-                            }}
-                            disabled={isCompleteStep2Disabled}
-                        >
-                            Complete Step 2
-                        </button>
-                    </div>
-                </fieldset>
-            )}
+                            After the package is finalized, enter the Draft Solicitation date below (if applicable).
+                        </p>
+                        <div className="display-flex">
+                            <MemoizedDatePicker
+                                id="step-2-draft-solicitation-date"
+                                name="draftSolicitationDate"
+                                label="Draft Solicitation Date (optional)"
+                                hint="mm/dd/yyyy"
+                                value={draftSolicitationDate}
+                                messages={validatorRes.getErrors("draftSolicitationDate") || []}
+                                onChange={(e) => {
+                                    runValidate("draftSolicitationDate", e.target.value);
+                                    setDraftSolicitationDate(e.target.value);
+                                }}
+                                isDisabled={isPackageFinalizedFieldsDisabled}
+                            />
+                        </div>
 
-            {!isReadOnly && stepStatus === "COMPLETED" && (
+                        <div className="margin-top-2 display-flex flex-justify-end">
+                            <button
+                                className="usa-button usa-button--unstyled margin-right-2"
+                                data-cy="cancel-button"
+                                onClick={cancelModalStep2}
+                                disabled={isPackageFinalizedFieldsDisabled}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className="usa-button"
+                                data-cy="continue-btn"
+                                onClick={() => {
+                                    handleStepTwoComplete(stepTwoData?.id);
+                                }}
+                                disabled={isCompleteStep2Disabled}
+                            >
+                                Complete Step 2
+                            </button>
+                        </div>
+                    </fieldset>
+                )}
+
+            {!isReadOnly && stepStatus === PROCUREMENT_STEP_STATUS.COMPLETED && (
                 <div>
                     <p>
                         Edit the pre-solicitation package in collaboration with the Procurement Shop. Once the documents

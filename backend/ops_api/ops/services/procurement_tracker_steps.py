@@ -198,11 +198,13 @@ class ProcurementTrackerStepService:
                 tracker_modified = True
                 logger.debug(f"Incremented active_step_number to {procurement_tracker.active_step_number}")
 
-                # Find the next step and set its step_start_date to today
+                # Find the next step and set its step_start_date and status
                 next_step = next((s for s in all_steps if s.step_number == step.step_number + 1), None)
                 if next_step:
                     next_step.step_start_date = date.today()
+                    next_step.status = ProcurementTrackerStepStatus.ACTIVE
                     logger.debug(f"Set next step (step {next_step.step_number}) step_start_date to {date.today()}")
+                    logger.debug(f"Set next step (step {next_step.step_number}) status to ACTIVE")
             else:
                 logger.debug("This is the final step; marking procurement tracker as completed.")
                 procurement_tracker.status = ProcurementTrackerStatus.COMPLETED

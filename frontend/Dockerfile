@@ -10,7 +10,7 @@ WORKDIR /home/app
 # Install production dependencies
 RUN bun install --frozen-lockfile --production
 
-# Production image – copy only production dependencies and source code (assumes your code is prebuilt)
+# Production image - copy only production dependencies and source code (assumes your code is prebuilt)
 FROM base AS release
 COPY --from=prod-deps /home/app/node_modules ./node_modules
 COPY . .
