@@ -23,6 +23,11 @@ export type AgreementNameListItem = {
     name: string;
 };
 
+export type ProjectLookupItem = {
+    id: number;
+    name: string;
+};
+
 export type Project = {
     id: number;
     project_type: "RESEARCH" | "ADMINISTRATIVE_AND_SUPPORT";
@@ -36,11 +41,13 @@ export type Project = {
     fiscal_year_totals?: Record<number, string> | null;
     project_total?: string | null;
     agreement_name_list?: AgreementNameListItem[];
+    project_officers?: ProjectLookupItem[];
+    alternate_project_officers?: ProjectLookupItem[];
     team_leaders?: SafeUser[];
     team_members?: SafeUser[];
-    division_directors?: string[];
-    research_methodologies?: string[];
-    special_topics?: string[];
+    division_directors?: Array<string | ProjectLookupItem>;
+    research_methodologies?: Array<string | ProjectLookupItem>;
+    special_topics?: Array<string | ProjectLookupItem>;
     created_on?: string;
     updated_on?: string;
     created_by?: any;

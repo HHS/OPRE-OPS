@@ -61,7 +61,7 @@ const ProjectAgreementBLICard = ({ fiscalYear, projects, agreements, budgetLines
                     <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">{projectHeading}</h3>
                     <div>
                         <span className="font-sans-xl text-bold line-height-sans-1">{totalProjectCount}</span>
-                        <div className="display-flex flex-column grid-gap margin-top-1">
+                        <div className="display-flex flex-column flex-align-start grid-gap margin-top-1">
                             {projects &&
                                 projects.length > 0 &&
                                 projects.map(({ type, count }, index) => (
@@ -83,7 +83,7 @@ const ProjectAgreementBLICard = ({ fiscalYear, projects, agreements, budgetLines
                     </h3>
                     <div>
                         <span className="font-sans-xl text-bold line-height-sans-1">{totalAgreementsCount}</span>
-                        <div className="display-flex flex-column grid-gap margin-top-1">
+                        <div className="display-flex flex-column flex-align-start grid-gap margin-top-1">
                             {agreements &&
                                 agreements.length > 0 &&
                                 groupAndSortAgreementTypeCounts(agreements).map(({ type, count }, index) => (
@@ -105,7 +105,7 @@ const ProjectAgreementBLICard = ({ fiscalYear, projects, agreements, budgetLines
                     </h3>
                     <div>
                         <span className="font-sans-xl text-bold line-height-sans-1">{totalBudgetLinesCount}</span>
-                        <div className="display-flex flex-column grid-gap margin-top-1">
+                        <div className="display-flex flex-column flex-align-start grid-gap margin-top-1">
                             {budgetLines &&
                                 budgetLines.length > 0 &&
                                 [...budgetLines]

@@ -6,6 +6,7 @@
  * @property {boolean} [active] - Whether the tag is active or not.
  * @property {string} [label] - The label of the tag.
  * @property {string} [className] - Additional CSS classes.
+ * @property {string} [display] - Optional display override for the tag container.
  * @property {number} [dataTestId] - The data test id.
  * @property {Object} [rest] - Additional props.
  * @property {React.ReactNode} [children] - Child elements.
@@ -23,6 +24,7 @@ const Tag = ({
     active = false,
     label,
     className = "",
+    display = "inline-block",
     style = {},
     children,
     ...rest
@@ -139,7 +141,12 @@ const Tag = ({
      * @returns {Object} - The styles for the tag.
      */
     const handleLegendStyles = () => ({
-        width: "fit-content", // Ensures the tag's width adapts to its content
+        width: "auto",
+        maxWidth: "100%",
+        height: "auto",
+        whiteSpace: "normal",
+        overflowWrap: "anywhere",
+        display,
         padding: ".25em .5em", // Adds some space inside the tag for better readability
         ...style // Merge with custom inline styles
     });

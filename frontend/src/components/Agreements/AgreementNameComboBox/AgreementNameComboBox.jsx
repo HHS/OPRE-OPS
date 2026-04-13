@@ -23,12 +23,17 @@ export const AgreementNameComboBox = ({
     defaultString = "",
     overrideStyles = {},
     agreementNameOptions = null,
+    isLoading = false,
     filterLabel = "Agreement Title"
 }) => {
     const navigate = useNavigate();
 
     // Fetch all agreements to get unique names using pagination (only if options not provided)
-    const { agreements, error, isLoading } = useGetAllAgreements(
+    const {
+        agreements,
+        error,
+        isLoading: isAgreementsLoading
+    } = useGetAllAgreements(
         {
             filters: {},
             onlyMy: false,
@@ -45,7 +50,8 @@ export const AgreementNameComboBox = ({
             return agreementNameOptions.map((option) => ({
                 id: option.id,
                 title: option.name,
-                name: option.name
+                name: option.name,
+                display_name: option.name
             }));
         }
 
@@ -76,11 +82,6 @@ export const AgreementNameComboBox = ({
         }
     }, [error, navigate]);
 
-    // Only show loading if we're fetching and options weren't provided
-    if (isLoading && agreementNameOptions === null) {
-        return <h1>Loading...</h1>;
-    }
-
     return (
         <div className="display-flex flex-justify">
             <div>
@@ -99,6 +100,7 @@ export const AgreementNameComboBox = ({
                         defaultString={defaultString}
                         overrideStyles={overrideStyles}
                         isMulti={true}
+                        isLoading={isLoading || (agreementNameOptions === null && isAgreementsLoading)}
                     />
                 </div>
             </div>

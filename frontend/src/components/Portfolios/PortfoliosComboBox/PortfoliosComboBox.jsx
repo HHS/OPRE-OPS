@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom";
  * @param {string} [props.defaultString] - Initial text to display in select (optional).
  * @param {Object} [props.overrideStyles] - Some CSS styles to override the default (optional).
  * @param {import("../../../types/PortfolioTypes").Portfolio[]} [props.portfolioOptions] - An array of portfolio options.
+ * @param {boolean} [props.usePrefetchedOptions] - Whether to use provided portfolio options instead of fetching.
  * @returns {React.ReactElement} - The rendered component.
  */
 export const PortfoliosComboBox = ({
@@ -19,12 +20,20 @@ export const PortfoliosComboBox = ({
     legendClassname = "usa-label margin-top-0",
     defaultString = "",
     overrideStyles = {},
-    portfolioOptions = []
+    portfolioOptions = null,
+    usePrefetchedOptions = false,
+    isLoading = false
 }) => {
     const navigate = useNavigate();
-    const { data, error, isSuccess, isLoading } = useGetPortfoliosQuery({});
+    const shouldUsePrefetchedOptions = usePrefetchedOptions;
+    const {
+        data,
+        error,
+        isSuccess,
+        isLoading: isPortfoliosLoading
+    } = useGetPortfoliosQuery({}, { skip: shouldUsePrefetchedOptions });
 
-    const sourcePortfolioOptions = portfolioOptions.length === 0 && isSuccess ? data || [] : portfolioOptions;
+    const sourcePortfolioOptions = shouldUsePrefetchedOptions ? (portfolioOptions ?? []) : isSuccess ? data || [] : [];
     const newPortfolioOptions = sourcePortfolioOptions.map((portfolio) => {
         const portfolioOption = {
             id: portfolio.id,
@@ -34,9 +43,6 @@ export const PortfoliosComboBox = ({
         return portfolioOption;
     });
 
-    if (isLoading) {
-        return <h1>Loading...</h1>;
-    }
     if (error) {
         navigate("/error");
         return;
@@ -60,6 +66,7 @@ export const PortfoliosComboBox = ({
                         defaultString={defaultString}
                         overrideStyles={overrideStyles}
                         isMulti={true}
+                        isLoading={isLoading || (!shouldUsePrefetchedOptions && isPortfoliosLoading)}
                     />
                 </div>
             </div>

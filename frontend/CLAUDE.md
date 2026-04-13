@@ -59,10 +59,11 @@ bun run lint --fix   # Auto-fix linting errors
 bun run format       # Format code (Prettier)
 ```
 
-**Before committing:**
+**Before pushing frontend code changes:**
 1. Run `bun run lint` to check for linting errors
 2. Run `bun run format` to fix formatting
-3. Pre-commit hooks will enforce these checks
+3. Re-run any focused frontend tests you changed or added
+4. Pre-commit hooks will enforce some of these checks, but do not rely on CI to catch avoidable frontend lint/format failures
 
 ## Architecture
 

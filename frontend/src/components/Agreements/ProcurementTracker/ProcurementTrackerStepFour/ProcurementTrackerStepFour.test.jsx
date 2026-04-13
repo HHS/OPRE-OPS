@@ -321,6 +321,45 @@ describe("ProcurementTrackerStepFour", () => {
         });
     });
 
+    describe("ACTIVE State", () => {
+        it("renders editable form fields when step status is ACTIVE", () => {
+            render(
+                <ProcurementTrackerStepFour
+                    {...defaultProps}
+                    stepStatus="ACTIVE"
+                />
+            );
+
+            expect(screen.getByRole("checkbox")).toBeInTheDocument();
+            expect(screen.getByTestId("users-combobox")).toBeInTheDocument();
+            expect(screen.getByTestId("text-area")).toBeInTheDocument();
+            expect(screen.getByRole("button", { name: /cancel/i })).toBeInTheDocument();
+            expect(screen.getByRole("button", { name: /complete step 4/i })).toBeInTheDocument();
+        });
+
+        it("form fields are interactive when evaluation complete in ACTIVE state", () => {
+            useProcurementTrackerStepFour.mockReturnValue({
+                ...defaultHookReturn,
+                isEvaluationComplete: true
+            });
+
+            render(
+                <ProcurementTrackerStepFour
+                    {...defaultProps}
+                    stepStatus="ACTIVE"
+                />
+            );
+
+            // eslint-disable-next-line testing-library/no-node-access
+            const select = screen.getByTestId("users-combobox").querySelector("select");
+            // eslint-disable-next-line testing-library/no-node-access
+            const notesInput = screen.getByTestId("text-area").querySelector("textarea");
+
+            expect(select).not.toBeDisabled();
+            expect(notesInput).not.toBeDisabled();
+        });
+    });
+
     describe("COMPLETED State", () => {
         const completedProps = {
             ...defaultProps,

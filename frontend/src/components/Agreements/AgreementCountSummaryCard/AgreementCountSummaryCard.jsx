@@ -48,7 +48,7 @@ const AgreementCountSummaryCard = ({ title, fiscalYear, totals }) => {
                     <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">{title}</h3>
                     <div>
                         <span className="font-sans-xl text-bold line-height-sans-1">{totalCount}</span>
-                        <div className="display-flex flex-column grid-gap margin-top-1">
+                        <div className="display-flex flex-column flex-align-start grid-gap margin-top-1">
                             {typeCounts.map(({ type, count }, index) => (
                                 <Tag
                                     key={type}
@@ -67,7 +67,7 @@ const AgreementCountSummaryCard = ({ title, fiscalYear, totals }) => {
                     </h3>
                     <div>
                         <span className="font-sans-xl text-bold line-height-sans-1">{newCount}</span>
-                        <div className="display-flex flex-column grid-gap margin-top-1">
+                        <div className="display-flex flex-column flex-align-start grid-gap margin-top-1">
                             {newTypeCounts.map(({ type, count }, index) => (
                                 <Tag
                                     key={type}
@@ -86,7 +86,7 @@ const AgreementCountSummaryCard = ({ title, fiscalYear, totals }) => {
                     </h3>
                     <div>
                         <span className="font-sans-xl text-bold line-height-sans-1">{continuingCount}</span>
-                        <div className="display-flex flex-column grid-gap margin-top-1">
+                        <div className="display-flex flex-column flex-align-start grid-gap margin-top-1">
                             {continuingTypeCounts.map(({ type, count }, index) => (
                                 <Tag
                                     key={type}

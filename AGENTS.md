@@ -157,6 +157,15 @@ pre-commit install
 pre-commit install --hook-type commit-msg
 ```
 
+### Before Pushing Changes
+
+Run the checks that match the part of the repo you changed instead of relying on CI to catch basic formatting or lint issues.
+
+- Frontend changes: run `bun run lint` and `bun run format` from `frontend/` before pushing.
+- Backend changes: run the relevant backend quality checks from `backend/ops_api/`, such as `pipenv run nox -s lint` and formatting checks when Python files changed.
+- Mixed changes: run both frontend and backend checks for the files you touched.
+- Docs-only or metadata-only changes: use judgment and run only the checks relevant to the edited files.
+
 ### Conventional Commits
 
 This project uses [Conventional Commits](https://www.conventionalcommits.org/) specification for commit messages, enforced by commitlint.

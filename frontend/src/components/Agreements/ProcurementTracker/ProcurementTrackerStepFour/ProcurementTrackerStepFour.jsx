@@ -134,136 +134,137 @@ const ProcurementTrackerStepFour = ({
                     </dl>
                 </div>
             )}
-            {!isReadOnly && stepStatus === PROCUREMENT_STEP_STATUS.PENDING && (
-                <fieldset className="usa-fieldset">
-                    <p>
-                        Complete the technical evaluations and any potential negotiations. If you have a target
-                        completion date for when evaluations will be complete, enter it below. Once you internally
-                        select a vendor check this task as complete (Internally means internal to OPRE, before you send
-                        the Final Consensus Memo to the Procurement Shop).
-                    </p>
-                    <div className="display-flex flex-align-end margin-bottom-2">
-                        {stepFourData?.target_completion_date ? (
-                            <TermTag
-                                term="Target Completion Date"
-                                description={step4TargetCompletionDateLabel}
-                            />
-                        ) : (
-                            <>
-                                <MemoizedDatePicker
-                                    id="target-completion-date"
-                                    name="targetCompletionDate"
-                                    label="Target Completion Date (optional)"
-                                    messages={validatorRes.getErrors("targetCompletionDate") || []}
-                                    hint="mm/dd/yyyy"
-                                    value={targetCompletionDate}
-                                    onChange={
-                                        /** @param {any} e */ (e) => {
-                                            runValidate("targetCompletionDate", e.target.value);
-                                            setTargetCompletionDate(e.target.value);
-                                        }
-                                    }
-                                    minDate={getLocalISODate()}
-                                    isDisabled={isDisabled}
+            {!isReadOnly &&
+                (stepStatus === PROCUREMENT_STEP_STATUS.PENDING || stepStatus === PROCUREMENT_STEP_STATUS.ACTIVE) && (
+                    <fieldset className="usa-fieldset">
+                        <p>
+                            Complete the technical evaluations and any potential negotiations. If you have a target
+                            completion date for when evaluations will be complete, enter it below. Once you internally
+                            select a vendor check this task as complete (Internally means internal to OPRE, before you
+                            send the Final Consensus Memo to the Procurement Shop).
+                        </p>
+                        <div className="display-flex flex-align-end margin-bottom-2">
+                            {stepFourData?.target_completion_date ? (
+                                <TermTag
+                                    term="Target Completion Date"
+                                    description={step4TargetCompletionDateLabel}
                                 />
-                                <button
-                                    className="usa-button usa-button--unstyled margin-bottom-1 margin-left-2"
-                                    data-cy="step-4-target-completion-save-btn"
-                                    disabled={isTargetCompletionDateSaveDisabled}
-                                    onClick={() => {
-                                        handleTargetCompletionDateSubmit(stepFourData?.id);
-                                    }}
-                                >
-                                    Save
-                                </button>
-                            </>
-                        )}
-                    </div>
-                    <div className="usa-checkbox margin-top-3">
-                        <input
-                            className="usa-checkbox__input"
-                            id="step-4-checkbox"
-                            type="checkbox"
-                            name="step-4-checkbox"
-                            value="step-4-checkbox"
-                            checked={isEvaluationComplete}
-                            onChange={() => setIsEvaluationComplete(!isEvaluationComplete)}
-                            disabled={isEvaluationCheckboxDisabled}
-                        />
-                        <label
-                            className="usa-checkbox__label"
-                            htmlFor="step-4-checkbox"
-                        >
-                            Evaluations are complete and OPRE has internally selected a vendor (Final Consensus Memo has
-                            not been sent)
-                        </label>
-                    </div>
-                    <div className="display-flex flex-align-center">
-                        <UsersComboBox
-                            className="width-card-lg margin-top-5"
-                            label={"Task Completed By"}
-                            selectedUser={selectedUser}
-                            setSelectedUser={setSelectedUser}
-                            users={authorizedUsers}
-                            isDisabled={isUsersComboBoxDisabled}
-                            messages={validatorRes.getErrors("users") || []}
-                            onChange={
-                                /** @param {any} name @param {any} value */ (name, value) => {
-                                    runValidate(name, value);
+                            ) : (
+                                <>
+                                    <MemoizedDatePicker
+                                        id="target-completion-date"
+                                        name="targetCompletionDate"
+                                        label="Target Completion Date (optional)"
+                                        messages={validatorRes.getErrors("targetCompletionDate") || []}
+                                        hint="mm/dd/yyyy"
+                                        value={targetCompletionDate}
+                                        onChange={
+                                            /** @param {any} e */ (e) => {
+                                                runValidate("targetCompletionDate", e.target.value);
+                                                setTargetCompletionDate(e.target.value);
+                                            }
+                                        }
+                                        minDate={getLocalISODate()}
+                                        isDisabled={isDisabled}
+                                    />
+                                    <button
+                                        className="usa-button usa-button--unstyled margin-bottom-1 margin-left-2"
+                                        data-cy="step-4-target-completion-save-btn"
+                                        disabled={isTargetCompletionDateSaveDisabled}
+                                        onClick={() => {
+                                            handleTargetCompletionDateSubmit(stepFourData?.id);
+                                        }}
+                                    >
+                                        Save
+                                    </button>
+                                </>
+                            )}
+                        </div>
+                        <div className="usa-checkbox margin-top-3">
+                            <input
+                                className="usa-checkbox__input"
+                                id="step-4-checkbox"
+                                type="checkbox"
+                                name="step-4-checkbox"
+                                value="step-4-checkbox"
+                                checked={isEvaluationComplete}
+                                onChange={() => setIsEvaluationComplete(!isEvaluationComplete)}
+                                disabled={isEvaluationCheckboxDisabled}
+                            />
+                            <label
+                                className="usa-checkbox__label"
+                                htmlFor="step-4-checkbox"
+                            >
+                                Evaluations are complete and OPRE has internally selected a vendor (Final Consensus Memo
+                                has not been sent)
+                            </label>
+                        </div>
+                        <div className="display-flex flex-align-center">
+                            <UsersComboBox
+                                className="width-card-lg margin-top-5"
+                                label={"Task Completed By"}
+                                selectedUser={selectedUser}
+                                setSelectedUser={setSelectedUser}
+                                users={authorizedUsers}
+                                isDisabled={isUsersComboBoxDisabled}
+                                messages={validatorRes.getErrors("users") || []}
+                                onChange={
+                                    /** @param {any} name @param {any} value */ (name, value) => {
+                                        runValidate(name, value);
+                                    }
                                 }
-                            }
-                        />
+                            />
 
-                        <MemoizedDatePicker
-                            id="step-4-date-completed"
-                            name="dateCompleted"
-                            className="margin-left-4"
-                            label="Date Completed"
-                            hint="mm/dd/yyyy"
-                            value={step4DateCompleted}
-                            messages={validatorRes.getErrors("dateCompleted") || []}
-                            onChange={
-                                /** @param {any} e */ (e) => {
-                                    runValidate("dateCompleted", e.target.value);
-                                    setStep4DateCompleted(e.target.value);
+                            <MemoizedDatePicker
+                                id="step-4-date-completed"
+                                name="dateCompleted"
+                                className="margin-left-4"
+                                label="Date Completed"
+                                hint="mm/dd/yyyy"
+                                value={step4DateCompleted}
+                                messages={validatorRes.getErrors("dateCompleted") || []}
+                                onChange={
+                                    /** @param {any} e */ (e) => {
+                                        runValidate("dateCompleted", e.target.value);
+                                        setStep4DateCompleted(e.target.value);
+                                    }
                                 }
-                            }
-                            maxDate={getLocalISODate()}
+                                maxDate={getLocalISODate()}
+                                isDisabled={isEvaluationFieldsDisabled}
+                            />
+                        </div>
+                        <TextArea
+                            name="notes"
+                            label="Notes (optional)"
+                            className="margin-top-2"
+                            maxLength={750}
+                            value={step4Notes}
+                            onChange={/** @param {any} _ @param {any} value */ (_, value) => setStep4Notes(value)}
                             isDisabled={isEvaluationFieldsDisabled}
                         />
-                    </div>
-                    <TextArea
-                        name="notes"
-                        label="Notes (optional)"
-                        className="margin-top-2"
-                        maxLength={750}
-                        value={step4Notes}
-                        onChange={/** @param {any} _ @param {any} value */ (_, value) => setStep4Notes(value)}
-                        isDisabled={isEvaluationFieldsDisabled}
-                    />
 
-                    <div className="margin-top-2 display-flex flex-justify-end">
-                        <button
-                            className="usa-button usa-button--unstyled margin-right-2"
-                            data-cy="cancel-button"
-                            onClick={cancelModalStep4}
-                            disabled={isEvaluationFieldsDisabled}
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            className="usa-button"
-                            data-cy="continue-btn"
-                            onClick={() => {
-                                handleStepFourComplete(stepFourData?.id);
-                            }}
-                            disabled={disableStep4Buttons}
-                        >
-                            Complete Step 4
-                        </button>
-                    </div>
-                </fieldset>
-            )}
+                        <div className="margin-top-2 display-flex flex-justify-end">
+                            <button
+                                className="usa-button usa-button--unstyled margin-right-2"
+                                data-cy="cancel-button"
+                                onClick={cancelModalStep4}
+                                disabled={isEvaluationFieldsDisabled}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className="usa-button"
+                                data-cy="continue-btn"
+                                onClick={() => {
+                                    handleStepFourComplete(stepFourData?.id);
+                                }}
+                                disabled={disableStep4Buttons}
+                            >
+                                Complete Step 4
+                            </button>
+                        </div>
+                    </fieldset>
+                )}
 
             {!isReadOnly && stepStatus === PROCUREMENT_STEP_STATUS.COMPLETED && (
                 <div>
