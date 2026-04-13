@@ -7,6 +7,7 @@ from data_tools.src.backfill_procurement_tracker import (
     backfill_procurement_records,
     ensure_action_and_tracker,
     get_agreements_with_in_execution_blis,
+    get_earliest_obligated_date_needed,
     get_earliest_obligated_fiscal_year,
     has_obligated_blis,
     link_blis_to_action,
@@ -261,6 +262,20 @@ def test_get_earliest_obligated_fiscal_year(db_with_agreements):
 def test_get_earliest_obligated_fiscal_year_no_obligated(db_with_agreements):
     """Should return None when agreement has no OBLIGATED BLIs."""
     result = get_earliest_obligated_fiscal_year(db_with_agreements, 9001)
+    assert result is None
+
+
+def test_get_earliest_obligated_date_needed(db_with_agreements):
+    """Should return the earliest date_needed among OBLIGATED BLIs for agreement 9007."""
+    # BLI 90007: date_needed=2024-01-15 (earliest)
+    # BLI 90008: date_needed=2025-03-01
+    result = get_earliest_obligated_date_needed(db_with_agreements, 9007)
+    assert result == date(2024, 1, 15)
+
+
+def test_get_earliest_obligated_date_needed_no_obligated(db_with_agreements):
+    """Should return None when agreement has no OBLIGATED BLIs."""
+    result = get_earliest_obligated_date_needed(db_with_agreements, 9001)
     assert result is None
 
 
@@ -679,6 +694,30 @@ def test_mod_scenario_links_in_execution_blis_to_modification(db_with_agreements
         assert bli.procurement_action_id == mod_action.id, (
             f"BLI {bli_id} (IN_EXECUTION) should be linked to MODIFICATION action {mod_action.id}"
         )
+
+
+def test_mod_scenario_sets_award_date_on_new_award_action(db_with_agreements):
+    """NEW_AWARD action should have date_awarded_obligated set to the earliest OBLIGATED date_needed."""
+    sys_user = get_or_create_sys_user(db_with_agreements)
+    backfill_procurement_records(db_with_agreements, sys_user)
+
+    new_award_action = db_with_agreements.execute(
+        select(ProcurementAction).where(
+            ProcurementAction.agreement_id == 9007,
+            ProcurementAction.award_type == AwardType.NEW_AWARD,
+        )
+    ).scalar_one()
+    # Earliest OBLIGATED BLI is 90007 with date_needed=2024-01-15
+    assert new_award_action.date_awarded_obligated == date(2024, 1, 15)
+
+    # MODIFICATION action should NOT have date_awarded_obligated set
+    mod_action = db_with_agreements.execute(
+        select(ProcurementAction).where(
+            ProcurementAction.agreement_id == 9007,
+            ProcurementAction.award_type == AwardType.MODIFICATION,
+        )
+    ).scalar_one()
+    assert mod_action.date_awarded_obligated is None
 
 
 def test_mod_scenario_sets_procurement_shop_on_both_actions(db_with_agreements):

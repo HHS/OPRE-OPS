@@ -17,6 +17,7 @@ Set DRY_RUN=1 to preview changes without committing:
 import os
 import sys
 import time
+from datetime import date
 
 import click
 from dotenv import load_dotenv
@@ -156,6 +157,17 @@ def get_earliest_obligated_fiscal_year(session: Session, agreement_id: int) -> i
     return int(result) if result is not None else None
 
 
+def get_earliest_obligated_date_needed(session: Session, agreement_id: int) -> date | None:
+    """Get the earliest date_needed among OBLIGATED BLIs for an agreement."""
+    from sqlalchemy import func
+
+    return session.execute(
+        select(func.min(BudgetLineItem.date_needed))
+        .where(BudgetLineItem.agreement_id == agreement_id)
+        .where(BudgetLineItem.status == BudgetLineItemStatus.OBLIGATED)
+    ).scalar_one_or_none()
+
+
 def ensure_action_and_tracker(
     session: Session,
     agreement: Agreement,
@@ -163,6 +175,7 @@ def ensure_action_and_tracker(
     award_type: AwardType,
     action_status: ProcurementActionStatus = ProcurementActionStatus.PLANNED,
     tracker_status: ProcurementTrackerStatus = ProcurementTrackerStatus.ACTIVE,
+    date_awarded_obligated: date | None = None,
 ) -> tuple[ProcurementAction, bool, bool]:
     """
     Ensure a ProcurementAction and ProcurementTracker exist for the given agreement and award type.
@@ -184,6 +197,7 @@ def ensure_action_and_tracker(
             award_type=award_type,
             status=action_status,
             procurement_shop_id=agreement.awarding_entity_id,
+            date_awarded_obligated=date_awarded_obligated,
             created_by=sys_user.id,
         )
         session.add(procurement_action)
@@ -295,10 +309,12 @@ def backfill_procurement_records(
                 )
 
                 # NEW_AWARD: action (AWARDED) + tracker (COMPLETED) + earliest-FY OBLIGATED BLIs
+                award_date = get_earliest_obligated_date_needed(session, agreement.id)
                 new_award_action, ac, tc = ensure_action_and_tracker(
                     session, agreement, sys_user, AwardType.NEW_AWARD,
                     action_status=ProcurementActionStatus.AWARDED,
                     tracker_status=ProcurementTrackerStatus.COMPLETED,
+                    date_awarded_obligated=award_date,
                 )
                 created_actions += int(ac)
                 created_trackers += int(tc)
