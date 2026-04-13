@@ -394,6 +394,55 @@ describe("ProcurementTrackerStepFive", () => {
         });
     });
 
+    describe("ACTIVE State Rendering", () => {
+        it("renders editable form fields when step status is ACTIVE", () => {
+            render(
+                <ProcurementTrackerStepFive
+                    stepStatus="ACTIVE"
+                    stepFiveData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    isActiveStep={true}
+                    agreementId={1}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                />
+            );
+
+            expect(screen.getByRole("checkbox")).toBeInTheDocument();
+            expect(screen.getByTestId("users-combobox")).toBeInTheDocument();
+            expect(screen.getByTestId("text-area")).toBeInTheDocument();
+            expect(screen.getByRole("button", { name: /cancel/i })).toBeInTheDocument();
+            expect(screen.getByRole("button", { name: /complete step 5/i })).toBeInTheDocument();
+        });
+
+        it("form fields are interactive when pre-award complete in ACTIVE state", () => {
+            useProcurementTrackerStepFive.mockReturnValue({
+                ...defaultHookReturn,
+                isPreAwardComplete: true
+            });
+
+            render(
+                <ProcurementTrackerStepFive
+                    stepStatus="ACTIVE"
+                    stepFiveData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    isActiveStep={true}
+                    agreementId={1}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                />
+            );
+
+            // eslint-disable-next-line testing-library/no-node-access
+            const select = screen.getByTestId("users-combobox").querySelector("select");
+            // eslint-disable-next-line testing-library/no-node-access
+            const notesInput = screen.getByTestId("text-area").querySelector("textarea");
+
+            expect(select).not.toBeDisabled();
+            expect(notesInput).not.toBeDisabled();
+        });
+    });
+
     describe("COMPLETED State Rendering", () => {
         it("renders completed view when step status is COMPLETED", () => {
             render(

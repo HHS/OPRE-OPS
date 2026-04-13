@@ -23,6 +23,7 @@ const SortableHeader = ({ label, sortCode, selectedHeader, sortDescending, onCli
             aria-sort={isSelected ? (sortDescending ? "descending" : "ascending") : "none"}
         >
             <button
+                type="button"
                 className="usa-table__header__button cursor-pointer"
                 title={`Click to sort by ${label} in ascending or descending order`}
                 onClick={() => {

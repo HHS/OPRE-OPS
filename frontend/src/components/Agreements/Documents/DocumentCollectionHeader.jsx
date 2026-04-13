@@ -19,6 +19,7 @@ export const DocumentCollectionHeader = ({ heading, details, isEditMode, setIsEd
                 <h2 className="font-sans-lg">{heading}</h2>
                 {!isEditMode && isEditable && (
                     <button
+                        type="button"
                         id="edit"
                         className="hover:text-underline cursor-pointer"
                         onClick={() => setIsEditMode(!isEditMode)}
