@@ -7,6 +7,9 @@ Related to: https://github.com/HHS/OPRE-OPS/issues/5329
 Usage (from backend/ directory):
     python data_tools/src/backfill_procurement_tracker.py --env dev
 
+Only backfill specific agreement types:
+    python data_tools/src/backfill_procurement_tracker.py --env dev --agreement-types CONTRACT --agreement-types GRANT
+
 Set DRY_RUN=1 to preview changes without committing:
     DRY_RUN=1 python data_tools/src/backfill_procurement_tracker.py --env dev
 """
@@ -26,6 +29,7 @@ from data_tools.src.common.utils import get_config, get_or_create_sys_user
 from models import *  # noqa: F403, F401
 from models import (
     Agreement,
+    AgreementType,
     BudgetLineItem,
     BudgetLineItemStatus,
     OpsEvent,
@@ -33,7 +37,11 @@ from models import (
     OpsEventType,
 )
 from models.procurement_action import AwardType, ProcurementAction, ProcurementActionStatus
-from models.procurement_tracker import DefaultProcurementTracker, ProcurementTracker
+from models.procurement_tracker import (
+    DefaultProcurementTracker,
+    ProcurementTracker,
+    ProcurementTrackerStatus,
+)
 from models.users import User
 
 load_dotenv(os.getenv("ENV_FILE", ".env"))
@@ -52,9 +60,13 @@ logger.remove()
 logger.add(sys.stderr, format=format, level=LOG_LEVEL)
 
 
-def get_agreements_with_in_execution_blis(session: Session) -> list[Agreement]:
+def get_agreements_with_in_execution_blis(
+    session: Session,
+    agreement_types: list[AgreementType] | None = None,
+) -> list[Agreement]:
     """
     Find all agreements that have at least one BLI in IN_EXECUTION status.
+    Optionally filter by agreement type(s).
     """
     in_execution_agreement_ids = (
         select(BudgetLineItem.agreement_id)
@@ -64,15 +76,16 @@ def get_agreements_with_in_execution_blis(session: Session) -> list[Agreement]:
         .subquery()
     )
 
-    return (
-        session.execute(
-            select(Agreement)
-            .where(Agreement.id.in_(select(in_execution_agreement_ids.c.agreement_id)))
-            .order_by(Agreement.id)
-        )
-        .scalars()
-        .all()
+    query = (
+        select(Agreement)
+        .where(Agreement.id.in_(select(in_execution_agreement_ids.c.agreement_id)))
+        .order_by(Agreement.id)
     )
+
+    if agreement_types:
+        query = query.where(Agreement.agreement_type.in_(agreement_types))
+
+    return session.execute(query).scalars().all()
 
 
 def link_blis_to_action(
@@ -148,6 +161,8 @@ def ensure_action_and_tracker(
     agreement: Agreement,
     sys_user: User,
     award_type: AwardType,
+    action_status: ProcurementActionStatus = ProcurementActionStatus.PLANNED,
+    tracker_status: ProcurementTrackerStatus = ProcurementTrackerStatus.ACTIVE,
 ) -> tuple[ProcurementAction, bool, bool]:
     """
     Ensure a ProcurementAction and ProcurementTracker exist for the given agreement and award type.
@@ -167,7 +182,7 @@ def ensure_action_and_tracker(
         procurement_action = ProcurementAction(
             agreement_id=agreement.id,
             award_type=award_type,
-            status=ProcurementActionStatus.PLANNED,
+            status=action_status,
             procurement_shop_id=agreement.awarding_entity_id,
             created_by=sys_user.id,
         )
@@ -217,6 +232,7 @@ def ensure_action_and_tracker(
         tracker = DefaultProcurementTracker.create_with_steps(
             agreement_id=agreement.id,
             procurement_action=procurement_action.id,
+            status=tracker_status,
             created_by=sys_user.id,
         )
         session.add(tracker)
@@ -242,7 +258,11 @@ def ensure_action_and_tracker(
     return procurement_action, action_created, tracker_created
 
 
-def backfill_procurement_records(session: Session, sys_user: User) -> None:
+def backfill_procurement_records(
+    session: Session,
+    sys_user: User,
+    agreement_types: list[AgreementType] | None = None,
+) -> None:
     """
     For each agreement with IN_EXECUTION BLIs, ensure it has the correct
     ProcurementAction(s) and ProcurementTracker(s):
@@ -251,8 +271,10 @@ def backfill_procurement_records(session: Session, sys_user: User) -> None:
     - IN_EXECUTION + OBLIGATED (mod): 2 actions/trackers:
         - NEW_AWARD: link OBLIGATED BLIs from the earliest fiscal year
         - MODIFICATION: link IN_EXECUTION BLIs
+
+    If agreement_types is provided, only agreements of those types are processed.
     """
-    agreements = get_agreements_with_in_execution_blis(session)
+    agreements = get_agreements_with_in_execution_blis(session, agreement_types)
     logger.info(f"Found {len(agreements)} agreements with IN_EXECUTION BLIs.")
     for agreement in agreements:
         logger.info(
@@ -272,9 +294,11 @@ def backfill_procurement_records(session: Session, sys_user: User) -> None:
                     f"Agreement {agreement.id} has both OBLIGATED and IN_EXECUTION BLIs — treating as mod."
                 )
 
-                # NEW_AWARD: action + tracker + earliest-FY OBLIGATED BLIs
+                # NEW_AWARD: action (AWARDED) + tracker (COMPLETED) + earliest-FY OBLIGATED BLIs
                 new_award_action, ac, tc = ensure_action_and_tracker(
-                    session, agreement, sys_user, AwardType.NEW_AWARD
+                    session, agreement, sys_user, AwardType.NEW_AWARD,
+                    action_status=ProcurementActionStatus.AWARDED,
+                    tracker_status=ProcurementTrackerStatus.COMPLETED,
                 )
                 created_actions += int(ac)
                 created_trackers += int(tc)
@@ -325,11 +349,25 @@ def backfill_procurement_records(session: Session, sys_user: User) -> None:
     )
 
 
+AGREEMENT_TYPE_NAMES = [t.name for t in AgreementType]
+
+
 @click.command()
 @click.option("--env", required=True, help="The environment to use (dev, local, azure).")
-def main(env: str):
+@click.option(
+    "--agreement-types",
+    multiple=True,
+    type=click.Choice(AGREEMENT_TYPE_NAMES, case_sensitive=False),
+    help="Agreement types to backfill (e.g. CONTRACT GRANT). If omitted, all types are processed.",
+)
+def main(env: str, agreement_types: tuple[str, ...]):
     """Backfill ProcurementTracker and ProcurementAction records for IN_EXECUTION agreements."""
-    logger.info("Starting procurement tracker backfill.")
+    parsed_types = [AgreementType[name] for name in agreement_types] if agreement_types else None
+
+    if parsed_types:
+        logger.info(f"Starting procurement tracker backfill for types: {[t.name for t in parsed_types]}")
+    else:
+        logger.info("Starting procurement tracker backfill for all agreement types.")
 
     script_config = get_config(env)
     db_engine, _ = init_db_from_config(script_config)
@@ -350,7 +388,7 @@ def main(env: str):
         sys_user = get_or_create_sys_user(session)
         logger.info(f"Retrieved system user: {sys_user}")
         setup_triggers(session, sys_user)
-        backfill_procurement_records(session, sys_user)
+        backfill_procurement_records(session, sys_user, parsed_types)
 
     logger.info("Procurement tracker backfill complete.")
 

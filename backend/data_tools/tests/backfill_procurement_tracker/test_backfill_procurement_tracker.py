@@ -13,8 +13,13 @@ from data_tools.src.backfill_procurement_tracker import (
 )
 from data_tools.src.common.utils import get_or_create_sys_user
 from models import *  # noqa: F403, F401
+from models.agreements import AgreementType
 from models.procurement_action import AwardType, ProcurementAction, ProcurementActionStatus
-from models.procurement_tracker import DefaultProcurementTracker, ProcurementTracker
+from models.procurement_tracker import (
+    DefaultProcurementTracker,
+    ProcurementTracker,
+    ProcurementTrackerStatus,
+)
 
 
 @pytest.fixture()
@@ -66,9 +71,14 @@ def db_with_agreements(loaded_db):
         id=9007, name="Contract Mod Scenario", project_id=9000,
         awarding_entity_id=9000, created_by=uid, updated_by=uid
     )
+    # Agreement 9008: Grant with IN_EXECUTION BLI → used to test agreement type filtering
+    grant_1 = GrantAgreement(
+        id=9008, name="Grant With Execution", project_id=9000,
+        awarding_entity_id=9000, created_by=uid, updated_by=uid
+    )
     loaded_db.add_all([
         contract_1, contract_2, contract_3, contract_4,
-        contract_5, contract_6, contract_7,
+        contract_5, contract_6, contract_7, grant_1,
     ])
     loaded_db.commit()
 
@@ -112,7 +122,11 @@ def db_with_agreements(loaded_db):
         id=90010, agreement_id=9007, amount=1000, status=BudgetLineItemStatus.IN_EXECUTION,
         date_needed=date(2025, 9, 1), created_by=uid,
     )
-    loaded_db.add_all([bli_1, bli_2, bli_3, bli_4, bli_5, bli_6, bli_7, bli_8, bli_9, bli_10])
+    # BLI for agreement 9008 (grant)
+    bli_11 = GrantBudgetLineItem(
+        id=90011, agreement_id=9008, amount=1100, status=BudgetLineItemStatus.IN_EXECUTION, created_by=uid
+    )
+    loaded_db.add_all([bli_1, bli_2, bli_3, bli_4, bli_5, bli_6, bli_7, bli_8, bli_9, bli_10, bli_11])
     loaded_db.commit()
 
     # Agreement 9002: already has both tracker and action
@@ -152,12 +166,16 @@ def db_with_agreements(loaded_db):
     loaded_db.execute(text("DELETE FROM default_procurement_tracker_version"))
     loaded_db.execute(text("DELETE FROM procurement_tracker"))
     loaded_db.execute(text("DELETE FROM procurement_tracker_version"))
+    loaded_db.execute(text("DELETE FROM grant_budget_line_item"))
+    loaded_db.execute(text("DELETE FROM grant_budget_line_item_version"))
     loaded_db.execute(text("DELETE FROM contract_budget_line_item"))
     loaded_db.execute(text("DELETE FROM contract_budget_line_item_version"))
     loaded_db.execute(text("DELETE FROM budget_line_item"))
     loaded_db.execute(text("DELETE FROM budget_line_item_version"))
     loaded_db.execute(text("DELETE FROM procurement_action"))
     loaded_db.execute(text("DELETE FROM procurement_action_version"))
+    loaded_db.execute(text("DELETE FROM grant_agreement"))
+    loaded_db.execute(text("DELETE FROM grant_agreement_version"))
     loaded_db.execute(text("DELETE FROM contract_agreement"))
     loaded_db.execute(text("DELETE FROM contract_agreement_version"))
     loaded_db.execute(text("DELETE FROM agreement"))
@@ -183,12 +201,13 @@ def test_query_finds_all_agreements_with_in_execution_blis(db_with_agreements):
     results = get_agreements_with_in_execution_blis(db_with_agreements)
     result_ids = {a.id for a in results}
 
-    # Agreements 9001-9004 and 9007 all have IN_EXECUTION BLIs → included
+    # Agreements 9001-9004, 9007, and 9008 all have IN_EXECUTION BLIs → included
     assert 9001 in result_ids
     assert 9002 in result_ids
     assert 9003 in result_ids
     assert 9004 in result_ids
     assert 9007 in result_ids
+    assert 9008 in result_ids
     # Agreement 9005: only PLANNED BLIs → excluded
     assert 9005 not in result_ids
     # Agreement 9006: only DRAFT BLIs → excluded
@@ -209,12 +228,13 @@ def test_query_still_returns_agreements_after_backfill(db_with_agreements):
 
     results = get_agreements_with_in_execution_blis(db_with_agreements)
     result_ids = {a.id for a in results}
-    # All 5 agreements with IN_EXECUTION BLIs are still returned
+    # All 6 agreements with IN_EXECUTION BLIs are still returned
     assert 9001 in result_ids
     assert 9002 in result_ids
     assert 9003 in result_ids
     assert 9004 in result_ids
     assert 9007 in result_ids
+    assert 9008 in result_ids
 
 
 # ---- Helper function tests ----
@@ -592,6 +612,11 @@ def test_mod_scenario_creates_two_actions_and_trackers(db_with_agreements):
     assert AwardType.NEW_AWARD in award_types
     assert AwardType.MODIFICATION in award_types
 
+    # NEW_AWARD action should be AWARDED, MODIFICATION should be PLANNED
+    actions_by_type = {a.award_type: a for a in actions}
+    assert actions_by_type[AwardType.NEW_AWARD].status == ProcurementActionStatus.AWARDED
+    assert actions_by_type[AwardType.MODIFICATION].status == ProcurementActionStatus.PLANNED
+
     trackers = db_with_agreements.execute(
         select(ProcurementTracker).where(ProcurementTracker.agreement_id == 9007)
     ).scalars().all()
@@ -601,6 +626,13 @@ def test_mod_scenario_creates_two_actions_and_trackers(db_with_agreements):
     tracker_action_ids = {t.procurement_action for t in trackers}
     action_ids = {a.id for a in actions}
     assert tracker_action_ids == action_ids
+
+    # NEW_AWARD tracker should be COMPLETED, MODIFICATION tracker should be ACTIVE
+    trackers_by_action = {t.procurement_action: t for t in trackers}
+    new_award_action_id = actions_by_type[AwardType.NEW_AWARD].id
+    mod_action_id = actions_by_type[AwardType.MODIFICATION].id
+    assert trackers_by_action[new_award_action_id].status == ProcurementTrackerStatus.COMPLETED
+    assert trackers_by_action[mod_action_id].status == ProcurementTrackerStatus.ACTIVE
 
 
 def test_mod_scenario_links_earliest_fy_obligated_blis_to_new_award(db_with_agreements):
@@ -701,3 +733,97 @@ def test_mod_scenario_idempotent(db_with_agreements):
     assert len(actions_second) == len(actions_first)
     assert len(trackers_second) == len(trackers_first)
     assert len(linked_blis_second) == len(linked_blis_first)
+
+
+# ---- Agreement type filtering tests ----
+
+
+def test_query_filters_by_single_agreement_type(db_with_agreements):
+    """Filtering by CONTRACT should exclude the GRANT agreement."""
+    results = get_agreements_with_in_execution_blis(
+        db_with_agreements, agreement_types=[AgreementType.CONTRACT]
+    )
+    result_ids = {a.id for a in results}
+
+    # All contracts with IN_EXECUTION BLIs
+    assert 9001 in result_ids
+    assert 9002 in result_ids
+    assert 9003 in result_ids
+    assert 9004 in result_ids
+    assert 9007 in result_ids
+    # Grant agreement excluded
+    assert 9008 not in result_ids
+
+
+def test_query_filters_by_multiple_agreement_types(db_with_agreements):
+    """Filtering by CONTRACT and GRANT should include both."""
+    results = get_agreements_with_in_execution_blis(
+        db_with_agreements, agreement_types=[AgreementType.CONTRACT, AgreementType.GRANT]
+    )
+    result_ids = {a.id for a in results}
+
+    assert 9001 in result_ids
+    assert 9008 in result_ids
+
+
+def test_query_filter_with_no_matches(db_with_agreements):
+    """Filtering by a type with no IN_EXECUTION BLIs should return empty."""
+    results = get_agreements_with_in_execution_blis(
+        db_with_agreements, agreement_types=[AgreementType.IAA]
+    )
+    assert len(results) == 0
+
+
+def test_query_no_filter_returns_all(db_with_agreements):
+    """Passing None (default) returns all types."""
+    results = get_agreements_with_in_execution_blis(db_with_agreements, agreement_types=None)
+    result_ids = {a.id for a in results}
+
+    assert 9001 in result_ids
+    assert 9008 in result_ids
+
+
+def test_backfill_with_type_filter_only_processes_matching(db_with_agreements):
+    """Backfilling with agreement_types=[GRANT] should only create records for the grant."""
+    sys_user = get_or_create_sys_user(db_with_agreements)
+    backfill_procurement_records(db_with_agreements, sys_user, agreement_types=[AgreementType.GRANT])
+
+    # Grant agreement 9008 should have been backfilled
+    action_9008 = db_with_agreements.execute(
+        select(ProcurementAction).where(ProcurementAction.agreement_id == 9008)
+    ).scalar_one_or_none()
+    assert action_9008 is not None
+
+    tracker_9008 = db_with_agreements.execute(
+        select(ProcurementTracker).where(ProcurementTracker.agreement_id == 9008)
+    ).scalar_one_or_none()
+    assert tracker_9008 is not None
+
+    # Contract agreement 9001 should NOT have been backfilled
+    action_9001 = db_with_agreements.execute(
+        select(ProcurementAction).where(ProcurementAction.agreement_id == 9001)
+    ).scalar_one_or_none()
+    assert action_9001 is None
+
+    tracker_9001 = db_with_agreements.execute(
+        select(ProcurementTracker).where(ProcurementTracker.agreement_id == 9001)
+    ).scalar_one_or_none()
+    assert tracker_9001 is None
+
+
+def test_backfill_without_type_filter_processes_all(db_with_agreements):
+    """Backfilling without a type filter should process both contracts and grants."""
+    sys_user = get_or_create_sys_user(db_with_agreements)
+    backfill_procurement_records(db_with_agreements, sys_user)
+
+    # Both contract 9001 and grant 9008 should have been backfilled
+    for agreement_id in [9001, 9008]:
+        action = db_with_agreements.execute(
+            select(ProcurementAction).where(ProcurementAction.agreement_id == agreement_id)
+        ).scalar_one_or_none()
+        assert action is not None, f"Agreement {agreement_id} should have an action"
+
+        tracker = db_with_agreements.execute(
+            select(ProcurementTracker).where(ProcurementTracker.agreement_id == agreement_id)
+        ).scalar_one_or_none()
+        assert tracker is not None, f"Agreement {agreement_id} should have a tracker"
