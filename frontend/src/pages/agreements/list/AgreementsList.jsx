@@ -340,6 +340,7 @@ const AgreementsList = () => {
                                 <div>
                                     {agreements.length > 0 && (
                                         <button
+                                            type="button"
                                             style={{ fontSize: "16px" }}
                                             className="usa-button--unstyled text-primary display-flex flex-align-end cursor-pointer"
                                             data-cy="agreement-export"

@@ -38,6 +38,7 @@ export const AgreementDetailHeader = ({
                 )}
                 {!isEditMode && isEditable && (
                     <button
+                        type="button"
                         id="edit"
                         className="hover:text-underline cursor-pointer"
                         onClick={() => setIsEditMode(!isEditMode)}

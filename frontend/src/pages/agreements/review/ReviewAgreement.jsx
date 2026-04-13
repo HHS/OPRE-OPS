@@ -292,6 +292,7 @@ export const ReviewAgreement = () => {
             </Accordion>
             <div className="grid-row flex-justify-end margin-top-1">
                 <button
+                    type="button"
                     name="cancel"
                     className={`usa-button usa-button--unstyled margin-right-2`}
                     data-cy="cancel-approval-btn"
@@ -300,6 +301,7 @@ export const ReviewAgreement = () => {
                     Cancel
                 </button>
                 <button
+                    type="button"
                     className={`usa-button usa-button--outline margin-right-2 ${
                         !isAgreementEditable ? "usa-tooltip" : ""
                     }`}
@@ -323,6 +325,7 @@ export const ReviewAgreement = () => {
                         position="top"
                     >
                         <button
+                            type="button"
                             className="usa-button"
                             data-cy="send-to-approval-btn"
                             disabled={true}
@@ -332,6 +335,7 @@ export const ReviewAgreement = () => {
                     </Tooltip>
                 ) : (
                     <button
+                        type="button"
                         className="usa-button"
                         data-cy="send-to-approval-btn"
                         onClick={handleSendToApproval}

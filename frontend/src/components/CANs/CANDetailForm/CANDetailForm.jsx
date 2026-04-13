@@ -72,6 +72,7 @@ const CANDetailForm = ({ canId, canNumber, canNickname, canDescription, portfoli
             />
             <div className="grid-row flex-justify-end margin-top-8">
                 <button
+                    type="button"
                     className="usa-button usa-button--unstyled margin-right-2"
                     data-cy="cancel-button"
                     onClick={(e) => handleCancel(e)}

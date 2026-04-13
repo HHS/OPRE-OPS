@@ -168,6 +168,7 @@ const ProcurementTrackerStepFour = ({
                                         isDisabled={isDisabled}
                                     />
                                     <button
+                                        type="button"
                                         className="usa-button usa-button--unstyled margin-bottom-1 margin-left-2"
                                         data-cy="step-4-target-completion-save-btn"
                                         disabled={isTargetCompletionDateSaveDisabled}
@@ -245,6 +246,7 @@ const ProcurementTrackerStepFour = ({
 
                         <div className="margin-top-2 display-flex flex-justify-end">
                             <button
+                                type="button"
                                 className="usa-button usa-button--unstyled margin-right-2"
                                 data-cy="cancel-button"
                                 onClick={cancelModalStep4}
@@ -253,6 +255,7 @@ const ProcurementTrackerStepFour = ({
                                 Cancel
                             </button>
                             <button
+                                type="button"
                                 className="usa-button"
                                 data-cy="continue-btn"
                                 onClick={() => {

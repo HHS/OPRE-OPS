@@ -207,6 +207,7 @@ function ServicesComponentForm({
                     {formData.mode === "edit" ? (
                         <>
                             <button
+                                type="button"
                                 className="usa-button--unstyled margin-right-2 cursor-pointer"
                                 onClick={handleCancel}
                             >

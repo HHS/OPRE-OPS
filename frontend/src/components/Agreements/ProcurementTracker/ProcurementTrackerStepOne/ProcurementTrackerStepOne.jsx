@@ -173,6 +173,7 @@ const ProcurementTrackerStepOne = ({
                         />
                         <div className="margin-top-2 display-flex flex-justify-end">
                             <button
+                                type="button"
                                 className="usa-button usa-button--unstyled margin-right-2"
                                 data-cy="cancel-button"
                                 onClick={cancelModalStep1}
@@ -181,6 +182,7 @@ const ProcurementTrackerStepOne = ({
                                 Cancel
                             </button>
                             <button
+                                type="button"
                                 className="usa-button"
                                 data-cy="continue-btn"
                                 onClick={() => handleStep1Complete(stepOneData?.id)}

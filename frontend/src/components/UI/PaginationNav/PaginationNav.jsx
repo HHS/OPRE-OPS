@@ -66,7 +66,12 @@ export const PaginationNav = ({ currentPage, setCurrentPage, items = [], itemsPe
                     className="usa-pagination__item usa-pagination__overflow"
                     aria-label="ellipsis indicating non-visible pages"
                 >
-                    <span>…</span>
+                    <span
+                        role="presentation"
+                        aria-hidden="true"
+                    >
+                        …
+                    </span>
                 </li>
             );
         } else {
