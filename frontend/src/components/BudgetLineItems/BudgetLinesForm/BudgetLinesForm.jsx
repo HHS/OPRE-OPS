@@ -220,6 +220,7 @@ export const BudgetLinesForm = ({
                 {isEditing ? (
                     <div className="display-flex flex-justify-end">
                         <button
+                            type="button"
                             className="usa-button usa-button--unstyled margin-top-2 margin-right-2"
                             onClick={(e) => {
                                 e.preventDefault();
@@ -229,6 +230,7 @@ export const BudgetLinesForm = ({
                             Cancel
                         </button>
                         <button
+                            type="button"
                             className="usa-button usa-button--outline margin-top-2 margin-right-0"
                             data-cy="update-budget-line"
                             disabled={isFormNotValid}
@@ -239,6 +241,7 @@ export const BudgetLinesForm = ({
                     </div>
                 ) : (
                     <button
+                        type="button"
                         id="add-budget-line"
                         className="usa-button usa-button--outline margin-top-2 float-right margin-right-0"
                         disabled={isFormNotValid}

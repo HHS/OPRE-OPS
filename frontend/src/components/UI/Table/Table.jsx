@@ -62,6 +62,7 @@ const Table = ({ children, tableHeadings, firstHeadingSlot, onClickHeader, selec
                             }
                         >
                             <button
+                                type="button"
                                 data-cy={header.value}
                                 className="usa-table__header__button cursor-pointer"
                                 title={`Click to sort by ${header.heading}`}

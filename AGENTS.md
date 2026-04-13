@@ -119,6 +119,7 @@ DB_PORT=55432 \
 BACKEND_PORT=58080 \
 FRONTEND_PORT=53000 \
 BACKEND_DOMAIN=http://localhost:58080 \
+OPS_FRONTEND_URL=http://localhost:53000 \
 docker compose --profile setup up --build
 ```
 
@@ -130,6 +131,9 @@ Port variables and their defaults:
 | `BACKEND_PORT` | `8080` | Flask API host port |
 | `FRONTEND_PORT` | `3000` | Frontend host port |
 | `BACKEND_DOMAIN` | `http://localhost:8080` | Backend URL used by the frontend container |
+| `OPS_FRONTEND_URL` | `http://localhost:3000` | Frontend origin allowed by backend CORS and Referer validation |
+
+> **Note:** `OPS_FRONTEND_URL` must match the origin the browser uses to reach the frontend. When `FRONTEND_PORT` is set, Compose derives `OPS_FRONTEND_URL` automatically (e.g., `FRONTEND_PORT=53000` → `http://localhost:53000`). Only set `OPS_FRONTEND_URL` explicitly when the browser uses a different host or scheme — otherwise login will fail with CORS errors.
 
 ### RSA Key Generation (Required Setup)
 
