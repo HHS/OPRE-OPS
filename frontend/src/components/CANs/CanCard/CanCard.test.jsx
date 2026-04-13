@@ -83,11 +83,6 @@ describe("CanCard", () => {
 
         await waitFor(() => {
             expect(screen.getByTestId("mock-line-graph")).toBeInTheDocument();
-            const lineGraph = screen.getByTestId("mock-line-graph");
-            const graphData = JSON.parse(lineGraph.getAttribute("data-graph-data"));
-
-            // The second segment (available) should use funding.total_funding, not top-level total_funding
-            expect(graphData[1].value).toBe(mockCanFundingData.funding.total_funding);
         });
 
         const lineGraph = screen.getByTestId("mock-line-graph");
