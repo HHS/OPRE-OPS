@@ -83,6 +83,7 @@ function ReviewCard({
                                 position="top"
                             >
                                 <button
+                                    type="button"
                                     id="approve"
                                     aria-label="Approve"
                                     onClick={() =>
@@ -106,6 +107,7 @@ function ReviewCard({
                                 position="top"
                             >
                                 <button
+                                    type="button"
                                     id="decline"
                                     aria-label="Decline"
                                     onClick={() =>

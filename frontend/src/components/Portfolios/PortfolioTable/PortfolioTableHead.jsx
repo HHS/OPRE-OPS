@@ -30,6 +30,7 @@ const PortfolioTableHead = ({ onClickHeader, selectedHeader, sortDescending, fis
                     }
                 >
                     <button
+                        type="button"
                         className="usa-table__header__button cursor-pointer"
                         title={`Click to sort by ${PORTFOLIO_TABLE_HEADERS.PORTFOLIO_NAME} in ascending or descending order`}
                         onClick={() => {
@@ -70,6 +71,7 @@ const PortfolioTableHead = ({ onClickHeader, selectedHeader, sortDescending, fis
                     }
                 >
                     <button
+                        type="button"
                         className="usa-table__header__button cursor-pointer"
                         title={`Click to sort by FY ${fyShort} Budget in ascending or descending order`}
                         onClick={() => {
@@ -110,6 +112,7 @@ const PortfolioTableHead = ({ onClickHeader, selectedHeader, sortDescending, fis
                     }
                 >
                     <button
+                        type="button"
                         className="usa-table__header__button cursor-pointer"
                         title={`Click to sort by FY ${fyShort} Spending in ascending or descending order`}
                         onClick={() => {
@@ -150,6 +153,7 @@ const PortfolioTableHead = ({ onClickHeader, selectedHeader, sortDescending, fis
                     }
                 >
                     <button
+                        type="button"
                         className="usa-table__header__button cursor-pointer"
                         title={`Click to sort by FY ${fyShort} Available Budget in ascending or descending order`}
                         onClick={() => {
