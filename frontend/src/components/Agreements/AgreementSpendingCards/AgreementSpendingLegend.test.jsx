@@ -62,4 +62,57 @@ describe("AgreementSpendingLegend", () => {
         render(<AgreementSpendingLegend agreementTypes={null} />);
         expect(screen.queryByTestId("agreement-spending-legend")).not.toBeInTheDocument();
     });
+
+    it("highlights only the New sub-row when activeId matches a type", () => {
+        render(
+            <AgreementSpendingLegend
+                agreementTypes={mockAgreementTypes}
+                activeId="CONTRACT"
+            />
+        );
+
+        // New sub-row text should be bold
+        const newLabels = screen.getAllByText("New");
+        expect(newLabels[0]).toHaveClass("fake-bold");
+
+        // Cont. sub-row text should not be bold
+        const contLabels = screen.getAllByText("Cont.");
+        expect(contLabels[0]).not.toHaveClass("fake-bold");
+
+        // Header should not be bold
+        const contractLabel = screen.getByText("Contracts");
+        expect(contractLabel).not.toHaveClass("fake-bold");
+    });
+
+    it("highlights only the Cont. sub-row when activeId matches a continuing type", () => {
+        render(
+            <AgreementSpendingLegend
+                agreementTypes={mockAgreementTypes}
+                activeId="CONTRACT_CONTINUING"
+            />
+        );
+
+        // Cont. sub-row text should be bold
+        const contLabels = screen.getAllByText("Cont.");
+        expect(contLabels[0]).toHaveClass("fake-bold");
+
+        // New sub-row text should not be bold
+        const newLabels = screen.getAllByText("New");
+        expect(newLabels[0]).not.toHaveClass("fake-bold");
+    });
+
+    it("does not apply fake-bold when activeId is 0", () => {
+        render(
+            <AgreementSpendingLegend
+                agreementTypes={mockAgreementTypes}
+                activeId={0}
+            />
+        );
+
+        const newLabels = screen.getAllByText("New");
+        newLabels.forEach((label) => expect(label).not.toHaveClass("fake-bold"));
+
+        const contLabels = screen.getAllByText("Cont.");
+        contLabels.forEach((label) => expect(label).not.toHaveClass("fake-bold"));
+    });
 });

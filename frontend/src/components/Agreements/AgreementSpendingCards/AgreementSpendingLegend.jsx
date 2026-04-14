@@ -4,7 +4,7 @@ import CurrencyFormat from "react-currency-format";
 import { AGREEMENT_TYPE_ORDER } from "./AgreementSpendingCards.constants";
 import styles from "./AgreementSpendingLegend.module.scss";
 
-const AgreementSpendingLegend = ({ agreementTypes = [] }) => {
+const AgreementSpendingLegend = ({ agreementTypes = [], activeId = 0 }) => {
     if (!agreementTypes || agreementTypes.length === 0) {
         return null;
     }
@@ -19,6 +19,10 @@ const AgreementSpendingLegend = ({ agreementTypes = [] }) => {
                 const total = typeData?.total || 0;
                 const newAmount = typeData?.new || 0;
                 const continuingAmount = typeData?.continuing || 0;
+                const isNewActive = activeId === config.type;
+                const isContActive = activeId === `${config.type}_CONTINUING`;
+                const newBoldClass = isNewActive ? "fake-bold" : "";
+                const contBoldClass = isContActive ? "fake-bold" : "";
 
                 return (
                     <div
@@ -44,7 +48,7 @@ const AgreementSpendingLegend = ({ agreementTypes = [] }) => {
                                 className={styles.colorDot}
                                 style={{ color: config.color }}
                             />
-                            <span className={styles.subValue}>New</span>
+                            <span className={`${styles.subValue} ${newBoldClass}`}>New</span>
                             <CurrencyFormat
                                 value={newAmount}
                                 displayType={"text"}
@@ -52,7 +56,9 @@ const AgreementSpendingLegend = ({ agreementTypes = [] }) => {
                                 prefix={"$"}
                                 decimalScale={2}
                                 fixedDecimalScale
-                                renderText={(value) => <span className={styles.subValue}>{value}</span>}
+                                renderText={(value) => (
+                                    <span className={`${styles.subValue} ${newBoldClass}`}>{value}</span>
+                                )}
                             />
                         </div>
                         <div className={styles.subRow}>
@@ -61,7 +67,7 @@ const AgreementSpendingLegend = ({ agreementTypes = [] }) => {
                                 className={styles.colorDot}
                                 style={{ color: config.continuingColor }}
                             />
-                            <span className={styles.subValue}>Cont.</span>
+                            <span className={`${styles.subValue} ${contBoldClass}`}>Cont.</span>
                             <CurrencyFormat
                                 value={continuingAmount}
                                 displayType={"text"}
@@ -69,7 +75,9 @@ const AgreementSpendingLegend = ({ agreementTypes = [] }) => {
                                 prefix={"$"}
                                 decimalScale={2}
                                 fixedDecimalScale
-                                renderText={(value) => <span className={styles.subValue}>{value}</span>}
+                                renderText={(value) => (
+                                    <span className={`${styles.subValue} ${contBoldClass}`}>{value}</span>
+                                )}
                             />
                         </div>
                     </div>
