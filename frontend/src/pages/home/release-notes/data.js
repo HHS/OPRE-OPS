@@ -63,7 +63,7 @@ export const data = [
                 type: "Improvements",
                 description:
                     "We’ve made some recent performance improvements that will reduce the time it takes to sign-in or load data across tables."
-             }
+            }
         ]
     },
     {
