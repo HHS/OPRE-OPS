@@ -293,9 +293,7 @@ def backfill_procurement_records(
     agreements = get_agreements_with_in_execution_blis(session, agreement_types)
     logger.info(f"Found {len(agreements)} agreements with IN_EXECUTION BLIs.")
     for agreement in agreements:
-        logger.info(
-            f"Agreement ID {agreement.id}, Name '{agreement.name}', Type '{agreement.agreement_type}'"
-        )
+        logger.info(f"Agreement ID {agreement.id}, Name '{agreement.name}', Type '{agreement.agreement_type}'")
 
     created_trackers = 0
     created_actions = 0
@@ -306,14 +304,15 @@ def backfill_procurement_records(
             is_mod = has_obligated_blis(session, agreement.id)
 
             if is_mod:
-                logger.info(
-                    f"Agreement {agreement.id} has both OBLIGATED and IN_EXECUTION BLIs — treating as mod."
-                )
+                logger.info(f"Agreement {agreement.id} has both OBLIGATED and IN_EXECUTION BLIs — treating as mod.")
 
                 # NEW_AWARD: action (AWARDED) + tracker (COMPLETED) + earliest-FY OBLIGATED BLIs
                 award_date = get_earliest_obligated_date_needed(session, agreement.id)
                 new_award_action, ac, tc = ensure_action_and_tracker(
-                    session, agreement, sys_user, AwardType.NEW_AWARD,
+                    session,
+                    agreement,
+                    sys_user,
+                    AwardType.NEW_AWARD,
                     action_status=ProcurementActionStatus.AWARDED,
                     tracker_status=ProcurementTrackerStatus.COMPLETED,
                     date_awarded_obligated=award_date,
@@ -324,30 +323,35 @@ def backfill_procurement_records(
                 earliest_fy = get_earliest_obligated_fiscal_year(session, agreement.id)
                 if earliest_fy:
                     total_linked_blis += link_blis_to_action(
-                        session, agreement, new_award_action,
-                        BudgetLineItemStatus.OBLIGATED, fiscal_year=earliest_fy,
+                        session,
+                        agreement,
+                        new_award_action,
+                        BudgetLineItemStatus.OBLIGATED,
+                        fiscal_year=earliest_fy,
                     )
 
                 # MODIFICATION: action + tracker + IN_EXECUTION BLIs
-                mod_action, ac, tc = ensure_action_and_tracker(
-                    session, agreement, sys_user, AwardType.MODIFICATION
-                )
+                mod_action, ac, tc = ensure_action_and_tracker(session, agreement, sys_user, AwardType.MODIFICATION)
                 created_actions += int(ac)
                 created_trackers += int(tc)
 
                 total_linked_blis += link_blis_to_action(
-                    session, agreement, mod_action, BudgetLineItemStatus.IN_EXECUTION,
+                    session,
+                    agreement,
+                    mod_action,
+                    BudgetLineItemStatus.IN_EXECUTION,
                 )
             else:
                 # NEW_AWARD only: action + tracker + IN_EXECUTION BLIs
-                new_award_action, ac, tc = ensure_action_and_tracker(
-                    session, agreement, sys_user, AwardType.NEW_AWARD
-                )
+                new_award_action, ac, tc = ensure_action_and_tracker(session, agreement, sys_user, AwardType.NEW_AWARD)
                 created_actions += int(ac)
                 created_trackers += int(tc)
 
                 total_linked_blis += link_blis_to_action(
-                    session, agreement, new_award_action, BudgetLineItemStatus.IN_EXECUTION,
+                    session,
+                    agreement,
+                    new_award_action,
+                    BudgetLineItemStatus.IN_EXECUTION,
                 )
 
             if os.getenv("DRY_RUN"):
