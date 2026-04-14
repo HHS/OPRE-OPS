@@ -34,6 +34,7 @@ export const AgreementBudgetLinesHeader = ({
 
                 <div>
                     <button
+                        type="button"
                         id="toggleDraftBLIs"
                         className="hover:text-underline cursor-pointer margin-right-205"
                         onClick={() => setIncludeDrafts(!includeDrafts)}
@@ -49,6 +50,7 @@ export const AgreementBudgetLinesHeader = ({
 
                     {!isEditMode && isEditable && (
                         <button
+                            type="button"
                             id="edit"
                             className="hover:text-underline cursor-pointer"
                             onClick={() => setIsEditMode(!isEditMode)}

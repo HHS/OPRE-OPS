@@ -143,6 +143,7 @@ const CanFunding = ({
                 <h2>{!isEditMode ? "CAN Funding" : `Review FY ${fiscalYear} Funding Information`}</h2>
                 {showButton && (
                     <button
+                        type="button"
                         id="edit"
                         className="hover:text-underline cursor-pointer"
                         onClick={toggleEditMode}
@@ -299,6 +300,7 @@ const CanFunding = ({
             {isEditMode && (
                 <div className="grid-row flex-justify-end margin-top-8">
                     <button
+                        type="button"
                         className="usa-button usa-button--unstyled margin-right-2"
                         data-cy="cancel-button"
                         onClick={handleCancel}
@@ -306,6 +308,7 @@ const CanFunding = ({
                         Cancel
                     </button>
                     <button
+                        type="button"
                         id="save-changes"
                         className="usa-button"
                         disabled={

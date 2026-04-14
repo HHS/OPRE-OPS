@@ -507,6 +507,7 @@ const AgreementEditForm = ({
                 {isWizardMode ? <GoBackButton handleGoBack={goBack} /> : <div />}
                 <div>
                     <button
+                        type="button"
                         className="usa-button usa-button--unstyled margin-right-2"
                         data-cy="cancel-button"
                         onClick={handleCancel}
@@ -515,6 +516,7 @@ const AgreementEditForm = ({
                     </button>
                     {isWizardMode && (
                         <button
+                            type="button"
                             className="usa-button usa-button--outline"
                             onClick={handleDraft}
                             disabled={!isReviewMode && shouldDisableBtn}
@@ -524,6 +526,7 @@ const AgreementEditForm = ({
                         </button>
                     )}
                     <button
+                        type="button"
                         id="continue"
                         className="usa-button"
                         onClick={handleContinue}

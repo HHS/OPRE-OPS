@@ -70,6 +70,7 @@ const DetailsTabs = ({
         const tabSelected = location.pathname == pathName;
         const button = (
             <button
+                type="button"
                 data-value={pathName}
                 className={`${tabSelected ? selected : notSelected} ${path.disabled ? styles.btnDisabled : ""}`}
                 key={pathName}

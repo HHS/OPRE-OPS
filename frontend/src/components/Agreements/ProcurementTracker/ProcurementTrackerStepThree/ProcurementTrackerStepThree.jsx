@@ -213,6 +213,7 @@ const ProcurementTrackerStepThree = ({
                                     />
 
                                     <button
+                                        type="button"
                                         className="usa-button usa-button--unstyled margin-bottom-1 margin-left-2"
                                         data-cy="solicitation-dates-save-btn"
                                         disabled={isSolicitationDatesSaveDisabled || !stepThreeData?.id}
@@ -294,6 +295,7 @@ const ProcurementTrackerStepThree = ({
 
                         <div className="margin-top-2 display-flex flex-justify-end">
                             <button
+                                type="button"
                                 className="usa-button usa-button--unstyled margin-right-2"
                                 data-cy="cancel-button"
                                 onClick={cancelModalStep3}
@@ -302,6 +304,7 @@ const ProcurementTrackerStepThree = ({
                                 Cancel
                             </button>
                             <button
+                                type="button"
                                 className="usa-button"
                                 data-cy="continue-btn"
                                 onClick={() => {

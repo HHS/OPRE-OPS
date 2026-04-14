@@ -179,8 +179,16 @@
         "POST_AGREEMENT",
 
         "GET_BUDGET_LINE_ITEM",
+        "PUT_BUDGET_LINE_ITEM",
+        "PATCH_BUDGET_LINE_ITEM",
+        "POST_BUDGET_LINE_ITEM",
+        "DELETE_BUDGET_LINE_ITEM",
 
         "GET_SERVICES_COMPONENT",
+        "PUT_SERVICES_COMPONENT",
+        "PATCH_SERVICES_COMPONENT",
+        "POST_SERVICES_COMPONENT",
+        "DELETE_SERVICES_COMPONENT",
 
         "GET_BLI_PACKAGE",
 
@@ -586,7 +594,7 @@
       division: 4,
       email: "dave.director@email.com",
       oidc_id: "00000000-0000-1111-a111-000000000020",
-      roles: [{"tablename":  "role", "id": 3}, {"tablename":  "role", "id": 2}],
+      roles: [{"tablename":  "role", "id": 3}],
       status: "ACTIVE"
     },
     { // 523
