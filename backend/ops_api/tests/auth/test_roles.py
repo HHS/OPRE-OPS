@@ -1,20 +1,24 @@
 import datetime
+import importlib.util
+from pathlib import Path
 
 from flask import url_for
 from sqlalchemy import select, text
 
 from models import BudgetLineItemStatus, ContractBudgetLineItem, Role
 
-NEW_PERMISSIONS = [
-    "PUT_BUDGET_LINE_ITEM",
-    "PATCH_BUDGET_LINE_ITEM",
-    "POST_BUDGET_LINE_ITEM",
-    "DELETE_BUDGET_LINE_ITEM",
-    "PUT_SERVICES_COMPONENT",
-    "PATCH_SERVICES_COMPONENT",
-    "POST_SERVICES_COMPONENT",
-    "DELETE_SERVICES_COMPONENT",
-]
+# Import NEW_PERMISSIONS from the actual Alembic migration so the test
+# stays in sync with the real migration rather than duplicating the list.
+_migration_file = (
+    Path(__file__).resolve().parents[3]
+    / "alembic"
+    / "versions"
+    / "2026_04_13_1940-c47768234303_add_perms_for_reviewer_approver.py"
+)
+_spec = importlib.util.spec_from_file_location("_migration", _migration_file)
+_mod = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_mod)
+NEW_PERMISSIONS = _mod.NEW_PERMISSIONS
 
 UPGRADE_SQL = text("""
     UPDATE ops.role
@@ -134,32 +138,38 @@ def test_reviewer_approver_can_patch_budget_line_item(division_6_director_auth_c
     loaded_db.add(bli)
     loaded_db.commit()
 
-    data = {"line_description": "Updated by Reviewer"}
-    response = division_6_director_auth_client.patch(url_for("api.budget-line-items-item", id=bli.id), json=data)
-    assert response.status_code == 200
-    assert response.json["line_description"] == "Updated by Reviewer"
-
-    loaded_db.delete(bli)
-    loaded_db.commit()
+    try:
+        data = {"line_description": "Updated by Reviewer"}
+        response = division_6_director_auth_client.patch(url_for("api.budget-line-items-item", id=bli.id), json=data)
+        assert response.status_code == 200
+        assert response.json["line_description"] == "Updated by Reviewer"
+    finally:
+        loaded_db.delete(bli)
+        loaded_db.commit()
 
 
 def test_reviewer_approver_can_post_budget_line_item(division_6_director_auth_client, loaded_db, test_can, app_ctx):
-    data = {
-        "line_description": "New BLI by Reviewer",
-        "comments": "test",
-        "agreement_id": 1,
-        "can_id": test_can.id,
-        "amount": 50.00,
-        "status": "DRAFT",
-        "date_needed": "2043-01-01",
-    }
-    response = division_6_director_auth_client.post("/api/v1/budget-line-items/", json=data)
-    assert response.status_code == 201
+    bli_id = None
+    try:
+        data = {
+            "line_description": "New BLI by Reviewer",
+            "comments": "test",
+            "agreement_id": 1,
+            "can_id": test_can.id,
+            "amount": 50.00,
+            "status": "DRAFT",
+            "date_needed": "2043-01-01",
+        }
+        response = division_6_director_auth_client.post("/api/v1/budget-line-items/", json=data)
+        assert response.status_code == 201
 
-    bli_id = response.json["id"]
-    bli = loaded_db.get(ContractBudgetLineItem, bli_id)
-    loaded_db.delete(bli)
-    loaded_db.commit()
+        bli_id = response.json["id"]
+    finally:
+        if bli_id is not None:
+            bli = loaded_db.get(ContractBudgetLineItem, bli_id)
+            if bli is not None:
+                loaded_db.delete(bli)
+                loaded_db.commit()
 
 
 def test_reviewer_approver_can_delete_budget_line_item(division_6_director_auth_client, loaded_db, test_can, app_ctx):
@@ -176,8 +186,14 @@ def test_reviewer_approver_can_delete_budget_line_item(division_6_director_auth_
     loaded_db.add(bli)
     loaded_db.commit()
 
-    response = division_6_director_auth_client.delete(url_for("api.budget-line-items-item", id=bli.id))
-    assert response.status_code == 200
+    try:
+        response = division_6_director_auth_client.delete(url_for("api.budget-line-items-item", id=bli.id))
+        assert response.status_code == 200
+    finally:
+        persisted_bli = loaded_db.get(ContractBudgetLineItem, bli.id)
+        if persisted_bli is not None:
+            loaded_db.delete(persisted_bli)
+            loaded_db.commit()
 
 
 def test_reviewer_approver_can_get_services_components(division_6_director_auth_client, app_ctx):
