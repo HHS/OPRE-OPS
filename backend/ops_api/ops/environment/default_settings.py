@@ -29,7 +29,7 @@ JWT_ENCODE_ISSUER = "https://opre-ops-backend-dev"
 JWT_ENCODE_AUDIENCE = "https://opre-ops-frontend-dev"
 
 # OPS-FRONTEND
-OPS_FRONTEND_URL = "http://localhost:3000"
+OPS_FRONTEND_URL = os.getenv("OPS_FRONTEND_URL", "http://localhost:3000")
 
 AUTHLIB_OAUTH_CLIENTS = {
     "logingov": {

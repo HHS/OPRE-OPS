@@ -279,6 +279,7 @@ export const RequestPreAwardApproval = () => {
                 {selectedFile && !isUploading && (
                     <div className="margin-top-2">
                         <button
+                            type="button"
                             className="usa-button"
                             onClick={handleFileUpload}
                             disabled={
@@ -358,6 +359,7 @@ export const RequestPreAwardApproval = () => {
             {/* Action Buttons */}
             <div className="grid-row flex-justify-end margin-top-8">
                 <button
+                    type="button"
                     className="usa-button usa-button--unstyled margin-right-2"
                     onClick={handleCancel}
                     disabled={isSubmitting}
@@ -365,6 +367,7 @@ export const RequestPreAwardApproval = () => {
                     Cancel
                 </button>
                 <button
+                    type="button"
                     className="usa-button"
                     onClick={handleSubmit}
                     disabled={isSubmitting || hasApprovalBeenRequested || hasBLIInReview || !isStep4Completed}

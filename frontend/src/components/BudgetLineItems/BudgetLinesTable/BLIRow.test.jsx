@@ -109,11 +109,13 @@ describe("BLIRow", () => {
         const createdBy = screen.getByText("TBD");
         const createdDate = screen.getByText("May 27, 2024");
         const notes = screen.getByText(/li 1/i);
+        const procurementShopLabel = screen.getByText("Procurement Shop");
 
         expect(expandedRow).toBeInTheDocument();
         expect(createdBy).toBeInTheDocument();
         expect(createdDate).toBeInTheDocument();
         expect(notes).toBeInTheDocument();
+        expect(procurementShopLabel).toBeInTheDocument();
     });
 
     it("should render edit icons when mouse over when agreement is not read-only", async () => {

@@ -42,6 +42,7 @@ const ProjectDetailTabs = ({ projectId }) => {
                 const isSelected = location.pathname === pathName;
                 const button = (
                     <button
+                        type="button"
                         key={pathName}
                         className={`${isSelected ? selected : notSelected} ${tab.disabled ? styles.btnDisabled : ""}`}
                         onClick={() => navigate(pathName)}

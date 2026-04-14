@@ -87,16 +87,16 @@ describe("StepIndicator", () => {
         expect(thirdStep).toHaveClass("usa-step-indicator__segment--complete");
     });
 
-    it("renders the correct aria-label", () => {
-        render(
+    it("does not have aria-label on the wrapper (USWDS 3.10.0)", () => {
+        const { container } = render(
             <StepIndicator
                 steps={mockSteps}
                 currentStep={2}
             />
         );
 
-        const stepIndicator = screen.getByLabelText("progress");
-        expect(stepIndicator).toBeInTheDocument();
+        const wrapper = container.querySelector('[data-cy="step-indicator"]');
+        expect(wrapper).not.toHaveAttribute("aria-label");
     });
 
     it("renders with custom step labels", () => {

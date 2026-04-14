@@ -152,6 +152,7 @@ const CreateProject = () => {
 
             <div className="grid-row flex-justify-end margin-top-8">
                 <button
+                    type="button"
                     id="cancel"
                     className="usa-button usa-button--unstyled margin-right-2"
                     onClick={handleCancel}
@@ -159,6 +160,7 @@ const CreateProject = () => {
                     Cancel
                 </button>
                 <button
+                    type="button"
                     id="submit"
                     className="usa-button"
                     onClick={() => addResearchProject(editedProject)}

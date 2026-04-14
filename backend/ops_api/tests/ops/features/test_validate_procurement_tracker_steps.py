@@ -866,6 +866,7 @@ def check_successful_response(context, loaded_db, setup_and_teardown):
     )
     assert next_step is not None, "Next step should exist"
     assert next_step.step_start_date == date.today(), "Next step should have step_start_date set to today"
+    assert next_step.status == ProcurementTrackerStepStatus.ACTIVE, "Next step should have status set to ACTIVE"
 
 
 @then(

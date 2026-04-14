@@ -372,7 +372,7 @@ describe("ProcurementTrackerStepTwo", () => {
         it("renders all form fields in ACTIVE state", () => {
             render(
                 <ProcurementTrackerStepTwo
-                    stepStatus="PENDING"
+                    stepStatus="ACTIVE"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
                     isDisabled={false}
@@ -389,7 +389,7 @@ describe("ProcurementTrackerStepTwo", () => {
         it("form fields are disabled until package is finalized in ACTIVE state", () => {
             render(
                 <ProcurementTrackerStepTwo
-                    stepStatus="PENDING"
+                    stepStatus="ACTIVE"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
                     isDisabled={false}
@@ -435,7 +435,7 @@ describe("ProcurementTrackerStepTwo", () => {
 
             render(
                 <ProcurementTrackerStepTwo
-                    stepStatus="PENDING"
+                    stepStatus="ACTIVE"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
                     isDisabled={false}
@@ -482,7 +482,7 @@ describe("ProcurementTrackerStepTwo", () => {
 
             render(
                 <ProcurementTrackerStepTwo
-                    stepStatus="PENDING"
+                    stepStatus="ACTIVE"
                     stepTwoData={mockStepData}
                     authorizedUsers={mockAllUsers}
                     isDisabled={false}
@@ -493,6 +493,33 @@ describe("ProcurementTrackerStepTwo", () => {
 
             fireEvent.click(screen.getByRole("button", { name: /cancel/i }));
             expect(mockCancelModalStep2).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    describe("Undefined stepTwoData guard", () => {
+        it("buttons are disabled when stepTwoData is undefined", () => {
+            useProcurementTrackerStepTwo.mockReturnValue({
+                ...defaultHookReturn,
+                isPreSolicitationPackageFinalized: true,
+                targetCompletionDate: "2024-03-20"
+            });
+
+            render(
+                <ProcurementTrackerStepTwo
+                    stepStatus="ACTIVE"
+                    stepTwoData={undefined}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    isActiveStep={true}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                />
+            );
+
+            const saveButton = screen.getByRole("button", { name: /save/i });
+            const completeButton = screen.getByRole("button", { name: /complete step 2/i });
+
+            expect(saveButton).toBeDisabled();
+            expect(completeButton).toBeDisabled();
         });
     });
 

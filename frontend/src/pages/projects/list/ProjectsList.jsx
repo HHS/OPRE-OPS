@@ -5,6 +5,7 @@ import { useGetProjectsQuery, useLazyGetProjectsQuery } from "../../../api/opsAP
 import App from "../../../App";
 import DebugCode from "../../../components/DebugCode";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
+import ProjectSummaryCardsSection from "../../../components/Projects/ProjectSummaryCardsSection";
 import ProjectsTable from "../../../components/Projects/ProjectsTable";
 import ProjectsTableLoading from "../../../components/Projects/ProjectsTable/ProjectsTableLoading";
 import FiscalYear from "../../../components/UI/FiscalYear/FiscalYear";
@@ -47,6 +48,7 @@ const ProjectsList = () => {
     const projects = projectsResponse?.projects ?? [];
     const totalCount = projectsResponse?.count ?? 0;
     const totalPages = Math.ceil(totalCount / pageSize);
+    const summary = projectsResponse?.summary ?? null;
     const isTableLoading = isLoading || isFetching;
 
     // Reset to page 1 when sort or fiscal year changes
@@ -63,6 +65,8 @@ const ProjectsList = () => {
     const handleChangeFiscalYear = (newValue) => {
         setSelectedFiscalYear(newValue);
     };
+
+    const fiscalYearDisplay = selectedFiscalYear === "All" ? "All FYs" : `FY ${selectedFiscalYear}`;
 
     if (isExporting) {
         return (
@@ -113,6 +117,7 @@ const ProjectsList = () => {
                     <div>
                         {totalCount > 0 && (
                             <button
+                                type="button"
                                 style={{ fontSize: "16px" }}
                                 className="usa-button--unstyled text-primary display-flex flex-align-end cursor-pointer"
                                 data-cy="projects-export"
@@ -148,6 +153,15 @@ const ProjectsList = () => {
                             showAllOption={true}
                         />
                     </div>
+                }
+                SummaryCardsSection={
+                    totalCount > 0 &&
+                    summary && (
+                        <ProjectSummaryCardsSection
+                            fiscalYear={fiscalYearDisplay}
+                            summary={summary}
+                        />
+                    )
                 }
                 TableSection={
                     <>

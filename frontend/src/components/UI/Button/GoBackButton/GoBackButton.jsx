@@ -16,6 +16,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 function GoBackButton({ handleGoBack = () => {}, buttonText = "Back", ...rest }) {
     return (
         <button
+            type="button"
             className="usa-button usa-button--unstyled margin-right-2"
             data-cy="back-button"
             onClick={handleGoBack}
