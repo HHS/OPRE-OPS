@@ -67,6 +67,8 @@ type SimpleAgreement = {
     agreement_type: string;
     name: string;
     awarding_entity_id?: number;
+    award_type?: string | null;
+    vendor?: string | null;
 };
 
 type ProcurementShop = {
