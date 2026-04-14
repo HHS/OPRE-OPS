@@ -42,6 +42,7 @@ from models.procurement_tracker import (
     DefaultProcurementTracker,
     ProcurementTracker,
     ProcurementTrackerStatus,
+    ProcurementTrackerStepStatus,
 )
 from models.users import User
 
@@ -251,6 +252,14 @@ def ensure_action_and_tracker(
         )
         session.add(tracker)
         session.flush()
+
+        # Activate step 1 with start date to match API behavior
+        for step in tracker.steps:
+            if step.step_number == 1:
+                step.status = ProcurementTrackerStepStatus.ACTIVE
+                step.step_start_date = date.today()
+                break
+
         tracker_created = True
         logger.info(
             f"Created DefaultProcurementTracker for Agreement {agreement.id} "
