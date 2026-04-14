@@ -353,12 +353,10 @@ def test_backfill_activates_step_1_with_start_date(db_with_agreements):
     # Remaining steps should be PENDING with no start date
     for step in tracker.steps:
         if step.step_number > 1:
-            assert step.status == ProcurementTrackerStepStatus.PENDING, (
-                f"Step {step.step_number} should be PENDING, got {step.status}"
-            )
-            assert step.step_start_date is None, (
-                f"Step {step.step_number} should have no start date"
-            )
+            assert (
+                step.status == ProcurementTrackerStepStatus.PENDING
+            ), f"Step {step.step_number} should be PENDING, got {step.status}"
+            assert step.step_start_date is None, f"Step {step.step_number} should have no start date"
 
 
 def test_backfill_creates_action_and_linked_tracker_when_existing_tracker_unlinked(db_with_agreements):
