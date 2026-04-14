@@ -13,7 +13,7 @@ import {
     uploadDocumentToBlob,
     uploadDocumentToInMemory
 } from "../../../components/Agreements/Documents/Document";
-import { ProcurementTrackerStepStatus } from "../../../components/Agreements/ProcurementTracker/ProcurementTracker.constants";
+import { PROCUREMENT_STEP_STATUS } from "../../../components/Agreements/ProcurementTracker/ProcurementTracker.constants";
 import usePreAwardApprovalData from "./usePreAwardApprovalData";
 
 /**
@@ -67,7 +67,7 @@ export default function useRequestPreAwardApproval(agreementId) {
     const hasBLIInReview = agreement?.budget_line_items?.some((/** @type {any} */ bli) => bli.in_review) ?? false;
 
     // Check if Step 4 (Evaluation) is completed
-    const isStep4Completed = step4?.status === ProcurementTrackerStepStatus.COMPLETED;
+    const isStep4Completed = step4?.status === PROCUREMENT_STEP_STATUS.COMPLETED;
 
     const handleFileChange = (/** @type {any} */ e) => {
         const file = e.target.files[0];
