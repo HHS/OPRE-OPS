@@ -31,12 +31,7 @@ function TermTag({ label, value = "", tagStyle = "primaryDarkTextLightBackground
                         key={index}
                         className="margin-left-0 margin-top-105"
                     >
-                        <Tag
-                            className="margin-top-5"
-                            tagStyle={tagStyle}
-                        >
-                            {value}
-                        </Tag>
+                        <Tag tagStyle={tagStyle}>{value}</Tag>
                     </dd>
                 ))}
         </dl>
