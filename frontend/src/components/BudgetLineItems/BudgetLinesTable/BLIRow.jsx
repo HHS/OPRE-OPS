@@ -6,7 +6,8 @@ import {
     BLILabel,
     canLabel,
     getBudgetLineCreatedDate,
-    getProcurementShopFeeTooltip
+    getProcurementShopFeeTooltip,
+    getProcurementShopLabel
 } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import { scrollToCenter } from "../../../helpers/scrollToCenter.helper";
@@ -171,13 +172,15 @@ const BLIRow = ({
                         {/* NOTE: Show logged in user name when creating BLIs */}
                         {budgetLine?.created_by ? budgetLineCreatorName : loggedInUserFullName}
                     </dd>
-                    <dt className="margin-0 text-base-dark display-flex flex-align-center margin-top-2">
+                    <dt className="margin-0 text-base-dark margin-top-2">Created on</dt>
+                    <dd className="margin-0 display-flex flex-align-center">
                         <FontAwesomeIcon
                             icon={faClock}
                             className="height-2 width-2 margin-right-1"
+                            aria-hidden={true}
                         />
                         {getBudgetLineCreatedDate(budgetLine)}
-                    </dt>
+                    </dd>
                 </dl>
                 <dl
                     className="font-12px"
@@ -190,6 +193,13 @@ const BLIRow = ({
                     >
                         {budgetLine?.line_description}
                     </dd>
+                </dl>
+                <dl
+                    className="font-12px"
+                    style={{ marginLeft: "9.0625rem" }}
+                >
+                    <dt className="margin-0 text-base-dark">Procurement Shop</dt>
+                    <dd className="margin-0">{getProcurementShopLabel(budgetLine)}</dd>
                 </dl>
                 <div className="flex-align-self-end margin-left-auto margin-bottom-1">{!readOnly && changeIcons}</div>
             </div>

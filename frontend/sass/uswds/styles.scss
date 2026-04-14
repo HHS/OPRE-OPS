@@ -65,6 +65,8 @@ html {
     --data-viz-agreement-grant-continuing: #EC9F7C;
     --data-viz-agreement-direct-obligation: #C54878;
     --data-viz-agreement-direct-obligation-continuing: #E26998;
+    --data-viz-project-research: #A7B9D9;
+    --data-viz-project-admin-support: #C2486E;
     --data-viz-bl-by-status-1: #a9aeb1;
     --data-viz-bl-by-status-2: #336a90;
     --data-viz-bl-by-status-3: #e5a000;
@@ -159,6 +161,8 @@ $themeColors: (
     "data-viz-agreement-grant-continuing": var(--data-viz-agreement-grant-continuing),
     "data-viz-agreement-direct-obligation": var(--data-viz-agreement-direct-obligation),
     "data-viz-agreement-direct-obligation-continuing": var(--data-viz-agreement-direct-obligation-continuing),
+    "data-viz-project-research": var(--data-viz-project-research),
+    "data-viz-project-admin-support": var(--data-viz-project-admin-support),
     "data-viz-bl-by-status-1": var(--data-viz-bl-by-status-1),
     "data-viz-bl-by-status-2": var(--data-viz-bl-by-status-2),
     "data-viz-bl-by-status-3": var(--data-viz-bl-by-status-3),
