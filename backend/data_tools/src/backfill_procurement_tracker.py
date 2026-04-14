@@ -237,39 +237,64 @@ def ensure_action_and_tracker(
 
     tracker_created = False
     if not existing_tracker:
-        tracker = DefaultProcurementTracker.create_with_steps(
-            agreement_id=agreement.id,
-            procurement_action=procurement_action.id,
-            status=tracker_status,
-            created_by=sys_user.id,
-        )
-        session.add(tracker)
-        session.flush()
-
-        # Activate step 1 with start date to match API behavior
-        for step in tracker.steps:
-            if step.step_number == 1:
-                step.status = ProcurementTrackerStepStatus.ACTIVE
-                step.step_start_date = date.today()
-                break
-
-        tracker_created = True
-        logger.info(
-            f"Created DefaultProcurementTracker for Agreement {agreement.id} "
-            f"('{agreement.name}') — {award_type.name} with {len(tracker.steps)} steps"
-        )
-        session.add(
-            OpsEvent(
-                event_type=OpsEventType.CREATE_PROCUREMENT_TRACKER,
-                event_status=OpsEventStatus.SUCCESS,
-                created_by=sys_user.id,
-                event_details={
-                    "procurement_tracker_id": tracker.id,
-                    "agreement_id": agreement.id,
-                    "message": f"Backfill: created tracker for {award_type.name}",
-                },
+        # Adopt an unlinked tracker if one exists, matching API behavior
+        unlinked_tracker = session.execute(
+            select(ProcurementTracker).where(
+                ProcurementTracker.agreement_id == agreement.id,
+                ProcurementTracker.procurement_action.is_(None),
             )
-        )
+        ).scalars().first()
+
+        if unlinked_tracker:
+            tracker = unlinked_tracker
+            tracker.procurement_action = procurement_action.id
+            tracker.status = tracker_status
+            logger.info(
+                f"Linked existing unlinked tracker {tracker.id} to "
+                f"ProcurementAction {procurement_action.id} ({award_type.name}) "
+                f"for Agreement {agreement.id} ('{agreement.name}')"
+            )
+        else:
+            tracker = DefaultProcurementTracker.create_with_steps(
+                agreement_id=agreement.id,
+                procurement_action=procurement_action.id,
+                status=tracker_status,
+                created_by=sys_user.id,
+            )
+            session.add(tracker)
+            session.flush()
+            tracker_created = True
+            logger.info(
+                f"Created DefaultProcurementTracker for Agreement {agreement.id} "
+                f"('{agreement.name}') — {award_type.name} with {len(tracker.steps)} steps"
+            )
+            session.add(
+                OpsEvent(
+                    event_type=OpsEventType.CREATE_PROCUREMENT_TRACKER,
+                    event_status=OpsEventStatus.SUCCESS,
+                    created_by=sys_user.id,
+                    event_details={
+                        "procurement_tracker_id": tracker.id,
+                        "agreement_id": agreement.id,
+                        "message": f"Backfill: created tracker for {award_type.name}",
+                    },
+                )
+            )
+
+        # Set step statuses to match tracker status
+        if tracker_status == ProcurementTrackerStatus.COMPLETED:
+            tracker.active_step_number = None
+            for step in tracker.steps:
+                step.status = ProcurementTrackerStepStatus.COMPLETED
+                if not step.step_start_date:
+                    step.step_start_date = date.today()
+                step.step_completed_date = date.today()
+        else:
+            for step in tracker.steps:
+                if step.step_number == 1:
+                    step.status = ProcurementTrackerStepStatus.ACTIVE
+                    step.step_start_date = date.today()
+                    break
 
     return procurement_action, action_created, tracker_created
 
@@ -290,6 +315,10 @@ def backfill_procurement_records(
 
     If agreement_types is provided, only agreements of those types are processed.
     """
+    dry_run = os.getenv("DRY_RUN", "").lower() in ("1", "true")
+    if dry_run:
+        logger.info("DRY_RUN mode enabled — changes will be rolled back.")
+
     agreements = get_agreements_with_in_execution_blis(session, agreement_types)
     logger.info(f"Found {len(agreements)} agreements with IN_EXECUTION BLIs.")
     for agreement in agreements:
@@ -354,7 +383,7 @@ def backfill_procurement_records(
                     BudgetLineItemStatus.IN_EXECUTION,
                 )
 
-            if os.getenv("DRY_RUN"):
+            if dry_run:
                 logger.info(f"Dry run: rolling back changes for Agreement {agreement.id}.")
                 session.rollback()
             else:
@@ -365,8 +394,9 @@ def backfill_procurement_records(
             session.rollback()
             raise
 
+    action = "Would create" if dry_run else "Created"
     logger.info(
-        f"Backfill complete. Created {created_trackers} trackers, "
+        f"Backfill complete. {action} {created_trackers} trackers, "
         f"{created_actions} actions, linked {total_linked_blis} BLIs."
     )
 

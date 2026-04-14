@@ -359,18 +359,19 @@ def test_backfill_activates_step_1_with_start_date(db_with_agreements):
             assert step.step_start_date is None, f"Step {step.step_number} should have no start date"
 
 
-def test_backfill_creates_action_and_linked_tracker_when_existing_tracker_unlinked(db_with_agreements):
-    """Agreement 9003 has an unlinked tracker but no action — backfill creates both action and
-    a new linked tracker (old unlinked tracker is left as-is)."""
+def test_backfill_links_existing_unlinked_tracker_to_action(db_with_agreements):
+    """Agreement 9003 has an unlinked tracker but no action — backfill creates the action
+    and links the existing tracker to it (no duplicate tracker created)."""
     sys_user = get_or_create_sys_user(db_with_agreements)
 
-    # Count trackers before
+    # Get the existing unlinked tracker
     trackers_before = (
         db_with_agreements.execute(select(ProcurementTracker).where(ProcurementTracker.agreement_id == 9003))
         .scalars()
         .all()
     )
     assert len(trackers_before) == 1
+    original_tracker_id = trackers_before[0].id
     assert trackers_before[0].procurement_action is None  # unlinked
 
     backfill_procurement_records(db_with_agreements, sys_user)
@@ -385,15 +386,15 @@ def test_backfill_creates_action_and_linked_tracker_when_existing_tracker_unlink
     assert action is not None
     assert action.status == ProcurementActionStatus.PLANNED
 
-    # A new tracker linked to the action should also exist
+    # Should still have exactly 1 tracker — the original, now linked
     trackers_after = (
         db_with_agreements.execute(select(ProcurementTracker).where(ProcurementTracker.agreement_id == 9003))
         .scalars()
         .all()
     )
-    linked_trackers = [t for t in trackers_after if t.procurement_action == action.id]
-    assert len(linked_trackers) == 1
-    assert len(linked_trackers[0].steps) == 6
+    assert len(trackers_after) == 1
+    assert trackers_after[0].id == original_tracker_id
+    assert trackers_after[0].procurement_action == action.id
 
 
 def test_backfill_creates_tracker_only_when_action_exists(db_with_agreements):
@@ -509,8 +510,9 @@ def test_backfill_creates_ops_events(db_with_agreements):
         .all()
     )
 
-    # Trackers created: 9001, 9003 (new linked), 9004, 9007(NEW_AWARD), 9007(MOD), 9008 = 6
-    assert len(tracker_events) == 6
+    # Trackers created: 9001, 9004, 9007(NEW_AWARD), 9007(MOD), 9008 = 5
+    # (9003's existing unlinked tracker is adopted, not created)
+    assert len(tracker_events) == 5
     # Actions created: 9001, 9003, 9007(NEW_AWARD), 9007(MOD), 9008 = 5
     assert len(action_events) == 5
 
@@ -748,6 +750,74 @@ def test_mod_scenario_creates_two_actions_and_trackers(db_with_agreements):
     mod_action_id = actions_by_type[AwardType.MODIFICATION].id
     assert trackers_by_action[new_award_action_id].status == ProcurementTrackerStatus.COMPLETED
     assert trackers_by_action[mod_action_id].status == ProcurementTrackerStatus.ACTIVE
+
+
+def test_mod_scenario_completed_tracker_has_completed_steps(db_with_agreements):
+    """The NEW_AWARD COMPLETED tracker should have all steps COMPLETED with dates
+    and active_step_number set to None."""
+    sys_user = get_or_create_sys_user(db_with_agreements)
+    backfill_procurement_records(db_with_agreements, sys_user)
+
+    new_award_action = db_with_agreements.execute(
+        select(ProcurementAction).where(
+            ProcurementAction.agreement_id == 9007,
+            ProcurementAction.award_type == AwardType.NEW_AWARD,
+        )
+    ).scalar_one()
+
+    tracker = db_with_agreements.execute(
+        select(ProcurementTracker).where(
+            ProcurementTracker.agreement_id == 9007,
+            ProcurementTracker.procurement_action == new_award_action.id,
+        )
+    ).scalar_one()
+
+    assert tracker.status == ProcurementTrackerStatus.COMPLETED
+    assert tracker.active_step_number is None
+
+    for step in tracker.steps:
+        assert step.status == ProcurementTrackerStepStatus.COMPLETED, (
+            f"Step {step.step_number} should be COMPLETED, got {step.status}"
+        )
+        assert step.step_start_date is not None, (
+            f"Step {step.step_number} should have a start date"
+        )
+        assert step.step_completed_date is not None, (
+            f"Step {step.step_number} should have a completed date"
+        )
+
+
+def test_mod_scenario_active_tracker_has_active_step_1(db_with_agreements):
+    """The MODIFICATION ACTIVE tracker should have step 1 ACTIVE and the rest PENDING."""
+    sys_user = get_or_create_sys_user(db_with_agreements)
+    backfill_procurement_records(db_with_agreements, sys_user)
+
+    mod_action = db_with_agreements.execute(
+        select(ProcurementAction).where(
+            ProcurementAction.agreement_id == 9007,
+            ProcurementAction.award_type == AwardType.MODIFICATION,
+        )
+    ).scalar_one()
+
+    tracker = db_with_agreements.execute(
+        select(ProcurementTracker).where(
+            ProcurementTracker.agreement_id == 9007,
+            ProcurementTracker.procurement_action == mod_action.id,
+        )
+    ).scalar_one()
+
+    assert tracker.status == ProcurementTrackerStatus.ACTIVE
+    assert tracker.active_step_number == 1
+
+    step_1 = [s for s in tracker.steps if s.step_number == 1][0]
+    assert step_1.status == ProcurementTrackerStepStatus.ACTIVE
+    assert step_1.step_start_date == date.today()
+
+    for step in tracker.steps:
+        if step.step_number > 1:
+            assert step.status == ProcurementTrackerStepStatus.PENDING, (
+                f"Step {step.step_number} should be PENDING, got {step.status}"
+            )
 
 
 def test_mod_scenario_links_earliest_fy_obligated_blis_to_new_award(db_with_agreements):
