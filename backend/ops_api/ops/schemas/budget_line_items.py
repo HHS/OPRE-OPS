@@ -233,6 +233,12 @@ class SimpleAgreementSchema(Schema):
         only=("id", "name", "abbr", "current_fee"),
         allow_none=True,
     )
+    award_type = fields.String(allow_none=True, dump_default=None)
+    vendor = fields.Method("get_vendor_name", dump_default=None)
+
+    def get_vendor_name(self, obj):
+        vendor = getattr(obj, "vendor", None)
+        return vendor.name if vendor and hasattr(vendor, "name") else None
 
 
 class BudgetLineItemResponseSchema(Schema):

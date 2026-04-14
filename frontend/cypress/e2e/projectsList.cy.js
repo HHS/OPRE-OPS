@@ -52,6 +52,15 @@ describe("Projects List Page", () => {
         cy.get("table tbody tr", { timeout: 15000 }).should("have.length.greaterThan", 0);
     });
 
+    it("displays the project count summary card", () => {
+        cy.get("[data-cy='project-count-summary-card']").should("be.visible");
+    });
+
+    it("displays the project type summary card with a donut chart", () => {
+        cy.get("[data-cy='project-type-summary-card']").should("be.visible");
+        cy.get("#project-type-chart").should("exist");
+    });
+
     it("clicking a column header sorts the table", () => {
         // Click "Type" column — direction depends on prior state so assert presence, not value
         cy.get("table thead th").eq(1).find("button").click();
