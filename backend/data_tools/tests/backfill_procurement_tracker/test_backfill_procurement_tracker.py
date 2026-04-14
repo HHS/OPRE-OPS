@@ -20,6 +20,7 @@ from models.procurement_tracker import (
     DefaultProcurementTracker,
     ProcurementTracker,
     ProcurementTrackerStatus,
+    ProcurementTrackerStepStatus,
 )
 
 
@@ -306,6 +307,30 @@ def test_backfill_creates_tracker_and_action_when_both_missing(db_with_agreement
     assert tracker.procurement_action == action.id
 
 
+def test_backfill_activates_step_1_with_start_date(db_with_agreements):
+    """Backfilled trackers should have step 1 as ACTIVE with today's start date, matching API behavior."""
+    sys_user = get_or_create_sys_user(db_with_agreements)
+    backfill_procurement_records(db_with_agreements, sys_user)
+
+    tracker = db_with_agreements.execute(
+        select(ProcurementTracker).where(ProcurementTracker.agreement_id == 9001)
+    ).scalar_one()
+
+    step_1 = [s for s in tracker.steps if s.step_number == 1][0]
+    assert step_1.status == ProcurementTrackerStepStatus.ACTIVE
+    assert step_1.step_start_date == date.today()
+
+    # Remaining steps should be PENDING with no start date
+    for step in tracker.steps:
+        if step.step_number > 1:
+            assert step.status == ProcurementTrackerStepStatus.PENDING, (
+                f"Step {step.step_number} should be PENDING, got {step.status}"
+            )
+            assert step.step_start_date is None, (
+                f"Step {step.step_number} should have no start date"
+            )
+
+
 def test_backfill_creates_action_and_linked_tracker_when_existing_tracker_unlinked(db_with_agreements):
     """Agreement 9003 has an unlinked tracker but no action — backfill creates both action and
     a new linked tracker (old unlinked tracker is left as-is)."""
@@ -428,10 +453,10 @@ def test_backfill_creates_ops_events(db_with_agreements):
         select(OpsEvent).where(OpsEvent.event_type == OpsEventType.CREATE_PROCUREMENT_ACTION)
     ).scalars().all()
 
-    # Trackers created: 9001, 9003 (new linked), 9004, 9007(NEW_AWARD), 9007(MOD) = 5
-    assert len(tracker_events) >= 4
-    # Actions created: 9001, 9003, 9007(NEW_AWARD), 9007(MOD) = 4
-    assert len(action_events) >= 3
+    # Trackers created: 9001, 9003 (new linked), 9004, 9007(NEW_AWARD), 9007(MOD), 9008 = 6
+    assert len(tracker_events) == 6
+    # Actions created: 9001, 9003, 9007(NEW_AWARD), 9007(MOD), 9008 = 5
+    assert len(action_events) == 5
 
 
 def test_backfill_is_idempotent(db_with_agreements):

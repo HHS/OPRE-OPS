@@ -22,7 +22,7 @@ from datetime import date
 import click
 from dotenv import load_dotenv
 from loguru import logger
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session, scoped_session, sessionmaker
 
 from data_tools.src.common.db import init_db_from_config, setup_triggers
@@ -51,7 +51,7 @@ load_dotenv(os.getenv("ENV_FILE", ".env"))
 os.environ["TZ"] = "UTC"
 time.tzset()
 
-format = (
+log_format = (
     "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | "
     "<level>{level: <8}</level> | "
     "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> | "
@@ -59,7 +59,7 @@ format = (
 )
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 logger.remove()
-logger.add(sys.stderr, format=format, level=LOG_LEVEL)
+logger.add(sys.stderr, format=log_format, level=LOG_LEVEL)
 
 
 def get_agreements_with_in_execution_blis(
@@ -105,10 +105,7 @@ def link_blis_to_action(
         select(BudgetLineItem)
         .where(BudgetLineItem.agreement_id == agreement.id)
         .where(BudgetLineItem.status == bli_status)
-        .where(
-            (BudgetLineItem.procurement_action_id.is_(None))
-            | (BudgetLineItem.procurement_action_id != procurement_action.id)
-        )
+        .where(BudgetLineItem.procurement_action_id.is_(None))
     )
 
     if fiscal_year is not None:
@@ -147,8 +144,6 @@ def has_obligated_blis(session: Session, agreement_id: int) -> bool:
 
 def get_earliest_obligated_fiscal_year(session: Session, agreement_id: int) -> int | None:
     """Get the earliest fiscal year among OBLIGATED BLIs for an agreement."""
-    from sqlalchemy import func
-
     result = session.execute(
         select(func.min(BudgetLineItem.fiscal_year))
         .where(BudgetLineItem.agreement_id == agreement_id)
@@ -160,8 +155,6 @@ def get_earliest_obligated_fiscal_year(session: Session, agreement_id: int) -> i
 
 def get_earliest_obligated_date_needed(session: Session, agreement_id: int) -> date | None:
     """Get the earliest date_needed among OBLIGATED BLIs for an agreement."""
-    from sqlalchemy import func
-
     return session.execute(
         select(func.min(BudgetLineItem.date_needed))
         .where(BudgetLineItem.agreement_id == agreement_id)
@@ -407,9 +400,9 @@ def main(env: str, agreement_types: tuple[str, ...]):
         conn.execute(text("SELECT 1"))
         logger.info("Successfully connected to the database.")
 
-    Session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=db_engine))
+    session_factory = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=db_engine))
 
-    with Session() as session:
+    with session_factory() as session:
         sys_user = get_or_create_sys_user(session)
         logger.info(f"Retrieved system user: {sys_user}")
         setup_triggers(session, sys_user)
