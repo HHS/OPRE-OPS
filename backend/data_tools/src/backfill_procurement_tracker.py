@@ -238,12 +238,16 @@ def ensure_action_and_tracker(
     tracker_created = False
     if not existing_tracker:
         # Adopt an unlinked tracker if one exists, matching API behavior
-        unlinked_tracker = session.execute(
-            select(ProcurementTracker).where(
-                ProcurementTracker.agreement_id == agreement.id,
-                ProcurementTracker.procurement_action.is_(None),
+        unlinked_tracker = (
+            session.execute(
+                select(ProcurementTracker).where(
+                    ProcurementTracker.agreement_id == agreement.id,
+                    ProcurementTracker.procurement_action.is_(None),
+                )
             )
-        ).scalars().first()
+            .scalars()
+            .first()
+        )
 
         if unlinked_tracker:
             tracker = unlinked_tracker

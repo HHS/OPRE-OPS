@@ -776,15 +776,11 @@ def test_mod_scenario_completed_tracker_has_completed_steps(db_with_agreements):
     assert tracker.active_step_number is None
 
     for step in tracker.steps:
-        assert step.status == ProcurementTrackerStepStatus.COMPLETED, (
-            f"Step {step.step_number} should be COMPLETED, got {step.status}"
-        )
-        assert step.step_start_date is not None, (
-            f"Step {step.step_number} should have a start date"
-        )
-        assert step.step_completed_date is not None, (
-            f"Step {step.step_number} should have a completed date"
-        )
+        assert (
+            step.status == ProcurementTrackerStepStatus.COMPLETED
+        ), f"Step {step.step_number} should be COMPLETED, got {step.status}"
+        assert step.step_start_date is not None, f"Step {step.step_number} should have a start date"
+        assert step.step_completed_date is not None, f"Step {step.step_number} should have a completed date"
 
 
 def test_mod_scenario_active_tracker_has_active_step_1(db_with_agreements):
@@ -815,9 +811,9 @@ def test_mod_scenario_active_tracker_has_active_step_1(db_with_agreements):
 
     for step in tracker.steps:
         if step.step_number > 1:
-            assert step.status == ProcurementTrackerStepStatus.PENDING, (
-                f"Step {step.step_number} should be PENDING, got {step.status}"
-            )
+            assert (
+                step.status == ProcurementTrackerStepStatus.PENDING
+            ), f"Step {step.step_number} should be PENDING, got {step.status}"
 
 
 def test_mod_scenario_links_earliest_fy_obligated_blis_to_new_award(db_with_agreements):
