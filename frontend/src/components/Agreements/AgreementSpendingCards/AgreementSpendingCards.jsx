@@ -44,10 +44,7 @@ const AgreementSpendingCards = ({ fiscalYear, spendingData }) => {
                 </div>
                 <AgreementSpendingLegend agreementTypes={agreementTypes} />
             </CurrencyCard>
-            <p
-                className="text-base-dark font-12px margin-bottom-0"
-                style={{ marginTop: "10px" }}
-            >
+            <p className="text-base-dark font-12px margin-bottom-0 margin-top-1">
                 *Spending equals the sum of Budget Lines in Planned, Executing and Obligated Status
             </p>
         </div>

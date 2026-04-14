@@ -39,22 +39,24 @@ const ReportingPage = () => {
     return (
         <App breadCrumbName="OPRE Budget Reporting">
             <div className="display-flex flex-justify flex-align-center">
-                <h1 className="margin-0 margin-bottom-2 text-brand-primary font-sans-2xl">OPRE Budget Reporting</h1>
+                <h1 className="margin-0 margin-top-205 text-brand-primary font-sans-2xl">OPRE Budget Reporting</h1>
                 <FiscalYear
                     fiscalYear={selectedFiscalYear}
                     handleChangeFiscalYear={setSelectedFiscalYear}
                 />
             </div>
-            <p className="margin-top-0">All Portfolios</p>
+            <p className="margin-top-1 margin-bottom-0">All Portfolios</p>
 
-            <div className="display-flex flex-justify flex-align-center">
-                <h2 className="margin-bottom-1">Budget Summary</h2>
+            <div className="display-flex flex-justify flex-align-center margin-top-105">
+                <h2>Budget Summary</h2>
                 <ReportingFilterButton
                     filters={filters}
                     setFilters={setFilters}
                 />
             </div>
-            <p>This is a summary of OPRE&apos;s budget for the selected FY and applied filters.</p>
+            <p className="margin-top-0 margin-bottom-4">
+                This is a summary of OPRE&apos;s budget for the selected FY and applied filters.
+            </p>
             {filters.portfolios.length > 0 && (
                 <ReportingFilterTags
                     filters={filters}
@@ -78,8 +80,10 @@ const ReportingPage = () => {
                     </div>
                 </>
             )}
-            <h2 className="margin-bottom-1">Spending Summary</h2>
-            <p>This is a summary of OPRE&apos;s spending for the selected FY and applied filters.</p>
+            <h2 className="margin-bottom-1 margin-top-8">Spending Summary</h2>
+            <p className="margin-top-205">
+                This is a summary of OPRE&apos;s spending for the selected FY and applied filters.
+            </p>
             {!isLoading && (
                 <>
                     <div className="margin-top-4">
