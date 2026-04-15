@@ -1,7 +1,7 @@
 """add perms for reviewer approver
 
 Revision ID: c47768234303
-Revises: c9a1b2d3e4f5
+Revises: d6e7f8a9b0c1
 Create Date: 2026-04-13 19:40:42.146668+00:00
 
 """
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision: str = 'c47768234303'
-down_revision: Union[str, None] = 'c9a1b2d3e4f5'
+down_revision: Union[str, None] = 'd6e7f8a9b0c1'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
