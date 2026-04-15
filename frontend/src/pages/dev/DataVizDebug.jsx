@@ -184,9 +184,9 @@ const DataVizDebug = () => (
             /dev/data-viz — Percentage Label Bug Review (issue #5513)
         </h1>
         <p style={{ fontSize: "0.85rem", color: "#555", marginBottom: "2.5rem" }}>
-            Each section renders a component with stub data chosen to surface worst-case rounding
-            and display bugs. Green labels confirm a fix is applied; red labels flag bugs not yet
-            fixed. This route is only available in DEV builds.
+            Each section renders a component with stub data chosen to surface worst-case rounding and display bugs.
+            Green labels confirm a fix is applied; red labels flag bugs not yet fixed. This route is only available in
+            DEV builds.
         </p>
 
         {/* ---------------------------------------------------------------- */}

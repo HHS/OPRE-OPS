@@ -56,35 +56,27 @@ describe("PortfolioFunding — percent labels", () => {
     });
 
     it("dominant carry-forward shows '>99%' instead of '100%'", () => {
-        useOutletContext.mockReturnValue(
-            makeContext({ carryForward: 996, newFunding: 4, totalFunding: 1000 })
-        );
+        useOutletContext.mockReturnValue(makeContext({ carryForward: 996, newFunding: 4, totalFunding: 1000 }));
         render(<PortfolioFunding />);
         expect(screen.getByText(">99%")).toBeInTheDocument();
         expect(screen.queryByText("100%")).not.toBeInTheDocument();
     });
 
     it("tiny new-funding shows '<1%' instead of '0%'", () => {
-        useOutletContext.mockReturnValue(
-            makeContext({ carryForward: 996, newFunding: 4, totalFunding: 1000 })
-        );
+        useOutletContext.mockReturnValue(makeContext({ carryForward: 996, newFunding: 4, totalFunding: 1000 }));
         render(<PortfolioFunding />);
         expect(screen.getByText("<1%")).toBeInTheDocument();
     });
 
     it("dominant new-funding shows '>99%' instead of '100%'", () => {
-        useOutletContext.mockReturnValue(
-            makeContext({ carryForward: 4, newFunding: 996, totalFunding: 1000 })
-        );
+        useOutletContext.mockReturnValue(makeContext({ carryForward: 4, newFunding: 996, totalFunding: 1000 }));
         render(<PortfolioFunding />);
         expect(screen.getByText(">99%")).toBeInTheDocument();
         expect(screen.queryByText("100%")).not.toBeInTheDocument();
     });
 
     it("sole non-zero item shows 100% (no peers — correct)", () => {
-        useOutletContext.mockReturnValue(
-            makeContext({ carryForward: 1000, newFunding: 0, totalFunding: 1000 })
-        );
+        useOutletContext.mockReturnValue(makeContext({ carryForward: 1000, newFunding: 0, totalFunding: 1000 }));
         render(<PortfolioFunding />);
         expect(screen.getByText("100%")).toBeInTheDocument();
         expect(screen.getByText("0%")).toBeInTheDocument();

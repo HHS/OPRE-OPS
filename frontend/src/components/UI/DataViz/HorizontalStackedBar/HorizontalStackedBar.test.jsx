@@ -56,7 +56,12 @@ describe("HorizontalStackedBar", () => {
             { id: 2, label: "B", abbreviation: "B", value: 300, color: "var(--color-b)", percent: 30 },
             { id: 3, label: "C", abbreviation: "C", value: 200, color: "var(--color-c)", percent: 20 }
         ];
-        render(<HorizontalStackedBar data={cleanData} setActiveId={vi.fn()} />);
+        render(
+            <HorizontalStackedBar
+                data={cleanData}
+                setActiveId={vi.fn()}
+            />
+        );
         const segments = screen.getAllByRole("button");
         expect(segments[0]).toHaveStyle({ flexBasis: "50%" });
         expect(segments[1]).toHaveStyle({ flexBasis: "30%" });
@@ -73,7 +78,12 @@ describe("HorizontalStackedBar", () => {
 
     it("calls setActiveId on mouse enter", () => {
         const setActiveId = vi.fn();
-        render(<HorizontalStackedBar data={mockData} setActiveId={setActiveId} />);
+        render(
+            <HorizontalStackedBar
+                data={mockData}
+                setActiveId={setActiveId}
+            />
+        );
         const segments = screen.getAllByRole("button");
         fireEvent.mouseEnter(segments[0]);
         expect(setActiveId).toHaveBeenCalledWith(1);
@@ -81,7 +91,12 @@ describe("HorizontalStackedBar", () => {
 
     it("calls setActiveId with null on mouse leave", () => {
         const setActiveId = vi.fn();
-        render(<HorizontalStackedBar data={mockData} setActiveId={setActiveId} />);
+        render(
+            <HorizontalStackedBar
+                data={mockData}
+                setActiveId={setActiveId}
+            />
+        );
         const segments = screen.getAllByRole("button");
         fireEvent.mouseLeave(segments[0]);
 
@@ -90,7 +105,12 @@ describe("HorizontalStackedBar", () => {
 
     it("calls setActiveId on focus", () => {
         const setActiveId = vi.fn();
-        render(<HorizontalStackedBar data={mockData} setActiveId={setActiveId} />);
+        render(
+            <HorizontalStackedBar
+                data={mockData}
+                setActiveId={setActiveId}
+            />
+        );
         const segments = screen.getAllByRole("button");
         fireEvent.focus(segments[0]);
         expect(setActiveId).toHaveBeenCalledWith(1);
@@ -98,7 +118,12 @@ describe("HorizontalStackedBar", () => {
 
     it("calls setActiveId with null on blur", () => {
         const setActiveId = vi.fn();
-        render(<HorizontalStackedBar data={mockData} setActiveId={setActiveId} />);
+        render(
+            <HorizontalStackedBar
+                data={mockData}
+                setActiveId={setActiveId}
+            />
+        );
         const segments = screen.getAllByRole("button");
         fireEvent.blur(segments[0]);
 
@@ -107,7 +132,12 @@ describe("HorizontalStackedBar", () => {
 
     it("calls setActiveId on Enter key", () => {
         const setActiveId = vi.fn();
-        render(<HorizontalStackedBar data={mockData} setActiveId={setActiveId} />);
+        render(
+            <HorizontalStackedBar
+                data={mockData}
+                setActiveId={setActiveId}
+            />
+        );
         const segments = screen.getAllByRole("button");
         fireEvent.keyDown(segments[0], { key: "Enter" });
         expect(setActiveId).toHaveBeenCalledWith(1);
@@ -115,7 +145,12 @@ describe("HorizontalStackedBar", () => {
 
     it("calls setActiveId on Space key", () => {
         const setActiveId = vi.fn();
-        render(<HorizontalStackedBar data={mockData} setActiveId={setActiveId} />);
+        render(
+            <HorizontalStackedBar
+                data={mockData}
+                setActiveId={setActiveId}
+            />
+        );
         const segments = screen.getAllByRole("button");
         fireEvent.keyDown(segments[0], { key: " " });
         expect(setActiveId).toHaveBeenCalledWith(1);
@@ -133,7 +168,12 @@ describe("HorizontalStackedBar", () => {
             { id: 1, label: "Contracts (New)", abbreviation: "CONTRACT", value: 996, color: "blue", percent: ">99" },
             { id: 2, label: "Grants (New)", abbreviation: "GRANT", value: 4, color: "green", percent: "<1" }
         ];
-        render(<HorizontalStackedBar data={dominantData} setActiveId={vi.fn()} />);
+        render(
+            <HorizontalStackedBar
+                data={dominantData}
+                setActiveId={vi.fn()}
+            />
+        );
         expect(screen.getByRole("button", { name: /CONTRACT: >99% of budget/i })).toBeInTheDocument();
         expect(screen.getByRole("button", { name: /GRANT: <1% of budget/i })).toBeInTheDocument();
     });
@@ -143,7 +183,12 @@ describe("HorizontalStackedBar", () => {
             { id: 1, label: "Contracts (New)", abbreviation: "CONTRACT", value: 996, color: "blue", percent: ">99" },
             { id: 2, label: "Grants (New)", abbreviation: "GRANT", value: 4, color: "green", percent: "<1" }
         ];
-        render(<HorizontalStackedBar data={dominantData} setActiveId={vi.fn()} />);
+        render(
+            <HorizontalStackedBar
+                data={dominantData}
+                setActiveId={vi.fn()}
+            />
+        );
         const segments = screen.getAllByRole("button");
         expect(segments).toHaveLength(2);
     });
@@ -153,7 +198,12 @@ describe("HorizontalStackedBar", () => {
             { id: 1, label: "Large", abbreviation: "LARGE", value: 990, color: "blue", percent: ">99" },
             { id: 2, label: "Tiny", abbreviation: "TINY", value: 1, color: "green", percent: "<1" }
         ];
-        render(<HorizontalStackedBar data={tinyData} setActiveId={vi.fn()} />);
+        render(
+            <HorizontalStackedBar
+                data={tinyData}
+                setActiveId={vi.fn()}
+            />
+        );
         const segments = screen.getAllByRole("button");
         // Tiny segment: 1/991 = ~0.1% — floored to 1%
         expect(segments[1]).toHaveStyle({ flexBasis: "1%" });
@@ -172,7 +222,12 @@ describe("HorizontalStackedBar", () => {
             { id: "placeholder-0", label: "", abbreviation: "", value: 0, color: "", percent: 0, isPlaceholder: true },
             { id: "placeholder-1", label: "", abbreviation: "", value: 0, color: "", percent: 0, isPlaceholder: true }
         ];
-        render(<HorizontalStackedBar data={dataWithPlaceholders} setActiveId={vi.fn()} />);
+        render(
+            <HorizontalStackedBar
+                data={dataWithPlaceholders}
+                setActiveId={vi.fn()}
+            />
+        );
         const segments = screen.getAllByRole("button");
         expect(segments).toHaveLength(3);
     });
@@ -183,7 +238,12 @@ describe("HorizontalStackedBar", () => {
             { id: 2, label: "Child Welfare", abbreviation: "CW", value: 0, color: "var(--c2)", percent: 0 },
             { id: 3, label: "Office Director", abbreviation: "OD", value: 0, color: "var(--c3)", percent: 0 }
         ];
-        render(<HorizontalStackedBar data={dataWithZeroValue} setActiveId={vi.fn()} />);
+        render(
+            <HorizontalStackedBar
+                data={dataWithZeroValue}
+                setActiveId={vi.fn()}
+            />
+        );
         const segments = screen.getAllByRole("button");
         expect(segments).toHaveLength(1);
     });
@@ -192,17 +252,32 @@ describe("HorizontalStackedBar", () => {
         const onlyPlaceholders = [
             { id: "placeholder-0", label: "", abbreviation: "", value: 0, color: "", percent: 0, isPlaceholder: true }
         ];
-        render(<HorizontalStackedBar data={onlyPlaceholders} setActiveId={vi.fn()} />);
+        render(
+            <HorizontalStackedBar
+                data={onlyPlaceholders}
+                setActiveId={vi.fn()}
+            />
+        );
         expect(screen.queryByRole("button")).not.toBeInTheDocument();
     });
 
     it("renders null for empty data array", () => {
-        render(<HorizontalStackedBar data={[]} setActiveId={vi.fn()} />);
+        render(
+            <HorizontalStackedBar
+                data={[]}
+                setActiveId={vi.fn()}
+            />
+        );
         expect(screen.queryByRole("button")).not.toBeInTheDocument();
     });
 
     it("renders null for null data", () => {
-        render(<HorizontalStackedBar data={null} setActiveId={vi.fn()} />);
+        render(
+            <HorizontalStackedBar
+                data={null}
+                setActiveId={vi.fn()}
+            />
+        );
         expect(screen.queryByRole("button")).not.toBeInTheDocument();
     });
 
