@@ -218,8 +218,8 @@ const BLIReviewRow = ({
             className="border-top-none"
             style={expandedRowBGColor}
         >
-            <div className="display-flex padding-right-9">
-                <dl className="font-12px">
+            <div className="grid-row grid-gap-4">
+                <dl className="grid-col-3 margin-top-0 font-12px">
                     <dt className="margin-0 text-base-dark">Created By</dt>
                     <dd
                         id={`created-by-name-${budgetLine?.id}`}
@@ -238,17 +238,9 @@ const BLIReviewRow = ({
                         {getBudgetLineCreatedDate(budgetLine)}
                     </dd>
                 </dl>
-                <dl
-                    className="font-12px"
-                    style={{ marginLeft: "9.0625rem" }}
-                >
+                <dl className="grid-col-6 margin-top-0 font-12px">
                     <dt className="margin-0 text-base-dark">Description</dt>
-                    <dd
-                        className="margin-0 wrap-text"
-                        style={{ maxWidth: "400px" }}
-                    >
-                        {budgetLine?.line_description}
-                    </dd>
+                    <dd className="margin-0 wrap-text">{budgetLine?.line_description}</dd>
                 </dl>
             </div>
         </td>
