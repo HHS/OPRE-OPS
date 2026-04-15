@@ -34,19 +34,19 @@ const HelpCenter = () => {
                 <HelpTabs
                     rightContent={
                         <a
-                            className="usa-link text-bold display-flex flex-align-center"
+                            className="usa-link display-flex flex-align-center"
                             href={HELP_CENTER_EXPORT_URL}
                             target="_blank"
                             rel="noopener noreferrer"
                         >
-                            <svg
-                                className="height-2 width-2 margin-right-05"
-                                aria-hidden="true"
-                                style={{ fill: "#005EA2", height: "24px", width: "24px" }}
-                            >
-                                <use href={`${icons}#save_alt`}></use>
-                            </svg>
                             <span>Open in SharePoint</span>
+                            <svg
+                                className="margin-left-05"
+                                aria-hidden="true"
+                                style={{ fill: "#005EA2", height: "20px", width: "20px" }}
+                            >
+                                <use href={`${icons}#launch`}></use>
+                            </svg>
                         </a>
                     }
                 />
