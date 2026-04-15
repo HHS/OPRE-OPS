@@ -5,9 +5,10 @@ from decimal import Decimal
 from enum import Enum, auto
 from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import Date, ForeignKey, Integer, Numeric, String, Text, Index
+from loguru import logger
+from sqlalchemy import Date, ForeignKey, Integer, Numeric, String, Text, Index, select
 from sqlalchemy.dialects.postgresql import ENUM
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, Session, mapped_column, relationship
 
 from models.base import BaseModel
 
@@ -130,6 +131,60 @@ class ProcurementAction(BaseModel):
     agreement_total: Mapped[Optional[Decimal]] = mapped_column(
         Numeric(12, 2), nullable=True, comment="Cumulative agreement total after this action"
     )
+
+    @classmethod
+    def get_or_create_for_agreement(
+        cls,
+        session: Session,
+        agreement: "Agreement",
+        award_type: "AwardType",
+        status: "ProcurementActionStatus" = ProcurementActionStatus.PLANNED,
+        date_awarded_obligated: Optional[date] = None,
+        created_by: Optional[int] = None,
+    ) -> tuple["ProcurementAction", bool]:
+        """
+        Find an existing ProcurementAction for the agreement + award_type,
+        or create one. Syncs procurement_shop_id from agreement.awarding_entity_id.
+
+        Returns (action, was_created).
+        """
+        existing = session.execute(
+            select(cls).where(
+                cls.agreement_id == agreement.id,
+                cls.award_type == award_type,
+            )
+        ).scalar_one_or_none()
+
+        if existing:
+            # Sync procurement_shop_id from agreement if it diverged
+            if (
+                existing.procurement_shop_id != agreement.awarding_entity_id
+                and agreement.awarding_entity_id is not None
+            ):
+                old_shop_id = existing.procurement_shop_id
+                existing.procurement_shop_id = agreement.awarding_entity_id
+                logger.info(
+                    f"Updated ProcurementAction {existing.id} procurement_shop_id "
+                    f"from {old_shop_id} to {agreement.awarding_entity_id} "
+                    f"for Agreement {agreement.id} ('{agreement.name}')"
+                )
+            return existing, False
+
+        action = cls(
+            agreement_id=agreement.id,
+            award_type=award_type,
+            status=status,
+            procurement_shop_id=agreement.awarding_entity_id,
+            date_awarded_obligated=date_awarded_obligated,
+            created_by=created_by,
+        )
+        session.add(action)
+        session.flush()
+        logger.info(
+            f"Created ProcurementAction ({award_type.name}) for Agreement {agreement.id} "
+            f"('{agreement.name}') with procurement_shop_id={agreement.awarding_entity_id}"
+        )
+        return action, True
 
     @BaseModel.display_name.getter
     def display_name(self):
