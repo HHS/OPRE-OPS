@@ -32,21 +32,25 @@ export const calculatePercent = (numerator, denominator) => {
 };
 
 /**
- * Computes display-friendly percent labels for an array of items.
+ * Computes display-friendly percent values for an array of items.
  *
- * Handles the edge case where one dominant item rounds to 100% while other
- * non-zero items exist — which would produce a contradictory legend like
- * "100% + <1%". In that case the dominant item is labelled ">99%" instead.
+ * Returns the raw numeric/string percent tokens without a trailing "%".
+ * The percent sign is appended later by `LegendItem` and other consumers.
+ *
+ * Handles the edge case where one dominant item rounds to 100 while other
+ * non-zero items exist — which would otherwise render in the legend as a
+ * contradictory combination like "100% + <1%". In that case this helper
+ * returns ">99" for the dominant item instead.
  *
  * Rules applied per item:
- *   - Zero value          → 0
- *   - Non-zero but rounds to 0 → "<1"
+ *   - Zero value                         → 0
+ *   - Non-zero but rounds to 0          → "<1"
  *   - Rounds to 100 while other non-zero items exist → ">99"
- *   - Otherwise           → rounded integer
+ *   - Otherwise                         → rounded integer
  *
  * @param {Array<{value: number}>} items - Data items with a numeric `value` field
  * @param {number} total - Sum of all item values
- * @returns {Array<number|string>} - Parallel array of display percent labels
+ * @returns {Array<number|string>} - Parallel array of raw display percent values; "%" is appended later by consumers
  */
 export const computeDisplayPercents = (items, total) => {
     if (total === 0) return items.map(() => 0);
