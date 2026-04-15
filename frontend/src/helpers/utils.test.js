@@ -1,6 +1,7 @@
 import {
     getCurrentFiscalYear,
     calculatePercent,
+    computeDisplayPercents,
     convertCodeForDisplay,
     fiscalYearFromDate,
     renderField,
@@ -25,6 +26,61 @@ test("percent is calculated correctly", () => {
     expect(calculatePercent(3, 4)).toEqual(75);
     expect(calculatePercent(7, 4)).toEqual(175);
     expect(calculatePercent(0, 4)).toEqual(0);
+});
+
+describe("computeDisplayPercents", () => {
+    test("returns zeros when total is 0", () => {
+        const items = [{ value: 100 }, { value: 200 }];
+        expect(computeDisplayPercents(items, 0)).toEqual([0, 0]);
+    });
+
+    test("returns 0 for zero values", () => {
+        const items = [{ value: 0 }, { value: 100 }];
+        expect(computeDisplayPercents(items, 100)).toEqual([0, 100]);
+    });
+
+    test("returns rounded integers for normal cases", () => {
+        const items = [{ value: 30 }, { value: 70 }];
+        expect(computeDisplayPercents(items, 100)).toEqual([30, 70]);
+    });
+
+    test("returns '<1' for non-zero values that round to 0", () => {
+        // 0.4% rounds to 0, but is non-zero
+        const items = [{ value: 0.4 }, { value: 99.6 }];
+        const result = computeDisplayPercents(items, 100);
+        expect(result[0]).toBe("<1");
+        // 99.6% rounds to 100, but since other item is non-zero, shows ">99"
+        expect(result[1]).toBe(">99");
+    });
+
+    test("returns '>99' when dominant item rounds to 100 while others exist", () => {
+        // Research: $3.5B, Admin: $301K - roughly 99.99% vs 0.008%
+        const items = [{ value: 3557011799.2 }, { value: 301500 }];
+        const total = 3557011799.2 + 301500;
+        const result = computeDisplayPercents(items, total);
+        expect(result[0]).toBe(">99");
+        expect(result[1]).toBe("<1");
+    });
+
+    test("allows 100% when it is the only non-zero item", () => {
+        const items = [{ value: 100 }, { value: 0 }];
+        expect(computeDisplayPercents(items, 100)).toEqual([100, 0]);
+    });
+
+    test("handles multiple non-zero items correctly", () => {
+        const items = [{ value: 33 }, { value: 33 }, { value: 34 }];
+        const result = computeDisplayPercents(items, 100);
+        expect(result).toEqual([33, 33, 34]);
+    });
+
+    test("handles edge case: one item rounds to 100, others are non-zero but tiny", () => {
+        const items = [{ value: 999 }, { value: 1 }];
+        const result = computeDisplayPercents(items, 1000);
+        // 999/1000 = 99.9% rounds to 100
+        // 1/1000 = 0.1% rounds to 0 -> "<1"
+        expect(result[0]).toBe(">99");
+        expect(result[1]).toBe("<1");
+    });
 });
 
 test("codes are converted for display correctly", () => {

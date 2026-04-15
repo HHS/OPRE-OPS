@@ -5,6 +5,7 @@ import {
     PROJECT_TYPE_ORDER,
     PROJECT_TYPE_TAG_STYLE_ACTIVE
 } from "../ProjectTypes.constants";
+import { computeDisplayPercents } from "../../../helpers/utils";
 import LegendItem from "../../UI/Cards/LineGraphWithLegendCard/LegendItem";
 import ResponsiveDonutWithInnerPercent from "../../UI/DataViz/ResponsiveDonutWithInnerPercent";
 import CustomLayerComponent from "../../UI/DataViz/ResponsiveDonutWithInnerPercent/CustomLayerComponent";
@@ -17,39 +18,6 @@ const PROJECT_TYPE_CONFIG = PROJECT_TYPE_ORDER.map((type) => ({
     color: PROJECT_TYPE_COLORS[type],
     tagStyleActive: PROJECT_TYPE_TAG_STYLE_ACTIVE[type]
 }));
-
-/**
- * Computes display-friendly percent labels for an array of items.
- *
- * Handles the edge case where one dominant item rounds to 100% while other
- * non-zero items exist — which would produce a contradictory legend like
- * "100% + <1%". In that case the dominant item is labelled ">99%" instead.
- *
- * Rules applied per item:
- *   - Zero value          → 0
- *   - Non-zero but rounds to 0 → "<1"
- *   - Rounds to 100 while other non-zero items exist → ">99"
- *   - Otherwise           → rounded integer
- *
- * @param {Array<{value: number}>} items - Data items with a numeric `value` field
- * @param {number} total - Sum of all item values
- * @returns {Array<number|string>} - Parallel array of display percent labels
- */
-const computeDisplayPercents = (items, total) => {
-    if (total === 0) return items.map(() => 0);
-
-    const rounded = items.map((item) => {
-        if (item.value === 0) return 0;
-        const exact = (item.value / total) * 100;
-        const r = Math.round(exact);
-        return r === 0 ? "<1" : r;
-    });
-
-    // Check if any item shows 100 while others have non-zero amounts
-    const hasOtherNonZero = (idx) => items.some((item, i) => i !== idx && item.value > 0);
-
-    return rounded.map((r, idx) => (r === 100 && hasOtherNonZero(idx) ? ">99" : r));
-};
 
 /**
  * Ensures every non-zero slice is at least 1% of the total so it remains
