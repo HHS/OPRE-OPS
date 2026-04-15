@@ -1043,6 +1043,54 @@ paths:
           description: Bad Request
         "500":
           description: Internal Server Error
+  /procurement-tracker-steps/pending-approvals/:
+    get:
+      tags:
+        - Procurement Tracker Steps
+      operationId: Get Pending Pre-Award Approvals
+      summary: Get pending pre-award approval requests for the current user
+      description: >-
+        List pending pre-award approval requests that require review by the current user.
+        Returns steps where the user has permission to approve (Division Director, Budget Team, or System Owner).
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProcurementTrackerPreAwardStep"
+              examples:
+                "0":
+                  summary: List of pending pre-award approvals
+                  value:
+                    - id: 25
+                      procurement_tracker_id: 5
+                      procurement_tracker:
+                        id: 5
+                        agreement_id: 13
+                        agreement:
+                          id: 13
+                          name: "Contract #13"
+                          display_name: "Contract #13"
+                      step_number: 5
+                      step_type: "PRE_AWARD"
+                      status: "IN_PROGRESS"
+                      step_start_date: "2026-04-05"
+                      step_completed_date: null
+                      approval_requested: true
+                      approval_requested_date: "2026-04-05"
+                      approval_requested_by: 42
+                      requestor_notes: "Urgent approval needed for Q2 budget execution"
+                      approval_status: "PENDING"
+                      approval_responded_by: null
+                      approval_responded_date: null
+                      reviewer_notes: null
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
   /procurement-tracker-steps/{id}:
     get:
       tags:
@@ -1067,13 +1115,20 @@ paths:
                   - $ref: "#/components/schemas/ProcurementTrackerAcquisitionPlanningStep"
                   - $ref: "#/components/schemas/ProcurementTrackerPreSolicitationStep"
                   - $ref: "#/components/schemas/ProcurementTrackerSolicitationStep"
+                  - $ref: "#/components/schemas/ProcurementTrackerEvaluationStep"
+                  - $ref: "#/components/schemas/ProcurementTrackerPreAwardStep"
                 description: >-
                   Procurement tracker step. ACQUISITION_PLANNING steps
                   include additional fields (task_completed_by,
                   date_completed, notes). PRE_SOLICITATION steps include
                   additional fields (target_completion_date,
                   task_completed_by, date_completed, notes,
-                  draft_solicitation_date).
+                  draft_solicitation_date). PRE_AWARD steps include additional
+                  fields (target_completion_date, task_completed_by,
+                  date_completed, notes, approval_requested,
+                  approval_requested_date, approval_requested_by,
+                  requestor_notes, approval_status, approval_responded_by,
+                  approval_responded_date, reviewer_notes).
               examples:
                 "0":
                   $ref: "#/components/examples/ProcurementTrackerStepExample"
@@ -1083,6 +1138,8 @@ paths:
                   $ref: "#/components/examples/ProcurementTrackerPreSolicitationStepExample"
                 "3":
                   $ref: "#/components/examples/ProcurementTrackerSolicitationStepExample"
+                "4":
+                  $ref: "#/components/examples/ProcurementTrackerPreAwardStepExample"
         "404":
           description: Not Found
         "500":
@@ -1098,7 +1155,9 @@ paths:
         (task_completed_by, date_completed, notes) can be updated. For
         PRE_SOLICITATION steps, additional fields
         (target_completion_date, task_completed_by, date_completed,
-        notes, draft_solicitation_date) can be updated.
+        notes, draft_solicitation_date) can be updated. For PRE_AWARD
+        steps, additional fields (approval_status, reviewer_notes) can
+        be updated by approvers.
       parameters:
         - in: path
           name: id
@@ -1122,6 +1181,8 @@ paths:
                 $ref: "#/components/examples/UpdateProcurementTrackerStepPreSolicitationRequest"
               "3":
                 $ref: "#/components/examples/UpdateProcurementTrackerStepSolicitationRequest"
+              "4":
+                $ref: "#/components/examples/UpdateProcurementTrackerStepPreAwardRequest"
       responses:
         "200":
           description: Procurement tracker step updated successfully
@@ -1133,13 +1194,17 @@ paths:
                   - $ref: "#/components/schemas/ProcurementTrackerAcquisitionPlanningStep"
                   - $ref: "#/components/schemas/ProcurementTrackerPreSolicitationStep"
                   - $ref: "#/components/schemas/ProcurementTrackerSolicitationStep"
+                  - $ref: "#/components/schemas/ProcurementTrackerEvaluationStep"
+                  - $ref: "#/components/schemas/ProcurementTrackerPreAwardStep"
                 description: >-
                   Updated procurement tracker step. ACQUISITION_PLANNING
                   steps include additional fields (task_completed_by,
                   date_completed, notes). PRE_SOLICITATION steps include
                   additional fields (target_completion_date,
                   task_completed_by, date_completed, notes,
-                  draft_solicitation_date).
+                  draft_solicitation_date). PRE_AWARD steps include additional
+                  fields (approval_status, approval_responded_by,
+                  approval_responded_date, reviewer_notes).
               examples:
                 "0":
                   $ref: "#/components/examples/ProcurementTrackerStepExample"
@@ -1149,6 +1214,8 @@ paths:
                   $ref: "#/components/examples/ProcurementTrackerPreSolicitationStepExample"
                 "3":
                   $ref: "#/components/examples/ProcurementTrackerSolicitationStepExample"
+                "4":
+                  $ref: "#/components/examples/ProcurementTrackerPreAwardStepExample"
         "400":
           description: Bad Request
         "404":
@@ -7583,6 +7650,72 @@ components:
               type: string
               nullable: true
               description: Additional notes about this step
+    ProcurementTrackerPreAwardStep:
+      allOf:
+        - $ref: "#/components/schemas/ProcurementTrackerStep"
+        - type: object
+          description: Pre-Award step with additional fields for approval workflow
+          properties:
+            target_completion_date:
+              type: string
+              format: date
+              nullable: true
+              description: >-
+                Target date for completing pre-award activities.
+                Must be current date or future date.
+            task_completed_by:
+              type: integer
+              nullable: true
+              description: User ID of the person who completed this step
+            date_completed:
+              type: string
+              format: date
+              nullable: true
+              description: >-
+                Date when this step was completed. Must be current date
+                or past date.
+            notes:
+              type: string
+              nullable: true
+              description: Additional notes about this step
+            approval_requested:
+              type: boolean
+              nullable: true
+              description: Whether pre-award approval has been requested
+            approval_requested_date:
+              type: string
+              format: date
+              nullable: true
+              description: Date when pre-award approval was requested
+            approval_requested_by:
+              type: integer
+              nullable: true
+              description: User ID of the person who requested approval
+            requestor_notes:
+              type: string
+              nullable: true
+              description: Notes from the agreement manager requesting approval (max 150 characters)
+            approval_status:
+              type: string
+              nullable: true
+              enum:
+                - PENDING
+                - APPROVED
+                - DECLINED
+              description: Current status of the approval request
+            approval_responded_by:
+              type: integer
+              nullable: true
+              description: User ID of the approver who responded (Division Director, Budget Team, or System Owner)
+            approval_responded_date:
+              type: string
+              format: date
+              nullable: true
+              description: Date when the approval request was responded to
+            reviewer_notes:
+              type: string
+              nullable: true
+              description: Notes from the approver (max 150 characters, required when declining)
     UpdateProcurementTrackerStepRequest:
       type: object
       description: Request schema for updating a procurement tracker step. All fields are optional for PATCH operations.
@@ -7639,6 +7772,21 @@ components:
           description: >-
             Date when the solicitation period ended
             (SOLICITATION steps only). Must be current date or past date.
+        approval_status:
+          type: string
+          nullable: true
+          enum:
+            - APPROVED
+            - DECLINED
+          description: >-
+            Approval status for PRE_AWARD steps. Server-controlled fields
+            (approval_responded_by, approval_responded_date) are set automatically.
+        reviewer_notes:
+          type: string
+          nullable: true
+          description: >-
+            Notes from the approver for PRE_AWARD steps (max 150 characters).
+            Required when approval_status is DECLINED.
     ProcurementTrackerResponse:
       type: object
       description: Procurement tracker tracking workflow progress. New trackers are initialized with active_step_number set to 1, step 1 in ACTIVE status, and step 1's step_start_date set to the current date.
@@ -7670,7 +7818,8 @@ components:
               - $ref: "#/components/schemas/ProcurementTrackerPreSolicitationStep"
               - $ref: "#/components/schemas/ProcurementTrackerSolicitationStep"
               - $ref: "#/components/schemas/ProcurementTrackerEvaluationStep"
-          description: Array of workflow steps associated with this tracker. Different step types include additional fields - ACQUISITION_PLANNING (task_completed_by, date_completed, notes), PRE_SOLICITATION (target_completion_date, task_completed_by, date_completed, notes, draft_solicitation_date), SOLICITATION (task_completed_by, date_completed, notes, solicitation_period_start_date, solicitation_period_end_date), EVALUATION (target_completion_date, task_completed_by, date_completed, notes). For new trackers, step 1 is initialized to ACTIVE status with step_start_date set to the current date, while all other steps are PENDING.
+              - $ref: "#/components/schemas/ProcurementTrackerPreAwardStep"
+          description: Array of workflow steps associated with this tracker. Different step types include additional fields - ACQUISITION_PLANNING (task_completed_by, date_completed, notes), PRE_SOLICITATION (target_completion_date, task_completed_by, date_completed, notes, draft_solicitation_date), SOLICITATION (task_completed_by, date_completed, notes, solicitation_period_start_date, solicitation_period_end_date), EVALUATION (target_completion_date, task_completed_by, date_completed, notes), PRE_AWARD (target_completion_date, task_completed_by, date_completed, notes, approval_requested, approval_requested_date, approval_requested_by, requestor_notes, approval_status, approval_responded_by, approval_responded_date, reviewer_notes). For new trackers, step 1 is initialized to ACTIVE status with step_start_date set to the current date, while all other steps are PENDING.
       required:
         - id
         - agreement_id
@@ -9043,6 +9192,33 @@ components:
         step_start_date: "2026-01-02"
         step_completed_date: null
 
+    ProcurementTrackerPreAwardStepExample:
+      summary: Pre-Award tracker step with approval workflow
+      description: >-
+        Example showing a pre-award step with approval request and response fields
+        (approval_requested, approval_requested_date, approval_requested_by, requestor_notes,
+        approval_status, approval_responded_by, approval_responded_date, reviewer_notes)
+      value:
+        id: 25
+        procurement_tracker_id: 5
+        step_number: 5
+        step_type: "PRE_AWARD"
+        status: "IN_PROGRESS"
+        step_start_date: "2026-04-05"
+        step_completed_date: null
+        target_completion_date: "2026-04-15"
+        task_completed_by: null
+        date_completed: null
+        notes: null
+        approval_requested: true
+        approval_requested_date: "2026-04-05"
+        approval_requested_by: 42
+        requestor_notes: "Urgent approval needed for Q2 budget execution"
+        approval_status: "APPROVED"
+        approval_responded_by: 100
+        approval_responded_date: "2026-04-06"
+        reviewer_notes: "Approved - all budget lines reviewed and verified"
+
     UpdateProcurementTrackerStepPreSolicitationRequest:
       summary: PATCH request to complete pre-solicitation step
       description: >-
@@ -9074,6 +9250,19 @@ components:
         task_completed_by: 521
         date_completed: "2026-02-10"
         notes: "Solicitation phase completed."
+
+    UpdateProcurementTrackerStepPreAwardRequest:
+      summary: PATCH request to approve/decline pre-award approval
+      description: >-
+        Example PATCH request body for approvers to respond to a pre-award
+        approval request. The approval_status field must be either APPROVED
+        or DECLINED. The reviewer_notes field is optional when approving
+        but required when declining (max 150 characters). Server-controlled
+        fields (approval_responded_by, approval_responded_date) are set
+        automatically from the current user and timestamp.
+      value:
+        approval_status: "APPROVED"
+        reviewer_notes: "All budget lines verified and approved for execution"
 
     ProcurementTracker:
       summary: Single procurement tracker with mixed step types

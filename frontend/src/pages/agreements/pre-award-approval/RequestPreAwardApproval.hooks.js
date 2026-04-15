@@ -1,17 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-    useGetAgreementByIdQuery,
-    useGetServicesComponentsListQuery,
     useUpdateProcurementTrackerStepMutation,
     useAddDocumentMutation,
-    useUpdateDocumentStatusMutation,
-    useGetDocumentsByAgreementIdQuery,
-    useGetProcurementTrackersByAgreementIdQuery
+    useUpdateDocumentStatusMutation
 } from "../../../api/opsAPI";
-import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import { getLocalISODate } from "../../../helpers/utils";
-import { groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
 import {
     convertFileSizeToMB,
     isFileValid,
@@ -19,10 +13,8 @@ import {
     uploadDocumentToBlob,
     uploadDocumentToInMemory
 } from "../../../components/Agreements/Documents/Document";
-import {
-    PROCUREMENT_STEP_STATUS,
-    PROCUREMENT_TRACKER_STATUS
-} from "../../../components/Agreements/ProcurementTracker/ProcurementTracker.constants";
+import { PROCUREMENT_STEP_STATUS } from "../../../components/Agreements/ProcurementTracker/ProcurementTracker.constants";
+import usePreAwardApprovalData from "./usePreAwardApprovalData";
 
 /**
  * Custom hook for the Request Pre-Award Approval page
@@ -32,54 +24,52 @@ import {
 export default function useRequestPreAwardApproval(agreementId) {
     const navigate = useNavigate();
     const [notes, setNotes] = useState("");
-    const [selectedFile, setSelectedFile] = useState(null);
+    const [selectedFile, setSelectedFile] = useState(/** @type {File | null} */ (null));
     const [isUploading, setIsUploading] = useState(false);
     const [uploadError, setUploadError] = useState("");
     const [submitError, setSubmitError] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const { data: agreement, isLoading } = useGetAgreementByIdQuery(agreementId);
     const [updateProcurementTrackerStep] = useUpdateProcurementTrackerStepMutation();
-    const { data: servicesComponents } = useGetServicesComponentsListQuery(agreementId, { skip: !agreementId });
     const [addDocument] = useAddDocumentMutation();
     const [updateDocumentStatus] = useUpdateDocumentStatusMutation();
-    const { data: documentsData } = useGetDocumentsByAgreementIdQuery(agreementId, { skip: !agreementId });
-    const { data: procurementTrackersData } = useGetProcurementTrackersByAgreementIdQuery(agreementId, {
-        skip: !agreementId
-    });
 
-    const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
-    const alternateProjectOfficerName = useGetUserFullNameFromId(agreement?.alternate_project_officer_id);
+    // Use shared data fetching and processing hook
+    const {
+        agreement,
+        isLoading,
+        allBudgetLines,
+        executingTotal,
+        projectOfficerName,
+        alternateProjectOfficerName,
+        servicesComponents,
+        groupedBudgetLinesByServicesComponent,
+        preAwardMemoDocuments,
+        step4,
+        step5
+    } = usePreAwardApprovalData(agreementId);
 
-    // Get executing budget lines
-    const executingBudgetLines = agreement?.budget_line_items?.filter((bli) => bli.status === "IN_EXECUTION") || [];
+    // Check if approval is pending (requested but not yet approved or declined)
+    // This is used for both the banner and disabling buttons
+    const isApprovalPending =
+        step5?.approval_requested === true && (!step5?.approval_status || step5?.approval_status === "PENDING");
 
-    // Group budget lines by services component
-    const groupedBudgetLinesByServicesComponent = groupByServicesComponent(
-        executingBudgetLines,
-        servicesComponents || []
-    );
+    // Check if approval has been approved (prevents re-requesting)
+    const isApprovalApproved = step5?.approval_status === "APPROVED";
 
-    // Get Step 4 and Step 5 from procurement tracker
-    const trackers = procurementTrackersData?.data || [];
-    const activeTracker = trackers.find((tracker) => tracker.status === PROCUREMENT_TRACKER_STATUS.ACTIVE);
-    const step4 = activeTracker?.steps?.find((step) => step.step_number === 4);
-    const step5 = activeTracker?.steps?.find((step) => step.step_number === 5);
+    // Check if approval was declined (allows re-requesting)
+    const isApprovalDeclined = step5?.approval_status === "DECLINED";
 
-    // Get existing Pre-Award Consensus Memo documents
-    const preAwardMemoDocuments =
-        documentsData?.documents?.filter((doc) => doc.document_type === "PRE_AWARD_CONSENSUS_MEMO") || [];
-
-    // Check if approval has already been requested
-    const hasApprovalBeenRequested = step5?.approval_requested === true;
+    // Disable editing when pending OR approved, but allow re-request when declined
+    const hasApprovalBeenRequested = (isApprovalPending || isApprovalApproved) && !isApprovalDeclined;
 
     // Check if any BLI is in review status
-    const hasBLIInReview = agreement?.budget_line_items?.some((bli) => bli.in_review) ?? false;
+    const hasBLIInReview = agreement?.budget_line_items?.some((/** @type {any} */ bli) => bli.in_review) ?? false;
 
     // Check if Step 4 (Evaluation) is completed
     const isStep4Completed = step4?.status === PROCUREMENT_STEP_STATUS.COMPLETED;
 
-    const handleFileChange = (e) => {
+    const handleFileChange = (/** @type {any} */ e) => {
         const file = e.target.files[0];
         setUploadError("");
 
@@ -133,8 +123,7 @@ export default function useRequestPreAwardApproval(agreementId) {
             // Reset file selection
             setSelectedFile(null);
             setIsUploading(false);
-        } catch (error) {
-            console.error("Error uploading document:", error);
+        } catch {
             setUploadError("Failed to upload document. Please try again.");
             setIsUploading(false);
         }
@@ -142,7 +131,6 @@ export default function useRequestPreAwardApproval(agreementId) {
 
     const handleSubmit = async () => {
         if (!step5?.id) {
-            console.error("Step 5 not found");
             setSubmitError("Unable to submit approval request because required tracker information is missing.");
             return;
         }
@@ -164,8 +152,7 @@ export default function useRequestPreAwardApproval(agreementId) {
             navigate(`/agreements/${agreementId}/procurement-tracker`, {
                 state: { success: true }
             });
-        } catch (error) {
-            console.error("Failed to submit approval request:", error);
+        } catch {
             setSubmitError("Failed to submit approval request. Please try again.");
             setIsSubmitting(false);
         }
@@ -178,7 +165,8 @@ export default function useRequestPreAwardApproval(agreementId) {
     return {
         agreement,
         isLoading,
-        executingBudgetLines,
+        allBudgetLines, // All budget lines for display (pre-award happens before IN_EXECUTION)
+        executingTotal, // Total calculated from executing budget lines only
         notes,
         setNotes,
         handleSubmit,
@@ -195,6 +183,7 @@ export default function useRequestPreAwardApproval(agreementId) {
         submitError,
         preAwardMemoDocuments,
         isSubmitting,
+        isApprovalPending,
         hasApprovalBeenRequested,
         hasBLIInReview,
         isStep4Completed

@@ -10,6 +10,7 @@ import {
     useGetCanByIdQuery,
     useLazyGetCansQuery,
     useGetChangeRequestsListQuery,
+    useGetPendingPreAwardApprovalsQuery,
     useUpdateChangeRequestMutation
 } from "../../../api/opsAPI";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
@@ -43,6 +44,7 @@ describe("ChangeRequestList", () => {
 
     it("renders without any change requests", () => {
         useGetChangeRequestsListQuery.mockReturnValue({ data: {} });
+        useGetPendingPreAwardApprovalsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
         useGetAgreementByIdQuery.mockReturnValue("Agreement Name");
         useGetCanByIdQuery.mockReturnValue({ data: { display_name: "CAN Name" }, isSuccess: true });
         useGetUserFullNameFromId.mockReturnValue("unknown");
@@ -64,6 +66,7 @@ describe("ChangeRequestList", () => {
         const mockChangeRequests = [{ ...changeRequests[0] }, { ...changeRequests[1] }, { ...changeRequests[2] }];
 
         useGetChangeRequestsListQuery.mockReturnValue({ data: mockChangeRequests });
+        useGetPendingPreAwardApprovalsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
         useGetAgreementByIdQuery.mockReturnValue("Agreement Name");
         useGetAgreementByIdQuery.mockReturnValue({ data: { agreement } });
         useGetBudgetLineItemQuery.mockReturnValue({ data: { budgetLine } });

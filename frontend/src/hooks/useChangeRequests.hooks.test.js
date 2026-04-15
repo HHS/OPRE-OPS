@@ -13,6 +13,7 @@ import {
 const useSelectorMock = vi.fn();
 const useGetAgreementByIdQueryMock = vi.fn();
 const useGetChangeRequestsListQueryMock = vi.fn();
+const useGetPendingPreAwardApprovalsQueryMock = vi.fn();
 const useGetProcurementShopsQueryMock = vi.fn();
 const useGetAllCansMock = vi.fn();
 const getChangeRequestMessagesMock = vi.fn();
@@ -24,6 +25,7 @@ vi.mock("react-redux", () => ({
 vi.mock("../api/opsAPI", () => ({
     useGetAgreementByIdQuery: (...args) => useGetAgreementByIdQueryMock(...args),
     useGetChangeRequestsListQuery: (...args) => useGetChangeRequestsListQueryMock(...args),
+    useGetPendingPreAwardApprovalsQuery: (...args) => useGetPendingPreAwardApprovalsQueryMock(...args),
     useGetProcurementShopsQuery: (...args) => useGetProcurementShopsQueryMock(...args)
 }));
 
@@ -68,6 +70,7 @@ describe("useChangeRequestTotal", () => {
     it("returns total count with active user id", () => {
         useSelectorMock.mockImplementation((selector) => selector({ auth: { activeUser: { id: 8 } } }));
         useGetChangeRequestsListQueryMock.mockReturnValue({ data: [{ id: 1 }, { id: 2 }] });
+        useGetPendingPreAwardApprovalsQueryMock.mockReturnValue({ data: [] });
 
         const { result } = renderHook(() => useChangeRequestTotal());
 
@@ -78,6 +81,7 @@ describe("useChangeRequestTotal", () => {
     it("falls back to zero when no list data and missing user", () => {
         useSelectorMock.mockImplementation((selector) => selector({ auth: { activeUser: null } }));
         useGetChangeRequestsListQueryMock.mockReturnValue({ data: undefined });
+        useGetPendingPreAwardApprovalsQueryMock.mockReturnValue({ data: undefined });
 
         const { result } = renderHook(() => useChangeRequestTotal());
 
