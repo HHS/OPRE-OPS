@@ -45,7 +45,7 @@ const ProcurementStepSummaryCard = ({ stepData = [], fiscalYear }) => {
                         margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
                         setPercent={setPercent}
                         setHoverId={setHoverId}
-                        CustomLayerComponent={CustomLayerComponent(percent ? `${percent}` : "")}
+                        CustomLayerComponent={CustomLayerComponent(percent ? `${percent}%` : "")}
                         container_id="procurement-step-chart"
                         ariaLabel="This is a Donut Chart that displays the percent by procurement step in the center."
                     />
