@@ -5,7 +5,6 @@ from sqlalchemy import select, text
 
 from data_tools.src.backfill_procurement_tracker import (
     backfill_procurement_records,
-    ensure_action_and_tracker,
     get_agreements_with_in_execution_blis,
     get_earliest_obligated_date_needed,
     get_earliest_obligated_fiscal_year,
@@ -340,6 +339,7 @@ def test_backfill_creates_tracker_and_action_when_both_missing(db_with_agreement
 def test_backfill_activates_step_1_with_start_date(db_with_agreements):
     """Backfilled trackers should have step 1 as ACTIVE with today's start date, matching API behavior."""
     sys_user = get_or_create_sys_user(db_with_agreements)
+    today = date.today()
     backfill_procurement_records(db_with_agreements, sys_user)
 
     tracker = db_with_agreements.execute(
@@ -348,7 +348,7 @@ def test_backfill_activates_step_1_with_start_date(db_with_agreements):
 
     step_1 = [s for s in tracker.steps if s.step_number == 1][0]
     assert step_1.status == ProcurementTrackerStepStatus.ACTIVE
-    assert step_1.step_start_date == date.today()
+    assert step_1.step_start_date == today
 
     # Remaining steps should be PENDING with no start date
     for step in tracker.steps:
@@ -754,7 +754,7 @@ def test_mod_scenario_creates_two_actions_and_trackers(db_with_agreements):
 
 def test_mod_scenario_completed_tracker_has_completed_steps(db_with_agreements):
     """The NEW_AWARD COMPLETED tracker should have all steps COMPLETED with dates
-    and active_step_number set to None."""
+    and active_step_number set to the final step number."""
     sys_user = get_or_create_sys_user(db_with_agreements)
     backfill_procurement_records(db_with_agreements, sys_user)
 
@@ -773,19 +773,24 @@ def test_mod_scenario_completed_tracker_has_completed_steps(db_with_agreements):
     ).scalar_one()
 
     assert tracker.status == ProcurementTrackerStatus.COMPLETED
-    assert tracker.active_step_number is None
+    assert tracker.active_step_number == 6
 
     for step in tracker.steps:
         assert (
             step.status == ProcurementTrackerStepStatus.COMPLETED
         ), f"Step {step.step_number} should be COMPLETED, got {step.status}"
-        assert step.step_start_date is not None, f"Step {step.step_number} should have a start date"
-        assert step.step_completed_date is not None, f"Step {step.step_number} should have a completed date"
+        assert step.step_start_date == date(
+            2024, 1, 15
+        ), f"Step {step.step_number} should have award date as start date"
+        assert step.step_completed_date == date(
+            2024, 1, 15
+        ), f"Step {step.step_number} should have award date as completed date"
 
 
 def test_mod_scenario_active_tracker_has_active_step_1(db_with_agreements):
     """The MODIFICATION ACTIVE tracker should have step 1 ACTIVE and the rest PENDING."""
     sys_user = get_or_create_sys_user(db_with_agreements)
+    today = date.today()
     backfill_procurement_records(db_with_agreements, sys_user)
 
     mod_action = db_with_agreements.execute(
@@ -807,7 +812,7 @@ def test_mod_scenario_active_tracker_has_active_step_1(db_with_agreements):
 
     step_1 = [s for s in tracker.steps if s.step_number == 1][0]
     assert step_1.status == ProcurementTrackerStepStatus.ACTIVE
-    assert step_1.step_start_date == date.today()
+    assert step_1.step_start_date == today
 
     for step in tracker.steps:
         if step.step_number > 1:

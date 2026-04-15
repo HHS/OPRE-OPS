@@ -22,7 +22,7 @@ from datetime import date
 import click
 from dotenv import load_dotenv
 from loguru import logger
-from sqlalchemy import func, select
+from sqlalchemy import func, select, text
 from sqlalchemy.orm import Session, scoped_session, sessionmaker
 
 from data_tools.src.common.db import init_db_from_config, setup_triggers
@@ -173,6 +173,10 @@ def ensure_action_and_tracker(
 ) -> tuple[ProcurementAction, bool, bool]:
     """
     Ensure a ProcurementAction and ProcurementTracker exist for the given agreement and award type.
+
+    If an unlinked tracker (procurement_action IS NULL) already exists for the agreement,
+    it is adopted and linked to the action rather than creating a duplicate.
+
     Returns (procurement_action, action_created, tracker_created).
     """
     existing_action = session.execute(
@@ -207,8 +211,10 @@ def ensure_action_and_tracker(
                 event_status=OpsEventStatus.SUCCESS,
                 created_by=sys_user.id,
                 event_details={
-                    "procurement_action_id": procurement_action.id,
                     "agreement_id": agreement.id,
+                    "action_id": procurement_action.id,
+                    "status": procurement_action.status.name,
+                    "award_type": award_type.name,
                     "message": f"Backfill: created {award_type.name} action",
                 },
             )
@@ -278,8 +284,11 @@ def ensure_action_and_tracker(
                     event_status=OpsEventStatus.SUCCESS,
                     created_by=sys_user.id,
                     event_details={
-                        "procurement_tracker_id": tracker.id,
                         "agreement_id": agreement.id,
+                        "tracker_id": tracker.id,
+                        "procurement_action_id": procurement_action.id,
+                        "status": tracker_status.name,
+                        "active_step_number": tracker.active_step_number,
                         "message": f"Backfill: created tracker for {award_type.name}",
                     },
                 )
@@ -287,12 +296,12 @@ def ensure_action_and_tracker(
 
         # Set step statuses to match tracker status
         if tracker_status == ProcurementTrackerStatus.COMPLETED:
-            tracker.active_step_number = None
+            completed_date = date_awarded_obligated or date.today()
+            tracker.active_step_number = len(tracker.steps)
             for step in tracker.steps:
                 step.status = ProcurementTrackerStepStatus.COMPLETED
-                if not step.step_start_date:
-                    step.step_start_date = date.today()
-                step.step_completed_date = date.today()
+                step.step_start_date = completed_date
+                step.step_completed_date = completed_date
         else:
             for step in tracker.steps:
                 if step.step_number == 1:
@@ -326,7 +335,7 @@ def backfill_procurement_records(
     agreements = get_agreements_with_in_execution_blis(session, agreement_types)
     logger.info(f"Found {len(agreements)} agreements with IN_EXECUTION BLIs.")
     for agreement in agreements:
-        logger.info(f"Agreement ID {agreement.id}, Name '{agreement.name}', Type '{agreement.agreement_type}'")
+        logger.debug(f"Agreement ID {agreement.id}, Name '{agreement.name}', Type '{agreement.agreement_type}'")
 
     created_trackers = 0
     created_actions = 0
@@ -337,7 +346,7 @@ def backfill_procurement_records(
             is_mod = has_obligated_blis(session, agreement.id)
 
             if is_mod:
-                logger.info(f"Agreement {agreement.id} has both OBLIGATED and IN_EXECUTION BLIs — treating as mod.")
+                logger.debug(f"Agreement {agreement.id} has both OBLIGATED and IN_EXECUTION BLIs — treating as mod.")
 
                 # NEW_AWARD: action (AWARDED) + tracker (COMPLETED) + earliest-FY OBLIGATED BLIs
                 award_date = get_earliest_obligated_date_needed(session, agreement.id)
@@ -398,9 +407,9 @@ def backfill_procurement_records(
             session.rollback()
             raise
 
-    action = "Would create" if dry_run else "Created"
+    verb = "Would create" if dry_run else "Created"
     logger.info(
-        f"Backfill complete. {action} {created_trackers} trackers, "
+        f"Backfill complete. {verb} {created_trackers} trackers, "
         f"{created_actions} actions, linked {total_linked_blis} BLIs."
     )
 
@@ -431,8 +440,6 @@ def main(env: str, agreement_types: tuple[str, ...]):
     if db_engine is None:
         logger.error("Failed to initialize the database engine.")
         sys.exit(1)
-
-    from sqlalchemy import text
 
     with db_engine.connect() as conn:
         conn.execute(text("SELECT 1"))
