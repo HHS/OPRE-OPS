@@ -1,6 +1,7 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import BLIFilterTags from "./BLIFilterTags";
+import { getFiscalYearHelpers } from "./fiscalYearFilterHelpers";
 
 // Mock child components
 vi.mock("../../../components/UI/FilterTags/FilterTags", () => ({
@@ -25,6 +26,8 @@ vi.mock("../../../components/UI/FilterTags/FilterTagsWrapper", () => ({
 
 describe("BLIFilterTags", () => {
     const mockSetFilters = vi.fn();
+    // Use Approach A (default) for tests - same behavior as current PR
+    const mockFyHelpers = getFiscalYearHelpers(false);
 
     const defaultFilters = {
         fiscalYears: [],
@@ -45,6 +48,7 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={defaultFilters}
                 setFilters={mockSetFilters}
+                fyHelpers={mockFyHelpers}
             />
         );
 
@@ -64,6 +68,7 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={filters}
                 setFilters={mockSetFilters}
+                fyHelpers={mockFyHelpers}
             />
         );
 
@@ -71,23 +76,7 @@ describe("BLIFilterTags", () => {
         expect(screen.getByTestId("remove-tag-FY 2025")).toBeInTheDocument();
     });
 
-    it("renders All FYs tag when All Fiscal Years is selected", () => {
-        const filters = {
-            ...defaultFilters,
-            fiscalYears: [{ id: "ALL", title: "All FYs" }]
-        };
-
-        render(
-            <BLIFilterTags
-                filters={filters}
-                setFilters={mockSetFilters}
-            />
-        );
-
-        expect(screen.getByTestId("remove-tag-All FYs")).toBeInTheDocument();
-    });
-
-    it("renders All FYs tag when fiscalYears is null", () => {
+    it("renders no fiscal year tags when fiscalYears is null (All)", () => {
         const filters = {
             ...defaultFilters,
             fiscalYears: null
@@ -97,35 +86,31 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={filters}
                 setFilters={mockSetFilters}
+                fyHelpers={mockFyHelpers}
             />
         );
 
-        expect(screen.getByTestId("remove-tag-All FYs")).toBeInTheDocument();
+        // null fiscalYears means "All" - no fiscal year tags displayed
+        expect(screen.queryByTestId("remove-tag-FY 2024")).not.toBeInTheDocument();
+        expect(screen.queryByTestId("remove-tag-FY 2025")).not.toBeInTheDocument();
     });
 
-    it("clears fiscalYears when removing All FYs tag", async () => {
+    it("renders no component when fiscalYears is null and no other filters", () => {
         const filters = {
             ...defaultFilters,
-            fiscalYears: [{ id: "ALL", title: "All FYs" }]
+            fiscalYears: null
         };
 
         render(
             <BLIFilterTags
                 filters={filters}
                 setFilters={mockSetFilters}
+                fyHelpers={mockFyHelpers}
             />
         );
 
-        const removeButton = screen.getByTestId("remove-tag-All FYs");
-        fireEvent.click(removeButton);
-
-        await waitFor(() => {
-            expect(mockSetFilters).toHaveBeenCalledWith(expect.any(Function));
-        });
-
-        const setFiltersCallback = mockSetFilters.mock.calls[0][0];
-        const result = setFiltersCallback({ fiscalYears: [{ id: "ALL", title: "All FYs" }] });
-        expect(result.fiscalYears).toEqual([]);
+        // No tags, so filter tags wrapper should not render
+        expect(screen.queryByTestId("filter-tags-wrapper")).not.toBeInTheDocument();
     });
 
     it.each([
@@ -147,6 +132,7 @@ describe("BLIFilterTags", () => {
                 <BLIFilterTags
                     filters={filtersWithNullish}
                     setFilters={mockSetFilters}
+                    fyHelpers={mockFyHelpers}
                 />
             );
         }).not.toThrow();
@@ -165,6 +151,7 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={filters}
                 setFilters={mockSetFilters}
+                fyHelpers={mockFyHelpers}
             />
         );
 
@@ -188,8 +175,37 @@ describe("BLIFilterTags", () => {
         expect(result.fiscalYears[0].title).toBe(2025);
     });
 
+    it("handles removing fiscalYears tag - sets to null when empty (All)", async () => {
+        const filters = {
+            ...defaultFilters,
+            fiscalYears: [{ id: 2024, title: 2024 }]
+        };
+
+        render(
+            <BLIFilterTags
+                filters={filters}
+                setFilters={mockSetFilters}
+                fyHelpers={mockFyHelpers}
+            />
+        );
+
+        const removeButton = screen.getByTestId("remove-tag-FY 2024");
+        fireEvent.click(removeButton);
+
+        await waitFor(() => {
+            expect(mockSetFilters).toHaveBeenCalled();
+        });
+
+        // For fiscalYears, empty array means "All" → set to null
+        const setFiltersCallback = mockSetFilters.mock.calls[0][0];
+        const result = setFiltersCallback({
+            fiscalYears: [{ id: 2024, title: 2024 }]
+        });
+
+        expect(result.fiscalYears).toBeNull();
+    });
+
     it.each([
-        ["fiscalYears", "FY 2024", { id: 2024, title: 2024 }],
         ["portfolios", "Portfolio 1", { id: 1, name: "Portfolio 1" }],
         ["bliStatus", "DRAFT", { id: 1, title: "DRAFT" }],
         ["agreementTypes", "CONTRACT", { id: 1, title: "CONTRACT" }],
@@ -205,6 +221,7 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={filters}
                 setFilters={mockSetFilters}
+                fyHelpers={mockFyHelpers}
             />
         );
 
@@ -237,6 +254,7 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={filters}
                 setFilters={mockSetFilters}
+                fyHelpers={mockFyHelpers}
             />
         );
 
@@ -257,6 +275,7 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={filters}
                 setFilters={mockSetFilters}
+                fyHelpers={mockFyHelpers}
             />
         );
 
@@ -274,6 +293,7 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={filters}
                 setFilters={mockSetFilters}
+                fyHelpers={mockFyHelpers}
             />
         );
 
@@ -290,6 +310,7 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={filters}
                 setFilters={mockSetFilters}
+                fyHelpers={mockFyHelpers}
             />
         );
 
@@ -314,6 +335,7 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={filters}
                 setFilters={mockSetFilters}
+                fyHelpers={mockFyHelpers}
             />
         );
 
@@ -334,6 +356,7 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={filters}
                 setFilters={mockSetFilters}
+                fyHelpers={mockFyHelpers}
             />
         );
 
@@ -354,6 +377,7 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={filters}
                 setFilters={mockSetFilters}
+                fyHelpers={mockFyHelpers}
             />
         );
 
@@ -377,6 +401,7 @@ describe("BLIFilterTags", () => {
                 <BLIFilterTags
                     filters={allNullFilters}
                     setFilters={mockSetFilters}
+                    fyHelpers={mockFyHelpers}
                 />
             );
         }).not.toThrow();
@@ -397,6 +422,7 @@ describe("BLIFilterTags", () => {
             <BLIFilterTags
                 filters={filters}
                 setFilters={mockSetFilters}
+                fyHelpers={mockFyHelpers}
             />
         );
 

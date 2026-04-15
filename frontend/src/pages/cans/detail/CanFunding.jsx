@@ -165,7 +165,10 @@ const CanFunding = ({
                     : "Review the new FY Funding Information for this CAN."}
             </p>
             <CANFundingInfoCard funding={funding} />
-            <p className="font-12px text-base-dark">
+            <p
+                className="font-12px text-base-dark"
+                style={{ marginTop: "10px" }}
+            >
                 * CAN Funding Information contains the latest CANBACs data, and does not reference historical changes if
                 there were any
             </p>
@@ -185,7 +188,7 @@ const CanFunding = ({
                             fiscalYear={fiscalYear}
                         />
                     </div>
-                    <div className="margin-top-05">
+                    <div style={{ marginTop: "10px" }}>
                         <p className="font-12px text-base-dark margin-0">
                             * For multi-year CANs, the total budget will display in the first year, and the
                             carry-forward will display in every year after

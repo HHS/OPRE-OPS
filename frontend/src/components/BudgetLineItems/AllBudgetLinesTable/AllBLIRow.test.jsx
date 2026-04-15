@@ -14,6 +14,11 @@ vi.mock("../../../hooks/useChangeRequests.hooks", () => ({
     useChangeRequestsForTooltip: () => null
 }));
 
+vi.mock("../../../hooks/user.hooks", () => ({
+    default: () => "Sheila Celentano",
+    useGetLoggedInUserFullName: () => "Sheila Celentano"
+}));
+
 vi.mock("../../../api/opsAPI", () => ({
     useGetAgreementByIdQuery: () => ({
         data: null,
@@ -41,9 +46,12 @@ const mockBudgetLine = {
         name: "Test Agreement",
         agreement_type: "IAA",
         awarding_entity_id: 1,
+        award_type: "NEW",
+        vendor: "Test Vendor",
         project: {
             id: 1,
-            title: "Test Project"
+            title: "Test Project",
+            project_type: "RESEARCH"
         },
         procurement_shop: {
             id: 1,
@@ -143,16 +151,28 @@ describe("AllBLIRow", () => {
         const expandedRow = screen.getByTestId("expanded-data");
         expect(expandedRow).toBeInTheDocument();
 
+        // Check for Created by section
+        expect(screen.getByText("Created by")).toBeInTheDocument();
+        expect(screen.getByText("Sheila Celentano")).toBeInTheDocument();
+
         // Check for specific expanded row content
         expect(screen.getByText("Description")).toBeInTheDocument();
         expect(screen.getByText("Test Description")).toBeInTheDocument();
         expect(screen.getByText("Procurement Shop")).toBeInTheDocument();
         expect(screen.getByText(/TEST - Current Fee Rate :\s*0.1%/)).toBeInTheDocument();
-        expect(screen.getByText("SubTotal")).toBeInTheDocument();
+        expect(screen.getByText("Subtotal")).toBeInTheDocument();
         expect(screen.getByText("$1,000.00")).toBeInTheDocument();
         expect(screen.getByText("Fees")).toBeInTheDocument();
         expect(screen.getByText("$1.00")).toBeInTheDocument();
+
+        // Check for agreement data section
+        expect(screen.getByText("Agreement data associated to this budget line")).toBeInTheDocument();
         expect(screen.getByText("Project")).toBeInTheDocument();
         expect(screen.getByText("Test Project")).toBeInTheDocument();
+        expect(screen.getByText("Award Type")).toBeInTheDocument();
+        expect(screen.getByText("New Award")).toBeInTheDocument();
+        expect(screen.getByText("Research Type")).toBeInTheDocument();
+        expect(screen.getByText("Vendor")).toBeInTheDocument();
+        expect(screen.getByText("Test Vendor")).toBeInTheDocument();
     });
 });

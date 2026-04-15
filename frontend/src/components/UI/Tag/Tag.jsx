@@ -110,6 +110,12 @@ const Tag = ({
                 case "portfolioNewFunding":
                     activeClass += " bg-brand-portfolio-new-funding text-white fake-bold";
                     break;
+                case "darkOnProjectResearch":
+                    activeClass += " bg-brand-data-viz-project-research text-ink fake-bold";
+                    break;
+                case "whiteOnProjectAdminSupport":
+                    activeClass += " bg-brand-data-viz-project-admin-support text-white fake-bold";
+                    break;
                 default:
                     break;
             }

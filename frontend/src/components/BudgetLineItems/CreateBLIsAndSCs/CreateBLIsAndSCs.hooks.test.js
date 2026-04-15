@@ -198,6 +198,9 @@ describe("useCreateBLIsAndSCs", () => {
 
         expect(result.current.tempBudgetLines).toHaveLength(1);
         expect(result.current.tempBudgetLines[0].amount).toBe(1000);
+        expect(result.current.tempBudgetLines[0].agreement).toEqual({
+            procurement_shop: { fee_percentage: 5, abbr: "PSC", current_fee: { fee: 5 } }
+        });
         expect(setAlertMock).toHaveBeenCalledWith(
             expect.objectContaining({
                 type: "success",
