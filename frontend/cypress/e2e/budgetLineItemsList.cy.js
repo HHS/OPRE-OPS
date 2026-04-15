@@ -172,11 +172,15 @@ it("click on chevron down should open row and see budgetline data", () => {
     cy.get("tbody").find('[data-cy="expanded-data"]').should("not.exist");
     cy.get("tbody").find("tr").first().find('[data-cy="expand-row"]').click();
     cy.get("tbody").find('[data-cy="expanded-data"]').as("expandedRow").should("exist");
+    cy.get("@expandedRow").contains("Created by");
     cy.get("@expandedRow").contains("Description");
     cy.get("@expandedRow").contains("Procurement Shop");
-    cy.get("@expandedRow").contains("SubTotal");
+    cy.get("@expandedRow").contains("Subtotal");
     cy.get("@expandedRow").contains("Fees");
     cy.get("@expandedRow").contains("Project");
+    cy.get("@expandedRow").contains("Award Type");
+    cy.get("@expandedRow").contains("Research Type");
+    cy.get("@expandedRow").contains("Vendor");
 });
 
 it("click on agreement name and check if its routed to the correct page", () => {

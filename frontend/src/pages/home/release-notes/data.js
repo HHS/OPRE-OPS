@@ -6,7 +6,34 @@ NOTE: types of changes are 'New Feature', 'Improvements', 'Fixes'
 */
 export const data = [
     {
-        releaseDate: "2026-3-13",
+        releaseDate: "2026-04-10",
+        version: "1.355.8",
+        changes: [
+            {
+                id: "0001",
+                subject: "View a list of projects",
+                type: "Improvements",
+                description:
+                    "You can now view a list of all projects in OPS including a breakdown of research projects vs admin & support projects. The table includes project names, types, start dates, end dates, FY totals and lifetime totals, as well as additional information on what agreements are included. You can utilize filters to search or narrow down your results, and export to download the data to an excel file."
+            },
+            {
+                id: "0002",
+                subject: "View a project",
+                type: "Improvements",
+                description:
+                    "Each project now has its own page where you can dig into the details about that specific project. The project details tab displays a description of the project, nickname, project type, start date, end date, portfolios, research methodologies, special topics/populations and team members, as well as a history of changes. Project spending and funding information will be added soon!"
+            },
+            {
+                id: "0003",
+                subject: "Improved Loading Experience",
+                type: "Improvements",
+                description:
+                    "We improved the loading experience by updating how tables render data. Instead of displaying partial updates or “loading…” placeholders in individual cells, data now appears in a single, fully populated view rather than updating incrementally."
+            }
+        ]
+    },
+    {
+        releaseDate: "2026-03-13",
         version: "1.326.0",
         changes: [
             {
@@ -40,7 +67,7 @@ export const data = [
         ]
     },
     {
-        releaseDate: "2026-2-13",
+        releaseDate: "2026-02-13",
         version: "1.289.3",
         changes: [
             {

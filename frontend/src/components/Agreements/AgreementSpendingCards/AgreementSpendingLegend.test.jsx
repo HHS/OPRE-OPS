@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { describe, it, expect } from "vitest";
 import AgreementSpendingLegend from "./AgreementSpendingLegend";
 
@@ -61,5 +61,61 @@ describe("AgreementSpendingLegend", () => {
     it("returns null for null agreement types", () => {
         render(<AgreementSpendingLegend agreementTypes={null} />);
         expect(screen.queryByTestId("agreement-spending-legend")).not.toBeInTheDocument();
+    });
+
+    it("highlights only the New sub-row when activeId matches a type", () => {
+        render(
+            <AgreementSpendingLegend
+                agreementTypes={mockAgreementTypes}
+                activeId="GRANT"
+            />
+        );
+
+        const grantColumn = within(screen.getByTestId("agreement-spending-legend-GRANT"));
+
+        // New sub-row label and currency value should be bold
+        expect(grantColumn.getByText("New")).toHaveClass("fake-bold");
+        expect(grantColumn.getByText("$5,000,000.00")).toHaveClass("fake-bold");
+
+        // Cont. sub-row label and currency value should not be bold
+        expect(grantColumn.getByText("Cont.")).not.toHaveClass("fake-bold");
+        expect(grantColumn.getByText("$3,000,000.00")).not.toHaveClass("fake-bold");
+
+        // Header should not be bold
+        expect(grantColumn.getByText("Grants")).not.toHaveClass("fake-bold");
+    });
+
+    it("highlights only the Cont. sub-row when activeId matches a continuing type", () => {
+        render(
+            <AgreementSpendingLegend
+                agreementTypes={mockAgreementTypes}
+                activeId="GRANT_CONTINUING"
+            />
+        );
+
+        const grantColumn = within(screen.getByTestId("agreement-spending-legend-GRANT"));
+
+        // Cont. sub-row label and currency value should be bold
+        expect(grantColumn.getByText("Cont.")).toHaveClass("fake-bold");
+        expect(grantColumn.getByText("$3,000,000.00")).toHaveClass("fake-bold");
+
+        // New sub-row label and currency value should not be bold
+        expect(grantColumn.getByText("New")).not.toHaveClass("fake-bold");
+        expect(grantColumn.getByText("$5,000,000.00")).not.toHaveClass("fake-bold");
+    });
+
+    it("does not apply fake-bold when activeId is null", () => {
+        render(
+            <AgreementSpendingLegend
+                agreementTypes={mockAgreementTypes}
+                activeId={null}
+            />
+        );
+
+        const newLabels = screen.getAllByText("New");
+        newLabels.forEach((label) => expect(label).not.toHaveClass("fake-bold"));
+
+        const contLabels = screen.getAllByText("Cont.");
+        contLabels.forEach((label) => expect(label).not.toHaveClass("fake-bold"));
     });
 });
