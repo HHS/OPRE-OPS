@@ -4,7 +4,7 @@ import CurrencyFormat from "react-currency-format";
 import { AGREEMENT_TYPE_ORDER } from "./AgreementSpendingCards.constants";
 import styles from "./AgreementSpendingLegend.module.scss";
 
-const AgreementSpendingLegend = ({ agreementTypes = [], activeId = 0 }) => {
+const AgreementSpendingLegend = ({ agreementTypes = [], activeId = null }) => {
     if (!agreementTypes || agreementTypes.length === 0) {
         return null;
     }

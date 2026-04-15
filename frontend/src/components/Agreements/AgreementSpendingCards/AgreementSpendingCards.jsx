@@ -6,7 +6,7 @@ import { transformToChartData } from "./AgreementSpendingCards.helpers";
 import styles from "./AgreementSpendingCards.module.scss";
 
 const AgreementSpendingCards = ({ fiscalYear, spendingData }) => {
-    const [activeId, setActiveId] = useState(0);
+    const [activeId, setActiveId] = useState(null);
     const totalSpending = spendingData?.total_spending || 0;
     const agreementTypes = useMemo(() => spendingData?.agreement_types || [], [spendingData]);
 
