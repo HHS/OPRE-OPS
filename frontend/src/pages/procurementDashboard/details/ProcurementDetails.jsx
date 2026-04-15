@@ -1,4 +1,5 @@
 import DetailsBuilderAccordion from "./DetailsBuilderAccordion";
+import ProcurementDetailsStepOne from "./ProcurementDetailsStepOne";
 
 const ProcurementDetails = ({ fiscalYear }) => {
     const WIZARD_STEPS = [
@@ -30,7 +31,9 @@ const ProcurementDetails = ({ fiscalYear }) => {
                         step={step}
                         totalSteps={WIZARD_STEPS.length}
                         key={`${step.id}`}
-                    />
+                    >
+                        {step.step_number === 1 && <ProcurementDetailsStepOne />}
+                    </DetailsBuilderAccordion>
                 );
             })}
         </>
