@@ -45,18 +45,7 @@ def procurement_tracker_trigger(event: OpsEvent, session: Session) -> None:
         session: SQLAlchemy session for database operations
     """
     try:
-        # Extract and validate event details
-        event_details = event.event_details or {}
-        change_request = event_details.get("change_request")
-
-        if not change_request:
-            logger.debug("No change_request in event details, skipping")
-            return
-
-        # Validate change request and extract IDs
-        is_valid, reason, agreement_id, budget_line_item_id = _validate_change_request_for_tracker_creation(
-            change_request
-        )
+        is_valid, reason, agreement_id, budget_line_item_id = _validate_event_for_procurement_tracker_creation(event)
 
         if not is_valid:
             logger.debug(f"{reason}, skipping")
@@ -92,23 +81,56 @@ def procurement_tracker_trigger(event: OpsEvent, session: Session) -> None:
     except IntegrityError as e:
         # This can happen if two handlers race and both try to create records
         # The row-level locks should prevent this, but handle gracefully just in case
-        agreement_id_for_log = (
-            change_request.get("agreement_id") if "change_request" in locals() and change_request else None
-        )
+        agreement_id_for_log = agreement_id if "agreement_id" in locals() else None
         logger.warning(
             f"IntegrityError in procurement_tracker_trigger (likely duplicate creation attempt): {e}",
             extra={"event_id": event.id, "event_type": event.event_type.name, "agreement_id": agreement_id_for_log},
         )
         session.rollback()
     except Exception as e:
-        agreement_id_for_log = (
-            change_request.get("agreement_id") if "change_request" in locals() and change_request else None
-        )
+        agreement_id_for_log = agreement_id if "agreement_id" in locals() else None
         logger.error(
             f"Error in procurement_tracker_trigger: {e}",
             exc_info=True,
             extra={"event_id": event.id, "event_type": event.event_type.name, "agreement_id": agreement_id_for_log},
         )
+
+
+def _validate_event_for_procurement_tracker_creation(
+    event: OpsEvent,
+) -> Tuple[bool, Optional[str], Optional[int], Optional[int]]:
+    """
+    Validate that the event should trigger procurement tracker creation.
+
+    Currently only supports UPDATE_CHANGE_REQUEST events for approved BLI status changes to IN_EXECUTION.
+
+    Returns:
+        Tuple of (is_valid, reason, agreement_id, budget_line_item_id)
+    """
+    # Extract and validate event details
+    if event.event_type == OpsEventType.UPDATE_CHANGE_REQUEST:
+        event_details = event.event_details or {}
+        change_request = event_details.get("change_request")
+
+        if not change_request:
+            logger.debug("No change_request in event details, skipping")
+            return
+
+        # Validate change request and extract IDs
+        is_valid, reason, agreement_id, budget_line_item_id = _validate_change_request_for_tracker_creation(
+            change_request
+        )
+    elif event.event_type == OpsEventType.UPDATE_BLI:
+        # TODO
+        print("hello")
+    else:
+        logger.debug(f"Received unsupported event type {event.event_type}, skipping")
+        is_valid = False
+        reason = f"Unsupported event type {event.event_type}"
+        agreement_id = None
+        budget_line_item_id = None
+
+    return (is_valid, reason, agreement_id, budget_line_item_id)
 
 
 def _validate_change_request_for_tracker_creation(
