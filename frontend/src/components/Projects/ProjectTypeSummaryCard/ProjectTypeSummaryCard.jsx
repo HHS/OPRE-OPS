@@ -19,17 +19,36 @@ const PROJECT_TYPE_CONFIG = PROJECT_TYPE_ORDER.map((type) => ({
 }));
 
 /**
- * Computes a display-friendly percent string.
- * Returns "<1" when a non-zero value rounds down to 0, otherwise the rounded integer.
- * @param {number} value - The slice value
- * @param {number} total - The total across all slices
- * @returns {number|string} - Rounded percent or "<1"
+ * Computes display-friendly percent labels for an array of items.
+ *
+ * Handles the edge case where one dominant item rounds to 100% while other
+ * non-zero items exist — which would produce a contradictory legend like
+ * "100% + <1%". In that case the dominant item is labelled ">99%" instead.
+ *
+ * Rules applied per item:
+ *   - Zero value          → 0
+ *   - Non-zero but rounds to 0 → "<1"
+ *   - Rounds to 100 while other non-zero items exist → ">99"
+ *   - Otherwise           → rounded integer
+ *
+ * @param {Array<{value: number}>} items - Data items with a numeric `value` field
+ * @param {number} total - Sum of all item values
+ * @returns {Array<number|string>} - Parallel array of display percent labels
  */
-const computeDisplayPercent = (value, total) => {
-    if (total === 0 || value === 0) return 0;
-    const exact = (value / total) * 100;
-    const rounded = Math.round(exact);
-    return rounded === 0 ? "<1" : rounded;
+const computeDisplayPercents = (items, total) => {
+    if (total === 0) return items.map(() => 0);
+
+    const rounded = items.map((item) => {
+        if (item.value === 0) return 0;
+        const exact = (item.value / total) * 100;
+        const r = Math.round(exact);
+        return r === 0 ? "<1" : r;
+    });
+
+    // Check if any item shows 100 while others have non-zero amounts
+    const hasOtherNonZero = (idx) => items.some((item, i) => i !== idx && item.value > 0);
+
+    return rounded.map((r, idx) => (r === 100 && hasOtherNonZero(idx) ? ">99" : r));
 };
 
 /**
@@ -106,10 +125,12 @@ const ProjectTypeSummaryCard = ({ title, summary }) => {
 
     const totalAmount = rawData.reduce((sum, item) => sum + item.value, 0);
 
-    // Legend data: real values + display-friendly percents
-    const legendData = rawData.map((item) => ({
+    // Legend data: real values + display-friendly percents (computed together
+    // so cross-item consistency — e.g. ">99%" alongside "<1%" — can be enforced)
+    const displayPercents = computeDisplayPercents(rawData, totalAmount);
+    const legendData = rawData.map((item, idx) => ({
         ...item,
-        percent: computeDisplayPercent(item.value, totalAmount)
+        percent: displayPercents[idx]
     }));
 
     // Chart data: floor tiny slices so every non-zero slice is visible,

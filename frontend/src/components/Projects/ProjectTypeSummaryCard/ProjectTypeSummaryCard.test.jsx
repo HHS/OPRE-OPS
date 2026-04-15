@@ -78,15 +78,17 @@ describe("ProjectTypeSummaryCard", () => {
         expect(screen.getByText("30%")).toBeInTheDocument();
     });
 
-    it("shows <1% tag when a non-zero amount rounds down to 0%", () => {
+    it("shows >99% and <1% when dominant item would otherwise round to 100% alongside non-zero items", () => {
         render(
             <ProjectTypeSummaryCard
                 title="FY 2025 Projects by Type"
                 summary={tinySliceSummary}
             />
         );
+        // Dominant item must not show 100% when other non-zero items exist
+        expect(screen.queryByText("100%")).not.toBeInTheDocument();
+        expect(screen.getByText(">99%")).toBeInTheDocument();
         expect(screen.getByText("<1%")).toBeInTheDocument();
-        expect(screen.getByText("100%")).toBeInTheDocument();
     });
 
     it("renders the donut chart when totalAmount > 0", () => {
