@@ -41,7 +41,7 @@ const HorizontalStackedBar = ({ data, setActiveId = () => {} }) => {
     };
 
     const handleMouseLeave = () => {
-        setActiveId(0);
+        setActiveId(null);
     };
 
     const handleKeyDown = (e, id) => {

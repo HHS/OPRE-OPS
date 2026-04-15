@@ -53,10 +53,11 @@ function AgreementChangesResponseAlert({
                     setIsAlertVisible={setApproveAlertVisibleAndDismissRequest}
                     isAlertVisible={isApproveAlertVisible}
                     isClosable={true}
+                    headingLevel={2}
                 >
                     {changeRequestNotifications?.length > 0 && (
                         <>
-                            <h2 className="margin-0 margin-top-3 font-sans-sm text-bold">Changes Approved:</h2>
+                            <h3 className="margin-0 margin-top-3 font-sans-sm text-bold">Changes Approved:</h3>
                             <ul className="margin-0 font-sans-sm">
                                 {approvedRequests?.map((changeRequest) => (
                                     <React.Fragment key={changeRequest.id}>
@@ -89,10 +90,11 @@ function AgreementChangesResponseAlert({
                     setIsAlertVisible={setDeclineAlertVisibleAndDismissRequest}
                     isAlertVisible={isDeclineAlertVisible}
                     isClosable={true}
+                    headingLevel={2}
                 >
                     {changeRequestNotifications && changeRequestNotifications.length > 0 && (
                         <>
-                            <h2 className="margin-0 margin-top-3 font-sans-sm text-bold">Changes Declined:</h2>
+                            <h3 className="margin-0 margin-top-3 font-sans-sm text-bold">Changes Declined:</h3>
                             <ul className="margin-0 font-sans-sm">
                                 {declinedRequests?.map((changeRequest) => (
                                     <React.Fragment key={changeRequest.id}>

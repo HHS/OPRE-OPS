@@ -98,6 +98,7 @@ from ops_api.ops.resources.procurement_shops import (
 from ops_api.ops.resources.procurement_tracker_steps import (
     ProcurementTrackerStepItemAPI,
     ProcurementTrackerStepListAPI,
+    ProcurementTrackerStepPendingApprovalsAPI,
 )
 from ops_api.ops.resources.procurement_trackers import (
     ProcurementTrackerItemAPI,
@@ -189,6 +190,9 @@ PROCUREMENT_TRACKER_STEP_ITEM_API_VIEW_FUNC = ProcurementTrackerStepItemAPI.as_v
 )
 PROCUREMENT_TRACKER_STEP_LIST_API_VIEW_FUNC = ProcurementTrackerStepListAPI.as_view(
     "procurement-tracker-steps-group", ProcurementTrackerStep
+)
+PROCUREMENT_TRACKER_STEP_PENDING_APPROVALS_API_VIEW_FUNC = ProcurementTrackerStepPendingApprovalsAPI.as_view(
+    "procurement-tracker-steps-pending-approvals", ProcurementTrackerStep
 )
 # LOOKUP ENDPOINTS
 LOOKUP_AGREEMENT_REASON_LIST_API_VIEW_FUNC = AgreementReasonListAPI.as_view("lookups-agreement-reason-list")

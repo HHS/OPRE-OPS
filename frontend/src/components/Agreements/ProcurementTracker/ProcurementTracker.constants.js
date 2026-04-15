@@ -29,3 +29,20 @@ export const PROCUREMENT_TRACKER_STATUS = {
     INACTIVE: "INACTIVE",
     COMPLETED: "COMPLETED"
 };
+
+/**
+ * Enum for pre-award approval status.
+ * @enum {string}
+ * @property {string} PENDING - Approval is pending
+ * @property {string} REQUESTED - Approval has been requested
+ * @property {string} APPROVED - Approval has been granted
+ * @property {string} DECLINED - Approval has been declined
+ * @property {string} CANCELLED - Approval request has been cancelled
+ */
+export const ProcurementTrackerPreAwardApprovalStatus = {
+    PENDING: "PENDING",
+    REQUESTED: "REQUESTED",
+    APPROVED: "APPROVED",
+    DECLINED: "DECLINED",
+    CANCELLED: "CANCELLED"
+};

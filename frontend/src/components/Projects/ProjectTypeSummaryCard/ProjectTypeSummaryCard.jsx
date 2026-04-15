@@ -5,11 +5,11 @@ import {
     PROJECT_TYPE_ORDER,
     PROJECT_TYPE_TAG_STYLE_ACTIVE
 } from "../ProjectTypes.constants";
+import { computeDisplayPercents } from "../../../helpers/utils";
 import LegendItem from "../../UI/Cards/LineGraphWithLegendCard/LegendItem";
 import ResponsiveDonutWithInnerPercent from "../../UI/DataViz/ResponsiveDonutWithInnerPercent";
 import CustomLayerComponent from "../../UI/DataViz/ResponsiveDonutWithInnerPercent/CustomLayerComponent";
 import RoundedBox from "../../UI/RoundedBox";
-import { computeDisplayPercents } from "../../../helpers/utils";
 
 // Build config from shared constants — single source of truth for labels, colors, and tag styles
 const PROJECT_TYPE_CONFIG = PROJECT_TYPE_ORDER.map((type) => ({

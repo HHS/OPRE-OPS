@@ -9,6 +9,22 @@ from models.procurement_tracker import (
 from ops_api.ops.schemas.pagination import PaginationListSchema
 
 
+class NestedAgreementSchema(Schema):
+    """Minimal agreement schema for nested responses."""
+
+    id = fields.Integer(required=True)
+    name = fields.String(allow_none=True)
+    display_name = fields.String(dump_only=True)
+
+
+class NestedProcurementTrackerSchema(Schema):
+    """Minimal procurement tracker schema for nested responses."""
+
+    id = fields.Integer(required=True)
+    agreement_id = fields.Integer(required=True)
+    agreement = fields.Nested(NestedAgreementSchema, allow_none=True)
+
+
 class ProcurementTrackerStepResponseSchema(Schema):
     """Schema for procurement tracker step responses.
 
@@ -19,6 +35,7 @@ class ProcurementTrackerStepResponseSchema(Schema):
 
     id = fields.Integer(required=True)
     procurement_tracker_id = fields.Integer(required=True)
+    procurement_tracker = fields.Nested(NestedProcurementTrackerSchema, allow_none=True)
     step_number = fields.Integer(required=True)
     step_class = fields.String(required=True)
     step_type = fields.Enum(ProcurementTrackerStepType, required=True, by_value=False)
@@ -46,6 +63,12 @@ class ProcurementTrackerStepResponseSchema(Schema):
     approval_requested_by = fields.Integer(allow_none=True)
     requestor_notes = fields.String(allow_none=True)
 
+    # PRE_AWARD approval response fields
+    approval_status = fields.String(allow_none=True, validate=validate.OneOf(["APPROVED", "DECLINED", "PENDING"]))
+    approval_responded_by = fields.Integer(allow_none=True)
+    approval_responded_date = fields.Date(allow_none=True)
+    reviewer_notes = fields.String(allow_none=True)
+
     # BaseModel fields
     display_name = fields.String(dump_only=True)
     created_on = fields.DateTime(dump_only=True)
@@ -69,6 +92,7 @@ class ProcurementTrackerStepResponseSchema(Schema):
         data = {
             "id": obj.id,
             "procurement_tracker_id": obj.procurement_tracker_id,
+            "procurement_tracker": obj.procurement_tracker if hasattr(obj, "procurement_tracker") else None,
             "step_number": obj.step_number,
             "step_class": obj.step_class,
             "step_type": obj.step_type,  # Keep as enum
@@ -116,6 +140,10 @@ class ProcurementTrackerStepResponseSchema(Schema):
             data["approval_requested_date"] = getattr(obj, "pre_award_approval_requested_date", None)
             data["approval_requested_by"] = getattr(obj, "pre_award_approval_requested_by", None)
             data["requestor_notes"] = getattr(obj, "pre_award_requestor_notes", None)
+            data["approval_status"] = getattr(obj, "pre_award_approval_status", None)
+            data["approval_responded_by"] = getattr(obj, "pre_award_approval_responded_by", None)
+            data["approval_responded_date"] = getattr(obj, "pre_award_approval_responded_date", None)
+            data["reviewer_notes"] = getattr(obj, "pre_award_approval_reviewer_notes", None)
 
         return data
 
@@ -192,6 +220,10 @@ class ProcurementTrackerStepResponseSchema(Schema):
                 "approval_requested_date",
                 "approval_requested_by",
                 "requestor_notes",
+                "approval_status",
+                "approval_responded_by",
+                "approval_responded_date",
+                "reviewer_notes",
             }
             # Remove PRE_SOLICITATION-only fields
             data.pop("draft_solicitation_date", None)
@@ -213,6 +245,10 @@ class ProcurementTrackerStepResponseSchema(Schema):
                 "approval_requested_date",
                 "approval_requested_by",
                 "requestor_notes",
+                "approval_status",
+                "approval_responded_by",
+                "approval_responded_date",
+                "reviewer_notes",
             ]:
                 data.pop(field, None)
 
@@ -242,6 +278,11 @@ class ProcurementTrackerStepPatchRequestSchema(Schema):
     approval_requested_date = fields.Date(required=False, allow_none=True)
     # approval_requested_by is server-controlled and derived from current_user - not accepted from client
     requestor_notes = fields.String(required=False, allow_none=True, validate=validate.Length(max=150))
+
+    # Pre-Award approval response fields
+    approval_status = fields.String(required=False, allow_none=True, validate=validate.OneOf(["APPROVED", "DECLINED"]))
+    # approval_responded_by and approval_responded_date are server-controlled - not accepted from client
+    reviewer_notes = fields.String(required=False, allow_none=True, validate=validate.Length(max=150))
 
 
 class ProcurementTrackerStepSchema(Schema):
@@ -273,6 +314,12 @@ class ProcurementTrackerStepSchema(Schema):
     approval_requested_date = fields.Date(allow_none=True)
     approval_requested_by = fields.Integer(allow_none=True)
     requestor_notes = fields.String(allow_none=True)
+
+    # PRE_AWARD approval response fields
+    approval_status = fields.String(allow_none=True)
+    approval_responded_by = fields.Integer(allow_none=True)
+    approval_responded_date = fields.Date(allow_none=True)
+    reviewer_notes = fields.String(allow_none=True)
 
     @pre_dump
     def map_step_specific_fields(self, obj, **_kwargs):
@@ -335,6 +382,10 @@ class ProcurementTrackerStepSchema(Schema):
             data["approval_requested_date"] = getattr(obj, "pre_award_approval_requested_date", None)
             data["approval_requested_by"] = getattr(obj, "pre_award_approval_requested_by", None)
             data["requestor_notes"] = getattr(obj, "pre_award_requestor_notes", None)
+            data["approval_status"] = getattr(obj, "pre_award_approval_status", None)
+            data["approval_responded_by"] = getattr(obj, "pre_award_approval_responded_by", None)
+            data["approval_responded_date"] = getattr(obj, "pre_award_approval_responded_date", None)
+            data["reviewer_notes"] = getattr(obj, "pre_award_approval_reviewer_notes", None)
 
         return data
 
@@ -418,6 +469,10 @@ class ProcurementTrackerStepSchema(Schema):
                 "approval_requested_date",
                 "approval_requested_by",
                 "requestor_notes",
+                "approval_status",
+                "approval_responded_by",
+                "approval_responded_date",
+                "reviewer_notes",
             }
             preserve_keys = base_fields | pre_award_fields
             # Remove PRE_SOLICITATION-only fields
@@ -440,6 +495,10 @@ class ProcurementTrackerStepSchema(Schema):
                 "approval_requested_date",
                 "approval_requested_by",
                 "requestor_notes",
+                "approval_status",
+                "approval_responded_by",
+                "approval_responded_date",
+                "reviewer_notes",
             ]:
                 data.pop(field, None)
 

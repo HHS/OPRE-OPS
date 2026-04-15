@@ -85,9 +85,10 @@ describe("ProjectTypeSummaryCard", () => {
                 summary={tinySliceSummary}
             />
         );
-        expect(screen.getByText("<1%")).toBeInTheDocument();
-        expect(screen.getByText(">99%")).toBeInTheDocument();
+        // Dominant item must not show 100% when other non-zero items exist
         expect(screen.queryByText("100%")).not.toBeInTheDocument();
+        expect(screen.getByText(">99%")).toBeInTheDocument();
+        expect(screen.getByText("<1%")).toBeInTheDocument();
     });
 
     it("dominant type shows '>99%' when non-zero peers exist", () => {

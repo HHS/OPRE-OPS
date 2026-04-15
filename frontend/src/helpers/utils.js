@@ -30,6 +30,7 @@ export const calculatePercent = (numerator, denominator) => {
 
     return Math.round((numerator / denominator) * 100);
 };
+
 /**
  * This function formats a date into a string in the format MM/DD/YYYY.
  * @param {Date} date - The date to format. This parameter is required.

@@ -33,7 +33,7 @@ export const setupStore = (preloadedState = {}) => {
     });
 };
 
-export default configureStore({
+const store = configureStore({
     reducer: rootReducer,
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware().concat(
@@ -43,3 +43,11 @@ export default configureStore({
             resetApiOnLogoutMiddleware
         )
 });
+
+/**
+ * RootState type for use with useSelector via JSDoc imports.
+ * Usage: @type {import('./store').RootState}
+ * @typedef {ReturnType<typeof store.getState>} RootState
+ */
+
+export default store;

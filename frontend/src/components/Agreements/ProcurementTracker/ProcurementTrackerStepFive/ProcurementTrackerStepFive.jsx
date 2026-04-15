@@ -7,7 +7,7 @@ import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepFive from "./ProcurementTrackerStepFive.hooks";
 import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { PROCUREMENT_STEP_STATUS } from "../ProcurementTracker.constants";
+import { PROCUREMENT_STEP_STATUS, ProcurementTrackerPreAwardApprovalStatus } from "../ProcurementTracker.constants";
 
 /**
  * @typedef {import("../../../../types/UserTypes").SafeUser} SafeUser
@@ -71,13 +71,18 @@ const ProcurementTrackerStepFive = ({
     } = useProcurementTrackerStepFive(stepFiveData, handleSetCompletedStepNumber);
 
     // Disabled flags for form controls
+    const isApprovalDeclined = stepFiveData?.approval_status === "DECLINED";
+    const isApprovalApproved = stepFiveData?.approval_status === "APPROVED";
     const isTargetCompletionDateSaveDisabled =
         isDisabled || validatorRes.hasErrors("targetCompletionDate") || !targetCompletionDate || !stepFiveData?.id;
-    const isPreAwardCheckboxDisabled = isDisabled || !isActiveStep;
+    const isPreAwardCheckboxDisabled = isDisabled || !isActiveStep || !isApprovalApproved;
     const isUsersComboBoxDisabled = isDisabled || !isPreAwardComplete || authorizedUsers.length === 0;
     const isPreAwardFieldsDisabled = isDisabled || !isPreAwardComplete;
     const hasBLIInReview = budgetLineItems?.some((bli) => bli.in_review) ?? false;
-    const isRequestBtnDisabled = isDisabled || !isActiveStep || !!stepFiveData?.approval_requested || hasBLIInReview;
+    // Allow re-requesting when approval is declined, even if approval_requested was previously true
+
+    const isRequestBtnDisabled =
+        isDisabled || !isActiveStep || (!!stepFiveData?.approval_requested && !isApprovalDeclined) || hasBLIInReview;
     const isStep5SubmitDisabled = Boolean(
         isDisabled ||
         !isPreAwardComplete ||
@@ -85,7 +90,7 @@ const ProcurementTrackerStepFive = ({
         !step5DateCompleted ||
         validatorRes.hasErrors() ||
         !stepFiveData?.id ||
-        stepFiveData?.approval_requested
+        stepFiveData?.approval_status !== ProcurementTrackerPreAwardApprovalStatus.APPROVED
     );
     return (
         <>
