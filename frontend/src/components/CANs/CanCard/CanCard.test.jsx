@@ -87,7 +87,7 @@ describe("CanCard", () => {
 
         const lineGraph = screen.getByTestId("mock-line-graph");
         const graphData = JSON.parse(lineGraph.getAttribute("data-graph-data"));
-        expect(graphData[1].value).not.toBeUndefined();
+        expect(graphData[1].value).toBe(mockCanFundingData.funding.total_funding);
     });
 
     it("computes spending/available chart percentages correctly", async () => {
