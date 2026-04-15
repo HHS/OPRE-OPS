@@ -515,7 +515,7 @@ describe("Agreement List", () => {
                     const percentText = Cypress.$(tag).text();
                     // Strip display-string prefixes (">99%" → 99, "<1%" → 1, "0%" → 0)
                     // so the sum check works correctly after cross-item normalisation.
-                    const normalized = percentText.replace(/^[><]/, "").replace("%", "").trim();
+                    const normalized = percentText.replace(/^[><]/, "").replace(/%/g, "").trim();
                     totalPercent += parseInt(normalized, 10) || 0;
                 });
                 // Due to rounding, the sum may not be exactly 100 but should be close
