@@ -1,5 +1,10 @@
 import { useSelector } from "react-redux";
-import { useGetAgreementByIdQuery, useGetChangeRequestsListQuery, useGetProcurementShopsQuery } from "../api/opsAPI";
+import {
+    useGetAgreementByIdQuery,
+    useGetChangeRequestsListQuery,
+    useGetPendingPreAwardApprovalsQuery,
+    useGetProcurementShopsQuery
+} from "../api/opsAPI";
 import { useGetAllCans } from "./useGetAllCans";
 import { convertToCurrency, renderField } from "../helpers/utils";
 import { calculateAgreementTotal } from "../helpers/agreement.helpers";
@@ -31,14 +36,18 @@ export const useChangeRequestsForAgreement = (agreementId) => {
 };
 
 /**
- * Custom hook that returns the total number of change requests.
- * @returns {number} The total number of change requests.
+ * Custom hook that returns the total number of change requests and pre-award approvals.
+ * @returns {number} The total number of items needing review.
  */
 export const useChangeRequestTotal = () => {
     const userId = useSelector((state) => state.auth?.activeUser?.id) ?? null;
     const { data: changeRequests } = useGetChangeRequestsListQuery({ userId }, { skip: !userId });
+    const { data: preAwardApprovals } = useGetPendingPreAwardApprovalsQuery(undefined, { skip: !userId });
 
-    return changeRequests?.length || 0;
+    const changeRequestsCount = changeRequests?.length || 0;
+    const preAwardApprovalsCount = preAwardApprovals?.length || 0;
+
+    return changeRequestsCount + preAwardApprovalsCount;
 };
 
 /**

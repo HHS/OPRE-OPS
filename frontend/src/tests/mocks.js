@@ -136,6 +136,29 @@ export const handlers = [
             limit: limit,
             offset: offset
         });
+    }),
+
+    // Mock documents endpoint for pre-award approval
+    http.get("https://localhost:8000/api/v1/documents/", ({ request }) => {
+        const url = new URL(request.url);
+        const agreementId = url.searchParams.get("agreement_id");
+
+        if (!agreementId) {
+            return HttpResponse.json({ documents: [] });
+        }
+
+        return HttpResponse.json({
+            documents: [
+                {
+                    id: 1,
+                    document_name: "Final_Consensus_Memo_2026.pdf",
+                    document_type: "PRE_AWARD_CONSENSUS_MEMO",
+                    document_size: "2.5",
+                    uploaded_by: 1,
+                    uploaded_date: "2026-04-01T10:30:00Z"
+                }
+            ]
+        });
     })
 ];
 
