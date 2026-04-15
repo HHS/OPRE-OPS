@@ -22,7 +22,7 @@ jobs:
           fetch-depth: 0
       - name: TruffleHog OSS
         id: trufflehog
-        uses: trufflesecurity/trufflehog@6bd2d14f7a4bc1e569fa3550efa7ec632a4fa67b # v3.94.2
+        uses: trufflesecurity/trufflehog@47e7b7cd74f578e1e3145d48f669f22fd1330ca6 # v3.94.3
         env:
           GITHUB_HEAD_REF_SAFE: ${{ github.head_ref }}
         continue-on-error: true
@@ -55,7 +55,7 @@ jobs:
       - uses: ./.github/actions/setup-javascript
 
       - name: Cache Cypress binary
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ~/.cache/Cypress
           key: cypress-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('frontend/bun.lock') }}
@@ -132,8 +132,13 @@ jobs:
         run: |
           COMMITTER_NAME=$(git log -1 --pretty=format:'%cn')
           COMMITTER_EMAIL=$(git log -1 --pretty=format:'%ce')
+          AUTHOR_NAME=$(git log -1 --pretty=format:'%an')
           echo "Last committer: $COMMITTER_NAME <$COMMITTER_EMAIL>"
-          if [[ "$COMMITTER_NAME" == "GitHub" && "$COMMITTER_EMAIL" == *"noreply@github.com"* ]]; then
+          echo "Last author: $AUTHOR_NAME"
+          if [[ "$AUTHOR_NAME" == *"[bot]"* ]]; then
+            echo "source=bot" >> $GITHUB_OUTPUT
+            echo "Bot commit detected — will check formatting (no auto-fix)"
+          elif [[ "$COMMITTER_NAME" == "GitHub" && "$COMMITTER_EMAIL" == *"noreply@github.com"* ]]; then
             echo "source=web-ui" >> $GITHUB_OUTPUT
             echo "Web UI commit detected — will auto-format if needed"
           else

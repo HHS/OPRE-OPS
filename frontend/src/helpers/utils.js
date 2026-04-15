@@ -30,6 +30,43 @@ export const calculatePercent = (numerator, denominator) => {
 
     return Math.round((numerator / denominator) * 100);
 };
+
+/**
+ * Computes display-friendly percent values for an array of items.
+ *
+ * Returns the raw numeric/string percent tokens without a trailing "%".
+ * The percent sign is appended later by `LegendItem` and other consumers.
+ *
+ * Handles the edge case where one dominant item rounds to 100 while other
+ * non-zero items exist — which would otherwise render in the legend as a
+ * contradictory combination like "100% + <1%". In that case this helper
+ * returns ">99" for the dominant item instead.
+ *
+ * Rules applied per item:
+ *   - Zero value                         → 0
+ *   - Non-zero but rounds to 0          → "<1"
+ *   - Rounds to 100 while other non-zero items exist → ">99"
+ *   - Otherwise                         → rounded integer
+ *
+ * @param {Array<{value: number}>} items - Data items with a numeric `value` field
+ * @param {number} total - Sum of all item values
+ * @returns {Array<number|string>} - Parallel array of raw display percent values; "%" is appended later by consumers
+ */
+export const computeDisplayPercents = (items, total) => {
+    if (total === 0) return items.map(() => 0);
+
+    const rounded = items.map((item) => {
+        if (item.value === 0) return 0;
+        const exact = (item.value / total) * 100;
+        const r = Math.round(exact);
+        return r === 0 ? "<1" : r;
+    });
+
+    // Check if any item shows 100 while others have non-zero amounts
+    const hasOtherNonZero = (idx) => items.some((item, i) => i !== idx && item.value > 0);
+
+    return rounded.map((r, idx) => (r === 100 && hasOtherNonZero(idx) ? ">99" : r));
+};
 /**
  * This function formats a date into a string in the format MM/DD/YYYY.
  * @param {Date} date - The date to format. This parameter is required.

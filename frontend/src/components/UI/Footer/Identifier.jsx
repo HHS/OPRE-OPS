@@ -51,7 +51,7 @@ const Identifier = () => {
                                 href="https://acf.gov/accessibility"
                                 className="usa-identifier__required-link usa-link"
                             >
-                                Accessibility support
+                                Accessibility statement
                             </a>
                         </li>
                         <li className="usa-identifier__required-links-item">

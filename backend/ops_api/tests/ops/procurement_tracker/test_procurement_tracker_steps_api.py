@@ -501,6 +501,11 @@ def test_update_procurement_tracker_step_creates_update_tracker_event(auth_clien
     tracker_data = tracker_event.event_details["procurement_tracker"]
     assert tracker_data["active_step_number"] == 2
 
+    # Verify the next step's status was set to ACTIVE
+    second_step = next((s for s in tracker.steps if s.step_number == 2), None)
+    assert second_step is not None, "Tracker must have a second step"
+    assert second_step.status == ProcurementTrackerStepStatus.ACTIVE
+
 
 # Serialization Tests for Pre-Solicitation Fields
 

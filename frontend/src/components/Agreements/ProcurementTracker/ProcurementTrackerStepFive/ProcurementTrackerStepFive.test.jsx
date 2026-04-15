@@ -296,6 +296,25 @@ describe("ProcurementTrackerStepFive", () => {
             expect(requestButton).toBeDisabled();
         });
 
+        it("renders Request Pre-Award Approval button as enabled when approval is declined", () => {
+            render(
+                <ProcurementTrackerStepFive
+                    stepStatus="PENDING"
+                    stepFiveData={{ ...mockStepData, approval_requested: false, approval_status: "DECLINED" }}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    isActiveStep={true}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
+                    budgetLineItems={[]}
+                />
+            );
+
+            const requestButton = screen.getByText("Request Pre-Award Approval");
+            expect(requestButton).toBeInTheDocument();
+            expect(requestButton).not.toBeDisabled();
+        });
+
         it("Target Completion Date has correct props", () => {
             render(
                 <ProcurementTrackerStepFive
@@ -372,6 +391,55 @@ describe("ProcurementTrackerStepFive", () => {
             );
 
             expect(screen.getByText("Save")).toBeInTheDocument();
+        });
+    });
+
+    describe("ACTIVE State Rendering", () => {
+        it("renders editable form fields when step status is ACTIVE", () => {
+            render(
+                <ProcurementTrackerStepFive
+                    stepStatus="ACTIVE"
+                    stepFiveData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    isActiveStep={true}
+                    agreementId={1}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                />
+            );
+
+            expect(screen.getByRole("checkbox")).toBeInTheDocument();
+            expect(screen.getByTestId("users-combobox")).toBeInTheDocument();
+            expect(screen.getByTestId("text-area")).toBeInTheDocument();
+            expect(screen.getByRole("button", { name: /cancel/i })).toBeInTheDocument();
+            expect(screen.getByRole("button", { name: /complete step 5/i })).toBeInTheDocument();
+        });
+
+        it("form fields are interactive when pre-award complete in ACTIVE state", () => {
+            useProcurementTrackerStepFive.mockReturnValue({
+                ...defaultHookReturn,
+                isPreAwardComplete: true
+            });
+
+            render(
+                <ProcurementTrackerStepFive
+                    stepStatus="ACTIVE"
+                    stepFiveData={mockStepData}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    isActiveStep={true}
+                    agreementId={1}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                />
+            );
+
+            // eslint-disable-next-line testing-library/no-node-access
+            const select = screen.getByTestId("users-combobox").querySelector("select");
+            // eslint-disable-next-line testing-library/no-node-access
+            const notesInput = screen.getByTestId("text-area").querySelector("textarea");
+
+            expect(select).not.toBeDisabled();
+            expect(notesInput).not.toBeDisabled();
         });
     });
 
@@ -1255,7 +1323,7 @@ describe("ProcurementTrackerStepFive", () => {
             render(
                 <ProcurementTrackerStepFive
                     stepStatus="PENDING"
-                    stepFiveData={mockStepData}
+                    stepFiveData={{ ...mockStepData, approval_status: "APPROVED" }}
                     authorizedUsers={mockAllUsers}
                     isDisabled={false}
                     isActiveStep={true}
@@ -1279,7 +1347,7 @@ describe("ProcurementTrackerStepFive", () => {
             render(
                 <ProcurementTrackerStepFive
                     stepStatus="PENDING"
-                    stepFiveData={mockStepData}
+                    stepFiveData={{ ...mockStepData, approval_status: "APPROVED" }}
                     authorizedUsers={mockAllUsers}
                     isDisabled={false}
                     isActiveStep={true}

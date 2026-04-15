@@ -6,6 +6,7 @@ import useProcurementTrackerStepOne from "./ProcurementTrackerStepOne.hooks";
 import { getLocalISODate } from "../../../../helpers/utils";
 import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { PROCUREMENT_STEP_STATUS } from "../ProcurementTracker.constants";
 
 /**
  * @typedef {import("../../../../types/UserTypes").SafeUser} SafeUser
@@ -77,7 +78,7 @@ const ProcurementTrackerStepOne = ({
                         Once the pre-solicitation package is sufficiently drafted and signed by all parties, send it to
                         the Procurement Shop and check this step as complete.
                     </p>
-                    {stepStatus === "COMPLETED" && (
+                    {stepStatus === PROCUREMENT_STEP_STATUS.COMPLETED && (
                         <div className="display-flex flex-align-center margin-top-5">
                             <FontAwesomeIcon
                                 icon={faCircleCheck}
@@ -107,90 +108,93 @@ const ProcurementTrackerStepOne = ({
                     </dl>
                 </div>
             )}
-            {!isReadOnly && stepStatus === "PENDING" && (
-                <fieldset className="usa-fieldset">
-                    <p>
-                        Once the pre-solicitation package is sufficiently drafted and signed by all parties, send it to
-                        the Procurement Shop and check this step as complete.
-                    </p>
-                    <div className="usa-checkbox">
-                        <input
-                            className="usa-checkbox__input"
-                            id="step-1-checkbox"
-                            type="checkbox"
-                            name="step-1-checkbox"
-                            value="step-1-checkbox"
-                            checked={isPreSolicitationPackageSent}
-                            onChange={() => setIsPreSolicitationPackageSent(!isPreSolicitationPackageSent)}
-                            disabled={isDisabled || !isActiveStep}
-                        />
-                        <label
-                            className="usa-checkbox__label"
-                            htmlFor="step-1-checkbox"
-                        >
-                            The pre-solicitation package has been sent to the Procurement Shop for review
-                        </label>
-                    </div>
-                    <div className="display-flex flex-align-center">
-                        <UsersComboBox
-                            className="width-card-lg margin-top-5"
-                            label={"Task Completed By"}
-                            selectedUser={selectedUser}
-                            setSelectedUser={setSelectedUser}
-                            messages={validatorRes.getErrors("users") || []}
-                            isDisabled={isDisabled || !isPreSolicitationPackageSent || authorizedUsers.length === 0}
-                            onChange={(name, value) => {
-                                runValidate(name, value);
-                            }}
-                            users={authorizedUsers}
-                        />
-                        <MemoizedDatePicker
-                            id="step-1-date-completed"
-                            className="margin-left-4"
-                            name="dateCompleted"
-                            label="Date Completed"
-                            hint="mm/dd/yyyy"
-                            value={step1DateCompleted}
-                            messages={validatorRes.getErrors("dateCompleted") || []}
-                            onChange={(e) => {
-                                runValidate("dateCompleted", e.target.value);
-                                setStep1DateCompleted(e.target.value);
-                            }}
+            {!isReadOnly &&
+                (stepStatus === PROCUREMENT_STEP_STATUS.PENDING || stepStatus === PROCUREMENT_STEP_STATUS.ACTIVE) && (
+                    <fieldset className="usa-fieldset">
+                        <p>
+                            Once the pre-solicitation package is sufficiently drafted and signed by all parties, send it
+                            to the Procurement Shop and check this step as complete.
+                        </p>
+                        <div className="usa-checkbox">
+                            <input
+                                className="usa-checkbox__input"
+                                id="step-1-checkbox"
+                                type="checkbox"
+                                name="step-1-checkbox"
+                                value="step-1-checkbox"
+                                checked={isPreSolicitationPackageSent}
+                                onChange={() => setIsPreSolicitationPackageSent(!isPreSolicitationPackageSent)}
+                                disabled={isDisabled || !isActiveStep}
+                            />
+                            <label
+                                className="usa-checkbox__label"
+                                htmlFor="step-1-checkbox"
+                            >
+                                The pre-solicitation package has been sent to the Procurement Shop for review
+                            </label>
+                        </div>
+                        <div className="display-flex flex-align-center">
+                            <UsersComboBox
+                                className="width-card-lg margin-top-5"
+                                label={"Task Completed By"}
+                                selectedUser={selectedUser}
+                                setSelectedUser={setSelectedUser}
+                                messages={validatorRes.getErrors("users") || []}
+                                isDisabled={isDisabled || !isPreSolicitationPackageSent || authorizedUsers.length === 0}
+                                onChange={(name, value) => {
+                                    runValidate(name, value);
+                                }}
+                                users={authorizedUsers}
+                            />
+                            <MemoizedDatePicker
+                                id="step-1-date-completed"
+                                className="margin-left-4"
+                                name="dateCompleted"
+                                label="Date Completed"
+                                hint="mm/dd/yyyy"
+                                value={step1DateCompleted}
+                                messages={validatorRes.getErrors("dateCompleted") || []}
+                                onChange={(e) => {
+                                    runValidate("dateCompleted", e.target.value);
+                                    setStep1DateCompleted(e.target.value);
+                                }}
+                                isDisabled={isDisabled || !isPreSolicitationPackageSent}
+                                maxDate={getLocalISODate()}
+                            />
+                        </div>
+                        <TextArea
+                            name="notes"
+                            label="Notes (optional)"
+                            className="margin-top-2"
+                            maxLength={750}
+                            value={step1Notes}
+                            onChange={(_, value) => setStep1Notes(value)}
                             isDisabled={isDisabled || !isPreSolicitationPackageSent}
-                            maxDate={getLocalISODate()}
                         />
-                    </div>
-                    <TextArea
-                        name="notes"
-                        label="Notes (optional)"
-                        className="margin-top-2"
-                        maxLength={750}
-                        value={step1Notes}
-                        onChange={(_, value) => setStep1Notes(value)}
-                        isDisabled={isDisabled || !isPreSolicitationPackageSent}
-                    />
-                    <div className="margin-top-2 display-flex flex-justify-end">
-                        <button
-                            className="usa-button usa-button--unstyled margin-right-2"
-                            data-cy="cancel-button"
-                            onClick={cancelModalStep1}
-                            disabled={isDisabled || !isPreSolicitationPackageSent}
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            className="usa-button"
-                            data-cy="continue-btn"
-                            onClick={() => handleStep1Complete(stepOneData?.id)}
-                            disabled={disableStep1Buttons}
-                        >
-                            Complete Step 1
-                        </button>
-                    </div>
-                </fieldset>
-            )}
+                        <div className="margin-top-2 display-flex flex-justify-end">
+                            <button
+                                type="button"
+                                className="usa-button usa-button--unstyled margin-right-2"
+                                data-cy="cancel-button"
+                                onClick={cancelModalStep1}
+                                disabled={isDisabled || !isPreSolicitationPackageSent}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                className="usa-button"
+                                data-cy="continue-btn"
+                                onClick={() => handleStep1Complete(stepOneData?.id)}
+                                disabled={disableStep1Buttons}
+                            >
+                                Complete Step 1
+                            </button>
+                        </div>
+                    </fieldset>
+                )}
 
-            {!isReadOnly && stepStatus === "COMPLETED" && (
+            {!isReadOnly && stepStatus === PROCUREMENT_STEP_STATUS.COMPLETED && (
                 <div>
                     <p>
                         When the pre-solicitation package has been sufficiently drafted and signed by all parties, send

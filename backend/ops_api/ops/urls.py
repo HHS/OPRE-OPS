@@ -52,6 +52,7 @@ from ops_api.ops.views import (
     PROCUREMENT_TRACKER_LIST_API_VIEW_FUNC,
     PROCUREMENT_TRACKER_STEP_ITEM_API_VIEW_FUNC,
     PROCUREMENT_TRACKER_STEP_LIST_API_VIEW_FUNC,
+    PROCUREMENT_TRACKER_STEP_PENDING_APPROVALS_API_VIEW_FUNC,
     PRODUCT_SERVICE_CODE_ITEM_API_VIEW_FUNC,
     PRODUCT_SERVICE_CODE_LIST_API_VIEW_FUNC,
     PROJECT_FUNDING_API_VIEW_FUNC,
@@ -166,6 +167,10 @@ def register_api(api_bp: Blueprint) -> None:
         view_func=PROCUREMENT_SHOPS_LIST_API_VIEW_FUNC,
     )
 
+    api_bp.add_url_rule(
+        "/procurement-tracker-steps/pending-approvals/",
+        view_func=PROCUREMENT_TRACKER_STEP_PENDING_APPROVALS_API_VIEW_FUNC,
+    )
     api_bp.add_url_rule(
         "/procurement-tracker-steps/<int:id>",
         view_func=PROCUREMENT_TRACKER_STEP_ITEM_API_VIEW_FUNC,

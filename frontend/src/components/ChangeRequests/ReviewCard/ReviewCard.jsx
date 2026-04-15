@@ -83,6 +83,7 @@ function ReviewCard({
                                 position="top"
                             >
                                 <button
+                                    type="button"
                                     id="approve"
                                     aria-label="Approve"
                                     onClick={() =>
@@ -106,6 +107,7 @@ function ReviewCard({
                                 position="top"
                             >
                                 <button
+                                    type="button"
                                     id="decline"
                                     aria-label="Decline"
                                     onClick={() =>
@@ -129,7 +131,7 @@ function ReviewCard({
                 </header>
             )}
             <section
-                className="display-flex flex-justify margin-y-1"
+                className="display-flex flex-justify flex-align-start margin-y-1"
                 style={{ maxWidth: "50rem", ...wrapperStyles }}
             >
                 <dl className="font-12px grid-col-2">
@@ -143,6 +145,7 @@ function ReviewCard({
                     <FontAwesomeIcon
                         icon={faClock}
                         className="height-2 width-2 margin-right-1"
+                        aria-hidden={true}
                     />
                     {formatDateToMonthDayYear(requestDate)}
                 </div>

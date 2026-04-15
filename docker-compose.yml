@@ -63,6 +63,7 @@ services:
       - JWT_PRIVATE_KEY
       - JWT_PUBLIC_KEY
       - OPS_CONFIG=environment/local/container.py
+      - OPS_FRONTEND_URL=${OPS_FRONTEND_URL:-http://localhost:${FRONTEND_PORT:-3000}}
     volumes:
       - ./backend/ops_api/ops:/home/app/ops_api/ops
     depends_on:

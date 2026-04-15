@@ -65,6 +65,7 @@ function ServicesComponentListItem({
                             position="top"
                         >
                             <button
+                                type="button"
                                 id="edit"
                                 aria-label={isEditDisabled ? disabledEditMsg : "Edit"}
                                 data-cy="services-component-item-edit-button"
@@ -90,6 +91,7 @@ function ServicesComponentListItem({
                             position="top"
                         >
                             <button
+                                type="button"
                                 id="delete"
                                 aria-label={`${isDeleteDisabled ? disabledDeleteMsg : "Delete"}`}
                                 data-cy="services-component-item-delete-button"
