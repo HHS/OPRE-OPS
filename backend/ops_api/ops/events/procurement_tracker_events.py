@@ -16,6 +16,7 @@ from sqlalchemy.orm import Session
 from models import (
     Agreement,
     BudgetLineItem,
+    BudgetLineItemChangeRequest,
     ChangeRequestStatus,
     ChangeRequestType,
     DefaultProcurementTracker,
@@ -45,7 +46,9 @@ def procurement_tracker_trigger(event: OpsEvent, session: Session) -> None:
         session: SQLAlchemy session for database operations
     """
     try:
-        is_valid, reason, agreement_id, budget_line_item_id = _validate_event_for_procurement_tracker_creation(event)
+        is_valid, reason, agreement_id, budget_line_item_id = _validate_event_for_procurement_tracker_creation(
+            event, session
+        )
 
         if not is_valid:
             logger.debug(f"{reason}, skipping")
@@ -97,7 +100,7 @@ def procurement_tracker_trigger(event: OpsEvent, session: Session) -> None:
 
 
 def _validate_event_for_procurement_tracker_creation(
-    event: OpsEvent,
+    event: OpsEvent, session: Session
 ) -> Tuple[bool, Optional[str], Optional[int], Optional[int]]:
     """
     Validate that the event should trigger procurement tracker creation.
@@ -114,15 +117,14 @@ def _validate_event_for_procurement_tracker_creation(
 
         if not change_request:
             logger.debug("No change_request in event details, skipping")
-            return
+            return False, "No change_request in event details", None, None
 
         # Validate change request and extract IDs
         is_valid, reason, agreement_id, budget_line_item_id = _validate_change_request_for_tracker_creation(
             change_request
         )
     elif event.event_type == OpsEventType.UPDATE_BLI:
-        # TODO
-        print("hello")
+        is_valid, reason, agreement_id, budget_line_item_id = _validate_bli_update_for_tracker_creation(event, session)
     else:
         logger.debug(f"Received unsupported event type {event.event_type}, skipping")
         is_valid = False
@@ -131,6 +133,75 @@ def _validate_event_for_procurement_tracker_creation(
         budget_line_item_id = None
 
     return (is_valid, reason, agreement_id, budget_line_item_id)
+
+
+def _validate_bli_update_for_tracker_creation(
+    event: OpsEvent, session: Session
+) -> Tuple[bool, Optional[str], Optional[int], Optional[int]]:
+    """
+    Validate that the UPDATE_BLI event should trigger procurement tracker creation.
+
+    Returns:
+        Tuple of (is_valid, reason, agreement_id, budget_line_item_id)
+    """
+    event_details = event.event_details or {}
+    bli_updates = event_details.get("bli_updates", {})
+    changes = bli_updates.get("changes", {})
+    if not changes or "status" not in changes:
+        return False, "No status change in event details, skipping", None, None
+    status_changes = changes.get("status", {})
+    new_status = status_changes.get("new_value")
+    old_status = status_changes.get("old_value")
+
+    if new_status != "IN_EXECUTION":
+        return False, f"New status is {new_status}, not IN_EXECUTION", None, None
+
+    if old_status == "IN_EXECUTION":
+        return False, "Old status is already IN_EXECUTION, skipping", None, None
+
+    bli = event_details.get("bli")
+    if not bli:
+        return False, "No BLI details in event, skipping", None, None
+    agreement_id = bli.get("agreement_id")
+    budget_line_item_id = bli.get("id")
+
+    if not agreement_id:
+        return False, "No agreement_id in serialized bli", None, None
+
+    if not budget_line_item_id:
+        return False, "No budget_line_item_id in serialized bli", None, None
+    no_cr_for_bli, reason = _validate_no_change_requests_for_bli(event.session, budget_line_item_id)
+
+    if not no_cr_for_bli:
+        # BLI was updated via change request, so tracker creation should be handled by the change request event
+        return False, reason, None, None
+
+    return True, None, agreement_id, budget_line_item_id
+
+
+def _validate_no_change_requests_for_bli(session: Session, budget_line_item_id: int) -> Tuple[bool, Optional[str]]:
+    """
+    Validate that there are no change requests of any status for the given budget line item.
+
+    Returns:
+        Tuple of (is_valid, reason)
+    """
+    cr_stmt = (
+        select(BudgetLineItemChangeRequest)
+        .where(
+            BudgetLineItemChangeRequest.budget_line_item_id == budget_line_item_id,
+        )
+        .limit(1)
+    )
+    change_request = session.scalar(cr_stmt)
+
+    if change_request:
+        return (
+            False,
+            f"Found change request {change_request.id} for BLI {budget_line_item_id}. Change Request process is responsible for creating tracker",
+        )
+
+    return True, None
 
 
 def _validate_change_request_for_tracker_creation(

@@ -1438,7 +1438,7 @@ def test_update_budget_line_to_planned_does_not_create_tracker(mock_session, moc
     event.event_details = {
         "budget_line_item_id": 1,
         "agreement_id": 100,
-        "changes": {"status": {"old": "DRAFT", "new": "PLANNED"}},
+        "changes": {"status": {"old_value": "DRAFT", "new_value": "PLANNED"}},
     }
 
     mock_session.get.side_effect = lambda model_class, id: {
@@ -1465,13 +1465,15 @@ def test_update_budget_line_to_executing_creates_tracker(mock_session, mock_agre
     event.event_type = OpsEventType.UPDATE_BLI
     event.event_status = OpsEventStatus.SUCCESS
     event.created_by = 42
+    event.session = mock_session
     event.event_details = {
-        "bli": mock_bli.to_dict(),
-        "bli_updates": {"changes": {"status": {"old": "PLANNED", "new": "IN_EXECUTION"}}},
+        "bli": {"id": 1, "agreement_id": 100},
+        "bli_updates": {"changes": {"status": {"old_value": "PLANNED", "new_value": "IN_EXECUTION"}}},
     }
 
-    # Mock the scalar calls: agreement, then no tracker, then no action
+    # Mock the scalar calls: agreement, no change request for BLI, then no tracker, then no action
     mock_session.scalar.side_effect = [
+        None,  # Change request query (not found) - BLI has no change requests
         mock_agreement,  # Agreement query with lock
         None,  # Tracker query (not found)
         None,  # Action query (not found)
@@ -1502,3 +1504,36 @@ def test_update_budget_line_to_executing_creates_tracker(mock_session, mock_agre
     # Verify the created tracker has Step 1 as active
     assert mock_tracker.active_step_number == 1
     assert mock_tracker.status == ProcurementTrackerStatus.ACTIVE
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_update_budget_line_with_change_request_does_not_create_tracker(mock_session, mock_agreement, mock_bli):
+    """Test that UPDATE_BLI event does NOT create tracker when BLI has associated change requests."""
+    from models import BudgetLineItemChangeRequest
+
+    # Create UPDATE_BLI event for IN_EXECUTION status
+    event = Mock(spec=OpsEvent)
+    event.id = 501
+    event.event_type = OpsEventType.UPDATE_BLI
+    event.event_status = OpsEventStatus.SUCCESS
+    event.created_by = 42
+    event.session = mock_session
+    event.event_details = {
+        "bli": {"id": 1, "agreement_id": 100},
+        "bli_updates": {"changes": {"status": {"old_value": "PLANNED", "new_value": "IN_EXECUTION"}}},
+    }
+
+    # Create a mock change request for the BLI
+    mock_change_request = Mock(spec=BudgetLineItemChangeRequest)
+    mock_change_request.id = 999
+    mock_change_request.budget_line_item_id = 1
+
+    # Mock scalar to return the change request (meaning BLI has an associated change request)
+    mock_session.scalar.return_value = mock_change_request
+
+    procurement_tracker_trigger(event, mock_session)
+
+    # Verify no tracker or action was created
+    mock_session.add.assert_not_called()
+    mock_session.flush.assert_not_called()
+    mock_session.get.assert_not_called()  # Should not proceed to get BLI or Agreement
