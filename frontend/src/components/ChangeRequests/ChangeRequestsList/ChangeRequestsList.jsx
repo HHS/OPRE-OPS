@@ -1,9 +1,10 @@
 import * as React from "react";
 import { useSelector } from "react-redux";
-import { useGetChangeRequestsListQuery } from "../../../api/opsAPI";
+import { useGetChangeRequestsListQuery, useGetPendingPreAwardApprovalsQuery } from "../../../api/opsAPI";
 import BudgetChangeReviewCard from "../BudgetChangeReviewCard";
 import ProcurementShopReviewCard from "../ProcurementShopReviewCard";
 import StatusChangeReviewCard from "../StatusChangeReviewCard";
+import PreAwardReviewCard from "../PreAwardReviewCard";
 import { useNavigate } from "react-router-dom";
 
 /**
@@ -21,18 +22,46 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
         data: changeRequests,
         isLoading: loadingChangeRequests,
         isError: errorChangeRequests
-    } = useGetChangeRequestsListQuery({ userId }, { refetchOnMountOrArgChange: true, skip: !userId });
+    } = useGetChangeRequestsListQuery({ userId }, { skip: !userId, refetchOnMountOrArgChange: true });
 
-    if (loadingChangeRequests) {
+    // Fetch pending pre-award approvals
+    const {
+        data: preAwardApprovals,
+        isLoading: loadingPreAwardApprovals,
+        isError: errorPreAwardApprovals
+    } = useGetPendingPreAwardApprovalsQuery(undefined, { refetchOnMountOrArgChange: true });
+
+    // Handle navigation to error page in useEffect to avoid setState during render
+    React.useEffect(() => {
+        if (errorChangeRequests || errorPreAwardApprovals) {
+            navigate("/error");
+        }
+    }, [errorChangeRequests, errorPreAwardApprovals, navigate]);
+
+    if (loadingChangeRequests || loadingPreAwardApprovals) {
         return <h1>Loading...</h1>;
     }
-    if (errorChangeRequests) {
-        navigate("/error");
-        return;
+    if (errorChangeRequests || errorPreAwardApprovals) {
+        return null;
     }
 
-    return changeRequests && changeRequests.length > 0 ? (
+    const hasChangeRequests = changeRequests && changeRequests.length > 0;
+    const hasPreAwardApprovals = preAwardApprovals && preAwardApprovals.length > 0;
+
+    return hasChangeRequests || hasPreAwardApprovals ? (
         <>
+            {/* Pre-Award Approval Cards */}
+            {preAwardApprovals?.map((step) => (
+                <PreAwardReviewCard
+                    key={`pre-award-${step.id}`}
+                    agreementId={step.procurement_tracker?.agreement?.id}
+                    requestorId={step.approval_requested_by}
+                    requestDate={step.approval_requested_date}
+                    requestorNotes={step.requestor_notes}
+                />
+            ))}
+
+            {/* Change Request Cards */}
             {changeRequests?.map(
                 /** @param {ChangeRequest} changeRequest */
                 (changeRequest) => (
