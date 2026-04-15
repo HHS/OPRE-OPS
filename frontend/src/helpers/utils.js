@@ -565,3 +565,112 @@ export function convertToCurrency(value) {
         currency: "USD"
     });
 }
+
+// ---------------------------------------------------------------------------
+// Data-visualization percentage helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Computes a display-friendly percent string for a single item.
+ *
+ * - Returns 0 when value or total is zero.
+ * - Returns "<1" when a non-zero value rounds down to 0% (i.e. the item is
+ *   present but too small to show as 1%).
+ * - Otherwise returns the rounded integer percent.
+ *
+ * @param {number} value - The slice value.
+ * @param {number} total - The sum across all slices.
+ * @returns {number|string} Rounded integer percent, "<1", or 0.
+ */
+export const computeDisplayPercent = (value, total) => {
+    if (total === 0 || value === 0) return 0;
+    const exact = (value / total) * 100;
+    const rounded = Math.round(exact);
+    return rounded === 0 ? "<1" : rounded;
+};
+
+/**
+ * Computes cross-item-normalised display percents for an array of data items.
+ *
+ * Rules applied across the full set:
+ * 1. Any non-zero item that rounds down to 0% is shown as "<1".
+ * 2. If a dominant item would round to 100% while at least one other non-zero
+ *    item exists, the dominant item is capped at ">99" instead of 100.
+ *
+ * The returned array mirrors the input with a `percent` field added/replaced.
+ * Original `value` fields are never modified.
+ *
+ * @param {Array<{value: number}>} items - Data items. Must all have a numeric `value`.
+ * @returns {Array} Items with `percent` set to a number or the strings "<1" / ">99".
+ */
+export const computeDisplayPercents = (items) => {
+    if (!items || items.length === 0) return items;
+
+    const total = items.reduce((sum, item) => sum + (item.value ?? 0), 0);
+
+    if (total === 0) {
+        return items.map((item) => ({ ...item, percent: 0 }));
+    }
+
+    const nonZeroCount = items.filter((item) => (item.value ?? 0) > 0).length;
+
+    return items.map((item) => {
+        const value = item.value ?? 0;
+        const base = computeDisplayPercent(value, total);
+
+        // Cap dominant item at ">99" when other non-zero items still exist
+        if (base === 100 && nonZeroCount > 1) {
+            return { ...item, percent: ">99" };
+        }
+
+        return { ...item, percent: base };
+    });
+};
+
+/**
+ * Ensures every non-zero slice is at least 1% of the total so it remains
+ * visible in a donut/arc chart, while preserving the original total used to
+ * compute arc proportions by reducing the added amount from larger slices.
+ *
+ * Only affects chart rendering — legend values and percents should always
+ * reflect the real amounts (pass legend data separately).
+ *
+ * @param {Array<{value: number}>} items - Data items with numeric `value`.
+ * @param {number} total - Sum of all real values.
+ * @returns {Array} Items with chart-safe `value` fields applied.
+ */
+export const applyMinimumArcValue = (items, total) => {
+    if (!items || items.length === 0 || total === 0) return items;
+
+    const minValue = total * 0.01;
+
+    // Floor any non-zero slice that is below the minimum
+    const adjustedItems = items.map((item) => ({
+        ...item,
+        value: item.value > 0 && item.value < minValue ? minValue : item.value
+    }));
+
+    // How much was added in total by flooring
+    const addedValue = adjustedItems.reduce((sum, item, index) => sum + (item.value - items[index].value), 0);
+
+    if (addedValue <= 0) return adjustedItems;
+
+    // Subtract the added amount proportionally from slices that are above the minimum
+    const reducibleTotal = adjustedItems.reduce(
+        (sum, item) => (item.value > minValue ? sum + (item.value - minValue) : sum),
+        0
+    );
+
+    // If we cannot redistribute without pushing other slices below minimum, return as-is
+    if (reducibleTotal < addedValue) return adjustedItems;
+
+    let remaining = addedValue;
+
+    return adjustedItems.map((item) => {
+        if (item.value <= minValue || remaining <= 0) return item;
+        const reducible = item.value - minValue;
+        const reduction = Math.min(reducible, (reducible / reducibleTotal) * addedValue, remaining);
+        remaining -= reduction;
+        return { ...item, value: item.value - reduction };
+    });
+};

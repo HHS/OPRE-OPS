@@ -122,7 +122,7 @@ describe("PortfolioLegend", () => {
         expect(screen.getByText("0%")).toBeInTheDocument();
     });
 
-    it("displays '<1%' for percentages less than 1", () => {
+    it("displays '<1%' when percent is the string '<1' (pre-normalised by helpers)", () => {
         const dataWithTiny = [
             {
                 id: 1,
@@ -130,7 +130,7 @@ describe("PortfolioLegend", () => {
                 abbreviation: "TINY",
                 value: 50000,
                 color: "var(--portfolio-budget-1)",
-                percent: 0.5
+                percent: "<1"
             }
         ];
 
@@ -142,6 +142,29 @@ describe("PortfolioLegend", () => {
         );
 
         expect(screen.getByText("<1%")).toBeInTheDocument();
+    });
+
+    it("displays '>99%' when percent is the string '>99' (pre-normalised by helpers)", () => {
+        const dataWithDominant = [
+            {
+                id: 1,
+                label: "Dominant Portfolio",
+                abbreviation: "DOM",
+                value: 9960000,
+                color: "var(--portfolio-budget-1)",
+                percent: ">99"
+            }
+        ];
+
+        render(
+            <PortfolioLegend
+                data={dataWithDominant}
+                activeId={0}
+            />
+        );
+
+        expect(screen.getByText(">99%")).toBeInTheDocument();
+        expect(screen.queryByText("100%")).not.toBeInTheDocument();
     });
 
     it("displays normal percentage for exactly 1%", () => {

@@ -431,5 +431,69 @@ describe("PortfolioSummaryCards.helpers", () => {
             expect(result[6].isPlaceholder).toBe(true); // Placeholder at end of column 2
             expect(result[7].isPlaceholder).toBe(true); // Placeholder at end of column 2
         });
+
+        it("dominant portfolio shows '>99' instead of 100 when non-zero peers exist", () => {
+            const portfolios = [
+                {
+                    id: 1,
+                    name: "CC Portfolio",
+                    abbreviation: "CC",
+                    fundingSummary: { total_funding: { amount: 9960 } }
+                },
+                {
+                    id: 2,
+                    name: "CW Portfolio",
+                    abbreviation: "CW",
+                    fundingSummary: { total_funding: { amount: 20 } }
+                },
+                {
+                    id: 3,
+                    name: "HS Portfolio",
+                    abbreviation: "HS",
+                    fundingSummary: { total_funding: { amount: 20 } }
+                }
+            ];
+            const totalBudget = 10000;
+
+            const result = transformPortfoliosToChartData(portfolios, totalBudget);
+            const cc = result.find((item) => item.abbreviation === "CC");
+            const cw = result.find((item) => item.abbreviation === "CW");
+            const hs = result.find((item) => item.abbreviation === "HS");
+
+            expect(cc.percent).toBe(">99");
+            expect(cw.percent).toBe("<1");
+            expect(hs.percent).toBe("<1");
+        });
+
+        it("single portfolio with all the budget shows 100% (no peers)", () => {
+            const portfolios = [
+                {
+                    id: 1,
+                    name: "CC Portfolio",
+                    abbreviation: "CC",
+                    fundingSummary: { total_funding: { amount: 1000000 } }
+                }
+            ];
+            const totalBudget = 1000000;
+
+            const result = transformPortfoliosToChartData(portfolios, totalBudget);
+            const cc = result.find((item) => item.abbreviation === "CC");
+            expect(cc.percent).toBe(100);
+        });
+
+        it("does not mutate original items — percent field comes from normalisation", () => {
+            const portfolios = [
+                {
+                    id: 1,
+                    name: "CC Portfolio",
+                    abbreviation: "CC",
+                    fundingSummary: { total_funding: { amount: 3000000 } }
+                }
+            ];
+            const totalBudget = 5000000;
+            transformPortfoliosToChartData(portfolios, totalBudget);
+            // Original portfolio object should not have a percent field added
+            expect(portfolios[0]).not.toHaveProperty("percent");
+        });
     });
 });

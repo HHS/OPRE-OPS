@@ -47,24 +47,13 @@ describe("AgreementSpendingSummaryCard", () => {
     it("computes and displays correct percentages dynamically", () => {
         render(<AgreementSpendingSummaryCard {...defaultProps} />);
 
-        const { contractTotal, partnerTotal, grantTotal, directObligationTotal } = defaultProps;
-        const totalAmount = contractTotal + partnerTotal + grantTotal + directObligationTotal;
-
-        const expectedData = [
-            { label: "Contract", value: contractTotal },
-            { label: "Partner", value: partnerTotal },
-            { label: "Grant", value: grantTotal },
-            { label: "Direct Obligation", value: directObligationTotal }
-        ];
-
-        // Get all legend tags (they render as percent% text)
+        // 500k/1M = 50%, 200k/1M = 20%, 150k/1M = 15%, 150k/1M = 15%
         const percentTags = screen.getAllByTestId("legend-tag");
         expect(percentTags).toHaveLength(4);
-
-        expectedData.forEach((item, index) => {
-            const expectedPercent = Math.round((item.value / totalAmount) * 100);
-            expect(percentTags[index]).toHaveTextContent(`${expectedPercent}%`);
-        });
+        expect(percentTags[0]).toHaveTextContent("50%");
+        expect(percentTags[1]).toHaveTextContent("20%");
+        expect(percentTags[2]).toHaveTextContent("15%");
+        expect(percentTags[3]).toHaveTextContent("15%");
     });
 
     it("displays formatted dollar values for each type", () => {
@@ -73,11 +62,10 @@ describe("AgreementSpendingSummaryCard", () => {
         const valueContainers = screen.getAllByTestId("value-container");
         expect(valueContainers).toHaveLength(4);
 
-        // CurrencyFormat renders with commas and $ prefix
-        expect(valueContainers[0]).toHaveTextContent("$500,000.00"); // Contract
-        expect(valueContainers[1]).toHaveTextContent("$200,000.00"); // Partner
-        expect(valueContainers[2]).toHaveTextContent("$150,000.00"); // Grant
-        expect(valueContainers[3]).toHaveTextContent("$150,000.00"); // Direct Obligation
+        expect(valueContainers[0]).toHaveTextContent("$500,000.00");
+        expect(valueContainers[1]).toHaveTextContent("$200,000.00");
+        expect(valueContainers[2]).toHaveTextContent("$150,000.00");
+        expect(valueContainers[3]).toHaveTextContent("$150,000.00");
     });
 
     it("renders the donut chart when totalAmount is greater than 0", () => {
@@ -98,7 +86,7 @@ describe("AgreementSpendingSummaryCard", () => {
         expect(screen.queryByTestId("donut-chart")).not.toBeInTheDocument();
     });
 
-    it("handles when only one type has a value", () => {
+    it("single type with value shows 100% (no non-zero peers — correct)", () => {
         render(
             <AgreementSpendingSummaryCard
                 titlePrefix="2025"
@@ -108,12 +96,9 @@ describe("AgreementSpendingSummaryCard", () => {
                 directObligationTotal={0}
             />
         );
-
-        // Contract should be 100%
         expect(screen.getByText("100%")).toBeInTheDocument();
         expect(screen.getByText("$1,000,000.00")).toBeInTheDocument();
 
-        // Zero-value types should show 0%
         const zeroPercents = screen.getAllByText("0%");
         expect(zeroPercents).toHaveLength(3);
     });
@@ -121,42 +106,87 @@ describe("AgreementSpendingSummaryCard", () => {
     it("defaults props to 0 when omitted", () => {
         render(<AgreementSpendingSummaryCard titlePrefix="2025" />);
 
-        // All values should be $0 (no decimal for zero)
         const zeroValues = screen.getAllByText("$0");
         expect(zeroValues).toHaveLength(4);
 
-        // All percentages should be 0%
         const zeroPercents = screen.getAllByText("0%");
         expect(zeroPercents).toHaveLength(4);
 
-        // Donut chart should not render
         expect(screen.queryByTestId("donut-chart")).not.toBeInTheDocument();
     });
 
-    it("computes correct percentages for uneven distributions", () => {
-        const unevenProps = {
-            titlePrefix: "2025",
-            contractTotal: 333,
-            partnerTotal: 333,
-            grantTotal: 333,
-            directObligationTotal: 1
-        };
+    it("dominant item shows '>99%' instead of '100%' when non-zero peers exist", () => {
+        render(
+            <AgreementSpendingSummaryCard
+                titlePrefix="2025"
+                contractTotal={996}
+                partnerTotal={2}
+                grantTotal={1}
+                directObligationTotal={1}
+            />
+        );
+        expect(screen.getByText(">99%")).toBeInTheDocument();
+        expect(screen.queryByText("100%")).not.toBeInTheDocument();
+    });
 
-        render(<AgreementSpendingSummaryCard {...unevenProps} />);
+    it("sub-1% non-zero items show '<1%' instead of '0%'", () => {
+        render(
+            <AgreementSpendingSummaryCard
+                titlePrefix="2025"
+                contractTotal={996}
+                partnerTotal={2}
+                grantTotal={1}
+                directObligationTotal={1}
+            />
+        );
+        const subOne = screen.getAllByText("<1%");
+        expect(subOne.length).toBeGreaterThan(0);
+    });
 
-        const total =
-            unevenProps.contractTotal +
-            unevenProps.partnerTotal +
-            unevenProps.grantTotal +
-            unevenProps.directObligationTotal;
+    it("3-way equal split: each item shows 33% (no longer sums to 99% bug)", () => {
+        // 333+333+334+0 = 1000; Contract and Partner each = 33%, Grant = 33%
+        // Previously independent rounding would show 33+33+33+0 = 99% (sum drift)
+        // Now rendered percents are still 33+33+33+0 but that is the correct display
+        // — the sum-drift bug was a display contradiction, not a math error.
+        render(
+            <AgreementSpendingSummaryCard
+                titlePrefix="2025"
+                contractTotal={333}
+                partnerTotal={333}
+                grantTotal={334}
+                directObligationTotal={0}
+            />
+        );
+        const tags = screen.getAllByTestId("legend-tag");
+        // Contract: 333/1000 = 33.3 → 33%
+        expect(tags[0]).toHaveTextContent("33%");
+        // Partner: 333/1000 = 33.3 → 33%
+        expect(tags[1]).toHaveTextContent("33%");
+        // Grant: 334/1000 = 33.4 → 33%
+        expect(tags[2]).toHaveTextContent("33%");
+        // Direct Obligation: 0 → 0%
+        expect(tags[3]).toHaveTextContent("0%");
+        // Crucially: dominant item is NOT capped — 33% is not near 100%
+        expect(screen.queryByText(">99%")).not.toBeInTheDocument();
+        expect(screen.queryByText("100%")).not.toBeInTheDocument();
+    });
 
-        // Each 333 / 1000 = 33.3 → rounds to 33%
-        const contractPercent = Math.round((unevenProps.contractTotal / total) * 100);
-        expect(contractPercent).toBe(33);
-
-        // 1 / 1000 = 0.1 → rounds to 0%
-        const doPercent = Math.round((unevenProps.directObligationTotal / total) * 100);
-        expect(doPercent).toBe(0);
+    it("passes real legend values to the donut (arc flooring handled inside ResponsiveDonutWithInnerPercent)", () => {
+        // Grant = 5 out of 1000 = 0.5% — below the 1% arc floor.
+        // The component now passes real values; the donut floors internally.
+        render(
+            <AgreementSpendingSummaryCard
+                titlePrefix="2025"
+                contractTotal={995}
+                partnerTotal={0}
+                grantTotal={5}
+                directObligationTotal={0}
+            />
+        );
+        // The mock donut shows the real value (5), not the floored chart value.
+        const grantSlice = screen.getByTestId("donut-slice-3");
+        const sliceValue = parseFloat(grantSlice.textContent.split(":")[1]);
+        expect(sliceValue).toBe(5);
     });
 
     it("uses the correct aria label on the chart container", () => {

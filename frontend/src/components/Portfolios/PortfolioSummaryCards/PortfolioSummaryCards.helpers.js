@@ -1,4 +1,4 @@
-import { calculatePercent } from "../../../helpers/utils";
+import { computeDisplayPercents } from "../../../helpers/utils";
 import {
     PORTFOLIO_ORDER,
     FALLBACK_COLOR,
@@ -64,6 +64,7 @@ export const sortPortfoliosByStaticOrder = (portfolios) => {
  * @param {number} totalBudget - Sum of all portfolio budgets
  * @returns {Array} Data array with { id, label, abbreviation, value, color, percent }
  */
+// eslint-disable-next-line no-unused-vars
 export const transformPortfoliosToChartData = (sortedPortfolios, totalBudget) => {
     if (!sortedPortfolios || !Array.isArray(sortedPortfolios)) {
         return [];
@@ -78,7 +79,8 @@ export const transformPortfoliosToChartData = (sortedPortfolios, totalBudget) =>
     // Track which abbreviations we've matched to known configs
     const matchedAbbreviations = new Set();
 
-    // Build columns 1..NUM_COLUMNS from PORTFOLIO_ORDER configs
+    // Build columns 1..NUM_COLUMNS from PORTFOLIO_ORDER configs — without percents
+    // (percents are computed in one cross-item pass below to avoid rounding drift)
     const columns = Array.from({ length: NUM_COLUMNS }, () => []);
 
     for (const config of PORTFOLIO_ORDER) {
@@ -92,15 +94,13 @@ export const transformPortfoliosToChartData = (sortedPortfolios, totalBudget) =>
 
         if (portfolio) {
             const value = portfolio?.fundingSummary?.total_funding?.amount || 0;
-            const percent = calculatePercent(value, totalBudget);
 
             columns[config.column - 1].push({
                 id: portfolio.id || PORTFOLIO_ORDER.indexOf(config),
                 label: portfolio.name || portfolio.abbreviation,
                 abbreviation: portfolio.abbreviation,
                 value: Number(value),
-                color: config.color,
-                percent
+                color: config.color
             });
             matchedAbbreviations.add(portfolio.abbreviation);
         }
@@ -112,22 +112,28 @@ export const transformPortfoliosToChartData = (sortedPortfolios, totalBudget) =>
     unknowns.forEach((portfolio, idx) => {
         if (unknownCol.length >= ROWS_PER_COLUMN) return;
         const value = portfolio?.fundingSummary?.total_funding?.amount || 0;
-        const percent = calculatePercent(value, totalBudget);
 
         unknownCol.push({
             id: portfolio.id || `unknown-${idx}`,
             label: portfolio.name || portfolio.abbreviation,
             abbreviation: portfolio.abbreviation,
             value: Number(value),
-            color: FALLBACK_COLOR,
-            percent
+            color: FALLBACK_COLOR
         });
     });
+
+    // Flatten all real items, apply cross-item percent normalisation in one
+    // pass (>99% cap + <1% guard), then re-index by id for fast lookup.
+    const allRealItems = columns.flat();
+    const normalised = computeDisplayPercents(allRealItems);
+    const percentById = new Map(normalised.map((item) => [item.id, item.percent]));
 
     // Pad each column to ROWS_PER_COLUMN with placeholders and flatten
     const result = [];
     columns.forEach((col, colIdx) => {
-        result.push(...col);
+        col.forEach((item) => {
+            result.push({ ...item, percent: percentById.get(item.id) ?? 0 });
+        });
         for (let i = col.length; i < ROWS_PER_COLUMN; i++) {
             result.push({
                 id: `placeholder-${colIdx + 1}-${i}`,

@@ -9,7 +9,10 @@ import {
     toLowerCaseFromSlug,
     fromUpperCaseToTitleCase,
     timeAgo,
-    formatDateToMonthDayYear
+    formatDateToMonthDayYear,
+    computeDisplayPercent,
+    computeDisplayPercents,
+    applyMinimumArcValue
 } from "./utils";
 
 test("current federal fiscal year is calculated correctly", () => {
@@ -177,5 +180,161 @@ describe("formatDateToMonthDayYear", () => {
 
     test("handles empty string", () => {
         expect(formatDateToMonthDayYear("")).toBeNull();
+    });
+});
+
+describe("computeDisplayPercent", () => {
+    test("returns 0 when value is 0", () => {
+        expect(computeDisplayPercent(0, 1000)).toBe(0);
+    });
+
+    test("returns 0 when total is 0", () => {
+        expect(computeDisplayPercent(100, 0)).toBe(0);
+    });
+
+    test("returns rounded integer for normal values", () => {
+        expect(computeDisplayPercent(500, 1000)).toBe(50);
+        expect(computeDisplayPercent(333, 1000)).toBe(33);
+        expect(computeDisplayPercent(996, 1000)).toBe(100);
+    });
+
+    test("returns '<1' for non-zero values that round down to 0%", () => {
+        expect(computeDisplayPercent(1, 1000)).toBe("<1");
+        expect(computeDisplayPercent(4, 1000)).toBe("<1");
+    });
+
+    test("returns 1 for values that round up to exactly 1%", () => {
+        expect(computeDisplayPercent(5, 1000)).toBe(1);
+    });
+
+    test("returns 100 for single-item (all of total)", () => {
+        expect(computeDisplayPercent(1000, 1000)).toBe(100);
+    });
+});
+
+describe("computeDisplayPercents", () => {
+    test("returns empty array for empty input", () => {
+        expect(computeDisplayPercents([])).toEqual([]);
+    });
+
+    test("returns items with percent 0 when total is 0", () => {
+        const items = [
+            { id: 1, value: 0 },
+            { id: 2, value: 0 }
+        ];
+        const result = computeDisplayPercents(items);
+        expect(result[0].percent).toBe(0);
+        expect(result[1].percent).toBe(0);
+    });
+
+    test("dominant item gets '>99' when other non-zero peers exist", () => {
+        // 996 + 2 + 1 + 1 = 1000; 996/1000 = 99.6% → rounds to 100, but peers are non-zero
+        const items = [
+            { id: 1, value: 996 },
+            { id: 2, value: 2 },
+            { id: 3, value: 1 },
+            { id: 4, value: 1 }
+        ];
+        const result = computeDisplayPercents(items);
+        expect(result[0].percent).toBe(">99");
+        expect(result[1].percent).toBe("<1");
+        expect(result[2].percent).toBe("<1");
+        expect(result[3].percent).toBe("<1");
+    });
+
+    test("single non-zero item gets 100 (no peers)", () => {
+        const items = [
+            { id: 1, value: 1000 },
+            { id: 2, value: 0 }
+        ];
+        const result = computeDisplayPercents(items);
+        expect(result[0].percent).toBe(100);
+        expect(result[1].percent).toBe(0);
+    });
+
+    test("three equal items show 33% each (sum drift, no crash)", () => {
+        const items = [
+            { id: 1, value: 333 },
+            { id: 2, value: 333 },
+            { id: 3, value: 334 }
+        ];
+        const result = computeDisplayPercents(items);
+        expect(result[0].percent).toBe(33);
+        expect(result[1].percent).toBe(33);
+        expect(result[2].percent).toBe(33);
+    });
+
+    test("sub-1% non-zero items show '<1'", () => {
+        const items = [
+            { id: 1, value: 998 },
+            { id: 2, value: 1 },
+            { id: 3, value: 1 }
+        ];
+        const result = computeDisplayPercents(items);
+        expect(result[1].percent).toBe("<1");
+        expect(result[2].percent).toBe("<1");
+    });
+
+    test("does not mutate original items", () => {
+        const items = [
+            { id: 1, value: 500 },
+            { id: 2, value: 500 }
+        ];
+        computeDisplayPercents(items);
+        expect(items[0]).not.toHaveProperty("percent");
+    });
+});
+
+describe("applyMinimumArcValue", () => {
+    test("returns items unchanged when all values are already above 1% of total", () => {
+        const items = [
+            { id: 1, value: 500 },
+            { id: 2, value: 500 }
+        ];
+        const result = applyMinimumArcValue(items, 1000);
+        expect(result[0].value).toBe(500);
+        expect(result[1].value).toBe(500);
+    });
+
+    test("floors tiny non-zero slice up to 1% of total", () => {
+        const items = [
+            { id: 1, value: 999 },
+            { id: 2, value: 1 } // 0.1% — below 1% floor
+        ];
+        const result = applyMinimumArcValue(items, 1000);
+        expect(result[1].value).toBe(10); // raised to 1% of 1000
+    });
+
+    test("preserves total by reducing larger slice", () => {
+        const items = [
+            { id: 1, value: 999 },
+            { id: 2, value: 1 }
+        ];
+        const result = applyMinimumArcValue(items, 1000);
+        const newTotal = result.reduce((sum, item) => sum + item.value, 0);
+        expect(newTotal).toBeCloseTo(1000, 5);
+    });
+
+    test("returns items unchanged when total is 0", () => {
+        const items = [
+            { id: 1, value: 0 },
+            { id: 2, value: 0 }
+        ];
+        const result = applyMinimumArcValue(items, 0);
+        expect(result[0].value).toBe(0);
+        expect(result[1].value).toBe(0);
+    });
+
+    test("returns empty array for empty input", () => {
+        expect(applyMinimumArcValue([], 0)).toEqual([]);
+    });
+
+    test("does not raise zero-value slices", () => {
+        const items = [
+            { id: 1, value: 1000 },
+            { id: 2, value: 0 }
+        ];
+        const result = applyMinimumArcValue(items, 1000);
+        expect(result[1].value).toBe(0);
     });
 });

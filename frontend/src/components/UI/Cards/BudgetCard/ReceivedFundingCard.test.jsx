@@ -66,7 +66,11 @@ describe("ReceivedFundingCard", () => {
                 totalFunding={5000}
             />
         );
-        expect(screen.getByTestId("line-graph-left-bar")).toHaveStyle("flex: 0 1 20%");
+        // Width is derived from value proportion: 1000 / (1000 + 5000) = 16.67%
+        // (previously was 20% because it used the display percent field directly)
+        expect(screen.getByTestId("line-graph-left-bar")).toHaveStyle(
+            "flex: 0 1 16.666666666666664%"
+        );
     });
 
     it("does not render the ReverseLineGraph when totalFunding is 0", () => {

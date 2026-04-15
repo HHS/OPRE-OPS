@@ -4,7 +4,7 @@ import styles from "./HorizontalStackedBar.module.scss";
 /**
  * @typedef {Object} SegmentData
  * @property {number} id - Unique identifier for the segment
- * @property {number} percent - Percentage width (0-100)
+ * @property {number|string} percent - Display percent: a rounded integer, or the strings "<1" / ">99"
  * @property {string} color - CSS color variable
  * @property {string} label - Portfolio name for accessibility
  * @property {string} abbreviation - Portfolio abbreviation
@@ -13,7 +13,12 @@ import styles from "./HorizontalStackedBar.module.scss";
  */
 
 /**
- * Horizontal stacked bar graph supporting multiple segments
+ * Horizontal stacked bar graph supporting multiple segments.
+ *
+ * Bar widths are derived from the proportional `value` of each segment
+ * (not from the display `percent` string), so segments with string percents
+ * like ">99" or "<1" still render correctly.
+ *
  * @component
  * @param {Object} props
  * @param {SegmentData[]} props.data - Array of segment data
@@ -21,11 +26,15 @@ import styles from "./HorizontalStackedBar.module.scss";
  * @returns {JSX.Element}
  */
 const HorizontalStackedBar = ({ data, setActiveId = () => {} }) => {
-    const segments = data?.filter((item) => !item.isPlaceholder && item.percent > 0) ?? [];
+    // Filter on value > 0 (always numeric) — percent can be a display string
+    // like ">99" or "<1" and must not be used for this boolean check.
+    const segments = data?.filter((item) => !item.isPlaceholder && item.value > 0) ?? [];
 
     if (segments.length === 0) {
         return null;
     }
+
+    const total = segments.reduce((sum, item) => sum + item.value, 0);
 
     const handleMouseEnter = (id) => {
         setActiveId(id);
@@ -45,15 +54,18 @@ const HorizontalStackedBar = ({ data, setActiveId = () => {} }) => {
     return (
         <div className={styles.stackedBarContainer}>
             {segments.map((segment) => {
-                // Ensure minimum width for tiny percentages
-                const minWidth = segment.percent > 0 && segment.percent < 1 ? 1 : segment.percent;
+                // Derive proportional width from value so that string percents
+                // (">99", "<1") don't break the CSS layout.
+                const rawWidth = total > 0 ? (segment.value / total) * 100 : 0;
+                // Ensure a minimum visible width for tiny non-zero segments
+                const flexWidth = rawWidth > 0 && rawWidth < 1 ? 1 : rawWidth;
 
                 return (
                     <div
                         key={segment.id}
                         className={styles.segment}
                         style={{
-                            flexBasis: `${minWidth}%`,
+                            flexBasis: `${flexWidth}%`,
                             backgroundColor: segment.color
                         }}
                         onMouseEnter={() => handleMouseEnter(segment.id)}
