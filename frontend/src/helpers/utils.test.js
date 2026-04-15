@@ -210,6 +210,16 @@ describe("computeDisplayPercent", () => {
     test("returns 100 for single-item (all of total)", () => {
         expect(computeDisplayPercent(1000, 1000)).toBe(100);
     });
+
+    test("coerces numeric strings correctly", () => {
+        expect(computeDisplayPercent("500", "1000")).toBe(50);
+    });
+
+    test("returns 0 for NaN/non-finite inputs", () => {
+        expect(computeDisplayPercent(NaN, 1000)).toBe(0);
+        expect(computeDisplayPercent(500, NaN)).toBe(0);
+        expect(computeDisplayPercent(Infinity, 1000)).toBe(0);
+    });
 });
 
 describe("computeDisplayPercents", () => {
@@ -282,6 +292,26 @@ describe("computeDisplayPercents", () => {
         ];
         computeDisplayPercents(items);
         expect(items[0]).not.toHaveProperty("percent");
+    });
+
+    test("coerces numeric string values correctly", () => {
+        const items = [
+            { id: 1, value: "500" },
+            { id: 2, value: "500" }
+        ];
+        const result = computeDisplayPercents(items);
+        expect(result[0].percent).toBe(50);
+        expect(result[1].percent).toBe(50);
+    });
+
+    test("treats NaN/non-finite values as 0", () => {
+        const items = [
+            { id: 1, value: NaN },
+            { id: 2, value: 1000 }
+        ];
+        const result = computeDisplayPercents(items);
+        expect(result[0].percent).toBe(0);
+        expect(result[1].percent).toBe(100);
     });
 });
 

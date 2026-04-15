@@ -465,6 +465,31 @@ describe("PortfolioSummaryCards.helpers", () => {
             expect(hs.percent).toBe("<1");
         });
 
+        it("percents use totalBudget as denominator even when unknown portfolios are truncated", () => {
+            // CC = 500, unknowns fill remaining spots; totalBudget = 1000 (includes truncated).
+            // CC percent should be 500/1000 = 50%, not 500/displayed_total.
+            const portfolios = [
+                {
+                    id: 1,
+                    name: "CC Portfolio",
+                    abbreviation: "CC",
+                    fundingSummary: { total_funding: { amount: 500 } }
+                },
+                ...Array.from({ length: 5 }, (_, i) => ({
+                    id: 100 + i,
+                    name: `Unknown ${i}`,
+                    abbreviation: `UNK${i}`,
+                    fundingSummary: { total_funding: { amount: 100 } }
+                }))
+            ];
+            const totalBudget = 1000;
+
+            const result = transformPortfoliosToChartData(portfolios, totalBudget);
+            const cc = result.find((item) => item.abbreviation === "CC");
+
+            expect(cc.percent).toBe(50);
+        });
+
         it("single portfolio with all the budget shows 100% (no peers)", () => {
             const portfolios = [
                 {

@@ -27,7 +27,8 @@ const ReceivedFundingCard = ({ title, totalReceived, totalFunding }) => {
         },
         {
             id: 2,
-            value: totalFunding,
+            // Use the remainder so left+right=totalFunding and width is correct
+            value: Math.max((totalFunding ?? 0) - (totalReceived ?? 0), 0),
             color: "var(--data-viz-budget-graph-2)"
         }
     ];

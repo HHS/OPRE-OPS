@@ -64,7 +64,6 @@ export const sortPortfoliosByStaticOrder = (portfolios) => {
  * @param {number} totalBudget - Sum of all portfolio budgets
  * @returns {Array} Data array with { id, label, abbreviation, value, color, percent }
  */
-// eslint-disable-next-line no-unused-vars
 export const transformPortfoliosToChartData = (sortedPortfolios, totalBudget) => {
     if (!sortedPortfolios || !Array.isArray(sortedPortfolios)) {
         return [];
@@ -124,8 +123,29 @@ export const transformPortfoliosToChartData = (sortedPortfolios, totalBudget) =>
 
     // Flatten all real items, apply cross-item percent normalisation in one
     // pass (>99% cap + <1% guard), then re-index by id for fast lookup.
+    //
+    // Use totalBudget as the true denominator so that percents are "% of total
+    // budget" rather than "% of displayed items". If unknown portfolios were
+    // truncated from the grid (ROWS_PER_COLUMN exceeded), inject a synthetic
+    // remainder item so computeDisplayPercents still uses the full denominator
+    // while preserving its display-percent rules for rendered items.
     const allRealItems = columns.flat();
-    const normalised = computeDisplayPercents(allRealItems);
+    const displayedTotal = allRealItems.reduce((sum, item) => sum + Number(item.value || 0), 0);
+    const normalisationItems =
+        totalBudget > displayedTotal
+            ? [
+                  ...allRealItems,
+                  {
+                      id: "__truncated-remainder__",
+                      label: "",
+                      abbreviation: "",
+                      value: totalBudget - displayedTotal,
+                      color: "",
+                      isPlaceholder: true
+                  }
+              ]
+            : allRealItems;
+    const normalised = computeDisplayPercents(normalisationItems);
     const percentById = new Map(normalised.map((item) => [item.id, item.percent]));
 
     // Pad each column to ROWS_PER_COLUMN with placeholders and flatten

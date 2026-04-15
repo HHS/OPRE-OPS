@@ -584,8 +584,13 @@ export function convertToCurrency(value) {
  * @returns {number|string} Rounded integer percent, "<1", or 0.
  */
 export const computeDisplayPercent = (value, total) => {
-    if (total === 0 || value === 0) return 0;
-    const exact = (value / total) * 100;
+    const numericValue = Number(value);
+    const numericTotal = Number(total);
+
+    if (!Number.isFinite(numericValue) || !Number.isFinite(numericTotal)) return 0;
+    if (numericTotal === 0 || numericValue === 0) return 0;
+
+    const exact = (numericValue / numericTotal) * 100;
     const rounded = Math.round(exact);
     return rounded === 0 ? "<1" : rounded;
 };
@@ -607,16 +612,21 @@ export const computeDisplayPercent = (value, total) => {
 export const computeDisplayPercents = (items) => {
     if (!items || items.length === 0) return items;
 
-    const total = items.reduce((sum, item) => sum + (item.value ?? 0), 0);
+    const toFiniteNumber = (v) => {
+        const n = Number(v ?? 0);
+        return Number.isFinite(n) ? n : 0;
+    };
+
+    const total = items.reduce((sum, item) => sum + toFiniteNumber(item.value), 0);
 
     if (total === 0) {
         return items.map((item) => ({ ...item, percent: 0 }));
     }
 
-    const nonZeroCount = items.filter((item) => (item.value ?? 0) > 0).length;
+    const nonZeroCount = items.filter((item) => toFiniteNumber(item.value) > 0).length;
 
     return items.map((item) => {
-        const value = item.value ?? 0;
+        const value = toFiniteNumber(item.value);
         const base = computeDisplayPercent(value, total);
 
         // Cap dominant item at ">99" when other non-zero items still exist
@@ -645,6 +655,10 @@ export const applyMinimumArcValue = (items, total) => {
 
     const minValue = total * 0.01;
 
+    // Check if any slice needs flooring before allocating
+    const needsAdjustment = items.some((item) => item.value > 0 && item.value < minValue);
+    if (!needsAdjustment) return items;
+
     // Floor any non-zero slice that is below the minimum
     const adjustedItems = items.map((item) => ({
         ...item,
@@ -654,7 +668,7 @@ export const applyMinimumArcValue = (items, total) => {
     // How much was added in total by flooring
     const addedValue = adjustedItems.reduce((sum, item, index) => sum + (item.value - items[index].value), 0);
 
-    if (addedValue <= 0) return adjustedItems;
+    if (addedValue <= 0) return items;
 
     // Subtract the added amount proportionally from slices that are above the minimum
     const reducibleTotal = adjustedItems.reduce(
