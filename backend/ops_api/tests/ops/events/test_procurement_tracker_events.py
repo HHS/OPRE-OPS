@@ -17,6 +17,7 @@ from models import (
     ChangeRequestType,
     DefaultProcurementTracker,
     OpsEvent,
+    OpsEventStatus,
     ProcurementAction,
 )
 from models.events import OpsEventType
@@ -1421,3 +1422,83 @@ def test_create_procurement_action_event_failure_on_error(mock_logger, mock_sess
 
     # Verify session.add was called
     mock_session.add.assert_called_once_with(event)
+
+
+# UPDATE_BUDGET_LINE Event Tests
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_update_budget_line_to_planned_does_not_create_tracker(mock_session, mock_agreement, mock_bli):
+    """Test that UPDATE_BLI event with PLANNED status does not create a tracker."""
+    # Create UPDATE_BUDGET_LINE event for PLANNED status
+    event = Mock(spec=OpsEvent)
+    event.id = 1
+    event.event_type = OpsEventType.UPDATE_BLI
+    event.created_by = 42
+    event.event_details = {
+        "budget_line_item_id": 1,
+        "agreement_id": 100,
+        "changes": {"status": {"old": "DRAFT", "new": "PLANNED"}},
+    }
+
+    mock_session.get.side_effect = lambda model_class, id: {
+        (Agreement, 100): mock_agreement,
+        (BudgetLineItem, 1): mock_bli,
+    }.get((model_class, id))
+
+    # Mock scalar for agreement query
+    mock_session.scalar.return_value = mock_agreement
+
+    procurement_tracker_trigger(event, mock_session)
+
+    # Verify no tracker or action was created
+    mock_session.add.assert_not_called()
+    mock_session.flush.assert_not_called()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_update_budget_line_to_executing_creates_tracker(mock_session, mock_agreement, mock_bli):
+    """Test that UPDATE_BUDGET_LINE event with IN_EXECUTION status creates a DefaultProcurementTracker with Step 1 active."""
+    # Create UPDATE_BUDGET_LINE event for IN_EXECUTION status
+    event = Mock(spec=OpsEvent)
+    event.id = 500
+    event.event_type = OpsEventType.UPDATE_BLI
+    event.event_status = OpsEventStatus.SUCCESS
+    event.created_by = 42
+    event.event_details = {
+        "bli": mock_bli.to_dict(),
+        "bli_updates": {"changes": {"status": {"old": "PLANNED", "new": "IN_EXECUTION"}}},
+    }
+
+    # Mock the scalar calls: agreement, then no tracker, then no action
+    mock_session.scalar.side_effect = [
+        mock_agreement,  # Agreement query with lock
+        None,  # Tracker query (not found)
+        None,  # Action query (not found)
+    ]
+
+    mock_session.get.side_effect = lambda model_class, id: {
+        (BudgetLineItem, 1): mock_bli,
+    }.get((model_class, id))
+
+    # Mock DefaultProcurementTracker.create_with_steps to verify it creates tracker with Step 1 active
+    mock_tracker = Mock(spec=DefaultProcurementTracker)
+    mock_tracker.id = 999
+    mock_tracker.agreement_id = 100
+    mock_tracker.status = ProcurementTrackerStatus.ACTIVE
+    mock_tracker.active_step_number = 1
+    mock_tracker.steps = [Mock(step_number=1, step_type=Mock(name="ACQUISITION_PLANNING"), status=Mock(name="ACTIVE"))]
+
+    with patch.object(DefaultProcurementTracker, "create_with_steps", return_value=mock_tracker) as mock_create:
+        procurement_tracker_trigger(event, mock_session)
+
+        # Verify create_with_steps was called with correct arguments
+        mock_create.assert_called_once_with(agreement_id=100, status=ProcurementTrackerStatus.ACTIVE, created_by=42)
+
+    # Verify tracker and action were created (tracker, action, tracker event, action event)
+    assert mock_session.add.call_count == 4
+    mock_session.flush.assert_called_once()
+
+    # Verify the created tracker has Step 1 as active
+    assert mock_tracker.active_step_number == 1
+    assert mock_tracker.status == ProcurementTrackerStatus.ACTIVE
