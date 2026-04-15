@@ -5,6 +5,7 @@ import {
     PROJECT_TYPE_ORDER,
     PROJECT_TYPE_TAG_STYLE_ACTIVE
 } from "../ProjectTypes.constants";
+import { computeDisplayPercents } from "../../../helpers/utils";
 import LegendItem from "../../UI/Cards/LineGraphWithLegendCard/LegendItem";
 import ResponsiveDonutWithInnerPercent from "../../UI/DataViz/ResponsiveDonutWithInnerPercent";
 import CustomLayerComponent from "../../UI/DataViz/ResponsiveDonutWithInnerPercent/CustomLayerComponent";
@@ -17,20 +18,6 @@ const PROJECT_TYPE_CONFIG = PROJECT_TYPE_ORDER.map((type) => ({
     color: PROJECT_TYPE_COLORS[type],
     tagStyleActive: PROJECT_TYPE_TAG_STYLE_ACTIVE[type]
 }));
-
-/**
- * Computes a display-friendly percent string.
- * Returns "<1" when a non-zero value rounds down to 0, otherwise the rounded integer.
- * @param {number} value - The slice value
- * @param {number} total - The total across all slices
- * @returns {number|string} - Rounded percent or "<1"
- */
-const computeDisplayPercent = (value, total) => {
-    if (total === 0 || value === 0) return 0;
-    const exact = (value / total) * 100;
-    const rounded = Math.round(exact);
-    return rounded === 0 ? "<1" : rounded;
-};
 
 /**
  * Ensures every non-zero slice is at least 1% of the total so it remains
@@ -106,10 +93,12 @@ const ProjectTypeSummaryCard = ({ title, summary }) => {
 
     const totalAmount = rawData.reduce((sum, item) => sum + item.value, 0);
 
-    // Legend data: real values + display-friendly percents
-    const legendData = rawData.map((item) => ({
+    // Legend data: real values + display-friendly percents (computed together
+    // so cross-item consistency — e.g. ">99%" alongside "<1%" — can be enforced)
+    const displayPercents = computeDisplayPercents(rawData, totalAmount);
+    const legendData = rawData.map((item, idx) => ({
         ...item,
-        percent: computeDisplayPercent(item.value, totalAmount)
+        percent: displayPercents[idx]
     }));
 
     // Chart data: floor tiny slices so every non-zero slice is visible,
