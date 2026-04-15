@@ -80,7 +80,7 @@ describe("HorizontalStackedBar", () => {
         expect(setActiveId).toHaveBeenCalledWith(1);
     });
 
-    it("calls setActiveId with 0 on mouse leave", () => {
+    it("calls setActiveId with null on mouse leave", () => {
         const setActiveId = vi.fn();
         render(
             <HorizontalStackedBar
@@ -92,7 +92,7 @@ describe("HorizontalStackedBar", () => {
         const segments = screen.getAllByRole("button");
         fireEvent.mouseLeave(segments[0]);
 
-        expect(setActiveId).toHaveBeenCalledWith(0);
+        expect(setActiveId).toHaveBeenCalledWith(null);
     });
 
     it("calls setActiveId on focus", () => {
@@ -110,7 +110,7 @@ describe("HorizontalStackedBar", () => {
         expect(setActiveId).toHaveBeenCalledWith(1);
     });
 
-    it("calls setActiveId with 0 on blur", () => {
+    it("calls setActiveId with null on blur", () => {
         const setActiveId = vi.fn();
         render(
             <HorizontalStackedBar
@@ -122,7 +122,7 @@ describe("HorizontalStackedBar", () => {
         const segments = screen.getAllByRole("button");
         fireEvent.blur(segments[0]);
 
-        expect(setActiveId).toHaveBeenCalledWith(0);
+        expect(setActiveId).toHaveBeenCalledWith(null);
     });
 
     it("calls setActiveId on Enter key", () => {
