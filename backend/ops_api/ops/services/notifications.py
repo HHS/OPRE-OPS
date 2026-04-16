@@ -17,17 +17,13 @@ class NotificationService(OpsService[Notification]):
         """
         Create a new notification.
         """
-        notification_type = data.get(
-            "notification_type", NotificationType.NOTIFICATION
-        )
+        notification_type = data.get("notification_type", NotificationType.NOTIFICATION)
 
         # Choose the appropriate class based on the polymorphic identity
         cls: Type[Notification]
         if notification_type == NotificationType.CHANGE_REQUEST_NOTIFICATION:
             cls = ChangeRequestNotification
-        elif (
-            notification_type == NotificationType.PRE_AWARD_APPROVAL_NOTIFICATION
-        ):
+        elif notification_type == NotificationType.PRE_AWARD_APPROVAL_NOTIFICATION:
             cls = PreAwardApprovalNotification
         else:
             cls = Notification

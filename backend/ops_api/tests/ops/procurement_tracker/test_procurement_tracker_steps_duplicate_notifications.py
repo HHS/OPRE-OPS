@@ -205,9 +205,7 @@ def test_approval_transitions_are_idempotent(auth_client, test_pre_award_step, l
     ), "Only the first request should have sent notifications"
 
 
-def test_approval_response_auto_dismisses_in_review_notifications(
-    auth_client, test_pre_award_step, loaded_db
-):
+def test_approval_response_auto_dismisses_in_review_notifications(auth_client, test_pre_award_step, loaded_db):
     """Test that approval response auto-dismisses 'in review' notifications for reviewers."""
     # Step 1: Request approval - creates "in review" notifications for reviewers
     update_data = {
@@ -227,9 +225,7 @@ def test_approval_response_auto_dismisses_in_review_notifications(
         .where(Notification.title == "Pre-Award Approval Request")
         .where(Notification.is_read.is_(False))
     ).all()
-    assert len(in_review_notifications) > 0, (
-        "Should have unread approval request notifications"
-    )
+    assert len(in_review_notifications) > 0, "Should have unread approval request notifications"
 
     # Store the notification IDs to verify later
     reviewer_notification_ids = [n.id for n in in_review_notifications]
@@ -248,6 +244,4 @@ def test_approval_response_auto_dismisses_in_review_notifications(
     # Step 3: Verify all "in review" notifications are marked as read
     for notification_id in reviewer_notification_ids:
         notification = loaded_db.get(Notification, notification_id)
-        assert notification.is_read, (
-            f"Notification {notification_id} should be auto-dismissed (marked as read)"
-        )
+        assert notification.is_read, f"Notification {notification_id} should be auto-dismissed (marked as read)"
