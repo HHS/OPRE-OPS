@@ -555,6 +555,15 @@ export const opsApi = createApi({
             }),
             invalidatesTags: ["ResearchProjects"]
         }),
+        updateProject: builder.mutation({
+            query: ({ id, data }) => ({
+                url: `/projects/${id}`,
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: data
+            }),
+            invalidatesTags: ["ResearchProjects"]
+        }),
         updateBudgetLineItemStatus: builder.mutation({
             query: ({ id, status }) => ({
                 url: `/budget-line-items/${id}`,
@@ -1109,6 +1118,7 @@ export const {
     useGetResearchProjectsQuery,
     useGetResearchProjectsByPortfolioQuery,
     useAddResearchProjectsMutation,
+    useUpdateProjectMutation,
     useUpdateBudgetLineItemStatusMutation,
     useGetAgreementTypesQuery,
     useGetProductServiceCodesQuery,

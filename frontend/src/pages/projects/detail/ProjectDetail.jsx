@@ -1,4 +1,5 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import App from "../../../App";
 import { useGetProjectByIdQuery } from "../../../api/opsAPI";
@@ -15,6 +16,10 @@ const ProjectDetail = () => {
     const navigate = useNavigate();
     const { id } = useParams();
     const projectId = id ? +id : -1;
+    const activeUser = useSelector((state) => state.auth.activeUser);
+    const canEdit = !!activeUser;
+    const [isEditMode, setIsEditMode] = useState(false);
+    const toggleEditMode = () => setIsEditMode((prev) => !prev);
 
     /** @type {{data?: import("../../../types/ProjectTypes").Project | undefined, error?: Object, isLoading: boolean}} */
     const {
@@ -62,7 +67,12 @@ const ProjectDetail = () => {
             <div className="display-flex flex-justify margin-top-3">
                 <ProjectDetailTabs projectId={projectId} />
             </div>
-            <ProjectDetailsView project={project} />
+            <ProjectDetailsView
+                project={project}
+                isEditMode={isEditMode}
+                toggleEditMode={toggleEditMode}
+                canEdit={canEdit}
+            />
             <DebugCode data={project} />
         </App>
     );

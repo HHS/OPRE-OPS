@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 import ProjectDetailsView from "./ProjectDetailsView";
@@ -31,10 +32,20 @@ const baseProject = {
     team_leaders: [{ id: 500, full_name: "Chris Fortunato", email: "chris.fortunato@example.com" }]
 };
 
-const renderComponent = (project) =>
+const defaultToggleEditMode = vi.fn();
+
+const renderComponent = (
+    project,
+    { canEdit = false, isEditMode = false, toggleEditMode = defaultToggleEditMode } = {}
+) =>
     render(
         <MemoryRouter>
-            <ProjectDetailsView project={project} />
+            <ProjectDetailsView
+                project={project}
+                canEdit={canEdit}
+                isEditMode={isEditMode}
+                toggleEditMode={toggleEditMode}
+            />
         </MemoryRouter>
     );
 
@@ -174,6 +185,20 @@ describe("ProjectDetailsView", () => {
         expect(screen.getAllByText("Amelia Popham").length).toBeGreaterThanOrEqual(1);
         expect(screen.getAllByText("Chris Fortunato").length).toBeGreaterThanOrEqual(1);
         expect(screen.getAllByText("Dave Director").length).toBeGreaterThanOrEqual(1);
+    });
+
+    it("renders an enabled edit button when canEdit is true", () => {
+        renderComponent(baseProject, { canEdit: true });
+        const editButton = screen.getByRole("button", { name: /edit/i });
+        expect(editButton).not.toHaveAttribute("aria-disabled");
+    });
+
+    it("calls toggleEditMode when the edit button is clicked", async () => {
+        const toggleFn = vi.fn();
+        renderComponent(baseProject, { canEdit: true, toggleEditMode: toggleFn });
+        const user = userEvent.setup();
+        await user.click(screen.getByRole("button", { name: /edit/i }));
+        expect(toggleFn).toHaveBeenCalledTimes(1);
     });
 
     it("renders History placeholder", () => {
