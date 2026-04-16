@@ -122,7 +122,7 @@ export const transformPortfoliosToChartData = (sortedPortfolios, totalBudget) =>
     });
 
     // Flatten all real items, apply cross-item percent normalisation in one
-    // pass (>99% cap + <1% guard), then re-index by id for fast lookup.
+    // pass (99-cap when dominant + <1% guard), then re-index by id for fast lookup.
     //
     // Use totalBudget as the true denominator so that percents are "% of total
     // budget" rather than "% of displayed items". If unknown portfolios were

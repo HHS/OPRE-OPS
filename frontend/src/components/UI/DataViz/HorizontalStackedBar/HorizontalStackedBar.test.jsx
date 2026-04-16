@@ -163,9 +163,9 @@ describe("HorizontalStackedBar", () => {
         expect(screen.getByRole("button", { name: /OD: 25% of budget/i })).toBeInTheDocument();
     });
 
-    it("renders aria-label with '>99%' string percent for dominant segment", () => {
+    it("renders aria-label with '99%' for dominant segment (Figma: show 99%, not >99%)", () => {
         const dominantData = [
-            { id: 1, label: "Contracts (New)", abbreviation: "CONTRACT", value: 996, color: "blue", percent: ">99" },
+            { id: 1, label: "Contracts (New)", abbreviation: "CONTRACT", value: 996, color: "blue", percent: 99 },
             { id: 2, label: "Grants (New)", abbreviation: "GRANT", value: 4, color: "green", percent: "<1" }
         ];
         render(
@@ -174,13 +174,13 @@ describe("HorizontalStackedBar", () => {
                 setActiveId={vi.fn()}
             />
         );
-        expect(screen.getByRole("button", { name: /CONTRACT: >99% of budget/i })).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /CONTRACT: 99% of budget/i })).toBeInTheDocument();
         expect(screen.getByRole("button", { name: /GRANT: <1% of budget/i })).toBeInTheDocument();
     });
 
-    it("renders both segments when percent is a string ('>99' / '<1') — not filtered out", () => {
+    it("renders both segments when percent is a string ('<1') or integer (99) — not filtered out", () => {
         const dominantData = [
-            { id: 1, label: "Contracts (New)", abbreviation: "CONTRACT", value: 996, color: "blue", percent: ">99" },
+            { id: 1, label: "Contracts (New)", abbreviation: "CONTRACT", value: 996, color: "blue", percent: 99 },
             { id: 2, label: "Grants (New)", abbreviation: "GRANT", value: 4, color: "green", percent: "<1" }
         ];
         render(
@@ -195,7 +195,7 @@ describe("HorizontalStackedBar", () => {
 
     it("tiny segment (value < 1% of total) gets minimum flexBasis of 1%", () => {
         const tinyData = [
-            { id: 1, label: "Large", abbreviation: "LARGE", value: 990, color: "blue", percent: ">99" },
+            { id: 1, label: "Large", abbreviation: "LARGE", value: 990, color: "blue", percent: 99 },
             { id: 2, label: "Tiny", abbreviation: "TINY", value: 1, color: "green", percent: "<1" }
         ];
         render(

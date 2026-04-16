@@ -43,6 +43,6 @@ export const transformToChartData = (agreementTypes, totalSpending) => {
         return result;
     });
 
-    // Apply cross-item normalisation: >99% cap + <1% guard across all segments
+    // Apply cross-item normalisation: 99-cap when dominant + <1% guard across all segments
     return computeDisplayPercents(segments);
 };

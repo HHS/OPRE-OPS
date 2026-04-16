@@ -75,7 +75,7 @@ describe("transformToChartData", () => {
         });
     });
 
-    it("dominant segment shows '>99' instead of 100 when non-zero peers exist", () => {
+    it("dominant segment shows 99 (not 100 or '>99') when non-zero peers exist", () => {
         const dominantTypes = [
             { type: "CONTRACT", new: 996, continuing: 0 },
             { type: "GRANT", new: 4, continuing: 0 }
@@ -83,25 +83,19 @@ describe("transformToChartData", () => {
         const result = transformToChartData(dominantTypes, 1000);
         const contract = result.find((d) => d.id === "CONTRACT");
         const grant = result.find((d) => d.id === "GRANT");
-        expect(contract.percent).toBe(">99");
+        expect(contract.percent).toBe(99);
         expect(grant.percent).toBe("<1");
     });
 
-    it("3-way equal split: no segment shows 100 or >99", () => {
+    it("3-way equal split: largest remainder assigns the extra point to the biggest segment", () => {
         const equalTypes = [
             { type: "CONTRACT", new: 333, continuing: 0 },
             { type: "GRANT", new: 333, continuing: 0 },
             { type: "DIRECT_OBLIGATION", new: 334, continuing: 0 }
         ];
         const result = transformToChartData(equalTypes, 1000);
-        result.forEach((segment) => {
-            expect(segment.percent).not.toBe(100);
-            expect(segment.percent).not.toBe(">99");
-        });
-        // Each should be 33%
-        result.forEach((segment) => {
-            expect(segment.percent).toBe(33);
-        });
+
+        expect(result.map((segment) => segment.percent)).toEqual([33, 33, 34]);
     });
 
     it("sub-1% non-zero segment shows '<1' instead of 0", () => {

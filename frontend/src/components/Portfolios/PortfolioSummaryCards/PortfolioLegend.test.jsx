@@ -144,7 +144,7 @@ describe("PortfolioLegend", () => {
         expect(screen.getByText("<1%")).toBeInTheDocument();
     });
 
-    it("displays '>99%' when percent is the string '>99' (pre-normalised by helpers)", () => {
+    it("displays '99%' when percent is 99 (dominant item capped per Figma spec, not '>99%')", () => {
         const dataWithDominant = [
             {
                 id: 1,
@@ -152,7 +152,7 @@ describe("PortfolioLegend", () => {
                 abbreviation: "DOM",
                 value: 9960000,
                 color: "var(--portfolio-budget-1)",
-                percent: ">99"
+                percent: 99
             }
         ];
 
@@ -163,7 +163,8 @@ describe("PortfolioLegend", () => {
             />
         );
 
-        expect(screen.getByText(">99%")).toBeInTheDocument();
+        expect(screen.getByText("99%")).toBeInTheDocument();
+        expect(screen.queryByText(">99%")).not.toBeInTheDocument();
         expect(screen.queryByText("100%")).not.toBeInTheDocument();
     });
 

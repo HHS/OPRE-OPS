@@ -48,8 +48,8 @@ const ProjectTypeSummaryCard = ({ title, summary }) => {
     const totalAmount = rawData.reduce((sum, item) => sum + item.value, 0);
 
     // Legend data: real values + cross-item-normalised display percents
-    // Uses computeDisplayPercents (plural) so the >99% cap is applied when a
-    // dominant type would otherwise show 100% alongside non-zero peers.
+    // Uses computeDisplayPercents (plural) so the dominant-item cap (99, not 100)
+    // is applied when a dominant type would otherwise show 100% alongside non-zero peers.
     const legendData = computeDisplayPercents(rawData);
 
     // chartData is passed directly to ResponsiveDonutWithInnerPercent which

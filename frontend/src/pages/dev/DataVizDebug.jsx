@@ -195,7 +195,7 @@ const DataVizDebug = () => (
         <Section
             id="bli-status-dominant"
             title="1a. BLIStatusSummaryCard — dominant item (996 Draft + 2+1+1 others)"
-            fix='Draft shows ">99%" instead of "100%"; peers show "<1%" — no contradiction'
+            fix='Draft shows "99%" instead of "100%"; peers show "<1%" — no contradiction'
         >
             <BLIStatusSummaryCard {...BLI_DOMINANT} />
         </Section>
@@ -221,7 +221,7 @@ const DataVizDebug = () => (
         <Section
             id="agreement-summary-3way"
             title="2a. AgreementSpendingSummaryCard — 3-way equal split (333+333+334+0)"
-            fix="Cross-item normalisation applied — percents computed together, not independently"
+            fix="Cross-item normalisation applied — largest remainder produces 33%, 33%, 34%, 0% so the legend sums to 100%"
         >
             <AgreementSpendingSummaryCard {...AGREEMENT_SUMMARY_3WAY} />
         </Section>
@@ -229,7 +229,7 @@ const DataVizDebug = () => (
         <Section
             id="agreement-summary-dominant"
             title="2b. AgreementSpendingSummaryCard — dominant item (996 Contract + 2+1+1)"
-            fix='Contract shows ">99%" instead of "100%"; peers show "<1%" — no contradiction'
+            fix='Contract shows "99%" instead of "100%"; peers show "<1%" — no contradiction'
         >
             <AgreementSpendingSummaryCard {...AGREEMENT_SUMMARY_DOMINANT} />
         </Section>
@@ -240,7 +240,7 @@ const DataVizDebug = () => (
         <Section
             id="agreement-spending-3way"
             title="3a. AgreementSpendingCards — 3 equal segments (333 each)"
-            fix="Segments built first, then computeDisplayPercents applied across the full array — no more independent rounding"
+            fix="Segments built first, then computeDisplayPercents applies largest remainder across the full array so integer labels sum to 100%"
         >
             <AgreementSpendingCards {...AGREEMENT_SPENDING_3WAY} />
         </Section>
@@ -248,7 +248,7 @@ const DataVizDebug = () => (
         <Section
             id="agreement-spending-dominant"
             title="3b. AgreementSpendingCards — dominant segment (996 Contract, 4 Grant)"
-            fix='Contract bar shows ">99%", Grant shows "<1%" — aria-label now speaks the guarded percent'
+            fix='Contract bar shows "99%", Grant shows "<1%" — aria-label now speaks the guarded percent'
         >
             <AgreementSpendingCards {...AGREEMENT_SPENDING_DOMINANT} />
         </Section>
@@ -259,7 +259,7 @@ const DataVizDebug = () => (
         <Section
             id="portfolio-funding-dominant"
             title="4a. PortfolioFunding — dominant carry-forward (996 carry-forward, 4 new)"
-            fix='carry-forward shows ">99%", new funding shows "<1%" — computed together via computeDisplayPercents'
+            fix='carry-forward shows "99%", new funding shows "<1%" — computed together via computeDisplayPercents'
         >
             <PortfolioFundingStub
                 label="FY 2024 Portfolio Total Budget"
@@ -285,7 +285,7 @@ const DataVizDebug = () => (
         <Section
             id="portfolio-summary-dominant"
             title="5a. PortfolioSummaryCards — dominant portfolio (CC=9960, CWR=20, HS=20)"
-            fix='CC shows ">99%" in the legend; CWR and HS show "<1%" — computeDisplayPercents applied across all portfolios'
+            fix='CC shows "99%" in the legend; CWR and HS show "<1%" — computeDisplayPercents applied across all portfolios'
         >
             <PortfolioSummaryCards
                 fiscalYear="2024"

@@ -237,8 +237,9 @@ describe("computeDisplayPercents", () => {
         expect(result[1].percent).toBe(0);
     });
 
-    test("dominant item gets '>99' when other non-zero peers exist", () => {
-        // 996 + 2 + 1 + 1 = 1000; 996/1000 = 99.6% → rounds to 100, but peers are non-zero
+    test("dominant item gets 99 (not 100) when other non-zero peers exist", () => {
+        // 996 + 2 + 1 + 1 = 1000; 996/1000 = 99.6% → rounds to 100, but peers are non-zero.
+        // Per Figma spec: show plain "99%" — never ">99%".
         const items = [
             { id: 1, value: 996 },
             { id: 2, value: 2 },
@@ -246,7 +247,7 @@ describe("computeDisplayPercents", () => {
             { id: 4, value: 1 }
         ];
         const result = computeDisplayPercents(items);
-        expect(result[0].percent).toBe(">99");
+        expect(result[0].percent).toBe(99);
         expect(result[1].percent).toBe("<1");
         expect(result[2].percent).toBe("<1");
         expect(result[3].percent).toBe("<1");
@@ -262,7 +263,7 @@ describe("computeDisplayPercents", () => {
         expect(result[1].percent).toBe(0);
     });
 
-    test("three equal items show 33% each (sum drift, no crash)", () => {
+    test("largest remainder assigns the extra point so integer labels sum to 100", () => {
         const items = [
             { id: 1, value: 333 },
             { id: 2, value: 333 },
@@ -271,7 +272,21 @@ describe("computeDisplayPercents", () => {
         const result = computeDisplayPercents(items);
         expect(result[0].percent).toBe(33);
         expect(result[1].percent).toBe(33);
-        expect(result[2].percent).toBe(33);
+        expect(result[2].percent).toBe(34);
+        expect(result.reduce((sum, item) => sum + item.percent, 0)).toBe(100);
+    });
+
+    test("largest remainder breaks ties deterministically by larger value then original order", () => {
+        const items = [
+            { id: 1, value: 125 },
+            { id: 2, value: 125 },
+            { id: 3, value: 250 },
+            { id: 4, value: 500 }
+        ];
+
+        const result = computeDisplayPercents(items);
+
+        expect(result.map((item) => item.percent)).toEqual([13, 12, 25, 50]);
     });
 
     test("sub-1% non-zero items show '<1'", () => {

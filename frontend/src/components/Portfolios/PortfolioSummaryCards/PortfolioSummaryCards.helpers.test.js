@@ -432,7 +432,7 @@ describe("PortfolioSummaryCards.helpers", () => {
             expect(result[7].isPlaceholder).toBe(true); // Placeholder at end of column 2
         });
 
-        it("dominant portfolio shows '>99' instead of 100 when non-zero peers exist", () => {
+        it("dominant portfolio shows 99 (not 100 or '>99') when non-zero peers exist", () => {
             const portfolios = [
                 {
                     id: 1,
@@ -460,7 +460,7 @@ describe("PortfolioSummaryCards.helpers", () => {
             const cw = result.find((item) => item.abbreviation === "CW");
             const hs = result.find((item) => item.abbreviation === "HS");
 
-            expect(cc.percent).toBe(">99");
+            expect(cc.percent).toBe(99);
             expect(cw.percent).toBe("<1");
             expect(hs.percent).toBe("<1");
         });

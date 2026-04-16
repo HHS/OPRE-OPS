@@ -115,7 +115,7 @@ describe("AgreementSpendingSummaryCard", () => {
         expect(screen.queryByTestId("donut-chart")).not.toBeInTheDocument();
     });
 
-    it("dominant item shows '>99%' instead of '100%' when non-zero peers exist", () => {
+    it("dominant item shows '99%' instead of '100%' when non-zero peers exist (Figma: no >99%)", () => {
         render(
             <AgreementSpendingSummaryCard
                 titlePrefix="2025"
@@ -125,7 +125,8 @@ describe("AgreementSpendingSummaryCard", () => {
                 directObligationTotal={1}
             />
         );
-        expect(screen.getByText(">99%")).toBeInTheDocument();
+        expect(screen.getByText("99%")).toBeInTheDocument();
+        expect(screen.queryByText(">99%")).not.toBeInTheDocument();
         expect(screen.queryByText("100%")).not.toBeInTheDocument();
     });
 
@@ -143,11 +144,10 @@ describe("AgreementSpendingSummaryCard", () => {
         expect(subOne.length).toBeGreaterThan(0);
     });
 
-    it("3-way equal split: each item shows 33% (no longer sums to 99% bug)", () => {
-        // 333+333+334+0 = 1000; Contract and Partner each = 33%, Grant = 33%
-        // Previously independent rounding would show 33+33+33+0 = 99% (sum drift)
-        // Now rendered percents are still 33+33+33+0 but that is the correct display
-        // — the sum-drift bug was a display contradiction, not a math error.
+    it("3-way equal split: largest remainder makes the legend sum to 100%", () => {
+        // 333+333+334+0 = 1000; exact percents are 33.3, 33.3, 33.4, 0.
+        // Largest remainder awards the extra point to Grant so the displayed
+        // integer labels add up to 100%.
         render(
             <AgreementSpendingSummaryCard
                 titlePrefix="2025"
@@ -162,12 +162,13 @@ describe("AgreementSpendingSummaryCard", () => {
         expect(tags[0]).toHaveTextContent("33%");
         // Partner: 333/1000 = 33.3 → 33%
         expect(tags[1]).toHaveTextContent("33%");
-        // Grant: 334/1000 = 33.4 → 33%
-        expect(tags[2]).toHaveTextContent("33%");
+        // Grant: 334/1000 = 33.4 → 34% after largest-remainder normalisation
+        expect(tags[2]).toHaveTextContent("34%");
         // Direct Obligation: 0 → 0%
         expect(tags[3]).toHaveTextContent("0%");
-        // Crucially: dominant item is NOT capped — 33% is not near 100%
+        // Crucially: dominant-item capping is unrelated to this case.
         expect(screen.queryByText(">99%")).not.toBeInTheDocument();
+        expect(screen.queryByText("99%")).not.toBeInTheDocument();
         expect(screen.queryByText("100%")).not.toBeInTheDocument();
     });
 

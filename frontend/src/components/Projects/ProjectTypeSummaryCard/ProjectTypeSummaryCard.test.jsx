@@ -78,20 +78,21 @@ describe("ProjectTypeSummaryCard", () => {
         expect(screen.getByText("30%")).toBeInTheDocument();
     });
 
-    it("shows '<1%' for tiny non-zero peer and '>99%' for the dominant type", () => {
+    it("shows '<1%' for tiny non-zero peer and '99%' for the dominant type (Figma: no >99%)", () => {
         render(
             <ProjectTypeSummaryCard
                 title="FY 2025 Projects by Type"
                 summary={tinySliceSummary}
             />
         );
-        // Dominant item must not show 100% when other non-zero items exist
+        // Dominant item must not show 100% or >99% when other non-zero items exist
         expect(screen.queryByText("100%")).not.toBeInTheDocument();
-        expect(screen.getByText(">99%")).toBeInTheDocument();
+        expect(screen.queryByText(">99%")).not.toBeInTheDocument();
+        expect(screen.getByText("99%")).toBeInTheDocument();
         expect(screen.getByText("<1%")).toBeInTheDocument();
     });
 
-    it("dominant type shows '>99%' when non-zero peers exist", () => {
+    it("dominant type shows '99%' (not '>99%') when non-zero peers exist", () => {
         render(
             <ProjectTypeSummaryCard
                 title="FY 2025 Projects by Type"
@@ -103,7 +104,8 @@ describe("ProjectTypeSummaryCard", () => {
                 }}
             />
         );
-        expect(screen.getByText(">99%")).toBeInTheDocument();
+        expect(screen.getByText("99%")).toBeInTheDocument();
+        expect(screen.queryByText(">99%")).not.toBeInTheDocument();
         expect(screen.queryByText("100%")).not.toBeInTheDocument();
     });
 

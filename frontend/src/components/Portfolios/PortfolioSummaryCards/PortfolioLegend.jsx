@@ -41,8 +41,8 @@ const PortfolioLegend = ({ data, activeId = 0 }) => {
 
                 const isActive = activeId === item.id;
                 // percent is already normalised by transformPortfoliosToChartData:
-                // ">99" when dominant with non-zero peers, "<1" for sub-1% non-zero,
-                // 0 for truly zero, or a plain integer otherwise.
+                // 99 when dominant with non-zero peers (Figma: plain 99%, not >99%),
+                // "<1" for sub-1% non-zero, 0 for truly zero, or a plain integer otherwise.
                 const displayPercent = item.percent;
 
                 // Portfolios with light backgrounds need dark text for readability

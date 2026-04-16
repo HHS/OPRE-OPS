@@ -6,7 +6,7 @@ import { resolveLeftFlexWidth } from "./util";
  * @property {number} id
  * @property {number} value
  * @property {string} color
- * @property {number|string} percent - Display percent: integer, or ">99" / "<1"
+ * @property {number|string} percent - Display percent: integer, or "<1"
  */
 
 /**

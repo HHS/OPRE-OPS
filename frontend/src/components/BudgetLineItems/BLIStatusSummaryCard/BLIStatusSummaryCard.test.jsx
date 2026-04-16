@@ -53,7 +53,7 @@ describe("BLIStatusSummaryCard", () => {
         expect(percentTags).toHaveLength(4);
     });
 
-    it("dominant item shows '>99%' instead of '100%' when non-zero peers exist", () => {
+    it("dominant item shows '99%' instead of '100%' when non-zero peers exist (Figma: no >99%)", () => {
         render(
             <BLIStatusSummaryCard
                 totalAmount={1000}
@@ -64,7 +64,8 @@ describe("BLIStatusSummaryCard", () => {
                 titlePrefix="FY 2024"
             />
         );
-        expect(screen.getByText(">99%")).toBeInTheDocument();
+        expect(screen.getByText("99%")).toBeInTheDocument();
+        expect(screen.queryByText(">99%")).not.toBeInTheDocument();
         expect(screen.queryByText("100%")).not.toBeInTheDocument();
     });
 

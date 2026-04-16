@@ -4,7 +4,7 @@ import styles from "./HorizontalStackedBar.module.scss";
 /**
  * @typedef {Object} SegmentData
  * @property {number} id - Unique identifier for the segment
- * @property {number|string} percent - Display percent: a rounded integer, or the strings "<1" / ">99"
+ * @property {number|string} percent - Display percent: a rounded integer, or the string "<1"
  * @property {string} color - CSS color variable
  * @property {string} label - Portfolio name for accessibility
  * @property {string} abbreviation - Portfolio abbreviation
@@ -16,8 +16,8 @@ import styles from "./HorizontalStackedBar.module.scss";
  * Horizontal stacked bar graph supporting multiple segments.
  *
  * Bar widths are derived from the proportional `value` of each segment
- * (not from the display `percent` string), so segments with string percents
- * like ">99" or "<1" still render correctly.
+ * (not from the display `percent` string), so segments with a string percent
+ * like "<1" still render correctly.
  *
  * @component
  * @param {Object} props
@@ -27,7 +27,7 @@ import styles from "./HorizontalStackedBar.module.scss";
  */
 const HorizontalStackedBar = ({ data, setActiveId = () => {} }) => {
     // Filter on value > 0 (always numeric) — percent can be a display string
-    // like ">99" or "<1" and must not be used for this boolean check.
+    // like "<1" and must not be used for this boolean check.
     const segments = data?.filter((item) => !item.isPlaceholder && item.value > 0) ?? [];
 
     if (segments.length === 0) {
@@ -54,8 +54,8 @@ const HorizontalStackedBar = ({ data, setActiveId = () => {} }) => {
     return (
         <div className={styles.stackedBarContainer}>
             {segments.map((segment) => {
-                // Derive proportional width from value so that string percents
-                // (">99", "<1") don't break the CSS layout.
+                // Derive proportional width from value so that a string percent
+                // ("<1") doesn't break the CSS layout.
                 const rawWidth = total > 0 ? (segment.value / total) * 100 : 0;
                 // Ensure a minimum visible width for tiny non-zero segments
                 const flexWidth = rawWidth > 0 && rawWidth < 1 ? 1 : rawWidth;

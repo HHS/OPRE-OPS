@@ -55,10 +55,11 @@ describe("PortfolioFunding — percent labels", () => {
         expect(tags[1]).toHaveTextContent("50%");
     });
 
-    it("dominant carry-forward shows '>99%' instead of '100%'", () => {
+    it("dominant carry-forward shows '99%' instead of '100%' (Figma: no >99%)", () => {
         useOutletContext.mockReturnValue(makeContext({ carryForward: 996, newFunding: 4, totalFunding: 1000 }));
         render(<PortfolioFunding />);
-        expect(screen.getByText(">99%")).toBeInTheDocument();
+        expect(screen.getByText("99%")).toBeInTheDocument();
+        expect(screen.queryByText(">99%")).not.toBeInTheDocument();
         expect(screen.queryByText("100%")).not.toBeInTheDocument();
     });
 
@@ -68,10 +69,11 @@ describe("PortfolioFunding — percent labels", () => {
         expect(screen.getByText("<1%")).toBeInTheDocument();
     });
 
-    it("dominant new-funding shows '>99%' instead of '100%'", () => {
+    it("dominant new-funding shows '99%' instead of '100%' (Figma: no >99%)", () => {
         useOutletContext.mockReturnValue(makeContext({ carryForward: 4, newFunding: 996, totalFunding: 1000 }));
         render(<PortfolioFunding />);
-        expect(screen.getByText(">99%")).toBeInTheDocument();
+        expect(screen.getByText("99%")).toBeInTheDocument();
+        expect(screen.queryByText(">99%")).not.toBeInTheDocument();
         expect(screen.queryByText("100%")).not.toBeInTheDocument();
     });
 

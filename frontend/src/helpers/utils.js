@@ -601,13 +601,16 @@ export const computeDisplayPercent = (value, total) => {
  * Rules applied across the full set:
  * 1. Any non-zero item that rounds down to 0% is shown as "<1".
  * 2. If a dominant item would round to 100% while at least one other non-zero
- *    item exists, the dominant item is capped at ">99" instead of 100.
+ *    item exists, the dominant item is capped at 99 instead of 100.
+ *    Per the Figma design spec, plain "99%" is shown — never ">99%".
+ * 3. When all non-zero items can be displayed as whole numbers, use a
+ *    largest-remainder pass so the displayed integer labels add up to 100.
  *
  * The returned array mirrors the input with a `percent` field added/replaced.
  * Original `value` fields are never modified.
  *
  * @param {Array<{value: number}>} items - Data items. Must all have a numeric `value`.
- * @returns {Array} Items with `percent` set to a number or the strings "<1" / ">99".
+ * @returns {Array} Items with `percent` set to a number or the string "<1".
  */
 export const computeDisplayPercents = (items) => {
     if (!items || items.length === 0) return items;
@@ -625,17 +628,61 @@ export const computeDisplayPercents = (items) => {
 
     const nonZeroCount = items.filter((item) => toFiniteNumber(item.value) > 0).length;
 
-    return items.map((item) => {
+    const annotated = items.map((item, index) => {
         const value = toFiniteNumber(item.value);
-        const base = computeDisplayPercent(value, total);
+        const exact = total > 0 ? (value / total) * 100 : 0;
 
-        // Cap dominant item at ">99" when other non-zero items still exist
-        if (base === 100 && nonZeroCount > 1) {
-            return { ...item, percent: ">99" };
-        }
-
-        return { ...item, percent: base };
+        return {
+            item,
+            index,
+            value,
+            exact,
+            isZero: value === 0,
+            isTiny: value > 0 && Math.round(exact) === 0,
+            isDominantCap: Math.round(exact) === 100 && nonZeroCount > 1
+        };
     });
+
+    const hasStringDisplayPercent = annotated.some((entry) => entry.isTiny || entry.isDominantCap);
+
+    if (hasStringDisplayPercent) {
+        return annotated.map(({ item, value, exact }) => {
+            const base = computeDisplayPercent(value, total);
+
+            // Cap dominant item at 99 (not 100) when other non-zero items still exist.
+            // Figma spec: show "99%" — never ">99%" — to avoid contradictory labels.
+            if (Math.round(exact) === 100 && nonZeroCount > 1) {
+                return { ...item, percent: 99 };
+            }
+
+            return { ...item, percent: base };
+        });
+    }
+
+    const floored = annotated.map((entry) => ({
+        ...entry,
+        whole: Math.floor(entry.exact),
+        remainder: entry.exact - Math.floor(entry.exact)
+    }));
+
+    let remaining = 100 - floored.reduce((sum, entry) => sum + entry.whole, 0);
+
+    const extraPointIndexes = new Set(
+        floored
+            .filter((entry) => !entry.isZero)
+            .sort((a, b) => {
+                if (b.remainder !== a.remainder) return b.remainder - a.remainder;
+                if (b.value !== a.value) return b.value - a.value;
+                return a.index - b.index;
+            })
+            .slice(0, remaining)
+            .map((entry) => entry.index)
+    );
+
+    return floored.map(({ item, index, whole }) => ({
+        ...item,
+        percent: whole + (remaining > 0 && extraPointIndexes.has(index) ? 1 : 0)
+    }));
 };
 
 /**

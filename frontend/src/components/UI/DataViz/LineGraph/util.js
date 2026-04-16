@@ -31,7 +31,7 @@ export const calculateRatio = (data) => {
  * 1. If `leftPercent` is a finite number, use it directly — preserves existing
  *    behaviour for callers (e.g. BudgetCard, CanCard) that pre-compute a correct
  *    percent and pass `totalFunding` (not the complement) as the right `value`.
- * 2. If `leftPercent` is a display string (">99" / "<1"), derive the width from
+ * 2. If `leftPercent` is a display string ("<1"), derive the width from
  *    `leftValue / (leftValue + rightValue)` — these callers (PortfolioFunding,
  *    CANSummaryCards) pass complementary values so the sum is the correct total.
  *
@@ -52,7 +52,7 @@ export const resolveLeftFlexWidth = (leftPercent, leftValue, rightValue) => {
         return raw;
     }
 
-    // Fall back to value-proportional width for display strings (">99" / "<1")
+    // Fall back to value-proportional width for display strings ("<1")
     const total = (leftValue ?? 0) + (rightValue ?? 0);
     if (total === 0) return 0;
     const raw = ((leftValue ?? 0) / total) * 100;
