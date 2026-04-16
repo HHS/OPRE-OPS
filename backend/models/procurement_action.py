@@ -132,6 +132,12 @@ class ProcurementAction(BaseModel):
         Numeric(12, 2), nullable=True, comment="Cumulative agreement total after this action"
     )
 
+    _TERMINAL_STATUSES = frozenset({
+        ProcurementActionStatus.AWARDED,
+        ProcurementActionStatus.CERTIFIED,
+        ProcurementActionStatus.CANCELLED,
+    })
+
     @classmethod
     def get_or_create_for_agreement(
         cls,
@@ -141,19 +147,34 @@ class ProcurementAction(BaseModel):
         status: "ProcurementActionStatus" = ProcurementActionStatus.PLANNED,
         date_awarded_obligated: Optional[date] = None,
         created_by: Optional[int] = None,
+        include_terminal: bool = False,
     ) -> tuple["ProcurementAction", bool]:
         """
         Find an existing ProcurementAction for the agreement + award_type,
         or create one.
 
+        By default, actions in terminal statuses (AWARDED, CERTIFIED, CANCELLED)
+        are excluded so that a new action is created for a new procurement cycle.
+        Pass ``include_terminal=True`` to match any status (e.g. for backfill).
+
+        Uses ``FOR UPDATE`` row-level locking to prevent duplicate creation
+        under concurrent calls.
+
         Returns (action, was_created).
         """
-        existing = session.execute(
-            select(cls).where(
+        query = (
+            select(cls)
+            .where(
                 cls.agreement_id == agreement.id,
                 cls.award_type == award_type,
             )
-        ).scalar_one_or_none()
+            .with_for_update()
+        )
+
+        if not include_terminal:
+            query = query.where(cls.status.not_in(list(cls._TERMINAL_STATUSES)))
+
+        existing = session.execute(query).scalar_one_or_none()
 
         if existing:
             return existing, False

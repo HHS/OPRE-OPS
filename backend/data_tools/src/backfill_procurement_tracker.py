@@ -137,6 +137,7 @@ def backfill_procurement_records(
                     tracker_status=ProcurementTrackerStatus.COMPLETED,
                     date_awarded_obligated=award_date,
                     source=SOURCE,
+                    include_terminal=True,
                 )
                 created_actions += int(ac)
                 created_trackers += int(tc)
@@ -167,7 +168,7 @@ def backfill_procurement_records(
             else:
                 # NEW_AWARD only: action + tracker + IN_EXECUTION BLIs
                 new_award_action, _, ac, tc = get_or_create_procurement_records_for_new_award(
-                    session, agreement, created_by=sys_user.id, source=SOURCE
+                    session, agreement, created_by=sys_user.id, source=SOURCE, include_terminal=True
                 )
                 created_actions += int(ac)
                 created_trackers += int(tc)

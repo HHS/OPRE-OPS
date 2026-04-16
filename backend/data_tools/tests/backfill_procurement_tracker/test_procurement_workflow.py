@@ -640,13 +640,14 @@ def test_sync_skips_terminal_action_statuses(db_workflow):
     sys_user = get_or_create_sys_user(db_workflow)
     agreement = db_workflow.get(Agreement, 8001)
 
-    # Create an AWARDED new-award action via the workflow
+    # Create an AWARDED new-award action via the workflow (backfill context)
     action, _, _, _ = get_or_create_procurement_records_for_new_award(
         db_workflow,
         agreement,
         created_by=sys_user.id,
         action_status=ProcurementActionStatus.AWARDED,
         tracker_status=ProcurementTrackerStatus.COMPLETED,
+        include_terminal=True,
     )
     db_workflow.flush()
     assert action.procurement_shop_id == 8000
@@ -657,14 +658,79 @@ def test_sync_skips_terminal_action_statuses(db_workflow):
     db_workflow.flush()
 
     agreement.awarding_entity_id = 9002
+    # Re-run with include_terminal so it finds the existing AWARDED action
     get_or_create_procurement_records_for_new_award(
         db_workflow,
         agreement,
         created_by=sys_user.id,
         action_status=ProcurementActionStatus.AWARDED,
         tracker_status=ProcurementTrackerStatus.COMPLETED,
+        include_terminal=True,
     )
     db_workflow.flush()
 
     # Shop should NOT have changed — the action is in a terminal status
     assert action.procurement_shop_id == 8000
+
+
+def test_default_skips_terminal_actions(db_workflow):
+    """By default, terminal-status actions are not matched; a new action is created."""
+    sys_user = get_or_create_sys_user(db_workflow)
+    agreement = db_workflow.get(Agreement, 8001)
+
+    # Create an AWARDED action directly (simulating a finalized procurement cycle)
+    finished_action = ProcurementAction(
+        agreement_id=8001,
+        award_type=AwardType.NEW_AWARD,
+        status=ProcurementActionStatus.AWARDED,
+        procurement_shop_id=8000,
+        created_by=sys_user.id,
+    )
+    db_workflow.add(finished_action)
+    db_workflow.flush()
+
+    # Default workflow call should NOT reuse the terminal action
+    action, _, action_created, _ = get_or_create_procurement_records_for_new_award(
+        db_workflow, agreement, created_by=sys_user.id
+    )
+
+    assert action_created is True
+    assert action.id != finished_action.id
+    assert action.status == ProcurementActionStatus.PLANNED
+
+
+def test_default_skips_inactive_trackers(db_workflow):
+    """By default, COMPLETED trackers are not matched; a new tracker is created."""
+    sys_user = get_or_create_sys_user(db_workflow)
+    agreement = db_workflow.get(Agreement, 8001)
+
+    # Create a completed tracker + action directly
+    action = ProcurementAction(
+        agreement_id=8001,
+        award_type=AwardType.NEW_AWARD,
+        status=ProcurementActionStatus.PLANNED,
+        procurement_shop_id=8000,
+        created_by=sys_user.id,
+    )
+    db_workflow.add(action)
+    db_workflow.flush()
+
+    completed_tracker = DefaultProcurementTracker.create_with_steps(
+        agreement_id=8001,
+        procurement_action=action.id,
+        status=ProcurementTrackerStatus.COMPLETED,
+        created_by=sys_user.id,
+    )
+    db_workflow.add(completed_tracker)
+    db_workflow.flush()
+
+    # Default call should NOT reuse the completed tracker
+    tracker, _, needs_setup = DefaultProcurementTracker.get_or_create_for_action(
+        db_workflow,
+        agreement_id=8001,
+        procurement_action_id=action.id,
+        created_by=sys_user.id,
+    )
+
+    assert tracker.id != completed_tracker.id
+    assert needs_setup is True

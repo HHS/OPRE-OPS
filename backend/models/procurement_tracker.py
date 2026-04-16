@@ -910,10 +910,19 @@ class DefaultProcurementTracker(ProcurementTracker):
         status: ProcurementTrackerStatus = ProcurementTrackerStatus.ACTIVE,
         created_by: Optional[int] = None,
         award_type_label: Optional[str] = None,
+        include_inactive: bool = False,
     ) -> tuple["DefaultProcurementTracker", bool, bool]:
         """
         Find an existing tracker linked to this action, adopt an unlinked
         tracker for the agreement, or create a new one.
+
+        By default only ACTIVE trackers are matched—INACTIVE and COMPLETED
+        trackers are skipped so that a new tracker is created for a new
+        procurement cycle.  Pass ``include_inactive=True`` to match any
+        status (e.g. for backfill).
+
+        Uses ``FOR UPDATE`` row-level locking to prevent duplicate creation
+        under concurrent calls.
 
         Returns (tracker, was_created, needs_step_setup).
         needs_step_setup is True for adopted and newly created trackers
@@ -923,27 +932,41 @@ class DefaultProcurementTracker(ProcurementTracker):
         in log messages for observability.
         """
         # Check for a tracker already linked to this action
-        existing = session.execute(
-            select(ProcurementTracker).where(
+        linked_query = (
+            select(ProcurementTracker)
+            .where(
                 ProcurementTracker.agreement_id == agreement_id,
                 ProcurementTracker.procurement_action == procurement_action_id,
             )
-        ).scalar_one_or_none()
+            .with_for_update()
+        )
+
+        if not include_inactive:
+            linked_query = linked_query.where(
+                ProcurementTracker.status == ProcurementTrackerStatus.ACTIVE
+            )
+
+        existing = session.execute(linked_query).scalar_one_or_none()
 
         if existing:
             return existing, False, False
 
         # Adopt an unlinked tracker if one exists
-        unlinked = (
-            session.execute(
-                select(ProcurementTracker).where(
-                    ProcurementTracker.agreement_id == agreement_id,
-                    ProcurementTracker.procurement_action.is_(None),
-                )
+        unlinked_query = (
+            select(ProcurementTracker)
+            .where(
+                ProcurementTracker.agreement_id == agreement_id,
+                ProcurementTracker.procurement_action.is_(None),
             )
-            .scalars()
-            .first()
+            .with_for_update()
         )
+
+        if not include_inactive:
+            unlinked_query = unlinked_query.where(
+                ProcurementTracker.status == ProcurementTrackerStatus.ACTIVE
+            )
+
+        unlinked = session.execute(unlinked_query).scalars().first()
 
         type_suffix = f" ({award_type_label})" if award_type_label else ""
         if unlinked:
