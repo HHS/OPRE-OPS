@@ -37,9 +37,7 @@ class NotificationService(OpsService[Notification]):
         self.db_session.commit()
         return notification
 
-    def update(
-        self, notification_id: int, updated_fields: dict[str, Any]
-    ) -> tuple[Notification, int]:
+    def update(self, notification_id: int, updated_fields: dict[str, Any]) -> tuple[Notification, int]:
         """
         Update an existing notification with the provided fields.
         """
@@ -74,9 +72,7 @@ class NotificationService(OpsService[Notification]):
             raise ResourceNotFoundError("Notification", notification_id)
         return notification
 
-    def get_list(
-        self, filters: dict | None = None
-    ) -> tuple[list[Notification], dict | None]:
+    def get_list(self, filters: dict | None = None) -> tuple[list[Notification], dict | None]:
         """
         List notifications, optionally filtered by the provided criteria.
         """
