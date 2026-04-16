@@ -70,10 +70,12 @@ const EditAgreement = () => {
     if (!isEditable) {
         return (
             <App>
+                <h1 className="font-sans-2xl margin-bottom-2">Access Denied</h1>
                 <SimpleAlert
                     type="error"
                     heading="Error"
                     message="This Agreement cannot be edited."
+                    headingLevel={2}
                 ></SimpleAlert>
                 <Link
                     to="/"
