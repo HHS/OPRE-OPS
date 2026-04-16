@@ -28,13 +28,12 @@ const LineGraph = ({ data = [], setActiveId = () => {}, isStriped = false, overB
 
     const leftFlexWidth = resolveLeftFlexWidth(leftPercent, leftValue, rightValue);
 
-    // Use numeric percent for full-bar class when available, otherwise use value comparison
+    // Use numeric percent for full-bar class when available.
+    // Fallback: "full" when the other side has no value (rightValue <= 0 / leftValue <= 0).
     const leftIsFull =
-        typeof leftPercent === "number" ? leftPercent >= 100 : (leftValue ?? 0) >= (leftValue ?? 0) + (rightValue ?? 0);
+        typeof leftPercent === "number" ? leftPercent >= 100 : (rightValue ?? 0) <= 0;
     const rightIsFull =
-        typeof rightPercent === "number"
-            ? rightPercent >= 100
-            : (rightValue ?? 0) >= (leftValue ?? 0) + (rightValue ?? 0);
+        typeof rightPercent === "number" ? rightPercent >= 100 : (leftValue ?? 0) <= 0;
 
     return (
         <div className={styles.barBox}>

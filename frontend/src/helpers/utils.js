@@ -609,6 +609,13 @@ export const computeDisplayPercent = (value, total) => {
  * The returned array mirrors the input with a `percent` field added/replaced.
  * Original `value` fields are never modified.
  *
+ * **Edge case — mixed display types**: When any item produces a string percent
+ * (i.e. `"<1"` or a capped `99`), the largest-remainder integer-sum pass is
+ * skipped for the entire set. In practice this means that when a tiny-slice
+ * item is present, the remaining numeric labels may sum to 99 rather than 100.
+ * This is an intentional tradeoff: fixing the misleading `0%` label is more
+ * important than perfect summing in those rare edge cases.
+ *
  * @param {Array<{value: number}>} items - Data items. Must all have a numeric `value`.
  * @returns {Array} Items with `percent` set to a number or the string "<1".
  */
