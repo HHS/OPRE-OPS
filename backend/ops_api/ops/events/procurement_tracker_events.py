@@ -186,20 +186,21 @@ def _validate_no_change_requests_for_bli(session: Session, budget_line_item_id: 
     Returns:
         Tuple of (is_valid, reason)
     """
-    cr_stmt = (
-        select(BudgetLineItemChangeRequest)
-        .where(
-            BudgetLineItemChangeRequest.budget_line_item_id == budget_line_item_id,
-        )
-        .limit(1)
+    cr_stmt = select(BudgetLineItemChangeRequest).where(
+        BudgetLineItemChangeRequest.budget_line_item_id == budget_line_item_id,
     )
-    change_request = session.scalar(cr_stmt)
+    change_requests = session.scalars(cr_stmt).all()
 
-    if change_request:
-        return (
-            False,
-            f"Found change request {change_request.id} for BLI {budget_line_item_id}. Change Request process is responsible for creating tracker",
-        )
+    for change_request in change_requests:
+        if (
+            change_request.status == ChangeRequestStatus.APPROVED
+            and change_request.requested_change_data.get("status", None) == "IN_EXECUTION"
+        ):
+            return (
+                False,
+                f"Found change request {change_request.id} for BLI {budget_line_item_id} with IN_EXECUTION status change. "
+                f"Change Request process is responsible for creating tracker",
+            )
 
     return True, None
 
