@@ -144,7 +144,7 @@ class ProcurementAction(BaseModel):
     ) -> tuple["ProcurementAction", bool]:
         """
         Find an existing ProcurementAction for the agreement + award_type,
-        or create one. Syncs procurement_shop_id from agreement.awarding_entity_id.
+        or create one.
 
         Returns (action, was_created).
         """
@@ -156,18 +156,6 @@ class ProcurementAction(BaseModel):
         ).scalar_one_or_none()
 
         if existing:
-            # Sync procurement_shop_id from agreement if it diverged
-            if (
-                existing.procurement_shop_id != agreement.awarding_entity_id
-                and agreement.awarding_entity_id is not None
-            ):
-                old_shop_id = existing.procurement_shop_id
-                existing.procurement_shop_id = agreement.awarding_entity_id
-                logger.info(
-                    f"Updated ProcurementAction {existing.id} procurement_shop_id "
-                    f"from {old_shop_id} to {agreement.awarding_entity_id} "
-                    f"for Agreement {agreement.id} ('{agreement.name}')"
-                )
             return existing, False
 
         action = cls(

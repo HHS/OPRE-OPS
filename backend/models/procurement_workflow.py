@@ -129,6 +129,26 @@ def link_single_bli_to_action(
 
 
 # ---------------------------------------------------------------------------
+# Attribute syncing
+# ---------------------------------------------------------------------------
+
+
+def _sync_procurement_shop(action: ProcurementAction, agreement: "Agreement") -> None:
+    """Sync procurement_shop_id from agreement.awarding_entity_id if they diverged."""
+    if (
+        action.procurement_shop_id != agreement.awarding_entity_id
+        and agreement.awarding_entity_id is not None
+    ):
+        old_shop_id = action.procurement_shop_id
+        action.procurement_shop_id = agreement.awarding_entity_id
+        logger.info(
+            f"Updated ProcurementAction {action.id} procurement_shop_id "
+            f"from {old_shop_id} to {agreement.awarding_entity_id} "
+            f"for Agreement {agreement.id} ('{agreement.name}')"
+        )
+
+
+# ---------------------------------------------------------------------------
 # OpsEvent creation
 # ---------------------------------------------------------------------------
 
@@ -218,6 +238,8 @@ def get_or_create_procurement_records_for_new_award(
     if action_created:
         _create_action_event(session, action, created_by=created_by, source=source)
 
+    _sync_procurement_shop(action, agreement)
+
     tracker, tracker_created = DefaultProcurementTracker.get_or_create_for_action(
         session,
         agreement_id=agreement.id,
@@ -257,6 +279,8 @@ def get_or_create_procurement_records_for_modification(
 
     if action_created:
         _create_action_event(session, action, created_by=created_by, source=source)
+
+    _sync_procurement_shop(action, agreement)
 
     tracker, tracker_created = DefaultProcurementTracker.get_or_create_for_action(
         session,
