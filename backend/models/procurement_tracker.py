@@ -909,12 +909,14 @@ class DefaultProcurementTracker(ProcurementTracker):
         procurement_action_id: int,
         status: ProcurementTrackerStatus = ProcurementTrackerStatus.ACTIVE,
         created_by: Optional[int] = None,
-    ) -> tuple["DefaultProcurementTracker", bool]:
+    ) -> tuple["DefaultProcurementTracker", bool, bool]:
         """
         Find an existing tracker linked to this action, adopt an unlinked
         tracker for the agreement, or create a new one.
 
-        Returns (tracker, was_created).
+        Returns (tracker, was_created, needs_step_setup).
+        needs_step_setup is True for adopted and newly created trackers
+        (i.e. whenever the caller should configure step statuses).
         """
         # Check for a tracker already linked to this action
         existing = session.execute(
@@ -925,7 +927,7 @@ class DefaultProcurementTracker(ProcurementTracker):
         ).scalar_one_or_none()
 
         if existing:
-            return existing, False
+            return existing, False, False
 
         # Adopt an unlinked tracker if one exists
         unlinked = (
@@ -942,13 +944,12 @@ class DefaultProcurementTracker(ProcurementTracker):
         if unlinked:
             unlinked.procurement_action = procurement_action_id
             unlinked.status = status
-            unlinked.activate_first_step()
             logger.info(
                 f"Linked existing unlinked tracker {unlinked.id} to "
                 f"ProcurementAction {procurement_action_id} "
                 f"for Agreement {agreement_id}"
             )
-            return unlinked, False
+            return unlinked, False, True
 
         # Create a new tracker
         tracker = cls.create_with_steps(
@@ -963,4 +964,4 @@ class DefaultProcurementTracker(ProcurementTracker):
             f"Created DefaultProcurementTracker for Agreement {agreement_id} "
             f"— linked to ProcurementAction {procurement_action_id} with {len(tracker.steps)} steps"
         )
-        return tracker, True
+        return tracker, True, True

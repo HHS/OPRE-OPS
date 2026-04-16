@@ -109,24 +109,6 @@ def link_blis_to_action(
     return linked_count
 
 
-def link_single_bli_to_action(
-    budget_line_item: BudgetLineItem,
-    procurement_action: ProcurementAction,
-) -> bool:
-    """
-    Link a single BLI to a ProcurementAction if not already linked.
-    Returns True if newly linked.
-    """
-    if budget_line_item.procurement_action_id == procurement_action.id:
-        return False
-
-    budget_line_item.procurement_action_id = procurement_action.id
-    logger.info(
-        f"Linked BLI {budget_line_item.id} to ProcurementAction {procurement_action.id} "
-        f"for Agreement {budget_line_item.agreement_id}"
-    )
-    return True
-
 
 # ---------------------------------------------------------------------------
 # Attribute syncing
@@ -240,7 +222,7 @@ def get_or_create_procurement_records_for_new_award(
 
     _sync_procurement_shop(action, agreement)
 
-    tracker, tracker_created = DefaultProcurementTracker.get_or_create_for_action(
+    tracker, tracker_created, needs_step_setup = DefaultProcurementTracker.get_or_create_for_action(
         session,
         agreement_id=agreement.id,
         procurement_action_id=action.id,
@@ -251,9 +233,12 @@ def get_or_create_procurement_records_for_new_award(
     if tracker_created:
         _create_tracker_event(session, tracker, created_by=created_by, source=source)
 
-    # Apply step statuses based on tracker_status
-    if tracker_status == ProcurementTrackerStatus.COMPLETED:
-        tracker.mark_completed(completed_date=date_awarded_obligated)
+    # Set step statuses only for adopted or newly created trackers
+    if needs_step_setup:
+        if tracker_status == ProcurementTrackerStatus.COMPLETED:
+            tracker.mark_completed(completed_date=date_awarded_obligated)
+        else:
+            tracker.activate_first_step()
 
     return action, tracker, action_created, tracker_created
 
@@ -282,7 +267,7 @@ def get_or_create_procurement_records_for_modification(
 
     _sync_procurement_shop(action, agreement)
 
-    tracker, tracker_created = DefaultProcurementTracker.get_or_create_for_action(
+    tracker, tracker_created, needs_step_setup = DefaultProcurementTracker.get_or_create_for_action(
         session,
         agreement_id=agreement.id,
         procurement_action_id=action.id,
@@ -292,5 +277,8 @@ def get_or_create_procurement_records_for_modification(
 
     if tracker_created:
         _create_tracker_event(session, tracker, created_by=created_by, source=source)
+
+    if needs_step_setup:
+        tracker.activate_first_step()
 
     return action, tracker, action_created, tracker_created
