@@ -909,6 +909,7 @@ class DefaultProcurementTracker(ProcurementTracker):
         procurement_action_id: int,
         status: ProcurementTrackerStatus = ProcurementTrackerStatus.ACTIVE,
         created_by: Optional[int] = None,
+        award_type_label: Optional[str] = None,
     ) -> tuple["DefaultProcurementTracker", bool, bool]:
         """
         Find an existing tracker linked to this action, adopt an unlinked
@@ -917,6 +918,9 @@ class DefaultProcurementTracker(ProcurementTracker):
         Returns (tracker, was_created, needs_step_setup).
         needs_step_setup is True for adopted and newly created trackers
         (i.e. whenever the caller should configure step statuses).
+
+        award_type_label is an optional string (e.g. "NEW_AWARD") included
+        in log messages for observability.
         """
         # Check for a tracker already linked to this action
         existing = session.execute(
@@ -941,12 +945,13 @@ class DefaultProcurementTracker(ProcurementTracker):
             .first()
         )
 
+        type_suffix = f" ({award_type_label})" if award_type_label else ""
         if unlinked:
             unlinked.procurement_action = procurement_action_id
             unlinked.status = status
             logger.info(
                 f"Linked existing unlinked tracker {unlinked.id} to "
-                f"ProcurementAction {procurement_action_id} "
+                f"ProcurementAction {procurement_action_id}{type_suffix} "
                 f"for Agreement {agreement_id}"
             )
             return unlinked, False, True
@@ -962,6 +967,7 @@ class DefaultProcurementTracker(ProcurementTracker):
         session.flush()
         logger.info(
             f"Created DefaultProcurementTracker for Agreement {agreement_id} "
-            f"— linked to ProcurementAction {procurement_action_id} with {len(tracker.steps)} steps"
+            f"— linked to ProcurementAction {procurement_action_id}{type_suffix} "
+            f"with {len(tracker.steps)} steps"
         )
         return tracker, True, True

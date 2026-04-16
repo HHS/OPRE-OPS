@@ -12,7 +12,7 @@ Used by:
 """
 
 from datetime import date
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 from loguru import logger
 from sqlalchemy import func, select
@@ -25,6 +25,18 @@ from models.procurement_tracker import (
     DefaultProcurementTracker,
     ProcurementTrackerStatus,
 )
+
+if TYPE_CHECKING:
+    from models.agreements import Agreement
+
+__all__ = [
+    "has_obligated_blis",
+    "get_earliest_obligated_fiscal_year",
+    "get_earliest_obligated_date_needed",
+    "link_blis_to_action",
+    "get_or_create_procurement_records_for_new_award",
+    "get_or_create_procurement_records_for_modification",
+]
 
 
 # ---------------------------------------------------------------------------
@@ -107,7 +119,6 @@ def link_blis_to_action(
         )
 
     return linked_count
-
 
 
 # ---------------------------------------------------------------------------
@@ -228,6 +239,7 @@ def get_or_create_procurement_records_for_new_award(
         procurement_action_id=action.id,
         status=tracker_status,
         created_by=created_by,
+        award_type_label=AwardType.NEW_AWARD.name,
     )
 
     if tracker_created:
@@ -273,6 +285,7 @@ def get_or_create_procurement_records_for_modification(
         procurement_action_id=action.id,
         status=ProcurementTrackerStatus.ACTIVE,
         created_by=created_by,
+        award_type_label=AwardType.MODIFICATION.name,
     )
 
     if tracker_created:
