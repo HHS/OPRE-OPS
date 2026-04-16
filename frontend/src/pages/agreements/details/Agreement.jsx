@@ -6,10 +6,12 @@ import { getUser } from "../../../api/getUser";
 import {
     useGetAgreementByIdQuery,
     useGetNotificationsByUserIdAndAgreementIdQuery,
-    useGetProcurementShopByIdQuery
+    useGetProcurementShopByIdQuery,
+    useGetProcurementTrackersByAgreementIdQuery
 } from "../../../api/opsAPI";
 import AgreementChangesAlert from "../../../components/Agreements/AgreementChangesAlert";
 import AgreementChangesResponseAlert from "../../../components/Agreements/AgreementChangesResponseAlert";
+import PreAwardApprovalAlert from "../../../components/Agreements/PreAwardApprovalAlert/PreAwardApprovalAlert";
 import DetailsTabs from "../../../components/Agreements/DetailsTabs";
 import DocumentView from "../../../components/Agreements/Documents/DocumentView";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
@@ -44,6 +46,8 @@ const Agreement = () => {
     const [isTempUiAlertVisible, setIsTempUiAlertVisible] = useState(true);
     const [isApproveAlertVisible, setIsApproveAlertVisible] = useState(true);
     const [isDeclinedAlertVisible, setIsDeclinedAlertVisible] = useState(true);
+    const [isPreAwardAlertVisible, setIsPreAwardAlertVisible] = useState(true);
+    const [isPreAwardInReviewAlertVisible, setIsPreAwardInReviewAlertVisible] = useState(true);
 
     const searchParams = new URLSearchParams(location.search);
     const mode = searchParams.get("mode") || undefined;
@@ -77,6 +81,11 @@ const Agreement = () => {
     if (query_response) {
         user_agreement_notifications = query_response.data;
     }
+
+    // Query procurement tracker to check for pre-award approval status
+    const { data: procurementTrackers } = useGetProcurementTrackersByAgreementIdQuery(agreementId, {
+        skip: !agreementId
+    });
 
     if (isSuccess && agreement) {
         doesAgreementHaveBlIsInReview = hasBlIsInReview(agreement.budget_line_items ?? []);
@@ -175,6 +184,12 @@ const Agreement = () => {
     const showReviewAlert = (doesAgreementHaveBlIsInReview || agreement?.in_review) && isAlertVisible;
     const showNonContractAlert = isAgreementNotDeveloped && isTempUiAlertVisible;
 
+    // Check if pre-award approval is in review (approval_requested but not yet approved/declined)
+    const trackers = procurementTrackers?.data || [];
+    const activeTracker = trackers.find((tracker) => tracker.status === "ACTIVE");
+    const preAwardStep = activeTracker?.steps?.find((step) => step.step_type === "PRE_AWARD");
+    const isPreAwardInReview = preAwardStep?.approval_requested && !preAwardStep?.approval_status;
+
     const isAgreementAwarded = agreement?.is_awarded;
     return (
         <App breadCrumbName={agreement?.name}>
@@ -183,6 +198,15 @@ const Agreement = () => {
                     changeRequests={allChangeRequests}
                     isAlertVisible={isAlertVisible}
                     setIsAlertVisible={setIsAlertVisible}
+                />
+            )}
+            {isPreAwardInReview && isPreAwardInReviewAlertVisible && (
+                <SimpleAlert
+                    type="warning"
+                    heading="Pre-Award Approval In Review"
+                    isClosable={true}
+                    message="This agreement is In Review for Pre-Award Approval. Edits or changes cannot be made at this time."
+                    setIsAlertVisible={setIsPreAwardInReviewAlertVisible}
                 />
             )}
             {showNonContractAlert && (
@@ -215,14 +239,21 @@ const Agreement = () => {
             </h2>
 
             {user_agreement_notifications?.length > 0 && (
-                <AgreementChangesResponseAlert
-                    changeRequestNotifications={user_agreement_notifications}
-                    isApproveAlertVisible={isApproveAlertVisible}
-                    isDeclineAlertVisible={isDeclinedAlertVisible}
-                    setIsApproveAlertVisible={setIsApproveAlertVisible}
-                    setIsDeclineAlertVisible={setIsDeclinedAlertVisible}
-                    budgetLines={agreement?.budget_line_items ?? []}
-                />
+                <>
+                    <AgreementChangesResponseAlert
+                        changeRequestNotifications={user_agreement_notifications}
+                        isApproveAlertVisible={isApproveAlertVisible}
+                        isDeclineAlertVisible={isDeclinedAlertVisible}
+                        setIsApproveAlertVisible={setIsApproveAlertVisible}
+                        setIsDeclineAlertVisible={setIsDeclinedAlertVisible}
+                        budgetLines={agreement?.budget_line_items ?? []}
+                    />
+                    <PreAwardApprovalAlert
+                        notifications={user_agreement_notifications}
+                        isVisible={isPreAwardAlertVisible}
+                        setIsVisible={setIsPreAwardAlertVisible}
+                    />
+                </>
             )}
             <div>
                 <section className="display-flex flex-justify margin-top-3">

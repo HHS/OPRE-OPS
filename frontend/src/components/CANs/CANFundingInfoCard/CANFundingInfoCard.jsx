@@ -81,8 +81,8 @@ const CANFundingInfoCard = ({ funding }) => {
                             description={funding.funding_received ?? NO_DATA}
                         />
                         <TermTag
-                            term="TAS #"
-                            description={funding.appropriation ?? NO_DATA}
+                            term="Funding Source"
+                            description={funding.funding_source ?? NO_DATA}
                         />
                     </dl>
                 </div>
@@ -93,8 +93,8 @@ const CANFundingInfoCard = ({ funding }) => {
                             description={funding.funding_method ?? NO_DATA}
                         />
                         <TermTag
-                            term="Funding Source"
-                            description={funding.funding_source ?? NO_DATA}
+                            term="Partner"
+                            description={funding.funding_partner ?? NO_DATA}
                         />
                     </dl>
                 </div>
@@ -104,14 +104,6 @@ const CANFundingInfoCard = ({ funding }) => {
                             term="Funding Type"
                             description={funding.funding_type ?? NO_DATA}
                         />
-                        <TermTag
-                            term="Partner"
-                            description={funding.funding_partner ?? NO_DATA}
-                        />
-                    </dl>
-                </div>
-                <div className="grid-col">
-                    <dl>
                         <TermTag
                             term="Method of Transfer"
                             description={funding.method_of_transfer ?? NO_DATA}

@@ -5449,7 +5449,6 @@ components:
         allowance:
           type: string
         appropriation:
-          description: The TAS number for the associated CAN.
           type: string
         display_name:
           type: string
@@ -5500,7 +5499,6 @@ components:
         allowance:
           type: string
         appropriation:
-          description: The TAS number for the associated CAN.
           type: string
         display_name:
           type: string
@@ -5543,7 +5541,6 @@ components:
         allowance:
           type: string
         appropriation:
-          description: The TAS number for the associated CAN.
           type: string
         display_name:
           type: string

@@ -203,3 +203,47 @@ def test_approval_transitions_are_idempotent(auth_client, test_pre_award_step, l
     assert (
         total_notifications_sent == notifications_sent_first_time
     ), "Only the first request should have sent notifications"
+
+
+def test_approval_response_auto_dismisses_in_review_notifications(
+    auth_client, test_pre_award_step, loaded_db
+):
+    """Test that approval response auto-dismisses 'in review' notifications for reviewers."""
+    # Step 1: Request approval - creates "in review" notifications for reviewers
+    update_data = {
+        "approval_requested": True,
+        "approval_requested_date": date.today().isoformat(),
+        "requestor_notes": "Please review and approve",
+    }
+    response = auth_client.patch(
+        f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}",
+        json=update_data,
+    )
+    assert response.status_code == 200
+
+    # Verify "in review" notifications were created
+    in_review_notifications = loaded_db.scalars(
+        select(Notification)
+        .where(Notification.title == "Pre-Award Approval Request")
+        .where(Notification.is_read.is_(False))
+    ).all()
+    assert len(in_review_notifications) > 0, "Should have unread approval request notifications"
+
+    # Store the notification IDs to verify later
+    reviewer_notification_ids = [n.id for n in in_review_notifications]
+
+    # Step 2: Approve request - should auto-dismiss reviewer notifications
+    update_data = {
+        "approval_status": "APPROVED",
+        "reviewer_notes": "Looks good, approved",
+    }
+    response = auth_client.patch(
+        f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}",
+        json=update_data,
+    )
+    assert response.status_code == 200
+
+    # Step 3: Verify all "in review" notifications are marked as read
+    for notification_id in reviewer_notification_ids:
+        notification = loaded_db.get(Notification, notification_id)
+        assert notification.is_read, f"Notification {notification_id} should be auto-dismissed (marked as read)"
