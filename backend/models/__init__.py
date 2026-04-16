@@ -15,7 +15,6 @@ from .portfolios import *
 from .procurement_shops import *
 from .procurement_tracker import *
 from .procurement_action import *
-from .procurement_workflow import *
 from .projects import *
 from .services_components import *
 from .users import *

@@ -177,6 +177,7 @@ def _create_tracker_event(
     tracker: DefaultProcurementTracker,
     created_by: Optional[int] = None,
     source: Optional[str] = None,
+    award_type_label: Optional[str] = None,
 ) -> None:
     """Create a CREATE_PROCUREMENT_TRACKER OpsEvent."""
     event_details = {
@@ -187,7 +188,8 @@ def _create_tracker_event(
         "active_step_number": tracker.active_step_number,
     }
     if source:
-        event_details["message"] = f"{source}: created tracker for agreement {tracker.agreement_id}"
+        type_str = f" {award_type_label}" if award_type_label else ""
+        event_details["message"] = f"{source}: created{type_str} tracker for agreement {tracker.agreement_id}"
 
     session.add(
         OpsEvent(
@@ -230,8 +232,8 @@ def get_or_create_procurement_records_for_new_award(
 
     if action_created:
         _create_action_event(session, action, created_by=created_by, source=source)
-
-    _sync_procurement_shop(action, agreement)
+    else:
+        _sync_procurement_shop(action, agreement)
 
     tracker, tracker_created, needs_step_setup = DefaultProcurementTracker.get_or_create_for_action(
         session,
@@ -243,7 +245,9 @@ def get_or_create_procurement_records_for_new_award(
     )
 
     if tracker_created:
-        _create_tracker_event(session, tracker, created_by=created_by, source=source)
+        _create_tracker_event(
+            session, tracker, created_by=created_by, source=source, award_type_label=AwardType.NEW_AWARD.name
+        )
 
     # Set step statuses only for adopted or newly created trackers
     if needs_step_setup:
@@ -276,8 +280,8 @@ def get_or_create_procurement_records_for_modification(
 
     if action_created:
         _create_action_event(session, action, created_by=created_by, source=source)
-
-    _sync_procurement_shop(action, agreement)
+    else:
+        _sync_procurement_shop(action, agreement)
 
     tracker, tracker_created, needs_step_setup = DefaultProcurementTracker.get_or_create_for_action(
         session,
@@ -289,7 +293,9 @@ def get_or_create_procurement_records_for_modification(
     )
 
     if tracker_created:
-        _create_tracker_event(session, tracker, created_by=created_by, source=source)
+        _create_tracker_event(
+            session, tracker, created_by=created_by, source=source, award_type_label=AwardType.MODIFICATION.name
+        )
 
     if needs_step_setup:
         tracker.activate_first_step()

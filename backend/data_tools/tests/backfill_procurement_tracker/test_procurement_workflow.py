@@ -582,3 +582,54 @@ def test_modification_workflow_adopts_unlinked_tracker(db_workflow):
         db_workflow.execute(select(ProcurementTracker).where(ProcurementTracker.agreement_id == 8001)).scalars().all()
     )
     assert len(all_trackers) == 1
+
+
+# ============================================================================
+# _sync_procurement_shop (via workflow functions)
+# ============================================================================
+
+
+def test_new_award_workflow_syncs_procurement_shop_on_existing_action(db_workflow):
+    """When an action exists and the agreement's awarding_entity_id changed, the shop is synced."""
+    sys_user = get_or_create_sys_user(db_workflow)
+    agreement = db_workflow.get(Agreement, 8001)
+
+    # First call creates the action with procurement_shop_id=8000
+    action, _, _, _ = get_or_create_procurement_records_for_new_award(db_workflow, agreement, created_by=sys_user.id)
+    db_workflow.flush()
+    assert action.procurement_shop_id == 8000
+
+    # Simulate the agreement's awarding_entity_id changing to None — no sync
+    agreement.awarding_entity_id = None
+    get_or_create_procurement_records_for_new_award(db_workflow, agreement, created_by=sys_user.id)
+    db_workflow.flush()
+    assert action.procurement_shop_id == 8000  # unchanged
+
+    # Now set a different non-None value — should sync
+    new_shop = ProcurementShop(id=9000, name="New PSC", abbr="NPSC", created_by=sys_user.id)
+    db_workflow.add(new_shop)
+    db_workflow.flush()
+
+    agreement.awarding_entity_id = 9000
+    get_or_create_procurement_records_for_new_award(db_workflow, agreement, created_by=sys_user.id)
+    db_workflow.flush()
+    assert action.procurement_shop_id == 9000
+
+
+def test_modification_workflow_syncs_procurement_shop_on_existing_action(db_workflow):
+    """When a modification action exists and the agreement's awarding_entity_id changed, the shop is synced."""
+    sys_user = get_or_create_sys_user(db_workflow)
+    agreement = db_workflow.get(Agreement, 8001)
+
+    action, _, _, _ = get_or_create_procurement_records_for_modification(db_workflow, agreement, created_by=sys_user.id)
+    db_workflow.flush()
+    assert action.procurement_shop_id == 8000
+
+    new_shop = ProcurementShop(id=9001, name="Another PSC", abbr="APSC", created_by=sys_user.id)
+    db_workflow.add(new_shop)
+    db_workflow.flush()
+
+    agreement.awarding_entity_id = 9001
+    get_or_create_procurement_records_for_modification(db_workflow, agreement, created_by=sys_user.id)
+    db_workflow.flush()
+    assert action.procurement_shop_id == 9001
