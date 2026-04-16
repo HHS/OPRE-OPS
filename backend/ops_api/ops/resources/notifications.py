@@ -185,15 +185,6 @@ class NotificationListAPI(BaseListAPI):
     ):
         if agreement_id:
             # Query for both ChangeRequestNotifications and PreAwardApprovalNotifications
-            from sqlalchemy import and_, or_
-
-            from models import (
-                ChangeRequestNotification,
-                PreAwardApprovalNotification,
-                ProcurementTracker,
-                ProcurementTrackerStep,
-            )
-
             stmt = (
                 select(Notification)
                 .join(
