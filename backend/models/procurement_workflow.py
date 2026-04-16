@@ -126,8 +126,22 @@ def link_blis_to_action(
 # ---------------------------------------------------------------------------
 
 
+_TERMINAL_ACTION_STATUSES = frozenset({
+    ProcurementActionStatus.AWARDED,
+    ProcurementActionStatus.CERTIFIED,
+    ProcurementActionStatus.CANCELLED,
+})
+
+
 def _sync_procurement_shop(action: ProcurementAction, agreement: "Agreement") -> None:
-    """Sync procurement_shop_id from agreement.awarding_entity_id if they diverged."""
+    """Sync procurement_shop_id from agreement.awarding_entity_id if they diverged.
+
+    Skips the sync when the action is in a terminal status (AWARDED, CERTIFIED,
+    CANCELLED) — completed actions should retain their original shop.
+    """
+    if action.status in _TERMINAL_ACTION_STATUSES:
+        return
+
     if (
         action.procurement_shop_id != agreement.awarding_entity_id
         and agreement.awarding_entity_id is not None

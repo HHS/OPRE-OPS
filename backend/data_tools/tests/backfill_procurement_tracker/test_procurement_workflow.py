@@ -633,3 +633,38 @@ def test_modification_workflow_syncs_procurement_shop_on_existing_action(db_work
     get_or_create_procurement_records_for_modification(db_workflow, agreement, created_by=sys_user.id)
     db_workflow.flush()
     assert action.procurement_shop_id == 9001
+
+
+def test_sync_skips_terminal_action_statuses(db_workflow):
+    """Completed (AWARDED/CERTIFIED/CANCELLED) actions should not have their shop synced."""
+    sys_user = get_or_create_sys_user(db_workflow)
+    agreement = db_workflow.get(Agreement, 8001)
+
+    # Create an AWARDED new-award action via the workflow
+    action, _, _, _ = get_or_create_procurement_records_for_new_award(
+        db_workflow,
+        agreement,
+        created_by=sys_user.id,
+        action_status=ProcurementActionStatus.AWARDED,
+        tracker_status=ProcurementTrackerStatus.COMPLETED,
+    )
+    db_workflow.flush()
+    assert action.procurement_shop_id == 8000
+
+    # Change the agreement's awarding_entity_id
+    new_shop = ProcurementShop(id=9002, name="Frozen PSC", abbr="FPSC", created_by=sys_user.id)
+    db_workflow.add(new_shop)
+    db_workflow.flush()
+
+    agreement.awarding_entity_id = 9002
+    get_or_create_procurement_records_for_new_award(
+        db_workflow,
+        agreement,
+        created_by=sys_user.id,
+        action_status=ProcurementActionStatus.AWARDED,
+        tracker_status=ProcurementTrackerStatus.COMPLETED,
+    )
+    db_workflow.flush()
+
+    # Shop should NOT have changed — the action is in a terminal status
+    assert action.procurement_shop_id == 8000
