@@ -912,12 +912,15 @@ def _compute_procurement_overview(all_results: list[Agreement], fiscal_year: int
                 agreements_by_status[bli.status].add(agreement.id)
 
     total_amount = sum(amount_by_status.values(), Decimal("0"))
+    # Uses all agreements in the query result as the denominator for agreements_percent,
+    # including agreements that have no BLIs in the tracked statuses for the given fiscal year.
+    # This means per-status percentages may not sum to 100%.
     total_agreements = len(all_results)
 
     def _percent(value, total):
         if total == 0:
             return 0.0
-        return round((float(value) / float(total)) * 100)
+        return float(round((float(value) / float(total)) * 100))
 
     status_data = []
     for status in tracked_statuses:
@@ -1025,7 +1028,6 @@ def _build_base_query(agreement_cls: Type[Agreement]) -> Select[tuple[Agreement]
         .join(CAN, isouter=True)
         .options(
             selectinload(agreement_cls.budget_line_items),
-            selectinload(agreement_cls.procurement_trackers),
         )
         .order_by(agreement_cls.id)
     )

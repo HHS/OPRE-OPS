@@ -17,7 +17,7 @@ const RoleProtectedRoute = ({ allowedRoles, children }) => {
 
     // Wait for auth hydration — activeUser is set asynchronously after login
     if (!activeUser) {
-        return children ? children : <Outlet />;
+        return null;
     }
 
     const userRoles = activeUser?.roles ?? [];

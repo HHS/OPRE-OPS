@@ -78,8 +78,8 @@ describe("RoleProtectedRoute", () => {
         expect(screen.getByText("Error Page")).toBeInTheDocument();
     });
 
-    it("renders children while activeUser is hydrating (isLoggedIn but no activeUser yet)", () => {
-        renderWithRoute(
+    it("renders nothing while activeUser is hydrating (isLoggedIn but no activeUser yet)", () => {
+        const { container } = renderWithRoute(
             {
                 auth: {
                     isLoggedIn: true,
@@ -89,12 +89,13 @@ describe("RoleProtectedRoute", () => {
             [USER_ROLES.BUDGET_TEAM]
         );
 
-        expect(screen.getByText("Protected Content")).toBeInTheDocument();
+        expect(container.innerHTML).toBe("");
+        expect(screen.queryByText("Protected Content")).not.toBeInTheDocument();
         expect(screen.queryByText("Error Page")).not.toBeInTheDocument();
     });
 
-    it("renders children while activeUser is hydrating (not logged in, no activeUser yet)", () => {
-        renderWithRoute(
+    it("renders nothing while activeUser is hydrating (not logged in, no activeUser yet)", () => {
+        const { container } = renderWithRoute(
             {
                 auth: {
                     isLoggedIn: false,
@@ -104,7 +105,8 @@ describe("RoleProtectedRoute", () => {
             [USER_ROLES.BUDGET_TEAM]
         );
 
-        expect(screen.getByText("Protected Content")).toBeInTheDocument();
+        expect(container.innerHTML).toBe("");
+        expect(screen.queryByText("Protected Content")).not.toBeInTheDocument();
         expect(screen.queryByText("Error Page")).not.toBeInTheDocument();
     });
 
