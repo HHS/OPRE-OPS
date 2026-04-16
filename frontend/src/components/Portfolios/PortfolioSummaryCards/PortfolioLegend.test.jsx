@@ -288,4 +288,51 @@ describe("PortfolioLegend", () => {
         const gridContainer = screen.getByTestId("portfolio-legend");
         expect(gridContainer).toBeInTheDocument();
     });
+
+    it("renders placeholder items as aria-hidden divs (no visible content)", () => {
+        const dataWithPlaceholder = [
+            ...mockData,
+            {
+                id: "placeholder-0",
+                isPlaceholder: true
+            }
+        ];
+        render(
+            <PortfolioLegend
+                data={dataWithPlaceholder}
+                activeId={0}
+            />
+        );
+        // Three real items render as legend items
+        expect(screen.getByTestId("portfolio-legend-item-CC")).toBeInTheDocument();
+        expect(screen.getByTestId("portfolio-legend-item-CW")).toBeInTheDocument();
+        expect(screen.getByTestId("portfolio-legend-item-OD")).toBeInTheDocument();
+        // Placeholder has no testid and contributes no visible text
+        expect(screen.queryByTestId("portfolio-legend-item-undefined")).not.toBeInTheDocument();
+    });
+
+    it("active light-background portfolio (CC) uses dark text color (#1B1B1B) on the percent tag", () => {
+        render(
+            <PortfolioLegend
+                data={mockData}
+                activeId={1}
+            />
+        );
+        // CC (id=1) is in lightBackgroundPortfolios — active Tag should carry color #1B1B1B.
+        // The Tag renders its text ("45%") inside a <span> with the inline style applied.
+        const tag = screen.getByText("45%");
+        expect(tag).toHaveStyle({ color: "#1B1B1B" });
+    });
+
+    it("active dark-background portfolio (CW) uses light text color (#FFFFFF) on the percent tag", () => {
+        render(
+            <PortfolioLegend
+                data={mockData}
+                activeId={2}
+            />
+        );
+        // CW (id=2) is NOT in lightBackgroundPortfolios — active Tag should carry color #FFFFFF.
+        const tag = screen.getByText("30%");
+        expect(tag).toHaveStyle({ color: "#FFFFFF" });
+    });
 });

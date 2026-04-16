@@ -3,10 +3,11 @@ import { describe, it, expect, vi } from "vitest";
 import ProjectTypeSummaryCard from "./ProjectTypeSummaryCard";
 
 vi.mock("../../UI/DataViz/ResponsiveDonutWithInnerPercent", () => ({
-    default: ({ data }) => (
+    default: ({ data, ariaLabel }) => (
         <div
             data-testid="donut-chart"
             data-chart-values={JSON.stringify(data.map((d) => d.value))}
+            data-aria-label={ariaLabel}
         />
     )
 }));
@@ -178,5 +179,36 @@ describe("ProjectTypeSummaryCard", () => {
     it("handles undefined summary gracefully", () => {
         render(<ProjectTypeSummaryCard title="FY 2025 Projects by Type" />);
         expect(screen.queryByTestId("donut-chart")).not.toBeInTheDocument();
+    });
+
+    it("renders chart and legend correctly when only one project type has a non-zero value", () => {
+        render(
+            <ProjectTypeSummaryCard
+                title="FY 2025 Projects by Type"
+                summary={{
+                    amounts_by_type: {
+                        RESEARCH: { amount: 1000000 },
+                        ADMINISTRATIVE_AND_SUPPORT: { amount: 0 }
+                    }
+                }}
+            />
+        );
+        // totalAmount = 1000000 > 0 → chart is shown
+        expect(screen.getByTestId("donut-chart")).toBeInTheDocument();
+        // Sole non-zero type shows 100% (no non-zero peers)
+        expect(screen.getByText("100%")).toBeInTheDocument();
+        // Zero peer shows 0%
+        expect(screen.getByText("0%")).toBeInTheDocument();
+    });
+
+    it("forwards the ariaLabel prop to ResponsiveDonutWithInnerPercent", () => {
+        render(
+            <ProjectTypeSummaryCard
+                title="FY 2025 Projects by Type"
+                summary={testSummary}
+            />
+        );
+        const chart = screen.getByTestId("donut-chart");
+        expect(chart).toHaveAttribute("data-aria-label", "Donut chart showing project budget by type");
     });
 });

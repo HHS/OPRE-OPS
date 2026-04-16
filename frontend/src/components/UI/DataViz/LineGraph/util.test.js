@@ -66,5 +66,11 @@ describe("resolveLeftFlexWidth", () => {
             // leftValue=990, rightValue=10 → rightRaw = 1% < 2 → leftFlexWidth = 98
             expect(resolveLeftFlexWidth("99", 990, 10)).toBe(98);
         });
+
+        it("falls through to value-proportional branch when leftPercent is NaN (not finite)", () => {
+            // typeof NaN === "number" but Number.isFinite(NaN) === false → string branch
+            // leftValue=600, rightValue=400 → 60%
+            expect(resolveLeftFlexWidth(NaN, 600, 400)).toBe(60);
+        });
     });
 });

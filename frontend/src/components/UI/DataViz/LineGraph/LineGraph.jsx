@@ -36,6 +36,7 @@ const LineGraph = ({ data = [], setActiveId = () => {}, isStriped = false, overB
     return (
         <div className={styles.barBox}>
             <div
+                data-testid="line-graph-left-bar"
                 className={`${styles.leftBar} ${leftIsFull ? styles.leftBarFull : ""}`}
                 style={{
                     flex: `0 1 ${leftFlexWidth}%`,
@@ -56,6 +57,7 @@ const LineGraph = ({ data = [], setActiveId = () => {}, isStriped = false, overB
             />
 
             <div
+                data-testid="line-graph-right-bar"
                 className={`${styles.rightBar} ${rightIsFull ? styles.rightBarFull : ""}`}
                 style={{
                     backgroundColor: rightColor,

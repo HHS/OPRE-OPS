@@ -382,4 +382,40 @@ describe("applyMinimumArcValue", () => {
         const result = applyMinimumArcValue(items, 1000);
         expect(result[1].value).toBe(0);
     });
+
+    test("floors multiple tiny slices and subtracts from the single reducible slice", () => {
+        // Two tiny slices (1 each) floored to 1% of 1000 = 10 each.
+        // addedValue = 18; reducible slice (998) must absorb both floor-ups.
+        const items = [
+            { id: 1, value: 998 },
+            { id: 2, value: 1 }, // 0.1% — below 1% floor
+            { id: 3, value: 1 } // 0.1% — below 1% floor
+        ];
+        const result = applyMinimumArcValue(items, 1000);
+        expect(result[1].value).toBe(10); // raised to 1% of 1000
+        expect(result[2].value).toBe(10); // raised to 1% of 1000
+        // Total must still equal 1000
+        const newTotal = result.reduce((sum, item) => sum + item.value, 0);
+        expect(newTotal).toBeCloseTo(1000, 5);
+    });
+
+    test("returns adjusted items (with floors applied) when reducibleTotal < addedValue", () => {
+        // Four tiny slices of 1 each — addedValue = 4 * 9 = 36.
+        // Remaining reducible slice is only 996, but reducible budget above floor is
+        // 996 - 10 = 986 which is > 36 in this case. Let's instead create an extreme
+        // scenario: many tiny slices leave almost nothing to redistribute.
+        // 98 items of value=1, 2 items of value=1 too — actually hard to trigger the
+        // guard with integers. Instead, test the floor-only path: all items are tiny,
+        // so reducibleTotal = 0 < addedValue > 0 → returns adjustedItems as-is (floors
+        // applied but no redistribution).
+        const items = [
+            { id: 1, value: 1 }, // 1% of 200 = 2 — below floor
+            { id: 2, value: 1 } // 1% of 200 = 2 — below floor
+        ];
+        // total=200, minValue=2. Both items below floor. reducibleTotal = 0 < addedValue = 2.
+        const result = applyMinimumArcValue(items, 200);
+        // Guard fires: returns adjustedItems with floors but no redistribution
+        expect(result[0].value).toBe(2);
+        expect(result[1].value).toBe(2);
+    });
 });

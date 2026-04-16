@@ -46,6 +46,7 @@ const ReverseLineGraph = ({ data = [], setActiveId = () => {} }) => {
                 />
             )}
             <div
+                data-testid="line-graph-right-bar"
                 className={`${styles.rightBar} ${rightIsFull ? styles.rightBarFull : ""}`}
                 style={{
                     backgroundColor: rightColor,
