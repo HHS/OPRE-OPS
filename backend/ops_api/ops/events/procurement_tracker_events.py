@@ -30,7 +30,7 @@ from models.procurement_tracker import ProcurementTrackerStatus
 
 def procurement_tracker_trigger(event: OpsEvent, session: Session) -> None:
     """
-    Handle UPDATE_CHANGE_REQUEST events to create procurement tracker and action.
+    Handle UPDATE_CHANGE_REQUEST and UPDATE_BLIevents to create procurement tracker and action.
 
     Creates DefaultProcurementTracker and ProcurementAction when:
     - A BudgetLineItemChangeRequest is approved
@@ -170,7 +170,7 @@ def _validate_bli_update_for_tracker_creation(
 
     if not budget_line_item_id:
         return False, "No budget_line_item_id in serialized bli", None, None
-    no_cr_for_bli, reason = _validate_no_change_requests_for_bli(event.session, budget_line_item_id)
+    no_cr_for_bli, reason = _validate_no_change_requests_for_bli(session, budget_line_item_id)
 
     if not no_cr_for_bli:
         # BLI was updated via change request, so tracker creation should be handled by the change request event
@@ -181,7 +181,7 @@ def _validate_bli_update_for_tracker_creation(
 
 def _validate_no_change_requests_for_bli(session: Session, budget_line_item_id: int) -> Tuple[bool, Optional[str]]:
     """
-    Validate that there are no change requests of any status for the given budget line item.
+    Validate that there are no approved change requests updating the status of a BLI to IN_EXECUTION for the given budget line item.
 
     Returns:
         Tuple of (is_valid, reason)
