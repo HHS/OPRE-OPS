@@ -1,4 +1,4 @@
-import { useMemo, useEffect } from "react";
+import { useMemo } from "react";
 import PropTypes from "prop-types";
 import SimpleAlert from "../../UI/Alert/SimpleAlert";
 import { useDismissNotificationMutation } from "../../../api/opsAPI";
@@ -36,10 +36,9 @@ const isDeclinedNotification = (title) => {
  * @param {Object} props - The component props.
  * @param {Object[]} props.notifications - Array of notification objects
  * @param {boolean} props.isVisible - Whether the alert is visible
- * @param {Function} props.setIsVisible - Callback to set visibility state
  * @returns {React.ReactElement|null} The rendered component or null if no notifications
  */
-function PreAwardApprovalAlert({ notifications, isVisible, setIsVisible }) {
+function PreAwardApprovalAlert({ notifications, isVisible }) {
     const [dismissNotification, { isError }] = useDismissNotificationMutation();
 
     // Filter for unread pre-award approval RESPONSE notifications (Approved/Declined only)
@@ -54,14 +53,6 @@ function PreAwardApprovalAlert({ notifications, isVisible, setIsVisible }) {
             ) || [],
         [notifications]
     );
-
-    // Auto-hide component when all notifications are dismissed
-    // Using useEffect prevents race condition with async mutation
-    useEffect(() => {
-        if (isVisible && preAwardNotifications.length === 0) {
-            setIsVisible(false);
-        }
-    }, [preAwardNotifications, isVisible, setIsVisible]);
 
     const handleDismiss = (notificationId) => {
         dismissNotification(notificationId);
@@ -121,8 +112,7 @@ PreAwardApprovalAlert.propTypes = {
             is_read: PropTypes.bool.isRequired
         })
     ),
-    isVisible: PropTypes.bool.isRequired,
-    setIsVisible: PropTypes.func.isRequired
+    isVisible: PropTypes.bool.isRequired
 };
 
 export default PreAwardApprovalAlert;

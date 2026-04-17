@@ -46,7 +46,7 @@ const Agreement = () => {
     const [isTempUiAlertVisible, setIsTempUiAlertVisible] = useState(true);
     const [isApproveAlertVisible, setIsApproveAlertVisible] = useState(true);
     const [isDeclinedAlertVisible, setIsDeclinedAlertVisible] = useState(true);
-    const [isPreAwardAlertVisible, setIsPreAwardAlertVisible] = useState(true);
+    const [isPreAwardAlertVisible] = useState(true);
     const [isPreAwardInReviewAlertVisible, setIsPreAwardInReviewAlertVisible] = useState(true);
 
     const searchParams = new URLSearchParams(location.search);
@@ -188,7 +188,10 @@ const Agreement = () => {
     const trackers = procurementTrackers?.data || [];
     const activeTracker = trackers.find((tracker) => tracker.status === "ACTIVE");
     const preAwardStep = activeTracker?.steps?.find((step) => step.step_type === "PRE_AWARD");
-    const isPreAwardInReview = preAwardStep?.approval_requested && !preAwardStep?.approval_status;
+    const preAwardApprovalStatus = preAwardStep?.approval_status;
+    const isPreAwardInReview =
+        preAwardStep?.approval_requested &&
+        (preAwardApprovalStatus == null || preAwardApprovalStatus === "PENDING");
 
     const isAgreementAwarded = agreement?.is_awarded;
     return (
@@ -251,7 +254,6 @@ const Agreement = () => {
                     <PreAwardApprovalAlert
                         notifications={user_agreement_notifications}
                         isVisible={isPreAwardAlertVisible}
-                        setIsVisible={setIsPreAwardAlertVisible}
                     />
                 </>
             )}

@@ -373,24 +373,26 @@ class ProcurementTrackerStepService:
             # Auto-dismiss "in review" notifications for reviewers
             from sqlalchemy import and_, select
 
+            # Auto-dismiss "in review" notifications for reviewers via bulk UPDATE
+            from sqlalchemy import update
+
             from models import PreAwardApprovalNotification
 
-            # Query for unread "Pre-Award Approval Request" notifications for this step
-            in_review_notifications = self.db_session.scalars(
-                select(PreAwardApprovalNotification).where(
+            dismiss_result = self.db_session.execute(
+                update(PreAwardApprovalNotification)
+                .where(
                     and_(
                         PreAwardApprovalNotification.title == "Pre-Award Approval Request",
                         PreAwardApprovalNotification.is_read.is_(False),
                         PreAwardApprovalNotification.procurement_tracker_step_id == step.id,
                     )
                 )
-            ).all()
+                .values(is_read=True)
+            )
 
-            # Mark all as read (auto-dismiss)
-            for notif in in_review_notifications:
-                notification_service.update(notif.id, {"is_read": True})
-
-            logger.debug(f"Auto-dismissed {len(in_review_notifications)} 'in review' notifications for reviewers")
+            logger.debug(
+                f"Auto-dismissed {dismiss_result.rowcount or 0} 'in review' notifications for reviewers"
+            )
 
     def _get_approval_reviewers(self, agreement) -> set[int]:
         """
