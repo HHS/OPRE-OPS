@@ -1466,7 +1466,6 @@ def test_update_budget_line_to_executing_creates_tracker(mock_session, mock_agre
     event.event_type = OpsEventType.UPDATE_BLI
     event.event_status = OpsEventStatus.SUCCESS
     event.created_by = 42
-    event.session = mock_session
     event.event_details = {
         "bli": {"id": 1, "agreement_id": 100},
         "bli_updates": {"changes": {"status": {"old_value": "PLANNED", "new_value": "IN_EXECUTION"}}},
@@ -1521,7 +1520,6 @@ def test_update_budget_line_with_change_request_does_not_create_tracker(mock_ses
     event.event_type = OpsEventType.UPDATE_BLI
     event.event_status = OpsEventStatus.SUCCESS
     event.created_by = 42
-    event.session = mock_session
     event.event_details = {
         "bli": {"id": 1, "agreement_id": 100},
         "bli_updates": {"changes": {"status": {"old_value": "PLANNED", "new_value": "IN_EXECUTION"}}},
@@ -1557,7 +1555,6 @@ def test_update_budget_line_to_executing_with_unrelated_change_request(mock_sess
     event.event_type = OpsEventType.UPDATE_BLI
     event.event_status = OpsEventStatus.SUCCESS
     event.created_by = 42
-    event.session = mock_session
     event.event_details = {
         "bli": {"id": 1, "agreement_id": 100},
         "bli_updates": {"changes": {"status": {"old_value": "PLANNED", "new_value": "IN_EXECUTION"}}},
