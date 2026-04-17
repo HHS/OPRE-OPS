@@ -1,6 +1,14 @@
 import { ResponsivePie } from "@nivo/pie";
 import { useEffect, useRef } from "react";
+import { applyMinimumArcValue } from "../../../../helpers/utils";
 
+/**
+ * Donut chart with a custom center layer that displays a percent on hover.
+ *
+ * Arc visibility: any non-zero slice below 1% of the total is floored to 1%
+ * internally before passing data to nivo, so it always renders a visible arc.
+ * The `data` prop is never mutated — callers' legend data is unaffected.
+ */
 const ResponsiveDonutWithInnerPercent = ({
     data = [{ id: -1, label: "", value: "", color: "", percent: "" }],
     width = 150,
@@ -43,12 +51,17 @@ const ResponsiveDonutWithInnerPercent = ({
         };
     }, [container_id, ariaLabel]);
 
+    // Floor any non-zero slice below 1% of total so it renders as a visible arc.
+    // Only affects chart geometry — the parent's legend data is unchanged.
+    const total = data.reduce((sum, item) => sum + (Number(item.value) || 0), 0);
+    const chartData = applyMinimumArcValue(data, total);
+
     return (
         <ResponsivePie
             margin={margin}
             width={width}
             height={height}
-            data={data}
+            data={chartData}
             innerRadius={0.5}
             enableArcLabels={false}
             enableArcLinkLabels={false}

@@ -1,5 +1,5 @@
 import React from "react";
-import { calculatePercent } from "../../../helpers/utils";
+import { computeDisplayPercents } from "../../../helpers/utils";
 import ResponsiveDonutWithInnerPercent from "../../UI/DataViz/ResponsiveDonutWithInnerPercent";
 import CustomLayerComponent from "../../UI/DataViz/ResponsiveDonutWithInnerPercent/CustomLayerComponent";
 import LegendItem from "../../UI/Cards/LineGraphWithLegendCard/LegendItem";
@@ -28,13 +28,15 @@ const AgreementSpendingSummaryCard = ({
 
     const totalAmount = contractTotal + partnerTotal + grantTotal + directObligationTotal;
 
-    const data = [
+    // Build raw items then apply cross-item percent normalisation so that no
+    // single slice can show "100%" while non-zero peers exist, and no non-zero
+    // slice rounds down to "0%".
+    const rawItems = [
         {
             id: 1,
             label: "Contract",
             value: contractTotal,
             color: "var(--data-viz-agreement-contract)",
-            percent: calculatePercent(contractTotal, totalAmount),
             tagStyleActive: "whiteOnContractBlue"
         },
         {
@@ -42,7 +44,6 @@ const AgreementSpendingSummaryCard = ({
             label: "Partner",
             value: partnerTotal,
             color: "var(--data-viz-agreement-partner)",
-            percent: calculatePercent(partnerTotal, totalAmount),
             tagStyleActive: "darkOnPartnerGreen"
         },
         {
@@ -50,7 +51,6 @@ const AgreementSpendingSummaryCard = ({
             label: "Grant",
             value: grantTotal,
             color: "var(--data-viz-agreement-grant)",
-            percent: calculatePercent(grantTotal, totalAmount),
             tagStyleActive: "darkOnGrantOrange"
         },
         {
@@ -58,10 +58,14 @@ const AgreementSpendingSummaryCard = ({
             label: "Direct Obligation",
             value: directObligationTotal,
             color: "var(--data-viz-agreement-direct-obligation)",
-            percent: calculatePercent(directObligationTotal, totalAmount),
             tagStyleActive: "whiteOnDirectObligationPink"
         }
     ];
+
+    // Legend data: real values + cross-item-normalised display percents
+    const legendData = computeDisplayPercents(rawItems);
+
+    // ResponsiveDonutWithInnerPercent applies applyMinimumArcValue internally.
 
     return (
         <RoundedBox
@@ -75,7 +79,7 @@ const AgreementSpendingSummaryCard = ({
                     className="font-12px flex-fill"
                     style={{ marginRight: "1rem" }}
                 >
-                    {data.map((item) => (
+                    {legendData.map((item) => (
                         <LegendItem
                             key={item.id}
                             id={item.id}
@@ -96,7 +100,7 @@ const AgreementSpendingSummaryCard = ({
                         role="img"
                     >
                         <ResponsiveDonutWithInnerPercent
-                            data={data}
+                            data={legendData}
                             width={150}
                             height={150}
                             margin={{ top: 10, right: 10, bottom: 10, left: 10 }}

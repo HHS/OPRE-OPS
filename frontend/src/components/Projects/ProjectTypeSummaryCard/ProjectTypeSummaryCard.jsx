@@ -20,52 +20,6 @@ const PROJECT_TYPE_CONFIG = PROJECT_TYPE_ORDER.map((type) => ({
 }));
 
 /**
- * Ensures every non-zero slice is at least 1% of the total so it remains
- * visible in the donut chart, while preserving the original total used to
- * compute arc proportions by reducing the added amount from larger slices.
- * Only affects the chart rendering — legend values and percents always
- * reflect the real amounts.
- * @param {Array} items - Array of { id, value, ... } data items
- * @param {number} total - Sum of all real values
- * @returns {Array} - Items with chart-safe values applied
- */
-const applyMinimumArcValue = (items, total) => {
-    if (total === 0) return items;
-
-    const minValue = total * 0.01;
-
-    // Floor any non-zero slice that is below the minimum
-    const adjustedItems = items.map((item) => ({
-        ...item,
-        value: item.value > 0 && item.value < minValue ? minValue : item.value
-    }));
-
-    // How much was added in total by flooring
-    const addedValue = adjustedItems.reduce((sum, item, index) => sum + (item.value - items[index].value), 0);
-
-    if (addedValue <= 0) return adjustedItems;
-
-    // Subtract the added amount proportionally from slices that are above the minimum
-    const reducibleTotal = adjustedItems.reduce(
-        (sum, item) => (item.value > minValue ? sum + (item.value - minValue) : sum),
-        0
-    );
-
-    // If we cannot redistribute without pushing other slices below minimum, return as-is
-    if (reducibleTotal < addedValue) return adjustedItems;
-
-    let remaining = addedValue;
-
-    return adjustedItems.map((item) => {
-        if (item.value <= minValue || remaining <= 0) return item;
-        const reducible = item.value - minValue;
-        const reduction = Math.min(reducible, (reducible / reducibleTotal) * addedValue, remaining);
-        remaining -= reduction;
-        return { ...item, value: item.value - reduction };
-    });
-};
-
-/**
  * ProjectTypeSummaryCard component
  * Displays project budget amounts broken down by project type with a donut chart.
  * @component
@@ -93,17 +47,13 @@ const ProjectTypeSummaryCard = ({ title, summary }) => {
 
     const totalAmount = rawData.reduce((sum, item) => sum + item.value, 0);
 
-    // Legend data: real values + display-friendly percents (computed together
-    // so cross-item consistency — e.g. ">99%" alongside "<1%" — can be enforced)
-    const displayPercents = computeDisplayPercents(rawData, totalAmount);
-    const legendData = rawData.map((item, idx) => ({
-        ...item,
-        percent: displayPercents[idx]
-    }));
+    // Legend data: real values + cross-item-normalised display percents
+    // Uses computeDisplayPercents (plural) so the dominant-item cap (99, not 100)
+    // is applied when a dominant type would otherwise show 100% alongside non-zero peers.
+    const legendData = computeDisplayPercents(rawData);
 
-    // Chart data: floor tiny slices so every non-zero slice is visible,
-    // redistributing the added amount from larger slices to preserve the total
-    const chartData = applyMinimumArcValue(legendData, totalAmount);
+    // chartData is passed directly to ResponsiveDonutWithInnerPercent which
+    // applies applyMinimumArcValue internally — no local flooring needed here.
 
     return (
         <RoundedBox
@@ -135,7 +85,7 @@ const ProjectTypeSummaryCard = ({ title, summary }) => {
                         className="width-card height-card margin-top-neg-1"
                     >
                         <ResponsiveDonutWithInnerPercent
-                            data={chartData}
+                            data={legendData}
                             width={150}
                             height={150}
                             margin={{ top: 10, right: 10, bottom: 10, left: 10 }}

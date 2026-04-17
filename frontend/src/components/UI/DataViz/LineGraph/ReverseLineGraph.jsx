@@ -1,20 +1,12 @@
 import styles from "./styles.module.scss";
-
-/**
- * Calculates the ratio of received to total.
- *
- * @param {Object} params - The parameters object.
- * @param {number} params.received - The received value.
- * @param {number} params.total - The total value.
- * @returns {number} The ratio of received to total. Returns 1 if total is 0.
- */
+import { resolveLeftFlexWidth } from "./util";
 
 /**
  * @typedef {Object} Data
  * @property {number} id
  * @property {number} value
  * @property {string} color
- * @property {number} percent
+ * @property {number|string} percent - Display percent: integer, or "<1"
  */
 
 /**
@@ -24,23 +16,29 @@ import styles from "./styles.module.scss";
  */
 
 /**
- * @component  - line graph that shows two bars side by side.
+ * @component  - line graph that shows two bars side by side (reversed layout).
  * @param {LineGraphProps} props
  * @returns {JSX.Element}
  */
-
 const ReverseLineGraph = ({ data = [], setActiveId = () => {} }) => {
     const { color: leftColor, id: leftId, value: leftValue, percent: leftPercent } = data[0];
-    const { color: rightColor, id: rightId, percent: rightPercent } = data[1];
+    const { color: rightColor, id: rightId, value: rightValue, percent: rightPercent } = data[1];
+
+    const leftFlexWidth = resolveLeftFlexWidth(leftPercent, leftValue, rightValue);
+
+    // Use numeric percent for full-bar class when available.
+    // Fallback: "full" when the other side has no value (rightValue <= 0 / leftValue <= 0).
+    const leftIsFull = typeof leftPercent === "number" ? leftPercent >= 100 : (rightValue ?? 0) <= 0;
+    const rightIsFull = typeof rightPercent === "number" ? rightPercent >= 100 : (leftValue ?? 0) <= 0;
 
     return (
         <div className={styles.barBox}>
             {leftValue > 0 && (
                 <div
                     data-testid="line-graph-left-bar"
-                    className={`${styles.leftBar} ${leftPercent >= 100 ? styles.leftBarFull : ""}`}
+                    className={`${styles.leftBar} ${leftIsFull ? styles.leftBarFull : ""}`}
                     style={{
-                        flex: `0  1 ${leftPercent}%`,
+                        flex: `0 1 ${leftFlexWidth}%`,
                         backgroundColor: leftColor
                     }}
                     onMouseEnter={() => setActiveId(leftId)}
@@ -48,7 +46,8 @@ const ReverseLineGraph = ({ data = [], setActiveId = () => {} }) => {
                 />
             )}
             <div
-                className={`${styles.rightBar} ${rightPercent >= 100 ? styles.rightBarFull : ""}`}
+                data-testid="line-graph-right-bar"
+                className={`${styles.rightBar} ${rightIsFull ? styles.rightBarFull : ""}`}
                 style={{
                     backgroundColor: rightColor,
                     backgroundImage: `repeating-linear-gradient(
