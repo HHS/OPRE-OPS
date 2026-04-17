@@ -387,9 +387,7 @@ class ProcurementTrackerStepService:
                 .values(is_read=True)
             )
 
-            logger.debug(
-                f"Auto-dismissed {dismiss_result.rowcount or 0} 'in review' notifications for reviewers"
-            )
+            logger.debug(f"Auto-dismissed {dismiss_result.rowcount or 0} 'in review' notifications for reviewers")
 
     def _get_approval_reviewers(self, agreement) -> set[int]:
         """
