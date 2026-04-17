@@ -28,6 +28,9 @@ COPY index.html ./
 COPY src src
 COPY public public
 
+# Copy Storybook config (needed for build-storybook in non-production builds)
+COPY .storybook .storybook
+
 # Build the application
 ARG MODE
 ARG VITE_BACKEND_DOMAIN
