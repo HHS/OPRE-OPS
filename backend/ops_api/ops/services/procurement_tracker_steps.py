@@ -405,6 +405,7 @@ class ProcurementTrackerStepService:
             Set of user IDs authorized to review
         """
         from models import Role
+
         from ops_api.ops.utils.agreements_helpers import get_division_directors_for_agreement
 
         reviewer_ids = set()
