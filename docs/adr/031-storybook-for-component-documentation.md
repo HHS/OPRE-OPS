@@ -30,13 +30,13 @@ v6 (Oxc pipeline), making the POC obsolete.
 
 ## Decision
 
-We will adopt **Storybook 8** with the `@storybook/react-vite` framework for component documentation and sandboxing.
+We will adopt **Storybook 10** with the `@storybook/react-vite` framework for component documentation and sandboxing.
 
 ### Tool Choice
 
 | Option | Considered | Decision |
 |---|---|---|
-| **Storybook 8** | Industry standard, largest addon ecosystem, Vite-native, React 19 support, strong a11y tooling | **Chosen** |
+| **Storybook 10** | Industry standard, largest addon ecosystem, Vite-native, React 19 support, strong a11y tooling | **Chosen** |
 | **Histoire** | Vue-first; React support is experimental and community-maintained | Rejected — immature React support |
 | **Ladle** | Minimal Vite-native alternative; very small addon ecosystem, limited documentation | Rejected — insufficient addon ecosystem for our needs |
 | **Chromatic** (hosted cloud) | Visual regression SaaS built by Storybook team | Deferred — not needed for initial rollout; can add later |
@@ -103,7 +103,7 @@ Implementation is broken into six phases, each tracked as a separate GitHub issu
 - **Redux/RTK Query**: Global `Provider` decorator in `preview.js` with a configurable mock store. Feature components
   use `msw-storybook-addon` for API mocking.
 - **React Router**: `withRouter` decorator in `preview.js` for components that use routing hooks.
-- **JSDoc/PropTypes**: Storybook 8 auto-generates controls and documentation from PropTypes and JSDoc `@param` annotations.
+- **JSDoc/PropTypes**: Storybook 10 auto-generates controls and documentation from PropTypes and JSDoc `@param` annotations.
 
 ## Consequences
 
