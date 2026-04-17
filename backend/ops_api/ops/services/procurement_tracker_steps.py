@@ -5,7 +5,7 @@ from typing import Any, Dict, Optional, Tuple
 
 from flask import current_app
 from loguru import logger
-from sqlalchemy import Select, func, select
+from sqlalchemy import Select, func
 from sqlalchemy.orm import selectinload
 
 from models import (
@@ -340,7 +340,8 @@ class ProcurementTrackerStepService:
                         ),
                         "is_read": False,
                         "recipient_id": recipient_id,
-                        "notification_type": NotificationType.NOTIFICATION,
+                        "notification_type": NotificationType.PRE_AWARD_APPROVAL_NOTIFICATION,
+                        "procurement_tracker_step_id": step.id,
                     }
                 )
             logger.debug(f"Created {len(recipient_ids)} pre-award approval request notifications")
@@ -363,10 +364,33 @@ class ProcurementTrackerStepService:
                         ),
                         "is_read": False,
                         "recipient_id": step.pre_award_approval_requested_by,
-                        "notification_type": NotificationType.NOTIFICATION,
+                        "notification_type": NotificationType.PRE_AWARD_APPROVAL_NOTIFICATION,
+                        "procurement_tracker_step_id": step.id,
                     }
                 )
                 logger.debug(f"Created pre-award approval {status_text} notification for submitter")
+
+            # Auto-dismiss "in review" notifications for reviewers
+            # Auto-dismiss "in review" notifications for reviewers via bulk UPDATE
+            from sqlalchemy import and_, select, update
+
+            from models import PreAwardApprovalNotification
+
+            dismiss_result = self.db_session.execute(
+                update(PreAwardApprovalNotification)
+                .where(
+                    and_(
+                        PreAwardApprovalNotification.title == "Pre-Award Approval Request",
+                        PreAwardApprovalNotification.is_read.is_(False),
+                        PreAwardApprovalNotification.procurement_tracker_step_id == step.id,
+                    )
+                )
+                .values(is_read=True)
+            )
+
+            logger.debug(
+                f"Auto-dismissed {dismiss_result.rowcount or 0} 'in review' notifications for reviewers"
+            )
 
     def _get_approval_reviewers(self, agreement) -> set[int]:
         """

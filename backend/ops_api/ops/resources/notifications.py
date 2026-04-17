@@ -7,9 +7,9 @@ from flask import Response, current_app, request
 from flask_jwt_extended import current_user
 from loguru import logger
 from marshmallow import Schema, fields
-from sqlalchemy import select
+from sqlalchemy import and_, or_, select
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm import InstrumentedAttribute, contains_eager
+from sqlalchemy.orm import InstrumentedAttribute, contains_eager, selectinload
 
 from models import (
     AgreementChangeRequest,
@@ -17,6 +17,9 @@ from models import (
     Notification,
     NotificationType,
     OpsEventType,
+    PreAwardApprovalNotification,
+    ProcurementTracker,
+    ProcurementTrackerStep,
     User,
 )
 from ops_api.ops.auth.auth_types import Permission, PermissionType
@@ -60,6 +63,7 @@ class NotificationResponseSchema(Schema):
     recipient = fields.Nested(RecipientSchema(), allow_none=True)
     expires = fields.Date(allow_none=True)
     change_request = fields.Nested(BudgetLineItemChangeRequestResponseSchema(), allow_none=True)
+    procurement_tracker_step_id = fields.Int(allow_none=True)
 
 
 class ListAPIRequest(Schema):
@@ -180,24 +184,44 @@ class NotificationListAPI(BaseListAPI):
         agreement_id: Optional[int] = None,
     ):
         if agreement_id:
-            # only ChangeRequestNotifications are associated with an agreement
+            # Query for both ChangeRequestNotifications and PreAwardApprovalNotifications
             stmt = (
-                select(ChangeRequestNotification)
+                select(Notification)
                 .join(
                     User,
-                    ChangeRequestNotification.recipient_id == User.id,
+                    Notification.recipient_id == User.id,
                     isouter=True,
                 )
-                .join(
+                .outerjoin(
                     AgreementChangeRequest,
-                    ChangeRequestNotification.change_request_id == AgreementChangeRequest.id,
+                    and_(
+                        Notification.id == ChangeRequestNotification.id,
+                        ChangeRequestNotification.change_request_id == AgreementChangeRequest.id,
+                    ),
                 )
-                .where(AgreementChangeRequest.agreement_id == agreement_id)
+                .outerjoin(
+                    ProcurementTrackerStep,
+                    and_(
+                        Notification.id == PreAwardApprovalNotification.id,
+                        PreAwardApprovalNotification.procurement_tracker_step_id == ProcurementTrackerStep.id,
+                    ),
+                )
+                .outerjoin(
+                    ProcurementTracker,
+                    ProcurementTrackerStep.procurement_tracker_id == ProcurementTracker.id,
+                )
+                .where(
+                    or_(
+                        AgreementChangeRequest.agreement_id == agreement_id,
+                        ProcurementTracker.agreement_id == agreement_id,
+                    )
+                )
                 .options(
-                    contains_eager(ChangeRequestNotification.recipient),
-                    contains_eager(ChangeRequestNotification.change_request),
+                    contains_eager(Notification.recipient),
+                    selectinload(ChangeRequestNotification.change_request),
+                    selectinload(PreAwardApprovalNotification.procurement_tracker_step),
                 )
-                .order_by(ChangeRequestNotification.created_on.desc())
+                .order_by(Notification.created_on.desc())
             )
         else:
             stmt = (
@@ -205,6 +229,8 @@ class NotificationListAPI(BaseListAPI):
                 .join(User, Notification.recipient_id == User.id, isouter=True)
                 .options(
                     contains_eager(Notification.recipient),
+                    selectinload(ChangeRequestNotification.change_request),
+                    selectinload(PreAwardApprovalNotification.procurement_tracker_step),
                 )
                 .order_by(Notification.created_on.desc())
             )
