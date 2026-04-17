@@ -1,11 +1,12 @@
 import styles from "./styles.module.scss";
+import { resolveLeftFlexWidth } from "./util";
 
 /**
  * @typedef {Object} Data
  * @property {number} id
  * @property {number} value
  * @property {string} color
- * @property {number} percent
+ * @property {number|string} percent - Display percent: integer, or "<1"
  */
 
 /**
@@ -22,15 +23,23 @@ import styles from "./styles.module.scss";
  * @returns {JSX.Element}
  */
 const LineGraph = ({ data = [], setActiveId = () => {}, isStriped = false, overBudget = false }) => {
-    const { color: leftColor, id: leftId, percent: leftPercent } = data[0];
-    const { color: rightColor, id: rightId, percent: rightPercent } = data[1];
+    const { color: leftColor, id: leftId, value: leftValue, percent: leftPercent } = data[0];
+    const { color: rightColor, id: rightId, value: rightValue, percent: rightPercent } = data[1];
+
+    const leftFlexWidth = resolveLeftFlexWidth(leftPercent, leftValue, rightValue);
+
+    // Use numeric percent for full-bar class when available.
+    // Fallback: "full" when the other side has no value (rightValue <= 0 / leftValue <= 0).
+    const leftIsFull = typeof leftPercent === "number" ? leftPercent >= 100 : (rightValue ?? 0) <= 0;
+    const rightIsFull = typeof rightPercent === "number" ? rightPercent >= 100 : (leftValue ?? 0) <= 0;
 
     return (
         <div className={styles.barBox}>
             <div
-                className={`${styles.leftBar} ${leftPercent >= 100 ? styles.leftBarFull : ""}`}
+                data-testid="line-graph-left-bar"
+                className={`${styles.leftBar} ${leftIsFull ? styles.leftBarFull : ""}`}
                 style={{
-                    flex: `0  1 ${leftPercent}%`,
+                    flex: `0 1 ${leftFlexWidth}%`,
                     backgroundColor: leftColor,
                     backgroundImage:
                         isStriped && !overBudget
@@ -48,7 +57,8 @@ const LineGraph = ({ data = [], setActiveId = () => {}, isStriped = false, overB
             />
 
             <div
-                className={`${styles.rightBar} ${rightPercent >= 100 ? styles.rightBarFull : ""}`}
+                data-testid="line-graph-right-bar"
+                className={`${styles.rightBar} ${rightIsFull ? styles.rightBarFull : ""}`}
                 style={{
                     backgroundColor: rightColor,
                     backgroundImage:

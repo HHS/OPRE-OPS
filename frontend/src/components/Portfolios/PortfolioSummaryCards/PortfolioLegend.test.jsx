@@ -122,7 +122,7 @@ describe("PortfolioLegend", () => {
         expect(screen.getByText("0%")).toBeInTheDocument();
     });
 
-    it("displays '<1%' for percentages less than 1", () => {
+    it("displays '<1%' when percent is the string '<1' (pre-normalised by helpers)", () => {
         const dataWithTiny = [
             {
                 id: 1,
@@ -130,7 +130,7 @@ describe("PortfolioLegend", () => {
                 abbreviation: "TINY",
                 value: 50000,
                 color: "var(--portfolio-budget-1)",
-                percent: 0.5
+                percent: "<1"
             }
         ];
 
@@ -142,6 +142,30 @@ describe("PortfolioLegend", () => {
         );
 
         expect(screen.getByText("<1%")).toBeInTheDocument();
+    });
+
+    it("displays '99%' when percent is 99 (dominant item capped per Figma spec, not '>99%')", () => {
+        const dataWithDominant = [
+            {
+                id: 1,
+                label: "Dominant Portfolio",
+                abbreviation: "DOM",
+                value: 9960000,
+                color: "var(--portfolio-budget-1)",
+                percent: 99
+            }
+        ];
+
+        render(
+            <PortfolioLegend
+                data={dataWithDominant}
+                activeId={0}
+            />
+        );
+
+        expect(screen.getByText("99%")).toBeInTheDocument();
+        expect(screen.queryByText(">99%")).not.toBeInTheDocument();
+        expect(screen.queryByText("100%")).not.toBeInTheDocument();
     });
 
     it("displays normal percentage for exactly 1%", () => {
@@ -263,5 +287,52 @@ describe("PortfolioLegend", () => {
 
         const gridContainer = screen.getByTestId("portfolio-legend");
         expect(gridContainer).toBeInTheDocument();
+    });
+
+    it("renders placeholder items as aria-hidden divs (no visible content)", () => {
+        const dataWithPlaceholder = [
+            ...mockData,
+            {
+                id: "placeholder-0",
+                isPlaceholder: true
+            }
+        ];
+        render(
+            <PortfolioLegend
+                data={dataWithPlaceholder}
+                activeId={0}
+            />
+        );
+        // Three real items render as legend items
+        expect(screen.getByTestId("portfolio-legend-item-CC")).toBeInTheDocument();
+        expect(screen.getByTestId("portfolio-legend-item-CW")).toBeInTheDocument();
+        expect(screen.getByTestId("portfolio-legend-item-OD")).toBeInTheDocument();
+        // Placeholder has no testid and contributes no visible text
+        expect(screen.queryByTestId("portfolio-legend-item-undefined")).not.toBeInTheDocument();
+    });
+
+    it("active light-background portfolio (CC) uses dark text color (#1B1B1B) on the percent tag", () => {
+        render(
+            <PortfolioLegend
+                data={mockData}
+                activeId={1}
+            />
+        );
+        // CC (id=1) is in lightBackgroundPortfolios — active Tag should carry color #1B1B1B.
+        // The Tag renders its text ("45%") inside a <span> with the inline style applied.
+        const tag = screen.getByText("45%");
+        expect(tag).toHaveStyle({ color: "#1B1B1B" });
+    });
+
+    it("active dark-background portfolio (CW) uses light text color (#FFFFFF) on the percent tag", () => {
+        render(
+            <PortfolioLegend
+                data={mockData}
+                activeId={2}
+            />
+        );
+        // CW (id=2) is NOT in lightBackgroundPortfolios — active Tag should carry color #FFFFFF.
+        const tag = screen.getByText("30%");
+        expect(tag).toHaveStyle({ color: "#FFFFFF" });
     });
 });
