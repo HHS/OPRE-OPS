@@ -370,9 +370,8 @@ class ProcurementTrackerStepService:
                 )
                 logger.debug(f"Created pre-award approval {status_text} notification for submitter")
 
-            # Auto-dismiss "in review" notifications for reviewers
             # Auto-dismiss "in review" notifications for reviewers via bulk UPDATE
-            from sqlalchemy import and_, select, update
+            from sqlalchemy import and_, update
 
             from models import PreAwardApprovalNotification
 
@@ -405,8 +404,6 @@ class ProcurementTrackerStepService:
         Returns:
             Set of user IDs authorized to review
         """
-        from sqlalchemy import select
-
         from models import Role
         from ops_api.ops.utils.agreements_helpers import get_division_directors_for_agreement
 
