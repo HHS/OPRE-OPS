@@ -5,7 +5,7 @@ from typing import Any, Dict, Optional, Tuple
 
 from flask import current_app
 from loguru import logger
-from sqlalchemy import Select, select, func
+from sqlalchemy import Select, func, select
 from sqlalchemy.orm import selectinload
 
 from models import (
