@@ -1,4 +1,4 @@
-import { calculatePercent } from "../../../helpers/utils";
+import { computeDisplayPercents } from "../../../helpers/utils";
 import BudgetCard from "../../UI/Cards/BudgetCard";
 import LineGraphWithLegendCard from "../../UI/Cards/LineGraphWithLegendCard";
 
@@ -28,13 +28,12 @@ const CANSummaryCards = ({
     inExecutionFunding
 }) => {
     const totalSpending = Number(plannedFunding) + Number(obligatedFunding) + Number(inExecutionFunding);
-    const data = [
+    const data = computeDisplayPercents([
         {
             id: 1,
             label: "Previous FYs Carry-Forward",
             value: carryForward,
             color: "var(--feedback-info)",
-            percent: calculatePercent(carryForward, totalBudget),
             tagActiveStyle: "darkTextOnLightBlue"
         },
         {
@@ -42,10 +41,9 @@ const CANSummaryCards = ({
             label: `FY ${fiscalYear} New Funding`,
             value: newFunding,
             color: "var(--can-total-budget-2)",
-            percent: calculatePercent(newFunding, totalBudget),
             tagActiveStyle: "lightTextOnDarkBlue"
         }
-    ];
+    ]);
     return (
         <>
             <div className="display-flex flex-justify">
