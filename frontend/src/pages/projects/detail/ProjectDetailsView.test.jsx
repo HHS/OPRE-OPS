@@ -9,6 +9,18 @@ vi.mock("react-router-dom", async () => {
     return { ...actual };
 });
 
+vi.mock("../../../api/opsAPI", () => ({
+    useUpdateProjectMutation: () => [
+        vi.fn().mockReturnValue({ unwrap: () => Promise.resolve({}) }),
+        { isLoading: false }
+    ]
+}));
+
+vi.mock("../../../hooks/use-alert.hooks", () => ({
+    __esModule: true,
+    default: () => ({ setAlert: vi.fn() })
+}));
+
 const baseProject = {
     id: 1000,
     title: "Human Services Interoperability Support",
@@ -221,5 +233,19 @@ describe("ProjectDetailsView", () => {
             project_end: null
         });
         expect(screen.getAllByText("TBD").length).toBeGreaterThanOrEqual(4);
+    });
+
+    it("renders ProjectDetailForm when isEditMode is true", () => {
+        renderComponent(baseProject, { canEdit: true, isEditMode: true });
+        expect(screen.getByText("Edit Project Details")).toBeInTheDocument();
+        expect(screen.getByLabelText(/project title/i)).toBeInTheDocument();
+        expect(screen.getByLabelText(/project nickname/i)).toBeInTheDocument();
+        expect(screen.getByLabelText(/description/i)).toBeInTheDocument();
+        expect(screen.getByLabelText(/project type/i)).toBeInTheDocument();
+    });
+
+    it("hides edit button when in edit mode", () => {
+        renderComponent(baseProject, { canEdit: true, isEditMode: true });
+        expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
     });
 });

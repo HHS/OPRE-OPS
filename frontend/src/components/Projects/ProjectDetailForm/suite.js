@@ -1,8 +1,6 @@
-import { create, test, enforce, only } from "vest";
+import { create, test, enforce } from "vest";
 
-const suite = create((data = {}, fieldName) => {
-    only(fieldName);
-
+const suite = create((data = {}) => {
     test("title", "This is required information", () => {
         enforce(data["title"]).isNotBlank();
     });

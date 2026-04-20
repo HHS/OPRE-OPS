@@ -43,7 +43,8 @@ const ProjectDetailForm = ({
         cn,
         showModal,
         setShowModal,
-        modalProps
+        modalProps,
+        isSubmitting
     } = useProjectDetailForm(
         projectId,
         projectTitle,
@@ -54,11 +55,7 @@ const ProjectDetailForm = ({
     );
 
     return (
-        <form
-            onSubmit={(e) => {
-                handleSubmit(e);
-            }}
-        >
+        <form onSubmit={handleSubmit}>
             {showModal && (
                 <ConfirmationModal
                     heading={modalProps.heading}
@@ -117,7 +114,7 @@ const ProjectDetailForm = ({
                 <button
                     id="save-changes"
                     className="usa-button"
-                    disabled={title.length === 0 || res.hasErrors()}
+                    disabled={title.length === 0 || res.hasErrors() || isSubmitting}
                     data-cy="save-btn"
                 >
                     Save Changes

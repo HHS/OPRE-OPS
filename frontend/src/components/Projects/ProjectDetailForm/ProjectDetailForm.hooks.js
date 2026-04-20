@@ -10,6 +10,8 @@ const DISPLAY_TO_API_TYPE = {
     "Admin & Support": "ADMINISTRATIVE_AND_SUPPORT"
 };
 
+const API_TO_DISPLAY_TYPE = Object.fromEntries(Object.entries(DISPLAY_TO_API_TYPE).map(([k, v]) => [v, k]));
+
 /**
  * @param {number} projectId
  * @param {string} projectTitle
@@ -29,8 +31,7 @@ export default function useProjectDetailForm(
     const [title, setTitle] = React.useState(projectTitle);
     const [shortTitle, setShortTitle] = React.useState(projectShortTitle);
     const [description, setDescription] = React.useState(projectDescription);
-    const apiToDisplay = Object.fromEntries(Object.entries(DISPLAY_TO_API_TYPE).map(([k, v]) => [v, k]));
-    const [type, setType] = React.useState(apiToDisplay[projectType] ?? projectType);
+    const [type, setType] = React.useState(API_TO_DISPLAY_TYPE[projectType] ?? projectType);
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({
         heading: "",
@@ -38,7 +39,7 @@ export default function useProjectDetailForm(
         secondaryButtonText: "",
         handleConfirm: () => {}
     });
-    const [updateProject] = useUpdateProjectMutation();
+    const [updateProject, { isLoading: isSubmitting }] = useUpdateProjectMutation();
     const { setAlert } = useAlert();
 
     let res = suite.get();
@@ -105,12 +106,7 @@ export default function useProjectDetailForm(
     };
 
     const runValidate = (name, value) => {
-        suite.run(
-            {
-                ...{ [name]: value }
-            },
-            name
-        );
+        suite.run({ [name]: value }, name);
     };
 
     return {
@@ -129,6 +125,7 @@ export default function useProjectDetailForm(
         cn,
         setShowModal,
         showModal,
-        modalProps
+        modalProps,
+        isSubmitting
     };
 }
