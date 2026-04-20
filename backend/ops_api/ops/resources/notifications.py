@@ -28,6 +28,9 @@ from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.schemas.change_requests import (
     BudgetLineItemChangeRequestResponseSchema,
 )
+from ops_api.ops.schemas.procurement_tracker_steps import (
+    ProcurementTrackerStepNotificationSchema,
+)
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
@@ -63,7 +66,7 @@ class NotificationResponseSchema(Schema):
     recipient = fields.Nested(RecipientSchema(), allow_none=True)
     expires = fields.Date(allow_none=True)
     change_request = fields.Nested(BudgetLineItemChangeRequestResponseSchema(), allow_none=True)
-    procurement_tracker_step_id = fields.Int(allow_none=True)
+    procurement_tracker_step = fields.Nested(ProcurementTrackerStepNotificationSchema(), allow_none=True)
 
 
 class ListAPIRequest(Schema):
