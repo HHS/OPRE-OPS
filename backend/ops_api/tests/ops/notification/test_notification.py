@@ -376,11 +376,13 @@ def test_pre_award_notification_includes_step_with_approval_status(auth_client, 
         step_number=999,
         step_type=ProcurementTrackerStepType.PRE_AWARD,
         status=ProcurementTrackerStepStatus.ACTIVE,
-        pre_award_approval_requested=True,
-        pre_award_approval_requested_date=date.today(),
-        pre_award_approval_status="APPROVED",
         created_by=test_admin_user.id,
     )
+    # Set pre-award specific fields after initialization
+    step.pre_award_approval_requested = True
+    step.pre_award_approval_requested_date = date.today()
+    step.pre_award_approval_status = "APPROVED"
+
     loaded_db.add(step)
     loaded_db.commit()
 
