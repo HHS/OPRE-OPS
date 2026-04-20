@@ -2,7 +2,7 @@
 // import { PROCUREMENT_STEP_STATUS } from "../ProcurementTracker.constants";
 import Accordion from "../../../components/UI/Accordion";
 import { fromUpperCaseToTitleCase } from "../../../helpers/utils";
-import "../../../components/Agreements/ProcurementTracker/StepBuilderAccordion/StepBuilderAccordion.css"
+import "../../../components/Agreements/ProcurementTracker/StepBuilderAccordion/StepBuilderAccordion.css";
 // const STEP_STATUS_MAP = {
 //     [PROCUREMENT_STEP_STATUS.COMPLETED]: "completed",
 //     [PROCUREMENT_STEP_STATUS.ACTIVE]: "active"
@@ -29,15 +29,15 @@ const formatStepLabel = (stepType) => {
 //         return mappedState;
 //     }
 
-    // if (typeof activeStepNumber === "number" && typeof step?.step_number === "number") {
-    //     if (step.step_number < activeStepNumber) {
-    //         return "completed";
-    //     }
+// if (typeof activeStepNumber === "number" && typeof step?.step_number === "number") {
+//     if (step.step_number < activeStepNumber) {
+//         return "completed";
+//     }
 
-    //     if (step.step_number === activeStepNumber) {
-    //         return "active";
-    //     }
-    // }
+//     if (step.step_number === activeStepNumber) {
+//         return "active";
+//     }
+// }
 
 //     return "not-started";
 // };
@@ -65,18 +65,7 @@ const formatStepLabel = (stepType) => {
  * @param {StepBuilderAccordionProps} props
  * @returns {import("react").ReactElement}
  */
-const DetailsBuilderAccordion = ({
-    step,
-    totalSteps,
-    // activeStepNumber,
-    children,
-    isClosed = false,
-    // isReadOnly = false,
-    level = 3
-}) => {
-    // const stepState = getStepState(step, activeStepNumber);
-    // const readOnlyClassName = isReadOnly ? "step-builder-accordion__heading--read-only" : "";
-
+const DetailsBuilderAccordion = ({ step, totalSteps, children, isClosed = false, level = 3 }) => {
     const heading = (
         <div
             className={`step-builder-accordion__heading step-builder-accordion__heading--active`}

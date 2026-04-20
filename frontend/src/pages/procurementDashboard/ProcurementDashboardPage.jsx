@@ -176,6 +176,7 @@ const ProcurementDashboard = () => {
             />
             <ProcurementDetails
             fiscalYear={CURRENT_FISCAL_YEAR}
+            agreements={agreements}
             />
         </App>
     );

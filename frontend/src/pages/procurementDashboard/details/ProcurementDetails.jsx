@@ -1,7 +1,7 @@
 import DetailsBuilderAccordion from "./DetailsBuilderAccordion";
 import ProcurementDetailsStepOne from "./ProcurementDetailsStepOne";
 
-const ProcurementDetails = ({ fiscalYear }) => {
+const ProcurementDetails = ({ fiscalYear, agreements }) => {
     const WIZARD_STEPS = [
         "Acquisition Planning",
         "Pre-Solicitation",
@@ -31,8 +31,11 @@ const ProcurementDetails = ({ fiscalYear }) => {
                         step={step}
                         totalSteps={WIZARD_STEPS.length}
                         key={`${step.id}`}
+                        isClosed={step.step_number !== 1}
                     >
-                        {step.step_number === 1 && <ProcurementDetailsStepOne />}
+                        {step.step_number === 1 && <ProcurementDetailsStepOne
+                        agreements={agreements}
+                         />}
                     </DetailsBuilderAccordion>
                 );
             })}
