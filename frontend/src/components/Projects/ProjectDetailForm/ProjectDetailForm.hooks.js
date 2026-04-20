@@ -5,11 +5,17 @@ import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import useAlert from "../../../hooks/use-alert.hooks";
 import suite from "./suite.js";
 
+const DISPLAY_TO_API_TYPE = {
+    Research: "RESEARCH",
+    "Admin & Support": "ADMINISTRATIVE_AND_SUPPORT"
+};
+
 /**
  * @param {number} projectId
  * @param {string} projectTitle
  * @param {string} projectShortTitle
  * @param {string} projectDescription
+ * @param {string} projectType
  * @param {Function} toggleEditMode
  */
 export default function useProjectDetailForm(
@@ -17,11 +23,14 @@ export default function useProjectDetailForm(
     projectTitle,
     projectShortTitle,
     projectDescription,
+    projectType,
     toggleEditMode
 ) {
     const [title, setTitle] = React.useState(projectTitle);
     const [shortTitle, setShortTitle] = React.useState(projectShortTitle);
     const [description, setDescription] = React.useState(projectDescription);
+    const apiToDisplay = Object.fromEntries(Object.entries(DISPLAY_TO_API_TYPE).map(([k, v]) => [v, k]));
+    const [type, setType] = React.useState(apiToDisplay[projectType] ?? projectType);
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({
         heading: "",
@@ -56,7 +65,8 @@ export default function useProjectDetailForm(
         const payload = {
             title,
             short_title: shortTitle,
-            description
+            description,
+            project_type: DISPLAY_TO_API_TYPE[type] ?? type
         };
 
         try {
@@ -81,6 +91,7 @@ export default function useProjectDetailForm(
         setTitle("");
         setShortTitle("");
         setDescription("");
+        setType("");
         setShowModal(false);
         setModalProps({
             heading: "",
@@ -109,6 +120,8 @@ export default function useProjectDetailForm(
         setShortTitle,
         description,
         setDescription,
+        type,
+        setType,
         handleCancel,
         handleSubmit,
         runValidate,

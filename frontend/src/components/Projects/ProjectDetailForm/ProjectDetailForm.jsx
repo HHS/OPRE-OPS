@@ -1,6 +1,7 @@
 import Input from "../../UI/Form/Input";
 import TextArea from "../../UI/Form/TextArea";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
+import ProjectTypeSelect from "../ProjectTypeSelect/ProjectTypeSelect";
 import useProjectDetailForm from "./ProjectDetailForm.hooks";
 
 /**
@@ -9,6 +10,7 @@ import useProjectDetailForm from "./ProjectDetailForm.hooks";
  * @property {string} projectTitle
  * @property {string} projectShortTitle
  * @property {string} projectDescription
+ * @property {string} projectType
  * @property {() => void} toggleEditMode
  */
 
@@ -17,7 +19,14 @@ import useProjectDetailForm from "./ProjectDetailForm.hooks";
  * @param {ProjectDetailFormProps} props
  * @returns {React.ReactElement}
  */
-const ProjectDetailForm = ({ projectId, projectTitle, projectShortTitle, projectDescription, toggleEditMode }) => {
+const ProjectDetailForm = ({
+    projectId,
+    projectTitle,
+    projectShortTitle,
+    projectDescription,
+    projectType,
+    toggleEditMode
+}) => {
     const {
         title,
         setTitle,
@@ -25,6 +34,8 @@ const ProjectDetailForm = ({ projectId, projectTitle, projectShortTitle, project
         setShortTitle,
         description,
         setDescription,
+        type,
+        setType,
         handleCancel,
         handleSubmit,
         runValidate,
@@ -33,7 +44,14 @@ const ProjectDetailForm = ({ projectId, projectTitle, projectShortTitle, project
         showModal,
         setShowModal,
         modalProps
-    } = useProjectDetailForm(projectId, projectTitle, projectShortTitle, projectDescription, toggleEditMode);
+    } = useProjectDetailForm(
+        projectId,
+        projectTitle,
+        projectShortTitle,
+        projectDescription,
+        projectType,
+        toggleEditMode
+    );
 
     return (
         <form
@@ -50,6 +68,14 @@ const ProjectDetailForm = ({ projectId, projectTitle, projectShortTitle, project
                     handleConfirm={modalProps.handleConfirm}
                 />
             )}
+            <ProjectTypeSelect
+                name="project_type"
+                label="Project Type"
+                onChange={(name, value) => {
+                    setType(value);
+                }}
+                value={type}
+            />
             <Input
                 name="title"
                 label="Project Title"

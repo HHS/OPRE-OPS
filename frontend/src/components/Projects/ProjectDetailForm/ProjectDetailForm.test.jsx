@@ -11,7 +11,8 @@ const mockProject = {
     id: 1000,
     title: "Human Services Interoperability Support",
     short_title: "HSS",
-    description: "Interoperability activities description."
+    description: "Interoperability activities description.",
+    project_type: "RESEARCH"
 };
 
 const store = configureStore({
@@ -44,6 +45,7 @@ const renderComponent = () => {
                 projectTitle={mockProject.title}
                 projectShortTitle={mockProject.short_title}
                 projectDescription={mockProject.description}
+                projectType={mockProject.project_type}
                 toggleEditMode={vi.fn()}
             />
         </Provider>

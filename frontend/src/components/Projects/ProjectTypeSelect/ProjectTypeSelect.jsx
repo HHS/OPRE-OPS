@@ -9,7 +9,7 @@ export const ProjectTypeSelect = ({
     value,
     className
 }) => {
-    const PROJECT_TYPES = ["Research"];
+    const PROJECT_TYPES = ["Research", "Admin & Support"];
 
     return (
         <div className={cx("usa-form-group", pending && "pending", className)}>

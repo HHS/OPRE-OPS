@@ -108,6 +108,7 @@ const ProjectDetailsView = ({ project, isEditMode = false, toggleEditMode, canEd
                     projectTitle={project.title ?? ""}
                     projectShortTitle={project.short_title ?? ""}
                     projectDescription={project.description ?? ""}
+                    projectType={project.project_type ?? ""}
                     toggleEditMode={toggleEditMode}
                 />
             ) : (
