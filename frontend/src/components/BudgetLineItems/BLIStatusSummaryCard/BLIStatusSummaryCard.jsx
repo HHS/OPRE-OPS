@@ -2,7 +2,7 @@ import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import CurrencyFormat from "react-currency-format";
-import { calculatePercent } from "../../../helpers/utils";
+import { computeDisplayPercents } from "../../../helpers/utils";
 import ResponsiveDonutWithInnerPercent from "../../UI/DataViz/ResponsiveDonutWithInnerPercent";
 import CustomLayerComponent from "../../UI/DataViz/ResponsiveDonutWithInnerPercent/CustomLayerComponent";
 import RoundedBox from "../../UI/RoundedBox";
@@ -31,36 +31,40 @@ const BLIStatusSummaryCard = ({
     const [percent, setPercent] = React.useState("");
     const [hoverId, setHoverId] = React.useState(-1);
 
-    const data = [
+    // Build raw items then apply cross-item percent normalisation so that no
+    // single slice can show "100%" while non-zero peers exist, and no non-zero
+    // slice rounds down to "0%".
+    const rawItems = [
         {
             id: 1,
             label: "Draft",
             value: totalDraftAmount ?? 0,
-            color: "var(--data-viz-bl-by-status-1)",
-            percent: calculatePercent(totalDraftAmount ?? 0, totalAmount)
+            color: "var(--data-viz-bl-by-status-1)"
         },
         {
             id: 2,
             label: "Planned",
             value: totalPlannedAmount ?? 0,
-            color: "var(--data-viz-bl-by-status-2)",
-            percent: calculatePercent(totalPlannedAmount ?? 0, totalAmount)
+            color: "var(--data-viz-bl-by-status-2)"
         },
         {
             id: 3,
             label: "Executing",
             value: totalExecutingAmount ?? 0,
-            color: "var(--data-viz-bl-by-status-3)",
-            percent: calculatePercent(totalExecutingAmount ?? 0, totalAmount)
+            color: "var(--data-viz-bl-by-status-3)"
         },
         {
             id: 4,
             label: "Obligated",
             value: totalObligatedAmount ?? 0,
-            color: "var(--data-viz-bl-by-status-4)",
-            percent: calculatePercent(totalObligatedAmount ?? 0, totalAmount)
+            color: "var(--data-viz-bl-by-status-4)"
         }
     ];
+
+    // Legend data: real values + cross-item-normalised display percents
+    const legendData = computeDisplayPercents(rawItems);
+
+    // ResponsiveDonutWithInnerPercent applies applyMinimumArcValue internally.
 
     /**
      * Renders a legend item for a budget line item status summary card.
@@ -69,7 +73,7 @@ const BLIStatusSummaryCard = ({
      * @param {string} props.label - The label of the legend item.
      * @param {number} props.value - The value of the legend item.
      * @param {string} props.color - The color of the legend item.
-     * @param {number} props.percent - The percentage of the legend item.
+     * @param {number|string} props.percent - The percentage of the legend item.
      * @returns {React.JSX.Element} - The legend item component.
      */
     const LegendItem = ({ id, label, value, color, percent }) => {
@@ -121,7 +125,7 @@ const BLIStatusSummaryCard = ({
                     className="font-12px flex-fill"
                     style={{ marginRight: "1rem" }}
                 >
-                    {data.map((item) => (
+                    {legendData.map((item) => (
                         <LegendItem
                             key={item.id}
                             id={item.id}
@@ -140,7 +144,7 @@ const BLIStatusSummaryCard = ({
                         role="img"
                     >
                         <ResponsiveDonutWithInnerPercent
-                            data={data}
+                            data={legendData}
                             width={150}
                             height={150}
                             margin={{ top: 10, right: 10, bottom: 10, left: 10 }}

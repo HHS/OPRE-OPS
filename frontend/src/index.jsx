@@ -38,6 +38,7 @@ import WhatsNext from "./pages/home/whats-next";
 import ProcurementMocksDebug from "./pages/dev/ProcurementMocksDebug";
 import RoleProtectedRoute from "./components/Auth/RoleProtectedRoute/RoleProtectedRoute";
 import { USER_ROLES } from "./components/Users/User.constants";
+import DataVizDebug from "./pages/dev/DataVizDebug";
 
 // NOTE: store muse be imported after react-router-dom to avoid access lexical declaration 'opsApi' before initialization
 
@@ -319,6 +320,10 @@ const router = createBrowserRouter(
                 <Route
                     path="/dev/procurement-mocks"
                     element={import.meta.env.DEV ? <ProcurementMocksDebug /> : <Navigate to="/error" />}
+                />
+                <Route
+                    path="/dev/data-viz"
+                    element={import.meta.env.DEV ? <DataVizDebug /> : <Navigate to="/error" />}
                 />
                 <Route
                     path="/user-admin"

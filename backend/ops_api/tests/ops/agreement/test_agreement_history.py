@@ -878,6 +878,60 @@ def test_agreement_history_solicitation_step(loaded_db, app_ctx):
     )
 
 
+def test_agreement_history_evaluation_step(loaded_db, app_ctx):
+    # clean up existing AgreementHistory entries before this test
+    loaded_db.query(AgreementHistory).delete()
+    loaded_db.flush()
+
+    next_agreement_history_ops_event = loaded_db.get(OpsEvent, 73)
+    agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
+
+    loaded_db.flush()  # Ensure items are visible to queries
+    # Filter for history items created by this specific ops event
+    agreement_history_list = (
+        loaded_db.query(AgreementHistory)
+        .where(AgreementHistory.ops_event_id == next_agreement_history_ops_event.id)
+        .order_by(AgreementHistory.id)
+        .all()
+    )
+    agreement_history_count = len(agreement_history_list)
+    new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
+
+    assert new_agreement_history_item.history_type == AgreementHistoryType.PROCUREMENT_TRACKER_STEP_UPDATED
+    assert new_agreement_history_item.history_title == "Evaluation Completed"
+    assert (
+        new_agreement_history_item.history_message
+        == "User Demo completed step 4 of the Procurement Tracker. The technical evaluations are complete and OPRE has internally selected a vendor."
+    )
+
+
+def test_agreement_history_pre_award_step(loaded_db, app_ctx):
+    # clean up existing AgreementHistory entries before this test
+    loaded_db.query(AgreementHistory).delete()
+    loaded_db.flush()
+
+    next_agreement_history_ops_event = loaded_db.get(OpsEvent, 74)
+    agreement_history_trigger(next_agreement_history_ops_event, loaded_db)
+
+    loaded_db.flush()  # Ensure items are visible to queries
+    # Filter for history items created by this specific ops event
+    agreement_history_list = (
+        loaded_db.query(AgreementHistory)
+        .where(AgreementHistory.ops_event_id == next_agreement_history_ops_event.id)
+        .order_by(AgreementHistory.id)
+        .all()
+    )
+    agreement_history_count = len(agreement_history_list)
+    new_agreement_history_item = agreement_history_list[agreement_history_count - 1]
+
+    assert new_agreement_history_item.history_type == AgreementHistoryType.PROCUREMENT_TRACKER_STEP_UPDATED
+    assert new_agreement_history_item.history_title == "Pre-Award Completed"
+    assert (
+        new_agreement_history_item.history_message
+        == "User Demo completed step 5 of the Procurement Tracker. Pre-Award Approval was received and the Final Consensus Memo was sent to the Procurement Shop."
+    )
+
+
 def test_add_history_events_prevents_duplicates_in_same_batch(loaded_db):
     """Test that add_history_events prevents duplicate events in the same batch."""
     event1 = AgreementHistory(

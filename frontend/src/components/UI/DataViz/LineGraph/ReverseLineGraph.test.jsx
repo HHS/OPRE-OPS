@@ -1,42 +1,55 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
-import LineGraph from "./LineGraph";
+import ReverseLineGraph from "./ReverseLineGraph";
 
 // Minimal two-item data sets used across tests.
 const makeData = (overrides = {}) => [
     {
         id: 1,
-        value: 600,
-        percent: 60,
+        value: 200,
+        percent: 20,
         color: "var(--color-left)",
         ...overrides.left
     },
     {
         id: 2,
-        value: 400,
-        percent: 40,
+        value: 800,
+        percent: 80,
         color: "var(--color-right)",
         ...overrides.right
     }
 ];
 
-describe("LineGraph", () => {
-    describe("rendering", () => {
-        it("renders both bars", () => {
-            render(<LineGraph data={makeData()} />);
+describe("ReverseLineGraph", () => {
+    describe("conditional left bar rendering", () => {
+        it("renders the left bar when leftValue > 0", () => {
+            render(<ReverseLineGraph data={makeData()} />);
             expect(screen.getByTestId("line-graph-left-bar")).toBeInTheDocument();
+        });
+
+        it("does NOT render the left bar when leftValue is 0", () => {
+            const data = makeData({ left: { value: 0, percent: 0 } });
+            render(<ReverseLineGraph data={data} />);
+            expect(screen.queryByTestId("line-graph-left-bar")).not.toBeInTheDocument();
+        });
+
+        it("always renders the right bar regardless of leftValue", () => {
+            const data = makeData({ left: { value: 0, percent: 0 } });
+            render(<ReverseLineGraph data={data} />);
             expect(screen.getByTestId("line-graph-right-bar")).toBeInTheDocument();
         });
 
-        it("applies correct background colors", () => {
-            render(<LineGraph data={makeData()} />);
-            expect(screen.getByTestId("line-graph-left-bar")).toHaveStyle({ backgroundColor: "var(--color-left)" });
-            expect(screen.getByTestId("line-graph-right-bar")).toHaveStyle({ backgroundColor: "var(--color-right)" });
+        it("renders both bars when both values are non-zero", () => {
+            render(<ReverseLineGraph data={makeData()} />);
+            expect(screen.getByTestId("line-graph-left-bar")).toBeInTheDocument();
+            expect(screen.getByTestId("line-graph-right-bar")).toBeInTheDocument();
         });
+    });
 
-        it("applies correct flex width on the left bar from numeric percent", () => {
-            render(<LineGraph data={makeData()} />);
-            expect(screen.getByTestId("line-graph-left-bar")).toHaveStyle({ flex: "0 1 60%" });
+    describe("flex width", () => {
+        it("applies correct flex width on left bar from numeric percent", () => {
+            render(<ReverseLineGraph data={makeData()} />);
+            expect(screen.getByTestId("line-graph-left-bar")).toHaveStyle({ flex: "0 1 20%" });
         });
 
         it("applies value-proportional flex width when leftPercent is a string ('<1')", () => {
@@ -45,8 +58,37 @@ describe("LineGraph", () => {
                 left: { value: 10, percent: "<1" },
                 right: { value: 990, percent: 99 }
             });
-            render(<LineGraph data={data} />);
+            render(<ReverseLineGraph data={data} />);
             expect(screen.getByTestId("line-graph-left-bar")).toHaveStyle({ flex: "0 1 2%" });
+        });
+    });
+
+    describe("colors", () => {
+        it("applies correct background color on the left bar", () => {
+            render(<ReverseLineGraph data={makeData()} />);
+            expect(screen.getByTestId("line-graph-left-bar")).toHaveStyle({ backgroundColor: "var(--color-left)" });
+        });
+
+        it("applies correct background color on the right bar", () => {
+            render(<ReverseLineGraph data={makeData()} />);
+            expect(screen.getByTestId("line-graph-right-bar")).toHaveStyle({ backgroundColor: "var(--color-right)" });
+        });
+    });
+
+    describe("right bar always has stripe pattern", () => {
+        it("right bar background-image is always a repeating-linear-gradient", () => {
+            render(<ReverseLineGraph data={makeData()} />);
+            expect(screen.getByTestId("line-graph-right-bar").style.backgroundImage).toContain(
+                "repeating-linear-gradient"
+            );
+        });
+
+        it("right bar stripe is present even when left bar is hidden", () => {
+            const data = makeData({ left: { value: 0, percent: 0 } });
+            render(<ReverseLineGraph data={data} />);
+            expect(screen.getByTestId("line-graph-right-bar").style.backgroundImage).toContain(
+                "repeating-linear-gradient"
+            );
         });
     });
 
@@ -56,12 +98,12 @@ describe("LineGraph", () => {
                 left: { value: 1000, percent: 100 },
                 right: { value: 0, percent: 0 }
             });
-            render(<LineGraph data={data} />);
+            render(<ReverseLineGraph data={data} />);
             expect(screen.getByTestId("line-graph-left-bar").className).toMatch(/leftBarFull/);
         });
 
         it("does NOT apply leftBarFull when leftPercent < 100", () => {
-            render(<LineGraph data={makeData()} />);
+            render(<ReverseLineGraph data={makeData()} />);
             expect(screen.getByTestId("line-graph-left-bar").className).not.toMatch(/leftBarFull/);
         });
 
@@ -70,7 +112,7 @@ describe("LineGraph", () => {
                 left: { value: 1000, percent: "<1" },
                 right: { value: 0, percent: 0 }
             });
-            render(<LineGraph data={data} />);
+            render(<ReverseLineGraph data={data} />);
             expect(screen.getByTestId("line-graph-left-bar").className).toMatch(/leftBarFull/);
         });
 
@@ -79,7 +121,7 @@ describe("LineGraph", () => {
                 left: { value: 0, percent: 0 },
                 right: { value: 1000, percent: 100 }
             });
-            render(<LineGraph data={data} />);
+            render(<ReverseLineGraph data={data} />);
             expect(screen.getByTestId("line-graph-right-bar").className).toMatch(/rightBarFull/);
         });
 
@@ -88,54 +130,8 @@ describe("LineGraph", () => {
                 left: { value: 0, percent: 0 },
                 right: { value: 1000, percent: "<1" }
             });
-            render(<LineGraph data={data} />);
+            render(<ReverseLineGraph data={data} />);
             expect(screen.getByTestId("line-graph-right-bar").className).toMatch(/rightBarFull/);
-        });
-
-        it("does NOT apply rightBarFull when rightPercent < 100", () => {
-            render(<LineGraph data={makeData()} />);
-            expect(screen.getByTestId("line-graph-right-bar").className).not.toMatch(/rightBarFull/);
-        });
-    });
-
-    describe("isStriped / overBudget", () => {
-        it("applies stripe background-image on both bars when isStriped=true, overBudget=false", () => {
-            render(
-                <LineGraph
-                    data={makeData()}
-                    isStriped={true}
-                    overBudget={false}
-                />
-            );
-            expect(screen.getByTestId("line-graph-left-bar").style.backgroundImage).toContain(
-                "repeating-linear-gradient"
-            );
-            expect(screen.getByTestId("line-graph-right-bar").style.backgroundImage).toContain(
-                "repeating-linear-gradient"
-            );
-        });
-
-        it("does NOT apply stripe when isStriped=false", () => {
-            render(
-                <LineGraph
-                    data={makeData()}
-                    isStriped={false}
-                />
-            );
-            expect(screen.getByTestId("line-graph-left-bar").style.backgroundImage).toBe("none");
-            expect(screen.getByTestId("line-graph-right-bar").style.backgroundImage).toBe("none");
-        });
-
-        it("does NOT apply stripe when overBudget=true even if isStriped=true", () => {
-            render(
-                <LineGraph
-                    data={makeData()}
-                    isStriped={true}
-                    overBudget={true}
-                />
-            );
-            expect(screen.getByTestId("line-graph-left-bar").style.backgroundImage).toBe("none");
-            expect(screen.getByTestId("line-graph-right-bar").style.backgroundImage).toBe("none");
         });
     });
 
@@ -143,7 +139,7 @@ describe("LineGraph", () => {
         it("calls setActiveId with left id on mouseEnter of left bar", () => {
             const setActiveId = vi.fn();
             render(
-                <LineGraph
+                <ReverseLineGraph
                     data={makeData()}
                     setActiveId={setActiveId}
                 />
@@ -155,7 +151,7 @@ describe("LineGraph", () => {
         it("calls setActiveId with 0 on mouseLeave of left bar", () => {
             const setActiveId = vi.fn();
             render(
-                <LineGraph
+                <ReverseLineGraph
                     data={makeData()}
                     setActiveId={setActiveId}
                 />
@@ -167,7 +163,7 @@ describe("LineGraph", () => {
         it("calls setActiveId with right id on mouseEnter of right bar", () => {
             const setActiveId = vi.fn();
             render(
-                <LineGraph
+                <ReverseLineGraph
                     data={makeData()}
                     setActiveId={setActiveId}
                 />
@@ -179,7 +175,7 @@ describe("LineGraph", () => {
         it("calls setActiveId with 0 on mouseLeave of right bar", () => {
             const setActiveId = vi.fn();
             render(
-                <LineGraph
+                <ReverseLineGraph
                     data={makeData()}
                     setActiveId={setActiveId}
                 />
@@ -190,7 +186,7 @@ describe("LineGraph", () => {
 
         it("does not throw when setActiveId is not provided (default no-op)", () => {
             expect(() => {
-                render(<LineGraph data={makeData()} />);
+                render(<ReverseLineGraph data={makeData()} />);
                 fireEvent.mouseEnter(screen.getByTestId("line-graph-left-bar"));
                 fireEvent.mouseLeave(screen.getByTestId("line-graph-left-bar"));
             }).not.toThrow();
