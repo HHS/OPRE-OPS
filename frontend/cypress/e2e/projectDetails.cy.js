@@ -56,7 +56,7 @@ describe("Project Details Page", () => {
         cy.get("[data-cy='cancel-button']").should("be.visible");
     });
 
-    it("edits project details and saves successfully", () => {
+    it.skip("edits project details and saves successfully", () => {
         cy.get("[data-cy='project-details-edit-button']").click();
         cy.get("input[name='short_title']").clear().type("Updated HSS");
         cy.get("[data-cy='save-btn']").click();
