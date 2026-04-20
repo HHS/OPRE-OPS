@@ -340,7 +340,8 @@ class ProcurementTrackerStepService:
                         ),
                         "is_read": False,
                         "recipient_id": recipient_id,
-                        "notification_type": NotificationType.NOTIFICATION,
+                        "notification_type": NotificationType.PRE_AWARD_APPROVAL_NOTIFICATION,
+                        "procurement_tracker_step_id": step.id,
                     }
                 )
             logger.debug(f"Created {len(recipient_ids)} pre-award approval request notifications")
@@ -363,10 +364,30 @@ class ProcurementTrackerStepService:
                         ),
                         "is_read": False,
                         "recipient_id": step.pre_award_approval_requested_by,
-                        "notification_type": NotificationType.NOTIFICATION,
+                        "notification_type": NotificationType.PRE_AWARD_APPROVAL_NOTIFICATION,
+                        "procurement_tracker_step_id": step.id,
                     }
                 )
                 logger.debug(f"Created pre-award approval {status_text} notification for submitter")
+
+            # Auto-dismiss "in review" notifications for reviewers via bulk UPDATE
+            from sqlalchemy import and_, update
+
+            from models import PreAwardApprovalNotification
+
+            dismiss_result = self.db_session.execute(
+                update(PreAwardApprovalNotification)
+                .where(
+                    and_(
+                        PreAwardApprovalNotification.title == "Pre-Award Approval Request",
+                        PreAwardApprovalNotification.is_read.is_(False),
+                        PreAwardApprovalNotification.procurement_tracker_step_id == step.id,
+                    )
+                )
+                .values(is_read=True)
+            )
+
+            logger.debug(f"Auto-dismissed {dismiss_result.rowcount or 0} 'in review' notifications for reviewers")
 
     def _get_approval_reviewers(self, agreement) -> set[int]:
         """
@@ -381,8 +402,6 @@ class ProcurementTrackerStepService:
         Returns:
             Set of user IDs authorized to review
         """
-        from sqlalchemy import select
-
         from models import Role
         from ops_api.ops.utils.agreements_helpers import get_division_directors_for_agreement
 

@@ -18,13 +18,13 @@ const useAgreementChangesResponseAlert = (
     let newAwardingEntityId = -1;
     let oldAwardingEntityId = -1;
     const approvedRequests = changeRequestNotifications?.filter(
-        (request) => request.change_request.status === "APPROVED"
+        (request) => request.change_request?.status === "APPROVED"
     );
     const declinedRequests = changeRequestNotifications?.filter(
-        (request) => request.change_request.status === "REJECTED"
+        (request) => request.change_request?.status === "REJECTED"
     );
 
-    const procurementShopChangeNotification = changeRequestNotifications.find(
+    const procurementShopChangeNotification = changeRequestNotifications?.find(
         (notification) => notification.change_request?.requested_change_diff?.awarding_entity_id !== undefined
     );
 
@@ -143,8 +143,9 @@ export function formatChangeRequest(changeRequest, oldProcurementShop = {}, newP
 export function getChangeRequestNotes(changeRequests) {
     let reviewerNotes = "";
     changeRequests?.forEach((changeRequest) => {
-        if (changeRequest.change_request?.reviewer_notes !== "") {
-            reviewerNotes = changeRequest.change_request?.reviewer_notes;
+        const notes = changeRequest?.change_request?.reviewer_notes;
+        if (notes && notes !== "") {
+            reviewerNotes = notes;
         }
     });
 
