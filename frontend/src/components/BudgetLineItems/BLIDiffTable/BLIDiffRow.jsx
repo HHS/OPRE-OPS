@@ -155,7 +155,7 @@ const BLIDiffRow = ({ budgetLine, changeType, statusChangeTo = "" }) => {
                         {budgetLineCreatorName}
                     </dd>
                     <dt className="margin-0 text-base-dark margin-top-2">Created on</dt>
-                    <dd className="margin-0 display-flex flex-align-center">
+                    <dd className="margin-0 display-flex flex-align-center text-normal">
                         <FontAwesomeIcon
                             icon={faClock}
                             className="height-2 width-2 margin-right-1"

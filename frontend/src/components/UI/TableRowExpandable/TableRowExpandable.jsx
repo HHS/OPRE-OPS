@@ -2,6 +2,7 @@ import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { changeBgColorIfExpanded, removeBorderBottomIfExpanded } from "./TableRowExpandable.helpers";
+import "./TableRowExpandable.css";
 
 const mergeClassNames = (...classNames) => classNames.filter(Boolean).join(" ");
 
@@ -80,6 +81,7 @@ const TableRowExpandable = ({ tableRowData, expandedData, isExpanded, setIsExpan
 
             {isExpanded && (
                 <tr
+                    className="expanded-row"
                     data-cy="expanded-data"
                     data-testid="expanded-data"
                 >
