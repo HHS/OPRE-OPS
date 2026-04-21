@@ -8,9 +8,12 @@ import {
 } from "../../../api/opsAPI";
 import DebugCode from "../../../components/DebugCode";
 import FiscalYear from "../../../components/UI/FiscalYear";
-import { getCurrentFiscalYear } from "../../../helpers/utils";
+import DonutGraphWithLegendCard from "../../../components/UI/Cards/DonutGraphWithLegendCard";
+import { AGREEMENT_TYPE_ORDER } from "../../../components/Agreements/AgreementSpendingCards/AgreementSpendingCards.constants";
+import { getCurrentFiscalYear, computeDisplayPercents } from "../../../helpers/utils";
 import ProjectDetailTabs from "./ProjectDetailTabs";
 import ProjectSpendingAgreementsTable from "./ProjectSpendingAgreementsTable";
+import ProjectSpendingTotalsCard from "./ProjectSpendingTotalsCard";
 
 /**
  * Derives the default fiscal year to display.
@@ -109,6 +112,34 @@ const ProjectSpending = () => {
         return {};
     }, [agreementsForFY, spendingData, selectedFY]);
 
+    // Summary card values
+    const fyTotal = Number(spendingData?.total_by_fiscal_year?.[selectedFY] ?? 0);
+    const lifetimeTotal = Number(spendingData?.total ?? 0);
+    const fyAgreementCount = spendingData?.agreements_by_fy?.[selectedFY]?.length ?? 0;
+
+    // Donut chart data — spending by agreement type for selected FY
+    const donutData = React.useMemo(() => {
+        const typeBreakdown = spendingData?.spending_type_by_fiscal_year?.[selectedFY];
+        if (!typeBreakdown || !fyTotal) return [];
+
+        // Map backend snake_case keys to AGREEMENT_TYPE_ORDER config
+        const keyMap = {
+            CONTRACT: "contract",
+            PARTNER: "partner",
+            GRANT: "grant",
+            DIRECT_OBLIGATION: "direct_obligation"
+        };
+
+        const rawItems = AGREEMENT_TYPE_ORDER.map((config, idx) => ({
+            id: idx + 1,
+            label: config.label,
+            value: Number(typeBreakdown[keyMap[config.type]] ?? 0),
+            color: config.color
+        }));
+
+        return computeDisplayPercents(rawItems);
+    }, [spendingData, selectedFY, fyTotal]);
+
     const is404 = projectError?.status === 404 || spendingError?.status === 404;
     const isLoading = isProjectLoading || isSpendingLoading;
 
@@ -157,11 +188,25 @@ const ProjectSpending = () => {
             {/* ── Project Spending Summary ── */}
             <section>
                 <h2 className="font-sans-lg">Project Spending Summary</h2>
-                <p className="font-sans-sm text-base margin-top-1 margin-bottom-4">
+                <p className="font-sans-sm text-base margin-top-1 margin-bottom-3">
                     The summary below shows a breakdown of the project total for the selected FY. Draft budget lines are
                     not included in the Totals.
                 </p>
-                {/* Phase 3: Summary cards + Donut chart go here */}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+                    <ProjectSpendingTotalsCard
+                        fiscalYear={selectedFY}
+                        fyTotal={fyTotal}
+                        lifetimeTotal={lifetimeTotal}
+                        fyAgreementCount={fyAgreementCount}
+                    />
+                    <DonutGraphWithLegendCard
+                        data={donutData}
+                        title={`FY ${selectedFY} Project Spending By Agreement Type`}
+                    />
+                </div>
+                <p className="font-12px text-base-dark margin-top-1">
+                    *Spending equals the sum of Budget Lines in Planned, Executing and Obligated Status
+                </p>
             </section>
 
             {/* ── Agreements ── */}
