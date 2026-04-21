@@ -14,7 +14,7 @@ import { getTableHeadings } from "./ProjectSpendingAgreementsTable.constants";
  * @returns {React.ReactElement}
  */
 const ProjectSpendingAgreementsTable = ({ agreements, fiscalYear, fyTotals }) => {
-    const headings = [...getTableHeadings(fiscalYear), ""]; // append empty col for chevron
+    const headings = getTableHeadings(fiscalYear); // no empty chevron entry — rendered explicitly below
 
     if (agreements.length === 0) {
         return (
@@ -43,6 +43,9 @@ const ProjectSpendingAgreementsTable = ({ agreements, fiscalYear, fyTotals }) =>
                             {heading}
                         </th>
                     ))}
+                    <th scope="col">
+                        <span className="usa-sr-only">Expand row</span>
+                    </th>
                 </tr>
             </thead>
             <tbody>
