@@ -35,11 +35,11 @@ const getDefaultFY = (agreementsByFy) => {
 };
 
 /**
- * Project Spending tab — Phase 1 + 2.
+ * Project Spending tab — Phases 1, 2, and 3.
  *
  * Phase 1: Fetches spending metadata and renders DebugCode.
  * Phase 2: Adds FY selector and Agreements table.
- * Phase 3 (future): Summary cards + donut chart.
+ * Phase 3: Adds summary cards and donut chart.
  *
  * @returns {React.ReactElement | null}
  */
@@ -192,21 +192,25 @@ const ProjectSpending = () => {
                     The summary below shows a breakdown of the project total for the selected FY. Draft budget lines are
                     not included in the Totals.
                 </p>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-                    <ProjectSpendingTotalsCard
-                        fiscalYear={selectedFY}
-                        fyTotal={fyTotal}
-                        lifetimeTotal={lifetimeTotal}
-                        fyAgreementCount={fyAgreementCount}
-                    />
-                    <DonutGraphWithLegendCard
-                        data={donutData}
-                        title={`FY ${selectedFY} Project Spending By Agreement Type`}
-                    />
-                </div>
-                <p className="font-12px text-base-dark margin-top-1">
-                    *Spending equals the sum of Budget Lines in Planned, Executing and Obligated Status
-                </p>
+                {selectedFY !== null && (
+                    <>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+                            <ProjectSpendingTotalsCard
+                                fiscalYear={selectedFY}
+                                fyTotal={fyTotal}
+                                lifetimeTotal={lifetimeTotal}
+                                fyAgreementCount={fyAgreementCount}
+                            />
+                            <DonutGraphWithLegendCard
+                                data={donutData}
+                                title={`FY ${selectedFY} Project Spending By Agreement Type`}
+                            />
+                        </div>
+                        <p className="font-12px text-base-dark margin-top-1">
+                            *Spending equals the sum of Budget Lines in Planned, Executing and Obligated Status
+                        </p>
+                    </>
+                )}
             </section>
 
             {/* ── Agreements ── */}
@@ -215,13 +219,16 @@ const ProjectSpending = () => {
                 <p className="font-sans-sm text-base margin-top-1 margin-bottom-4">
                     This is a list of all agreements within this project for the selected FY.
                 </p>
-                {selectedFY !== null && (
-                    <ProjectSpendingAgreementsTable
-                        agreements={isAgreementsLoading ? [] : agreementsForFY}
-                        fiscalYear={selectedFY}
-                        fyTotals={fyTotals}
-                    />
-                )}
+                {selectedFY !== null &&
+                    (isAgreementsLoading ? (
+                        <p className="font-sans-sm text-base margin-top-1">Loading agreements...</p>
+                    ) : (
+                        <ProjectSpendingAgreementsTable
+                            agreements={agreementsForFY}
+                            fiscalYear={selectedFY}
+                            fyTotals={fyTotals}
+                        />
+                    ))}
             </section>
 
             <DebugCode

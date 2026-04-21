@@ -29,11 +29,11 @@ const COLUMN_COUNT = 7; // Agreement, Type, Start, End, FY Total, Agreement Tota
  *
  * @param {Object} props
  * @param {import("../../../types/AgreementTypes").Agreement} props.agreement
- * @param {number} props.fiscalYear - The selected fiscal year (number).
+ * @param {number} props.fiscalYear - The selected fiscal year (reserved; used when #5548 ships).
  * @param {number | null} props.fyTotal - Pre-computed FY total, or null if unavailable.
  * @returns {React.ReactElement}
  */
-const ProjectSpendingAgreementRow = ({ agreement, fyTotal }) => {
+const ProjectSpendingAgreementRow = ({ agreement, fiscalYear, fyTotal }) => {  // eslint-disable-line no-unused-vars
     const { isExpanded, setIsExpanded, setIsRowActive } = useTableRow();
 
     const agreementName = getAgreementName(agreement) ?? NO_DATA;
