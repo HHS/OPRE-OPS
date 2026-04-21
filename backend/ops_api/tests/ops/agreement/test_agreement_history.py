@@ -932,6 +932,223 @@ def test_agreement_history_pre_award_step(loaded_db, app_ctx):
     )
 
 
+def test_agreement_history_pre_award_approval_approved(loaded_db, app_ctx):
+    """Test that pre-award approval creates history with requester name."""
+    # clean up existing AgreementHistory entries before this test
+    loaded_db.query(AgreementHistory).delete()
+    loaded_db.flush()
+
+    # Create a mock OpsEvent for pre-award approval
+    from models import ProcurementTracker, User
+
+    # Use existing test users
+    requester = loaded_db.get(User, 503)  # Amelia Popham
+    approver = loaded_db.get(User, 521)  # User Demo
+
+    # Create event with approval_status change
+    ops_event = OpsEvent(
+        event_type=OpsEventType.UPDATE_PROCUREMENT_TRACKER_STEP,
+        event_status=OpsEventStatus.SUCCESS,
+        created_by=approver.id,
+        event_details={
+            "procurement_tracker_step": {
+                "id": 17,
+                "procurement_tracker_id": 5,
+                "step_type": "PRE_AWARD",
+                "step_number": 5,
+                "status": "ACTIVE",
+                "approval_requested": True,
+                "approval_requested_by": requester.id,
+                "approval_status": "APPROVED",
+                "approval_responded_by": approver.id,
+            },
+            "procurement_tracker_step_updates": {
+                "owner_id": 1,
+                "updated_by": approver.id,
+                "changes": {
+                    "approval_status": {
+                        "old_value": None,
+                        "new_value": "APPROVED",
+                    }
+                },
+            },
+        },
+    )
+    loaded_db.add(ops_event)
+    loaded_db.flush()
+
+    # Get the tracker to extract agreement_id
+    tracker = loaded_db.get(ProcurementTracker, 5)
+
+    # Trigger history creation
+    agreement_history_trigger(ops_event, loaded_db)
+    loaded_db.flush()
+
+    # Verify history was created
+    history_items = (
+        loaded_db.query(AgreementHistory)
+        .where(AgreementHistory.ops_event_id == ops_event.id)
+        .order_by(AgreementHistory.id)
+        .all()
+    )
+
+    assert len(history_items) == 1
+    history_item = history_items[0]
+
+    assert history_item.history_type == AgreementHistoryType.PROCUREMENT_TRACKER_STEP_UPDATED
+    assert history_item.history_title == "Pre-Award Approval Approved"
+    assert history_item.agreement_id == tracker.agreement_id
+    assert (
+        history_item.history_message
+        == f"User Demo approved the agreement for pre-award as requested by Amelia Popham. "
+        f"The requisition will be submitted by the Budget Team before the Final Consensus Memo is sent to the procurement shop."
+    )
+
+
+def test_agreement_history_pre_award_approval_declined(loaded_db, app_ctx):
+    """Test that pre-award decline creates history with requester name."""
+    # clean up existing AgreementHistory entries before this test
+    loaded_db.query(AgreementHistory).delete()
+    loaded_db.flush()
+
+    # Create a mock OpsEvent for pre-award decline
+    from models import ProcurementTracker, User
+
+    # Use existing test users
+    requester = loaded_db.get(User, 503)  # Amelia Popham
+    decliner = loaded_db.get(User, 521)  # User Demo
+
+    # Create event with approval_status change to DECLINED
+    ops_event = OpsEvent(
+        event_type=OpsEventType.UPDATE_PROCUREMENT_TRACKER_STEP,
+        event_status=OpsEventStatus.SUCCESS,
+        created_by=decliner.id,
+        event_details={
+            "procurement_tracker_step": {
+                "id": 17,
+                "procurement_tracker_id": 5,
+                "step_type": "PRE_AWARD",
+                "step_number": 5,
+                "status": "ACTIVE",
+                "approval_requested": True,
+                "approval_requested_by": requester.id,
+                "approval_status": "DECLINED",
+                "approval_responded_by": decliner.id,
+            },
+            "procurement_tracker_step_updates": {
+                "owner_id": 1,
+                "updated_by": decliner.id,
+                "changes": {
+                    "approval_status": {
+                        "old_value": None,
+                        "new_value": "DECLINED",
+                    }
+                },
+            },
+        },
+    )
+    loaded_db.add(ops_event)
+    loaded_db.flush()
+
+    # Get the tracker to extract agreement_id
+    tracker = loaded_db.get(ProcurementTracker, 5)
+
+    # Trigger history creation
+    agreement_history_trigger(ops_event, loaded_db)
+    loaded_db.flush()
+
+    # Verify history was created
+    history_items = (
+        loaded_db.query(AgreementHistory)
+        .where(AgreementHistory.ops_event_id == ops_event.id)
+        .order_by(AgreementHistory.id)
+        .all()
+    )
+
+    assert len(history_items) == 1
+    history_item = history_items[0]
+
+    assert history_item.history_type == AgreementHistoryType.PROCUREMENT_TRACKER_STEP_UPDATED
+    assert history_item.history_title == "Pre-Award Approval Declined"
+    assert history_item.agreement_id == tracker.agreement_id
+    assert (
+        history_item.history_message == f"User Demo declined this agreement for pre-award as requested by Amelia Popham."
+    )
+
+
+def test_agreement_history_pre_award_approval_unknown_requester(loaded_db, app_ctx):
+    """Test that pre-award approval handles missing requester with Unknown User fallback."""
+    # clean up existing AgreementHistory entries before this test
+    loaded_db.query(AgreementHistory).delete()
+    loaded_db.flush()
+
+    # Create a mock OpsEvent with non-existent requester
+    from models import ProcurementTracker, User
+
+    approver = loaded_db.get(User, 521)  # User Demo
+    non_existent_user_id = 99999
+
+    # Create event with approval_status change and non-existent requester
+    ops_event = OpsEvent(
+        event_type=OpsEventType.UPDATE_PROCUREMENT_TRACKER_STEP,
+        event_status=OpsEventStatus.SUCCESS,
+        created_by=approver.id,
+        event_details={
+            "procurement_tracker_step": {
+                "id": 17,
+                "procurement_tracker_id": 5,
+                "step_type": "PRE_AWARD",
+                "step_number": 5,
+                "status": "ACTIVE",
+                "approval_requested": True,
+                "approval_requested_by": non_existent_user_id,
+                "approval_status": "APPROVED",
+                "approval_responded_by": approver.id,
+            },
+            "procurement_tracker_step_updates": {
+                "owner_id": 1,
+                "updated_by": approver.id,
+                "changes": {
+                    "approval_status": {
+                        "old_value": None,
+                        "new_value": "APPROVED",
+                    }
+                },
+            },
+        },
+    )
+    loaded_db.add(ops_event)
+    loaded_db.flush()
+
+    # Get the tracker to extract agreement_id
+    tracker = loaded_db.get(ProcurementTracker, 5)
+
+    # Trigger history creation
+    agreement_history_trigger(ops_event, loaded_db)
+    loaded_db.flush()
+
+    # Verify history was created with "Unknown User"
+    history_items = (
+        loaded_db.query(AgreementHistory)
+        .where(AgreementHistory.ops_event_id == ops_event.id)
+        .order_by(AgreementHistory.id)
+        .all()
+    )
+
+    assert len(history_items) == 1
+    history_item = history_items[0]
+
+    assert history_item.history_type == AgreementHistoryType.PROCUREMENT_TRACKER_STEP_UPDATED
+    assert history_item.history_title == "Pre-Award Approval Approved"
+    assert history_item.agreement_id == tracker.agreement_id
+    assert "Unknown User" in history_item.history_message
+    assert (
+        history_item.history_message
+        == f"User Demo approved the agreement for pre-award as requested by Unknown User. "
+        f"The requisition will be submitted by the Budget Team before the Final Consensus Memo is sent to the procurement shop."
+    )
+
+
 def test_add_history_events_prevents_duplicates_in_same_batch(loaded_db):
     """Test that add_history_events prevents duplicate events in the same batch."""
     event1 = AgreementHistory(
