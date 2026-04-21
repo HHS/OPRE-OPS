@@ -1066,8 +1066,8 @@ def test_agreement_history_pre_award_approval_approved(loaded_db, app_ctx):
     assert history_item.agreement_id == tracker.agreement_id
     assert (
         history_item.history_message
-        == f"User Demo approved the agreement for pre-award as requested by Amelia Popham. "
-        f"The requisition will be submitted by the Budget Team before the Final Consensus Memo is sent to the procurement shop."
+        == "User Demo approved the agreement for pre-award as requested by Amelia Popham. "
+        "The requisition will be submitted by the Budget Team before the Final Consensus Memo is sent to the procurement shop."
     )
 
 
@@ -1138,7 +1138,7 @@ def test_agreement_history_pre_award_approval_declined(loaded_db, app_ctx):
     assert history_item.history_title == "Pre-Award Approval Declined"
     assert history_item.agreement_id == tracker.agreement_id
     assert (
-        history_item.history_message == f"User Demo declined this agreement for pre-award as requested by Amelia Popham."
+        history_item.history_message == "User Demo declined this agreement for pre-award as requested by Amelia Popham."
     )
 
 
@@ -1210,8 +1210,8 @@ def test_agreement_history_pre_award_approval_unknown_requester(loaded_db, app_c
     assert "Unknown User" in history_item.history_message
     assert (
         history_item.history_message
-        == f"User Demo approved the agreement for pre-award as requested by Unknown User. "
-        f"The requisition will be submitted by the Budget Team before the Final Consensus Memo is sent to the procurement shop."
+        == "User Demo approved the agreement for pre-award as requested by Unknown User. "
+        "The requisition will be submitted by the Budget Team before the Final Consensus Memo is sent to the procurement shop."
     )
 
 
