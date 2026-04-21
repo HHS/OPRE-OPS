@@ -33,6 +33,8 @@ from models import (
     GrantBudgetLineItem,
     OpsDBHistory,
     OpsDBHistoryType,
+    OpsEvent,
+    OpsEventType,
     Portfolio,
     ProcurementShop,
     ProcurementShopFee,
@@ -41,6 +43,8 @@ from models import (
     ServicesComponent,
     User,
 )
+from models.procurement_action import AwardType, ProcurementAction
+from models.procurement_tracker import DefaultProcurementTracker, ProcurementTracker, ProcurementTrackerStepStatus
 
 file_path = os.path.join(os.path.dirname(__file__), "../../test_csv/master_spreadsheet_budget_lines_v2.tsv")
 
@@ -203,6 +207,15 @@ def db_with_data_v2(loaded_db):
 
 
 def clean_up_db(session):
+    session.execute(text("DELETE FROM procurement_tracker_step"))
+    session.execute(text("DELETE FROM procurement_tracker_step_version"))
+    session.execute(text("DELETE FROM default_procurement_tracker"))
+    session.execute(text("DELETE FROM default_procurement_tracker_version"))
+    session.execute(text("DELETE FROM procurement_tracker"))
+    session.execute(text("DELETE FROM procurement_tracker_version"))
+    session.execute(text("DELETE FROM procurement_action"))
+    session.execute(text("DELETE FROM procurement_action_version"))
+
     session.execute(text("DELETE FROM procurement_shop"))
     session.execute(text("DELETE FROM procurement_shop_version"))
 
@@ -1397,5 +1410,362 @@ def test_obligated_bli_with_missing_fee_data(db_with_data_v2):
 
     # Cleanup
     db_with_data_v2.delete(bli_model)
+    db_with_data_v2.delete(contract_agreement)
+    db_with_data_v2.commit()
+
+
+# ============================================================================
+# Procurement workflow integration tests
+# ============================================================================
+
+
+def _ensure_user(session):
+    user = session.get(User, 1)
+    if not user:
+        user = User(id=1, email="system.admin@localhost")
+        session.add(user)
+        session.commit()
+    return user
+
+
+def test_in_execution_bli_creates_procurement_records(db_with_data_v2):
+    """
+    An IN_EXECUTION BLI with no prior OBLIGATED BLIs on the agreement
+    creates a NEW_AWARD ProcurementAction and tracker, and links the BLI.
+    """
+    contract_agreement = ContractAgreement(
+        id=20,
+        name="Test Contract In Execution",
+        agreement_type=AgreementType.CONTRACT,
+    )
+    db_with_data_v2.add(contract_agreement)
+    db_with_data_v2.commit()
+
+    data = BudgetLineItemData(
+        ID="new",
+        AGREEMENT_NAME="Test Contract In Execution",
+        AGREEMENT_TYPE="CONTRACT",
+        LINE_DESC="Execution Line",
+        DATE_NEEDED="3/11/25",
+        AMOUNT="50000.00",
+        STATUS="com",
+        COMMENTS="Test",
+        CAN="TestCanNumber (TestCanNickname)",
+        SC="SC1",
+        PROC_SHOP="PROC1",
+        PROC_SHOP_FEE=None,
+        PROC_SHOP_RATE=None,
+    )
+
+    user = _ensure_user(db_with_data_v2)
+    create_models(data, user, db_with_data_v2)
+
+    # Verify procurement action was created
+    action = db_with_data_v2.execute(
+        select(ProcurementAction).where(ProcurementAction.agreement_id == 20)
+    ).scalar_one_or_none()
+    assert action is not None
+    assert action.award_type == AwardType.NEW_AWARD
+
+    # Verify tracker was created with step 1 active
+    tracker = db_with_data_v2.execute(
+        select(DefaultProcurementTracker).where(DefaultProcurementTracker.agreement_id == 20)
+    ).scalar_one_or_none()
+    assert tracker is not None
+    assert tracker.procurement_action == action.id
+    step_1 = next(s for s in tracker.steps if s.step_number == 1)
+    assert step_1.status == ProcurementTrackerStepStatus.ACTIVE
+
+    # Verify BLI is linked to the action
+    bli = db_with_data_v2.execute(
+        select(ContractBudgetLineItem)
+        .join(ContractAgreement)
+        .where(ContractAgreement.name == "Test Contract In Execution")
+    ).scalar_one_or_none()
+    assert bli.procurement_action_id == action.id
+
+    # Verify OpsEvents were created for the procurement records
+    action_events = db_with_data_v2.execute(
+        select(OpsEvent).where(OpsEvent.event_type == OpsEventType.CREATE_PROCUREMENT_ACTION)
+    ).scalars().all()
+    tracker_events = db_with_data_v2.execute(
+        select(OpsEvent).where(OpsEvent.event_type == OpsEventType.CREATE_PROCUREMENT_TRACKER)
+    ).scalars().all()
+    assert len(action_events) == 1
+    assert "SpreadsheetIngest" in action_events[0].event_details["message"]
+    assert len(tracker_events) == 1
+
+    # Cleanup
+    db_with_data_v2.delete(bli)
+    db_with_data_v2.delete(tracker)
+    db_with_data_v2.delete(action)
+    db_with_data_v2.delete(contract_agreement)
+    db_with_data_v2.commit()
+
+
+def test_in_execution_bli_with_existing_obligated_creates_modification(db_with_data_v2):
+    """
+    When an agreement already has OBLIGATED BLIs and a new IN_EXECUTION BLI
+    is ingested, a MODIFICATION action and tracker are created.
+    """
+    contract_agreement = ContractAgreement(
+        id=21,
+        name="Test Contract Modification",
+        agreement_type=AgreementType.CONTRACT,
+    )
+    db_with_data_v2.add(contract_agreement)
+    db_with_data_v2.commit()
+
+    user = _ensure_user(db_with_data_v2)
+
+    # First, create an OBLIGATED BLI
+    obligated_data = BudgetLineItemData(
+        ID="new",
+        AGREEMENT_NAME="Test Contract Modification",
+        AGREEMENT_TYPE="CONTRACT",
+        LINE_DESC="Obligated Line",
+        DATE_NEEDED="1/15/25",
+        AMOUNT="30000.00",
+        STATUS="OBL",
+        COMMENTS="Test",
+        CAN="TestCanNumber (TestCanNickname)",
+        SC="SC1",
+        PROC_SHOP="PROC1",
+        PROC_SHOP_FEE="300.00",
+        PROC_SHOP_RATE="1.0",
+    )
+    create_models(obligated_data, user, db_with_data_v2)
+
+    # Now create an IN_EXECUTION BLI — should trigger modification
+    in_exec_data = BudgetLineItemData(
+        ID="new",
+        AGREEMENT_NAME="Test Contract Modification",
+        AGREEMENT_TYPE="CONTRACT",
+        LINE_DESC="Execution Line",
+        DATE_NEEDED="3/11/25",
+        AMOUNT="50000.00",
+        STATUS="com",
+        COMMENTS="Test",
+        CAN="TestCanNumber (TestCanNickname)",
+        SC="SC2",
+        PROC_SHOP="PROC1",
+        PROC_SHOP_FEE=None,
+        PROC_SHOP_RATE=None,
+    )
+    create_models(in_exec_data, user, db_with_data_v2)
+
+    # Verify a MODIFICATION action was created
+    mod_action = db_with_data_v2.execute(
+        select(ProcurementAction)
+        .where(ProcurementAction.agreement_id == 21)
+        .where(ProcurementAction.award_type == AwardType.MODIFICATION)
+    ).scalar_one_or_none()
+    assert mod_action is not None
+
+    # Verify the IN_EXECUTION BLI is linked to the modification action
+    exec_bli = db_with_data_v2.execute(
+        select(ContractBudgetLineItem)
+        .where(ContractBudgetLineItem.agreement_id == 21)
+        .where(ContractBudgetLineItem.status == BudgetLineItemStatus.IN_EXECUTION)
+    ).scalar_one_or_none()
+    assert exec_bli.procurement_action_id == mod_action.id
+
+    # The OBLIGATED BLI should NOT be linked (it wasn't IN_EXECUTION)
+    obl_bli = db_with_data_v2.execute(
+        select(ContractBudgetLineItem)
+        .where(ContractBudgetLineItem.agreement_id == 21)
+        .where(ContractBudgetLineItem.status == BudgetLineItemStatus.OBLIGATED)
+    ).scalar_one_or_none()
+    assert obl_bli.procurement_action_id is None
+
+    # Cleanup
+    for bli in db_with_data_v2.execute(
+        select(BudgetLineItem).where(BudgetLineItem.agreement_id == 21)
+    ).scalars().all():
+        db_with_data_v2.delete(bli)
+    for tracker in db_with_data_v2.execute(
+        select(ProcurementTracker).where(ProcurementTracker.agreement_id == 21)
+    ).scalars().all():
+        db_with_data_v2.delete(tracker)
+    for action in db_with_data_v2.execute(
+        select(ProcurementAction).where(ProcurementAction.agreement_id == 21)
+    ).scalars().all():
+        db_with_data_v2.delete(action)
+    db_with_data_v2.delete(contract_agreement)
+    db_with_data_v2.commit()
+
+
+def test_update_bli_to_in_execution_creates_procurement_records(db_with_data_v2):
+    """
+    Updating an existing BLI's status to IN_EXECUTION triggers
+    procurement record creation.
+    """
+    contract_agreement = ContractAgreement(
+        id=22,
+        name="Test Contract Update To Exec",
+        agreement_type=AgreementType.CONTRACT,
+    )
+    db_with_data_v2.add(contract_agreement)
+    db_with_data_v2.commit()
+
+    user = _ensure_user(db_with_data_v2)
+
+    # Create a PLANNED BLI first
+    planned_bli = ContractBudgetLineItem(
+        agreement_id=22,
+        can_id=1,
+        budget_line_item_type=AgreementType.CONTRACT,
+        line_description="Planned Line",
+        amount=40000,
+        status=BudgetLineItemStatus.PLANNED,
+        date_needed=date(2025, 3, 11),
+        created_by=user.id,
+    )
+    db_with_data_v2.add(planned_bli)
+    db_with_data_v2.commit()
+    bli_id = planned_bli.id
+
+    # Now update it to IN_EXECUTION via the spreadsheet ingest
+    update_data = BudgetLineItemData(
+        ID=bli_id,
+        AGREEMENT_NAME="Test Contract Update To Exec",
+        AGREEMENT_TYPE="CONTRACT",
+        LINE_DESC="Now Executing",
+        DATE_NEEDED="3/11/25",
+        AMOUNT="40000.00",
+        STATUS="com",
+        COMMENTS="Updated to execution",
+        CAN="TestCanNumber (TestCanNickname)",
+        SC="SC1",
+        PROC_SHOP="PROC1",
+        PROC_SHOP_FEE=None,
+        PROC_SHOP_RATE=None,
+    )
+    create_models(update_data, user, db_with_data_v2)
+
+    # Verify procurement records were created
+    action = db_with_data_v2.execute(
+        select(ProcurementAction).where(ProcurementAction.agreement_id == 22)
+    ).scalar_one_or_none()
+    assert action is not None
+    assert action.award_type == AwardType.NEW_AWARD
+
+    # Verify BLI is linked
+    bli = db_with_data_v2.get(ContractBudgetLineItem, bli_id)
+    assert bli.procurement_action_id == action.id
+
+    # Cleanup
+    db_with_data_v2.delete(bli)
+    for tracker in db_with_data_v2.execute(
+        select(ProcurementTracker).where(ProcurementTracker.agreement_id == 22)
+    ).scalars().all():
+        db_with_data_v2.delete(tracker)
+    db_with_data_v2.delete(action)
+    db_with_data_v2.delete(contract_agreement)
+    db_with_data_v2.commit()
+
+
+def test_planned_bli_does_not_create_procurement_records(db_with_data_v2):
+    """
+    A PLANNED BLI should NOT create any procurement records.
+    """
+    user = _ensure_user(db_with_data_v2)
+
+    data = BudgetLineItemData(
+        ID="new",
+        AGREEMENT_NAME="Grant #1: Early Care and Education Leadership Study (ExCELS)",
+        AGREEMENT_TYPE="GRANT",
+        LINE_DESC="Planned Only",
+        DATE_NEEDED="3/11/25",
+        AMOUNT="10000.00",
+        STATUS="OPRE - CURRENT",
+        COMMENTS="No procurement needed",
+        CAN="TestCanNumber (TestCanNickname)",
+        SC="SC1",
+        PROC_SHOP="PROC1",
+        PROC_SHOP_FEE=None,
+        PROC_SHOP_RATE=None,
+    )
+    create_models(data, user, db_with_data_v2)
+
+    # No procurement records should exist for agreement 1
+    actions = db_with_data_v2.execute(
+        select(ProcurementAction).where(ProcurementAction.agreement_id == 1)
+    ).scalars().all()
+    assert len(actions) == 0
+
+    trackers = db_with_data_v2.execute(
+        select(ProcurementTracker).where(ProcurementTracker.agreement_id == 1)
+    ).scalars().all()
+    assert len(trackers) == 0
+
+    # Cleanup
+    bli = db_with_data_v2.execute(
+        select(GrantBudgetLineItem)
+        .where(GrantBudgetLineItem.agreement_id == 1)
+        .where(GrantBudgetLineItem.line_description == "Planned Only")
+    ).scalar_one_or_none()
+    db_with_data_v2.delete(bli)
+    db_with_data_v2.commit()
+
+
+def test_in_execution_bli_idempotent_procurement_records(db_with_data_v2):
+    """
+    Creating two IN_EXECUTION BLIs on the same agreement reuses the same
+    ProcurementAction and tracker — no duplicates.
+    """
+    contract_agreement = ContractAgreement(
+        id=23,
+        name="Test Contract Idempotent",
+        agreement_type=AgreementType.CONTRACT,
+    )
+    db_with_data_v2.add(contract_agreement)
+    db_with_data_v2.commit()
+
+    user = _ensure_user(db_with_data_v2)
+
+    for desc in ("Line A", "Line B"):
+        data = BudgetLineItemData(
+            ID="new",
+            AGREEMENT_NAME="Test Contract Idempotent",
+            AGREEMENT_TYPE="CONTRACT",
+            LINE_DESC=desc,
+            DATE_NEEDED="3/11/25",
+            AMOUNT="25000.00",
+            STATUS="com",
+            COMMENTS="Test",
+            CAN="TestCanNumber (TestCanNickname)",
+            SC="SC1",
+            PROC_SHOP="PROC1",
+            PROC_SHOP_FEE=None,
+            PROC_SHOP_RATE=None,
+        )
+        create_models(data, user, db_with_data_v2)
+
+    # Only one action and one tracker
+    actions = db_with_data_v2.execute(
+        select(ProcurementAction).where(ProcurementAction.agreement_id == 23)
+    ).scalars().all()
+    assert len(actions) == 1
+
+    trackers = db_with_data_v2.execute(
+        select(ProcurementTracker).where(ProcurementTracker.agreement_id == 23)
+    ).scalars().all()
+    assert len(trackers) == 1
+
+    # Both BLIs linked to the same action
+    blis = db_with_data_v2.execute(
+        select(ContractBudgetLineItem).where(ContractBudgetLineItem.agreement_id == 23)
+    ).scalars().all()
+    assert len(blis) == 2
+    assert all(b.procurement_action_id == actions[0].id for b in blis)
+
+    # Cleanup
+    for bli in blis:
+        db_with_data_v2.delete(bli)
+    for tracker in trackers:
+        db_with_data_v2.delete(tracker)
+    for action in actions:
+        db_with_data_v2.delete(action)
     db_with_data_v2.delete(contract_agreement)
     db_with_data_v2.commit()
