@@ -1,22 +1,6 @@
 import styles from "../../UI/Table/table.module.css";
 import ProjectSpendingAgreementRow from "../ProjectSpendingAgreementRow";
-
-/**
- * Column headings for the Project Spending Agreements table.
- * The FY Total column label is dynamic based on the selected fiscal year.
- *
- * @param {number} fiscalYear
- * @returns {string[]}
- */
-const getTableHeadings = (fiscalYear) => [
-    "Agreement",
-    "Type",
-    "Start",
-    "End",
-    `FY ${fiscalYear} Total`,
-    "Agreement Total",
-    "" // chevron column
-];
+import { getTableHeadings } from "./ProjectSpendingAgreementsTable.constants";
 
 /**
  * Table of agreements for the Project Spending tab.
@@ -30,7 +14,7 @@ const getTableHeadings = (fiscalYear) => [
  * @returns {React.ReactElement}
  */
 const ProjectSpendingAgreementsTable = ({ agreements, fiscalYear, fyTotals }) => {
-    const headings = getTableHeadings(fiscalYear);
+    const headings = [...getTableHeadings(fiscalYear), ""]; // append empty col for chevron
 
     if (agreements.length === 0) {
         return (

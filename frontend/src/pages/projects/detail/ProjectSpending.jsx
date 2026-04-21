@@ -13,6 +13,7 @@ import { AGREEMENT_TYPE_ORDER } from "../../../components/Agreements/AgreementSp
 import { getCurrentFiscalYear, computeDisplayPercents } from "../../../helpers/utils";
 import ProjectDetailTabs from "./ProjectDetailTabs";
 import ProjectSpendingAgreementsTable from "../../../components/Projects/ProjectSpendingAgreementsTable";
+import ProjectSpendingAgreementsTableLoading from "../../../components/Projects/ProjectSpendingAgreementsTable/ProjectSpendingAgreementsTableLoading";
 import ProjectSpendingTotalsCard from "../../../components/Projects/ProjectSpendingTotalsCard";
 
 /**
@@ -221,7 +222,7 @@ const ProjectSpending = () => {
                 </p>
                 {selectedFY !== null &&
                     (isAgreementsLoading ? (
-                        <p className="font-sans-sm text-base margin-top-1">Loading agreements...</p>
+                        <ProjectSpendingAgreementsTableLoading fiscalYear={selectedFY} />
                     ) : (
                         <ProjectSpendingAgreementsTable
                             agreements={agreementsForFY}

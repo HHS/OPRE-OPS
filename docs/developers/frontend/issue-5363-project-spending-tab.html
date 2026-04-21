@@ -414,7 +414,7 @@
 
           <!-- Phase 2 -->
           <div class="phase-card active">
-            <div class="phase-tag tag-active">Phase 2 &#x2013; Complete &#x2705; (post-review: agreements loading state)</div>
+            <div class="phase-tag tag-active">Phase 2 &#x2013; Complete &#x2705; (post-review: skeleton loader)</div>
             <h3>Agreements Table</h3>
             <ul>
               <li>&#x2705; FY selector with only FYs that have spending data; defaults to highest FY (or current FY if present)</li>
@@ -423,7 +423,8 @@
               <li>&#x2705; Expandable rows: Description, Procurement Shop, Subtotal, Fees, Lifetime Obligated, Contract #, Award Type, Vendor</li>
               <li>&#x2705; Hover effect via shared <span class="code-inline">table.module.css</span></li>
               <li>&#x2705; Agreements filtered per FY via <span class="code-inline">agreements_by_fy</span> from spending endpoint</li>
-              <li>&#x2705; Agreements section shows <em>Loading agreements&hellip;</em> while the fetch is in flight (instead of a false empty state)</li>
+              <li>&#x2705; <span class="code-inline">ProjectSpendingAgreementsTableLoading</span> skeleton shown while the agreements fetch is in flight &mdash; consistent with <span class="code-inline">AgreementsTableLoading</span>, <span class="code-inline">ProjectsTableLoading</span>, and the other table skeletons across the app. Column headings (including dynamic &ldquo;FY <em>N</em> Total&rdquo;) and the expandable-row chevron column are preserved in the skeleton so the layout does not shift on data arrival.</li>
+              <li>&#x2705; <span class="code-inline">getTableHeadings(fiscalYear)</span> extracted to <span class="code-inline">ProjectSpendingAgreementsTable.constants.js</span> and shared between the main table and the loading component.</li>
               <li>
                 &#x26A0;&#xFE0F; <strong>FY Total shows &#x201C;TBD&#x201D;</strong> &#x2014;
                 the spending endpoint returns project-level FY totals only, not per-agreement.
@@ -755,6 +756,8 @@
           &nbsp;&nbsp;components/Projects/<br />
           &nbsp;&nbsp;&nbsp;&nbsp;<span class="new-file">ProjectSpendingAgreementRow/</span> &nbsp;&#x2190; NEW (Phase 2) + unit tests<br />
           &nbsp;&nbsp;&nbsp;&nbsp;<span class="new-file">ProjectSpendingAgreementsTable/</span> &nbsp;&#x2190; NEW (Phase 2) + unit tests<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="new-file">ProjectSpendingAgreementsTable.constants.js</span> &nbsp;&#x2190; NEW &#x2013; shared <span class="code-inline">getTableHeadings(fiscalYear)</span> helper<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="new-file">ProjectSpendingAgreementsTableLoading.jsx</span> &nbsp;&#x2190; NEW &#x2013; shimmer skeleton; wraps <span class="code-inline">TableLoadingSkeleton</span> with <span class="code-inline">hasExpandableRows</span><br />
           &nbsp;&nbsp;&nbsp;&nbsp;<span class="new-file">ProjectSpendingTotalsCard/</span> &nbsp;&#x2190; NEW (Phase 3) + unit tests<br />
           &nbsp;&nbsp;pages/projects/<br />
           &nbsp;&nbsp;&nbsp;&nbsp;detail/<br />
@@ -828,8 +831,8 @@
             Render
             <span class="code-inline">ProjectSpendingAgreementsTable</span>;
             while <span class="code-inline">isAgreementsLoading</span> is true
-            show <em>Loading agreements&hellip;</em> instead of the table so the
-            empty-state is never shown during fetch
+            show <span class="code-inline">ProjectSpendingAgreementsTableLoading</span> (shimmer skeleton)
+            so the layout is preserved and the empty-state is never shown during fetch
           </li>
         </ol>
 
@@ -998,7 +1001,7 @@ const fyTotal = Number(
           <li>Fiscal Year selector shows only FYs with spending data; defaults to highest FY (current FY if present).</li>
           <li>Agreements table renders: Agreement (linked), Type, Start, End, FY Total, Agreement Total columns.</li>
           <li>FY Total shows real currency for single-agreement FYs; shows <code>TBD</code> for multi-agreement FYs (pending #5548).</li>
-          <li><em>Loading agreements&hellip;</em> shown while the agreements fetch is in flight; table never shows the empty state during a pending request.</li>
+          <li><span class="code-inline">ProjectSpendingAgreementsTableLoading</span> skeleton shown while the agreements fetch is in flight; table column headings (including dynamic FY label) and chevron column are preserved so no layout shift occurs on data arrival. Table never shows the empty state during a pending request.</li>
           <li>Rows expand to show Description, Procurement Shop, Subtotal, Fees, Lifetime Obligated, Contract #, Award Type, Vendor.</li>
           <li>Switching FY updates the table rows and column header (e.g. "FY 2043 Total" &#x2192; "FY 2044 Total").</li>
           <li>Empty state "No agreements found for FY X" shown when FY has no agreements.</li>

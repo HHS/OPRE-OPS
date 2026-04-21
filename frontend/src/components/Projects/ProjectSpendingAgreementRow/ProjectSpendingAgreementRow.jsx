@@ -33,7 +33,8 @@ const COLUMN_COUNT = 7; // Agreement, Type, Start, End, FY Total, Agreement Tota
  * @param {number | null} props.fyTotal - Pre-computed FY total, or null if unavailable.
  * @returns {React.ReactElement}
  */
-const ProjectSpendingAgreementRow = ({ agreement, fiscalYear, fyTotal }) => {  // eslint-disable-line no-unused-vars
+// eslint-disable-next-line no-unused-vars
+const ProjectSpendingAgreementRow = ({ agreement, fiscalYear, fyTotal }) => {
     const { isExpanded, setIsExpanded, setIsRowActive } = useTableRow();
 
     const agreementName = getAgreementName(agreement) ?? NO_DATA;
