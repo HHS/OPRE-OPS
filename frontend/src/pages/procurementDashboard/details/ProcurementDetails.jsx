@@ -1,7 +1,8 @@
+import { useMemo } from "react";
 import DetailsBuilderAccordion from "./DetailsBuilderAccordion";
-import ProcurementDetailsStepOne from "./ProcurementDetailsStepOne";
+import ProcurementDetailsStep from "./ProcurementDetailsStep";
 
-const ProcurementDetails = ({ fiscalYear, agreements }) => {
+const ProcurementDetails = ({ fiscalYear, agreements, procurementTrackers, procurementStepSummary }) => {
     const WIZARD_STEPS = [
         "Acquisition Planning",
         "Pre-Solicitation",
@@ -16,6 +17,23 @@ const ProcurementDetails = ({ fiscalYear, agreements }) => {
         step_number: index + 1,
         step_type: stepName
     }));
+
+    const agreementsByStep = useMemo(() => {
+        const stepToAgreementIds = {};
+        for (const tracker of procurementTrackers) {
+            if (!stepToAgreementIds[tracker.active_step_number]) {
+                stepToAgreementIds[tracker.active_step_number] = new Set();
+            }
+            stepToAgreementIds[tracker.active_step_number].add(tracker.agreement_id);
+        }
+
+        const result = {};
+        for (const stepNumber of Object.keys(stepToAgreementIds)) {
+            const ids = stepToAgreementIds[stepNumber];
+            result[stepNumber] = agreements.filter((a) => ids.has(a.id));
+        }
+        return result;
+    }, [agreements, procurementTrackers]);
 
     return (
         <>
@@ -33,9 +51,10 @@ const ProcurementDetails = ({ fiscalYear, agreements }) => {
                         key={`${step.id}`}
                         isClosed={step.step_number !== 1}
                     >
-                        {step.step_number === 1 && <ProcurementDetailsStepOne
-                        agreements={agreements}
-                         />}
+                        <ProcurementDetailsStep
+                            agreements={agreementsByStep[step.step_number] ?? []}
+                            agreementsPerStep={procurementStepSummary?.step_data[step.step_number - 1]?.agreements}
+                        />
                     </DetailsBuilderAccordion>
                 );
             })}

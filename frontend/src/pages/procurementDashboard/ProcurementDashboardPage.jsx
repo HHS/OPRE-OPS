@@ -59,14 +59,18 @@ const ProcurementDashboard = () => {
     });
 
     const agreements = useMemo(() => agreementsResponse?.agreements || [], [agreementsResponse]);
+    console.log(agreementsResponse);
+
     const procurementOverview = agreementsResponse?.procurement_overview ?? null;
     const procurementStepSummary = agreementsResponse?.procurement_step_summary ?? null;
+    console.log(procurementStepSummary);
 
     const agreementIds = useMemo(() => agreements.map((a) => a.id), [agreements]);
 
     const { data: procurementTrackers = [] } = useGetProcurementTrackersByAgreementIdsQuery(agreementIds, {
         skip: agreementIds.length === 0
     });
+    console.log(procurementTrackers);
 
     const handleExport = useCallback(() => {
         // Build a lookup from agreement ID to its active procurement step number
@@ -181,8 +185,10 @@ const ProcurementDashboard = () => {
                 }
             />
             <ProcurementDetails
-            fiscalYear={CURRENT_FISCAL_YEAR}
-            agreements={agreements}
+                fiscalYear={CURRENT_FISCAL_YEAR}
+                agreements={agreements}
+                procurementTrackers={procurementTrackers}
+                procurementStepSummary={procurementStepSummary}
             />
         </App>
     );
