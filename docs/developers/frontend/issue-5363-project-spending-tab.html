@@ -373,9 +373,10 @@
           delivery approach agreed on during planning.
         </p>
         <div class="note">
-          <strong>Priority order:</strong> (1) Wire API call + DebugCode display
+          <strong>All three phases are now delivered</strong> and merged in
+          <a href="https://github.com/HHS/OPRE-OPS/pull/5554">PR #5554</a>.
+          The original priority order was: (1) Wire API call + DebugCode
           &rarr; (2) Agreements table &rarr; (3) Summary cards / donut chart.
-          Summary cards are lower priority and deferred to a later sub-task.
         </div>
       </div>
 
@@ -385,7 +386,7 @@
         <div class="phases">
           <!-- Phase 1 -->
           <div class="phase-card active">
-            <div class="phase-tag tag-active">Phase 1 – This PR</div>
+            <div class="phase-tag tag-active">Phase 1 &#x2013; Complete &#x2705;</div>
             <h3>API Hook + DebugCode Display</h3>
             <ul>
               <li>
@@ -413,7 +414,7 @@
 
           <!-- Phase 2 -->
           <div class="phase-card active">
-            <div class="phase-tag tag-active">Phase 2 &#x2013; Complete &#x2705;</div>
+            <div class="phase-tag tag-active">Phase 2 &#x2013; Complete &#x2705; (post-review: agreements loading state)</div>
             <h3>Agreements Table</h3>
             <ul>
               <li>&#x2705; FY selector with only FYs that have spending data; defaults to highest FY (or current FY if present)</li>
@@ -422,8 +423,9 @@
               <li>&#x2705; Expandable rows: Description, Procurement Shop, Subtotal, Fees, Lifetime Obligated, Contract #, Award Type, Vendor</li>
               <li>&#x2705; Hover effect via shared <span class="code-inline">table.module.css</span></li>
               <li>&#x2705; Agreements filtered per FY via <span class="code-inline">agreements_by_fy</span> from spending endpoint</li>
+              <li>&#x2705; Agreements section shows <em>Loading agreements&hellip;</em> while the fetch is in flight (instead of a false empty state)</li>
               <li>
-                &#x26A0;&#xFE0F; <strong>FY Total shows &#x201C;&#x2014;&#x201D;</strong> &#x2014;
+                &#x26A0;&#xFE0F; <strong>FY Total shows &#x201C;TBD&#x201D;</strong> &#x2014;
                 the spending endpoint returns project-level FY totals only, not per-agreement.
                 Requires backend change to <span class="code-inline">GET /projects/:id/spending/</span>
                 to add <span class="code-inline">agreements_fy_total</span>.
@@ -434,12 +436,13 @@
 
           <!-- Phase 3 -->
           <div class="phase-card active">
-            <div class="phase-tag tag-active">Phase 3 &#x2013; Complete &#x2705;</div>
+            <div class="phase-tag tag-active">Phase 3 &#x2013; Complete &#x2705; (post-review: null-FY guard)</div>
             <h3>Summary Cards + Donut Chart</h3>
             <ul>
               <li>&#x2705; <span class="code-inline">ProjectSpendingTotalsCard</span>: FY Total (large <span class="code-inline">CurrencyWithSmallCents</span>), Lifetime Project Total, FY Agreement count</li>
               <li>&#x2705; <span class="code-inline">DonutGraphWithLegendCard</span> wired to <span class="code-inline">spending_type_by_fiscal_year[fy]</span> using <span class="code-inline">AGREEMENT_TYPE_ORDER</span> colors and <span class="code-inline">computeDisplayPercents</span></li>
               <li>&#x2705; CSS Grid (1fr 1fr, gap 1rem) for equal-height cards</li>
+              <li>&#x2705; Summary cards and footnote gated on <span class="code-inline">selectedFY !== null</span> to prevent a &#x201C;FY null&#x201D; flash before the default-FY <span class="code-inline">useEffect</span> fires</li>
               <li>&#x2705; Footnote: <em>*Spending equals the sum of Budget Lines in Planned, Executing and Obligated Status</em></li>
             </ul>
           </div>
@@ -805,8 +808,11 @@
         <ol style="margin-top: 0.25rem">
           <li>
             Add local
-            <span class="code-inline">fiscalYear</span> state (default = current
-            FY derived from today's date)
+            <span class="code-inline">selectedFY</span> state (starts as
+            <span class="code-inline">null</span>; set by
+            <span class="code-inline">useEffect</span> once spending data
+            arrives — defaults to current FY if present, otherwise highest
+            available FY)
           </li>
           <li>
             Also call
@@ -820,7 +826,36 @@
           </li>
           <li>
             Render
-            <span class="code-inline">ProjectSpendingAgreementsTable</span>
+            <span class="code-inline">ProjectSpendingAgreementsTable</span>;
+            while <span class="code-inline">isAgreementsLoading</span> is true
+            show <em>Loading agreements&hellip;</em> instead of the table so the
+            empty-state is never shown during fetch
+          </li>
+        </ol>
+
+        <h3>Phase 3 addition</h3>
+        <ol style="margin-top: 0.25rem">
+          <li>
+            Derive summary values from spending data:
+            <span class="code-inline">fyTotal</span>,
+            <span class="code-inline">lifetimeTotal</span>,
+            <span class="code-inline">fyAgreementCount</span>,
+            and <span class="code-inline">donutData</span> (via
+            <span class="code-inline">computeDisplayPercents</span>)
+          </li>
+          <li>
+            Gate the entire summary section on
+            <span class="code-inline">selectedFY !== null</span> so
+            <span class="code-inline">ProjectSpendingTotalsCard</span> and
+            <span class="code-inline">DonutGraphWithLegendCard</span> never
+            render with an unset FY value
+          </li>
+          <li>
+            Render cards in a CSS Grid (1fr&thinsp;/&thinsp;1fr) so they remain
+            equal height across all FYs
+          </li>
+          <li>
+            Render footnote below the grid
           </li>
         </ol>
       </div>
@@ -883,14 +918,16 @@
               </td>
             </tr>
             <tr>
-              <td>Summary cards priority</td>
-              <td>Phase 3 (deferred)</td>
+              <td>Summary cards delivery</td>
+              <td>Phase 3 (shipped in same PR)</td>
               <td>
-                Cards depend on the spending type breakdown. The table gives
-                more immediate user value and is more straightforward to
-                implement. Cards can reuse
-                <span class="code-inline">DonutGraphWithLegendCard</span>
-                once the data shape is confirmed.
+                Cards reuse
+                <span class="code-inline">DonutGraphWithLegendCard</span> wired
+                to <span class="code-inline">spending_type_by_fiscal_year[fy]</span>
+                and <span class="code-inline">ProjectSpendingTotalsCard</span>.
+                Both are gated on <span class="code-inline">selectedFY !== null</span>
+                to prevent a flash of &#x201C;FY null&#x201D; before the default-FY
+                effect fires.
               </td>
             </tr>
           </tbody>
@@ -961,6 +998,7 @@ const fyTotal = Number(
           <li>Fiscal Year selector shows only FYs with spending data; defaults to highest FY (current FY if present).</li>
           <li>Agreements table renders: Agreement (linked), Type, Start, End, FY Total, Agreement Total columns.</li>
           <li>FY Total shows real currency for single-agreement FYs; shows <code>TBD</code> for multi-agreement FYs (pending #5548).</li>
+          <li><em>Loading agreements&hellip;</em> shown while the agreements fetch is in flight; table never shows the empty state during a pending request.</li>
           <li>Rows expand to show Description, Procurement Shop, Subtotal, Fees, Lifetime Obligated, Contract #, Award Type, Vendor.</li>
           <li>Switching FY updates the table rows and column header (e.g. "FY 2043 Total" &#x2192; "FY 2044 Total").</li>
           <li>Empty state "No agreements found for FY X" shown when FY has no agreements.</li>
@@ -969,6 +1007,7 @@ const fyTotal = Number(
 
         <h3>Phase 3 &#x2705;</h3>
         <ul>
+          <li>Summary section stays hidden until <span class="code-inline">selectedFY</span> is resolved — no &#x201C;FY null&#x201D; flash on first render.</li>
           <li>Left summary card shows FY Project Total (large), Lifetime Project Total, FY Agreement count.</li>
           <li>Right card shows donut chart of spending by agreement type (Contracts, Partner, Grants, Direct Oblig.) with correct design-system colors.</li>
           <li>Both cards are equal height at all FYs.</li>
