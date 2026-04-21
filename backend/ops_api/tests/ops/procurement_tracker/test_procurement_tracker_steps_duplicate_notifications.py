@@ -333,7 +333,9 @@ def test_approval_response_excludes_empty_reviewer_notes(auth_client, test_pre_a
     ).first()
 
     assert notification is not None, "Notification should be created"
-    assert "Notes:" not in notification.message, f"Notes section should not appear when empty. Got: {notification.message}"
+    assert (
+        "Notes:" not in notification.message
+    ), f"Notes section should not appear when empty. Got: {notification.message}"
     # Verify base message is present
     assert "has been approved" in notification.message
 
@@ -363,7 +365,9 @@ def test_approval_response_excludes_whitespace_only_reviewer_notes(auth_client, 
     ).first()
 
     assert notification is not None, "Notification should be created"
-    assert "Notes:" not in notification.message, f"Notes section should not appear for whitespace-only notes. Got: {notification.message}"
+    assert (
+        "Notes:" not in notification.message
+    ), f"Notes section should not appear for whitespace-only notes. Got: {notification.message}"
     # Verify base message is present
     assert "has been approved" in notification.message
 
