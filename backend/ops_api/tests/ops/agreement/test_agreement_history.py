@@ -874,7 +874,7 @@ def test_agreement_history_solicitation_step(loaded_db, app_ctx):
     assert new_agreement_history_item.history_title == "Solicitation Completed"
     assert (
         new_agreement_history_item.history_message
-        == "User Demo completed step 3 of the Procurement Tracker. The evaluations are complete and OPRE has internally selected a vendor."
+        == "User Demo completed step 3 of the Procurement Tracker. The solicitation has been closed to vendors and evaluations can start."
     )
 
 
