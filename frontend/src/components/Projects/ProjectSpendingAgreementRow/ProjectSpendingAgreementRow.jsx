@@ -3,18 +3,18 @@ import { Link } from "react-router-dom";
 import { NO_DATA } from "../../../constants";
 import { getAgreementType } from "../../../helpers/agreement.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
-import TableRowExpandable from "../../../components/UI/TableRowExpandable";
-import { expandedRowBGColor } from "../../../components/UI/TableRowExpandable/TableRowExpandable.helpers";
-import { useTableRow } from "../../../components/UI/TableRowExpandable/TableRowExpandable.hooks";
-import TextClip from "../../../components/UI/Text/TextClip";
+import TableRowExpandable from "../../UI/TableRowExpandable";
+import { expandedRowBGColor } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
+import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
+import TextClip from "../../UI/Text/TextClip";
 import {
     getAgreementContractNumber,
     getAgreementEndDate,
     getAgreementName,
     getAgreementStartDate,
     getProcurementShopDisplay
-} from "../../../components/Agreements/AgreementsTable/AgreementsTable.helpers";
-import { AWARD_TYPE_LABELS } from "../../agreements/agreements.constants";
+} from "../../Agreements/AgreementsTable/AgreementsTable.helpers";
+import { AWARD_TYPE_LABELS } from "../../../pages/agreements/agreements.constants";
 
 const COLUMN_COUNT = 7; // Agreement, Type, Start, End, FY Total, Agreement Total, chevron
 
@@ -70,10 +70,7 @@ const ProjectSpendingAgreementRow = ({ agreement, fyTotal }) => {
             <td data-cy="agreement-type">{agreementType}</td>
             <td data-cy="agreement-start-date">{agreementStartDate}</td>
             <td data-cy="agreement-end-date">{agreementEndDate}</td>
-            <td
-                data-cy="agreement-fy-total"
-                className={fyTotal === null ? "text-base-dark" : ""}
-            >
+            <td data-cy="agreement-fy-total">
                 {fyTotal !== null ? (
                     <CurrencyFormat
                         value={fyTotal}

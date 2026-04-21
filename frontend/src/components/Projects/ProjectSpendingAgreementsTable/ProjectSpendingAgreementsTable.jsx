@@ -1,5 +1,5 @@
-import styles from "../../../components/UI/Table/table.module.css";
-import ProjectSpendingAgreementRow from "./ProjectSpendingAgreementRow";
+import styles from "../../UI/Table/table.module.css";
+import ProjectSpendingAgreementRow from "../ProjectSpendingAgreementRow";
 
 /**
  * Column headings for the Project Spending Agreements table.

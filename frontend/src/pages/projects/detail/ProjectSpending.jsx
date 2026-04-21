@@ -12,8 +12,8 @@ import DonutGraphWithLegendCard from "../../../components/UI/Cards/DonutGraphWit
 import { AGREEMENT_TYPE_ORDER } from "../../../components/Agreements/AgreementSpendingCards/AgreementSpendingCards.constants";
 import { getCurrentFiscalYear, computeDisplayPercents } from "../../../helpers/utils";
 import ProjectDetailTabs from "./ProjectDetailTabs";
-import ProjectSpendingAgreementsTable from "./ProjectSpendingAgreementsTable";
-import ProjectSpendingTotalsCard from "./ProjectSpendingTotalsCard";
+import ProjectSpendingAgreementsTable from "../../../components/Projects/ProjectSpendingAgreementsTable";
+import ProjectSpendingTotalsCard from "../../../components/Projects/ProjectSpendingTotalsCard";
 
 /**
  * Derives the default fiscal year to display.

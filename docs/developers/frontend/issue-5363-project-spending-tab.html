@@ -433,34 +433,14 @@
           </div>
 
           <!-- Phase 3 -->
-          <div class="phase-card later">
-            <div class="phase-tag tag-later">Phase 3 – Later</div>
+          <div class="phase-card active">
+            <div class="phase-tag tag-active">Phase 3 &#x2013; Complete &#x2705;</div>
             <h3>Summary Cards + Donut Chart</h3>
             <ul>
-              <li>
-                Left card: FY Total (big number), Lifetime Project Total, FY
-                Agreement count
-              </li>
-              <li>
-                Right card: Donut chart — spending by agreement type (Contract,
-                Partner, Grant, Direct Obligations)
-              </li>
-              <li>
-                Use existing
-                <span class="code-inline">DonutGraphWithLegendCard</span>
-                component
-              </li>
-              <li>
-                Data comes from
-                <span class="code-inline"
-                  >spending_type_by_fiscal_year[selectedFY]</span
-                >
-                from the spending endpoint
-              </li>
-              <li>
-                Footnote: <em>*Spending equals the sum of Budget Lines in
-                Planned, Executing and Obligated Status</em>
-              </li>
+              <li>&#x2705; <span class="code-inline">ProjectSpendingTotalsCard</span>: FY Total (large <span class="code-inline">CurrencyWithSmallCents</span>), Lifetime Project Total, FY Agreement count</li>
+              <li>&#x2705; <span class="code-inline">DonutGraphWithLegendCard</span> wired to <span class="code-inline">spending_type_by_fiscal_year[fy]</span> using <span class="code-inline">AGREEMENT_TYPE_ORDER</span> colors and <span class="code-inline">computeDisplayPercents</span></li>
+              <li>&#x2705; CSS Grid (1fr 1fr, gap 1rem) for equal-height cards</li>
+              <li>&#x2705; Footnote: <em>*Spending equals the sum of Budget Lines in Planned, Executing and Obligated Status</em></li>
             </ul>
           </div>
         </div>
@@ -768,26 +748,23 @@
           frontend/src/<br />
           &nbsp;&nbsp;api/<br />
           &nbsp;&nbsp;&nbsp;&nbsp;<span class="modified-file">opsAPI.js</span>
-          &nbsp;&nbsp;← add
-          <span class="code-inline">getProjectSpendingById</span> endpoint +
-          export hook<br />
+          &nbsp;&nbsp;&#x2190; <span class="code-inline">getProjectSpendingById</span> + <span class="code-inline">transformResponse</span> on <span class="code-inline">getAgreementsByResearchProjectFilter</span><br />
+          &nbsp;&nbsp;components/Projects/<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="new-file">ProjectSpendingAgreementRow/</span> &nbsp;&#x2190; NEW (Phase 2) + unit tests<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="new-file">ProjectSpendingAgreementsTable/</span> &nbsp;&#x2190; NEW (Phase 2) + unit tests<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="new-file">ProjectSpendingTotalsCard/</span> &nbsp;&#x2190; NEW (Phase 3) + unit tests<br />
           &nbsp;&nbsp;pages/projects/<br />
           &nbsp;&nbsp;&nbsp;&nbsp;detail/<br />
           &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="new-file">ProjectSpending.jsx</span>
-          &nbsp;&nbsp;← NEW – Phase 1 page (FY selector state, API call,
-          DebugCode)<br />
-          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="modified-file">ProjectDetail.jsx</span>
-          &nbsp;&nbsp;← add
-          <span class="code-inline">/spending</span> sub-route rendering<br />
+          &nbsp;&nbsp;&#x2190; NEW &#x2013; page: FY selector, summary cards, agreements table, DebugCode<br />
           &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="modified-file">ProjectDetailTabs.jsx</span>
-          &nbsp;&nbsp;← un-disable "Project Spending" tab<br />
+          &nbsp;&nbsp;&#x2190; un-disable &#x201C;Project Spending&#x201D; tab<br />
           &nbsp;&nbsp;<span class="modified-file">index.jsx</span>
-          &nbsp;&nbsp;← register
-          <span class="code-inline">/projects/:id/spending</span> route<br />
+          &nbsp;&nbsp;&#x2190; register <span class="code-inline">/projects/:id/spending</span> route<br />
           <br />
           docs/developers/frontend/<br />
           &nbsp;&nbsp;<span class="new-file">issue-5363-project-spending-tab.html</span>
-          &nbsp;&nbsp;← this file
+          &nbsp;&nbsp;&#x2190; this file
         </div>
       </div>
 

@@ -1,6 +1,6 @@
 import CurrencyFormat from "react-currency-format";
-import CurrencyWithSmallCents from "../../../components/UI/CurrencyWithSmallCents/CurrencyWithSmallCents";
-import RoundedBox from "../../../components/UI/RoundedBox";
+import CurrencyWithSmallCents from "../../UI/CurrencyWithSmallCents/CurrencyWithSmallCents";
+import RoundedBox from "../../UI/RoundedBox";
 
 /**
  * Left summary card for the Project Spending tab.
