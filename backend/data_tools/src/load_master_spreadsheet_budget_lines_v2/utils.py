@@ -35,6 +35,12 @@ from models import (
     ProcurementShopFee,
     User,
 )
+from models.procurement_workflow import (
+    get_or_create_procurement_records_for_modification,
+    get_or_create_procurement_records_for_new_award,
+    has_obligated_blis,
+    link_blis_to_action,
+)
 
 
 def _strip_or_none(val):
@@ -253,6 +259,19 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
             )
 
         commit_or_rollback(session)
+
+        if bli.status == BudgetLineItemStatus.IN_EXECUTION and agreement:
+            is_mod = has_obligated_blis(session, agreement.id)
+            if is_mod:
+                action, _, _, _ = get_or_create_procurement_records_for_modification(
+                    session, agreement, created_by=sys_user.id, source="SpreadsheetIngest"
+                )
+            else:
+                action, _, _, _ = get_or_create_procurement_records_for_new_award(
+                    session, agreement, created_by=sys_user.id, source="SpreadsheetIngest"
+                )
+            link_blis_to_action(session, agreement, action, BudgetLineItemStatus.IN_EXECUTION)
+            commit_or_rollback(session)
 
         # Create an OPSEvent record for the new BLI
         ops_event = OpsEvent(
