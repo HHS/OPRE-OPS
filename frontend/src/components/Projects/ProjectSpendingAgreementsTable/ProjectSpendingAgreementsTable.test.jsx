@@ -89,7 +89,8 @@ describe("ProjectSpendingAgreementsTable", () => {
             <ProjectSpendingAgreementsTable
                 agreements={mockAgreements}
                 fiscalYear={2043}
-                fyTotals={{}}            />
+                fyTotals={{}}
+            />
         );
         expect(screen.getByRole("table")).toBeInTheDocument();
     });

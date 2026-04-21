@@ -944,29 +944,42 @@ const fyTotal = Number(
 
       <!-- ── Acceptance ── -->
       <div class="section">
-        <h2>Phase 1 Acceptance Criteria</h2>
+        <h2>Acceptance Criteria (All Phases)</h2>
+
+        <h3>Phase 1 &#x2705;</h3>
         <ul>
-          <li>
-            Navigating to
-            <span class="code-inline">/projects/:id/spending</span> renders
-            without errors.
-          </li>
-          <li>
-            The <em>Project Spending</em> tab in the project nav is enabled
-            (no "Coming Soon" tooltip / disabled state).
-          </li>
-          <li>
-            In development mode, a
-            <span class="code-inline">DebugCode</span> block is visible
-            containing the raw JSON from
-            <span class="code-inline">/projects/:id/spending/</span>.
-          </li>
-          <li>
-            404 case: if the project does not exist the page shows the same
-            "Project Not Found" treatment as <span class="code-inline">ProjectDetail.jsx</span>.
-          </li>
-          <li>Loading state shows a spinner/text while the request is in flight.</li>
-          <li>No regressions on the existing <em>Project Details</em> tab.</li>
+          <li>Navigating to <span class="code-inline">/projects/:id/spending</span> renders without errors.</li>
+          <li>The <em>Project Spending</em> tab is enabled — no "Coming Soon" tooltip or <code>disabled</code> attribute.</li>
+          <li>In dev mode a <span class="code-inline">DebugCode</span> block shows the raw JSON from the spending endpoint.</li>
+          <li>404 case shows "Project Not Found" (matches <span class="code-inline">ProjectDetail</span> behavior).</li>
+          <li>Loading state renders while requests are in flight.</li>
+          <li>No regressions on the Project Details tab.</li>
+        </ul>
+
+        <h3>Phase 2 &#x2705;</h3>
+        <ul>
+          <li>Fiscal Year selector shows only FYs with spending data; defaults to highest FY (current FY if present).</li>
+          <li>Agreements table renders: Agreement (linked), Type, Start, End, FY Total, Agreement Total columns.</li>
+          <li>FY Total shows real currency for single-agreement FYs; shows <code>TBD</code> for multi-agreement FYs (pending #5548).</li>
+          <li>Rows expand to show Description, Procurement Shop, Subtotal, Fees, Lifetime Obligated, Contract #, Award Type, Vendor.</li>
+          <li>Switching FY updates the table rows and column header (e.g. "FY 2043 Total" &#x2192; "FY 2044 Total").</li>
+          <li>Empty state "No agreements found for FY X" shown when FY has no agreements.</li>
+          <li>Table rows have hover highlight.</li>
+        </ul>
+
+        <h3>Phase 3 &#x2705;</h3>
+        <ul>
+          <li>Left summary card shows FY Project Total (large), Lifetime Project Total, FY Agreement count.</li>
+          <li>Right card shows donut chart of spending by agreement type (Contracts, Partner, Grants, Direct Oblig.) with correct design-system colors.</li>
+          <li>Both cards are equal height at all FYs.</li>
+          <li>Footnote: <em>*Spending equals the sum of Budget Lines in Planned, Executing and Obligated Status</em>.</li>
+          <li>Summary cards update when FY selector changes.</li>
+        </ul>
+
+        <h3>Cypress E2E</h3>
+        <ul>
+          <li><span class="code-inline">projectDetails.cy.js</span>: spending tab is now <strong>enabled</strong> (no disabled assertion).</li>
+          <li><span class="code-inline">projectSpending.cy.js</span>: navigates to <span class="code-inline">/projects/1000/spending</span>, verifies heading, FY selector, summary cards, agreements table rows and expand/collapse.</li>
         </ul>
       </div>
     </div>
