@@ -1011,9 +1011,15 @@ def create_procurement_tracker_step_update_history_event(
         status = updates["approval_status"]["new_value"]
 
         # Get requester name from step data
-        requester_id = procurement_tracker_step.get("pre_award_approval_requested_by")
+        requester_id = procurement_tracker_step.get("approval_requested_by")
         requester_user = session.get(User, requester_id) if requester_id else None
-        requester_name = requester_user.full_name if requester_user else "Unknown User"
+        if requester_user is None:
+            requester_user = User(id=-1, full_name="Unknown User")
+            logger.error(
+                f"Requester user for procurement tracker step is None (requester_id={requester_id}). "
+                f"Using placeholder user."
+            )
+        requester_name = requester_user.full_name
 
         if status == "APPROVED":
             history_title = "Pre-Award Approval Approved"
