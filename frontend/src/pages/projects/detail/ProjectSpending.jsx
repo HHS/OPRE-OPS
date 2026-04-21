@@ -91,12 +91,23 @@ const ProjectSpending = () => {
     );
 
     // Filter the full agreement list to only those active in the selected FY — must be before early returns
+    // allAgreements is a plain array after transformResponse normalisation in opsAPI.js
     const agreementsForFY = React.useMemo(() => {
-        if (!allAgreements || !selectedFY) return [];
+        if (!Array.isArray(allAgreements) || !selectedFY) return [];
         const fyIds = new Set(spendingData?.agreements_by_fy?.[selectedFY] ?? []);
-        const list = Array.isArray(allAgreements) ? allAgreements : (allAgreements?.agreements ?? []);
-        return list.filter((a) => fyIds.has(a.id));
+        return allAgreements.filter((a) => fyIds.has(a.id));
     }, [allAgreements, selectedFY, spendingData]);
+
+    // Per-agreement FY total — only derivable when exactly one agreement exists in the FY.
+    // When multiple agreements share a FY the project-level total cannot be split without
+    // a backend change to /projects/:id/spending/. Pass null to signal "unavailable".
+    const fyTotals = React.useMemo(() => {
+        const fyTotal = spendingData?.total_by_fiscal_year?.[selectedFY];
+        if (agreementsForFY.length === 1 && fyTotal != null) {
+            return { [agreementsForFY[0].id]: Number(fyTotal) };
+        }
+        return {};
+    }, [agreementsForFY, spendingData, selectedFY]);
 
     const is404 = projectError?.status === 404 || spendingError?.status === 404;
     const isLoading = isProjectLoading || isSpendingLoading;
@@ -163,6 +174,7 @@ const ProjectSpending = () => {
                     <ProjectSpendingAgreementsTable
                         agreements={isAgreementsLoading ? [] : agreementsForFY}
                         fiscalYear={selectedFY}
+                        fyTotals={fyTotals}
                     />
                 )}
             </section>
@@ -170,6 +182,10 @@ const ProjectSpending = () => {
             <DebugCode
                 title="Project Spending API Response"
                 data={spendingData}
+            />
+            <DebugCode
+                title="Agreements (raw list / filtered)"
+                data={{ all: allAgreements, forFY: agreementsForFY, selectedFY }}
             />
         </App>
     );

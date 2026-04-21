@@ -1,3 +1,4 @@
+import styles from "../../../components/UI/Table/table.module.css";
 import ProjectSpendingAgreementRow from "./ProjectSpendingAgreementRow";
 
 /**
@@ -24,9 +25,11 @@ const getTableHeadings = (fiscalYear) => [
  * @param {Object} props
  * @param {import("../../../types/AgreementTypes").Agreement[]} props.agreements
  * @param {number} props.fiscalYear - The currently selected fiscal year.
+ * @param {Record<number, number>} props.fyTotals - Map of agreement id to FY total.
+ *   Only populated when a single agreement exists in the FY; otherwise empty.
  * @returns {React.ReactElement}
  */
-const ProjectSpendingAgreementsTable = ({ agreements, fiscalYear }) => {
+const ProjectSpendingAgreementsTable = ({ agreements, fiscalYear, fyTotals }) => {
     const headings = getTableHeadings(fiscalYear);
 
     if (agreements.length === 0) {
@@ -42,7 +45,7 @@ const ProjectSpendingAgreementsTable = ({ agreements, fiscalYear }) => {
 
     return (
         <table
-            className="usa-table usa-table--borderless width-full"
+            className={`usa-table usa-table--borderless width-full ${styles.tableHover}`}
             data-cy="project-spending-agreements-table"
         >
             <thead>
@@ -64,6 +67,7 @@ const ProjectSpendingAgreementsTable = ({ agreements, fiscalYear }) => {
                         key={agreement.id}
                         agreement={agreement}
                         fiscalYear={fiscalYear}
+                        fyTotal={fyTotals[agreement.id] ?? null}
                     />
                 ))}
             </tbody>

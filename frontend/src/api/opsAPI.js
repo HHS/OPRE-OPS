@@ -420,7 +420,13 @@ export const opsApi = createApi({
         }),
         getAgreementsByResearchProjectFilter: builder.query({
             query: (id) => `/agreements/?project_id=${id}`,
-            providesTags: ["Agreements", "FilterAgreements"]
+            transformResponse: (response) => {
+                if (Array.isArray(response)) return response;
+                if (response.data) return response.data;
+                if (response.agreements) return response.agreements;
+                return [];
+            },
+            providesTags: ["Agreements"]
         }),
         getUserById: builder.query({
             query: (id) => `/users/${id}`,

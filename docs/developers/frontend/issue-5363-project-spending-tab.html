@@ -412,30 +412,23 @@
           </div>
 
           <!-- Phase 2 -->
-          <div class="phase-card next">
-            <div class="phase-tag tag-next">Phase 2 – Next Sub-task</div>
+          <div class="phase-card active">
+            <div class="phase-tag tag-active">Phase 2 &#x2013; Complete &#x2705;</div>
             <h3>Agreements Table</h3>
             <ul>
+              <li>&#x2705; FY selector with only FYs that have spending data; defaults to highest FY (or current FY if present)</li>
+              <li>&#x2705; <span class="code-inline">ProjectSpendingAgreementsTable</span> + <span class="code-inline">ProjectSpendingAgreementRow</span></li>
+              <li>&#x2705; Columns: Agreement (linked), Type, Start, End, FY Total*, Agreement Total</li>
+              <li>&#x2705; Expandable rows: Description, Procurement Shop, Subtotal, Fees, Lifetime Obligated, Contract #, Award Type, Vendor</li>
+              <li>&#x2705; Hover effect via shared <span class="code-inline">table.module.css</span></li>
+              <li>&#x2705; Agreements filtered per FY via <span class="code-inline">agreements_by_fy</span> from spending endpoint</li>
               <li>
-                Fetch agreements for the selected FY using
-                <span class="code-inline"
-                  >useGetAgreementsByResearchProjectFilterQuery</span
-                >
-                (or extend it to support FY filtering)
+                &#x26A0;&#xFE0F; <strong>FY Total shows &#x201C;&#x2014;&#x201D;</strong> &#x2014;
+                the spending endpoint returns project-level FY totals only, not per-agreement.
+                Requires backend change to <span class="code-inline">GET /projects/:id/spending/</span>
+                to add <span class="code-inline">agreements_fy_total</span>.
+                See <a href="#backend-ask">Backend Ask</a> below.
               </li>
-              <li>
-                Build
-                <span class="code-inline">ProjectSpendingAgreementsTable</span>
-                component with columns: Agreement, Type, Start, End, FY Total,
-                Agreement Total
-              </li>
-              <li>
-                Add expandable accordion row showing Description, Procurement
-                Shop, Subtotal, Fees, Lifetime Obligated, Contract #, Award
-                Type, Research Type, Vendor
-              </li>
-              <li>Wire the Fiscal Year selector to filter the table</li>
-              <li>Loading skeleton (follow table loading pattern)</li>
             </ul>
           </div>
 
@@ -925,6 +918,51 @@
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- ── Backend Ask ── -->
+      <div
+        class="section"
+        id="backend-ask"
+      >
+        <h2>Backend Ask &#x2014; FY Total Per Agreement</h2>
+        <p>
+          The <strong>FY Total</strong> column in the Agreements table currently shows
+          <code>&#x2014;</code> because the spending endpoint only returns project-level
+          FY totals, not per-agreement breakdowns.
+        </p>
+        <div class="warn">
+          <strong>Backend team request:</strong> Please add
+          <span class="code-inline">agreements_fy_total</span> to
+          <span class="code-inline">GET /api/v1/projects/&lt;id&gt;/spending/</span>.
+        </div>
+        <h3>Proposed response shape</h3>
+        <pre class="api-sample">
+// New field in ProjectSpendingMetadataSchema:
+"agreements_fy_total": {
+  "1":  { "2043": "1234567.00", "2044": "890000.00", "2045": "151217218.00" },
+  "2":  { "2043": "749316710.00", "2044": "267694002.00" },
+  "10": { "2043": "32289000.00" }
+}
+        </pre>
+        <h3>Backend implementation hint</h3>
+        <p>
+          The data is already iterated in <span class="code-inline">project_list_metadata</span>
+          in <span class="code-inline">backend/models/projects.py</span>.
+          A <span class="code-inline">defaultdict(lambda: defaultdict(Decimal))</span>
+          keyed by <span class="code-inline">agreement.id &#x2192; bli.fiscal_year</span>
+          inside the existing BLI loop would capture it with no extra DB queries.
+        </p>
+        <h3>Frontend change needed once available</h3>
+        <p>
+          In <span class="code-inline">ProjectSpendingAgreementRow.jsx</span>, replace
+          the <code>&#x2014;</code> placeholder with:
+        </p>
+        <pre class="api-sample">
+const fyTotal = Number(
+  spendingData?.agreements_fy_total?.[agreement.id]?.[fiscalYear] ?? 0
+);
+        </pre>
       </div>
 
       <!-- ── Acceptance ── -->

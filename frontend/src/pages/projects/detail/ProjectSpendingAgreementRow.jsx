@@ -2,7 +2,6 @@ import CurrencyFormat from "react-currency-format";
 import { Link } from "react-router-dom";
 import { NO_DATA } from "../../../constants";
 import { getAgreementType } from "../../../helpers/agreement.helpers";
-import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import TableRowExpandable from "../../../components/UI/TableRowExpandable";
 import { expandedRowBGColor } from "../../../components/UI/TableRowExpandable/TableRowExpandable.helpers";
@@ -17,33 +16,24 @@ import {
 } from "../../../components/Agreements/AgreementsTable/AgreementsTable.helpers";
 import { AWARD_TYPE_LABELS } from "../../agreements/agreements.constants";
 
-/**
- * Calculates the total spending for an agreement in a given fiscal year.
- * Only includes non-DRAFT budget lines (Planned + Executing + Obligated).
- *
- * @param {import("../../../types/AgreementTypes").Agreement} agreement
- * @param {number} fiscalYear
- * @returns {number}
- */
-const getFYTotal = (agreement, fiscalYear) => {
-    const blis = agreement?.budget_line_items ?? [];
-    return blis
-        .filter((bli) => bli.fiscal_year === fiscalYear && bli.status !== BLI_STATUS.DRAFT)
-        .reduce((sum, bli) => sum + Number(bli.total ?? 0), 0);
-};
-
 const COLUMN_COUNT = 7; // Agreement, Type, Start, End, FY Total, Agreement Total, chevron
 
 /**
  * A read-only expandable table row for the Project Spending Agreements table.
- * Shows agreement-level totals for the selected FY and expands to show detail metadata.
+ *
+ * NOTE: The FY Total column shows NO_DATA when multiple agreements share the FY.
+ * The spending endpoint only provides project-level FY totals; a backend change to
+ * add `agreements_fy_total` to GET /projects/:id/spending/ is needed for the general case.
+ * When only one agreement exists in the FY its fyTotal is passed directly from the parent.
+ * See: https://github.com/HHS/OPRE-OPS/issues/5363
  *
  * @param {Object} props
  * @param {import("../../../types/AgreementTypes").Agreement} props.agreement
  * @param {number} props.fiscalYear - The selected fiscal year (number).
+ * @param {number | null} props.fyTotal - Pre-computed FY total, or null if unavailable.
  * @returns {React.ReactElement}
  */
-const ProjectSpendingAgreementRow = ({ agreement, fiscalYear }) => {
+const ProjectSpendingAgreementRow = ({ agreement, fyTotal }) => {
     const { isExpanded, setIsExpanded, setIsRowActive } = useTableRow();
 
     const agreementName = getAgreementName(agreement) ?? NO_DATA;
@@ -51,7 +41,6 @@ const ProjectSpendingAgreementRow = ({ agreement, fiscalYear }) => {
     const agreementStartDate = getAgreementStartDate(agreement);
     const agreementEndDate = getAgreementEndDate(agreement);
     const agreementTotal = Number(agreement?.agreement_total ?? 0);
-    const fyTotal = getFYTotal(agreement, fiscalYear);
 
     // Expanded detail fields
     const description = agreement?.description ?? NO_DATA;
@@ -81,16 +70,23 @@ const ProjectSpendingAgreementRow = ({ agreement, fiscalYear }) => {
             <td data-cy="agreement-type">{agreementType}</td>
             <td data-cy="agreement-start-date">{agreementStartDate}</td>
             <td data-cy="agreement-end-date">{agreementEndDate}</td>
-            <td data-cy="agreement-fy-total">
-                <CurrencyFormat
-                    value={fyTotal}
-                    displayType="text"
-                    thousandSeparator={true}
-                    prefix="$"
-                    decimalScale={getDecimalScale(fyTotal)}
-                    fixedDecimalScale={true}
-                    renderText={(value) => value}
-                />
+            <td
+                data-cy="agreement-fy-total"
+                className={fyTotal === null ? "text-base-dark" : ""}
+            >
+                {fyTotal !== null ? (
+                    <CurrencyFormat
+                        value={fyTotal}
+                        displayType="text"
+                        thousandSeparator={true}
+                        prefix="$"
+                        decimalScale={getDecimalScale(fyTotal)}
+                        fixedDecimalScale={true}
+                        renderText={(value) => value}
+                    />
+                ) : (
+                    NO_DATA
+                )}
             </td>
             <td data-cy="agreement-total">
                 <CurrencyFormat
