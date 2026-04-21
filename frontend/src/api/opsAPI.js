@@ -493,6 +493,10 @@ export const opsApi = createApi({
             transformResponse: (response) => normalizeProjectUsers(response),
             providesTags: ["ResearchProjects"]
         }),
+        getProjectSpendingById: builder.query({
+            query: (id) => `/projects/${id}/spending/`,
+            providesTags: ["ResearchProjects", "BudgetLineItems"]
+        }),
         getProjectsByPortfolio: builder.query({
             query: ({ fiscal_year, portfolio_id, search }) => {
                 const queryParams = [];
@@ -1105,6 +1109,7 @@ export const {
     useGetProjectsQuery,
     useLazyGetProjectsQuery,
     useGetProjectByIdQuery,
+    useGetProjectSpendingByIdQuery,
     useGetProjectsByPortfolioQuery,
     useGetResearchProjectsQuery,
     useGetResearchProjectsByPortfolioQuery,
