@@ -58,6 +58,7 @@ const CanDetail = ({
                 <h2>{!isEditMode ? "CAN Details" : "Edit CAN Details"}</h2>
                 {showButton && !isEditMode && (
                     <button
+                        type="button"
                         id="edit"
                         className="hover:text-underline cursor-pointer"
                         onClick={toggleEditMode}

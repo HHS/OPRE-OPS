@@ -451,7 +451,8 @@ describe("CAN funding page", () => {
             .and("contain", "2021")
             .and("contain", "Quarterly")
             .and("contain", "Direct")
-            .and("contain", "Discretionary");
+            .and("contain", "Discretionary")
+            .and("contain", "75-2125-1552");
         cy.get("[data-cy=budget-received-card]")
             .should("exist")
             .and("contain", "FY 2024 Funding Received YTD")

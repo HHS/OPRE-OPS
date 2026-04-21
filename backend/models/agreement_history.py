@@ -992,9 +992,50 @@ def create_procurement_tracker_step_update_history_event(
     """A method that generates an AgreementHistory event for an updated procurement tracker step."""
     procurement_tracker_step = event.event_details["procurement_tracker_step"]
     updates = event.event_details["procurement_tracker_step_updates"]["changes"]
+    procurement_tracker = session.get(ProcurementTracker, procurement_tracker_step["procurement_tracker_id"])
+
+    # Handle approval request events
+    if "approval_requested" in updates and updates["approval_requested"]["new_value"] is True:
+        return AgreementHistory(
+            agreement_id=procurement_tracker.agreement_id,
+            agreement_id_record=procurement_tracker.agreement_id,
+            ops_event_id=event.id,
+            history_title="Pre-Award Approval Requested",
+            history_message=f"{event_user.full_name} requested pre-award approval for step 5 of the Procurement Tracker.",
+            timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            history_type=AgreementHistoryType.PROCUREMENT_TRACKER_STEP_UPDATED,
+        )
+
+    # Handle approval response events
+    if "approval_status" in updates:
+        status = updates["approval_status"]["new_value"]
+        if status == "APPROVED":
+            history_title = "Pre-Award Approval Approved"
+            history_message = (
+                f"{event_user.full_name} approved the pre-award approval request for step 5 of the Procurement Tracker."
+            )
+        elif status == "DECLINED":
+            history_title = "Pre-Award Approval Declined"
+            history_message = (
+                f"{event_user.full_name} declined the pre-award approval request for step 5 of the Procurement Tracker."
+            )
+        else:
+            history_title = None
+
+        if history_title:
+            return AgreementHistory(
+                agreement_id=procurement_tracker.agreement_id,
+                agreement_id_record=procurement_tracker.agreement_id,
+                ops_event_id=event.id,
+                history_title=history_title,
+                history_message=history_message,
+                timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                history_type=AgreementHistoryType.PROCUREMENT_TRACKER_STEP_UPDATED,
+            )
+
+    # Handle status change events (step completion)
     if "status" not in updates:
         return None  # Only create history event for status changes
-    procurement_tracker = session.get(ProcurementTracker, procurement_tracker_step["procurement_tracker_id"])
     new_value = updates["status"]["new_value"]
     step_type = procurement_tracker_step["step_type"]
     if new_value != str(ProcurementTrackerStepStatus.COMPLETED):
@@ -1011,8 +1052,14 @@ def create_procurement_tracker_step_update_history_event(
     elif step_type == str(ProcurementTrackerStepType.SOLICITATION):
         history_title = "Solicitation Completed"
         history_message = f"{event_user.full_name} completed step 3 of the Procurement Tracker. The evaluations are complete and OPRE has internally selected a vendor."
+    elif step_type == str(ProcurementTrackerStepType.EVALUATION):
+        history_title = "Evaluation Completed"
+        history_message = f"{event_user.full_name} completed step 4 of the Procurement Tracker. The technical evaluations are complete and OPRE has internally selected a vendor."
+    elif step_type == str(ProcurementTrackerStepType.PRE_AWARD):
+        history_title = "Pre-Award Completed"
+        history_message = f"{event_user.full_name} completed step 5 of the Procurement Tracker. Pre-Award Approval was received and the Final Consensus Memo was sent to the Procurement Shop."
     else:
-        return None  # Only Acquisition Planning and Pre-Solicitation steps are supported right now
+        return None  # Only steps 1-5 completion events are supported
 
     return AgreementHistory(
         agreement_id=procurement_tracker.agreement_id,

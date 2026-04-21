@@ -15,7 +15,7 @@ RUN python -m venv .venv && \
    apk add --update --no-cache curl && \
    apk add --update --no-cache --virtual .tmp-build-deps \
       build-base gcc python3-dev postgresql-dev musl-dev libffi-dev openssl-dev cargo  && \
-   .venv/bin/pip install --no-cache-dir pipenv==2024.0.1 && \
+   .venv/bin/pip install --no-cache-dir pipenv==2026.5.2 && \
    .venv/bin/pipenv install --dev --deploy && \
    rm -rf /tmp && rm -rf /var/cache/apk/* \
    apk del .tmp-build-deps

@@ -84,9 +84,11 @@ const ProcurementDashboard = () => {
             "Procurement Step",
             "BLI ID",
             "Fiscal Year",
-            "BLI Amount"
+            "BLI Amount",
+            "Fees",
+            "Total"
         ];
-        const currencyColumns = [8];
+        const currencyColumns = [8, 9, 10];
 
         // Map each agreement + BLI combination into a flat row
         const mapAgreementRows = (agreementList) => {
@@ -100,6 +102,8 @@ const ProcurementDashboard = () => {
                 if (blis.length === 0) continue;
 
                 for (const bli of blis) {
+                    const amount = bli.amount ?? 0;
+                    const fees = bli.fees ?? 0;
                     rows.push([
                         agreement.id,
                         agreement.name ?? "",
@@ -109,7 +113,9 @@ const ProcurementDashboard = () => {
                         stepNumber,
                         bli.id,
                         bli.fiscal_year,
-                        bli.amount ?? 0
+                        amount,
+                        fees,
+                        amount + fees
                     ]);
                 }
             }

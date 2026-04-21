@@ -1,6 +1,10 @@
+import { useEffect } from "react";
 import { Navigate, Outlet } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { PacmanLoader } from "react-spinners";
 import PropTypes from "prop-types";
+import { getAccessToken, setActiveUser } from "../auth";
+import { login } from "../authSlice";
 
 /**
  * A route component that restricts access based on user roles.
@@ -13,11 +17,31 @@ import PropTypes from "prop-types";
  * @returns {React.ReactElement}
  */
 const RoleProtectedRoute = ({ allowedRoles, children }) => {
+    const dispatch = useDispatch();
     const activeUser = useSelector((state) => state.auth?.activeUser);
 
-    // Wait for auth hydration — activeUser is set asynchronously after login
+    // Hydrate activeUser independently since AuthSection won't mount until after the role check.
+    useEffect(() => {
+        if (!activeUser) {
+            const token = getAccessToken();
+            if (token) {
+                dispatch(login());
+                setActiveUser(token, dispatch);
+            }
+        }
+    }, [activeUser, dispatch]);
+
     if (!activeUser) {
-        return children ? children : <Outlet />;
+        return (
+            <div className="bg-white display-flex flex-column flex-align-center flex-justify-center padding-y-4 height-viewport">
+                <h1 className="margin-bottom-2">Loading...</h1>
+                <PacmanLoader
+                    size={25}
+                    aria-label="Loading Spinner"
+                    data-testid="loader"
+                />
+            </div>
+        );
     }
 
     const userRoles = activeUser?.roles ?? [];

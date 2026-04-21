@@ -1076,6 +1076,10 @@ export const opsApi = createApi({
                 };
             },
             invalidatesTags: ["ProcurementTrackers", "Procurement Tracker Steps"]
+        }),
+        getPendingPreAwardApprovals: builder.query({
+            query: () => `/procurement-tracker-steps/pending-approvals/`,
+            providesTags: ["Procurement Tracker Steps"]
         })
     })
 });
@@ -1179,5 +1183,6 @@ export const {
     useGetSpecialTopicsQuery,
     useGetProcurementTrackersByAgreementIdQuery,
     useGetProcurementTrackersByAgreementIdsQuery,
-    useUpdateProcurementTrackerStepMutation
+    useUpdateProcurementTrackerStepMutation,
+    useGetPendingPreAwardApprovalsQuery
 } = opsApi;

@@ -2,21 +2,12 @@ import { useParams } from "react-router-dom";
 import App from "../../../App";
 import PageHeader from "../../../components/UI/PageHeader";
 import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
-import AgreementBLIAccordion from "../../../components/Agreements/AgreementBLIAccordion";
-import AgreementCANReviewAccordion from "../../../components/Agreements/AgreementCANReviewAccordion";
-import AgreementBLIReviewTable from "../../../components/BudgetLineItems/BLIReviewTable";
-import ServicesComponentAccordion from "../../../components/ServicesComponents/ServicesComponentAccordion";
 import Accordion from "../../../components/UI/Accordion";
 import TextArea from "../../../components/UI/Form/TextArea";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import { convertCodeForDisplay } from "../../../helpers/utils";
-import {
-    findDescription,
-    findIfOptional,
-    findPeriodEnd,
-    findPeriodStart
-} from "../../../helpers/servicesComponent.helpers";
 import useRequestPreAwardApproval from "./RequestPreAwardApproval.hooks";
+import { PreAwardBudgetLinesReviewAccordion } from "./PreAwardBudgetLinesReviewAccordion";
 
 // Feature flag for upload consensus memo functionality
 const ENABLE_UPLOAD_CONSENSUS_MEMO = false;
@@ -32,7 +23,8 @@ export const RequestPreAwardApproval = () => {
     const {
         agreement,
         isLoading,
-        executingBudgetLines,
+        allBudgetLines,
+        executingTotal,
         notes,
         setNotes,
         handleSubmit,
@@ -49,13 +41,14 @@ export const RequestPreAwardApproval = () => {
         submitError,
         preAwardMemoDocuments,
         isSubmitting,
+        isApprovalPending,
         hasApprovalBeenRequested,
         hasBLIInReview,
         isStep4Completed
     } = useRequestPreAwardApproval(agreementId);
 
     if (isLoading) {
-        return <h1>Loading...</h1>;
+        return <p>Loading...</p>;
     }
 
     return (
@@ -65,12 +58,21 @@ export const RequestPreAwardApproval = () => {
                 subTitle={agreement?.name}
             />
 
-            {hasApprovalBeenRequested && (
+            <p className="margin-y-3">
+                Review the agreement details to make sure everything looks up to date and upload the Final Consensus
+                Memo. If you need to make changes, Cancel the Pre-Award Request and edit from the Agreement Details
+                Page. Once you receive Pre-Award approval from the Division Director(s), the Budget Team will add the
+                Requisition # and Requisition Date. Then you can send the Final Consensus Memo to the Procurement Shop.
+                The agreement will be locked from editing until the contract is Awarded.
+            </p>
+
+            {isApprovalPending && (
                 <SimpleAlert
                     type="warning"
                     heading="Pre-Award Approval In Review"
                     message="This agreement is In Review for Pre-Award Approval. Edits or changes cannot be made at this time."
                     isClosable={false}
+                    headingLevel={2}
                 />
             )}
 
@@ -80,6 +82,7 @@ export const RequestPreAwardApproval = () => {
                     heading="Budget Line In Review"
                     message="One or more budget lines have pending change requests that are currently in review. You cannot request pre-award approval until all change requests are resolved."
                     isClosable={false}
+                    headingLevel={2}
                 />
             )}
 
@@ -89,6 +92,7 @@ export const RequestPreAwardApproval = () => {
                     heading="Step 4 Not Completed"
                     message="You must complete Step 4 (Evaluation) in the Procurement Tracker before requesting pre-award approval."
                     isClosable={false}
+                    headingLevel={2}
                 />
             )}
 
@@ -98,65 +102,17 @@ export const RequestPreAwardApproval = () => {
                 projectOfficerName={projectOfficerName}
                 alternateProjectOfficerName={alternateProjectOfficerName}
                 convertCodeForDisplay={convertCodeForDisplay}
-                instructions="Review the agreement details below before requesting pre-award approval."
+                instructions="Please review the agreement details below to ensure everything is up to date."
                 changeRequestType={agreement?.change_request_type}
             />
 
-            {/* Budget Lines (Executing Status) */}
-            <AgreementBLIAccordion
-                title="Review Budget Lines"
-                instructions="Review all executing budget lines for this agreement before requesting approval."
-                budgetLineItems={executingBudgetLines}
+            {/* Budget Lines and Executing Total */}
+            <PreAwardBudgetLinesReviewAccordion
+                budgetLineItems={allBudgetLines}
                 agreement={agreement}
-                afterApproval={false}
-                setAfterApproval={() => {}}
-                action=""
-            >
-                {groupedBudgetLinesByServicesComponent &&
-                    groupedBudgetLinesByServicesComponent.length > 0 &&
-                    groupedBudgetLinesByServicesComponent.map((group, index) => {
-                        const budgetLineScGroupingLabel = group.serviceComponentGroupingLabel
-                            ? group.serviceComponentGroupingLabel
-                            : group.servicesComponentNumber;
-                        return (
-                            <ServicesComponentAccordion
-                                key={`${group.servicesComponentNumber}-${index}`}
-                                servicesComponentNumber={group.servicesComponentNumber}
-                                serviceComponentGroupingLabel={group.serviceComponentGroupingLabel}
-                                withMetadata={true}
-                                periodStart={findPeriodStart(servicesComponents, budgetLineScGroupingLabel)}
-                                periodEnd={findPeriodEnd(servicesComponents, budgetLineScGroupingLabel)}
-                                description={findDescription(servicesComponents, budgetLineScGroupingLabel)}
-                                optional={findIfOptional(servicesComponents, budgetLineScGroupingLabel)}
-                                serviceRequirementType={agreement?.service_requirement_type}
-                            >
-                                {group.budgetLines.length > 0 ? (
-                                    <AgreementBLIReviewTable
-                                        readOnly={true}
-                                        budgetLines={group.budgetLines}
-                                        isReviewMode={true}
-                                        servicesComponentNumber={group.servicesComponentNumber}
-                                        action=""
-                                        setSelectedBLIs={undefined}
-                                    />
-                                ) : (
-                                    <p className="text-center margin-y-7">
-                                        No budget lines in this services component.
-                                    </p>
-                                )}
-                            </ServicesComponentAccordion>
-                        );
-                    })}
-            </AgreementBLIAccordion>
-
-            {/* CAN Impact */}
-            <AgreementCANReviewAccordion
-                instructions="Review the CAN budget impact for executing budget lines."
-                selectedBudgetLines={executingBudgetLines}
-                afterApproval={false}
-                setAfterApproval={() => {}}
-                action=""
-                changeRequestType={agreement?.change_request_type}
+                servicesComponents={servicesComponents}
+                groupedBudgetLines={groupedBudgetLinesByServicesComponent}
+                executingTotal={executingTotal}
             />
 
             {/* Upload Final Consensus Memo */}
@@ -279,6 +235,7 @@ export const RequestPreAwardApproval = () => {
                 {selectedFile && !isUploading && (
                     <div className="margin-top-2">
                         <button
+                            type="button"
                             className="usa-button"
                             onClick={handleFileUpload}
                             disabled={
@@ -336,6 +293,7 @@ export const RequestPreAwardApproval = () => {
                     <SimpleAlert
                         type="error"
                         heading="Submission Failed"
+                        headingLevel={2}
                     >
                         {submitError}
                     </SimpleAlert>
@@ -358,6 +316,7 @@ export const RequestPreAwardApproval = () => {
             {/* Action Buttons */}
             <div className="grid-row flex-justify-end margin-top-8">
                 <button
+                    type="button"
                     className="usa-button usa-button--unstyled margin-right-2"
                     onClick={handleCancel}
                     disabled={isSubmitting}
@@ -365,6 +324,7 @@ export const RequestPreAwardApproval = () => {
                     Cancel
                 </button>
                 <button
+                    type="button"
                     className="usa-button"
                     onClick={handleSubmit}
                     disabled={isSubmitting || hasApprovalBeenRequested || hasBLIInReview || !isStep4Completed}
@@ -378,7 +338,7 @@ export const RequestPreAwardApproval = () => {
                                 : ""
                     }
                 >
-                    {isSubmitting ? "Submitting..." : "Request Pre-Award Approval"}
+                    {isSubmitting ? "Submitting..." : "Send to Approval"}
                 </button>
             </div>
         </App>

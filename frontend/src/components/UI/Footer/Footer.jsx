@@ -12,6 +12,7 @@ const Footer = () => {
         <footer className="usa-footer">
             <div className="grid-container usa-footer__return-to-top bg-white">
                 <button
+                    type="button"
                     className="text-underline text-primary cursor-pointer"
                     onClick={scrollToTop}
                 >

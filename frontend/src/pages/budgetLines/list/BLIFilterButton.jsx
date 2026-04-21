@@ -20,9 +20,10 @@ import { FILTER_MODAL_FULL_WIDTH } from "../../../constants";
  * @param {Object} props.filters - The current filters.
  * @param {Function} props.setFilters - A function to call to set the filters.
  * @param {string|number} props.selectedFiscalYear - The current fiscal year shortcut value from the dropdown.
+ * @param {boolean} props.useApproachB - Whether to use Approach B (UX requested) with "All FYs" option.
  * @returns {React.ReactElement} - The procurement shop select element.
  */
-export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => {
+export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear, useApproachB }) => {
     const [fiscalYears, setFiscalYears] = React.useState([]);
     const [portfolios, setPortfolios] = React.useState([]);
     const [bliStatus, setBLIStatus] = React.useState([]);
@@ -32,8 +33,6 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
     const [agreementTitles, setAgreementTitles] = React.useState([]);
     const [canActivePeriods, setCanActivePeriods] = React.useState([]);
     const [searchParams] = useSearchParams();
-    const isResetting = React.useRef(false);
-    const allFiscalYearsOption = React.useMemo(() => ({ id: "ALL", title: "All FYs" }), []);
 
     const myBudgetLineItemsUrl = searchParams.get("filter") === "my-budget-lines";
 
@@ -43,7 +42,7 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
         { refetchOnMountOrArgChange: true }
     );
 
-    // Ensure current fiscal year and selected filter years are included in the fiscal year options
+    // Fiscal year options for modal (no "All" option - empty selection means "All")
     const fiscalYearOptions = React.useMemo(() => {
         let options = (filterOptions?.fiscal_years ?? [])
             .map((year) => Number(year))
@@ -60,42 +59,29 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
         if (selectedFiscalYear && selectedFiscalYear !== "Multi" && selectedFiscalYear !== "All") {
             const yearAsNumber = Number(selectedFiscalYear);
             if (!isNaN(yearAsNumber) && !options.includes(yearAsNumber)) {
-                return [allFiscalYearsOption, ...[...options, yearAsNumber].sort((a, b) => b - a)];
+                return [...options, yearAsNumber].sort((a, b) => b - a);
             }
         }
-        return [allFiscalYearsOption, ...options];
-    }, [filterOptions?.fiscal_years, filters.fiscalYears, selectedFiscalYear, allFiscalYearsOption]);
+        return options.sort((a, b) => b - a);
+    }, [filterOptions?.fiscal_years, filters.fiscalYears, selectedFiscalYear]);
 
-    // The useEffect() hook calls below are used to set the state appropriately when the filter tags (X) are clicked.
-    // Also pre-populates with the selected fiscal year when no filters are applied
+    // Sync local fiscal years state from filters (for external changes like tag removal)
+    // Modal's local state is the editing buffer - syncs from filters when they change externally
+    // Empty array in modal = "All" fiscal years (no filter)
     React.useEffect(() => {
-        if (isResetting.current) {
-            // Don't pre-populate if user just reset the filters
-            setFiscalYears(filters.fiscalYears ?? []);
-            isResetting.current = false;
-        } else if (filters.fiscalYears === null) {
-            setFiscalYears([allFiscalYearsOption]);
+        if (filters.fiscalYears === null) {
+            setFiscalYears([]); // Empty selection in modal means "All"
         } else {
             setFiscalYears(filters.fiscalYears ?? []);
         }
-    }, [filters.fiscalYears, selectedFiscalYear, allFiscalYearsOption]);
+    }, [filters.fiscalYears]);
 
     const handleFiscalYearsChange = (nextFiscalYears) => {
         if (!Array.isArray(nextFiscalYears)) {
             setFiscalYears([]);
             return;
         }
-        const hasAllFiscalYears = nextFiscalYears.some((fiscalYear) => fiscalYear?.id === "ALL");
-        if (hasAllFiscalYears) {
-            if ((fiscalYears ?? []).some((fiscalYear) => fiscalYear?.id === "ALL")) {
-                const selectedYears = nextFiscalYears.filter((fiscalYear) => fiscalYear?.id !== "ALL");
-                setFiscalYears(selectedYears);
-                return;
-            }
-            setFiscalYears([allFiscalYearsOption]);
-            return;
-        }
-        setFiscalYears(nextFiscalYears.filter((fiscalYear) => fiscalYear?.id !== "ALL"));
+        setFiscalYears(nextFiscalYears);
     };
 
     React.useEffect(() => {
@@ -133,13 +119,9 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
 
     const applyFilter = () => {
         const normalizedFiscalYears = Array.isArray(fiscalYears) ? fiscalYears : [];
-        const hasAllFiscalYears = normalizedFiscalYears.some((fiscalYear) => fiscalYear.id === "ALL");
-        let nextFiscalYears = normalizedFiscalYears;
-        if (hasAllFiscalYears) {
-            nextFiscalYears = null;
-        } else if (normalizedFiscalYears.length === 0) {
-            nextFiscalYears = undefined;
-        }
+        // Empty array in modal means "All" → set to null
+        const nextFiscalYears = normalizedFiscalYears.length === 0 ? null : normalizedFiscalYears;
+
         setFilters((prevState) => {
             return {
                 ...prevState,
@@ -154,21 +136,12 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
         });
     };
 
+    // Reset clears all modal selections (not part of A/B test)
     const resetFilter = () => {
-        isResetting.current = true;
-        setFilters({
-            fiscalYears: [],
-            portfolios: [],
-            bliStatus: [],
-            budgetRange: null,
-            agreementTypes: [],
-            agreementTitles: [],
-            canActivePeriods: []
-        });
         setFiscalYears([]);
         setPortfolios([]);
         setBLIStatus([]);
-        setBudgetRange(null);
+        setBudgetRange(null); // null = no budget range filter
         setAgreementTypes([]);
         setAgreementTitles([]);
         setCanActivePeriods([]);
@@ -177,16 +150,10 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
     const fieldStyles = "usa-fieldset margin-bottom-205";
     const legendStyles = `usa-legend font-sans-3xs margin-top-0 padding-bottom-1 ${customStyles.legendColor}`;
 
-    // Calculate default string based on selectedFiscalYear from the shortcut dropdown
+    // No default placeholder text for fiscal year modal field
+    // Empty state in modal means "All" fiscal years
     const getDefaultFiscalYearString = () => {
-        if (!selectedFiscalYear || selectedFiscalYear === "Multi") {
-            return `Fiscal Year ${getCurrentFiscalYear()}`;
-        }
-        if (selectedFiscalYear === "All") {
-            return "All Fiscal Years";
-        }
-        // It's a specific year number
-        return `Fiscal Year ${selectedFiscalYear}`;
+        return ""; // No placeholder text
     };
 
     const fieldsetList = [
@@ -202,6 +169,7 @@ export const BLIFilterButton = ({ filters, setFilters, selectedFiscalYear }) => 
                 overrideStyles={FILTER_MODAL_FULL_WIDTH}
                 budgetLinesFiscalYears={fiscalYearOptions}
                 label="Compare Fiscal Years"
+                includeAllOption={useApproachB}
             />
         </fieldset>,
         <fieldset

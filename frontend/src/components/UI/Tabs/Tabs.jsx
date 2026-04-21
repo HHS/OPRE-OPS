@@ -37,6 +37,7 @@ const Tabs = ({ paths, rightContent }) => {
 
         return (
             <button
+                type="button"
                 data-value={path.pathName}
                 className={tabSelected ? selected : notSelected}
                 key={path.pathName}

@@ -147,16 +147,40 @@ it("filter button works as expected", () => {
     cy.get("button[id='filter-tag-canActivePeriods-5']").should("not.exist");
 });
 
+it("filter button does not reset fiscal year dropdown when fiscal year dropdown is changed from current FY", () => {
+    cy.get("#fiscal-year-select").select("2044");
+    cy.get("button").contains("Filter").click();
+
+    // set a number of filters
+
+    cy.get(".bli-status-combobox__control")
+        .click()
+        .get(".bli-status-combobox__menu")
+        .find(".bli-status-combobox__option")
+        .contains("Draft")
+        .click();
+
+    // click the button that has text Apply
+    cy.get("button").contains("Apply").click();
+
+    // Check that the same year is still provided
+    cy.get("#fiscal-year-select").should("have.value", "2044");
+});
+
 it("click on chevron down should open row and see budgetline data", () => {
     cy.get("#fiscal-year-select").select("2044");
     cy.get("tbody").find('[data-cy="expanded-data"]').should("not.exist");
     cy.get("tbody").find("tr").first().find('[data-cy="expand-row"]').click();
     cy.get("tbody").find('[data-cy="expanded-data"]').as("expandedRow").should("exist");
+    cy.get("@expandedRow").contains("Created by");
     cy.get("@expandedRow").contains("Description");
     cy.get("@expandedRow").contains("Procurement Shop");
-    cy.get("@expandedRow").contains("SubTotal");
+    cy.get("@expandedRow").contains("Subtotal");
     cy.get("@expandedRow").contains("Fees");
     cy.get("@expandedRow").contains("Project");
+    cy.get("@expandedRow").contains("Award Type");
+    cy.get("@expandedRow").contains("Research Type");
+    cy.get("@expandedRow").contains("Vendor");
 });
 
 it("click on agreement name and check if its routed to the correct page", () => {

@@ -55,6 +55,7 @@ const ChangeIcons = ({
                             className="line-height-body-1"
                         >
                             <button
+                                type="button"
                                 id={`edit-${item?.id}`}
                                 title="Edit"
                                 aria-label="Edit"
@@ -76,6 +77,7 @@ const ChangeIcons = ({
                             className="line-height-body-1"
                         >
                             <button
+                                type="button"
                                 id={`delete-${item?.id}`}
                                 title="Delete"
                                 aria-label="Delete"
@@ -110,6 +112,7 @@ const ChangeIcons = ({
                             className="line-height-body-1"
                         >
                             <button
+                                type="button"
                                 id={`edit-${item?.id}`}
                                 title="Edit"
                                 aria-label="Edit"
@@ -130,6 +133,7 @@ const ChangeIcons = ({
                             className="line-height-body-1"
                         >
                             <button
+                                type="button"
                                 id={`delete-${item?.id}`}
                                 title="Delete"
                                 aria-label="Delete"
@@ -154,6 +158,7 @@ const ChangeIcons = ({
                         className="line-height-body-1"
                     >
                         <button
+                            type="button"
                             id={`duplicate-row-${item?.id}`}
                             title="Duplicate"
                             aria-label="Duplicate"
@@ -177,6 +182,7 @@ const ChangeIcons = ({
                         className="line-height-body-1"
                     >
                         <button
+                            type="button"
                             id={`duplicate-${item?.id}`}
                             title="Duplicate"
                             aria-label="Duplicate"
@@ -200,6 +206,7 @@ const ChangeIcons = ({
                         className="line-height-body-1"
                     >
                         <button
+                            type="button"
                             id={`submit-for-approval-${item.id}`}
                             title="Submit for approval"
                             aria-label="Submit for approval"
@@ -228,6 +235,7 @@ const ChangeIcons = ({
                         className="line-height-body-1"
                     >
                         <button
+                            type="button"
                             id={`submit-for-approval-${item?.id}`}
                             title="Submit for Approval"
                             aria-label="Submit for Approval"

@@ -7,6 +7,7 @@ const navigateMock = vi.fn();
 const requestPreAwardApprovalHookMock = vi.fn();
 
 vi.mock("react-router-dom", async (importOriginal) => {
+    /** @type {any} */
     const actual = await importOriginal();
     return {
         ...actual,
@@ -22,7 +23,7 @@ vi.mock("./RequestPreAwardApproval.hooks", () => ({
 
 vi.mock("../../../App", () => ({
     __esModule: true,
-    default: ({ children }) => <div data-testid="app">{children}</div>
+    default: (/** @type {{ children: React.ReactNode }} */ { children }) => <div data-testid="app">{children}</div>
 }));
 
 vi.mock("../../../components/Agreements/AgreementMetaAccordion", () => ({
@@ -32,17 +33,17 @@ vi.mock("../../../components/Agreements/AgreementMetaAccordion", () => ({
 
 vi.mock("../../../components/Agreements/AgreementBLIAccordion", () => ({
     __esModule: true,
-    default: ({ title }) => <div data-testid="bli-accordion">{title}</div>
+    default: (/** @type {{ title: string }} */ { title }) => <div data-testid="bli-accordion">{title}</div>
 }));
 
-vi.mock("../../../components/Agreements/AgreementCANReviewAccordion", () => ({
+vi.mock("../../../components/BudgetLineItems/ReviewExecutingTotalAccordion/ReviewExecutingTotalAccordion", () => ({
     __esModule: true,
-    default: () => <div data-testid="can-review-accordion" />
+    default: () => <div data-testid="review-executing-total-accordion" />
 }));
 
 vi.mock("../../../components/UI/Accordion", () => ({
     __esModule: true,
-    default: ({ heading, children }) => (
+    default: (/** @type {{ heading: string; children: React.ReactNode }} */ { heading, children }) => (
         <section data-testid="accordion">
             <h2>{heading}</h2>
             {children}
@@ -52,7 +53,9 @@ vi.mock("../../../components/UI/Accordion", () => ({
 
 vi.mock("../../../components/UI/Form/TextArea", () => ({
     __esModule: true,
-    default: ({ value, onChange }) => (
+    default: (
+        /** @type {{ value: string; onChange: (name: string, value: string) => void }} */ { value, onChange }
+    ) => (
         <textarea
             data-testid="notes-textarea"
             value={value}
@@ -63,7 +66,7 @@ vi.mock("../../../components/UI/Form/TextArea", () => ({
 
 vi.mock("../../../components/UI/PageHeader", () => ({
     __esModule: true,
-    default: ({ title, subTitle }) => (
+    default: (/** @type {{ title: string; subTitle: string }} */ { title, subTitle }) => (
         <header data-testid="page-header">
             <h1>{title}</h1>
             <h2>{subTitle}</h2>
@@ -75,12 +78,14 @@ const baseHookResult = () => ({
     agreement: { name: "Test Agreement", id: 1 },
     isLoading: false,
     executingBudgetLines: [{ id: 1, status: "IN_EXECUTION" }],
+    executingTotal: 0,
     notes: "",
     setNotes: vi.fn(),
     handleSubmit: vi.fn(),
     handleCancel: vi.fn(),
     projectOfficerName: "John Doe",
     alternateProjectOfficerName: "Jane Smith",
+    isApprovalPending: false,
     hasApprovalBeenRequested: false,
     hasBLIInReview: false,
     isSubmitting: false,
@@ -110,7 +115,9 @@ describe("RequestPreAwardApproval", () => {
 
         render(<RequestPreAwardApproval />);
 
-        expect(screen.getByText("Loading...")).toBeInTheDocument();
+        const loadingElement = screen.getByText("Loading...");
+        expect(loadingElement).toBeInTheDocument();
+        expect(loadingElement.tagName).toBe("P");
     });
 
     it("renders page header with agreement name", () => {
@@ -125,7 +132,6 @@ describe("RequestPreAwardApproval", () => {
 
         expect(screen.getByTestId("meta-accordion")).toBeInTheDocument();
         expect(screen.getByTestId("bli-accordion")).toBeInTheDocument();
-        expect(screen.getByTestId("can-review-accordion")).toBeInTheDocument();
         expect(screen.getByText("Notes")).toBeInTheDocument();
     });
 
@@ -157,7 +163,7 @@ describe("RequestPreAwardApproval", () => {
         render(<RequestPreAwardApproval />);
 
         expect(screen.getByRole("button", { name: "Cancel" })).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: "Request Pre-Award Approval" })).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "Send to Approval" })).toBeInTheDocument();
     });
 
     it("calls handleCancel when cancel button is clicked", async () => {
@@ -186,7 +192,7 @@ describe("RequestPreAwardApproval", () => {
         const user = userEvent.setup();
         render(<RequestPreAwardApproval />);
 
-        const submitButton = screen.getByRole("button", { name: "Request Pre-Award Approval" });
+        const submitButton = screen.getByRole("button", { name: "Send to Approval" });
         await user.click(submitButton);
 
         expect(handleSubmitMock).toHaveBeenCalledTimes(1);
@@ -195,18 +201,20 @@ describe("RequestPreAwardApproval", () => {
     it("disables submit button when approval already requested", () => {
         requestPreAwardApprovalHookMock.mockReturnValue({
             ...baseHookResult(),
+            isApprovalPending: true,
             hasApprovalBeenRequested: true
         });
 
         render(<RequestPreAwardApproval />);
 
-        const submitButton = screen.getByRole("button", { name: "Request Pre-Award Approval" });
+        const submitButton = screen.getByRole("button", { name: "Send to Approval" });
         expect(submitButton).toBeDisabled();
     });
 
     it("shows alert when approval already requested", () => {
         requestPreAwardApprovalHookMock.mockReturnValue({
             ...baseHookResult(),
+            isApprovalPending: true,
             hasApprovalBeenRequested: true
         });
 
@@ -223,7 +231,7 @@ describe("RequestPreAwardApproval", () => {
 
         render(<RequestPreAwardApproval />);
 
-        const submitButton = screen.getByRole("button", { name: "Request Pre-Award Approval" });
+        const submitButton = screen.getByRole("button", { name: "Send to Approval" });
         expect(submitButton).toBeDisabled();
     });
 
@@ -252,7 +260,7 @@ describe("RequestPreAwardApproval", () => {
 
         render(<RequestPreAwardApproval />);
 
-        const submitButton = screen.getByRole("button", { name: "Request Pre-Award Approval" });
+        const submitButton = screen.getByRole("button", { name: "Send to Approval" });
         expect(submitButton).not.toBeDisabled();
     });
 
@@ -264,7 +272,7 @@ describe("RequestPreAwardApproval", () => {
 
         render(<RequestPreAwardApproval />);
 
-        const submitButton = screen.getByRole("button", { name: "Request Pre-Award Approval" });
+        const submitButton = screen.getByRole("button", { name: "Send to Approval" });
         expect(submitButton).toBeDisabled();
     });
 
@@ -280,5 +288,32 @@ describe("RequestPreAwardApproval", () => {
         expect(
             screen.getByText(/You must complete Step 4 \(Evaluation\) in the Procurement Tracker/)
         ).toBeInTheDocument();
+    });
+
+    it("enables submit button when approval is declined", () => {
+        requestPreAwardApprovalHookMock.mockReturnValue({
+            ...baseHookResult(),
+            hasApprovalBeenRequested: false, // Should be false when declined
+            hasBLIInReview: false,
+            isSubmitting: false,
+            isStep4Completed: true
+        });
+
+        render(<RequestPreAwardApproval />);
+
+        const submitButton = screen.getByRole("button", { name: "Send to Approval" });
+        expect(submitButton).not.toBeDisabled();
+    });
+
+    it("disables submit button when approval is approved", () => {
+        requestPreAwardApprovalHookMock.mockReturnValue({
+            ...baseHookResult(),
+            hasApprovalBeenRequested: true
+        });
+
+        render(<RequestPreAwardApproval />);
+
+        const submitButton = screen.getByRole("button", { name: "Send to Approval" });
+        expect(submitButton).toBeDisabled();
     });
 });

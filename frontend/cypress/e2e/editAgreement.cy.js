@@ -169,7 +169,7 @@ describe("Not awarded Agreement", () => {
         cy.get("tbody").children().as("table-rows").should("exist");
         // get the first row which is in DRAFT
         cy.get("@table-rows").eq(0).find('[data-cy="expand-row"]').click();
-        cy.get(".padding-right-9").find('[data-cy="edit-row"]').should("exist");
+        cy.get(".grid-row").find('[data-cy="edit-row"]').should("exist");
         cy.get('[data-cy="continue-btn"]').should("exist");
         cy.get('[data-cy="continue-btn"]').click();
     });

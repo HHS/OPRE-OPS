@@ -1,9 +1,15 @@
 import { render, screen } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { vi } from "vitest";
 import { setupStore } from "../../../store";
 import { USER_ROLES } from "../../Users/User.constants";
 import RoleProtectedRoute from "./RoleProtectedRoute";
+
+vi.mock("../auth", () => ({
+    getAccessToken: vi.fn(() => null),
+    setActiveUser: vi.fn()
+}));
 
 function renderWithRoute(preloadedState, allowedRoles) {
     const store = setupStore(preloadedState);
@@ -78,7 +84,7 @@ describe("RoleProtectedRoute", () => {
         expect(screen.getByText("Error Page")).toBeInTheDocument();
     });
 
-    it("renders children while activeUser is hydrating (isLoggedIn but no activeUser yet)", () => {
+    it("shows loading state while activeUser is hydrating (isLoggedIn but no activeUser yet)", () => {
         renderWithRoute(
             {
                 auth: {
@@ -89,11 +95,12 @@ describe("RoleProtectedRoute", () => {
             [USER_ROLES.BUDGET_TEAM]
         );
 
-        expect(screen.getByText("Protected Content")).toBeInTheDocument();
+        expect(screen.getByRole("heading", { name: "Loading..." })).toBeInTheDocument();
+        expect(screen.queryByText("Protected Content")).not.toBeInTheDocument();
         expect(screen.queryByText("Error Page")).not.toBeInTheDocument();
     });
 
-    it("renders children while activeUser is hydrating (not logged in, no activeUser yet)", () => {
+    it("shows loading state while activeUser is hydrating (not logged in, no activeUser yet)", () => {
         renderWithRoute(
             {
                 auth: {
@@ -104,7 +111,8 @@ describe("RoleProtectedRoute", () => {
             [USER_ROLES.BUDGET_TEAM]
         );
 
-        expect(screen.getByText("Protected Content")).toBeInTheDocument();
+        expect(screen.getByRole("heading", { name: "Loading..." })).toBeInTheDocument();
+        expect(screen.queryByText("Protected Content")).not.toBeInTheDocument();
         expect(screen.queryByText("Error Page")).not.toBeInTheDocument();
     });
 

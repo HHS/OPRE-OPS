@@ -29,7 +29,7 @@ import ReleaseNotes from "./pages/home/release-notes";
 import ReportingPage from "./pages/reporting/ReportingPage";
 import UserAdmin from "./pages/users/admin/UserAdmin.jsx";
 import ReviewAgreement from "./pages/agreements/review/ReviewAgreement";
-import { RequestPreAwardApproval } from "./pages/agreements/pre-award-approval";
+import { RequestPreAwardApproval, ApprovePreAwardApproval } from "./pages/agreements/pre-award-approval";
 import UserDetail from "./pages/users/detail/UserDetail";
 import UploadDocument from "./components/Agreements/Documents/UploadDocument.jsx";
 import EditUser from "./pages/users/edit/EditUser";
@@ -38,6 +38,7 @@ import WhatsNext from "./pages/home/whats-next";
 import ProcurementMocksDebug from "./pages/dev/ProcurementMocksDebug";
 import RoleProtectedRoute from "./components/Auth/RoleProtectedRoute/RoleProtectedRoute";
 import { USER_ROLES } from "./components/Users/User.constants";
+import DataVizDebug from "./pages/dev/DataVizDebug";
 
 // NOTE: store muse be imported after react-router-dom to avoid access lexical declaration 'opsApi' before initialization
 
@@ -264,6 +265,20 @@ const router = createBrowserRouter(
                     }}
                 />
                 <Route
+                    path="/agreements/:id/review-pre-award"
+                    element={<ApprovePreAwardApproval />}
+                    handle={{
+                        crumb: () => (
+                            <Link
+                                to="/agreements"
+                                className="text-primary"
+                            >
+                                Agreements
+                            </Link>
+                        )
+                    }}
+                />
+                <Route
                     path="/cans"
                     element={<CanList />}
                 />
@@ -305,6 +320,10 @@ const router = createBrowserRouter(
                 <Route
                     path="/dev/procurement-mocks"
                     element={import.meta.env.DEV ? <ProcurementMocksDebug /> : <Navigate to="/error" />}
+                />
+                <Route
+                    path="/dev/data-viz"
+                    element={import.meta.env.DEV ? <DataVizDebug /> : <Navigate to="/error" />}
                 />
                 <Route
                     path="/user-admin"

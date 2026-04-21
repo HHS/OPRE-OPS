@@ -89,8 +89,8 @@ describe("ProcurementDashboardPage", () => {
                         procurement_shop: { abbr: "GCS" },
                         award_type: "NEW",
                         budget_line_items: [
-                            { id: 100, fiscal_year: 2025, status: "IN_EXECUTION", amount: 50000 },
-                            { id: 101, fiscal_year: 2025, status: "Draft", amount: 10000 }
+                            { id: 100, fiscal_year: 2025, status: "IN_EXECUTION", amount: 50000, fees: 2500 },
+                            { id: 101, fiscal_year: 2025, status: "Draft", amount: 10000, fees: 500 }
                         ]
                     }
                 ],
@@ -146,7 +146,19 @@ describe("ProcurementDashboardPage", () => {
         const allSheet = mockExportMultiSheetToXlsx.mock.calls[0][0].sheets[0];
         // Only the Executing BLI should be included (Draft is filtered out)
         expect(allSheet.rows).toHaveLength(1);
-        expect(allSheet.rows[0]).toEqual([10, "Agreement A", "CONTRACT", "GCS", "NEW", 3, 100, 2025, 50000]);
+        expect(allSheet.rows[0]).toEqual([
+            10,
+            "Agreement A",
+            "CONTRACT",
+            "GCS",
+            "NEW",
+            3,
+            100,
+            2025,
+            50000,
+            2500,
+            52500
+        ]);
     });
 
     it("filters export rows into step-specific sheets", async () => {
@@ -170,7 +182,7 @@ describe("ProcurementDashboardPage", () => {
         await user.click(screen.getByText("Export"));
 
         const allSheet = mockExportMultiSheetToXlsx.mock.calls[0][0].sheets[0];
-        expect(allSheet.currencyColumns).toEqual([8]);
+        expect(allSheet.currencyColumns).toEqual([8, 9, 10]);
     });
 
     it("skips agreements with no executing BLIs in export", async () => {
@@ -183,7 +195,7 @@ describe("ProcurementDashboardPage", () => {
                         agreement_type: "GRANT",
                         procurement_shop: null,
                         award_type: null,
-                        budget_line_items: [{ id: 200, fiscal_year: 2025, status: "Draft", amount: 5000 }]
+                        budget_line_items: [{ id: 200, fiscal_year: 2025, status: "Draft", amount: 5000, fees: 250 }]
                     }
                 ],
                 procurement_overview: null,
