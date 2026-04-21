@@ -932,6 +932,72 @@ def test_agreement_history_pre_award_step(loaded_db, app_ctx):
     )
 
 
+def test_agreement_history_pre_award_approval_requested(loaded_db, app_ctx):
+    """Test that pre-award approval request creates history with Division Director reference."""
+    # clean up existing AgreementHistory entries before this test
+    loaded_db.query(AgreementHistory).delete()
+    loaded_db.flush()
+
+    # Create a mock OpsEvent for pre-award approval request
+    from models import ProcurementTracker, User
+
+    requester = loaded_db.get(User, 503)  # Amelia Popham
+
+    # Create event with approval_requested change
+    ops_event = OpsEvent(
+        event_type=OpsEventType.UPDATE_PROCUREMENT_TRACKER_STEP,
+        event_status=OpsEventStatus.SUCCESS,
+        created_by=requester.id,
+        event_details={
+            "procurement_tracker_step": {
+                "id": 17,
+                "procurement_tracker_id": 5,
+                "step_type": "PRE_AWARD",
+                "step_number": 5,
+                "status": "ACTIVE",
+                "approval_requested": True,
+                "approval_requested_by": requester.id,
+                "approval_status": None,
+            },
+            "procurement_tracker_step_updates": {
+                "owner_id": 1,
+                "updated_by": requester.id,
+                "changes": {
+                    "approval_requested": {
+                        "old_value": False,
+                        "new_value": True,
+                    }
+                },
+            },
+        },
+    )
+    loaded_db.add(ops_event)
+    loaded_db.flush()
+
+    # Get the tracker to extract agreement_id
+    tracker = loaded_db.get(ProcurementTracker, 5)
+
+    # Trigger history creation
+    agreement_history_trigger(ops_event, loaded_db)
+    loaded_db.flush()
+
+    # Verify history was created
+    history_items = (
+        loaded_db.query(AgreementHistory)
+        .where(AgreementHistory.ops_event_id == ops_event.id)
+        .order_by(AgreementHistory.id)
+        .all()
+    )
+
+    assert len(history_items) == 1
+    history_item = history_items[0]
+
+    assert history_item.history_type == AgreementHistoryType.PROCUREMENT_TRACKER_STEP_UPDATED
+    assert history_item.history_title == "Pre-Award Approval Requested"
+    assert history_item.agreement_id == tracker.agreement_id
+    assert history_item.history_message == "Amelia Popham requested pre-award approval from the Division Director."
+
+
 def test_agreement_history_pre_award_approval_approved(loaded_db, app_ctx):
     """Test that pre-award approval creates history with requester name."""
     # clean up existing AgreementHistory entries before this test

@@ -1001,7 +1001,7 @@ def create_procurement_tracker_step_update_history_event(
             agreement_id_record=procurement_tracker.agreement_id,
             ops_event_id=event.id,
             history_title="Pre-Award Approval Requested",
-            history_message=f"{event_user.full_name} requested pre-award approval for step 5 of the Procurement Tracker.",
+            history_message=f"{event_user.full_name} requested pre-award approval from the Division Director.",
             timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
             history_type=AgreementHistoryType.PROCUREMENT_TRACKER_STEP_UPDATED,
         )
