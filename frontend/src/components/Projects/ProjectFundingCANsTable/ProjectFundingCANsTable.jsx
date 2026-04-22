@@ -60,7 +60,7 @@ const ProjectFundingCANsTable = ({ cans = [], fiscalYear }) => {
                         <td>
                             <Link
                                 to={`/cans/${can.id}`}
-                                className="text-primary"
+                                className="text-ink text-no-underline"
                             >
                                 {can.number}
                             </Link>
