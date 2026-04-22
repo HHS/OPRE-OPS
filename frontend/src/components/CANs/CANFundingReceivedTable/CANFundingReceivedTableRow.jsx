@@ -56,7 +56,7 @@ const CANFundingReceivedTableRow = ({
                 <dl className="font-12px">
                     <dt className="margin-0 text-base-dark">Created By</dt>
                     <dd className="margin-0">
-                        <div id={`created-by-name`}>{createdBy ?? NO_DATA}</div>
+                        <div id={`created-by-name-${tempRowId}`}>{createdBy ?? NO_DATA}</div>
                         <div className="margin-top-2 display-flex flex-align-center text-base-dark text-normal">
                             <FontAwesomeIcon
                                 icon={faClock}
