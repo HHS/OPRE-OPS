@@ -178,7 +178,7 @@ describe("ProcurementDashboardPage", () => {
         expect(step1Sheet.rows).toHaveLength(0);
     });
 
-    it("sets currencyColumns to [8] for BLI Amount", async () => {
+    it("sets currencyColumns to [8, 9, 10] for BLI Amount, Fees, and Total", async () => {
         const user = userEvent.setup();
         renderWithProviders(<ProcurementDashboard />);
 

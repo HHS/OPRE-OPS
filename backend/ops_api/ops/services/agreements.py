@@ -1028,6 +1028,7 @@ def _build_base_query(agreement_cls: Type[Agreement]) -> Select[tuple[Agreement]
         .join(CAN, isouter=True)
         .options(
             selectinload(agreement_cls.budget_line_items),
+            selectinload(agreement_cls.procurement_trackers),
         )
         .order_by(agreement_cls.id)
     )
