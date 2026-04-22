@@ -105,7 +105,7 @@ const AllBLIRow = ({ budgetLine }) => {
             className="border-top-none"
             style={expandedRowBGColor}
         >
-            <div className="grid-row grid-gap-4">
+            <div className="grid-row grid-gap-3">
                 <dl className="grid-col-auto margin-top-0 font-12px">
                     <dt className="margin-0 text-base-dark">Created by</dt>
                     <dd
@@ -161,7 +161,7 @@ const AllBLIRow = ({ budgetLine }) => {
             <p className="font-12px margin-0 margin-top-1 text-base-dark">
                 Agreement data associated to this budget line
             </p>
-            <div className="grid-row grid-gap-6">
+            <div className="grid-row grid-gap-6 padding-bottom-1">
                 <dl className="grid-col-4 margin-top-0 font-12px">
                     <dt className="margin-0 text-base-dark">Project</dt>
                     <dd className="margin-0 wrap-text">{budgetLine.agreement?.project?.title ?? NO_DATA}</dd>
