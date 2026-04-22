@@ -984,6 +984,13 @@ def test_patch_project_cannot_change_id(budget_team_auth_client, loaded_db, proj
     assert response.status_code == 400
 
 
+def test_patch_project_invalid_project_type(budget_team_auth_client, loaded_db, project_with_no_agreements):
+    """Test that an invalid project_type value returns 400."""
+    data = {"project_type": "INVALID_TYPE"}
+    response = budget_team_auth_client.patch(url_for("api.projects-item", id=project_with_no_agreements.id), json=data)
+    assert response.status_code == 400
+
+
 def test_patch_project_change_type_research_to_admin(budget_team_auth_client, loaded_db, project_with_no_agreements):
     """Test changing project type from Research to Administrative and Support."""
     project_id = project_with_no_agreements.id
@@ -1112,9 +1119,9 @@ def test_change_type_creates_version_records_research_to_admin(budget_team_auth_
     ).fetchall()
     assert len(pv_rows) >= 1
     assert pv_rows[0][0] == "ADMINISTRATIVE_AND_SUPPORT"
-    assert pv_rows[0][1] == 1  # UPDATE
+    assert pv_rows[0][1] == Project._OP_UPDATE
 
-    # Verify research_project_version has a DELETE record (operation_type=2)
+    # Verify research_project_version has a DELETE record
     rpv_rows = loaded_db.execute(
         text(
             "SELECT operation_type FROM research_project_version" " WHERE id = :id ORDER BY transaction_id DESC LIMIT 1"
@@ -1122,9 +1129,9 @@ def test_change_type_creates_version_records_research_to_admin(budget_team_auth_
         {"id": project_id},
     ).fetchall()
     assert len(rpv_rows) >= 1
-    assert rpv_rows[0][0] == 2  # DELETE
+    assert rpv_rows[0][0] == Project._OP_DELETE
 
-    # Verify administrative_and_support_project_version has an INSERT record (operation_type=0)
+    # Verify administrative_and_support_project_version has an INSERT record
     aspv_rows = loaded_db.execute(
         text(
             "SELECT operation_type FROM administrative_and_support_project_version"
@@ -1133,7 +1140,7 @@ def test_change_type_creates_version_records_research_to_admin(budget_team_auth_
         {"id": project_id},
     ).fetchall()
     assert len(aspv_rows) >= 1
-    assert aspv_rows[0][0] == 0  # INSERT
+    assert aspv_rows[0][0] == Project._OP_INSERT
 
 
 def test_change_type_creates_version_records_admin_to_research(budget_team_auth_client, loaded_db):
@@ -1163,7 +1170,7 @@ def test_change_type_creates_version_records_admin_to_research(budget_team_auth_
     ).fetchall()
     assert len(pv_rows) >= 1
     assert pv_rows[0][0] == "RESEARCH"
-    assert pv_rows[0][1] == 1  # UPDATE
+    assert pv_rows[0][1] == Project._OP_UPDATE
 
     # Verify administrative_and_support_project_version has a DELETE record
     aspv_rows = loaded_db.execute(
@@ -1174,7 +1181,7 @@ def test_change_type_creates_version_records_admin_to_research(budget_team_auth_
         {"id": project_id},
     ).fetchall()
     assert len(aspv_rows) >= 1
-    assert aspv_rows[0][0] == 2  # DELETE
+    assert aspv_rows[0][0] == Project._OP_DELETE
 
     # Verify research_project_version has an INSERT record
     rpv_rows = loaded_db.execute(
@@ -1184,7 +1191,7 @@ def test_change_type_creates_version_records_admin_to_research(budget_team_auth_
         {"id": project_id},
     ).fetchall()
     assert len(rpv_rows) >= 1
-    assert rpv_rows[0][0] == 0  # INSERT
+    assert rpv_rows[0][0] == Project._OP_INSERT
 
 
 def test_change_type_version_records_share_transaction(budget_team_auth_client, loaded_db):

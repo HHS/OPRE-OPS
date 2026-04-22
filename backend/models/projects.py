@@ -70,7 +70,12 @@ class Project(BaseModel):
     def display_name(self):
         return self.title
 
+    _OP_INSERT = 0
+    _OP_UPDATE = 1
+    _OP_DELETE = 2
+
     # All SQL below uses only hardcoded table names (no user input) and parameterized values.
+    # NOTE: insert_parent_ver column list must be kept in sync with the project table schema.
     _SQL = {  # nosemgrep: python.sqlalchemy.security.audit.avoid-sqlalchemy-text.avoid-sqlalchemy-text
         "insert_research": text("INSERT INTO research_project (id) VALUES (:id)"),  # nosemgrep
         "insert_admin": text("INSERT INTO administrative_and_support_project (id) VALUES (:id)"),  # nosemgrep
@@ -108,9 +113,8 @@ class Project(BaseModel):
         session.execute(self._SQL["update_parent"], {"new_type": new_type.name, "id": self.id})
         session.execute(self._SQL[f"delete_{old_key}"], {"id": self.id})
 
-        # Record version history: DELETE old child, INSERT new child, UPDATE parent
-        session.execute(self._SQL[f"insert_{old_key}_ver"], {"id": self.id, "txn": txn_id, "op": 2})
-        session.execute(self._SQL[f"insert_{new_key}_ver"], {"id": self.id, "txn": txn_id, "op": 0})
+        session.execute(self._SQL[f"insert_{old_key}_ver"], {"id": self.id, "txn": txn_id, "op": self._OP_DELETE})
+        session.execute(self._SQL[f"insert_{new_key}_ver"], {"id": self.id, "txn": txn_id, "op": self._OP_INSERT})
         session.execute(self._SQL["insert_parent_ver"], {"id": self.id, "txn": txn_id})
 
         session.expire_all()
