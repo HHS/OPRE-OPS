@@ -36,6 +36,7 @@ ALLOWED_TABLES = [
     "budget_line_item_status",
     "can_fiscal_year_carry_forward",
     "portfolio_team_leaders",
+    "project",
     "research_project",
     "research_project_cans",
     "research_project_team_leaders",

@@ -63,6 +63,7 @@ class Project(BaseModel):
         primaryjoin="Project.id == ProjectTeamLeaders.project_id",
         secondaryjoin="User.id == ProjectTeamLeaders.team_lead_id",
     )
+    origination_date: Mapped[Optional[Date]] = mapped_column(Date(), nullable=True)
 
     __table_args__ = (Index("ix_project_title_pattern", "title", postgresql_ops={"title": "text_pattern_ops"}),)
 
@@ -137,7 +138,8 @@ class Project(BaseModel):
                 key=lambda x: x["name"],
             ),
             "project_officers": sorted(
-                [{"id": user_id, "name": name} for user_id, name in project_officer_dict.items()], key=lambda x: x["name"]
+                [{"id": user_id, "name": name} for user_id, name in project_officer_dict.items()],
+                key=lambda x: x["name"],
             ),
             "alternate_project_officers": sorted(
                 [{"id": user_id, "name": name} for user_id, name in alternate_project_officer_dict.items()],
@@ -311,18 +313,18 @@ class Project(BaseModel):
         }
 
 
-class ResearchProject(Project):
-    __tablename__ = "research_project"
-    __mapper_args__ = {
-        "polymorphic_identity": ProjectType.RESEARCH,
-    }
-    id: Mapped[int] = mapped_column(ForeignKey("project.id"), primary_key=True)
-    origination_date: Mapped[Optional[Date]] = mapped_column(Date(), nullable=True)
+# class ResearchProject(Project):
+#     __tablename__ = "research_project"
+#     __mapper_args__ = {
+#         "polymorphic_identity": ProjectType.RESEARCH,
+#     }
+#     id: Mapped[int] = mapped_column(ForeignKey("project.id"), primary_key=True)
+#     origination_date: Mapped[Optional[Date]] = mapped_column(Date(), nullable=True)
 
 
-class AdministrativeAndSupportProject(Project):
-    __tablename__ = "administrative_and_support_project"
-    __mapper_args__ = {
-        "polymorphic_identity": ProjectType.ADMINISTRATIVE_AND_SUPPORT,
-    }
-    id: Mapped[int] = mapped_column(ForeignKey("project.id"), primary_key=True)
+# class AdministrativeAndSupportProject(Project):
+#     __tablename__ = "administrative_and_support_project"
+#     __mapper_args__ = {
+#         "polymorphic_identity": ProjectType.ADMINISTRATIVE_AND_SUPPORT,
+#     }
+#     id: Mapped[int] = mapped_column(ForeignKey("project.id"), primary_key=True)
