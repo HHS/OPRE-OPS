@@ -8,7 +8,6 @@ from models.notifications import ChangeRequestNotification, Notification, PreAwa
 from models.procurement_tracker import (
     DefaultProcurementTrackerStep,
     ProcurementTracker,
-    ProcurementTrackerStep,
     ProcurementTrackerStepStatus,
     ProcurementTrackerStepType,
 )
