@@ -3,7 +3,11 @@
     background-color: var(--base-light-variant);
 }
 
-.tableHover td,
+.tableHover td {
+    padding: 0.5rem 0.5rem !important;
+    vertical-align: top;
+    padding-bottom: 0 !important;
+}
 .tableHover th {
     padding: 0.5rem 0.5rem !important;
 }
