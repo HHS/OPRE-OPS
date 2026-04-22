@@ -23,9 +23,22 @@ vi.mock("../../../api/opsAPI", async () => {
     return {
         ...actual,
         useGetProjectByIdQuery: () => mockUseGetProjectByIdQuery(),
-        useGetProjectFundingByIdQuery: () => mockUseGetProjectFundingByIdQuery()
+        useGetProjectFundingByIdQuery: () => mockUseGetProjectFundingByIdQuery(),
+        useGetPortfoliosQuery: () => ({ data: [], isLoading: false, error: undefined })
     };
 });
+
+vi.mock("../../../components/Projects/ProjectFundingByPortfolioCard/ProjectFundingByPortfolioCard", () => ({
+    default: () => <div data-testid="project-funding-by-portfolio-card" />
+}));
+
+vi.mock("../../../components/Projects/ProjectFundingByCANCard/ProjectFundingByCANCard", () => ({
+    default: () => <div data-testid="project-funding-by-can-card" />
+}));
+
+vi.mock("../../../components/Projects/ProjectFundingByFYCard/ProjectFundingByFYCard", () => ({
+    default: () => <div data-testid="project-funding-by-fy-card" />
+}));
 
 vi.mock("../../../App", () => ({
     default: ({ children }) => <div data-testid="app-wrapper">{children}</div>
@@ -116,7 +129,7 @@ describe("ProjectFunding", () => {
         expect(screen.getByText("Loading...")).toBeInTheDocument();
     });
 
-    it("renders the project title, tabs, FY selector, and section headings on success", () => {
+    it("renders the project title, tabs, FY selector, section headings, and summary cards on success", () => {
         mockUseGetProjectByIdQuery.mockReturnValue({ data: mockProject, isLoading: false, error: undefined });
         mockUseGetProjectFundingByIdQuery.mockReturnValue({
             data: mockFundingData,
@@ -131,6 +144,9 @@ describe("ProjectFunding", () => {
         expect(screen.getByLabelText("Fiscal Year")).toBeInTheDocument();
         expect(screen.getByText("Project Funding Summary")).toBeInTheDocument();
         expect(screen.getByText("Project Funding by CAN")).toBeInTheDocument();
+        expect(screen.getByTestId("project-funding-by-portfolio-card")).toBeInTheDocument();
+        expect(screen.getByTestId("project-funding-by-can-card")).toBeInTheDocument();
+        expect(screen.getByTestId("project-funding-by-fy-card")).toBeInTheDocument();
     });
 
     it("renders DebugCode with funding data in dev mode", () => {

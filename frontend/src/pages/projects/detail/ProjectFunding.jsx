@@ -1,8 +1,11 @@
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import App from "../../../App";
-import { useGetProjectByIdQuery, useGetProjectFundingByIdQuery } from "../../../api/opsAPI";
+import { useGetPortfoliosQuery, useGetProjectByIdQuery, useGetProjectFundingByIdQuery } from "../../../api/opsAPI";
 import DebugCode from "../../../components/DebugCode";
+import ProjectFundingByCANCard from "../../../components/Projects/ProjectFundingByCANCard/ProjectFundingByCANCard";
+import ProjectFundingByFYCard from "../../../components/Projects/ProjectFundingByFYCard/ProjectFundingByFYCard";
+import ProjectFundingByPortfolioCard from "../../../components/Projects/ProjectFundingByPortfolioCard/ProjectFundingByPortfolioCard";
 import FiscalYear from "../../../components/UI/FiscalYear/FiscalYear";
 import { getCurrentFiscalYear } from "../../../helpers/utils";
 import ProjectDetailTabs from "./ProjectDetailTabs";
@@ -41,6 +44,20 @@ const ProjectFunding = () => {
         }
     );
 
+    const { data: portfolios, isLoading: isPortfoliosLoading } = useGetPortfoliosQuery(
+        { projectId },
+        {
+            refetchOnMountOrArgChange: true,
+            skip: !projectId || projectId === -1
+        }
+    );
+
+    /** @type {Map<number, string>} portfolioId → abbreviation */
+    const portfolioAbbrevMap = React.useMemo(
+        () => new Map((portfolios ?? []).map((p) => [p.id, p.abbreviation])),
+        [portfolios]
+    );
+
     const is404 = projectError?.status === 404;
 
     React.useEffect(() => {
@@ -55,7 +72,7 @@ const ProjectFunding = () => {
         }
     }, [fundingError, navigate]);
 
-    if (isProjectLoading || isFundingLoading) {
+    if (isProjectLoading || isFundingLoading || isPortfoliosLoading) {
         return (
             <App>
                 <h1>Loading...</h1>
@@ -92,6 +109,24 @@ const ProjectFunding = () => {
                 <p className="font-sans-sm">
                     The summary below shows a breakdown of the project funding for the selected FY.
                 </p>
+                <ProjectFundingByPortfolioCard
+                    fiscalYear={fiscalYear}
+                    fundingByPortfolio={fundingData?.funding_by_portfolio ?? []}
+                    portfolioAbbrevMap={portfolioAbbrevMap}
+                />
+                <div
+                    className="display-flex flex-justify margin-top-2"
+                    style={{ gap: "1rem" }}
+                >
+                    <ProjectFundingByCANCard
+                        fiscalYear={fiscalYear}
+                        fundingByCAN={fundingData?.funding_by_can ?? {}}
+                    />
+                    <ProjectFundingByFYCard
+                        fiscalYear={fiscalYear}
+                        fundingByFiscalYear={fundingData?.funding_by_fiscal_year ?? []}
+                    />
+                </div>
             </section>
             <section>
                 <h2 className="font-sans-lg">Project Funding by CAN</h2>

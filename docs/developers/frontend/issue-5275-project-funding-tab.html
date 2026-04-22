@@ -285,8 +285,8 @@ so that I can understand how a project is funded across portfolios and CANs for 
 #### Dev
 - [x] Phase 1: `useGetProjectFundingByIdQuery` in `opsAPI.js`, `ProjectFunding.jsx` page,
       route in `index.jsx`, un-disable tab in `ProjectDetailTabs.jsx`, unit tests — **merged**
-- [ ] Phase 2: `ProjectFundingByPortfolioCard`, `ProjectFundingByCANCard`,
-      `ProjectFundingByFYCard` components + unit tests
+- [x] Phase 2: `ProjectFundingByPortfolioCard`, `ProjectFundingByCANCard`,
+      `ProjectFundingByFYCard` components + unit tests — **merged**
 - [ ] Phase 3: `ProjectFundingCANsTable` + `ProjectFundingCANsTableLoading` + unit tests
 - [ ] File backend story to add `abbreviation` to `funding_by_portfolio` response
       (see build plan for template)
@@ -342,8 +342,8 @@ so that I can understand how a project is funded across portfolios and CANs for 
           </div>
 
           <!-- Phase 2 -->
-          <div class="phase-card next">
-            <div class="phase-tag tag-next">Phase 2 &ndash; Up Next</div>
+          <div class="phase-card active">
+            <div class="phase-tag tag-active">Phase 2 &ndash; Complete &#x2705;</div>
             <h3>Project Funding Summary Cards</h3>
             <ul>
               <li><span class="code-inline">ProjectFundingByPortfolioCard</span> — full-width; <span class="code-inline">CurrencyCard</span> + <span class="code-inline">HorizontalStackedBar</span> + legend; portfolio color/abbreviation derived via reverse-lookup against <span class="code-inline">PORTFOLIO_ORDER</span> constants by portfolio name (see Backend Ask for long-term fix)</li>
@@ -355,8 +355,8 @@ so that I can understand how a project is funded across portfolios and CANs for 
           </div>
 
           <!-- Phase 3 -->
-          <div class="phase-card later">
-            <div class="phase-tag tag-later">Phase 3 &ndash; Upcoming</div>
+          <div class="phase-card next">
+            <div class="phase-tag tag-next">Phase 3 &ndash; Up Next</div>
             <h3>Project Funding by CAN Table</h3>
             <ul>
               <li><span class="code-inline">ProjectFundingCANsTable</span> — columns: CAN (number), Portfolio, Active Period (<em>N Year(s)</em>), FY {selectedFY} Project Funding, Lifetime Project Funding</li>
