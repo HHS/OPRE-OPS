@@ -1,6 +1,11 @@
 from typing import Any, Type
 
-from models import ChangeRequestNotification, Notification, NotificationType
+from models import (
+    ChangeRequestNotification,
+    Notification,
+    NotificationType,
+    PreAwardApprovalNotification,
+)
 from ops_api.ops.services.ops_service import OpsService, ResourceNotFoundError
 
 
@@ -18,6 +23,8 @@ class NotificationService(OpsService[Notification]):
         cls: Type[Notification]
         if notification_type == NotificationType.CHANGE_REQUEST_NOTIFICATION:
             cls = ChangeRequestNotification
+        elif notification_type == NotificationType.PRE_AWARD_APPROVAL_NOTIFICATION:
+            cls = PreAwardApprovalNotification
         else:
             cls = Notification
 

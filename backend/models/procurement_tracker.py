@@ -4,6 +4,7 @@ from datetime import date
 from enum import Enum, auto
 from typing import TYPE_CHECKING, List, Optional
 
+from loguru import logger
 from sqlalchemy import (
     Boolean,
     Date,
@@ -12,9 +13,10 @@ from sqlalchemy import (
     String,
     Text,
     Index,
+    select,
 )
 from sqlalchemy.dialects.postgresql import ENUM
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, Session, mapped_column, relationship
 
 from models.base import BaseModel
 
@@ -153,6 +155,30 @@ class ProcurementTracker(BaseModel):
     @BaseModel.display_name.getter
     def display_name(self):
         return f"ProcurementTracker#{self.id}"
+
+    def mark_completed(self, completed_date: Optional[date] = None) -> None:
+        """
+        Mark tracker and all steps as COMPLETED with the given date.
+        Sets active_step_number to the final step.
+        """
+        completed_date = completed_date or date.today()
+        self.status = ProcurementTrackerStatus.COMPLETED
+        self.active_step_number = len(self.steps)
+        for step in self.steps:
+            step.status = ProcurementTrackerStepStatus.COMPLETED
+            step.step_start_date = completed_date
+            step.step_completed_date = completed_date
+
+    def activate_first_step(self) -> None:
+        """
+        Set step 1 to ACTIVE with today's date.
+        Useful when adopting an unlinked tracker whose steps may still be PENDING.
+        """
+        for step in self.steps:
+            if step.step_number == 1:
+                step.status = ProcurementTrackerStepStatus.ACTIVE
+                step.step_start_date = date.today()
+                break
 
 
 # ============================================================================
@@ -874,3 +900,97 @@ class DefaultProcurementTracker(ProcurementTracker):
             tracker.steps.append(step)
 
         return tracker
+
+    @classmethod
+    def get_or_create_for_action(
+        cls,
+        session: Session,
+        agreement_id: int,
+        procurement_action_id: int,
+        status: ProcurementTrackerStatus = ProcurementTrackerStatus.ACTIVE,
+        created_by: Optional[int] = None,
+        award_type_label: Optional[str] = None,
+        include_inactive: bool = False,
+    ) -> tuple["DefaultProcurementTracker", bool, bool]:
+        """
+        Find an existing tracker linked to this action, adopt an unlinked
+        tracker for the agreement, or create a new one.
+
+        By default only ACTIVE trackers are matched—INACTIVE and COMPLETED
+        trackers are skipped so that a new tracker is created for a new
+        procurement cycle.  Pass ``include_inactive=True`` to match any
+        status (e.g. for backfill).
+
+        Uses ``FOR UPDATE`` row-level locking to prevent duplicate creation
+        under concurrent calls.
+
+        Returns (tracker, was_created, needs_step_setup).
+        needs_step_setup is True for adopted and newly created trackers
+        (i.e. whenever the caller should configure step statuses).
+
+        award_type_label is an optional string (e.g. "NEW_AWARD") included
+        in log messages for observability.
+        """
+        # Check for a tracker already linked to this action
+        linked_query = (
+            select(ProcurementTracker)
+            .where(
+                ProcurementTracker.agreement_id == agreement_id,
+                ProcurementTracker.procurement_action == procurement_action_id,
+            )
+            .with_for_update()
+        )
+
+        if not include_inactive:
+            linked_query = linked_query.where(
+                ProcurementTracker.status == ProcurementTrackerStatus.ACTIVE
+            )
+
+        existing = session.execute(linked_query).scalar_one_or_none()
+
+        if existing:
+            return existing, False, False
+
+        # Adopt an unlinked tracker if one exists
+        unlinked_query = (
+            select(ProcurementTracker)
+            .where(
+                ProcurementTracker.agreement_id == agreement_id,
+                ProcurementTracker.procurement_action.is_(None),
+            )
+            .with_for_update()
+        )
+
+        if not include_inactive:
+            unlinked_query = unlinked_query.where(
+                ProcurementTracker.status == ProcurementTrackerStatus.ACTIVE
+            )
+
+        unlinked = session.execute(unlinked_query).scalars().first()
+
+        type_suffix = f" ({award_type_label})" if award_type_label else ""
+        if unlinked:
+            unlinked.procurement_action = procurement_action_id
+            unlinked.status = status
+            logger.info(
+                f"Linked existing unlinked tracker {unlinked.id} to "
+                f"ProcurementAction {procurement_action_id}{type_suffix} "
+                f"for Agreement {agreement_id}"
+            )
+            return unlinked, False, True
+
+        # Create a new tracker
+        tracker = cls.create_with_steps(
+            agreement_id=agreement_id,
+            procurement_action=procurement_action_id,
+            status=status,
+            created_by=created_by,
+        )
+        session.add(tracker)
+        session.flush()
+        logger.info(
+            f"Created DefaultProcurementTracker for Agreement {agreement_id} "
+            f"— linked to ProcurementAction {procurement_action_id}{type_suffix} "
+            f"with {len(tracker.steps)} steps"
+        )
+        return tracker, True, True
