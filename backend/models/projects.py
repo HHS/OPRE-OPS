@@ -70,52 +70,48 @@ class Project(BaseModel):
     def display_name(self):
         return self.title
 
+    # All SQL below uses only hardcoded table names (no user input) and parameterized values.
+    _SQL = {  # nosemgrep: python.sqlalchemy.security.audit.avoid-sqlalchemy-text.avoid-sqlalchemy-text
+        "insert_research": text("INSERT INTO research_project (id) VALUES (:id)"),  # nosemgrep
+        "insert_admin": text("INSERT INTO administrative_and_support_project (id) VALUES (:id)"),  # nosemgrep
+        "delete_research": text("DELETE FROM research_project WHERE id = :id"),  # nosemgrep
+        "delete_admin": text("DELETE FROM administrative_and_support_project WHERE id = :id"),  # nosemgrep
+        "insert_research_ver": text("INSERT INTO research_project_version (id, transaction_id, operation_type) VALUES (:id, :txn, :op)"),  # nosemgrep
+        "insert_admin_ver": text("INSERT INTO administrative_and_support_project_version (id, transaction_id, operation_type) VALUES (:id, :txn, :op)"),  # nosemgrep
+        "update_parent": text("UPDATE project SET project_type = :new_type WHERE id = :id"),  # nosemgrep
+        "new_txn": text("INSERT INTO transaction (issued_at) VALUES (NOW()) RETURNING id"),  # nosemgrep
+        "insert_parent_ver": text(  # nosemgrep
+            "INSERT INTO project_version (id, project_type, title, short_title, description, url,"
+            " created_by, updated_by, created_on, updated_on, transaction_id, operation_type)"
+            " SELECT id, project_type, title, short_title, description, url,"
+            " created_by, updated_by, created_on, updated_on, :txn, 1"
+            " FROM project WHERE id = :id"
+        ),
+    }
+    _TYPE_KEYS = {
+        ProjectType.RESEARCH: "research",
+        ProjectType.ADMINISTRATIVE_AND_SUPPORT: "admin",
+    }
+
     def change_type(self, new_type: "ProjectType") -> None:
         if self.project_type == new_type:
             return
 
         session = object_session(self)
+        old_key = self._TYPE_KEYS[self.project_type]
+        new_key = self._TYPE_KEYS[new_type]
 
-        child_tables = {
-            ProjectType.RESEARCH: "research_project",
-            ProjectType.ADMINISTRATIVE_AND_SUPPORT: "administrative_and_support_project",
-        }
-
-        old_table = child_tables[self.project_type]
-        new_table = child_tables[new_type]
-
-        # Create a continuum transaction for version tracking
-        txn_id = session.execute(
-            text("INSERT INTO transaction (issued_at) VALUES (NOW()) RETURNING id")
-        ).scalar()
+        txn_id = session.execute(self._SQL["new_txn"]).scalar()
 
         # Mutate the live tables
-        session.execute(text(f"INSERT INTO {new_table} (id) VALUES (:id)"), {"id": self.id})
-        session.execute(
-            text("UPDATE project SET project_type = :new_type WHERE id = :id"),
-            {"new_type": new_type.name, "id": self.id},
-        )
-        session.execute(text(f"DELETE FROM {old_table} WHERE id = :id"), {"id": self.id})
+        session.execute(self._SQL[f"insert_{new_key}"], {"id": self.id})
+        session.execute(self._SQL["update_parent"], {"new_type": new_type.name, "id": self.id})
+        session.execute(self._SQL[f"delete_{old_key}"], {"id": self.id})
 
         # Record version history: DELETE old child, INSERT new child, UPDATE parent
-        session.execute(
-            text(f"INSERT INTO {old_table}_version (id, transaction_id, operation_type) VALUES (:id, :txn, 2)"),
-            {"id": self.id, "txn": txn_id},
-        )
-        session.execute(
-            text(f"INSERT INTO {new_table}_version (id, transaction_id, operation_type) VALUES (:id, :txn, 0)"),
-            {"id": self.id, "txn": txn_id},
-        )
-        session.execute(
-            text(
-                "INSERT INTO project_version (id, project_type, title, short_title, description, url,"
-                " created_by, updated_by, created_on, updated_on, transaction_id, operation_type)"
-                " SELECT id, project_type, title, short_title, description, url,"
-                " created_by, updated_by, created_on, updated_on, :txn, 1"
-                " FROM project WHERE id = :id"
-            ),
-            {"id": self.id, "txn": txn_id},
-        )
+        session.execute(self._SQL[f"insert_{old_key}_ver"], {"id": self.id, "txn": txn_id, "op": 2})
+        session.execute(self._SQL[f"insert_{new_key}_ver"], {"id": self.id, "txn": txn_id, "op": 0})
+        session.execute(self._SQL["insert_parent_ver"], {"id": self.id, "txn": txn_id})
 
         session.expire_all()
 
