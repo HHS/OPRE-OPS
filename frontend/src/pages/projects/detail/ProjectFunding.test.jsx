@@ -189,7 +189,7 @@ describe("ProjectFunding", () => {
 
         renderComponent();
 
-        expect(screen.getByText("Loading...")).toBeInTheDocument();
+        expect(screen.getByTestId("project-funding-cans-table-loading")).toBeInTheDocument();
     });
 
     it("renders a not-found message on a 404 project error", () => {

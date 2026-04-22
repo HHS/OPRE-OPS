@@ -74,7 +74,7 @@ const ProjectFunding = () => {
         }
     }, [fundingError, navigate]);
 
-    if (isProjectLoading || isFundingLoading || isPortfoliosLoading) {
+    if (isProjectLoading || isPortfoliosLoading) {
         return (
             <App>
                 <h1>Loading...</h1>
