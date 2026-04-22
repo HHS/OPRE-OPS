@@ -972,7 +972,7 @@ def test_agreement_history_pre_award_approval_requested(loaded_db, app_ctx):
         },
     )
     loaded_db.add(ops_event)
-    loaded_db.flush()
+    loaded_db.commit()
 
     # Get the tracker to extract agreement_id
     tracker = loaded_db.get(ProcurementTracker, 5)
@@ -1041,7 +1041,7 @@ def test_agreement_history_pre_award_approval_approved(loaded_db, app_ctx):
         },
     )
     loaded_db.add(ops_event)
-    loaded_db.flush()
+    loaded_db.commit()
 
     # Get the tracker to extract agreement_id
     tracker = loaded_db.get(ProcurementTracker, 5)
@@ -1065,8 +1065,7 @@ def test_agreement_history_pre_award_approval_approved(loaded_db, app_ctx):
     assert history_item.history_title == "Pre-Award Approval Approved"
     assert history_item.agreement_id == tracker.agreement_id
     assert (
-        history_item.history_message
-        == "User Demo approved the agreement for pre-award as requested by Amelia Popham. "
+        history_item.history_message == "User Demo approved the agreement for pre-award as requested by Amelia Popham. "
         "The requisition will be submitted by the Budget Team before the Final Consensus Memo is sent to the procurement shop."
     )
 
@@ -1114,7 +1113,7 @@ def test_agreement_history_pre_award_approval_declined(loaded_db, app_ctx):
         },
     )
     loaded_db.add(ops_event)
-    loaded_db.flush()
+    loaded_db.commit()
 
     # Get the tracker to extract agreement_id
     tracker = loaded_db.get(ProcurementTracker, 5)
@@ -1184,7 +1183,7 @@ def test_agreement_history_pre_award_approval_unknown_requester(loaded_db, app_c
         },
     )
     loaded_db.add(ops_event)
-    loaded_db.flush()
+    loaded_db.commit()
 
     # Get the tracker to extract agreement_id
     tracker = loaded_db.get(ProcurementTracker, 5)
@@ -1209,8 +1208,7 @@ def test_agreement_history_pre_award_approval_unknown_requester(loaded_db, app_c
     assert history_item.agreement_id == tracker.agreement_id
     assert "Unknown User" in history_item.history_message
     assert (
-        history_item.history_message
-        == "User Demo approved the agreement for pre-award as requested by Unknown User. "
+        history_item.history_message == "User Demo approved the agreement for pre-award as requested by Unknown User. "
         "The requisition will be submitted by the Budget Team before the Final Consensus Memo is sent to the procurement shop."
     )
 
