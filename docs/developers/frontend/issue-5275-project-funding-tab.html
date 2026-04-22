@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Issue #5275 – Project Funding Tab: Build Plan</title>
+    <title>Issue #5275 - Project Funding Tab: Build Plan</title>
     <style>
       *,
       *::before,
@@ -235,7 +235,7 @@
 
       <!-- Header -->
       <div class="page-header">
-        <h1>Issue #5275 – Project Funding Tab</h1>
+        <h1>Issue #5275 - Project Funding Tab</h1>
         <p>
           Build plan &amp; static mockup &middot; OPRE OPS &middot;
           <a href="https://github.com/HHS/OPRE-OPS/issues/5275" style="color:#fff">GitHub Issue</a>
@@ -251,7 +251,7 @@
           Implement the <strong>Project Funding</strong> tab on the project detail page
           (<span class="code-inline">/projects/:id/funding</span>).
           The tab currently exists in the nav but is disabled with a <em>Coming Soon</em> tooltip.
-          This plan covers <strong>frontend only</strong> — the backend endpoint
+          This plan covers <strong>frontend only</strong> - the backend endpoint
           <span class="code-inline">GET /api/v1/projects/&lt;id&gt;/funding/</span> already exists and is tested.
         </p>
         <div class="info">
@@ -271,12 +271,12 @@
             <div class="phase-tag tag-active">Phase 1 &ndash; Complete &#x2705;</div>
             <h3>API Hook + Route + FY Selector + DebugCode</h3>
             <ul>
-              <li>Add <span class="code-inline">useGetProjectFundingByIdQuery</span> RTK Query endpoint to <span class="code-inline">opsAPI.js</span> — accepts <span class="code-inline">{ id, fiscalYear }</span>, hits <span class="code-inline">/projects/:id/funding/?fiscal_year=YYYY</span></li>
+              <li>Add <span class="code-inline">useGetProjectFundingByIdQuery</span> RTK Query endpoint to <span class="code-inline">opsAPI.js</span> - accepts <span class="code-inline">{ id, fiscalYear }</span>, hits <span class="code-inline">/projects/:id/funding/?fiscal_year=YYYY</span></li>
               <li>Create <span class="code-inline">ProjectFunding.jsx</span> page component: fetches funding data, renders <span class="code-inline">&lt;DebugCode&gt;</span>, placeholder headings, loading state</li>
-              <li>Add <span class="code-inline">FiscalYear</span> selector — defaults to <span class="code-inline">getCurrentFiscalYear()</span>; re-fetch on change (RTK Query caches per FY arg) — follows CAN funding convention</li>
+              <li>Add <span class="code-inline">FiscalYear</span> selector - defaults to <span class="code-inline">getCurrentFiscalYear()</span>; re-fetch on change (RTK Query caches per FY arg) - follows CAN funding convention</li>
               <li>Register <span class="code-inline">/projects/:id/funding</span> route in <span class="code-inline">index.jsx</span></li>
               <li>Un-disable the <em>Project Funding</em> tab in <span class="code-inline">ProjectDetailTabs.jsx</span></li>
-              <li>Unit tests: <span class="code-inline">ProjectFunding.test.jsx</span> — renders heading, FY selector present, tab enabled</li>
+              <li>Unit tests: <span class="code-inline">ProjectFunding.test.jsx</span> - renders heading, FY selector present, tab enabled</li>
             </ul>
           </div>
 
@@ -285,9 +285,9 @@
             <div class="phase-tag tag-active">Phase 2 &ndash; Complete &#x2705;</div>
             <h3>Project Funding Summary Cards</h3>
             <ul>
-              <li><span class="code-inline">ProjectFundingByPortfolioCard</span> — full-width; <span class="code-inline">CurrencyCard</span> + <span class="code-inline">HorizontalStackedBar</span> + legend; portfolio color/abbreviation derived via reverse-lookup against <span class="code-inline">PORTFOLIO_ORDER</span> constants by portfolio name (see Backend Ask for long-term fix)</li>
-              <li><span class="code-inline">ProjectFundingByCANCard</span> — half-width left; reuses <span class="code-inline">LineGraphWithLegendCard</span>; two segments: <em>Previous FYs Carry-Forward</em> and <em>FY {selectedFY} New Funding</em> using <span class="code-inline">var(--portfolio-carry-forward)</span> / <span class="code-inline">var(--portfolio-new-funding)</span> CSS vars</li>
-              <li><span class="code-inline">ProjectFundingByFYCard</span> — half-width right; reuses <span class="code-inline">Card</span> + <span class="code-inline">LineBar</span> pattern from <span class="code-inline">CANBudgetByFYCard</span>; derives last 5 FYs from <span class="code-inline">selectedFY</span> client-side from <span class="code-inline">funding_by_fiscal_year</span>; zeros for missing years; uses <span class="code-inline">constants.budgetsByFYChartColors</span></li>
+              <li><span class="code-inline">ProjectFundingByPortfolioCard</span> - full-width; <span class="code-inline">CurrencyCard</span> + <span class="code-inline">HorizontalStackedBar</span> + legend; portfolio color/abbreviation derived via reverse-lookup against <span class="code-inline">PORTFOLIO_ORDER</span> constants by portfolio name (see Backend Ask for long-term fix)</li>
+              <li><span class="code-inline">ProjectFundingByCANCard</span> - half-width left; reuses <span class="code-inline">LineGraphWithLegendCard</span>; two segments: <em>Previous FYs Carry-Forward</em> and <em>FY {selectedFY} New Funding</em> using <span class="code-inline">var(--portfolio-carry-forward)</span> / <span class="code-inline">var(--portfolio-new-funding)</span> CSS vars</li>
+              <li><span class="code-inline">ProjectFundingByFYCard</span> - half-width right; reuses <span class="code-inline">Card</span> + <span class="code-inline">LineBar</span> pattern from <span class="code-inline">CANBudgetByFYCard</span>; derives last 5 FYs from <span class="code-inline">selectedFY</span> client-side from <span class="code-inline">funding_by_fiscal_year</span>; zeros for missing years; uses <span class="code-inline">constants.budgetsByFYChartColors</span></li>
               <li>Summary section gated on data loaded (no flash of empty cards during fetch)</li>
               <li>Unit tests for each new card component</li>
             </ul>
@@ -298,11 +298,13 @@
             <div class="phase-tag tag-active">Phase 3 &ndash; Complete &#x2705;</div>
             <h3>Project Funding by CAN Table</h3>
             <ul>
-              <li><span class="code-inline">ProjectFundingCANsTable</span> — columns: CAN (number), Portfolio, Active Period (<em>N Year(s)</em>), FY {selectedFY} Project Funding, Lifetime Project Funding</li>
-              <li><span class="code-inline">ProjectFundingCANsTableLoading</span> — shimmer skeleton shown while fetch is in flight; preserves column layout including dynamic FY column header</li>
-              <li>Empty state: no-data row with message <em>"No CANs found for this project"</em> when <span class="code-inline">cans</span> array is empty (follows CAN funding convention — show table with zeros rather than hiding it)</li>
-              <li>Remove <span class="code-inline">&lt;DebugCode&gt;</span></li>
-              <li>Unit tests for table + loading skeleton</li>
+              <li>&#x2705; <span class="code-inline">ProjectFundingCANsTable</span> &mdash; CAN column links to <span class="code-inline">/cans/:id</span> using <span class="code-inline">text-ink text-no-underline</span> (matches app-wide table convention); columns: CAN, Portfolio, Active Period (<em>N Year(s)</em>), FY Project Funding, Lifetime Project Funding</li>
+              <li>&#x2705; <span class="code-inline">ProjectFundingCANsTableLoading</span> &mdash; shimmer skeleton shown while fetch is in flight; preserves column layout including dynamic FY column header</li>
+              <li>&#x2705; Empty state: <em>&ldquo;No CANs found for this project.&rdquo;</em> when <span class="code-inline">cans</span> is empty</li>
+              <li>&#x2705; New CSS design tokens added + USWDS compiled: <span class="code-inline">--project-funding-carry-forward: #009ec1</span>, <span class="code-inline">--project-funding-new-funding: #1f468e</span>, <span class="code-inline">--project-funding-by-fy-graph-1..5</span> (#844a10 &rarr; #ffba7a)</li>
+              <li>&#x2705; <span class="code-inline">projectFundingCarryForward</span> / <span class="code-inline">projectFundingNewFunding</span> cases added to <span class="code-inline">Tag.jsx</span> &mdash; hover colors on the CAN card now match segment colors</li>
+              <li>&#x2705; <span class="code-inline">&lt;DebugCode /&gt;</span> retained below the table (dev-only)</li>
+              <li>&#x2705; Unit tests for all new components; 2893 total passing</li>
             </ul>
           </div>
 
@@ -451,7 +453,7 @@
         <ul style="margin-top:0.5rem">
           <li><strong>URL:</strong> <span class="code-inline">GET /api/v1/projects/&lt;id&gt;/funding/?fiscal_year=YYYY</span></li>
           <li><strong>Auth:</strong> Requires JWT bearer token (<span class="code-inline">Permission.RESEARCH_PROJECT GET</span>)</li>
-          <li><strong>fiscal_year param:</strong> Optional — defaults to current fiscal year on the backend if omitted</li>
+          <li><strong>fiscal_year param:</strong> Optional - defaults to current fiscal year on the backend if omitted</li>
           <li><strong>404:</strong> Returns 404 if project ID does not exist</li>
         </ul>
 
@@ -488,7 +490,7 @@
           <strong>Note:</strong> <span class="code-inline">funding_by_portfolio</span>,
           <span class="code-inline">funding_by_can</span>, and <span class="code-inline">cans</span>
           are all scoped to the <span class="code-inline">fiscal_year</span> param.
-          <span class="code-inline">funding_by_fiscal_year</span> always returns all years with data regardless of the param —
+          <span class="code-inline">funding_by_fiscal_year</span> always returns all years with data regardless of the param -
           this powers the FY selector options and the "last 5 FYs" bar chart.
           Real data for project 1000 spans 7 years (2021&ndash;2027), confirming client-side
           <span class="code-inline">getLast5FiscalYears(selectedFY)</span> slicing is the correct approach.
@@ -506,16 +508,16 @@
             <tr>
               <td>Where does FY state live?</td>
               <td>Local state in <span class="code-inline">ProjectFunding.jsx</span></td>
-              <td>Follows CAN funding convention — only the funding tab needs it; no Redux or context required.</td>
+              <td>Follows CAN funding convention - only the funding tab needs it; no Redux or context required.</td>
             </tr>
             <tr>
               <td>FY selector default</td>
-              <td><span class="code-inline">getCurrentFiscalYear()</span> — no fallback to highest available FY</td>
+              <td><span class="code-inline">getCurrentFiscalYear()</span> - no fallback to highest available FY</td>
               <td>Matches <span class="code-inline">Can.hooks.js</span> pattern exactly. Show zeros/empty if current FY has no data.</td>
             </tr>
             <tr>
               <td>FY change triggers re-fetch?</td>
-              <td>Yes — RTK Query re-fetches with new <span class="code-inline">fiscal_year</span> arg</td>
+              <td>Yes - RTK Query re-fetches with new <span class="code-inline">fiscal_year</span> arg</td>
               <td>API is FY-scoped for portfolio/CAN/cans data. RTK Query caches per arg so switching back is instant.</td>
             </tr>
             <tr>
@@ -536,7 +538,7 @@
             <tr>
               <td>Empty state (no funding data)</td>
               <td>Show cards/table with zero values; "No CANs found for this project" in table body</td>
-              <td>Follows CAN funding convention — no special empty-state screen, just graceful zeros.</td>
+              <td>Follows CAN funding convention - no special empty-state screen, just graceful zeros.</td>
             </tr>
             <tr>
               <td>Active Period display format</td>
@@ -551,7 +553,7 @@
             <tr>
               <td>When to remove DebugCode</td>
               <td>End of Phase 3</td>
-              <td>Already dev-only — safe to leave during Phases 1–2 without impacting production users.</td>
+              <td>Already dev-only - safe to leave during Phases 1-2 without impacting production users.</td>
             </tr>
           </tbody>
         </table>
@@ -569,8 +571,15 @@
           &nbsp;&nbsp;&nbsp;&nbsp;<span class="new-file">ProjectFundingByCANCard/</span> &nbsp;&#x2190; NEW (Phase 2) + unit tests<br>
           &nbsp;&nbsp;&nbsp;&nbsp;<span class="new-file">ProjectFundingByFYCard/</span> &nbsp;&#x2190; NEW (Phase 2) + unit tests<br>
           &nbsp;&nbsp;&nbsp;&nbsp;<span class="new-file">ProjectFundingCANsTable/</span> &nbsp;&#x2190; NEW (Phase 3) + unit tests<br>
-          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="new-file">ProjectFundingCANsTable.jsx</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="new-file">ProjectFundingCANsTable.constants.js</span> &nbsp;&#x2190; <span class="code-inline">getTableHeadings(fy)</span>, <span class="code-inline">COLUMN_WIDTHS</span>, <span class="code-inline">formatActivePeriod</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="new-file">ProjectFundingCANsTable.jsx</span> &nbsp;&#x2190; CAN links via <span class="code-inline">text-ink text-no-underline</span><br>
           &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="new-file">ProjectFundingCANsTableLoading.jsx</span> &nbsp;&#x2190; shimmer skeleton<br>
+          &nbsp;&nbsp;components/UI/Tag/<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="modified-file">Tag.jsx</span> &nbsp;&#x2190; add <span class="code-inline">projectFundingCarryForward</span> + <span class="code-inline">projectFundingNewFunding</span> tagActiveStyle cases<br>
+          &nbsp;&nbsp;constants.js &nbsp;&#x2190; add <span class="code-inline">projectFundingByFYChartColors</span><br>
+          <br>
+          sass/uswds/<br>
+          &nbsp;&nbsp;<span class="modified-file">styles.scss</span> &nbsp;&#x2190; add 7 new CSS design tokens + USWDS compile (gulp)
           &nbsp;&nbsp;pages/projects/detail/<br>
           &nbsp;&nbsp;&nbsp;&nbsp;<span class="new-file">ProjectFunding.jsx</span> &nbsp;&#x2190; NEW &ndash; page component: FY selector, summary cards, CAN table, DebugCode<br>
           &nbsp;&nbsp;&nbsp;&nbsp;<span class="new-file">ProjectFunding.test.jsx</span> &nbsp;&#x2190; NEW (Phase 1)<br>
@@ -622,7 +631,7 @@
         <h3>Phase 1</h3>
         <ul>
           <li>Navigating to <span class="code-inline">/projects/:id/funding</span> renders without errors.</li>
-          <li>The <em>Project Funding</em> tab is enabled — no "Coming Soon" tooltip or <span class="code-inline">disabled</span> attribute.</li>
+          <li>The <em>Project Funding</em> tab is enabled - no "Coming Soon" tooltip or <span class="code-inline">disabled</span> attribute.</li>
           <li>FY selector visible, defaults to current fiscal year, changes trigger a new RTK Query fetch.</li>
           <li>In dev mode, <span class="code-inline">DebugCode</span> shows raw JSON from the funding endpoint.</li>
           <li>404 case shows "Project Not Found" (matches <span class="code-inline">ProjectDetail</span> behavior).</li>
@@ -636,18 +645,19 @@
           <li>"FY {year} Project Funding by CAN" half-width card renders carry-forward and new-funding segments with correct labels (<em>Previous FYs Carry-Forward</em>, <em>FY {selectedFY} New Funding</em>).</li>
           <li>"Project Funding By FY" half-width card renders last 5 FYs relative to selected FY using <span class="code-inline">constants.budgetsByFYChartColors</span>; zeros shown for years with no data.</li>
           <li>All cards update when FY selector changes.</li>
-          <li>Cards are gated — no flash of empty/zero values before the first fetch resolves.</li>
+          <li>Cards are gated - no flash of empty/zero values before the first fetch resolves.</li>
           <li>Portfolio colors and abbreviations render correctly for known portfolios; unknown portfolios fall back gracefully.</li>
         </ul>
 
-        <h3>Phase 3</h3>
+        <h3>Phase 3 &#x2705;</h3>
         <ul>
-          <li><span class="code-inline">ProjectFundingCANsTableLoading</span> skeleton shown while fetch is in flight; column headers (including dynamic FY column) preserved so layout does not shift on data arrival.</li>
-          <li>Table renders CAN number, Portfolio, Active Period ("N Year(s)"), FY Project Funding, Lifetime Project Funding for each CAN.</li>
-          <li>Dynamic FY column header updates when FY selector changes (e.g. "FY 25 Project Funding" → "FY 24 Project Funding").</li>
-          <li>Empty state row shown when <span class="code-inline">cans</span> is empty.</li>
-          <li><span class="code-inline">&lt;DebugCode&gt;</span> removed.</li>
-          <li>Unit tests pass at 90%+ coverage for all new components.</li>
+          <li>&#x2705; <span class="code-inline">ProjectFundingCANsTableLoading</span> skeleton shown while fetch is in flight; column headers (including dynamic FY column) preserved so layout does not shift on data arrival.</li>
+          <li>&#x2705; Table renders CAN number (linked to <span class="code-inline">/cans/:id</span>, <span class="code-inline">text-ink text-no-underline</span>), Portfolio, Active Period (&ldquo;N Year(s)&rdquo;), FY Project Funding, Lifetime Project Funding.</li>
+          <li>&#x2705; Dynamic FY column header updates when FY selector changes (e.g. &ldquo;FY 25 Project Funding&rdquo; &rarr; &ldquo;FY 24 Project Funding&rdquo;).</li>
+          <li>&#x2705; Empty state shown when <span class="code-inline">cans</span> is empty.</li>
+          <li>&#x2705; <span class="code-inline">&lt;DebugCode /&gt;</span> retained below the table (dev-only).</li>
+          <li>&#x2705; Chart colors corrected: new CSS tokens + USWDS compiled; <span class="code-inline">Tag.jsx</span> hover cases wired to project-funding colors.</li>
+          <li>&#x2705; 2893 unit tests passing, lint clean.</li>
         </ul>
       </div>
 
@@ -658,7 +668,7 @@
           The <span class="code-inline">funding_by_portfolio</span> array currently returns
           <span class="code-inline">portfolio</span> (full name) but not the portfolio abbreviation.
           The frontend derives the abbreviation by reverse-looking up
-          <span class="code-inline">PORTFOLIO_ORDER</span> constants by name — a fragile coupling
+          <span class="code-inline">PORTFOLIO_ORDER</span> constants by name - a fragile coupling
           that will break if portfolio names drift between backend data and frontend constants.
         </p>
 
@@ -686,7 +696,7 @@
 
           <p style="margin-top:0.5rem"><strong>Additional Context</strong></p>
           <ul>
-            <li>The <span class="code-inline">Portfolio</span> model already has an <span class="code-inline">abbreviation</span> field — this is a minor schema addition</li>
+            <li>The <span class="code-inline">Portfolio</span> model already has an <span class="code-inline">abbreviation</span> field - this is a minor schema addition</li>
             <li>Frontend workaround is in place (reverse-lookup via <span class="code-inline">PORTFOLIO_ORDER</span>) until this lands</li>
             <li>Dependency: <a href="https://github.com/HHS/OPRE-OPS/issues/5275">Issue #5275</a></li>
           </ul>
