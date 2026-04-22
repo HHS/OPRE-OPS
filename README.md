@@ -165,11 +165,41 @@ BACKEND_DOMAIN=http://localhost:58080 \
 docker compose up --build
 ```
 
+### Running Storybook
+
+[Storybook](https://storybook.js.org/) provides an interactive component library for browsing and developing UI components in isolation. It is available in development and staging environments only — not in production.
+
+**Option 1 — standalone (recommended for frontend development):**
+
+```shell
+cd ./frontend/
+bun run storybook
+```
+
+Opens at `http://localhost:6006`.
+
+**Option 2 — via Docker Compose (opt-in profile):**
+
+```shell
+docker compose --profile storybook up storybook
+```
+
+Also opens at `http://localhost:6006`. Useful when you want Storybook running alongside the full stack.
+
+See [`frontend/.storybook/README.md`](./frontend/.storybook/README.md) for conventions on writing and co-locating story files.
+
 
 ## Access
 
 Whether you run the application through Docker or locally, you can access the frontend at `http://localhost:3000` and
 the backend api at `http://localhost:8080`.
+
+[Storybook](https://storybook.js.org/) (component documentation) is available at:
+
+- **Local**: `http://localhost:6006` (see [Running Storybook](#running-storybook) below)
+- **Dev**: `https://dev.ops.opre.acf.gov/storybook`
+- **Staging**: `https://stg.ops.opre.acf.gov/storybook`
+- **Production**: not available
 
 ## Checks
 

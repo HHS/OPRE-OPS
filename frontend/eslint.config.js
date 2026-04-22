@@ -1,3 +1,6 @@
+// For more info, see https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
+import storybook from "eslint-plugin-storybook";
+
 import { fixupConfigRules, fixupPluginRules } from "@eslint/compat";
 import pluginJs from "@eslint/js";
 import pluginJsxA11y from "eslint-plugin-jsx-a11y";
@@ -25,7 +28,14 @@ export default [
         }
     },
     pluginJs.configs.recommended,
-    { files: ["**/*.{js,ts,jsx,tsx}"], languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } } },
+    {
+        files: ["**/*.{js,ts,jsx,tsx}"],
+        languageOptions: {
+            parserOptions: {
+                ecmaFeatures: { jsx: true }
+            }
+        }
+    },
     ...fixupConfigRules(pluginReactConfig),
     ...fixupConfigRules(pluginJsxConfig),
     {
@@ -122,5 +132,6 @@ export default [
             "cypress/no-unnecessary-waiting": "off",
             "cypress/unsafe-to-chain-command": "off"
         }
-    }
+    },
+    ...storybook.configs["flat/recommended"]
 ];
