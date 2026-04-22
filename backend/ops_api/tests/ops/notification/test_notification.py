@@ -6,6 +6,7 @@ from flask import url_for
 from models import AgreementChangeRequest, ChangeRequestStatus, User
 from models.notifications import ChangeRequestNotification, Notification, PreAwardApprovalNotification
 from models.procurement_tracker import (
+    DefaultProcurementTrackerStep,
     ProcurementTracker,
     ProcurementTrackerStep,
     ProcurementTrackerStepStatus,
@@ -371,7 +372,7 @@ def test_pre_award_notification_includes_step_with_approval_status(auth_client, 
     """PreAwardApprovalNotification response includes nested step with approval_status."""
     # Create a PRE_AWARD step with APPROVED status
     tracker = loaded_db.get(ProcurementTracker, 1)
-    step = ProcurementTrackerStep(
+    step = DefaultProcurementTrackerStep(
         procurement_tracker_id=tracker.id,
         step_number=999,
         step_type=ProcurementTrackerStepType.PRE_AWARD,
