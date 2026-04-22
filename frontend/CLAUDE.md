@@ -51,6 +51,31 @@ bun run test:e2e:interactive  # Run E2E tests interactively
 
 Clean state between full test runs: `docker system prune --volumes`
 
+### Storybook
+
+Storybook provides an interactive component browser for developing and reviewing UI components in isolation. It runs on port 6006 and is served at `/storybook` on dev and staging (not production).
+
+```bash
+bun run storybook          # Start dev server at http://localhost:6006
+bun run build-storybook    # Build static output (used in Dockerfile.azure for dev/stg)
+```
+
+**Story file convention** — co-locate stories with their component:
+```
+src/components/UI/Alert/
+  Alert.jsx
+  Alert.test.jsx          ← unit test (unchanged)
+  Alert.stories.jsx       ← new story file
+```
+
+**Global decorators** (configured in `.storybook/preview.jsx`, apply to every story automatically):
+- **Redux `Provider`** — seed store state via `parameters.store.preloadedState`
+- **`MemoryRouter`** — set initial route via `parameters.reactRouter.initialEntries`
+
+**Coverage**: `*.stories.jsx` files are excluded from the 90% coverage gate.
+
+See [`.storybook/README.md`](.storybook/README.md) for the full conventions guide.
+
 ### Code Quality
 
 ```bash
