@@ -1217,7 +1217,7 @@ def test_delete_project_with_single_agreement(projects_service, loaded_db, proje
 
     # Add a single agreement to the project
     agreement = ContractAgreement(
-        name="Test Agreement",
+        name="Test Agreement for Delete Project",
         project_id=project_id,
     )
     loaded_db.add(agreement)
