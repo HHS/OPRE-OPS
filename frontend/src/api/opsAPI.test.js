@@ -1047,7 +1047,7 @@ describe("opsAPI - Wave 2 high-yield endpoint coverage", () => {
         expect(result.data).toEqual([]);
     });
 
-    it("sets limit to 1 when empty agreement IDs array is passed", async () => {
+    it("returns no results when empty agreement IDs array is passed", async () => {
         let capturedUrl = "";
         server.use(
             http.get("*/api/v1/procurement-trackers/*", ({ request }) => {
@@ -1059,7 +1059,8 @@ describe("opsAPI - Wave 2 high-yield endpoint coverage", () => {
         const storeRef = setupApiStore(opsApi);
         await storeRef.store.dispatch(opsApi.endpoints.getProcurementTrackersByAgreementIds.initiate([]));
 
-        expect(capturedUrl).toContain("limit=1");
+        expect(capturedUrl).toContain("agreement_id=-1");
+        expect(capturedUrl).toContain("limit=0");
     });
 
     it("sends POST payload for addAgreement mutation", async () => {
