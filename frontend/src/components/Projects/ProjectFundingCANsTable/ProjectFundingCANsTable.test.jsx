@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect } from "vitest";
+import { MemoryRouter } from "react-router-dom";
 import ProjectFundingCANsTable from "./ProjectFundingCANsTable";
 
 const mockCANs = [
@@ -33,13 +34,18 @@ const mockCANs = [
 ];
 
 describe("ProjectFundingCANsTable", () => {
-    it("renders the table with correct column headers for the selected FY", () => {
+    const renderComponent = (cans = mockCANs, fiscalYear = 2025) =>
         render(
-            <ProjectFundingCANsTable
-                cans={mockCANs}
-                fiscalYear={2025}
-            />
+            <MemoryRouter>
+                <ProjectFundingCANsTable
+                    cans={cans}
+                    fiscalYear={fiscalYear}
+                />
+            </MemoryRouter>
         );
+
+    it("renders the table with correct column headers for the selected FY", () => {
+        renderComponent();
         expect(screen.getByText("CAN")).toBeInTheDocument();
         expect(screen.getByText("Portfolio")).toBeInTheDocument();
         expect(screen.getByText("Active Period")).toBeInTheDocument();
@@ -48,78 +54,57 @@ describe("ProjectFundingCANsTable", () => {
     });
 
     it("updates the FY column header when fiscal year changes", () => {
-        const { rerender } = render(
-            <ProjectFundingCANsTable
-                cans={mockCANs}
-                fiscalYear={2025}
-            />
-        );
+        const { rerender } = renderComponent();
         expect(screen.getByText("FY 25 Project Funding")).toBeInTheDocument();
 
         rerender(
-            <ProjectFundingCANsTable
-                cans={mockCANs}
-                fiscalYear={2024}
-            />
+            <MemoryRouter>
+                <ProjectFundingCANsTable
+                    cans={mockCANs}
+                    fiscalYear={2024}
+                />
+            </MemoryRouter>
         );
         expect(screen.getByText("FY 24 Project Funding")).toBeInTheDocument();
         expect(screen.queryByText("FY 25 Project Funding")).not.toBeInTheDocument();
     });
 
-    it("renders a row for each CAN", () => {
-        render(
-            <ProjectFundingCANsTable
-                cans={mockCANs}
-                fiscalYear={2025}
-            />
-        );
-        expect(screen.getByText("G99MVT3")).toBeInTheDocument();
-        expect(screen.getByText("G994426")).toBeInTheDocument();
-        expect(screen.getByText("G99XXX3")).toBeInTheDocument();
+    it("renders each CAN number as a link to its detail page", () => {
+        renderComponent();
+        const link = screen.getByRole("link", { name: "G99MVT3" });
+        expect(link).toBeInTheDocument();
+        expect(link).toHaveAttribute("href", "/cans/515");
+    });
+
+    it("renders a link for every CAN row", () => {
+        renderComponent();
+        expect(screen.getByRole("link", { name: "G99MVT3" })).toHaveAttribute("href", "/cans/515");
+        expect(screen.getByRole("link", { name: "G994426" })).toHaveAttribute("href", "/cans/504");
+        expect(screen.getByRole("link", { name: "G99XXX3" })).toHaveAttribute("href", "/cans/509");
     });
 
     it("renders portfolio name for each row", () => {
-        render(
-            <ProjectFundingCANsTable
-                cans={mockCANs}
-                fiscalYear={2025}
-            />
-        );
+        renderComponent();
         expect(screen.getByText("Child Care Research")).toBeInTheDocument();
         expect(screen.getByText("Head Start Research")).toBeInTheDocument();
     });
 
     it("formats active_period as '5 Years', '1 Year', and 'TBD' for null", () => {
-        render(
-            <ProjectFundingCANsTable
-                cans={mockCANs}
-                fiscalYear={2025}
-            />
-        );
+        renderComponent();
         expect(screen.getByText("5 Years")).toBeInTheDocument();
         expect(screen.getByText("1 Year")).toBeInTheDocument();
         expect(screen.getByText("TBD")).toBeInTheDocument();
     });
 
     it("renders the empty state when cans is empty", () => {
-        render(
-            <ProjectFundingCANsTable
-                cans={[]}
-                fiscalYear={2025}
-            />
-        );
+        renderComponent([]);
         expect(screen.getByTestId("project-funding-cans-empty")).toBeInTheDocument();
         expect(screen.getByText("No CANs found for this project.")).toBeInTheDocument();
         expect(screen.queryByTestId("project-funding-cans-table")).not.toBeInTheDocument();
     });
 
     it("renders $0.00 for zero fy_funding", () => {
-        render(
-            <ProjectFundingCANsTable
-                cans={[mockCANs[1]]}
-                fiscalYear={2025}
-            />
-        );
+        renderComponent([mockCANs[1]]);
         expect(screen.getAllByText("$0.00").length).toBeGreaterThan(0);
     });
 });

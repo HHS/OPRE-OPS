@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import CurrencyFormat from "react-currency-format";
 import { formatActivePeriod, getTableHeadings } from "./ProjectFundingCANsTable.constants";
 
@@ -56,7 +57,14 @@ const ProjectFundingCANsTable = ({ cans = [], fiscalYear }) => {
             <tbody>
                 {cans.map((can) => (
                     <tr key={can.id}>
-                        <td>{can.number}</td>
+                        <td>
+                            <Link
+                                to={`/cans/${can.id}`}
+                                className="text-primary"
+                            >
+                                {can.number}
+                            </Link>
+                        </td>
                         <td>{can.portfolio}</td>
                         <td>{formatActivePeriod(can.active_period)}</td>
                         <td>
