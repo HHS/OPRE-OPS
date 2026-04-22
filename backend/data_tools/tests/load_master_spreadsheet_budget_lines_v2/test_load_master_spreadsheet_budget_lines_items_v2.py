@@ -458,9 +458,7 @@ def test_main(db_with_data_v2):
     assert action.agreement_id == exec_agreement.id
 
     tracker = db_with_data_v2.execute(
-        select(DefaultProcurementTracker).where(
-            DefaultProcurementTracker.agreement_id == exec_agreement.id
-        )
+        select(DefaultProcurementTracker).where(DefaultProcurementTracker.agreement_id == exec_agreement.id)
     ).scalar_one_or_none()
     assert tracker is not None
     assert tracker.procurement_action == action.id
@@ -1370,9 +1368,7 @@ def test_in_execution_bli_creates_procurement_records(db_with_data_v2):
 
     # Verify tracker was created with step 1 active
     tracker = db_with_data_v2.execute(
-        select(DefaultProcurementTracker).where(
-            DefaultProcurementTracker.agreement_id == contract_agreement.id
-        )
+        select(DefaultProcurementTracker).where(DefaultProcurementTracker.agreement_id == contract_agreement.id)
     ).scalar_one_or_none()
     assert tracker is not None
     assert tracker.procurement_action == action.id
@@ -1493,17 +1489,27 @@ def test_in_execution_bli_with_existing_obligated_creates_modification(db_with_d
     assert obl_bli.procurement_action_id is None
 
     # Cleanup
-    for bli in db_with_data_v2.execute(
-        select(BudgetLineItem).where(BudgetLineItem.agreement_id == contract_agreement.id)
-    ).scalars().all():
+    for bli in (
+        db_with_data_v2.execute(select(BudgetLineItem).where(BudgetLineItem.agreement_id == contract_agreement.id))
+        .scalars()
+        .all()
+    ):
         db_with_data_v2.delete(bli)
-    for tracker in db_with_data_v2.execute(
-        select(ProcurementTracker).where(ProcurementTracker.agreement_id == contract_agreement.id)
-    ).scalars().all():
+    for tracker in (
+        db_with_data_v2.execute(
+            select(ProcurementTracker).where(ProcurementTracker.agreement_id == contract_agreement.id)
+        )
+        .scalars()
+        .all()
+    ):
         db_with_data_v2.delete(tracker)
-    for action in db_with_data_v2.execute(
-        select(ProcurementAction).where(ProcurementAction.agreement_id == contract_agreement.id)
-    ).scalars().all():
+    for action in (
+        db_with_data_v2.execute(
+            select(ProcurementAction).where(ProcurementAction.agreement_id == contract_agreement.id)
+        )
+        .scalars()
+        .all()
+    ):
         db_with_data_v2.delete(action)
     db_with_data_v2.delete(contract_agreement)
     db_with_data_v2.commit()
@@ -1570,9 +1576,13 @@ def test_update_bli_to_in_execution_creates_procurement_records(db_with_data_v2)
 
     # Cleanup
     db_with_data_v2.delete(bli)
-    for tracker in db_with_data_v2.execute(
-        select(ProcurementTracker).where(ProcurementTracker.agreement_id == contract_agreement.id)
-    ).scalars().all():
+    for tracker in (
+        db_with_data_v2.execute(
+            select(ProcurementTracker).where(ProcurementTracker.agreement_id == contract_agreement.id)
+        )
+        .scalars()
+        .all()
+    ):
         db_with_data_v2.delete(tracker)
     db_with_data_v2.delete(action)
     db_with_data_v2.delete(contract_agreement)
@@ -1609,14 +1619,18 @@ def test_planned_bli_does_not_create_procurement_records(db_with_data_v2):
     create_models(data, user, db_with_data_v2)
 
     # No procurement records should exist for this agreement
-    actions = db_with_data_v2.execute(
-        select(ProcurementAction).where(ProcurementAction.agreement_id == grant_agreement.id)
-    ).scalars().all()
+    actions = (
+        db_with_data_v2.execute(select(ProcurementAction).where(ProcurementAction.agreement_id == grant_agreement.id))
+        .scalars()
+        .all()
+    )
     assert len(actions) == 0
 
-    trackers = db_with_data_v2.execute(
-        select(ProcurementTracker).where(ProcurementTracker.agreement_id == grant_agreement.id)
-    ).scalars().all()
+    trackers = (
+        db_with_data_v2.execute(select(ProcurementTracker).where(ProcurementTracker.agreement_id == grant_agreement.id))
+        .scalars()
+        .all()
+    )
     assert len(trackers) == 0
 
     # Cleanup
@@ -1662,22 +1676,32 @@ def test_in_execution_bli_idempotent_procurement_records(db_with_data_v2):
         create_models(data, user, db_with_data_v2)
 
     # Only one action and one tracker
-    actions = db_with_data_v2.execute(
-        select(ProcurementAction).where(ProcurementAction.agreement_id == contract_agreement.id)
-    ).scalars().all()
+    actions = (
+        db_with_data_v2.execute(
+            select(ProcurementAction).where(ProcurementAction.agreement_id == contract_agreement.id)
+        )
+        .scalars()
+        .all()
+    )
     assert len(actions) == 1
 
-    trackers = db_with_data_v2.execute(
-        select(ProcurementTracker).where(ProcurementTracker.agreement_id == contract_agreement.id)
-    ).scalars().all()
+    trackers = (
+        db_with_data_v2.execute(
+            select(ProcurementTracker).where(ProcurementTracker.agreement_id == contract_agreement.id)
+        )
+        .scalars()
+        .all()
+    )
     assert len(trackers) == 1
 
     # Both BLIs linked to the same action
-    blis = db_with_data_v2.execute(
-        select(ContractBudgetLineItem).where(
-            ContractBudgetLineItem.agreement_id == contract_agreement.id
+    blis = (
+        db_with_data_v2.execute(
+            select(ContractBudgetLineItem).where(ContractBudgetLineItem.agreement_id == contract_agreement.id)
         )
-    ).scalars().all()
+        .scalars()
+        .all()
+    )
     assert len(blis) == 2
     assert all(b.procurement_action_id == actions[0].id for b in blis)
 
