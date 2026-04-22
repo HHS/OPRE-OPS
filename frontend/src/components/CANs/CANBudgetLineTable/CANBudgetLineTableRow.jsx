@@ -112,7 +112,7 @@ const CANBudgetLineTableRow = ({
             style={expandedRowBGColor}
         >
             <div className="grid-row grid-gap-4 padding-bottom-1">
-                <dl className="grid-col margin-top-0 font-12px">
+                <dl className="grid-col-auto margin-top-0 font-12px">
                     <dt className="margin-0 text-base-dark">Created By</dt>
                     <dd className="margin-0">
                         <div id={`created-by-name-${blId}`}>{budgetLineCreatorName}</div>
@@ -136,7 +136,7 @@ const CANBudgetLineTableRow = ({
                     <dd className="margin-0">{`${procShopLabel}`}</dd>
                 </dl>
 
-                <dl className="grid-col margin-top-0 font-12px">
+                <dl className="grid-col-auto margin-top-0 font-12px">
                     <dt className="margin-0 text-base-dark">SubTotal</dt>
                     <dd className="margin-0">
                         <CurrencyFormat
@@ -149,7 +149,7 @@ const CANBudgetLineTableRow = ({
                         />
                     </dd>
                 </dl>
-                <dl className="grid-col margin-top-0 font-12px">
+                <dl className="grid-col-auto margin-top-0 font-12px">
                     <dt className="margin-0 text-base-dark">Fees</dt>
                     <dd className="margin-0">
                         <CurrencyFormat

@@ -180,7 +180,7 @@ const BLIRow = ({
                         </div>
                     </dd>
                 </dl>
-                <dl className="grid-col-5 margin-top-0 font-12px">
+                <dl className="grid-col-4 margin-top-0 font-12px">
                     <dt className="margin-0 text-base-dark">Description</dt>
                     <dd className="margin-0 wrap-text">{budgetLine?.line_description}</dd>
                 </dl>
