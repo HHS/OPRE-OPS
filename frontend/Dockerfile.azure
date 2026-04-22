@@ -1,5 +1,5 @@
 # ---- Dependency Installation Stage ----
-FROM oven/bun@sha256:8956c7667fa17beb6e3c664115e66bdacfe502da5d99603626e74c197bdef160 as deps
+FROM oven/bun@sha256:87416c977a612a204eb54ab9f3927023c2a3c971f4f345a01da08ea6262ae30e as deps
 
 WORKDIR /home/bun/app
 
@@ -36,7 +36,7 @@ COPY vite-env/env.${MODE}.local .env
 RUN VITE_BACKEND_DOMAIN=${VITE_BACKEND_DOMAIN} VITE_ENABLE_MSW=${VITE_ENABLE_MSW} NODE_ENV=${MODE} bun run build --mode ${MODE}
 
 # ---- Release Stage ----
-FROM alpine:3.23.3 as release
+FROM alpine:3.23.4 as release
 
 # hadolint ignore=DL3018
 RUN apk update && apk add --no-cache nginx && rm -rf /var/cache/apk/*
