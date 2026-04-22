@@ -991,7 +991,7 @@ def _compute_procurement_step_summary(all_results: list[Agreement], fiscal_year:
     def _percent(value, total):
         if total == 0:
             return 0.0
-        return round((value / total) * 100)
+        return float(round((float(value) / float(total)) * 100))
 
     step_data = []
     for step in range(1, 7):
