@@ -244,66 +244,6 @@
         </p>
       </div>
 
-      <!-- Updated Issue Story -->
-      <div class="section" id="issue-story">
-        <h2>Updated GitHub Issue Story</h2>
-        <p style="font-size:0.85rem;color:#71767a;margin-bottom:0.75rem">Copy this into <a href="https://github.com/HHS/OPRE-OPS/issues/5275">#5275</a> to replace the original story.</p>
-
-        <pre class="api-sample" style="color:#e8e8e8;white-space:pre-wrap">
-### User Story
-As an OPRE user, I want to view the Project Funding tab on a project detail page
-so that I can understand how a project is funded across portfolios and CANs for any fiscal year.
-
-### Acceptance Criteria
-
-**Phase 1 — API Hook + Route + FY Selector** &#x2705;
-- [x] Navigating to `/projects/:id/funding` renders without errors
-- [x] The Project Funding tab is enabled (no &quot;Coming Soon&quot; tooltip or disabled attribute)
-- [x] A Fiscal Year selector is visible, defaults to the current FY, and triggers a re-fetch on change
-- [x] 404 projects show &quot;Project Not Found&quot;
-- [x] No regressions on Project Details or Project Spending tabs
-
-**Phase 2 — Project Funding Summary Cards** &#x2705;
-- [x] &quot;FY {year} Project Funding by Portfolio&quot; full-width card renders total, stacked bar, and legend
-      (abbreviation, dollar amount, percent) — colors from PORTFOLIO_ORDER constants
-- [x] &quot;FY {year} Project Funding by CAN&quot; half-width card renders carry-forward and new-funding segments
-      labeled &quot;Previous FYs Carry-Forward&quot; and &quot;FY {selectedFY} New Funding&quot;
-- [x] &quot;Project Funding By FY&quot; half-width card renders last 5 FYs relative to selected FY; zeros for missing years
-- [x] All summary cards update when the FY selector changes
-- [x] Cards are gated — no flash of empty/zero values before the first fetch resolves
-
-**Phase 3 — Project Funding by CAN Table** &#x2705;
-- [x] Skeleton loader shown while fetch is in flight; column headers preserved
-- [x] Table renders: CAN, Portfolio, Active Period (&quot;N Year(s)&quot;), FY Project Funding, Lifetime Project Funding
-- [x] Dynamic FY column header updates with selector (e.g. &quot;FY 25&quot; &#x2192; &quot;FY 24&quot;)
-- [x] Empty-state row shown when no CANs exist for the project
-- [x] DebugCode removed
-- [x] Unit tests pass at 90%+ coverage for all new components
-
-### Tasks
-#### Dev
-- [x] Phase 1: `useGetProjectFundingByIdQuery` in `opsAPI.js`, `ProjectFunding.jsx` page,
-      route in `index.jsx`, un-disable tab in `ProjectDetailTabs.jsx`, unit tests — **merged**
-- [x] Phase 2: `ProjectFundingByPortfolioCard`, `ProjectFundingByCANCard`,
-      `ProjectFundingByFYCard` components + unit tests — **merged**
-- [x] Phase 3: `ProjectFundingCANsTable` + `ProjectFundingCANsTableLoading` + unit tests — **merged**
-- [ ] File backend story to add `abbreviation` to `funding_by_portfolio` response
-      (see build plan for template)
-
-### Definition of Done Checklist
-- [ ] UI works as designed (UX team)
-- [ ] PR(s) merged to main
-- [ ] Unit tests pass at 90%+ coverage
-- [ ] Linting passes
-
-### Additional Context &amp; Resources
-- Build plan: `docs/developers/frontend/issue-5275-project-funding-tab.html`
-- Backend endpoint: `GET /api/v1/projects/&lt;id&gt;/funding/?fiscal_year=YYYY` (already exists)
-- Follows phased pattern from PR #5554 (Project Spending tab)
-- FY selector convention follows `Can.hooks.js` (`getCurrentFiscalYear()` default, re-fetch on change)
-        </pre>
-      </div>
-
       <!-- Goal -->
       <div class="section">
         <h2>Goal</h2>
