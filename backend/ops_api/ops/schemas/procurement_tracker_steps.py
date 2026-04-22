@@ -40,14 +40,29 @@ class ProcurementTrackerStepNotificationSchema(Schema):
     @pre_dump
     def map_pre_award_fields(self, data, **kwargs):
         """Map pre-award prefixed fields to generic API names."""
-        if hasattr(data, "pre_award_approval_status"):
+        # Handle dict inputs (from to_dict() or test fixtures)
+        if isinstance(data, dict):
+            step_type = data.get("step_type")
+            if step_type != ProcurementTrackerStepType.PRE_AWARD:
+                return data
             return {
-                "id": data.id,
-                "step_type": data.step_type,
-                "approval_status": data.pre_award_approval_status,
-                "approval_requested": data.pre_award_approval_requested,
+                "id": data.get("id"),
+                "step_type": step_type,
+                "approval_status": data.get("pre_award_approval_status"),
+                "approval_requested": data.get("pre_award_approval_requested"),
             }
-        return data
+
+        # Handle ORM object inputs
+        step_type = getattr(data, "step_type", None)
+        if step_type != ProcurementTrackerStepType.PRE_AWARD:
+            return data
+
+        return {
+            "id": data.id,
+            "step_type": step_type,
+            "approval_status": data.pre_award_approval_status,
+            "approval_requested": data.pre_award_approval_requested,
+        }
 
 
 class ProcurementTrackerStepResponseSchema(Schema):
