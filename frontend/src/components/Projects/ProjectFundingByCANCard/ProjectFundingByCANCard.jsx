@@ -20,14 +20,14 @@ const ProjectFundingByCANCard = ({ fiscalYear, fundingByCAN = {} }) => {
             label: "Previous FYs Carry-Forward",
             value: carry_forward_funding,
             color: "var(--project-funding-carry-forward)",
-            tagActiveStyle: "portfolioCarryForward"
+            tagActiveStyle: "projectFundingCarryForward"
         },
         {
             id: 2,
             label: `FY ${fiscalYear} New Funding`,
             value: new_funding,
             color: "var(--project-funding-new-funding)",
-            tagActiveStyle: "portfolioNewFunding"
+            tagActiveStyle: "projectFundingNewFunding"
         }
     ]);
 
