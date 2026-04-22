@@ -381,7 +381,7 @@ def test_reviewer_notes_prevent_markdown_injection(auth_client, test_pre_award_s
     loaded_db.commit()
 
     # Respond with approval and Markdown injection attempt
-    malicious_notes = "**Bold** text with [link](http://example.com) and ![image](url)"
+    malicious_notes = "**Bold** text with [link](http://example.com) and ```code``` attempt"
     update_data = {
         "approval_status": "APPROVED",
         "reviewer_notes": malicious_notes,
@@ -398,9 +398,43 @@ def test_reviewer_notes_prevent_markdown_injection(auth_client, test_pre_award_s
     ).first()
 
     assert notification is not None, "Notification should be created"
-    # Verify notes are wrapped in code block (prevents Markdown rendering)
-    assert "```" in notification.message, "Notes should be wrapped in code block"
+    # Verify notes are wrapped in 5-backtick code block (prevents Markdown rendering)
+    assert "`````" in notification.message, "Notes should be wrapped in 5-backtick code block"
     # Verify the raw Markdown syntax is preserved as plain text
     assert "**Bold**" in notification.message, "Markdown syntax should be preserved literally"
     assert "[link]" in notification.message, "Link syntax should be preserved literally"
-    assert "![image]" in notification.message, "Image syntax should be preserved literally"
+    assert "```code```" in notification.message, "Triple backticks should be preserved literally"
+
+
+def test_reviewer_notes_backtick_injection_prevented(auth_client, test_pre_award_step, loaded_db):
+    """Test that triple backticks in reviewer notes don't break the code fence."""
+    # Setup: approval requested by user 500
+    test_pre_award_step.pre_award_approval_requested = True
+    test_pre_award_step.pre_award_approval_requested_date = date.today()
+    test_pre_award_step.pre_award_approval_requested_by = 500
+    loaded_db.commit()
+
+    # Try to break the code fence with triple backticks followed by markdown
+    injection_attempt = "Approved\n```\n**This should NOT render as bold**"
+    update_data = {
+        "approval_status": "APPROVED",
+        "reviewer_notes": injection_attempt,
+    }
+    response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}", json=update_data)
+    assert response.status_code == 200
+
+    # Query for the notification
+    notification = loaded_db.scalars(
+        select(Notification)
+        .where(Notification.title == "Pre-Award Approval Approved")
+        .where(Notification.recipient_id == test_pre_award_step.pre_award_approval_requested_by)
+        .order_by(Notification.created_on.desc())
+    ).first()
+
+    assert notification is not None, "Notification should be created"
+    # Verify 5-backtick fence is used
+    assert notification.message.count("`````") == 2, "Should have opening and closing 5-backtick fences"
+    # Verify triple backticks are contained within the fence (appear in raw form)
+    assert "```" in notification.message, "Triple backticks should be preserved"
+    # Verify the markdown after triple backticks is also preserved literally
+    assert "**This should NOT render as bold**" in notification.message, "Markdown after backticks should be literal"

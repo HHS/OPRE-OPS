@@ -361,8 +361,9 @@ class ProcurementTrackerStepService:
                     f"has been {status_text} by {current_user.full_name}."
                 )
                 if step.pre_award_approval_reviewer_notes and step.pre_award_approval_reviewer_notes.strip():
-                    escaped_notes = step.pre_award_approval_reviewer_notes.strip()
-                    message += f"\n\nNotes:\n```\n{escaped_notes}\n```"
+                    reviewer_notes_text = step.pre_award_approval_reviewer_notes.strip()
+                    # Use 5 backticks to safely contain any triple-backtick sequences in notes
+                    message += f"\n\nNotes:\n`````\n{reviewer_notes_text}\n`````"
 
                 notification_service.create(
                     {
