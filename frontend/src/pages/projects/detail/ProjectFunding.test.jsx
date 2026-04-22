@@ -62,6 +62,10 @@ vi.mock("../../../components/Projects/ProjectFundingCANsTable/ProjectFundingCANs
     default: () => <div data-testid="project-funding-cans-table-loading" />
 }));
 
+vi.mock("../../../components/DebugCode", () => ({
+    default: ({ data }) => <pre data-testid="debug-code">{JSON.stringify(data)}</pre>
+}));
+
 const mockProject = {
     id: 1000,
     title: "Human Services Interoperability Support",
@@ -162,6 +166,7 @@ describe("ProjectFunding", () => {
         expect(screen.getByTestId("project-funding-by-can-card")).toBeInTheDocument();
         expect(screen.getByTestId("project-funding-by-fy-card")).toBeInTheDocument();
         expect(screen.getByTestId("project-funding-cans-table")).toBeInTheDocument();
+        expect(screen.getByTestId("debug-code")).toBeInTheDocument();
     });
 
     it("passes CAN data to the table", () => {

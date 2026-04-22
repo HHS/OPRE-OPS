@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import App from "../../../App";
 import { useGetPortfoliosQuery, useGetProjectByIdQuery, useGetProjectFundingByIdQuery } from "../../../api/opsAPI";
+import DebugCode from "../../../components/DebugCode";
 import ProjectFundingByCANCard from "../../../components/Projects/ProjectFundingByCANCard/ProjectFundingByCANCard";
 import ProjectFundingByFYCard from "../../../components/Projects/ProjectFundingByFYCard/ProjectFundingByFYCard";
 import ProjectFundingByPortfolioCard from "../../../components/Projects/ProjectFundingByPortfolioCard/ProjectFundingByPortfolioCard";
@@ -143,6 +144,7 @@ const ProjectFunding = () => {
                     />
                 )}
             </section>
+            <DebugCode data={fundingData} />
         </App>
     );
 };
