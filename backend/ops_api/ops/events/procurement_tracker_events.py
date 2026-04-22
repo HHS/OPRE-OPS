@@ -30,13 +30,13 @@ from models.procurement_tracker import ProcurementTrackerStatus
 
 def procurement_tracker_trigger(event: OpsEvent, session: Session) -> None:
     """
-    Handle UPDATE_CHANGE_REQUEST and UPDATE_BLIevents to create procurement tracker and action.
+    Handle UPDATE_CHANGE_REQUEST and UPDATE_BLI events to create procurement tracker and action.
 
     Creates DefaultProcurementTracker and ProcurementAction when:
     - A BudgetLineItemChangeRequest is approved
-    - The budget line status changes to IN_EXECUTION
-    - The agreement is not yet awarded
-    - Neither tracker nor action exists yet for the agreement
+    - OR The budget line status changes to IN_EXECUTION
+    - AND The agreement is not yet awarded
+    - AND Neither tracker nor action exists yet for the agreement
 
     This subscriber implements idempotency to handle multiple budget lines
     transitioning to IN_EXECUTION at different times.
@@ -188,6 +188,7 @@ def _validate_no_change_requests_for_bli(session: Session, budget_line_item_id: 
     """
     cr_stmt = select(BudgetLineItemChangeRequest).where(
         BudgetLineItemChangeRequest.budget_line_item_id == budget_line_item_id,
+        BudgetLineItemChangeRequest.status == ChangeRequestStatus.APPROVED,
     )
     change_requests = session.scalars(cr_stmt).all()
 

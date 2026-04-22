@@ -1437,9 +1437,8 @@ def test_update_budget_line_to_planned_does_not_create_tracker(mock_session, moc
     event.event_type = OpsEventType.UPDATE_BLI
     event.created_by = 42
     event.event_details = {
-        "budget_line_item_id": 1,
-        "agreement_id": 100,
-        "changes": {"status": {"old_value": "DRAFT", "new_value": "PLANNED"}},
+        "bli": {"id": 1, "agreement_id": 100},
+        "bli_updates": {"changes": {"status": {"old_value": "DRAFT", "new_value": "PLANNED"}}},
     }
 
     mock_session.get.side_effect = lambda model_class, id: {
