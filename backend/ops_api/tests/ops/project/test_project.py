@@ -4,6 +4,7 @@ from decimal import Decimal
 
 import pytest
 from flask import url_for
+from sqlalchemy import text
 
 from models import (
     CAN,
@@ -1082,6 +1083,178 @@ def test_patch_project_change_type_preserves_relationships(budget_team_auth_clie
     assert len(updated.team_leaders) == 1
     assert updated.team_leaders[0].id == 500
     assert len(updated.agreements) == 1
+
+
+def test_change_type_creates_version_records_research_to_admin(budget_team_auth_client, loaded_db):
+    """Test that changing Research -> Admin creates correct version rows."""
+    project = ResearchProject(
+        project_type=ProjectType.RESEARCH,
+        title="Version Test R2A",
+        short_title="VTR2A",
+        description="Test version tracking for type change",
+    )
+    loaded_db.add(project)
+    loaded_db.commit()
+    loaded_db.refresh(project)
+    project_id = project.id
+
+    data = {"project_type": ProjectType.ADMINISTRATIVE_AND_SUPPORT.name}
+    response = budget_team_auth_client.patch(url_for("api.projects-item", id=project_id), json=data)
+    assert response.status_code == 200
+
+    # Verify project_version has an UPDATE record (operation_type=1) with the new type
+    pv_rows = loaded_db.execute(
+        text(
+            "SELECT project_type, operation_type FROM project_version"
+            " WHERE id = :id ORDER BY transaction_id DESC LIMIT 1"
+        ),
+        {"id": project_id},
+    ).fetchall()
+    assert len(pv_rows) >= 1
+    assert pv_rows[0][0] == "ADMINISTRATIVE_AND_SUPPORT"
+    assert pv_rows[0][1] == 1  # UPDATE
+
+    # Verify research_project_version has a DELETE record (operation_type=2)
+    rpv_rows = loaded_db.execute(
+        text(
+            "SELECT operation_type FROM research_project_version" " WHERE id = :id ORDER BY transaction_id DESC LIMIT 1"
+        ),
+        {"id": project_id},
+    ).fetchall()
+    assert len(rpv_rows) >= 1
+    assert rpv_rows[0][0] == 2  # DELETE
+
+    # Verify administrative_and_support_project_version has an INSERT record (operation_type=0)
+    aspv_rows = loaded_db.execute(
+        text(
+            "SELECT operation_type FROM administrative_and_support_project_version"
+            " WHERE id = :id ORDER BY transaction_id DESC LIMIT 1"
+        ),
+        {"id": project_id},
+    ).fetchall()
+    assert len(aspv_rows) >= 1
+    assert aspv_rows[0][0] == 0  # INSERT
+
+
+def test_change_type_creates_version_records_admin_to_research(budget_team_auth_client, loaded_db):
+    """Test that changing Admin -> Research creates correct version rows."""
+    project = AdministrativeAndSupportProject(
+        project_type=ProjectType.ADMINISTRATIVE_AND_SUPPORT,
+        title="Version Test A2R",
+        short_title="VTA2R",
+        description="Test version tracking for type change",
+    )
+    loaded_db.add(project)
+    loaded_db.commit()
+    loaded_db.refresh(project)
+    project_id = project.id
+
+    data = {"project_type": ProjectType.RESEARCH.name}
+    response = budget_team_auth_client.patch(url_for("api.projects-item", id=project_id), json=data)
+    assert response.status_code == 200
+
+    # Verify project_version has an UPDATE record with the new type
+    pv_rows = loaded_db.execute(
+        text(
+            "SELECT project_type, operation_type FROM project_version"
+            " WHERE id = :id ORDER BY transaction_id DESC LIMIT 1"
+        ),
+        {"id": project_id},
+    ).fetchall()
+    assert len(pv_rows) >= 1
+    assert pv_rows[0][0] == "RESEARCH"
+    assert pv_rows[0][1] == 1  # UPDATE
+
+    # Verify administrative_and_support_project_version has a DELETE record
+    aspv_rows = loaded_db.execute(
+        text(
+            "SELECT operation_type FROM administrative_and_support_project_version"
+            " WHERE id = :id ORDER BY transaction_id DESC LIMIT 1"
+        ),
+        {"id": project_id},
+    ).fetchall()
+    assert len(aspv_rows) >= 1
+    assert aspv_rows[0][0] == 2  # DELETE
+
+    # Verify research_project_version has an INSERT record
+    rpv_rows = loaded_db.execute(
+        text(
+            "SELECT operation_type FROM research_project_version" " WHERE id = :id ORDER BY transaction_id DESC LIMIT 1"
+        ),
+        {"id": project_id},
+    ).fetchall()
+    assert len(rpv_rows) >= 1
+    assert rpv_rows[0][0] == 0  # INSERT
+
+
+def test_change_type_version_records_share_transaction(budget_team_auth_client, loaded_db):
+    """Test that all version rows from a type change share the same transaction_id."""
+    project = ResearchProject(
+        project_type=ProjectType.RESEARCH,
+        title="Version Txn Test",
+        short_title="VTT",
+        description="Test shared transaction",
+    )
+    loaded_db.add(project)
+    loaded_db.commit()
+    loaded_db.refresh(project)
+    project_id = project.id
+
+    data = {"project_type": ProjectType.ADMINISTRATIVE_AND_SUPPORT.name}
+    response = budget_team_auth_client.patch(url_for("api.projects-item", id=project_id), json=data)
+    assert response.status_code == 200
+
+    pv_txn = loaded_db.execute(
+        text("SELECT transaction_id FROM project_version WHERE id = :id ORDER BY transaction_id DESC LIMIT 1"),
+        {"id": project_id},
+    ).scalar()
+
+    rpv_txn = loaded_db.execute(
+        text("SELECT transaction_id FROM research_project_version WHERE id = :id ORDER BY transaction_id DESC LIMIT 1"),
+        {"id": project_id},
+    ).scalar()
+
+    aspv_txn = loaded_db.execute(
+        text(
+            "SELECT transaction_id FROM administrative_and_support_project_version"
+            " WHERE id = :id ORDER BY transaction_id DESC LIMIT 1"
+        ),
+        {"id": project_id},
+    ).scalar()
+
+    assert pv_txn is not None
+    assert pv_txn == rpv_txn
+    assert pv_txn == aspv_txn
+
+
+def test_change_type_noop_creates_no_version_records(budget_team_auth_client, loaded_db):
+    """Test that setting project_type to the same value creates no new version rows."""
+    project = ResearchProject(
+        project_type=ProjectType.RESEARCH,
+        title="Version Noop Test",
+        short_title="VNT",
+        description="Test no-op creates no versions",
+    )
+    loaded_db.add(project)
+    loaded_db.commit()
+    loaded_db.refresh(project)
+    project_id = project.id
+
+    pv_count_before = loaded_db.execute(
+        text("SELECT count(*) FROM project_version WHERE id = :id"),
+        {"id": project_id},
+    ).scalar()
+
+    data = {"project_type": ProjectType.RESEARCH.name}
+    response = budget_team_auth_client.patch(url_for("api.projects-item", id=project_id), json=data)
+    assert response.status_code == 200
+
+    pv_count_after = loaded_db.execute(
+        text("SELECT count(*) FROM project_version WHERE id = :id"),
+        {"id": project_id},
+    ).scalar()
+
+    assert pv_count_after == pv_count_before
 
 
 def test_patch_project_auth_required(client, loaded_db, project_with_no_agreements):

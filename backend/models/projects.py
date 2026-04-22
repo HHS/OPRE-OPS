@@ -84,12 +84,38 @@ class Project(BaseModel):
         old_table = child_tables[self.project_type]
         new_table = child_tables[new_type]
 
+        # Create a continuum transaction for version tracking
+        txn_id = session.execute(
+            text("INSERT INTO transaction (issued_at) VALUES (NOW()) RETURNING id")
+        ).scalar()
+
+        # Mutate the live tables
         session.execute(text(f"INSERT INTO {new_table} (id) VALUES (:id)"), {"id": self.id})
         session.execute(
             text("UPDATE project SET project_type = :new_type WHERE id = :id"),
             {"new_type": new_type.name, "id": self.id},
         )
         session.execute(text(f"DELETE FROM {old_table} WHERE id = :id"), {"id": self.id})
+
+        # Record version history: DELETE old child, INSERT new child, UPDATE parent
+        session.execute(
+            text(f"INSERT INTO {old_table}_version (id, transaction_id, operation_type) VALUES (:id, :txn, 2)"),
+            {"id": self.id, "txn": txn_id},
+        )
+        session.execute(
+            text(f"INSERT INTO {new_table}_version (id, transaction_id, operation_type) VALUES (:id, :txn, 0)"),
+            {"id": self.id, "txn": txn_id},
+        )
+        session.execute(
+            text(
+                "INSERT INTO project_version (id, project_type, title, short_title, description, url,"
+                " created_by, updated_by, created_on, updated_on, transaction_id, operation_type)"
+                " SELECT id, project_type, title, short_title, description, url,"
+                " created_by, updated_by, created_on, updated_on, :txn, 1"
+                " FROM project WHERE id = :id"
+            ),
+            {"id": self.id, "txn": txn_id},
+        )
 
         session.expire_all()
 
