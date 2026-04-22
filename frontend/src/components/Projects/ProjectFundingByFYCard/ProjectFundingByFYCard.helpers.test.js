@@ -56,7 +56,7 @@ describe("buildFYChartData", () => {
     it("assigns a color from budgetsByFYChartColors to each bar", () => {
         const result = buildFYChartData(mockFundingByFiscalYear, 2025);
         result.forEach((item) => {
-            expect(item.color).toMatch(/var\(--can-budget-by-fy-graph-/);
+            expect(item.color).toMatch(/var\(--project-funding-by-fy-graph-/);
         });
     });
 

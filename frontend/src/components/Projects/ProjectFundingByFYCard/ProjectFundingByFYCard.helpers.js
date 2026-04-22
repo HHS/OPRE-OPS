@@ -1,6 +1,6 @@
 import constants from "../../../constants";
 
-const { budgetsByFYChartColors } = constants;
+const { projectFundingByFYChartColors } = constants;
 
 /**
  * Returns the last 5 fiscal years counting back from the given year (inclusive).
@@ -29,6 +29,6 @@ export const buildFYChartData = (fundingByFiscalYear, fiscalYear) => {
         FY: item.fy,
         total: item.total,
         ratio: item.total / maxTotal,
-        color: budgetsByFYChartColors[index].color
+        color: projectFundingByFYChartColors[index].color
     }));
 };
