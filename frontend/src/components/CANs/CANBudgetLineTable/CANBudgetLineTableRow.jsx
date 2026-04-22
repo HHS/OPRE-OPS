@@ -111,7 +111,7 @@ const CANBudgetLineTableRow = ({
             className="border-top-none"
             style={expandedRowBGColor}
         >
-            <div className="grid-row grid-gap-4">
+            <div className="grid-row grid-gap-4 padding-bottom-1">
                 <dl className="grid-col margin-top-0 font-12px">
                     <dt className="margin-0 text-base-dark">Created By</dt>
                     <dd
@@ -120,8 +120,7 @@ const CANBudgetLineTableRow = ({
                     >
                         {budgetLineCreatorName}
                     </dd>
-                    <dt className="margin-0 text-base-dark margin-top-2">Created on</dt>
-                    <dd className="margin-0 display-flex flex-align-center text-normal">
+                    <dd className="margin-0 margin-top-2 display-flex flex-align-center text-base-dark text-normal">
                         <FontAwesomeIcon
                             icon={faClock}
                             className="height-2 width-2 margin-right-1"
