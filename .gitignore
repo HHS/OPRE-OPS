@@ -204,7 +204,7 @@ yarn-error.log*
 *.drawio.bkp
 *.db
 claude.sh
-.claude
+
 
 # Local .terraform directories
 **/.terraform/*
