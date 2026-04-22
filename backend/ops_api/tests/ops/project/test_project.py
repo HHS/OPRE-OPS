@@ -7,6 +7,7 @@ from flask import url_for
 
 from models import (
     CAN,
+    AdministrativeAndSupportProject,
     AgreementType,
     BudgetLineItem,
     BudgetLineItemStatus,
@@ -982,11 +983,105 @@ def test_patch_project_cannot_change_id(budget_team_auth_client, loaded_db, proj
     assert response.status_code == 400
 
 
-def test_patch_project_cannot_change_project_type(budget_team_auth_client, loaded_db, project_with_no_agreements):
-    """Test that project_type cannot be changed."""
+def test_patch_project_change_type_research_to_admin(budget_team_auth_client, loaded_db, project_with_no_agreements):
+    """Test changing project type from Research to Administrative and Support."""
+    project_id = project_with_no_agreements.id
+    assert project_with_no_agreements.project_type == ProjectType.RESEARCH
+
     data = {"project_type": ProjectType.ADMINISTRATIVE_AND_SUPPORT.name}
-    response = budget_team_auth_client.patch(url_for("api.projects-item", id=project_with_no_agreements.id), json=data)
-    assert response.status_code == 400
+    response = budget_team_auth_client.patch(url_for("api.projects-item", id=project_id), json=data)
+    assert response.status_code == 200
+
+    loaded_db.expire_all()
+    project = loaded_db.get(Project, project_id)
+    assert project.project_type == ProjectType.ADMINISTRATIVE_AND_SUPPORT
+    assert isinstance(project, AdministrativeAndSupportProject)
+
+
+def test_patch_project_change_type_admin_to_research(budget_team_auth_client, loaded_db):
+    """Test changing project type from Administrative and Support to Research."""
+    admin_project = AdministrativeAndSupportProject(
+        project_type=ProjectType.ADMINISTRATIVE_AND_SUPPORT,
+        title="Admin Project For Type Change",
+        short_title="APTC",
+        description="Test admin project",
+    )
+    loaded_db.add(admin_project)
+    loaded_db.commit()
+    loaded_db.refresh(admin_project)
+    project_id = admin_project.id
+
+    data = {"project_type": ProjectType.RESEARCH.name}
+    response = budget_team_auth_client.patch(url_for("api.projects-item", id=project_id), json=data)
+    assert response.status_code == 200
+
+    loaded_db.expire_all()
+    project = loaded_db.get(Project, project_id)
+    assert project.project_type == ProjectType.RESEARCH
+    assert isinstance(project, ResearchProject)
+    assert project.origination_date is None
+
+
+def test_patch_project_change_type_same_type_noop(budget_team_auth_client, loaded_db, project_with_no_agreements):
+    """Test that setting project_type to the same value is a no-op."""
+    project_id = project_with_no_agreements.id
+    data = {"project_type": ProjectType.RESEARCH.name}
+    response = budget_team_auth_client.patch(url_for("api.projects-item", id=project_id), json=data)
+    assert response.status_code == 200
+
+    loaded_db.expire_all()
+    project = loaded_db.get(Project, project_id)
+    assert project.project_type == ProjectType.RESEARCH
+    assert isinstance(project, ResearchProject)
+
+
+def test_patch_project_change_type_with_other_fields(budget_team_auth_client, loaded_db, project_with_no_agreements):
+    """Test changing project type and other fields simultaneously."""
+    project_id = project_with_no_agreements.id
+    data = {
+        "project_type": ProjectType.ADMINISTRATIVE_AND_SUPPORT.name,
+        "title": "Now An Admin Project",
+    }
+    response = budget_team_auth_client.patch(url_for("api.projects-item", id=project_id), json=data)
+    assert response.status_code == 200
+
+    loaded_db.expire_all()
+    project = loaded_db.get(Project, project_id)
+    assert project.project_type == ProjectType.ADMINISTRATIVE_AND_SUPPORT
+    assert project.title == "Now An Admin Project"
+
+
+def test_patch_project_change_type_preserves_relationships(budget_team_auth_client, loaded_db):
+    """Test that changing project type preserves team leaders and agreements."""
+    project = ResearchProject(
+        project_type=ProjectType.RESEARCH,
+        title="Research With Relations",
+        short_title="RWR",
+        description="Test project with relationships",
+    )
+    loaded_db.add(project)
+    loaded_db.commit()
+    loaded_db.refresh(project)
+    project_id = project.id
+
+    from models import User
+
+    user = loaded_db.get(User, 500)
+    project.team_leaders = [user]
+    agreement = ContractAgreement(name="Test Agreement", project_id=project_id)
+    loaded_db.add(agreement)
+    loaded_db.commit()
+
+    data = {"project_type": ProjectType.ADMINISTRATIVE_AND_SUPPORT.name}
+    response = budget_team_auth_client.patch(url_for("api.projects-item", id=project_id), json=data)
+    assert response.status_code == 200
+
+    loaded_db.expire_all()
+    updated = loaded_db.get(Project, project_id)
+    assert updated.project_type == ProjectType.ADMINISTRATIVE_AND_SUPPORT
+    assert len(updated.team_leaders) == 1
+    assert updated.team_leaders[0].id == 500
+    assert len(updated.agreements) == 1
 
 
 def test_patch_project_auth_required(client, loaded_db, project_with_no_agreements):

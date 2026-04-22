@@ -2,9 +2,9 @@ from enum import Enum
 from typing import Optional
 from decimal import Decimal
 
-from sqlalchemy import Date, ForeignKey, Index, Sequence, String, Text
+from sqlalchemy import Date, ForeignKey, Index, Sequence, String, Text, text
 from sqlalchemy.dialects.postgresql import ENUM
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column, object_session, relationship
 from typing_extensions import List
 
 from models.base import BaseModel
@@ -69,6 +69,29 @@ class Project(BaseModel):
     @BaseModel.display_name.getter
     def display_name(self):
         return self.title
+
+    def change_type(self, new_type: "ProjectType") -> None:
+        if self.project_type == new_type:
+            return
+
+        session = object_session(self)
+
+        child_tables = {
+            ProjectType.RESEARCH: "research_project",
+            ProjectType.ADMINISTRATIVE_AND_SUPPORT: "administrative_and_support_project",
+        }
+
+        old_table = child_tables[self.project_type]
+        new_table = child_tables[new_type]
+
+        session.execute(text(f"INSERT INTO {new_table} (id) VALUES (:id)"), {"id": self.id})
+        session.execute(
+            text("UPDATE project SET project_type = :new_type WHERE id = :id"),
+            {"new_type": new_type.name, "id": self.id},
+        )
+        session.execute(text(f"DELETE FROM {old_table} WHERE id = :id"), {"id": self.id})
+
+        session.expire_all()
 
     @property
     def project_metadata(self) -> dict:
