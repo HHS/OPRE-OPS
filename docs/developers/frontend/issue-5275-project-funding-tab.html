@@ -257,29 +257,28 @@ so that I can understand how a project is funded across portfolios and CANs for 
 ### Acceptance Criteria
 
 **Phase 1 — API Hook + Route + FY Selector** &#x2705;
-- [ ] Navigating to `/projects/:id/funding` renders without errors
-- [ ] The Project Funding tab is enabled (no &quot;Coming Soon&quot; tooltip or disabled attribute)
-- [ ] A Fiscal Year selector is visible, defaults to the current FY, and triggers a re-fetch on change
-- [ ] In dev mode, DebugCode shows the raw JSON from `GET /projects/:id/funding/`
-- [ ] 404 projects show &quot;Project Not Found&quot;
-- [ ] No regressions on Project Details or Project Spending tabs
+- [x] Navigating to `/projects/:id/funding` renders without errors
+- [x] The Project Funding tab is enabled (no &quot;Coming Soon&quot; tooltip or disabled attribute)
+- [x] A Fiscal Year selector is visible, defaults to the current FY, and triggers a re-fetch on change
+- [x] 404 projects show &quot;Project Not Found&quot;
+- [x] No regressions on Project Details or Project Spending tabs
 
-**Phase 2 — Project Funding Summary Cards**
-- [ ] &quot;FY {year} Project Funding by Portfolio&quot; full-width card renders total, stacked bar, and legend
+**Phase 2 — Project Funding Summary Cards** &#x2705;
+- [x] &quot;FY {year} Project Funding by Portfolio&quot; full-width card renders total, stacked bar, and legend
       (abbreviation, dollar amount, percent) — colors from PORTFOLIO_ORDER constants
-- [ ] &quot;FY {year} Project Funding by CAN&quot; half-width card renders carry-forward and new-funding segments
+- [x] &quot;FY {year} Project Funding by CAN&quot; half-width card renders carry-forward and new-funding segments
       labeled &quot;Previous FYs Carry-Forward&quot; and &quot;FY {selectedFY} New Funding&quot;
-- [ ] &quot;Project Funding By FY&quot; half-width card renders last 5 FYs relative to selected FY; zeros for missing years
-- [ ] All summary cards update when the FY selector changes
-- [ ] Cards are gated — no flash of empty/zero values before the first fetch resolves
+- [x] &quot;Project Funding By FY&quot; half-width card renders last 5 FYs relative to selected FY; zeros for missing years
+- [x] All summary cards update when the FY selector changes
+- [x] Cards are gated — no flash of empty/zero values before the first fetch resolves
 
-**Phase 3 — Project Funding by CAN Table**
-- [ ] Skeleton loader shown while fetch is in flight; column headers preserved
-- [ ] Table renders: CAN, Portfolio, Active Period (&quot;N Year(s)&quot;), FY Project Funding, Lifetime Project Funding
-- [ ] Dynamic FY column header updates with selector (e.g. &quot;FY 25&quot; &#x2192; &quot;FY 24&quot;)
-- [ ] Empty-state row shown when no CANs exist for the project
-- [ ] DebugCode removed
-- [ ] Unit tests pass at 90%+ coverage for all new components
+**Phase 3 — Project Funding by CAN Table** &#x2705;
+- [x] Skeleton loader shown while fetch is in flight; column headers preserved
+- [x] Table renders: CAN, Portfolio, Active Period (&quot;N Year(s)&quot;), FY Project Funding, Lifetime Project Funding
+- [x] Dynamic FY column header updates with selector (e.g. &quot;FY 25&quot; &#x2192; &quot;FY 24&quot;)
+- [x] Empty-state row shown when no CANs exist for the project
+- [x] DebugCode removed
+- [x] Unit tests pass at 90%+ coverage for all new components
 
 ### Tasks
 #### Dev
@@ -287,7 +286,7 @@ so that I can understand how a project is funded across portfolios and CANs for 
       route in `index.jsx`, un-disable tab in `ProjectDetailTabs.jsx`, unit tests — **merged**
 - [x] Phase 2: `ProjectFundingByPortfolioCard`, `ProjectFundingByCANCard`,
       `ProjectFundingByFYCard` components + unit tests — **merged**
-- [ ] Phase 3: `ProjectFundingCANsTable` + `ProjectFundingCANsTableLoading` + unit tests
+- [x] Phase 3: `ProjectFundingCANsTable` + `ProjectFundingCANsTableLoading` + unit tests — **merged**
 - [ ] File backend story to add `abbreviation` to `funding_by_portfolio` response
       (see build plan for template)
 
@@ -355,8 +354,8 @@ so that I can understand how a project is funded across portfolios and CANs for 
           </div>
 
           <!-- Phase 3 -->
-          <div class="phase-card next">
-            <div class="phase-tag tag-next">Phase 3 &ndash; Up Next</div>
+          <div class="phase-card active">
+            <div class="phase-tag tag-active">Phase 3 &ndash; Complete &#x2705;</div>
             <h3>Project Funding by CAN Table</h3>
             <ul>
               <li><span class="code-inline">ProjectFundingCANsTable</span> — columns: CAN (number), Portfolio, Active Period (<em>N Year(s)</em>), FY {selectedFY} Project Funding, Lifetime Project Funding</li>

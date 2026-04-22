@@ -2,10 +2,11 @@ import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import App from "../../../App";
 import { useGetPortfoliosQuery, useGetProjectByIdQuery, useGetProjectFundingByIdQuery } from "../../../api/opsAPI";
-import DebugCode from "../../../components/DebugCode";
 import ProjectFundingByCANCard from "../../../components/Projects/ProjectFundingByCANCard/ProjectFundingByCANCard";
 import ProjectFundingByFYCard from "../../../components/Projects/ProjectFundingByFYCard/ProjectFundingByFYCard";
 import ProjectFundingByPortfolioCard from "../../../components/Projects/ProjectFundingByPortfolioCard/ProjectFundingByPortfolioCard";
+import ProjectFundingCANsTable from "../../../components/Projects/ProjectFundingCANsTable/ProjectFundingCANsTable";
+import ProjectFundingCANsTableLoading from "../../../components/Projects/ProjectFundingCANsTable/ProjectFundingCANsTableLoading";
 import FiscalYear from "../../../components/UI/FiscalYear/FiscalYear";
 import { getCurrentFiscalYear } from "../../../helpers/utils";
 import ProjectDetailTabs from "./ProjectDetailTabs";
@@ -133,8 +134,15 @@ const ProjectFunding = () => {
                 <p className="font-sans-sm">
                     This is a list of all CANs associated with this project for the selected FY.
                 </p>
+                {isFundingLoading ? (
+                    <ProjectFundingCANsTableLoading fiscalYear={fiscalYear} />
+                ) : (
+                    <ProjectFundingCANsTable
+                        cans={fundingData?.cans ?? []}
+                        fiscalYear={fiscalYear}
+                    />
+                )}
             </section>
-            <DebugCode data={fundingData} />
         </App>
     );
 };

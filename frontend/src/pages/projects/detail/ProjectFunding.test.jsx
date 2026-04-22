@@ -28,6 +28,10 @@ vi.mock("../../../api/opsAPI", async () => {
     };
 });
 
+vi.mock("../../../App", () => ({
+    default: ({ children }) => <div data-testid="app-wrapper">{children}</div>
+}));
+
 vi.mock("../../../components/Projects/ProjectFundingByPortfolioCard/ProjectFundingByPortfolioCard", () => ({
     default: () => <div data-testid="project-funding-by-portfolio-card" />
 }));
@@ -40,12 +44,22 @@ vi.mock("../../../components/Projects/ProjectFundingByFYCard/ProjectFundingByFYC
     default: () => <div data-testid="project-funding-by-fy-card" />
 }));
 
-vi.mock("../../../App", () => ({
-    default: ({ children }) => <div data-testid="app-wrapper">{children}</div>
+vi.mock("../../../components/Projects/ProjectFundingCANsTable/ProjectFundingCANsTable", () => ({
+    default: ({ cans }) => (
+        <table data-testid="project-funding-cans-table">
+            <tbody>
+                {cans.map((c) => (
+                    <tr key={c.id}>
+                        <td>{c.number}</td>
+                    </tr>
+                ))}
+            </tbody>
+        </table>
+    )
 }));
 
-vi.mock("../../../components/DebugCode", () => ({
-    default: ({ data }) => <pre data-testid="debug-code">{JSON.stringify(data)}</pre>
+vi.mock("../../../components/Projects/ProjectFundingCANsTable/ProjectFundingCANsTableLoading", () => ({
+    default: () => <div data-testid="project-funding-cans-table-loading" />
 }));
 
 const mockProject = {
@@ -129,7 +143,7 @@ describe("ProjectFunding", () => {
         expect(screen.getByText("Loading...")).toBeInTheDocument();
     });
 
-    it("renders the project title, tabs, FY selector, section headings, and summary cards on success", () => {
+    it("renders the project title, tabs, FY selector, section headings, summary cards, and CAN table on success", () => {
         mockUseGetProjectByIdQuery.mockReturnValue({ data: mockProject, isLoading: false, error: undefined });
         mockUseGetProjectFundingByIdQuery.mockReturnValue({
             data: mockFundingData,
@@ -147,9 +161,10 @@ describe("ProjectFunding", () => {
         expect(screen.getByTestId("project-funding-by-portfolio-card")).toBeInTheDocument();
         expect(screen.getByTestId("project-funding-by-can-card")).toBeInTheDocument();
         expect(screen.getByTestId("project-funding-by-fy-card")).toBeInTheDocument();
+        expect(screen.getByTestId("project-funding-cans-table")).toBeInTheDocument();
     });
 
-    it("renders DebugCode with funding data in dev mode", () => {
+    it("passes CAN data to the table", () => {
         mockUseGetProjectByIdQuery.mockReturnValue({ data: mockProject, isLoading: false, error: undefined });
         mockUseGetProjectFundingByIdQuery.mockReturnValue({
             data: mockFundingData,
@@ -159,9 +174,17 @@ describe("ProjectFunding", () => {
 
         renderComponent();
 
-        const debugEl = screen.getByTestId("debug-code");
-        expect(debugEl).toBeInTheDocument();
-        expect(debugEl.textContent).toContain("Child Care");
+        expect(screen.getByText("G99XXX1")).toBeInTheDocument();
+        expect(screen.getByText("G99XXX2")).toBeInTheDocument();
+    });
+
+    it("shows the skeleton loader while funding is loading", () => {
+        mockUseGetProjectByIdQuery.mockReturnValue({ data: mockProject, isLoading: false, error: undefined });
+        mockUseGetProjectFundingByIdQuery.mockReturnValue({ data: undefined, isLoading: true, error: undefined });
+
+        renderComponent();
+
+        expect(screen.getByText("Loading...")).toBeInTheDocument();
     });
 
     it("renders a not-found message on a 404 project error", () => {
@@ -182,18 +205,12 @@ describe("ProjectFunding", () => {
     it("navigates to error page on a non-404 project error", async () => {
         const { waitFor } = await import("@testing-library/react");
 
-        mockUseGetProjectByIdQuery.mockReturnValue({
-            data: undefined,
-            isLoading: false,
-            error: { status: 500, data: "Server Error" }
-        });
+        mockUseGetProjectByIdQuery.mockReturnValue({ data: undefined, isLoading: false, error: { status: 500 } });
         mockUseGetProjectFundingByIdQuery.mockReturnValue({ data: undefined, isLoading: false, error: undefined });
 
         renderComponent();
 
-        await waitFor(() => {
-            expect(mockNavigate).toHaveBeenCalledWith("/error");
-        });
+        await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith("/error"));
     });
 
     it("navigates to error page on a non-404 funding error", async () => {
@@ -203,14 +220,12 @@ describe("ProjectFunding", () => {
         mockUseGetProjectFundingByIdQuery.mockReturnValue({
             data: undefined,
             isLoading: false,
-            error: { status: 500, data: "Server Error" }
+            error: { status: 500 }
         });
 
         renderComponent();
 
-        await waitFor(() => {
-            expect(mockNavigate).toHaveBeenCalledWith("/error");
-        });
+        await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith("/error"));
     });
 
     it("updates the fiscal year when the FY selector changes", () => {
