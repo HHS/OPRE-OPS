@@ -53,7 +53,7 @@ def test_create_budget_line_data():
     test_data = list(csv.DictReader(open(file_path), dialect="excel-tab"))
 
     # Check record count
-    assert len(test_data) == 10
+    assert len(test_data) == 11
     record = test_data[0]
 
     # Create data object
@@ -77,148 +77,77 @@ def test_create_budget_line_data():
 
 def test_validate_data():
     test_data = list(csv.DictReader(open(file_path), dialect="excel-tab"))
-    assert len(test_data) == 10
+    assert len(test_data) == 11
     count = sum(1 for data in test_data if validate_data(create_budget_line_item_data(data)))
-    assert count == 10
+    assert count == 11
+
+
+def _ensure_user(session):
+    user = session.scalar(select(User).where(User.email == "system.admin@localhost"))
+    if not user:
+        user = User(email="system.admin@localhost")
+        session.add(user)
+        session.commit()
+    return user
 
 
 @pytest.fixture()
 def db_with_data_v2(loaded_db):
-    # Clean up existing Budget Line Items
-    for bli in loaded_db.execute(select(BudgetLineItem)).scalars().all():
-        loaded_db.delete(bli)
-    loaded_db.commit()
+    clean_up_db(loaded_db)
 
-    # Create test division
-    division = loaded_db.get(Division, 1)
+    division = loaded_db.scalar(select(Division).where(Division.name == "Test Division"))
     if not division:
-        division = Division(
-            id=1,
-            name="Test Division",
-            abbreviation="TD",
-        )
-    loaded_db.add(division)
+        division = Division(name="Test Division", abbreviation="TD")
+        loaded_db.add(division)
+        loaded_db.flush()
 
-    # Create test portfolio
-    portfolio = loaded_db.get(Portfolio, 1)
+    portfolio = loaded_db.scalar(select(Portfolio).where(Portfolio.name == "Test Portfolio"))
     if not portfolio:
-        portfolio = Portfolio(
-            id=1,
-            name="Test Portfolio",
-            division_id=1,
-        )
-    loaded_db.add(portfolio)
+        portfolio = Portfolio(name="Test Portfolio", division_id=division.id)
+        loaded_db.add(portfolio)
+        loaded_db.flush()
+
+    procurement_shop_proc1 = ProcurementShop(name="Procurement Shop 1", abbr="PROC1")
+    procurement_shop_proc2 = ProcurementShop(name="Procurement Shop 2", abbr="PROC2")
+    procurement_shop_proc3 = ProcurementShop(name="Procurement Shop 3", abbr="PROC3")
+    loaded_db.add_all([procurement_shop_proc1, procurement_shop_proc2, procurement_shop_proc3])
     loaded_db.commit()
 
-    # Create test Procurement Shop
-    procurement_shop_proc1 = ProcurementShop(
-        name="Procurement Shop 1",
-        abbr="PROC1",
-    )
-    procurement_shop_proc2 = ProcurementShop(
-        name="Procurement Shop 2",
-        abbr="PROC2",
-    )
-    procurement_shop_proc3 = ProcurementShop(
-        name="Procurement Shop 3",
-        abbr="PROC3",
-    )
-    loaded_db.add(procurement_shop_proc1)
-    loaded_db.add(procurement_shop_proc2)
-    loaded_db.add(procurement_shop_proc3)
+    loaded_db.add(ProcurementShopFee(procurement_shop_id=procurement_shop_proc1.id, fee=Decimal("1.0")))
+    loaded_db.add(ProcurementShopFee(procurement_shop_id=procurement_shop_proc2.id, fee=Decimal("2.0")))
+    loaded_db.add(ProcurementShopFee(procurement_shop_id=procurement_shop_proc3.id, fee=Decimal("3.0")))
     loaded_db.commit()
 
-    procurement_shop_proc1_fee = ProcurementShopFee(
-        procurement_shop_id=procurement_shop_proc1.id,
-        fee=Decimal("1.0"),
-    )
-    procurement_shop_proc2_fee = ProcurementShopFee(
-        procurement_shop_id=procurement_shop_proc2.id,
-        fee=Decimal("2.0"),
-    )
-    procurement_shop_proc3_fee = ProcurementShopFee(
-        procurement_shop_id=procurement_shop_proc3.id,
-        fee=Decimal("3.0"),
-    )
-    loaded_db.add(procurement_shop_proc1_fee)
-    loaded_db.add(procurement_shop_proc2_fee)
-    loaded_db.add(procurement_shop_proc3_fee)
-    loaded_db.commit()
-
-    # Create test agreements
-    g_agreement = loaded_db.get(GrantAgreement, 1)
-    if not g_agreement:
-        grant_agreement = GrantAgreement(
-            id=1,
+    loaded_db.add(
+        GrantAgreement(
             name="Grant #1: Early Care and Education Leadership Study (ExCELS)",
             agreement_type=AgreementType.GRANT,
         )
-        loaded_db.add(grant_agreement)
-    else:
-        g_agreement.name = "Grant #1: Early Care and Education Leadership Study (ExCELS)"
-        g_agreement.agreement_type = AgreementType.GRANT
-        loaded_db.add(g_agreement)
-    loaded_db.commit()
-
-    c_agreement = loaded_db.get(ContractAgreement, 2)
-    if not c_agreement:
-        contract_agreement = ContractAgreement(
-            id=2,
+    )
+    loaded_db.add(
+        ContractAgreement(
             name="Test Contract Agreement Name",
             agreement_type=AgreementType.CONTRACT,
         )
-        loaded_db.add(contract_agreement)
-    else:
-        c_agreement.name = "Test Contract Agreement Name"
-        c_agreement.agreement_type = AgreementType.CONTRACT
-        loaded_db.add(c_agreement)
+    )
+    loaded_db.add(
+        ContractAgreement(
+            name="Test Contract In Execution TSV",
+            agreement_type=AgreementType.CONTRACT,
+        )
+    )
     loaded_db.commit()
 
-    # Create test CAN
-    can = loaded_db.get(CAN, 1)
-    if not can:
-        can = CAN(
-            id=1,
-            number="TestCanNumber",
-            portfolio_id=1,
-        )
-        loaded_db.add(can)
-    else:
-        can.number = "TestCanNumber"
-        can.portfolio_id = 1
-        loaded_db.add(can)
+    loaded_db.add(CAN(number="TestCanNumber", portfolio_id=portfolio.id))
     loaded_db.commit()
 
     yield loaded_db
 
-    if g_agreement:
-        loaded_db.delete(g_agreement)
-    if c_agreement:
-        loaded_db.delete(c_agreement)
-    loaded_db.delete(procurement_shop_proc1)
-    loaded_db.delete(procurement_shop_proc2)
-    loaded_db.delete(procurement_shop_proc3)
-    loaded_db.delete(procurement_shop_proc1_fee)
-    loaded_db.delete(procurement_shop_proc2_fee)
-    loaded_db.delete(procurement_shop_proc3_fee)
-    loaded_db.commit()
-
+    loaded_db.rollback()
     clean_up_db(loaded_db)
 
 
 def clean_up_db(session):
-    session.execute(text("DELETE FROM procurement_tracker_step"))
-    session.execute(text("DELETE FROM procurement_tracker_step_version"))
-    session.execute(text("DELETE FROM default_procurement_tracker"))
-    session.execute(text("DELETE FROM default_procurement_tracker_version"))
-    session.execute(text("DELETE FROM procurement_tracker"))
-    session.execute(text("DELETE FROM procurement_tracker_version"))
-    session.execute(text("DELETE FROM procurement_action"))
-    session.execute(text("DELETE FROM procurement_action_version"))
-
-    session.execute(text("DELETE FROM procurement_shop"))
-    session.execute(text("DELETE FROM procurement_shop_version"))
-
     session.execute(text("DELETE FROM grant_budget_line_item"))
     session.execute(text("DELETE FROM grant_budget_line_item_version"))
 
@@ -237,6 +166,18 @@ def clean_up_db(session):
     session.execute(text("DELETE FROM budget_line_item"))
     session.execute(text("DELETE FROM budget_line_item_version"))
 
+    session.execute(text("DELETE FROM procurement_tracker_step"))
+    session.execute(text("DELETE FROM procurement_tracker_step_version"))
+    session.execute(text("DELETE FROM default_procurement_tracker"))
+    session.execute(text("DELETE FROM default_procurement_tracker_version"))
+    session.execute(text("DELETE FROM procurement_tracker"))
+    session.execute(text("DELETE FROM procurement_tracker_version"))
+    session.execute(text("DELETE FROM procurement_action"))
+    session.execute(text("DELETE FROM procurement_action_version"))
+
+    session.execute(text("DELETE FROM services_component"))
+    session.execute(text("DELETE FROM services_component_version"))
+
     session.execute(text("DELETE FROM agreement_mod"))
     session.execute(text("DELETE FROM agreement_mod_version"))
 
@@ -245,6 +186,14 @@ def clean_up_db(session):
 
     session.execute(text("DELETE FROM can"))
     session.execute(text("DELETE FROM can_version"))
+
+    session.execute(text("DELETE FROM portfolio_team_leaders"))
+    session.execute(text("DELETE FROM portfolio_url"))
+    session.execute(text("DELETE FROM portfolio"))
+    session.execute(text("DELETE FROM portfolio_version"))
+
+    session.execute(text("DELETE FROM division"))
+    session.execute(text("DELETE FROM division_version"))
 
     session.execute(text("DELETE FROM grant_agreement"))
     session.execute(text("DELETE FROM grant_agreement_version"))
@@ -263,6 +212,11 @@ def clean_up_db(session):
 
     session.execute(text("DELETE FROM agreement"))
     session.execute(text("DELETE FROM agreement_version"))
+
+    session.execute(text("DELETE FROM procurement_shop_fee"))
+    session.execute(text("DELETE FROM procurement_shop_fee_version"))
+    session.execute(text("DELETE FROM procurement_shop"))
+    session.execute(text("DELETE FROM procurement_shop_version"))
 
     session.execute(text("DELETE FROM role"))
     session.execute(text("DELETE FROM role_version"))
@@ -295,14 +249,15 @@ def test_create_model(db_with_data_v2):
         PROC_SHOP_RATE="7.153",
     )
 
-    user = db_with_data_v2.get(User, 1)
-
-    if not user:
-        user = User(id=1, email="system.admin@localhost")
-        db_with_data_v2.add(user)
-        db_with_data_v2.commit()
-
+    user = _ensure_user(db_with_data_v2)
     create_models(data, user, db_with_data_v2)
+
+    grant_agreement = db_with_data_v2.scalar(
+        select(GrantAgreement).where(
+            GrantAgreement.name == "Grant #1: Early Care and Education Leadership Study (ExCELS)"
+        )
+    )
+    can = db_with_data_v2.scalar(select(CAN).where(CAN.number == "TestCanNumber"))
 
     bli_model = db_with_data_v2.execute(
         select(GrantBudgetLineItem)
@@ -312,17 +267,15 @@ def test_create_model(db_with_data_v2):
 
     # Check data on the created model
     assert bli_model.id != 0
-    assert bli_model.agreement_id == 1
-    assert bli_model.can_id == 1
+    assert bli_model.agreement_id == grant_agreement.id
+    assert bli_model.can_id == can.id
 
-    bli_agreement = db_with_data_v2.get(GrantAgreement, 1)
-    assert bli_model.agreement == bli_agreement
-    assert bli_agreement.awarding_entity_id == db_with_data_v2.scalar(
+    assert bli_model.agreement == grant_agreement
+    assert grant_agreement.awarding_entity_id == db_with_data_v2.scalar(
         select(ProcurementShop.id).where(ProcurementShop.abbr == "PROC1")
     )
 
-    bli_can = db_with_data_v2.get(CAN, 1)
-    assert bli_model.can == bli_can
+    assert bli_model.can == can
 
     assert bli_model.budget_line_item_type == AgreementType.GRANT
     assert bli_model.line_description == "Test Line Description"
@@ -331,7 +284,7 @@ def test_create_model(db_with_data_v2):
     assert bli_model.status == BudgetLineItemStatus.PLANNED
     assert bli_model.date_needed == date(2025, 3, 11)
     assert bli_model.procurement_shop_fee_id is None
-    assert bli_model.created_by == 1
+    assert bli_model.created_by == user.id
 
     # Default values
     assert bli_model.on_hold is False
@@ -350,8 +303,8 @@ def test_create_model(db_with_data_v2):
 
     # Check version records
     assert bli_model.versions[0].id == bli_model.id
-    assert bli_model.versions[0].agreement_id == 1
-    assert bli_model.versions[0].can_id == 1
+    assert bli_model.versions[0].agreement_id == grant_agreement.id
+    assert bli_model.versions[0].can_id == can.id
     assert bli_model.versions[0].budget_line_item_type == AgreementType.GRANT
     assert bli_model.versions[0].line_description == "Test Line Description"
     assert bli_model.versions[0].comments == "Test Comments"
@@ -379,10 +332,14 @@ def test_create_model(db_with_data_v2):
 
 
 def test_create_models_upsert(db_with_data_v2):
+    contract_agreement = db_with_data_v2.scalar(
+        select(ContractAgreement).where(ContractAgreement.name == "Test Contract Agreement Name")
+    )
+    can = db_with_data_v2.scalar(select(CAN).where(CAN.number == "TestCanNumber"))
+
     existing_bli = ContractBudgetLineItem(
-        # id=existing_bli_id,
-        agreement_id=2,
-        can_id=1,
+        agreement_id=contract_agreement.id,
+        can_id=can.id,
         budget_line_item_type=AgreementType.CONTRACT,
         line_description="Original Test Line Description",
         comments="Original Test Comments",
@@ -410,20 +367,14 @@ def test_create_models_upsert(db_with_data_v2):
         PROC_SHOP_RATE="7.153",
     )
 
-    user = db_with_data_v2.get(User, 1)
-
-    if not user:
-        user = User(id=1, email="system.admin@localhost")
-        db_with_data_v2.add(user)
-        db_with_data_v2.commit()
-
+    user = _ensure_user(db_with_data_v2)
     create_models(data, user, db_with_data_v2)
 
     bli = db_with_data_v2.get(ContractBudgetLineItem, existing_bli.id)
     assert bli is not None
     assert bli.id == existing_bli.id
-    assert bli.agreement_id == 2
-    assert bli.can_id == 1
+    assert bli.agreement_id == contract_agreement.id
+    assert bli.can_id == can.id
     assert bli.budget_line_item_type == AgreementType.CONTRACT
     assert bli.line_description == "Test Line Description"
     assert bli.comments == "Test Comments"
@@ -434,8 +385,8 @@ def test_create_models_upsert(db_with_data_v2):
 
     # Check version records
     assert bli.versions[1].id == existing_bli.id
-    assert bli.versions[1].agreement_id == 2
-    assert bli.versions[1].can_id == 1
+    assert bli.versions[1].agreement_id == contract_agreement.id
+    assert bli.versions[1].can_id == can.id
     assert bli.versions[1].budget_line_item_type == AgreementType.CONTRACT
     assert bli.versions[1].line_description == "Test Line Description"
     assert bli.versions[1].comments == "Test Comments"
@@ -445,8 +396,8 @@ def test_create_models_upsert(db_with_data_v2):
     assert bli.versions[1].proc_shop_fee_percentage == Decimal("0.015")
 
     assert bli.versions[0].id == existing_bli.id
-    assert bli.versions[0].agreement_id == 2
-    assert bli.versions[0].can_id == 1
+    assert bli.versions[0].agreement_id == contract_agreement.id
+    assert bli.versions[0].can_id == can.id
     assert bli.versions[0].budget_line_item_type == AgreementType.CONTRACT
     assert bli.versions[0].line_description == "Original Test Line Description"
     assert bli.versions[0].comments == "Original Test Comments"
@@ -478,7 +429,7 @@ def test_main(db_with_data_v2):
 
     all_blis = db_with_data_v2.execute(select(BudgetLineItem)).scalars().all()
 
-    assert len(all_blis) == 6
+    assert len(all_blis) == 7
 
     # Check Grant Budget Line Item
     grant_bli = db_with_data_v2.scalar(
@@ -489,6 +440,30 @@ def test_main(db_with_data_v2):
     assert grant_bli.agreement.awarding_entity_id == db_with_data_v2.scalar(
         select(ProcurementShop.id).where(ProcurementShop.abbr == "PROC1")
     )
+
+    # Check that the IN_EXECUTION BLI from the TSV created procurement records
+    exec_agreement = db_with_data_v2.scalar(
+        select(ContractAgreement).where(ContractAgreement.name == "Test Contract In Execution TSV")
+    )
+    exec_bli = db_with_data_v2.execute(
+        select(ContractBudgetLineItem)
+        .where(ContractBudgetLineItem.agreement_id == exec_agreement.id)
+        .where(ContractBudgetLineItem.status == BudgetLineItemStatus.IN_EXECUTION)
+    ).scalar_one_or_none()
+    assert exec_bli is not None
+    assert exec_bli.procurement_action_id is not None
+
+    action = db_with_data_v2.get(ProcurementAction, exec_bli.procurement_action_id)
+    assert action.award_type == AwardType.NEW_AWARD
+    assert action.agreement_id == exec_agreement.id
+
+    tracker = db_with_data_v2.execute(
+        select(DefaultProcurementTracker).where(
+            DefaultProcurementTracker.agreement_id == exec_agreement.id
+        )
+    ).scalar_one_or_none()
+    assert tracker is not None
+    assert tracker.procurement_action == action.id
 
     # Cleanup
     db_with_data_v2.delete(grant_bli)
@@ -515,13 +490,7 @@ def test_create_model_lock_in_proc_shop(db_with_data_v2):
         PROC_SHOP_RATE="1.0",
     )
 
-    user = db_with_data_v2.get(User, 1)
-
-    if not user:
-        user = User(id=1, email="system.admin@localhost")
-        db_with_data_v2.add(user)
-        db_with_data_v2.commit()
-
+    user = _ensure_user(db_with_data_v2)
     create_models(data, user, db_with_data_v2)
 
     bli_model = db_with_data_v2.execute(
@@ -532,14 +501,20 @@ def test_create_model_lock_in_proc_shop(db_with_data_v2):
         .where(GrantBudgetLineItem.line_description == "Test Line Description")
     ).scalar_one_or_none()
 
+    grant_agreement = db_with_data_v2.scalar(
+        select(GrantAgreement).where(
+            GrantAgreement.name == "Grant #1: Early Care and Education Leadership Study (ExCELS)"
+        )
+    )
+    can = db_with_data_v2.scalar(select(CAN).where(CAN.number == "TestCanNumber"))
+
     # Check data on the created model
     assert bli_model.id != 0
-    assert bli_model.agreement_id == 1
-    assert bli_model.can_id == 1
+    assert bli_model.agreement_id == grant_agreement.id
+    assert bli_model.can_id == can.id
 
-    bli_agreement = db_with_data_v2.get(GrantAgreement, 1)
-    assert bli_model.agreement == bli_agreement
-    assert bli_agreement.awarding_entity_id == db_with_data_v2.scalar(
+    assert bli_model.agreement == grant_agreement
+    assert grant_agreement.awarding_entity_id == db_with_data_v2.scalar(
         select(ProcurementShop.id).where(ProcurementShop.abbr == "PROC1")
     )
 
@@ -598,13 +573,7 @@ def test_create_model_lock_in_proc_shop_fee_not_found(db_with_data_v2):
         PROC_SHOP_RATE="2.0",
     )
 
-    user = db_with_data_v2.get(User, 1)
-
-    if not user:
-        user = User(id=1, email="system.admin@localhost")
-        db_with_data_v2.add(user)
-        db_with_data_v2.commit()
-
+    user = _ensure_user(db_with_data_v2)
     create_models(data, user, db_with_data_v2)
 
     bli_model = db_with_data_v2.execute(
@@ -613,14 +582,20 @@ def test_create_model_lock_in_proc_shop_fee_not_found(db_with_data_v2):
         .where(GrantAgreement.name == "Grant #1: Early Care and Education Leadership Study (ExCELS)")
     ).scalar_one_or_none()
 
+    grant_agreement = db_with_data_v2.scalar(
+        select(GrantAgreement).where(
+            GrantAgreement.name == "Grant #1: Early Care and Education Leadership Study (ExCELS)"
+        )
+    )
+    can = db_with_data_v2.scalar(select(CAN).where(CAN.number == "TestCanNumber"))
+
     # Check data on the created model
     assert bli_model.id != 0
-    assert bli_model.agreement_id == 1
-    assert bli_model.can_id == 1
+    assert bli_model.agreement_id == grant_agreement.id
+    assert bli_model.can_id == can.id
 
-    bli_agreement = db_with_data_v2.get(GrantAgreement, 1)
-    assert bli_model.agreement == bli_agreement
-    assert bli_agreement.awarding_entity_id == db_with_data_v2.scalar(
+    assert bli_model.agreement == grant_agreement
+    assert grant_agreement.awarding_entity_id == db_with_data_v2.scalar(
         select(ProcurementShop.id).where(ProcurementShop.abbr == "PROC1")
     )
 
@@ -751,13 +726,7 @@ def test_create_model_for_aa_agreement(db_for_aas):
         PROC_SHOP_RATE="2.0",
     )
 
-    user = db_for_aas.get(User, 1)
-
-    if not user:
-        user = User(id=1, email="system.admin@localhost")
-        db_for_aas.add(user)
-        db_for_aas.commit()
-
+    user = _ensure_user(db_for_aas)
     create_models(data, user, db_for_aas)
 
     bli_model = db_for_aas.execute(
@@ -825,13 +794,7 @@ def test_create_model_for_aa_agreement_upsert(db_for_aas):
         PROC_SHOP_RATE="2.0",
     )
 
-    user = db_for_aas.get(User, 1)
-
-    if not user:
-        user = User(id=1, email="system.admin@localhost")
-        db_for_aas.add(user)
-        db_for_aas.commit()
-
+    user = _ensure_user(db_for_aas)
     create_models(data, user, db_for_aas)
 
     bli_model = db_for_aas.execute(
@@ -876,7 +839,7 @@ def test_create_model_for_aa_agreement_upsert(db_for_aas):
     assert updated_bli_model.amount == Decimal("25000.00")
     assert updated_bli_model.comments == "Updated Test Comments"
     assert updated_bli_model.line_description == "Updated Test Line Description"
-    assert updated_bli_model.updated_by == 1
+    assert updated_bli_model.updated_by == user.id
 
     # Check version records after update
     assert len(list(updated_bli_model.versions)) == 2
@@ -915,13 +878,7 @@ def test_create_model_with_scs(db_with_data_v2):
         PROC_SHOP_RATE="7.153",
     )
 
-    user = db_with_data_v2.get(User, 1)
-
-    if not user:
-        user = User(id=1, email="system.admin@localhost")
-        db_with_data_v2.add(user)
-        db_with_data_v2.commit()
-
+    user = _ensure_user(db_with_data_v2)
     create_models(data, user, db_with_data_v2)
 
     bli = db_with_data_v2.execute(
@@ -952,7 +909,6 @@ def test_create_model_for_do_agreement_upsert(db_with_data_v2):
     Test creating a model for an DirectObligation Agreement and then updating it.
     """
     do_agreement = DirectAgreement(
-        id=3,
         name="Test DO Agreement Name",
     )
 
@@ -975,13 +931,7 @@ def test_create_model_for_do_agreement_upsert(db_with_data_v2):
         PROC_SHOP_RATE="2.0",
     )
 
-    user = db_with_data_v2.get(User, 1)
-
-    if not user:
-        user = User(id=1, email="system.admin@localhost")
-        db_with_data_v2.add(user)
-        db_with_data_v2.commit()
-
+    user = _ensure_user(db_with_data_v2)
     create_models(data, user, db_with_data_v2)
 
     bli_model = db_with_data_v2.execute(
@@ -1022,7 +972,7 @@ def test_create_model_for_do_agreement_upsert(db_with_data_v2):
     assert updated_bli_model.comments == "Test Comments"
     assert updated_bli_model.line_description == "Updated Test Line Description"
     assert updated_bli_model.services_component.description == "SC2"
-    assert updated_bli_model.updated_by == 1
+    assert updated_bli_model.updated_by == user.id
 
     # Cleanup
     db_with_data_v2.delete(bli_model)
@@ -1035,9 +985,7 @@ def test_procurement_shop_set_from_fee_when_obligated(db_with_data_v2):
     Test that when a budget line is OBLIGATED and has a valid procurement_shop_fee,
     the agreement's procurement_shop is set from the ProcurementShopFee object.
     """
-    # Create a contract agreement with no procurement shop initially
     contract_agreement = ContractAgreement(
-        id=10,
         name="Test Contract for Proc Shop",
         agreement_type=AgreementType.CONTRACT,
     )
@@ -1060,12 +1008,7 @@ def test_procurement_shop_set_from_fee_when_obligated(db_with_data_v2):
         PROC_SHOP_RATE="1.0",
     )
 
-    user = db_with_data_v2.get(User, 1)
-    if not user:
-        user = User(id=1, email="system.admin@localhost")
-        db_with_data_v2.add(user)
-        db_with_data_v2.commit()
-
+    user = _ensure_user(db_with_data_v2)
     create_models(data, user, db_with_data_v2)
 
     # Verify the budget line item was created with the procurement_shop_fee_id
@@ -1083,9 +1026,9 @@ def test_procurement_shop_set_from_fee_when_obligated(db_with_data_v2):
     assert procurement_shop_fee is not None
 
     # Verify the agreement's procurement_shop matches the fee's procurement_shop
-    agreement = db_with_data_v2.get(ContractAgreement, 10)
-    assert agreement.procurement_shop == procurement_shop_fee.procurement_shop
-    assert agreement.procurement_shop.abbr == "PROC1"
+    db_with_data_v2.refresh(contract_agreement)
+    assert contract_agreement.procurement_shop == procurement_shop_fee.procurement_shop
+    assert contract_agreement.procurement_shop.abbr == "PROC1"
 
     # Cleanup
     db_with_data_v2.delete(bli_model)
@@ -1098,9 +1041,7 @@ def test_procurement_shop_set_from_data_when_not_obligated(db_with_data_v2):
     Test that when a budget line is NOT OBLIGATED, the agreement's procurement_shop
     is set from raw data, and procurement_shop_fee_id is None.
     """
-    # Create a contract agreement with no procurement shop initially
     contract_agreement = ContractAgreement(
-        id=11,
         name="Test Contract Not Obligated",
         agreement_type=AgreementType.CONTRACT,
     )
@@ -1123,12 +1064,7 @@ def test_procurement_shop_set_from_data_when_not_obligated(db_with_data_v2):
         PROC_SHOP_RATE="2.0",
     )
 
-    user = db_with_data_v2.get(User, 1)
-    if not user:
-        user = User(id=1, email="system.admin@localhost")
-        db_with_data_v2.add(user)
-        db_with_data_v2.commit()
-
+    user = _ensure_user(db_with_data_v2)
     create_models(data, user, db_with_data_v2)
 
     # Verify the budget line item was created WITHOUT procurement_shop_fee_id
@@ -1142,9 +1078,9 @@ def test_procurement_shop_set_from_data_when_not_obligated(db_with_data_v2):
     assert bli_model.procurement_shop_fee_id is None  # Should be None for non-OBLIGATED
 
     # Verify the agreement's procurement_shop is still set from raw data
-    agreement = db_with_data_v2.get(ContractAgreement, 11)
-    assert agreement.procurement_shop is not None
-    assert agreement.procurement_shop.abbr == "PROC2"
+    db_with_data_v2.refresh(contract_agreement)
+    assert contract_agreement.procurement_shop is not None
+    assert contract_agreement.procurement_shop.abbr == "PROC2"
 
     # Cleanup
     db_with_data_v2.delete(bli_model)
@@ -1163,7 +1099,6 @@ def test_procurement_shop_updated_when_fee_found(db_with_data_v2):
 
     # Create a contract agreement with PROC1 initially
     contract_agreement = ContractAgreement(
-        id=12,
         name="Test Contract Shop Change",
         agreement_type=AgreementType.CONTRACT,
         procurement_shop=proc_shop_1,  # Start with PROC1
@@ -1172,8 +1107,8 @@ def test_procurement_shop_updated_when_fee_found(db_with_data_v2):
     db_with_data_v2.commit()
 
     # Verify initial state
-    agreement = db_with_data_v2.get(ContractAgreement, 12)
-    assert agreement.procurement_shop.abbr == "PROC1"
+    db_with_data_v2.refresh(contract_agreement)
+    assert contract_agreement.procurement_shop.abbr == "PROC1"
 
     # Create an OBLIGATED budget line with PROC2 fee
     data = BudgetLineItemData(
@@ -1192,12 +1127,7 @@ def test_procurement_shop_updated_when_fee_found(db_with_data_v2):
         PROC_SHOP_RATE="2.0",
     )
 
-    user = db_with_data_v2.get(User, 1)
-    if not user:
-        user = User(id=1, email="system.admin@localhost")
-        db_with_data_v2.add(user)
-        db_with_data_v2.commit()
-
+    user = _ensure_user(db_with_data_v2)
     create_models(data, user, db_with_data_v2)
 
     # Verify the budget line item was created with the procurement_shop_fee_id
@@ -1216,8 +1146,8 @@ def test_procurement_shop_updated_when_fee_found(db_with_data_v2):
     assert procurement_shop_fee.procurement_shop.abbr == "PROC2"
 
     # Verify the agreement's procurement_shop was updated to PROC2
-    db_with_data_v2.refresh(agreement)
-    assert agreement.procurement_shop.abbr == "PROC2"
+    db_with_data_v2.refresh(contract_agreement)
+    assert contract_agreement.procurement_shop.abbr == "PROC2"
 
     # Cleanup
     db_with_data_v2.delete(bli_model)
@@ -1230,9 +1160,7 @@ def test_procurement_shop_from_data_when_fee_not_found(db_with_data_v2):
     Test that when an OBLIGATED budget line has a procurement_shop but the fee is not found,
     the agreement's procurement_shop is still set from the raw data.
     """
-    # Create a contract agreement with no procurement shop initially
     contract_agreement = ContractAgreement(
-        id=13,
         name="Test Contract Fee Not Found",
         agreement_type=AgreementType.CONTRACT,
     )
@@ -1255,12 +1183,7 @@ def test_procurement_shop_from_data_when_fee_not_found(db_with_data_v2):
         PROC_SHOP_RATE="6.58",
     )
 
-    user = db_with_data_v2.get(User, 1)
-    if not user:
-        user = User(id=1, email="system.admin@localhost")
-        db_with_data_v2.add(user)
-        db_with_data_v2.commit()
-
+    user = _ensure_user(db_with_data_v2)
     create_models(data, user, db_with_data_v2)
 
     # Verify the budget line item was created WITHOUT procurement_shop_fee_id
@@ -1274,9 +1197,9 @@ def test_procurement_shop_from_data_when_fee_not_found(db_with_data_v2):
     assert bli_model.procurement_shop_fee_id is None  # Fee not found
 
     # Verify the agreement's procurement_shop is still set from raw data
-    agreement = db_with_data_v2.get(ContractAgreement, 13)
-    assert agreement.procurement_shop is not None
-    assert agreement.procurement_shop.abbr == "PROC3"
+    db_with_data_v2.refresh(contract_agreement)
+    assert contract_agreement.procurement_shop is not None
+    assert contract_agreement.procurement_shop.abbr == "PROC3"
 
     # Cleanup
     db_with_data_v2.delete(bli_model)
@@ -1294,7 +1217,6 @@ def test_procurement_shop_not_overwritten_when_bli_has_no_proc_shop(db_with_data
 
     # Create a contract agreement with PROC1 initially
     contract_agreement = ContractAgreement(
-        id=14,
         name="Test Contract Keep Proc Shop",
         agreement_type=AgreementType.CONTRACT,
         procurement_shop=proc_shop_1,  # Start with PROC1
@@ -1303,8 +1225,8 @@ def test_procurement_shop_not_overwritten_when_bli_has_no_proc_shop(db_with_data
     db_with_data_v2.commit()
 
     # Verify initial state
-    agreement = db_with_data_v2.get(ContractAgreement, 14)
-    assert agreement.procurement_shop.abbr == "PROC1"
+    db_with_data_v2.refresh(contract_agreement)
+    assert contract_agreement.procurement_shop.abbr == "PROC1"
 
     # Create a budget line WITHOUT a PROC_SHOP value
     data = BudgetLineItemData(
@@ -1323,12 +1245,7 @@ def test_procurement_shop_not_overwritten_when_bli_has_no_proc_shop(db_with_data
         PROC_SHOP_RATE=None,
     )
 
-    user = db_with_data_v2.get(User, 1)
-    if not user:
-        user = User(id=1, email="system.admin@localhost")
-        db_with_data_v2.add(user)
-        db_with_data_v2.commit()
-
+    user = _ensure_user(db_with_data_v2)
     create_models(data, user, db_with_data_v2)
 
     # Verify the budget line item was created
@@ -1342,9 +1259,9 @@ def test_procurement_shop_not_overwritten_when_bli_has_no_proc_shop(db_with_data
     assert bli_model.procurement_shop_fee_id is None
 
     # Verify the agreement's procurement_shop was NOT overwritten and still is PROC1
-    db_with_data_v2.refresh(agreement)
-    assert agreement.procurement_shop is not None
-    assert agreement.procurement_shop.abbr == "PROC1"
+    db_with_data_v2.refresh(contract_agreement)
+    assert contract_agreement.procurement_shop is not None
+    assert contract_agreement.procurement_shop.abbr == "PROC1"
 
     # Cleanup
     db_with_data_v2.delete(bli_model)
@@ -1358,9 +1275,7 @@ def test_obligated_bli_with_missing_fee_data(db_with_data_v2):
     PROC_SHOP_FEE or AMOUNT, no procurement_shop_fee_id is set but the agreement
     is still updated from raw data.
     """
-    # Create a contract agreement with no procurement shop initially
     contract_agreement = ContractAgreement(
-        id=15,
         name="Test Contract Missing Fee Data",
         agreement_type=AgreementType.CONTRACT,
     )
@@ -1384,11 +1299,7 @@ def test_obligated_bli_with_missing_fee_data(db_with_data_v2):
         PROC_SHOP_RATE=None,
     )
 
-    user = db_with_data_v2.get(User, 1)
-    if not user:
-        user = User(id=1, email="system.admin@localhost")
-        db_with_data_v2.add(user)
-        db_with_data_v2.commit()
+    user = _ensure_user(db_with_data_v2)
 
     # This should not raise an exception even with missing fee data
     create_models(data, user, db_with_data_v2)
@@ -1404,9 +1315,9 @@ def test_obligated_bli_with_missing_fee_data(db_with_data_v2):
     assert bli_model.procurement_shop_fee_id is None  # No fee ID because data is missing
 
     # Verify the agreement's procurement_shop was still set from raw data
-    agreement = db_with_data_v2.get(ContractAgreement, 15)
-    assert agreement.procurement_shop is not None
-    assert agreement.procurement_shop.abbr == "PROC1"
+    db_with_data_v2.refresh(contract_agreement)
+    assert contract_agreement.procurement_shop is not None
+    assert contract_agreement.procurement_shop.abbr == "PROC1"
 
     # Cleanup
     db_with_data_v2.delete(bli_model)
@@ -1419,22 +1330,12 @@ def test_obligated_bli_with_missing_fee_data(db_with_data_v2):
 # ============================================================================
 
 
-def _ensure_user(session):
-    user = session.get(User, 1)
-    if not user:
-        user = User(id=1, email="system.admin@localhost")
-        session.add(user)
-        session.commit()
-    return user
-
-
 def test_in_execution_bli_creates_procurement_records(db_with_data_v2):
     """
     An IN_EXECUTION BLI with no prior OBLIGATED BLIs on the agreement
     creates a NEW_AWARD ProcurementAction and tracker, and links the BLI.
     """
     contract_agreement = ContractAgreement(
-        id=20,
         name="Test Contract In Execution",
         agreement_type=AgreementType.CONTRACT,
     )
@@ -1462,14 +1363,16 @@ def test_in_execution_bli_creates_procurement_records(db_with_data_v2):
 
     # Verify procurement action was created
     action = db_with_data_v2.execute(
-        select(ProcurementAction).where(ProcurementAction.agreement_id == 20)
+        select(ProcurementAction).where(ProcurementAction.agreement_id == contract_agreement.id)
     ).scalar_one_or_none()
     assert action is not None
     assert action.award_type == AwardType.NEW_AWARD
 
     # Verify tracker was created with step 1 active
     tracker = db_with_data_v2.execute(
-        select(DefaultProcurementTracker).where(DefaultProcurementTracker.agreement_id == 20)
+        select(DefaultProcurementTracker).where(
+            DefaultProcurementTracker.agreement_id == contract_agreement.id
+        )
     ).scalar_one_or_none()
     assert tracker is not None
     assert tracker.procurement_action == action.id
@@ -1484,13 +1387,25 @@ def test_in_execution_bli_creates_procurement_records(db_with_data_v2):
     ).scalar_one_or_none()
     assert bli.procurement_action_id == action.id
 
-    # Verify OpsEvents were created for the procurement records
-    action_events = db_with_data_v2.execute(
-        select(OpsEvent).where(OpsEvent.event_type == OpsEventType.CREATE_PROCUREMENT_ACTION)
-    ).scalars().all()
-    tracker_events = db_with_data_v2.execute(
-        select(OpsEvent).where(OpsEvent.event_type == OpsEventType.CREATE_PROCUREMENT_TRACKER)
-    ).scalars().all()
+    # Verify OpsEvents were created for the procurement records (scoped to this agreement)
+    action_events = [
+        e
+        for e in db_with_data_v2.execute(
+            select(OpsEvent).where(OpsEvent.event_type == OpsEventType.CREATE_PROCUREMENT_ACTION)
+        )
+        .scalars()
+        .all()
+        if e.event_details.get("agreement_id") == contract_agreement.id
+    ]
+    tracker_events = [
+        e
+        for e in db_with_data_v2.execute(
+            select(OpsEvent).where(OpsEvent.event_type == OpsEventType.CREATE_PROCUREMENT_TRACKER)
+        )
+        .scalars()
+        .all()
+        if e.event_details.get("agreement_id") == contract_agreement.id
+    ]
     assert len(action_events) == 1
     assert "SpreadsheetIngest" in action_events[0].event_details["message"]
     assert len(tracker_events) == 1
@@ -1509,7 +1424,6 @@ def test_in_execution_bli_with_existing_obligated_creates_modification(db_with_d
     is ingested, a MODIFICATION action and tracker are created.
     """
     contract_agreement = ContractAgreement(
-        id=21,
         name="Test Contract Modification",
         agreement_type=AgreementType.CONTRACT,
     )
@@ -1557,7 +1471,7 @@ def test_in_execution_bli_with_existing_obligated_creates_modification(db_with_d
     # Verify a MODIFICATION action was created
     mod_action = db_with_data_v2.execute(
         select(ProcurementAction)
-        .where(ProcurementAction.agreement_id == 21)
+        .where(ProcurementAction.agreement_id == contract_agreement.id)
         .where(ProcurementAction.award_type == AwardType.MODIFICATION)
     ).scalar_one_or_none()
     assert mod_action is not None
@@ -1565,7 +1479,7 @@ def test_in_execution_bli_with_existing_obligated_creates_modification(db_with_d
     # Verify the IN_EXECUTION BLI is linked to the modification action
     exec_bli = db_with_data_v2.execute(
         select(ContractBudgetLineItem)
-        .where(ContractBudgetLineItem.agreement_id == 21)
+        .where(ContractBudgetLineItem.agreement_id == contract_agreement.id)
         .where(ContractBudgetLineItem.status == BudgetLineItemStatus.IN_EXECUTION)
     ).scalar_one_or_none()
     assert exec_bli.procurement_action_id == mod_action.id
@@ -1573,22 +1487,22 @@ def test_in_execution_bli_with_existing_obligated_creates_modification(db_with_d
     # The OBLIGATED BLI should NOT be linked (it wasn't IN_EXECUTION)
     obl_bli = db_with_data_v2.execute(
         select(ContractBudgetLineItem)
-        .where(ContractBudgetLineItem.agreement_id == 21)
+        .where(ContractBudgetLineItem.agreement_id == contract_agreement.id)
         .where(ContractBudgetLineItem.status == BudgetLineItemStatus.OBLIGATED)
     ).scalar_one_or_none()
     assert obl_bli.procurement_action_id is None
 
     # Cleanup
     for bli in db_with_data_v2.execute(
-        select(BudgetLineItem).where(BudgetLineItem.agreement_id == 21)
+        select(BudgetLineItem).where(BudgetLineItem.agreement_id == contract_agreement.id)
     ).scalars().all():
         db_with_data_v2.delete(bli)
     for tracker in db_with_data_v2.execute(
-        select(ProcurementTracker).where(ProcurementTracker.agreement_id == 21)
+        select(ProcurementTracker).where(ProcurementTracker.agreement_id == contract_agreement.id)
     ).scalars().all():
         db_with_data_v2.delete(tracker)
     for action in db_with_data_v2.execute(
-        select(ProcurementAction).where(ProcurementAction.agreement_id == 21)
+        select(ProcurementAction).where(ProcurementAction.agreement_id == contract_agreement.id)
     ).scalars().all():
         db_with_data_v2.delete(action)
     db_with_data_v2.delete(contract_agreement)
@@ -1601,7 +1515,6 @@ def test_update_bli_to_in_execution_creates_procurement_records(db_with_data_v2)
     procurement record creation.
     """
     contract_agreement = ContractAgreement(
-        id=22,
         name="Test Contract Update To Exec",
         agreement_type=AgreementType.CONTRACT,
     )
@@ -1609,11 +1522,12 @@ def test_update_bli_to_in_execution_creates_procurement_records(db_with_data_v2)
     db_with_data_v2.commit()
 
     user = _ensure_user(db_with_data_v2)
+    can = db_with_data_v2.scalar(select(CAN).where(CAN.number == "TestCanNumber"))
 
     # Create a PLANNED BLI first
     planned_bli = ContractBudgetLineItem(
-        agreement_id=22,
-        can_id=1,
+        agreement_id=contract_agreement.id,
+        can_id=can.id,
         budget_line_item_type=AgreementType.CONTRACT,
         line_description="Planned Line",
         amount=40000,
@@ -1645,7 +1559,7 @@ def test_update_bli_to_in_execution_creates_procurement_records(db_with_data_v2)
 
     # Verify procurement records were created
     action = db_with_data_v2.execute(
-        select(ProcurementAction).where(ProcurementAction.agreement_id == 22)
+        select(ProcurementAction).where(ProcurementAction.agreement_id == contract_agreement.id)
     ).scalar_one_or_none()
     assert action is not None
     assert action.award_type == AwardType.NEW_AWARD
@@ -1657,7 +1571,7 @@ def test_update_bli_to_in_execution_creates_procurement_records(db_with_data_v2)
     # Cleanup
     db_with_data_v2.delete(bli)
     for tracker in db_with_data_v2.execute(
-        select(ProcurementTracker).where(ProcurementTracker.agreement_id == 22)
+        select(ProcurementTracker).where(ProcurementTracker.agreement_id == contract_agreement.id)
     ).scalars().all():
         db_with_data_v2.delete(tracker)
     db_with_data_v2.delete(action)
@@ -1670,6 +1584,12 @@ def test_planned_bli_does_not_create_procurement_records(db_with_data_v2):
     A PLANNED BLI should NOT create any procurement records.
     """
     user = _ensure_user(db_with_data_v2)
+
+    grant_agreement = db_with_data_v2.scalar(
+        select(GrantAgreement).where(
+            GrantAgreement.name == "Grant #1: Early Care and Education Leadership Study (ExCELS)"
+        )
+    )
 
     data = BudgetLineItemData(
         ID="new",
@@ -1688,21 +1608,21 @@ def test_planned_bli_does_not_create_procurement_records(db_with_data_v2):
     )
     create_models(data, user, db_with_data_v2)
 
-    # No procurement records should exist for agreement 1
+    # No procurement records should exist for this agreement
     actions = db_with_data_v2.execute(
-        select(ProcurementAction).where(ProcurementAction.agreement_id == 1)
+        select(ProcurementAction).where(ProcurementAction.agreement_id == grant_agreement.id)
     ).scalars().all()
     assert len(actions) == 0
 
     trackers = db_with_data_v2.execute(
-        select(ProcurementTracker).where(ProcurementTracker.agreement_id == 1)
+        select(ProcurementTracker).where(ProcurementTracker.agreement_id == grant_agreement.id)
     ).scalars().all()
     assert len(trackers) == 0
 
     # Cleanup
     bli = db_with_data_v2.execute(
         select(GrantBudgetLineItem)
-        .where(GrantBudgetLineItem.agreement_id == 1)
+        .where(GrantBudgetLineItem.agreement_id == grant_agreement.id)
         .where(GrantBudgetLineItem.line_description == "Planned Only")
     ).scalar_one_or_none()
     db_with_data_v2.delete(bli)
@@ -1715,7 +1635,6 @@ def test_in_execution_bli_idempotent_procurement_records(db_with_data_v2):
     ProcurementAction and tracker — no duplicates.
     """
     contract_agreement = ContractAgreement(
-        id=23,
         name="Test Contract Idempotent",
         agreement_type=AgreementType.CONTRACT,
     )
@@ -1744,18 +1663,20 @@ def test_in_execution_bli_idempotent_procurement_records(db_with_data_v2):
 
     # Only one action and one tracker
     actions = db_with_data_v2.execute(
-        select(ProcurementAction).where(ProcurementAction.agreement_id == 23)
+        select(ProcurementAction).where(ProcurementAction.agreement_id == contract_agreement.id)
     ).scalars().all()
     assert len(actions) == 1
 
     trackers = db_with_data_v2.execute(
-        select(ProcurementTracker).where(ProcurementTracker.agreement_id == 23)
+        select(ProcurementTracker).where(ProcurementTracker.agreement_id == contract_agreement.id)
     ).scalars().all()
     assert len(trackers) == 1
 
     # Both BLIs linked to the same action
     blis = db_with_data_v2.execute(
-        select(ContractBudgetLineItem).where(ContractBudgetLineItem.agreement_id == 23)
+        select(ContractBudgetLineItem).where(
+            ContractBudgetLineItem.agreement_id == contract_agreement.id
+        )
     ).scalars().all()
     assert len(blis) == 2
     assert all(b.procurement_action_id == actions[0].id for b in blis)
