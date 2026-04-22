@@ -34,36 +34,40 @@ describe("ProjectDetailTabs", () => {
         expect(screen.getByRole("button", { name: "Project Funding" })).toBeInTheDocument();
     });
 
-    it("keeps Project Details enabled and navigates when clicked", () => {
+    it("keeps Project Details and Project Funding tabs enabled", () => {
         renderComponent();
 
-        const detailsTab = screen.getByRole("button", { name: "Project Details" });
-        expect(detailsTab).not.toBeDisabled();
-
-        fireEvent.click(detailsTab);
-
-        expect(mockNavigate).toHaveBeenCalledWith("/projects/1000");
+        expect(screen.getByRole("button", { name: "Project Details" })).not.toBeDisabled();
+        expect(screen.getByRole("button", { name: "Project Funding" })).not.toBeDisabled();
     });
 
-    it("disables only the Project Funding tab", () => {
+    it("keeps all tabs enabled", () => {
         renderComponent();
 
+        expect(screen.getByRole("button", { name: "Project Details" })).not.toBeDisabled();
+        expect(screen.getByRole("button", { name: "Project Funding" })).not.toBeDisabled();
         expect(screen.getByRole("button", { name: "Project Spending" })).not.toBeDisabled();
-        expect(screen.getByRole("button", { name: "Project Funding" })).toBeDisabled();
     });
 
-    it("renders coming soon tooltip only for Project Funding tab", () => {
+    it("navigates to the funding route when Project Funding tab is clicked", () => {
         renderComponent();
 
-        const fundingTab = screen.getByRole("button", { name: "Project Funding" });
-        const spendingTab = screen.getByRole("button", { name: "Project Spending" });
+        fireEvent.click(screen.getByRole("button", { name: "Project Funding" }));
 
-        // Only one tab is still disabled/tooltipped
-        const tooltips = screen.getAllByRole("tooltip", { hidden: true });
-        expect(tooltips).toHaveLength(1);
-        expect(tooltips[0]).toHaveTextContent("Coming Soon");
+        expect(mockNavigate).toHaveBeenCalledWith("/projects/1000/funding");
+    });
 
-        expect(fundingTab).toHaveAttribute("data-position", "top");
-        expect(spendingTab).not.toHaveAttribute("data-position", "top");
+    it("navigates to the spending route when Project Spending tab is clicked", () => {
+        renderComponent();
+
+        fireEvent.click(screen.getByRole("button", { name: "Project Spending" }));
+
+        expect(mockNavigate).toHaveBeenCalledWith("/projects/1000/spending");
+    });
+
+    it("renders no Coming Soon tooltips", () => {
+        renderComponent();
+
+        expect(screen.queryAllByRole("tooltip", { hidden: true })).toHaveLength(0);
     });
 });
