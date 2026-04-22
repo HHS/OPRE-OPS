@@ -81,7 +81,16 @@
         "vite": "8.0.9",
         "vite-plugin-eslint": "1.8.1",
         "vite-plugin-svgr": "5.0.0",
-        "vitest": "4.1.5"
+        "vitest": "4.1.5",
+        "storybook": "10.3.5",
+        "@storybook/react-vite": "10.3.5",
+        "@chromatic-com/storybook": "5.1.2",
+        "@storybook/addon-a11y": "10.3.5",
+        "@storybook/addon-docs": "10.3.5",
+        "@storybook/addon-onboarding": "10.3.5",
+        "prop-types": "15.8.1",
+        "eslint-plugin-storybook": "10.3.5",
+        "@vitest/coverage-v8": "4.1.4"
     },
     "scripts": {
         "start": "bunx --bun vite",
@@ -102,7 +111,9 @@
         "lint:cypress": "eslint './cypress/**'",
         "cypress:open": "cypress open",
         "uswds:update": "bunx gulp compile",
-        "test:e2e:ci:parallel-local": "./scripts/run-e2e-ci-matrix-local.sh"
+        "test:e2e:ci:parallel-local": "./scripts/run-e2e-ci-matrix-local.sh",
+        "storybook": "storybook dev -p 6006",
+        "build-storybook": "storybook build"
     },
     "browserslist": {
         "production": [
