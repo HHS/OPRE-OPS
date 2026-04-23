@@ -47,8 +47,9 @@ Storybook will be served at the `/storybook` sub-path of the existing frontend n
 staging environments only**. Production will not include storybook assets.
 
 **Implementation**: The `Dockerfile.azure` build stage conditionally runs `bun run build-storybook --output-dir
-build/storybook` only when `MODE != production`. In production, the `build/storybook/` directory simply does not exist,
-so nginx returns a 404 via its existing `try_files` directive. No nginx configuration changes are required.
+build/storybook` only when the `BUILD_STORYBOOK` build arg is set to `true` (default: `false`). Only the dev and
+staging deploy workflows pass `BUILD_STORYBOOK=true`; production and E2E builds leave it unset. When the directory
+does not exist, nginx returns a 404 via its existing `try_files` directive.
 
 **Local development**: Storybook runs as a standalone Vite dev server on port 6006 via `bun run storybook`, optionally
 as a Docker Compose service under the `storybook` profile.

@@ -3,7 +3,7 @@
 **Date:** 2026-04-23
 **Affected workflows:** `Continuous Integration` (all PR branches)
 **Symptoms:** E2E test matrix jobs hanging for >1 hour; normal CI wall-time is ~20 min
-**Fixed by:** `hotfix/storybook-ci-hang` → PR #XXXX
+**Fixed by:** `hotfix/storybook-ci-hang` → [PR #5573](https://github.com/HHS/OPRE-OPS/pull/5573)
 
 ---
 
@@ -92,6 +92,7 @@ Changes:
 - `--quiet` **removed** — verbose output is essential for diagnosing future hangs.
 - `timeout 600` added — fails the Docker layer after 10 minutes instead of silently hanging for hours.
 - Gate is now independent of `MODE`, so a future `MODE=staging` or similar won't accidentally re-enable it.
+- Stale references to `MODE != production` in `docs/adr/031-storybook-for-component-documentation.md` and `AGENTS.md` have been updated to reflect the new `BUILD_STORYBOOK` arg.
 
 ### 2. `docker-compose.static.yml` — explicit `BUILD_STORYBOOK: "false"`
 
