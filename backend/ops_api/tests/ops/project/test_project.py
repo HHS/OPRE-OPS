@@ -2081,11 +2081,13 @@ class TestProjectFunding:
         p1 = by_portfolio[funding_test_data["portfolio_1"].id]
         assert p1["amount"] == 1000000.00
         assert p1["portfolio"] == funding_test_data["portfolio_1"].name
+        assert p1["abbreviation"] == funding_test_data["portfolio_1"].abbreviation
 
         # Portfolio 6: CAN2 has $300,000 budget in FY 2025
         p6 = by_portfolio[funding_test_data["portfolio_6"].id]
         assert p6["amount"] == 300000.00
         assert p6["portfolio"] == funding_test_data["portfolio_6"].name
+        assert p6["abbreviation"] == funding_test_data["portfolio_6"].abbreviation
 
     def test_get_project_funding_by_can_classification(self, loaded_db, funding_test_data):
         """funding_by_can correctly classifies carry-forward vs new funding."""

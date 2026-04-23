@@ -3364,6 +3364,14 @@ paths:
             format: int32
             minimum: 1
             default: 1
+        - in: query
+          name: fiscal_year
+          description: Fiscal year for funding summary (defaults to current fiscal year if not provided)
+          required: false
+          schema:
+            type: integer
+            format: int32
+            example: 2025
       responses:
         "200":
           description: OK
@@ -5900,6 +5908,7 @@ components:
               - portfolio_id
               - portfolio
               - amount
+              - abbreviation
             properties:
               portfolio_id:
                 type: integer
@@ -5911,6 +5920,9 @@ components:
                 type: number
                 format: double
                 example: 123.456
+              abbreviation:
+                type: string
+                example: "CW"
         funding_by_can:
           type: object
           required:
@@ -5972,9 +5984,11 @@ components:
           example: 1
         portfolio:
           type: string
+          nullable: true
           example: "Child Welfare"
         active_period:
           type: integer
+          nullable: true
           description: Active period in years
           example: 1
         fy_funding:
