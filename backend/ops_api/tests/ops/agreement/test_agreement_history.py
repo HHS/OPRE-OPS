@@ -942,36 +942,41 @@ def test_agreement_history_pre_award_approval_requested(loaded_db, app_ctx):
     from models import ProcurementTracker, ProcurementTrackerType, User
 
     requester = loaded_db.get(User, 503)  # Amelia Popham
+    assert requester is not None, "Requester user (ID 503) not found in database"
 
-    # Create a ProcurementTracker for testing
+    # Store ID to use after commits
+    requester_id = requester.id
+
+    # Create a ProcurementTracker for testing (let DB auto-assign ID)
     tracker = ProcurementTracker(
-        id=5,
         agreement_id=1,  # Use existing test agreement
         tracker_type=ProcurementTrackerType.DEFAULT,
-        created_by=requester.id,
+        created_by=requester_id,
     )
     loaded_db.add(tracker)
+    loaded_db.flush()  # Flush to get ID
+    tracker_id = tracker.id
     loaded_db.commit()
 
     # Create event with approval_requested change
     ops_event = OpsEvent(
         event_type=OpsEventType.UPDATE_PROCUREMENT_TRACKER_STEP,
         event_status=OpsEventStatus.SUCCESS,
-        created_by=requester.id,
+        created_by=requester_id,
         event_details={
             "procurement_tracker_step": {
                 "id": 17,
-                "procurement_tracker_id": 5,
+                "procurement_tracker_id": tracker_id,
                 "step_type": "PRE_AWARD",
                 "step_number": 5,
                 "status": "ACTIVE",
                 "approval_requested": True,
-                "approval_requested_by": requester.id,
+                "approval_requested_by": requester_id,
                 "approval_status": None,
             },
             "procurement_tracker_step_updates": {
                 "owner_id": 1,
-                "updated_by": requester.id,
+                "updated_by": requester_id,
                 "changes": {
                     "approval_requested": {
                         "old_value": False,
@@ -982,10 +987,28 @@ def test_agreement_history_pre_award_approval_requested(loaded_db, app_ctx):
         },
     )
     loaded_db.add(ops_event)
+    loaded_db.flush()  # Flush to assign ID but don't commit yet
+
+    # Capture the event ID and created_by before commit
+    event_id = ops_event.id
+    expected_created_by = ops_event.created_by
+    assert expected_created_by is not None, "ops_event.created_by should not be None before commit"
+
     loaded_db.commit()
 
-    # Get the tracker to extract agreement_id
-    tracker = loaded_db.get(ProcurementTracker, 5)
+    # Re-query the event from the database instead of refreshing
+    # Refresh might have issues with the session state
+    ops_event = loaded_db.query(OpsEvent).filter(OpsEvent.id == event_id).one()
+
+    # Verify created_by is set in the re-queried event
+    assert ops_event.created_by is not None, f"ops_event.created_by should not be None after commit, expected {expected_created_by}"
+
+    # Re-fetch users to ensure they're in the session before calling the trigger
+    # This is necessary because the trigger uses session.get() which relies on the identity map
+    loaded_db.query(User).filter(User.id.in_([503, 521, 99999])).all()
+
+    # Get tracker from database
+    tracker = loaded_db.query(ProcurementTracker).filter(ProcurementTracker.id == tracker_id).one()
 
     # Trigger history creation
     agreement_history_trigger(ops_event, loaded_db)
@@ -1020,37 +1043,43 @@ def test_agreement_history_pre_award_approval_approved(loaded_db, app_ctx):
     # Use existing test users
     requester = loaded_db.get(User, 503)  # Amelia Popham
     approver = loaded_db.get(User, 521)  # User Demo
+    assert requester is not None, "Requester user (ID 503) not found in database"
+    assert approver is not None, "Approver user (ID 521) not found in database"
 
-    # Create a ProcurementTracker for testing
+    # Store IDs to use after commits
+    requester_id = requester.id
+    approver_id = approver.id
+
+    # Create a ProcurementTracker for testing (let DB auto-assign ID)
     tracker = ProcurementTracker(
-        id=5,
         agreement_id=1,  # Use existing test agreement
         tracker_type=ProcurementTrackerType.DEFAULT,
-        created_by=approver.id,
+        created_by=approver_id,
     )
     loaded_db.add(tracker)
     loaded_db.commit()
+    loaded_db.refresh(tracker)  # Get the auto-assigned ID
 
     # Create event with approval_status change
     ops_event = OpsEvent(
         event_type=OpsEventType.UPDATE_PROCUREMENT_TRACKER_STEP,
         event_status=OpsEventStatus.SUCCESS,
-        created_by=approver.id,
+        created_by=approver_id,
         event_details={
             "procurement_tracker_step": {
                 "id": 17,
-                "procurement_tracker_id": 5,
+                "procurement_tracker_id": tracker.id,
                 "step_type": "PRE_AWARD",
                 "step_number": 5,
                 "status": "ACTIVE",
                 "approval_requested": True,
-                "approval_requested_by": requester.id,
+                "approval_requested_by": requester_id,
                 "approval_status": "APPROVED",
-                "approval_responded_by": approver.id,
+                "approval_responded_by": approver_id,
             },
             "procurement_tracker_step_updates": {
                 "owner_id": 1,
-                "updated_by": approver.id,
+                "updated_by": approver_id,
                 "changes": {
                     "approval_status": {
                         "old_value": None,
@@ -1061,10 +1090,25 @@ def test_agreement_history_pre_award_approval_approved(loaded_db, app_ctx):
         },
     )
     loaded_db.add(ops_event)
+    loaded_db.flush()  # Flush to assign ID but don't commit yet
+
+    # Capture the event ID and created_by before commit
+    event_id = ops_event.id
+    expected_created_by = ops_event.created_by
+    assert expected_created_by is not None, "ops_event.created_by should not be None before commit"
+
     loaded_db.commit()
 
-    # Get the tracker to extract agreement_id
-    tracker = loaded_db.get(ProcurementTracker, 5)
+    # Re-query the event from the database instead of refreshing
+    # Refresh might have issues with the session state
+    ops_event = loaded_db.query(OpsEvent).filter(OpsEvent.id == event_id).one()
+
+    # Verify created_by is set in the re-queried event
+    assert ops_event.created_by is not None, f"ops_event.created_by should not be None after commit, expected {expected_created_by}"
+
+    # Re-fetch users to ensure they're in the session before calling the trigger
+    # This is necessary because the trigger uses session.get() which relies on the identity map
+    loaded_db.query(User).filter(User.id.in_([503, 521, 99999])).all()
 
     # Trigger history creation
     agreement_history_trigger(ops_event, loaded_db)
@@ -1102,37 +1146,43 @@ def test_agreement_history_pre_award_approval_declined(loaded_db, app_ctx):
     # Use existing test users
     requester = loaded_db.get(User, 503)  # Amelia Popham
     decliner = loaded_db.get(User, 521)  # User Demo
+    assert requester is not None, "Requester user (ID 503) not found in database"
+    assert decliner is not None, "Decliner user (ID 521) not found in database"
 
-    # Create a ProcurementTracker for testing
+    # Store IDs to use after commits
+    requester_id = requester.id
+    decliner_id = decliner.id
+
+    # Create a ProcurementTracker for testing (let DB auto-assign ID)
     tracker = ProcurementTracker(
-        id=5,
         agreement_id=1,  # Use existing test agreement
         tracker_type=ProcurementTrackerType.DEFAULT,
-        created_by=decliner.id,
+        created_by=decliner_id,
     )
     loaded_db.add(tracker)
     loaded_db.commit()
+    loaded_db.refresh(tracker)  # Get the auto-assigned ID
 
     # Create event with approval_status change to DECLINED
     ops_event = OpsEvent(
         event_type=OpsEventType.UPDATE_PROCUREMENT_TRACKER_STEP,
         event_status=OpsEventStatus.SUCCESS,
-        created_by=decliner.id,
+        created_by=decliner_id,
         event_details={
             "procurement_tracker_step": {
                 "id": 17,
-                "procurement_tracker_id": 5,
+                "procurement_tracker_id": tracker.id,
                 "step_type": "PRE_AWARD",
                 "step_number": 5,
                 "status": "ACTIVE",
                 "approval_requested": True,
-                "approval_requested_by": requester.id,
+                "approval_requested_by": requester_id,
                 "approval_status": "DECLINED",
-                "approval_responded_by": decliner.id,
+                "approval_responded_by": decliner_id,
             },
             "procurement_tracker_step_updates": {
                 "owner_id": 1,
-                "updated_by": decliner.id,
+                "updated_by": decliner_id,
                 "changes": {
                     "approval_status": {
                         "old_value": None,
@@ -1143,10 +1193,25 @@ def test_agreement_history_pre_award_approval_declined(loaded_db, app_ctx):
         },
     )
     loaded_db.add(ops_event)
+    loaded_db.flush()  # Flush to assign ID but don't commit yet
+
+    # Capture the event ID and created_by before commit
+    event_id = ops_event.id
+    expected_created_by = ops_event.created_by
+    assert expected_created_by is not None, "ops_event.created_by should not be None before commit"
+
     loaded_db.commit()
 
-    # Get the tracker to extract agreement_id
-    tracker = loaded_db.get(ProcurementTracker, 5)
+    # Re-query the event from the database instead of refreshing
+    # Refresh might have issues with the session state
+    ops_event = loaded_db.query(OpsEvent).filter(OpsEvent.id == event_id).one()
+
+    # Verify created_by is set in the re-queried event
+    assert ops_event.created_by is not None, f"ops_event.created_by should not be None after commit, expected {expected_created_by}"
+
+    # Re-fetch users to ensure they're in the session before calling the trigger
+    # This is necessary because the trigger uses session.get() which relies on the identity map
+    loaded_db.query(User).filter(User.id.in_([503, 521, 99999])).all()
 
     # Trigger history creation
     agreement_history_trigger(ops_event, loaded_db)
@@ -1182,37 +1247,41 @@ def test_agreement_history_pre_award_approval_unknown_requester(loaded_db, app_c
 
     approver = loaded_db.get(User, 521)  # User Demo
     non_existent_user_id = 99999
+    assert approver is not None, "Approver user (ID 521) not found in database"
 
-    # Create a ProcurementTracker for testing
+    # Store ID to use after commits
+    approver_id = approver.id
+
+    # Create a ProcurementTracker for testing (let DB auto-assign ID)
     tracker = ProcurementTracker(
-        id=5,
         agreement_id=1,  # Use existing test agreement
         tracker_type=ProcurementTrackerType.DEFAULT,
-        created_by=approver.id,
+        created_by=approver_id,
     )
     loaded_db.add(tracker)
     loaded_db.commit()
+    loaded_db.refresh(tracker)  # Get the auto-assigned ID
 
     # Create event with approval_status change and non-existent requester
     ops_event = OpsEvent(
         event_type=OpsEventType.UPDATE_PROCUREMENT_TRACKER_STEP,
         event_status=OpsEventStatus.SUCCESS,
-        created_by=approver.id,
+        created_by=approver_id,
         event_details={
             "procurement_tracker_step": {
                 "id": 17,
-                "procurement_tracker_id": 5,
+                "procurement_tracker_id": tracker.id,
                 "step_type": "PRE_AWARD",
                 "step_number": 5,
                 "status": "ACTIVE",
                 "approval_requested": True,
                 "approval_requested_by": non_existent_user_id,
                 "approval_status": "APPROVED",
-                "approval_responded_by": approver.id,
+                "approval_responded_by": approver_id,
             },
             "procurement_tracker_step_updates": {
                 "owner_id": 1,
-                "updated_by": approver.id,
+                "updated_by": approver_id,
                 "changes": {
                     "approval_status": {
                         "old_value": None,
@@ -1223,10 +1292,25 @@ def test_agreement_history_pre_award_approval_unknown_requester(loaded_db, app_c
         },
     )
     loaded_db.add(ops_event)
+    loaded_db.flush()  # Flush to assign ID but don't commit yet
+
+    # Capture the event ID and created_by before commit
+    event_id = ops_event.id
+    expected_created_by = ops_event.created_by
+    assert expected_created_by is not None, "ops_event.created_by should not be None before commit"
+
     loaded_db.commit()
 
-    # Get the tracker to extract agreement_id
-    tracker = loaded_db.get(ProcurementTracker, 5)
+    # Re-query the event from the database instead of refreshing
+    # Refresh might have issues with the session state
+    ops_event = loaded_db.query(OpsEvent).filter(OpsEvent.id == event_id).one()
+
+    # Verify created_by is set in the re-queried event
+    assert ops_event.created_by is not None, f"ops_event.created_by should not be None after commit, expected {expected_created_by}"
+
+    # Re-fetch users to ensure they're in the session before calling the trigger
+    # This is necessary because the trigger uses session.get() which relies on the identity map
+    loaded_db.query(User).filter(User.id.in_([503, 521, 99999])).all()
 
     # Trigger history creation
     agreement_history_trigger(ops_event, loaded_db)
