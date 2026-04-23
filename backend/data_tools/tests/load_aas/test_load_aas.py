@@ -107,7 +107,7 @@ def test_validate_all():
 def db_for_aas(loaded_db):
     """Set up database for AAS tests"""
     # Create project
-    project = ResearchProject(title="Test Project")
+    project = Project(title="Test Project", project_type=ProjectType.RESEARCH)
     loaded_db.add(project)
 
     # Create requesting agency

@@ -36,7 +36,8 @@ from models import (
     Portfolio,
     ProcurementShop,
     ProcurementShopFee,
-    ResearchProject,
+    Project,
+    ProjectType,
     ServiceRequirementType,
     ServicesComponent,
     User,
@@ -654,7 +655,7 @@ def db_for_aas(loaded_db):
     loaded_db.commit()
 
     # Create project
-    project = ResearchProject(title="Test Project")
+    project = Project(title="Test Project", project_type=ProjectType.RESEARCH)
     loaded_db.add(project)
 
     # Create requesting agency

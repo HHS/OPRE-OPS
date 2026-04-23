@@ -71,13 +71,15 @@ def test_validate_data_missing_date():
 
 @pytest.fixture()
 def db_for_award_date(loaded_db):
-    project_1 = ResearchProject(
+    project_1 = Project(
         id=1,
+        project_type=ProjectType.RESEARCH,
         title="Test Project",
         short_title="Test Project",
     )
-    project_2 = ResearchProject(
+    project_2 = Project(
         id=2,
+        project_type=ProjectType.RESEARCH,
         title="Test Project 2",
         short_title="Test Project 2",
     )

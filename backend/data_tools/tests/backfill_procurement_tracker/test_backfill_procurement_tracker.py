@@ -23,6 +23,7 @@ from models.procurement_workflow import (
     has_obligated_blis,
     link_blis_to_action,
 )
+from models.projects import Project, ProjectType
 
 
 @pytest.fixture()
@@ -32,7 +33,7 @@ def db_with_agreements(loaded_db):
     loaded_db.commit()
     uid = sys_user.id
 
-    project = ResearchProject(id=9000, title="Backfill Test Project", short_title="BTP")
+    project = Project(id=9000, project_type=ProjectType.RESEARCH, title="Backfill Test Project", short_title="BTP")
     loaded_db.add(project)
     loaded_db.commit()
 

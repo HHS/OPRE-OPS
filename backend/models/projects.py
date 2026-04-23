@@ -43,10 +43,6 @@ class ProjectSortCondition(Enum):
 
 class Project(BaseModel):
     __tablename__ = "project"
-    __mapper_args__: dict[str, str | ProjectType] = {
-        "polymorphic_identity": "project",
-        "polymorphic_on": "project_type",
-    }
 
     id: Mapped[int] = BaseModel.get_pk_column(sequence=Sequence("project_id_seq", start=1000, increment=1))
     project_type: Mapped[ProjectType] = mapped_column(ENUM(ProjectType), nullable=False)
@@ -311,20 +307,3 @@ class Project(BaseModel):
             "funding_by_fiscal_year": funding_by_fiscal_year,
             "cans": cans_list,
         }
-
-
-# class ResearchProject(Project):
-#     __tablename__ = "research_project"
-#     __mapper_args__ = {
-#         "polymorphic_identity": ProjectType.RESEARCH,
-#     }
-#     id: Mapped[int] = mapped_column(ForeignKey("project.id"), primary_key=True)
-#     origination_date: Mapped[Optional[Date]] = mapped_column(Date(), nullable=True)
-
-
-# class AdministrativeAndSupportProject(Project):
-#     __tablename__ = "administrative_and_support_project"
-#     __mapper_args__ = {
-#         "polymorphic_identity": ProjectType.ADMINISTRATIVE_AND_SUPPORT,
-#     }
-#     id: Mapped[int] = mapped_column(ForeignKey("project.id"), primary_key=True)

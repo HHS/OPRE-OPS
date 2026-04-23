@@ -42,7 +42,7 @@ from models import (
     OpsEvent,
     ProcurementShop,
     Project,
-    ResearchProject,
+    ProjectType,
     User,
     Vendor,
 )
@@ -366,7 +366,8 @@ def db_for_aa_agreement(loaded_db):
         duns="123456789",
     )
 
-    project = ResearchProject(
+    project = Project(
+        project_type=ProjectType.RESEARCH,
         title="Test Project for AA Agreement",
         description="This is a test project for AA agreement.",
     )

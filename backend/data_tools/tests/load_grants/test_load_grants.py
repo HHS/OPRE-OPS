@@ -43,22 +43,25 @@ def test_create_models_no_grants_title():
 
 @pytest.fixture()
 def db_for_grants(loaded_db):
-    project_1 = ResearchProject(
+    project_1 = Project(
         id=1,
         title="Test Project",
         short_title="Test Project",
+        project_type=ProjectType.RESEARCH,
     )
 
-    project_2 = ResearchProject(
+    project_2 = Project(
         id=2,
         title="Test Project 2",
         short_title="Test Project 2",
+        project_type=ProjectType.RESEARCH,
     )
 
-    project_1000 = ResearchProject(
+    project_1000 = Project(
         id=1000,
         title="Test Project 1000",
         short_title="Test Project 1000",
+        project_type=ProjectType.RESEARCH,
     )
 
     loaded_db.add(project_1)

@@ -6,7 +6,7 @@ from typing import List, Optional
 from loguru import logger
 from sqlalchemy.orm import Session
 
-from models import AdministrativeAndSupportProject, ProjectType, ResearchProject, User
+from models import Project, ProjectType, User
 
 
 @dataclass
@@ -84,7 +84,7 @@ def create_models(data: ProjectData, sys_user: User, session: Session) -> None:
 
     try:
         if data.PROJECT_TYPE == "RESEARCH":
-            project = ResearchProject(
+            project = Project(
                 id=data.SYS_PROJECT_ID,
                 project_type=ProjectType.RESEARCH,
                 title=data.PROJECT_TITLE,
@@ -93,7 +93,7 @@ def create_models(data: ProjectData, sys_user: User, session: Session) -> None:
                 created_by=sys_user.id,
             )
         else:
-            project = AdministrativeAndSupportProject(
+            project = Project(
                 id=data.SYS_PROJECT_ID,
                 project_type=ProjectType.ADMINISTRATIVE_AND_SUPPORT,
                 title=data.PROJECT_TITLE,

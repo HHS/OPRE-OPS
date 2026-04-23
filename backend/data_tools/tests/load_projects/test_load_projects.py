@@ -112,20 +112,18 @@ def test_main(loaded_db):
     assert result.exit_code == 0
 
     # make sure the data was loaded
-    project_1 = loaded_db.get(ResearchProject, 1)
+    project_1 = loaded_db.get(Project, 1)
     assert project_1.id == 1
 
-    project_2 = loaded_db.get(ResearchProject, 2)
+    project_2 = loaded_db.get(Project, 2)
     assert project_2.id == 2
 
-    history_objs = (
-        loaded_db.execute(select(OpsDBHistory).where(OpsDBHistory.class_name == "ResearchProject")).scalars().all()
-    )
+    history_objs = loaded_db.execute(select(OpsDBHistory).where(OpsDBHistory.class_name == "Project")).scalars().all()
     assert len(history_objs) == 13
 
     project_1_history = (
         loaded_db.execute(
-            select(OpsDBHistory).where(and_(OpsDBHistory.row_key == "1", OpsDBHistory.class_name == "ResearchProject"))
+            select(OpsDBHistory).where(and_(OpsDBHistory.row_key == "1", OpsDBHistory.class_name == "Project"))
         )
         .scalars()
         .all()
@@ -157,10 +155,7 @@ def test_create_models_upsert(loaded_db):
     create_models(data_1, sys_user, loaded_db)
 
     # make sure the data was loaded
-    # project_1 = loaded_db.get(ResearchProject, 1)
-    project_1 = loaded_db.execute(
-        select(ResearchProject).where(ResearchProject.title == "New Research Project")
-    ).scalar()
+    project_1 = loaded_db.execute(select(Project).where(Project.title == "New Research Project")).scalar()
     # assert project_1.id == 1
     new_id = project_1.id
     assert project_1.title == "New Research Project"
@@ -176,9 +171,7 @@ def test_create_models_upsert(loaded_db):
 
     # make sure the history records are created
     history_record = loaded_db.execute(
-        select(OpsDBHistory)
-        .where(OpsDBHistory.class_name == "ResearchProject")
-        .order_by(OpsDBHistory.created_on.desc())
+        select(OpsDBHistory).where(OpsDBHistory.class_name == "Project").order_by(OpsDBHistory.created_on.desc())
     ).scalar()
     assert history_record is not None
     assert history_record.event_type == OpsDBHistoryType.NEW
@@ -195,7 +188,7 @@ def test_create_models_upsert(loaded_db):
     )
     create_models(data_2, sys_user, loaded_db)
 
-    project_1 = loaded_db.get(ResearchProject, new_id)
+    project_1 = loaded_db.get(Project, new_id)
     assert project_1.title == "Human Services Interoperability Support Updated"
     assert project_1.short_title == "XXX"
     assert project_1.description == "This contract will conduct interoperability activities"
@@ -211,7 +204,7 @@ def test_create_models_upsert(loaded_db):
     )
     create_models(data_3, sys_user, loaded_db)
 
-    project_1 = loaded_db.get(ResearchProject, new_id)
+    project_1 = loaded_db.get(Project, new_id)
     assert project_1.title == "Human Services Interoperability Support Updated"
     assert project_1.short_title == "YYY"
     assert project_1.description == "This contract will conduct interoperability activities"

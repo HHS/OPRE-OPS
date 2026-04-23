@@ -15,15 +15,14 @@ from models import (
     GrantAgreement,
     GrantBudgetLineItem,
     Portfolio,
-    ResearchProject,
+    Project,
+    ProjectType,
 )
 from ops_api.ops.utils.reporting_summary import get_reporting_counts
 
 
 @pytest.fixture()
 def db_with_reporting_data(app, loaded_db, app_ctx):
-    from models import CAN, CANFundingBudget, CANFundingDetails, Portfolio, ResearchProject
-
     portfolio = Portfolio(name="COUNTS TEST PORTFOLIO", division_id=1)
     can = CAN(number="COUNTS_TEST_CAN")
     portfolio.cans.append(can)
@@ -40,7 +39,12 @@ def db_with_reporting_data(app, loaded_db, app_ctx):
     loaded_db.commit()
 
     # Research project
-    project = ResearchProject(title="Counts Test Project", short_title="CTP", description="Test project for counts")
+    project = Project(
+        project_type=ProjectType.RESEARCH,
+        title="Counts Test Project",
+        short_title="CTP",
+        description="Test project for counts",
+    )
     loaded_db.add(project)
     loaded_db.commit()
 
@@ -230,7 +234,12 @@ def db_with_2024_data(app, loaded_db, app_ctx):
     loaded_db.commit()
 
     # Research project
-    project = ResearchProject(title="FY2024 Test Project", short_title="FY24TP", description="Test project for FY 2024")
+    project = Project(
+        project_type=ProjectType.RESEARCH,
+        title="FY2024 Test Project",
+        short_title="FY24TP",
+        description="Test project for FY 2024",
+    )
     loaded_db.add(project)
     loaded_db.commit()
 

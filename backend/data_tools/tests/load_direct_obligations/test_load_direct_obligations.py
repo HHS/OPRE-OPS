@@ -41,10 +41,11 @@ def test_create_models_no_direct_obligation_name():
 
 @pytest.fixture()
 def db_for_direct_obligations(loaded_db):
-    project_1 = ResearchProject(
+    project_1 = Project(
         id=1,
         title="Test Project",
         short_title="Test Project",
+        project_type=ProjectType.RESEARCH,
     )
 
     loaded_db.add(project_1)

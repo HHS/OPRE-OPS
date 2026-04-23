@@ -8,7 +8,6 @@ from sqlalchemy.orm import selectinload
 
 from models import (
     CAN,
-    AdministrativeAndSupportProject,
     Agreement,
     BudgetLineItem,
     BudgetLineItemStatus,
@@ -16,7 +15,6 @@ from models import (
     Project,
     ProjectSortCondition,
     ProjectType,
-    ResearchProject,
     User,
 )
 from ops_api.ops.services.ops_service import OpsService, ResourceNotFoundError, ValidationError
@@ -75,9 +73,6 @@ class ProjectsService(OpsService[Project]):
         if "id" in updated_fields and project.id != updated_fields.get("id"):
             raise ValidationError({"id": ["ID cannot be changed"]})
 
-        if "project_type" in updated_fields and project.project_type != updated_fields.get("project_type"):
-            raise ValidationError({"project_type": ["Project type cannot be changed"]})
-
     def _validate_and_convert_team_leaders(self, team_leaders_data) -> list[User]:
         """
         Validate that the team leaders provided are valid users and convert them to User objects.
@@ -128,15 +123,19 @@ class ProjectsService(OpsService[Project]):
 
         project_type = data.get("project_type", None)
         if project_type == ProjectType.RESEARCH:
-            new_project = ResearchProject(**data)
+            if not data.get("project_type", None):
+                data["project_type"] = ProjectType.RESEARCH
+            new_project = Project(**data)
         elif project_type == ProjectType.ADMINISTRATIVE_AND_SUPPORT:
             # remove origination_date if it's present since it's not a field on AdministrativeAndSupportProject
             data.pop("origination_date", None)
-            new_project = AdministrativeAndSupportProject(**data)
+            if not data.get("project_type", None):
+                data["project_type"] = ProjectType.ADMINISTRATIVE_AND_SUPPORT
+            new_project = Project(**data)
         else:
             raise ValidationError({"project_type": "Invalid project type."})
 
-        # convert team leaders from key value pair to user object on ResearchProject
+        # convert team leaders from key value pair to user object on Project
         new_project.team_leaders = sorted_tl_users
 
         self.db_session.add(new_project)
@@ -170,7 +169,15 @@ class ProjectsService(OpsService[Project]):
 
         # Remove origination_date if updating an admin project (not a valid field for that type)
         if project.project_type == ProjectType.ADMINISTRATIVE_AND_SUPPORT:
-            updated_fields.pop("origination_date", None)
+            if (
+                "project_type" in updated_fields
+                and updated_fields["project_type"] == ProjectType.ADMINISTRATIVE_AND_SUPPORT
+            ):
+                # If we are changing project type to admin, set origination date to None since it's not a field on that type
+                updated_fields["origination_date"] = None
+            else:
+                # If we aren't changing project types, always remove origination date
+                updated_fields.pop("origination_date", None)
 
         # Handle team_leaders if provided
         tl_users = None
@@ -226,19 +233,20 @@ class ProjectsService(OpsService[Project]):
             SQLAlchemy select statement
         """
         stmt = (
-            select(ResearchProject)
-            .distinct(ResearchProject.id)
+            select(Project)
+            .where(Project.project_type == ProjectType.RESEARCH)
+            .distinct(Project.id)
             .join(Agreement, isouter=True)
             .join(BudgetLineItem, isouter=True)
             .join(CAN, isouter=True)
             .options(
-                selectinload(ResearchProject.agreements).selectinload(Agreement.services_components),
-                selectinload(ResearchProject.agreements)
+                selectinload(Project.agreements).selectinload(Agreement.services_components),
+                selectinload(Project.agreements)
                 .selectinload(Agreement.budget_line_items)
                 .selectinload(BudgetLineItem.can),
-                selectinload(ResearchProject.agreements).selectinload(Agreement.special_topics),
-                selectinload(ResearchProject.agreements).selectinload(Agreement.research_methodologies),
-                selectinload(ResearchProject.agreements).selectinload(Agreement.team_members),
+                selectinload(Project.agreements).selectinload(Agreement.special_topics),
+                selectinload(Project.agreements).selectinload(Agreement.research_methodologies),
+                selectinload(Project.agreements).selectinload(Agreement.team_members),
             )
         )
 
@@ -286,19 +294,20 @@ class ProjectsService(OpsService[Project]):
             SQLAlchemy select statement
         """
         stmt = (
-            select(AdministrativeAndSupportProject)
-            .distinct(AdministrativeAndSupportProject.id)
+            select(Project)
+            .where(Project.project_type == ProjectType.ADMINISTRATIVE_AND_SUPPORT)
+            .distinct(Project.id)
             .join(Agreement, isouter=True)
             .join(BudgetLineItem, isouter=True)
             .join(CAN, isouter=True)
             .options(
-                selectinload(ResearchProject.agreements).selectinload(Agreement.services_components),
-                selectinload(ResearchProject.agreements)
+                selectinload(Project.agreements).selectinload(Agreement.services_components),
+                selectinload(Project.agreements)
                 .selectinload(Agreement.budget_line_items)
                 .selectinload(BudgetLineItem.can),
-                selectinload(ResearchProject.agreements).selectinload(Agreement.special_topics),
-                selectinload(ResearchProject.agreements).selectinload(Agreement.research_methodologies),
-                selectinload(ResearchProject.agreements).selectinload(Agreement.team_members),
+                selectinload(Project.agreements).selectinload(Agreement.special_topics),
+                selectinload(Project.agreements).selectinload(Agreement.research_methodologies),
+                selectinload(Project.agreements).selectinload(Agreement.team_members),
             )
         )
 

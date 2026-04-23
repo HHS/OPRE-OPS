@@ -1,13 +1,13 @@
 import uuid
 
 from flask import url_for
+from sqlalchemy import select
 
 from models import Project, ProjectType
-from models.projects import ResearchProject
 
 
 def test_research_projects_get_all(auth_client, loaded_db):
-    count = loaded_db.query(ResearchProject).count()
+    count = len(loaded_db.execute(select(Project).where(Project.project_type == ProjectType.RESEARCH)).scalars().all())
 
     response = auth_client.get(url_for("api.projects-group", project_type=ProjectType.RESEARCH.name))
     assert response.status_code == 200

@@ -14,7 +14,6 @@ from models import (
     Portfolio,
     Project,
     ProjectType,
-    ResearchProject,
     ServicesComponent,
 )
 from models.cans import CANFundingBudget, CANFundingDetails
@@ -174,13 +173,13 @@ def test_agreement_search(auth_client, loaded_db, test_project):
 def test_agreement_search_multiple_projects(auth_client, loaded_db):
     """Test agreement search returns all projects with matching agreements (exact match)."""
     # Create two research projects
-    project1 = ResearchProject(
+    project1 = Project(
         project_type=ProjectType.RESEARCH,
         title="Project Alpha",
         short_title="PA",
         description="First test project",
     )
-    project2 = ResearchProject(
+    project2 = Project(
         project_type=ProjectType.RESEARCH,
         title="Project Beta",
         short_title="PB",
@@ -454,7 +453,8 @@ def test_projects_summary_scoped_to_portfolio(auth_client, loaded_db):
     loaded_db.add(can2_budget)
 
     # Project with one agreement having BLIs in both portfolios
-    project = ResearchProject(
+    project = Project(
+        project_type=ProjectType.RESEARCH,
         title=f"Multi Portfolio Project {unique}",
         short_title="MPP",
         description="Test portfolio scoping",
@@ -666,7 +666,7 @@ def test_project_list_metadata_serialization(auth_client, loaded_db):
     Test that project_list_metadata is correctly extracted and serialized in list response.
     """
     # Create a new project
-    project = ResearchProject(
+    project = Project(
         project_type=ProjectType.RESEARCH,
         title="Project List Metadata Test Project",
         short_title="PLMTP",
@@ -982,11 +982,50 @@ def test_patch_project_cannot_change_id(budget_team_auth_client, loaded_db, proj
     assert response.status_code == 400
 
 
-def test_patch_project_cannot_change_project_type(budget_team_auth_client, loaded_db, project_with_no_agreements):
-    """Test that project_type cannot be changed."""
+def test_change_project_type_clears_origination_date(budget_team_auth_client, loaded_db):
+    """Test that changing project type from RESEARCH to ADMINISTRATIVE_AND_SUPPORT clears origination_date."""
+    # Create a research project with origination_date and other fields
+    project = Project(
+        project_type=ProjectType.RESEARCH,
+        title="Research Project to Convert",
+        short_title="RPTC" + uuid.uuid4().hex[:6],
+        description="This is a research project that will be converted",
+        url="https://example.com/original",
+        origination_date=date.fromisoformat("2023-05-15"),
+    )
+    loaded_db.add(project)
+    loaded_db.commit()
+    project_id = project.id
+
+    # Verify initial state
+    response = budget_team_auth_client.get(url_for("api.projects-item", id=project_id))
+    assert response.status_code == 200
+    initial_data = response.json
+    assert initial_data["project_type"] == ProjectType.RESEARCH.name
+    assert initial_data["origination_date"] == "2023-05-15"
+    assert initial_data["title"] == "Research Project to Convert"
+    assert initial_data["description"] == "This is a research project that will be converted"
+    assert initial_data["url"] == "https://example.com/original"
+
+    # Change project type to ADMINISTRATIVE_AND_SUPPORT
     data = {"project_type": ProjectType.ADMINISTRATIVE_AND_SUPPORT.name}
-    response = budget_team_auth_client.patch(url_for("api.projects-item", id=project_with_no_agreements.id), json=data)
-    assert response.status_code == 400
+    response = budget_team_auth_client.patch(url_for("api.projects-item", id=project_id), json=data)
+    assert response.status_code == 200
+
+    # Verify project type changed and origination_date is now null
+    response = budget_team_auth_client.get(url_for("api.projects-item", id=project_id))
+    assert response.status_code == 200
+    updated_data = response.json
+    assert updated_data["project_type"] == ProjectType.ADMINISTRATIVE_AND_SUPPORT.name
+    # We should no longer have origination date because we've switched to admin and support.
+    assert "origination_date" not in updated_data
+
+    # Verify other fields remain unchanged
+    assert updated_data["title"] == initial_data["title"]
+    assert updated_data["short_title"] == initial_data["short_title"]
+    assert updated_data["description"] == initial_data["description"]
+    assert updated_data["url"] == initial_data["url"]
+    assert updated_data["id"] == initial_data["id"]
 
 
 def test_patch_project_auth_required(client, loaded_db, project_with_no_agreements):
@@ -1033,7 +1072,7 @@ def projects_service(loaded_db):
 @pytest.fixture
 def project_with_no_agreements(loaded_db):
     """Create a test project with no agreements."""
-    project = ResearchProject(
+    project = Project(
         project_type=ProjectType.RESEARCH,
         title="Test Project With No Agreements",
         short_title="TPNA",
@@ -1585,7 +1624,7 @@ class TestProjectMetadata:
         from models import ServicesComponent
 
         # Create a test project
-        project = ResearchProject(
+        project = Project(
             project_type=ProjectType.RESEARCH,
             title="Test Project Dates",
             short_title="TPD",
@@ -1651,7 +1690,7 @@ class TestProjectMetadata:
         from models import User
 
         # Create a new project
-        project = ResearchProject(
+        project = Project(
             project_type=ProjectType.RESEARCH,
             title="Team Members Aggregation Test Project",
             short_title="TMATP",
@@ -1747,7 +1786,7 @@ class TestProjectMetadata:
         from models import User
 
         # Create a new project
-        project = ResearchProject(
+        project = Project(
             project_type=ProjectType.RESEARCH,
             title="Project Officers Test Project",
             short_title="POTP",
@@ -1802,7 +1841,7 @@ class TestProjectMetadata:
         from models import User
 
         # Create a new project
-        project = ResearchProject(
+        project = Project(
             project_type=ProjectType.RESEARCH,
             title="Alternate Project Officers Test Project",
             short_title="APOTP",
@@ -1857,7 +1896,7 @@ class TestProjectMetadata:
         from models import User
 
         # Create a new project
-        project = ResearchProject(
+        project = Project(
             project_type=ProjectType.RESEARCH,
             title="PO Deduplication Test Project",
             short_title="PODTP",
@@ -1926,7 +1965,7 @@ class TestProjectMetadata:
         from models import User
 
         # Create a new project
-        project = ResearchProject(
+        project = Project(
             project_type=ProjectType.RESEARCH,
             title="Team Members No Duplicates Test Project",
             short_title="TMNDTP",
@@ -2014,7 +2053,8 @@ class TestProjectFunding:
         loaded_db.add_all([can2_budget_2022, can2_budget_2025])
 
         # Project with agreement and BLIs referencing both CANs
-        project = ResearchProject(
+        project = Project(
+            project_type=ProjectType.RESEARCH,
             title=f"Funding Test Project {unique}",
             short_title="FTP",
             description="Project for testing funding calculations",
@@ -2055,7 +2095,8 @@ class TestProjectFunding:
 
     def test_get_project_funding_empty_project(self, loaded_db):
         """A project with no agreements returns empty/zero results."""
-        project = ResearchProject(
+        project = Project(
+            project_type=ProjectType.RESEARCH,
             title="Empty Funding Project",
             short_title="EFP",
             description="No agreements",

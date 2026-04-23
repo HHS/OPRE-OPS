@@ -47,20 +47,23 @@ def test_create_models_no_contract_name():
 
 @pytest.fixture()
 def db_for_contracts(loaded_db):
-    project_1 = ResearchProject(
+    project_1 = Project(
         id=1,
+        project_type=ProjectType.RESEARCH,
         title="Test Project",
         short_title="Test Project",
     )
 
-    project_2 = ResearchProject(
+    project_2 = Project(
         id=2,
+        project_type=ProjectType.RESEARCH,
         title="Test Project 2",
         short_title="Test Project 2",
     )
 
-    project_1000 = ResearchProject(
+    project_1000 = Project(
         id=1000,
+        project_type=ProjectType.RESEARCH,
         title="Test Project 1000",
         short_title="Test Project 1000",
     )

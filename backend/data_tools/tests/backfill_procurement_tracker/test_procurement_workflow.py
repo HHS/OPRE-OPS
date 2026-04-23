@@ -37,7 +37,7 @@ def db_workflow(loaded_db):
     loaded_db.commit()
     uid = sys_user.id
 
-    project = ResearchProject(id=8000, title="Workflow Test Project", short_title="WTP")
+    project = Project(id=8000, project_type=ProjectType.RESEARCH, title="Workflow Test Project", short_title="WTP")
     loaded_db.add(project)
     loaded_db.commit()
 

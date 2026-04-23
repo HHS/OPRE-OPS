@@ -34,7 +34,8 @@ from models import (
     Portfolio,
     ProcurementShop,
     ProcurementShopFee,
-    ResearchProject,
+    Project,
+    ProjectType,
     ServiceRequirementType,
     User,
 )
@@ -849,7 +850,7 @@ def test_create_model_lock_in_proc_shop_fee_not_found(db_with_data):
 def db_for_aas(loaded_db):
     """Set up database for AAS tests"""
     # Create project
-    project = ResearchProject(title="Test Project")
+    project = Project(title="Test Project", project_type=ProjectType.RESEARCH)
     loaded_db.add(project)
 
     # Create requesting agency

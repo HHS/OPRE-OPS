@@ -39,10 +39,11 @@ def test_create_models_no_iaa_name():
 
 @pytest.fixture()
 def db_for_iaas(loaded_db):
-    project_1 = ResearchProject(
+    project_1 = Project(
         id=1,
         title="Test Project",
         short_title="Test Project",
+        project_type=ProjectType.RESEARCH,
     )
 
     loaded_db.add(project_1)

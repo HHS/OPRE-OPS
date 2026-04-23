@@ -31,7 +31,7 @@ from models import (
     ProcurementActionStatus,
     ProcurementShop,
     ProcurementShopFee,
-    ResearchProject,
+    Project,
     ServiceRequirementType,
     User,
     Vendor,
@@ -2101,7 +2101,7 @@ def test_agreements_post_aa_agreement_max(auth_client, db_for_aa_agreement, app_
                 },
             ],
             "project_id": db_for_aa_agreement.scalar(
-                select(ResearchProject.id).where(ResearchProject.title == "Test Project for AA Agreement")
+                select(Project.id).where(Project.title == "Test Project for AA Agreement")
             ),
             "awarding_entity_id": db_for_aa_agreement.scalar(
                 select(ProcurementShop.id).where(ProcurementShop.name == "Test Awarding Entity")
@@ -2146,7 +2146,7 @@ def test_agreements_post_aa_agreement_max(auth_client, db_for_aa_agreement, app_
     assert aa_from_db.alternate_project_officer_id == 501
     assert [tm.id for tm in aa_from_db.team_members] == [500, 501]
     assert aa_from_db.project_id == db_for_aa_agreement.scalar(
-        select(ResearchProject.id).where(ResearchProject.title == "Test Project for AA Agreement")
+        select(Project.id).where(Project.title == "Test Project for AA Agreement")
     )
     assert aa_from_db.awarding_entity_id == db_for_aa_agreement.scalar(
         select(ProcurementShop.id).where(ProcurementShop.name == "Test Awarding Entity")
@@ -2277,7 +2277,7 @@ def test_agreements_put_aa_agreement_max(auth_client, db_for_aa_agreement, app_c
                 },
             ],
             "project_id": db_for_aa_agreement.scalar(
-                select(ResearchProject.id).where(ResearchProject.title == "Test Project for AA Agreement")
+                select(Project.id).where(Project.title == "Test Project for AA Agreement")
             ),
             "awarding_entity_id": db_for_aa_agreement.scalar(
                 select(ProcurementShop.id).where(ProcurementShop.name == "Test Awarding Entity")
@@ -2319,7 +2319,7 @@ def test_agreements_put_aa_agreement_max(auth_client, db_for_aa_agreement, app_c
     assert aa_from_db.alternate_project_officer_id == 501
     assert [tm.id for tm in aa_from_db.team_members] == [500, 501]
     assert aa_from_db.project_id == db_for_aa_agreement.scalar(
-        select(ResearchProject.id).where(ResearchProject.title == "Test Project for AA Agreement")
+        select(Project.id).where(Project.title == "Test Project for AA Agreement")
     )
     assert aa_from_db.awarding_entity_id == db_for_aa_agreement.scalar(
         select(ProcurementShop.id).where(ProcurementShop.name == "Test Awarding Entity")
@@ -2368,7 +2368,7 @@ def test_agreements_get_aa_agreement_max(auth_client, db_for_aa_agreement, app_c
             db_for_aa_agreement.get(User, 501),
         ],
         project_id=db_for_aa_agreement.scalar(
-            select(ResearchProject.id).where(ResearchProject.title == "Test Project for AA Agreement")
+            select(Project.id).where(Project.title == "Test Project for AA Agreement")
         ),
         awarding_entity_id=db_for_aa_agreement.scalar(
             select(ProcurementShop.id).where(ProcurementShop.name == "Test Awarding Entity")
@@ -2417,7 +2417,7 @@ def test_agreements_get_aa_agreement_max(auth_client, db_for_aa_agreement, app_c
     assert data["alternate_project_officer_id"] == 501
     assert [tm["id"] for tm in data["team_members"]] == [500, 501]
     assert data["project_id"] == db_for_aa_agreement.scalar(
-        select(ResearchProject.id).where(ResearchProject.title == "Test Project for AA Agreement")
+        select(Project.id).where(Project.title == "Test Project for AA Agreement")
     )
     assert data["awarding_entity_id"] == db_for_aa_agreement.scalar(
         select(ProcurementShop.id).where(ProcurementShop.name == "Test Awarding Entity")
@@ -2466,7 +2466,7 @@ def test_agreements_get_aa_agreement_list_max(auth_client, db_for_aa_agreement, 
             db_for_aa_agreement.get(User, 501),
         ],
         project_id=db_for_aa_agreement.scalar(
-            select(ResearchProject.id).where(ResearchProject.title == "Test Project for AA Agreement")
+            select(Project.id).where(Project.title == "Test Project for AA Agreement")
         ),
         awarding_entity_id=db_for_aa_agreement.scalar(
             select(ProcurementShop.id).where(ProcurementShop.name == "Test Awarding Entity")
@@ -2519,7 +2519,7 @@ def test_agreements_get_aa_agreement_list_max(auth_client, db_for_aa_agreement, 
     assert aa_data["alternate_project_officer_id"] == 501
     assert [tm["id"] for tm in aa_data["team_members"]] == [500, 501]
     assert aa_data["project_id"] == db_for_aa_agreement.scalar(
-        select(ResearchProject.id).where(ResearchProject.title == "Test Project for AA Agreement")
+        select(Project.id).where(Project.title == "Test Project for AA Agreement")
     )
     assert aa_data["awarding_entity_id"] == db_for_aa_agreement.scalar(
         select(ProcurementShop.id).where(ProcurementShop.name == "Test Awarding Entity")

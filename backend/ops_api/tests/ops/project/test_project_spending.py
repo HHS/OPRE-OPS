@@ -8,8 +8,8 @@ from models import (
     BudgetLineItem,
     BudgetLineItemStatus,
     ContractAgreement,
+    Project,
     ProjectType,
-    ResearchProject,
 )
 
 
@@ -148,7 +148,7 @@ class TestProjectSpendingSerialization:
     def test_project_spending_with_no_agreements(self, auth_client, loaded_db):
         """Test spending endpoint for project with no agreements."""
         # Create a project with no agreements
-        project = ResearchProject(
+        project = Project(
             project_type=ProjectType.RESEARCH,
             title="Project With No Agreements For Spending Test",
             short_title="PNAFST",
@@ -174,7 +174,7 @@ class TestProjectSpendingSerialization:
     def test_project_spending_with_multiple_fiscal_years(self, auth_client, loaded_db):
         """Test spending endpoint for project with BLIs across multiple fiscal years."""
         # Create a new project
-        project = ResearchProject(
+        project = Project(
             project_type=ProjectType.RESEARCH,
             title="Multi-FY Spending Test Project",
             short_title="MFYSTP",
@@ -250,7 +250,7 @@ class TestProjectSpendingSerialization:
     def test_project_spending_excludes_draft_blis(self, auth_client, loaded_db):
         """Test that DRAFT BLIs are excluded from spending calculations."""
         # Create a new project
-        project = ResearchProject(
+        project = Project(
             project_type=ProjectType.RESEARCH,
             title="Draft BLI Exclusion Test Project",
             short_title="DBETP",
@@ -297,7 +297,7 @@ class TestProjectSpendingSerialization:
     def test_project_spending_includes_bli_fees(self, auth_client, loaded_db):
         """Test that BLI fees are included in spending totals."""
         # Create a new project
-        project = ResearchProject(
+        project = Project(
             project_type=ProjectType.RESEARCH,
             title="BLI Fees Test Project",
             short_title="BFTP",
@@ -345,7 +345,7 @@ class TestProjectSpendingSerialization:
     def test_project_spending_contract_type_breakdown(self, auth_client, loaded_db):
         """Test that spending is correctly categorized by contract type."""
         # Create a new project
-        project = ResearchProject(
+        project = Project(
             project_type=ProjectType.RESEARCH,
             title="Contract Type Breakdown Test",
             short_title="CTBT",

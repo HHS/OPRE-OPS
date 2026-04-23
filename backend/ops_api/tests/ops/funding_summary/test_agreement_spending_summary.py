@@ -21,7 +21,7 @@ from ops_api.ops.utils.reporting_summary import (
 
 @pytest.fixture()
 def db_with_agreement_spending_data(app, loaded_db, app_ctx):
-    from models import CAN, CANFundingBudget, CANFundingDetails, Portfolio, ResearchProject
+    from models import CAN, CANFundingBudget, CANFundingDetails, Portfolio, Project, ProjectType
 
     portfolio = Portfolio(name="SPENDING TEST PORTFOLIO", division_id=1)
     can = CAN(number="SPEND_TEST_CAN")
@@ -39,7 +39,9 @@ def db_with_agreement_spending_data(app, loaded_db, app_ctx):
     loaded_db.commit()
 
     # Research project for the contract agreement
-    project = ResearchProject(title="Test Research Project", short_title="TRP", description="Test project")
+    project = Project(
+        project_type=ProjectType.RESEARCH, title="Test Research Project", short_title="TRP", description="Test project"
+    )
     loaded_db.add(project)
     loaded_db.commit()
 
@@ -221,7 +223,7 @@ def test_endpoint_with_portfolio_ids(auth_client, db_with_agreement_spending_dat
 @pytest.fixture()
 def db_with_cross_portfolio_agreement(app, loaded_db, app_ctx):
     """Agreement with BLIs spanning two different portfolios."""
-    from models import CAN, CANFundingBudget, CANFundingDetails, Portfolio, ResearchProject
+    from models import CAN, CANFundingBudget, CANFundingDetails, Portfolio, Project, ProjectType
 
     portfolio_a = Portfolio(name="CROSS PORTFOLIO A", division_id=1)
     can_a = CAN(number="CROSS_CAN_A")
@@ -244,7 +246,9 @@ def db_with_cross_portfolio_agreement(app, loaded_db, app_ctx):
         funding_objects.extend([budget, details])
     loaded_db.commit()
 
-    project = ResearchProject(title="Cross Portfolio Project", short_title="CPP", description="Test")
+    project = Project(
+        project_type=ProjectType.RESEARCH, title="Cross Portfolio Project", short_title="CPP", description="Test"
+    )
     loaded_db.add(project)
     loaded_db.commit()
 

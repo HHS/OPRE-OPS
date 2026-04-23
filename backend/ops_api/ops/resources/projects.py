@@ -1,7 +1,7 @@
 from flask import Response, current_app, request
 from typing_extensions import List
 
-from models import AdministrativeAndSupportProject, Project, ProjectType, ResearchProject
+from models import Project, ProjectType
 from models.base import BaseModel
 from models.events import OpsEventType
 from models.utils.fiscal_year import get_current_fiscal_year
@@ -76,9 +76,9 @@ class ProjectListAPI(BaseListAPI):
 
         project_response: List[dict] = []
         for project in projects:
-            if isinstance(project, ResearchProject):
+            if project.project_type == ProjectType.RESEARCH:
                 project_response.append(research_schema.dump(project))
-            elif isinstance(project, AdministrativeAndSupportProject):
+            elif project.project_type == ProjectType.ADMINISTRATIVE_AND_SUPPORT:
                 project_response.append(admin_schema.dump(project))
 
         # Return wrapped response with pagination metadata

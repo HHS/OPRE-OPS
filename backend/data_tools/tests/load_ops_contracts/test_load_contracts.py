@@ -55,10 +55,11 @@ def test_create_models_no_contract_name():
 
 @pytest.fixture()
 def db_for_contracts(loaded_db):
-    project_1 = ResearchProject(
+    project_1 = Project(
         id=1,
         title="Human Services Interoperability Support",
         short_title="Human Services Interoperability Support",
+        project_type=ProjectType.RESEARCH,
     )
 
     loaded_db.add(project_1)
