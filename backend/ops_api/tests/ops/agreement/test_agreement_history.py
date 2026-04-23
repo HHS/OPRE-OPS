@@ -939,7 +939,7 @@ def test_agreement_history_pre_award_approval_requested(loaded_db, app_ctx):
     loaded_db.flush()
 
     # Create a mock OpsEvent for pre-award approval request
-    from models import ProcurementTracker, User
+    from models import ProcurementTracker, ProcurementTrackerType, User
 
     requester = loaded_db.get(User, 503)  # Amelia Popham
 
@@ -947,6 +947,7 @@ def test_agreement_history_pre_award_approval_requested(loaded_db, app_ctx):
     tracker = ProcurementTracker(
         id=5,
         agreement_id=1,  # Use existing test agreement
+        tracker_type=ProcurementTrackerType.DEFAULT,
         created_by=requester.id,
     )
     loaded_db.add(tracker)
@@ -1014,7 +1015,7 @@ def test_agreement_history_pre_award_approval_approved(loaded_db, app_ctx):
     loaded_db.flush()
 
     # Create a mock OpsEvent for pre-award approval
-    from models import ProcurementTracker, User
+    from models import ProcurementTracker, ProcurementTrackerType, User
 
     # Use existing test users
     requester = loaded_db.get(User, 503)  # Amelia Popham
@@ -1024,6 +1025,7 @@ def test_agreement_history_pre_award_approval_approved(loaded_db, app_ctx):
     tracker = ProcurementTracker(
         id=5,
         agreement_id=1,  # Use existing test agreement
+        tracker_type=ProcurementTrackerType.DEFAULT,
         created_by=approver.id,
     )
     loaded_db.add(tracker)
@@ -1095,7 +1097,7 @@ def test_agreement_history_pre_award_approval_declined(loaded_db, app_ctx):
     loaded_db.flush()
 
     # Create a mock OpsEvent for pre-award decline
-    from models import ProcurementTracker, User
+    from models import ProcurementTracker, ProcurementTrackerType, User
 
     # Use existing test users
     requester = loaded_db.get(User, 503)  # Amelia Popham
@@ -1105,6 +1107,7 @@ def test_agreement_history_pre_award_approval_declined(loaded_db, app_ctx):
     tracker = ProcurementTracker(
         id=5,
         agreement_id=1,  # Use existing test agreement
+        tracker_type=ProcurementTrackerType.DEFAULT,
         created_by=decliner.id,
     )
     loaded_db.add(tracker)
@@ -1175,7 +1178,7 @@ def test_agreement_history_pre_award_approval_unknown_requester(loaded_db, app_c
     loaded_db.flush()
 
     # Create a mock OpsEvent with non-existent requester
-    from models import ProcurementTracker, User
+    from models import ProcurementTracker, ProcurementTrackerType, User
 
     approver = loaded_db.get(User, 521)  # User Demo
     non_existent_user_id = 99999
@@ -1184,6 +1187,7 @@ def test_agreement_history_pre_award_approval_unknown_requester(loaded_db, app_c
     tracker = ProcurementTracker(
         id=5,
         agreement_id=1,  # Use existing test agreement
+        tracker_type=ProcurementTrackerType.DEFAULT,
         created_by=approver.id,
     )
     loaded_db.add(tracker)
