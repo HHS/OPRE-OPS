@@ -1643,6 +1643,113 @@ def test_planned_bli_does_not_create_procurement_records(db_with_data_v2):
     db_with_data_v2.commit()
 
 
+def test_in_execution_grant_does_not_create_procurement_records(db_with_data_v2):
+    """
+    An IN_EXECUTION BLI on a GRANT agreement should NOT create procurement records.
+    Procurement tracker creation only applies to CONTRACT, IAA, and AA types.
+    """
+    user = _ensure_user(db_with_data_v2)
+
+    grant_agreement = db_with_data_v2.scalar(
+        select(GrantAgreement).where(
+            GrantAgreement.name == "Grant #1: Early Care and Education Leadership Study (ExCELS)"
+        )
+    )
+
+    data = BudgetLineItemData(
+        ID="new",
+        AGREEMENT_NAME="Grant #1: Early Care and Education Leadership Study (ExCELS)",
+        AGREEMENT_TYPE="GRANT",
+        LINE_DESC="Grant In Execution",
+        DATE_NEEDED="3/11/25",
+        AMOUNT="50000.00",
+        STATUS="com",
+        COMMENTS="Should not create procurement records",
+        CAN="TestCanNumber (TestCanNickname)",
+        SC="SC1",
+        PROC_SHOP="PROC1",
+        PROC_SHOP_FEE=None,
+        PROC_SHOP_RATE=None,
+    )
+    create_models(data, user, db_with_data_v2)
+
+    actions = (
+        db_with_data_v2.execute(select(ProcurementAction).where(ProcurementAction.agreement_id == grant_agreement.id))
+        .scalars()
+        .all()
+    )
+    assert len(actions) == 0
+
+    trackers = (
+        db_with_data_v2.execute(select(ProcurementTracker).where(ProcurementTracker.agreement_id == grant_agreement.id))
+        .scalars()
+        .all()
+    )
+    assert len(trackers) == 0
+
+    # Cleanup
+    bli = db_with_data_v2.execute(
+        select(GrantBudgetLineItem)
+        .where(GrantBudgetLineItem.agreement_id == grant_agreement.id)
+        .where(GrantBudgetLineItem.line_description == "Grant In Execution")
+    ).scalar_one_or_none()
+    db_with_data_v2.delete(bli)
+    db_with_data_v2.commit()
+
+
+def test_in_execution_direct_obligation_does_not_create_procurement_records(db_with_data_v2):
+    """
+    An IN_EXECUTION BLI on a DIRECT_OBLIGATION agreement should NOT create procurement records.
+    """
+    do_agreement = DirectAgreement(
+        name="Test DO In Execution",
+    )
+    db_with_data_v2.add(do_agreement)
+    db_with_data_v2.commit()
+
+    user = _ensure_user(db_with_data_v2)
+
+    data = BudgetLineItemData(
+        ID="new",
+        AGREEMENT_NAME="Test DO In Execution",
+        AGREEMENT_TYPE="DIRECT OBLIGATION",
+        LINE_DESC="DO In Execution",
+        DATE_NEEDED="3/11/25",
+        AMOUNT="50000.00",
+        STATUS="com",
+        COMMENTS="Should not create procurement records",
+        CAN="TestCanNumber (TestCanNickname)",
+        SC="SC1",
+        PROC_SHOP="PROC1",
+        PROC_SHOP_FEE=None,
+        PROC_SHOP_RATE=None,
+    )
+    create_models(data, user, db_with_data_v2)
+
+    actions = (
+        db_with_data_v2.execute(select(ProcurementAction).where(ProcurementAction.agreement_id == do_agreement.id))
+        .scalars()
+        .all()
+    )
+    assert len(actions) == 0
+
+    trackers = (
+        db_with_data_v2.execute(select(ProcurementTracker).where(ProcurementTracker.agreement_id == do_agreement.id))
+        .scalars()
+        .all()
+    )
+    assert len(trackers) == 0
+
+    # Cleanup
+    bli = db_with_data_v2.execute(
+        select(DirectObligationBudgetLineItem)
+        .where(DirectObligationBudgetLineItem.agreement_id == do_agreement.id)
+    ).scalar_one_or_none()
+    db_with_data_v2.delete(bli)
+    db_with_data_v2.delete(do_agreement)
+    db_with_data_v2.commit()
+
+
 def test_in_execution_bli_idempotent_procurement_records(db_with_data_v2):
     """
     Creating two IN_EXECUTION BLIs on the same agreement reuses the same
