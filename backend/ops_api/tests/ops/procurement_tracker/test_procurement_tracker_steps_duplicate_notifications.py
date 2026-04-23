@@ -245,3 +245,196 @@ def test_approval_response_auto_dismisses_in_review_notifications(auth_client, t
     for notification_id in reviewer_notification_ids:
         notification = loaded_db.get(Notification, notification_id)
         assert notification.is_read, f"Notification {notification_id} should be auto-dismissed (marked as read)"
+
+
+def test_approval_response_includes_reviewer_notes_in_notification(auth_client, test_pre_award_step, loaded_db):
+    """Test that reviewer notes are included in the approval response notification message."""
+    # Setup: approval was requested by user 500
+    test_pre_award_step.pre_award_approval_requested = True
+    test_pre_award_step.pre_award_approval_requested_date = date.today()
+    test_pre_award_step.pre_award_approval_requested_by = 500
+    loaded_db.commit()
+
+    # Respond with approval AND reviewer notes
+    reviewer_notes = "This looks good, all requirements met"
+    update_data = {
+        "approval_status": "APPROVED",
+        "reviewer_notes": reviewer_notes,
+    }
+    response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}", json=update_data)
+    assert response.status_code == 200
+
+    # Query for the approval response notification
+    notification = loaded_db.scalars(
+        select(Notification)
+        .where(Notification.title == "Pre-Award Approval Approved")
+        .where(Notification.recipient_id == test_pre_award_step.pre_award_approval_requested_by)
+        .order_by(Notification.created_on.desc())
+    ).first()
+
+    assert notification is not None, "Notification should be created for approval response"
+    assert reviewer_notes in notification.message, f"Reviewer notes should be in message. Got: {notification.message}"
+    assert "Notes:" in notification.message, "Message should include 'Notes:' label"
+    assert "```" in notification.message, "Notes should be wrapped in code block"
+
+
+def test_decline_response_includes_reviewer_notes_in_notification(auth_client, test_pre_award_step, loaded_db):
+    """Test that reviewer notes are included in the decline response notification message."""
+    # Setup: approval was requested by user 500
+    test_pre_award_step.pre_award_approval_requested = True
+    test_pre_award_step.pre_award_approval_requested_date = date.today()
+    test_pre_award_step.pre_award_approval_requested_by = 500
+    loaded_db.commit()
+
+    # Respond with decline AND reviewer notes
+    reviewer_notes = "Missing required documentation"
+    update_data = {
+        "approval_status": "DECLINED",
+        "reviewer_notes": reviewer_notes,
+    }
+    response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}", json=update_data)
+    assert response.status_code == 200
+
+    # Query for the decline response notification
+    notification = loaded_db.scalars(
+        select(Notification)
+        .where(Notification.title == "Pre-Award Approval Declined")
+        .where(Notification.recipient_id == test_pre_award_step.pre_award_approval_requested_by)
+        .order_by(Notification.created_on.desc())
+    ).first()
+
+    assert notification is not None, "Notification should be created for decline response"
+    assert reviewer_notes in notification.message, f"Reviewer notes should be in message. Got: {notification.message}"
+    assert "Notes:" in notification.message, "Message should include 'Notes:' label"
+    assert "```" in notification.message, "Notes should be wrapped in code block"
+
+
+def test_approval_response_excludes_empty_reviewer_notes(auth_client, test_pre_award_step, loaded_db):
+    """Test that reviewer notes are NOT included when they are empty."""
+    # Setup: approval requested by user 500
+    test_pre_award_step.pre_award_approval_requested = True
+    test_pre_award_step.pre_award_approval_requested_date = date.today()
+    test_pre_award_step.pre_award_approval_requested_by = 500
+    loaded_db.commit()
+
+    # Respond with approval but NO reviewer notes
+    update_data = {
+        "approval_status": "APPROVED",
+    }
+    response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}", json=update_data)
+    assert response.status_code == 200
+
+    # Query for the notification
+    notification = loaded_db.scalars(
+        select(Notification)
+        .where(Notification.title == "Pre-Award Approval Approved")
+        .where(Notification.recipient_id == test_pre_award_step.pre_award_approval_requested_by)
+        .order_by(Notification.created_on.desc())
+    ).first()
+
+    assert notification is not None, "Notification should be created"
+    assert (
+        "Notes:" not in notification.message
+    ), f"Notes section should not appear when empty. Got: {notification.message}"
+    # Verify base message is present
+    assert "has been approved" in notification.message
+
+
+def test_approval_response_excludes_whitespace_only_reviewer_notes(auth_client, test_pre_award_step, loaded_db):
+    """Test that whitespace-only reviewer notes are treated as empty."""
+    # Setup: approval requested by user 500
+    test_pre_award_step.pre_award_approval_requested = True
+    test_pre_award_step.pre_award_approval_requested_date = date.today()
+    test_pre_award_step.pre_award_approval_requested_by = 500
+    loaded_db.commit()
+
+    # Respond with approval but whitespace-only notes
+    update_data = {
+        "approval_status": "APPROVED",
+        "reviewer_notes": "   \n  ",
+    }
+    response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}", json=update_data)
+    assert response.status_code == 200
+
+    # Query for the notification
+    notification = loaded_db.scalars(
+        select(Notification)
+        .where(Notification.title == "Pre-Award Approval Approved")
+        .where(Notification.recipient_id == test_pre_award_step.pre_award_approval_requested_by)
+        .order_by(Notification.created_on.desc())
+    ).first()
+
+    assert notification is not None, "Notification should be created"
+    assert (
+        "Notes:" not in notification.message
+    ), f"Notes section should not appear for whitespace-only notes. Got: {notification.message}"
+    # Verify base message is present
+    assert "has been approved" in notification.message
+
+
+def test_reviewer_notes_prevent_markdown_injection(auth_client, test_pre_award_step, loaded_db):
+    """Test that Markdown syntax in reviewer notes is escaped and doesn't render."""
+    # Setup: approval requested by user 500
+    test_pre_award_step.pre_award_approval_requested = True
+    test_pre_award_step.pre_award_approval_requested_date = date.today()
+    test_pre_award_step.pre_award_approval_requested_by = 500
+    loaded_db.commit()
+
+    # Respond with approval and Markdown injection attempt
+    malicious_notes = "**Bold** text with [link](http://example.com) and ```code``` attempt"
+    update_data = {
+        "approval_status": "APPROVED",
+        "reviewer_notes": malicious_notes,
+    }
+    response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}", json=update_data)
+    assert response.status_code == 200
+
+    # Query for the notification
+    notification = loaded_db.scalars(
+        select(Notification)
+        .where(Notification.title == "Pre-Award Approval Approved")
+        .where(Notification.recipient_id == test_pre_award_step.pre_award_approval_requested_by)
+        .order_by(Notification.created_on.desc())
+    ).first()
+
+    assert notification is not None, "Notification should be created"
+    # Verify notes are wrapped in 5-backtick code block (prevents Markdown rendering)
+    assert "`````" in notification.message, "Notes should be wrapped in 5-backtick code block"
+    # Verify the raw Markdown syntax is preserved as plain text
+    assert "**Bold**" in notification.message, "Markdown syntax should be preserved literally"
+    assert "[link]" in notification.message, "Link syntax should be preserved literally"
+    assert "```code```" in notification.message, "Triple backticks should be preserved literally"
+
+
+def test_reviewer_notes_backtick_injection_prevented(auth_client, test_pre_award_step, loaded_db):
+    """Test that triple backticks in reviewer notes don't break the code fence."""
+    # Setup: approval requested by user 500
+    test_pre_award_step.pre_award_approval_requested = True
+    test_pre_award_step.pre_award_approval_requested_date = date.today()
+    test_pre_award_step.pre_award_approval_requested_by = 500
+    loaded_db.commit()
+
+    # Try to break the code fence with triple backticks followed by markdown
+    injection_attempt = "Approved\n```\n**This should NOT render as bold**"
+    update_data = {
+        "approval_status": "APPROVED",
+        "reviewer_notes": injection_attempt,
+    }
+    response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}", json=update_data)
+    assert response.status_code == 200
+
+    # Query for the notification
+    notification = loaded_db.scalars(
+        select(Notification)
+        .where(Notification.title == "Pre-Award Approval Approved")
+        .where(Notification.recipient_id == test_pre_award_step.pre_award_approval_requested_by)
+        .order_by(Notification.created_on.desc())
+    ).first()
+
+    assert notification is not None, "Notification should be created"
+    # Verify 5-backtick fence is used
+    assert notification.message.count("`````") == 2, "Should have opening and closing 5-backtick fences"
+    # Verify triple backticks are contained within the fence (appear in raw form)
+    assert "```" in notification.message, "Triple backticks should be preserved"
+    # Verify the markdown after triple backticks is also preserved literally
+    assert "**This should NOT render as bold**" in notification.message, "Markdown after backticks should be literal"

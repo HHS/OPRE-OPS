@@ -360,8 +360,10 @@ class ProcurementTrackerStepService:
                     f"Your pre-award approval request for Agreement {agreement.display_name} "
                     f"has been {status_text} by {current_user.full_name}."
                 )
-                if step.pre_award_approval_reviewer_notes:
-                    message += f"\n\nNotes: {step.pre_award_approval_reviewer_notes}"
+                if step.pre_award_approval_reviewer_notes and step.pre_award_approval_reviewer_notes.strip():
+                    reviewer_notes_text = step.pre_award_approval_reviewer_notes.strip()
+                    # Use 5 backticks to safely contain any triple-backtick sequences in notes
+                    message += f"\n\nNotes:\n`````\n{reviewer_notes_text}\n`````"
 
                 notification_service.create(
                     {
