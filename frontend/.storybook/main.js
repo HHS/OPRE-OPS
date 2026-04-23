@@ -4,7 +4,6 @@ const config = {
     addons: [
         "@storybook/addon-docs",
         "@storybook/addon-a11y",
-        "@storybook/addon-onboarding",
         // Chromatic visual diffing — no-op locally, active in CI when CHROMATIC_PROJECT_TOKEN is set
         "@chromatic-com/storybook"
     ],
