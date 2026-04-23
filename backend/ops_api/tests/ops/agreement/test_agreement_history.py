@@ -1001,7 +1001,9 @@ def test_agreement_history_pre_award_approval_requested(loaded_db, app_ctx):
     ops_event = loaded_db.query(OpsEvent).filter(OpsEvent.id == event_id).one()
 
     # Verify created_by is set in the re-queried event
-    assert ops_event.created_by is not None, f"ops_event.created_by should not be None after commit, expected {expected_created_by}"
+    assert (
+        ops_event.created_by is not None
+    ), f"ops_event.created_by should not be None after commit, expected {expected_created_by}"
 
     # Re-fetch users to ensure they're in the session before calling the trigger
     # This is necessary because the trigger uses session.get() which relies on the identity map
@@ -1104,7 +1106,9 @@ def test_agreement_history_pre_award_approval_approved(loaded_db, app_ctx):
     ops_event = loaded_db.query(OpsEvent).filter(OpsEvent.id == event_id).one()
 
     # Verify created_by is set in the re-queried event
-    assert ops_event.created_by is not None, f"ops_event.created_by should not be None after commit, expected {expected_created_by}"
+    assert (
+        ops_event.created_by is not None
+    ), f"ops_event.created_by should not be None after commit, expected {expected_created_by}"
 
     # Re-fetch users to ensure they're in the session before calling the trigger
     # This is necessary because the trigger uses session.get() which relies on the identity map
@@ -1207,7 +1211,9 @@ def test_agreement_history_pre_award_approval_declined(loaded_db, app_ctx):
     ops_event = loaded_db.query(OpsEvent).filter(OpsEvent.id == event_id).one()
 
     # Verify created_by is set in the re-queried event
-    assert ops_event.created_by is not None, f"ops_event.created_by should not be None after commit, expected {expected_created_by}"
+    assert (
+        ops_event.created_by is not None
+    ), f"ops_event.created_by should not be None after commit, expected {expected_created_by}"
 
     # Re-fetch users to ensure they're in the session before calling the trigger
     # This is necessary because the trigger uses session.get() which relies on the identity map
@@ -1306,7 +1312,9 @@ def test_agreement_history_pre_award_approval_unknown_requester(loaded_db, app_c
     ops_event = loaded_db.query(OpsEvent).filter(OpsEvent.id == event_id).one()
 
     # Verify created_by is set in the re-queried event
-    assert ops_event.created_by is not None, f"ops_event.created_by should not be None after commit, expected {expected_created_by}"
+    assert (
+        ops_event.created_by is not None
+    ), f"ops_event.created_by should not be None after commit, expected {expected_created_by}"
 
     # Re-fetch users to ensure they're in the session before calling the trigger
     # This is necessary because the trigger uses session.get() which relies on the identity map
