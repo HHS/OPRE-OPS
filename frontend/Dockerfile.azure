@@ -41,7 +41,7 @@ COPY vite-env/env.${MODE}.local .env
 # from nginx's try_files miss.
 RUN VITE_BACKEND_DOMAIN=${VITE_BACKEND_DOMAIN} VITE_ENABLE_MSW=${VITE_ENABLE_MSW} NODE_ENV=${MODE} bun run build --mode ${MODE} && \
     if [ "${MODE}" != "production" ]; then \
-      bun run build-storybook --output-dir build/storybook --quiet; \
+      CI=true bun run build-storybook --output-dir build/storybook --quiet; \
     fi
 
 # ---- Release Stage ----
