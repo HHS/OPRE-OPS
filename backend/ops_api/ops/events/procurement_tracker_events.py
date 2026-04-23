@@ -16,6 +16,7 @@ from sqlalchemy.orm import Session
 from models import (
     Agreement,
     BudgetLineItem,
+    BudgetLineItemChangeRequest,
     ChangeRequestStatus,
     ChangeRequestType,
     DefaultProcurementTracker,
@@ -29,13 +30,13 @@ from models.procurement_tracker import ProcurementTrackerStatus
 
 def procurement_tracker_trigger(event: OpsEvent, session: Session) -> None:
     """
-    Handle UPDATE_CHANGE_REQUEST events to create procurement tracker and action.
+    Handle UPDATE_CHANGE_REQUEST and UPDATE_BLI events to create procurement tracker and action.
 
     Creates DefaultProcurementTracker and ProcurementAction when:
     - A BudgetLineItemChangeRequest is approved
-    - The budget line status changes to IN_EXECUTION
-    - The agreement is not yet awarded
-    - Neither tracker nor action exists yet for the agreement
+    - OR The budget line status changes to IN_EXECUTION
+    - AND The agreement is not yet awarded
+    - AND Neither tracker nor action exists yet for the agreement
 
     This subscriber implements idempotency to handle multiple budget lines
     transitioning to IN_EXECUTION at different times.
@@ -45,17 +46,8 @@ def procurement_tracker_trigger(event: OpsEvent, session: Session) -> None:
         session: SQLAlchemy session for database operations
     """
     try:
-        # Extract and validate event details
-        event_details = event.event_details or {}
-        change_request = event_details.get("change_request")
-
-        if not change_request:
-            logger.debug("No change_request in event details, skipping")
-            return
-
-        # Validate change request and extract IDs
-        is_valid, reason, agreement_id, budget_line_item_id = _validate_change_request_for_tracker_creation(
-            change_request
+        is_valid, reason, agreement_id, budget_line_item_id = _validate_event_for_procurement_tracker_creation(
+            event, session
         )
 
         if not is_valid:
@@ -92,23 +84,126 @@ def procurement_tracker_trigger(event: OpsEvent, session: Session) -> None:
     except IntegrityError as e:
         # This can happen if two handlers race and both try to create records
         # The row-level locks should prevent this, but handle gracefully just in case
-        agreement_id_for_log = (
-            change_request.get("agreement_id") if "change_request" in locals() and change_request else None
-        )
+        agreement_id_for_log = agreement_id if "agreement_id" in locals() else None
         logger.warning(
             f"IntegrityError in procurement_tracker_trigger (likely duplicate creation attempt): {e}",
             extra={"event_id": event.id, "event_type": event.event_type.name, "agreement_id": agreement_id_for_log},
         )
         session.rollback()
     except Exception as e:
-        agreement_id_for_log = (
-            change_request.get("agreement_id") if "change_request" in locals() and change_request else None
-        )
+        agreement_id_for_log = agreement_id if "agreement_id" in locals() else None
         logger.error(
             f"Error in procurement_tracker_trigger: {e}",
             exc_info=True,
             extra={"event_id": event.id, "event_type": event.event_type.name, "agreement_id": agreement_id_for_log},
         )
+
+
+def _validate_event_for_procurement_tracker_creation(
+    event: OpsEvent, session: Session
+) -> Tuple[bool, Optional[str], Optional[int], Optional[int]]:
+    """
+    Validate that the event should trigger procurement tracker creation.
+
+    Currently only supports UPDATE_CHANGE_REQUEST events for approved BLI status changes to IN_EXECUTION.
+
+    Returns:
+        Tuple of (is_valid, reason, agreement_id, budget_line_item_id)
+    """
+    # Extract and validate event details
+    if event.event_type == OpsEventType.UPDATE_CHANGE_REQUEST:
+        event_details = event.event_details or {}
+        change_request = event_details.get("change_request")
+
+        if not change_request:
+            logger.debug("No change_request in event details, skipping")
+            return False, "No change_request in event details", None, None
+
+        # Validate change request and extract IDs
+        is_valid, reason, agreement_id, budget_line_item_id = _validate_change_request_for_tracker_creation(
+            change_request
+        )
+    elif event.event_type == OpsEventType.UPDATE_BLI:
+        is_valid, reason, agreement_id, budget_line_item_id = _validate_bli_update_for_tracker_creation(event, session)
+    else:
+        logger.debug(f"Received unsupported event type {event.event_type}, skipping")
+        is_valid = False
+        reason = f"Unsupported event type {event.event_type}"
+        agreement_id = None
+        budget_line_item_id = None
+
+    return (is_valid, reason, agreement_id, budget_line_item_id)
+
+
+def _validate_bli_update_for_tracker_creation(
+    event: OpsEvent, session: Session
+) -> Tuple[bool, Optional[str], Optional[int], Optional[int]]:
+    """
+    Validate that the UPDATE_BLI event should trigger procurement tracker creation.
+
+    Returns:
+        Tuple of (is_valid, reason, agreement_id, budget_line_item_id)
+    """
+    event_details = event.event_details or {}
+    bli_updates = event_details.get("bli_updates", {})
+    changes = bli_updates.get("changes", {})
+    if not changes or "status" not in changes:
+        return False, "No status change in event details, skipping", None, None
+    status_changes = changes.get("status", {})
+    new_status = status_changes.get("new_value")
+    old_status = status_changes.get("old_value")
+
+    if new_status != "IN_EXECUTION":
+        return False, f"New status is {new_status}, not IN_EXECUTION", None, None
+
+    if old_status == "IN_EXECUTION":
+        return False, "Old status is already IN_EXECUTION, skipping", None, None
+
+    bli = event_details.get("bli")
+    if not bli:
+        return False, "No BLI details in event, skipping", None, None
+    agreement_id = bli.get("agreement_id")
+    budget_line_item_id = bli.get("id")
+
+    if not agreement_id:
+        return False, "No agreement_id in serialized bli", None, None
+
+    if not budget_line_item_id:
+        return False, "No budget_line_item_id in serialized bli", None, None
+    no_cr_for_bli, reason = _validate_no_change_requests_for_bli(session, budget_line_item_id)
+
+    if not no_cr_for_bli:
+        # BLI was updated via change request, so tracker creation should be handled by the change request event
+        return False, reason, None, None
+
+    return True, None, agreement_id, budget_line_item_id
+
+
+def _validate_no_change_requests_for_bli(session: Session, budget_line_item_id: int) -> Tuple[bool, Optional[str]]:
+    """
+    Validate that there are no approved change requests updating the status of a BLI to IN_EXECUTION for the given budget line item.
+
+    Returns:
+        Tuple of (is_valid, reason)
+    """
+    cr_stmt = select(BudgetLineItemChangeRequest).where(
+        BudgetLineItemChangeRequest.budget_line_item_id == budget_line_item_id,
+        BudgetLineItemChangeRequest.status == ChangeRequestStatus.APPROVED,
+    )
+    change_requests = session.scalars(cr_stmt).all()
+
+    for change_request in change_requests:
+        if (
+            change_request.status == ChangeRequestStatus.APPROVED
+            and change_request.requested_change_data.get("status", None) == "IN_EXECUTION"
+        ):
+            return (
+                False,
+                f"Found change request {change_request.id} for BLI {budget_line_item_id} with IN_EXECUTION status change. "
+                f"Change Request process is responsible for creating tracker",
+            )
+
+    return True, None
 
 
 def _validate_change_request_for_tracker_creation(
