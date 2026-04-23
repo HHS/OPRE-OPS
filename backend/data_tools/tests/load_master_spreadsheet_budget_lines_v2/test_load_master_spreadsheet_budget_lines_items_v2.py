@@ -1742,8 +1742,7 @@ def test_in_execution_direct_obligation_does_not_create_procurement_records(db_w
 
     # Cleanup
     bli = db_with_data_v2.execute(
-        select(DirectObligationBudgetLineItem)
-        .where(DirectObligationBudgetLineItem.agreement_id == do_agreement.id)
+        select(DirectObligationBudgetLineItem).where(DirectObligationBudgetLineItem.agreement_id == do_agreement.id)
     ).scalar_one_or_none()
     db_with_data_v2.delete(bli)
     db_with_data_v2.delete(do_agreement)
