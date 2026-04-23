@@ -45,8 +45,7 @@ const DetailsTabs = ({
                   name: "TBD1",
                   label: "Award & Modifications",
                   disabled: !IS_AWARDED_TAB_READY || !isAgreementAwarded,
-                  disabledTooltip:
-                      "Award & Modifications tab is coming soon! For now, please upload to the OPRE preferred tool to share documents"
+                  disabledTooltip: "Award & Modifications tab is coming soon"
               },
               {
                   name: "/procurement-tracker",
@@ -59,7 +58,7 @@ const DetailsTabs = ({
                   label: "Documents",
                   disabled: !IS_DOCUMENTS_TAB_READY || !isAgreementAwarded,
                   disabledTooltip:
-                      "Documents tab is coming soon! For now, please upload to the OPRE preferred tool to share documents"
+                      "Documents tab is coming soon. For now, please \nupload to the OPRE preferred tool to share documents"
               }
           ]
         : [];
