@@ -979,7 +979,7 @@ def test_agreement_history_pre_award_approval_requested(loaded_db, app_ctx):
 
     # Trigger history creation
     agreement_history_trigger(ops_event, loaded_db)
-    loaded_db.flush()
+    loaded_db.commit()
 
     # Verify history was created
     history_items = (
@@ -1048,7 +1048,7 @@ def test_agreement_history_pre_award_approval_approved(loaded_db, app_ctx):
 
     # Trigger history creation
     agreement_history_trigger(ops_event, loaded_db)
-    loaded_db.flush()
+    loaded_db.commit()
 
     # Verify history was created
     history_items = (
@@ -1120,7 +1120,7 @@ def test_agreement_history_pre_award_approval_declined(loaded_db, app_ctx):
 
     # Trigger history creation
     agreement_history_trigger(ops_event, loaded_db)
-    loaded_db.flush()
+    loaded_db.commit()
 
     # Verify history was created
     history_items = (
@@ -1190,7 +1190,7 @@ def test_agreement_history_pre_award_approval_unknown_requester(loaded_db, app_c
 
     # Trigger history creation
     agreement_history_trigger(ops_event, loaded_db)
-    loaded_db.flush()
+    loaded_db.commit()
 
     # Verify history was created with "Unknown User"
     history_items = (
