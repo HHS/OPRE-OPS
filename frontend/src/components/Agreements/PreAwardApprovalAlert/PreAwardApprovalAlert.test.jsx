@@ -15,17 +15,29 @@ vi.spyOn(opsAPI, "useDismissNotificationMutation").mockReturnValue([
 const approvedNotification = {
     id: 1,
     notification_type: "PRE_AWARD_APPROVAL_NOTIFICATION",
-    title: "Pre-Award Approval Approved",
+    title: "Pre-Award Approval Response",
     message: "Your pre-award approval request has been approved by John Doe.",
-    is_read: false
+    is_read: false,
+    procurement_tracker_step: {
+        id: 5,
+        step_type: "PRE_AWARD",
+        approval_status: "APPROVED",
+        approval_requested: true
+    }
 };
 
 const declinedNotification = {
     id: 2,
     notification_type: "PRE_AWARD_APPROVAL_NOTIFICATION",
-    title: "Pre-Award Approval Declined",
+    title: "Pre-Award Approval Response",
     message: "Your pre-award approval request has been declined by Jane Smith.",
-    is_read: false
+    is_read: false,
+    procurement_tracker_step: {
+        id: 5,
+        step_type: "PRE_AWARD",
+        approval_status: "DECLINED",
+        approval_requested: true
+    }
 };
 
 const requestNotification = {
@@ -33,15 +45,27 @@ const requestNotification = {
     notification_type: "PRE_AWARD_APPROVAL_NOTIFICATION",
     title: "Pre-Award Approval Request",
     message: "A pre-award approval has been requested.",
-    is_read: false
+    is_read: false,
+    procurement_tracker_step: {
+        id: 5,
+        step_type: "PRE_AWARD",
+        approval_status: null,
+        approval_requested: true
+    }
 };
 
 const readNotification = {
     id: 4,
     notification_type: "PRE_AWARD_APPROVAL_NOTIFICATION",
-    title: "Pre-Award Approval Approved",
+    title: "Pre-Award Approval Response",
     message: "Already read notification.",
-    is_read: true
+    is_read: true,
+    procurement_tracker_step: {
+        id: 5,
+        step_type: "PRE_AWARD",
+        approval_status: "APPROVED",
+        approval_requested: true
+    }
 };
 
 describe("PreAwardApprovalAlert", () => {
@@ -60,7 +84,7 @@ describe("PreAwardApprovalAlert", () => {
             </Provider>
         );
 
-        expect(screen.getByText("Pre-Award Approval Approved")).toBeInTheDocument();
+        expect(screen.getByText("Pre-Award Approval Response")).toBeInTheDocument();
         expect(screen.getByText(/Your pre-award approval request has been approved by John Doe/)).toBeInTheDocument();
     });
 
@@ -75,7 +99,7 @@ describe("PreAwardApprovalAlert", () => {
             </Provider>
         );
 
-        expect(screen.getByText("Pre-Award Approval Declined")).toBeInTheDocument();
+        expect(screen.getByText("Pre-Award Approval Response")).toBeInTheDocument();
         expect(screen.getByText(/Your pre-award approval request has been declined by Jane Smith/)).toBeInTheDocument();
     });
 
@@ -187,7 +211,8 @@ describe("PreAwardApprovalAlert", () => {
             </Provider>
         );
 
-        expect(screen.getByText("Pre-Award Approval Approved")).toBeInTheDocument();
-        expect(screen.getByText("Pre-Award Approval Declined")).toBeInTheDocument();
+        expect(screen.getAllByText("Pre-Award Approval Response")).toHaveLength(2);
+        expect(screen.getByText(/Your pre-award approval request has been approved by John Doe/)).toBeInTheDocument();
+        expect(screen.getByText(/Your pre-award approval request has been declined by Jane Smith/)).toBeInTheDocument();
     });
 });

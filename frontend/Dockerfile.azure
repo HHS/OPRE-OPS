@@ -35,13 +35,20 @@ COPY .storybook .storybook
 ARG MODE
 ARG VITE_BACKEND_DOMAIN
 ARG VITE_ENABLE_MSW
+# BUILD_STORYBOOK controls whether the Storybook static site is compiled into
+# build/storybook.  Default is false so that E2E and other non-serving builds
+# skip the Storybook step entirely — it is the root cause of >1 h CI hangs
+# when the build runs uncached on constrained GitHub Actions runners.
+# Set BUILD_STORYBOOK=true only in the dev / staging deploy workflows.
+ARG BUILD_STORYBOOK=false
 COPY vite-env/env.${MODE}.local .env
 # Build the app, then conditionally build Storybook into build/storybook.
-# Storybook is omitted in production so /storybook returns a natural 404
-# from nginx's try_files miss.
+# A 10-minute timeout guards against silent hangs (Vite worker OOM, network
+# calls from the Chromatic addon, etc.) so the job fails fast instead of
+# consuming the runner's full 6-hour budget.
 RUN VITE_BACKEND_DOMAIN=${VITE_BACKEND_DOMAIN} VITE_ENABLE_MSW=${VITE_ENABLE_MSW} NODE_ENV=${MODE} bun run build --mode ${MODE} && \
-    if [ "${MODE}" != "production" ]; then \
-      bun run build-storybook --output-dir build/storybook --quiet; \
+    if [ "${BUILD_STORYBOOK}" = "true" ]; then \
+      CI=true timeout 600 bun run build-storybook --output-dir build/storybook; \
     fi
 
 # ---- Release Stage ----

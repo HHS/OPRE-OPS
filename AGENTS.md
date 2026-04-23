@@ -79,7 +79,7 @@ bun run test:e2e:interactive
 # Run Storybook (component documentation, dev server on port 6006)
 bun run storybook
 
-# Build Storybook static output (omitted automatically when MODE=production)
+# Build Storybook static output (only when BUILD_STORYBOOK=true; dev/stg deploy workflows opt in)
 bun run build-storybook
 
 # Linting
@@ -303,7 +303,7 @@ The frontend follows modern React patterns with Redux for state management:
 
 ## Storybook Component Documentation
 
-Storybook provides an interactive component library for browsing and developing UI components in isolation. It runs on port 6006 locally and is served at `/storybook` on dev and staging environments. It is **not available in production** (build output is omitted when `MODE=production`).
+Storybook provides an interactive component library for browsing and developing UI components in isolation. It runs on port 6006 locally and is served at `/storybook` on dev and staging environments. It is **not available in production** (the `Dockerfile.azure` build stage only compiles Storybook when the `BUILD_STORYBOOK=true` build arg is passed; dev and stg deploy workflows opt in, production does not).
 
 ### Story File Convention
 
