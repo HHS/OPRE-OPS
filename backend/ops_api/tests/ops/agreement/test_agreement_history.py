@@ -943,6 +943,15 @@ def test_agreement_history_pre_award_approval_requested(loaded_db, app_ctx):
 
     requester = loaded_db.get(User, 503)  # Amelia Popham
 
+    # Create a ProcurementTracker for testing
+    tracker = ProcurementTracker(
+        id=5,
+        agreement_id=1,  # Use existing test agreement
+        created_by=requester.id,
+    )
+    loaded_db.add(tracker)
+    loaded_db.commit()
+
     # Create event with approval_requested change
     ops_event = OpsEvent(
         event_type=OpsEventType.UPDATE_PROCUREMENT_TRACKER_STEP,
@@ -1010,6 +1019,15 @@ def test_agreement_history_pre_award_approval_approved(loaded_db, app_ctx):
     # Use existing test users
     requester = loaded_db.get(User, 503)  # Amelia Popham
     approver = loaded_db.get(User, 521)  # User Demo
+
+    # Create a ProcurementTracker for testing
+    tracker = ProcurementTracker(
+        id=5,
+        agreement_id=1,  # Use existing test agreement
+        created_by=approver.id,
+    )
+    loaded_db.add(tracker)
+    loaded_db.commit()
 
     # Create event with approval_status change
     ops_event = OpsEvent(
@@ -1083,6 +1101,15 @@ def test_agreement_history_pre_award_approval_declined(loaded_db, app_ctx):
     requester = loaded_db.get(User, 503)  # Amelia Popham
     decliner = loaded_db.get(User, 521)  # User Demo
 
+    # Create a ProcurementTracker for testing
+    tracker = ProcurementTracker(
+        id=5,
+        agreement_id=1,  # Use existing test agreement
+        created_by=decliner.id,
+    )
+    loaded_db.add(tracker)
+    loaded_db.commit()
+
     # Create event with approval_status change to DECLINED
     ops_event = OpsEvent(
         event_type=OpsEventType.UPDATE_PROCUREMENT_TRACKER_STEP,
@@ -1152,6 +1179,15 @@ def test_agreement_history_pre_award_approval_unknown_requester(loaded_db, app_c
 
     approver = loaded_db.get(User, 521)  # User Demo
     non_existent_user_id = 99999
+
+    # Create a ProcurementTracker for testing
+    tracker = ProcurementTracker(
+        id=5,
+        agreement_id=1,  # Use existing test agreement
+        created_by=approver.id,
+    )
+    loaded_db.add(tracker)
+    loaded_db.commit()
 
     # Create event with approval_status change and non-existent requester
     ops_event = OpsEvent(
