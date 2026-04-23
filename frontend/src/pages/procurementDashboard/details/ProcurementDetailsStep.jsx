@@ -1,7 +1,26 @@
+import { useMemo } from "react";
 import Tag from "../../../components/UI/Tag";
+import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
+import { convertToCurrency } from "../../../helpers/utils";
 import { ProcurementDetailsTable } from "./ProcurementDetailsTable";
 
-const ProcurementDetailsStep = ({ agreements, agreementsPerStep }) => {
+const ProcurementDetailsStep = ({ agreements, agreementsPerStep, userNameById, targetDateByAgreementId }) => {
+    const executingBLIs = useMemo(
+        () =>
+            agreements
+                .flatMap((agreement) => agreement.budget_line_items ?? [])
+                .filter((bli) => bli.status === BLI_STATUS.EXECUTING),
+        [agreements]
+    );
+
+    const executingBLICount = executingBLIs.length;
+
+    const totalExecuting = useMemo(
+        () => executingBLIs.reduce((sum, bli) => sum + (bli.amount ?? 0), 0),
+        [executingBLIs]
+    );
+
+    const totalFees = useMemo(() => executingBLIs.reduce((sum, bli) => sum + (bli.fees ?? 0), 0), [executingBLIs]);
     return (
         <>
             <div>
@@ -29,9 +48,8 @@ const ProcurementDetailsStep = ({ agreements, agreementsPerStep }) => {
                     <dt className="margin-0 text-base-dark margin-top-3">Executing Budget Lines</dt>
                     <dd className="margin-0 margin-top-1">
                         <Tag
-                            // dataCy="agreement-nickname-tag"
                             tagStyle="primaryDarkTextLightBackground"
-                            text={"$5000"}
+                            text={executingBLICount}
                         />
                     </dd>
                 </dl>
@@ -39,9 +57,8 @@ const ProcurementDetailsStep = ({ agreements, agreementsPerStep }) => {
                     <dt className="margin-0 text-base-dark margin-top-3">Total Executing</dt>
                     <dd className="margin-0 margin-top-1">
                         <Tag
-                            // dataCy="agreement-nickname-tag"
                             tagStyle="primaryDarkTextLightBackground"
-                            text={"$5000"}
+                            text={convertToCurrency(totalExecuting)}
                         />
                     </dd>
                 </dl>
@@ -49,14 +66,17 @@ const ProcurementDetailsStep = ({ agreements, agreementsPerStep }) => {
                     <dt className="margin-0 text-base-dark margin-top-3">Total Fees</dt>
                     <dd className="margin-0 margin-top-1">
                         <Tag
-                            // dataCy="agreement-nickname-tag"
                             tagStyle="primaryDarkTextLightBackground"
-                            text={"$5000"}
+                            text={convertToCurrency(totalFees)}
                         />
                     </dd>
                 </dl>
             </div>
-            <ProcurementDetailsTable agreements={agreements}></ProcurementDetailsTable>
+            <ProcurementDetailsTable
+                agreements={agreements}
+                userNameById={userNameById}
+                targetDateByAgreementId={targetDateByAgreementId}
+            ></ProcurementDetailsTable>
         </>
     );
 };

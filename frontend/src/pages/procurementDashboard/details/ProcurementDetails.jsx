@@ -1,8 +1,19 @@
 import { useMemo } from "react";
+import { useGetUsersQuery } from "../../../api/opsAPI";
 import DetailsBuilderAccordion from "./DetailsBuilderAccordion";
 import ProcurementDetailsStep from "./ProcurementDetailsStep";
 
 const ProcurementDetails = ({ fiscalYear, agreements, procurementTrackers, procurementStepSummary }) => {
+    const { data: users = [] } = useGetUsersQuery();
+
+    const userNameById = useMemo(() => {
+        const map = {};
+        for (const user of users) {
+            map[user.id] = user.display_name ?? user.full_name;
+        }
+        return map;
+    }, [users]);
+
     const WIZARD_STEPS = [
         "Acquisition Planning",
         "Pre-Solicitation",
@@ -17,6 +28,19 @@ const ProcurementDetails = ({ fiscalYear, agreements, procurementTrackers, procu
         step_number: index + 1,
         step_type: stepName
     }));
+
+    const targetDateByStepAndAgreement = useMemo(() => {
+        const map = {};
+        for (const tracker of procurementTrackers) {
+            for (const step of tracker.steps ?? []) {
+                if (!map[step.step_number]) {
+                    map[step.step_number] = {};
+                }
+                map[step.step_number][tracker.agreement_id] = step.target_completion_date ?? null;
+            }
+        }
+        return map;
+    }, [procurementTrackers]);
 
     const agreementsByStep = useMemo(() => {
         const stepToAgreementIds = {};
@@ -54,6 +78,8 @@ const ProcurementDetails = ({ fiscalYear, agreements, procurementTrackers, procu
                         <ProcurementDetailsStep
                             agreements={agreementsByStep[step.step_number] ?? []}
                             agreementsPerStep={procurementStepSummary?.step_data[step.step_number - 1]?.agreements}
+                            userNameById={userNameById}
+                            targetDateByAgreementId={targetDateByStepAndAgreement[step.step_number] ?? {}}
                         />
                     </DetailsBuilderAccordion>
                 );

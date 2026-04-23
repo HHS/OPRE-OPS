@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import TableRowExpandable from "../../../components/UI/TableRowExpandable";
 import { useTableRow } from "../../../components/UI/TableRowExpandable/TableRowExpandable.hooks";
@@ -5,13 +6,23 @@ import TextClip from "../../../components/UI/Text/TextClip";
 import { getAgreementName } from "../../../components/Agreements/AgreementsTable/AgreementsTable.helpers";
 import { NO_DATA } from "../../../constants";
 import { expandedRowBGColor } from "../../../components/UI/TableRowExpandable/TableRowExpandable.helpers";
+import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
+import { convertToCurrency, formatDateNeeded } from "../../../helpers/utils";
 import CurrencyFormat from "react-currency-format";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 
-export const ProcurementDetailsTableRow = ({ agreement }) => {
+export const ProcurementDetailsTableRow = ({ agreement, userNameById, targetDateByAgreementId }) => {
     const { isExpanded, setIsExpanded, setIsRowActive } = useTableRow();
     const isSuccess = !!agreement;
     const agreementName = isSuccess ? getAgreementName(agreement) : NO_DATA;
+
+    const totalExecuting = useMemo(
+        () =>
+            (agreement.budget_line_items ?? [])
+                .filter((bli) => bli.status === BLI_STATUS.EXECUTING)
+                .reduce((sum, bli) => sum + (bli.amount ?? 0), 0),
+        [agreement]
+    );
 
     const TableRowData = (
         <>
@@ -28,10 +39,10 @@ export const ProcurementDetailsTableRow = ({ agreement }) => {
                     />
                 </Link>
             </td>
-            <td data-cy="cor-name">{agreement.cotr_id || ""}</td>
+            <td data-cy="cor-name">{userNameById[agreement.project_officer_id] || ""}</td>
             <td data-cy="proc-shop">{agreement.procurement_shop.abbr || ""}</td>
-            <td data-cy="total-executing">{"test"}</td>
-            <td data-cy="target-date">{"test"}</td>
+            <td data-cy="total-executing">{convertToCurrency(totalExecuting)}</td>
+            <td data-cy="target-date">{targetDateByAgreementId[agreement.id] ? formatDateNeeded(targetDateByAgreementId[agreement.id]) : "None"}</td>
             <td data-cy="days-in-step">{"test"}</td>
         </>
     );

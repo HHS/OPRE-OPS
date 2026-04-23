@@ -2,7 +2,7 @@ import Table from "../../../components/UI/Table";
 import { tableSortCodes } from "../../../helpers/utils";
 import { ProcurementDetailsTableRow } from "./ProcurementDetailsTableRow";
 
-export const ProcurementDetailsTable = ({agreements}) => {
+export const ProcurementDetailsTable = ({agreements, userNameById, targetDateByAgreementId}) => {
     const tableHeadings = [
         { heading: "Agreements", value: tableSortCodes.agreementCodes.AGREEMENT },
         { heading: "COR", value: tableSortCodes.agreementCodes.AGREEMENT },
@@ -17,6 +17,8 @@ export const ProcurementDetailsTable = ({agreements}) => {
                                 <ProcurementDetailsTableRow
                                     key={agreement?.id}
                                     agreement={agreement}
+                                    userNameById={userNameById}
+                                    targetDateByAgreementId={targetDateByAgreementId}
                                 />
                             ))}
     </Table>;
