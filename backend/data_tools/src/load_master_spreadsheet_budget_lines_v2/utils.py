@@ -261,7 +261,11 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
         commit_or_rollback(session)
 
         procurement_eligible_types = {AgreementType.CONTRACT, AgreementType.IAA, AgreementType.AA}
-        if bli.status == BudgetLineItemStatus.IN_EXECUTION and agreement and data.AGREEMENT_TYPE in procurement_eligible_types:
+        if (
+            bli.status == BudgetLineItemStatus.IN_EXECUTION
+            and agreement
+            and data.AGREEMENT_TYPE in procurement_eligible_types
+        ):
             is_mod = has_obligated_blis(session, agreement.id)
             if is_mod:
                 action, _, _, _ = get_or_create_procurement_records_for_modification(
