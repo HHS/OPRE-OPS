@@ -3,28 +3,22 @@ import PropTypes from "prop-types";
 import SimpleAlert from "../../UI/Alert/SimpleAlert";
 import { useDismissNotificationMutation } from "../../../api/opsAPI";
 
-// Keywords for identifying notification types
-const APPROVAL_KEYWORDS = ["approved", "approval granted"];
-const DECLINE_KEYWORDS = ["declined", "rejected", "denial"];
-
 /**
- * Check if notification title indicates approval
- * @param {string} title - Notification title
- * @returns {boolean} True if title contains approval keywords
+ * Check if notification indicates approval based on step status
+ * @param {Object} notification - Notification object with procurement_tracker_step
+ * @returns {boolean} True if approval_status is APPROVED
  */
-const isApprovedNotification = (title) => {
-    const lowerTitle = title?.toLowerCase() || "";
-    return APPROVAL_KEYWORDS.some((keyword) => lowerTitle.includes(keyword));
+const isApprovedNotification = (notification) => {
+    return notification.procurement_tracker_step?.approval_status === "APPROVED";
 };
 
 /**
- * Check if notification title indicates decline
- * @param {string} title - Notification title
- * @returns {boolean} True if title contains decline keywords
+ * Check if notification indicates decline based on step status
+ * @param {Object} notification - Notification object with procurement_tracker_step
+ * @returns {boolean} True if approval_status is DECLINED
  */
-const isDeclinedNotification = (title) => {
-    const lowerTitle = title?.toLowerCase() || "";
-    return DECLINE_KEYWORDS.some((keyword) => lowerTitle.includes(keyword));
+const isDeclinedNotification = (notification) => {
+    return notification.procurement_tracker_step?.approval_status === "DECLINED";
 };
 
 /**
@@ -49,7 +43,7 @@ function PreAwardApprovalAlert({ notifications, isVisible }) {
                 (n) =>
                     !n.is_read &&
                     n.notification_type === "PRE_AWARD_APPROVAL_NOTIFICATION" &&
-                    (isApprovedNotification(n.title) || isDeclinedNotification(n.title))
+                    (isApprovedNotification(n) || isDeclinedNotification(n))
             ) || [],
         [notifications]
     );
@@ -63,12 +57,12 @@ function PreAwardApprovalAlert({ notifications, isVisible }) {
         return null;
     }
 
-    // Helper to determine alert type based on title
-    const getAlertType = (title) => {
-        if (isApprovedNotification(title)) {
+    // Helper to determine alert type based on approval status
+    const getAlertType = (notification) => {
+        if (isApprovedNotification(notification)) {
             return "success";
         }
-        if (isDeclinedNotification(title)) {
+        if (isDeclinedNotification(notification)) {
             return "error";
         }
         return "warning";
@@ -85,7 +79,7 @@ function PreAwardApprovalAlert({ notifications, isVisible }) {
                 />
             )}
             {preAwardNotifications.map((notification) => {
-                const alertType = getAlertType(notification.title);
+                const alertType = getAlertType(notification);
 
                 return (
                     <SimpleAlert
@@ -109,7 +103,13 @@ PreAwardApprovalAlert.propTypes = {
             notification_type: PropTypes.string.isRequired,
             title: PropTypes.string,
             message: PropTypes.string,
-            is_read: PropTypes.bool.isRequired
+            is_read: PropTypes.bool.isRequired,
+            procurement_tracker_step: PropTypes.shape({
+                id: PropTypes.number,
+                step_type: PropTypes.string,
+                approval_status: PropTypes.string,
+                approval_requested: PropTypes.bool
+            })
         })
     ),
     isVisible: PropTypes.bool.isRequired
