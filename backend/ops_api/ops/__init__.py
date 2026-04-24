@@ -230,6 +230,7 @@ def initialize_event_subscriptions():
     MessageBus.subscribe_globally(OpsEventType.UPDATE_AGREEMENT, agreement_history_trigger)
     MessageBus.subscribe_globally(OpsEventType.CREATE_BLI, agreement_history_trigger)
     MessageBus.subscribe_globally(OpsEventType.UPDATE_BLI, agreement_history_trigger)
+    MessageBus.subscribe_globally(OpsEventType.UPDATE_BLI, procurement_tracker_trigger)
     MessageBus.subscribe_globally(OpsEventType.DELETE_BLI, agreement_history_trigger)
     MessageBus.subscribe_globally(OpsEventType.CREATE_NEW_AGREEMENT, agreement_history_trigger)
     MessageBus.subscribe_globally(OpsEventType.CREATE_CHANGE_REQUEST, agreement_history_trigger)
