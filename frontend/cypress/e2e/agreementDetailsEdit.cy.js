@@ -442,10 +442,12 @@ describe("Awarded Agreement", () => {
     });
 
     it("should allow agreement team member to edit awarded AA agreement ", () => {
+        cy.intercept("PATCH", "**/agreements/**").as("patchAgreement");
         cy.visit(`/agreements/12?mode=edit`);
         cy.get("#agreementNotes").clear();
         cy.get("#agreementNotes").type("Adding notes as agreement team member.");
         cy.get("[data-cy='continue-btn']").click();
+        cy.wait("@patchAgreement");
         // verify notes are added
         cy.get("[data-cy='details-notes']").should("contain", "Adding notes as agreement team member.");
         checkAgreementHistory();
@@ -457,6 +459,7 @@ describe("Awarded Agreement", () => {
 
     it("should allow power user to edit awarded AA agreement fields", () => {
         testLogin("power-user");
+        cy.intercept("PATCH", "**/agreements/**").as("patchAgreement");
         cy.visit(`/agreements/12?mode=edit`);
 
         // agreement type should remain disabled (cannot be changed after creation)
@@ -475,6 +478,7 @@ describe("Awarded Agreement", () => {
         cy.get("#agreementNotes").clear();
         cy.get("#agreementNotes").type("Adding notes as agreement power user.");
         cy.get("[data-cy='continue-btn']").click();
+        cy.wait("@patchAgreement");
         // verify notes are added
         cy.get("[data-cy='details-notes']").should("contain", "Adding notes as agreement power user.");
         checkAgreementHistory();
