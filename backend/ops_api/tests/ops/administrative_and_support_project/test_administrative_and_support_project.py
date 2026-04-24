@@ -7,11 +7,11 @@ from models import Project, ProjectType
 
 
 def test_administrative_and_support_projects_get_all(auth_client, loaded_db):
-    count = loaded_db.query(
+    count = len(
         loaded_db.execute(select(Project).where(Project.project_type == ProjectType.ADMINISTRATIVE_AND_SUPPORT))
         .scalars()
         .all()
-    ).count()
+    )
 
     response = auth_client.get(
         url_for("api.projects-group", project_type=[ProjectType.ADMINISTRATIVE_AND_SUPPORT.name])
