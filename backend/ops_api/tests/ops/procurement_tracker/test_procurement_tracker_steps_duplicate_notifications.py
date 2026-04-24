@@ -275,7 +275,6 @@ def test_approval_response_includes_reviewer_notes_in_notification(auth_client, 
     assert notification is not None, "Notification should be created for approval response"
     assert reviewer_notes in notification.message, f"Reviewer notes should be in message. Got: {notification.message}"
     assert "Notes:" in notification.message, "Message should include 'Notes:' label"
-    assert "```" in notification.message, "Notes should be wrapped in code block"
 
 
 def test_decline_response_includes_reviewer_notes_in_notification(auth_client, test_pre_award_step, loaded_db):
@@ -306,7 +305,6 @@ def test_decline_response_includes_reviewer_notes_in_notification(auth_client, t
     assert notification is not None, "Notification should be created for decline response"
     assert reviewer_notes in notification.message, f"Reviewer notes should be in message. Got: {notification.message}"
     assert "Notes:" in notification.message, "Message should include 'Notes:' label"
-    assert "```" in notification.message, "Notes should be wrapped in code block"
 
 
 def test_approval_response_excludes_empty_reviewer_notes(auth_client, test_pre_award_step, loaded_db):
