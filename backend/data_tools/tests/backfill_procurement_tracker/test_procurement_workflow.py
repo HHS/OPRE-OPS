@@ -87,8 +87,6 @@ def db_workflow(loaded_db):
     loaded_db.execute(text("DELETE FROM procurement_shop_fee_version"))
     loaded_db.execute(text("DELETE FROM procurement_shop"))
     loaded_db.execute(text("DELETE FROM procurement_shop_version"))
-    loaded_db.execute(text("DELETE FROM research_project"))
-    loaded_db.execute(text("DELETE FROM research_project_version"))
     loaded_db.execute(text("DELETE FROM project"))
     loaded_db.execute(text("DELETE FROM project_version"))
     loaded_db.execute(text("DELETE FROM ops_db_history"))
