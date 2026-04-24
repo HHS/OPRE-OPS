@@ -5908,7 +5908,6 @@ components:
               - portfolio_id
               - portfolio
               - amount
-              - abbreviation
             properties:
               portfolio_id:
                 type: integer
@@ -5922,6 +5921,7 @@ components:
                 example: 123.456
               abbreviation:
                 type: string
+                nullable: true
                 example: "CW"
         funding_by_can:
           type: object

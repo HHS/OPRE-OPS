@@ -252,7 +252,7 @@ class Project(BaseModel):
         # --- funding_by_portfolio ---
         portfolio_totals: dict[int, Decimal] = defaultdict(lambda: Decimal("0"))
         portfolio_names: dict[int, str] = {}
-        portfolio_abbr: dict[int, str] = {}
+        portfolio_abbr: dict[int, str | None] = {}
         for can in unique_cans:
             if can.portfolio:
                 for fb in can.funding_budgets:

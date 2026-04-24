@@ -218,7 +218,7 @@ class ProjectFundingByPortfolioSchema(Schema):
     portfolio_id = fields.Int(required=True)
     portfolio = fields.String(required=True)
     amount = fields.Float(required=True)
-    abbreviation = fields.String(required=True)
+    abbreviation = fields.String(allow_none=True)
 
 
 class ProjectFundingByCANSchema(Schema):
