@@ -1036,3 +1036,19 @@ def test_evaluation_step_field_mapping(auth_client, test_evaluation_step, loaded
     # Verify that the API fields mapped to the correct model fields
     assert test_evaluation_step.evaluation_target_completion_date == future_date
     assert test_evaluation_step.evaluation_notes == test_notes
+
+
+# Pending Approvals Endpoint Tests
+
+
+def test_get_pending_approvals_returns_empty_list(auth_client, app_ctx, loaded_db):
+    """Test that pending approvals endpoint returns an empty JSON array when there are none."""
+    response = auth_client.get("/api/v1/procurement-tracker-steps/pending-approvals/")
+    assert response.status_code == 200
+    assert response.json == []
+
+
+def test_get_pending_approvals_unauthorized(client, app_ctx, loaded_db):
+    """Test that unauthenticated requests to pending approvals are rejected."""
+    response = client.get("/api/v1/procurement-tracker-steps/pending-approvals/")
+    assert response.status_code == 401

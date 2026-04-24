@@ -1,6 +1,6 @@
 """API resources for procurement tracker steps."""
 
-from flask import Response, current_app, request
+from flask import Response, current_app, jsonify, request
 from flask_jwt_extended import get_current_user
 from loguru import logger
 
@@ -147,4 +147,4 @@ class ProcurementTrackerStepPendingApprovalsAPI(BaseListAPI):
         response_schema = ProcurementTrackerStepResponseSchema(many=True)
         serialized_data = response_schema.dump(pending_approvals)
 
-        return make_response_with_headers(serialized_data)
+        return make_response_with_headers(jsonify(serialized_data))
