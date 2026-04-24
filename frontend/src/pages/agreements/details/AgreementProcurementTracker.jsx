@@ -118,10 +118,10 @@ const AgreementProcurementTracker = ({ agreement }) => {
                         totalSteps={WIZARD_STEPS.length}
                         activeStepNumber={hasActiveTracker ? currentStep : undefined}
                         isReadOnly={!hasActiveTracker || isProcurementTeamOnly}
-                        // Keep the completed step and active step open after form submission, all others closed
+                        // Keep only the completed step open after form submission to show progress, all others closed
                         isClosed={
                             completedStepNumber !== null
-                                ? !(step.step_number === completedStepNumber || step.step_number === accordionOpenStep)
+                                ? step.step_number !== completedStepNumber
                                 : step.step_number !== accordionOpenStep
                         }
                         level={3}
