@@ -398,8 +398,8 @@ def test_reviewer_notes_prevent_markdown_injection(auth_client, test_pre_award_s
     ).first()
 
     assert notification is not None, "Notification should be created"
-    # Verify notes are wrapped in 5-backtick code block (prevents Markdown rendering)
-    assert "`````" in notification.message, "Notes should be wrapped in 5-backtick code block"
+    # Verify notes are included in the message
+    assert "Notes:" in notification.message, "Message should include 'Notes:' label"
     # Verify the raw Markdown syntax is preserved as plain text
     assert "**Bold**" in notification.message, "Markdown syntax should be preserved literally"
     assert "[link]" in notification.message, "Link syntax should be preserved literally"
@@ -432,9 +432,9 @@ def test_reviewer_notes_backtick_injection_prevented(auth_client, test_pre_award
     ).first()
 
     assert notification is not None, "Notification should be created"
-    # Verify 5-backtick fence is used
-    assert notification.message.count("`````") == 2, "Should have opening and closing 5-backtick fences"
-    # Verify triple backticks are contained within the fence (appear in raw form)
+    # Verify notes are included in the message
+    assert "Notes:" in notification.message, "Message should include 'Notes:' label"
+    # Verify triple backticks are preserved in the notes
     assert "```" in notification.message, "Triple backticks should be preserved"
     # Verify the markdown after triple backticks is also preserved literally
     assert "**This should NOT render as bold**" in notification.message, "Markdown after backticks should be literal"

@@ -362,8 +362,7 @@ class ProcurementTrackerStepService:
                 )
                 if step.pre_award_approval_reviewer_notes and step.pre_award_approval_reviewer_notes.strip():
                     reviewer_notes_text = step.pre_award_approval_reviewer_notes.strip()
-                    # Use 5 backticks to safely contain any triple-backtick sequences in notes
-                    message += f"\n\nNotes:\n`````\n{reviewer_notes_text}\n`````"
+                    message += f"\n\nNotes:\n{reviewer_notes_text}"
 
                 notification_service.create(
                     {
