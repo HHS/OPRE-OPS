@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { describe, it, expect, vi, beforeAll, beforeEach, afterEach, afterAll } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { server } from "../tests/mocks";
 import { http, HttpResponse } from "msw";
 import { setupStore } from "../store";
@@ -21,9 +21,7 @@ beforeEach(() => {
 });
 
 describe("opsAPI - Agreements Pagination", () => {
-    beforeAll(() => server.listen());
     afterEach(() => server.resetHandlers());
-    afterAll(() => server.close());
 
     describe("Query Parameter Construction", () => {
         it("should add pagination parameters when page and limit provided", async () => {
@@ -793,9 +791,7 @@ describe("opsAPI - Agreements Pagination", () => {
 });
 
 describe("opsAPI - Wave 2 high-yield endpoint coverage", () => {
-    beforeAll(() => server.listen());
     afterEach(() => server.resetHandlers());
-    afterAll(() => server.close());
 
     it("normalizes fiscal year values in getAgreements query params", async () => {
         let capturedUrl = "";
