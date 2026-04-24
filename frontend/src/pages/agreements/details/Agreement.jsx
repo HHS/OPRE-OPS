@@ -36,6 +36,17 @@ const Agreement = () => {
     const agreementId = urlPathParams?.id ? +urlPathParams.id : -1;
     const [isEditMode, setIsEditMode] = useState(false);
     const [showPreAwardSuccessAlert, setShowPreAwardSuccessAlert] = useState(location.state?.success === true);
+
+    // Auto-dismiss success alert after 10 seconds
+    useEffect(() => {
+        if (showPreAwardSuccessAlert) {
+            const timer = setTimeout(() => {
+                setShowPreAwardSuccessAlert(false);
+            }, 10000);
+            return () => clearTimeout(timer);
+        }
+    }, [showPreAwardSuccessAlert]);
+
     const [projectOfficer, setProjectOfficer] = useState({ email: "", full_name: "", id: 0 });
     const [alternateProjectOfficer, setAlternateProjectOfficer] = useState({ email: "", full_name: "", id: 0 });
     const [hasAgreementChanged, setHasAgreementChanged] = useState(false);
@@ -51,11 +62,14 @@ const Agreement = () => {
     const [isPreAwardAlertVisible] = useState(true);
     const [isPreAwardInReviewAlertVisible, setIsPreAwardInReviewAlertVisible] = useState(true);
 
-    const searchParams = new URLSearchParams(location.search);
-    const mode = searchParams.get("mode") || undefined;
-    if (mode === "edit" && !isEditMode) {
-        setIsEditMode(true);
-    }
+    // Set edit mode based on URL query parameter
+    useEffect(() => {
+        const searchParams = new URLSearchParams(window.location.search);
+        const mode = searchParams.get("mode");
+        if (mode === "edit" && !isEditMode) {
+            setIsEditMode(true);
+        }
+    }, [isEditMode]);
 
     /** @type {{data?: import("../../../types/AgreementTypes").Agreement | undefined, error?: Object, isLoading: boolean, isSuccess: boolean}} */
     const {
