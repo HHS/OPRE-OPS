@@ -107,7 +107,7 @@ const CANBudgetLineTableRow = ({
 
     const ExpandedData = (
         <td
-            colSpan={9}
+            colSpan={8}
             className="border-top-none"
             style={expandedRowBGColor}
         >

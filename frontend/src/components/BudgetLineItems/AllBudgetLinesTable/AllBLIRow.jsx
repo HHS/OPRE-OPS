@@ -101,7 +101,7 @@ const AllBLIRow = ({ budgetLine }) => {
 
     const ExpandedData = (
         <td
-            colSpan={12}
+            colSpan={10}
             className="border-top-none"
             style={expandedRowBGColor}
         >
