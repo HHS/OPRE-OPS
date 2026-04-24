@@ -8,6 +8,7 @@ import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import useRequestPreAwardApproval from "./RequestPreAwardApproval.hooks";
 import { PreAwardBudgetLinesReviewAccordion } from "./PreAwardBudgetLinesReviewAccordion";
+import Tooltip from "../../../components/UI/USWDS/Tooltip";
 
 // Feature flag for upload consensus memo functionality
 const ENABLE_UPLOAD_CONSENSUS_MEMO = false;
@@ -123,104 +124,86 @@ export const RequestPreAwardApproval = () => {
                 <p>Please upload the Final Consensus Memo so the Division Director can review it.</p>
 
                 <div className="usa-form-group margin-top-3">
-                    <div className="display-flex flex-align-center">
-                        <div
-                            className="position-relative bg-white border-1px border-base-light"
-                            style={{
-                                maxWidth: "540px",
-                                flexGrow: 1,
-                                minHeight: "100px",
-                                display: "flex",
-                                flexDirection: "column",
-                                justifyContent: "space-between",
-                                padding: "1rem"
-                            }}
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                        <Tooltip
+                            label="Documents tab is coming soon! For now, please upload to the OPRE preferred tool to share documents"
+                            position="top"
                         >
-                            <div>
-                                <span style={{ fontSize: "0.875rem", color: "#757575" }}>
-                                    {selectedFile ? selectedFile.name : "Final Consensus Memo"}
-                                </span>
-                            </div>
-                            <label
-                                htmlFor="consensus-memo-upload"
-                                className={
-                                    !ENABLE_UPLOAD_CONSENSUS_MEMO ||
-                                    !isStep4Completed ||
-                                    isUploading ||
-                                    hasApprovalBeenRequested ||
-                                    hasBLIInReview
-                                        ? "cursor-not-allowed"
-                                        : "cursor-pointer"
-                                }
+                            <div
+                                className="position-relative bg-white border-1px border-base-light"
                                 style={{
+                                    width: "450px",
+                                    minHeight: "100px",
                                     display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "end",
-                                    gap: "0.5rem",
-                                    color:
+                                    flexDirection: "column",
+                                    justifyContent: "space-between",
+                                    padding: "1rem",
+                                    borderRadius: "0.25rem"
+                                }}
+                            >
+                                <div>
+                                    <span style={{ fontSize: "0.875rem", color: "#757575" }}>
+                                        {selectedFile ? selectedFile.name : "Final Consensus Memo"}
+                                    </span>
+                                </div>
+                                <label
+                                    htmlFor="consensus-memo-upload"
+                                    className={
                                         !ENABLE_UPLOAD_CONSENSUS_MEMO ||
                                         !isStep4Completed ||
                                         isUploading ||
                                         hasApprovalBeenRequested ||
                                         hasBLIInReview
-                                            ? "#c9c9c9"
-                                            : "#757575",
-                                    fontSize: "0.875rem",
-                                    marginTop: "0.5rem",
-                                    opacity: !ENABLE_UPLOAD_CONSENSUS_MEMO ? 0.5 : 1
-                                }}
-                                title={
-                                    !ENABLE_UPLOAD_CONSENSUS_MEMO
-                                        ? "Document upload functionality is currently unavailable"
-                                        : !isStep4Completed
-                                          ? "Step 4 (Evaluation) must be completed before uploading documents"
-                                          : isUploading
-                                            ? "Upload in progress"
-                                            : hasApprovalBeenRequested
-                                              ? "Cannot upload documents - Pre-Award approval has already been requested"
-                                              : hasBLIInReview
-                                                ? "Cannot upload documents while budget lines have pending change requests"
-                                                : ""
-                                }
-                            >
-                                <svg
-                                    className="usa-icon"
-                                    aria-hidden="true"
-                                    focusable="false"
-                                    role="img"
-                                    viewBox="0 0 24 24"
-                                    style={{ fill: "currentColor", width: "32px", height: "32px" }}
+                                            ? "cursor-not-allowed"
+                                            : "cursor-pointer"
+                                    }
+                                    style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "end",
+                                        gap: "0.5rem",
+                                        color:
+                                            !ENABLE_UPLOAD_CONSENSUS_MEMO ||
+                                            !isStep4Completed ||
+                                            isUploading ||
+                                            hasApprovalBeenRequested ||
+                                            hasBLIInReview
+                                                ? "#c9c9c9"
+                                                : "#757575",
+                                        fontSize: "0.875rem",
+                                        marginTop: "0.5rem",
+                                        opacity: !ENABLE_UPLOAD_CONSENSUS_MEMO ? 0.5 : 1
+                                    }}
                                 >
-                                    <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" />
-                                </svg>
-                                <span style={{ textDecoration: "underline", fontSize: "1rem" }}>Upload File</span>
-                            </label>
-                            <input
-                                id="consensus-memo-upload"
-                                type="file"
-                                name="consensus-memo-upload"
-                                accept=".pdf,.doc,.docx,.xls,.xlsx"
-                                onChange={handleFileChange}
-                                disabled={
-                                    !ENABLE_UPLOAD_CONSENSUS_MEMO ||
-                                    !isStep4Completed ||
-                                    isUploading ||
-                                    hasApprovalBeenRequested ||
-                                    hasBLIInReview
-                                }
-                                style={{ display: "none" }}
-                            />
-                        </div>
-                        <div
-                            className="bg-base-darker text-white padding-2 border-radius-md margin-left-2"
-                            style={{
-                                maxWidth: "300px",
-                                fontSize: "0.875rem"
-                            }}
-                        >
-                            Documents tab is coming soon! For now, please upload to the OPRE preferred tool to share
-                            documents
-                        </div>
+                                    <svg
+                                        className="usa-icon"
+                                        aria-hidden="true"
+                                        focusable="false"
+                                        role="img"
+                                        viewBox="0 0 24 24"
+                                        style={{ fill: "currentColor", width: "32px", height: "32px" }}
+                                    >
+                                        <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" />
+                                    </svg>
+                                    <span style={{ textDecoration: "underline", fontSize: "1rem" }}>Upload File</span>
+                                </label>
+                                <input
+                                    id="consensus-memo-upload"
+                                    type="file"
+                                    name="consensus-memo-upload"
+                                    accept=".pdf,.doc,.docx,.xls,.xlsx"
+                                    onChange={handleFileChange}
+                                    disabled={
+                                        !ENABLE_UPLOAD_CONSENSUS_MEMO ||
+                                        !isStep4Completed ||
+                                        isUploading ||
+                                        hasApprovalBeenRequested ||
+                                        hasBLIInReview
+                                    }
+                                    style={{ display: "none" }}
+                                />
+                            </div>
+                        </Tooltip>
                     </div>
                 </div>
 
