@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { Route, Routes, useNavigate, useParams } from "react-router-dom";
+import { Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
 import App from "../../../App";
 import { getUser } from "../../../api/getUser";
 import {
@@ -30,10 +30,12 @@ import AgreementProcurementTracker from "./AgreementProcurementTracker";
 
 const Agreement = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     // TODO: move logic into a custom hook aka Agreement.hooks.js
     const urlPathParams = useParams();
     const agreementId = urlPathParams?.id ? +urlPathParams.id : -1;
     const [isEditMode, setIsEditMode] = useState(false);
+    const [showPreAwardSuccessAlert, setShowPreAwardSuccessAlert] = useState(location.state?.success === true);
     const [projectOfficer, setProjectOfficer] = useState({ email: "", full_name: "", id: 0 });
     const [alternateProjectOfficer, setAlternateProjectOfficer] = useState({ email: "", full_name: "", id: 0 });
     const [hasAgreementChanged, setHasAgreementChanged] = useState(false);
@@ -202,7 +204,17 @@ const Agreement = () => {
                     setIsAlertVisible={setIsAlertVisible}
                 />
             )}
-            {isPreAwardInReview && isPreAwardInReviewAlertVisible && (
+            {showPreAwardSuccessAlert && (
+                <SimpleAlert
+                    type="success"
+                    heading="Agreement Sent to Pre-Award Approval"
+                    message="This agreement has been successfully sent to your Division Director to review. After it's approved, you can send the Final Consensus Memo and continue your progress in the Procurement Tracker."
+                    isClosable={true}
+                    setIsAlertVisible={setShowPreAwardSuccessAlert}
+                    headingLevel={2}
+                />
+            )}
+            {!showPreAwardSuccessAlert && isPreAwardInReview && isPreAwardInReviewAlertVisible && (
                 <SimpleAlert
                     type="warning"
                     heading="Pre-Award Approval In Review"
@@ -256,6 +268,7 @@ const Agreement = () => {
                     />
                 </>
             )}
+
             <div>
                 <section className="display-flex flex-justify margin-top-3">
                     <DetailsTabs
