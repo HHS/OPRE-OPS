@@ -58,7 +58,7 @@ const DetailsTabs = ({
                   label: "Documents",
                   disabled: !IS_DOCUMENTS_TAB_READY || !isAgreementAwarded,
                   disabledTooltip:
-                      "Documents tab is coming soon. For now, please \nupload to the OPRE preferred tool to share documents"
+                      "Documents tab is coming soon. For now, please\nupload to the OPRE preferred tool to share documents"
               }
           ]
         : [];
