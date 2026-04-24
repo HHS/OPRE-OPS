@@ -1,12 +1,17 @@
 import uuid
 
 from flask import url_for
+from sqlalchemy import select
 
-from models import AdministrativeAndSupportProject, ProjectType
+from models import Project, ProjectType
 
 
 def test_administrative_and_support_projects_get_all(auth_client, loaded_db):
-    count = loaded_db.query(AdministrativeAndSupportProject).count()
+    count = loaded_db.query(
+        loaded_db.execute(select(Project).where(Project.project_type == ProjectType.ADMINISTRATIVE_AND_SUPPORT))
+        .scalars()
+        .all()
+    ).count()
 
     response = auth_client.get(
         url_for("api.projects-group", project_type=[ProjectType.ADMINISTRATIVE_AND_SUPPORT.name])
@@ -143,7 +148,7 @@ def test_post_administrative_and_support_projects(auth_client, loaded_db):
     assert response.status_code == 201
     id = response.json["id"]
     # verify project was created in db with correct values
-    project = loaded_db.get(AdministrativeAndSupportProject, id)
+    project = loaded_db.get(Project, id)
     assert project is not None
     assert project.title == "Administrative Project #1"
     assert len(project.team_leaders) == 3
@@ -162,7 +167,7 @@ def test_post_administrative_and_support_projects_minimum(auth_client, loaded_db
     assert response.status_code == 201
     id = response.json["id"]
     # verify project was created in db with correct values
-    project = loaded_db.get(AdministrativeAndSupportProject, id)
+    project = loaded_db.get(Project, id)
     assert project is not None
     assert project.title == "Administrative Project #1"
     assert project.team_leaders == []
