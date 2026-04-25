@@ -1043,6 +1043,20 @@ def test_evaluation_step_field_mapping(auth_client, test_evaluation_step, loaded
 
 def test_get_pending_approvals_returns_empty_list(auth_client, app_ctx, loaded_db):
     """Test that pending approvals endpoint returns an empty JSON array when there are none."""
+    from models.procurement_tracker import DefaultProcurementTrackerStep, ProcurementTrackerStepType
+
+    # Ensure no PRE_AWARD steps have approval_requested=True (other tests may leave dirty state)
+    polluted_steps = loaded_db.scalars(
+        select(DefaultProcurementTrackerStep).where(
+            DefaultProcurementTrackerStep.step_type == ProcurementTrackerStepType.PRE_AWARD,
+            DefaultProcurementTrackerStep.pre_award_approval_requested.is_(True),
+        )
+    ).all()
+    for step in polluted_steps:
+        step.pre_award_approval_requested = False
+    if polluted_steps:
+        loaded_db.commit()
+
     response = auth_client.get("/api/v1/procurement-tracker-steps/pending-approvals/")
     assert response.status_code == 200
     assert response.json == []
