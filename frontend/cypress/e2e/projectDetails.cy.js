@@ -19,12 +19,8 @@ describe("Project Details Page", () => {
         cy.contains("h2", "Project Details").should("be.visible");
 
         cy.get("[data-cy='project-tab-Project Details']").should("be.visible");
-        cy.get("[data-cy='project-tab-Project Spending']")
-            .should("be.disabled")
-            .and("have.attr", "data-position", "top");
-        cy.get("[data-cy='project-tab-Project Funding']")
-            .should("be.disabled")
-            .and("have.attr", "data-position", "top");
+        cy.get("[data-cy='project-tab-Project Spending']").should("be.visible").and("not.be.disabled");
+        cy.get("[data-cy='project-tab-Project Funding']").should("be.disabled").and("have.attr", "data-position", "top");
         cy.get("[role='tooltip']").should("contain", "Coming Soon");
 
         cy.contains("Description").should("be.visible");

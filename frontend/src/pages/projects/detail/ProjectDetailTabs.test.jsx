@@ -45,25 +45,25 @@ describe("ProjectDetailTabs", () => {
         expect(mockNavigate).toHaveBeenCalledWith("/projects/1000");
     });
 
-    it("disables Project Spending and Project Funding tabs", () => {
+    it("disables only the Project Funding tab", () => {
         renderComponent();
 
-        expect(screen.getByRole("button", { name: "Project Spending" })).toBeDisabled();
+        expect(screen.getByRole("button", { name: "Project Spending" })).not.toBeDisabled();
         expect(screen.getByRole("button", { name: "Project Funding" })).toBeDisabled();
     });
 
-    it("renders coming soon tooltips for disabled project tabs", () => {
+    it("renders coming soon tooltip only for Project Funding tab", () => {
         renderComponent();
 
-        const tooltips = screen.getAllByRole("tooltip", { hidden: true });
-        const spendingTab = screen.getByRole("button", { name: "Project Spending" });
         const fundingTab = screen.getByRole("button", { name: "Project Funding" });
+        const spendingTab = screen.getByRole("button", { name: "Project Spending" });
 
-        expect(tooltips).toHaveLength(2);
-        tooltips.forEach((tooltip) => {
-            expect(tooltip).toHaveTextContent("Coming Soon");
-        });
-        expect(spendingTab).toHaveAttribute("data-position", "top");
+        // Only one tab is still disabled/tooltipped
+        const tooltips = screen.getAllByRole("tooltip", { hidden: true });
+        expect(tooltips).toHaveLength(1);
+        expect(tooltips[0]).toHaveTextContent("Coming Soon");
+
         expect(fundingTab).toHaveAttribute("data-position", "top");
+        expect(spendingTab).not.toHaveAttribute("data-position", "top");
     });
 });

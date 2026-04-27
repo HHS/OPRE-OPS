@@ -420,7 +420,13 @@ export const opsApi = createApi({
         }),
         getAgreementsByResearchProjectFilter: builder.query({
             query: (id) => `/agreements/?project_id=${id}`,
-            providesTags: ["Agreements", "FilterAgreements"]
+            transformResponse: (response) => {
+                if (Array.isArray(response)) return response;
+                if (response.data) return response.data;
+                if (response.agreements) return response.agreements;
+                return [];
+            },
+            providesTags: ["Agreements"]
         }),
         getUserById: builder.query({
             query: (id) => `/users/${id}`,
@@ -492,6 +498,10 @@ export const opsApi = createApi({
             query: (id) => `/projects/${id}`,
             transformResponse: (response) => normalizeProjectUsers(response),
             providesTags: ["ResearchProjects"]
+        }),
+        getProjectSpendingById: builder.query({
+            query: (id) => `/projects/${id}/spending/`,
+            providesTags: ["ResearchProjects", "BudgetLineItems"]
         }),
         getProjectsByPortfolio: builder.query({
             query: ({ fiscal_year, portfolio_id, search }) => {
@@ -1105,6 +1115,7 @@ export const {
     useGetProjectsQuery,
     useLazyGetProjectsQuery,
     useGetProjectByIdQuery,
+    useGetProjectSpendingByIdQuery,
     useGetProjectsByPortfolioQuery,
     useGetResearchProjectsQuery,
     useGetResearchProjectsByPortfolioQuery,
