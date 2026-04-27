@@ -50,8 +50,8 @@ const ProjectFundingByPortfolioCard = ({ fiscalYear, fundingByPortfolio = [] }) 
                             />
                         </div>
                         <div
-                            className="display-flex flex-row margin-top-1"
-                            style={{ gap: "2rem" }}
+                            className="display-flex flex-row margin-top-2"
+                            style={{ gap: "0.75rem 2rem", flexWrap: "wrap" }}
                             data-cy="project-funding-portfolio-legend"
                             data-testid="project-funding-portfolio-legend"
                         >
