@@ -86,8 +86,6 @@ def test_create_models(loaded_db):
     assert project_model.id == 1
 
     # Cleanup
-    loaded_db.execute(text("DELETE FROM administrative_and_support_project"))
-    loaded_db.execute(text("DELETE FROM administrative_and_support_project_version"))
     loaded_db.execute(text("DELETE FROM project"))
     loaded_db.execute(text("DELETE FROM project_version"))
     loaded_db.execute(text("DELETE FROM ops_db_history"))
@@ -129,8 +127,6 @@ def test_main(loaded_db):
     assert len(project_1_history) == 1
 
     # Cleanup
-    loaded_db.execute(text("DELETE FROM administrative_and_support_project"))
-    loaded_db.execute(text("DELETE FROM administrative_and_support_project_version"))
     loaded_db.execute(text("DELETE FROM project"))
     loaded_db.execute(text("DELETE FROM project_version"))
     loaded_db.execute(text("DELETE FROM ops_db_history"))
@@ -207,8 +203,6 @@ def test_create_models_upsert(loaded_db):
     assert project_1.created_by == sys_user.id
 
     # Cleanup
-    loaded_db.execute(text("DELETE FROM administrative_and_support_project"))
-    loaded_db.execute(text("DELETE FROM administrative_and_support_project_version"))
     loaded_db.execute(text("DELETE FROM project"))
     loaded_db.execute(text("DELETE FROM project_version"))
     loaded_db.execute(text("DELETE FROM ops_db_history"))
