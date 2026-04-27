@@ -22,9 +22,7 @@ vi.mock("../../Portfolios/PortfolioSummaryCards/PortfolioLegend", () => ({
     )
 }));
 
-const mockFunding = [{ portfolio_id: 3, portfolio: "Child Care Research", amount: 500000 }];
-
-const mockAbbrevMap = new Map([[3, "CC"]]);
+const mockFunding = [{ portfolio_id: 3, portfolio: "Child Care Research", amount: 500000, abbreviation: "CC" }];
 
 describe("ProjectFundingByPortfolioCard", () => {
     it("renders the card heading with the selected fiscal year", () => {
@@ -32,7 +30,6 @@ describe("ProjectFundingByPortfolioCard", () => {
             <ProjectFundingByPortfolioCard
                 fiscalYear={2025}
                 fundingByPortfolio={mockFunding}
-                portfolioAbbrevMap={mockAbbrevMap}
             />
         );
         expect(screen.getByText("FY 2025 Project Funding by Portfolio")).toBeInTheDocument();
@@ -43,7 +40,6 @@ describe("ProjectFundingByPortfolioCard", () => {
             <ProjectFundingByPortfolioCard
                 fiscalYear={2025}
                 fundingByPortfolio={mockFunding}
-                portfolioAbbrevMap={mockAbbrevMap}
             />
         );
         expect(screen.getByTestId("horizontal-stacked-bar")).toBeInTheDocument();
@@ -53,8 +49,7 @@ describe("ProjectFundingByPortfolioCard", () => {
         render(
             <ProjectFundingByPortfolioCard
                 fiscalYear={2025}
-                fundingByPortfolio={[{ portfolio_id: 3, portfolio: "Child Care Research", amount: 0 }]}
-                portfolioAbbrevMap={mockAbbrevMap}
+                fundingByPortfolio={[{ portfolio_id: 3, portfolio: "Child Care Research", amount: 0, abbreviation: "CC" }]}
             />
         );
         expect(screen.queryByTestId("horizontal-stacked-bar")).not.toBeInTheDocument();
@@ -65,7 +60,6 @@ describe("ProjectFundingByPortfolioCard", () => {
             <ProjectFundingByPortfolioCard
                 fiscalYear={2025}
                 fundingByPortfolio={mockFunding}
-                portfolioAbbrevMap={mockAbbrevMap}
             />
         );
         expect(screen.getByTestId("portfolio-legend")).toBeInTheDocument();
@@ -76,7 +70,6 @@ describe("ProjectFundingByPortfolioCard", () => {
             <ProjectFundingByPortfolioCard
                 fiscalYear={2025}
                 fundingByPortfolio={[]}
-                portfolioAbbrevMap={mockAbbrevMap}
             />
         );
         expect(screen.getByText("FY 2025 Project Funding by Portfolio")).toBeInTheDocument();

@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import App from "../../../App";
-import { useGetPortfoliosQuery, useGetProjectByIdQuery, useGetProjectFundingByIdQuery } from "../../../api/opsAPI";
+import { useGetProjectByIdQuery, useGetProjectFundingByIdQuery } from "../../../api/opsAPI";
 import DebugCode from "../../../components/DebugCode";
 import ProjectFundingByCANCard from "../../../components/Projects/ProjectFundingByCANCard/ProjectFundingByCANCard";
 import ProjectFundingByFYCard from "../../../components/Projects/ProjectFundingByFYCard/ProjectFundingByFYCard";
@@ -46,20 +46,6 @@ const ProjectFunding = () => {
         }
     );
 
-    const { data: portfolios, isLoading: isPortfoliosLoading } = useGetPortfoliosQuery(
-        { projectId },
-        {
-            refetchOnMountOrArgChange: true,
-            skip: !projectId || projectId === -1
-        }
-    );
-
-    /** @type {Map<number, string>} portfolioId → abbreviation */
-    const portfolioAbbrevMap = React.useMemo(
-        () => new Map((portfolios ?? []).map((p) => [p.id, p.abbreviation])),
-        [portfolios]
-    );
-
     const is404 = projectError?.status === 404;
 
     React.useEffect(() => {
@@ -74,7 +60,7 @@ const ProjectFunding = () => {
         }
     }, [fundingError, navigate]);
 
-    if (isProjectLoading || isPortfoliosLoading) {
+    if (isProjectLoading) {
         return (
             <App>
                 <h1>Loading...</h1>
@@ -114,7 +100,6 @@ const ProjectFunding = () => {
                 <ProjectFundingByPortfolioCard
                     fiscalYear={fiscalYear}
                     fundingByPortfolio={fundingData?.funding_by_portfolio ?? []}
-                    portfolioAbbrevMap={portfolioAbbrevMap}
                 />
                 <div
                     className="display-flex flex-justify margin-top-2"
