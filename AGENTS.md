@@ -76,6 +76,12 @@ bun run test:e2e
 # Run E2E tests interactively
 bun run test:e2e:interactive
 
+# Run Storybook (component documentation, dev server on port 6006)
+bun run storybook
+
+# Build Storybook static output (only when BUILD_STORYBOOK=true; dev/stg deploy workflows opt in)
+bun run build-storybook
+
 # Linting
 bun run lint
 
@@ -293,6 +299,61 @@ The frontend follows modern React patterns with Redux for state management:
 
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:8080
+- **Storybook** (dev/stg only): http://localhost:6006 (local), https://dev.ops.opre.acf.gov/storybook, https://stg.ops.opre.acf.gov/storybook
+
+## Storybook Component Documentation
+
+Storybook provides an interactive component library for browsing and developing UI components in isolation. It runs on port 6006 locally and is served at `/storybook` on dev and staging environments. It is **not available in production** (the `Dockerfile.azure` build stage only compiles Storybook when the `BUILD_STORYBOOK=true` build arg is passed; dev and stg deploy workflows opt in, production does not).
+
+### Story File Convention
+
+Stories are **co-located** with their component, following the same pattern as unit tests:
+
+```
+src/components/UI/DataViz/LineGraph/
+  LineGraph.jsx
+  LineGraph.test.jsx        ← unit test
+  LineGraph.stories.jsx     ← story
+```
+
+### When to Write a Story
+
+- **Required**: All new components added to `src/components/UI/`
+- **Encouraged**: Feature/domain components that appear on multiple pages or have complex visual states
+- **Not required**: Highly page-specific components tightly coupled to a single route
+
+### Story Title Hierarchy
+
+| Component type | Title prefix | Example |
+|---|---|---|
+| DataViz primitives | `UI/DataViz/` | `UI/DataViz/LineGraph` |
+| Card composites | `UI/Cards/` | `UI/Cards/BudgetCard` |
+| Shared UI | `UI/` | `UI/Alert` |
+| Feature/domain | `Features/<Domain>/` | `Features/CANs/CanCard` |
+
+### Global Decorators
+
+Every story automatically receives two global decorators (configured in `.storybook/preview.jsx`):
+
+1. **Redux `Provider`** — seed specific state via `parameters.store.preloadedState`:
+   ```jsx
+   export const WithUser = {
+       parameters: { store: { preloadedState: { auth: { activeUser: { id: 1 } } } } }
+   };
+   ```
+
+2. **`MemoryRouter`** — set initial route via `parameters.reactRouter.initialEntries`:
+   ```jsx
+   export const OnDetailPage = {
+       parameters: { reactRouter: { initialEntries: ["/cans/1"] } }
+   };
+   ```
+
+### Coverage Exclusion
+
+`*.stories.jsx` files are excluded from the 90% Vitest coverage gate. Stories are documentation, not tests.
+
+See [`frontend/.storybook/README.md`](./frontend/.storybook/README.md) for full conventions and [`docs/adr/031-storybook-for-component-documentation.md`](./docs/adr/031-storybook-for-component-documentation.md) for the architectural decision record.
 
 ## Important Notes
 

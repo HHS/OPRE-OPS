@@ -204,7 +204,7 @@ yarn-error.log*
 *.drawio.bkp
 *.db
 claude.sh
-.claude
+
 
 # Local .terraform directories
 **/.terraform/*
@@ -261,3 +261,6 @@ docs/openapi_reports/spectral_*
 docs/openapi_reports/swagger_cli_*
 docs/openapi_reports/validation_summary_*
 docs/openapi_reports/yamllint_*
+
+*storybook.log
+storybook-static

@@ -2,7 +2,13 @@ import { faClock } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import CurrencyFormat from "react-currency-format";
 import { useSelector } from "react-redux";
-import { BLI_STATUS, BLILabel, canLabel, getBudgetLineCreatedDate } from "../../../helpers/budgetLines.helpers";
+import {
+    BLI_STATUS,
+    BLILabel,
+    canLabel,
+    getBudgetLineCreatedDate,
+    getProcurementShopLabel
+} from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import { fiscalYearFromDate, formatDateNeeded } from "../../../helpers/utils";
 import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
@@ -146,27 +152,27 @@ const BLIDiffRow = ({ budgetLine, changeType, statusChangeTo = "" }) => {
             style={expandedRowBGColor}
         >
             <div className="grid-row grid-gap-4">
-                <dl className="grid-col-3 margin-top-0 font-12px">
+                <dl className="grid-col-auto margin-top-0 font-12px">
                     <dt className="margin-0 text-base-dark">Created By</dt>
-                    <dd
-                        id={`created-by-name-${budgetLine?.id}`}
-                        className="margin-0"
-                    >
-                        {budgetLineCreatorName}
-                    </dd>
-                    <dt className="margin-0 text-base-dark margin-top-2">Created on</dt>
-                    <dd className="margin-0 display-flex flex-align-center">
-                        <FontAwesomeIcon
-                            icon={faClock}
-                            className="height-2 width-2 margin-right-1"
-                            aria-hidden={true}
-                        />
-                        {getBudgetLineCreatedDate(budgetLine)}
+                    <dd className="margin-0">
+                        <div id={`created-by-name-${budgetLine?.id}`}>{budgetLineCreatorName}</div>
+                        <div className="margin-top-2 display-flex flex-align-center text-base-dark text-normal">
+                            <FontAwesomeIcon
+                                icon={faClock}
+                                className="height-2 width-2 margin-right-1"
+                                aria-hidden={true}
+                            />
+                            {getBudgetLineCreatedDate(budgetLine)}
+                        </div>
                     </dd>
                 </dl>
-                <dl className="grid-col-6 margin-top-0 font-12px">
+                <dl className="grid-col-4 margin-top-0 font-12px">
                     <dt className="margin-0 text-base-dark">Description</dt>
                     <dd className="margin-0 wrap-text">{budgetLine?.line_description}</dd>
+                </dl>
+                <dl className="grid-col-auto margin-top-0 font-12px">
+                    <dt className="margin-0 text-base-dark">Procurement Shop</dt>
+                    <dd className="margin-0">{getProcurementShopLabel(budgetLine)}</dd>
                 </dl>
             </div>
         </td>

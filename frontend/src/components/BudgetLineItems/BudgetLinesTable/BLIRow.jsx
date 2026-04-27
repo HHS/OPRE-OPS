@@ -163,23 +163,21 @@ const BLIRow = ({
             style={expandedRowBGColor}
         >
             <div className="grid-row grid-gap-4">
-                <dl className="grid-col margin-top-0 font-12px">
+                <dl className="grid-col-auto margin-top-0 font-12px">
                     <dt className="margin-0 text-base-dark">Created By</dt>
-                    <dd
-                        id={`created-by-name-${budgetLine?.id}`}
-                        className="margin-0"
-                    >
-                        {/* NOTE: Show logged in user name when creating BLIs */}
-                        {budgetLine?.created_by ? budgetLineCreatorName : loggedInUserFullName}
-                    </dd>
-                    <dt className="margin-0 text-base-dark margin-top-2">Created on</dt>
-                    <dd className="margin-0 display-flex flex-align-center">
-                        <FontAwesomeIcon
-                            icon={faClock}
-                            className="height-2 width-2 margin-right-1"
-                            aria-hidden={true}
-                        />
-                        {getBudgetLineCreatedDate(budgetLine)}
+                    <dd className="margin-0">
+                        <div id={`created-by-name-${budgetLine?.id}`}>
+                            {/* NOTE: Show logged in user name when creating BLIs */}
+                            {budgetLine?.created_by ? budgetLineCreatorName : loggedInUserFullName}
+                        </div>
+                        <div className="margin-top-2 display-flex flex-align-center text-base-dark text-normal">
+                            <FontAwesomeIcon
+                                icon={faClock}
+                                className="height-2 width-2 margin-right-1"
+                                aria-hidden={true}
+                            />
+                            {getBudgetLineCreatedDate(budgetLine)}
+                        </div>
                     </dd>
                 </dl>
                 <dl className="grid-col-4 margin-top-0 font-12px">
