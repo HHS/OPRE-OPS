@@ -13,7 +13,8 @@ export default {
                     "directly. Left bar flex-width is resolved via `resolveLeftFlexWidth` which accepts " +
                     'either a numeric percent or the string `"<1"`. The `isStriped` prop adds diagonal ' +
                     "hatching to both bars (used in BudgetCard to indicate in-progress spending). " +
-                    "`overBudget` turns both bars solid red and disables striping."
+                    "`overBudget` disables striping only — bar colors are not changed by this prop. " +
+                    "Callers (e.g. `BudgetCard`) set error-red via the `color` fields in `data` when over budget."
             }
         }
     },
@@ -31,7 +32,7 @@ export default {
         leftColor: { control: "color", description: "Left bar color", table: { category: "Colors" } },
         rightColor: { control: "color", description: "Right bar color", table: { category: "Colors" } },
         isStriped: { control: "boolean", description: "Diagonal stripe overlay on both bars" },
-        overBudget: { control: "boolean", description: "Both bars turn solid red; stripes disabled" }
+        overBudget: { control: "boolean", description: "Disables stripe overlay; bar colors are determined by the `color` fields in `data`" }
     }
 };
 

@@ -104,8 +104,6 @@ const DonutWrapper = ({
         <div
             id={containerId}
             style={{ width: 150, height: 150 }}
-            aria-label={ariaLabel}
-            role="img"
         >
             <ResponsiveDonutWithInnerPercent
                 data={legendData}
