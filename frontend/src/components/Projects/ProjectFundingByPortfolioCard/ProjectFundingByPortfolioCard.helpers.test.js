@@ -19,6 +19,27 @@ describe("buildPortfolioChartData", () => {
         expect(result[1].abbreviation).toBe("CWR");
     });
 
+    it("sorts items by canonical PORTFOLIO_ORDER position regardless of API order", () => {
+        // API returns CWR before CC, but CC comes first in PORTFOLIO_ORDER
+        const reversed = [
+            { portfolio_id: 1, portfolio: "Child Welfare Research", amount: 250000, abbreviation: "CWR" },
+            { portfolio_id: 3, portfolio: "Child Care Research", amount: 500000, abbreviation: "CC" }
+        ];
+        const result = buildPortfolioChartData(reversed);
+        expect(result[0].abbreviation).toBe("CC");
+        expect(result[1].abbreviation).toBe("CWR");
+    });
+
+    it("appends unknown portfolios after known ones", () => {
+        const withUnknown = [
+            { portfolio_id: 99, portfolio: "Unknown Portfolio", amount: 100000, abbreviation: "UNK" },
+            { portfolio_id: 3, portfolio: "Child Care Research", amount: 500000, abbreviation: "CC" }
+        ];
+        const result = buildPortfolioChartData(withUnknown);
+        expect(result[0].abbreviation).toBe("CC");
+        expect(result[1].abbreviation).toBe("UNK");
+    });
+
     it("falls back to portfolio name when abbreviation is null", () => {
         const noAbbrev = mockFundingByPortfolio.map((item) => ({ ...item, abbreviation: null }));
         const result = buildPortfolioChartData(noAbbrev);
