@@ -186,7 +186,8 @@ class Project(BaseModel):
                 key=lambda x: x["name"],
             ),
             "project_officers": sorted(
-                [{"id": user_id, "name": name} for user_id, name in project_officer_dict.items()], key=lambda x: x["name"]
+                [{"id": user_id, "name": name} for user_id, name in project_officer_dict.items()],
+                key=lambda x: x["name"],
             ),
             "alternate_project_officers": sorted(
                 [{"id": user_id, "name": name} for user_id, name in alternate_project_officer_dict.items()],
@@ -300,15 +301,22 @@ class Project(BaseModel):
         # --- funding_by_portfolio ---
         portfolio_totals: dict[int, Decimal] = defaultdict(lambda: Decimal("0"))
         portfolio_names: dict[int, str] = {}
+        portfolio_abbr: dict[int, str | None] = {}
         for can in unique_cans:
             if can.portfolio:
                 for fb in can.funding_budgets:
                     if fb.fiscal_year == fiscal_year:
                         portfolio_totals[can.portfolio_id] += fb.budget or Decimal("0")
                         portfolio_names[can.portfolio_id] = can.portfolio.name
+                        portfolio_abbr[can.portfolio_id] = can.portfolio.abbreviation
 
         funding_by_portfolio = [
-            {"portfolio_id": pid, "portfolio": portfolio_names[pid], "amount": float(amt)}
+            {
+                "portfolio_id": pid,
+                "portfolio": portfolio_names[pid],
+                "amount": float(amt),
+                "abbreviation": portfolio_abbr[pid],
+            }
             for pid, amt in portfolio_totals.items()
         ]
 
