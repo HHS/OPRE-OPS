@@ -35,7 +35,19 @@ const Agreement = () => {
     const urlPathParams = useParams();
     const agreementId = urlPathParams?.id ? +urlPathParams.id : -1;
     const [isEditMode, setIsEditMode] = useState(false);
-    const [showPreAwardSuccessAlert, setShowPreAwardSuccessAlert] = useState(location.state?.success === true);
+    const [showPreAwardSuccessAlert, setShowPreAwardSuccessAlert] = useState(false);
+
+    // Consume success state from navigation and clear it to prevent re-display on back/forward
+    useEffect(() => {
+        if (location.state?.success) {
+            setShowPreAwardSuccessAlert(true);
+            // Clear location.state so alert doesn't reappear on browser back/forward navigation
+            navigate(location.pathname + location.search, {
+                replace: true,
+                state: {}
+            });
+        }
+    }, [location.state?.success, location.pathname, location.search, navigate]);
 
     // Auto-dismiss success alert after 10 seconds
     useEffect(() => {
@@ -64,12 +76,12 @@ const Agreement = () => {
 
     // Set edit mode based on URL query parameter
     useEffect(() => {
-        const searchParams = new URLSearchParams(window.location.search);
+        const searchParams = new URLSearchParams(location.search);
         const mode = searchParams.get("mode");
         if (mode === "edit" && !isEditMode) {
             setIsEditMode(true);
         }
-    }, [isEditMode]);
+    }, [location.search, isEditMode]);
 
     /** @type {{data?: import("../../../types/AgreementTypes").Agreement | undefined, error?: Object, isLoading: boolean, isSuccess: boolean}} */
     const {

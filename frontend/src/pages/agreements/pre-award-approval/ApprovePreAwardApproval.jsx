@@ -189,28 +189,28 @@ export const ApprovePreAwardApproval = () => {
                         className="margin-top-3"
                         style={{ display: "flex", alignItems: "center" }}
                     >
-                        <Tooltip
-                            label="Upload Documents is coming soon! For now, please review within the OPRE preferred tool to share documents"
-                            position="top"
+                        <div
+                            className="border-1px border-base-light padding-2"
+                            style={{
+                                backgroundColor: "white",
+                                width: "450px",
+                                borderRadius: "0.25rem"
+                            }}
                         >
                             <div
-                                className="border-1px border-base-light padding-2"
                                 style={{
-                                    backgroundColor: "white",
-                                    width: "450px",
-                                    borderRadius: "0.25rem"
+                                    fontSize: "0.875rem",
+                                    color: "#757575",
+                                    marginBottom: "0.5rem"
                                 }}
                             >
-                                <div
-                                    style={{
-                                        fontSize: "0.875rem",
-                                        color: "#757575",
-                                        marginBottom: "0.5rem"
-                                    }}
+                                Final Consensus Memo
+                            </div>
+                            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                                <Tooltip
+                                    label="Upload Documents is coming soon! For now, please review within the OPRE preferred tool to share documents"
+                                    position="top"
                                 >
-                                    Final Consensus Memo
-                                </div>
-                                <div style={{ display: "flex", justifyContent: "flex-end" }}>
                                     <button
                                         type="button"
                                         className="usa-button--unstyled"
@@ -227,9 +227,9 @@ export const ApprovePreAwardApproval = () => {
                                             <use href={`${icons}#file_download`}></use>
                                         </svg>
                                     </button>
-                                </div>
+                                </Tooltip>
                             </div>
-                        </Tooltip>
+                        </div>
                     </div>
                 )}
             </Accordion>

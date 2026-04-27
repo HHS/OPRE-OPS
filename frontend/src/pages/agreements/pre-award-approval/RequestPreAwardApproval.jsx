@@ -125,27 +125,27 @@ export const RequestPreAwardApproval = () => {
 
                 <div className="usa-form-group margin-top-3">
                     <div style={{ display: "flex", alignItems: "center" }}>
-                        <Tooltip
-                            label="Documents tab is coming soon! For now, please upload to the OPRE preferred tool to share documents"
-                            position="top"
+                        <div
+                            className="position-relative bg-white border-1px border-base-light"
+                            style={{
+                                width: "450px",
+                                minHeight: "100px",
+                                display: "flex",
+                                flexDirection: "column",
+                                justifyContent: "space-between",
+                                padding: "1rem",
+                                borderRadius: "0.25rem"
+                            }}
                         >
-                            <div
-                                className="position-relative bg-white border-1px border-base-light"
-                                style={{
-                                    width: "450px",
-                                    minHeight: "100px",
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    justifyContent: "space-between",
-                                    padding: "1rem",
-                                    borderRadius: "0.25rem"
-                                }}
+                            <div>
+                                <span style={{ fontSize: "0.875rem", color: "#757575" }}>
+                                    {selectedFile ? selectedFile.name : "Final Consensus Memo"}
+                                </span>
+                            </div>
+                            <Tooltip
+                                label="Documents tab is coming soon! For now, please upload to the OPRE preferred tool to share documents"
+                                position="top"
                             >
-                                <div>
-                                    <span style={{ fontSize: "0.875rem", color: "#757575" }}>
-                                        {selectedFile ? selectedFile.name : "Final Consensus Memo"}
-                                    </span>
-                                </div>
                                 <label
                                     htmlFor="consensus-memo-upload"
                                     className={
@@ -187,23 +187,23 @@ export const RequestPreAwardApproval = () => {
                                     </svg>
                                     <span style={{ textDecoration: "underline", fontSize: "1rem" }}>Upload File</span>
                                 </label>
-                                <input
-                                    id="consensus-memo-upload"
-                                    type="file"
-                                    name="consensus-memo-upload"
-                                    accept=".pdf,.doc,.docx,.xls,.xlsx"
-                                    onChange={handleFileChange}
-                                    disabled={
-                                        !ENABLE_UPLOAD_CONSENSUS_MEMO ||
-                                        !isStep4Completed ||
-                                        isUploading ||
-                                        hasApprovalBeenRequested ||
-                                        hasBLIInReview
-                                    }
-                                    style={{ display: "none" }}
-                                />
-                            </div>
-                        </Tooltip>
+                            </Tooltip>
+                            <input
+                                id="consensus-memo-upload"
+                                type="file"
+                                name="consensus-memo-upload"
+                                accept=".pdf,.doc,.docx,.xls,.xlsx"
+                                onChange={handleFileChange}
+                                disabled={
+                                    !ENABLE_UPLOAD_CONSENSUS_MEMO ||
+                                    !isStep4Completed ||
+                                    isUploading ||
+                                    hasApprovalBeenRequested ||
+                                    hasBLIInReview
+                                }
+                                style={{ display: "none" }}
+                            />
+                        </div>
                     </div>
                 </div>
 

@@ -26,6 +26,34 @@ from ops_api.ops.services.ops_service import ResourceNotFoundError
 from ops_api.ops.validation.procurement_tracker_steps_validator import ProcurementTrackerStepsValidator
 
 
+def escape_markdown(text: str) -> str:
+    """
+    Escape Markdown metacharacters for safe plain-text display.
+
+    Ensures user-supplied text is displayed literally in both plain-text
+    and ReactMarkdown contexts, preventing unintended formatting or links.
+
+    Args:
+        text: The text to escape
+
+    Returns:
+        Text with Markdown metacharacters escaped
+    """
+    # Escape backslash first to prevent double-escaping
+    text = text.replace("\\", "\\\\")
+    # Escape Markdown syntax characters
+    text = text.replace("*", "\\*")  # Bold/italic
+    text = text.replace("_", "\\_")  # Italic/bold
+    text = text.replace("[", "\\[")  # Links
+    text = text.replace("]", "\\]")
+    text = text.replace("`", "\\`")  # Code
+    text = text.replace("#", "\\#")  # Headers
+    text = text.replace("+", "\\+")  # Lists
+    text = text.replace("-", "\\-")  # Lists
+    text = text.replace("!", "\\!")  # Images
+    return text
+
+
 class ProcurementTrackerStepService:
     """Service for procurement tracker step operations."""
 
@@ -362,6 +390,10 @@ class ProcurementTrackerStepService:
                 )
                 if step.pre_award_approval_reviewer_notes and step.pre_award_approval_reviewer_notes.strip():
                     reviewer_notes_text = step.pre_award_approval_reviewer_notes.strip()
+                    # Escape Markdown metacharacters to ensure notes display literally in both
+                    # SimpleAlert (plain text) and NotificationCenter/LogItem (ReactMarkdown).
+                    # Prevents user-supplied markdown from rendering as formatting or clickable links.
+                    reviewer_notes_text = escape_markdown(reviewer_notes_text)
                     message += f"\n\nNotes:\n{reviewer_notes_text}"
 
                 notification_service.create(

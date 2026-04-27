@@ -398,10 +398,10 @@ def test_reviewer_notes_prevent_markdown_injection(auth_client, test_pre_award_s
     assert notification is not None, "Notification should be created"
     # Verify notes are included in the message
     assert "Notes:" in notification.message, "Message should include 'Notes:' label"
-    # Verify the raw Markdown syntax is preserved as plain text
-    assert "**Bold**" in notification.message, "Markdown syntax should be preserved literally"
-    assert "[link]" in notification.message, "Link syntax should be preserved literally"
-    assert "```code```" in notification.message, "Triple backticks should be preserved literally"
+    # Verify the Markdown syntax is escaped to prevent rendering
+    assert "\\*\\*Bold\\*\\*" in notification.message, "Asterisks should be escaped"
+    assert "\\[link\\]" in notification.message, "Brackets should be escaped"
+    assert "\\`\\`\\`code\\`\\`\\`" in notification.message, "Backticks should be escaped"
 
 
 def test_reviewer_notes_backtick_injection_prevented(auth_client, test_pre_award_step, loaded_db):
@@ -432,7 +432,7 @@ def test_reviewer_notes_backtick_injection_prevented(auth_client, test_pre_award
     assert notification is not None, "Notification should be created"
     # Verify notes are included in the message
     assert "Notes:" in notification.message, "Message should include 'Notes:' label"
-    # Verify triple backticks are preserved in the notes
-    assert "```" in notification.message, "Triple backticks should be preserved"
-    # Verify the markdown after triple backticks is also preserved literally
-    assert "**This should NOT render as bold**" in notification.message, "Markdown after backticks should be literal"
+    # Verify triple backticks are escaped
+    assert "\\`\\`\\`" in notification.message, "Triple backticks should be escaped"
+    # Verify the markdown after triple backticks is also escaped
+    assert "\\*\\*This should NOT render as bold\\*\\*" in notification.message, "Asterisks should be escaped"
