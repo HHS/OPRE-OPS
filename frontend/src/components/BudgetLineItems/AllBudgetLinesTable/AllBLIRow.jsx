@@ -101,48 +101,34 @@ const AllBLIRow = ({ budgetLine }) => {
 
     const ExpandedData = (
         <td
-            colSpan={12}
+            colSpan={10}
             className="border-top-none"
             style={expandedRowBGColor}
         >
-            <div className="display-flex flex-justify padding-right-10">
-                <dl className="font-12px margin-top-0">
+            <div className="grid-row grid-gap-3">
+                <dl className="grid-col-auto margin-top-0 font-12px">
                     <dt className="margin-0 text-base-dark">Created by</dt>
-                    <dd
-                        id={`created-by-name-${budgetLine?.id}`}
-                        className="margin-0"
-                    >
-                        {budgetLineCreatorName}
-                    </dd>
-                    <dt className="margin-0 text-base-dark margin-top-2">Created on</dt>
-                    <dd className="margin-0 display-flex flex-align-center">
-                        <FontAwesomeIcon
-                            icon={faClock}
-                            className="height-2 width-2 margin-right-1"
-                            aria-hidden={true}
-                        />
-                        {getBudgetLineCreatedDate(budgetLine)}
+                    <dd className="margin-0">
+                        <div id={`created-by-name-${budgetLine?.id}`}>{budgetLineCreatorName}</div>
+                        <div className="margin-top-2 display-flex flex-align-center text-base-dark text-normal">
+                            <FontAwesomeIcon
+                                icon={faClock}
+                                className="height-2 width-2 margin-right-1"
+                                aria-hidden={true}
+                            />
+                            {getBudgetLineCreatedDate(budgetLine)}
+                        </div>
                     </dd>
                 </dl>
-                <dl className="font-12px margin-left-2 margin-top-0">
+                <dl className="grid-col-4 margin-top-0 font-12px">
                     <dt className="margin-0 text-base-dark">Description</dt>
-                    <dd
-                        className="margin-0 wrap-text"
-                        style={{ maxWidth: "25rem" }}
-                    >
-                        {budgetLine?.line_description}
-                    </dd>
+                    <dd className="margin-0 wrap-text">{budgetLine?.line_description}</dd>
                 </dl>
-                <dl className="font-12px margin-left-2 margin-top-0">
+                <dl className="grid-col-auto margin-top-0 font-12px">
                     <dt className="margin-0 text-base-dark">Procurement Shop</dt>
-                    <dd
-                        className="margin-0"
-                        style={{ maxWidth: "25rem" }}
-                    >
-                        {getProcurementShopLabel(budgetLine)}
-                    </dd>
+                    <dd className="margin-0">{getProcurementShopLabel(budgetLine)}</dd>
                 </dl>
-                <dl className="font-12px margin-left-2 margin-top-0">
+                <dl className="grid-col-auto margin-top-0 font-12px">
                     <dt className="margin-0 text-base-dark">Subtotal</dt>
                     <dd className="margin-0">
                         <CurrencyFormat
@@ -155,7 +141,7 @@ const AllBLIRow = ({ budgetLine }) => {
                         />
                     </dd>
                 </dl>
-                <dl className="margin-left-2 font-12px margin-top-0">
+                <dl className="grid-col-auto margin-top-0 font-12px">
                     <dt className="margin-0 text-base-dark">Fees</dt>
                     <dd className="margin-0">
                         <CurrencyFormat
@@ -172,25 +158,20 @@ const AllBLIRow = ({ budgetLine }) => {
             <p className="font-12px margin-0 margin-top-1 text-base-dark">
                 Agreement data associated to this budget line
             </p>
-            <div className="display-flex flex-justify padding-right-10 ">
-                <dl className="font-12px margin-top-0">
+            <div className="grid-row grid-gap-6 padding-bottom-1">
+                <dl className="grid-col-4 margin-top-0 font-12px">
                     <dt className="margin-0 text-base-dark">Project</dt>
-                    <dd
-                        className="margin-0 wrap-text"
-                        style={{ maxWidth: "25rem" }}
-                    >
-                        {budgetLine.agreement?.project?.title ?? NO_DATA}
-                    </dd>
+                    <dd className="margin-0 wrap-text">{budgetLine.agreement?.project?.title ?? NO_DATA}</dd>
                 </dl>
-                <dl className="font-12px margin-left-2 margin-top-0">
+                <dl className="grid-col-auto margin-top-0 font-12px">
                     <dt className="margin-0 text-base-dark">Award Type</dt>
                     <dd className="margin-0">{awardType}</dd>
                 </dl>
-                <dl className="font-12px margin-left-2 margin-top-0">
+                <dl className="grid-col-auto margin-top-0 font-12px">
                     <dt className="margin-0 text-base-dark">Research Type</dt>
                     <dd className="margin-0">{NO_DATA}</dd>
                 </dl>
-                <dl className="font-12px margin-left-2 margin-top-0">
+                <dl className="grid-col-auto margin-top-0 font-12px">
                     <dt className="margin-0 text-base-dark">Vendor</dt>
                     <dd className="margin-0">{vendor}</dd>
                 </dl>
