@@ -56,6 +56,20 @@ const buildStepData = (procurementStepSummary) => {
     return { stepData, budgetByStep };
 };
 
+/**
+ * @typedef {Object} ProcurementSummaryCardsProps
+ * @property {import("./ProcurementOverviewCard").ProcurementOverview | null} procurementOverview - Overview data from the API.
+ * @property {Object | null} procurementStepSummary - Step summary data from the API.
+ * @property {number} fiscalYear - The fiscal year being displayed.
+ * @property {boolean} isLoading - Whether data is still loading.
+ * @property {*} error - Error object, if any.
+ */
+
+/**
+ * @component ProcurementSummaryCards
+ * @param {ProcurementSummaryCardsProps} props
+ * @returns {JSX.Element}
+ */
 const ProcurementSummaryCards = ({ procurementOverview, procurementStepSummary, fiscalYear, isLoading, error }) => {
     const { stepData, budgetByStep } = useMemo(() => buildStepData(procurementStepSummary), [procurementStepSummary]);
 

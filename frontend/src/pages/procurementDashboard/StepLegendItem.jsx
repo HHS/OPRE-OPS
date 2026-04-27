@@ -2,6 +2,21 @@ import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Tag from "../../components/UI/Tag/Tag";
 
+/**
+ * @typedef {Object} StepLegendItemProps
+ * @property {number} id - The step id.
+ * @property {number} activeId - The currently hovered/active step id.
+ * @property {string} label - The step label (e.g. "Step 1").
+ * @property {number} value - The number of agreements in this step.
+ * @property {string} color - CSS color for the legend dot.
+ * @property {number} percent - The percentage of total agreements.
+ */
+
+/**
+ * @component StepLegendItem
+ * @param {StepLegendItemProps} props
+ * @returns {JSX.Element}
+ */
 const StepLegendItem = ({ id, activeId, label, value, color, percent }) => {
     const isActive = activeId === id;
     return (

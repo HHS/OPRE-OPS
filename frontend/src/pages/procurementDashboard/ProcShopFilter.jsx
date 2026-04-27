@@ -1,3 +1,15 @@
+/**
+ * @typedef {Object} ProcShopFilterProps
+ * @property {string} value - The currently selected procurement shop abbreviation or "all".
+ * @property {(value: string) => void} onChange - Callback when the selection changes.
+ * @property {string[]} [options] - List of procurement shop abbreviations.
+ */
+
+/**
+ * @component ProcShopFilter
+ * @param {ProcShopFilterProps} props
+ * @returns {JSX.Element}
+ */
 const ProcShopFilter = ({ value, onChange, options = [] }) => {
     return (
         <div

@@ -415,7 +415,10 @@ class AgreementsService(OpsService[Agreement]):
         return agreement
 
     def get_list(
-        self, agreement_classes: list[Type[Agreement]], data: dict[str, Any]
+        self,
+        agreement_classes: list[Type[Agreement]],
+        data: dict[str, Any],
+        include_procurement: bool = False,
     ) -> tuple[list[Agreement], dict[str, Any]]:
         """
         Get list of agreements with optional filtering and pagination.
@@ -423,6 +426,7 @@ class AgreementsService(OpsService[Agreement]):
         Args:
             agreement_classes: List of Agreement subclasses to query (e.g., ContractAgreement, GrantAgreement)
             data: Dictionary containing filter parameters including limit and offset
+            include_procurement: When True, eager-load BLIs/trackers and compute procurement metrics
 
         Returns:
             Tuple of (paginated agreements list, metadata dict with count/limit/offset)
@@ -433,7 +437,7 @@ class AgreementsService(OpsService[Agreement]):
         # Collect all agreements across types using existing resource helpers
         all_results = []
         for agreement_cls in agreement_classes:
-            agreements = _get_agreements(self.db_session, agreement_cls, data)
+            agreements = _get_agreements(self.db_session, agreement_cls, data, include_procurement)
             all_results.extend(agreements)
 
         # Filter by award_type (computed property, must be done post-query)
@@ -454,10 +458,15 @@ class AgreementsService(OpsService[Agreement]):
         # Calculate aggregate totals before pagination (for summary cards)
         totals = _compute_agreement_totals(all_results)
 
-        # Calculate procurement overview and step summary before pagination
-        overview_fiscal_year = filters.fiscal_year[0] if filters.fiscal_year and len(filters.fiscal_year) == 1 else None
-        procurement_overview = _compute_procurement_overview(all_results, overview_fiscal_year)
-        procurement_step_summary = _compute_procurement_step_summary(all_results, overview_fiscal_year)
+        # Calculate procurement overview and step summary before pagination (only when requested)
+        procurement_overview = None
+        procurement_step_summary = None
+        if include_procurement:
+            overview_fiscal_year = (
+                filters.fiscal_year[0] if filters.fiscal_year and len(filters.fiscal_year) == 1 else None
+            )
+            procurement_overview = _compute_procurement_overview(all_results, overview_fiscal_year)
+            procurement_step_summary = _compute_procurement_step_summary(all_results, overview_fiscal_year)
 
         # Apply pagination slicing
         if filters.limit is not None and filters.offset is not None:
@@ -836,6 +845,13 @@ def _validate_special_topics(db_session: Session, special_topics: List[SpecialTo
         raise ValidationError({"special_topics": [f"Special Topic IDs do not exist: {invalid_special_topic_ids}"]})
 
 
+def _percent(value, total):
+    """Return ``value / total`` as a rounded whole-number percentage, or 0.0 when *total* is zero."""
+    if total == 0:
+        return 0.0
+    return float(round((float(value) / float(total)) * 100))
+
+
 def _compute_agreement_totals(all_results: list[Agreement]) -> dict[str, Any]:
     """Compute aggregate totals across all filtered agreements for summary cards."""
     totals = {
@@ -917,11 +933,6 @@ def _compute_procurement_overview(all_results: list[Agreement], fiscal_year: int
     # This means per-status percentages may not sum to 100%.
     total_agreements = len(all_results)
 
-    def _percent(value, total):
-        if total == 0:
-            return 0.0
-        return float(round((float(value) / float(total)) * 100))
-
     status_data = []
     for status in tracked_statuses:
         amount = amount_by_status[status]
@@ -988,11 +999,6 @@ def _compute_procurement_step_summary(all_results: list[Agreement], fiscal_year:
 
     total_agreement_count = sum(agreements_by_step.values())
 
-    def _percent(value, total):
-        if total == 0:
-            return 0.0
-        return float(round((float(value) / float(total)) * 100))
-
     step_data = []
     for step in range(1, 7):
         step_data.append(
@@ -1010,8 +1016,13 @@ def _compute_procurement_step_summary(all_results: list[Agreement], fiscal_year:
     }
 
 
-def _get_agreements(session: Session, agreement_cls: Type[Agreement], data: dict[str, Any]) -> Sequence[Agreement]:
-    query = _build_base_query(agreement_cls)
+def _get_agreements(
+    session: Session,
+    agreement_cls: Type[Agreement],
+    data: dict[str, Any],
+    include_procurement: bool = False,
+) -> Sequence[Agreement]:
+    query = _build_base_query(agreement_cls, include_procurement)
     query = _apply_filters(query, agreement_cls, data)
 
     logger.debug(f"query: {query}")
@@ -1020,18 +1031,16 @@ def _get_agreements(session: Session, agreement_cls: Type[Agreement], data: dict
     return _filter_by_ownership(all_results, data.get("only_my", []))
 
 
-def _build_base_query(agreement_cls: Type[Agreement]) -> Select[tuple[Agreement]]:
-    return (
-        select(agreement_cls)
-        .distinct()
-        .join(BudgetLineItem, isouter=True)
-        .join(CAN, isouter=True)
-        .options(
+def _build_base_query(agreement_cls: Type[Agreement], include_procurement: bool = False) -> Select[tuple[Agreement]]:
+    query = select(agreement_cls).distinct().join(BudgetLineItem, isouter=True).join(CAN, isouter=True)
+
+    if include_procurement:
+        query = query.options(
             selectinload(agreement_cls.budget_line_items),
             selectinload(agreement_cls.procurement_trackers),
         )
-        .order_by(agreement_cls.id)
-    )
+
+    return query.order_by(agreement_cls.id)
 
 
 def _apply_filters(query: Select[Agreement], agreement_cls: Type[Agreement], data: dict[str, Any]) -> Select[Agreement]:

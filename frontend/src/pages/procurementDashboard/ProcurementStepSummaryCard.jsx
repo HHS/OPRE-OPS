@@ -4,6 +4,26 @@ import CustomLayerComponent from "../../components/UI/DataViz/ResponsiveDonutWit
 import RoundedBox from "../../components/UI/RoundedBox";
 import StepLegendItem from "./StepLegendItem";
 
+/**
+ * @typedef {Object} StepDataItem
+ * @property {number} id - The step number (used as chart segment id).
+ * @property {string} label - Display label (e.g. "Step 1").
+ * @property {string} color - CSS color for the chart segment and legend.
+ * @property {number} value - Number of agreements in this step.
+ * @property {number} percent - Percentage of total agreements.
+ */
+
+/**
+ * @typedef {Object} ProcurementStepSummaryCardProps
+ * @property {StepDataItem[]} [stepData] - Per-step agreement counts for the donut chart.
+ * @property {number} fiscalYear - The fiscal year being displayed.
+ */
+
+/**
+ * @component ProcurementStepSummaryCard
+ * @param {ProcurementStepSummaryCardProps} props
+ * @returns {JSX.Element}
+ */
 const ProcurementStepSummaryCard = ({ stepData = [], fiscalYear }) => {
     const [percent, setPercent] = React.useState("");
     const [hoverId, setHoverId] = React.useState(-1);

@@ -97,7 +97,8 @@ export const opsApi = createApi({
                     projectTitle,
                     contractNumber,
                     awardType,
-                    awardingEntityId
+                    awardingEntityId,
+                    includeProcurement
                 },
                 onlyMy,
                 sortConditions,
@@ -141,6 +142,9 @@ export const opsApi = createApi({
                 }
                 if (awardingEntityId) {
                     awardingEntityId.forEach((id) => queryParams.push(`awarding_entity_id=${id}`));
+                }
+                if (includeProcurement) {
+                    queryParams.push("include_procurement=true");
                 }
                 if (onlyMy) {
                     queryParams.push("only_my=true");
@@ -1059,9 +1063,6 @@ export const opsApi = createApi({
         }),
         getProcurementTrackersByAgreementIds: builder.query({
             query: (agreementIds) => {
-                if (!agreementIds || agreementIds.length === 0) {
-                    return `/procurement-trackers/?agreement_id=-1&limit=0`;
-                }
                 const queryParams = agreementIds.map((id) => `agreement_id=${id}`);
                 queryParams.push(`limit=${agreementIds.length}`);
                 return `/procurement-trackers/?${queryParams.join("&")}`;

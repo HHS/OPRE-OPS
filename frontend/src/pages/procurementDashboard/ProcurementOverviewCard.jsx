@@ -34,6 +34,36 @@ const buildStatusData = (procurementOverview) => {
     return { statusData, totalAmount: total_amount, totalAgreements: total_agreements };
 };
 
+/**
+ * @typedef {Object} StatusDataItem
+ * @property {string} status - Status key (e.g. "PLANNED", "IN_EXECUTION", "OBLIGATED").
+ * @property {string} label - Human-readable status label.
+ * @property {number} amount - Dollar amount for this status.
+ * @property {number} amount_percent - Percentage of total amount.
+ * @property {number} agreements - Number of agreements with this status.
+ * @property {number} agreements_percent - Percentage of total agreements.
+ */
+
+/**
+ * @typedef {Object} ProcurementOverview
+ * @property {StatusDataItem[]} status_data - Breakdown by BLI status.
+ * @property {number} total_amount - Total dollar amount across all tracked statuses.
+ * @property {number} total_agreements - Total number of agreements in the result set.
+ */
+
+/**
+ * @typedef {Object} ProcurementOverviewCardProps
+ * @property {ProcurementOverview | null} procurementOverview - Overview data from the API.
+ * @property {number} fiscalYear - The fiscal year being displayed.
+ * @property {boolean} isLoading - Whether data is still loading.
+ * @property {*} error - Error object, if any.
+ */
+
+/**
+ * @component ProcurementOverviewCard
+ * @param {ProcurementOverviewCardProps} props
+ * @returns {JSX.Element}
+ */
 const ProcurementOverviewCard = ({ procurementOverview, fiscalYear, isLoading, error }) => {
     const { statusData, totalAmount, totalAgreements } = useMemo(
         () => buildStatusData(procurementOverview),

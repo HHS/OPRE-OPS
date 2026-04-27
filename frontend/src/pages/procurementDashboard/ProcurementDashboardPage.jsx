@@ -45,6 +45,7 @@ const ProcurementDashboard = () => {
     const { agreements, metadata, isLoading, error } = useGetAllAgreements({
         filters: {
             fiscalYear: [CURRENT_FISCAL_YEAR],
+            includeProcurement: true,
             ...(awardTypeFilter ? { awardType: [{ awardType: awardTypeFilter }] } : {}),
             ...(selectedProcShopId ? { awardingEntityId: [selectedProcShopId] } : {})
         }
