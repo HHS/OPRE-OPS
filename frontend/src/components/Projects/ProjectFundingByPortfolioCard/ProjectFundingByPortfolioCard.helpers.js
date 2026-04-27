@@ -6,9 +6,10 @@ import { computeDisplayPercents } from "../../../helpers/utils";
 
 /**
  * Build chart data for the "Project Funding by Portfolio" horizontal stacked bar.
- * Colors are resolved from PORTFOLIO_ORDER by abbreviation.
- * Items are sorted by their position in PORTFOLIO_ORDER so bars and legend
- * always appear in the same canonical left-to-right sequence as PortfolioSummaryCards.
+ * Items are sorted by their position in PORTFOLIO_ORDER, then colors are assigned
+ * sequentially (slot 1, 2, 3 …) so a project with 3 portfolios always shows
+ * the first 3 colors from the palette — matching the visual sequence on the
+ * reporting page — rather than the sparse slots of each abbreviation's fixed color.
  * Abbreviations come directly from the funding API response (item.abbreviation).
  *
  * @param {Array<{portfolio_id: number, portfolio: string, amount: number, abbreviation: string|null}>} fundingByPortfolio
@@ -17,29 +18,31 @@ import { computeDisplayPercents } from "../../../helpers/utils";
 export const buildPortfolioChartData = (fundingByPortfolio) => {
     if (!fundingByPortfolio?.length) return [];
 
-    const rawItems = fundingByPortfolio.map((item) => {
-        const abbreviation = item.abbreviation ?? "";
-        const configIndex = PORTFOLIO_ORDER.findIndex(
-            (c) => c.abbreviation === abbreviation || c.aliases?.includes(abbreviation)
+    // Sort by canonical PORTFOLIO_ORDER position; unknowns go to the end
+    const sorted = [...fundingByPortfolio].sort((a, b) => {
+        const idxA = PORTFOLIO_ORDER.findIndex(
+            (c) => c.abbreviation === (a.abbreviation ?? "") || c.aliases?.includes(a.abbreviation ?? "")
         );
-        const config = configIndex !== -1 ? PORTFOLIO_ORDER[configIndex] : null;
-
-        return {
-            id: item.portfolio_id,
-            label: item.portfolio,
-            abbreviation: abbreviation || item.portfolio,
-            value: item.amount,
-            color: config?.color ?? FALLBACK_COLOR,
-            _order: configIndex !== -1 ? configIndex : Infinity
-        };
+        const idxB = PORTFOLIO_ORDER.findIndex(
+            (c) => c.abbreviation === (b.abbreviation ?? "") || c.aliases?.includes(b.abbreviation ?? "")
+        );
+        if (idxA === -1 && idxB === -1) return 0;
+        if (idxA === -1) return 1;
+        if (idxB === -1) return -1;
+        return idxA - idxB;
     });
 
-    // Sort by canonical PORTFOLIO_ORDER position so bar segments and legend
-    // always appear in the same left-to-right sequence as PortfolioSummaryCards.
-    rawItems.sort((a, b) => a._order - b._order);
+    // Assign colors sequentially from PORTFOLIO_ORDER so 3 portfolios always
+    // get colors #1, #2, #3 rather than their sparse fixed slots (e.g. 1, 3, 13).
+    const paletteColors = PORTFOLIO_ORDER.map((c) => c.color);
 
-    const result = computeDisplayPercents(rawItems);
-    // Strip internal sort key before returning
-    result.forEach((item) => delete item._order);
-    return result;
+    const rawItems = sorted.map((item, i) => ({
+        id: item.portfolio_id,
+        label: item.portfolio,
+        abbreviation: item.abbreviation || item.portfolio,
+        value: item.amount,
+        color: paletteColors[i] ?? FALLBACK_COLOR
+    }));
+
+    return computeDisplayPercents(rawItems);
 };
