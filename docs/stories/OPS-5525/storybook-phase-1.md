@@ -112,22 +112,22 @@ Each item below is a single story file. Check off as we land each one.
 
 ### DataViz primitives (pure/presentational — no Redux, no API)
 
-- [ ] **HorizontalStackedBar** — `UI/DataViz/HorizontalStackedBar/HorizontalStackedBar.stories.jsx`
+- [x] **HorizontalStackedBar** — `UI/DataViz/HorizontalStackedBar/HorizontalStackedBar.stories.jsx`
   - Stories: Default (5 portfolios), TinySegment, SingleSegment, AllZero, KeyboardNav
   - 📝 Widths derived from `value`, never from `percent` string. Zero-value segments filtered out. Returns `null` when all filtered.
-  - ⏳ Awaiting manual verification.
-- [ ] **LineGraph** — `UI/DataViz/LineGraph/LineGraph.stories.jsx`
+  - ✅ Verified in `bun run storybook` — all stories render, controls live.
+- [x] **LineGraph** — `UI/DataViz/LineGraph/LineGraph.stories.jsx`
   - Stories: Default, InProgress (striped), ZeroLeft, ZeroRight
   - 📝 Always 2 data items. `isStriped` + `overBudget` boolean controls exposed.
-  - ⏳ Awaiting manual verification.
-- [ ] **ReverseLineGraph** — `UI/DataViz/LineGraph/ReverseLineGraph.stories.jsx`
+  - ✅ Verified in `bun run storybook` — all stories render, controls live.
+- [x] **ReverseLineGraph** — `UI/DataViz/LineGraph/ReverseLineGraph.stories.jsx`
   - Stories: Default, ZeroReceived, OverReceived
   - 📝 Left bar hidden when `leftValue === 0`. Right bar always striped.
-  - ⏳ Awaiting manual verification.
-- [ ] **LineBar** — `UI/DataViz/LineBar/LineBar.stories.jsx`
+  - ✅ Verified in `bun run storybook` — all stories render, controls live.
+- [x] **LineBar** — `UI/DataViz/LineBar/LineBar.stories.jsx`
   - Stories: Default, ZeroValue (shows TBD), ZeroValueNotFirstRow (shows $0), MaxValue
   - 📝 `ratio` exposed as a range slider (0–1). TBD fallback when `total===0 && iterator===0`.
-  - ⏳ Awaiting manual verification.
+  - ✅ Verified in `bun run storybook` — ratio slider, TBD fallback, and MaxValue confirmed.
 - [x] **ResponsiveDonutWithInnerPercent** — `UI/DataViz/ResponsiveDonutWithInnerPercent/ResponsiveDonutWithInnerPercent.stories.jsx`
   - Stories: Default (multi-slice), AllOneCategory, TinySlice, AccessibilityLabeling
   - ❌ `SingleSlice` dropped — visually identical to `AllOneCategory` from a UX
@@ -146,13 +146,13 @@ Each item below is a single story file. Check off as we land each one.
 
 ### Card composites (may read from Redux / React Router)
 
-- [ ] **LineGraphWithLegendCard** — `UI/Cards/LineGraphWithLegendCard/LineGraphWithLegendCard.stories.jsx`
+- [x] **LineGraphWithLegendCard** — `UI/Cards/LineGraphWithLegendCard/LineGraphWithLegendCard.stories.jsx`
   - Stories: Default (CAN carry-forward vs new funding), EqualSplit, ZeroBudget
   - 📝 `LineGraph` always expects exactly 2 data items — destructures `data[0]` and
     `data[1]` directly. Bar is hidden when `bigNumber === 0`.
   - 📝 No wrapper state needed — card manages `activeId` internally.
   - ✅ Verified in `bun run storybook` — all stories render, controls live, hover bolding confirmed.
-- [ ] **DonutGraphWithLegendCard** — `UI/Cards/DonutGraphWithLegendCard/DonutGraphWithLegendCard.stories.jsx`
+- [x] **DonutGraphWithLegendCard** — `UI/Cards/DonutGraphWithLegendCard/DonutGraphWithLegendCard.stories.jsx`
   - Stories: Default (BLI status breakdown), AllOneCategory, TinySlice
   - 📝 No wrapper state needed — card manages hover state + `container_id` internally.
     Render factory pre-computes percents via `computeDisplayPercents` before
@@ -176,12 +176,12 @@ Each item below is a single story file. Check off as we land each one.
 
 ### Wrap-up tasks
 
-- [ ] Manually verify all 10 components render with USWDS styles in
+- [x] Manually verify all 10 components render with USWDS styles in
   `bun run storybook`.
-- [ ] Check `addon-a11y` panel for each story; note any regressions.
-- [ ] Run `bun run build-storybook` to confirm production build succeeds.
-- [ ] Run `bun run lint` and `bun run format`.
-- [ ] Update this doc with any gotchas discovered during implementation.
+- [x] Check `addon-a11y` panel for each story; note any regressions.
+- [x] Run `bun run build-storybook` to confirm production build succeeds.
+- [x] Run `bun run lint` and `bun run format`.
+- [x] Update this doc with any gotchas discovered during implementation.
 - [ ] Demo to UX team; capture feedback in a follow-up section below.
 
 ---
@@ -228,4 +228,5 @@ _(Populated after the demo.)_
 
 ## Changelog
 
+- **2026-04-27** — All 10 components manually verified. Wrap-up tasks complete. PR #5584 released for review.
 - **2026-04-24** — Initial plan drafted alongside issue kickoff.
