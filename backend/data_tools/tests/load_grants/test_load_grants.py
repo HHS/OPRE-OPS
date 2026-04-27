@@ -90,8 +90,6 @@ def db_for_grants(loaded_db):
     loaded_db.execute(text("DELETE FROM grant_agreement_version"))
     loaded_db.execute(text("DELETE FROM agreement"))
     loaded_db.execute(text("DELETE FROM agreement_version"))
-    loaded_db.execute(text("DELETE FROM research_project"))
-    loaded_db.execute(text("DELETE FROM research_project_version"))
     loaded_db.execute(text("DELETE FROM project"))
     loaded_db.execute(text("DELETE FROM project_version"))
     loaded_db.execute(text("DELETE FROM ops_user"))

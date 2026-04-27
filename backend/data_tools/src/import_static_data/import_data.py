@@ -37,7 +37,6 @@ ALLOWED_TABLES = [
     "can_fiscal_year_carry_forward",
     "portfolio_team_leaders",
     "project",
-    "research_project",
     "research_project_cans",
     "research_project_team_leaders",
     "shared_portfolio_cans",
@@ -83,7 +82,6 @@ ALLOWED_TABLES = [
     "ops_event",
     "product_service_code",
     "can_funding_details",
-    "administrative_and_support_project",
     "can_history",
 ]
 

@@ -119,8 +119,6 @@ def db_for_contracts(loaded_db):
     loaded_db.execute(text("DELETE FROM agreement_version"))
     loaded_db.execute(text("DELETE FROM vendor"))
     loaded_db.execute(text("DELETE FROM vendor_version"))
-    loaded_db.execute(text("DELETE FROM research_project"))
-    loaded_db.execute(text("DELETE FROM research_project_version"))
     loaded_db.execute(text("DELETE FROM project"))
     loaded_db.execute(text("DELETE FROM project_version"))
     loaded_db.execute(text("DELETE FROM ops_user"))

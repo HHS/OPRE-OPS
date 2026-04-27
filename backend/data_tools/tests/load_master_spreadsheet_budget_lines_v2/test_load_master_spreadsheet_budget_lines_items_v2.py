@@ -682,8 +682,6 @@ def db_for_aas(loaded_db):
     loaded_db.execute(text("DELETE FROM agreement_version"))
     loaded_db.execute(text("DELETE FROM agreement_agency"))
     loaded_db.execute(text("DELETE FROM agreement_agency_version"))
-    loaded_db.execute(text("DELETE FROM research_project"))
-    loaded_db.execute(text("DELETE FROM research_project_version"))
     loaded_db.execute(text("DELETE FROM project"))
     loaded_db.execute(text("DELETE FROM project_version"))
     loaded_db.execute(text("DELETE FROM ops_event"))

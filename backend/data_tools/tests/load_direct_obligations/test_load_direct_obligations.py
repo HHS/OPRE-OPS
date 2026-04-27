@@ -58,8 +58,6 @@ def db_for_direct_obligations(loaded_db):
     loaded_db.execute(text("DELETE FROM direct_agreement_version"))
     loaded_db.execute(text("DELETE FROM agreement"))
     loaded_db.execute(text("DELETE FROM agreement_version"))
-    loaded_db.execute(text("DELETE FROM research_project"))
-    loaded_db.execute(text("DELETE FROM research_project_version"))
     loaded_db.execute(text("DELETE FROM project"))
     loaded_db.execute(text("DELETE FROM project_version"))
     loaded_db.execute(text("DELETE FROM ops_user"))
