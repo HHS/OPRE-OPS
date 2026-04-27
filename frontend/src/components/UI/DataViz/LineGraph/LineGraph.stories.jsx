@@ -32,7 +32,10 @@ export default {
         leftColor: { control: "color", description: "Left bar color", table: { category: "Colors" } },
         rightColor: { control: "color", description: "Right bar color", table: { category: "Colors" } },
         isStriped: { control: "boolean", description: "Diagonal stripe overlay on both bars" },
-        overBudget: { control: "boolean", description: "Disables stripe overlay; bar colors are determined by the `color` fields in `data`" }
+        overBudget: {
+            control: "boolean",
+            description: "Disables stripe overlay; bar colors are determined by the `color` fields in `data`"
+        }
     }
 };
 
