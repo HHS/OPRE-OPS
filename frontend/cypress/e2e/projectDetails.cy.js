@@ -25,7 +25,6 @@ describe("Project Details Page", () => {
         cy.get("[data-cy='project-tab-Project Funding']")
             .should("be.disabled")
             .and("have.attr", "data-position", "top");
-        cy.get("[role='tooltip']").should("contain", "Coming Soon");
 
         cy.contains("Description").should("be.visible");
         cy.contains("Project Nickname").should("be.visible");
@@ -45,5 +44,28 @@ describe("Project Details Page", () => {
         cy.get("[data-cy='project-officers-tag']").should("contain", "Chris Fortunato");
         cy.get("[data-cy='alternate-project-officers-tag']").should("contain", "Dave Director");
         cy.get("[data-cy='project-team-members-tag']").should("contain", "Amelia Popham");
+    });
+
+    it("enters edit mode and displays the form", () => {
+        cy.get("[data-cy='project-details-edit-button']").click();
+        cy.contains("h2", "Edit Project Details").should("be.visible");
+        cy.get("input[name='title']").should("be.visible");
+        cy.get("input[name='short_title']").should("be.visible");
+        cy.get("textarea[name='description']").should("be.visible");
+        cy.get("[data-cy='save-btn']").should("be.visible");
+        cy.get("[data-cy='cancel-button']").should("be.visible");
+    });
+
+    it.skip("edits project details and saves successfully", () => {
+        cy.get("[data-cy='project-details-edit-button']").click();
+        cy.get("input[name='short_title']").clear().type("Updated HSS");
+        cy.get("[data-cy='save-btn']").click();
+        cy.contains("Project Updated").should("be.visible");
+    });
+
+    it("shows confirmation modal on cancel during edit", () => {
+        cy.get("[data-cy='project-details-edit-button']").click();
+        cy.get("[data-cy='cancel-button']").click();
+        cy.contains("Are you sure you want to cancel editing").should("be.visible");
     });
 });

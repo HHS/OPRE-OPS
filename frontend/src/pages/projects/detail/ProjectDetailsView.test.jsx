@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 import ProjectDetailsView from "./ProjectDetailsView";
@@ -7,6 +8,18 @@ vi.mock("react-router-dom", async () => {
     const actual = await vi.importActual("react-router-dom");
     return { ...actual };
 });
+
+vi.mock("../../../api/opsAPI", () => ({
+    useUpdateProjectMutation: () => [
+        vi.fn().mockReturnValue({ unwrap: () => Promise.resolve({}) }),
+        { isLoading: false }
+    ]
+}));
+
+vi.mock("../../../hooks/use-alert.hooks", () => ({
+    __esModule: true,
+    default: () => ({ setAlert: vi.fn() })
+}));
 
 const baseProject = {
     id: 1000,
@@ -31,10 +44,20 @@ const baseProject = {
     team_leaders: [{ id: 500, full_name: "Chris Fortunato", email: "chris.fortunato@example.com" }]
 };
 
-const renderComponent = (project) =>
+const defaultToggleEditMode = vi.fn();
+
+const renderComponent = (
+    project,
+    { canEdit = false, isEditMode = false, toggleEditMode = defaultToggleEditMode } = {}
+) =>
     render(
         <MemoryRouter>
-            <ProjectDetailsView project={project} />
+            <ProjectDetailsView
+                project={project}
+                canEdit={canEdit}
+                isEditMode={isEditMode}
+                toggleEditMode={toggleEditMode}
+            />
         </MemoryRouter>
     );
 
@@ -176,6 +199,20 @@ describe("ProjectDetailsView", () => {
         expect(screen.getAllByText("Dave Director").length).toBeGreaterThanOrEqual(1);
     });
 
+    it("renders an enabled edit button when canEdit is true", () => {
+        renderComponent(baseProject, { canEdit: true });
+        const editButton = screen.getByRole("button", { name: /edit/i });
+        expect(editButton).not.toHaveAttribute("aria-disabled");
+    });
+
+    it("calls toggleEditMode when the edit button is clicked", async () => {
+        const toggleFn = vi.fn();
+        renderComponent(baseProject, { canEdit: true, toggleEditMode: toggleFn });
+        const user = userEvent.setup();
+        await user.click(screen.getByRole("button", { name: /edit/i }));
+        expect(toggleFn).toHaveBeenCalledTimes(1);
+    });
+
     it("renders History placeholder", () => {
         renderComponent(baseProject);
         expect(screen.getByText("History")).toBeInTheDocument();
@@ -196,5 +233,19 @@ describe("ProjectDetailsView", () => {
             project_end: null
         });
         expect(screen.getAllByText("TBD").length).toBeGreaterThanOrEqual(4);
+    });
+
+    it("renders ProjectDetailForm when isEditMode is true", () => {
+        renderComponent(baseProject, { canEdit: true, isEditMode: true });
+        expect(screen.getByText("Edit Project Details")).toBeInTheDocument();
+        expect(screen.getByLabelText(/project title/i)).toBeInTheDocument();
+        expect(screen.getByLabelText(/project nickname/i)).toBeInTheDocument();
+        expect(screen.getByLabelText(/description/i)).toBeInTheDocument();
+        expect(screen.getByLabelText(/project type/i)).toBeInTheDocument();
+    });
+
+    it("hides edit button when in edit mode", () => {
+        renderComponent(baseProject, { canEdit: true, isEditMode: true });
+        expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
     });
 });

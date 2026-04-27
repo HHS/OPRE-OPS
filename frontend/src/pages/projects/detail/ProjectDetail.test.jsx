@@ -202,6 +202,37 @@ describe("ProjectDetail", () => {
         expect(mockNavigate).not.toHaveBeenCalled();
     });
 
+    it("shows an enabled edit button for a logged-in user", () => {
+        mockUseGetProjectByIdQuery.mockReturnValue({
+            data: mockProject,
+            isLoading: false,
+            error: undefined
+        });
+
+        renderComponent();
+
+        const editButton = screen.getByRole("button", { name: /edit/i });
+        expect(editButton).not.toHaveAttribute("aria-disabled");
+    });
+
+    it("switches to edit mode when edit button is clicked", async () => {
+        const { userEvent: ue } = await import("@testing-library/user-event");
+        const user = ue.setup();
+
+        mockUseGetProjectByIdQuery.mockReturnValue({
+            data: mockProject,
+            isLoading: false,
+            error: undefined
+        });
+
+        renderComponent();
+
+        await user.click(screen.getByRole("button", { name: /edit/i }));
+
+        expect(screen.getByText("Edit Project Details")).toBeInTheDocument();
+        expect(screen.getByLabelText("Project Title")).toBeInTheDocument();
+    });
+
     it("fires navigate when a tab is clicked", async () => {
         const { userEvent } = await import("@testing-library/user-event");
         const user = userEvent.setup();
