@@ -1004,6 +1004,7 @@ def test_patch_project_change_type_research_to_admin(budget_team_auth_client, lo
     project = loaded_db.get(Project, project_id)
     assert project.project_type == ProjectType.ADMINISTRATIVE_AND_SUPPORT
     assert isinstance(project, AdministrativeAndSupportProject)
+    assert not hasattr(project, "origination_date")
 
 
 def test_patch_project_change_type_admin_to_research(budget_team_auth_client, loaded_db):

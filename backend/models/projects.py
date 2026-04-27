@@ -89,7 +89,7 @@ class Project(BaseModel):
             "INSERT INTO project_version (id, project_type, title, short_title, description, url,"
             " created_by, updated_by, created_on, updated_on, transaction_id, operation_type)"
             " SELECT id, project_type, title, short_title, description, url,"
-            " created_by, updated_by, created_on, updated_on, :txn, 1"
+            " created_by, updated_by, created_on, updated_on, :txn, :op"
             " FROM project WHERE id = :id"
         ),
     }
@@ -115,7 +115,7 @@ class Project(BaseModel):
 
         session.execute(self._SQL[f"insert_{old_key}_ver"], {"id": self.id, "txn": txn_id, "op": self._OP_DELETE})
         session.execute(self._SQL[f"insert_{new_key}_ver"], {"id": self.id, "txn": txn_id, "op": self._OP_INSERT})
-        session.execute(self._SQL["insert_parent_ver"], {"id": self.id, "txn": txn_id})
+        session.execute(self._SQL["insert_parent_ver"], {"id": self.id, "txn": txn_id, "op": self._OP_UPDATE})
 
         session.expire_all()
 
