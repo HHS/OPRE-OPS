@@ -75,11 +75,19 @@ export default {
 // DonutGraphWithLegendCard manages its own hover state and generates its own
 // container_id via crypto.randomUUID() — no wrapper state needed here.
 const renderCard = (title) => {
-    const Render = ({ draftAmount, plannedAmount, executingAmount, obligatedAmount,
-                      draftColor, plannedColor, executingColor, obligatedColor }) => {
+    const Render = ({
+        draftAmount,
+        plannedAmount,
+        executingAmount,
+        obligatedAmount,
+        draftColor,
+        plannedColor,
+        executingColor,
+        obligatedColor
+    }) => {
         const rawData = [
-            { id: 1, label: "Draft",     value: draftAmount,     color: draftColor },
-            { id: 2, label: "Planned",   value: plannedAmount,   color: plannedColor },
+            { id: 1, label: "Draft", value: draftAmount, color: draftColor },
+            { id: 2, label: "Planned", value: plannedAmount, color: plannedColor },
             { id: 3, label: "Executing", value: executingAmount, color: executingColor },
             { id: 4, label: "Obligated", value: obligatedAmount, color: obligatedColor }
         ];

@@ -10,7 +10,7 @@ export default {
             description: {
                 component:
                     "Multi-segment horizontal stacked bar. Segment widths are derived from each segment's " +
-                    "numeric `value` (never from the display `percent` string), so segments with `percent: \"<1\"` " +
+                    'numeric `value` (never from the display `percent` string), so segments with `percent: "<1"` ' +
                     "still render correctly. Segments where `value === 0` or `isPlaceholder === true` are filtered " +
                     "out before rendering. Returns `null` when all segments are filtered out. Hover / keyboard " +
                     "focus fires `setActiveId` so a parent legend can highlight the matching row."
@@ -18,16 +18,36 @@ export default {
         }
     },
     argTypes: {
-        dcfdAmount:     { control: { type: "number", min: 0, step: 100_000 }, description: "DCFD portfolio amount",  table: { category: "Segment Values" } },
-        dfsAmount:      { control: { type: "number", min: 0, step: 100_000 }, description: "DFS portfolio amount",   table: { category: "Segment Values" } },
-        deiAmount:      { control: { type: "number", min: 0, step: 100_000 }, description: "DEI portfolio amount",   table: { category: "Segment Values" } },
-        odAmount:       { control: { type: "number", min: 0, step: 100_000 }, description: "OD portfolio amount",    table: { category: "Segment Values" } },
-        nonOpreAmount:  { control: { type: "number", min: 0, step: 100_000 }, description: "Non-OPRE amount",        table: { category: "Segment Values" } },
-        dcfdColor:      { control: "color", description: "DCFD color",    table: { category: "Segment Colors" } },
-        dfsColor:       { control: "color", description: "DFS color",     table: { category: "Segment Colors" } },
-        deiColor:       { control: "color", description: "DEI color",     table: { category: "Segment Colors" } },
-        odColor:        { control: "color", description: "OD color",      table: { category: "Segment Colors" } },
-        nonOpreColor:   { control: "color", description: "Non-OPRE color",table: { category: "Segment Colors" } }
+        dcfdAmount: {
+            control: { type: "number", min: 0, step: 100_000 },
+            description: "DCFD portfolio amount",
+            table: { category: "Segment Values" }
+        },
+        dfsAmount: {
+            control: { type: "number", min: 0, step: 100_000 },
+            description: "DFS portfolio amount",
+            table: { category: "Segment Values" }
+        },
+        deiAmount: {
+            control: { type: "number", min: 0, step: 100_000 },
+            description: "DEI portfolio amount",
+            table: { category: "Segment Values" }
+        },
+        odAmount: {
+            control: { type: "number", min: 0, step: 100_000 },
+            description: "OD portfolio amount",
+            table: { category: "Segment Values" }
+        },
+        nonOpreAmount: {
+            control: { type: "number", min: 0, step: 100_000 },
+            description: "Non-OPRE amount",
+            table: { category: "Segment Values" }
+        },
+        dcfdColor: { control: "color", description: "DCFD color", table: { category: "Segment Colors" } },
+        dfsColor: { control: "color", description: "DFS color", table: { category: "Segment Colors" } },
+        deiColor: { control: "color", description: "DEI color", table: { category: "Segment Colors" } },
+        odColor: { control: "color", description: "OD color", table: { category: "Segment Colors" } },
+        nonOpreColor: { control: "color", description: "Non-OPRE color", table: { category: "Segment Colors" } }
     }
 };
 
@@ -38,29 +58,50 @@ export default {
 // percent labels are accurate, then wires up setActiveId state.
 // Bar widths are always derived from `value` inside the component — percents
 // are display-only and must not be used for sizing.
-const BarWrapper = ({ dcfdAmount, dfsAmount, deiAmount, odAmount, nonOpreAmount,
-                      dcfdColor, dfsColor, deiColor, odColor, nonOpreColor }) => {
+const BarWrapper = ({
+    dcfdAmount,
+    dfsAmount,
+    deiAmount,
+    odAmount,
+    nonOpreAmount,
+    dcfdColor,
+    dfsColor,
+    deiColor,
+    odColor,
+    nonOpreColor
+}) => {
     const setActiveId = useState(null)[1];
 
     const rawData = [
-        { id: 1, label: "Child Welfare and Family Development", abbreviation: "DCFD", value: dcfdAmount,    color: dcfdColor },
-        { id: 2, label: "Division of Family Support",           abbreviation: "DFS",  value: dfsAmount,    color: dfsColor },
-        { id: 3, label: "Division of Economic Independence",    abbreviation: "DEI",  value: deiAmount,    color: deiColor },
-        { id: 4, label: "Office of the Director",               abbreviation: "OD",   value: odAmount,     color: odColor },
-        { id: 5, label: "Non-OPRE",                             abbreviation: "Non",  value: nonOpreAmount,color: nonOpreColor }
+        {
+            id: 1,
+            label: "Child Welfare and Family Development",
+            abbreviation: "DCFD",
+            value: dcfdAmount,
+            color: dcfdColor
+        },
+        { id: 2, label: "Division of Family Support", abbreviation: "DFS", value: dfsAmount, color: dfsColor },
+        { id: 3, label: "Division of Economic Independence", abbreviation: "DEI", value: deiAmount, color: deiColor },
+        { id: 4, label: "Office of the Director", abbreviation: "OD", value: odAmount, color: odColor },
+        { id: 5, label: "Non-OPRE", abbreviation: "Non", value: nonOpreAmount, color: nonOpreColor }
     ];
 
     const data = computeDisplayPercents(rawData);
-    return <HorizontalStackedBar data={data} setActiveId={setActiveId} />;
+    return (
+        <HorizontalStackedBar
+            data={data}
+            setActiveId={setActiveId}
+        />
+    );
 };
 BarWrapper.displayName = "HorizontalStackedBarStory";
 
 // Default app portfolio colors
 const defaultColors = {
-    dcfdColor:    "#336a90",
-    dfsColor:     "#e5a000",
-    deiColor:     "#518c49",
-    odColor:      "#8b4687",
+    dcfdColor: "#336a90",
+    dfsColor: "#e5a000",
+    deiColor: "#518c49",
+    odColor: "#8b4687",
     nonOpreColor: "#a9aeb1"
 };
 
@@ -75,11 +116,11 @@ const defaultColors = {
  */
 export const Default = {
     args: {
-        dcfdAmount:    4_500_000,
-        dfsAmount:     3_200_000,
-        deiAmount:     2_800_000,
-        odAmount:      1_500_000,
-        nonOpreAmount:   900_000,
+        dcfdAmount: 4_500_000,
+        dfsAmount: 3_200_000,
+        deiAmount: 2_800_000,
+        odAmount: 1_500_000,
+        nonOpreAmount: 900_000,
         ...defaultColors
     },
     render: (args) => <BarWrapper {...args} />
@@ -92,11 +133,11 @@ export const Default = {
  */
 export const TinySegment = {
     args: {
-        dcfdAmount:    4_500_000,
-        dfsAmount:     3_200_000,
-        deiAmount:           500,
-        odAmount:      1_500_000,
-        nonOpreAmount:   900_000,
+        dcfdAmount: 4_500_000,
+        dfsAmount: 3_200_000,
+        deiAmount: 500,
+        odAmount: 1_500_000,
+        nonOpreAmount: 900_000,
         ...defaultColors
     },
     render: (args) => <BarWrapper {...args} />
@@ -108,11 +149,11 @@ export const TinySegment = {
  */
 export const SingleSegment = {
     args: {
-        dcfdAmount:    6_000_000,
-        dfsAmount:             0,
-        deiAmount:             0,
-        odAmount:              0,
-        nonOpreAmount:         0,
+        dcfdAmount: 6_000_000,
+        dfsAmount: 0,
+        deiAmount: 0,
+        odAmount: 0,
+        nonOpreAmount: 0,
         ...defaultColors
     },
     render: (args) => <BarWrapper {...args} />
@@ -124,10 +165,10 @@ export const SingleSegment = {
  */
 export const AllZero = {
     args: {
-        dcfdAmount:    0,
-        dfsAmount:     0,
-        deiAmount:     0,
-        odAmount:      0,
+        dcfdAmount: 0,
+        dfsAmount: 0,
+        deiAmount: 0,
+        odAmount: 0,
         nonOpreAmount: 0,
         ...defaultColors
     },
@@ -141,11 +182,11 @@ export const AllZero = {
  */
 export const KeyboardNav = {
     args: {
-        dcfdAmount:    4_500_000,
-        dfsAmount:     3_200_000,
-        deiAmount:     2_800_000,
-        odAmount:      1_500_000,
-        nonOpreAmount:   900_000,
+        dcfdAmount: 4_500_000,
+        dfsAmount: 3_200_000,
+        deiAmount: 2_800_000,
+        odAmount: 1_500_000,
+        nonOpreAmount: 900_000,
         ...defaultColors
     },
     render: (args) => <BarWrapper {...args} />

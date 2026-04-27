@@ -16,16 +16,24 @@ export default {
         }
     },
     argTypes: {
-        receivedValue:  { control: { type: "number", min: 0, step: 50_000 }, description: "Amount received (left bar)",    table: { category: "Values" } },
-        remainingValue: { control: { type: "number", min: 0, step: 50_000 }, description: "Remaining amount (right bar, striped)", table: { category: "Values" } },
-        receivedColor:  { control: "color", description: "Received bar color",   table: { category: "Colors" } },
-        remainingColor: { control: "color", description: "Remaining bar color",  table: { category: "Colors" } }
+        receivedValue: {
+            control: { type: "number", min: 0, step: 50_000 },
+            description: "Amount received (left bar)",
+            table: { category: "Values" }
+        },
+        remainingValue: {
+            control: { type: "number", min: 0, step: 50_000 },
+            description: "Remaining amount (right bar, striped)",
+            table: { category: "Values" }
+        },
+        receivedColor: { control: "color", description: "Received bar color", table: { category: "Colors" } },
+        remainingColor: { control: "color", description: "Remaining bar color", table: { category: "Colors" } }
     }
 };
 
 const buildData = ({ receivedValue, remainingValue, receivedColor, remainingColor }) => {
     const raw = [
-        { id: 1, value: receivedValue,  color: receivedColor },
+        { id: 1, value: receivedValue, color: receivedColor },
         { id: 2, value: remainingValue, color: remainingColor }
     ];
     return computeDisplayPercents(raw);

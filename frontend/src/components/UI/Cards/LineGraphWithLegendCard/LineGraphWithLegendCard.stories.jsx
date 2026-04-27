@@ -66,18 +66,9 @@ export default {
 // Rebuilds the two-item data array from flat args and runs computeDisplayPercents
 // so legend percent tags are accurate. LineGraphWithLegendCard manages its own
 // activeId state — no wrapper state needed here.
-const renderCard = ({
-    heading,
-    bigNumber,
-    leftLabel,
-    leftAmount,
-    leftColor,
-    rightLabel,
-    rightAmount,
-    rightColor
-}) => {
+const renderCard = ({ heading, bigNumber, leftLabel, leftAmount, leftColor, rightLabel, rightAmount, rightColor }) => {
     const rawData = [
-        { id: 1, label: leftLabel,  value: leftAmount,  color: leftColor },
+        { id: 1, label: leftLabel, value: leftAmount, color: leftColor },
         { id: 2, label: rightLabel, value: rightAmount, color: rightColor }
     ];
     return (
