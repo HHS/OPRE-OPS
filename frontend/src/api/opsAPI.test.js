@@ -1059,7 +1059,7 @@ describe("opsAPI - Wave 2 high-yield endpoint coverage", () => {
         const storeRef = setupApiStore(opsApi);
         await storeRef.store.dispatch(opsApi.endpoints.getProcurementTrackersByAgreementIds.initiate([]));
 
-        expect(capturedUrl).toContain("agreement_id=-1");
+        expect(capturedUrl).not.toContain("agreement_id=");
         expect(capturedUrl).toContain("limit=0");
     });
 
