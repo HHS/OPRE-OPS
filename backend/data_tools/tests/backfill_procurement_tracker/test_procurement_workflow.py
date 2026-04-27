@@ -34,16 +34,16 @@ from models.procurement_workflow import (
 def db_workflow(loaded_db):
     """Minimal fixture: one procurement shop, one project, and two agreements."""
     sys_user = get_or_create_sys_user(loaded_db)
-    loaded_db.commit()
+    loaded_db.flush()
     uid = sys_user.id
 
     project = Project(id=8000, project_type=ProjectType.RESEARCH, title="Workflow Test Project", short_title="WTP")
     loaded_db.add(project)
-    loaded_db.commit()
+    loaded_db.flush()
 
     proc_shop = ProcurementShop(id=8000, name="Test PSC", abbr="TPSC", created_by=uid)
     loaded_db.add(proc_shop)
-    loaded_db.commit()
+    loaded_db.flush()
 
     # Agreement 8001: no pre-existing action or tracker
     agreement_1 = ContractAgreement(
@@ -64,34 +64,11 @@ def db_workflow(loaded_db):
         updated_by=uid,
     )
     loaded_db.add_all([agreement_1, agreement_2])
-    loaded_db.commit()
+    loaded_db.flush()
 
     yield loaded_db
 
     loaded_db.rollback()
-    loaded_db.execute(text("DELETE FROM ops_event"))
-    loaded_db.execute(text("DELETE FROM ops_event_version"))
-    loaded_db.execute(text("DELETE FROM procurement_tracker_step"))
-    loaded_db.execute(text("DELETE FROM procurement_tracker_step_version"))
-    loaded_db.execute(text("DELETE FROM default_procurement_tracker"))
-    loaded_db.execute(text("DELETE FROM default_procurement_tracker_version"))
-    loaded_db.execute(text("DELETE FROM procurement_tracker"))
-    loaded_db.execute(text("DELETE FROM procurement_tracker_version"))
-    loaded_db.execute(text("DELETE FROM procurement_action"))
-    loaded_db.execute(text("DELETE FROM procurement_action_version"))
-    loaded_db.execute(text("DELETE FROM contract_agreement"))
-    loaded_db.execute(text("DELETE FROM contract_agreement_version"))
-    loaded_db.execute(text("DELETE FROM agreement"))
-    loaded_db.execute(text("DELETE FROM agreement_version"))
-    loaded_db.execute(text("DELETE FROM procurement_shop_fee"))
-    loaded_db.execute(text("DELETE FROM procurement_shop_fee_version"))
-    loaded_db.execute(text("DELETE FROM procurement_shop"))
-    loaded_db.execute(text("DELETE FROM procurement_shop_version"))
-    loaded_db.execute(text("DELETE FROM project"))
-    loaded_db.execute(text("DELETE FROM project_version"))
-    loaded_db.execute(text("DELETE FROM ops_db_history"))
-    loaded_db.execute(text("DELETE FROM ops_db_history_version"))
-    loaded_db.commit()
 
 
 # ============================================================================
