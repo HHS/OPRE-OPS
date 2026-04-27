@@ -39,7 +39,9 @@ describe("ProjectFundingByPortfolioCard", () => {
         render(
             <ProjectFundingByPortfolioCard
                 fiscalYear={2025}
-                fundingByPortfolio={[{ portfolio_id: 3, portfolio: "Child Care Research", amount: 0, abbreviation: "CC" }]}
+                fundingByPortfolio={[
+                    { portfolio_id: 3, portfolio: "Child Care Research", amount: 0, abbreviation: "CC" }
+                ]}
             />
         );
         expect(screen.queryByTestId("horizontal-stacked-bar")).not.toBeInTheDocument();

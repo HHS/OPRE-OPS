@@ -50,8 +50,8 @@ describe("buildPortfolioChartData", () => {
         // CC is slot 0, CWR is slot 1 in PORTFOLIO_ORDER — so sorted [CC, CWR]
         // should get palette[0] and palette[1] respectively
         const result = buildPortfolioChartData(mockFundingByPortfolio);
-        expect(result[0].color).toBe("var(--portfolio-bar-graph-cc)");  // palette[0]
-        expect(result[1].color).toBe("var(--portfolio-bar-graph-cw)");  // palette[1]
+        expect(result[0].color).toBe("var(--portfolio-bar-graph-cc)"); // palette[0]
+        expect(result[1].color).toBe("var(--portfolio-bar-graph-cw)"); // palette[1]
     });
 
     it("skips sparse slots — 3 present portfolios get colors 1, 2, 3 not 1, 3, 13", () => {
@@ -64,11 +64,11 @@ describe("buildPortfolioChartData", () => {
         ];
         const result = buildPortfolioChartData(sparse);
         expect(result[0].abbreviation).toBe("CC");
-        expect(result[0].color).toBe("var(--portfolio-bar-graph-cc)");   // palette[0]
+        expect(result[0].color).toBe("var(--portfolio-bar-graph-cc)"); // palette[0]
         expect(result[1].abbreviation).toBe("HS");
-        expect(result[1].color).toBe("var(--portfolio-bar-graph-cw)");   // palette[1], not HS's own slot
+        expect(result[1].color).toBe("var(--portfolio-bar-graph-cw)"); // palette[1], not HS's own slot
         expect(result[2].abbreviation).toBe("OCDO");
-        expect(result[2].color).toBe("var(--portfolio-bar-graph-hs)");   // palette[2], not OCDO's own slot
+        expect(result[2].color).toBe("var(--portfolio-bar-graph-hs)"); // palette[2], not OCDO's own slot
     });
 
     it("falls back to FALLBACK_COLOR when palette is exhausted (>13 portfolios)", () => {
