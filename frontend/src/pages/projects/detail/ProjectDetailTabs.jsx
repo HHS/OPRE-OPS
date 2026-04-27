@@ -7,9 +7,7 @@ const TABS = [
     { name: "/spending", label: "Project Spending" },
     {
         name: "/funding",
-        label: "Project Funding",
-        disabled: true,
-        disabledTooltip: "Coming Soon"
+        label: "Project Funding"
     }
 ];
 
