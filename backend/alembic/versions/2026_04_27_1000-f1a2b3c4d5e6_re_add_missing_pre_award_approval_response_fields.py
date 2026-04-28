@@ -63,12 +63,13 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.drop_column('procurement_tracker_step_version', 'pre_award_approval_reviewer_notes')
-    op.drop_column('procurement_tracker_step_version', 'pre_award_approval_responded_date')
-    op.drop_column('procurement_tracker_step_version', 'pre_award_approval_responded_by')
-    op.drop_column('procurement_tracker_step_version', 'pre_award_approval_status')
-    op.drop_constraint('fk_pre_award_responded_by', 'procurement_tracker_step', type_='foreignkey')
-    op.drop_column('procurement_tracker_step', 'pre_award_approval_reviewer_notes')
-    op.drop_column('procurement_tracker_step', 'pre_award_approval_responded_date')
-    op.drop_column('procurement_tracker_step', 'pre_award_approval_responded_by')
-    op.drop_column('procurement_tracker_step', 'pre_award_approval_status')
+    # This is a repair migration whose upgrade() is intentionally idempotent:
+    # in some environments these columns/constraints already existed from the
+    # earlier migration history, and this revision simply backfills missing DDL
+    # where needed. Dropping them here would be destructive on rollback because
+    # it could remove schema objects that pre-dated this revision.
+    #
+    # Keep downgrade non-destructive so rolling back this repair revision does
+    # not leave dev/staging environments inconsistent with earlier applied
+    # revisions.
+    pass
