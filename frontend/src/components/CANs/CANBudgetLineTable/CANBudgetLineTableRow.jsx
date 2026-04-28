@@ -107,27 +107,23 @@ const CANBudgetLineTableRow = ({
 
     const ExpandedData = (
         <td
-            colSpan={9}
+            colSpan={8}
             className="border-top-none"
             style={expandedRowBGColor}
         >
-            <div className="grid-row grid-gap-4">
-                <dl className="grid-col margin-top-0 font-12px">
+            <div className="grid-row grid-gap-4 padding-bottom-1">
+                <dl className="grid-col-auto margin-top-0 font-12px">
                     <dt className="margin-0 text-base-dark">Created By</dt>
-                    <dd
-                        id={`created-by-name-${blId}`}
-                        className="margin-0"
-                    >
-                        {budgetLineCreatorName}
-                    </dd>
-                    <dt className="margin-0 text-base-dark margin-top-2">Created on</dt>
-                    <dd className="margin-0 display-flex flex-align-center">
-                        <FontAwesomeIcon
-                            icon={faClock}
-                            className="height-2 width-2 margin-right-1"
-                            aria-hidden={true}
-                        />
-                        {displayCreatedDate}
+                    <dd className="margin-0">
+                        <div id={`created-by-name-${blId}`}>{budgetLineCreatorName}</div>
+                        <div className="margin-top-2 display-flex flex-align-center text-base-dark text-normal">
+                            <FontAwesomeIcon
+                                icon={faClock}
+                                className="height-2 width-2 margin-right-1"
+                                aria-hidden={true}
+                            />
+                            {displayCreatedDate}
+                        </div>
                     </dd>
                 </dl>
                 <dl className="grid-col-4 margin-top-0 font-12px">
@@ -140,7 +136,7 @@ const CANBudgetLineTableRow = ({
                     <dd className="margin-0">{`${procShopLabel}`}</dd>
                 </dl>
 
-                <dl className="grid-col margin-top-0 font-12px">
+                <dl className="grid-col-auto margin-top-0 font-12px">
                     <dt className="margin-0 text-base-dark">SubTotal</dt>
                     <dd className="margin-0">
                         <CurrencyFormat
@@ -153,7 +149,7 @@ const CANBudgetLineTableRow = ({
                         />
                     </dd>
                 </dl>
-                <dl className="grid-col margin-top-0 font-12px">
+                <dl className="grid-col-auto margin-top-0 font-12px">
                     <dt className="margin-0 text-base-dark">Fees</dt>
                     <dd className="margin-0">
                         <CurrencyFormat

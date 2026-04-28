@@ -14,6 +14,8 @@ import Can from "./pages/cans/detail/Can";
 import CanList from "./pages/cans/list/CanList";
 import CreateProject from "./pages/projects/CreateProject";
 import ProjectDetail from "./pages/projects/detail/ProjectDetail";
+import ProjectSpending from "./pages/projects/detail/ProjectSpending";
+import ProjectFunding from "./pages/projects/detail/ProjectFunding";
 import EditAgreement from "./pages/agreements/EditAgreement";
 import ErrorBoundary from "./components/ErrorBoundary";
 import ErrorPage from "./pages/ErrorPage";
@@ -196,6 +198,34 @@ const router = createBrowserRouter(
                 <Route
                     path="/projects/:id"
                     element={<ProjectDetail />}
+                    handle={{
+                        crumb: () => (
+                            <Link
+                                to="/projects"
+                                className="text-primary"
+                            >
+                                Projects
+                            </Link>
+                        )
+                    }}
+                />
+                <Route
+                    path="/projects/:id/spending"
+                    element={<ProjectSpending />}
+                    handle={{
+                        crumb: () => (
+                            <Link
+                                to="/projects"
+                                className="text-primary"
+                            >
+                                Projects
+                            </Link>
+                        )
+                    }}
+                />
+                <Route
+                    path="/projects/:id/funding"
+                    element={<ProjectFunding />}
                     handle={{
                         crumb: () => (
                             <Link
