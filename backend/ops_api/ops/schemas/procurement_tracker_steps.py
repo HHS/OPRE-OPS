@@ -25,6 +25,46 @@ class NestedProcurementTrackerSchema(Schema):
     agreement = fields.Nested(NestedAgreementSchema, allow_none=True)
 
 
+class ProcurementTrackerStepNotificationSchema(Schema):
+    """Minimal step schema for notification responses.
+
+    Includes only the fields needed to display pre-award approval notifications
+    in the frontend without keyword matching on titles.
+    """
+
+    id = fields.Integer(required=True)
+    step_type = fields.Enum(ProcurementTrackerStepType, required=True, by_value=False)
+    approval_status = fields.String(allow_none=True)
+    approval_requested = fields.Boolean(allow_none=True)
+
+    @pre_dump
+    def map_pre_award_fields(self, data, **kwargs):
+        """Map pre-award prefixed fields to generic API names."""
+        # Handle dict inputs (from to_dict() or test fixtures)
+        if isinstance(data, dict):
+            step_type = data.get("step_type")
+            if step_type != ProcurementTrackerStepType.PRE_AWARD:
+                return data
+            return {
+                "id": data.get("id"),
+                "step_type": step_type,
+                "approval_status": data.get("pre_award_approval_status"),
+                "approval_requested": data.get("pre_award_approval_requested"),
+            }
+
+        # Handle ORM object inputs
+        step_type = getattr(data, "step_type", None)
+        if step_type != ProcurementTrackerStepType.PRE_AWARD:
+            return data
+
+        return {
+            "id": data.id,
+            "step_type": step_type,
+            "approval_status": data.pre_award_approval_status,
+            "approval_requested": data.pre_award_approval_requested,
+        }
+
+
 class ProcurementTrackerStepResponseSchema(Schema):
     """Schema for procurement tracker step responses.
 

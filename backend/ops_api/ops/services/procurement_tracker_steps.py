@@ -355,13 +355,20 @@ class ProcurementTrackerStepService:
             status_text = "approved" if new_approval_status == "APPROVED" else "declined"
 
             if step.pre_award_approval_requested_by:
+                # Build message with optional reviewer notes
+                message = (
+                    f"Your pre-award approval request for Agreement {agreement.display_name} "
+                    f"has been {status_text} by {current_user.full_name}."
+                )
+                if step.pre_award_approval_reviewer_notes and step.pre_award_approval_reviewer_notes.strip():
+                    reviewer_notes_text = step.pre_award_approval_reviewer_notes.strip()
+                    # Use 5 backticks to safely contain any triple-backtick sequences in notes
+                    message += f"\n\nNotes:\n`````\n{reviewer_notes_text}\n`````"
+
                 notification_service.create(
                     {
                         "title": f"Pre-Award Approval {status_text.capitalize()}",
-                        "message": (
-                            f"Your pre-award approval request for Agreement {agreement.display_name} "
-                            f"has been {status_text} by {current_user.full_name}."
-                        ),
+                        "message": message,
                         "is_read": False,
                         "recipient_id": step.pre_award_approval_requested_by,
                         "notification_type": NotificationType.PRE_AWARD_APPROVAL_NOTIFICATION,
