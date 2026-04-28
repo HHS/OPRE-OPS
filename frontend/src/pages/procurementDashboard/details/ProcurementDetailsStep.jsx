@@ -4,7 +4,13 @@ import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { convertToCurrency } from "../../../helpers/utils";
 import { ProcurementDetailsTable } from "./ProcurementDetailsTable";
 
-const ProcurementDetailsStep = ({ agreements, agreementsPerStep, userNameById, targetDateByAgreementId }) => {
+const ProcurementDetailsStep = ({
+    agreements,
+    agreementsPerStep,
+    userNameById,
+    targetDateByAgreementId,
+    daysInStepByAgreementId
+}) => {
     const executingBLIs = useMemo(
         () =>
             agreements
@@ -76,6 +82,7 @@ const ProcurementDetailsStep = ({ agreements, agreementsPerStep, userNameById, t
                 agreements={agreements}
                 userNameById={userNameById}
                 targetDateByAgreementId={targetDateByAgreementId}
+                daysInStepByAgreementId={daysInStepByAgreementId}
             ></ProcurementDetailsTable>
         </>
     );

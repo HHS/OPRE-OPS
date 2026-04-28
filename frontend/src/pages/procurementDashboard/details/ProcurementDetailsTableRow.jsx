@@ -11,7 +11,12 @@ import { convertToCurrency, formatDateNeeded } from "../../../helpers/utils";
 import CurrencyFormat from "react-currency-format";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 
-export const ProcurementDetailsTableRow = ({ agreement, userNameById, targetDateByAgreementId }) => {
+export const ProcurementDetailsTableRow = ({
+    agreement,
+    userNameById,
+    targetDateByAgreementId,
+    daysInStepByAgreementId
+}) => {
     const { isExpanded, setIsExpanded, setIsRowActive } = useTableRow();
     const isSuccess = !!agreement;
     const agreementName = isSuccess ? getAgreementName(agreement) : NO_DATA;
@@ -42,8 +47,12 @@ export const ProcurementDetailsTableRow = ({ agreement, userNameById, targetDate
             <td data-cy="cor-name">{userNameById[agreement.project_officer_id] || ""}</td>
             <td data-cy="proc-shop">{agreement.procurement_shop.abbr || ""}</td>
             <td data-cy="total-executing">{convertToCurrency(totalExecuting)}</td>
-            <td data-cy="target-date">{targetDateByAgreementId[agreement.id] ? formatDateNeeded(targetDateByAgreementId[agreement.id]) : "None"}</td>
-            <td data-cy="days-in-step">{"test"}</td>
+            <td data-cy="target-date">
+                {targetDateByAgreementId[agreement.id]
+                    ? formatDateNeeded(targetDateByAgreementId[agreement.id])
+                    : "None"}
+            </td>
+            <td data-cy="days-in-step">{daysInStepByAgreementId[agreement.id] ?? "—"}</td>
         </>
     );
     const ExpandedData = (
