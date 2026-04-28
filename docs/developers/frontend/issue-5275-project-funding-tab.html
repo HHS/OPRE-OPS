@@ -1,0 +1,708 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Issue #5275 - Project Funding Tab: Build Plan</title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: "Source Sans Pro", Arial, sans-serif;
+        font-size: 15px;
+        color: #1b1b1b;
+        background: #f0f0f0;
+        padding: 2rem;
+      }
+      a { color: #005ea2; }
+
+      .page-wrapper { max-width: 1100px; margin: 0 auto; }
+
+      /* Header */
+      .page-header {
+        background: #005ea2;
+        color: #fff;
+        padding: 1.5rem 2rem;
+        border-radius: 4px 4px 0 0;
+      }
+      .page-header h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 0.25rem; }
+      .page-header p  { font-size: 0.9rem; opacity: 0.85; }
+
+      /* Sections */
+      .section {
+        background: #fff;
+        border: 1px solid #ddd;
+        border-top: none;
+        padding: 1.5rem 2rem;
+      }
+      .section + .section { border-top: 1px solid #ddd; margin-top: 1.5rem; }
+      .section:last-child  { border-radius: 0 0 4px 4px; }
+      .section h2 {
+        font-size: 1.15rem;
+        color: #005ea2;
+        border-bottom: 2px solid #dfe1e2;
+        padding-bottom: 0.5rem;
+        margin-bottom: 1rem;
+      }
+      .section h3 { font-size: 1rem; margin: 1rem 0 0.4rem; color: #1b1b1b; }
+      .section p, .section li { line-height: 1.6; color: #3d4551; }
+      .section ul, .section ol { padding-left: 1.4rem; margin-top: 0.4rem; }
+
+      /* Phase cards */
+      .phases { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; margin-top: 0.5rem; }
+      .phase-card { border: 1px solid #dfe1e2; border-radius: 4px; padding: 1rem 1.25rem; }
+      .phase-card.active { border-left: 4px solid #2e8540; }
+      .phase-card.next   { border-left: 4px solid #fdb81e; }
+      .phase-card.later  { border-left: 4px solid #aeb0b5; }
+      .phase-tag { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.35rem; }
+      .tag-active { color: #2e8540; }
+      .tag-next   { color: #9c5a00; }
+      .tag-later  { color: #71767a; }
+      .phase-card h3 { margin: 0 0 0.5rem; font-size: 0.95rem; }
+      .phase-card ul  { padding-left: 1.2rem; font-size: 0.88rem; color: #3d4551; }
+      .phase-card ul li { margin-bottom: 0.25rem; line-height: 1.5; }
+
+      /* Code */
+      pre.api-sample {
+        background: #1b1b1b;
+        color: #a8ff78;
+        padding: 1rem;
+        border-radius: 4px;
+        font-size: 0.82rem;
+        overflow-x: auto;
+        margin-top: 0.75rem;
+        line-height: 1.5;
+      }
+      .code-inline {
+        font-family: "Courier New", monospace;
+        background: #f0f0f0;
+        padding: 0 4px;
+        border-radius: 2px;
+        font-size: 0.88em;
+      }
+
+      /* File tree */
+      .file-tree {
+        font-family: "Courier New", monospace;
+        font-size: 0.85rem;
+        background: #f8f8f8;
+        border: 1px solid #dfe1e2;
+        border-radius: 4px;
+        padding: 1rem;
+        margin-top: 0.5rem;
+        line-height: 1.8;
+      }
+      .file-tree .new-file      { color: #2e8540; font-weight: 700; }
+      .file-tree .modified-file { color: #9c5a00; font-weight: 700; }
+
+      /* Figma mock */
+      .figma-mock {
+        border: 1px solid #dfe1e2;
+        border-radius: 4px;
+        background: #fff;
+        padding: 1.5rem;
+        margin-top: 0.75rem;
+        font-size: 0.9rem;
+      }
+      .figma-mock .tabs {
+        display: flex;
+        gap: 2rem;
+        border-bottom: 1px solid #dfe1e2;
+        padding-bottom: 0.5rem;
+        margin-bottom: 1.25rem;
+      }
+      .figma-mock .tab       { font-size: 0.85rem; color: #71767a; cursor: default; }
+      .figma-mock .tab.selected {
+        color: #005ea2;
+        font-weight: 700;
+        border-bottom: 2px solid #005ea2;
+        padding-bottom: 0.5rem;
+        margin-bottom: -0.5rem;
+      }
+      .figma-mock .fy-select {
+        float: right;
+        font-size: 0.8rem;
+        color: #71767a;
+        border: 1px solid #71767a;
+        padding: 0.15rem 0.5rem;
+        border-radius: 2px;
+      }
+
+      /* Wide portfolio card */
+      .wide-card {
+        border: 1px solid #dfe1e2;
+        border-radius: 4px;
+        background: #f8f8f8;
+        padding: 1rem 1.25rem;
+        margin-bottom: 1rem;
+      }
+      .wide-card .card-title { font-size: 0.75rem; color: #71767a; margin-bottom: 0.4rem; }
+      .wide-card .big-num    { font-size: 1.6rem; font-weight: 700; color: #1b1b1b; margin-bottom: 0.6rem; }
+
+      /* Stacked bar mock */
+      .stacked-bar { display: flex; height: 14px; border-radius: 3px; overflow: hidden; margin-bottom: 0.6rem; }
+      .stacked-bar .seg-cc  { flex: 50; background: #1b4f82; }
+      .stacked-bar .seg-cw  { flex: 25; background: #205493; }
+      .stacked-bar .seg-hs  { flex: 25; background: #7eb8d9; }
+      .stacked-bar .seg-cf  { flex: 75; background: #1b4f82; }
+      .stacked-bar .seg-new { flex: 25; background: #3e80b5; }
+
+      .bar-legend { display: flex; gap: 2rem; font-size: 0.8rem; flex-wrap: wrap; }
+      .bar-legend .item { display: flex; align-items: center; gap: 0.4rem; }
+      .bar-legend .dot  { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+      /* Two-col cards */
+      .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+      .half-card {
+        border: 1px solid #dfe1e2;
+        border-radius: 4px;
+        background: #f8f8f8;
+        padding: 1rem 1.25rem;
+      }
+      .half-card .card-title { font-size: 0.75rem; color: #71767a; margin-bottom: 0.4rem; }
+      .half-card .big-num    { font-size: 1.4rem; font-weight: 700; color: #1b1b1b; margin-bottom: 0.6rem; }
+
+      /* FY bar chart mock */
+      .fy-bars { display: flex; flex-direction: column; gap: 0.4rem; font-size: 0.8rem; }
+      .fy-row  { display: flex; align-items: center; gap: 0.5rem; }
+      .fy-label { width: 3.5rem; color: #3d4551; }
+      .fy-bar   { height: 12px; border-radius: 2px; }
+      .fy-amount { color: #3d4551; font-size: 0.78rem; }
+
+      /* CAN table */
+      .table-mock { width: 100%; border-collapse: collapse; margin-top: 0.75rem; font-size: 0.82rem; }
+      .table-mock th {
+        text-align: left;
+        padding: 0.5rem 0.6rem;
+        border-bottom: 2px solid #1b1b1b;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+      .table-mock td { padding: 0.6rem 0.6rem; border-bottom: 1px solid #dfe1e2; vertical-align: top; }
+
+      /* Callout boxes */
+      .note {
+        background: #e7f4e4;
+        border-left: 4px solid #2e8540;
+        padding: 0.6rem 1rem;
+        font-size: 0.85rem;
+        margin-top: 0.75rem;
+        border-radius: 0 4px 4px 0;
+      }
+      .warn {
+        background: #fef0c8;
+        border-left: 4px solid #fdb81e;
+        padding: 0.6rem 1rem;
+        font-size: 0.85rem;
+        margin-top: 0.75rem;
+        border-radius: 0 4px 4px 0;
+      }
+      .info {
+        background: #e8f1f8;
+        border-left: 4px solid #005ea2;
+        padding: 0.6rem 1rem;
+        font-size: 0.85rem;
+        margin-top: 0.75rem;
+        border-radius: 0 4px 4px 0;
+      }
+
+      /* Decisions table */
+      table.decisions { width: 100%; border-collapse: collapse; font-size: 0.88rem; margin-top: 0.5rem; }
+      table.decisions th { background: #dfe1e2; text-align: left; padding: 0.5rem 0.75rem; font-weight: 700; }
+      table.decisions td { padding: 0.5rem 0.75rem; border-bottom: 1px solid #dfe1e2; vertical-align: top; }
+      table.decisions tr:last-child td { border-bottom: none; }
+
+      /* Backend ask box */
+      .be-ask {
+        background: #fff3cd;
+        border: 1px solid #fdb81e;
+        border-radius: 4px;
+        padding: 1rem 1.25rem;
+        margin-top: 0.75rem;
+      }
+      .be-ask h4 { font-size: 0.9rem; margin-bottom: 0.4rem; color: #1b1b1b; }
+      .be-ask p, .be-ask li { font-size: 0.85rem; color: #3d4551; line-height: 1.6; }
+      .be-ask ul { padding-left: 1.2rem; margin-top: 0.3rem; }
+    </style>
+  </head>
+  <body>
+    <div class="page-wrapper">
+
+      <!-- Header -->
+      <div class="page-header">
+        <h1>Issue #5275 - Project Funding Tab</h1>
+        <p>
+          Build plan &amp; static mockup &middot; OPRE OPS &middot;
+          <a href="https://github.com/HHS/OPRE-OPS/issues/5275" style="color:#fff">GitHub Issue</a>
+          &nbsp;&middot;&nbsp; Follows phased pattern from
+          <a href="https://github.com/HHS/OPRE-OPS/pull/5554" style="color:#fff">PR #5554 (Project Spending)</a>
+        </p>
+      </div>
+
+      <!-- Goal -->
+      <div class="section">
+        <h2>Goal</h2>
+        <p>
+          Implement the <strong>Project Funding</strong> tab on the project detail page
+          (<span class="code-inline">/projects/:id/funding</span>).
+          The tab currently exists in the nav but is disabled with a <em>Coming Soon</em> tooltip.
+          This plan covers <strong>frontend only</strong> - the backend endpoint
+          <span class="code-inline">GET /api/v1/projects/&lt;id&gt;/funding/</span> already exists and is tested.
+        </p>
+        <div class="info">
+          <strong>Scope:</strong> Frontend only. Backend changes are tracked separately
+          (see <a href="#backend-ask">Backend Ask</a> below).
+          Three incremental phases, each pausing for manual testing before the next begins.
+        </div>
+      </div>
+
+      <!-- Phases -->
+      <div class="section">
+        <h2>Delivery Phases</h2>
+        <div class="phases">
+
+          <!-- Phase 1 -->
+          <div class="phase-card active">
+            <div class="phase-tag tag-active">Phase 1 &ndash; Complete &#x2705;</div>
+            <h3>API Hook + Route + FY Selector + DebugCode</h3>
+            <ul>
+              <li>Add <span class="code-inline">useGetProjectFundingByIdQuery</span> RTK Query endpoint to <span class="code-inline">opsAPI.js</span> - accepts <span class="code-inline">{ id, fiscalYear }</span>, hits <span class="code-inline">/projects/:id/funding/?fiscal_year=YYYY</span></li>
+              <li>Create <span class="code-inline">ProjectFunding.jsx</span> page component: fetches funding data, renders <span class="code-inline">&lt;DebugCode&gt;</span>, placeholder headings, loading state</li>
+              <li>Add <span class="code-inline">FiscalYear</span> selector - defaults to <span class="code-inline">getCurrentFiscalYear()</span>; re-fetch on change (RTK Query caches per FY arg) - follows CAN funding convention</li>
+              <li>Register <span class="code-inline">/projects/:id/funding</span> route in <span class="code-inline">index.jsx</span></li>
+              <li>Un-disable the <em>Project Funding</em> tab in <span class="code-inline">ProjectDetailTabs.jsx</span></li>
+              <li>Unit tests: <span class="code-inline">ProjectFunding.test.jsx</span> - renders heading, FY selector present, tab enabled</li>
+            </ul>
+          </div>
+
+          <!-- Phase 2 -->
+          <div class="phase-card active">
+            <div class="phase-tag tag-active">Phase 2 &ndash; Complete &#x2705;</div>
+            <h3>Project Funding Summary Cards</h3>
+            <ul>
+              <li><span class="code-inline">ProjectFundingByPortfolioCard</span> - full-width; <span class="code-inline">CurrencyCard</span> + <span class="code-inline">HorizontalStackedBar</span> + legend; portfolio color/abbreviation derived via reverse-lookup against <span class="code-inline">PORTFOLIO_ORDER</span> constants by portfolio name (see Backend Ask for long-term fix)</li>
+              <li><span class="code-inline">ProjectFundingByCANCard</span> - half-width left; reuses <span class="code-inline">LineGraphWithLegendCard</span>; two segments: <em>Previous FYs Carry-Forward</em> and <em>FY {selectedFY} New Funding</em> using <span class="code-inline">var(--portfolio-carry-forward)</span> / <span class="code-inline">var(--portfolio-new-funding)</span> CSS vars</li>
+              <li><span class="code-inline">ProjectFundingByFYCard</span> - half-width right; reuses <span class="code-inline">Card</span> + <span class="code-inline">LineBar</span> pattern from <span class="code-inline">CANBudgetByFYCard</span>; derives last 5 FYs from <span class="code-inline">selectedFY</span> client-side from <span class="code-inline">funding_by_fiscal_year</span>; zeros for missing years; uses <span class="code-inline">constants.budgetsByFYChartColors</span></li>
+              <li>Summary section gated on data loaded (no flash of empty cards during fetch)</li>
+              <li>Unit tests for each new card component</li>
+            </ul>
+          </div>
+
+          <!-- Phase 3 -->
+          <div class="phase-card active">
+            <div class="phase-tag tag-active">Phase 3 &ndash; Complete &#x2705;</div>
+            <h3>Project Funding by CAN Table</h3>
+            <ul>
+              <li>&#x2705; <span class="code-inline">ProjectFundingCANsTable</span> &mdash; CAN column links to <span class="code-inline">/cans/:id</span> using <span class="code-inline">text-ink text-no-underline</span> (matches app-wide table convention); columns: CAN, Portfolio, Active Period (<em>N Year(s)</em>), FY Project Funding, Lifetime Project Funding</li>
+              <li>&#x2705; <span class="code-inline">ProjectFundingCANsTableLoading</span> &mdash; shimmer skeleton shown while fetch is in flight; preserves column layout including dynamic FY column header</li>
+              <li>&#x2705; Empty state: <em>&ldquo;No CANs found for this project.&rdquo;</em> when <span class="code-inline">cans</span> is empty</li>
+              <li>&#x2705; New CSS design tokens added + USWDS compiled: <span class="code-inline">--project-funding-carry-forward: #009ec1</span>, <span class="code-inline">--project-funding-new-funding: #1f468e</span>, <span class="code-inline">--project-funding-by-fy-graph-1..5</span> (#844a10 &rarr; #ffba7a)</li>
+              <li>&#x2705; <span class="code-inline">projectFundingCarryForward</span> / <span class="code-inline">projectFundingNewFunding</span> cases added to <span class="code-inline">Tag.jsx</span> &mdash; hover colors on the CAN card now match segment colors</li>
+              <li>&#x2705; <span class="code-inline">&lt;DebugCode /&gt;</span> retained below the table (dev-only)</li>
+              <li>&#x2705; Unit tests for all new components; 2893 total passing</li>
+            </ul>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Figma mockup -->
+      <div class="section">
+        <h2>UI Reference (from Figma)</h2>
+        <p>Static HTML approximation for reference during development.</p>
+
+        <div class="figma-mock">
+          <div style="overflow:hidden; margin-bottom:0.5rem;">
+            <span class="fy-select">Fiscal Year &nbsp; 2025 &#x2336;</span>
+            <div class="tabs">
+              <span class="tab">Project Details</span>
+              <span class="tab">Project Spending</span>
+              <span class="tab selected">Project Funding</span>
+            </div>
+          </div>
+
+          <h3 style="margin-bottom:0.25rem">Project Funding Summary</h3>
+          <p style="font-size:0.82rem;color:#71767a;margin-bottom:0.75rem">
+            The summary below shows a breakdown of the project funding for the selected FY.
+          </p>
+
+          <!-- Wide: by portfolio -->
+          <div class="wide-card">
+            <div class="card-title">FY 2025 Project Funding by Portfolio</div>
+            <div class="big-num">$&thinsp;1,500,000.<sup style="font-size:0.65em">00</sup></div>
+            <div class="stacked-bar">
+              <div class="seg-cc"></div>
+              <div class="seg-cw"></div>
+              <div class="seg-hs"></div>
+            </div>
+            <div class="bar-legend">
+              <div class="item"><span class="dot" style="background:#1b4f82"></span> CC &nbsp; $1,000,000.00 &nbsp; <strong>50%</strong></div>
+              <div class="item"><span class="dot" style="background:#205493"></span> CW &nbsp; $250,000.00 &nbsp; <strong>25%</strong></div>
+              <div class="item"><span class="dot" style="background:#7eb8d9"></span> HS &nbsp; $250,000.00 &nbsp; <strong>25%</strong></div>
+            </div>
+          </div>
+
+          <!-- Two-col: by CAN + by FY -->
+          <div class="two-col">
+            <!-- Left: by CAN (carry-forward vs new) -->
+            <div class="half-card">
+              <div class="card-title">FY 2025 Project Funding by CAN</div>
+              <div class="big-num">$&thinsp;1,500,000.<sup style="font-size:0.65em">00</sup></div>
+              <div class="stacked-bar">
+                <div class="seg-cf"></div>
+                <div class="seg-new"></div>
+              </div>
+              <div class="bar-legend" style="flex-direction:column;gap:0.35rem;">
+                <div class="item"><span class="dot" style="background:#1b4f82"></span> Previous FYs Carry-Forward &nbsp; $1,250,000.00 &nbsp; <strong>75%</strong></div>
+                <div class="item"><span class="dot" style="background:#3e80b5"></span> FY 2025 New Funding &nbsp; $250,000.00 &nbsp; <strong>25%</strong></div>
+              </div>
+            </div>
+
+            <!-- Right: by FY (last 5 years) -->
+            <div class="half-card">
+              <div class="card-title" style="font-weight:700;color:#1b1b1b;font-size:0.88rem;">Project Funding By FY</div>
+              <div class="fy-bars" style="margin-top:0.5rem">
+                <div class="fy-row">
+                  <span class="fy-label">FY 2025</span>
+                  <div class="fy-bar" style="width:25%;background:#6b4226;"></div>
+                  <span class="fy-amount">$1,500,000.00</span>
+                </div>
+                <div class="fy-row">
+                  <span class="fy-label">FY 2024</span>
+                  <div class="fy-bar" style="width:33%;background:#8b5e3c;"></div>
+                  <span class="fy-amount">$2,000,000.00</span>
+                </div>
+                <div class="fy-row">
+                  <span class="fy-label">FY 2023</span>
+                  <div class="fy-bar" style="width:50%;background:#c97d3e;"></div>
+                  <span class="fy-amount">$3,000,000.00</span>
+                </div>
+                <div class="fy-row">
+                  <span class="fy-label">FY 2022</span>
+                  <div class="fy-bar" style="width:67%;background:#d9a56b;"></div>
+                  <span class="fy-amount">$4,000,000.00</span>
+                </div>
+                <div class="fy-row">
+                  <span class="fy-label">FY 2021</span>
+                  <div class="fy-bar" style="width:100%;background:#f0ccaa;"></div>
+                  <span class="fy-amount">$6,000,000.00</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CAN table section -->
+          <h3 style="margin-bottom:0.25rem">Project Funding by CAN</h3>
+          <p style="font-size:0.82rem;color:#71767a;margin-bottom:0.75rem">
+            This is a list of all CANs associated with this project for the selected FY.
+          </p>
+
+          <table class="table-mock">
+            <thead>
+              <tr>
+                <th>CAN</th>
+                <th>Portfolio</th>
+                <th>Active Period</th>
+                <th>FY 25 Project Funding</th>
+                <th>Lifetime Project Funding</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>CCXXXX</td>
+                <td>Child Care</td>
+                <td>5 Years</td>
+                <td>$1,000,000.00</td>
+                <td>$3,000,000.00</td>
+              </tr>
+              <tr>
+                <td>CCXXXX</td>
+                <td>Child Welfare</td>
+                <td>5 Years</td>
+                <td>$125,000.00</td>
+                <td>$1,000,000.00</td>
+              </tr>
+              <tr>
+                <td>HSXXXX</td>
+                <td>Child Welfare</td>
+                <td>5 Years</td>
+                <td>$125,000.00</td>
+                <td>$1,000,000.00</td>
+              </tr>
+              <tr>
+                <td>HSXXXX</td>
+                <td>Head Start</td>
+                <td>1 Year</td>
+                <td>$250,000.00</td>
+                <td>$0</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- API -->
+      <div class="section">
+        <h2>Backend API</h2>
+        <p>The endpoint <strong>already exists</strong> and is fully tested:</p>
+        <ul style="margin-top:0.5rem">
+          <li><strong>URL:</strong> <span class="code-inline">GET /api/v1/projects/&lt;id&gt;/funding/?fiscal_year=YYYY</span></li>
+          <li><strong>Auth:</strong> Requires JWT bearer token (<span class="code-inline">Permission.RESEARCH_PROJECT GET</span>)</li>
+          <li><strong>fiscal_year param:</strong> Optional - defaults to current fiscal year on the backend if omitted</li>
+          <li><strong>404:</strong> Returns 404 if project ID does not exist</li>
+        </ul>
+
+        <h3>Sample Response</h3>
+        <pre class="api-sample">
+{
+  "funding_by_portfolio": [
+    { "portfolio_id": 1, "portfolio": "Child Care",    "amount": 1000000.0 },
+    { "portfolio_id": 2, "portfolio": "Child Welfare", "amount": 250000.0  },
+    { "portfolio_id": 3, "portfolio": "Head Start",    "amount": 250000.0  }
+  ],
+  "funding_by_can": {
+    "total":                1500000.0,
+    "carry_forward_funding": 1250000.0,
+    "new_funding":            250000.0
+  },
+  "funding_by_fiscal_year": [
+    { "fiscal_year": 2021, "amount": 6000000.0 },
+    { "fiscal_year": 2022, "amount": 4000000.0 },
+    { "fiscal_year": 2023, "amount": 3000000.0 },
+    { "fiscal_year": 2024, "amount": 2000000.0 },
+    { "fiscal_year": 2025, "amount": 1500000.0 }
+  ],
+  "cans": [
+    { "id": 1, "number": "CCXXXX", "portfolio_id": 1, "portfolio": "Child Care",    "active_period": 5, "fy_funding": 1000000.0, "lifetime_funding": 3000000.0 },
+    { "id": 2, "number": "CCXXXX", "portfolio_id": 2, "portfolio": "Child Welfare", "active_period": 5, "fy_funding": 125000.0,  "lifetime_funding": 1000000.0 },
+    { "id": 3, "number": "HSXXXX", "portfolio_id": 2, "portfolio": "Child Welfare", "active_period": 5, "fy_funding": 125000.0,  "lifetime_funding": 1000000.0 },
+    { "id": 4, "number": "HSXXXX", "portfolio_id": 3, "portfolio": "Head Start",    "active_period": 1, "fy_funding": 250000.0,  "lifetime_funding": 0.0       }
+  ]
+}
+        </pre>
+
+        <div class="warn">
+          <strong>Note:</strong> <span class="code-inline">funding_by_portfolio</span>,
+          <span class="code-inline">funding_by_can</span>, and <span class="code-inline">cans</span>
+          are all scoped to the <span class="code-inline">fiscal_year</span> param.
+          <span class="code-inline">funding_by_fiscal_year</span> always returns all years with data regardless of the param -
+          this powers the FY selector options and the "last 5 FYs" bar chart.
+          Real data for project 1000 spans 7 years (2021&ndash;2027), confirming client-side
+          <span class="code-inline">getLast5FiscalYears(selectedFY)</span> slicing is the correct approach.
+        </div>
+      </div>
+
+      <!-- Key decisions -->
+      <div class="section">
+        <h2>Key Decisions</h2>
+        <table class="decisions">
+          <thead>
+            <tr><th>Decision</th><th>Choice</th><th>Rationale</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Where does FY state live?</td>
+              <td>Local state in <span class="code-inline">ProjectFunding.jsx</span></td>
+              <td>Follows CAN funding convention - only the funding tab needs it; no Redux or context required.</td>
+            </tr>
+            <tr>
+              <td>FY selector default</td>
+              <td><span class="code-inline">getCurrentFiscalYear()</span> - no fallback to highest available FY</td>
+              <td>Matches <span class="code-inline">Can.hooks.js</span> pattern exactly. Show zeros/empty if current FY has no data.</td>
+            </tr>
+            <tr>
+              <td>FY change triggers re-fetch?</td>
+              <td>Yes - RTK Query re-fetches with new <span class="code-inline">fiscal_year</span> arg</td>
+              <td>API is FY-scoped for portfolio/CAN/cans data. RTK Query caches per arg so switching back is instant.</td>
+            </tr>
+            <tr>
+              <td>Portfolio abbreviations</td>
+              <td>Interim: reverse-lookup from <span class="code-inline">PORTFOLIO_ORDER</span> constants by portfolio name</td>
+              <td>API does not return abbreviation. Reverse-lookup by full name is pragmatic short-term. Backend ask filed to add <span class="code-inline">abbreviation</span> to response long-term (see below).</td>
+            </tr>
+            <tr>
+              <td>"FY N New Funding" label</td>
+              <td><span class="code-inline">FY {selectedFY} New Funding</span></td>
+              <td>Backend returns <span class="code-inline">new_funding</span> as money appropriated in the selected FY. "FY 2024" shown in Figma was a mockup artifact.</td>
+            </tr>
+            <tr>
+              <td>"Project Funding By FY" bar chart range</td>
+              <td>Last 5 FYs relative to selected FY, derived client-side</td>
+              <td>Matches <span class="code-inline">CANBudgetByFYCard</span> pattern (<span class="code-inline">getLast5FiscalYears</span>). Uses <span class="code-inline">constants.budgetsByFYChartColors</span>. Zeros shown for years with no data.</td>
+            </tr>
+            <tr>
+              <td>Empty state (no funding data)</td>
+              <td>Show cards/table with zero values; "No CANs found for this project" in table body</td>
+              <td>Follows CAN funding convention - no special empty-state screen, just graceful zeros.</td>
+            </tr>
+            <tr>
+              <td>Active Period display format</td>
+              <td><span class="code-inline">active_period === 1 ? "1 Year" : `${active_period} Years"`</span></td>
+              <td>Matches Figma ("5 Years", "1 Year"). API returns a plain integer.</td>
+            </tr>
+            <tr>
+              <td>Route strategy</td>
+              <td>New sibling route <span class="code-inline">/projects/:id/funding</span></td>
+              <td>Consistent with <span class="code-inline">/projects/:id/spending</span> and existing ProjectDetailTabs navigation pattern.</td>
+            </tr>
+            <tr>
+              <td>When to remove DebugCode</td>
+              <td>End of Phase 3</td>
+              <td>Already dev-only - safe to leave during Phases 1-2 without impacting production users.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Files -->
+      <div class="section">
+        <h2>Files Added / Modified</h2>
+        <div class="file-tree">
+          frontend/src/<br>
+          &nbsp;&nbsp;api/<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="modified-file">opsAPI.js</span> &nbsp;&#x2190; add <span class="code-inline">useGetProjectFundingByIdQuery</span> (Phase 1)<br>
+          &nbsp;&nbsp;components/Projects/<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="new-file">ProjectFundingByPortfolioCard/</span> &nbsp;&#x2190; NEW (Phase 2) + unit tests<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="new-file">ProjectFundingByCANCard/</span> &nbsp;&#x2190; NEW (Phase 2) + unit tests<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="new-file">ProjectFundingByFYCard/</span> &nbsp;&#x2190; NEW (Phase 2) + unit tests<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="new-file">ProjectFundingCANsTable/</span> &nbsp;&#x2190; NEW (Phase 3) + unit tests<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="new-file">ProjectFundingCANsTable.constants.js</span> &nbsp;&#x2190; <span class="code-inline">getTableHeadings(fy)</span>, <span class="code-inline">COLUMN_WIDTHS</span>, <span class="code-inline">formatActivePeriod</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="new-file">ProjectFundingCANsTable.jsx</span> &nbsp;&#x2190; CAN links via <span class="code-inline">text-ink text-no-underline</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="new-file">ProjectFundingCANsTableLoading.jsx</span> &nbsp;&#x2190; shimmer skeleton<br>
+          &nbsp;&nbsp;components/UI/Tag/<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="modified-file">Tag.jsx</span> &nbsp;&#x2190; add <span class="code-inline">projectFundingCarryForward</span> + <span class="code-inline">projectFundingNewFunding</span> tagActiveStyle cases<br>
+          &nbsp;&nbsp;constants.js &nbsp;&#x2190; add <span class="code-inline">projectFundingByFYChartColors</span><br>
+          <br>
+          sass/uswds/<br>
+          &nbsp;&nbsp;<span class="modified-file">styles.scss</span> &nbsp;&#x2190; add 7 new CSS design tokens + USWDS compile (gulp)
+          &nbsp;&nbsp;pages/projects/detail/<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="new-file">ProjectFunding.jsx</span> &nbsp;&#x2190; NEW &ndash; page component: FY selector, summary cards, CAN table, DebugCode<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="new-file">ProjectFunding.test.jsx</span> &nbsp;&#x2190; NEW (Phase 1)<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="modified-file">ProjectDetailTabs.jsx</span> &nbsp;&#x2190; un-disable &ldquo;Project Funding&rdquo; tab (Phase 1)<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="modified-file">ProjectDetailTabs.test.jsx</span> &nbsp;&#x2190; update assertion (Phase 1)<br>
+          &nbsp;&nbsp;<span class="modified-file">index.jsx</span> &nbsp;&#x2190; register <span class="code-inline">/projects/:id/funding</span> route (Phase 1)<br>
+          <br>
+          docs/developers/frontend/<br>
+          &nbsp;&nbsp;<span class="new-file">issue-5275-project-funding-tab.html</span> &nbsp;&#x2190; this file
+        </div>
+      </div>
+
+      <!-- Data flow -->
+      <div class="section">
+        <h2>Data Flow</h2>
+
+        <h3>Phase 1</h3>
+        <ol style="margin-top:0.25rem">
+          <li>User navigates to <span class="code-inline">/projects/42/funding</span></li>
+          <li><span class="code-inline">ProjectFunding.jsx</span> reads <span class="code-inline">:id</span> from URL params</li>
+          <li>Calls <span class="code-inline">useGetProjectFundingByIdQuery({ id: projectId, fiscalYear })</span></li>
+          <li>RTK Query hits <span class="code-inline">/api/v1/projects/42/funding/?fiscal_year=2025</span></li>
+          <li>Response rendered inside <span class="code-inline">&lt;DebugCode data={fundingData} /&gt;</span> (dev-only)</li>
+          <li>FY selector visible; changing it updates <span class="code-inline">selectedFiscalYear</span> state and triggers a new (or cached) RTK Query fetch</li>
+        </ol>
+
+        <h3>Phase 2 additions</h3>
+        <ol style="margin-top:0.25rem">
+          <li>On data load, derive <span class="code-inline">fyChartData</span>: call <span class="code-inline">getLast5FiscalYears(selectedFY)</span>, map each year to <span class="code-inline">funding_by_fiscal_year</span> (zero if absent)</li>
+          <li>Derive portfolio bar segments: map <span class="code-inline">funding_by_portfolio</span> items through <span class="code-inline">getPortfolioAbbrevAndColor(name)</span> helper that reverse-looks up <span class="code-inline">PORTFOLIO_ORDER</span>; pass through <span class="code-inline">computeDisplayPercents</span></li>
+          <li>Derive carry-forward/new segments from <span class="code-inline">funding_by_can</span>; pass through <span class="code-inline">computeDisplayPercents</span></li>
+          <li>Render <span class="code-inline">ProjectFundingByPortfolioCard</span> (full width), then two-column grid of <span class="code-inline">ProjectFundingByCANCard</span> + <span class="code-inline">ProjectFundingByFYCard</span></li>
+        </ol>
+
+        <h3>Phase 3 additions</h3>
+        <ol style="margin-top:0.25rem">
+          <li>While <span class="code-inline">isFundingLoading</span> is true, render <span class="code-inline">ProjectFundingCANsTableLoading</span> skeleton (column layout preserved)</li>
+          <li>On data arrival, render <span class="code-inline">ProjectFundingCANsTable</span> from <span class="code-inline">fundingData.cans</span></li>
+          <li>Format <span class="code-inline">active_period</span>: <span class="code-inline">1 → "1 Year"</span>, <span class="code-inline">N → "N Years"</span>; null/undefined → <span class="code-inline">TBD</span></li>
+          <li>Dynamic column header: <span class="code-inline">"FY {twoDigitYear} Project Funding"</span> (e.g. "FY 25 Project Funding")</li>
+          <li>Remove <span class="code-inline">&lt;DebugCode&gt;</span></li>
+        </ol>
+      </div>
+
+      <!-- Acceptance criteria -->
+      <div class="section">
+        <h2>Acceptance Criteria</h2>
+
+        <h3>Phase 1</h3>
+        <ul>
+          <li>Navigating to <span class="code-inline">/projects/:id/funding</span> renders without errors.</li>
+          <li>The <em>Project Funding</em> tab is enabled - no "Coming Soon" tooltip or <span class="code-inline">disabled</span> attribute.</li>
+          <li>FY selector visible, defaults to current fiscal year, changes trigger a new RTK Query fetch.</li>
+          <li>In dev mode, <span class="code-inline">DebugCode</span> shows raw JSON from the funding endpoint.</li>
+          <li>404 case shows "Project Not Found" (matches <span class="code-inline">ProjectDetail</span> behavior).</li>
+          <li>Loading state renders while request is in flight.</li>
+          <li>No regressions on Project Details or Project Spending tabs.</li>
+        </ul>
+
+        <h3>Phase 2</h3>
+        <ul>
+          <li>"FY {year} Project Funding by Portfolio" full-width card renders with correct total, stacked bar segments and legend (abbreviation, dollar amount, percent).</li>
+          <li>"FY {year} Project Funding by CAN" half-width card renders carry-forward and new-funding segments with correct labels (<em>Previous FYs Carry-Forward</em>, <em>FY {selectedFY} New Funding</em>).</li>
+          <li>"Project Funding By FY" half-width card renders last 5 FYs relative to selected FY using <span class="code-inline">constants.budgetsByFYChartColors</span>; zeros shown for years with no data.</li>
+          <li>All cards update when FY selector changes.</li>
+          <li>Cards are gated - no flash of empty/zero values before the first fetch resolves.</li>
+          <li>Portfolio colors and abbreviations render correctly for known portfolios; unknown portfolios fall back gracefully.</li>
+        </ul>
+
+        <h3>Phase 3 &#x2705;</h3>
+        <ul>
+          <li>&#x2705; <span class="code-inline">ProjectFundingCANsTableLoading</span> skeleton shown while fetch is in flight; column headers (including dynamic FY column) preserved so layout does not shift on data arrival.</li>
+          <li>&#x2705; Table renders CAN number (linked to <span class="code-inline">/cans/:id</span>, <span class="code-inline">text-ink text-no-underline</span>), Portfolio, Active Period (&ldquo;N Year(s)&rdquo;), FY Project Funding, Lifetime Project Funding.</li>
+          <li>&#x2705; Dynamic FY column header updates when FY selector changes (e.g. &ldquo;FY 25 Project Funding&rdquo; &rarr; &ldquo;FY 24 Project Funding&rdquo;).</li>
+          <li>&#x2705; Empty state shown when <span class="code-inline">cans</span> is empty.</li>
+          <li>&#x2705; <span class="code-inline">&lt;DebugCode /&gt;</span> retained below the table (dev-only).</li>
+          <li>&#x2705; Chart colors corrected: new CSS tokens + USWDS compiled; <span class="code-inline">Tag.jsx</span> hover cases wired to project-funding colors.</li>
+          <li>&#x2705; 2893 unit tests passing, lint clean.</li>
+        </ul>
+      </div>
+
+      <!-- Backend ask -->
+      <div class="section" id="backend-ask">
+        <h2>Backend Ask &mdash; Add <span class="code-inline">abbreviation</span> to Portfolio Funding Response</h2>
+        <p>
+          The <span class="code-inline">funding_by_portfolio</span> array currently returns
+          <span class="code-inline">portfolio</span> (full name) but not the portfolio abbreviation.
+          The frontend derives the abbreviation by reverse-looking up
+          <span class="code-inline">PORTFOLIO_ORDER</span> constants by name - a fragile coupling
+          that will break if portfolio names drift between backend data and frontend constants.
+        </p>
+
+        <div class="be-ask">
+          <h4>&#x1F4CB; Backend Story &mdash; <a href="https://github.com/HHS/OPRE-OPS/issues/5564">#5564</a></h4>
+
+          <p><strong>User Story</strong><br>
+          As a frontend developer, I want the <span class="code-inline">GET /api/v1/projects/&lt;id&gt;/funding/</span>
+          response to include the portfolio abbreviation in each <span class="code-inline">funding_by_portfolio</span> item
+          so that I can display and color-code portfolio segments in the horizontal stacked bar without relying on client-side name matching.</p>
+
+          <p style="margin-top:0.5rem"><strong>Acceptance Criteria</strong></p>
+          <ul>
+            <li><span class="code-inline">funding_by_portfolio</span> items include an <span class="code-inline">abbreviation</span> field (e.g. <span class="code-inline">"CC"</span>, <span class="code-inline">"CW"</span>, <span class="code-inline">"HS"</span>)</li>
+            <li><span class="code-inline">ProjectFundingByPortfolioSchema</span> updated to serialize <span class="code-inline">abbreviation</span></li>
+            <li>Existing backend tests updated; no change to other fields</li>
+          </ul>
+
+          <p style="margin-top:0.5rem"><strong>Tasks</strong></p>
+          <ul>
+            <li>Add <span class="code-inline">portfolio.abbreviation</span> to <span class="code-inline">get_project_funding()</span> in <span class="code-inline">backend/models/projects.py</span></li>
+            <li>Add <span class="code-inline">abbreviation = fields.String()</span> to <span class="code-inline">ProjectFundingByPortfolioSchema</span> in <span class="code-inline">backend/ops_api/ops/schemas/projects.py</span></li>
+            <li>Update frontend <span class="code-inline">ProjectFundingByPortfolioCard</span> to use response abbreviation instead of reverse-lookup (follow-up frontend PR)</li>
+          </ul>
+
+          <p style="margin-top:0.5rem"><strong>Additional Context</strong></p>
+          <ul>
+            <li>The <span class="code-inline">Portfolio</span> model already has an <span class="code-inline">abbreviation</span> field - this is a minor schema addition</li>
+            <li>Frontend workaround is in place (reverse-lookup via <span class="code-inline">PORTFOLIO_ORDER</span>) until this lands</li>
+            <li>Dependency: <a href="https://github.com/HHS/OPRE-OPS/issues/5275">Issue #5275</a></li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </body>
+</html>
