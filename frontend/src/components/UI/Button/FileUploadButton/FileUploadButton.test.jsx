@@ -486,7 +486,6 @@ describe("FileUploadButton component", () => {
     });
 
     describe("Event Handling", () => {
-
         it("does not trigger file input when button is disabled", () => {
             const { container } = render(
                 <FileUploadButton
