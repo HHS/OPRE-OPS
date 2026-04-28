@@ -4,17 +4,10 @@ import Tooltip from "../../../components/UI/USWDS/Tooltip";
 
 const TABS = [
     { name: "", label: "Project Details" },
-    {
-        name: "/spending",
-        label: "Project Spending",
-        disabled: true,
-        disabledTooltip: "Coming Soon"
-    },
+    { name: "/spending", label: "Project Spending" },
     {
         name: "/funding",
-        label: "Project Funding",
-        disabled: true,
-        disabledTooltip: "Coming Soon"
+        label: "Project Funding"
     }
 ];
 
