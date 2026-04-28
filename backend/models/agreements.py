@@ -349,6 +349,18 @@ class Agreement(BaseModel):
             Decimal("0"),
         )
 
+    @property
+    def spending_by_fiscal_year(self) -> dict[int, Decimal]:
+        """Sum of (amount + fees) per fiscal year for non-DRAFT (or OBE) BLIs with a fiscal_year assigned."""
+        from collections import defaultdict
+        from models.budget_line_items import BudgetLineItemStatus
+
+        totals: dict[int, Decimal] = defaultdict(lambda: Decimal("0"))
+        for bli in self.budget_line_items:
+            if (bli.is_obe or bli.status != BudgetLineItemStatus.DRAFT) and bli.fiscal_year is not None:
+                totals[bli.fiscal_year] += (bli.amount or Decimal("0")) + (bli.fees or Decimal("0"))
+        return dict(totals)
+
     __mapper_args__: dict[str, str | AgreementType] = {
         "polymorphic_identity": "agreement",
         "polymorphic_on": "agreement_type",
