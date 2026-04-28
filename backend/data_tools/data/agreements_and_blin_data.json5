@@ -18326,6 +18326,8 @@
       step_class: "default_step",
       step_type: "ACQUISITION_PLANNING",
       status: "PENDING",
+      step_start_date: "2026-03-01",
+      acquisition_planning_date_completed: "2050-03-15",
     },
     {
       procurement_tracker_id: 3,
@@ -18333,6 +18335,7 @@
       step_class: "default_step",
       step_type: "PRE_SOLICITATION",
       status: "PENDING",
+      pre_solicitation_target_completion_date: "2050-06-01",
     },
     {
       procurement_tracker_id: 3,
@@ -18340,6 +18343,8 @@
       step_class: "default_step",
       step_type: "SOLICITATION",
       status: "PENDING",
+      solicitation_period_start_date: "2050-07-01",
+      solicitation_period_end_date: "2050-08-01",
     },
     {
       procurement_tracker_id: 3,
@@ -18347,6 +18352,7 @@
       step_class: "default_step",
       step_type: "EVALUATION",
       status: "PENDING",
+      evaluation_target_completion_date: "2050-09-15",
     },
     {
       procurement_tracker_id: 3,
@@ -18354,6 +18360,7 @@
       step_class: "default_step",
       step_type: "PRE_AWARD",
       status: "PENDING",
+      pre_award_target_completion_date: "2050-11-01",
     },
     {
       procurement_tracker_id: 3,
@@ -18369,6 +18376,7 @@
       step_class: "default_step",
       step_type: "ACQUISITION_PLANNING",
       status: "PENDING",
+      acquisition_planning_date_completed: "2051-02-10",
     },
     {
       procurement_tracker_id: 4,
@@ -18376,6 +18384,8 @@
       step_class: "default_step",
       step_type: "PRE_SOLICITATION",
       status: "PENDING",
+      step_start_date: "2026-03-15",
+      pre_solicitation_target_completion_date: "2051-05-01",
     },
     {
       procurement_tracker_id: 4,
@@ -18383,6 +18393,8 @@
       step_class: "default_step",
       step_type: "SOLICITATION",
       status: "PENDING",
+      solicitation_period_start_date: "2051-06-01",
+      solicitation_period_end_date: "2051-07-15",
     },
     {
       procurement_tracker_id: 4,
@@ -18390,6 +18402,7 @@
       step_class: "default_step",
       step_type: "EVALUATION",
       status: "PENDING",
+      evaluation_target_completion_date: "2051-09-01",
     },
     {
       procurement_tracker_id: 4,
@@ -18397,6 +18410,7 @@
       step_class: "default_step",
       step_type: "PRE_AWARD",
       status: "PENDING",
+      pre_award_target_completion_date: "2051-10-15",
     },
     {
       procurement_tracker_id: 4,
@@ -18412,6 +18426,7 @@
       step_class: "default_step",
       step_type: "ACQUISITION_PLANNING",
       status: "PENDING",
+      acquisition_planning_date_completed: "2052-03-15",
     },
     {
       procurement_tracker_id: 5,
@@ -18419,6 +18434,7 @@
       step_class: "default_step",
       step_type: "PRE_SOLICITATION",
       status: "PENDING",
+      pre_solicitation_target_completion_date: "2052-06-01",
     },
     {
       procurement_tracker_id: 5,
@@ -18426,6 +18442,9 @@
       step_class: "default_step",
       step_type: "SOLICITATION",
       status: "PENDING",
+      step_start_date: "2026-04-05",
+      solicitation_period_start_date: "2052-07-01",
+      solicitation_period_end_date: "2052-08-01",
     },
     {
       procurement_tracker_id: 5,
@@ -18433,6 +18452,7 @@
       step_class: "default_step",
       step_type: "EVALUATION",
       status: "PENDING",
+      evaluation_target_completion_date: "2052-09-15",
     },
     {
       procurement_tracker_id: 5,
@@ -18440,6 +18460,7 @@
       step_class: "default_step",
       step_type: "PRE_AWARD",
       status: "PENDING",
+      pre_award_target_completion_date: "2052-11-01",
     },
     {
       procurement_tracker_id: 5,
@@ -18455,6 +18476,7 @@
       step_class: "default_step",
       step_type: "ACQUISITION_PLANNING",
       status: "PENDING",
+      acquisition_planning_date_completed: "2053-03-15",
     },
     {
       procurement_tracker_id: 6,
@@ -18462,6 +18484,7 @@
       step_class: "default_step",
       step_type: "PRE_SOLICITATION",
       status: "PENDING",
+      pre_solicitation_target_completion_date: "2053-06-01",
     },
     {
       procurement_tracker_id: 6,
@@ -18469,6 +18492,8 @@
       step_class: "default_step",
       step_type: "SOLICITATION",
       status: "PENDING",
+      solicitation_period_start_date: "2053-07-01",
+      solicitation_period_end_date: "2053-08-01",
     },
     {
       procurement_tracker_id: 6,
@@ -18476,6 +18501,8 @@
       step_class: "default_step",
       step_type: "EVALUATION",
       status: "PENDING",
+      step_start_date: "2026-04-10",
+      evaluation_target_completion_date: "2053-09-15",
     },
     {
       procurement_tracker_id: 6,
@@ -18483,6 +18510,7 @@
       step_class: "default_step",
       step_type: "PRE_AWARD",
       status: "PENDING",
+      pre_award_target_completion_date: "2053-11-01",
     },
     {
       procurement_tracker_id: 6,
@@ -18498,6 +18526,7 @@
       step_class: "default_step",
       step_type: "ACQUISITION_PLANNING",
       status: "PENDING",
+      acquisition_planning_date_completed: "2054-03-15",
     },
     {
       procurement_tracker_id: 7,
@@ -18505,6 +18534,7 @@
       step_class: "default_step",
       step_type: "PRE_SOLICITATION",
       status: "PENDING",
+      pre_solicitation_target_completion_date: "2054-06-01",
     },
     {
       procurement_tracker_id: 7,
@@ -18512,6 +18542,8 @@
       step_class: "default_step",
       step_type: "SOLICITATION",
       status: "PENDING",
+      solicitation_period_start_date: "2054-07-01",
+      solicitation_period_end_date: "2054-08-01",
     },
     {
       procurement_tracker_id: 7,
@@ -18519,6 +18551,7 @@
       step_class: "default_step",
       step_type: "EVALUATION",
       status: "PENDING",
+      evaluation_target_completion_date: "2054-09-15",
     },
     {
       procurement_tracker_id: 7,
@@ -18526,6 +18559,8 @@
       step_class: "default_step",
       step_type: "PRE_AWARD",
       status: "PENDING",
+      step_start_date: "2026-04-15",
+      pre_award_target_completion_date: "2054-11-01",
     },
     {
       procurement_tracker_id: 7,
@@ -18541,6 +18576,7 @@
       step_class: "default_step",
       step_type: "ACQUISITION_PLANNING",
       status: "PENDING",
+      acquisition_planning_date_completed: "2055-03-15",
     },
     {
       procurement_tracker_id: 8,
@@ -18548,6 +18584,7 @@
       step_class: "default_step",
       step_type: "PRE_SOLICITATION",
       status: "PENDING",
+      pre_solicitation_target_completion_date: "2055-06-01",
     },
     {
       procurement_tracker_id: 8,
@@ -18555,6 +18592,8 @@
       step_class: "default_step",
       step_type: "SOLICITATION",
       status: "PENDING",
+      solicitation_period_start_date: "2055-07-01",
+      solicitation_period_end_date: "2055-08-01",
     },
     {
       procurement_tracker_id: 8,
@@ -18562,6 +18601,7 @@
       step_class: "default_step",
       step_type: "EVALUATION",
       status: "PENDING",
+      evaluation_target_completion_date: "2055-09-15",
     },
     {
       procurement_tracker_id: 8,
@@ -18569,6 +18609,7 @@
       step_class: "default_step",
       step_type: "PRE_AWARD",
       status: "PENDING",
+      pre_award_target_completion_date: "2055-11-01",
     },
     {
       procurement_tracker_id: 8,
@@ -18576,6 +18617,7 @@
       step_class: "default_step",
       step_type: "AWARD",
       status: "PENDING",
+      step_start_date: "2026-04-20",
     },
   ],
 }

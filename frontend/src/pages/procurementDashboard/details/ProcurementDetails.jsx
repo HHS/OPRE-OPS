@@ -42,6 +42,24 @@ const ProcurementDetails = ({ fiscalYear, agreements, procurementTrackers, procu
         return map;
     }, [procurementTrackers]);
 
+    const daysInStepByStepAndAgreement = useMemo(() => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const map = {};
+        for (const tracker of procurementTrackers) {
+            const activeStep = (tracker.steps ?? []).find((step) => step.step_number === tracker.active_step_number);
+            if (activeStep?.step_start_date) {
+                const startDate = new Date(activeStep.step_start_date + "T00:00:00");
+                const diffDays = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
+                if (!map[activeStep.step_number]) {
+                    map[activeStep.step_number] = {};
+                }
+                map[activeStep.step_number][tracker.agreement_id] = diffDays;
+            }
+        }
+        return map;
+    }, [procurementTrackers]);
+
     const agreementsByStep = useMemo(() => {
         const stepToAgreementIds = {};
         for (const tracker of procurementTrackers) {
@@ -80,6 +98,7 @@ const ProcurementDetails = ({ fiscalYear, agreements, procurementTrackers, procu
                             agreementsPerStep={procurementStepSummary?.step_data[step.step_number - 1]?.agreements}
                             userNameById={userNameById}
                             targetDateByAgreementId={targetDateByStepAndAgreement[step.step_number] ?? {}}
+                            daysInStepByAgreementId={daysInStepByStepAndAgreement[step.step_number] ?? {}}
                         />
                     </DetailsBuilderAccordion>
                 );
