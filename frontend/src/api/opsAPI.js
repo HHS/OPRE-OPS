@@ -503,6 +503,10 @@ export const opsApi = createApi({
             query: (id) => `/projects/${id}/spending/`,
             providesTags: ["ResearchProjects", "BudgetLineItems"]
         }),
+        getAgreementSpendingById: builder.query({
+            query: (id) => `/agreements/${id}/spending/`,
+            providesTags: (_result, _error, id) => [{ type: "Agreements", id }, "BudgetLineItems"]
+        }),
         getProjectFundingById: builder.query({
             query: ({ id, fiscalYear }) => `/projects/${id}/funding/?fiscal_year=${fiscalYear}`,
             providesTags: ["ResearchProjects"]
@@ -1120,6 +1124,7 @@ export const {
     useLazyGetProjectsQuery,
     useGetProjectByIdQuery,
     useGetProjectSpendingByIdQuery,
+    useGetAgreementSpendingByIdQuery,
     useGetProjectFundingByIdQuery,
     useGetProjectsByPortfolioQuery,
     useGetResearchProjectsQuery,

@@ -1,5 +1,6 @@
 import CurrencyFormat from "react-currency-format";
 import { Link } from "react-router-dom";
+import { useGetAgreementSpendingByIdQuery } from "../../../api/opsAPI";
 import { NO_DATA } from "../../../constants";
 import { getAgreementType } from "../../../helpers/agreement.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
@@ -21,21 +22,24 @@ const COLUMN_COUNT = 7; // Agreement, Type, Start, End, FY Total, Agreement Tota
 /**
  * A read-only expandable table row for the Project Spending Agreements table.
  *
- * NOTE: The FY Total column shows NO_DATA when multiple agreements share the FY.
- * The spending endpoint only provides project-level FY totals; a backend change to
- * add `agreements_fy_total` to GET /projects/:id/spending/ is needed for the general case.
- * When only one agreement exists in the FY its fyTotal is passed directly from the parent.
- * See: https://github.com/HHS/OPRE-OPS/issues/5363
+ * The FY Total comes from `GET /agreements/:id/spending/` (per-agreement, per-FY).
+ * The `fyTotal` prop is used as a fallback while the query is in flight or if the
+ * endpoint has no entry for the selected FY.
  *
  * @param {Object} props
  * @param {import("../../../types/AgreementTypes").Agreement} props.agreement
- * @param {number} props.fiscalYear - The selected fiscal year (reserved; used when #5548 ships).
- * @param {number | null} props.fyTotal - Pre-computed FY total, or null if unavailable.
+ * @param {number} props.fiscalYear - The selected fiscal year.
+ * @param {number | null} props.fyTotal - Fallback FY total from the parent.
  * @returns {React.ReactElement}
  */
-// eslint-disable-next-line no-unused-vars
 const ProjectSpendingAgreementRow = ({ agreement, fiscalYear, fyTotal }) => {
     const { isExpanded, setIsExpanded, setIsRowActive } = useTableRow();
+
+    const { data: agreementSpending } = useGetAgreementSpendingByIdQuery(agreement?.id, {
+        skip: !agreement?.id
+    });
+    const fyTotalFromEndpoint = agreementSpending?.fy_total?.[fiscalYear];
+    const resolvedFyTotal = fyTotalFromEndpoint != null ? Number(fyTotalFromEndpoint) : fyTotal;
 
     const agreementName = getAgreementName(agreement) ?? NO_DATA;
     const agreementType = getAgreementType(agreement?.agreement_type) ?? NO_DATA;
@@ -72,13 +76,13 @@ const ProjectSpendingAgreementRow = ({ agreement, fiscalYear, fyTotal }) => {
             <td data-cy="agreement-start-date">{agreementStartDate}</td>
             <td data-cy="agreement-end-date">{agreementEndDate}</td>
             <td data-cy="agreement-fy-total">
-                {fyTotal !== null ? (
+                {resolvedFyTotal != null ? (
                     <CurrencyFormat
-                        value={fyTotal}
+                        value={resolvedFyTotal}
                         displayType="text"
                         thousandSeparator={true}
                         prefix="$"
-                        decimalScale={getDecimalScale(fyTotal)}
+                        decimalScale={getDecimalScale(resolvedFyTotal)}
                         fixedDecimalScale={true}
                         renderText={(value) => value}
                     />
