@@ -366,7 +366,7 @@ class Agreement(BaseModel):
             return {}
 
         fiscal_year = BudgetLineItem.fiscal_year
-        total_expr = func.sum(func.coalesce(BudgetLineItem.amount, 0) + BudgetLineItem.fees)
+        total_expr = func.sum(func.coalesce(BudgetLineItem.amount, 0) + func.coalesce(BudgetLineItem.fees, 0))
 
         stmt = (
             select(fiscal_year.label("fy"), total_expr.label("total"))

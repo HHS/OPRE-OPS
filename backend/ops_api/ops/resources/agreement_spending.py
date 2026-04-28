@@ -1,3 +1,5 @@
+from typing import Type
+
 from flask import Response, current_app
 
 from models import Agreement
@@ -13,7 +15,7 @@ from ops_api.ops.utils.response import make_response_with_headers
 class AgreementSpendingItemAPI(BaseItemAPI):
     """API endpoint for retrieving per-agreement fiscal-year spending totals."""
 
-    def __init__(self, model: BaseModel = Agreement):
+    def __init__(self, model: Type[BaseModel] = Agreement):
         super().__init__(model)
 
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
