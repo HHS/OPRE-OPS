@@ -50,24 +50,22 @@ export const RequestPreAwardApproval = () => {
 
     // Calculate upload disabled state
     const isUploadDisabled =
-        !ENABLE_UPLOAD_CONSENSUS_MEMO ||
-        !isStep4Completed ||
-        isUploading ||
-        hasApprovalBeenRequested ||
-        hasBLIInReview;
+        !ENABLE_UPLOAD_CONSENSUS_MEMO || !isStep4Completed || isUploading || hasApprovalBeenRequested || hasBLIInReview;
 
     // Determine tooltip message for disabled state
-    const uploadDisabledReason = !ENABLE_UPLOAD_CONSENSUS_MEMO
-        ? "Documents tab is coming soon! For now, please upload to the OPRE preferred tool to share documents"
-        : !isStep4Completed
-        ? "Please complete Step 4 (Evaluation) before uploading documents"
-        : hasApprovalBeenRequested
-        ? "Cannot upload documents after approval has been requested"
-        : hasBLIInReview
-        ? "Cannot upload documents while budget line items have pending changes"
-        : isUploading
-        ? "Upload in progress..."
-        : undefined;
+    let uploadDisabledReason;
+    if (!ENABLE_UPLOAD_CONSENSUS_MEMO) {
+        uploadDisabledReason =
+            "Documents tab is coming soon! For now, please upload to the OPRE preferred tool to share documents";
+    } else if (!isStep4Completed) {
+        uploadDisabledReason = "Please complete Step 4 (Evaluation) before uploading documents";
+    } else if (hasApprovalBeenRequested) {
+        uploadDisabledReason = "Cannot upload documents after approval has been requested";
+    } else if (hasBLIInReview) {
+        uploadDisabledReason = "Cannot upload documents while budget line items have pending changes";
+    } else if (isUploading) {
+        uploadDisabledReason = "Upload in progress...";
+    }
 
     if (isLoading) {
         return <p>Loading...</p>;
@@ -145,37 +143,16 @@ export const RequestPreAwardApproval = () => {
                 <p>Please upload the Final Consensus Memo so the Division Director can review it.</p>
 
                 <div className="usa-form-group margin-top-3">
-                    <div style={{ display: "flex", alignItems: "center" }}>
-                        <div
-                            className="position-relative bg-white border-1px border-base-light"
-                            style={{
-                                width: "450px",
-                                minHeight: "100px",
-                                display: "flex",
-                                flexDirection: "column",
-                                justifyContent: "space-between",
-                                padding: "1rem",
-                                borderRadius: "0.25rem"
-                            }}
-                        >
-                            <div>
-                                <span style={{ fontSize: "0.875rem", color: "#757575" }}>
-                                    {selectedFile ? selectedFile.name : "Final Consensus Memo"}
-                                </span>
-                            </div>
-                            <div style={{ display: "flex", justifyContent: "end" }}>
-                                <FileUploadButton
-                                    id="consensus-memo-upload"
-                                    acceptedFileTypes=".pdf,.doc,.docx,.xls,.xlsx"
-                                    onFileChange={handleFileChange}
-                                    disabled={isUploadDisabled}
-                                    disabledTooltip={uploadDisabledReason}
-                                    buttonText="Upload File"
-                                    style={{ marginTop: "0.5rem" }}
-                                />
-                            </div>
-                        </div>
-                    </div>
+                    <FileUploadButton
+                        id="consensus-memo-upload"
+                        acceptedFileTypes=".pdf,.doc,.docx,.xls,.xlsx"
+                        onFileChange={handleFileChange}
+                        selectedFile={selectedFile}
+                        label="Final Consensus Memo"
+                        disabled={isUploadDisabled}
+                        disabledTooltip={uploadDisabledReason}
+                        buttonText="Upload File"
+                    />
                 </div>
 
                 {uploadError && (
