@@ -142,52 +142,53 @@ export const RequestPreAwardApproval = () => {
                                     {selectedFile ? selectedFile.name : "Final Consensus Memo"}
                                 </span>
                             </div>
-                            <Tooltip
-                                label="Documents tab is coming soon! For now, please upload to the OPRE preferred tool to share documents"
-                                position="top"
-                            >
-                                <label
-                                    htmlFor="consensus-memo-upload"
-                                    className={
-                                        !ENABLE_UPLOAD_CONSENSUS_MEMO ||
-                                        !isStep4Completed ||
-                                        isUploading ||
-                                        hasApprovalBeenRequested ||
-                                        hasBLIInReview
-                                            ? "cursor-not-allowed"
-                                            : "cursor-pointer"
-                                    }
-                                    style={{
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "end",
-                                        gap: "0.5rem",
-                                        color:
+                            <div style={{ display: "flex", justifyContent: "end" }}>
+                                <Tooltip
+                                    label="Documents tab is coming soon! For now, please upload to the OPRE preferred tool to share documents"
+                                    position="top"
+                                >
+                                    <label
+                                        htmlFor="consensus-memo-upload"
+                                        className={
                                             !ENABLE_UPLOAD_CONSENSUS_MEMO ||
                                             !isStep4Completed ||
                                             isUploading ||
                                             hasApprovalBeenRequested ||
                                             hasBLIInReview
-                                                ? "#c9c9c9"
-                                                : "#757575",
-                                        fontSize: "0.875rem",
-                                        marginTop: "0.5rem",
-                                        opacity: !ENABLE_UPLOAD_CONSENSUS_MEMO ? 0.5 : 1
-                                    }}
-                                >
-                                    <svg
-                                        className="usa-icon"
-                                        aria-hidden="true"
-                                        focusable="false"
-                                        role="img"
-                                        viewBox="0 0 24 24"
-                                        style={{ fill: "currentColor", width: "32px", height: "32px" }}
+                                                ? "cursor-not-allowed"
+                                                : "cursor-pointer"
+                                        }
+                                        style={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: "0.5rem",
+                                            color:
+                                                !ENABLE_UPLOAD_CONSENSUS_MEMO ||
+                                                !isStep4Completed ||
+                                                isUploading ||
+                                                hasApprovalBeenRequested ||
+                                                hasBLIInReview
+                                                    ? "#c9c9c9"
+                                                    : "#757575",
+                                            fontSize: "0.875rem",
+                                            marginTop: "0.5rem",
+                                            opacity: !ENABLE_UPLOAD_CONSENSUS_MEMO ? 0.5 : 1
+                                        }}
                                     >
-                                        <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" />
-                                    </svg>
-                                    <span style={{ textDecoration: "underline", fontSize: "1rem" }}>Upload File</span>
-                                </label>
-                            </Tooltip>
+                                        <svg
+                                            className="usa-icon"
+                                            aria-hidden="true"
+                                            focusable="false"
+                                            role="img"
+                                            viewBox="0 0 24 24"
+                                            style={{ fill: "currentColor", width: "32px", height: "32px" }}
+                                        >
+                                            <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" />
+                                        </svg>
+                                        <span style={{ textDecoration: "underline", fontSize: "1rem" }}>Upload File</span>
+                                    </label>
+                                </Tooltip>
+                            </div>
                             <input
                                 id="consensus-memo-upload"
                                 type="file"
