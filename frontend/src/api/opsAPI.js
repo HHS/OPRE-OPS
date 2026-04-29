@@ -173,7 +173,8 @@ export const opsApi = createApi({
                         offset: response.offset,
                         totals: response.totals ?? null,
                         procurement_overview: response.procurement_overview ?? null,
-                        procurement_step_summary: response.procurement_step_summary ?? null
+                        procurement_step_summary: response.procurement_step_summary ?? null,
+                        procurement_days_in_step: response.procurement_days_in_step ?? null
                     };
                 }
                 // Backward compatibility with old "agreements" key
@@ -185,7 +186,8 @@ export const opsApi = createApi({
                         offset: response.offset,
                         totals: response.totals ?? null,
                         procurement_overview: response.procurement_overview ?? null,
-                        procurement_step_summary: response.procurement_step_summary ?? null
+                        procurement_step_summary: response.procurement_step_summary ?? null,
+                        procurement_days_in_step: response.procurement_days_in_step ?? null
                     };
                 }
                 // Legacy array format (no pagination)
@@ -196,7 +198,8 @@ export const opsApi = createApi({
                     offset: 0,
                     totals: null,
                     procurement_overview: null,
-                    procurement_step_summary: null
+                    procurement_step_summary: null,
+                    procurement_days_in_step: null
                 };
             },
             providesTags: ["Agreements", "BudgetLineItems"]
