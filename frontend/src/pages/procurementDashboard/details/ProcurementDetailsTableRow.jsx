@@ -10,6 +10,7 @@ import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { convertToCurrency, formatDateNeeded } from "../../../helpers/utils";
 import CurrencyFormat from "react-currency-format";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
+import Tag from "../../../components/UI/Tag";
 
 export const ProcurementDetailsTableRow = ({
     agreement,
@@ -52,7 +53,16 @@ export const ProcurementDetailsTableRow = ({
                     ? formatDateNeeded(targetDateByAgreementId[agreement.id])
                     : "None"}
             </td>
-            <td data-cy="days-in-step">{daysInStepByAgreementId[agreement.id] ?? "—"}</td>
+            <td data-cy="days-in-step">
+                <Tag
+                    tagStyle={
+                        daysInStepByAgreementId[agreement.id] > 30
+                            ? "lightTextRedBackground"
+                            : "primaryDarkTextLightBackground"
+                    }
+                    text={`${daysInStepByAgreementId[agreement.id] ?? "None"} days`}
+                />
+            </td>
         </>
     );
     const ExpandedData = (

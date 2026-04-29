@@ -129,10 +129,7 @@ def load_new_data(
                         discriminator_key = mapper.polymorphic_on.key
                         identity = data_without_associations.get(discriminator_key)
                         if identity is not None:
-                            for sub_mapper in mapper.self_and_descendants:
-                                if sub_mapper.polymorphic_identity == identity:
-                                    obj_model = sub_mapper.class_
-                                    break
+                            obj_model = mapper.polymorphic_map.get(identity, mapper).class_
                     obj = obj_model(**data_without_associations)
                     session.add(obj)
                     session.commit()

@@ -142,7 +142,7 @@ class AgreementsService(OpsService[Agreement]):
 
         Raises:
             ValidationError: If validation fails (e.g., invalid services_component_ref)
-            ResourceNotFoundError: If referenced entities don't exist (e.g., invalid can_id)
+            ResourceNotFoundError: If referenced entities don'tracker exist (e.g., invalid can_id)
         """
         # STEP 0: Extract nested entity data from request
         budget_line_items_data = create_request.pop("budget_line_items", [])
@@ -270,7 +270,7 @@ class AgreementsService(OpsService[Agreement]):
 
         Raises:
             ValidationError: If services_component_ref is invalid
-            ResourceNotFoundError: If referenced CAN doesn't exist
+            ResourceNotFoundError: If referenced CAN doesn'tracker exist
         """
         bli_count = 0
 
@@ -458,6 +458,7 @@ class AgreementsService(OpsService[Agreement]):
         overview_fiscal_year = filters.fiscal_year[0] if filters.fiscal_year and len(filters.fiscal_year) == 1 else None
         procurement_overview = _compute_procurement_overview(all_results, overview_fiscal_year)
         procurement_step_summary = _compute_procurement_step_summary(all_results, overview_fiscal_year)
+        procurement_days_in_step = _compute_days_in_procurement_step(all_results, overview_fiscal_year)
 
         # Apply pagination slicing
         if filters.limit is not None and filters.offset is not None:
@@ -476,6 +477,7 @@ class AgreementsService(OpsService[Agreement]):
             "totals": totals,
             "procurement_overview": procurement_overview,
             "procurement_step_summary": procurement_step_summary,
+            "procurement_days_in_step": procurement_days_in_step,
         }
 
         return paginated_results, metadata
@@ -957,9 +959,9 @@ def _compute_procurement_step_summary(all_results: list[Agreement], fiscal_year:
         # Find the active tracker for this agreement
         tracker = next(
             (
-                t
-                for t in agreement.procurement_trackers
-                if t.status == ProcurementTrackerStatus.ACTIVE and t.active_step_number is not None
+                tracker
+                for tracker in agreement.procurement_trackers
+                if tracker.status == ProcurementTrackerStatus.ACTIVE and tracker.active_step_number is not None
             ),
             None,
         )
@@ -1008,6 +1010,56 @@ def _compute_procurement_step_summary(all_results: list[Agreement], fiscal_year:
         "step_data": step_data,
         "total_agreement_count": total_agreement_count,
     }
+
+
+def _compute_days_in_procurement_step(
+    all_results: list[Agreement], fiscal_year: int | None
+) -> dict[int, dict[int, int]]:
+    """Compute days in procurement step for each agreement's active step.
+
+    For each agreement with an active procurement tracker:
+    - Finds the active step
+    - If the step is completed, days = step_completed_date - step_start_date
+    - If the step is not completed, days = today - step_start_date
+
+    Returns a nested map: { step_number: { agreement_id: days_in_step } }
+    """
+    today = date.today()
+    days_in_step: dict[int, dict[int, int]] = {}
+
+    for agreement in all_results:
+        tracker = next(
+            (
+                tracker
+                for tracker in agreement.procurement_trackers
+                if tracker.status == ProcurementTrackerStatus.ACTIVE and tracker.active_step_number is not None
+            ),
+            None,
+        )
+        if tracker is None:
+            continue
+
+        step_number = tracker.active_step_number
+        if step_number < 1 or step_number > 6:
+            continue
+
+        active_step = next(
+            (step for step in tracker.steps if step.step_number == step_number),
+            None,
+        )
+        if active_step is None or active_step.step_start_date is None:
+            continue
+
+        if active_step.step_completed_date:
+            diff_days = (active_step.step_completed_date - active_step.step_start_date).days
+        else:
+            diff_days = (today - active_step.step_start_date).days
+
+        if step_number not in days_in_step:
+            days_in_step[step_number] = {}
+        days_in_step[step_number][agreement.id] = diff_days
+
+    return days_in_step
 
 
 def _get_agreements(session: Session, agreement_cls: Type[Agreement], data: dict[str, Any]) -> Sequence[Agreement]:

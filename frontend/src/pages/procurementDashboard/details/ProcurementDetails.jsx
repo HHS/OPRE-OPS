@@ -3,7 +3,13 @@ import { useGetUsersQuery } from "../../../api/opsAPI";
 import DetailsBuilderAccordion from "./DetailsBuilderAccordion";
 import ProcurementDetailsStep from "./ProcurementDetailsStep";
 
-const ProcurementDetails = ({ fiscalYear, agreements, procurementTrackers, procurementStepSummary }) => {
+const ProcurementDetails = ({
+    fiscalYear,
+    agreements,
+    procurementTrackers,
+    procurementStepSummary,
+    procurementDaysInStep
+}) => {
     const { data: users = [] } = useGetUsersQuery();
 
     const userNameById = useMemo(() => {
@@ -42,23 +48,7 @@ const ProcurementDetails = ({ fiscalYear, agreements, procurementTrackers, procu
         return map;
     }, [procurementTrackers]);
 
-    const daysInStepByStepAndAgreement = useMemo(() => {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const map = {};
-        for (const tracker of procurementTrackers) {
-            const activeStep = (tracker.steps ?? []).find((step) => step.step_number === tracker.active_step_number);
-            if (activeStep?.step_start_date) {
-                const startDate = new Date(activeStep.step_start_date + "T00:00:00");
-                const diffDays = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
-                if (!map[activeStep.step_number]) {
-                    map[activeStep.step_number] = {};
-                }
-                map[activeStep.step_number][tracker.agreement_id] = diffDays;
-            }
-        }
-        return map;
-    }, [procurementTrackers]);
+    const daysInStep = procurementDaysInStep ?? {};
 
     const agreementsByStep = useMemo(() => {
         const stepToAgreementIds = {};
@@ -98,7 +88,7 @@ const ProcurementDetails = ({ fiscalYear, agreements, procurementTrackers, procu
                             agreementsPerStep={procurementStepSummary?.step_data[step.step_number - 1]?.agreements}
                             userNameById={userNameById}
                             targetDateByAgreementId={targetDateByStepAndAgreement[step.step_number] ?? {}}
-                            daysInStepByAgreementId={daysInStepByStepAndAgreement[step.step_number] ?? {}}
+                            daysInStepByAgreementId={daysInStep[step.step_number] ?? {}}
                         />
                     </DetailsBuilderAccordion>
                 );
