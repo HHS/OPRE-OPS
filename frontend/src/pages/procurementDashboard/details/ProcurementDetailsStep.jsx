@@ -9,7 +9,8 @@ const ProcurementDetailsStep = ({
     agreementsPerStep,
     userNameById,
     targetDateByAgreementId,
-    daysInStepByAgreementId
+    daysInStepByAgreementId,
+    procurementOverview
 }) => {
     const executingBLIs = useMemo(
         () =>
@@ -83,6 +84,7 @@ const ProcurementDetailsStep = ({
                 userNameById={userNameById}
                 targetDateByAgreementId={targetDateByAgreementId}
                 daysInStepByAgreementId={daysInStepByAgreementId}
+                procurementOverview={procurementOverview}
             ></ProcurementDetailsTable>
         </>
     );

@@ -6,7 +6,8 @@ export const ProcurementDetailsTable = ({
     agreements,
     userNameById,
     targetDateByAgreementId,
-    daysInStepByAgreementId
+    daysInStepByAgreementId,
+    procurementOverview
 }) => {
     const tableHeadings = [
         { heading: "Agreements", value: tableSortCodes.agreementCodes.AGREEMENT },
@@ -26,6 +27,7 @@ export const ProcurementDetailsTable = ({
                         userNameById={userNameById}
                         targetDateByAgreementId={targetDateByAgreementId}
                         daysInStepByAgreementId={daysInStepByAgreementId}
+                        procurementOverview={procurementOverview}
                     />
                 ))}
         </Table>

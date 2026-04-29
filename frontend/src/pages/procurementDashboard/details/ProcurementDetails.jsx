@@ -8,7 +8,8 @@ const ProcurementDetails = ({
     agreements,
     procurementTrackers,
     procurementStepSummary,
-    procurementDaysInStep
+    procurementDaysInStep,
+    procurementOverview
 }) => {
     const { data: users = [] } = useGetUsersQuery();
 
@@ -89,6 +90,7 @@ const ProcurementDetails = ({
                             userNameById={userNameById}
                             targetDateByAgreementId={targetDateByStepAndAgreement[step.step_number] ?? {}}
                             daysInStepByAgreementId={daysInStep[step.step_number] ?? {}}
+                            procurementOverview={procurementOverview}
                         />
                     </DetailsBuilderAccordion>
                 );
