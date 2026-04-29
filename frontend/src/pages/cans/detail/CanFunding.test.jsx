@@ -15,7 +15,7 @@ vi.mock("./CanFunding.hooks.js", () => ({
         setShowModal: vi.fn(),
         showButton: false,
         showModal: false,
-        budgetForm: {},
+        budgetForm: { submittedAmount: 500000, isSubmitted: true },
         handleEnteredBudgetAmount: vi.fn(),
         fundingReceivedForm: { enteredNotes: "", isEditing: false, isSubmitted: false },
         handleEnteredFundingReceivedAmount: vi.fn(),
@@ -37,8 +37,9 @@ vi.mock("../../../components/CANs/CANBudgetByFYCard/CANBudgetByFYCard", () => ({
 vi.mock("../../../components/CANs/CANBudgetForm", () => ({ default: () => <div>Budget form</div> }));
 vi.mock("../../../components/CANs/CANFundingInfoCard", () => ({ default: () => <div>Funding info card</div> }));
 vi.mock("../../../components/CANs/CANFundingReceivedForm", () => ({ default: () => <div>Funding received form</div> }));
+const CANFundingReceivedTableMock = vi.fn(() => <div>Funding received table</div>);
 vi.mock("../../../components/CANs/CANFundingReceivedTable", () => ({
-    default: () => <div>Funding received table</div>
+    default: (props) => CANFundingReceivedTableMock(props)
 }));
 vi.mock("../../../components/UI/Cards/BudgetCard/ReceivedFundingCard", () => ({
     default: () => <div>Received funding card</div>
@@ -50,6 +51,58 @@ vi.mock("../../../components/UI/RoundedBox", () => ({ default: ({ children }) =>
 describe("CanFunding", () => {
     afterEach(() => {
         vi.clearAllMocks();
+    });
+
+    it("passes budgetForm.submittedAmount as totalFunding to the table in edit mode", () => {
+        render(
+            <CanFunding
+                canId={1}
+                canNumber="CAN-001"
+                currentFiscalYearFundingId={11}
+                funding={{ fiscal_year: 2026, active_period: 1 }}
+                fundingBudgets={[]}
+                fiscalYear={2026}
+                totalFunding={0}
+                receivedFunding={100}
+                fundingReceived={[]}
+                isBudgetTeamMember={true}
+                isEditMode={true}
+                toggleEditMode={() => {}}
+                carryForwardFunding={0}
+                welcomeModal={{ showModal: false }}
+                resetWelcomeModal={() => {}}
+                isExpired={false}
+                isTableLoading={false}
+            />
+        );
+
+        expect(CANFundingReceivedTableMock).toHaveBeenCalledWith(expect.objectContaining({ totalFunding: 500000 }));
+    });
+
+    it("passes totalFunding prop to the table when not in edit mode", () => {
+        render(
+            <CanFunding
+                canId={1}
+                canNumber="CAN-001"
+                currentFiscalYearFundingId={11}
+                funding={{ fiscal_year: 2026, active_period: 1 }}
+                fundingBudgets={[]}
+                fiscalYear={2026}
+                totalFunding={1000}
+                receivedFunding={100}
+                fundingReceived={[]}
+                isBudgetTeamMember={false}
+                isEditMode={false}
+                toggleEditMode={() => {}}
+                carryForwardFunding={0}
+                welcomeModal={{ showModal: false }}
+                resetWelcomeModal={() => {}}
+                isExpired={false}
+                isTableLoading={false}
+            />
+        );
+
+        expect(CANFundingReceivedTableMock).toHaveBeenCalledWith(expect.objectContaining({ totalFunding: 1000 }));
     });
 
     it("shows the funding received skeleton while parent data is refetching", () => {

@@ -293,7 +293,7 @@ const CanFunding = ({
                 ) : (
                     <CANFundingReceivedTable
                         fundingReceived={enteredFundingReceived}
-                        totalFunding={totalFunding}
+                        totalFunding={isEditMode ? budgetForm.submittedAmount : totalFunding}
                         isEditMode={isEditMode}
                         populateFundingReceivedForm={populateFundingReceivedForm}
                         deleteFundingReceived={deleteFundingReceived}
