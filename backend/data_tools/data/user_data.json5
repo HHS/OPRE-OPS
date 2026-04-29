@@ -393,6 +393,26 @@
         "POST_UPLOAD_DOCUMENT"
       ]
     },
+    { // 8 Read-Only
+      name: "READ_ONLY",
+      permissions: [
+        "GET_AGREEMENT",
+        "GET_BUDGET_LINE_ITEM",
+        "GET_SERVICES_COMPONENT",
+        "GET_BLI_PACKAGE",
+        "GET_CAN",
+        "GET_DIVISION",
+        "GET_NOTIFICATION",
+        "GET_PORTFOLIO",
+        "GET_RESEARCH_PROJECT",
+        "GET_USER",
+        "GET_HISTORY",
+        "GET_WORKFLOW",
+        "GET_CHANGE_REQUEST",
+        "GET_CHANGE_REQUEST_REVIEW",
+        "GET_UPLOAD_DOCUMENT"
+      ]
+    },
   ],
   ops_user: [
     { // 500
@@ -664,6 +684,15 @@
       email: "power.user@email.com",
       oidc_id: "00000000-0000-1111-a111-000000000028",
       roles: [{"tablename":  "role", "id": 7}],
+      status: "ACTIVE"
+    },
+    { // 529
+      first_name: "Read-Only",
+      last_name: "Randall",
+      division: 3,
+      email: "readonly.randall@email.com",
+      oidc_id: "00000000-0000-1111-a111-000000000029",
+      roles: [{"tablename":  "role", "id": 8}],
       status: "ACTIVE"
     }
   ],

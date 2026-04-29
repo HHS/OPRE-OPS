@@ -76,6 +76,9 @@ def get_users(session: Session, **kwargs) -> list[User]:
     :param **kwargs: The criteria to filter the users by.
     :return: The users that match the criteria.
 
+    Business Rules:
+    - Users with READ_ONLY role are excluded from the response
+
     """
     stmt = select(User)
 
@@ -89,7 +92,10 @@ def get_users(session: Session, **kwargs) -> list[User]:
 
     users = session.execute(stmt).scalars().all()
 
-    return list(users)
+    # Filter out users with READ_ONLY role
+    filtered_users = [user for user in users if not any(role.name == "READ_ONLY" for role in user.roles)]
+
+    return filtered_users
 
 
 def create_user(session: Session, **kwargs) -> User:
