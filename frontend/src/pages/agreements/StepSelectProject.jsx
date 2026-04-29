@@ -50,7 +50,7 @@ export const StepSelectProject = ({
         data: projects,
         error: errorProjects,
         isLoading: isLoadingProjects
-    } = useGetResearchProjectsQuery({}, { refetchOnMountOrArgChange: true });
+    } = useGetResearchProjectsQuery(undefined, { refetchOnMountOrArgChange: true });
     const [deleteAgreement] = useDeleteAgreementMutation();
 
     if (isLoadingProjects) {

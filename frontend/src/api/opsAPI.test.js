@@ -1039,3 +1039,89 @@ describe("opsAPI - Wave 2 high-yield endpoint coverage", () => {
         expect(capturedUrl).toContain("project_id=42");
     });
 });
+
+describe("opsAPI - getResearchProjects queryFn pagination", () => {
+    afterEach(() => server.resetHandlers());
+
+    it("returns all projects when total fits in a single batch", async () => {
+        const mockProjects = [
+            { id: 1, title: "Child Care Research", project_type: "RESEARCH" },
+            { id: 2, title: "Head Start Study", project_type: "RESEARCH" }
+        ];
+
+        server.use(
+            http.get("*/api/v1/projects/", ({ request }) => {
+                const url = new URL(request.url);
+                expect(url.searchParams.get("project_type")).toBe("RESEARCH");
+                expect(url.searchParams.get("limit")).toBe("50");
+                expect(url.searchParams.get("offset")).toBe("0");
+                return HttpResponse.json({ data: mockProjects, count: 2, limit: 50, offset: 0 });
+            })
+        );
+
+        const storeRef = setupApiStore(opsApi);
+        const result = await storeRef.store.dispatch(
+            opsApi.endpoints.getResearchProjects.initiate(undefined)
+        );
+
+        expect(result.data).toEqual(mockProjects);
+        expect(result.data).toHaveLength(2);
+    });
+
+    it("paginates across multiple batches when total exceeds batch size", async () => {
+        const page1 = Array.from({ length: 50 }, (_, i) => ({ id: i + 1, title: `Project ${i + 1}` }));
+        const page2 = [{ id: 51, title: "Project 51" }];
+        let callCount = 0;
+
+        server.use(
+            http.get("*/api/v1/projects/", ({ request }) => {
+                const url = new URL(request.url);
+                callCount++;
+                const offset = parseInt(url.searchParams.get("offset") ?? "0");
+                if (offset === 0) {
+                    return HttpResponse.json({ data: page1, count: 51, limit: 50, offset: 0 });
+                }
+                return HttpResponse.json({ data: page2, count: 51, limit: 50, offset: 50 });
+            })
+        );
+
+        const storeRef = setupApiStore(opsApi);
+        const result = await storeRef.store.dispatch(
+            opsApi.endpoints.getResearchProjects.initiate(undefined)
+        );
+
+        expect(callCount).toBe(2);
+        expect(result.data).toHaveLength(51);
+        expect(result.data[50]).toEqual(page2[0]);
+    });
+
+    it("returns all items immediately for legacy array response format", async () => {
+        const legacyProjects = [{ id: 1, title: "Legacy Project", project_type: "RESEARCH" }];
+
+        server.use(
+            http.get("*/api/v1/projects/", () => HttpResponse.json(legacyProjects))
+        );
+
+        const storeRef = setupApiStore(opsApi);
+        const result = await storeRef.store.dispatch(
+            opsApi.endpoints.getResearchProjects.initiate(undefined)
+        );
+
+        expect(result.data).toEqual(legacyProjects);
+    });
+
+    it("surfaces an error when the API call fails", async () => {
+        server.use(
+            http.get("*/api/v1/projects/", () =>
+                HttpResponse.json({ message: "Internal Server Error" }, { status: 500 })
+            )
+        );
+
+        const storeRef = setupApiStore(opsApi);
+        const result = await storeRef.store.dispatch(
+            opsApi.endpoints.getResearchProjects.initiate(undefined)
+        );
+
+        expect(result.error).toBeDefined();
+    });
+});

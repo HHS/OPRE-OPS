@@ -109,7 +109,7 @@ describe("StepSelectProject", () => {
 
             renderComponent();
 
-            expect(useGetResearchProjectsQuery).toHaveBeenCalledWith({}, { refetchOnMountOrArgChange: true });
+            expect(useGetResearchProjectsQuery).toHaveBeenCalledWith(undefined, { refetchOnMountOrArgChange: true });
         });
     });
 
