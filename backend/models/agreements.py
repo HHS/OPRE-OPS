@@ -349,6 +349,40 @@ class Agreement(BaseModel):
             Decimal("0"),
         )
 
+    @property
+    def spending_by_fiscal_year(self) -> dict[int, Decimal]:
+        """Sum of (amount + fees) per fiscal year for non-DRAFT (or OBE) BLIs with a fiscal_year assigned.
+
+        Executes a single aggregation query (GROUP BY fiscal_year) rather than
+        iterating BLIs in Python, so the cost is independent of how many BLIs
+        the agreement has.
+        """
+        from sqlalchemy import func, or_, select
+
+        from models.budget_line_items import BudgetLineItem, BudgetLineItemStatus
+
+        session = object_session(self)
+        if session is None:
+            return {}
+
+        fiscal_year = BudgetLineItem.fiscal_year
+        total_expr = func.sum(func.coalesce(BudgetLineItem.amount, 0) + func.coalesce(BudgetLineItem.fees, 0))
+
+        stmt = (
+            select(fiscal_year.label("fy"), total_expr.label("total"))
+            .where(BudgetLineItem.agreement_id == self.id)
+            .where(
+                or_(
+                    BudgetLineItem.is_obe.is_(True),
+                    BudgetLineItem.status != BudgetLineItemStatus.DRAFT,
+                )
+            )
+            .where(fiscal_year.isnot(None))
+            .group_by(fiscal_year)
+        )
+
+        return {row.fy: Decimal(str(row.total)) for row in session.execute(stmt).all()}
+
     __mapper_args__: dict[str, str | AgreementType] = {
         "polymorphic_identity": "agreement",
         "polymorphic_on": "agreement_type",

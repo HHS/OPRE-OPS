@@ -33,6 +33,7 @@ from ops_api.ops.resources.agreement_agency import (
     AgreementAgencyListAPI,
 )
 from ops_api.ops.resources.agreement_history import AgreementHistoryListAPI
+from ops_api.ops.resources.agreement_spending import AgreementSpendingItemAPI
 from ops_api.ops.resources.agreements import (
     AgreementItemAPI,
     AgreementListAPI,
@@ -130,6 +131,7 @@ from ops_api.ops.utils.version import VersionAPI
 # AGREEMENT ENDPOINTS
 AGREEMENT_ITEM_API_VIEW_FUNC = AgreementItemAPI.as_view("agreements-item", Agreement)
 AGREEMENT_LIST_API_VIEW_FUNC = AgreementListAPI.as_view("agreements-group", Agreement)
+AGREEMENT_SPENDING_ITEM_API_VIEW_FUNC = AgreementSpendingItemAPI.as_view("agreements-spending-item", Agreement)
 
 # Agreement History Endpoint
 AGREEMENT_HISTORY_LIST_API_VIEW_FUNC = AgreementHistoryListAPI.as_view("agreement-history", AgreementHistory)

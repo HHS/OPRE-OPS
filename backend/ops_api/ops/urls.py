@@ -7,6 +7,7 @@ from ops_api.ops.views import (
     AGREEMENT_ITEM_API_VIEW_FUNC,
     AGREEMENT_LIST_API_VIEW_FUNC,
     AGREEMENT_LIST_FILTER_OPTION_API_VIEW_FUNC,
+    AGREEMENT_SPENDING_ITEM_API_VIEW_FUNC,
     AZURE_SAS_TOKEN_VIEW_FUNC,
     BUDGET_LINE_ITEMS_ITEM_API_VIEW_FUNC,
     BUDGET_LINE_ITEMS_LIST_API_VIEW_FUNC,
@@ -260,6 +261,10 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/agreements/<int:id>/history/",
         view_func=AGREEMENT_HISTORY_LIST_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/agreements/<int:id>/spending/",
+        view_func=AGREEMENT_SPENDING_ITEM_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
         "/agreement-agencies/",
