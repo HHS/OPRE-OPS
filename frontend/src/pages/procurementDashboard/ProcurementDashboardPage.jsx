@@ -180,6 +180,7 @@ const ProcurementDashboard = () => {
                 procurementTrackers={procurementTrackers}
                 procurementStepSummary={procurementStepSummary}
                 procurementDaysInStep={procurementDaysInStep}
+                procurementOverview={procurementOverview}
             />
         </App>
     );
