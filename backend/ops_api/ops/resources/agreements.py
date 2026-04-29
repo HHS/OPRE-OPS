@@ -202,6 +202,9 @@ class AgreementListAPI(BaseListAPI):
                 "limit": metadata["limit"],
                 "offset": metadata["offset"],
                 "totals": metadata["totals"],
+                "procurement_overview": metadata["procurement_overview"],
+                "procurement_step_summary": metadata["procurement_step_summary"],
+                "procurement_days_in_step": metadata["procurement_days_in_step"],
             }
 
             return make_response_with_headers(response_data)

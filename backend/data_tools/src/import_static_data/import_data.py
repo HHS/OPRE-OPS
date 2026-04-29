@@ -122,7 +122,15 @@ def load_new_data(
                 with Session(conn) as session:
                     if "id" in data_without_associations:
                         seq_needs_reset = True
-                    obj = model(**data_without_associations)
+                    # Resolve polymorphic subclass when discriminator is present in data
+                    obj_model = model
+                    mapper = model.__mapper__
+                    if mapper.polymorphic_on is not None:
+                        discriminator_key = mapper.polymorphic_on.key
+                        identity = data_without_associations.get(discriminator_key)
+                        if identity is not None:
+                            obj_model = mapper.polymorphic_map.get(identity, mapper).class_
+                    obj = obj_model(**data_without_associations)
                     session.add(obj)
                     session.commit()
                     insert_associated_data(data_with_associations, obj, session)
