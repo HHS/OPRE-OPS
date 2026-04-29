@@ -4,9 +4,11 @@ from decimal import Decimal
 
 import pytest
 from flask import url_for
+from sqlalchemy import text
 
 from models import (
     CAN,
+    AdministrativeAndSupportProject,
     AgreementType,
     BudgetLineItem,
     BudgetLineItemStatus,
@@ -982,11 +984,285 @@ def test_patch_project_cannot_change_id(budget_team_auth_client, loaded_db, proj
     assert response.status_code == 400
 
 
-def test_patch_project_cannot_change_project_type(budget_team_auth_client, loaded_db, project_with_no_agreements):
-    """Test that project_type cannot be changed."""
-    data = {"project_type": ProjectType.ADMINISTRATIVE_AND_SUPPORT.name}
+def test_patch_project_invalid_project_type(budget_team_auth_client, loaded_db, project_with_no_agreements):
+    """Test that an invalid project_type value returns 400."""
+    data = {"project_type": "INVALID_TYPE"}
     response = budget_team_auth_client.patch(url_for("api.projects-item", id=project_with_no_agreements.id), json=data)
     assert response.status_code == 400
+
+
+def test_patch_project_change_type_research_to_admin(budget_team_auth_client, loaded_db, project_with_no_agreements):
+    """Test changing project type from Research to Administrative and Support."""
+    project_id = project_with_no_agreements.id
+    assert project_with_no_agreements.project_type == ProjectType.RESEARCH
+
+    data = {"project_type": ProjectType.ADMINISTRATIVE_AND_SUPPORT.name}
+    response = budget_team_auth_client.patch(url_for("api.projects-item", id=project_id), json=data)
+    assert response.status_code == 200
+
+    loaded_db.expire_all()
+    project = loaded_db.get(Project, project_id)
+    assert project.project_type == ProjectType.ADMINISTRATIVE_AND_SUPPORT
+    assert isinstance(project, AdministrativeAndSupportProject)
+    assert not hasattr(project, "origination_date")
+
+
+def test_patch_project_change_type_admin_to_research(budget_team_auth_client, loaded_db):
+    """Test changing project type from Administrative and Support to Research."""
+    admin_project = AdministrativeAndSupportProject(
+        project_type=ProjectType.ADMINISTRATIVE_AND_SUPPORT,
+        title="Admin Project For Type Change",
+        short_title="APTC",
+        description="Test admin project",
+    )
+    loaded_db.add(admin_project)
+    loaded_db.commit()
+    loaded_db.refresh(admin_project)
+    project_id = admin_project.id
+
+    data = {"project_type": ProjectType.RESEARCH.name}
+    response = budget_team_auth_client.patch(url_for("api.projects-item", id=project_id), json=data)
+    assert response.status_code == 200
+
+    loaded_db.expire_all()
+    project = loaded_db.get(Project, project_id)
+    assert project.project_type == ProjectType.RESEARCH
+    assert isinstance(project, ResearchProject)
+    assert project.origination_date is None
+
+
+def test_patch_project_change_type_same_type_noop(budget_team_auth_client, loaded_db, project_with_no_agreements):
+    """Test that setting project_type to the same value is a no-op."""
+    project_id = project_with_no_agreements.id
+    data = {"project_type": ProjectType.RESEARCH.name}
+    response = budget_team_auth_client.patch(url_for("api.projects-item", id=project_id), json=data)
+    assert response.status_code == 200
+
+    loaded_db.expire_all()
+    project = loaded_db.get(Project, project_id)
+    assert project.project_type == ProjectType.RESEARCH
+    assert isinstance(project, ResearchProject)
+
+
+def test_patch_project_change_type_with_other_fields(budget_team_auth_client, loaded_db, project_with_no_agreements):
+    """Test changing project type and other fields simultaneously."""
+    project_id = project_with_no_agreements.id
+    data = {
+        "project_type": ProjectType.ADMINISTRATIVE_AND_SUPPORT.name,
+        "title": "Now An Admin Project",
+    }
+    response = budget_team_auth_client.patch(url_for("api.projects-item", id=project_id), json=data)
+    assert response.status_code == 200
+
+    loaded_db.expire_all()
+    project = loaded_db.get(Project, project_id)
+    assert project.project_type == ProjectType.ADMINISTRATIVE_AND_SUPPORT
+    assert project.title == "Now An Admin Project"
+
+
+def test_patch_project_change_type_preserves_relationships(budget_team_auth_client, loaded_db):
+    """Test that changing project type preserves team leaders and agreements."""
+    project = ResearchProject(
+        project_type=ProjectType.RESEARCH,
+        title="Research With Relations",
+        short_title="RWR",
+        description="Test project with relationships",
+    )
+    loaded_db.add(project)
+    loaded_db.commit()
+    loaded_db.refresh(project)
+    project_id = project.id
+
+    from models import User
+
+    user = loaded_db.get(User, 500)
+    project.team_leaders = [user]
+    agreement = ContractAgreement(name="Test Agreement", project_id=project_id)
+    loaded_db.add(agreement)
+    loaded_db.commit()
+
+    data = {"project_type": ProjectType.ADMINISTRATIVE_AND_SUPPORT.name}
+    response = budget_team_auth_client.patch(url_for("api.projects-item", id=project_id), json=data)
+    assert response.status_code == 200
+
+    loaded_db.expire_all()
+    updated = loaded_db.get(Project, project_id)
+    assert updated.project_type == ProjectType.ADMINISTRATIVE_AND_SUPPORT
+    assert len(updated.team_leaders) == 1
+    assert updated.team_leaders[0].id == 500
+    assert len(updated.agreements) == 1
+
+
+def test_change_type_creates_version_records_research_to_admin(budget_team_auth_client, loaded_db):
+    """Test that changing Research -> Admin creates correct version rows."""
+    project = ResearchProject(
+        project_type=ProjectType.RESEARCH,
+        title="Version Test R2A",
+        short_title="VTR2A",
+        description="Test version tracking for type change",
+    )
+    loaded_db.add(project)
+    loaded_db.commit()
+    loaded_db.refresh(project)
+    project_id = project.id
+
+    data = {"project_type": ProjectType.ADMINISTRATIVE_AND_SUPPORT.name}
+    response = budget_team_auth_client.patch(url_for("api.projects-item", id=project_id), json=data)
+    assert response.status_code == 200
+
+    # Verify project_version has an UPDATE record (operation_type=1) with the new type
+    pv_rows = loaded_db.execute(
+        text(
+            "SELECT project_type, operation_type FROM project_version"
+            " WHERE id = :id ORDER BY transaction_id DESC LIMIT 1"
+        ),
+        {"id": project_id},
+    ).fetchall()
+    assert len(pv_rows) >= 1
+    assert pv_rows[0][0] == "ADMINISTRATIVE_AND_SUPPORT"
+    assert pv_rows[0][1] == Project._OP_UPDATE
+
+    # Verify research_project_version has a DELETE record
+    rpv_rows = loaded_db.execute(
+        text(
+            "SELECT operation_type FROM research_project_version" " WHERE id = :id ORDER BY transaction_id DESC LIMIT 1"
+        ),
+        {"id": project_id},
+    ).fetchall()
+    assert len(rpv_rows) >= 1
+    assert rpv_rows[0][0] == Project._OP_DELETE
+
+    # Verify administrative_and_support_project_version has an INSERT record
+    aspv_rows = loaded_db.execute(
+        text(
+            "SELECT operation_type FROM administrative_and_support_project_version"
+            " WHERE id = :id ORDER BY transaction_id DESC LIMIT 1"
+        ),
+        {"id": project_id},
+    ).fetchall()
+    assert len(aspv_rows) >= 1
+    assert aspv_rows[0][0] == Project._OP_INSERT
+
+
+def test_change_type_creates_version_records_admin_to_research(budget_team_auth_client, loaded_db):
+    """Test that changing Admin -> Research creates correct version rows."""
+    project = AdministrativeAndSupportProject(
+        project_type=ProjectType.ADMINISTRATIVE_AND_SUPPORT,
+        title="Version Test A2R",
+        short_title="VTA2R",
+        description="Test version tracking for type change",
+    )
+    loaded_db.add(project)
+    loaded_db.commit()
+    loaded_db.refresh(project)
+    project_id = project.id
+
+    data = {"project_type": ProjectType.RESEARCH.name}
+    response = budget_team_auth_client.patch(url_for("api.projects-item", id=project_id), json=data)
+    assert response.status_code == 200
+
+    # Verify project_version has an UPDATE record with the new type
+    pv_rows = loaded_db.execute(
+        text(
+            "SELECT project_type, operation_type FROM project_version"
+            " WHERE id = :id ORDER BY transaction_id DESC LIMIT 1"
+        ),
+        {"id": project_id},
+    ).fetchall()
+    assert len(pv_rows) >= 1
+    assert pv_rows[0][0] == "RESEARCH"
+    assert pv_rows[0][1] == Project._OP_UPDATE
+
+    # Verify administrative_and_support_project_version has a DELETE record
+    aspv_rows = loaded_db.execute(
+        text(
+            "SELECT operation_type FROM administrative_and_support_project_version"
+            " WHERE id = :id ORDER BY transaction_id DESC LIMIT 1"
+        ),
+        {"id": project_id},
+    ).fetchall()
+    assert len(aspv_rows) >= 1
+    assert aspv_rows[0][0] == Project._OP_DELETE
+
+    # Verify research_project_version has an INSERT record
+    rpv_rows = loaded_db.execute(
+        text(
+            "SELECT operation_type FROM research_project_version" " WHERE id = :id ORDER BY transaction_id DESC LIMIT 1"
+        ),
+        {"id": project_id},
+    ).fetchall()
+    assert len(rpv_rows) >= 1
+    assert rpv_rows[0][0] == Project._OP_INSERT
+
+
+def test_change_type_version_records_share_transaction(budget_team_auth_client, loaded_db):
+    """Test that all version rows from a type change share the same transaction_id."""
+    project = ResearchProject(
+        project_type=ProjectType.RESEARCH,
+        title="Version Txn Test",
+        short_title="VTT",
+        description="Test shared transaction",
+    )
+    loaded_db.add(project)
+    loaded_db.commit()
+    loaded_db.refresh(project)
+    project_id = project.id
+
+    data = {"project_type": ProjectType.ADMINISTRATIVE_AND_SUPPORT.name}
+    response = budget_team_auth_client.patch(url_for("api.projects-item", id=project_id), json=data)
+    assert response.status_code == 200
+
+    pv_txn = loaded_db.execute(
+        text("SELECT transaction_id FROM project_version WHERE id = :id ORDER BY transaction_id DESC LIMIT 1"),
+        {"id": project_id},
+    ).scalar()
+
+    rpv_txn = loaded_db.execute(
+        text("SELECT transaction_id FROM research_project_version WHERE id = :id ORDER BY transaction_id DESC LIMIT 1"),
+        {"id": project_id},
+    ).scalar()
+
+    aspv_txn = loaded_db.execute(
+        text(
+            "SELECT transaction_id FROM administrative_and_support_project_version"
+            " WHERE id = :id ORDER BY transaction_id DESC LIMIT 1"
+        ),
+        {"id": project_id},
+    ).scalar()
+
+    assert pv_txn is not None
+    assert pv_txn == rpv_txn
+    assert pv_txn == aspv_txn
+
+
+def test_change_type_noop_creates_no_version_records(budget_team_auth_client, loaded_db):
+    """Test that setting project_type to the same value creates no new version rows."""
+    project = ResearchProject(
+        project_type=ProjectType.RESEARCH,
+        title="Version Noop Test",
+        short_title="VNT",
+        description="Test no-op creates no versions",
+    )
+    loaded_db.add(project)
+    loaded_db.commit()
+    loaded_db.refresh(project)
+    project_id = project.id
+
+    pv_count_before = loaded_db.execute(
+        text("SELECT count(*) FROM project_version WHERE id = :id"),
+        {"id": project_id},
+    ).scalar()
+
+    data = {"project_type": ProjectType.RESEARCH.name}
+    response = budget_team_auth_client.patch(url_for("api.projects-item", id=project_id), json=data)
+    assert response.status_code == 200
+
+    pv_count_after = loaded_db.execute(
+        text("SELECT count(*) FROM project_version WHERE id = :id"),
+        {"id": project_id},
+    ).scalar()
+
+    assert pv_count_after == pv_count_before
 
 
 def test_patch_project_auth_required(client, loaded_db, project_with_no_agreements):
@@ -1122,7 +1398,7 @@ def test_delete_project_with_single_agreement(projects_service, loaded_db, proje
 
     # Add a single agreement to the project
     agreement = ContractAgreement(
-        name="Test Agreement",
+        name="Test Agreement for Delete Project",
         project_id=project_id,
     )
     loaded_db.add(agreement)
