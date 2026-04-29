@@ -1124,4 +1124,20 @@ describe("opsAPI - getResearchProjects queryFn pagination", () => {
 
         expect(result.error).toBeDefined();
     });
+
+    it("breaks out of the loop when the backend returns an empty page", async () => {
+        // Guards against an infinite loop if `count` is mis-reported by the server
+        server.use(
+            http.get("*/api/v1/projects/", () =>
+                HttpResponse.json({ data: [], count: 99, limit: 50, offset: 0 })
+            )
+        );
+
+        const storeRef = setupApiStore(opsApi);
+        const result = await storeRef.store.dispatch(
+            opsApi.endpoints.getResearchProjects.initiate(undefined)
+        );
+
+        expect(result.data).toEqual([]);
+    });
 });

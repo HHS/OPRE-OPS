@@ -440,7 +440,7 @@ export const opsApi = createApi({
             providesTags: ["Users"]
         }),
         getResearchProjects: builder.query({
-            // The backend caps every list endpoint at limit=50 (PaginationListSchema).
+            // `/projects/` is capped at limit=50 by `PaginationListSchema`.
             // Rather than deviating from that constraint we page through all results
             // here so the Create Agreement project dropdown always shows every
             // research project regardless of how many exist.
@@ -466,6 +466,7 @@ export const opsApi = createApi({
                     // Wrapped format: { data: [...], count: N, ... }
                     const page = response.data ?? [];
                     total = response.count ?? page.length;
+                    if (page.length === 0) break; // guard against malformed count
                     allProjects.push(...page);
                     offset += BATCH_SIZE;
                 }
