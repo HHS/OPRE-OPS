@@ -3,6 +3,7 @@ import { ITEMS_PER_PAGE, NO_DATA } from "../../../constants";
 import { calculatePercent, formatDateNeeded } from "../../../helpers/utils";
 import PaginationNav from "../../UI/PaginationNav";
 import Table from "../../UI/Table";
+import tableStyles from "../../UI/Table/table.module.css";
 import { CAN_HEADERS, PORTFOLIO_HEADERS } from "./CANBudgetLineTable.constants";
 import { useSetSortConditions } from "../../UI/Table/Table.hooks";
 import CANBudgetLineTableRow from "./CANBudgetLineTableRow";
@@ -55,6 +56,7 @@ const CANBudgetLineTable = ({ budgetLines, totalFunding, fiscalYear, tableType =
                 onClickHeader={setSortConditions}
                 sortDescending={sortDescending}
                 selectedHeader={sortCondition}
+                className={tableStyles.verticalAlignTop}
             >
                 {visibleBudgetLines.map((budgetLine) => (
                     <CANBudgetLineTableRow

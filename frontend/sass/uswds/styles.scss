@@ -82,6 +82,13 @@ html {
     --can-budget-by-fy-graph-5: #a1d0be;
     --portfolio-carry-forward: #ba99c6;
     --portfolio-new-funding: #4c2a5c;
+    --project-funding-carry-forward: #009ec1;
+    --project-funding-new-funding: #1f468e;
+    --project-funding-by-fy-graph-1: #844a10;
+    --project-funding-by-fy-graph-2: #a05d1a;
+    --project-funding-by-fy-graph-3: #c97624;
+    --project-funding-by-fy-graph-4: #eb9c53;
+    --project-funding-by-fy-graph-5: #ffba7a;
     --portfolio-budget-graph-1: #123373;
     --portfolio-budget-graph-2: #24589d;
     --portfolio-budget-graph-3: #0050d8;
@@ -178,6 +185,13 @@ $themeColors: (
     "can-budget-by-fy-graph-5": var(--can-budget-by-fy-graph-5),
     "portfolio-carry-forward": var(--portfolio-carry-forward),
     "portfolio-new-funding": var(--portfolio-new-funding),
+    "project-funding-carry-forward": var(--project-funding-carry-forward),
+    "project-funding-new-funding": var(--project-funding-new-funding),
+    "project-funding-by-fy-graph-1": var(--project-funding-by-fy-graph-1),
+    "project-funding-by-fy-graph-2": var(--project-funding-by-fy-graph-2),
+    "project-funding-by-fy-graph-3": var(--project-funding-by-fy-graph-3),
+    "project-funding-by-fy-graph-4": var(--project-funding-by-fy-graph-4),
+    "project-funding-by-fy-graph-5": var(--project-funding-by-fy-graph-5),
     "portfolio-budget-graph-1": var(--portfolio-budget-graph-1),
     "portfolio-budget-graph-2": var(--portfolio-budget-graph-2),
     "portfolio-budget-graph-3": var(--portfolio-budget-graph-3),

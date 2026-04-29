@@ -214,7 +214,6 @@ describe("ProjectDetail", () => {
 
         renderComponent("1000");
 
-        // Project Details tab is already selected; click Project Spending (disabled) — skip.
         // Click the enabled Project Details tab to fire the onClick.
         await user.click(screen.getByRole("button", { name: "Project Details" }));
 
