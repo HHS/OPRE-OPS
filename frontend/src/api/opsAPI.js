@@ -440,14 +440,37 @@ export const opsApi = createApi({
             providesTags: ["Users"]
         }),
         getResearchProjects: builder.query({
-            query: () => `/projects/?project_type=RESEARCH`,
-            transformResponse: (response) => {
-                // New wrapped format with data key
-                if (response.data) {
-                    return response.data;
+            // The backend caps every list endpoint at limit=50 (PaginationListSchema).
+            // Rather than deviating from that constraint we page through all results
+            // here so the Create Agreement project dropdown always shows every
+            // research project regardless of how many exist.
+            async queryFn(_arg, _queryApi, _extraOptions, fetchWithBQ) {
+                const BATCH_SIZE = 50;
+                const allProjects = [];
+                let offset = 0;
+                let total = Infinity; // set on first wrapped response
+
+                while (allProjects.length < total) {
+                    const result = await fetchWithBQ(
+                        `/projects/?project_type=RESEARCH&limit=${BATCH_SIZE}&offset=${offset}`
+                    );
+                    if (result.error) return { error: result.error };
+
+                    const response = result.data;
+
+                    // Legacy array format (no wrapper) — all results in one shot
+                    if (Array.isArray(response)) {
+                        return { data: response };
+                    }
+
+                    // Wrapped format: { data: [...], count: N, ... }
+                    const page = response.data ?? [];
+                    total = response.count ?? page.length;
+                    allProjects.push(...page);
+                    offset += BATCH_SIZE;
                 }
-                // Legacy array format (no wrapper) - for backward compatibility during transition
-                return response;
+
+                return { data: allProjects };
             },
             providesTags: ["ResearchProjects"]
         }),

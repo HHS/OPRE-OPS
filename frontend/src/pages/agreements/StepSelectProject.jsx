@@ -46,7 +46,11 @@ export const StepSelectProject = ({
     const [modalProps, setModalProps] = React.useState({});
     const { setAlert } = useAlert();
     /** @type {{data?: import("../../types/ProjectTypes").Project[] | undefined, error?: Object, isLoading: boolean}} */
-    const { data: projects, error: errorProjects, isLoading: isLoadingProjects } = useGetResearchProjectsQuery({});
+    const {
+        data: projects,
+        error: errorProjects,
+        isLoading: isLoadingProjects
+    } = useGetResearchProjectsQuery({}, { refetchOnMountOrArgChange: true });
     const [deleteAgreement] = useDeleteAgreementMutation();
 
     if (isLoadingProjects) {
