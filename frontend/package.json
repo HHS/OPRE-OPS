@@ -56,7 +56,7 @@
         "@vitest/eslint-plugin": "1.6.16",
         "@vitest/ui": "4.1.5",
         "axe-core": "4.11.4",
-        "cypress": "15.14.1",
+        "cypress": "15.14.2",
         "cypress-axe": "1.7.0",
         "cypress-localstorage-commands": "2.3.0",
         "eslint": "10.2.1",
