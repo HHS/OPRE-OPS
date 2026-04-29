@@ -76,12 +76,12 @@ const Agreement = () => {
 
     // Set edit mode based on URL query parameter
     useEffect(() => {
-        const searchParams = new URLSearchParams(location.search);
+        const searchParams = new URLSearchParams(window.location.search);
         const mode = searchParams.get("mode");
         if (mode === "edit" && !isEditMode) {
             setIsEditMode(true);
         }
-    }, [location.search, isEditMode]);
+    }, [isEditMode]);
 
     /** @type {{data?: import("../../../types/AgreementTypes").Agreement | undefined, error?: Object, isLoading: boolean, isSuccess: boolean}} */
     const {
