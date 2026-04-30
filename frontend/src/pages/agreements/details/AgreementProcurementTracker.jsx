@@ -32,9 +32,24 @@ const AgreementProcurementTracker = ({ agreement }) => {
         "Award"
     ];
     const [completedStepNumber, setCompletedStepNumber] = React.useState(null);
+    const completedStepRef = React.useRef(null);
+
     const handleSetCompletedStepNumber = (stepNumber) => {
         setCompletedStepNumber(stepNumber);
     };
+
+    // After accordions remount, scroll to the completed step
+    React.useEffect(() => {
+        if (completedStepNumber !== null && completedStepRef.current) {
+            // Wait for USWDS to finish all its scrollIntoView calls
+            setTimeout(() => {
+                if (completedStepRef.current) {
+                    completedStepRef.current.scrollIntoView({ behavior: "instant", block: "nearest" });
+                }
+            }, 100);
+        }
+    }, [completedStepNumber]);
+
     const agreementId = agreement?.id;
 
     const isSuperUser = useIsUserSuperUser();
@@ -112,24 +127,30 @@ const AgreementProcurementTracker = ({ agreement }) => {
                 currentStep={indicatorCurrentStep}
             />
             {stepsToRender.map((step) => {
+                const isCompletedStep = step.step_number === completedStepNumber;
                 return (
-                    <StepBuilderAccordion
-                        step={step}
-                        totalSteps={WIZARD_STEPS.length}
-                        activeStepNumber={hasActiveTracker ? currentStep : undefined}
-                        isReadOnly={!hasActiveTracker || isProcurementTeamOnly}
-                        // Keep the completed step and active step open after form submission, all others closed
-                        isClosed={
-                            completedStepNumber !== null
-                                ? !(step.step_number === completedStepNumber || step.step_number === accordionOpenStep)
-                                : step.step_number !== accordionOpenStep
-                        }
-                        level={3}
-                        // Key includes state that affects which accordion should be open.
-                        // Since Accordion is an uncontrolled component, we need to force a remount
-                        // when the active/completed step changes to reset the initial state.
-                        key={`${step.id}-${completedStepNumber}-${accordionOpenStep}`}
+                    <div
+                        key={`step-wrapper-${step.id}-${completedStepNumber}-${accordionOpenStep}`}
+                        ref={isCompletedStep ? completedStepRef : null}
+                        className="margin-bottom-2"
                     >
+                        <StepBuilderAccordion
+                            step={step}
+                            totalSteps={WIZARD_STEPS.length}
+                            activeStepNumber={hasActiveTracker ? currentStep : undefined}
+                            isReadOnly={!hasActiveTracker || isProcurementTeamOnly}
+                            // Keep the completed step and active step open after form submission, all others closed
+                            isClosed={
+                                completedStepNumber !== null
+                                    ? !(step.step_number === completedStepNumber || step.step_number === accordionOpenStep)
+                                    : step.step_number !== accordionOpenStep
+                            }
+                            level={3}
+                            // Key includes state that affects which accordion should be open.
+                            // Since Accordion is an uncontrolled component, we need to force a remount
+                            // when the active/completed step changes to reset the initial state.
+                            key={`${step.id}-${completedStepNumber}-${accordionOpenStep}`}
+                        >
                         {IS_PROCUREMENT_TRACKER_READY_MAP.STEP_1 && step.step_number === 1 && (
                             <ProcurementTrackerStepOne
                                 stepStatus={step.status}
@@ -242,6 +263,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
                             </div>
                         )}
                     </StepBuilderAccordion>
+                    </div>
                 );
             })}
             {activeTracker && <DebugCode data={activeTracker}></DebugCode>}
