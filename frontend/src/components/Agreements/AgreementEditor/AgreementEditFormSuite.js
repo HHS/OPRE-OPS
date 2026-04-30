@@ -2,7 +2,9 @@ import { create, test, enforce, only } from "vest";
 import { AGREEMENT_TYPES } from "../../ServicesComponents/ServicesComponents.constants";
 
 const suite = create((data = {}, fieldName) => {
-    only(fieldName); // only run the tests for the field that changed
+    if (fieldName) {
+        only(fieldName);
+    }
 
     test("agreement_type", "This is required information", () => {
         enforce(data.agreement_type).notEquals("-Select Agreement Type-");
