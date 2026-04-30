@@ -129,28 +129,24 @@ const AgreementProcurementTracker = ({ agreement }) => {
             {stepsToRender.map((step) => {
                 const isCompletedStep = step.step_number === completedStepNumber;
                 return (
-                    <div
-                        key={`step-wrapper-${step.id}-${completedStepNumber}-${accordionOpenStep}`}
+                    <StepBuilderAccordion
                         ref={isCompletedStep ? completedStepRef : null}
-                        className="margin-bottom-2"
+                        step={step}
+                        totalSteps={WIZARD_STEPS.length}
+                        activeStepNumber={hasActiveTracker ? currentStep : undefined}
+                        isReadOnly={!hasActiveTracker || isProcurementTeamOnly}
+                        // Keep the completed step and active step open after form submission, all others closed
+                        isClosed={
+                            completedStepNumber !== null
+                                ? !(step.step_number === completedStepNumber || step.step_number === accordionOpenStep)
+                                : step.step_number !== accordionOpenStep
+                        }
+                        level={3}
+                        // Key includes state that affects which accordion should be open.
+                        // Since Accordion is an uncontrolled component, we need to force a remount
+                        // when the active/completed step changes to reset the initial state.
+                        key={`${step.id}-${completedStepNumber}-${accordionOpenStep}`}
                     >
-                        <StepBuilderAccordion
-                            step={step}
-                            totalSteps={WIZARD_STEPS.length}
-                            activeStepNumber={hasActiveTracker ? currentStep : undefined}
-                            isReadOnly={!hasActiveTracker || isProcurementTeamOnly}
-                            // Keep the completed step and active step open after form submission, all others closed
-                            isClosed={
-                                completedStepNumber !== null
-                                    ? !(step.step_number === completedStepNumber || step.step_number === accordionOpenStep)
-                                    : step.step_number !== accordionOpenStep
-                            }
-                            level={3}
-                            // Key includes state that affects which accordion should be open.
-                            // Since Accordion is an uncontrolled component, we need to force a remount
-                            // when the active/completed step changes to reset the initial state.
-                            key={`${step.id}-${completedStepNumber}-${accordionOpenStep}`}
-                        >
                         {IS_PROCUREMENT_TRACKER_READY_MAP.STEP_1 && step.step_number === 1 && (
                             <ProcurementTrackerStepOne
                                 stepStatus={step.status}
@@ -263,7 +259,6 @@ const AgreementProcurementTracker = ({ agreement }) => {
                             </div>
                         )}
                     </StepBuilderAccordion>
-                    </div>
                 );
             })}
             {activeTracker && <DebugCode data={activeTracker}></DebugCode>}
