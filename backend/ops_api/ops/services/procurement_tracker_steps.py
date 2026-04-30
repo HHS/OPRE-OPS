@@ -420,7 +420,9 @@ class ProcurementTrackerStepService:
         # Case 3: Budget Team Requisition Approval (OPS-1639)
         # Only send if requisition_approved_by changed from None → {user_id}
         new_requisition_approved_by = step.pre_award_requisition_approved_by
-        requisition_approval_transitioned = new_requisition_approved_by is not None and old_requisition_approved_by is None
+        requisition_approval_transitioned = (
+            new_requisition_approved_by is not None and old_requisition_approved_by is None
+        )
 
         if requisition_approval_transitioned:
             # Budget team approved requisition - notify original requester
@@ -469,11 +471,7 @@ class ProcurementTrackerStepService:
         from models.users import UserRole
 
         # Get all budget team members
-        budget_team_query = (
-            select(User.id)
-            .join(User.roles)
-            .where(UserRole.role == "BUDGET_TEAM")
-        )
+        budget_team_query = select(User.id).join(User.roles).where(UserRole.role == "BUDGET_TEAM")
         budget_team_ids = self.db_session.execute(budget_team_query).scalars().all()
 
         message = (

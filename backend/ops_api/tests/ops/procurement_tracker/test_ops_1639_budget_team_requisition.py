@@ -65,11 +65,7 @@ def test_pre_award_step(app_ctx, loaded_db):
 @pytest.fixture
 def budget_team_user_ids(loaded_db):
     """Get user IDs of all budget team members for testing."""
-    budget_team_query = (
-        select(User.id)
-        .join(User.roles)
-        .where(UserRole.role == "BUDGET_TEAM")
-    )
+    budget_team_query = select(User.id).join(User.roles).where(UserRole.role == "BUDGET_TEAM")
     return loaded_db.execute(budget_team_query).scalars().all()
 
 
@@ -81,10 +77,10 @@ class TestRequisitionModelFields:
         step = DefaultProcurementTrackerStep()
 
         # Verify fields exist
-        assert hasattr(step, 'pre_award_requisition_number')
-        assert hasattr(step, 'pre_award_requisition_date')
-        assert hasattr(step, 'pre_award_requisition_approved_by')
-        assert hasattr(step, 'pre_award_requisition_approved_date')
+        assert hasattr(step, "pre_award_requisition_number")
+        assert hasattr(step, "pre_award_requisition_date")
+        assert hasattr(step, "pre_award_requisition_approved_by")
+        assert hasattr(step, "pre_award_requisition_approved_date")
 
     def test_requisition_fields_are_nullable(self, app_ctx, loaded_db, test_pre_award_step):
         """Test that requisition fields can be None (nullable)."""
@@ -125,7 +121,7 @@ class TestRequisitionModelFields:
         loaded_db.refresh(step)
 
         # Verify relationship exists
-        assert hasattr(step, 'pre_award_requisition_approved_by_user')
+        assert hasattr(step, "pre_award_requisition_approved_by_user")
 
         # If relationship is loaded, verify it points to correct user
         if step.pre_award_requisition_approved_by_user:
@@ -166,10 +162,7 @@ class TestNotificationFlowFix:
             "reviewer_notes": "Approved for budget team requisition",
         }
 
-        response = auth_client.patch(
-            f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}",
-            json=update_data
-        )
+        response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}", json=update_data)
         assert response.status_code == 200
 
         # Verify notifications were sent
@@ -179,9 +172,9 @@ class TestNotificationFlowFix:
         )
 
         # CRITICAL: Requester should NOT receive notification after DD approval
-        assert final_requester_notifications == initial_requester_notifications, (
-            "Requester should NOT be notified when DD approves (OPS-1639 fix)"
-        )
+        assert (
+            final_requester_notifications == initial_requester_notifications
+        ), "Requester should NOT be notified when DD approves (OPS-1639 fix)"
 
         # CRITICAL: Budget team members SHOULD receive notifications
         budget_team_notified_count = 0
@@ -192,14 +185,14 @@ class TestNotificationFlowFix:
             if final_bt_notifications > initial_budget_team_notifications[bt_id]:
                 budget_team_notified_count += 1
 
-        assert budget_team_notified_count == len(budget_team_user_ids), (
-            f"All {len(budget_team_user_ids)} budget team members should be notified"
-        )
+        assert budget_team_notified_count == len(
+            budget_team_user_ids
+        ), f"All {len(budget_team_user_ids)} budget team members should be notified"
 
         # Verify total notification count increased by number of budget team members
-        assert final_total_count == initial_total_count + len(budget_team_user_ids), (
-            f"Should create {len(budget_team_user_ids)} notifications (one per budget team member)"
-        )
+        assert final_total_count == initial_total_count + len(
+            budget_team_user_ids
+        ), f"Should create {len(budget_team_user_ids)} notifications (one per budget team member)"
 
     def test_dd_approval_notification_has_correct_title_and_message(
         self, auth_client, test_pre_award_step, loaded_db, budget_team_user_ids
@@ -210,19 +203,20 @@ class TestNotificationFlowFix:
 
         # DD approves
         update_data = {"approval_status": "APPROVED"}
-        response = auth_client.patch(
-            f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}",
-            json=update_data
-        )
+        response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}", json=update_data)
         assert response.status_code == 200
 
         # Get notifications for budget team members
-        budget_team_notifications = loaded_db.execute(
-            select(Notification)
-            .where(Notification.recipient_id.in_(budget_team_user_ids))
-            .order_by(Notification.created_at.desc())
-            .limit(len(budget_team_user_ids))
-        ).scalars().all()
+        budget_team_notifications = (
+            loaded_db.execute(
+                select(Notification)
+                .where(Notification.recipient_id.in_(budget_team_user_ids))
+                .order_by(Notification.created_at.desc())
+                .limit(len(budget_team_user_ids))
+            )
+            .scalars()
+            .all()
+        )
 
         assert len(budget_team_notifications) > 0, "Should have budget team notifications"
 
@@ -232,9 +226,7 @@ class TestNotificationFlowFix:
             assert "Budget Team review and requisition entry is now required" in notification.message
             assert notification.procurement_tracker_step_id == test_pre_award_step.id
 
-    def test_dd_decline_still_notifies_requester(
-        self, auth_client, test_pre_award_step, loaded_db
-    ):
+    def test_dd_decline_still_notifies_requester(self, auth_client, test_pre_award_step, loaded_db):
         """Test that DD decline still notifies the requester (existing behavior maintained)."""
         requester_id = test_pre_award_step.pre_award_approval_requested_by
 
@@ -249,10 +241,7 @@ class TestNotificationFlowFix:
             "reviewer_notes": "Needs more information",
         }
 
-        response = auth_client.patch(
-            f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}",
-            json=update_data
-        )
+        response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}", json=update_data)
         assert response.status_code == 200
 
         # Verify requester was notified
@@ -260,13 +249,11 @@ class TestNotificationFlowFix:
             select(func.count()).select_from(Notification).where(Notification.recipient_id == requester_id)
         )
 
-        assert final_requester_notifications == initial_requester_notifications + 1, (
-            "Requester should be notified when DD declines (existing behavior)"
-        )
+        assert (
+            final_requester_notifications == initial_requester_notifications + 1
+        ), "Requester should be notified when DD declines (existing behavior)"
 
-    def test_budget_team_approval_notifies_requester(
-        self, auth_client, test_pre_award_step, loaded_db
-    ):
+    def test_budget_team_approval_notifies_requester(self, auth_client, test_pre_award_step, loaded_db):
         """Test that budget team approval notifies the original requester."""
         # Setup: DD has already approved
         test_pre_award_step.pre_award_approval_status = "APPROVED"
@@ -289,10 +276,7 @@ class TestNotificationFlowFix:
             "requisition_approved_date": "2026-04-30",
         }
 
-        response = auth_client.patch(
-            f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}",
-            json=update_data
-        )
+        response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}", json=update_data)
         assert response.status_code == 200
 
         # Verify requester was notified
@@ -300,13 +284,11 @@ class TestNotificationFlowFix:
             select(func.count()).select_from(Notification).where(Notification.recipient_id == requester_id)
         )
 
-        assert final_requester_notifications == initial_requester_notifications + 1, (
-            "Requester should be notified when budget team approves requisition"
-        )
+        assert (
+            final_requester_notifications == initial_requester_notifications + 1
+        ), "Requester should be notified when budget team approves requisition"
 
-    def test_budget_team_approval_notification_has_correct_content(
-        self, auth_client, test_pre_award_step, loaded_db
-    ):
+    def test_budget_team_approval_notification_has_correct_content(self, auth_client, test_pre_award_step, loaded_db):
         """Test that budget team approval notification has correct title and message."""
         # Setup: DD has already approved
         test_pre_award_step.pre_award_approval_status = "APPROVED"
@@ -324,10 +306,7 @@ class TestNotificationFlowFix:
             "requisition_approved_date": "2026-04-30",
         }
 
-        response = auth_client.patch(
-            f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}",
-            json=update_data
-        )
+        response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}", json=update_data)
         assert response.status_code == 200
 
         # Get requester's most recent notification
@@ -383,10 +362,7 @@ class TestNotificationFlowFix:
             "requisition_date": "2026-04-30",
         }
 
-        response = auth_client.patch(
-            f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}",
-            json=update_data
-        )
+        response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}", json=update_data)
         assert response.status_code == 200
 
         # Verify notifications were auto-dismissed
@@ -400,9 +376,7 @@ class TestNotificationFlowFix:
             )
         )
 
-        assert unread_count_after == 0, (
-            "All budget team review notifications should be auto-dismissed after approval"
-        )
+        assert unread_count_after == 0, "All budget team review notifications should be auto-dismissed after approval"
 
 
 class TestAPISchemaFields:
@@ -436,10 +410,7 @@ class TestAPISchemaFields:
             "requisition_approved_date": "2026-04-30",
         }
 
-        response = auth_client.patch(
-            f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}",
-            json=update_data
-        )
+        response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}", json=update_data)
         assert response.status_code == 200
 
         # Verify fields were updated
