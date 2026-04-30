@@ -378,6 +378,45 @@ class TestNotificationFlowFix:
 
         assert unread_count_after == 0, "All budget team review notifications should be auto-dismissed after approval"
 
+    def test_requisition_update_after_approval_does_not_renotify(
+        self, auth_client, test_pre_award_step, loaded_db
+    ):
+        """Test that updating requisition fields after initial approval does not trigger duplicate notifications."""
+        # Setup: DD approved, budget team already approved requisition
+        test_pre_award_step.pre_award_approval_status = "APPROVED"
+        test_pre_award_step.pre_award_approval_responded_by = 503
+        test_pre_award_step.pre_award_approval_responded_date = date.today()
+        test_pre_award_step.pre_award_requisition_number = "REQ-2026-12345"
+        test_pre_award_step.pre_award_requisition_date = date.today()
+        test_pre_award_step.pre_award_requisition_approved_by = 502
+        test_pre_award_step.pre_award_requisition_approved_date = date.today()
+        loaded_db.commit()
+
+        requester_id = test_pre_award_step.pre_award_approval_requested_by
+
+        # Get initial notification count for requester
+        initial_requester_notifications = loaded_db.scalar(
+            select(func.count()).select_from(Notification).where(Notification.recipient_id == requester_id)
+        )
+
+        # Budget team updates requisition fields (e.g., correcting the requisition number)
+        update_data = {
+            "requisition_number": "REQ-2026-99999",  # Changed
+            "requisition_date": "2026-04-30",  # Same date
+        }
+
+        response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}", json=update_data)
+        assert response.status_code == 200
+
+        # Verify requester was NOT notified again
+        final_requester_notifications = loaded_db.scalar(
+            select(func.count()).select_from(Notification).where(Notification.recipient_id == requester_id)
+        )
+
+        assert (
+            final_requester_notifications == initial_requester_notifications
+        ), "Requester should NOT be notified when requisition fields are updated after initial approval"
+
 
 class TestAPISchemaFields:
     """Test that new requisition fields are exposed in API responses."""

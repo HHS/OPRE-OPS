@@ -269,6 +269,10 @@ class ProcurementTrackerStepResponseSchema(Schema):
                 "approval_responded_by",
                 "approval_responded_date",
                 "reviewer_notes",
+                "requisition_number",
+                "requisition_date",
+                "requisition_approved_by",
+                "requisition_approved_date",
             }
             # Remove PRE_SOLICITATION-only fields
             data.pop("draft_solicitation_date", None)
@@ -328,6 +332,12 @@ class ProcurementTrackerStepPatchRequestSchema(Schema):
     approval_status = fields.String(required=False, allow_none=True, validate=validate.OneOf(["APPROVED", "DECLINED"]))
     # approval_responded_by and approval_responded_date are server-controlled - not accepted from client
     reviewer_notes = fields.String(required=False, allow_none=True, validate=validate.Length(max=150))
+
+    # OPS-1639: Budget team requisition fields
+    requisition_number = fields.String(required=False, allow_none=True, validate=validate.Length(max=100))
+    requisition_date = fields.Date(required=False, allow_none=True)
+    requisition_approved_by = fields.Integer(required=False, allow_none=True)
+    requisition_approved_date = fields.Date(required=False, allow_none=True)
 
 
 class ProcurementTrackerStepSchema(Schema):
@@ -523,6 +533,10 @@ class ProcurementTrackerStepSchema(Schema):
                 "approval_responded_by",
                 "approval_responded_date",
                 "reviewer_notes",
+                "requisition_number",
+                "requisition_date",
+                "requisition_approved_by",
+                "requisition_approved_date",
             }
             preserve_keys = base_fields | pre_award_fields
             # Remove PRE_SOLICITATION-only fields

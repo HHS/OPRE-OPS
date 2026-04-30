@@ -41,7 +41,8 @@ def upgrade() -> None:
         'procurement_tracker_step',
         'ops_user',
         ['pre_award_requisition_approved_by'],
-        ['id']
+        ['id'],
+        ondelete='SET NULL'
     )
 
     # Add columns to version table (audit history)
