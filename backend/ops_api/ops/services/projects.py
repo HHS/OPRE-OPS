@@ -71,12 +71,8 @@ class ProjectsService(OpsService[Project]):
         Validate that the immutable fields are not changed on the project.
         Raises ValidationError if any fields are invalid.
         """
-        # Validate that immutable fields aren't being changed
         if "id" in updated_fields and project.id != updated_fields.get("id"):
             raise ValidationError({"id": ["ID cannot be changed"]})
-
-        if "project_type" in updated_fields and project.project_type != updated_fields.get("project_type"):
-            raise ValidationError({"project_type": ["Project type cannot be changed"]})
 
     def _validate_and_convert_team_leaders(self, team_leaders_data) -> list[User]:
         """
@@ -167,6 +163,12 @@ class ProjectsService(OpsService[Project]):
             raise ResourceNotFoundError("Project", id)
 
         self._check_immutable_fields(project, updated_fields)
+
+        # Handle project type change via raw SQL on the model
+        new_type = updated_fields.pop("project_type", None)
+        if new_type and new_type != project.project_type:
+            project.change_type(new_type)
+            project = self.db_session.get(Project, id)
 
         # Remove origination_date if updating an admin project (not a valid field for that type)
         if project.project_type == ProjectType.ADMINISTRATIVE_AND_SUPPORT:
