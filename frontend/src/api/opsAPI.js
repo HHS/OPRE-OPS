@@ -96,7 +96,9 @@ export const opsApi = createApi({
                     agreementType,
                     projectTitle,
                     contractNumber,
-                    awardType
+                    awardType,
+                    awardingEntityId,
+                    includeProcurement
                 },
                 onlyMy,
                 sortConditions,
@@ -138,6 +140,12 @@ export const opsApi = createApi({
                 if (awardType) {
                     awardType.forEach((award) => queryParams.push(`award_type=${encodeURIComponent(award.awardType)}`));
                 }
+                if (awardingEntityId) {
+                    awardingEntityId.forEach((id) => queryParams.push(`awarding_entity_id=${id}`));
+                }
+                if (includeProcurement) {
+                    queryParams.push("include_procurement=true");
+                }
                 if (onlyMy) {
                     queryParams.push("only_my=true");
                 }
@@ -163,7 +171,9 @@ export const opsApi = createApi({
                         count: response.count,
                         limit: response.limit,
                         offset: response.offset,
-                        totals: response.totals ?? null
+                        totals: response.totals ?? null,
+                        procurement_overview: response.procurement_overview ?? null,
+                        procurement_step_summary: response.procurement_step_summary ?? null
                     };
                 }
                 // Backward compatibility with old "agreements" key
@@ -173,7 +183,9 @@ export const opsApi = createApi({
                         count: response.count,
                         limit: response.limit,
                         offset: response.offset,
-                        totals: response.totals ?? null
+                        totals: response.totals ?? null,
+                        procurement_overview: response.procurement_overview ?? null,
+                        procurement_step_summary: response.procurement_step_summary ?? null
                     };
                 }
                 // Legacy array format (no pagination)
@@ -182,7 +194,9 @@ export const opsApi = createApi({
                     count: response.length,
                     limit: response.length,
                     offset: 0,
-                    totals: null
+                    totals: null,
+                    procurement_overview: null,
+                    procurement_step_summary: null
                 };
             },
             providesTags: ["Agreements", "BudgetLineItems"]
@@ -1089,6 +1103,15 @@ export const opsApi = createApi({
             query: (agreement_id) => `/procurement-trackers/?agreement_id=${agreement_id}`,
             providesTags: ["ProcurementTrackers"]
         }),
+        getProcurementTrackersByAgreementIds: builder.query({
+            query: (agreementIds) => {
+                const queryParams = agreementIds.map((id) => `agreement_id=${id}`);
+                queryParams.push(`limit=${agreementIds.length}`);
+                return `/procurement-trackers/?${queryParams.join("&")}`;
+            },
+            transformResponse: (response) => response?.data || [],
+            providesTags: ["ProcurementTrackers"]
+        }),
         updateProcurementTrackerStep: builder.mutation({
             query: ({ stepId, data }) => {
                 return {
@@ -1208,6 +1231,7 @@ export const {
     useGetResearchMethodologiesQuery,
     useGetSpecialTopicsQuery,
     useGetProcurementTrackersByAgreementIdQuery,
+    useGetProcurementTrackersByAgreementIdsQuery,
     useUpdateProcurementTrackerStepMutation,
     useGetPendingPreAwardApprovalsQuery
 } = opsApi;

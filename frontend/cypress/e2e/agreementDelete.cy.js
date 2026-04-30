@@ -101,7 +101,35 @@ afterEach(() => {
     cy.checkA11y(null, null, terminalLog);
 });
 
+const navigateToAgreementPage = (name) => {
+    // Check if the agreement is on the current page
+    cy.get("tbody", { timeout: 30000 }).then(($tbody) => {
+        if ($tbody.text().includes(name)) {
+            return;
+        }
+        // Get the current page number before clicking next
+        cy.get(".usa-pagination__button.usa-current")
+            .invoke("text")
+            .then((currentPageText) => {
+                const currentPageNum = parseInt(currentPageText);
+                // The Next button uses visibility:hidden (not disabled) when on the last page
+                cy.get(".usa-pagination__next-page").then(($nextBtn) => {
+                    if ($nextBtn.css("visibility") !== "hidden") {
+                        cy.wrap($nextBtn).click();
+                        // Wait for the page number to change before recursing
+                        cy.get(".usa-pagination__button.usa-current", { timeout: 30000 }).should(
+                            "have.text",
+                            String(currentPageNum + 1)
+                        );
+                        navigateToAgreementPage(name);
+                    }
+                });
+            });
+    });
+};
+
 const deleteAgreementByName = (name) => {
+    navigateToAgreementPage(name);
     // get the created agreement
     cy.contains("tbody tr", name, { timeout: 30000 }).as("agreement-row");
     cy.get("@agreement-row").find('[data-cy="expand-row"]').click();

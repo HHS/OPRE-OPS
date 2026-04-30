@@ -153,6 +153,7 @@ class AgreementRequestSchema(PaginationListSchema):
     only_my = fields.List(fields.Boolean(), required=False)
     award_type = fields.List(fields.Enum(AgreementClassification), required=False)
     exact_match = fields.List(fields.Boolean(), required=False, load_default=[True])
+    include_procurement = fields.List(fields.Boolean(), required=False, load_default=[False])
 
 
 class AgreementFiltersQueryParametersSchema(Schema):
@@ -224,7 +225,7 @@ class AgreementListResponse(FyObligatedMixin, AgreementData):
     project = fields.Nested(ProjectSchema())
     product_service_code = fields.Nested(ProductServiceCodeSchema)
     budget_line_items = fields.List(
-        fields.Nested(BudgetLineItemResponseSchema, only=["id", "amount", "fees", "status", "is_obe"]),
+        fields.Nested(BudgetLineItemResponseSchema, only=["id", "amount", "fees", "status", "is_obe", "fiscal_year"]),
         allow_none=True,
     )
     procurement_shop = fields.Nested(ProcurementShopSchema)

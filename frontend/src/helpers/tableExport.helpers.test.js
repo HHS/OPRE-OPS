@@ -159,3 +159,107 @@ describe("exportTableToXlsx", () => {
         expect(mockWorksheet.C3.z).toBeUndefined();
     });
 });
+
+describe("exportMultiSheetToXlsx", () => {
+    const originalCreateElement = document.createElement.bind(document);
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+
+        if (!URL.createObjectURL) {
+            Object.defineProperty(URL, "createObjectURL", {
+                writable: true,
+                value: vi.fn()
+            });
+        }
+
+        if (!URL.revokeObjectURL) {
+            Object.defineProperty(URL, "revokeObjectURL", {
+                writable: true,
+                value: vi.fn()
+            });
+        }
+
+        vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:test-url");
+        vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
+
+        vi.spyOn(document, "createElement").mockImplementation((tagName, options) => {
+            if (tagName === "a") {
+                return {
+                    href: "",
+                    download: "",
+                    click: vi.fn()
+                };
+            }
+
+            return originalCreateElement(tagName, options);
+        });
+    });
+
+    it("should throw if no sheets are provided", async () => {
+        const { exportMultiSheetToXlsx } = await import("./tableExport.helpers");
+
+        await expect(exportMultiSheetToXlsx({ sheets: [] })).rejects.toThrow("At least one sheet is required");
+        await expect(exportMultiSheetToXlsx({})).rejects.toThrow("At least one sheet is required");
+    });
+
+    it("should create a workbook with multiple sheets", async () => {
+        const { exportMultiSheetToXlsx } = await import("./tableExport.helpers");
+
+        vi.mocked(XLSX.utils.aoa_to_sheet).mockReturnValue({});
+
+        const sheets = [
+            {
+                name: "All",
+                headers: ["ID", "Name"],
+                rows: [
+                    [1, "Alice"],
+                    [2, "Bob"]
+                ]
+            },
+            {
+                name: "Step 1",
+                headers: ["ID", "Name"],
+                rows: [[1, "Alice"]]
+            }
+        ];
+
+        await exportMultiSheetToXlsx({ sheets, filename: "test" });
+
+        // Should create one workbook and append two sheets
+        expect(XLSX.utils.book_new).toHaveBeenCalledTimes(1);
+        expect(XLSX.utils.book_append_sheet).toHaveBeenCalledTimes(2);
+        expect(XLSX.utils.book_append_sheet).toHaveBeenCalledWith(expect.anything(), expect.anything(), "All");
+        expect(XLSX.utils.book_append_sheet).toHaveBeenCalledWith(expect.anything(), expect.anything(), "Step 1");
+        expect(XLSX.write).toHaveBeenCalled();
+    });
+
+    it("should apply currency formatting to specified columns per sheet", async () => {
+        const { exportMultiSheetToXlsx } = await import("./tableExport.helpers");
+
+        const mockWorksheet = {
+            "!ref": "A1:C2",
+            C2: { v: 500.0 }
+        };
+
+        vi.mocked(XLSX.utils.aoa_to_sheet).mockReturnValue(mockWorksheet);
+        vi.mocked(XLSX.utils.decode_range).mockReturnValue({ s: { r: 0, c: 0 }, e: { r: 1, c: 2 } });
+        vi.mocked(XLSX.utils.encode_cell).mockImplementation(({ r, c }) => {
+            const cols = ["A", "B", "C"];
+            return `${cols[c]}${r + 1}`;
+        });
+
+        const sheets = [
+            {
+                name: "Sheet1",
+                headers: ["ID", "Name", "Amount"],
+                rows: [[1, "Test", 500.0]],
+                currencyColumns: [2]
+            }
+        ];
+
+        await exportMultiSheetToXlsx({ sheets });
+
+        expect(mockWorksheet.C2.z).toBe('"$"#,##0.00_);("$"#,##0.00)');
+    });
+});
