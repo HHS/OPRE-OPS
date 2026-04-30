@@ -23,7 +23,14 @@ const suite = create((data = {}, fieldName = undefined) => {
     test("reason", "This information is required to submit for approval", () => {
         enforce(data.agreement_reason).isNotBlank();
     });
-    // vendor is not required
+    test("vendor", "This information is required to submit for approval", () => {
+        if (
+            data.agreement_reason &&
+            (data.agreement_reason === "RECOMPETE" || data.agreement_reason === "LOGICAL_FOLLOW_ON")
+        ) {
+            enforce(data.vendor).isNotBlank();
+        }
+    });
     test("project-officer", "This information is required to submit for approval", () => {
         enforce(Number(data.project_officer_id)).greaterThan(0);
     });

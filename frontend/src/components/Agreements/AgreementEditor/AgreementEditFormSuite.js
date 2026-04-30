@@ -38,8 +38,8 @@ const suite = create((data = {}, fieldName) => {
     });
     test("vendor", "This is required information", () => {
         if (
-            (data.agreement_reason && data.agreement_reason === "RECOMPETE") ||
-            data.agreement_reason === "LOGICAL_FOLLOW_ON"
+            data.agreement_reason &&
+            (data.agreement_reason === "RECOMPETE" || data.agreement_reason === "LOGICAL_FOLLOW_ON")
         ) {
             enforce(data.vendor).isNotBlank();
         }

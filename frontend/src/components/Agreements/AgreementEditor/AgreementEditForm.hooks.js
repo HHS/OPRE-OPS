@@ -184,10 +184,11 @@ const useAgreementEditForm = (
     const shouldRequestChange = hasProcurementShopChanged && areAnyBudgetLinesPlanned && !isAgreementAwarded;
 
     const runValidate = React.useCallback(
-        (name, value) => {
+        (name, value, overrides = {}) => {
             suite.run(
                 {
                     ...agreement,
+                    ...overrides,
                     [name]: value
                 },
                 name

@@ -398,6 +398,7 @@ const AgreementEditForm = ({
                         setAgreementReason(value);
                         if (isReviewMode) {
                             runValidate(name, value);
+                            runValidate("vendor", null, { agreement_reason: value });
                         }
                     }}
                     isDisabled={isFieldDisabled(
