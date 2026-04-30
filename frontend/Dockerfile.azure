@@ -1,6 +1,10 @@
 # ---- Dependency Installation Stage ----
 FROM oven/bun@sha256:87416c977a612a204eb54ab9f3927023c2a3c971f4f345a01da08ea6262ae30e as deps
 
+# Patch OS packages so CVEs fixed upstream (e.g. OpenSSL) are picked up on rebuild
+# even while this image is pinned to a fixed digest.
+RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /home/bun/app
 
 # Copy only the package files first to leverage Docker cache
@@ -55,7 +59,7 @@ RUN VITE_BACKEND_DOMAIN=${VITE_BACKEND_DOMAIN} VITE_ENABLE_MSW=${VITE_ENABLE_MSW
 FROM alpine:3.23.4 as release
 
 # hadolint ignore=DL3018
-RUN apk update && apk add --no-cache nginx && rm -rf /var/cache/apk/*
+RUN apk update && apk upgrade --no-cache && apk add --no-cache nginx && rm -rf /var/cache/apk/*
 
 COPY nginx.conf /etc/nginx/nginx.conf
 
