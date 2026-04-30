@@ -1,161 +1,126 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
+import { exportTableToXlsx } from "./tableExport.helpers";
 
-// Mock the utils module
-const mockGetCurrentLocalTimestamp = vi.fn(() => "2023-01-01_12-00-00");
+const CURRENCY_FORMAT = '"$"#,##0.00_);("$"#,##0.00)';
+
 vi.mock("./utils", () => ({
-    getCurrentLocalTimestamp: mockGetCurrentLocalTimestamp
-}));
-
-// Mock the XLSX library
-vi.mock("xlsx", () => ({
-    utils: {
-        aoa_to_sheet: vi.fn(),
-        book_new: vi.fn(() => ({})),
-        book_append_sheet: vi.fn(),
-        decode_range: vi.fn(),
-        encode_cell: vi.fn()
-    },
-    write: vi.fn(() => new Uint8Array(10))
+    getCurrentLocalTimestamp: () => "2023-01-01_12-00-00"
 }));
 
 describe("exportTableToXlsx", () => {
     const originalCreateElement = document.createElement.bind(document);
+    /** @type {{ href: string; download: string; click: import("vitest").Mock }} */
+    let anchor;
 
     beforeEach(() => {
-        vi.clearAllMocks();
+        vi.restoreAllMocks();
 
         if (!URL.createObjectURL) {
-            Object.defineProperty(URL, "createObjectURL", {
-                writable: true,
-                value: vi.fn()
-            });
+            Object.defineProperty(URL, "createObjectURL", { writable: true, value: vi.fn() });
         }
-
         if (!URL.revokeObjectURL) {
-            Object.defineProperty(URL, "revokeObjectURL", {
-                writable: true,
-                value: vi.fn()
-            });
+            Object.defineProperty(URL, "revokeObjectURL", { writable: true, value: vi.fn() });
         }
-
         vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:test-url");
         vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
 
-        vi.spyOn(document, "createElement").mockImplementation((tagName, options) => {
-            if (tagName === "a") {
-                return {
-                    href: "",
-                    download: "",
-                    click: vi.fn()
-                };
+        anchor = { href: "", download: "", click: vi.fn() };
+        vi.spyOn(document, "createElement").mockImplementation(
+            /** @type {(tagName: string, options?: ElementCreationOptions) => HTMLElement} */ (tagName, options) => {
+                if (tagName === "a") return /** @type {any} */ (anchor);
+                return originalCreateElement(tagName, options);
             }
-
-            return originalCreateElement(tagName, options);
-        });
+        );
     });
 
-    it("should export table data to XLSX successfully", async () => {
-        // Import the function after mocks are set up
-        const { exportTableToXlsx } = await import("./tableExport.helpers");
+    const readWorkbookFromBlob = async () => {
+        const createObjectURL = /** @type {import("vitest").Mock} */ (/** @type {unknown} */ (URL.createObjectURL));
+        const createCall = createObjectURL.mock.calls[0];
+        expect(createCall, "expected a Blob to be handed to URL.createObjectURL").toBeDefined();
+        /** @type {Blob} */
+        const blob = createCall[0];
+        const arrayBuffer = await blob.arrayBuffer();
+        const wb = new ExcelJS.Workbook();
+        await wb.xlsx.load(arrayBuffer);
+        const ws = wb.getWorksheet("Sheet1");
+        if (!ws) throw new Error("Worksheet 'Sheet1' not found in generated workbook");
+        return ws;
+    };
 
+    /**
+     * Read a row's values as a plain array (1-indexed values in ExcelJS; slice off the leading empty entry).
+     * @param {import("exceljs").Worksheet} ws
+     * @param {number} rowNumber
+     */
+    const rowValues = (ws, rowNumber) => {
+        const raw = ws.getRow(rowNumber).values;
+        const arr = Array.isArray(raw) ? raw : [];
+        return arr.slice(1);
+    };
+
+    it("should export table data to XLSX successfully", async () => {
         const data = [
             { id: 1, name: "John Doe", age: 30 },
             { id: 2, name: "Jane Doe", age: 25 }
         ];
         const headers = ["ID", "Name", "Age"];
+        /** @param {{ id: number; name: string; age: number }} item */
         const rowMapper = (item) => [item.id, item.name, item.age];
-        const filename = "test.xlsx";
 
-        await exportTableToXlsx({ data, headers, rowMapper, filename });
+        await exportTableToXlsx({ data, headers, rowMapper, filename: "test.xlsx" });
 
-        // Verify XLSX processing
-        expect(XLSX.utils.aoa_to_sheet).toHaveBeenCalledWith([headers, [1, "John Doe", 30], [2, "Jane Doe", 25]]);
-        expect(XLSX.utils.book_new).toHaveBeenCalled();
-        expect(XLSX.utils.book_append_sheet).toHaveBeenCalled();
-        expect(XLSX.write).toHaveBeenCalled();
+        expect(anchor.click).toHaveBeenCalledOnce();
+        expect(anchor.download).toBe("test.xlsx_2023-01-01_12-00-00.xlsx");
+
+        const ws = await readWorkbookFromBlob();
+        expect(rowValues(ws, 1)).toEqual(headers);
+        expect(rowValues(ws, 2)).toEqual([1, "John Doe", 30]);
+        expect(rowValues(ws, 3)).toEqual([2, "Jane Doe", 25]);
     });
 
     it("should throw an error if required parameters are missing", async () => {
-        const { exportTableToXlsx } = await import("./tableExport.helpers");
-
-        await expect(exportTableToXlsx({})).rejects.toThrow("Missing required parameters");
+        await expect(exportTableToXlsx(/** @type {any} */ ({}))).rejects.toThrow("Missing required parameters");
     });
 
     it("should apply currency formatting to specified columns", async () => {
-        const { exportTableToXlsx } = await import("./tableExport.helpers");
-
         const data = [{ id: 1, name: "Project A", budget: 1000.5, cost: 800.25 }];
         const headers = ["ID", "Name", "Budget", "Cost"];
+        /** @param {{ id: number; name: string; budget: number; cost: number }} item */
         const rowMapper = (item) => [item.id, item.name, item.budget, item.cost];
-        const currencyColumns = [2, 3];
 
-        // Create a mock worksheet
-        const mockWorksheet = {
-            "!ref": "A1:D2",
-            C2: { v: 1000.5 },
-            D2: { v: 800.25 }
-        };
+        await exportTableToXlsx({ data, headers, rowMapper, currencyColumns: [2, 3] });
 
-        vi.mocked(XLSX.utils.aoa_to_sheet).mockReturnValue(mockWorksheet);
-        vi.mocked(XLSX.utils.decode_range).mockReturnValue({ s: { r: 0, c: 0 }, e: { r: 1, c: 3 } });
-        vi.mocked(XLSX.utils.encode_cell).mockImplementation(({ r, c }) => {
-            const cols = ["A", "B", "C", "D"];
-            return `${cols[c]}${r + 1}`;
-        });
-
-        await exportTableToXlsx({ data, headers, rowMapper, currencyColumns });
-
-        // Verify currency formatting was applied
-        expect(mockWorksheet.C2.z).toBe('"$"#,##0.00_);("$"#,##0.00)');
-        expect(mockWorksheet.D2.z).toBe('"$"#,##0.00_);("$"#,##0.00)');
+        const ws = await readWorkbookFromBlob();
+        expect(ws.getCell("C2").numFmt).toBe(CURRENCY_FORMAT);
+        expect(ws.getCell("D2").numFmt).toBe(CURRENCY_FORMAT);
     });
 
     it("should handle empty currencyColumns array", async () => {
-        const { exportTableToXlsx } = await import("./tableExport.helpers");
-
         const data = [{ id: 1, name: "Test", amount: 100 }];
         const headers = ["ID", "Name", "Amount"];
+        /** @param {{ id: number; name: string; amount: number }} item */
         const rowMapper = (item) => [item.id, item.name, item.amount];
-        const currencyColumns = [];
 
-        const mockWorksheet = { "!ref": "A1:C2" };
-        vi.mocked(XLSX.utils.aoa_to_sheet).mockReturnValue(mockWorksheet);
+        await exportTableToXlsx({ data, headers, rowMapper, currencyColumns: [] });
 
-        await exportTableToXlsx({ data, headers, rowMapper, currencyColumns });
-
-        // Should not call decode_range when currencyColumns is empty
-        expect(XLSX.utils.decode_range).not.toHaveBeenCalled();
+        const ws = await readWorkbookFromBlob();
+        expect(ws.getCell("C2").numFmt).toBeFalsy();
     });
 
     it("should only format numeric values in currency columns", async () => {
-        const { exportTableToXlsx } = await import("./tableExport.helpers");
-
         const data = [
             { id: 1, name: "Project", budget: 1000.5 },
             { id: 2, name: "Task", budget: "N/A" }
         ];
         const headers = ["ID", "Name", "Budget"];
+        /** @param {{ id: number; name: string; budget: number | string }} item */
         const rowMapper = (item) => [item.id, item.name, item.budget];
-        const currencyColumns = [2];
 
-        const mockWorksheet = {
-            "!ref": "A1:C3",
-            C2: { v: 1000.5 },
-            C3: { v: "N/A" }
-        };
+        await exportTableToXlsx({ data, headers, rowMapper, currencyColumns: [2] });
 
-        vi.mocked(XLSX.utils.aoa_to_sheet).mockReturnValue(mockWorksheet);
-        vi.mocked(XLSX.utils.decode_range).mockReturnValue({ s: { r: 0, c: 0 }, e: { r: 2, c: 2 } });
-        vi.mocked(XLSX.utils.encode_cell).mockImplementation(({ r, c }) => {
-            const cols = ["A", "B", "C"];
-            return `${cols[c]}${r + 1}`;
-        });
-
-        await exportTableToXlsx({ data, headers, rowMapper, currencyColumns });
-
-        // Only numeric values should be formatted
-        expect(mockWorksheet.C2.z).toBe('"$"#,##0.00_);("$"#,##0.00)');
-        expect(mockWorksheet.C3.z).toBeUndefined();
+        const ws = await readWorkbookFromBlob();
+        expect(ws.getCell("C2").numFmt).toBe(CURRENCY_FORMAT);
+        expect(ws.getCell("C3").numFmt).toBeFalsy();
     });
 });
