@@ -167,6 +167,12 @@ def test_get_all_users(auth_client, loaded_db, app_ctx):
     assert response.json[0]["roles"] == get_expected_roles(expected_user)
     assert response.json[0]["is_superuser"] is False
 
+    # Verify READ_ONLY users are filtered out
+    user_ids = [user["id"] for user in response.json]
+    read_only_user = loaded_db.get(User, 529)  # Read-Only Randall
+    assert read_only_user is not None, "READ_ONLY user should exist in database"
+    assert read_only_user.id not in user_ids, "READ_ONLY user should be filtered from response"
+
 
 def test_get_all_users_by_id(auth_client, loaded_db, app_ctx):
     response = auth_client.get(url_for("api.users-group", id=500))
