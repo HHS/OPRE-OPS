@@ -118,7 +118,7 @@ describe("FileUploadButton component", () => {
 
     describe("Disabled State", () => {
         it("renders with disabled=true", () => {
-            render(
+            const { container } = render(
                 <FileUploadButton
                     id="test-upload"
                     onFileChange={mockOnFileChange}
@@ -126,7 +126,8 @@ describe("FileUploadButton component", () => {
                 />
             );
 
-            const input = screen.getByLabelText("Upload File");
+            // eslint-disable-next-line testing-library/no-node-access, testing-library/no-container
+            const input = container.querySelector('input[type="file"]');
             expect(input).toBeDisabled();
         });
 
@@ -203,7 +204,7 @@ describe("FileUploadButton component", () => {
         });
 
         it("does NOT wrap in Tooltip when disabled but no disabledTooltip", () => {
-            const { container } = render(
+            render(
                 <FileUploadButton
                     id="test-upload"
                     onFileChange={mockOnFileChange}
@@ -214,13 +215,10 @@ describe("FileUploadButton component", () => {
             const button = screen.getByRole("button", { name: "Upload File" });
             // Without tooltip, should not have the inline-block div wrapper
             expect(button.parentElement.style.display).not.toBe("inline-block");
-            // Should not be wrapped by Tooltip's span
-            // eslint-disable-next-line testing-library/no-node-access, testing-library/no-container
-            expect(container.querySelector("span[ref]")).toBeNull();
         });
 
         it("does NOT wrap in Tooltip when enabled", () => {
-            const { container } = render(
+            render(
                 <FileUploadButton
                     id="test-upload"
                     onFileChange={mockOnFileChange}
@@ -232,9 +230,6 @@ describe("FileUploadButton component", () => {
             const button = screen.getByRole("button", { name: "Upload File" });
             // When enabled, should not have the inline-block div wrapper
             expect(button.parentElement.style.display).not.toBe("inline-block");
-            // Should not be wrapped by Tooltip's span
-            // eslint-disable-next-line testing-library/no-node-access, testing-library/no-container
-            expect(container.querySelector("span[ref]")).toBeNull();
         });
     });
 
@@ -446,7 +441,7 @@ describe("FileUploadButton component", () => {
                 />
             );
 
-            const button = screen.getByRole("button", { name: "Upload File" });
+            const button = screen.getByRole("button", { name: "Download File" });
             await user.click(button);
 
             expect(mockOnDownload).toHaveBeenCalledTimes(1);
@@ -510,31 +505,33 @@ describe("FileUploadButton component", () => {
     });
 
     describe("Accessibility", () => {
-        it("button has correct aria-label from label prop", () => {
+        it("button has correct aria-label from buttonText prop", () => {
             render(
                 <FileUploadButton
                     id="test-upload"
                     onFileChange={mockOnFileChange}
                     label="Custom Label"
+                    buttonText="Upload File"
                 />
             );
 
-            const button = screen.getByRole("button", { name: "Custom Label" });
-            expect(button).toHaveAttribute("aria-label", "Custom Label");
+            const button = screen.getByRole("button", { name: "Upload File" });
+            expect(button).toHaveAttribute("aria-label", "Upload File");
         });
 
-        it("button aria-label uses selectedFile name when provided", () => {
+        it("button aria-label includes action and selectedFile name when provided", () => {
             const mockFile = new File(["content"], "my-file.pdf", { type: "application/pdf" });
             render(
                 <FileUploadButton
                     id="test-upload"
                     onFileChange={mockOnFileChange}
                     selectedFile={mockFile}
+                    buttonText="Upload File"
                 />
             );
 
-            const button = screen.getByRole("button", { name: "my-file.pdf" });
-            expect(button).toHaveAttribute("aria-label", "my-file.pdf");
+            const button = screen.getByRole("button", { name: "Upload File: my-file.pdf" });
+            expect(button).toHaveAttribute("aria-label", "Upload File: my-file.pdf");
         });
 
         it("button has type='button' to prevent form submission", () => {

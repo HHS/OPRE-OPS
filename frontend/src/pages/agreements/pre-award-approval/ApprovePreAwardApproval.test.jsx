@@ -326,8 +326,8 @@ describe("ApprovePreAwardApproval", () => {
         expect(
             screen.getByText(/Upload Documents is coming soon! For now, please review within the OPRE preferred tool/)
         ).toBeInTheDocument();
-        // FileUploadButton with download variant - aria-label comes from label prop
-        expect(screen.getByRole("button", { name: "Final Consensus Memo" })).toBeDisabled();
+        // FileUploadButton with download variant - aria-label comes from buttonText prop
+        expect(screen.getByRole("button", { name: "Download File" })).toBeDisabled();
     });
 
     it("should not display submitter notes section when notes are empty", () => {

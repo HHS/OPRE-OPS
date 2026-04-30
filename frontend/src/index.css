@@ -29,3 +29,10 @@ body {
     ) {
     font-weight: 500;
 }
+
+/* ---------- Center tooltip text for FileUploadButton components ---------- */
+.tooltip-centered .usa-tooltip__body {
+    text-align: center;
+    max-width: 300px;
+    white-space: normal;
+}

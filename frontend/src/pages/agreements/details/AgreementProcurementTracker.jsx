@@ -42,11 +42,12 @@ const AgreementProcurementTracker = ({ agreement }) => {
     React.useEffect(() => {
         if (completedStepNumber !== null && completedStepRef.current) {
             // Wait for USWDS to finish all its scrollIntoView calls
-            setTimeout(() => {
+            const timeoutId = setTimeout(() => {
                 if (completedStepRef.current) {
-                    completedStepRef.current.scrollIntoView({ behavior: "instant", block: "nearest" });
+                    completedStepRef.current.scrollIntoView({ behavior: "auto", block: "nearest" });
                 }
             }, 100);
+            return () => clearTimeout(timeoutId);
         }
     }, [completedStepNumber]);
 

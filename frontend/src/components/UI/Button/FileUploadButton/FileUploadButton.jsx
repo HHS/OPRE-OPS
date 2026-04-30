@@ -59,7 +59,7 @@ function FileUploadButton({
     onDownload,
     selectedFile,
     label = "Upload File",
-    acceptedFileTypes = "*",
+    acceptedFileTypes = "*/*",
     disabled = false,
     disabledTooltip,
     buttonText = "Upload File",
@@ -83,7 +83,7 @@ function FileUploadButton({
     };
 
     const buttonClasses = disabled
-        ? "display-flex flex-column padding-2 radius-lg border-2px bg-base-lighter border-base-light cursor-not-allowed"
+        ? `display-flex flex-column padding-2 radius-lg border-2px bg-white border-base-light cursor-not-allowed ${className}`.trim()
         : `display-flex flex-column padding-2 radius-lg border-2px bg-white hover:bg-base-lightest border-base-light hover:border-base-lighter cursor-pointer ${className}`.trim();
 
     const buttonElement = (
@@ -91,13 +91,12 @@ function FileUploadButton({
             type="button"
             onClick={handleButtonClick}
             disabled={disabled}
-            aria-label={selectedFile ? selectedFile.name : label}
+            aria-label={selectedFile ? `${buttonText}: ${selectedFile.name}` : buttonText}
             className={buttonClasses}
             style={{
                 width,
                 minHeight,
                 justifyContent: "space-between",
-                background: "none",
                 font: "inherit",
                 textAlign: "left",
                 pointerEvents: disabled ? "none" : "auto",
@@ -149,8 +148,12 @@ function FileUploadButton({
                 <Tooltip
                     label={disabledTooltip}
                     position="top"
+                    className="tooltip-centered"
                 >
                     <div
+                        tabIndex={0}
+                        role="button"
+                        aria-disabled="true"
                         style={{
                             display: "inline-block",
                             cursor: "not-allowed"
