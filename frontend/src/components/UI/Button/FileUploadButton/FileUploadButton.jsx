@@ -147,8 +147,8 @@ function FileUploadButton({
             {disabled && disabledTooltip ? (
                 <Tooltip
                     label={disabledTooltip}
-                    position="top"
-                    className="tooltip-centered"
+                    position="right"
+                    className="tooltip-centered tooltip-right-wide"
                 >
                     <div
                         tabIndex={0}
