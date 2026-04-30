@@ -378,9 +378,7 @@ class TestNotificationFlowFix:
 
         assert unread_count_after == 0, "All budget team review notifications should be auto-dismissed after approval"
 
-    def test_requisition_update_after_approval_does_not_renotify(
-        self, auth_client, test_pre_award_step, loaded_db
-    ):
+    def test_requisition_update_after_approval_does_not_renotify(self, auth_client, test_pre_award_step, loaded_db):
         """Test that updating requisition fields after initial approval does not trigger duplicate notifications."""
         # Setup: DD approved, budget team already approved requisition
         test_pre_award_step.pre_award_approval_status = "APPROVED"
