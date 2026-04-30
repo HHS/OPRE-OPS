@@ -124,6 +124,7 @@ class ProcurementTrackerStepService:
         # Used to detect state transitions for notification logic
         old_approval_requested = step.pre_award_approval_requested
         old_approval_status = step.pre_award_approval_status
+        old_requisition_approved_by = step.pre_award_requisition_approved_by
         # Map API field names to model field names for step-specific fields
         field_mapping = {
             "acquisition_planning": {
@@ -164,6 +165,11 @@ class ProcurementTrackerStepService:
                 "approval_responded_by": "pre_award_approval_responded_by",
                 "approval_responded_date": "pre_award_approval_responded_date",
                 "reviewer_notes": "pre_award_approval_reviewer_notes",
+                # OPS-1639: Budget team requisition fields
+                "requisition_number": "pre_award_requisition_number",
+                "requisition_date": "pre_award_requisition_date",
+                "requisition_approved_by": "pre_award_requisition_approved_by",
+                "requisition_approved_date": "pre_award_requisition_approved_date",
             },
         }
 
@@ -231,6 +237,7 @@ class ProcurementTrackerStepService:
             current_user,
             old_approval_requested=old_approval_requested,
             old_approval_status=old_approval_status,
+            old_requisition_approved_by=old_requisition_approved_by,
         )
 
         logger.debug(f"Successfully updated procurement tracker step {id}")
@@ -324,6 +331,7 @@ class ProcurementTrackerStepService:
         current_user: User,
         old_approval_requested: Optional[bool] = None,
         old_approval_status: Optional[str] = None,
+        old_requisition_approved_by: Optional[int] = None,
     ) -> None:
         """
         Send notifications when approval is requested or responded to.
@@ -331,6 +339,7 @@ class ProcurementTrackerStepService:
         Only sends notifications when state TRANSITIONS occur:
         - Approval request: when pre_award_approval_requested changes from False/None → True
         - Approval response: when pre_award_approval_status changes to APPROVED/DECLINED for first time
+        - Budget team requisition: when pre_award_requisition_approved_by changes from None → user_id
 
         Args:
             step: The updated procurement tracker step
@@ -338,6 +347,7 @@ class ProcurementTrackerStepService:
             current_user: User making the update
             old_approval_requested: Previous value of pre_award_approval_requested before update
             old_approval_status: Previous value of pre_award_approval_status before update
+            old_requisition_approved_by: Previous value of pre_award_requisition_approved_by before update
         """
         from models import NotificationType
         from ops_api.ops.services.notifications import NotificationService
@@ -374,39 +384,19 @@ class ProcurementTrackerStepService:
                 )
             logger.debug(f"Created {len(recipient_ids)} pre-award approval request notifications")
 
-        # Case 2: Approval was approved/declined - notify submitter
+        # Case 2: Approval was approved/declined
         # Only send if approval_status changed from None → APPROVED/DECLINED
         new_approval_status = data.get("approval_status")
         approval_response_transitioned = new_approval_status in ["APPROVED", "DECLINED"] and old_approval_status is None
 
         if approval_response_transitioned:
-            status_text = "approved" if new_approval_status == "APPROVED" else "declined"
+            if new_approval_status == "APPROVED":
+                # OPS-1639: DD approved - notify BUDGET_TEAM members (not requester)
+                self._notify_budget_team_for_requisition_review(step, agreement, current_user, notification_service)
 
-            if step.pre_award_approval_requested_by:
-                # Build message with optional reviewer notes
-                message = (
-                    f"Your pre-award approval request for Agreement {agreement.display_name} "
-                    f"has been {status_text} by {current_user.full_name}."
-                )
-                if step.pre_award_approval_reviewer_notes and step.pre_award_approval_reviewer_notes.strip():
-                    reviewer_notes_text = step.pre_award_approval_reviewer_notes.strip()
-                    # Escape Markdown metacharacters to ensure notes display literally in both
-                    # SimpleAlert (plain text) and NotificationCenter/LogItem (ReactMarkdown).
-                    # Prevents user-supplied markdown from rendering as formatting or clickable links.
-                    reviewer_notes_text = escape_markdown(reviewer_notes_text)
-                    message += f"\n\nNotes:\n{reviewer_notes_text}"
-
-                notification_service.create(
-                    {
-                        "title": f"Pre-Award Approval {status_text.capitalize()}",
-                        "message": message,
-                        "is_read": False,
-                        "recipient_id": step.pre_award_approval_requested_by,
-                        "notification_type": NotificationType.PRE_AWARD_APPROVAL_NOTIFICATION,
-                        "procurement_tracker_step_id": step.id,
-                    }
-                )
-                logger.debug(f"Created pre-award approval {status_text} notification for submitter")
+            elif new_approval_status == "DECLINED":
+                # DD declined - notify requester (existing behavior)
+                self._notify_requester_of_decline(step, agreement, current_user, notification_service)
 
             # Auto-dismiss "in review" notifications for reviewers via bulk UPDATE
             from sqlalchemy import and_, update
@@ -426,6 +416,113 @@ class ProcurementTrackerStepService:
             )
 
             logger.debug(f"Auto-dismissed {dismiss_result.rowcount or 0} 'in review' notifications for reviewers")
+
+        # Case 3: Budget Team Requisition Approval (OPS-1639)
+        # Only send if requisition_approved_by changed from None → {user_id}
+        new_requisition_approved_by = step.pre_award_requisition_approved_by
+        requisition_approval_transitioned = new_requisition_approved_by is not None and old_requisition_approved_by is None
+
+        if requisition_approval_transitioned:
+            # Budget team approved requisition - notify original requester
+            if step.pre_award_approval_requested_by:
+                message = (
+                    f"{current_user.full_name} has approved the Pre-Award Requisition for Agreement {agreement.display_name}. "
+                    f"The Final Consensus Memo can now be sent to the Procurement Shop."
+                )
+
+                notification_service.create(
+                    {
+                        "title": "Pre-Award Requisition Approved",
+                        "message": message,
+                        "is_read": False,
+                        "recipient_id": step.pre_award_approval_requested_by,
+                        "notification_type": NotificationType.PRE_AWARD_APPROVAL_NOTIFICATION,
+                        "procurement_tracker_step_id": step.id,
+                    }
+                )
+                logger.debug("Created pre-award requisition approved notification for original requester")
+
+            # Auto-dismiss budget team requisition review notifications
+            from sqlalchemy import and_, update
+
+            from models import PreAwardApprovalNotification
+
+            dismiss_result = self.db_session.execute(
+                update(PreAwardApprovalNotification)
+                .where(
+                    and_(
+                        PreAwardApprovalNotification.title == "Budget Team Requisition Review Required",
+                        PreAwardApprovalNotification.is_read.is_(False),
+                        PreAwardApprovalNotification.procurement_tracker_step_id == step.id,
+                    )
+                )
+                .values(is_read=True)
+            )
+
+            logger.debug(f"Auto-dismissed {dismiss_result.rowcount or 0} budget team requisition review notifications")
+
+    def _notify_budget_team_for_requisition_review(self, step, agreement, current_user, notification_service):
+        """Notify budget team members that DD has approved and requisition review is required."""
+        from sqlalchemy import select
+
+        from models import NotificationType, User
+        from models.users import UserRole
+
+        # Get all budget team members
+        budget_team_query = (
+            select(User.id)
+            .join(User.roles)
+            .where(UserRole.role == "BUDGET_TEAM")
+        )
+        budget_team_ids = self.db_session.execute(budget_team_query).scalars().all()
+
+        message = (
+            f"{current_user.full_name} has approved the Pre-Award request for Agreement {agreement.display_name}. "
+            f"Budget Team review and requisition entry is now required."
+        )
+
+        # Send notification to each budget team member
+        for budget_team_id in budget_team_ids:
+            notification_service.create(
+                {
+                    "title": "Budget Team Requisition Review Required",
+                    "message": message,
+                    "is_read": False,
+                    "recipient_id": budget_team_id,
+                    "notification_type": NotificationType.PRE_AWARD_APPROVAL_NOTIFICATION,
+                    "procurement_tracker_step_id": step.id,
+                }
+            )
+        logger.debug(f"Created budget team requisition review notifications for {len(budget_team_ids)} members")
+
+    def _notify_requester_of_decline(self, step, agreement, current_user, notification_service):
+        """Notify requester that their pre-award approval request was declined."""
+        from models import NotificationType
+
+        if step.pre_award_approval_requested_by:
+            message = (
+                f"Your pre-award approval request for Agreement {agreement.display_name} "
+                f"has been declined by {current_user.full_name}."
+            )
+            if step.pre_award_approval_reviewer_notes and step.pre_award_approval_reviewer_notes.strip():
+                reviewer_notes_text = step.pre_award_approval_reviewer_notes.strip()
+                # Escape Markdown metacharacters to ensure notes display literally in both
+                # SimpleAlert (plain text) and NotificationCenter/LogItem (ReactMarkdown).
+                # Prevents user-supplied markdown from rendering as formatting or clickable links.
+                reviewer_notes_text = escape_markdown(reviewer_notes_text)
+                message += f"\n\nNotes:\n{reviewer_notes_text}"
+
+            notification_service.create(
+                {
+                    "title": "Pre-Award Approval Declined",
+                    "message": message,
+                    "is_read": False,
+                    "recipient_id": step.pre_award_approval_requested_by,
+                    "notification_type": NotificationType.PRE_AWARD_APPROVAL_NOTIFICATION,
+                    "procurement_tracker_step_id": step.id,
+                }
+            )
+            logger.debug("Created pre-award approval declined notification for submitter")
 
     def _get_approval_reviewers(self, agreement) -> set[int]:
         """

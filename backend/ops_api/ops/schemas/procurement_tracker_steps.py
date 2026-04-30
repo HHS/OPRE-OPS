@@ -184,6 +184,11 @@ class ProcurementTrackerStepResponseSchema(Schema):
             data["approval_responded_by"] = getattr(obj, "pre_award_approval_responded_by", None)
             data["approval_responded_date"] = getattr(obj, "pre_award_approval_responded_date", None)
             data["reviewer_notes"] = getattr(obj, "pre_award_approval_reviewer_notes", None)
+            # OPS-1639: Budget team requisition fields
+            data["requisition_number"] = getattr(obj, "pre_award_requisition_number", None)
+            data["requisition_date"] = getattr(obj, "pre_award_requisition_date", None)
+            data["requisition_approved_by"] = getattr(obj, "pre_award_requisition_approved_by", None)
+            data["requisition_approved_date"] = getattr(obj, "pre_award_requisition_approved_date", None)
 
         return data
 
@@ -426,6 +431,11 @@ class ProcurementTrackerStepSchema(Schema):
             data["approval_responded_by"] = getattr(obj, "pre_award_approval_responded_by", None)
             data["approval_responded_date"] = getattr(obj, "pre_award_approval_responded_date", None)
             data["reviewer_notes"] = getattr(obj, "pre_award_approval_reviewer_notes", None)
+            # OPS-1639: Budget team requisition fields
+            data["requisition_number"] = getattr(obj, "pre_award_requisition_number", None)
+            data["requisition_date"] = getattr(obj, "pre_award_requisition_date", None)
+            data["requisition_approved_by"] = getattr(obj, "pre_award_requisition_approved_by", None)
+            data["requisition_approved_date"] = getattr(obj, "pre_award_requisition_approved_date", None)
 
         return data
 
