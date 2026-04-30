@@ -613,6 +613,46 @@ paths:
                 $ref: "#/components/schemas/AgreementHistory"
         "404":
           description: Not Found
+  /agreements/{id}/spending/:
+    get:
+      tags:
+        - Agreements
+      operationId: getAgreementSpending
+      summary: Get per-agreement fiscal year spending totals
+      description: |
+        Returns per-agreement spending totals grouped by fiscal year.
+        Only includes non-DRAFT budget line items (or OBE items regardless
+        of status) with a fiscal_year assigned. Totals include both BLI
+        amounts and fees.
+
+        Used by the Project Spending tab to populate the FY Total column
+        when multiple agreements exist in the same fiscal year.
+      parameters:
+        - in: path
+          name: id
+          description: Agreement ID
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            example: 1
+      responses:
+        "200":
+          description: OK - Successfully retrieved agreement spending metadata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgreementSpendingMetadata"
+              example:
+                fy_total:
+                  "2043": "1234567.00"
+                  "2044": "890000.00"
+                  "2045": "151217218.00"
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not Found - Agreement does not exist
   /agreements-filters/:
     get:
       tags:
@@ -6051,6 +6091,25 @@ components:
             "2023": [1, 2]
             "2024": [1]
             "2025": [2]
+    AgreementSpendingMetadata:
+      description: Per-agreement fiscal year spending totals
+      type: object
+      required:
+        - fy_total
+      properties:
+        fy_total:
+          type: object
+          description: |
+            Spending totals keyed by fiscal year. Includes BLIs that are OBE or
+            non-DRAFT and have a fiscal_year assigned. Values are the sum of BLI
+            amount and fees for that fiscal year.
+          additionalProperties:
+            type: string
+            description: Decimal amount as string for precision
+          example:
+            "2043": "1234567.00"
+            "2044": "890000.00"
+            "2045": "151217218.00"
     AgreementName:
       description: Agreement identifier with ID and name (nick_name preferred over title)
       type: object
