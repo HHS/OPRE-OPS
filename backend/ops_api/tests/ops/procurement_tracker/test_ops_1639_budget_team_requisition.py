@@ -13,7 +13,7 @@ from sqlalchemy import func, select
 
 from models import Notification, ProcurementTracker, ProcurementTrackerStepStatus, User
 from models.procurement_tracker import DefaultProcurementTrackerStep, ProcurementTrackerStepType
-from models.users import UserRole
+from models.users import Role
 
 
 @pytest.fixture
@@ -65,7 +65,7 @@ def test_pre_award_step(app_ctx, loaded_db):
 @pytest.fixture
 def budget_team_user_ids(loaded_db):
     """Get user IDs of all budget team members for testing."""
-    budget_team_query = select(User.id).join(User.roles).where(UserRole.role == "BUDGET_TEAM")
+    budget_team_query = select(User.id).join(User.roles).where(Role.name == "BUDGET_TEAM")
     return loaded_db.execute(budget_team_query).scalars().all()
 
 
