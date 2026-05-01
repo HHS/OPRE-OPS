@@ -211,7 +211,7 @@ class TestNotificationFlowFix:
             loaded_db.execute(
                 select(Notification)
                 .where(Notification.recipient_id.in_(budget_team_user_ids))
-                .order_by(Notification.created_at.desc())
+                .order_by(Notification.created_on.desc())
                 .limit(len(budget_team_user_ids))
             )
             .scalars()
@@ -315,7 +315,7 @@ class TestNotificationFlowFix:
         notification = loaded_db.execute(
             select(Notification)
             .where(Notification.recipient_id == requester_id)
-            .order_by(Notification.created_at.desc())
+            .order_by(Notification.created_on.desc())
             .limit(1)
         ).scalar_one()
 

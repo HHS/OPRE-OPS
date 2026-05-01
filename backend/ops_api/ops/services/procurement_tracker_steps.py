@@ -468,10 +468,10 @@ class ProcurementTrackerStepService:
         from sqlalchemy import select
 
         from models import NotificationType, User
-        from models.users import UserRole
+        from models.users import Role
 
         # Get all budget team members
-        budget_team_query = select(User.id).join(User.roles).where(UserRole.role == "BUDGET_TEAM")
+        budget_team_query = select(User.id).join(User.roles).where(Role.name == "BUDGET_TEAM")
         budget_team_ids = self.db_session.execute(budget_team_query).scalars().all()
 
         message = (
