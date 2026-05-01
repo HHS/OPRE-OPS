@@ -15,7 +15,8 @@ vi.mock("react-router-dom", async (importOriginal) => {
     const actual = await importOriginal();
     return {
         ...actual,
-        useParams: () => useParamsMock()
+        useParams: () => useParamsMock(),
+        useLocation: () => ({ pathname: "/cans/42" })
     };
 });
 

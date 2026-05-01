@@ -1,4 +1,5 @@
 import React from "react";
+import { useBlocker } from "react-router-dom";
 import classnames from "vest/classnames";
 import { useUpdateCanMutation } from "../../../api/opsAPI";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
@@ -23,8 +24,13 @@ export default function useCanDetailForm(canId, canNumber, canNickname, canDescr
         secondaryButtonText: "",
         handleConfirm: () => {}
     });
+    const [showBlockerModal, setShowBlockerModal] = React.useState(false);
+    const [blockerModalProps, setBlockerModalProps] = React.useState({});
+    const [isCancelling, setIsCancelling] = React.useState(false);
     const [updateCan] = useUpdateCanMutation();
     const { setAlert } = useAlert();
+
+    const hasChanged = nickName !== canNickname || description !== canDescription;
 
     let res = suite.get();
 
@@ -34,19 +40,12 @@ export default function useCanDetailForm(canId, canNumber, canNickname, canDescr
         warning: "warning"
     });
 
-    const handleCancel = (e) => {
-        e.preventDefault();
-        setShowModal(true);
-        setModalProps({
-            heading: "Are you sure you want to cancel editing? Your changes will not be saved.",
-            actionButtonText: "Cancel Edits",
-            secondaryButtonText: "Continue Editing",
-            handleConfirm: () => cleanUp()
-        });
-    };
+    const blocker = useBlocker(
+        ({ currentLocation, nextLocation }) =>
+            !isCancelling && hasChanged && currentLocation.pathname !== nextLocation.pathname
+    );
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
+    const saveChanges = React.useCallback(async () => {
         const payload = {
             number: canNumber,
             portfolio_id: portfolioId,
@@ -60,11 +59,94 @@ export default function useCanDetailForm(canId, canNumber, canNickname, canDescr
             message: `The CAN ${canNumber} has been successfully updated.`
         });
 
-        updateCan({
+        await updateCan({
             id: canId,
             data: payload
         });
+    }, [canId, canNumber, portfolioId, nickName, description, updateCan, setAlert]);
 
+    const saveChangesRef = React.useRef(saveChanges);
+    React.useEffect(() => {
+        saveChangesRef.current = saveChanges;
+    }, [saveChanges]);
+
+    const toggleEditModeRef = React.useRef(toggleEditMode);
+    React.useEffect(() => {
+        toggleEditModeRef.current = toggleEditMode;
+    }, [toggleEditMode]);
+
+    const blockerRef = React.useRef(blocker);
+    React.useEffect(() => {
+        blockerRef.current = blocker;
+    }, [blocker]);
+
+    const proceedIfBlocked = async () => {
+        const currentBlocker = blockerRef.current;
+        if (!currentBlocker || currentBlocker.state !== "blocked") {
+            return;
+        }
+        try {
+            await currentBlocker.proceed();
+        } catch (error) {
+            const message = error && typeof error.message === "string" ? error.message.trim() : "";
+            if (message.startsWith("Invalid blocker state transition")) {
+                console.warn("Ignored known React Router blocker exception:", message);
+                return;
+            }
+            throw error;
+        }
+    };
+
+    React.useEffect(() => {
+        if (blocker.state === "blocked") {
+            setShowBlockerModal(true);
+            setBlockerModalProps({
+                heading: "You have unsaved changes",
+                description: "Do you want to save your changes before leaving this page?",
+                actionButtonText: "Save Changes",
+                secondaryButtonText: "Leave without saving",
+                handleConfirm: async () => {
+                    try {
+                        await saveChangesRef.current();
+                        setShowBlockerModal(false);
+                        toggleEditModeRef.current();
+                        await proceedIfBlocked();
+                    } catch (error) {
+                        console.error(error);
+                        blocker.reset();
+                    }
+                },
+                handleSecondary: async () => {
+                    setShowBlockerModal(false);
+                    toggleEditModeRef.current();
+                    await proceedIfBlocked();
+                },
+                closeModal: () => {
+                    setShowBlockerModal(false);
+                    blocker.reset();
+                }
+            });
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [blocker.state]);
+
+    const handleCancel = (e) => {
+        e.preventDefault();
+        setShowModal(true);
+        setModalProps({
+            heading: "Are you sure you want to cancel editing? Your changes will not be saved.",
+            actionButtonText: "Cancel Edits",
+            secondaryButtonText: "Continue Editing",
+            handleConfirm: () => {
+                setIsCancelling(true);
+                cleanUp();
+            }
+        });
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        await saveChanges();
         cleanUp();
     };
 
@@ -103,6 +185,9 @@ export default function useCanDetailForm(canId, canNumber, canNickname, canDescr
         cn,
         setShowModal,
         showModal,
-        modalProps
+        modalProps,
+        showBlockerModal,
+        setShowBlockerModal,
+        blockerModalProps
     };
 }

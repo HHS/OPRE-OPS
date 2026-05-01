@@ -1,6 +1,7 @@
 import cryptoRandomString from "crypto-random-string";
 import React from "react";
 import { useSelector } from "react-redux";
+import { useBlocker } from "react-router-dom";
 import classnames from "vest/classnames";
 import {
     useAddCanFundingBudgetsMutation,
@@ -63,6 +64,10 @@ export default function useCanFunding(
         handleConfirm: () => {}
     });
 
+    const [showBlockerModal, setShowBlockerModal] = React.useState(false);
+    const [blockerModalProps, setBlockerModalProps] = React.useState({});
+    const [isCancelling, setIsCancelling] = React.useState(false);
+
     const [budgetForm, setBudgetForm] = React.useState({
         submittedAmount: 0.0,
         isSubmitted: false
@@ -103,6 +108,31 @@ export default function useCanFunding(
         setEnteredFundingReceived([...fundingReceived]);
     }, [fundingReceived]);
 
+    const hasChanged = React.useMemo(() => {
+        const budgetChanged = +budgetEnteredAmount !== +totalFunding;
+        const budgetSubmitted = budgetForm.isSubmitted;
+        const fundingReceivedInProgress =
+            fundingReceivedEnteredAmount !== "" || fundingReceivedForm.enteredNotes !== "";
+        const hasNewFundingReceived = enteredFundingReceived.some((e) => "tempId" in e);
+        const hasDeletedFunding = deletedFundingReceivedIds.length > 0;
+        return (
+            budgetChanged || budgetSubmitted || fundingReceivedInProgress || hasNewFundingReceived || hasDeletedFunding
+        );
+    }, [
+        budgetEnteredAmount,
+        totalFunding,
+        budgetForm.isSubmitted,
+        fundingReceivedEnteredAmount,
+        fundingReceivedForm.enteredNotes,
+        enteredFundingReceived,
+        deletedFundingReceivedIds
+    ]);
+
+    const blocker = useBlocker(
+        ({ currentLocation, nextLocation }) =>
+            !isCancelling && hasChanged && currentLocation.pathname !== nextLocation.pathname
+    );
+
     /** @param {string} value */
     const handleEnteredBudgetAmount = (value) => {
         setBudgetEnteredAmount(+value);
@@ -131,10 +161,7 @@ export default function useCanFunding(
         warning: "warning"
     });
 
-    /** @param {React.FormEvent<HTMLFormElement>} e */
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
+    const saveChanges = React.useCallback(async () => {
         const payload = {
             fiscal_year: fiscalYear,
             can_id: canId,
@@ -144,14 +171,12 @@ export default function useCanFunding(
         const handleFundingBudget = async () => {
             if (+payload.budget >= 0) {
                 if (currentFiscalYearFundingId) {
-                    // PATCH for existing CAN Funding
                     await updateCanFundingBudget({
                         id: currentFiscalYearFundingId,
                         data: payload
                     }).unwrap();
                     console.log("CAN Funding Updated");
                 } else {
-                    // POST for new CAN Funding
                     await addCanFundingBudget({
                         data: payload
                     }).unwrap();
@@ -164,7 +189,6 @@ export default function useCanFunding(
             /** @type {Promise<any>[]} */
             const fundingPromise = [];
             enteredFundingReceived.map((fundingItem) => {
-                //POST
                 if (fundingItem.id === NO_DATA && "tempId" in fundingItem) {
                     fundingPromise.push(
                         addCanFundingReceived({
@@ -177,7 +201,6 @@ export default function useCanFunding(
                         })
                     );
                 } else if (fundingItem.id !== NO_DATA && "tempId" in fundingItem) {
-                    //PATCH
                     fundingPromise.push(
                         updateCanFundingReceived({
                             id: fundingItem.id,
@@ -203,30 +226,129 @@ export default function useCanFunding(
             await Promise.all(deletePromise);
         };
 
+        const operations = [
+            { name: "handleFundingBudget", fn: handleFundingBudget },
+            { name: "handleFundingReceived", fn: handleFundingReceived },
+            { name: "handleDeleteFundingReceived", fn: handleDeleteFundingReceived }
+        ];
+
+        const results = await Promise.allSettled(operations.map((operation) => operation.fn()));
+        const failures = results
+            .map((result, index) =>
+                result.status === "rejected" ? { operation: operations[index].name, reason: result.reason } : null
+            )
+            .filter(Boolean);
+
+        if (failures.length > 0) {
+            console.error("Failed CAN funding operations:", failures);
+            throw failures[0].reason || new Error("CAN funding update failed");
+        }
+
+        setAlert({
+            type: "success",
+            heading: "CAN Updated",
+            message: `The CAN ${canNumber} has been successfully updated.`
+        });
+    }, [
+        fiscalYear,
+        canId,
+        canNumber,
+        budgetForm.submittedAmount,
+        currentFiscalYearFundingId,
+        enteredFundingReceived,
+        deletedFundingReceivedIds,
+        updateCanFundingBudget,
+        addCanFundingBudget,
+        addCanFundingReceived,
+        updateCanFundingReceived,
+        deleteCanFundingReceived,
+        setAlert
+    ]);
+
+    const saveChangesRef = React.useRef(saveChanges);
+    React.useEffect(() => {
+        saveChangesRef.current = saveChanges;
+    }, [saveChanges]);
+
+    const toggleEditModeRef = React.useRef(toggleEditMode);
+    React.useEffect(() => {
+        toggleEditModeRef.current = toggleEditMode;
+    }, [toggleEditMode]);
+
+    const resetWelcomeModalRef = React.useRef(resetWelcomeModal);
+    React.useEffect(() => {
+        resetWelcomeModalRef.current = resetWelcomeModal;
+    }, [resetWelcomeModal]);
+
+    const blockerRef = React.useRef(blocker);
+    React.useEffect(() => {
+        blockerRef.current = blocker;
+    }, [blocker]);
+
+    const proceedIfBlocked = async () => {
+        const currentBlocker = blockerRef.current;
+        if (!currentBlocker || currentBlocker.state !== "blocked") {
+            return;
+        }
         try {
-            const operations = [
-                { name: "handleFundingBudget", fn: handleFundingBudget },
-                { name: "handleFundingReceived", fn: handleFundingReceived },
-                { name: "handleDeleteFundingReceived", fn: handleDeleteFundingReceived }
-            ];
-
-            const results = await Promise.allSettled(operations.map((operation) => operation.fn()));
-            const failures = results
-                .map((result, index) =>
-                    result.status === "rejected" ? { operation: operations[index].name, reason: result.reason } : null
-                )
-                .filter(Boolean);
-
-            if (failures.length > 0) {
-                console.error("Failed CAN funding operations:", failures);
-                throw failures[0].reason || new Error("CAN funding update failed");
+            await currentBlocker.proceed();
+        } catch (error) {
+            const message = error && typeof error.message === "string" ? error.message.trim() : "";
+            if (message.startsWith("Invalid blocker state transition")) {
+                console.warn("Ignored known React Router blocker exception:", message);
+                return;
             }
+            throw error;
+        }
+    };
 
-            setAlert({
-                type: "success",
-                heading: "CAN Updated",
-                message: `The CAN ${canNumber} has been successfully updated.`
+    React.useEffect(() => {
+        if (blocker.state === "blocked") {
+            setShowBlockerModal(true);
+            setBlockerModalProps({
+                heading: "You have unsaved changes",
+                description: "Do you want to save your changes before leaving this page?",
+                actionButtonText: "Save Changes",
+                secondaryButtonText: "Leave without saving",
+                handleConfirm: async () => {
+                    try {
+                        await saveChangesRef.current();
+                        setShowBlockerModal(false);
+                        toggleEditModeRef.current();
+                        resetWelcomeModalRef.current();
+                        await proceedIfBlocked();
+                    } catch (error) {
+                        console.error("Error saving CAN funding:", error);
+                        setAlert({
+                            type: "error",
+                            heading: "Error",
+                            message: "An error occurred while updating the CAN.",
+                            redirectUrl: "/error"
+                        });
+                        blocker.reset();
+                    }
+                },
+                handleSecondary: async () => {
+                    setShowBlockerModal(false);
+                    toggleEditModeRef.current();
+                    resetWelcomeModalRef.current();
+                    await proceedIfBlocked();
+                },
+                closeModal: () => {
+                    setShowBlockerModal(false);
+                    blocker.reset();
+                }
             });
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [blocker.state]);
+
+    /** @param {React.FormEvent<HTMLFormElement>} e */
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        try {
+            await saveChanges();
         } catch (error) {
             console.error("Error Updating CAN", error);
             setAlert({
@@ -398,6 +520,7 @@ export default function useCanFunding(
             actionButtonText: "Cancel Edits",
             secondaryButtonText: "Continue Editing",
             handleConfirm: () => {
+                setIsCancelling(true);
                 setTotalReceived(receivedFunding || 0);
                 cleanUp();
             }
@@ -496,6 +619,9 @@ export default function useCanFunding(
         deleteFundingReceived,
         deletedFundingReceivedIds,
         budgetEnteredAmount,
-        fundingReceivedEnteredAmount
+        fundingReceivedEnteredAmount,
+        showBlockerModal,
+        setShowBlockerModal,
+        blockerModalProps
     };
 }
