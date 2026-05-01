@@ -31,9 +31,13 @@ vi.mock("../../helpers/tableExport.helpers", () => ({
     exportMultiSheetToXlsx: (...args) => mockExportMultiSheetToXlsx(...args)
 }));
 
-vi.mock("../../helpers/utils", () => ({
-    getCurrentFiscalYear: () => "2025"
-}));
+vi.mock("../../helpers/utils", async (importOriginal) => {
+    const actual = await importOriginal();
+    return {
+        ...actual,
+        getCurrentFiscalYear: () => "2025"
+    };
+});
 
 vi.mock("./summary/ProcurementSummaryCards", () => ({
     default: () => <div data-testid="summary-cards" />
