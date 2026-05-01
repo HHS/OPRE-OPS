@@ -82,7 +82,8 @@ export const opsApi = createApi({
         "Documents",
         "Cans",
         "ProcurementTrackers",
-        "Procurement Tracker Steps"
+        "Procurement Tracker Steps",
+        "Budget Requisitions"
     ],
     baseQuery: getBaseQueryWithReauth(baseQuery),
     endpoints: (builder) => ({
@@ -1103,6 +1104,10 @@ export const opsApi = createApi({
         getPendingPreAwardApprovals: builder.query({
             query: () => `/procurement-tracker-steps/pending-approvals/`,
             providesTags: ["Procurement Tracker Steps"]
+        }),
+        getPendingBudgetRequisitions: builder.query({
+            query: () => `/procurement-tracker-steps/pending-requisitions/`,
+            providesTags: ["Budget Requisitions"]
         })
     })
 });
@@ -1209,5 +1214,6 @@ export const {
     useGetSpecialTopicsQuery,
     useGetProcurementTrackersByAgreementIdQuery,
     useUpdateProcurementTrackerStepMutation,
-    useGetPendingPreAwardApprovalsQuery
+    useGetPendingPreAwardApprovalsQuery,
+    useGetPendingBudgetRequisitionsQuery
 } = opsApi;

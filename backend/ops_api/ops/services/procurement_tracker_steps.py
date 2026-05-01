@@ -508,9 +508,12 @@ class ProcurementTrackerStepService:
         budget_team_query = select(User.id).join(User.roles).where(Role.name == "BUDGET_TEAM")
         budget_team_ids = self.db_session.execute(budget_team_query).scalars().all()
 
+        fe_url = current_app.config.get("OPS_FRONTEND_URL", "http://localhost:3000")
+        review_url = f"{fe_url}/agreements/{agreement.id}/review-budget-requisition"
+
         message = (
             f"{current_user.full_name} has approved the Pre-Award request for Agreement {agreement.display_name}. "
-            f"Budget Team review and requisition entry is now required."
+            f"Budget Team review and requisition entry is now required.\n\n[Review Agreement]({review_url})"
         )
 
         # Send notification to each budget team member
@@ -742,17 +745,59 @@ class ProcurementTrackerStepService:
         # For all other users, allow access when they are the division director/deputy
         # for the related agreement. This keeps the pending approvals list aligned
         # with reviewer notification recipients.
+
+    def get_pending_requisitions_for_user(self, user_id: int) -> list[ProcurementTrackerStep]:
+        """
+        Get all pending budget team requisition reviews for a user.
+
+        Returns steps where:
+        - DD has approved (approval_status = 'APPROVED')
+        - Budget team hasn't entered requisition yet (requisition_number IS NULL)
+        - User has BUDGET_TEAM role
+
+        Args:
+            user_id: The user ID to check permissions for
+
+        Returns:
+            List of ProcurementTrackerStep objects with pending requisitions
+        """
+        from sqlalchemy import and_
+
+        from models import (
+            Agreement,
+            DefaultProcurementTrackerStep,
+            ProcurementTracker,
+        )
+
+        # Get user roles
+        user = self.db_session.get(User, user_id)
+        if not user:
+            return []
+
+        user_role_names = [role.name for role in user.roles]
+
+        # Only BUDGET_TEAM members see these
+        if "BUDGET_TEAM" not in user_role_names:
+            return []
+
+        # Query for steps awaiting budget team requisition entry
         stmt = (
-            stmt.outerjoin(Agreement.budget_line_items)
-            .outerjoin(BudgetLineItem.can)
-            .outerjoin(CAN.portfolio)
-            .outerjoin(Portfolio.division)
+            select(DefaultProcurementTrackerStep)
+            .join(DefaultProcurementTrackerStep.procurement_tracker)
+            .join(ProcurementTracker.agreement)
+            .options(
+                selectinload(DefaultProcurementTrackerStep.procurement_tracker)
+                .selectinload(ProcurementTracker.agreement)
+                .selectinload(Agreement.budget_line_items),
+            )
             .where(
-                or_(
-                    Division.division_director_id == user_id,
-                    Division.deputy_division_director_id == user_id,
+                and_(
+                    DefaultProcurementTrackerStep.step_type == ProcurementTrackerStepType.PRE_AWARD,
+                    DefaultProcurementTrackerStep.pre_award_approval_status == "APPROVED",
+                    DefaultProcurementTrackerStep.pre_award_requisition_number.is_(None),
                 )
             )
+            .order_by(DefaultProcurementTrackerStep.pre_award_approval_responded_date.desc())
         )
-        results = self.db_session.execute(stmt.distinct()).scalars().all()
-        return list(results)
+
+        return list(self.db_session.scalars(stmt).all())
