@@ -9,12 +9,23 @@ from models.procurement_tracker import (
 from ops_api.ops.schemas.pagination import PaginationListSchema
 
 
+class NestedBudgetLineItemSchema(Schema):
+    """Minimal budget line item schema for nested responses."""
+
+    id = fields.Integer(required=True)
+    status = fields.String(allow_none=True)
+    amount = fields.Float(allow_none=True)
+    date_needed = fields.Date(allow_none=True)
+
+
 class NestedAgreementSchema(Schema):
     """Minimal agreement schema for nested responses."""
 
     id = fields.Integer(required=True)
     name = fields.String(allow_none=True)
     display_name = fields.String(dump_only=True)
+    budget_line_items = fields.List(fields.Nested(NestedBudgetLineItemSchema), allow_none=True)
+    agreement_total = fields.Float(allow_none=True, dump_only=True)
 
 
 class NestedProcurementTrackerSchema(Schema):

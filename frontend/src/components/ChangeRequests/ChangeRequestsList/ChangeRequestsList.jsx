@@ -1,10 +1,15 @@
 import * as React from "react";
 import { useSelector } from "react-redux";
-import { useGetChangeRequestsListQuery, useGetPendingPreAwardApprovalsQuery } from "../../../api/opsAPI";
+import {
+    useGetChangeRequestsListQuery,
+    useGetPendingPreAwardApprovalsQuery,
+    useGetPendingBudgetRequisitionsQuery
+} from "../../../api/opsAPI";
 import BudgetChangeReviewCard from "../BudgetChangeReviewCard";
 import ProcurementShopReviewCard from "../ProcurementShopReviewCard";
 import StatusChangeReviewCard from "../StatusChangeReviewCard";
 import PreAwardReviewCard from "../PreAwardReviewCard";
+import BudgetTeamRequisitionReviewCard from "../BudgetTeamRequisitionReviewCard";
 import { useNavigate } from "react-router-dom";
 
 /**
@@ -31,25 +36,68 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
         isError: errorPreAwardApprovals
     } = useGetPendingPreAwardApprovalsQuery(undefined, { refetchOnMountOrArgChange: true });
 
+    // Fetch pending budget team requisitions
+    const {
+        data: budgetRequisitions,
+        isLoading: loadingBudgetRequisitions,
+        isError: errorBudgetRequisitions
+    } = useGetPendingBudgetRequisitionsQuery(undefined, { refetchOnMountOrArgChange: true });
+
+    // Calculate sum and count of budget lines in EXECUTING status
+    const calculateExecutingTotal = (budgetLineItems = []) => {
+        return budgetLineItems
+            .filter((bli) => bli.status === "In Execution")
+            .reduce((sum, bli) => sum + (bli.amount || 0), 0);
+    };
+
+    const calculateExecutingBliCount = (budgetLineItems = []) => {
+        return budgetLineItems.filter((bli) => bli.status === "In Execution").length;
+    };
+
+    // Get the earliest obligate-by date from executing BLIs
+    const getObligateByDate = (budgetLineItems = []) => {
+        const executingBlis = budgetLineItems.filter((bli) => bli.status === "In Execution" && bli.date_needed);
+        if (executingBlis.length === 0) return null;
+        const dates = executingBlis.map((bli) => new Date(bli.date_needed));
+        return new Date(Math.min(...dates)).toISOString().split("T")[0];
+    };
+
     // Handle navigation to error page in useEffect to avoid setState during render
     React.useEffect(() => {
-        if (errorChangeRequests || errorPreAwardApprovals) {
+        if (errorChangeRequests || errorPreAwardApprovals || errorBudgetRequisitions) {
             navigate("/error");
         }
-    }, [errorChangeRequests, errorPreAwardApprovals, navigate]);
+    }, [errorChangeRequests, errorPreAwardApprovals, errorBudgetRequisitions, navigate]);
 
-    if (loadingChangeRequests || loadingPreAwardApprovals) {
+    if (loadingChangeRequests || loadingPreAwardApprovals || loadingBudgetRequisitions) {
         return <h1>Loading...</h1>;
     }
-    if (errorChangeRequests || errorPreAwardApprovals) {
+    if (errorChangeRequests || errorPreAwardApprovals || errorBudgetRequisitions) {
         return null;
     }
 
     const hasChangeRequests = changeRequests && changeRequests.length > 0;
     const hasPreAwardApprovals = preAwardApprovals && preAwardApprovals.length > 0;
+    const hasBudgetRequisitions = budgetRequisitions && budgetRequisitions.length > 0;
 
-    return hasChangeRequests || hasPreAwardApprovals ? (
+    return hasChangeRequests || hasPreAwardApprovals || hasBudgetRequisitions ? (
         <>
+            {/* Budget Team Requisition Cards */}
+            {budgetRequisitions?.map((step) => (
+                <BudgetTeamRequisitionReviewCard
+                    key={`budget-requisition-${step.id}`}
+                    agreementId={step.procurement_tracker?.agreement?.id}
+                    requestorId={step.approval_requested_by}
+                    requestDate={step.approval_requested_date}
+                    executingBliCount={calculateExecutingBliCount(
+                        step.procurement_tracker?.agreement?.budget_line_items
+                    )}
+                    executingTotal={calculateExecutingTotal(step.procurement_tracker?.agreement?.budget_line_items)}
+                    obligateByDate={getObligateByDate(step.procurement_tracker?.agreement?.budget_line_items)}
+                    agreementTotal={step.procurement_tracker?.agreement?.agreement_total || 0}
+                />
+            ))}
+
             {/* Pre-Award Approval Cards */}
             {preAwardApprovals?.map((step) => (
                 <PreAwardReviewCard

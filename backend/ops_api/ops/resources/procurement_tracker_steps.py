@@ -148,3 +148,34 @@ class ProcurementTrackerStepPendingApprovalsAPI(BaseListAPI):
         serialized_data = response_schema.dump(pending_approvals)
 
         return make_response_with_headers(serialized_data)
+
+
+class ProcurementTrackerStepPendingRequisitionsAPI(BaseListAPI):
+    """
+    GET /api/v1/procurement-tracker-steps/pending-requisitions
+
+    List pending budget team requisition reviews for current user.
+    """
+
+    def __init__(self, model: BaseModel = ProcurementTrackerStep):
+        super().__init__(model)
+
+    @error_simulator
+    @is_authorized(PermissionType.GET, Permission.AGREEMENT)
+    def get(self) -> Response:
+        """Get list of pending requisition reviews for budget team."""
+        current_user = get_current_user()
+
+        if not current_user or not hasattr(current_user, "id") or current_user.id is None:
+            return make_response_with_headers({"error": "Unable to determine current user"}, 401)
+
+        user_id = current_user.id
+        logger.debug(f"Getting pending budget team requisitions for user {user_id}")
+        service = ProcurementTrackerStepService(current_app.db_session)
+        pending_requisitions = service.get_pending_requisitions_for_user(user_id)
+
+        # Serialize response
+        response_schema = ProcurementTrackerStepResponseSchema(many=True)
+        serialized_data = response_schema.dump(pending_requisitions)
+
+        return make_response_with_headers(serialized_data)

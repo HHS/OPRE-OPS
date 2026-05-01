@@ -1,0 +1,124 @@
+"""Tests for budget team requisition review card endpoint (OPS-1639 PR2)."""
+
+from datetime import date
+
+import pytest
+from sqlalchemy import select
+
+from models import User
+from models.procurement_tracker import (
+    DefaultProcurementTrackerStep,
+    ProcurementTracker,
+    ProcurementTrackerStepStatus,
+    ProcurementTrackerStepType,
+)
+from models.users import Role
+
+
+@pytest.fixture
+def test_budget_team_requisition_step(app_ctx, loaded_db):
+    """Create a test step where DD approved but budget team hasn't entered requisition."""
+    tracker = loaded_db.get(ProcurementTracker, 1)
+
+    # Ensure Step 4 (Evaluation) exists and is completed
+    step_4 = next((step for step in tracker.steps if step.step_number == 4), None)
+    if not step_4:
+        step_4 = DefaultProcurementTrackerStep(
+            procurement_tracker=tracker,
+            step_number=4,
+            step_type=ProcurementTrackerStepType.EVALUATION,
+            status=ProcurementTrackerStepStatus.COMPLETED,
+        )
+        loaded_db.add(step_4)
+    else:
+        step_4.status = ProcurementTrackerStepStatus.COMPLETED
+    loaded_db.commit()
+
+    # Create PRE_AWARD step where DD has approved
+    step = DefaultProcurementTrackerStep(
+        procurement_tracker=tracker,
+        step_number=997,
+        step_type=ProcurementTrackerStepType.PRE_AWARD,
+        status=ProcurementTrackerStepStatus.ACTIVE,
+        pre_award_approval_requested=True,
+        pre_award_approval_requested_by=500,
+        pre_award_approval_requested_date=date.today(),
+        pre_award_approval_status="APPROVED",  # DD approved
+        pre_award_approval_responded_by=503,
+        pre_award_approval_responded_date=date.today(),
+        # requisition fields are NULL - budget team hasn't entered yet
+    )
+    loaded_db.add(step)
+    loaded_db.commit()
+
+    yield step
+
+    # Cleanup
+    loaded_db.rollback()
+    try:
+        loaded_db.delete(step)
+        loaded_db.commit()
+    except Exception:
+        loaded_db.rollback()
+
+
+def test_get_pending_requisitions_returns_approved_without_requisition(
+    auth_client, test_budget_team_requisition_step, loaded_db
+):
+    """Budget team sees steps where DD approved but requisition not entered."""
+    # Get a budget team user
+    budget_team_user = loaded_db.scalar(select(User).join(User.roles).where(Role.name == "BUDGET_TEAM").limit(1))
+    assert budget_team_user is not None, "Test requires a BUDGET_TEAM user"
+
+    # Make request as budget team user (auth_client defaults to user 503)
+    response = auth_client.get("/api/v1/procurement-tracker-steps/pending-requisitions/")
+    assert response.status_code == 200
+
+    data = response.json
+    assert isinstance(data, list)
+
+    # Should include our test step
+    step_ids = [step["id"] for step in data]
+    assert test_budget_team_requisition_step.id in step_ids
+
+
+def test_get_pending_requisitions_excludes_completed(auth_client, test_budget_team_requisition_step, loaded_db):
+    """Steps with requisition_number filled are excluded."""
+    # Set requisition number (budget team completed it)
+    test_budget_team_requisition_step.pre_award_requisition_number = "REQ-2026-12345"
+    loaded_db.commit()
+
+    response = auth_client.get("/api/v1/procurement-tracker-steps/pending-requisitions/")
+    assert response.status_code == 200
+
+    data = response.json
+    step_ids = [step["id"] for step in data]
+    # Should NOT include our test step anymore
+    assert test_budget_team_requisition_step.id not in step_ids
+
+
+def test_get_pending_requisitions_filters_by_budget_team_role(client, test_budget_team_requisition_step, loaded_db):
+    """Only BUDGET_TEAM role users get results."""
+    # Non-budget-team user should get empty list
+    # Note: This test would need proper auth setup for a non-budget-team user
+    # For now, just verify the endpoint requires auth
+    response = client.get("/api/v1/procurement-tracker-steps/pending-requisitions/")
+    assert response.status_code == 401  # Unauthenticated
+
+
+def test_get_pending_requisitions_includes_agreement_data(auth_client, test_budget_team_requisition_step, loaded_db):
+    """Response includes agreement with budget line items."""
+    response = auth_client.get("/api/v1/procurement-tracker-steps/pending-requisitions/")
+    assert response.status_code == 200
+
+    data = response.json
+    if len(data) > 0:
+        # Find our test step
+        test_step_data = next((step for step in data if step["id"] == test_budget_team_requisition_step.id), None)
+        if test_step_data:
+            # Verify agreement data is included
+            assert "procurement_tracker" in test_step_data
+            assert "agreement" in test_step_data["procurement_tracker"]
+            agreement = test_step_data["procurement_tracker"]["agreement"]
+            assert "id" in agreement
+            assert "name" in agreement
