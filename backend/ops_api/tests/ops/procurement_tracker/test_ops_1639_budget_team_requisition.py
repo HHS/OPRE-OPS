@@ -270,6 +270,7 @@ class TestNotificationFlowFix:
 
         # Budget team approves requisition
         update_data = {
+            "status": "ACTIVE",
             "requisition_number": "REQ-2026-12345",
             "requisition_date": "2026-04-30",
             "requisition_approved_by": 502,  # Budget team user
@@ -300,6 +301,7 @@ class TestNotificationFlowFix:
 
         # Budget team approves
         update_data = {
+            "status": "ACTIVE",
             "requisition_number": "REQ-2026-12345",
             "requisition_date": "2026-04-30",
             "requisition_approved_by": 502,
@@ -357,6 +359,7 @@ class TestNotificationFlowFix:
 
         # Budget team approves
         update_data = {
+            "status": "ACTIVE",
             "requisition_approved_by": 502,
             "requisition_number": "REQ-123",
             "requisition_date": "2026-04-30",
@@ -399,6 +402,7 @@ class TestNotificationFlowFix:
 
         # Budget team updates requisition fields (e.g., correcting the requisition number)
         update_data = {
+            "status": "ACTIVE",
             "requisition_number": "REQ-2026-99999",  # Changed
             "requisition_date": "2026-04-30",  # Same date
         }
@@ -441,6 +445,7 @@ class TestAPISchemaFields:
     def test_can_update_requisition_fields_via_api(self, auth_client, test_pre_award_step, loaded_db):
         """Test that requisition fields can be updated via API."""
         update_data = {
+            "status": "ACTIVE",
             "requisition_number": "REQ-2026-99999",
             "requisition_date": "2026-04-30",
             "requisition_approved_by": 502,
