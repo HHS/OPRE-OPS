@@ -10,6 +10,8 @@ import ComboBox from "../../UI/Form/ComboBox";
  * @param {string} [props.legendClassname] - Additional CSS classes to apply to the label/legend (optional).
  * @param {string} [props.defaultString] - Initial text to display in select (optional).
  * @param {Object} [props.overrideStyles] - Some CSS styles to override the default (optional).
+ * @param {boolean} props.isLoading - IS the data for the component loading or not
+ * @param {string} props.filterLabel - The title to display above the component.
  * @returns {React.ReactElement} - The rendered component.
  */
 export const ProjectTitleComboBox = ({
@@ -19,7 +21,8 @@ export const ProjectTitleComboBox = ({
     legendClassname = "usa-label margin-top-0",
     defaultString = "",
     overrideStyles = { minWidth: "22.7rem" },
-    isLoading = false
+    isLoading = false,
+    filterLabel = "Project Title"
 }) => {
     // Transform project_titles data to ComboBox format
     const projectOptions = useMemo(() => {
@@ -38,7 +41,7 @@ export const ProjectTitleComboBox = ({
                     className={legendClassname}
                     htmlFor="project-title-combobox-input"
                 >
-                    Project Title
+                    {filterLabel}
                 </label>
                 <div>
                     <ComboBox
