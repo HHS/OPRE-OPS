@@ -267,9 +267,7 @@ def test_approval_response_includes_reviewer_notes_in_notification(auth_client, 
     loaded_db.commit()
 
     # Get a budget team member ID
-    budget_team_user_id = loaded_db.scalar(
-        select(User.id).join(User.roles).where(Role.name == "BUDGET_TEAM").limit(1)
-    )
+    budget_team_user_id = loaded_db.scalar(select(User.id).join(User.roles).where(Role.name == "BUDGET_TEAM").limit(1))
     assert budget_team_user_id is not None, "Test requires at least one budget team member"
 
     # Respond with approval AND reviewer notes
@@ -335,9 +333,7 @@ def test_approval_response_excludes_empty_reviewer_notes(auth_client, test_pre_a
     loaded_db.commit()
 
     # Get a budget team member ID
-    budget_team_user_id = loaded_db.scalar(
-        select(User.id).join(User.roles).where(Role.name == "BUDGET_TEAM").limit(1)
-    )
+    budget_team_user_id = loaded_db.scalar(select(User.id).join(User.roles).where(Role.name == "BUDGET_TEAM").limit(1))
 
     # Respond with approval but NO reviewer notes
     update_data = {
