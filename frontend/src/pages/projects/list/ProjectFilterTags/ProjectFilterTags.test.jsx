@@ -73,10 +73,7 @@ describe("ProjectFilterTags", () => {
     it("should render project search filter tags", () => {
         const filtersWithProjects = {
             ...mockFilters,
-            projectSearch: [
-                { title: "Project Alpha" },
-                { title: "Project Beta" }
-            ]
+            projectSearch: [{ title: "Project Alpha" }, { title: "Project Beta" }]
         };
 
         render(
@@ -93,10 +90,7 @@ describe("ProjectFilterTags", () => {
     it("should render agreement search filter tags", () => {
         const filtersWithAgreements = {
             ...mockFilters,
-            agreementSearch: [
-                { title: "Agreement 1" },
-                { title: "Agreement 2" }
-            ]
+            agreementSearch: [{ title: "Agreement 1" }, { title: "Agreement 2" }]
         };
 
         render(
@@ -113,10 +107,7 @@ describe("ProjectFilterTags", () => {
     it("should render project type filter tags", () => {
         const filtersWithTypes = {
             ...mockFilters,
-            projectType: [
-                { title: "RESEARCH" },
-                { title: "ADMINISTRATIVE_AND_SUPPORT" }
-            ]
+            projectType: [{ title: "RESEARCH" }, { title: "ADMINISTRATIVE_AND_SUPPORT" }]
         };
 
         render(
