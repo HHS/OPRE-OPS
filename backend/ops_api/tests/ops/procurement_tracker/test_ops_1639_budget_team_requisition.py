@@ -12,6 +12,7 @@ import pytest
 from sqlalchemy import func, select
 
 from models import Notification, ProcurementTracker, ProcurementTrackerStepStatus, User
+from models.notifications import PreAwardApprovalNotification
 from models.procurement_tracker import DefaultProcurementTrackerStep, ProcurementTrackerStepType
 from models.users import Role
 
@@ -335,7 +336,7 @@ class TestNotificationFlowFix:
 
         # Create budget team review notifications
         for bt_id in budget_team_user_ids[:2]:  # Just use first 2 for speed
-            notification = Notification(
+            notification = PreAwardApprovalNotification(
                 title="Budget Team Requisition Review Required",
                 message="Test notification",
                 is_read=False,
@@ -348,11 +349,11 @@ class TestNotificationFlowFix:
         # Get count of unread budget team review notifications
         unread_count_before = loaded_db.scalar(
             select(func.count())
-            .select_from(Notification)
+            .select_from(PreAwardApprovalNotification)
             .where(
-                Notification.title == "Budget Team Requisition Review Required",
-                Notification.is_read.is_(False),
-                Notification.procurement_tracker_step_id == test_pre_award_step.id,
+                PreAwardApprovalNotification.title == "Budget Team Requisition Review Required",
+                PreAwardApprovalNotification.is_read.is_(False),
+                PreAwardApprovalNotification.procurement_tracker_step_id == test_pre_award_step.id,
             )
         )
         assert unread_count_before >= 2, "Should have unread notifications"
@@ -371,11 +372,11 @@ class TestNotificationFlowFix:
         # Verify notifications were auto-dismissed
         unread_count_after = loaded_db.scalar(
             select(func.count())
-            .select_from(Notification)
+            .select_from(PreAwardApprovalNotification)
             .where(
-                Notification.title == "Budget Team Requisition Review Required",
-                Notification.is_read.is_(False),
-                Notification.procurement_tracker_step_id == test_pre_award_step.id,
+                PreAwardApprovalNotification.title == "Budget Team Requisition Review Required",
+                PreAwardApprovalNotification.is_read.is_(False),
+                PreAwardApprovalNotification.procurement_tracker_step_id == test_pre_award_step.id,
             )
         )
 
@@ -428,7 +429,7 @@ class TestAPISchemaFields:
         response = auth_client.get(f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}")
         assert response.status_code == 200
 
-        data = response.json()
+        data = response.json
 
         # Verify requisition fields are present in response
         assert "requisition_number" in data
