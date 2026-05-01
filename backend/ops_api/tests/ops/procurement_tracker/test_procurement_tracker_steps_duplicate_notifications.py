@@ -108,13 +108,21 @@ def test_duplicate_approval_request_no_notification(auth_client, test_pre_award_
 
 
 def test_initial_approval_response_sends_notification(auth_client, test_pre_award_step, loaded_db):
-    """Test that first approval response sends notification to submitter."""
+    """Test that first approval response sends notification to budget team (OPS-1639)."""
+    from models import User
+    from models.users import Role
+
     # Setup: approval was requested by a specific user
     test_pre_award_step.pre_award_approval_requested = True
     test_pre_award_step.pre_award_approval_requested_date = date.today()
     test_pre_award_step.pre_award_approval_requested_by = 500  # Submitter user ID
     test_pre_award_step.pre_award_approval_status = None  # Not yet responded
     loaded_db.commit()
+
+    # Get budget team member count
+    budget_team_count = loaded_db.scalar(
+        select(func.count()).select_from(User).join(User.roles).where(Role.name == "BUDGET_TEAM")
+    )
 
     # Get initial notification count
     initial_notification_count = loaded_db.scalar(select(func.count()).select_from(Notification))
@@ -128,11 +136,11 @@ def test_initial_approval_response_sends_notification(auth_client, test_pre_awar
     response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}", json=update_data)
     assert response.status_code == 200
 
-    # Verify notification was sent to submitter
+    # OPS-1639: DD approval now sends notifications to budget team (not requester)
     final_notification_count = loaded_db.scalar(select(func.count()).select_from(Notification))
     assert (
-        final_notification_count == initial_notification_count + 1
-    ), "Notification should be sent to submitter on first approval response"
+        final_notification_count == initial_notification_count + budget_team_count
+    ), f"Notification should be sent to all {budget_team_count} budget team members on first approval response"
 
 
 def test_duplicate_approval_response_no_notification(auth_client, test_pre_award_step, loaded_db):
@@ -248,12 +256,21 @@ def test_approval_response_auto_dismisses_in_review_notifications(auth_client, t
 
 
 def test_approval_response_includes_reviewer_notes_in_notification(auth_client, test_pre_award_step, loaded_db):
-    """Test that reviewer notes are included in the approval response notification message."""
+    """Test that DD approval sends notification to budget team (OPS-1639) - reviewer notes not included in budget team notification."""
+    from models import User
+    from models.users import Role
+
     # Setup: approval was requested by user 500
     test_pre_award_step.pre_award_approval_requested = True
     test_pre_award_step.pre_award_approval_requested_date = date.today()
     test_pre_award_step.pre_award_approval_requested_by = 500
     loaded_db.commit()
+
+    # Get a budget team member ID
+    budget_team_user_id = loaded_db.scalar(
+        select(User.id).join(User.roles).where(Role.name == "BUDGET_TEAM").limit(1)
+    )
+    assert budget_team_user_id is not None, "Test requires at least one budget team member"
 
     # Respond with approval AND reviewer notes
     reviewer_notes = "This looks good, all requirements met"
@@ -264,17 +281,16 @@ def test_approval_response_includes_reviewer_notes_in_notification(auth_client, 
     response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}", json=update_data)
     assert response.status_code == 200
 
-    # Query for the approval response notification
+    # OPS-1639: DD approval now sends to budget team, not requester
     notification = loaded_db.scalars(
         select(Notification)
-        .where(Notification.title == "Pre-Award Approval Approved")
-        .where(Notification.recipient_id == test_pre_award_step.pre_award_approval_requested_by)
+        .where(Notification.title == "Budget Team Requisition Review Required")
+        .where(Notification.recipient_id == budget_team_user_id)
         .order_by(Notification.created_on.desc())
     ).first()
 
-    assert notification is not None, "Notification should be created for approval response"
-    assert reviewer_notes in notification.message, f"Reviewer notes should be in message. Got: {notification.message}"
-    assert "Notes:" in notification.message, "Message should include 'Notes:' label"
+    assert notification is not None, "Notification should be created for budget team"
+    # Budget team notification does NOT include reviewer notes - those are for decline notifications to requester
 
 
 def test_decline_response_includes_reviewer_notes_in_notification(auth_client, test_pre_award_step, loaded_db):
@@ -308,12 +324,20 @@ def test_decline_response_includes_reviewer_notes_in_notification(auth_client, t
 
 
 def test_approval_response_excludes_empty_reviewer_notes(auth_client, test_pre_award_step, loaded_db):
-    """Test that reviewer notes are NOT included when they are empty."""
+    """Test that DD approval sends notification to budget team (OPS-1639)."""
+    from models import User
+    from models.users import Role
+
     # Setup: approval requested by user 500
     test_pre_award_step.pre_award_approval_requested = True
     test_pre_award_step.pre_award_approval_requested_date = date.today()
     test_pre_award_step.pre_award_approval_requested_by = 500
     loaded_db.commit()
+
+    # Get a budget team member ID
+    budget_team_user_id = loaded_db.scalar(
+        select(User.id).join(User.roles).where(Role.name == "BUDGET_TEAM").limit(1)
+    )
 
     # Respond with approval but NO reviewer notes
     update_data = {
@@ -322,11 +346,11 @@ def test_approval_response_excludes_empty_reviewer_notes(auth_client, test_pre_a
     response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}", json=update_data)
     assert response.status_code == 200
 
-    # Query for the notification
+    # OPS-1639: DD approval sends to budget team
     notification = loaded_db.scalars(
         select(Notification)
-        .where(Notification.title == "Pre-Award Approval Approved")
-        .where(Notification.recipient_id == test_pre_award_step.pre_award_approval_requested_by)
+        .where(Notification.title == "Budget Team Requisition Review Required")
+        .where(Notification.recipient_id == budget_team_user_id)
         .order_by(Notification.created_on.desc())
     ).first()
 
@@ -339,25 +363,25 @@ def test_approval_response_excludes_empty_reviewer_notes(auth_client, test_pre_a
 
 
 def test_approval_response_excludes_whitespace_only_reviewer_notes(auth_client, test_pre_award_step, loaded_db):
-    """Test that whitespace-only reviewer notes are treated as empty."""
+    """Test that whitespace-only reviewer notes are treated as empty (testing decline notification since approve goes to budget team in OPS-1639)."""
     # Setup: approval requested by user 500
     test_pre_award_step.pre_award_approval_requested = True
     test_pre_award_step.pre_award_approval_requested_date = date.today()
     test_pre_award_step.pre_award_approval_requested_by = 500
     loaded_db.commit()
 
-    # Respond with approval but whitespace-only notes
+    # Respond with DECLINE and whitespace-only notes (decline still notifies requester)
     update_data = {
-        "approval_status": "APPROVED",
+        "approval_status": "DECLINED",
         "reviewer_notes": "   \n  ",
     }
     response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}", json=update_data)
     assert response.status_code == 200
 
-    # Query for the notification
+    # Query for the notification - decline goes to requester
     notification = loaded_db.scalars(
         select(Notification)
-        .where(Notification.title == "Pre-Award Approval Approved")
+        .where(Notification.title == "Pre-Award Approval Declined")
         .where(Notification.recipient_id == test_pre_award_step.pre_award_approval_requested_by)
         .order_by(Notification.created_on.desc())
     ).first()
@@ -367,30 +391,30 @@ def test_approval_response_excludes_whitespace_only_reviewer_notes(auth_client, 
         "Notes:" not in notification.message
     ), f"Notes section should not appear for whitespace-only notes. Got: {notification.message}"
     # Verify base message is present
-    assert "has been approved" in notification.message
+    assert "has been declined" in notification.message
 
 
 def test_reviewer_notes_prevent_markdown_injection(auth_client, test_pre_award_step, loaded_db):
-    """Test that Markdown syntax in reviewer notes is escaped and doesn't render."""
+    """Test that Markdown syntax in reviewer notes is escaped (testing decline notification since approve goes to budget team in OPS-1639)."""
     # Setup: approval requested by user 500
     test_pre_award_step.pre_award_approval_requested = True
     test_pre_award_step.pre_award_approval_requested_date = date.today()
     test_pre_award_step.pre_award_approval_requested_by = 500
     loaded_db.commit()
 
-    # Respond with approval and Markdown injection attempt
+    # Respond with DECLINE and Markdown injection attempt (decline still notifies requester)
     malicious_notes = "**Bold** text with [link](http://example.com) and ```code``` attempt"
     update_data = {
-        "approval_status": "APPROVED",
+        "approval_status": "DECLINED",
         "reviewer_notes": malicious_notes,
     }
     response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}", json=update_data)
     assert response.status_code == 200
 
-    # Query for the notification
+    # Query for the notification - decline goes to requester
     notification = loaded_db.scalars(
         select(Notification)
-        .where(Notification.title == "Pre-Award Approval Approved")
+        .where(Notification.title == "Pre-Award Approval Declined")
         .where(Notification.recipient_id == test_pre_award_step.pre_award_approval_requested_by)
         .order_by(Notification.created_on.desc())
     ).first()
@@ -415,16 +439,16 @@ def test_reviewer_notes_backtick_injection_prevented(auth_client, test_pre_award
     # Try to break the code fence with triple backticks followed by markdown
     injection_attempt = "Approved\n```\n**This should NOT render as bold**"
     update_data = {
-        "approval_status": "APPROVED",
+        "approval_status": "DECLINED",  # Use DECLINED since OPS-1639 makes APPROVED notify budget team
         "reviewer_notes": injection_attempt,
     }
     response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}", json=update_data)
     assert response.status_code == 200
 
-    # Query for the notification
+    # Query for the notification - decline goes to requester
     notification = loaded_db.scalars(
         select(Notification)
-        .where(Notification.title == "Pre-Award Approval Approved")
+        .where(Notification.title == "Pre-Award Approval Declined")
         .where(Notification.recipient_id == test_pre_award_step.pre_award_approval_requested_by)
         .order_by(Notification.created_on.desc())
     ).first()
