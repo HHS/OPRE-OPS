@@ -109,6 +109,12 @@ class ProcurementTrackerStepResponseSchema(Schema):
     approval_responded_date = fields.Date(allow_none=True)
     reviewer_notes = fields.String(allow_none=True)
 
+    # OPS-1639: PRE_AWARD budget team requisition fields
+    requisition_number = fields.String(allow_none=True)
+    requisition_date = fields.Date(allow_none=True)
+    requisition_approved_by = fields.Integer(allow_none=True)
+    requisition_approved_date = fields.Date(allow_none=True)
+
     # BaseModel fields
     display_name = fields.String(dump_only=True)
     created_on = fields.DateTime(dump_only=True)

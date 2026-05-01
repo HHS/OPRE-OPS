@@ -464,7 +464,7 @@ class TestAPISchemaFields:
         assert test_pre_award_step.pre_award_requisition_approved_date == date(2026, 4, 30)
 
         # Verify fields appear in response
-        data = response.json()
+        data = response.json
         assert data["requisition_number"] == "REQ-2026-99999"
         assert data["requisition_date"] == "2026-04-30"
         assert data["requisition_approved_by"] == 502
