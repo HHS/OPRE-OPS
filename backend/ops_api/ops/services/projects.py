@@ -624,7 +624,7 @@ class ProjectsService(OpsService[Project]):
         )
         project_types = sorted([pt.name for pt in self.db_session.scalars(project_types_query).all()])
 
-        # Step 6: Agreement names and nick_names - Query both and create a sorted list
+        # Step 6: Agreement names and nick_names - Query both and create a sorted list of dicts
         agreement_names_query = (
             select(Agreement.id, Agreement.name, Agreement.nick_name)
             .join(Project, Agreement.project_id == Project.id)
@@ -632,16 +632,19 @@ class ProjectsService(OpsService[Project]):
             .where(Agreement.name.isnot(None))
         )
 
-        # Collect all names and nick_names into a single sorted list
-        # Don't need ids because the match query matches directly on name and nick_name.
-        agreement_values = set()  # Use set to avoid duplicates
-        for _, a_name, a_nick_name in self.db_session.execute(agreement_names_query).all():
-            if a_name:
-                agreement_values.add(a_name)
-            if a_nick_name:
-                agreement_values.add(a_nick_name)
+        # Collect all names and nick_names into a list of dicts with ids
+        # Use a dict keyed by name to avoid duplicates while preserving id
+        agreement_values_dict = {}  # Key: name, Value: id
+        for a_id, a_name, a_nick_name in self.db_session.execute(agreement_names_query).all():
+            if a_name and a_name not in agreement_values_dict:
+                agreement_values_dict[a_name] = a_id
+            if a_nick_name and a_nick_name not in agreement_values_dict:
+                agreement_values_dict[a_nick_name] = a_id
 
-        agreement_names = sorted(list(agreement_values))
+        # Convert to list of dicts and sort by name
+        agreement_names = sorted(
+            [{"id": a_id, "name": name} for name, a_id in agreement_values_dict.items()], key=lambda x: x["name"]
+        )
 
         # Build response
         filters = {

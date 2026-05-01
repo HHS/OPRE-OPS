@@ -3524,9 +3524,23 @@ paths:
                   agreement_names:
                     type: array
                     items:
-                      type: string
-                    description: List of agreement names and nicknames associated with projects (sorted alphabetically, no duplicates)
-                    example: ["Agreement 001", "Contract Alpha", "Grant Beta"]
+                      type: object
+                      required:
+                        - id
+                        - name
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                    description: List of agreement names and nicknames associated with projects (sorted alphabetically by name, no duplicates)
+                    example:
+                      - id: 1
+                        name: "Agreement 001"
+                      - id: 2
+                        name: "Contract Alpha"
+                      - id: 3
+                        name: "Grant Beta"
         "401":
           description: Unauthorized
         "500":

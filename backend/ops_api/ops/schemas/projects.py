@@ -207,7 +207,7 @@ class ProjectListFilterOptionResponseSchema(Schema):
     portfolios = fields.List(fields.Dict(keys=fields.String(), values=fields.Raw()), required=True)
     project_titles = fields.List(fields.Dict(keys=fields.String(), values=fields.Raw()), required=True)
     project_types = fields.List(fields.String(), required=True)
-    agreement_names = fields.List(fields.String(), required=True)
+    agreement_names = fields.List(fields.Nested(AgreementNameListItem), required=True)
 
 
 class ProjectFundingRequestSchema(Schema):

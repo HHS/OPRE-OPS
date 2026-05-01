@@ -1,6 +1,8 @@
 /// <reference types="cypress" />
 import { terminalLog, testLogin } from "./utils";
 
+const getAppliedFilters = () => cy.contains("span", "Filters Applied:").parent();
+
 beforeEach(() => {
     testLogin("budget-team");
     cy.visit("/projects");
@@ -71,5 +73,263 @@ describe("Projects List Page", () => {
             .eq(1)
             .should("have.attr", "aria-sort")
             .and("match", /ascending|descending/);
+    });
+
+    it("the filter button works as expected", () => {
+        cy.get("button").contains("Filter").click();
+
+        // Set a number of filters
+        cy.get(".fiscal-year-combobox__control").click();
+        cy.get(".fiscal-year-combobox__menu").contains(".fiscal-year-combobox__option", "FY 2044").click();
+
+        cy.get(".portfolios-combobox__control").click();
+        cy.get(".portfolios-combobox__menu").contains(".portfolios-combobox__option", "Child Care Research").click();
+
+        // Click Apply
+        cy.get("button").contains("Apply").click();
+
+        // Check that the correct tags are displayed
+        getAppliedFilters().within(() => {
+            cy.contains("FY 2044").should("exist");
+            cy.contains("Child Care Research").should("exist");
+        });
+
+        // Verify filters were applied — table shows results or zero-results message
+        cy.get("tbody tr", { timeout: 10000 }).should("exist");
+
+        // Reset
+        cy.get("button").contains("Filter").click();
+        cy.get("button").contains("Reset").click();
+        cy.get("button").contains("Apply").click();
+
+        // Wait for filters to be cleared
+        cy.wait(1000);
+
+        // Check that no tags are displayed
+        cy.contains("span", "Filters Applied:").should("not.exist");
+    });
+
+    it("filters projects by fiscal year", () => {
+        cy.get("button").contains("Filter").click();
+
+        // Select a fiscal year
+        cy.get(".fiscal-year-combobox__control").click();
+        cy.get(".fiscal-year-combobox__menu").should("be.visible");
+        cy.get(".fiscal-year-combobox__menu").contains("FY 2043").click();
+
+        // Apply the filter
+        cy.get("button").contains("Apply").click();
+
+        // Verify the filter tag is displayed
+        getAppliedFilters().within(() => {
+            cy.contains("FY 2043", { timeout: 10000 }).should("exist");
+        });
+
+        // Verify the table is filtered correctly
+        cy.get("tbody tr", { timeout: 30000 }).should("have.length.at.least", 1);
+
+        // Reset the filter
+        cy.get("button").contains("Filter").click();
+        cy.get("button").contains("Reset").click();
+        cy.get("button").contains("Apply").click();
+
+        // Wait for table to reload with all projects
+        cy.get("tbody tr", { timeout: 30000 }).should("have.length.at.least", 1);
+        cy.contains("span", "Filters Applied:").should("not.exist");
+    });
+
+    it("filters projects by portfolio", () => {
+        cy.get("button").contains("Filter").click();
+
+        // Select a portfolio
+        cy.get(".portfolios-combobox__control").click();
+        cy.get(".portfolios-combobox__menu").should("be.visible");
+        cy.get(".portfolios-combobox__menu").contains("Child Care Research").click();
+
+        // Apply the filter
+        cy.get("button").contains("Apply").click();
+
+        // Verify the filter tag is displayed
+        getAppliedFilters().within(() => {
+            cy.contains("Child Care Research", { timeout: 10000 }).should("exist");
+        });
+
+        // Verify the table is filtered correctly
+        cy.get("tbody tr", { timeout: 30000 }).should("have.length.at.least", 1);
+
+        // Reset the filter
+        cy.get("button").contains("Filter").click();
+        cy.get("button").contains("Reset").click();
+        cy.get("button").contains("Apply").click();
+
+        // Wait for table to reload
+        cy.get("tbody tr", { timeout: 30000 }).should("have.length.at.least", 1);
+        cy.contains("span", "Filters Applied:").should("not.exist");
+    });
+
+    it("filters projects by project title", () => {
+        cy.get("#fiscal-year-select").select("All");
+
+        cy.get("button").contains("Filter").click();
+
+        // Select a project title
+        cy.get(".project-title-combobox__control").click();
+        cy.get(".project-title-combobox__menu").should("be.visible");
+        // Select the first project option that appears
+        cy.get(".project-title-combobox__menu .project-title-combobox__option").first().click();
+
+        // Apply the filter
+        cy.get("button").contains("Apply").click();
+
+        // Verify a filter tag is displayed (we don't know the exact project name)
+        getAppliedFilters().should("exist");
+
+        // Verify the table shows filtered results
+        cy.get("tbody tr", { timeout: 30000 }).should("have.length.at.least", 1);
+
+        // Reset the filter
+        cy.get("button").contains("Filter").click();
+        cy.get("button").contains("Reset").click();
+        cy.get("button").contains("Apply").click();
+
+        cy.get("tbody tr", { timeout: 30000 }).should("have.length.at.least", 1);
+        cy.contains("span", "Filters Applied:").should("not.exist");
+    });
+
+    it("filters projects by project type", () => {
+        cy.get("button").contains("Filter").click();
+
+        // Select project type
+        cy.get(".project-type-combobox__control").click();
+        cy.get(".project-type-combobox__menu").should("be.visible");
+        cy.get(".project-type-combobox__menu").contains("Research").click();
+
+        // Apply the filter
+        cy.get("button").contains("Apply").click();
+
+        // Verify the filter tag is displayed
+        getAppliedFilters().within(() => {
+            cy.contains("Research", { timeout: 10000 }).should("exist");
+        });
+
+        // Verify the table shows only research projects
+        cy.get("tbody tr", { timeout: 30000 }).should("have.length.at.least", 1);
+        // All visible rows should show "Research" as the type
+        cy.get("tbody tr td:nth-child(2)").each(($el) => {
+            cy.wrap($el).should("contain.text", "Research");
+        });
+
+        // Reset the filter
+        cy.get("button").contains("Filter").click();
+        cy.get("button").contains("Reset").click();
+        cy.get("button").contains("Apply").click();
+
+        cy.get("tbody tr", { timeout: 30000 }).should("have.length.at.least", 1);
+        cy.contains("span", "Filters Applied:").should("not.exist");
+    });
+
+    it("filters projects by agreement title", () => {
+        cy.get("button").contains("Filter").click();
+
+        // Select an agreement title
+        cy.get(".agreement-name-combobox__control").click();
+        cy.get(".agreement-name-combobox__menu").should("be.visible");
+        // Select the first agreement option that appears
+        cy.get(".agreement-name-combobox__menu .agreement-name-combobox__option").first().click();
+
+        // Apply the filter
+        cy.get("button").contains("Apply").click();
+
+        // Verify a filter tag is displayed
+        getAppliedFilters().should("exist");
+
+        // Verify the table shows filtered results
+        cy.get("tbody tr", { timeout: 30000 }).should("have.length.at.least", 1);
+
+        // Reset the filter
+        cy.get("button").contains("Filter").click();
+        cy.get("button").contains("Reset").click();
+        cy.get("button").contains("Apply").click();
+
+        cy.get("tbody tr", { timeout: 30000 }).should("have.length.at.least", 1);
+        cy.contains("span", "Filters Applied:").should("not.exist");
+    });
+
+    it("filters projects by multiple criteria", () => {
+        cy.get("button").contains("Filter").click();
+
+        // Select multiple filters
+        cy.get(".fiscal-year-combobox__control").click();
+        cy.get(".fiscal-year-combobox__menu").should("be.visible");
+        cy.get(".fiscal-year-combobox__menu").contains("FY 2044").click();
+
+        cy.get(".portfolios-combobox__control").click();
+        cy.get(".portfolios-combobox__menu").should("be.visible");
+        cy.get(".portfolios-combobox__menu").contains("Child Care Research").click();
+
+        cy.get(".project-type-combobox__control").click();
+        cy.get(".project-type-combobox__menu").should("be.visible");
+        cy.get(".project-type-combobox__menu").contains("Research").click();
+
+        // Apply the filter
+        cy.get("button").contains("Apply").click();
+
+        // Verify all filter tags are displayed
+        getAppliedFilters().within(() => {
+            cy.contains("FY 2044", { timeout: 10000 }).should("exist");
+            cy.contains("Child Care Research").should("exist");
+            cy.contains("Research").should("exist");
+        });
+
+        // Verify the table shows filtered results
+        cy.get("tbody tr", { timeout: 30000 }).should("have.length.at.least", 1);
+
+        // Reset the filter
+        cy.get("button").contains("Filter").click();
+        cy.get("button").contains("Reset").click();
+        cy.get("button").contains("Apply").click();
+
+        cy.get("tbody tr", { timeout: 30000 }).should("have.length.at.least", 1);
+        cy.contains("span", "Filters Applied:").should("not.exist");
+    });
+
+    it("removes individual filter tags when clicked", () => {
+        cy.get("button").contains("Filter").click();
+
+        // Set multiple filters
+        cy.get(".fiscal-year-combobox__control").click();
+        cy.get(".fiscal-year-combobox__menu").contains("FY 2044").click();
+
+        cy.get(".portfolios-combobox__control").click();
+        cy.get(".portfolios-combobox__menu").contains("Child Care Research").click();
+
+        cy.get("button").contains("Apply").click();
+
+        // Verify both tags are displayed
+        getAppliedFilters().within(() => {
+            cy.contains("FY 2044").should("exist");
+            cy.contains("Child Care Research").should("exist");
+        });
+
+        // Click the X button on the fiscal year tag
+        cy.get('[aria-label="Remove FY 2044 filter"]').click();
+
+        // Wait for table to reload
+        cy.wait(1000);
+
+        // Verify only the portfolio tag remains
+        getAppliedFilters().within(() => {
+            cy.contains("FY 2044").should("not.exist");
+            cy.contains("Child Care Research").should("exist");
+        });
+
+        // Click the X button on the portfolio tag
+        cy.get('[aria-label="Remove Child Care Research filter"]').click();
+
+        // Wait for table to reload
+        cy.wait(1000);
+
+        // Verify no filter tags remain
+        cy.contains("span", "Filters Applied:").should("not.exist");
     });
 });
