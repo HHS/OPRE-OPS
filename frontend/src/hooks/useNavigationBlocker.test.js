@@ -113,9 +113,7 @@ describe("useNavigationBlocker", () => {
         const error = new Error("save failed");
         const failingSave = vi.fn().mockRejectedValue(error);
 
-        const { result } = renderHook(() =>
-            useNavigationBlocker({ ...defaultProps, saveChanges: failingSave })
-        );
+        const { result } = renderHook(() => useNavigationBlocker({ ...defaultProps, saveChanges: failingSave }));
 
         await act(async () => {
             await result.current.blockerModalProps.handleConfirm();
