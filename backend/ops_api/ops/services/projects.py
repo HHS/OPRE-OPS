@@ -273,7 +273,10 @@ class ProjectsService(OpsService[Project]):
         # Apply project search filter on project title (OR logic, exact match on title/short title)
         if filters.project_search:
             where_clauses.append(
-                or_(ResearchProject.title.in_(filters.project_search), ResearchProject.short_title.in_(filters.project_search))
+                or_(
+                    ResearchProject.title.in_(filters.project_search),
+                    ResearchProject.short_title.in_(filters.project_search),
+                )
             )
 
         # Apply agreement search filter using EXISTS subquery
