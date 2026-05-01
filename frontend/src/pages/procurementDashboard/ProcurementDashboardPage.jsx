@@ -60,7 +60,6 @@ const ProcurementDashboard = () => {
     const { data: procurementTrackers = [] } = useGetProcurementTrackersByAgreementIdsQuery(agreementIds, {
         skip: agreementIds.length === 0
     });
-    console.log(procurementTrackers);
 
     const handleExport = useCallback(() => {
         // Build a lookup from agreement ID to its active procurement step number

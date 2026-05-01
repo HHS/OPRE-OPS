@@ -103,7 +103,7 @@ export const ProcurementDetailsTableRow = ({
                         </dl>
                         <dl className="font-12px margin-top-0">
                             <dt className="margin-0 text-base-dark">Earliest PoP - Start</dt>
-                            <dd className="margin-0">2/25/2026</dd>
+                            <dd className="margin-0">TBD</dd>
                         </dl>
                         <dl className="font-12px margin-top-0">
                             <dt className="margin-0 text-base-dark">Subtotal</dt>
