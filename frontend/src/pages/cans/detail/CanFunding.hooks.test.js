@@ -30,13 +30,14 @@ vi.mock("react-redux", () => ({
     useSelector: (selector) => useSelectorMock(selector)
 }));
 
-vi.mock("react-router-dom", async (importOriginal) => {
-    const actual = await importOriginal();
-    return {
-        ...actual,
-        useBlocker: () => ({ state: "unblocked", reset: vi.fn(), proceed: vi.fn() })
-    };
-});
+vi.mock("../../../hooks/useNavigationBlocker.hooks", () => ({
+    default: () => ({
+        showBlockerModal: false,
+        setShowBlockerModal: vi.fn(),
+        blockerModalProps: {},
+        setIsCancelling: vi.fn()
+    })
+}));
 
 vi.mock("../../../api/opsAPI.js", () => ({
     useAddCanFundingBudgetsMutation: (...args) => useAddCanFundingBudgetsMutationMock(...args),

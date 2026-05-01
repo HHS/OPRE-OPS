@@ -25,6 +25,7 @@ export default function useCan() {
             return prev;
         });
     }, [location.pathname]);
+
     const activeUser = useSelector((state) => state.auth.activeUser);
     const userRoles = activeUser?.roles ?? [];
     const isBudgetTeam = userRoles?.some((role) => role?.name === USER_ROLES.BUDGET_TEAM);

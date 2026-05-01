@@ -1,9 +1,9 @@
 import React from "react";
-import { useBlocker } from "react-router-dom";
 import classnames from "vest/classnames";
 import { useUpdateCanMutation } from "../../../api/opsAPI";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import useAlert from "../../../hooks/use-alert.hooks";
+import useNavigationBlocker from "../../../hooks/useNavigationBlocker.hooks";
 import suite from "./suite.js";
 /**
  * @description - Custom hook for the CAN Detail Form.
@@ -24,9 +24,6 @@ export default function useCanDetailForm(canId, canNumber, canNickname, canDescr
         secondaryButtonText: "",
         handleConfirm: () => {}
     });
-    const [showBlockerModal, setShowBlockerModal] = React.useState(false);
-    const [blockerModalProps, setBlockerModalProps] = React.useState({});
-    const [isCancelling, setIsCancelling] = React.useState(false);
     const [updateCan] = useUpdateCanMutation();
     const { setAlert } = useAlert();
 
@@ -40,11 +37,6 @@ export default function useCanDetailForm(canId, canNumber, canNickname, canDescr
         warning: "warning"
     });
 
-    const blocker = useBlocker(
-        ({ currentLocation, nextLocation }) =>
-            !isCancelling && hasChanged && currentLocation.pathname !== nextLocation.pathname
-    );
-
     const saveChanges = React.useCallback(async () => {
         const payload = {
             number: canNumber,
@@ -53,82 +45,31 @@ export default function useCanDetailForm(canId, canNumber, canNickname, canDescr
             description: description
         };
 
+        await updateCan({
+            id: canId,
+            data: payload
+        });
+
         setAlert({
             type: "success",
             heading: "CAN Updated",
             message: `The CAN ${canNumber} has been successfully updated.`
         });
-
-        await updateCan({
-            id: canId,
-            data: payload
-        });
     }, [canId, canNumber, portfolioId, nickName, description, updateCan, setAlert]);
 
-    const saveChangesRef = React.useRef(saveChanges);
-    React.useEffect(() => {
-        saveChangesRef.current = saveChanges;
-    }, [saveChanges]);
-
-    const toggleEditModeRef = React.useRef(toggleEditMode);
-    React.useEffect(() => {
-        toggleEditModeRef.current = toggleEditMode;
-    }, [toggleEditMode]);
-
-    const blockerRef = React.useRef(blocker);
-    React.useEffect(() => {
-        blockerRef.current = blocker;
-    }, [blocker]);
-
-    const proceedIfBlocked = async () => {
-        const currentBlocker = blockerRef.current;
-        if (!currentBlocker || currentBlocker.state !== "blocked") {
-            return;
-        }
-        try {
-            await currentBlocker.proceed();
-        } catch (error) {
-            const message = error && typeof error.message === "string" ? error.message.trim() : "";
-            if (message.startsWith("Invalid blocker state transition")) {
-                console.warn("Ignored known React Router blocker exception:", message);
-                return;
-            }
-            throw error;
-        }
-    };
-
-    React.useEffect(() => {
-        if (blocker.state === "blocked") {
-            setShowBlockerModal(true);
-            setBlockerModalProps({
-                heading: "You have unsaved changes",
-                description: "Do you want to save your changes before leaving this page?",
-                actionButtonText: "Save Changes",
-                secondaryButtonText: "Leave without saving",
-                handleConfirm: async () => {
-                    try {
-                        await saveChangesRef.current();
-                        setShowBlockerModal(false);
-                        toggleEditModeRef.current();
-                        await proceedIfBlocked();
-                    } catch (error) {
-                        console.error(error);
-                        blocker.reset();
-                    }
-                },
-                handleSecondary: async () => {
-                    setShowBlockerModal(false);
-                    toggleEditModeRef.current();
-                    await proceedIfBlocked();
-                },
-                closeModal: () => {
-                    setShowBlockerModal(false);
-                    blocker.reset();
-                }
+    const { showBlockerModal, setShowBlockerModal, blockerModalProps, setIsCancelling } = useNavigationBlocker({
+        hasChanged,
+        saveChanges,
+        onExit: toggleEditMode,
+        onSaveError: () => {
+            setAlert({
+                type: "error",
+                heading: "Error",
+                message: "An error occurred while updating the CAN.",
+                redirectUrl: "/error"
             });
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [blocker.state]);
+    });
 
     const handleCancel = (e) => {
         e.preventDefault();

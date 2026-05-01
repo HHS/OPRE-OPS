@@ -1,7 +1,6 @@
 import cryptoRandomString from "crypto-random-string";
 import React from "react";
 import { useSelector } from "react-redux";
-import { useBlocker } from "react-router-dom";
 import classnames from "vest/classnames";
 import {
     useAddCanFundingBudgetsMutation,
@@ -14,6 +13,7 @@ import { NO_DATA } from "../../../constants.js";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper.js";
 import { getCurrentFiscalYear } from "../../../helpers/utils.js";
 import useAlert from "../../../hooks/use-alert.hooks";
+import useNavigationBlocker from "../../../hooks/useNavigationBlocker.hooks";
 import suite from "./CanFundingSuite.js";
 
 /**
@@ -63,10 +63,6 @@ export default function useCanFunding(
         secondaryButtonText: "",
         handleConfirm: () => {}
     });
-
-    const [showBlockerModal, setShowBlockerModal] = React.useState(false);
-    const [blockerModalProps, setBlockerModalProps] = React.useState({});
-    const [isCancelling, setIsCancelling] = React.useState(false);
 
     const [budgetForm, setBudgetForm] = React.useState({
         submittedAmount: 0.0,
@@ -127,11 +123,6 @@ export default function useCanFunding(
         enteredFundingReceived,
         deletedFundingReceivedIds
     ]);
-
-    const blocker = useBlocker(
-        ({ currentLocation, nextLocation }) =>
-            !isCancelling && hasChanged && currentLocation.pathname !== nextLocation.pathname
-    );
 
     /** @param {string} value */
     const handleEnteredBudgetAmount = (value) => {
@@ -265,83 +256,32 @@ export default function useCanFunding(
         setAlert
     ]);
 
-    const saveChangesRef = React.useRef(saveChanges);
-    React.useEffect(() => {
-        saveChangesRef.current = saveChanges;
-    }, [saveChanges]);
+    const onFundingExit = React.useCallback(() => {
+        toggleEditMode();
+        resetWelcomeModal();
+    }, [toggleEditMode, resetWelcomeModal]);
 
-    const toggleEditModeRef = React.useRef(toggleEditMode);
-    React.useEffect(() => {
-        toggleEditModeRef.current = toggleEditMode;
-    }, [toggleEditMode]);
-
-    const resetWelcomeModalRef = React.useRef(resetWelcomeModal);
-    React.useEffect(() => {
-        resetWelcomeModalRef.current = resetWelcomeModal;
-    }, [resetWelcomeModal]);
-
-    const blockerRef = React.useRef(blocker);
-    React.useEffect(() => {
-        blockerRef.current = blocker;
-    }, [blocker]);
-
-    const proceedIfBlocked = async () => {
-        const currentBlocker = blockerRef.current;
-        if (!currentBlocker || currentBlocker.state !== "blocked") {
-            return;
-        }
-        try {
-            await currentBlocker.proceed();
-        } catch (error) {
-            const message = error && typeof error.message === "string" ? error.message.trim() : "";
-            if (message.startsWith("Invalid blocker state transition")) {
-                console.warn("Ignored known React Router blocker exception:", message);
-                return;
-            }
-            throw error;
-        }
-    };
-
-    React.useEffect(() => {
-        if (blocker.state === "blocked") {
-            setShowBlockerModal(true);
-            setBlockerModalProps({
-                heading: "You have unsaved changes",
-                description: "Do you want to save your changes before leaving this page?",
-                actionButtonText: "Save Changes",
-                secondaryButtonText: "Leave without saving",
-                handleConfirm: async () => {
-                    try {
-                        await saveChangesRef.current();
-                        setShowBlockerModal(false);
-                        toggleEditModeRef.current();
-                        resetWelcomeModalRef.current();
-                        await proceedIfBlocked();
-                    } catch (error) {
-                        console.error("Error saving CAN funding:", error);
-                        setAlert({
-                            type: "error",
-                            heading: "Error",
-                            message: "An error occurred while updating the CAN.",
-                            redirectUrl: "/error"
-                        });
-                        blocker.reset();
-                    }
-                },
-                handleSecondary: async () => {
-                    setShowBlockerModal(false);
-                    toggleEditModeRef.current();
-                    resetWelcomeModalRef.current();
-                    await proceedIfBlocked();
-                },
-                closeModal: () => {
-                    setShowBlockerModal(false);
-                    blocker.reset();
-                }
+    const { showBlockerModal, setShowBlockerModal, blockerModalProps, setIsCancelling } = useNavigationBlocker({
+        hasChanged,
+        saveChanges,
+        onExit: onFundingExit,
+        onSaveError: () => {
+            setAlert({
+                type: "error",
+                heading: "Error",
+                message: "An error occurred while updating the CAN.",
+                redirectUrl: "/error"
             });
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [blocker.state]);
+    });
+
+    const wasEditModeRef = React.useRef(isEditMode);
+    React.useEffect(() => {
+        if (!wasEditModeRef.current && isEditMode) {
+            setIsCancelling(false);
+        }
+        wasEditModeRef.current = isEditMode;
+    }, [isEditMode, setIsCancelling]);
 
     /** @param {React.FormEvent<HTMLFormElement>} e */
     const handleSubmit = async (e) => {
