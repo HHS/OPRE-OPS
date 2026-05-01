@@ -7,7 +7,9 @@ import { getCurrentFiscalYear } from "../../../../helpers/utils";
  * @param {Function} setFilters - A function to call to set the filters.
  */
 export const useProjectFilterButton = (filters, setFilters) => {
-    const [fiscalYear, setFiscalYear] = React.useState(/** @type {import('./ProjectFilterTypes').FilterOption[]} */ ([]));
+    const [fiscalYear, setFiscalYear] = React.useState(
+        /** @type {import('./ProjectFilterTypes').FilterOption[]} */ ([])
+    );
     const [portfolio, setPortfolio] = React.useState(/** @type {import('./ProjectFilterTypes').FilterOption[]} */ ([]));
     const [projectSearch, setProjectSearch] = React.useState(
         /** @type {import('./ProjectFilterTypes').FilterOption[]} */ ([])
