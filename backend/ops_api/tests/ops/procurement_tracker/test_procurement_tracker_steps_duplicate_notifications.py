@@ -291,12 +291,12 @@ def test_approval_response_includes_reviewer_notes_in_notification(auth_client, 
     assert notification is not None, "Notification should be created for budget team"
 
     # Budget team notification should NOT include reviewer notes
-    assert reviewer_notes not in notification.message, (
-        f"Reviewer notes should not be in budget team notification. Got: {notification.message}"
-    )
-    assert "Notes:" not in notification.message, (
-        f"Budget team notification should not include 'Notes:' label. Got: {notification.message}"
-    )
+    assert (
+        reviewer_notes not in notification.message
+    ), f"Reviewer notes should not be in budget team notification. Got: {notification.message}"
+    assert (
+        "Notes:" not in notification.message
+    ), f"Budget team notification should not include 'Notes:' label. Got: {notification.message}"
 
 
 def test_decline_response_includes_reviewer_notes_in_notification(auth_client, test_pre_award_step, loaded_db):
@@ -385,7 +385,9 @@ def test_decline_response_excludes_whitespace_only_reviewer_notes(auth_client, t
     # Expect validation error since reviewer notes are required for DECLINED status
     assert response.status_code == 400
     error_data = response.json
-    assert "reviewer_notes" in error_data["error_message"] or "Reviewer notes are required" in error_data["error_message"]
+    assert (
+        "reviewer_notes" in error_data["error_message"] or "Reviewer notes are required" in error_data["error_message"]
+    )
 
 
 def test_reviewer_notes_prevent_markdown_injection(auth_client, test_pre_award_step, loaded_db):
