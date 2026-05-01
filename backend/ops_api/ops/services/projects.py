@@ -20,7 +20,6 @@ from models import (
     User,
 )
 from ops_api.ops.services.ops_service import OpsService, ResourceNotFoundError, ValidationError
-from ops_api.ops.utils.query_helpers import QueryHelper
 
 
 @dataclass
@@ -225,12 +224,10 @@ class ProjectsService(OpsService[Project]):
         Returns:
             SQLAlchemy select statement
         """
+        # Base query with all necessary eager loading
         stmt = (
             select(ResearchProject)
             .distinct(ResearchProject.id)
-            .join(Agreement, isouter=True)
-            .join(BudgetLineItem, isouter=True)
-            .join(CAN, isouter=True)
             .options(
                 selectinload(ResearchProject.agreements).selectinload(Agreement.services_components),
                 selectinload(ResearchProject.agreements)
@@ -242,35 +239,60 @@ class ProjectsService(OpsService[Project]):
             )
         )
 
-        query_helper = QueryHelper(stmt)
+        # For filtering, we use EXISTS subqueries to ensure each filter can match different
+        # related records. This prevents the issue where a single joined row must satisfy
+        # multiple conditions across different tables (e.g., one agreement for fiscal year
+        # and a different agreement for agreement name).
+        where_clauses = []
 
-        # Apply portfolio filter (OR logic - match any portfolio)
+        # Apply portfolio filter using EXISTS subquery
         if filters.portfolio_id:
-            query_helper.add_column_in_list(CAN.portfolio_id, filters.portfolio_id)
+            portfolio_subquery = (
+                select(1)
+                .select_from(Agreement)
+                .join(BudgetLineItem)
+                .join(CAN)
+                .where(Agreement.project_id == ResearchProject.id)
+                .where(CAN.portfolio_id.in_(filters.portfolio_id))
+                .exists()
+            )
+            where_clauses.append(portfolio_subquery)
 
-        # Apply fiscal year filter (OR logic - match any fiscal year)
+        # Apply fiscal year filter using EXISTS subquery
         if filters.fiscal_year:
-            if len(filters.fiscal_year) == 1:
-                fiscal_year = filters.fiscal_year[0]
-                query_helper.add_column_equals(BudgetLineItem.fiscal_year, fiscal_year)
-            else:
-                # Multiple fiscal years - use IN clause
-                query_helper.add_column_in_list(BudgetLineItem.fiscal_year, filters.fiscal_year)
+            fy_subquery = (
+                select(1)
+                .select_from(Agreement)
+                .join(BudgetLineItem)
+                .where(Agreement.project_id == ResearchProject.id)
+                .where(BudgetLineItem.fiscal_year.in_(filters.fiscal_year))
+                .exists()
+            )
+            where_clauses.append(fy_subquery)
 
         # Apply project search filter on project title (OR logic, exact match on title/short title)
         if filters.project_search:
-            query_helper.where_clauses.append(
-                or_(Project.title.in_(filters.project_search), Project.short_title.in_(filters.project_search))
+            where_clauses.append(
+                or_(ResearchProject.title.in_(filters.project_search), ResearchProject.short_title.in_(filters.project_search))
             )
 
-        # Apply agreement search filter on agreement name and nick_name (exact match - OR logic)
-        # Projects are returned if any agreement has name OR nick_name matching any search term
+        # Apply agreement search filter using EXISTS subquery
         if filters.agreement_search:
-            query_helper.where_clauses.append(
-                or_(Agreement.name.in_(filters.agreement_search), Agreement.nick_name.in_(filters.agreement_search))
+            agreement_subquery = (
+                select(1)
+                .select_from(Agreement)
+                .where(Agreement.project_id == ResearchProject.id)
+                .where(
+                    or_(Agreement.name.in_(filters.agreement_search), Agreement.nick_name.in_(filters.agreement_search))
+                )
+                .exists()
             )
+            where_clauses.append(agreement_subquery)
 
-        stmt = query_helper.get_stmt()
+        # Apply all where clauses
+        if where_clauses:
+            stmt = stmt.where(*where_clauses)
+
         logger.debug(f"SQL: {stmt}")
 
         return stmt
@@ -285,55 +307,78 @@ class ProjectsService(OpsService[Project]):
         Returns:
             SQLAlchemy select statement
         """
+        # Base query with all necessary eager loading
         stmt = (
             select(AdministrativeAndSupportProject)
             .distinct(AdministrativeAndSupportProject.id)
-            .join(Agreement, isouter=True)
-            .join(BudgetLineItem, isouter=True)
-            .join(CAN, isouter=True)
             .options(
-                selectinload(ResearchProject.agreements).selectinload(Agreement.services_components),
-                selectinload(ResearchProject.agreements)
+                selectinload(AdministrativeAndSupportProject.agreements).selectinload(Agreement.services_components),
+                selectinload(AdministrativeAndSupportProject.agreements)
                 .selectinload(Agreement.budget_line_items)
                 .selectinload(BudgetLineItem.can),
-                selectinload(ResearchProject.agreements).selectinload(Agreement.special_topics),
-                selectinload(ResearchProject.agreements).selectinload(Agreement.research_methodologies),
-                selectinload(ResearchProject.agreements).selectinload(Agreement.team_members),
+                selectinload(AdministrativeAndSupportProject.agreements).selectinload(Agreement.special_topics),
+                selectinload(AdministrativeAndSupportProject.agreements).selectinload(Agreement.research_methodologies),
+                selectinload(AdministrativeAndSupportProject.agreements).selectinload(Agreement.team_members),
             )
         )
 
-        query_helper = QueryHelper(stmt)
+        # For filtering, we use EXISTS subqueries to ensure each filter can match different
+        # related records. This prevents the issue where a single joined row must satisfy
+        # multiple conditions across different tables (e.g., one agreement for fiscal year
+        # and a different agreement for agreement name).
+        where_clauses = []
 
-        # Apply portfolio filter (OR logic - match any portfolio)
+        # Apply portfolio filter using EXISTS subquery
         if filters.portfolio_id:
-            query_helper.add_column_in_list(CAN.portfolio_id, filters.portfolio_id)
+            portfolio_subquery = (
+                select(1)
+                .select_from(Agreement)
+                .join(BudgetLineItem)
+                .join(CAN)
+                .where(Agreement.project_id == AdministrativeAndSupportProject.id)
+                .where(CAN.portfolio_id.in_(filters.portfolio_id))
+                .exists()
+            )
+            where_clauses.append(portfolio_subquery)
 
-        # Apply fiscal year filter (OR logic - match any fiscal year)
+        # Apply fiscal year filter using EXISTS subquery
         if filters.fiscal_year:
-            if len(filters.fiscal_year) == 1:
-                fiscal_year = filters.fiscal_year[0]
-                query_helper.add_column_equals(BudgetLineItem.fiscal_year, fiscal_year)
-            else:
-                # Multiple fiscal years - use IN clause
-                query_helper.add_column_in_list(BudgetLineItem.fiscal_year, filters.fiscal_year)
+            fy_subquery = (
+                select(1)
+                .select_from(Agreement)
+                .join(BudgetLineItem)
+                .where(Agreement.project_id == AdministrativeAndSupportProject.id)
+                .where(BudgetLineItem.fiscal_year.in_(filters.fiscal_year))
+                .exists()
+            )
+            where_clauses.append(fy_subquery)
 
-        # Apply project search filter on project title (AND logic - must match all search terms)
+        # Apply project search filter on project title (OR logic, exact match on title/short title)
         if filters.project_search:
-            query_helper.where_clauses.append(
+            where_clauses.append(
                 or_(
-                    Project.title.in_(filters.project_search),
-                    Project.short_title.in_(filters.project_search),
+                    AdministrativeAndSupportProject.title.in_(filters.project_search),
+                    AdministrativeAndSupportProject.short_title.in_(filters.project_search),
                 )
             )
 
-        # Apply agreement search filter on agreement name and nick_name (exact match - OR logic)
-        # Projects are returned if any agreement has name OR nick_name matching any search term
+        # Apply agreement search filter using EXISTS subquery
         if filters.agreement_search:
-            query_helper.where_clauses.append(
-                or_(Agreement.name.in_(filters.agreement_search), Agreement.nick_name.in_(filters.agreement_search))
+            agreement_subquery = (
+                select(1)
+                .select_from(Agreement)
+                .where(Agreement.project_id == AdministrativeAndSupportProject.id)
+                .where(
+                    or_(Agreement.name.in_(filters.agreement_search), Agreement.nick_name.in_(filters.agreement_search))
+                )
+                .exists()
             )
+            where_clauses.append(agreement_subquery)
 
-        stmt = query_helper.get_stmt()
+        # Apply all where clauses
+        if where_clauses:
+            stmt = stmt.where(*where_clauses)
+
         logger.debug(f"SQL: {stmt}")
 
         return stmt
