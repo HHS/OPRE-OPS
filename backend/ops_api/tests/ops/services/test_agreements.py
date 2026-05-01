@@ -24,6 +24,7 @@ from models import (
 from ops_api.ops.services.agreements import (
     AgreementsService,
     _compute_agreement_totals,
+    _compute_days_in_procurement_step,
     _compute_procurement_overview,
     _compute_procurement_step_summary,
 )
@@ -1795,3 +1796,152 @@ class TestComputeProcurementStepSummary:
         result = _compute_procurement_step_summary([], fiscal_year=2025)
         for step in result["step_data"]:
             assert step["agreements_percent"] == 0.0
+
+
+def _make_mock_step(step_number, step_start_date=None, step_completed_date=None):
+    """Helper to create a mock procurement tracker step."""
+    step = MagicMock()
+    step.step_number = step_number
+    step.step_start_date = step_start_date
+    step.step_completed_date = step_completed_date
+    return step
+
+
+def _make_mock_tracker_with_steps(active_step_number, steps, status=None):
+    """Helper to create a mock procurement tracker with steps."""
+    from models.procurement_tracker import ProcurementTrackerStatus
+
+    tracker = MagicMock()
+    tracker.active_step_number = active_step_number
+    tracker.status = status if status is not None else ProcurementTrackerStatus.ACTIVE
+    tracker.steps = steps
+    return tracker
+
+
+class TestComputeDaysInProcurementStep:
+    def test_empty_list(self):
+        result = _compute_days_in_procurement_step([], fiscal_year=2025)
+        assert result == {}
+
+    def test_agreement_without_tracker(self):
+        ag = _make_mock_procurement_agreement(trackers=[])
+        result = _compute_days_in_procurement_step([ag], fiscal_year=2025)
+        assert result == {}
+
+    def test_completed_step_uses_completed_date(self):
+        step = _make_mock_step(3, step_start_date=date(2025, 1, 1), step_completed_date=date(2025, 1, 11))
+        tracker = _make_mock_tracker_with_steps(3, steps=[step])
+        ag = _make_mock_procurement_agreement(trackers=[tracker], agreement_id=10)
+
+        result = _compute_days_in_procurement_step([ag], fiscal_year=2025)
+
+        assert result == {3: {10: 10}}
+
+    @patch("ops_api.ops.services.agreements.date")
+    def test_incomplete_step_uses_today(self, mock_date):
+        mock_date.today.return_value = date(2025, 3, 1)
+        mock_date.side_effect = lambda *args, **kwargs: date(*args, **kwargs)
+
+        step = _make_mock_step(2, step_start_date=date(2025, 1, 1), step_completed_date=None)
+        tracker = _make_mock_tracker_with_steps(2, steps=[step])
+        ag = _make_mock_procurement_agreement(trackers=[tracker], agreement_id=5)
+
+        result = _compute_days_in_procurement_step([ag], fiscal_year=2025)
+
+        assert result == {2: {5: 59}}
+
+    def test_skips_inactive_tracker(self):
+        from models.procurement_tracker import ProcurementTrackerStatus
+
+        step = _make_mock_step(1, step_start_date=date(2025, 1, 1))
+        tracker = _make_mock_tracker_with_steps(1, steps=[step], status=ProcurementTrackerStatus.INACTIVE)
+        ag = _make_mock_procurement_agreement(trackers=[tracker], agreement_id=1)
+
+        result = _compute_days_in_procurement_step([ag], fiscal_year=2025)
+        assert result == {}
+
+    def test_skips_completed_tracker(self):
+        from models.procurement_tracker import ProcurementTrackerStatus
+
+        step = _make_mock_step(1, step_start_date=date(2025, 1, 1))
+        tracker = _make_mock_tracker_with_steps(1, steps=[step], status=ProcurementTrackerStatus.COMPLETED)
+        ag = _make_mock_procurement_agreement(trackers=[tracker], agreement_id=1)
+
+        result = _compute_days_in_procurement_step([ag], fiscal_year=2025)
+        assert result == {}
+
+    def test_skips_step_out_of_range(self):
+        step = _make_mock_step(7, step_start_date=date(2025, 1, 1))
+        tracker = _make_mock_tracker_with_steps(7, steps=[step])
+        ag = _make_mock_procurement_agreement(trackers=[tracker], agreement_id=1)
+
+        result = _compute_days_in_procurement_step([ag], fiscal_year=2025)
+        assert result == {}
+
+    def test_skips_step_zero(self):
+        step = _make_mock_step(0, step_start_date=date(2025, 1, 1))
+        tracker = _make_mock_tracker_with_steps(0, steps=[step])
+        ag = _make_mock_procurement_agreement(trackers=[tracker], agreement_id=1)
+
+        result = _compute_days_in_procurement_step([ag], fiscal_year=2025)
+        assert result == {}
+
+    def test_skips_step_without_start_date(self):
+        step = _make_mock_step(3, step_start_date=None)
+        tracker = _make_mock_tracker_with_steps(3, steps=[step])
+        ag = _make_mock_procurement_agreement(trackers=[tracker], agreement_id=1)
+
+        result = _compute_days_in_procurement_step([ag], fiscal_year=2025)
+        assert result == {}
+
+    def test_skips_when_active_step_not_in_steps_list(self):
+        step = _make_mock_step(1, step_start_date=date(2025, 1, 1))
+        tracker = _make_mock_tracker_with_steps(4, steps=[step])  # active_step_number=4 but only step 1 exists
+        ag = _make_mock_procurement_agreement(trackers=[tracker], agreement_id=1)
+
+        result = _compute_days_in_procurement_step([ag], fiscal_year=2025)
+        assert result == {}
+
+    def test_multiple_agreements_same_step(self):
+        step1 = _make_mock_step(2, step_start_date=date(2025, 1, 1), step_completed_date=date(2025, 1, 6))
+        tracker1 = _make_mock_tracker_with_steps(2, steps=[step1])
+        ag1 = _make_mock_procurement_agreement(trackers=[tracker1], agreement_id=10)
+
+        step2 = _make_mock_step(2, step_start_date=date(2025, 1, 1), step_completed_date=date(2025, 1, 21))
+        tracker2 = _make_mock_tracker_with_steps(2, steps=[step2])
+        ag2 = _make_mock_procurement_agreement(trackers=[tracker2], agreement_id=20)
+
+        result = _compute_days_in_procurement_step([ag1, ag2], fiscal_year=2025)
+
+        assert result == {2: {10: 5, 20: 20}}
+
+    def test_multiple_agreements_different_steps(self):
+        step1 = _make_mock_step(1, step_start_date=date(2025, 1, 1), step_completed_date=date(2025, 1, 4))
+        tracker1 = _make_mock_tracker_with_steps(1, steps=[step1])
+        ag1 = _make_mock_procurement_agreement(trackers=[tracker1], agreement_id=1)
+
+        step2 = _make_mock_step(5, step_start_date=date(2025, 2, 1), step_completed_date=date(2025, 2, 15))
+        tracker2 = _make_mock_tracker_with_steps(5, steps=[step2])
+        ag2 = _make_mock_procurement_agreement(trackers=[tracker2], agreement_id=2)
+
+        result = _compute_days_in_procurement_step([ag1, ag2], fiscal_year=2025)
+
+        assert result == {1: {1: 3}, 5: {2: 14}}
+
+    def test_uses_active_tracker_ignores_completed(self):
+        from models.procurement_tracker import ProcurementTrackerStatus
+
+        step_completed = _make_mock_step(2, step_start_date=date(2025, 1, 1), step_completed_date=date(2025, 1, 5))
+        completed_tracker = _make_mock_tracker_with_steps(
+            2, steps=[step_completed], status=ProcurementTrackerStatus.COMPLETED
+        )
+
+        step_active = _make_mock_step(4, step_start_date=date(2025, 3, 1), step_completed_date=date(2025, 3, 11))
+        active_tracker = _make_mock_tracker_with_steps(4, steps=[step_active])
+
+        ag = _make_mock_procurement_agreement(trackers=[completed_tracker, active_tracker], agreement_id=7)
+
+        result = _compute_days_in_procurement_step([ag], fiscal_year=2025)
+
+        assert result == {4: {7: 10}}
+        assert 2 not in result
