@@ -82,6 +82,7 @@ export const ProjectFilterButton = ({ filters, setFilters, projectFilterOptions,
                 defaultString={""}
                 overrideStyles={FILTER_MODAL_FULL_WIDTH}
                 isLoading={isLoadingOptions}
+                filterLabel={"Project Title or Nickname"}
             />
         </fieldset>,
         <fieldset
@@ -108,7 +109,7 @@ export const ProjectFilterButton = ({ filters, setFilters, projectFilterOptions,
                 defaultString={""}
                 overrideStyles={FILTER_MODAL_FULL_WIDTH}
                 isLoading={isLoadingOptions}
-                filterLabel="Agreement Title"
+                filterLabel="Agreement Title or Nickname"
             />
         </fieldset>
     ];
