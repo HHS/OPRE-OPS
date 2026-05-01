@@ -123,6 +123,7 @@ def test_initial_approval_response_sends_notification(auth_client, test_pre_awar
     budget_team_count = loaded_db.scalar(
         select(func.count()).select_from(User).join(User.roles).where(Role.name == "BUDGET_TEAM")
     )
+    assert budget_team_count > 0, "Test requires at least one BUDGET_TEAM user to verify notification behavior"
 
     # Get initial notification count
     initial_notification_count = loaded_db.scalar(select(func.count()).select_from(Notification))
@@ -288,7 +289,14 @@ def test_approval_response_includes_reviewer_notes_in_notification(auth_client, 
     ).first()
 
     assert notification is not None, "Notification should be created for budget team"
-    # Budget team notification does NOT include reviewer notes - those are for decline notifications to requester
+
+    # Budget team notification should NOT include reviewer notes
+    assert reviewer_notes not in notification.message, (
+        f"Reviewer notes should not be in budget team notification. Got: {notification.message}"
+    )
+    assert "Notes:" not in notification.message, (
+        f"Budget team notification should not include 'Notes:' label. Got: {notification.message}"
+    )
 
 
 def test_decline_response_includes_reviewer_notes_in_notification(auth_client, test_pre_award_step, loaded_db):
@@ -334,6 +342,7 @@ def test_approval_response_excludes_empty_reviewer_notes(auth_client, test_pre_a
 
     # Get a budget team member ID
     budget_team_user_id = loaded_db.scalar(select(User.id).join(User.roles).where(Role.name == "BUDGET_TEAM").limit(1))
+    assert budget_team_user_id is not None, "Test requires at least one BUDGET_TEAM user"
 
     # Respond with approval but NO reviewer notes
     update_data = {
@@ -358,38 +367,25 @@ def test_approval_response_excludes_empty_reviewer_notes(auth_client, test_pre_a
     assert "has approved" in notification.message
 
 
-def test_approval_response_excludes_whitespace_only_reviewer_notes(auth_client, test_pre_award_step, loaded_db):
-    """Test that whitespace-only reviewer notes are treated as empty (testing decline notification since approve goes to budget team in OPS-1639)."""
+def test_decline_response_excludes_whitespace_only_reviewer_notes(auth_client, test_pre_award_step, loaded_db):
+    """Test that whitespace-only reviewer notes are treated as invalid (validation requires non-empty notes for DECLINED)."""
     # Setup: approval requested by user 500
     test_pre_award_step.pre_award_approval_requested = True
     test_pre_award_step.pre_award_approval_requested_date = date.today()
     test_pre_award_step.pre_award_approval_requested_by = 500
     loaded_db.commit()
 
-    # Respond with DECLINE and valid reviewer notes (not whitespace-only since validation may reject it)
+    # Decline with whitespace-only notes - should fail validation
     update_data = {
         "approval_status": "DECLINED",
-        "reviewer_notes": "",  # Empty string to test omission from notification
+        "reviewer_notes": "   \n  ",  # Whitespace only
     }
     response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}", json=update_data)
-    # May get 200 or 400 depending on validation - if validation fails, adjust test
-    if response.status_code == 400:
-        # Validation may require reviewer_notes for DECLINED - update to valid decline
-        update_data["reviewer_notes"] = "Declined"
-        response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}", json=update_data)
-    assert response.status_code == 200
 
-    # Query for the notification - decline goes to requester
-    notification = loaded_db.scalars(
-        select(Notification)
-        .where(Notification.title == "Pre-Award Approval Declined")
-        .where(Notification.recipient_id == test_pre_award_step.pre_award_approval_requested_by)
-        .order_by(Notification.created_on.desc())
-    ).first()
-
-    assert notification is not None, "Notification should be created"
-    # If we used empty string, verify Notes section doesn't appear; otherwise just verify notification exists
-    assert "has been declined" in notification.message
+    # Expect validation error since reviewer notes are required for DECLINED status
+    assert response.status_code == 400
+    error_data = response.json
+    assert "reviewer_notes" in error_data["error_message"] or "Reviewer notes are required" in error_data["error_message"]
 
 
 def test_reviewer_notes_prevent_markdown_injection(auth_client, test_pre_award_step, loaded_db):

@@ -339,11 +339,10 @@ class ProcurementTrackerStepPatchRequestSchema(Schema):
     # approval_responded_by and approval_responded_date are server-controlled - not accepted from client
     reviewer_notes = fields.String(required=False, allow_none=True, validate=validate.Length(max=150))
 
-    # OPS-1639: Budget team requisition fields
+    # OPS-1639: Budget team requisition fields (user-provided only)
     requisition_number = fields.String(required=False, allow_none=True, validate=validate.Length(max=100))
     requisition_date = fields.Date(required=False, allow_none=True)
-    requisition_approved_by = fields.Integer(required=False, allow_none=True)
-    requisition_approved_date = fields.Date(required=False, allow_none=True)
+    # requisition_approved_by and requisition_approved_date are SERVER-CONTROLLED - not accepted from client
 
 
 class ProcurementTrackerStepSchema(Schema):
@@ -381,6 +380,12 @@ class ProcurementTrackerStepSchema(Schema):
     approval_responded_by = fields.Integer(allow_none=True)
     approval_responded_date = fields.Date(allow_none=True)
     reviewer_notes = fields.String(allow_none=True)
+
+    # OPS-1639: Budget team requisition fields
+    requisition_number = fields.String(allow_none=True)
+    requisition_date = fields.Date(allow_none=True)
+    requisition_approved_by = fields.Integer(allow_none=True)
+    requisition_approved_date = fields.Date(allow_none=True)
 
     @pre_dump
     def map_step_specific_fields(self, obj, **_kwargs):

@@ -20,11 +20,16 @@ from models.users import Role
 @pytest.fixture
 def test_pre_award_step(app_ctx, loaded_db):
     """Create a test PRE_AWARD step for budget team requisition testing."""
+    from models.procurement_tracker import ProcurementTrackerStep
+
     # Get the procurement tracker first
     tracker = loaded_db.get(ProcurementTracker, 1)
 
     # Ensure Step 4 (Evaluation) exists and is completed (required for pre-award approval)
     step_4 = next((step for step in tracker.steps if step.step_number == 4), None)
+    step_4_was_created = False
+    step_4_original_status = None
+
     if not step_4:
         step_4 = DefaultProcurementTrackerStep(
             procurement_tracker=tracker,
@@ -33,7 +38,9 @@ def test_pre_award_step(app_ctx, loaded_db):
             status=ProcurementTrackerStepStatus.COMPLETED,
         )
         loaded_db.add(step_4)
+        step_4_was_created = True
     else:
+        step_4_original_status = step_4.status
         step_4.status = ProcurementTrackerStepStatus.COMPLETED
     loaded_db.commit()
 
@@ -54,11 +61,23 @@ def test_pre_award_step(app_ctx, loaded_db):
 
     yield step
 
-    # Cleanup
+    # Cleanup: restore Step 4 to original state
     loaded_db.rollback()
     try:
         loaded_db.delete(step)
         loaded_db.commit()
+
+        # Restore Step 4
+        if step_4_was_created:
+            step_4_restored = loaded_db.get(ProcurementTrackerStep, step_4.id)
+            if step_4_restored:
+                loaded_db.delete(step_4_restored)
+                loaded_db.commit()
+        elif step_4_original_status is not None:
+            step_4_restored = loaded_db.get(ProcurementTrackerStep, step_4.id)
+            if step_4_restored:
+                step_4_restored.status = step_4_original_status
+                loaded_db.commit()
     except Exception:
         loaded_db.rollback()
 
@@ -274,12 +293,15 @@ class TestNotificationFlowFix:
             "status": "ACTIVE",
             "requisition_number": "REQ-2026-12345",
             "requisition_date": "2026-04-30",
-            "requisition_approved_by": 502,  # Budget team user
-            "requisition_approved_date": "2026-04-30",
         }
 
         response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}", json=update_data)
         assert response.status_code == 200
+
+        # Verify approval fields were SERVER-CONTROLLED (set automatically)
+        loaded_db.refresh(test_pre_award_step)
+        assert test_pre_award_step.pre_award_requisition_approved_by == 503  # Current user
+        assert test_pre_award_step.pre_award_requisition_approved_date == date.today()
 
         # Verify requester was notified
         final_requester_notifications = loaded_db.scalar(
@@ -305,12 +327,15 @@ class TestNotificationFlowFix:
             "status": "ACTIVE",
             "requisition_number": "REQ-2026-12345",
             "requisition_date": "2026-04-30",
-            "requisition_approved_by": 502,
-            "requisition_approved_date": "2026-04-30",
         }
 
         response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}", json=update_data)
         assert response.status_code == 200
+
+        # Verify approval fields were SERVER-CONTROLLED (set automatically)
+        loaded_db.refresh(test_pre_award_step)
+        assert test_pre_award_step.pre_award_requisition_approved_by == 503  # Current user
+        assert test_pre_award_step.pre_award_requisition_approved_date == date.today()
 
         # Get requester's most recent notification
         notification = loaded_db.execute(
@@ -361,13 +386,17 @@ class TestNotificationFlowFix:
         # Budget team approves
         update_data = {
             "status": "ACTIVE",
-            "requisition_approved_by": 502,
             "requisition_number": "REQ-123",
             "requisition_date": "2026-04-30",
         }
 
         response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}", json=update_data)
         assert response.status_code == 200
+
+        # Verify approval fields were SERVER-CONTROLLED (set automatically)
+        loaded_db.refresh(test_pre_award_step)
+        assert test_pre_award_step.pre_award_requisition_approved_by == 503  # Current user
+        assert test_pre_award_step.pre_award_requisition_approved_date == date.today()
 
         # Verify notifications were auto-dismissed
         unread_count_after = loaded_db.scalar(
@@ -444,28 +473,28 @@ class TestAPISchemaFields:
         assert data["requisition_approved_date"] is None
 
     def test_can_update_requisition_fields_via_api(self, auth_client, test_pre_award_step, loaded_db):
-        """Test that requisition fields can be updated via API."""
+        """Test that requisition fields can be updated via API and approval fields are server-controlled."""
         update_data = {
             "status": "ACTIVE",
             "requisition_number": "REQ-2026-99999",
             "requisition_date": "2026-04-30",
-            "requisition_approved_by": 502,
-            "requisition_approved_date": "2026-04-30",
         }
 
         response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}", json=update_data)
         assert response.status_code == 200
 
-        # Verify fields were updated
+        # Verify user-provided fields were updated
         loaded_db.refresh(test_pre_award_step)
         assert test_pre_award_step.pre_award_requisition_number == "REQ-2026-99999"
         assert test_pre_award_step.pre_award_requisition_date == date(2026, 4, 30)
-        assert test_pre_award_step.pre_award_requisition_approved_by == 502
-        assert test_pre_award_step.pre_award_requisition_approved_date == date(2026, 4, 30)
+
+        # Verify approval fields were SERVER-CONTROLLED (set automatically)
+        assert test_pre_award_step.pre_award_requisition_approved_by == 503  # Current user from auth_client
+        assert test_pre_award_step.pre_award_requisition_approved_date == date.today()
 
         # Verify fields appear in response
         data = response.json
         assert data["requisition_number"] == "REQ-2026-99999"
         assert data["requisition_date"] == "2026-04-30"
-        assert data["requisition_approved_by"] == 502
-        assert data["requisition_approved_date"] == "2026-04-30"
+        assert data["requisition_approved_by"] == 503  # Server-controlled
+        assert data["requisition_approved_date"] == date.today().isoformat()  # Server-controlled

@@ -165,11 +165,10 @@ class ProcurementTrackerStepService:
                 "approval_responded_by": "pre_award_approval_responded_by",
                 "approval_responded_date": "pre_award_approval_responded_date",
                 "reviewer_notes": "pre_award_approval_reviewer_notes",
-                # OPS-1639: Budget team requisition fields
+                # OPS-1639: Budget team requisition fields (user-provided only)
                 "requisition_number": "pre_award_requisition_number",
                 "requisition_date": "pre_award_requisition_date",
-                "requisition_approved_by": "pre_award_requisition_approved_by",
-                "requisition_approved_date": "pre_award_requisition_approved_date",
+                # requisition_approved_by and requisition_approved_date are SERVER-CONTROLLED
             },
         }
 
@@ -185,6 +184,11 @@ class ProcurementTrackerStepService:
             active_mapping = field_mapping["pre_award"]
         else:
             active_mapping = {}
+
+        # Server-control requisition approval audit fields (OPS-1639)
+        # Must be checked BEFORE field mapping, since we need to detect the transition
+        if step.step_type == ProcurementTrackerStepType.PRE_AWARD:
+            self._handle_requisition_approval(step, data, current_user)
 
         # Update fields
         for key, value in data.items():
@@ -324,6 +328,34 @@ class ProcurementTrackerStepService:
             f"(agreement {procurement_tracker.agreement_id})"
         )
 
+    def _handle_requisition_approval(self, step, data, current_user):
+        """
+        Detect when requisition is being approved and auto-set audit fields.
+
+        Budget team approves by providing requisition_number and requisition_date.
+        When these fields transition from None to filled values, set approval audit trail.
+
+        Args:
+            step: The ProcurementTrackerStep being updated
+            data: The update data dictionary
+            current_user: User making the update
+        """
+        from datetime import date
+
+        # Check if requisition fields are being set for first time
+        old_requisition_number = step.pre_award_requisition_number
+        new_requisition_number = data.get("requisition_number")
+
+        requisition_being_approved = new_requisition_number is not None and old_requisition_number is None
+
+        if requisition_being_approved:
+            # Server-control: Set approval audit trail
+            step.pre_award_requisition_approved_by = current_user.id
+            step.pre_award_requisition_approved_date = date.today()
+            logger.debug(
+                f"Auto-set requisition approval audit: approved_by={current_user.id}, approved_date={date.today()}"
+            )
+
     def _handle_approval_notifications(
         self,
         step: ProcurementTrackerStep,
@@ -414,6 +446,7 @@ class ProcurementTrackerStepService:
                 )
                 .values(is_read=True)
             )
+            self.db_session.commit()
 
             logger.debug(f"Auto-dismissed {dismiss_result.rowcount or 0} 'in review' notifications for reviewers")
 
@@ -460,6 +493,7 @@ class ProcurementTrackerStepService:
                 )
                 .values(is_read=True)
             )
+            self.db_session.commit()
 
             logger.debug(f"Auto-dismissed {dismiss_result.rowcount or 0} budget team requisition review notifications")
 
