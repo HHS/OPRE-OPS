@@ -46,6 +46,7 @@ const withRouter = (Story, context) => {
 
 /** @type { import('@storybook/react-vite').Preview } */
 const preview = {
+    tags: ["autodocs"],
     decorators: [withReduxProvider, withRouter],
     parameters: {
         controls: {

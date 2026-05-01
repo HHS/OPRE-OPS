@@ -29,3 +29,31 @@ body {
     ) {
     font-weight: 500;
 }
+
+/* ---------- Center tooltip text for FileUploadButton components ---------- */
+.tooltip-centered .usa-tooltip__body {
+    text-align: center;
+    max-width: 300px;
+    white-space: normal;
+}
+
+/* ---------- Right-positioned tooltips need more width ---------- */
+/* Higher specificity selector to override USWDS default without !important */
+span.tooltip-right-wide .usa-tooltip__body.is-set,
+span.tooltip-right-wide .usa-tooltip__body.is-visible {
+    max-width: 450px;
+    min-width: 250px;
+}
+
+/* ---------- Adjust vertical alignment for right-positioned tooltips ---------- */
+/* CSS variable for easy adjustment if needed */
+span.tooltip-right-wide {
+    --tooltip-vertical-offset: -20px;
+}
+
+/* USWDS applies inline styles dynamically (element.style.top), which have higher
+   specificity than any CSS selector. !important is the only way to override them.
+   The -20px offset centers the tooltip vertically with the FileUploadButton card. */
+span.tooltip-right-wide .usa-tooltip__body--right.is-visible {
+    transform: translateY(var(--tooltip-vertical-offset)) !important;
+}
