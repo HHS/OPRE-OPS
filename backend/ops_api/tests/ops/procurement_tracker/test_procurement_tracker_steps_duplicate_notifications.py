@@ -385,9 +385,9 @@ def test_decline_response_excludes_whitespace_only_reviewer_notes(auth_client, t
     # Expect validation error since reviewer notes are required for DECLINED status
     assert response.status_code == 400
     error_data = response.json
-    assert (
-        "reviewer_notes" in error_data["error_message"] or "Reviewer notes are required" in error_data["error_message"]
-    )
+    assert "errors" in error_data
+    assert "reviewer_notes" in error_data["errors"]
+    assert "Reviewer notes are required" in error_data["errors"]["reviewer_notes"]
 
 
 def test_reviewer_notes_prevent_markdown_injection(auth_client, test_pre_award_step, loaded_db):
