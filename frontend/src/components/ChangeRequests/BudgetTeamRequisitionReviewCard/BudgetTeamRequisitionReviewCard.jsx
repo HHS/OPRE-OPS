@@ -74,6 +74,7 @@ function BudgetTeamRequisitionReviewCard({
                         <Tag
                             tagStyle="darkTextLightBackground"
                             text={executingBliCount.toString()}
+                            data-cy="executing-bli-count"
                         />
                     </dd>
                 </dl>
