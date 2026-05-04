@@ -312,7 +312,7 @@ describe("Projects List Page", () => {
         });
 
         // Click the X button on the fiscal year tag
-        cy.get('[aria-label="Remove FY FY 2044 filter"]').click();
+        cy.get('[aria-label="Remove FY 2044 filter"]').click();
 
         // Wait for table to reload
         cy.wait(1000);

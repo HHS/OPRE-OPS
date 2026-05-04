@@ -53,7 +53,7 @@ export const useTagsList = (filters) => {
             } else if (filterKey == "fiscalYear") {
                 const selectedTags =
                     filters[filterKey]?.map((item) => ({
-                        tagText: "FY " + item.title,
+                        tagText: item.title,
                         filter: filterName
                     })) ?? [];
                 setTagsList((prevState) => [...prevState.filter((t) => t.filter !== filterName), ...selectedTags]);
@@ -102,7 +102,7 @@ export const removeFilter = (tag, setFilters) => {
         case "fiscalYear":
             setFilters((prevState) => ({
                 ...prevState,
-                fiscalYear: prevState.fiscalYear.filter((fiscalYear) => "FY " + fiscalYear.title !== tag.tagText)
+                fiscalYear: prevState.fiscalYear.filter((fiscalYear) => fiscalYear.title !== tag.tagText)
             }));
             break;
         case "portfolio":
