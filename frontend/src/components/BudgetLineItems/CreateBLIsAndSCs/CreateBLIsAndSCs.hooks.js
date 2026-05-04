@@ -1022,6 +1022,7 @@ const useCreateBLIsAndSCs = (
                 handleConfirm: async () => {
                     setShowSaveChangesModal(false);
                     await handleSaveRef.current(true);
+                    blocker.reset();
                     if (destination) {
                         navigate(destination);
                     }
