@@ -85,7 +85,7 @@ const ProcurementDetailsStep = ({
                 targetDateByAgreementId={targetDateByAgreementId}
                 daysInStepByAgreementId={daysInStepByAgreementId}
                 procurementOverview={procurementOverview}
-            ></ProcurementDetailsTable>
+            />
         </>
     );
 };
