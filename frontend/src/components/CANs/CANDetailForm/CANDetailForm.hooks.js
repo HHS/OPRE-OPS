@@ -48,7 +48,7 @@ export default function useCanDetailForm(canId, canNumber, canNickname, canDescr
         await updateCan({
             id: canId,
             data: payload
-        });
+        }).unwrap();
 
         setAlert({
             type: "success",
@@ -57,6 +57,8 @@ export default function useCanDetailForm(canId, canNumber, canNickname, canDescr
         });
     }, [canId, canNumber, portfolioId, nickName, description, updateCan, setAlert]);
 
+    // No wasEditModeRef needed: this component unmounts when edit mode toggles off,
+    // so isCancelling resets naturally on remount.
     const { showBlockerModal, setShowBlockerModal, blockerModalProps, setIsCancelling } = useNavigationBlocker({
         hasChanged,
         saveChanges,

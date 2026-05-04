@@ -47,6 +47,8 @@ export default function useNavigationBlocker({ hasChanged, saveChanges, onExit, 
             await currentBlocker.proceed();
         } catch (error) {
             const message = error && typeof error.message === "string" ? error.message.trim() : "";
+            // Known React Router bug — proceed() throws when blocker has already transitioned.
+            // String match is fragile; revisit if upgrading react-router.
             if (message.startsWith("Invalid blocker state transition")) {
                 console.warn("Ignored known React Router blocker exception:", message);
                 return;
@@ -74,7 +76,7 @@ export default function useNavigationBlocker({ hasChanged, saveChanges, onExit, 
                         if (onSaveErrorRef.current) {
                             onSaveErrorRef.current(error);
                         }
-                        blocker.reset();
+                        blockerRef.current.reset();
                     }
                 },
                 handleSecondary: async () => {
@@ -84,11 +86,10 @@ export default function useNavigationBlocker({ hasChanged, saveChanges, onExit, 
                 },
                 closeModal: () => {
                     setShowBlockerModal(false);
-                    blocker.reset();
+                    blockerRef.current.reset();
                 }
             });
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [blocker.state]);
 
     return { showBlockerModal, setShowBlockerModal, blockerModalProps, setIsCancelling };

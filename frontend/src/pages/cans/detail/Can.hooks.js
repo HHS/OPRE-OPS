@@ -17,15 +17,6 @@ export default function useCan() {
     const urlPathParams = useParams();
     const location = useLocation();
 
-    React.useEffect(() => {
-        setIsEditMode((prev) => {
-            if (prev.detailPage || prev.fundingPage) {
-                return { detailPage: false, fundingPage: false };
-            }
-            return prev;
-        });
-    }, [location.pathname]);
-
     const activeUser = useSelector((state) => state.auth.activeUser);
     const userRoles = activeUser?.roles ?? [];
     const isBudgetTeam = userRoles?.some((role) => role?.name === USER_ROLES.BUDGET_TEAM);
@@ -45,6 +36,15 @@ export default function useCan() {
         detailPage: false,
         fundingPage: false
     });
+
+    React.useEffect(() => {
+        setIsEditMode((prev) => {
+            if (prev.detailPage || prev.fundingPage) {
+                return { detailPage: false, fundingPage: false };
+            }
+            return prev;
+        });
+    }, [location.pathname]);
 
     /** @type {{data?: CAN | undefined, isLoading: boolean, isFetching: boolean}} */
     const {
