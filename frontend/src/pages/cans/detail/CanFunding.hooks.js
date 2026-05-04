@@ -20,11 +20,18 @@ import suite from "./CanFundingSuite.js";
  */
 
 /**
- * @typedef {Object} PendingAction
- * @property {"budget-add" | "budget-update" | "received-add" | "received-update" | "received-update-temp" | "received-delete" | "received-delete-temp"} kind
- * @property {number} [id]
- * @property {string} [tempId]
- * @property {Object} [payload]
+ * @typedef {{ fiscal_year: number, can_id: number, budget: number | string }} BudgetPayload
+ * @typedef {{ fiscal_year: number, can_id: number, funding: number | string, notes?: string }} ReceivedPayload
+ *
+ * @typedef {
+ *   | { kind: "budget-add", payload: BudgetPayload }
+ *   | { kind: "budget-update", id: number, payload: BudgetPayload }
+ *   | { kind: "received-add", tempId: string, payload: ReceivedPayload }
+ *   | { kind: "received-update", id: number, payload: ReceivedPayload }
+ *   | { kind: "received-update-temp", tempId: string, payload: ReceivedPayload }
+ *   | { kind: "received-delete", id: number }
+ *   | { kind: "received-delete-temp", tempId: string }
+ * } PendingAction
  */
 
 /**
@@ -297,7 +304,7 @@ export default function useCanFunding(
                           }
                         : {
                               kind: "received-update",
-                              id: newFundingReceived.id,
+                              id: /** @type {number} */ (/** @type {unknown} */ (newFundingReceived.id)),
                               payload: receivedPayload
                           }
                 )
