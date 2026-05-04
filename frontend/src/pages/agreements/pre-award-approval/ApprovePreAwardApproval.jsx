@@ -12,6 +12,7 @@ import { convertCodeForDisplay, formatDateToMonthDayYear } from "../../../helper
 import icons from "../../../uswds/img/sprite.svg";
 import useApprovePreAwardApproval from "./ApprovePreAwardApproval.hooks";
 import { PreAwardBudgetLinesReviewAccordion } from "./PreAwardBudgetLinesReviewAccordion";
+import FileUploadButton from "../../../components/UI/Button/FileUploadButton";
 
 /**
  * @component - Renders a page for Division Directors to approve/decline pre-award approval requests.
@@ -184,59 +185,15 @@ export const ApprovePreAwardApproval = () => {
                         </div>
                     ))
                 ) : (
-                    <div
-                        className="margin-top-3"
-                        style={{ display: "flex", alignItems: "center", gap: "1rem" }}
-                    >
-                        <div
-                            className="border-1px border-base-light padding-2"
-                            style={{
-                                backgroundColor: "white",
-                                maxWidth: "460px",
-                                flexGrow: 1
-                            }}
-                        >
-                            <div
-                                style={{
-                                    fontSize: "0.875rem",
-                                    color: "#757575",
-                                    marginBottom: "0.5rem"
-                                }}
-                            >
-                                Final Consensus Memo
-                            </div>
-                            <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                                <button
-                                    type="button"
-                                    className="usa-button--unstyled"
-                                    style={{ padding: "0.5rem", cursor: "not-allowed" }}
-                                    title="Document upload coming soon"
-                                    aria-label="Download document (disabled)"
-                                    disabled
-                                >
-                                    <svg
-                                        className="usa-icon"
-                                        aria-hidden="true"
-                                        focusable="false"
-                                        style={{ fill: "#757575", width: "24px", height: "24px" }}
-                                    >
-                                        <use href={`${icons}#file_download`}></use>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                        <div
-                            className="bg-base-dark padding-2"
-                            style={{
-                                color: "white",
-                                fontSize: "0.875rem",
-                                maxWidth: "420px",
-                                borderRadius: "4px"
-                            }}
-                        >
-                            Upload Documents is coming soon! For now, please review within the OPRE preferred tool to
-                            share documents
-                        </div>
+                    <div className="margin-top-3">
+                        <FileUploadButton
+                            id="consensus-memo-download"
+                            variant="download"
+                            label="Final Consensus Memo"
+                            disabled={true}
+                            disabledTooltip="Upload Documents is coming soon! For now, please review within the OPRE preferred tool to share documents"
+                            buttonText="Download File"
+                        />
                     </div>
                 )}
             </Accordion>
