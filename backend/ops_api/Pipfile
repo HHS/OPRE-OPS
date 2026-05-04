@@ -24,7 +24,7 @@ PyYAML = "==6.0.3"
 requests = "==2.33.1"
 sqlalchemy = "==2.0.49"
 sqlalchemy-continuum = "==1.6.0"
-deepdiff = "*"
+deepdiff = "==9.0.0"
 
 [dev-packages]
 black = {extras = ["d"], version = "==26.3.1"}
