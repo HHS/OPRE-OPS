@@ -1001,6 +1001,7 @@ const useCreateBLIsAndSCs = (
 
     React.useEffect(() => {
         if (blocker.state === "blocked") {
+            const destination = blocker.location?.pathname;
             const modalContent = hasFinancialSnapshotChanges
                 ? {
                       heading: "Save changes before leaving?",
@@ -1012,16 +1013,18 @@ const useCreateBLIsAndSCs = (
                 : {
                       heading: "Save changes before leaving?",
                       description: "You have unsaved changes. If you leave without saving, these changes will be lost.",
-                      actionButtonText: "Save",
+                      actionButtonText: "Save Changes",
                       secondaryButtonText: "Leave without saving"
                   };
             setShowSaveChangesModal(true);
             setModalProps({
                 ...modalContent,
                 handleConfirm: async () => {
-                    await handleSaveRef.current(true);
                     setShowSaveChangesModal(false);
-                    await proceedIfBlocked();
+                    await handleSaveRef.current(true);
+                    if (destination) {
+                        navigate(destination);
+                    }
                 },
                 handleSecondary: async () => {
                     setHasUnsavedChanges(false);
@@ -1034,7 +1037,7 @@ const useCreateBLIsAndSCs = (
                 }
             });
         }
-    }, [blocker, hasFinancialSnapshotChanges, setIsEditMode]);
+    }, [blocker, hasFinancialSnapshotChanges, setIsEditMode, navigate]);
 
     return {
         blocker,
