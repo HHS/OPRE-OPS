@@ -45,7 +45,7 @@ const DetailsTabs = ({
                   name: "TBD1",
                   label: "Award & Modifications",
                   disabled: !IS_AWARDED_TAB_READY || !isAgreementAwarded,
-                  disabledTooltip: "Award & Modifications tab is coming soon"
+                  disabledTooltip: "Award & Modifications\ntab is coming soon"
               },
               {
                   name: "/procurement-tracker",

@@ -68,10 +68,11 @@ class ProjectUpdateRequestSchema(Schema):
     """Schema for updating a project.
 
     Includes all fields that can be updated:
-    - Common fields: title, short_title, description, url, team_leaders
+    - Common fields: project_type, title, short_title, description, url, team_leaders
     - Research-specific: origination_date
     """
 
+    project_type = fields.Enum(ProjectType, required=False)
     title = fields.String(allow_none=True)
     short_title = fields.String(allow_none=True)
     description = fields.String(allow_none=True)

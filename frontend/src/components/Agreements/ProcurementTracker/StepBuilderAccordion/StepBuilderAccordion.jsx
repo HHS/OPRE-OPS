@@ -1,3 +1,4 @@
+import React from "react";
 import Accordion from "../../../UI/Accordion";
 import { fromUpperCaseToTitleCase } from "../../../../helpers/utils";
 import { PROCUREMENT_STEP_STATUS } from "../ProcurementTracker.constants";
@@ -63,43 +64,41 @@ const getStepState = (step, activeStepNumber) => {
 
 /**
  * @param {StepBuilderAccordionProps} props
+ * @param {React.Ref} ref - Forwarded ref to the accordion container
  * @returns {import("react").ReactElement}
  */
-const StepBuilderAccordion = ({
-    step,
-    totalSteps,
-    activeStepNumber,
-    children,
-    isClosed = false,
-    isReadOnly = false,
-    level = 3
-}) => {
-    const stepState = getStepState(step, activeStepNumber);
-    const readOnlyClassName = isReadOnly ? "step-builder-accordion__heading--read-only" : "";
+const StepBuilderAccordion = React.forwardRef(
+    ({ step, totalSteps, activeStepNumber, children, isClosed = false, isReadOnly = false, level = 3 }, ref) => {
+        const stepState = getStepState(step, activeStepNumber);
+        const readOnlyClassName = isReadOnly ? "step-builder-accordion__heading--read-only" : "";
 
-    const heading = (
-        <div
-            className={`step-builder-accordion__heading step-builder-accordion__heading--${stepState} ${readOnlyClassName}`}
-            data-testid={`step-builder-heading-${step?.id}`}
-        >
-            <span className="step-builder-accordion__step-count">
-                <span className="step-builder-accordion__step-number">{step?.step_number}</span>{" "}
-                <span className="step-builder-accordion__step-total">of {totalSteps}</span>
-            </span>{" "}
-            <span className="step-builder-accordion__step-label">{formatStepLabel(step?.step_type)}</span>
-        </div>
-    );
+        const heading = (
+            <div
+                className={`step-builder-accordion__heading step-builder-accordion__heading--${stepState} ${readOnlyClassName}`}
+                data-testid={`step-builder-heading-${step?.id}`}
+            >
+                <span className="step-builder-accordion__step-count">
+                    <span className="step-builder-accordion__step-number">{step?.step_number}</span>{" "}
+                    <span className="step-builder-accordion__step-total">of {totalSteps}</span>
+                </span>{" "}
+                <span className="step-builder-accordion__step-label">{formatStepLabel(step?.step_type)}</span>
+            </div>
+        );
 
-    return (
-        <Accordion
-            heading={heading}
-            dataCy={`step-builder-accordion-${step?.id}`}
-            isClosed={isClosed}
-            level={level}
-        >
-            {children}
-        </Accordion>
-    );
-};
+        return (
+            <Accordion
+                ref={ref}
+                heading={heading}
+                dataCy={`step-builder-accordion-${step?.id}`}
+                isClosed={isClosed}
+                level={level}
+            >
+                {children}
+            </Accordion>
+        );
+    }
+);
+
+StepBuilderAccordion.displayName = "StepBuilderAccordion";
 
 export default StepBuilderAccordion;
