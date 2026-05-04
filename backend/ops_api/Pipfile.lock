@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "475a58130534e10347e86f119c4ef2cd44669dfdfb981c025b53d577e0120b83"
+            "sha256": "f7b2b7120954f32b0f08528cbb4d64050f110054509dce8c3b2f8d5a8d68ec6a"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -36,12 +36,12 @@
         },
         "authlib": {
             "hashes": [
-                "sha256:b3e326c9aa9cc3ea95fe7d89fd880722d3608da4d00e8a27e061e64b48d801d5",
-                "sha256:e36817afb02f6f0b6bf55f150782499ddd6ddf44b402bb055d3263cc65ac9ae0"
+                "sha256:8470f4aa6b5590ac41bd81d6e6ee12448ce36a0da0af19bbed69fb53fb4e8ad9",
+                "sha256:8c09b0f9d080c823e594b52316af70f79a1fa4eed64d0363a076233c04ef063a"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.10'",
-            "version": "==1.7.0"
+            "version": "==1.7.1"
         },
         "azure-core": {
             "hashes": [
@@ -2661,10 +2661,10 @@
         },
         "parse": {
             "hashes": [
-                "sha256:55339ca698019815df3b8e8b550e5933933527e623b0cdf1ca2f404da35ffb47",
-                "sha256:825e1a88e9d9fb481b8d2ca709c6195558b6eaa97c559ad3a9a20aa2d12815a3"
+                "sha256:d4987d68ccf08b6ba3bf80b5004ff7de61c4337cba2d8350ae5c9925794979d9",
+                "sha256:eea8ed34e2614cea65d9c1d4af9cb68cce26aea13d44bdcaf83c1b40884fe945"
             ],
-            "version": "==1.21.1"
+            "version": "==1.22.0"
         },
         "parse-type": {
             "hashes": [
@@ -3210,11 +3210,11 @@
         },
         "wcwidth": {
             "hashes": [
-                "sha256:1a3a1e510b553315f8e146c54764f4fb6264ffad731b3d78088cdb1478ffbdad",
-                "sha256:cdc4e4262d6ef9a1a57e018384cbeb1208d8abbc64176027e2c2455c81313159"
+                "sha256:5d69154c429a82910e241c738cd0e2976fac8a2dd47a1a805f4afed1c0f136f2",
+                "sha256:90e3a7ea092341c44b99562e75d09e4d5160fe7a3974c6fb842a101a95e7eed0"
             ],
             "markers": "python_version >= '3.8'",
-            "version": "==0.6.0"
+            "version": "==0.7.0"
         },
         "websocket-client": {
             "hashes": [

@@ -273,7 +273,7 @@ class TestNotificationFlowFix:
             final_requester_notifications == initial_requester_notifications + 1
         ), "Requester should be notified when DD declines (existing behavior)"
 
-    def test_budget_team_approval_notifies_requester(self, auth_client, test_pre_award_step, loaded_db):
+    def test_budget_team_approval_notifies_requester(self, budget_team_auth_client, test_pre_award_step, loaded_db):
         """Test that budget team approval notifies the original requester."""
         # Setup: DD has already approved
         test_pre_award_step.pre_award_approval_status = "APPROVED"
@@ -288,19 +288,21 @@ class TestNotificationFlowFix:
             select(func.count()).select_from(Notification).where(Notification.recipient_id == requester_id)
         )
 
-        # Budget team approves requisition
+        # Budget team approves requisition (user 523 has BUDGET_TEAM role)
         update_data = {
             "status": "ACTIVE",
             "requisition_number": "REQ-2026-12345",
             "requisition_date": "2026-04-30",
         }
 
-        response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}", json=update_data)
+        response = budget_team_auth_client.patch(
+            f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}", json=update_data
+        )
         assert response.status_code == 200
 
         # Verify approval fields were SERVER-CONTROLLED (set automatically)
         loaded_db.refresh(test_pre_award_step)
-        assert test_pre_award_step.pre_award_requisition_approved_by == 503  # Current user
+        assert test_pre_award_step.pre_award_requisition_approved_by == 523  # Budget team user
         assert test_pre_award_step.pre_award_requisition_approved_date == date.today()
 
         # Verify requester was notified
@@ -312,7 +314,9 @@ class TestNotificationFlowFix:
             final_requester_notifications == initial_requester_notifications + 1
         ), "Requester should be notified when budget team approves requisition"
 
-    def test_budget_team_approval_notification_has_correct_content(self, auth_client, test_pre_award_step, loaded_db):
+    def test_budget_team_approval_notification_has_correct_content(
+        self, budget_team_auth_client, test_pre_award_step, loaded_db
+    ):
         """Test that budget team approval notification has correct title and message."""
         # Setup: DD has already approved
         test_pre_award_step.pre_award_approval_status = "APPROVED"
@@ -322,19 +326,21 @@ class TestNotificationFlowFix:
 
         requester_id = test_pre_award_step.pre_award_approval_requested_by
 
-        # Budget team approves
+        # Budget team approves (user 523 has BUDGET_TEAM role)
         update_data = {
             "status": "ACTIVE",
             "requisition_number": "REQ-2026-12345",
             "requisition_date": "2026-04-30",
         }
 
-        response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}", json=update_data)
+        response = budget_team_auth_client.patch(
+            f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}", json=update_data
+        )
         assert response.status_code == 200
 
         # Verify approval fields were SERVER-CONTROLLED (set automatically)
         loaded_db.refresh(test_pre_award_step)
-        assert test_pre_award_step.pre_award_requisition_approved_by == 503  # Current user
+        assert test_pre_award_step.pre_award_requisition_approved_by == 523  # Budget team user
         assert test_pre_award_step.pre_award_requisition_approved_date == date.today()
 
         # Get requester's most recent notification
@@ -352,7 +358,7 @@ class TestNotificationFlowFix:
         assert notification.procurement_tracker_step_id == test_pre_award_step.id
 
     def test_budget_team_approval_auto_dismisses_review_notifications(
-        self, auth_client, test_pre_award_step, loaded_db, budget_team_user_ids
+        self, budget_team_auth_client, test_pre_award_step, loaded_db, budget_team_user_ids
     ):
         """Test that budget team approval auto-dismisses budget team review notifications."""
         # Setup: DD approved, budget team has pending notifications
@@ -383,19 +389,21 @@ class TestNotificationFlowFix:
         )
         assert unread_count_before >= 2, "Should have unread notifications"
 
-        # Budget team approves
+        # Budget team approves (user 523 has BUDGET_TEAM role)
         update_data = {
             "status": "ACTIVE",
             "requisition_number": "REQ-123",
             "requisition_date": "2026-04-30",
         }
 
-        response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}", json=update_data)
+        response = budget_team_auth_client.patch(
+            f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}", json=update_data
+        )
         assert response.status_code == 200
 
         # Verify approval fields were SERVER-CONTROLLED (set automatically)
         loaded_db.refresh(test_pre_award_step)
-        assert test_pre_award_step.pre_award_requisition_approved_by == 503  # Current user
+        assert test_pre_award_step.pre_award_requisition_approved_by == 523  # Budget team user
         assert test_pre_award_step.pre_award_requisition_approved_date == date.today()
 
         # Verify notifications were auto-dismissed
@@ -472,7 +480,7 @@ class TestAPISchemaFields:
         assert data["requisition_approved_by"] is None
         assert data["requisition_approved_date"] is None
 
-    def test_can_update_requisition_fields_via_api(self, auth_client, test_pre_award_step, loaded_db):
+    def test_can_update_requisition_fields_via_api(self, budget_team_auth_client, test_pre_award_step, loaded_db):
         """Test that requisition fields can be updated via API and approval fields are server-controlled."""
         update_data = {
             "status": "ACTIVE",
@@ -480,7 +488,9 @@ class TestAPISchemaFields:
             "requisition_date": "2026-04-30",
         }
 
-        response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}", json=update_data)
+        response = budget_team_auth_client.patch(
+            f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}", json=update_data
+        )
         assert response.status_code == 200
 
         # Verify user-provided fields were updated
@@ -489,12 +499,101 @@ class TestAPISchemaFields:
         assert test_pre_award_step.pre_award_requisition_date == date(2026, 4, 30)
 
         # Verify approval fields were SERVER-CONTROLLED (set automatically)
-        assert test_pre_award_step.pre_award_requisition_approved_by == 503  # Current user from auth_client
+        assert test_pre_award_step.pre_award_requisition_approved_by == 523  # Budget team user
         assert test_pre_award_step.pre_award_requisition_approved_date == date.today()
 
         # Verify fields appear in response
         data = response.json
         assert data["requisition_number"] == "REQ-2026-99999"
         assert data["requisition_date"] == "2026-04-30"
-        assert data["requisition_approved_by"] == 503  # Server-controlled
+        assert data["requisition_approved_by"] == 523  # Server-controlled
+
+    def test_budget_team_user_can_approve_requisition(self, budget_team_auth_client, test_pre_award_step, loaded_db):
+        """Test that BUDGET_TEAM users CAN approve requisitions (positive authorization test)."""
+        # Setup: DD has already approved
+        test_pre_award_step.pre_award_approval_status = "APPROVED"
+        loaded_db.commit()
+
+        # Budget team approves requisition (user 523 has BUDGET_TEAM role)
+        update_data = {
+            "status": "ACTIVE",
+            "requisition_number": "REQ-2026-12345",
+            "requisition_date": "2026-04-30",
+        }
+
+        response = budget_team_auth_client.patch(
+            f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}", json=update_data
+        )
+
+        assert response.status_code == 200
+        loaded_db.refresh(test_pre_award_step)
+        assert test_pre_award_step.pre_award_requisition_approved_by == 523  # Budget team user
+
+    def test_non_budget_team_cannot_approve_requisition(self, basic_user_auth_client, test_pre_award_step, loaded_db):
+        """Test that non-BUDGET_TEAM users cannot approve requisitions (negative authorization test)."""
+        # Setup: DD has already approved
+        test_pre_award_step.pre_award_approval_status = "APPROVED"
+        loaded_db.commit()
+
+        # Attempt requisition approval by non-BUDGET_TEAM user (user 521 - basic user)
+        update_data = {
+            "status": "ACTIVE",
+            "requisition_number": "REQ-2026-12345",
+            "requisition_date": "2026-04-30",
+        }
+
+        response = basic_user_auth_client.patch(
+            f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}", json=update_data
+        )
+
+        # Expect authorization error
+        assert response.status_code == 403
+        error_data = response.json
+        assert "message" in error_data
+        error_message = error_data["message"].lower()
+        assert "not authorized" in error_message or "budget_team" in error_message
+
+    def test_requisition_approval_requires_both_number_and_date(
+        self, budget_team_auth_client, test_pre_award_step, loaded_db
+    ):
+        """Test that requisition approval requires BOTH number and date."""
+        # Setup: DD approved, user is budget team (523)
+        test_pre_award_step.pre_award_approval_status = "APPROVED"
+        loaded_db.commit()
+
+        # Case 1: Only requisition_number (no date) - should NOT trigger approval
+        response = budget_team_auth_client.patch(
+            f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}", json={"requisition_number": "REQ-2026-12345"}
+        )
+        assert response.status_code == 200
+        loaded_db.refresh(test_pre_award_step)
+        assert test_pre_award_step.pre_award_requisition_number == "REQ-2026-12345"
+        assert test_pre_award_step.pre_award_requisition_approved_by is None  # NOT approved yet
+
+        # Case 2: Add requisition_date - should NOW trigger approval
+        response = budget_team_auth_client.patch(
+            f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}", json={"requisition_date": "2026-04-30"}
+        )
+        assert response.status_code == 200
+        loaded_db.refresh(test_pre_award_step)
+        assert test_pre_award_step.pre_award_requisition_date is not None
+        assert test_pre_award_step.pre_award_requisition_approved_by == 523  # NOW approved (budget team user)
+
+    def test_both_fields_set_together_triggers_approval(self, budget_team_auth_client, test_pre_award_step, loaded_db):
+        """Test that setting both fields together also triggers approval."""
+        # Setup: DD approved
+        test_pre_award_step.pre_award_approval_status = "APPROVED"
+        loaded_db.commit()
+
+        # Set both fields at once
+        response = budget_team_auth_client.patch(
+            f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}",
+            json={"requisition_number": "REQ-2026-12345", "requisition_date": "2026-04-30"},
+        )
+        assert response.status_code == 200
+        loaded_db.refresh(test_pre_award_step)
+        assert test_pre_award_step.pre_award_requisition_approved_by == 523  # Approved immediately
+
+        # Verify in response
+        data = response.json
         assert data["requisition_approved_date"] == date.today().isoformat()  # Server-controlled

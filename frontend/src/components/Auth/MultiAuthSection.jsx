@@ -7,6 +7,7 @@ import ContainerModal from "../UI/Modals/ContainerModal";
 import { getAuthorizationCode, setActiveUser } from "./auth";
 import { login, logout } from "./authSlice";
 import { PacmanLoader } from "react-spinners";
+import { safeRedirectPath } from "../../helpers/safeRedirect.helpers";
 
 /**
  * Component that handles multiple authentication methods
@@ -62,8 +63,11 @@ const MultiAuthSection = () => {
                 await dispatch(login());
                 await setActiveUser(access_token, dispatch);
 
-                // Navigate to the intended destination or home
-                const from = location.state?.from?.pathname || "/";
+                // Navigate to the intended destination or home.
+                // location.state can be attacker-influenced (a crafted link can
+                // set from.pathname to "//evil.com" or "http://evil.com"), so
+                // we only honor same-origin in-app paths and fall back to "/".
+                const from = safeRedirectPath(location.state?.from?.pathname);
                 navigate(from, { replace: true });
             } catch (error) {
                 console.error("Error logging in:", error);
