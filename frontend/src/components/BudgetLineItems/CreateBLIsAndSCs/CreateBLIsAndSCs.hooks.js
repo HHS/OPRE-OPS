@@ -1020,8 +1020,8 @@ const useCreateBLIsAndSCs = (
             setModalProps({
                 ...modalContent,
                 handleConfirm: async () => {
-                    setShowSaveChangesModal(false);
                     await handleSaveRef.current(true);
+                    setShowSaveChangesModal(false);
                     blocker.reset();
                     if (destination) {
                         navigate(destination);
