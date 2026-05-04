@@ -9,7 +9,8 @@ COPY ./data_tools/Pipfile ./data_tools/Pipfile.lock /home/app/
 WORKDIR /home/app
 
 # hadolint ignore=DL3018
-RUN python -m venv .venv && \
+RUN apk update && apk upgrade --no-cache && \
+   python -m venv .venv && \
    .venv/bin/pip install --upgrade pip && \
    apk add --update --no-cache alpine-sdk && \
    apk add --update --no-cache postgresql16-client && \
