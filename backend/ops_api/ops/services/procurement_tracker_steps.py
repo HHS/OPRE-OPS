@@ -822,6 +822,7 @@ class ProcurementTrackerStepService:
                     DefaultProcurementTrackerStep.step_type == ProcurementTrackerStepType.PRE_AWARD,
                     DefaultProcurementTrackerStep.pre_award_approval_status == "APPROVED",
                     DefaultProcurementTrackerStep.pre_award_requisition_number.is_(None),
+                    DefaultProcurementTrackerStep.pre_award_requisition_date.is_(None),
                 )
             )
             .order_by(DefaultProcurementTrackerStep.pre_award_approval_responded_date.desc())
