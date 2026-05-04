@@ -63,6 +63,8 @@ const ProcurementDashboard = () => {
     const procurementOverview = agreementsResponse?.procurement_overview ?? null;
     const procurementStepSummary = agreementsResponse?.procurement_step_summary ?? null;
     const procurementDaysInStep = agreementsResponse?.procurement_days_in_step ?? null;
+    console.log({"procurementOverview": procurementOverview, "procurementStepSummary": procurementStepSummary, "prcurementDaysInStep": procurementDaysInStep});
+
 
     const agreementIds = useMemo(() => agreements.map((a) => a.id), [agreements]);
 
