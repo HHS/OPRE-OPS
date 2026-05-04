@@ -2,7 +2,9 @@ import { create, test, enforce, only } from "vest";
 import { AGREEMENT_TYPES } from "../../ServicesComponents/ServicesComponents.constants";
 
 const suite = create((data = {}, fieldName) => {
-    only(fieldName); // only run the tests for the field that changed
+    if (fieldName) {
+        only(fieldName);
+    }
 
     test("agreement_type", "This is required information", () => {
         enforce(data.agreement_type).notEquals("-Select Agreement Type-");
@@ -38,8 +40,8 @@ const suite = create((data = {}, fieldName) => {
     });
     test("vendor", "This is required information", () => {
         if (
-            (data.agreement_reason && data.agreement_reason === "RECOMPETE") ||
-            data.agreement_reason === "LOGICAL_FOLLOW_ON"
+            data.agreement_reason &&
+            (data.agreement_reason === "RECOMPETE" || data.agreement_reason === "LOGICAL_FOLLOW_ON")
         ) {
             enforce(data.vendor).isNotBlank();
         }
