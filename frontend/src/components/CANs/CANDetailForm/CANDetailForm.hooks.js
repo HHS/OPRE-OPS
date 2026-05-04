@@ -89,8 +89,18 @@ export default function useCanDetailForm(canId, canNumber, canNickname, canDescr
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        await saveChanges();
-        cleanUp();
+        try {
+            await saveChanges();
+            cleanUp();
+        } catch (error) {
+            console.error("Error Updating CAN", error);
+            setAlert({
+                type: "error",
+                heading: "Error",
+                message: "An error occurred while updating the CAN.",
+                redirectUrl: "/error"
+            });
+        }
     };
 
     const cleanUp = () => {
