@@ -356,9 +356,9 @@ class ProcurementTrackerStepService:
         requisition_number_present = new_requisition_number is not None or step.pre_award_requisition_number is not None
         requisition_date_present = new_requisition_date is not None or step.pre_award_requisition_date is not None
 
-        # Trigger approval if requisition_number is being set in this update AND both fields will be present
+        # Trigger approval if EITHER field is being set in this update AND both fields will be present
         requisition_being_approved = (
-            new_requisition_number is not None  # Number being set in this update
+            (new_requisition_number is not None or new_requisition_date is not None)  # Either field being set
             and requisition_number_present
             and requisition_date_present
         )
