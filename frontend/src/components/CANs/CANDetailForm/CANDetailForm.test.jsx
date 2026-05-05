@@ -2,6 +2,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Provider } from "react-redux";
+import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 import { opsApi } from "../../../api/opsAPI";
 import CANDetailForm from "./CANDetailForm";
@@ -40,16 +41,28 @@ vi.mock("react-redux", async () => {
 });
 
 const renderComponent = () => {
+    const router = createMemoryRouter(
+        [
+            {
+                path: "/cans/:id",
+                element: (
+                    <CANDetailForm
+                        canId={mockCan.id}
+                        canNumber={mockCan.number}
+                        canNickname={mockCan.nick_name}
+                        canDescription={mockCan.description}
+                        portfolioId={mockCan.portfolio_id}
+                        toggleEditMode={vi.fn()}
+                    />
+                )
+            }
+        ],
+        { initialEntries: ["/cans/123"] }
+    );
+
     return render(
         <Provider store={store}>
-            <CANDetailForm
-                canId={mockCan.id}
-                canNumber={mockCan.number}
-                canNickname={mockCan.nick_name}
-                canDescription={mockCan.description}
-                portfolioId={mockCan.portfolio_id}
-                toggleEditMode={vi.fn()}
-            />
+            <RouterProvider router={router} />
         </Provider>
     );
 };

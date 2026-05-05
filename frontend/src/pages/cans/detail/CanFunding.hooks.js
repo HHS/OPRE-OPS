@@ -13,6 +13,7 @@ import { NO_DATA } from "../../../constants.js";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper.js";
 import { getCurrentFiscalYear } from "../../../helpers/utils.js";
 import useAlert from "../../../hooks/use-alert.hooks";
+import useNavigationBlocker from "../../../hooks/useNavigationBlocker.hooks";
 import suite from "./CanFundingSuite.js";
 
 /**
@@ -156,6 +157,26 @@ export default function useCanFunding(
         setEnteredFundingReceived([...fundingReceived]);
     }, [fundingReceived]);
 
+    const hasChanged = React.useMemo(() => {
+        const budgetChanged = +budgetEnteredAmount !== +totalFunding;
+        const budgetSubmitted = budgetForm.isSubmitted;
+        const fundingReceivedInProgress =
+            fundingReceivedEnteredAmount !== "" || fundingReceivedForm.enteredNotes !== "";
+        const hasNewFundingReceived = enteredFundingReceived.some((e) => "tempId" in e);
+        const hasDeletedFunding = deletedFundingReceivedIds.length > 0;
+        return (
+            budgetChanged || budgetSubmitted || fundingReceivedInProgress || hasNewFundingReceived || hasDeletedFunding
+        );
+    }, [
+        budgetEnteredAmount,
+        totalFunding,
+        budgetForm.isSubmitted,
+        fundingReceivedEnteredAmount,
+        fundingReceivedForm.enteredNotes,
+        enteredFundingReceived,
+        deletedFundingReceivedIds
+    ]);
+
     /** @param {string} value */
     const handleEnteredBudgetAmount = (value) => {
         setBudgetEnteredAmount(+value);
@@ -184,44 +205,83 @@ export default function useCanFunding(
         warning: "warning"
     });
 
+    const saveChanges = React.useCallback(async () => {
+        for (const action of pendingActions) {
+            switch (action.kind) {
+                case "budget-add":
+                    if (+action.payload.budget >= 0) {
+                        await addCanFundingBudget({ data: action.payload }).unwrap();
+                    }
+                    break;
+                case "budget-update":
+                    if (+action.payload.budget >= 0) {
+                        await updateCanFundingBudget({ id: action.id, data: action.payload }).unwrap();
+                    }
+                    break;
+                case "received-add":
+                case "received-update-temp":
+                    await addCanFundingReceived({ data: action.payload }).unwrap();
+                    break;
+                case "received-update":
+                    await updateCanFundingReceived({ id: action.id, data: action.payload }).unwrap();
+                    break;
+                case "received-delete":
+                    await deleteCanFundingReceived(action.id).unwrap();
+                    break;
+                case "received-delete-temp":
+                    break;
+            }
+        }
+
+        setAlert({
+            type: "success",
+            heading: "CAN Updated",
+            message: `The CAN ${canNumber} has been successfully updated.`
+        });
+    }, [
+        pendingActions,
+        canNumber,
+        updateCanFundingBudget,
+        addCanFundingBudget,
+        addCanFundingReceived,
+        updateCanFundingReceived,
+        deleteCanFundingReceived,
+        setAlert
+    ]);
+
+    const onFundingExit = React.useCallback(() => {
+        toggleEditMode();
+        resetWelcomeModal();
+    }, [toggleEditMode, resetWelcomeModal]);
+
+    const { showBlockerModal, setShowBlockerModal, blockerModalProps, setIsCancelling } = useNavigationBlocker({
+        hasChanged,
+        saveChanges,
+        onExit: onFundingExit,
+        onSaveError: () => {
+            setAlert({
+                type: "error",
+                heading: "Error",
+                message: "An error occurred while updating the CAN.",
+                redirectUrl: "/error"
+            });
+        }
+    });
+
+    const wasEditModeRef = React.useRef(isEditMode);
+    React.useEffect(() => {
+        if (!wasEditModeRef.current && isEditMode) {
+            setIsCancelling(false);
+        }
+        wasEditModeRef.current = isEditMode;
+    }, [isEditMode, setIsCancelling]);
+
     /** @param {React.FormEvent<HTMLFormElement>} e */
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         try {
-            for (const action of pendingActions) {
-                switch (action.kind) {
-                    case "budget-add":
-                        if (+action.payload.budget >= 0) {
-                            await addCanFundingBudget({ data: action.payload }).unwrap();
-                        }
-                        break;
-                    case "budget-update":
-                        if (+action.payload.budget >= 0) {
-                            await updateCanFundingBudget({ id: action.id, data: action.payload }).unwrap();
-                        }
-                        break;
-                    case "received-add":
-                    case "received-update-temp":
-                        await addCanFundingReceived({ data: action.payload }).unwrap();
-                        break;
-                    case "received-update":
-                        await updateCanFundingReceived({ id: action.id, data: action.payload }).unwrap();
-                        break;
-                    case "received-delete":
-                        await deleteCanFundingReceived(action.id).unwrap();
-                        break;
-                    case "received-delete-temp":
-                        // No-op: row was never persisted; it was collapsed out of the queue.
-                        break;
-                }
-            }
-
-            setAlert({
-                type: "success",
-                heading: "CAN Updated",
-                message: `The CAN ${canNumber} has been successfully updated.`
-            });
+            await saveChanges();
         } catch (error) {
             console.error("Error Updating CAN", error);
             setAlert({
@@ -447,6 +507,7 @@ export default function useCanFunding(
             actionButtonText: "Cancel Edits",
             secondaryButtonText: "Continue Editing",
             handleConfirm: () => {
+                setIsCancelling(true);
                 setTotalReceived(receivedFunding || 0);
                 cleanUp();
             }
@@ -546,6 +607,9 @@ export default function useCanFunding(
         deleteFundingReceived,
         deletedFundingReceivedIds,
         budgetEnteredAmount,
-        fundingReceivedEnteredAmount
+        fundingReceivedEnteredAmount,
+        showBlockerModal,
+        setShowBlockerModal,
+        blockerModalProps
     };
 }
