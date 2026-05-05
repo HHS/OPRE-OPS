@@ -20,6 +20,14 @@ vi.mock("../../../api/opsAPI");
 // Mock the table hooks
 vi.mock("../../../components/UI/Table/Table.hooks");
 
+// Mock the xlsx export helper: the real implementation calls jszip under the
+// hood, which fails with "Cannot read properties of undefined (reading
+// 'nodebuffer')" inside jsdom. These tests only verify the batching behavior
+// around the click — the actual file generation isn't the subject under test.
+vi.mock("../../../helpers/tableExport.helpers", () => ({
+    exportTableToXlsx: vi.fn()
+}));
+
 // Mock the App component to avoid router complexity
 vi.mock("../../../App", () => ({
     default: ({ children }) => <div data-testid="app-mock">{children}</div>
