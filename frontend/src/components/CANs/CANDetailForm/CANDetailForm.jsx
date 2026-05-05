@@ -1,6 +1,7 @@
 import Input from "../../UI/Form/Input";
 import TextArea from "../../UI/Form/TextArea";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
+import SaveChangesAndExitModal from "../../UI/Modals/SaveChangesAndExitModal";
 import useCanDetailForm from "./CANDetailForm.hooks";
 
 /**
@@ -31,7 +32,10 @@ const CANDetailForm = ({ canId, canNumber, canNickname, canDescription, portfoli
         cn,
         showModal,
         setShowModal,
-        modalProps
+        modalProps,
+        showBlockerModal,
+        setShowBlockerModal,
+        blockerModalProps
     } = useCanDetailForm(canId, canNumber, canNickname, canDescription, portfolioId, toggleEditMode);
 
     return (
@@ -47,6 +51,18 @@ const CANDetailForm = ({ canId, canNumber, canNickname, canDescription, portfoli
                     actionButtonText={modalProps.actionButtonText}
                     secondaryButtonText={modalProps.secondaryButtonText}
                     handleConfirm={modalProps.handleConfirm}
+                />
+            )}
+            {showBlockerModal && (
+                <SaveChangesAndExitModal
+                    heading={blockerModalProps.heading}
+                    description={blockerModalProps.description}
+                    actionButtonText={blockerModalProps.actionButtonText}
+                    secondaryButtonText={blockerModalProps.secondaryButtonText}
+                    handleConfirm={blockerModalProps.handleConfirm}
+                    handleSecondary={blockerModalProps.handleSecondary}
+                    closeModal={blockerModalProps.closeModal}
+                    setShowModal={setShowBlockerModal}
                 />
             )}
             <Input

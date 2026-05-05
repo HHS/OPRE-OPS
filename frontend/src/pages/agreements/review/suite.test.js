@@ -47,9 +47,34 @@ describe("Agreement Review Suite", () => {
         expect(result.isValid()).toBe(false);
     });
 
-    it("does not require vendor", () => {
-        const data = { ...validData };
-        delete data.vendor;
+    it("does not require vendor when agreement_reason is not RECOMPETE or LOGICAL_FOLLOW_ON", () => {
+        const data = { ...validData, vendor: null };
+        suite.reset();
+        suite.run(data);
+        const result = suite.get();
+        expect(result.isValid()).toBe(true);
+    });
+
+    it("fails if vendor is null and agreement_reason is RECOMPETE", () => {
+        const data = { ...validData, agreement_reason: "RECOMPETE", vendor: null };
+        suite.reset();
+        suite.run(data);
+        const result = suite.get();
+        expect(result.isValid()).toBe(false);
+        expect(result.getErrors()).toHaveProperty("vendor");
+    });
+
+    it("fails if vendor is null and agreement_reason is LOGICAL_FOLLOW_ON", () => {
+        const data = { ...validData, agreement_reason: "LOGICAL_FOLLOW_ON", vendor: null };
+        suite.reset();
+        suite.run(data);
+        const result = suite.get();
+        expect(result.isValid()).toBe(false);
+        expect(result.getErrors()).toHaveProperty("vendor");
+    });
+
+    it("passes if vendor is provided and agreement_reason is RECOMPETE", () => {
+        const data = { ...validData, agreement_reason: "RECOMPETE", vendor: "Acme Corp" };
         suite.reset();
         suite.run(data);
         const result = suite.get();
