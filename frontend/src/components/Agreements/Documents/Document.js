@@ -33,19 +33,33 @@ export const processUploading = async (source, uuid, file, agreementId, inMemory
     }
 };
 
+// Sanitize a filename coming from the API before using it as the browser's
+// download suggestion: strip path separators, control chars, and leading dots
+// to prevent directory-traversal-style names from reaching the save dialog.
+/** @param {unknown} rawName */
+export const sanitizeDownloadFilename = (rawName) => {
+    const fallback = "document";
+    if (typeof rawName !== "string" || rawName.length === 0) return fallback;
+    // eslint-disable-next-line no-control-regex
+    const cleaned = rawName.replace(/[/\\\x00-\x1F\x7F]/g, "_").replace(/^\.+/, "");
+    return cleaned.length > 0 ? cleaned : fallback;
+};
+
+/**
+ * @param {Blob} blob
+ * @param {string} fileName
+ */
 const triggerDownload = (blob, fileName) => {
-    // Convert the blob to a URL that can be used to download the file
     const objectUrl = URL.createObjectURL(blob);
 
-    // Create a temporary anchor element to initiate the download
+    // Detached anchor — modern browsers honor .click() without inserting the
+    // element into the DOM, which avoids the appendChild DOM-XSS sink that
+    // Snyk flags when API-sourced file names flow into the page.
     const a = document.createElement("a");
-    a.href = objectUrl; // Set the href to the blob URL
-    a.download = fileName; // Set the name for the downloaded file
-    document.body.appendChild(a); // Append the anchor element to the body
-    a.click(); // Programmatically click the anchor to trigger the download
-    document.body.removeChild(a); // Clean up: remove the anchor element
+    a.href = objectUrl;
+    a.download = sanitizeDownloadFilename(fileName);
+    a.click();
 
-    // Revoke the object URL after the download is triggered (to free up memory)
     URL.revokeObjectURL(objectUrl);
 };
 
@@ -95,6 +109,10 @@ export const downloadDocumentFromBlob = async (sasUrl, documentId, fileName) => 
         // Download the blob
         const downloadBlobResponse = await blobClient.download();
         const blob = await downloadBlobResponse.blobBody;
+        if (!blob) {
+            console.error("Downloaded blob is empty. document_id:", documentId);
+            return;
+        }
 
         triggerDownload(blob, fileName);
     } catch (error) {

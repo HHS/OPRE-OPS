@@ -32,9 +32,25 @@ const AgreementProcurementTracker = ({ agreement }) => {
         "Award"
     ];
     const [completedStepNumber, setCompletedStepNumber] = React.useState(null);
+    const completedStepRef = React.useRef(null);
+
     const handleSetCompletedStepNumber = (stepNumber) => {
         setCompletedStepNumber(stepNumber);
     };
+
+    // After accordions remount, scroll to the completed step
+    React.useEffect(() => {
+        if (completedStepNumber !== null && completedStepRef.current) {
+            // Wait for USWDS to finish all its scrollIntoView calls
+            const timeoutId = setTimeout(() => {
+                if (completedStepRef.current) {
+                    completedStepRef.current.scrollIntoView({ behavior: "auto", block: "nearest" });
+                }
+            }, 100);
+            return () => clearTimeout(timeoutId);
+        }
+    }, [completedStepNumber]);
+
     const agreementId = agreement?.id;
 
     const isSuperUser = useIsUserSuperUser();
@@ -112,8 +128,10 @@ const AgreementProcurementTracker = ({ agreement }) => {
                 currentStep={indicatorCurrentStep}
             />
             {stepsToRender.map((step) => {
+                const isCompletedStep = step.step_number === completedStepNumber;
                 return (
                     <StepBuilderAccordion
+                        ref={isCompletedStep ? completedStepRef : null}
                         step={step}
                         totalSteps={WIZARD_STEPS.length}
                         activeStepNumber={hasActiveTracker ? currentStep : undefined}
