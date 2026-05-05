@@ -411,8 +411,10 @@ describe("useCanFunding", () => {
             result.current.handleAddFundingReceived({ preventDefault: vi.fn() });
         });
 
+        const stagedTempId = result.current.enteredFundingReceived.find((f) => f.id === "TBD")?.tempId ?? "";
+
         act(() => {
-            result.current.populateFundingReceivedForm("temp-abc");
+            result.current.populateFundingReceivedForm(stagedTempId);
         });
 
         act(() => {

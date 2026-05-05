@@ -229,6 +229,7 @@ export default function useCanFunding(
                     await deleteCanFundingReceived(action.id).unwrap();
                     break;
                 case "received-delete-temp":
+                    // Row was never persisted — already removed from the queue by mergePendingAction.
                     break;
             }
         }

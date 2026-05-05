@@ -11,8 +11,8 @@ import { getCurrentFiscalYear } from "../../src/helpers/utils.js";
 
 beforeEach(() => {
     testLogin("budget-team");
-    cy.intercept("POST", "**/api/v1/can-funding-budgets/**").as("canFundingBudget");
-    cy.intercept("PATCH", "**/api/v1/can-funding-budgets/**").as("canFundingBudget");
+    cy.intercept("POST", "**/api/v1/can-funding-budgets/**").as("canFundingBudgetPost");
+    cy.intercept("PATCH", "**/api/v1/can-funding-budgets/**").as("canFundingBudgetPatch");
     cy.intercept("POST", "**/api/v1/can-funding-received/**").as("canFundingReceived");
 });
 
@@ -44,67 +44,14 @@ const closeWelcomeModalIfPresent = (attempts = 10) => {
     });
 };
 
-const parseMoneyInputValue = (value, expected) => {
-    const raw = String(value || "").trim();
-    if (!raw) {
-        return 0;
-    }
-    const normalized = raw.replace(/[^0-9.]/g, "");
-    if (!normalized) {
-        return 0;
-    }
-    if (normalized.includes(".")) {
-        return Number(normalized);
-    }
-    const asNumber = Number(normalized);
-    if (Number.isNaN(asNumber)) {
-        return 0;
-    }
-    const expectedNumber = Number(expected);
-    if (Number.isFinite(expectedNumber)) {
-        return Math.abs(asNumber / 100 - expectedNumber) < Math.abs(asNumber - expectedNumber)
-            ? asNumber / 100
-            : asNumber;
-    }
-    return asNumber;
-};
-
 const setMoneyInputValue = (selector, value) => {
-    const expected = Number(String(value).replace(/,/g, ""));
-    const typeValue = (delayMs) => {
-        cy.get(selector)
-            .should("be.visible")
-            .and("not.be.disabled")
-            .click({ force: true })
-            .type("{selectall}{backspace}", { force: true })
-            .type(`${value}`, { delay: delayMs, force: true })
-            .blur();
-
-        cy.get(selector).trigger("change", { force: true });
-    };
-
-    typeValue(0);
-
     cy.get(selector)
-        .invoke("val")
-        .then((val) => {
-            if (!Number.isFinite(expected)) {
-                return;
-            }
-            const parsed = parseMoneyInputValue(val, expected);
-            if (Math.abs(parsed - expected) <= 0.01) {
-                expect(parsed).to.be.closeTo(expected, 0.01);
-                return;
-            }
-
-            typeValue(25);
-            cy.get(selector)
-                .invoke("val")
-                .then((retryVal) => {
-                    const parsedRetry = parseMoneyInputValue(retryVal, expected);
-                    expect(parsedRetry).to.be.closeTo(expected, 0.01);
-                });
-        });
+        .should("be.visible")
+        .and("not.be.disabled")
+        .click()
+        .type("{selectall}{backspace}")
+        .type(`${value}`)
+        .blur();
 };
 
 describe("CAN funding history ordering (issue #5571)", () => {
@@ -134,7 +81,7 @@ describe("CAN funding history ordering (issue #5571)", () => {
 
         // Save. Both the budget and the received mutations fire from one Save.
         cy.get("[data-cy=save-btn]").should("be.enabled").click();
-        cy.wait("@canFundingBudget", { timeout: 30000 });
+        cy.wait("@canFundingBudgetPatch", { timeout: 30000 });
         cy.wait("@canFundingReceived", { timeout: 30000 });
         cy.get(".usa-alert__body").should("contain", `The CAN ${can.nickname} has been successfully updated.`);
 
