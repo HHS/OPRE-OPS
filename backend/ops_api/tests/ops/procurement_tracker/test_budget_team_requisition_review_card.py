@@ -75,7 +75,9 @@ def test_get_pending_requisitions_returns_approved_without_requisition(
     assert test_budget_team_requisition_step.id in step_ids
 
 
-def test_get_pending_requisitions_excludes_completed(budget_team_auth_client, test_budget_team_requisition_step, loaded_db):
+def test_get_pending_requisitions_excludes_completed(
+    budget_team_auth_client, test_budget_team_requisition_step, loaded_db
+):
     """Steps with requisition_number filled are excluded."""
     # Set requisition number (budget team completed it)
     test_budget_team_requisition_step.pre_award_requisition_number = "REQ-2026-12345"
@@ -99,7 +101,9 @@ def test_get_pending_requisitions_filters_by_budget_team_role(client, test_budge
     assert response.status_code == 401  # Unauthenticated
 
 
-def test_get_pending_requisitions_includes_agreement_data(budget_team_auth_client, test_budget_team_requisition_step, loaded_db):
+def test_get_pending_requisitions_includes_agreement_data(
+    budget_team_auth_client, test_budget_team_requisition_step, loaded_db
+):
     """Response includes agreement with budget line items."""
     response = budget_team_auth_client.get("/api/v1/procurement-tracker-steps/pending-requisitions/")
     assert response.status_code == 200
