@@ -73,6 +73,7 @@ def get_users(session: Session, **kwargs) -> list[User]:
     Get all users that match the given criteria.
 
     :param session: The database session.
+    :param exclude_read_only: Whether to exclude read-only users.
     :param **kwargs: The criteria to filter the users by.
     :return: The users that match the criteria.
 
@@ -85,6 +86,8 @@ def get_users(session: Session, **kwargs) -> list[User]:
     for key, value in kwargs.items():
         if key == "roles":
             stmt = stmt.where(User.roles.any(Role.name.in_(value)))
+        elif key == "exclude_read_only":
+            exclude_read_only = value
         else:
             stmt = stmt.where(cast(ColumnElement[bool], getattr(User, key)) == value)
 
@@ -92,10 +95,13 @@ def get_users(session: Session, **kwargs) -> list[User]:
 
     users = session.execute(stmt).scalars().all()
 
-    # Filter out users with READ_ONLY role
-    filtered_users = [user for user in users if not any(role.name == "READ_ONLY" for role in user.roles)]
+    if exclude_read_only:
+        # Filter out users with READ_ONLY role
+        filtered_users = [user for user in users if not any(role.name == "READ_ONLY" for role in user.roles)]
 
-    return filtered_users
+        return filtered_users
+    else:
+        return users
 
 
 def create_user(session: Session, **kwargs) -> User:

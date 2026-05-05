@@ -687,10 +687,10 @@
       status: "ACTIVE"
     },
     { // 529
-      first_name: "Read-Only",
-      last_name: "Randall",
+      first_name: "Randy",
+      last_name: "Read-Only",
       division: 3,
-      email: "readonly.randall@email.com",
+      email: "randy.readonly@email.com",
       oidc_id: "00000000-0000-1111-a111-000000000029",
       roles: [{"tablename":  "role", "id": 8}],
       status: "ACTIVE"

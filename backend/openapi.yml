@@ -2826,14 +2826,66 @@ paths:
       tags:
         - Users
       operationId: getAllUsers
-      description: Get all Users
+      description: Get all Users. Returns full user details for admins, or SafeUser (id and full_name only) for non-admins viewing other users.
       parameters:
         - $ref: "#/components/parameters/simulatedError"
+        - name: id
+          in: query
+          description: Filter by user ID
+          schema:
+            type: integer
         - name: oidc_id
           in: query
+          description: Filter by OIDC ID
           schema:
             type: string
           example: e5711101-bc3e-41e5-a6a2-051874b307ca
+        - name: hhs_id
+          in: query
+          description: Filter by HHS ID
+          schema:
+            type: string
+        - name: email
+          in: query
+          description: Filter by email
+          schema:
+            type: string
+        - name: status
+          in: query
+          description: Filter by user status
+          schema:
+            type: string
+            enum: [active, inactive, locked]
+        - name: division
+          in: query
+          description: Filter by division ID
+          schema:
+            type: integer
+        - name: first_name
+          in: query
+          description: Filter by first name
+          schema:
+            type: string
+        - name: last_name
+          in: query
+          description: Filter by last name
+          schema:
+            type: string
+        - name: roles
+          in: query
+          description: Filter by role names (can specify multiple)
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
+        - name: exclude_read_only
+          in: query
+          description: Exclude users with READ_ONLY role from results
+          schema:
+            type: boolean
+            default: false
       responses:
         "200":
           description: OK
@@ -2910,23 +2962,77 @@ paths:
                       updated_by: 101
                       created_on: "2023-04-06T20:33:38.292475"
                       updated_on: null
-  /users/{user_id}:
+    post:
+      tags:
+        - Users
+      operationId: createUser
+      description: Create a new user. Only USER_ADMIN role can create users.
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                first_name:
+                  type: string
+                  nullable: true
+                last_name:
+                  type: string
+                  nullable: true
+                division:
+                  type: integer
+                  nullable: true
+                status:
+                  type: string
+                  enum: [active, inactive, locked]
+                  default: inactive
+                roles:
+                  type: array
+                  items:
+                    type: string
+                  default: []
+            example:
+              email: "new.user@example.com"
+              first_name: "John"
+              last_name: "Doe"
+              division: 1
+              status: "active"
+              roles: ["COR"]
+      responses:
+        "202":
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Bad Request - Invalid data or insufficient permissions
+        "403":
+          description: Forbidden - User does not have USER_ADMIN role
+  /users/{id}:
     get:
       tags:
         - Users
       operationId: getUserById
-      description: Get User by Id
+      description: Get User by Id. Returns full user details for admins or when viewing own profile, SafeUser (id and full_name only) otherwise.
       parameters:
         - $ref: "#/components/parameters/simulatedError"
         - in: path
-          name: user_id
+          name: id
           description: User Id
           required: true
           schema:
             type: integer
             format: int32
             minimum: 0
-            default: 0
       responses:
         "200":
           description: OK
@@ -2937,6 +3043,129 @@ paths:
               examples:
                 "0":
                   $ref: "#/components/examples/User"
+        "404":
+          description: User not found
+    put:
+      tags:
+        - Users
+      operationId: updateUser
+      description: Update a user by ID. Only USER_ADMIN role can update users.
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: id
+          description: User Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: integer
+                email:
+                  type: string
+                  format: email
+                first_name:
+                  type: string
+                  nullable: true
+                last_name:
+                  type: string
+                  nullable: true
+                division:
+                  type: integer
+                  nullable: true
+                status:
+                  type: string
+                  enum: [active, inactive, locked]
+                roles:
+                  type: array
+                  items:
+                    type: string
+            example:
+              email: "updated.user@example.com"
+              first_name: "Jane"
+              last_name: "Smith"
+              division: 2
+              status: "active"
+              roles: ["Division Director"]
+      responses:
+        "200":
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Bad Request - Invalid data, user cannot deactivate themselves, or insufficient permissions
+        "403":
+          description: Forbidden - User does not have USER_ADMIN role
+        "404":
+          description: User not found
+    patch:
+      tags:
+        - Users
+      operationId: partialUpdateUser
+      description: Partially update a user by ID. Only USER_ADMIN role can update users.
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: id
+          description: User Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: integer
+                email:
+                  type: string
+                  format: email
+                first_name:
+                  type: string
+                  nullable: true
+                last_name:
+                  type: string
+                  nullable: true
+                division:
+                  type: integer
+                  nullable: true
+                status:
+                  type: string
+                  enum: [active, inactive, locked]
+                roles:
+                  type: array
+                  items:
+                    type: string
+            example:
+              status: "inactive"
+      responses:
+        "200":
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Bad Request - Invalid data, user cannot deactivate themselves, or insufficient permissions
+        "403":
+          description: Forbidden - User does not have USER_ADMIN role
+        "404":
+          description: User not found
   /login/:
     servers:
       - url: https://localhost:8080/auth

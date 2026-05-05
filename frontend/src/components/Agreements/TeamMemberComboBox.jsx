@@ -37,7 +37,11 @@ export const TeamMemberComboBox = ({
 }) => {
     const navigate = useNavigate();
     /** @type {{data?: SafeUser[] | undefined, error?: Object,  isLoading: boolean}} */
-    const { data: users, error: errorUsers, isLoading: isLoadingUsers } = useGetUsersQuery({});
+    const {
+        data: users,
+        error: errorUsers,
+        isLoading: isLoadingUsers
+    } = useGetUsersQuery({ excludeReadOnlyUsers: true });
     const [selectedTeamMember, setSelectedTeamMember] = useState({});
 
     if (isLoadingUsers) {
