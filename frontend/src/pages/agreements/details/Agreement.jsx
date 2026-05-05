@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
 import App from "../../../App";
@@ -84,8 +84,12 @@ const Agreement = () => {
     }, [isEditMode]);
 
     // Exit edit mode when navigating between tabs
+    const previousPathnameRef = useRef(location.pathname);
     useEffect(() => {
-        setIsEditMode((prev) => (prev ? false : prev));
+        if (previousPathnameRef.current !== location.pathname) {
+            previousPathnameRef.current = location.pathname;
+            setIsEditMode((prev) => (prev ? false : prev));
+        }
     }, [location.pathname]);
 
     /** @type {{data?: import("../../../types/AgreementTypes").Agreement | undefined, error?: Object, isLoading: boolean, isSuccess: boolean}} */
