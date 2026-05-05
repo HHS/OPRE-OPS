@@ -25,6 +25,7 @@ from models import (
     OpsEventType,
     Portfolio,
     PortfolioTeamLeaders,
+    ProcurementShop,
     Project,
     ResearchMethodology,
     ServicesComponent,
@@ -922,16 +923,12 @@ def _compute_procurement_overview(all_results: list[Agreement], fiscal_year: int
             if fiscal_year is not None and bli.fiscal_year != fiscal_year:
                 continue
             if bli.status in amount_by_status:
-                amount = bli.amount if bli.amount is not None else Decimal("0")
-                fees = bli.fees if bli.fees is not None else Decimal("0")
-                amount_by_status[bli.status] += amount + fees
+                amount_by_status[bli.status] += (bli.amount or Decimal("0")) + bli.fees
                 agreements_by_status[bli.status].add(agreement.id)
 
     total_amount = sum(amount_by_status.values(), Decimal("0"))
-    # Uses all agreements in the query result as the denominator for agreements_percent,
-    # including agreements that have no BLIs in the tracked statuses for the given fiscal year.
-    # This means per-status percentages may not sum to 100%.
-    total_agreements = len(all_results)
+    tracked_agreement_ids = set().union(*agreements_by_status.values())
+    total_agreements = len(tracked_agreement_ids)
 
     status_data = []
     for status in tracked_statuses:
@@ -955,60 +952,51 @@ def _compute_procurement_overview(all_results: list[Agreement], fiscal_year: int
     }
 
 
-def _compute_procurement_step_summary(all_results: list[Agreement], fiscal_year: int | None) -> dict[str, Any]:
-    """Compute procurement step summary: agreement counts and dollar amounts per step (1-6).
+def _get_active_step(agreement: Agreement) -> int | None:
+    """Return the active procurement tracker step number for an agreement, or None."""
+    for tracker in agreement.procurement_trackers:
+        if tracker.status == ProcurementTrackerStatus.ACTIVE and tracker.active_step_number is not None:
+            return tracker.active_step_number
+    return None
 
-    Uses each agreement's procurement tracker active_step_number and only considers
-    IN_EXECUTION BLIs for the given fiscal year.
-    """
-    amount_by_step: dict[int, Decimal] = {s: Decimal("0") for s in range(1, 7)}
-    agreements_by_step: dict[int, int] = {s: 0 for s in range(1, 7)}
+
+def _compute_procurement_step_summary(all_results: list[Agreement], fiscal_year: int | None) -> dict[str, Any]:
+    """Compute procurement step summary: agreement counts and dollar amounts per step (1-6)."""
+    amount_by_step: dict[int, Decimal] = {step: Decimal("0") for step in range(1, 7)}
+    agreements_by_step: dict[int, int] = {step: 0 for step in range(1, 7)}
 
     for agreement in all_results:
-        # Find the active tracker for this agreement
-        tracker = next(
-            (
-                t
-                for t in agreement.procurement_trackers
-                if t.status == ProcurementTrackerStatus.ACTIVE and t.active_step_number is not None
-            ),
-            None,
-        )
-        if tracker is None:
+        active_step = _get_active_step(agreement)
+        if active_step is None or active_step < 1 or active_step > 6:
             continue
 
-        step = tracker.active_step_number
-        if step < 1 or step > 6:
+        executing_total = Decimal("0")
+        has_executing_blis = False
+        for bli in agreement.budget_line_items:
+            if bli.status != BudgetLineItemStatus.IN_EXECUTION:
+                continue
+            if fiscal_year is not None and bli.fiscal_year != fiscal_year:
+                continue
+            has_executing_blis = True
+            executing_total += (bli.amount or Decimal("0")) + bli.fees
+
+        if not has_executing_blis:
             continue
 
-        # Filter BLIs to IN_EXECUTION for the fiscal year
-        executing_blis = [
-            bli
-            for bli in agreement.budget_line_items
-            if bli.status == BudgetLineItemStatus.IN_EXECUTION
-            and (fiscal_year is None or bli.fiscal_year == fiscal_year)
-        ]
-        if not executing_blis:
-            continue
-
-        agreements_by_step[step] += 1
-        for bli in executing_blis:
-            amount = bli.amount if bli.amount is not None else Decimal("0")
-            fees = bli.fees if bli.fees is not None else Decimal("0")
-            amount_by_step[step] += amount + fees
+        agreements_by_step[active_step] += 1
+        amount_by_step[active_step] += executing_total
 
     total_agreement_count = sum(agreements_by_step.values())
 
-    step_data = []
-    for step in range(1, 7):
-        step_data.append(
-            {
-                "step": step,
-                "agreements": agreements_by_step[step],
-                "agreements_percent": _percent(agreements_by_step[step], total_agreement_count),
-                "amount": float(amount_by_step[step]),
-            }
-        )
+    step_data = [
+        {
+            "step": step,
+            "agreements": agreements_by_step[step],
+            "agreements_percent": _percent(agreements_by_step[step], total_agreement_count),
+            "amount": float(amount_by_step[step]),
+        }
+        for step in range(1, 7)
+    ]
 
     return {
         "step_data": step_data,
@@ -1036,8 +1024,9 @@ def _build_base_query(agreement_cls: Type[Agreement], include_procurement: bool 
 
     if include_procurement:
         query = query.options(
-            selectinload(agreement_cls.budget_line_items),
+            selectinload(agreement_cls.budget_line_items).selectinload(BudgetLineItem.procurement_shop_fee),
             selectinload(agreement_cls.procurement_trackers),
+            selectinload(agreement_cls.procurement_shop).selectinload(ProcurementShop.procurement_shop_fees),
         )
 
     return query.order_by(agreement_cls.id)

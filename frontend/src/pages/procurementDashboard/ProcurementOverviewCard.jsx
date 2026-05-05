@@ -70,7 +70,7 @@ const ProcurementOverviewCard = ({ procurementOverview, fiscalYear, isLoading, e
         [procurementOverview]
     );
     const fyShort = String(fiscalYear).slice(-2);
-    const hasData = totalAmount > 0 || totalAgreements > 0;
+    const hasData = totalAmount > 0;
 
     if (isLoading) {
         return (
