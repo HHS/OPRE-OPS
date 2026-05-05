@@ -127,51 +127,51 @@ describe("exportTableToXlsx", () => {
 
 describe("exportMultiSheetToXlsx", () => {
     const originalCreateElement = document.createElement.bind(document);
+    /** @type {{ href: string; download: string; click: import("vitest").Mock }} */
+    let anchor;
 
     beforeEach(() => {
-        vi.clearAllMocks();
+        vi.restoreAllMocks();
 
         if (!URL.createObjectURL) {
-            Object.defineProperty(URL, "createObjectURL", {
-                writable: true,
-                value: vi.fn()
-            });
+            Object.defineProperty(URL, "createObjectURL", { writable: true, value: vi.fn() });
         }
-
         if (!URL.revokeObjectURL) {
-            Object.defineProperty(URL, "revokeObjectURL", {
-                writable: true,
-                value: vi.fn()
-            });
+            Object.defineProperty(URL, "revokeObjectURL", { writable: true, value: vi.fn() });
         }
-
         vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:test-url");
         vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
 
-        vi.spyOn(document, "createElement").mockImplementation((tagName, options) => {
-            if (tagName === "a") {
-                return {
-                    href: "",
-                    download: "",
-                    click: vi.fn()
-                };
+        anchor = { href: "", download: "", click: vi.fn() };
+        vi.spyOn(document, "createElement").mockImplementation(
+            /** @type {(tagName: string, options?: ElementCreationOptions) => HTMLElement} */ (tagName, options) => {
+                if (tagName === "a") return /** @type {any} */ (anchor);
+                return originalCreateElement(tagName, options);
             }
-
-            return originalCreateElement(tagName, options);
-        });
+        );
     });
+
+    const readWorkbookFromBlob = async () => {
+        const createObjectURL = /** @type {import("vitest").Mock} */ (/** @type {unknown} */ (URL.createObjectURL));
+        const createCall = createObjectURL.mock.calls[0];
+        expect(createCall, "expected a Blob to be handed to URL.createObjectURL").toBeDefined();
+        /** @type {Blob} */
+        const blob = createCall[0];
+        const arrayBuffer = await blob.arrayBuffer();
+        const wb = new ExcelJS.Workbook();
+        await wb.xlsx.load(arrayBuffer);
+        return wb;
+    };
 
     it("should throw if no sheets are provided", async () => {
         const { exportMultiSheetToXlsx } = await import("./tableExport.helpers");
 
         await expect(exportMultiSheetToXlsx({ sheets: [] })).rejects.toThrow("At least one sheet is required");
-        await expect(exportMultiSheetToXlsx({})).rejects.toThrow("At least one sheet is required");
+        await expect(exportMultiSheetToXlsx(/** @type {any} */ ({}))).rejects.toThrow("At least one sheet is required");
     });
 
     it("should create a workbook with multiple sheets", async () => {
         const { exportMultiSheetToXlsx } = await import("./tableExport.helpers");
-
-        vi.mocked(XLSX.utils.aoa_to_sheet).mockReturnValue({});
 
         const sheets = [
             {
@@ -191,28 +191,19 @@ describe("exportMultiSheetToXlsx", () => {
 
         await exportMultiSheetToXlsx({ sheets, filename: "test" });
 
-        // Should create one workbook and append two sheets
-        expect(XLSX.utils.book_new).toHaveBeenCalledTimes(1);
-        expect(XLSX.utils.book_append_sheet).toHaveBeenCalledTimes(2);
-        expect(XLSX.utils.book_append_sheet).toHaveBeenCalledWith(expect.anything(), expect.anything(), "All");
-        expect(XLSX.utils.book_append_sheet).toHaveBeenCalledWith(expect.anything(), expect.anything(), "Step 1");
-        expect(XLSX.write).toHaveBeenCalled();
+        expect(anchor.click).toHaveBeenCalledOnce();
+
+        const wb = await readWorkbookFromBlob();
+        expect(wb.getWorksheet("All")).toBeDefined();
+        expect(wb.getWorksheet("Step 1")).toBeDefined();
+
+        const allSheet = wb.getWorksheet("All");
+        const row2 = allSheet.getRow(2).values;
+        expect(Array.isArray(row2) ? row2.slice(1) : []).toEqual([1, "Alice"]);
     });
 
     it("should apply currency formatting to specified columns per sheet", async () => {
         const { exportMultiSheetToXlsx } = await import("./tableExport.helpers");
-
-        const mockWorksheet = {
-            "!ref": "A1:C2",
-            C2: { v: 500.0 }
-        };
-
-        vi.mocked(XLSX.utils.aoa_to_sheet).mockReturnValue(mockWorksheet);
-        vi.mocked(XLSX.utils.decode_range).mockReturnValue({ s: { r: 0, c: 0 }, e: { r: 1, c: 2 } });
-        vi.mocked(XLSX.utils.encode_cell).mockImplementation(({ r, c }) => {
-            const cols = ["A", "B", "C"];
-            return `${cols[c]}${r + 1}`;
-        });
 
         const sheets = [
             {
@@ -225,6 +216,8 @@ describe("exportMultiSheetToXlsx", () => {
 
         await exportMultiSheetToXlsx({ sheets });
 
-        expect(mockWorksheet.C2.z).toBe('"$"#,##0.00_);("$"#,##0.00)');
+        const wb = await readWorkbookFromBlob();
+        const ws = wb.getWorksheet("Sheet1");
+        expect(ws.getCell("C2").numFmt).toBe(CURRENCY_FORMAT);
     });
 });
