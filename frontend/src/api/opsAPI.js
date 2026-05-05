@@ -514,7 +514,7 @@ export const opsApi = createApi({
                     // project_type filter
                     if (filters.projectType && filters.projectType.length > 0) {
                         filters.projectType.forEach((type) => {
-                            queryParams.push(`project_type=${type.name}`);
+                            queryParams.push(`project_type=${type.id}`);
                         });
                     }
                 }

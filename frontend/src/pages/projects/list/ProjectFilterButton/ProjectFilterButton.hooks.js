@@ -5,8 +5,9 @@ import { getCurrentFiscalYear } from "../../../../helpers/utils";
  * A filter for Projects list.
  * @param {import('./ProjectFilterTypes').Filters} filters - The current filters.
  * @param {Function} setFilters - A function to call to set the filters.
+ * @param {boolean} showModal - Whether the modal is currently open.
  */
-export const useProjectFilterButton = (filters, setFilters) => {
+export const useProjectFilterButton = (filters, setFilters, showModal) => {
     const [fiscalYear, setFiscalYear] = React.useState(
         /** @type {import('./ProjectFilterTypes').FilterOption[]} */ ([])
     );
@@ -21,6 +22,17 @@ export const useProjectFilterButton = (filters, setFilters) => {
         /** @type {import('./ProjectFilterTypes').FilterOption[]} */ ([])
     );
     const currentFiscalYear = getCurrentFiscalYear();
+
+    // Reset local state to match filters when modal opens (prevents stale selections from persisting)
+    React.useEffect(() => {
+        if (showModal) {
+            setFiscalYear(filters.fiscalYear ?? []);
+            setPortfolio(filters.portfolio ?? []);
+            setProjectSearch(filters.projectSearch ?? []);
+            setAgreementSearch(filters.agreementSearch ?? []);
+            setProjectType(filters.projectType ?? []);
+        }
+    }, [showModal, filters]);
 
     // The useEffect() hook calls below are used to set the state appropriately when the filter tags (X) are clicked.
     React.useEffect(() => {
