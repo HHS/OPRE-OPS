@@ -1,5 +1,5 @@
 import React from "react";
-import { useLocation, useNavigate, useBlocker } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import classnames from "vest/classnames";
 import {
     useDeleteAgreementMutation,
@@ -11,6 +11,7 @@ import { calculateAgreementTotal, cleanAgreementForApi, formatTeamMember } from 
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import useAlert from "../../../hooks/use-alert.hooks";
 import useHasStateChanged from "../../../hooks/useHasStateChanged.hooks";
+import useNavigationBlocker from "../../../hooks/useNavigationBlocker.hooks";
 import { AGREEMENT_TYPES } from "../../ServicesComponents/ServicesComponents.constants";
 import suite from "./AgreementEditFormSuite";
 import {
@@ -80,9 +81,6 @@ const useAgreementEditForm = (
 
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
-    const [showBlockerModal, setShowBlockerModal] = React.useState(false);
-    const [blockerModalProps, setBlockerModalProps] = React.useState({});
-    const [isCancelling, setIsCancelling] = React.useState(false);
     const [selectedAgreementFilter, setSelectedAgreementFilter] = React.useState("");
 
     const navigate = useNavigate();
@@ -91,9 +89,6 @@ const useAgreementEditForm = (
 
     const [updateAgreement] = useUpdateAgreementMutation();
     const [deleteAgreement] = useDeleteAgreementMutation();
-
-    // Track transitions into edit mode so we can reset the cancelling flag
-    const wasEditModeRef = React.useRef(isEditMode);
 
     const {
         agreement,
@@ -158,15 +153,6 @@ const useAgreementEditForm = (
         setHasAgreementChanged(hasAgreementChanged);
     }, [hasAgreementChanged, setHasAgreementChanged]);
 
-    // Reset cancelling flag when entering edit mode
-    React.useEffect(() => {
-        // When we newly enter edit mode, clear any stale cancelling state
-        if (!wasEditModeRef.current && isEditMode) {
-            setIsCancelling(false);
-        }
-        wasEditModeRef.current = isEditMode;
-    }, [isEditMode]);
-
     // set agreement filter state based on agreement type
     React.useEffect(() => {
         if (agreementType === AGREEMENT_TYPES.CONTRACT) {
@@ -219,12 +205,6 @@ const useAgreementEditForm = (
     }, [errorProductServiceCodes, errorProjects, navigate]);
 
     let res = suite.get();
-
-    // Navigation blocker to prevent unsaved changes from being lost
-    const blocker = useBlocker(
-        ({ currentLocation, nextLocation }) =>
-            !isCancelling && hasAgreementChanged && currentLocation.pathname !== nextLocation.pathname
-    );
 
     const vendorDisabled = agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
     const isAgreementAA = agreementType === AGREEMENT_TYPES.AA;
@@ -376,71 +356,28 @@ const useAgreementEditForm = (
         ]
     );
 
-    // Ref to capture saveAgreement for use in blocker modal
-    const saveAgreementRef = React.useRef(saveAgreement);
-
-    React.useEffect(() => {
-        saveAgreementRef.current = saveAgreement;
+    const blockerSaveChanges = React.useCallback(async () => {
+        await saveAgreement(null);
     }, [saveAgreement]);
 
-    const blockerRef = React.useRef(blocker);
+    const blockerOnExit = React.useCallback(() => {
+        setHasAgreementChanged(false);
+        if (isEditMode && setIsEditMode) setIsEditMode(false);
+    }, [setHasAgreementChanged, isEditMode, setIsEditMode]);
 
+    const { showBlockerModal, setShowBlockerModal, blockerModalProps, setIsCancelling } = useNavigationBlocker({
+        hasChanged: hasAgreementChanged,
+        saveChanges: blockerSaveChanges,
+        onExit: blockerOnExit
+    });
+
+    const wasEditModeRef = React.useRef(isEditMode);
     React.useEffect(() => {
-        blockerRef.current = blocker;
-    }, [blocker]);
-
-    const proceedIfBlocked = async () => {
-        const currentBlocker = blockerRef.current;
-        if (!currentBlocker || currentBlocker.state !== "blocked") {
-            return;
+        if (!wasEditModeRef.current && isEditMode) {
+            setIsCancelling(false);
         }
-        try {
-            await currentBlocker.proceed();
-        } catch (error) {
-            const message = error && typeof error.message === "string" ? error.message.trim() : "";
-            if (message.startsWith("Invalid blocker state transition")) {
-                console.warn("Ignored known React Router blocker exception:", message);
-                return;
-            }
-            throw error;
-        }
-    };
-
-    // Setup blocker modal when navigation is blocked
-    React.useEffect(() => {
-        if (blocker.state === "blocked") {
-            setShowBlockerModal(true);
-            setBlockerModalProps({
-                heading: "You have unsaved changes",
-                description: "Do you want to save your changes before leaving this page?",
-                actionButtonText: "Save Changes",
-                secondaryButtonText: "Leave without saving",
-                handleConfirm: async () => {
-                    try {
-                        await saveAgreementRef.current(null); // No redirectUrl - let blocker handle navigation
-                        setHasAgreementChanged(false);
-                        if (isEditMode && setIsEditMode) setIsEditMode(false);
-                        setShowBlockerModal(false);
-                        await proceedIfBlocked();
-                    } catch (error) {
-                        // Error already handled in saveAgreement
-                        console.error(error);
-                        blocker.reset();
-                    }
-                },
-                handleSecondary: async () => {
-                    setHasAgreementChanged(false);
-                    setShowBlockerModal(false);
-                    if (isEditMode && setIsEditMode) setIsEditMode(false);
-                    await proceedIfBlocked();
-                },
-                closeModal: () => {
-                    setShowBlockerModal(false);
-                    blocker.reset();
-                }
-            });
-        }
-    }, [blocker, setHasAgreementChanged, isEditMode, setIsEditMode]);
+        wasEditModeRef.current = isEditMode;
+    }, [isEditMode, setIsCancelling]);
 
     const handleContinue = async () => {
         if (shouldRequestChange) {
@@ -639,7 +576,6 @@ const useAgreementEditForm = (
         setAgreementNotes,
         setAgreementType,
         res,
-        blocker,
         showBlockerModal,
         setShowBlockerModal,
         blockerModalProps,

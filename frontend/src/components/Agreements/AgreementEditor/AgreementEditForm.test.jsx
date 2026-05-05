@@ -257,8 +257,8 @@ describe("AgreementEditForm useEffect behavior", () => {
             const currentLocation = { pathname: "/agreements/1" };
             const nextLocation = { pathname: "/agreements" };
 
-            // The blocker condition from useBlocker:
-            // !isCancelling && hasAgreementChanged && currentLocation.pathname !== nextLocation.pathname
+            // The blocker condition from useNavigationBlocker:
+            // !isCancelling && hasChanged && currentLocation.pathname !== nextLocation.pathname
             const shouldBlock =
                 !isCancelling && hasAgreementChanged && currentLocation.pathname !== nextLocation.pathname;
 
@@ -394,52 +394,14 @@ describe("AgreementEditForm useEffect behavior", () => {
     });
 
     describe("Ref synchronization", () => {
-        it("saveAgreementRef should maintain reference to latest saveAgreement function", () => {
-            const saveAgreement1 = vi.fn();
-            const saveAgreement2 = vi.fn();
-
-            // Simulates the ref pattern
-            const saveAgreementRef = { current: saveAgreement1 };
-
-            // Initial assignment
-            expect(saveAgreementRef.current).toBe(saveAgreement1);
-
-            // Update to new function (like in useEffect)
-            saveAgreementRef.current = saveAgreement2;
-
-            expect(saveAgreementRef.current).toBe(saveAgreement2);
-        });
-
         it("wasEditModeRef should track previous edit mode state", () => {
-            // Simulates the ref pattern for tracking previous edit mode
             const wasEditModeRef = { current: false };
 
             expect(wasEditModeRef.current).toBe(false);
 
-            // Update to new state
             wasEditModeRef.current = true;
 
             expect(wasEditModeRef.current).toBe(true);
         });
     });
 });
-
-// Note: The blocker modal functionality in AgreementEditForm uses useBlocker from react-router-dom.
-// Full integration testing of the modal requires mocking the entire component tree including
-// EditAgreementProvider, Redux store, and all API hooks. For comprehensive testing of the blocker
-// modal user flows, see the E2E tests or manually test the following scenarios:
-//
-// 1. Make an edit and click "Portfolios" link → Modal appears → Click "Save Changes" → Navigates to Portfolios
-// 2. Make an edit and click "Leave without saving" → Navigates away without saving
-// 3. Make an edit and press Escape → Modal closes, navigation canceled
-// 4. Make an edit, try to navigate, mock save to fail → blocker.reset() is called
-//
-// The implementation uses:
-// - useBlocker hook to detect navigation attempts (lines 179-182)
-// - Separate showBlockerModal state to avoid race conditions (line 80)
-// - useCallback for saveAgreement to prevent stale closures (lines 244-324)
-// - Ref pattern (saveAgreementRef) to ensure latest save function is called (lines 327-331)
-// - useEffect to configure modal when blocker.state === "blocked" (lines 334-367)
-//
-// Key fix: saveAgreement is called with redirectUrl=null to prevent race condition with Alert
-// component navigation. blocker.proceed() handles navigation instead of Alert.

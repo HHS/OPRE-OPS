@@ -1,6 +1,6 @@
 import React from "react";
 import { useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import { useGetCanByIdQuery, useGetCanFundingQuery } from "../../../api/opsAPI";
 import { USER_ROLES } from "../../../components/Users/User.constants";
 import { NO_DATA } from "../../../constants";
@@ -15,6 +15,8 @@ export default function useCan() {
      */
 
     const urlPathParams = useParams();
+    const location = useLocation();
+
     const activeUser = useSelector((state) => state.auth.activeUser);
     const userRoles = activeUser?.roles ?? [];
     const isBudgetTeam = userRoles?.some((role) => role?.name === USER_ROLES.BUDGET_TEAM);
@@ -34,6 +36,15 @@ export default function useCan() {
         detailPage: false,
         fundingPage: false
     });
+
+    React.useEffect(() => {
+        setIsEditMode((prev) => {
+            if (prev.detailPage || prev.fundingPage) {
+                return { detailPage: false, fundingPage: false };
+            }
+            return prev;
+        });
+    }, [location.pathname]);
 
     /** @type {{data?: CAN | undefined, isLoading: boolean, isFetching: boolean}} */
     const {

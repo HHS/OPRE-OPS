@@ -6,6 +6,7 @@ const useSelectorMock = vi.fn();
 const useParamsMock = vi.fn();
 const useGetCanByIdQueryMock = vi.fn();
 const useGetCanFundingQueryMock = vi.fn();
+let mockPathname = "/cans/42";
 
 vi.mock("react-redux", () => ({
     useSelector: (selector) => useSelectorMock(selector)
@@ -15,7 +16,8 @@ vi.mock("react-router-dom", async (importOriginal) => {
     const actual = await importOriginal();
     return {
         ...actual,
-        useParams: () => useParamsMock()
+        useParams: () => useParamsMock(),
+        useLocation: () => ({ pathname: mockPathname })
     };
 });
 
@@ -84,6 +86,7 @@ const canFixture = {
 describe("useCan", () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        mockPathname = "/cans/42";
 
         useParamsMock.mockReturnValue({ id: "42" });
         useSelectorMock.mockImplementation((selector) =>
@@ -260,5 +263,19 @@ describe("useCan", () => {
 
         expect(result.current.isLoading).toBe(false);
         expect(result.current.isTableLoading).toBe(true);
+    });
+
+    it("resets isEditMode when location.pathname changes", () => {
+        const { result, rerender } = renderHook(() => useCan());
+
+        act(() => {
+            result.current.toggleDetailPageEditMode();
+        });
+        expect(result.current.isEditMode.detailPage).toBe(true);
+
+        mockPathname = "/cans/42/funding";
+        rerender();
+
+        expect(result.current.isEditMode).toEqual({ detailPage: false, fundingPage: false });
     });
 });
