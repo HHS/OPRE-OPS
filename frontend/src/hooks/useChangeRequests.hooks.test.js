@@ -14,6 +14,7 @@ const useSelectorMock = vi.fn();
 const useGetAgreementByIdQueryMock = vi.fn();
 const useGetChangeRequestsListQueryMock = vi.fn();
 const useGetPendingPreAwardApprovalsQueryMock = vi.fn();
+const useGetPendingBudgetRequisitionsQueryMock = vi.fn();
 const useGetProcurementShopsQueryMock = vi.fn();
 const useGetAllCansMock = vi.fn();
 const getChangeRequestMessagesMock = vi.fn();
@@ -26,6 +27,7 @@ vi.mock("../api/opsAPI", () => ({
     useGetAgreementByIdQuery: (...args) => useGetAgreementByIdQueryMock(...args),
     useGetChangeRequestsListQuery: (...args) => useGetChangeRequestsListQueryMock(...args),
     useGetPendingPreAwardApprovalsQuery: (...args) => useGetPendingPreAwardApprovalsQueryMock(...args),
+    useGetPendingBudgetRequisitionsQuery: (...args) => useGetPendingBudgetRequisitionsQueryMock(...args),
     useGetProcurementShopsQuery: (...args) => useGetProcurementShopsQueryMock(...args)
 }));
 
