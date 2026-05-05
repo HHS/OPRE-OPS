@@ -83,6 +83,11 @@ const Agreement = () => {
         }
     }, [isEditMode]);
 
+    // Exit edit mode when navigating between tabs
+    useEffect(() => {
+        setIsEditMode((prev) => (prev ? false : prev));
+    }, [location.pathname]);
+
     /** @type {{data?: import("../../../types/AgreementTypes").Agreement | undefined, error?: Object, isLoading: boolean, isSuccess: boolean}} */
     const {
         data: agreement,
