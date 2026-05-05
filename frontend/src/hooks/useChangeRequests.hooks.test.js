@@ -73,6 +73,7 @@ describe("useChangeRequestTotal", () => {
         useSelectorMock.mockImplementation((selector) => selector({ auth: { activeUser: { id: 8 } } }));
         useGetChangeRequestsListQueryMock.mockReturnValue({ data: [{ id: 1 }, { id: 2 }] });
         useGetPendingPreAwardApprovalsQueryMock.mockReturnValue({ data: [] });
+        useGetPendingBudgetRequisitionsQueryMock.mockReturnValue({ data: [] });
 
         const { result } = renderHook(() => useChangeRequestTotal());
 
@@ -84,6 +85,7 @@ describe("useChangeRequestTotal", () => {
         useSelectorMock.mockImplementation((selector) => selector({ auth: { activeUser: null } }));
         useGetChangeRequestsListQueryMock.mockReturnValue({ data: undefined });
         useGetPendingPreAwardApprovalsQueryMock.mockReturnValue({ data: undefined });
+        useGetPendingBudgetRequisitionsQueryMock.mockReturnValue({ data: undefined });
 
         const { result } = renderHook(() => useChangeRequestTotal());
 
