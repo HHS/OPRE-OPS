@@ -14,7 +14,14 @@ import customStyles from "./FilterButton.module.css";
  * @param {boolean} [props.disabled] - Whether the button is disabled.
  * @returns {JSX.Element} - The procurement shop select element.
  */
-export const FilterButton = ({ applyFilter, resetFilter, fieldsetList, showModal: externalShowModal, setShowModal: externalSetShowModal, disabled = false }) => {
+export const FilterButton = ({
+    applyFilter,
+    resetFilter,
+    fieldsetList,
+    showModal: externalShowModal,
+    setShowModal: externalSetShowModal,
+    disabled = false
+}) => {
     const [internalShowModal, setInternalShowModal] = React.useState(false);
 
     // Use external state if provided, otherwise use internal state
