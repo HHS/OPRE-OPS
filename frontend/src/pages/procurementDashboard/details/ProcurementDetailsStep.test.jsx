@@ -35,8 +35,7 @@ describe("ProcurementDetailsStep", () => {
         agreementsPerStep: 0,
         userNameById: {},
         targetDateByAgreementId: {},
-        daysInStepByAgreementId: {},
-        procurementOverview: null
+        daysInStepByAgreementId: {}
     };
 
     const renderComponent = (props = {}) =>

@@ -22,8 +22,7 @@ export const ProcurementDetailsTableRow = ({
     agreement,
     userNameById,
     targetDateByAgreementId,
-    daysInStepByAgreementId,
-    procurementOverview
+    daysInStepByAgreementId
 }) => {
     const { isExpanded, setIsExpanded, setIsRowActive } = useTableRow();
     const isSuccess = !!agreement;
@@ -42,8 +41,8 @@ export const ProcurementDetailsTableRow = ({
     const agreementSubTotal = isSuccess ? (agreement?.agreement_subtotal ?? 0) : 0;
     const agreementFees = isSuccess ? (agreement?.total_agreement_fees ?? 0) : 0;
 
-    const statusData = procurementOverview?.status_data ?? [];
-    const getStatusCount = (status) => statusData.find((item) => item.status === status)?.agreements ?? 0;
+    const budgetLineItems = agreement.budget_line_items ?? [];
+    const getStatusCount = (status) => budgetLineItems.filter((bli) => bli.status === status).length;
 
     const TableRowData = (
         <>

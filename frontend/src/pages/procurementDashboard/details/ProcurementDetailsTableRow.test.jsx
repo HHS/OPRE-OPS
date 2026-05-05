@@ -39,8 +39,7 @@ const renderRow = (props = {}) => {
         agreement: makeAgreement(),
         userNameById: { 500: "Jane Doe" },
         targetDateByAgreementId: {},
-        daysInStepByAgreementId: {},
-        procurementOverview: null
+        daysInStepByAgreementId: {}
     };
 
     return render(
@@ -130,17 +129,24 @@ describe("ProcurementDetailsTableRow", () => {
         expect(screen.getByText("$3,750.00")).toBeInTheDocument();
     });
 
-    it("renders budget line status counts from procurementOverview", () => {
-        const procurementOverview = {
-            status_data: [
-                { status: "DRAFT", agreements: 3 },
-                { status: "PLANNED", agreements: 5 },
-                { status: "IN_EXECUTION", agreements: 2 },
-                { status: "OBLIGATED", agreements: 1 }
+    it("renders budget line status counts from agreement budget_line_items", () => {
+        const agreement = makeAgreement({
+            budget_line_items: [
+                { id: 1, status: "DRAFT", amount: 1000 },
+                { id: 2, status: "DRAFT", amount: 2000 },
+                { id: 3, status: "DRAFT", amount: 3000 },
+                { id: 4, status: "PLANNED", amount: 4000 },
+                { id: 5, status: "PLANNED", amount: 5000 },
+                { id: 6, status: "PLANNED", amount: 6000 },
+                { id: 7, status: "PLANNED", amount: 7000 },
+                { id: 8, status: "PLANNED", amount: 8000 },
+                { id: 9, status: "IN_EXECUTION", amount: 9000 },
+                { id: 10, status: "IN_EXECUTION", amount: 10000 },
+                { id: 11, status: "OBLIGATED", amount: 11000 }
             ]
-        };
+        });
 
-        renderRow({ procurementOverview });
+        renderRow({ agreement });
 
         expect(screen.getByText("3")).toBeInTheDocument();
         expect(screen.getByText("5")).toBeInTheDocument();

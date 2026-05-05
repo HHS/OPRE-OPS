@@ -53,8 +53,7 @@ function renderComponent(props = {}) {
         agreements: [],
         procurementTrackers: [],
         procurementStepSummary: null,
-        procurementDaysInStep: null,
-        procurementOverview: null
+        procurementDaysInStep: null
     };
 
     return render(

@@ -34,8 +34,7 @@ describe("ProcurementDetailsTable", () => {
         agreements: [],
         userNameById: {},
         targetDateByAgreementId: {},
-        daysInStepByAgreementId: {},
-        procurementOverview: null
+        daysInStepByAgreementId: {}
     };
 
     const renderComponent = (props = {}) =>
