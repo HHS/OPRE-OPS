@@ -30,6 +30,15 @@ vi.mock("react-redux", () => ({
     useSelector: (selector) => useSelectorMock(selector)
 }));
 
+vi.mock("../../../hooks/useNavigationBlocker.hooks", () => ({
+    default: () => ({
+        showBlockerModal: false,
+        setShowBlockerModal: vi.fn(),
+        blockerModalProps: {},
+        setIsCancelling: vi.fn()
+    })
+}));
+
 vi.mock("../../../api/opsAPI.js", () => ({
     useAddCanFundingBudgetsMutation: (...args) => useAddCanFundingBudgetsMutationMock(...args),
     useUpdateCanFundingBudgetMutation: (...args) => useUpdateCanFundingBudgetMutationMock(...args),
