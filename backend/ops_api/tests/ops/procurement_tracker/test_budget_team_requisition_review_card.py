@@ -3,16 +3,13 @@
 from datetime import date
 
 import pytest
-from sqlalchemy import select
 
-from models import User
 from models.procurement_tracker import (
     DefaultProcurementTrackerStep,
     ProcurementTracker,
     ProcurementTrackerStepStatus,
     ProcurementTrackerStepType,
 )
-from models.users import Role
 
 
 @pytest.fixture
@@ -63,15 +60,11 @@ def test_budget_team_requisition_step(app_ctx, loaded_db):
 
 
 def test_get_pending_requisitions_returns_approved_without_requisition(
-    auth_client, test_budget_team_requisition_step, loaded_db
+    budget_team_auth_client, test_budget_team_requisition_step, loaded_db
 ):
     """Budget team sees steps where DD approved but requisition not entered."""
-    # Get a budget team user
-    budget_team_user = loaded_db.scalar(select(User).join(User.roles).where(Role.name == "BUDGET_TEAM").limit(1))
-    assert budget_team_user is not None, "Test requires a BUDGET_TEAM user"
-
-    # Make request as budget team user (auth_client defaults to user 503)
-    response = auth_client.get("/api/v1/procurement-tracker-steps/pending-requisitions/")
+    # Make request as budget team user
+    response = budget_team_auth_client.get("/api/v1/procurement-tracker-steps/pending-requisitions/")
     assert response.status_code == 200
 
     data = response.json
@@ -82,13 +75,13 @@ def test_get_pending_requisitions_returns_approved_without_requisition(
     assert test_budget_team_requisition_step.id in step_ids
 
 
-def test_get_pending_requisitions_excludes_completed(auth_client, test_budget_team_requisition_step, loaded_db):
+def test_get_pending_requisitions_excludes_completed(budget_team_auth_client, test_budget_team_requisition_step, loaded_db):
     """Steps with requisition_number filled are excluded."""
     # Set requisition number (budget team completed it)
     test_budget_team_requisition_step.pre_award_requisition_number = "REQ-2026-12345"
     loaded_db.commit()
 
-    response = auth_client.get("/api/v1/procurement-tracker-steps/pending-requisitions/")
+    response = budget_team_auth_client.get("/api/v1/procurement-tracker-steps/pending-requisitions/")
     assert response.status_code == 200
 
     data = response.json
@@ -106,9 +99,9 @@ def test_get_pending_requisitions_filters_by_budget_team_role(client, test_budge
     assert response.status_code == 401  # Unauthenticated
 
 
-def test_get_pending_requisitions_includes_agreement_data(auth_client, test_budget_team_requisition_step, loaded_db):
+def test_get_pending_requisitions_includes_agreement_data(budget_team_auth_client, test_budget_team_requisition_step, loaded_db):
     """Response includes agreement with budget line items."""
-    response = auth_client.get("/api/v1/procurement-tracker-steps/pending-requisitions/")
+    response = budget_team_auth_client.get("/api/v1/procurement-tracker-steps/pending-requisitions/")
     assert response.status_code == 200
 
     data = response.json
