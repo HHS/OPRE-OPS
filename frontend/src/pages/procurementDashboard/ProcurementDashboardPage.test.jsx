@@ -7,16 +7,19 @@ import { configureStore } from "@reduxjs/toolkit";
 import ProcurementDashboard from "./ProcurementDashboardPage";
 import { opsApi } from "../../api/opsAPI";
 
-const mockUseGetAgreementsQuery = vi.fn();
+const mockUseGetAllAgreements = vi.fn();
 const mockUseGetProcurementShopsQuery = vi.fn();
 const mockUseGetProcurementTrackersByAgreementIdsQuery = vi.fn();
 const mockExportMultiSheetToXlsx = vi.fn();
+
+vi.mock("../../hooks/useGetAllAgreements", () => ({
+    useGetAllAgreements: (params, opts) => mockUseGetAllAgreements(params, opts)
+}));
 
 vi.mock("../../api/opsAPI", async () => {
     const actual = await vi.importActual("../../api/opsAPI");
     return {
         ...actual,
-        useGetAgreementsQuery: (args) => mockUseGetAgreementsQuery(args),
         useGetProcurementShopsQuery: () => mockUseGetProcurementShopsQuery(),
         useGetProcurementTrackersByAgreementIdsQuery: (ids, opts) =>
             mockUseGetProcurementTrackersByAgreementIdsQuery(ids, opts)
@@ -83,21 +86,21 @@ describe("ProcurementDashboardPage", () => {
     beforeEach(() => {
         vi.clearAllMocks();
         mockUseGetProcurementShopsQuery.mockReturnValue({ data: [{ id: 1, abbr: "GCS" }] });
-        mockUseGetAgreementsQuery.mockReturnValue({
-            data: {
-                agreements: [
-                    {
-                        id: 10,
-                        name: "Agreement A",
-                        agreement_type: "CONTRACT",
-                        procurement_shop: { abbr: "GCS" },
-                        award_type: "NEW",
-                        budget_line_items: [
-                            { id: 100, fiscal_year: 2025, status: "IN_EXECUTION", amount: 50000, fees: 2500 },
-                            { id: 101, fiscal_year: 2025, status: "Draft", amount: 10000, fees: 500 }
-                        ]
-                    }
-                ],
+        mockUseGetAllAgreements.mockReturnValue({
+            agreements: [
+                {
+                    id: 10,
+                    name: "Agreement A",
+                    agreement_type: "CONTRACT",
+                    procurement_shop: { abbr: "GCS" },
+                    award_type: "NEW",
+                    budget_line_items: [
+                        { id: 100, fiscal_year: 2025, status: "IN_EXECUTION", amount: 50000, fees: 2500 },
+                        { id: 101, fiscal_year: 2025, status: "Draft", amount: 10000, fees: 500 }
+                    ]
+                }
+            ],
+            metadata: {
                 procurement_overview: null,
                 procurement_step_summary: null
             },
@@ -179,7 +182,7 @@ describe("ProcurementDashboardPage", () => {
         expect(step1Sheet.rows).toHaveLength(0);
     });
 
-    it("sets currencyColumns to [8] for BLI Amount", async () => {
+    it("sets currencyColumns to [8, 9, 10] for BLI Amount, Fees, and Total", async () => {
         const user = userEvent.setup();
         renderWithProviders(<ProcurementDashboard />);
 
@@ -190,18 +193,18 @@ describe("ProcurementDashboardPage", () => {
     });
 
     it("skips agreements with no executing BLIs in export", async () => {
-        mockUseGetAgreementsQuery.mockReturnValue({
-            data: {
-                agreements: [
-                    {
-                        id: 20,
-                        name: "No BLIs",
-                        agreement_type: "GRANT",
-                        procurement_shop: null,
-                        award_type: null,
-                        budget_line_items: [{ id: 200, fiscal_year: 2025, status: "Draft", amount: 5000, fees: 250 }]
-                    }
-                ],
+        mockUseGetAllAgreements.mockReturnValue({
+            agreements: [
+                {
+                    id: 20,
+                    name: "No BLIs",
+                    agreement_type: "GRANT",
+                    procurement_shop: null,
+                    award_type: null,
+                    budget_line_items: [{ id: 200, fiscal_year: 2025, status: "Draft", amount: 5000, fees: 250 }]
+                }
+            ],
+            metadata: {
                 procurement_overview: null,
                 procurement_step_summary: null
             },

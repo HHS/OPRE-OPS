@@ -3,11 +3,8 @@ import { useLocation } from "react-router-dom";
 import icons from "../../uswds/img/sprite.svg";
 import App from "../../App";
 import TablePageLayout from "../../components/Layouts/TablePageLayout";
-import {
-    useGetAgreementsQuery,
-    useGetProcurementShopsQuery,
-    useGetProcurementTrackersByAgreementIdsQuery
-} from "../../api/opsAPI";
+import { useGetProcurementShopsQuery, useGetProcurementTrackersByAgreementIdsQuery } from "../../api/opsAPI";
+import { useGetAllAgreements } from "../../hooks/useGetAllAgreements";
 import { BLI_STATUS } from "../../helpers/budgetLines.helpers";
 import { exportMultiSheetToXlsx } from "../../helpers/tableExport.helpers";
 import { getCurrentFiscalYear } from "../../helpers/utils";
@@ -46,28 +43,19 @@ const ProcurementDashboard = () => {
 
     const selectedProcShopId = selectedProcShop !== "all" ? procShopIdMap[selectedProcShop] : null;
 
-    const {
-        data: agreementsResponse,
-        isLoading,
-        error
-    } = useGetAgreementsQuery({
+    const { agreements, metadata, isLoading, error } = useGetAllAgreements({
         filters: {
             fiscalYear: [CURRENT_FISCAL_YEAR],
+            includeProcurement: true,
             ...(awardTypeFilter ? { awardType: [{ awardType: awardTypeFilter }] } : {}),
             ...(selectedProcShopId ? { awardingEntityId: [selectedProcShopId] } : {})
         }
     });
 
-    const agreements = useMemo(() => agreementsResponse?.agreements || [], [agreementsResponse]);
 
-    const procurementOverview = agreementsResponse?.procurement_overview ?? null;
-    const procurementStepSummary = agreementsResponse?.procurement_step_summary ?? null;
-    const procurementDaysInStep = agreementsResponse?.procurement_days_in_step ?? null;
-    console.log({
-        procurementOverview: procurementOverview,
-        procurementStepSummary: procurementStepSummary,
-        prcurementDaysInStep: procurementDaysInStep
-    });
+    const procurementOverview = metadata?.procurement_overview ?? null;
+    const procurementStepSummary = metadata?.procurement_step_summary ?? null;
+    const procurementDaysInStep = metadata?.procurement_days_in_step ?? null;
 
     const agreementIds = useMemo(() => agreements.map((a) => a.id), [agreements]);
 

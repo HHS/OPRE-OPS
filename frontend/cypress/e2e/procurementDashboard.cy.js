@@ -117,9 +117,10 @@ describe("Procurement Dashboard - Authorized User", () => {
 
                         // Reset to all
                         cy.get("#proc-shop-select").select("All");
-                        getAgreementCount().then((restoredCount) => {
-                            expect(restoredCount).to.equal(allCount);
-                        });
+                        cy.get("[data-cy='procurement-overview-total-agreements']").should(
+                            "contain",
+                            `${allCount} agreements`
+                        );
                     });
             });
         });

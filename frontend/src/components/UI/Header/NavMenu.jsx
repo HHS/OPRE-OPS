@@ -107,11 +107,23 @@ const NavMenu = () => {
                         style={{ display: isMenuOpen === "reporting" ? "block" : "none" }}
                     >
                         <li className="usa-nav__submenu-item">
-                            <NavLink to="/reporting">OPRE Budget Reporting</NavLink>
+                            <NavLink
+                                to="/reporting"
+                                className={getNavLinkClass}
+                                end
+                            >
+                                OPRE Budget Reporting
+                            </NavLink>
                         </li>
                         {hasProcurementAccess && (
                             <li className="usa-nav__submenu-item">
-                                <NavLink to="/procurement-dashboard">Procurement Dashboard</NavLink>
+                                <NavLink
+                                    to="/procurement-dashboard"
+                                    className={getNavLinkClass}
+                                    end
+                                >
+                                    Procurement Dashboard
+                                </NavLink>
                             </li>
                         )}
                     </ul>

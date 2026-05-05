@@ -1,4 +1,5 @@
 from datetime import date
+from decimal import Decimal
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -1563,7 +1564,7 @@ class TestComputeAgreementTotals:
         assert isinstance(result["total_contract_amount"], float)
 
 
-def _make_mock_bli(status, fiscal_year=2025, amount=None, fees=None):
+def _make_mock_bli(status, fiscal_year=2025, amount=None, fees=Decimal("0")):
     """Helper to create a mock BLI for procurement overview/step summary tests."""
     bli = MagicMock()
     bli.status = status
@@ -1653,7 +1654,7 @@ class TestComputeProcurementOverview:
         assert result["total_amount"] == 100000.0
 
     def test_null_amounts_treated_as_zero(self):
-        bli = _make_mock_bli(BudgetLineItemStatus.PLANNED, 2025, None, None)
+        bli = _make_mock_bli(BudgetLineItemStatus.PLANNED, 2025, None)
         ag = _make_mock_procurement_agreement(blis=[bli])
 
         result = _compute_procurement_overview([ag], fiscal_year=2025)
@@ -1750,7 +1751,7 @@ class TestComputeProcurementStepSummary:
         assert result["total_agreement_count"] == 0
 
     def test_null_amounts_treated_as_zero(self):
-        bli = _make_mock_bli(BudgetLineItemStatus.IN_EXECUTION, 2025, None, None)
+        bli = _make_mock_bli(BudgetLineItemStatus.IN_EXECUTION, 2025, None)
         tracker = _make_mock_tracker(1)
         ag = _make_mock_procurement_agreement(blis=[bli], trackers=[tracker])
 
