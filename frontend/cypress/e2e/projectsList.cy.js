@@ -332,4 +332,56 @@ describe("Projects List Page", () => {
         // Verify no filter tags remain
         cy.contains("span", "Filters Applied:").should("not.exist");
     });
+
+    it("clears unapplied filter values when filter is closed and reopened but keeps applied values", () => {
+        // Apply initial filters
+        cy.get("button").contains("Filter").click();
+
+        cy.get(".fiscal-year-combobox__control").click();
+        cy.get(".fiscal-year-combobox__menu").contains("FY 2044").click();
+
+        cy.get(".portfolios-combobox__control").click();
+        cy.get(".portfolios-combobox__menu").contains("Child Care Research").click();
+
+        cy.get("button").contains("Apply").click();
+
+        // Verify applied filters are displayed
+        getAppliedFilters().within(() => {
+            cy.contains("FY 2044").should("exist");
+            cy.contains("Child Care Research").should("exist");
+        });
+
+        // Reopen filter and select additional values WITHOUT applying
+        cy.get("button").contains("Filter").click();
+
+        cy.get(".project-type-combobox__control").click();
+        cy.get(".project-type-combobox__menu").contains("Admin & Support").click();
+
+        // Verify the unapplied value is selected in the dropdown
+        cy.get(".project-type-combobox__control").should("contain", "Admin & Support");
+
+        // Close the filter without applying (click outside or press Escape)
+        cy.get("#filter-close").click(); // Click outside the filter modal
+
+        // Reopen the filter
+        cy.get("button").contains("Filter").click();
+
+        // Verify applied filters are still selected
+        cy.get(".fiscal-year-combobox__control").should("contain", "FY 2044");
+        cy.get(".portfolios-combobox__control").should("contain", "Child Care Research");
+
+        // Verify unapplied filter value (project type) was cleared
+        cy.get(".project-type-combobox__control").should("not.contain", "Admin & Support");
+
+        // Verify applied filter tags still exist
+        getAppliedFilters().within(() => {
+            cy.contains("FY 2044").should("exist");
+            cy.contains("Child Care Research").should("exist");
+        });
+
+        // Verify project type was not applied (should not have a tag)
+        getAppliedFilters().within(() => {
+            cy.contains("Admin & Support").should("not.exist");
+        });
+    });
 });

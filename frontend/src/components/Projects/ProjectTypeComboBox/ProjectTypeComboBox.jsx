@@ -21,13 +21,11 @@ export const ProjectTypeComboBox = ({
     const projectTypeOptions = [
         {
             id: PROJECT_TYPE_RESEARCH,
-            title: PROJECT_TYPE_LABELS[PROJECT_TYPE_RESEARCH],
-            name: PROJECT_TYPE_RESEARCH
+            title: PROJECT_TYPE_LABELS[PROJECT_TYPE_RESEARCH]
         },
         {
             id: PROJECT_TYPE_ADMIN_SUPPORT,
-            title: PROJECT_TYPE_LABELS[PROJECT_TYPE_ADMIN_SUPPORT],
-            name: PROJECT_TYPE_ADMIN_SUPPORT
+            title: PROJECT_TYPE_LABELS[PROJECT_TYPE_ADMIN_SUPPORT]
         }
     ];
 

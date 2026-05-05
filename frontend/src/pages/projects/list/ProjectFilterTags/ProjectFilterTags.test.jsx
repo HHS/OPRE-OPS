@@ -34,8 +34,8 @@ describe("ProjectFilterTags", () => {
         const filtersWithFY = {
             ...mockFilters,
             fiscalYear: [
-                { id: 2023, title: "2023" },
-                { id: 2024, title: "2024" }
+                { id: 2023, title: "FY 2023" },
+                { id: 2024, title: "FY 2024" }
             ]
         };
 
@@ -123,7 +123,7 @@ describe("ProjectFilterTags", () => {
 
     it("should render all filter types together", () => {
         const allFilters = {
-            fiscalYear: [{ id: 2023, title: "2023" }],
+            fiscalYear: [{ id: 2023, title: "FY 2023" }],
             portfolio: [{ id: 1, name: "Portfolio A" }],
             projectSearch: [{ title: "Project Alpha" }],
             agreementSearch: [{ title: "Agreement 1" }],
@@ -149,8 +149,8 @@ describe("ProjectFilterTags", () => {
         const filtersWithFY = {
             ...mockFilters,
             fiscalYear: [
-                { id: 2023, title: "2023" },
-                { id: 2024, title: "2024" }
+                { id: 2023, title: "FY 2023" },
+                { id: 2024, title: "FY 2024" }
             ]
         };
 
@@ -254,9 +254,9 @@ describe("ProjectFilterTags", () => {
         const filtersWithMultiple = {
             ...mockFilters,
             fiscalYear: [
-                { id: 2023, title: "2023" },
-                { id: 2024, title: "2024" },
-                { id: 2025, title: "2025" }
+                { id: 2023, title: "FY 2023" },
+                { id: 2024, title: "FY 2024" },
+                { id: 2025, title: "FY 2025" }
             ]
         };
 

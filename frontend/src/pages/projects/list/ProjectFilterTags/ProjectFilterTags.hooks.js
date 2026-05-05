@@ -1,26 +1,7 @@
-import { useState, useEffect, useCallback } from "react";
-/**
- * @typedef {Object} FYFilterItem
- * @property {string} title
- */
+import { useMemo } from "react";
 
 /**
- * @typedef {Object} PortfolioFilterItem
- * @property {string} name
- */
-
-/**
- * @typedef {Object} FilterItem
- * @property {string} title
- */
-
-/**
- * @typedef {Object} Filters
- * @property {FYFilterItem[]} fiscalYear
- * @property {PortfolioFilterItem[]} portfolio
- * @property {FilterItem[]} projectSearch
- * @property {FilterItem[]} agreementSearch
- * @property {FilterItem[]} projectType
+ * @typedef {import("../ProjectFilterButton/ProjectFilterTypes.d.ts").Filters} Filters
  */
 
 /**
@@ -35,59 +16,24 @@ import { useState, useEffect, useCallback } from "react";
  * @returns {Tag[]}
  */
 export const useTagsList = (filters) => {
-    const [tagsList, setTagsList] = useState([]);
+    const tagsList = useMemo(() => {
+        // Map each filter key to the property name we need to extract
+        const propertyMap = {
+            portfolio: "name",
+            fiscalYear: "title",
+            projectSearch: "title",
+            agreementSearch: "title",
+            projectType: "title"
+        };
 
-    /**
-     * @param {keyof Filters} filterKey
-     * @param {string} filterName
-     */
-    const updateTags = useCallback(
-        (filterKey, filterName) => {
-            if (filterKey == "portfolio") {
-                const selectedTags =
-                    filters[filterKey]?.map((item) => ({
-                        tagText: item.name,
-                        filter: filterName
-                    })) ?? [];
-                setTagsList((prevState) => [...prevState.filter((t) => t.filter !== filterName), ...selectedTags]);
-            } else if (filterKey == "fiscalYear") {
-                const selectedTags =
-                    filters[filterKey]?.map((item) => ({
-                        tagText: item.title,
-                        filter: filterName
-                    })) ?? [];
-                setTagsList((prevState) => [...prevState.filter((t) => t.filter !== filterName), ...selectedTags]);
-            } else {
-                const selectedTags =
-                    filters[filterKey]?.map((item) => ({
-                        tagText: item.title,
-                        filter: filterName
-                    })) ?? [];
-                setTagsList((prevState) => [...prevState.filter((t) => t.filter !== filterName), ...selectedTags]);
-            }
-        },
-        [filters]
-    );
-
-    useEffect(() => {
-        updateTags("fiscalYear", "fiscalYear");
-    }, [filters.fiscalYear, updateTags]);
-
-    useEffect(() => {
-        updateTags("portfolio", "portfolio");
-    }, [filters.portfolio, updateTags]);
-
-    useEffect(() => {
-        updateTags("projectSearch", "projectSearch");
-    }, [filters.projectSearch, updateTags]);
-
-    useEffect(() => {
-        updateTags("agreementSearch", "agreementSearch");
-    }, [filters.agreementSearch, updateTags]);
-
-    useEffect(() => {
-        updateTags("projectType", "projectType");
-    }, [filters.projectType, updateTags]);
+        // Transform all filters into tags in one pass
+        return Object.entries(propertyMap).flatMap(([filterKey, propertyName]) =>
+            (filters[filterKey] ?? []).map((item) => ({
+                tagText: item[propertyName],
+                filter: filterKey
+            }))
+        );
+    }, [filters]);
 
     return tagsList;
 };
@@ -129,7 +75,5 @@ export const removeFilter = (tag, setFilters) => {
                 projectType: prevState.projectType.filter((type) => type.title !== tag.tagText)
             }));
             break;
-        default:
-            console.warn(`Unknown filter type: ${tag.filter}`);
     }
 };

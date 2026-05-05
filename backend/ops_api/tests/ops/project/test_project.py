@@ -357,9 +357,22 @@ def test_agreement_and_fiscal_year_filter(auth_client, loaded_db):
         )
     )
 
-    assert response_research == 200
+    assert response_research.status_code == 200
     projects = [p for p in response_research.json["data"]]
     assert len(projects) == 1
+
+    response_2 = auth_client.get(
+        url_for(
+            "api.projects-group",
+            agreement_search=["AA #1: Fathers and Continuous Learning (FCL)"],
+            fiscal_year=[2045],
+            limit=50,
+        )
+    )
+
+    assert response_2.status_code == 200
+    projects = [p for p in response_2.json["data"]]
+    assert len(projects) == 0
 
 
 def test_projects_get_all_includes_summary(auth_client, loaded_db):

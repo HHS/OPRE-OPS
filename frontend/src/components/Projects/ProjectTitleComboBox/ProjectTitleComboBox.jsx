@@ -10,7 +10,7 @@ import ComboBox from "../../UI/Form/ComboBox";
  * @param {string} [props.legendClassname] - Additional CSS classes to apply to the label/legend (optional).
  * @param {string} [props.defaultString] - Initial text to display in select (optional).
  * @param {Object} [props.overrideStyles] - Some CSS styles to override the default (optional).
- * @param {boolean} props.isLoading - IS the data for the component loading or not
+ * @param {boolean} props.isLoading - Is the data for the component loading or not
  * @param {string} props.filterLabel - The title to display above the component.
  * @returns {React.ReactElement} - The rendered component.
  */

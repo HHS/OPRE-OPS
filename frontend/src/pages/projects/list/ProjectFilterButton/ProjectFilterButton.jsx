@@ -8,6 +8,8 @@ import AgreementNameComboBox from "../../../../components/Agreements/AgreementNa
 import FilterButton from "../../../../components/UI/FilterButton/FilterButton";
 import useProjectFilterButton from "./ProjectFilterButton.hooks";
 import { FILTER_MODAL_FULL_WIDTH } from "../../../../constants";
+import { useEffect } from "react";
+import React from "react";
 
 /**
  * A filter for projects.
@@ -19,6 +21,8 @@ import { FILTER_MODAL_FULL_WIDTH } from "../../../../constants";
  * @returns {JSX.Element} - The project filter button component.
  */
 export const ProjectFilterButton = ({ filters, setFilters, projectFilterOptions, isLoadingOptions = false }) => {
+    const [showModal, setShowModal] = React.useState(false);
+
     const {
         fiscalYear,
         setFiscalYear,
@@ -33,7 +37,7 @@ export const ProjectFilterButton = ({ filters, setFilters, projectFilterOptions,
         applyFilter,
         resetFilter,
         currentFiscalYear
-    } = useProjectFilterButton(filters, setFilters);
+    } = useProjectFilterButton(filters, setFilters, showModal);
 
     const fieldStyles = "usa-fieldset margin-bottom-205";
     const legendStyles = `usa-legend font-sans-3xs margin-top-0 padding-bottom-1 ${customStyles.legendColor}`;
@@ -114,13 +118,16 @@ export const ProjectFilterButton = ({ filters, setFilters, projectFilterOptions,
         </fieldset>
     ];
 
-    Modal.setAppElement("#root");
-
+    useEffect(() => {
+        Modal.setAppElement("#root");
+    }, []);
     return (
         <FilterButton
             applyFilter={applyFilter}
             resetFilter={resetFilter}
             fieldsetList={fieldsetList}
+            showModal={showModal}
+            setShowModal={setShowModal}
         />
     );
 };
