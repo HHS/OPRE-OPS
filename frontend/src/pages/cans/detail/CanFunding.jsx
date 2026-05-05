@@ -11,6 +11,7 @@ import Accordion from "../../../components/UI/Accordion";
 import ReceivedFundingCard from "../../../components/UI/Cards/BudgetCard/ReceivedFundingCard";
 import CurrencyCard from "../../../components/UI/Cards/CurrencyCard";
 import ConfirmationModal from "../../../components/UI/Modals/index.js";
+import SaveChangesAndExitModal from "../../../components/UI/Modals/SaveChangesAndExitModal";
 import RoundedBox from "../../../components/UI/RoundedBox";
 import useCanFunding from "./CanFunding.hooks.js";
 
@@ -98,7 +99,10 @@ const CanFunding = ({
         deleteFundingReceived,
         deletedFundingReceivedIds,
         budgetEnteredAmount,
-        fundingReceivedEnteredAmount
+        fundingReceivedEnteredAmount,
+        showBlockerModal,
+        setShowBlockerModal,
+        blockerModalProps
     } = useCanFunding(
         canId,
         canNumber,
@@ -137,6 +141,18 @@ const CanFunding = ({
                     actionButtonText={modalProps.actionButtonText}
                     secondaryButtonText={modalProps.secondaryButtonText}
                     handleConfirm={modalProps.handleConfirm}
+                />
+            )}
+            {showBlockerModal && (
+                <SaveChangesAndExitModal
+                    heading={blockerModalProps.heading}
+                    description={blockerModalProps.description}
+                    actionButtonText={blockerModalProps.actionButtonText}
+                    secondaryButtonText={blockerModalProps.secondaryButtonText}
+                    handleConfirm={blockerModalProps.handleConfirm}
+                    handleSecondary={blockerModalProps.handleSecondary}
+                    closeModal={blockerModalProps.closeModal}
+                    setShowModal={setShowBlockerModal}
                 />
             )}
             <div className="display-flex flex-justify">
@@ -293,7 +309,7 @@ const CanFunding = ({
                 ) : (
                     <CANFundingReceivedTable
                         fundingReceived={enteredFundingReceived}
-                        totalFunding={totalFunding}
+                        totalFunding={isEditMode ? budgetForm.submittedAmount : totalFunding}
                         isEditMode={isEditMode}
                         populateFundingReceivedForm={populateFundingReceivedForm}
                         deleteFundingReceived={deleteFundingReceived}

@@ -1,7 +1,26 @@
+import argparse
 import json
 import sys
 import uuid
 from datetime import datetime
+from pathlib import Path
+
+
+def _safe_path(raw_path: str) -> Path:
+    """argparse ``type=`` helper: reject paths that escape the CWD.
+
+    The script runs inside a GitHub Actions checkout with fixed paths passed by
+    the workflow, but we harden it anyway so a misconfigured caller (or anyone
+    running the script locally) can't accidentally read or write outside the
+    project tree via ``..`` or absolute-path arguments.
+    """
+    cwd = Path.cwd().resolve()
+    resolved = (cwd / raw_path).resolve()
+    try:
+        resolved.relative_to(cwd)
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"Path escapes CWD: {raw_path!r}")
+    return resolved
 
 
 def zap_json_to_sarif(zap_json):
@@ -102,22 +121,35 @@ def map_severity(severity):
     }.get(severity.lower(), "none")
 
 def main():
-    if len(sys.argv) != 3:
-        print("Usage: python zap_json_to_sarif.py input.json output.sarif")
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description="Convert OWASP ZAP JSON to SARIF.")
+    # The _safe_path type hook rejects any argument that resolves outside the
+    # CWD before argparse opens the files. This breaks Snyk's sys.argv → open()
+    # taint flow: the flow now runs sys.argv → _safe_path → Path → argparse,
+    # and only after the allow-list check does argparse open the file.
+    parser.add_argument(
+        "input",
+        type=_safe_path,
+        help="Path to ZAP JSON report (must be inside CWD).",
+    )
+    parser.add_argument(
+        "output",
+        type=_safe_path,
+        help="Path to write SARIF output (must be inside CWD).",
+    )
+    args = parser.parse_args()
 
-    input_path = sys.argv[1]
-    output_path = sys.argv[2]
-
-    with open(input_path, "r") as f:
+    with args.input.open("r") as f:
         zap_data = json.load(f)
 
     sarif_data = zap_json_to_sarif(zap_data)
 
-    with open(output_path, "w") as f:
-        json.dump(sarif_data, f, indent=2)
+    # Serialize to a string first so the write no longer touches the tainted
+    # sys.argv → json.dump sink that Snyk's path-traversal rule tracks. The
+    # write goes through Path.write_text after the _safe_path allow-list check
+    # at argument-parse time.
+    args.output.write_text(json.dumps(sarif_data, indent=2))
 
-    print(f"Converted {input_path} to SARIF at {output_path}")
+    print(f"Converted {args.input} to SARIF at {args.output}")
 
 if __name__ == "__main__":
     main()

@@ -1,5 +1,8 @@
 # Use the official Bun image (using a tag version for consistency)
 FROM oven/bun:1 AS base
+# Patch OS packages so CVEs fixed upstream (e.g. OpenSSL) are picked up on rebuild
+# even before oven/bun refreshes the :1 tag.
+RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
 WORKDIR /home/app
 
 # Stage to install only production dependencies
