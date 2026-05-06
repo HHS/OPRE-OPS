@@ -490,11 +490,58 @@ export const opsApi = createApi({
             providesTags: ["ResearchProjects"]
         }),
         getProjects: builder.query({
-            query: ({ sortConditions, sortDescending, page, limit, fiscalYear } = {}) => {
+            query: ({ sortConditions, sortDescending, page, limit, fiscalYear, filters } = {}) => {
                 const queryParams = [];
-                if (fiscalYear && fiscalYear !== "All") {
+
+                // Add filter parameters if they exist and are not empty
+                if (filters) {
+                    // fiscal_year filter
+                    if (filters.fiscalYear && filters.fiscalYear.length > 0) {
+                        filters.fiscalYear.forEach((fy) => {
+                            if (fy.id !== "all") {
+                                queryParams.push(`fiscal_year=${fy.id}`);
+                            }
+                        });
+                    }
+
+                    // portfolio_id filter
+                    if (filters.portfolio && filters.portfolio.length > 0) {
+                        filters.portfolio.forEach((portfolio) => {
+                            queryParams.push(`portfolio_id=${portfolio.id}`);
+                        });
+                    }
+
+                    // project_search filter
+                    if (filters.projectSearch && filters.projectSearch.length > 0) {
+                        filters.projectSearch.forEach((project) => {
+                            queryParams.push(`project_search=${encodeURIComponent(project.title)}`);
+                        });
+                    }
+
+                    // agreement_search filter
+                    if (filters.agreementSearch && filters.agreementSearch.length > 0) {
+                        filters.agreementSearch.forEach((agreement) => {
+                            queryParams.push(`agreement_search=${encodeURIComponent(agreement.title)}`);
+                        });
+                    }
+
+                    // project_type filter
+                    if (filters.projectType && filters.projectType.length > 0) {
+                        filters.projectType.forEach((type) => {
+                            queryParams.push(`project_type=${type.id}`);
+                        });
+                    }
+                }
+
+                // Legacy fiscal year parameter (when not using filters)
+                if (
+                    fiscalYear &&
+                    fiscalYear !== "All" &&
+                    (!filters || !filters.fiscalYear || filters.fiscalYear.length === 0)
+                ) {
                     queryParams.push(`fiscal_year=${fiscalYear}`);
                 }
+
                 if (sortConditions) {
                     queryParams.push(`sort_field=${sortConditions}`);
                     queryParams.push(`sort_descending=${sortDescending}`);
@@ -547,6 +594,10 @@ export const opsApi = createApi({
         }),
         getProjectFundingById: builder.query({
             query: ({ id, fiscalYear }) => `/projects/${id}/funding/?fiscal_year=${fiscalYear}`,
+            providesTags: ["ResearchProjects"]
+        }),
+        getProjectsFilterOptions: builder.query({
+            query: () => `/projects-filters/`,
             providesTags: ["ResearchProjects"]
         }),
         getProjectsByPortfolio: builder.query({
@@ -1173,6 +1224,7 @@ export const {
     useGetProjectSpendingByIdQuery,
     useGetAgreementSpendingByIdQuery,
     useGetProjectFundingByIdQuery,
+    useGetProjectsFilterOptionsQuery,
     useGetProjectsByPortfolioQuery,
     useGetResearchProjectsQuery,
     useGetResearchProjectsByPortfolioQuery,

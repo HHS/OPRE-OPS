@@ -346,6 +346,35 @@ def test_project_type_filter_single_type(auth_client, loaded_db):
     assert len(response_research.json["data"]) + len(response_admin.json["data"]) == len(response_all.json["data"])
 
 
+def test_agreement_and_fiscal_year_filter(auth_client, loaded_db):
+    """Test filtering by agreement and fiscal year at the same time"""
+    response_research = auth_client.get(
+        url_for(
+            "api.projects-group",
+            agreement_search=["AA #1: Fathers and Continuous Learning (FCL)"],
+            fiscal_year=[2044],
+            limit=50,
+        )
+    )
+
+    assert response_research.status_code == 200
+    projects = [p for p in response_research.json["data"]]
+    assert len(projects) == 1
+
+    response_2 = auth_client.get(
+        url_for(
+            "api.projects-group",
+            agreement_search=["AA #1: Fathers and Continuous Learning (FCL)"],
+            fiscal_year=[2045],
+            limit=50,
+        )
+    )
+
+    assert response_2.status_code == 200
+    projects = [p for p in response_2.json["data"]]
+    assert len(projects) == 0
+
+
 def test_projects_get_all_includes_summary(auth_client, loaded_db):
     """Test that GET /projects/ includes summary with total_projects, projects_by_type, and amounts_by_type."""
     response = auth_client.get(url_for("api.projects-group"))
@@ -1716,12 +1745,18 @@ class TestProjectFilterOptions:
         assert project_types == sorted(project_types)
 
     def test_filter_options_agreement_names_sorted_by_name(self, auth_client, app_ctx):
-        """Agreement names should be sorted alphabetically by name."""
+        """Agreement names should be sorted alphabetically by name and returned as list of dicts with id and name."""
         response = auth_client.get(url_for("api.projects-filters"))
         assert response.status_code == 200
 
         agreement_names = response.json["agreement_names"]
-        names = [a for a in agreement_names]
+        assert len(agreement_names) > 0
+        # Verify structure: each item should have id and name
+        for agreement in agreement_names:
+            assert "id" in agreement
+            assert "name" in agreement
+        # Verify sorted by name
+        names = [a["name"] for a in agreement_names]
         assert names == sorted(names)
 
 
