@@ -1,12 +1,6 @@
-// import { fromUpperCaseToTitleCase } from "../../../../helpers/utils";
-// import { PROCUREMENT_STEP_STATUS } from "../ProcurementTracker.constants";
 import Accordion from "../../../components/UI/Accordion";
 import { fromUpperCaseToTitleCase } from "../../../helpers/utils";
 import "../../../components/Agreements/ProcurementTracker/StepBuilderAccordion/StepBuilderAccordion.css";
-// const STEP_STATUS_MAP = {
-//     [PROCUREMENT_STEP_STATUS.COMPLETED]: "completed",
-//     [PROCUREMENT_STEP_STATUS.ACTIVE]: "active"
-// };
 
 const formatStepLabel = (stepType) => {
     if (typeof stepType !== "string") {
@@ -22,25 +16,6 @@ const formatStepLabel = (stepType) => {
         ? fromUpperCaseToTitleCase(trimmedStepType)
         : trimmedStepType;
 };
-
-// const getStepState = (step, activeStepNumber) => {
-//     const mappedState = STEP_STATUS_MAP[step?.status];
-//     if (mappedState) {
-//         return mappedState;
-//     }
-
-// if (typeof activeStepNumber === "number" && typeof step?.step_number === "number") {
-//     if (step.step_number < activeStepNumber) {
-//         return "completed";
-//     }
-
-//     if (step.step_number === activeStepNumber) {
-//         return "active";
-//     }
-// }
-
-//     return "not-started";
-// };
 
 /**
  * @typedef {Object} ProcurementStep
