@@ -462,6 +462,7 @@ class AgreementsService(OpsService[Agreement]):
         # Calculate procurement overview and step summary before pagination (only when requested)
         procurement_overview = None
         procurement_step_summary = None
+        procurement_days_in_step = None
         if include_procurement:
             overview_fiscal_year = (
                 filters.fiscal_year[0] if filters.fiscal_year and len(filters.fiscal_year) == 1 else None
