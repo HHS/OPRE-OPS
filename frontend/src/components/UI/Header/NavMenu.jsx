@@ -1,14 +1,7 @@
 import React from "react";
 import { useSelector } from "react-redux";
 import { NavLink, useLocation } from "react-router-dom";
-import { USER_ROLES } from "../../Users/User.constants";
-
-const PROCUREMENT_DASHBOARD_ROLES = [
-    USER_ROLES.PROCUREMENT_TEAM,
-    USER_ROLES.BUDGET_TEAM,
-    USER_ROLES.REVIEWER_APPROVER,
-    USER_ROLES.SUPER_USER
-];
+import { PROCUREMENT_DASHBOARD_ROLES } from "../../Users/User.constants";
 
 const NavMenu = () => {
     const activeUser = useSelector((state) => state.auth?.activeUser);
