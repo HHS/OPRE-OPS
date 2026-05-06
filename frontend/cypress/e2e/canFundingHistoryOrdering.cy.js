@@ -92,19 +92,21 @@ describe("CAN funding history ordering (issue #5571)", () => {
         // History is sorted newest-first. The user did:
         //   1. Enter FY Budget   → older
         //   2. Add Funding Received → newer
-        // So the top row must be "Funding Received Added" and the second row
-        // must be the FY Budget entry. Any swap means the bug is back.
-        cy.get('[data-cy="can-history-list"] > :nth-child(1) [data-cy="log-item-title"]')
-            .invoke("text")
-            .then((text) => {
-                expect(text.replace(/\s+/g, " ").trim()).to.equal("Funding Received Added");
-            });
+        // So "Funding Received Added" must appear before the FY Budget entry.
+        // Prior test runs may have left additional history entries, so we check
+        // relative ordering rather than fixed positions.
+        const budgetPattern = new RegExp(`^FY ${currentFiscalYear} Budget (Entered|Edited)$`);
 
-        cy.get('[data-cy="can-history-list"] > :nth-child(2) [data-cy="log-item-title"]')
-            .invoke("text")
-            .then((text) => {
-                const normalized = text.replace(/\s+/g, " ").trim();
-                expect(normalized).to.match(new RegExp(`^FY ${currentFiscalYear} Budget (Entered|Edited)$`));
-            });
+        cy.get('[data-cy="can-history-list"] [data-cy="log-item-title"]').then(($titles) => {
+            const titles = [...$titles].map((el) => el.textContent.replace(/\s+/g, " ").trim());
+            const receivedIndex = titles.indexOf("Funding Received Added");
+            const budgetIndex = titles.findIndex((t) => budgetPattern.test(t));
+
+            expect(receivedIndex, "Funding Received Added should be in history").to.be.at.least(0);
+            expect(budgetIndex, "FY Budget entry should be in history").to.be.at.least(0);
+            expect(receivedIndex, "Funding Received should appear before (newer than) FY Budget").to.be.lessThan(
+                budgetIndex
+            );
+        });
     });
 });
