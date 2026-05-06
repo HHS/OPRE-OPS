@@ -4,9 +4,24 @@ import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { convertToCurrency } from "../../../helpers/utils";
 import { ProcurementDetailsTable } from "./ProcurementDetailsTable";
 
+const STEP_DESCRIPTIONS = {
+    "Acquisition Planning":
+        "Step 1 - Lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsa earum odit debitis eveniet laboriosam cumque, id rem similique. Amet harum doloribus distinctio unde eum cumque deserunt eius alias corrupti fugit!",
+    "Pre-Solicitation":
+        "Step 2 - Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam voluptates accusantium nemo perspiciatis delectus reprehenderit, facere quis blanditiis ducimus aliquam provident officiis quasi numquam!",
+    Solicitation:
+        "Step 3 - Lorem ipsum dolor sit amet consectetur adipisicing elit. Excepturi voluptatum debitis animi sequi dolorum fugiat nihil quae molestiae vero dolor recusandae, a temporibus accusamus inventore.",
+    Evaluation:
+        "Step 4 - Lorem ipsum dolor sit amet consectetur adipisicing elit. Magni asperiores possimus enim accusantium consectetur fugit soluta minima praesentium tempora natus ab dolore, fuga velit nemo eaque eveniet laborum!",
+    "Pre-Award":
+        "Step 5 - Lorem ipsum dolor sit amet consectetur adipisicing elit. Doloremque quas possimus nostrum perspiciatis. Laboriosam inventore accusamus veritatis ipsam nisi odit officiis quidem aspernatur!",
+    Award: "Step 6 - Lorem ipsum dolor sit amet consectetur adipisicing elit. Repudiandae ratione nihil quos officia eum voluptatibus earum consequuntur incidunt, vitae nesciunt iste modi numquam eligendi eius nulla."
+};
+
 const ProcurementDetailsStep = ({
     agreements,
     agreementsPerStep,
+    stepType,
     userNameById,
     targetDateByAgreementId,
     daysInStepByAgreementId
@@ -30,11 +45,7 @@ const ProcurementDetailsStep = ({
     return (
         <>
             <div>
-                <p className="line-height-alt-4 margin-bottom-5">
-                    Lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsa earum odit debitis eveniet laboriosam
-                    cumque, id rem similique. Amet harum doloribus distinctio unde eum cumque deserunt eius alias
-                    corrupti fugit!
-                </p>
+                <p className="line-height-alt-4 margin-bottom-5">{STEP_DESCRIPTIONS[stepType] ?? ""}</p>
             </div>
             <div
                 className="display-flex"

@@ -86,6 +86,7 @@ const ProcurementDetails = ({
                         <ProcurementDetailsStep
                             agreements={agreementsByStep[step.step_number] ?? []}
                             agreementsPerStep={procurementStepSummary?.step_data[step.step_number - 1]?.agreements}
+                            stepType={step.step_type}
                             userNameById={userNameById}
                             targetDateByAgreementId={targetDateByStepAndAgreement[step.step_number] ?? {}}
                             daysInStepByAgreementId={daysInStep[step.step_number] ?? {}}
