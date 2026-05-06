@@ -227,7 +227,6 @@ export default function useCanFunding(
                     }
                     break;
                 case "received-add":
-                case "received-update-temp":
                     await addCanFundingReceived({ data: action.payload }).unwrap();
                     break;
                 case "received-update":
@@ -241,11 +240,10 @@ export default function useCanFunding(
                         throw err;
                     }
                     break;
-                case "received-delete-temp":
-                    break;
             }
         }
 
+        setPendingActions([]);
         setAlert({
             type: "success",
             heading: "CAN Updated",
@@ -318,15 +316,19 @@ export default function useCanFunding(
         setBudgetForm(nextForm);
         setBudgetEnteredAmount("");
         setPendingActions((q) =>
-            mergePendingAction(q, {
-                kind: currentFiscalYearFundingId ? "budget-update" : "budget-add",
-                id: currentFiscalYearFundingId,
-                payload: {
-                    fiscal_year: fiscalYear,
-                    can_id: canId,
-                    budget: budgetEnteredAmount
-                }
-            })
+            mergePendingAction(
+                q,
+                currentFiscalYearFundingId
+                    ? {
+                          kind: "budget-update",
+                          id: currentFiscalYearFundingId,
+                          payload: { fiscal_year: fiscalYear, can_id: canId, budget: budgetEnteredAmount }
+                      }
+                    : {
+                          kind: "budget-add",
+                          payload: { fiscal_year: fiscalYear, can_id: canId, budget: budgetEnteredAmount }
+                      }
+            )
         );
         setAlert({
             type: "success",
