@@ -93,12 +93,23 @@ def test_get_pending_requisitions_excludes_completed(
 
 
 def test_get_pending_requisitions_filters_by_budget_team_role(client, test_budget_team_requisition_step, loaded_db):
-    """Only BUDGET_TEAM role users get results."""
-    # Non-budget-team user should get empty list
-    # Note: This test would need proper auth setup for a non-budget-team user
-    # For now, just verify the endpoint requires auth
+    """Unauthenticated users get 401."""
     response = client.get("/api/v1/procurement-tracker-steps/pending-requisitions/")
     assert response.status_code == 401  # Unauthenticated
+
+
+def test_get_pending_requisitions_non_budget_team_gets_empty_list(
+    basic_user_auth_client, test_budget_team_requisition_step, loaded_db
+):
+    """Authenticated non-budget-team users get empty list, not 401."""
+    # Make request as basic user (not budget team)
+    response = basic_user_auth_client.get("/api/v1/procurement-tracker-steps/pending-requisitions/")
+    assert response.status_code == 200
+
+    data = response.json
+    assert isinstance(data, list)
+    # Non-budget-team user should see empty list
+    assert len(data) == 0
 
 
 def test_get_pending_requisitions_includes_agreement_data(
