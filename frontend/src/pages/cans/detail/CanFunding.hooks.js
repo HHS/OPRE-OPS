@@ -158,6 +158,7 @@ export default function useCanFunding(
     }, [fundingReceived]);
 
     const hasChanged = React.useMemo(() => {
+        if (!isEditMode) return false;
         const budgetChanged = +budgetEnteredAmount !== +totalFunding;
         const budgetSubmitted = budgetForm.isSubmitted;
         const fundingReceivedInProgress =
@@ -168,6 +169,7 @@ export default function useCanFunding(
             budgetChanged || budgetSubmitted || fundingReceivedInProgress || hasNewFundingReceived || hasDeletedFunding
         );
     }, [
+        isEditMode,
         budgetEnteredAmount,
         totalFunding,
         budgetForm.isSubmitted,
