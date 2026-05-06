@@ -83,25 +83,22 @@ def get_users(session: Session, **kwargs) -> list[User]:
     """
     stmt = select(User)
 
+    exclude_read_only = kwargs.pop("exclude_read_only", False)
+
     for key, value in kwargs.items():
         if key == "roles":
             stmt = stmt.where(User.roles.any(Role.name.in_(value)))
-        elif key == "exclude_read_only":
-            exclude_read_only = value
         else:
             stmt = stmt.where(cast(ColumnElement[bool], getattr(User, key)) == value)
+
+    if exclude_read_only:
+        stmt = stmt.where(~User.roles.any(Role.name == "READ_ONLY"))
 
     stmt = stmt.order_by(User.id)
 
     users = session.execute(stmt).scalars().all()
 
-    if exclude_read_only:
-        # Filter out users with READ_ONLY role
-        filtered_users = [user for user in users if not any(role.name == "READ_ONLY" for role in user.roles)]
-
-        return filtered_users
-    else:
-        return users
+    return users
 
 
 def create_user(session: Session, **kwargs) -> User:
