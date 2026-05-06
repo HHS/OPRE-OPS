@@ -448,6 +448,25 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
         nullable=True,
     )
 
+    # PRE_AWARD budget team requisition fields (OPS-1639)
+    pre_award_requisition_number: Mapped[Optional[str]] = mapped_column(
+        String(100),
+        nullable=True,
+    )
+    pre_award_requisition_date: Mapped[Optional[date]] = mapped_column(
+        Date,
+        nullable=True,
+    )
+    pre_award_requisition_approved_by: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        ForeignKey("ops_user.id"),
+        nullable=True,
+    )
+    pre_award_requisition_approved_date: Mapped[Optional[date]] = mapped_column(
+        Date,
+        nullable=True,
+    )
+
     # Relationship for pre_award completed by user
     pre_award_completed_by_user: Mapped[Optional["User"]] = relationship(
         "User",
@@ -466,6 +485,13 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
     pre_award_approval_responded_by_user: Mapped[Optional["User"]] = relationship(
         "User",
         foreign_keys=[pre_award_approval_responded_by],
+        viewonly=True,
+    )
+
+    # Relationship for pre_award requisition approved by user
+    pre_award_requisition_approved_by_user: Mapped[Optional["User"]] = relationship(
+        "User",
+        foreign_keys=[pre_award_requisition_approved_by],
         viewonly=True,
     )
 

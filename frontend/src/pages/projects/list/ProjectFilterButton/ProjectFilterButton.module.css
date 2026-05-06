@@ -1,0 +1,23 @@
+.legendColor {
+    color: var(--base-dark);
+}
+
+.filterButton {
+    width: min-content;
+}
+
+.filterModal {
+    position: absolute;
+    top: 50px;
+    right: 0;
+    min-width: 25rem;
+    border: 1px solid var(--gray-10);
+}
+
+.filterOverlay {
+    position: relative;
+}
+
+.modalBackgroundColor {
+    background-color: var(--gray-2);
+}
