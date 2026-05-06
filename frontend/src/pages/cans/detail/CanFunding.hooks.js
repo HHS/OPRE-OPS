@@ -145,17 +145,23 @@ export default function useCanFunding(
         useSelector((state) => state.auth?.activeUser?.display_name ?? state.auth?.activeUser?.full_name) || "";
 
     React.useEffect(() => {
-        setTotalReceived(receivedFunding);
-    }, [receivedFunding]);
+        if (!isEditMode) {
+            setTotalReceived(receivedFunding);
+        }
+    }, [receivedFunding, isEditMode]);
 
     React.useEffect(() => {
-        setBudgetForm((b) => ({ ...b, submittedAmount: totalFunding }));
-        setBudgetEnteredAmount(totalFunding);
-    }, [totalFunding]);
+        if (!isEditMode) {
+            setBudgetForm((b) => ({ ...b, submittedAmount: totalFunding }));
+            setBudgetEnteredAmount(totalFunding);
+        }
+    }, [totalFunding, isEditMode]);
 
     React.useEffect(() => {
-        setEnteredFundingReceived([...fundingReceived]);
-    }, [fundingReceived]);
+        if (!isEditMode) {
+            setEnteredFundingReceived([...fundingReceived]);
+        }
+    }, [fundingReceived, isEditMode]);
 
     const hasChanged = React.useMemo(() => {
         if (!isEditMode) return false;
@@ -228,10 +234,14 @@ export default function useCanFunding(
                     await updateCanFundingReceived({ id: action.id, data: action.payload }).unwrap();
                     break;
                 case "received-delete":
-                    await deleteCanFundingReceived(action.id).unwrap();
+                    try {
+                        await deleteCanFundingReceived(action.id).unwrap();
+                    } catch (err) {
+                        if (err?.originalStatus === 200) continue;
+                        throw err;
+                    }
                     break;
                 case "received-delete-temp":
-                    // Row was never persisted — already removed from the queue by mergePendingAction.
                     break;
             }
         }
@@ -265,8 +275,7 @@ export default function useCanFunding(
             setAlert({
                 type: "error",
                 heading: "Error",
-                message: "An error occurred while updating the CAN.",
-                redirectUrl: "/error"
+                message: "An error occurred while updating the CAN."
             });
         }
     });
@@ -290,8 +299,7 @@ export default function useCanFunding(
             setAlert({
                 type: "error",
                 heading: "Error",
-                message: "An error occurred while updating the CAN.",
-                redirectUrl: "/error"
+                message: "An error occurred while updating the CAN."
             });
         }
 
@@ -518,6 +526,7 @@ export default function useCanFunding(
     };
 
     const cleanUp = () => {
+        setIsCancelling(true);
         setDeletedFundingReceivedIds([]);
         setEnteredFundingReceived([...fundingReceived]);
         setPendingActions([]);

@@ -347,8 +347,7 @@ describe("useCanFunding", () => {
             expect(setAlertMock).toHaveBeenCalledWith(
                 expect.objectContaining({
                     type: "error",
-                    heading: "Error",
-                    redirectUrl: "/error"
+                    heading: "Error"
                 })
             );
         });
