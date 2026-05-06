@@ -10,6 +10,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 /**
  * BudgetTeamRequisitionReviewCard component for displaying pending budget team requisition reviews
  * Appears after Division Director approval, prompts budget team to enter requisition details
+ *
+ * NOTE: This component does NOT use the shared ReviewCard base component because it serves a different
+ * purpose than change request cards. ReviewCard is designed for inline approve/reject actions on
+ * change requests, while this card (like PreAwardReviewCard) is an informational card that links
+ * to a detail page. The card structure is intentionally customized to show budget-specific metadata.
+ *
  * @component
  * @param {Object} props - Properties passed to component
  * @param {number} props.agreementId - The ID of the agreement
