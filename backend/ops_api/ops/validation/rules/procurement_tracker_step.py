@@ -295,6 +295,50 @@ class PreAwardCompletionRequiredFieldsRule(ValidationRule):
             )
 
 
+class AwardCompletionRequiredFieldsRule(ValidationRule):
+    """
+    Validates that required fields are present when completing the AWARD step.
+    Only runs when status is being set to COMPLETED.
+    """
+
+    @property
+    def name(self) -> str:
+        return "AWARD Completion Required Fields Check"
+
+    def validate(self, procurement_tracker_step: ProcurementTrackerStep, context: ValidationContext) -> None:
+        mapping = {
+            "task_completed_by": "award_task_completed_by",
+            "date_completed": "award_date_completed",
+        }
+
+        if not is_procurement_tracker_step_updated_to_complete(context):
+            return
+
+        updated_fields = context.updated_fields
+        award_required_fields = ["task_completed_by", "date_completed"]
+
+        # Check for missing fields
+        missing_fields = [field for field in award_required_fields if field not in updated_fields]
+
+        # Check if missing fields are populated on model
+        final_missing_fields = [
+            field for field in missing_fields if getattr(procurement_tracker_step, mapping[field], None) is None
+        ]
+
+        # Check if any provided fields are explicitly set to None
+        null_fields = [
+            field for field in award_required_fields if field in updated_fields and updated_fields[field] is None
+        ]
+
+        # Combine missing and null fields
+        invalid_fields = list(set(final_missing_fields + null_fields))
+
+        if invalid_fields:
+            raise ValidationError(
+                {field: f"{field} is required when completing AWARD step." for field in invalid_fields}
+            )
+
+
 class NoPastTargetCompletionDateUpdateRule(ValidationRule):
     """
     Validates that the target_completion_date is not in the past when being updated for pre-solicitation, evaluation, and pre-award steps.
@@ -384,6 +428,8 @@ class CompletionAuthorizationRule(ValidationRule):
             task_completed_by_id = procurement_tracker_step.evaluation_task_completed_by
         elif procurement_tracker_step.step_type == ProcurementTrackerStepType.PRE_AWARD:
             task_completed_by_id = procurement_tracker_step.pre_award_task_completed_by
+        elif procurement_tracker_step.step_type == ProcurementTrackerStepType.AWARD:
+            task_completed_by_id = procurement_tracker_step.award_task_completed_by
         # If task_completed_by is not set, the CompletionRequiredFieldsRule will catch it
         if not task_completed_by_id:
             return
