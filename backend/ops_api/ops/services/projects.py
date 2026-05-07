@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from decimal import Decimal
 from typing import Any, Optional, Sequence
 
+from flask_jwt_extended import get_current_user
 from loguru import logger
 from sqlalchemy import distinct, or_, select
 from sqlalchemy.orm import selectinload
@@ -19,7 +20,8 @@ from models import (
     ResearchProject,
     User,
 )
-from ops_api.ops.services.ops_service import OpsService, ResourceNotFoundError, ValidationError
+from ops_api.ops.services.ops_service import AuthorizationError, OpsService, ResourceNotFoundError, ValidationError
+from ops_api.ops.utils.projects_helpers import check_project_user_association
 
 
 @dataclass
@@ -155,11 +157,34 @@ class ProjectsService(OpsService[Project]):
         Raises:
             ResourceNotFoundError: If the project doesn't exist
             ValidationError: If trying to change immutable fields or invalid data
+            AuthorizationError: If the user is not authorized to update the project
         """
-        # Get the existing project
-        project = self.db_session.get(Project, id)
+        # Eager-load the relationships traversed by check_project_user_association
+        # to keep the authorization check to a single query.
+        stmt = (
+            select(Project)
+            .where(Project.id == id)
+            .options(
+                selectinload(Project.agreements).selectinload(Agreement.team_members),
+                selectinload(Project.agreements)
+                .selectinload(Agreement.budget_line_items)
+                .selectinload(BudgetLineItem.can)
+                .selectinload(CAN.portfolio)
+                .selectinload(Portfolio.division),
+                selectinload(Project.agreements)
+                .selectinload(Agreement.budget_line_items)
+                .selectinload(BudgetLineItem.can)
+                .selectinload(CAN.portfolio)
+                .selectinload(Portfolio.team_leaders),
+            )
+        )
+        project = self.db_session.scalar(stmt)
         if not project:
             raise ResourceNotFoundError("Project", id)
+
+        user = get_current_user()
+        if not check_project_user_association(project, user):
+            raise AuthorizationError(f"update Project {id}", "Project")
 
         self._check_immutable_fields(project, updated_fields)
 
