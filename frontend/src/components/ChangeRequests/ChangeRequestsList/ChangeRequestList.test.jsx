@@ -115,6 +115,7 @@ describe("ChangeRequestList", () => {
         });
 
         useGetChangeRequestsListQuery.mockReturnValue({ data: undefined, isLoading: false, isError: false });
+        useGetPendingPreAwardApprovalsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
         useGetPendingBudgetRequisitionsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
 
         render(

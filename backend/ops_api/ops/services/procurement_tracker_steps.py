@@ -772,6 +772,20 @@ class ProcurementTrackerStepService:
         # For all other users, allow access when they are the division director/deputy
         # for the related agreement. This keeps the pending approvals list aligned
         # with reviewer notification recipients.
+        stmt = (
+            stmt.outerjoin(Agreement.budget_line_items)
+            .outerjoin(BudgetLineItem.can)
+            .outerjoin(CAN.portfolio)
+            .outerjoin(Portfolio.division)
+            .where(
+                or_(
+                    Division.division_director_id == user_id,
+                    Division.deputy_division_director_id == user_id,
+                )
+            )
+        )
+        results = self.db_session.execute(stmt.distinct()).scalars().all()
+        return list(results)
 
     def get_pending_requisitions_for_user(self, user_id: int) -> list[ProcurementTrackerStep]:
         """
