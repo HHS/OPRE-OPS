@@ -79,8 +79,7 @@ const ProcurementTrackerStepSix = ({
     const isAwardFieldsDisabled = isDisabled || !isAwardCheckboxChecked;
 
     // Check if there are any BLIs in review status
-    const hasBLIInReview =
-        budgetLineItems?.some((bli) => bli.status === "In Review" || bli.change_requests_in_review) ?? false;
+    const hasBLIInReview = budgetLineItems?.some((bli) => bli.in_review) ?? false;
 
     const isRequestBtnDisabled =
         isDisabled ||
@@ -88,28 +87,37 @@ const ProcurementTrackerStepSix = ({
         (!!stepSixData?.approval_requested && stepSixData?.approval_status !== "DECLINED") ||
         hasBLIInReview;
 
-    // State 1: Read-Only Completed View
-    if (isReadOnly && stepStatus === PROCUREMENT_STEP_STATUS.COMPLETED) {
-        return (
-            <div className="display-flex">
-                <TermTag
-                    iconName="check"
-                    iconColor="green"
-                    tagStyle="primaryDarkTextWhiteBackground"
-                    label={`Completed by ${stepSixCompletedByUserName || "Unknown"} on ${stepSixDateCompletedLabel || "Unknown"}`}
+    return (
+        <>
+            {showModal && (
+                <ConfirmationModal
+                    heading={modalProps.heading}
+                    setShowModal={setShowModal}
+                    actionButtonText={modalProps.actionButtonText}
+                    secondaryButtonText={modalProps.secondaryButtonText}
+                    handleConfirm={modalProps.handleConfirm}
                 />
-                {stepSixNotesLabel && (
-                    <div className="margin-left-2">
-                        <strong>Notes:</strong> {stepSixNotesLabel}
-                    </div>
-                )}
-            </div>
-        );
-    }
+            )}
 
-    // State 2: Active/Pending Edit Form
-    if (!isReadOnly && (stepStatus === PROCUREMENT_STEP_STATUS.PENDING || stepStatus === PROCUREMENT_STEP_STATUS.ACTIVE)) {
-        return (
+    {/* State 1: Read-Only Completed View */}
+    {isReadOnly && stepStatus === PROCUREMENT_STEP_STATUS.COMPLETED && (
+        <div className="display-flex">
+            <TermTag
+                iconName="check"
+                iconColor="green"
+                tagStyle="primaryDarkTextWhiteBackground"
+                label={`Completed by ${stepSixCompletedByUserName || "Unknown"} on ${stepSixDateCompletedLabel || "Unknown"}`}
+            />
+            {stepSixNotesLabel && (
+                <div className="margin-left-2">
+                    <strong>Notes:</strong> {stepSixNotesLabel}
+                </div>
+            )}
+        </div>
+    )}
+
+    {/* State 2: Active/Pending Edit Form */}
+    {!isReadOnly && (stepStatus === PROCUREMENT_STEP_STATUS.PENDING || stepStatus === PROCUREMENT_STEP_STATUS.ACTIVE) && (
             <>
                 <p className="margin-top-0">
                     This step tracks the final award milestone. Request Award Approval from the budget team, then
@@ -129,13 +137,15 @@ const ProcurementTrackerStepSix = ({
                             <MemoizedDatePicker
                                 name="target-completion-date-step-6"
                                 value={targetCompletionDate}
-                                onChange={(name, value) => {
-                                    setTargetCompletionDate(value);
-                                    runValidate("targetCompletionDate", value);
-                                }}
+                                onChange={
+                                    /** @param {any} e */ (e) => {
+                                        runValidate("targetCompletionDate", e.target.value);
+                                        setTargetCompletionDate(e.target.value);
+                                    }
+                                }
                                 minDate={getLocalISODate()}
                                 aria-label="target-completion-date-step-6"
-                                error={validatorRes.getErrors("targetCompletionDate")?.[0]}
+                                messages={validatorRes.getErrors("targetCompletionDate") || []}
                             />
                             <button
                                 className="usa-button margin-left-2"
@@ -220,14 +230,16 @@ const ProcurementTrackerStepSix = ({
                         name="date-completed-step-6"
                         label="Date Completed"
                         value={stepSixDateCompleted}
-                        onChange={(name, value) => {
-                            setStepSixDateCompleted(value);
-                            runValidate("dateCompleted", value);
-                        }}
+                        onChange={
+                            /** @param {any} e */ (e) => {
+                                runValidate("dateCompleted", e.target.value);
+                                setStepSixDateCompleted(e.target.value);
+                            }
+                        }
                         maxDate={getLocalISODate()}
-                        disabled={isAwardFieldsDisabled}
+                        isDisabled={isAwardFieldsDisabled}
                         aria-label="date-completed-step-6"
-                        error={validatorRes.getErrors("dateCompleted")?.[0]}
+                        messages={validatorRes.getErrors("dateCompleted") || []}
                     />
 
                     {/* Notes */}
@@ -268,22 +280,11 @@ const ProcurementTrackerStepSix = ({
                         </button>
                     </div>
                 </fieldset>
-
-                <ConfirmationModal
-                    heading={modalProps.heading}
-                    isOpen={showModal}
-                    setIsOpen={setShowModal}
-                    actionButtonText={modalProps.actionButtonText}
-                    secondaryButtonText={modalProps.secondaryButtonText}
-                    handleConfirm={modalProps.handleConfirm}
-                />
             </>
-        );
-    }
+    )}
 
-    // State 3: Completed Non-ReadOnly View
-    if (!isReadOnly && stepStatus === PROCUREMENT_STEP_STATUS.COMPLETED) {
-        return (
+    {/* State 3: Completed Non-ReadOnly View */}
+    {!isReadOnly && stepStatus === PROCUREMENT_STEP_STATUS.COMPLETED && (
             <div className="display-flex flex-align-center">
                 <FontAwesomeIcon
                     icon={faCircleCheck}
@@ -299,10 +300,9 @@ const ProcurementTrackerStepSix = ({
                     </div>
                 )}
             </div>
-        );
-    }
-
-    return null;
+    )}
+        </>
+    );
 };
 
 export default ProcurementTrackerStepSix;
