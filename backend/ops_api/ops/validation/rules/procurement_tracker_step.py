@@ -375,6 +375,61 @@ class AwardApprovalRequiredRule(ValidationRule):
             )
 
 
+class AwardAgreementDataRequiredRule(ValidationRule):
+    """
+    Validates that the agreement has required data before completing the AWARD step:
+    - Vendor must exist for CONTRACT and AA agreement types
+    - At least one CLIN must exist for CONTRACT and AA agreement types
+    Only runs when status is being set to COMPLETED.
+
+    Note: IAA agreements use agencies instead of vendors and don't have CLINs, so they are excluded.
+    GRANT and DIRECT_OBLIGATION types don't use procurement trackers.
+    """
+
+    @property
+    def name(self) -> str:
+        return "AWARD Agreement Data Required Check"
+
+    def validate(self, procurement_tracker_step: ProcurementTrackerStep, context: ValidationContext) -> None:
+        from sqlalchemy import select
+
+        from models import AgreementType
+        from models.services_components import CLIN
+
+        if not is_procurement_tracker_step_updated_to_complete(context):
+            return
+
+        # Get the agreement
+        if not procurement_tracker_step.procurement_tracker or not procurement_tracker_step.procurement_tracker.agreement:
+            raise ValidationError({"agreement": "Procurement tracker step is not linked to a valid agreement."})
+
+        agreement = procurement_tracker_step.procurement_tracker.agreement
+
+        # Only validate for CONTRACT and AA types
+        # IAA agreements use agencies instead of vendors and don't have CLINs
+        # GRANT and DIRECT_OBLIGATION types don't use procurement trackers
+        if agreement.agreement_type not in [AgreementType.CONTRACT, AgreementType.AA]:
+            return
+
+        # Validate Vendor exists (use defensive getattr for polymorphic agreement types)
+        vendor_id = getattr(agreement, "vendor_id", None)
+        if not vendor_id:
+            raise ValidationError(
+                {"vendor": "Vendor is required for CONTRACT and AA agreements before completing the AWARD step."}
+            )
+
+        # Validate at least one CLIN exists (use .first() for efficiency)
+        has_clin = (
+            context.db_session.execute(select(CLIN).where(CLIN.agreement_id == agreement.id).limit(1)).first()
+            is not None
+        )
+
+        if not has_clin:
+            raise ValidationError(
+                {"clins": "At least one CLIN is required for CONTRACT and AA agreements before completing the AWARD step."}
+            )
+
+
 class NoPastTargetCompletionDateUpdateRule(ValidationRule):
     """
     Validates that the target_completion_date is not in the past when being updated for pre-solicitation, evaluation, and pre-award steps.
