@@ -12,6 +12,9 @@ import PreAwardReviewCard from "../PreAwardReviewCard";
 import BudgetTeamRequisitionReviewCard from "../BudgetTeamRequisitionReviewCard";
 import { useNavigate } from "react-router-dom";
 
+// Budget Line Item status constant
+const BLI_STATUS_IN_EXECUTION = "In Execution";
+
 /**
  * @component Change Requests List component.
  * @typedef {import("../../../types/ChangeRequestsTypes").ChangeRequest} ChangeRequest
@@ -46,17 +49,17 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
     // Calculate sum and count of budget lines in EXECUTING status
     const calculateExecutingTotal = (budgetLineItems = []) => {
         return budgetLineItems
-            .filter((bli) => bli.status === "In Execution")
+            .filter((bli) => bli.status === BLI_STATUS_IN_EXECUTION)
             .reduce((sum, bli) => sum + (bli.amount || 0), 0);
     };
 
     const calculateExecutingBliCount = (budgetLineItems = []) => {
-        return budgetLineItems.filter((bli) => bli.status === "In Execution").length;
+        return budgetLineItems.filter((bli) => bli.status === BLI_STATUS_IN_EXECUTION).length;
     };
 
     // Get the earliest obligate-by date from executing BLIs
     const getObligateByDate = (budgetLineItems = []) => {
-        const executingBlis = budgetLineItems.filter((bli) => bli.status === "In Execution" && bli.date_needed);
+        const executingBlis = budgetLineItems.filter((bli) => bli.status === BLI_STATUS_IN_EXECUTION && bli.date_needed);
         if (executingBlis.length === 0) return null;
         const dates = executingBlis.map((bli) => new Date(bli.date_needed));
         return new Date(Math.min(...dates)).toISOString().split("T")[0];
