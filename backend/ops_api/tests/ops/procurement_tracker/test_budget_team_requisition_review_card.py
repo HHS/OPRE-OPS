@@ -17,8 +17,12 @@ def test_budget_team_requisition_step(app_ctx, loaded_db):
     """Create a test step where DD approved but budget team hasn't entered requisition."""
     tracker = loaded_db.get(ProcurementTracker, 1)
 
-    # Ensure Step 4 (Evaluation) exists and is completed
+    # Capture original step 4 state before modification
     step_4 = next((step for step in tracker.steps if step.step_number == 4), None)
+    step_4_existed = step_4 is not None
+    step_4_original_status = step_4.status if step_4_existed else None
+
+    # Ensure Step 4 (Evaluation) exists and is completed
     if not step_4:
         step_4 = DefaultProcurementTrackerStep(
             procurement_tracker=tracker,
@@ -50,10 +54,16 @@ def test_budget_team_requisition_step(app_ctx, loaded_db):
 
     yield step
 
-    # Cleanup
+    # Cleanup: restore step 4 to original state and delete test step
     loaded_db.rollback()
     try:
         loaded_db.delete(step)
+        if not step_4_existed:
+            # Step 4 was created by this fixture, delete it
+            loaded_db.delete(step_4)
+        else:
+            # Step 4 existed before, restore its original status
+            step_4.status = step_4_original_status
         loaded_db.commit()
     except Exception:
         loaded_db.rollback()
