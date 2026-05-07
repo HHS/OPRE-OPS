@@ -370,14 +370,11 @@ describe("agreement details", () => {
         cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
         cy.get("#ops-modal", { timeout: 5000 }).should("not.exist");
 
-        // Navigation should succeed
+        // Navigation should succeed and edit mode should be exited
         cy.url().should("include", "/budget-lines");
+        cy.waitForEditingState(false);
 
-        // Test the reverse: Budget Lines to Agreement Details
-        cy.get("#editing").should("have.text", "Editing...");
-        cy.get('[data-cy="unsaved-changes"]').should("not.exist");
-
-        // Navigate to Agreement Details - no modal
+        // Navigate back to Agreement Details - no modal
         cy.get('[data-cy="details-tab-Agreement Details"]').click();
         cy.get("#ops-modal", { timeout: 5000 }).should("not.exist");
         cy.url().should("not.include", "/budget-lines");
