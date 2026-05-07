@@ -75,6 +75,7 @@ class ProcurementTrackerStepsValidator:
         """
         from ops_api.ops.validation.rules.procurement_tracker_step import (
             AcquisitionPlanningRequiredFieldsRule,
+            AwardApprovalRequiredRule,
             AwardCompletionRequiredFieldsRule,
             CompletedByUpdateAuthorizationRule,
             EvaluationCompletionRequiredFieldsRule,
@@ -151,6 +152,7 @@ class ProcurementTrackerStepsValidator:
             return [
                 ResourceExistsRule(),
                 UserAssociationRule(),
+                AwardApprovalRequiredRule(),
                 AwardCompletionRequiredFieldsRule(),
                 CompletedByUpdateAuthorizationRule(),
                 NoUpdatingCompletedProcurementStepRule(),

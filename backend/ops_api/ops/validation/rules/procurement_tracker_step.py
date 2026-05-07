@@ -339,6 +339,42 @@ class AwardCompletionRequiredFieldsRule(ValidationRule):
             )
 
 
+class AwardApprovalRequiredRule(ValidationRule):
+    """
+    Validates that Award Approval has been approved before completing the AWARD step.
+    Only runs when status is being set to COMPLETED.
+
+    Note: This creates intentional asymmetry with PRE_AWARD, which does not gate completion
+    on approval status. For AWARD steps, approval is mandatory per OPS-1640 requirements.
+    """
+
+    @property
+    def name(self) -> str:
+        return "AWARD Approval Required Check"
+
+    def validate(self, procurement_tracker_step: ProcurementTrackerStep, context: ValidationContext) -> None:
+        if not is_procurement_tracker_step_updated_to_complete(context):
+            return
+
+        # Check if approval status is APPROVED
+        approval_status = procurement_tracker_step.award_approval_status
+
+        if not approval_status:
+            raise ValidationError(
+                {"approval_status": "Award Approval request must be submitted and approved before completing this step."}
+            )
+
+        if approval_status == "DECLINED":
+            raise ValidationError(
+                {"approval_status": "Cannot complete AWARD step - approval request was declined."}
+            )
+
+        if approval_status != "APPROVED":
+            raise ValidationError(
+                {"approval_status": f"Award Approval must be approved before completing this step. Current status: {approval_status}"}
+            )
+
+
 class NoPastTargetCompletionDateUpdateRule(ValidationRule):
     """
     Validates that the target_completion_date is not in the past when being updated for pre-solicitation, evaluation, and pre-award steps.
