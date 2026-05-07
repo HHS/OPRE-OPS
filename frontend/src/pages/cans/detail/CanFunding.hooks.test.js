@@ -121,9 +121,9 @@ describe("useCanFunding", () => {
 
         addCanFundingBudgetMock.mockReturnValue({ unwrap: () => Promise.resolve({ ok: true }) });
         updateCanFundingBudgetMock.mockReturnValue({ unwrap: () => Promise.resolve({ ok: true }) });
-        addCanFundingReceivedMock.mockResolvedValue({ ok: true });
-        updateCanFundingReceivedMock.mockResolvedValue({ ok: true });
-        deleteCanFundingReceivedMock.mockResolvedValue({ ok: true });
+        addCanFundingReceivedMock.mockReturnValue({ unwrap: () => Promise.resolve({ ok: true }) });
+        updateCanFundingReceivedMock.mockReturnValue({ unwrap: () => Promise.resolve({ ok: true }) });
+        deleteCanFundingReceivedMock.mockReturnValue({ unwrap: () => Promise.resolve({ ok: true }) });
 
         useAddCanFundingBudgetsMutationMock.mockReturnValue([addCanFundingBudgetMock]);
         useUpdateCanFundingBudgetMutationMock.mockReturnValue([updateCanFundingBudgetMock]);
@@ -324,12 +324,20 @@ describe("useCanFunding", () => {
         expect(result.current.showModal).toBe(false);
     });
 
-    it("shows an error alert and still cleans up when submit fails", async () => {
+    it("shows an error alert and preserves pending actions when submit fails", async () => {
         updateCanFundingBudgetMock.mockReturnValueOnce({
             unwrap: () => Promise.reject(new Error("budget failed"))
         });
 
         const { result } = renderUseCanFunding({ isEditMode: true });
+
+        act(() => {
+            result.current.handleEnteredBudgetAmount("1200");
+        });
+
+        act(() => {
+            result.current.handleAddBudget({ preventDefault: vi.fn() });
+        });
 
         await act(async () => {
             await result.current.handleSubmit({ preventDefault: vi.fn() });
@@ -339,14 +347,127 @@ describe("useCanFunding", () => {
             expect(setAlertMock).toHaveBeenCalledWith(
                 expect.objectContaining({
                     type: "error",
-                    heading: "Error",
-                    redirectUrl: "/error"
+                    heading: "Error"
                 })
             );
         });
 
-        expect(toggleEditModeMock).toHaveBeenCalledTimes(1);
-        expect(resetWelcomeModalMock).toHaveBeenCalledTimes(1);
-        expect(scrollToTopMock).toHaveBeenCalledTimes(1);
+        expect(toggleEditModeMock).not.toHaveBeenCalled();
+        expect(resetWelcomeModalMock).not.toHaveBeenCalled();
+        expect(scrollToTopMock).not.toHaveBeenCalled();
+    });
+
+    it("dispatches mutations in the order the user took action", async () => {
+        const callOrder = [];
+        addCanFundingBudgetMock.mockImplementation(() => {
+            callOrder.push("budget-add");
+            return { unwrap: () => Promise.resolve({ ok: true }) };
+        });
+        updateCanFundingBudgetMock.mockImplementation(() => {
+            callOrder.push("budget-update");
+            return { unwrap: () => Promise.resolve({ ok: true }) };
+        });
+        addCanFundingReceivedMock.mockImplementation(() => {
+            callOrder.push("received-add");
+            return { unwrap: () => Promise.resolve({ ok: true }) };
+        });
+
+        const { result } = renderUseCanFunding({ isEditMode: true });
+
+        act(() => {
+            result.current.handleEnteredBudgetAmount("1200");
+        });
+
+        act(() => {
+            result.current.handleAddBudget({ preventDefault: vi.fn() });
+        });
+
+        act(() => {
+            result.current.handleEnteredFundingReceivedAmount("100");
+            result.current.handleEnteredNotes("After budget");
+        });
+
+        act(() => {
+            result.current.handleAddFundingReceived({ preventDefault: vi.fn() });
+        });
+
+        await act(async () => {
+            await result.current.handleSubmit({ preventDefault: vi.fn() });
+        });
+
+        expect(callOrder).toEqual(["budget-update", "received-add"]);
+    });
+
+    it("collapses repeated edits of the same staged row into one add", async () => {
+        const { result } = renderUseCanFunding({ isEditMode: true });
+
+        act(() => {
+            result.current.handleEnteredFundingReceivedAmount("100");
+            result.current.handleEnteredNotes("first");
+        });
+
+        act(() => {
+            result.current.handleAddFundingReceived({ preventDefault: vi.fn() });
+        });
+
+        const stagedTempId = result.current.enteredFundingReceived.find((f) => f.id === "TBD")?.tempId ?? "";
+
+        act(() => {
+            result.current.populateFundingReceivedForm(stagedTempId);
+        });
+
+        act(() => {
+            result.current.handleEnteredFundingReceivedAmount("175");
+            result.current.handleEnteredNotes("second");
+        });
+
+        act(() => {
+            result.current.handleAddFundingReceived({ preventDefault: vi.fn() });
+        });
+
+        await act(async () => {
+            await result.current.handleSubmit({ preventDefault: vi.fn() });
+        });
+
+        expect(addCanFundingReceivedMock).toHaveBeenCalledTimes(1);
+        expect(addCanFundingReceivedMock).toHaveBeenCalledWith({
+            data: {
+                fiscal_year: 2026,
+                can_id: 1,
+                funding: "175",
+                notes: "second"
+            }
+        });
+        expect(updateCanFundingReceivedMock).not.toHaveBeenCalled();
+    });
+
+    it("drops an add + delete of the same staged row entirely", async () => {
+        const { result } = renderUseCanFunding({ isEditMode: true });
+
+        act(() => {
+            result.current.handleEnteredFundingReceivedAmount("100");
+            result.current.handleEnteredNotes("staged");
+        });
+
+        act(() => {
+            result.current.handleAddFundingReceived({ preventDefault: vi.fn() });
+        });
+
+        const stagedTempId = result.current.enteredFundingReceived.find((f) => f.id === "TBD")?.tempId ?? "";
+
+        act(() => {
+            result.current.deleteFundingReceived(stagedTempId);
+        });
+
+        act(() => {
+            result.current.modalProps.handleConfirm();
+        });
+
+        await act(async () => {
+            await result.current.handleSubmit({ preventDefault: vi.fn() });
+        });
+
+        expect(addCanFundingReceivedMock).not.toHaveBeenCalled();
+        expect(deleteCanFundingReceivedMock).not.toHaveBeenCalled();
     });
 });

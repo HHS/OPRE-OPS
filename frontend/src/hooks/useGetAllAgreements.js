@@ -14,6 +14,7 @@ import { useLazyGetAgreementsQuery } from "../api/opsAPI";
  */
 export const useGetAllAgreements = (params = {}, options = {}) => {
     const [allAgreements, setAllAgreements] = useState([]);
+    const [metadata, setMetadata] = useState(null);
     const [isLoadingAll, setIsLoadingAll] = useState(!options.skip);
     const [hasError, setHasError] = useState(false);
     const [errorObj, setErrorObj] = useState(null);
@@ -47,12 +48,13 @@ export const useGetAllAgreements = (params = {}, options = {}) => {
 
                 if (cancelled) return;
 
-                const { agreements: firstPageAgreements, count } = firstPageResponse;
+                const { agreements: firstPageAgreements, count, ...rest } = firstPageResponse;
                 const totalPages = Math.ceil(count / limit);
 
                 if (totalPages <= 1) {
                     if (!cancelled) {
                         setAllAgreements(firstPageAgreements);
+                        setMetadata({ count, ...rest });
                         setIsLoadingAll(false);
                     }
                     return;
@@ -78,6 +80,7 @@ export const useGetAllAgreements = (params = {}, options = {}) => {
                     const allRemainingAgreements = allResponses.flatMap((response) => response?.agreements || []);
                     const combinedAgreements = [...firstPageAgreements, ...allRemainingAgreements];
                     setAllAgreements(combinedAgreements);
+                    setMetadata({ count, ...rest });
                     setIsLoadingAll(false);
                 }
             } catch (err) {
@@ -99,6 +102,7 @@ export const useGetAllAgreements = (params = {}, options = {}) => {
 
     return {
         agreements: allAgreements,
+        metadata,
         isLoading: isLoadingAll,
         isError: hasError,
         error: errorObj
