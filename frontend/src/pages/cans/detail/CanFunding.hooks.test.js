@@ -324,7 +324,7 @@ describe("useCanFunding", () => {
         expect(result.current.showModal).toBe(false);
     });
 
-    it("shows an error alert and still cleans up when submit fails", async () => {
+    it("shows an error alert and preserves pending actions when submit fails", async () => {
         updateCanFundingBudgetMock.mockReturnValueOnce({
             unwrap: () => Promise.reject(new Error("budget failed"))
         });
@@ -352,9 +352,9 @@ describe("useCanFunding", () => {
             );
         });
 
-        expect(toggleEditModeMock).toHaveBeenCalledTimes(1);
-        expect(resetWelcomeModalMock).toHaveBeenCalledTimes(1);
-        expect(scrollToTopMock).toHaveBeenCalledTimes(1);
+        expect(toggleEditModeMock).not.toHaveBeenCalled();
+        expect(resetWelcomeModalMock).not.toHaveBeenCalled();
+        expect(scrollToTopMock).not.toHaveBeenCalled();
     });
 
     it("dispatches mutations in the order the user took action", async () => {

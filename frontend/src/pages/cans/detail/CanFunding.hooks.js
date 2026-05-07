@@ -236,6 +236,9 @@ export default function useCanFunding(
                     try {
                         await deleteCanFundingReceived(action.id).unwrap();
                     } catch (err) {
+                        // RTK Query's .unwrap() treats 2xx with no JSON body as
+                        // an error (originalStatus 200). Only delete returns an
+                        // empty 200, so we suppress it here rather than globally.
                         if (err?.originalStatus === 200) continue;
                         throw err;
                     }
@@ -292,6 +295,7 @@ export default function useCanFunding(
 
         try {
             await saveChanges();
+            cleanUp();
         } catch (error) {
             console.error("Error Updating CAN", error);
             setAlert({
@@ -300,8 +304,6 @@ export default function useCanFunding(
                 message: "An error occurred while updating the CAN."
             });
         }
-
-        cleanUp();
     };
 
     /** @param {React.FormEvent<HTMLFormElement>} e */
