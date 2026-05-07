@@ -54,6 +54,7 @@ const ProcurementDashboard = () => {
 
     const procurementOverview = metadata?.procurement_overview ?? null;
     const procurementStepSummary = metadata?.procurement_step_summary ?? null;
+    const procurementDaysInStep = metadata?.procurement_days_in_step ?? null;
 
     const agreementIds = useMemo(() => agreements.map((a) => a.id), [agreements]);
 

@@ -469,6 +469,7 @@ class AgreementsService(OpsService[Agreement]):
             )
             procurement_overview = _compute_procurement_overview(all_results, overview_fiscal_year)
             procurement_step_summary = _compute_procurement_step_summary(all_results, overview_fiscal_year)
+            procurement_days_in_step = _compute_days_in_procurement_step(all_results, overview_fiscal_year)
 
         # Apply pagination slicing
         if filters.limit is not None and filters.offset is not None:
@@ -1004,6 +1005,56 @@ def _compute_procurement_step_summary(all_results: list[Agreement], fiscal_year:
         "step_data": step_data,
         "total_agreement_count": total_agreement_count,
     }
+
+
+def _compute_days_in_procurement_step(
+    all_results: list[Agreement], fiscal_year: int | None
+) -> dict[int, dict[int, int]]:
+    """Compute days in procurement step for each agreement's active step.
+
+    For each agreement with an active procurement tracker:
+    - Finds the active step
+    - If the step is completed, days = step_completed_date - step_start_date
+    - If the step is not completed, days = today - step_start_date
+
+    Returns a nested map: { step_number: { agreement_id: days_in_step } }
+    """
+    today = date.today()
+    days_in_step: dict[int, dict[int, int]] = {}
+
+    for agreement in all_results:
+        tracker = next(
+            (
+                tracker
+                for tracker in agreement.procurement_trackers
+                if tracker.status == ProcurementTrackerStatus.ACTIVE and tracker.active_step_number is not None
+            ),
+            None,
+        )
+        if tracker is None:
+            continue
+
+        step_number = tracker.active_step_number
+        if step_number < 1 or step_number > 6:
+            continue
+
+        active_step = next(
+            (step for step in tracker.steps if step.step_number == step_number),
+            None,
+        )
+        if active_step is None or active_step.step_start_date is None:
+            continue
+
+        if active_step.step_completed_date:
+            diff_days = (active_step.step_completed_date - active_step.step_start_date).days
+        else:
+            diff_days = (today - active_step.step_start_date).days
+
+        if step_number not in days_in_step:
+            days_in_step[step_number] = {}
+        days_in_step[step_number][agreement.id] = diff_days
+
+    return days_in_step
 
 
 def _get_agreements(
