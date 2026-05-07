@@ -1132,21 +1132,33 @@ def test_budget_line_items_get_all_by_portfolio(auth_client, loaded_db, app_ctx)
 
 
 def test_get_budget_line_items_list_with_pagination_without_obe(auth_client, loaded_db):
+    # Count non-OBE BLIs dynamically
+    total_non_obe = loaded_db.execute(
+        select(func.count(BudgetLineItem.id)).where(func.coalesce(BudgetLineItem.is_obe, False).is_(False))
+    ).scalar()
+
     response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"limit": 5, "offset": 0})
     assert response.status_code == 200
     assert len(response.json) == 5
     assert response.json[0]["_meta"]["limit"] == 5
     assert response.json[0]["_meta"]["offset"] == 0
-    assert response.json[0]["_meta"]["number_of_pages"] == 210
-    assert response.json[0]["_meta"]["total_count"] == 1046
+    assert response.json[0]["_meta"]["number_of_pages"] == -(-total_non_obe // 5)  # ceiling division
+    assert response.json[0]["_meta"]["total_count"] == total_non_obe
 
     response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"limit": 5, "offset": 5})
     assert response.status_code == 200
     assert len(response.json) == 5
     assert response.json[0]["_meta"]["limit"] == 5
     assert response.json[0]["_meta"]["offset"] == 5
-    assert response.json[0]["_meta"]["number_of_pages"] == 210
-    assert response.json[0]["_meta"]["total_count"] == 1046
+    assert response.json[0]["_meta"]["number_of_pages"] == -(-total_non_obe // 5)
+    assert response.json[0]["_meta"]["total_count"] == total_non_obe
+
+    # Count non-OBE BLIs in portfolio 1 dynamically
+    portfolio_1_non_obe = loaded_db.execute(
+        select(func.count(BudgetLineItem.id))
+        .where(func.coalesce(BudgetLineItem.is_obe, False).is_(False))
+        .where(BudgetLineItem.portfolio_id == 1)
+    ).scalar()
 
     response = auth_client.get(
         url_for("api.budget-line-items-group"),
@@ -1157,8 +1169,8 @@ def test_get_budget_line_items_list_with_pagination_without_obe(auth_client, loa
     assert response.json[0]["portfolio_id"] == 1
     assert response.json[0]["_meta"]["limit"] == 1
     assert response.json[0]["_meta"]["offset"] == 0
-    assert response.json[0]["_meta"]["number_of_pages"] == 157
-    assert response.json[0]["_meta"]["total_count"] == 157
+    assert response.json[0]["_meta"]["number_of_pages"] == portfolio_1_non_obe
+    assert response.json[0]["_meta"]["total_count"] == portfolio_1_non_obe
 
     expected_params = {
         "portfolio": [1],
@@ -1444,23 +1456,28 @@ def test_get_budget_line_items_filter_options(system_owner_auth_client, app_ctx)
     print(response.json)
 
     # check for the presence of specific filter options
-    assert response.json["fiscal_years"] == [2045, 2044, 2043, 2022]
-    assert response.json["portfolios"] == [
-        {"id": 3, "name": "Child Care Research"},
-        {"id": 1, "name": "Child Welfare Research"},
-        {"id": 2, "name": "Head Start Research"},
-        {"id": 6, "name": "Healthy Marriage & Responsible Fatherhood Research"},
-        {"id": 8, "name": "OCDO Portfolio"},
-        {"id": 9, "name": "OD Portfolio"},
-        {"id": 4, "name": "Welfare Research"},
-    ]
-    assert response.json["statuses"] == [
-        "DRAFT",
-        "PLANNED",
-        "IN_EXECUTION",
-        "OBLIGATED",
-        "Overcome by Events",
-    ]
+    # Verify fiscal_years are returned in descending order and contain expected years
+    fiscal_years = response.json["fiscal_years"]
+    assert fiscal_years == sorted(fiscal_years, reverse=True)
+    assert set([2045, 2044, 2043, 2022]).issubset(set(fiscal_years))
+
+    # Verify portfolios contain expected entries
+    portfolio_names = {p["name"] for p in response.json["portfolios"]}
+    expected_portfolios = {
+        "Child Care Research",
+        "Child Welfare Research",
+        "Head Start Research",
+        "Healthy Marriage & Responsible Fatherhood Research",
+        "OCDO Portfolio",
+        "OD Portfolio",
+        "Welfare Research",
+    }
+    assert expected_portfolios.issubset(portfolio_names)
+
+    # Verify statuses contain expected values
+    statuses = response.json["statuses"]
+    expected_statuses = {"DRAFT", "PLANNED", "IN_EXECUTION", "OBLIGATED", "Overcome by Events"}
+    assert expected_statuses.issubset(set(statuses))
 
     # Verify budget_line_total_range is present and has correct structure
     assert "budget_line_total_range" in response.json

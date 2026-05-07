@@ -161,9 +161,12 @@ class AgreementListAPI(BaseListAPI):
             request_schema = AgreementRequestSchema()
             data = request_schema.load(request.args.to_dict(flat=False))
 
+            include_procurement_list = data.pop("include_procurement", [False])
+            include_procurement = include_procurement_list[0] if include_procurement_list else False
+
             logger.debug("Beginning agreement queries")
             service = AgreementsService(current_app.db_session)
-            agreements, metadata = service.get_list(agreement_classes, data)
+            agreements, metadata = service.get_list(agreement_classes, data, include_procurement)
             logger.debug("Agreement queries complete")
 
             logger.debug("Serializing results")
@@ -202,6 +205,8 @@ class AgreementListAPI(BaseListAPI):
                 "limit": metadata["limit"],
                 "offset": metadata["offset"],
                 "totals": metadata["totals"],
+                "procurement_overview": metadata["procurement_overview"],
+                "procurement_step_summary": metadata["procurement_step_summary"],
             }
 
             return make_response_with_headers(response_data)
