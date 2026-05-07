@@ -21,6 +21,7 @@ export default defineConfig({
             "cypress/e2e/auth.cy.js",
             "cypress/e2e/budgetChangeRequest.cy.js",
             "cypress/e2e/canDetail.cy.js",
+            "cypress/e2e/canFundingHistoryOrdering.cy.js",
             "cypress/e2e/canList.cy.js",
             "cypress/e2e/components.cy.js",
             "cypress/e2e/createAAAgreement.cy.js",
