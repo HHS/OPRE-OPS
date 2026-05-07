@@ -59,7 +59,9 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
 
     // Get the earliest obligate-by date from executing BLIs
     const getObligateByDate = (budgetLineItems = []) => {
-        const executingBlis = budgetLineItems.filter((bli) => bli.status === BLI_STATUS_IN_EXECUTION && bli.date_needed);
+        const executingBlis = budgetLineItems.filter(
+            (bli) => bli.status === BLI_STATUS_IN_EXECUTION && bli.date_needed
+        );
         if (executingBlis.length === 0) return null;
         const dates = executingBlis.map((bli) => new Date(bli.date_needed));
         return new Date(Math.min(...dates)).toISOString().split("T")[0];
