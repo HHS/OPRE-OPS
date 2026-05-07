@@ -109,6 +109,7 @@ function BudgetTeamRequisitionReviewCard({
                     {formatDateToMonthDayYear(requestDate)}
                 </div>
                 {!isCondensed && (
+                    /* TODO (PR4): Wire navigation to budget requisition review page */
                     <button
                         type="button"
                         className="usa-button--unstyled text-primary font-12px cursor-pointer"

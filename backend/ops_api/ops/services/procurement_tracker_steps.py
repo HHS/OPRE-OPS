@@ -5,16 +5,19 @@ from typing import Any, Dict, Optional, Tuple
 
 from flask import current_app
 from loguru import logger
-from sqlalchemy import Select, func, select
+from sqlalchemy import Select, and_, func, select
 from sqlalchemy.orm import selectinload
 
 from models import (
+    Agreement,
     AwardType,
+    DefaultProcurementTrackerStep,
     OpsEvent,
     OpsEventStatus,
     OpsEventType,
     ProcurementAction,
     ProcurementActionStatus,
+    ProcurementTracker,
     ProcurementTrackerStatus,
     ProcurementTrackerStep,
     ProcurementTrackerStepStatus,
@@ -531,6 +534,7 @@ class ProcurementTrackerStepService:
         budget_team_ids = self.db_session.execute(budget_team_query).scalars().all()
 
         fe_url = current_app.config.get("OPS_FRONTEND_URL", "http://localhost:3000")
+        # TODO (PR3/PR4): This URL points to budget requisition review page to be implemented
         review_url = f"{fe_url}/agreements/{agreement.id}/review-budget-requisition"
 
         message = (
@@ -825,14 +829,6 @@ class ProcurementTrackerStepService:
         Returns:
             List of ProcurementTrackerStep objects with pending requisitions
         """
-        from sqlalchemy import and_
-
-        from models import (
-            Agreement,
-            DefaultProcurementTrackerStep,
-            ProcurementTracker,
-        )
-
         # Get user roles
         user = self.db_session.get(User, user_id)
         if not user:
