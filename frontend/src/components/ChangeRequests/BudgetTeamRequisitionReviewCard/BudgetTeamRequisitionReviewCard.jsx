@@ -1,4 +1,5 @@
 import PropTypes from "prop-types";
+import { useNavigate } from "react-router-dom";
 import { formatDateToMonthDayYear, convertToCurrency } from "../../../helpers/utils";
 import { useGetAgreementName } from "../../../hooks/lookup.hooks";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
@@ -40,8 +41,14 @@ function BudgetTeamRequisitionReviewCard({
     isCondensed = false,
     forceHover = false
 }) {
+    const navigate = useNavigate();
     const agreementName = useGetAgreementName(agreementId);
     const requestorName = useGetUserFullNameFromId(requestorId);
+
+    const handleViewClick = (e) => {
+        e.preventDefault();
+        navigate(`/agreements/${agreementId}/review-budget-requisition`);
+    };
 
     return (
         <div
@@ -49,6 +56,7 @@ function BudgetTeamRequisitionReviewCard({
                 forceHover ? "bg-base-lightest border-base-lighter" : "border-base-light hover:border-base-lighter"
             }`}
             data-cy="budget-team-requisition-review-card"
+            data-testid="budget-team-requisition-review-card"
             style={{ minHeight: "8.375rem" }}
         >
             {!isCondensed && (
@@ -109,14 +117,14 @@ function BudgetTeamRequisitionReviewCard({
                     {formatDateToMonthDayYear(requestDate)}
                 </div>
                 {!isCondensed && (
-                    /* TODO (PR4): Wire navigation to budget requisition review page */
                     <button
                         type="button"
+                        onClick={handleViewClick}
                         className="usa-button--unstyled text-primary font-12px cursor-pointer"
                         data-cy="review-agreement-button"
                         aria-label={`Review agreement ${agreementName}`}
                     >
-                        Review Agreement
+                        Review
                         <FontAwesomeIcon
                             icon={faEye}
                             size="3x"
