@@ -33,6 +33,10 @@ const CurrencyInput = ({
     // decimal isn't stripped before the user finishes typing the cents.
     const [displayValue, setDisplayValue] = useState(value ?? "");
 
+    function handleChange(e) {
+        onChange(name, e.target.value);
+    }
+
     return (
         <div className={cx("usa-form-group", pending && "pending", className)}>
             <label
@@ -69,9 +73,6 @@ const CurrencyInput = ({
             />
         </div>
     );
-    function handleChange(e) {
-        onChange(name, e.target.value);
-    }
 };
 
 export default CurrencyInput;
