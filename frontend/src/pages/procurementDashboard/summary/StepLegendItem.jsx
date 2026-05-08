@@ -17,8 +17,11 @@ import Tag from "../../../components/UI/Tag/Tag";
  * @param {StepLegendItemProps} props
  * @returns {JSX.Element}
  */
+const LIGHT_BACKGROUND_STEPS = [1, 2, 3, 4];
+
 const StepLegendItem = ({ id, activeId, label, value, color, percent }) => {
     const isActive = activeId === id;
+    const textColor = LIGHT_BACKGROUND_STEPS.includes(id) ? "#1B1B1B" : "#FFFFFF";
     return (
         <div className="display-flex flex-justify margin-top-2 font-12px flex-align-center">
             <div className="display-flex flex-align-center flex-1">
@@ -39,7 +42,7 @@ const StepLegendItem = ({ id, activeId, label, value, color, percent }) => {
                     text={`${percent}%`}
                     label={label}
                     active={isActive}
-                    style={isActive ? { backgroundColor: color, color: "white" } : {}}
+                    style={isActive ? { backgroundColor: color, color: textColor, fontWeight: "bold" } : {}}
                 />
             </div>
         </div>

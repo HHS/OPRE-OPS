@@ -36,6 +36,14 @@ export const ProcurementDetailsTableRow = ({
         [agreement]
     );
 
+    const earliestPoPStart = useMemo(() => {
+        const dates = (agreement.services_components ?? [])
+            .map((sc) => sc.period_start)
+            .filter(Boolean)
+            .sort();
+        return dates[0] ? formatDateNeeded(dates[0]) : "TBD";
+    }, [agreement]);
+
     const researchProjectName = isSuccess ? getResearchProjectName(agreement) : NO_DATA;
     const procurementShopDisplay = isSuccess ? getProcurementShopDisplay(agreement) : NO_DATA;
     const agreementSubTotal = isSuccess ? (agreement?.agreement_subtotal ?? 0) : 0;
@@ -102,7 +110,7 @@ export const ProcurementDetailsTableRow = ({
                         </dl>
                         <dl className="font-12px margin-top-0">
                             <dt className="margin-0 text-base-dark">Earliest PoP - Start</dt>
-                            <dd className="margin-0">TBD</dd>
+                            <dd className="margin-0">{earliestPoPStart}</dd>
                         </dl>
                         <dl className="font-12px margin-top-0">
                             <dt className="margin-0 text-base-dark">Subtotal</dt>
