@@ -32,18 +32,16 @@ const CurrencyInput = ({
     // displayValue holds the raw formatted string (e.g. "5.") so a trailing
     // decimal isn't stripped before the user finishes typing the cents.
     const [displayValue, setDisplayValue] = useState(value ?? "");
-    const displayValueRef = useRef(displayValue);
-    displayValueRef.current = displayValue;
+    // Set to true on each user keystroke so the useEffect skips the parent's
+    // round-trip echo and doesn't overwrite the in-progress display string.
+    const skipNextSyncRef = useRef(false);
 
     useEffect(() => {
-        // Sync from parent when the logical value genuinely changes (e.g. form reset).
-        // Skip round-trip echoes of our own input so trailing decimals like "5." are preserved.
-        const incomingFloat = value == null || value === "" ? null : Number(value);
-        const currentFloat =
-            displayValueRef.current === "" ? null : parseFloat(String(displayValueRef.current).replace(/,/g, ""));
-        if (incomingFloat !== currentFloat) {
-            setDisplayValue(value ?? "");
+        if (skipNextSyncRef.current) {
+            skipNextSyncRef.current = false;
+            return;
         }
+        setDisplayValue(value ?? "");
     }, [value]);
 
     function handleChange(e) {
@@ -75,6 +73,7 @@ const CurrencyInput = ({
                 decimalScale={2}
                 placeholder={placeholder}
                 onValueChange={(values) => {
+                    skipNextSyncRef.current = true;
                     setDisplayValue(values.value);
                     const { floatValue } = values;
                     if (setEnteredAmount) {
