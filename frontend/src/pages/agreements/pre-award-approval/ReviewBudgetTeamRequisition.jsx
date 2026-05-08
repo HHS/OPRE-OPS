@@ -1,4 +1,3 @@
-import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import App from "../../../App";
 import PageHeader from "../../../components/UI/PageHeader";
@@ -8,27 +7,21 @@ import Accordion from "../../../components/UI/Accordion";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import { convertCodeForDisplay, formatDateToMonthDayYear } from "../../../helpers/utils";
 import icons from "../../../uswds/img/sprite.svg";
-import usePreAwardApprovalData from "./usePreAwardApprovalData";
 import { PreAwardBudgetLinesReviewAccordion } from "./PreAwardBudgetLinesReviewAccordion";
 import FileUploadButton from "../../../components/UI/Button/FileUploadButton";
 import Input from "../../../components/UI/Form/Input";
+import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
+import useReviewBudgetTeamRequisition from "./ReviewBudgetTeamRequisition.hooks";
 
 /**
- * @component - Renders a read-only page for Budget Team to review pre-award requisition information
- * Phase 3: Display-only with disabled form fields (no handlers)
- * Phase 4: Will add handlers, validation, and submission
+ * @component - Budget Team Requisition Review page with full functionality
+ * Phase 4: Form fields enabled with validation and submission
  * @returns {React.ReactElement} - The rendered component
  */
 export const ReviewBudgetTeamRequisition = () => {
     const { id } = useParams();
     const agreementId = Number(id);
 
-    // Get current user and check for BUDGET_TEAM role
-    const currentUser = useSelector((state) => state.auth?.activeUser);
-    const userRoles = currentUser?.roles?.map((role) => role.name) || [];
-    const hasPermission = userRoles.includes("BUDGET_TEAM");
-
-    // Fetch data using shared hook
     const {
         agreement,
         isLoading,
@@ -39,17 +32,27 @@ export const ReviewBudgetTeamRequisition = () => {
         servicesComponents,
         groupedBudgetLinesByServicesComponent,
         preAwardMemoDocuments,
-        step5,
+        requestorNotes,
+        reviewerNotes,
         preAwardRequestorName,
-        preAwardApprovalRequestedDate
-    } = usePreAwardApprovalData(agreementId);
-
-    // Get notes from step5
-    const requestorNotes = step5?.requestor_notes;
-    const reviewerNotes = step5?.reviewer_notes; // DD notes
-
-    // Check if already processed
-    const approvalAlreadyProcessed = step5?.requisition_approved_by !== null && step5?.requisition_approved_by !== undefined;
+        preAwardApprovalRequestedDate,
+        requisitionNumber,
+        setRequisitionNumber,
+        requisitionDate,
+        setRequisitionDate,
+        attestationChecked,
+        setAttestationChecked,
+        showModal,
+        setShowModal,
+        modalProps,
+        isSubmitting,
+        submitError,
+        handleApprove,
+        handleCancel,
+        isFormValid,
+        hasPermission,
+        approvalAlreadyProcessed
+    } = useReviewBudgetTeamRequisition(agreementId);
 
     if (isLoading) {
         return <p>Loading...</p>;
@@ -81,6 +84,16 @@ export const ReviewBudgetTeamRequisition = () => {
                 Shop after the Budget Team completes the Requisition Request. Complete the Requisition Request outside
                 of OPS and then enter the Requisition # and Date.
             </p>
+
+            {submitError && (
+                <SimpleAlert
+                    type="error"
+                    heading="Submission Error"
+                    message={submitError}
+                    isClosable={true}
+                    headingLevel={2}
+                />
+            )}
 
             {approvalAlreadyProcessed && (
                 <SimpleAlert
@@ -200,12 +213,11 @@ export const ReviewBudgetTeamRequisition = () => {
                         <Input
                             name="requisition-number"
                             label="Requisition #"
-                            type="text"
-                            value=""
-                            onChange={() => {}} // Phase 3: no functionality
-                            disabled={true}
+                            value={requisitionNumber}
+                            onChange={(name, value) => setRequisitionNumber(value)}
+                            isDisabled={isSubmitting || approvalAlreadyProcessed}
                             messages={[]}
-                            required={true}
+                            isRequired={true}
                             maxLength={100}
                         />
                     </div>
@@ -222,7 +234,9 @@ export const ReviewBudgetTeamRequisition = () => {
                             id="requisition-date"
                             name="requisition-date"
                             type="date"
-                            disabled={true}
+                            value={requisitionDate}
+                            onChange={(e) => setRequisitionDate(e.target.value)}
+                            disabled={isSubmitting || approvalAlreadyProcessed}
                         />
                     </div>
                 </div>
@@ -237,14 +251,14 @@ export const ReviewBudgetTeamRequisition = () => {
 
                 <div className="grid-row grid-gap margin-top-3">
                     <div className="grid-col-6">
-                        <h3 className="font-sans-sm text-semibold margin-bottom-2">Submitter&apos;s Notes</h3>
+                        <h3 className="font-sans-sm text-semibold margin-bottom-3">Submitter&apos;s Notes</h3>
                         <div style={{ minHeight: "8.5rem", whiteSpace: "pre-wrap" }}>
                             {requestorNotes || "No notes provided"}
                         </div>
                     </div>
 
                     <div className="grid-col-6">
-                        <h3 className="font-sans-sm text-semibold margin-bottom-2">Division Director Notes</h3>
+                        <h3 className="font-sans-sm text-semibold margin-bottom-3">Division Director Notes</h3>
                         <div style={{ minHeight: "8.5rem", whiteSpace: "pre-wrap" }}>
                             {reviewerNotes || "No notes provided"}
                         </div>
@@ -260,7 +274,9 @@ export const ReviewBudgetTeamRequisition = () => {
                         id="attestation"
                         type="checkbox"
                         name="attestation"
-                        disabled={true} // Phase 3: no functionality
+                        checked={attestationChecked}
+                        onChange={(e) => setAttestationChecked(e.target.checked)}
+                        disabled={isSubmitting || approvalAlreadyProcessed}
                     />
                     <label
                         className="usa-checkbox__label"
@@ -277,7 +293,8 @@ export const ReviewBudgetTeamRequisition = () => {
                 <button
                     className="usa-button usa-button--unstyled margin-right-2"
                     type="button"
-                    disabled={true} // Phase 3: no functionality
+                    onClick={handleCancel}
+                    disabled={isSubmitting}
                     data-cy="cancel-requisition-btn"
                 >
                     Cancel
@@ -286,12 +303,26 @@ export const ReviewBudgetTeamRequisition = () => {
                 <button
                     className="usa-button"
                     type="button"
-                    disabled={true} // Phase 3: no functionality
+                    onClick={handleApprove}
+                    disabled={isSubmitting || !isFormValid() || approvalAlreadyProcessed}
                     data-cy="approve-requisition-btn"
                 >
-                    Approve Pre-Award Requisition
+                    {isSubmitting ? "Submitting..." : "Approve Pre-Award Requisition"}
                 </button>
             </div>
+
+            {/* Confirmation Modal */}
+            {showModal && (
+                <ConfirmationModal
+                    heading={modalProps.heading}
+                    description={modalProps.description}
+                    setShowModal={setShowModal}
+                    actionButtonText={modalProps.actionButtonText}
+                    secondaryButtonText={modalProps.secondaryButtonText}
+                    handleConfirm={modalProps.handleConfirm}
+                    handleSecondary={modalProps.handleSecondary}
+                />
+            )}
         </App>
     );
 };
