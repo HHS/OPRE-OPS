@@ -110,9 +110,8 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
 
         setShowModal(true);
         setModalProps({
-            heading: "Are you sure you want to approve this Pre-Award Requisition?",
-            description:
-                "The COR will send the Final Consensus Memo to the Procurement Shop and the agreement will be locked from editing until after it's awarded.",
+            heading:
+                "Are you sure you want to approve this Pre-Award Requisition? The COR will send the Final Consensus Memo to the Procurement Shop and the agreement will be locked from editing until after it's awarded.",
             actionButtonText: "Approve",
             secondaryButtonText: "Cancel",
             handleConfirm: async () => {
@@ -132,8 +131,8 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
 
                     setAlert({
                         type: "success",
-                        heading: "Pre-Award Requisition Approved",
-                        message: `${agreement?.name} agreement has been successfully approved for Pre-Award Requisition.`,
+                        heading: "Pre-Award Requisition approved",
+                        message: `Budget Team has approved the Pre-Award Requisition for Agreement ${agreement?.name}. The Final Consensus Memo can now be sent to the Procurement Shop.`,
                         redirectUrl: "/agreements?filter=change-requests"
                     });
                 } catch (error) {

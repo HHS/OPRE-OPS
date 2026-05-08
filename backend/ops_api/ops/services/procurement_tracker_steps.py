@@ -475,8 +475,8 @@ class ProcurementTrackerStepService:
             # Budget team approved requisition - notify original requester
             if step.pre_award_approval_requested_by:
                 message = (
-                    f"{current_user.full_name} has approved the Pre-Award Requisition for Agreement {agreement.display_name}. "
-                    f"The Final Consensus Memo can now be sent to the Procurement Shop."
+                    "This agreement has been approved for Pre-Award. Please send the Final Consensus Memo to the "
+                    "Procurement Shop and continue your progress in the Procurement Tracker."
                 )
 
                 notification_service.create(
