@@ -60,7 +60,8 @@ describe("CurrencyInput", () => {
         const input = screen.getByRole("textbox");
         await userEvent.type(input, "5.");
 
-        // Simulate the parent echoing back the floatValue (5) after onValueChange fires
+        // Simulate the parent echoing back the floatValue (5) after onValueChange fires.
+        // The guard should block this round-trip and preserve the trailing decimal.
         rerender(
             <CurrencyInput
                 name="amount"
@@ -71,6 +72,19 @@ describe("CurrencyInput", () => {
         );
 
         expect(input).toHaveDisplayValue(/5\./);
+
+        // Simulate the parent then pushing a genuinely new value (no user typing).
+        // The guard should allow this through and update the display.
+        rerender(
+            <CurrencyInput
+                name="amount"
+                value={7}
+                setEnteredAmount={setEnteredAmount}
+                onChange={onChange}
+            />
+        );
+
+        expect(input).toHaveDisplayValue("7");
     });
 
     it("clears the input when parent resets value to empty", () => {
