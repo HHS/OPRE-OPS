@@ -1,4 +1,5 @@
 import cx from "clsx";
+import { useState, useEffect } from "react";
 import CurrencyFormat from "react-currency-format";
 
 /**
@@ -28,6 +29,15 @@ const CurrencyInput = ({
     placeholder = "$",
     ...rest
 }) => {
+    // Internal display value tracks mid-entry states (e.g. trailing decimal "5.")
+    // that would otherwise be stripped by the controlled value prop.
+    const [displayValue, setDisplayValue] = useState(value ?? "");
+
+    // Keep displayValue in sync when the external value changes (e.g. form reset).
+    useEffect(() => {
+        setDisplayValue(value ?? "");
+    }, [value]);
+
     return (
         <div className={cx("usa-form-group", pending && "pending", className)}>
             <label
@@ -47,26 +57,26 @@ const CurrencyInput = ({
             <CurrencyFormat
                 id={name}
                 name={name}
-                value={value}
+                value={displayValue}
                 className={`usa-input ${messages.length ? "usa-input--error" : ""} `}
                 thousandSeparator={true}
                 decimalScale={2}
                 placeholder={placeholder}
                 onValueChange={(values) => {
-                    const { floatValue } = values;
-                    // Explicitly check if floatValue is a number (including 0)
+                    const { floatValue, value: rawValue } = values;
+                    // Preserve internal display value so trailing decimals are not stripped.
+                    setDisplayValue(rawValue);
+                    // Notify parent of the raw string for uncontrolled-style updates.
+                    onChange(name, rawValue);
+                    // Notify caller of the resolved float (undefined becomes null).
                     if (setEnteredAmount) {
                         setEnteredAmount(typeof floatValue === "number" ? floatValue : null);
                     }
                 }}
-                onChange={handleChange}
                 {...rest}
             />
         </div>
     );
-    function handleChange(e) {
-        onChange(name, e.target.value);
-    }
 };
 
 export default CurrencyInput;
