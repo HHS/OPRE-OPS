@@ -44,6 +44,35 @@ describe("CurrencyInput", () => {
         expect(setEnteredAmount).toHaveBeenLastCalledWith(5.5);
     });
 
+    it("does not strip a trailing decimal when the parent re-renders with the same float", async () => {
+        const setEnteredAmount = vi.fn();
+        const onChange = vi.fn();
+
+        const { rerender } = render(
+            <CurrencyInput
+                name="amount"
+                value=""
+                setEnteredAmount={setEnteredAmount}
+                onChange={onChange}
+            />
+        );
+
+        const input = screen.getByRole("textbox");
+        await userEvent.type(input, "5.");
+
+        // Simulate the parent echoing back the floatValue (5) after onValueChange fires
+        rerender(
+            <CurrencyInput
+                name="amount"
+                value={5}
+                setEnteredAmount={setEnteredAmount}
+                onChange={onChange}
+            />
+        );
+
+        expect(input).toHaveDisplayValue(/5\./);
+    });
+
     it("clears the input when parent resets value to empty", () => {
         const setEnteredAmount = vi.fn();
         const onChange = vi.fn();
