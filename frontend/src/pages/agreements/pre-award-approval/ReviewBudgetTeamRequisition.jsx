@@ -76,10 +76,10 @@ export const ReviewBudgetTeamRequisition = () => {
             />
 
             <p className="margin-y-3">
-                Review the agreement details and Final Consensus Memo to make sure everything looks up to date. Enter
-                the Requisition # and Requisition Date for the requisition you submitted outside of OPS. Once you
-                approve, the COR will send the Final Consensus Memo to the Procurement Shop and the agreement will be
-                locked from editing until the contract is Awarded.
+                Review the agreement details and Final Consensus Memo attached below. This agreement has been approved
+                by the Division Director for Pre-Award, and the Final Consensus Memo will be sent to the Procurement
+                Shop after the Budget Team completes the Requisition Request. Complete the Requisition Request outside
+                of OPS and then enter the Requisition # and Date.
             </p>
 
             {approvalAlreadyProcessed && (
