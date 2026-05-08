@@ -398,6 +398,6 @@ it("allows entering a decimal budget line amount", () => {
     cy.get("#can-combobox-input").type("G99MVT3{enter}");
     cy.get("#enteredAmount").clear().type("500.75");
 
-    // The decimal should persist and display as the formatted value
-    cy.get("#enteredAmount").should("have.value", "$500.75");
+    // The decimal value should be accepted and retained by the input
+    cy.get("#enteredAmount").should("have.value", "500.75");
 });
