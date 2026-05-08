@@ -24,7 +24,8 @@ export const RequestAwardApproval = () => {
         submitError,
         isSubmitting,
         hasApprovalBeenRequested,
-        hasBLIInReview
+        hasBLIInReview,
+        isStep5Completed
     } = useRequestAwardApproval(agreementId);
 
     if (isLoading) {
@@ -40,10 +41,20 @@ export const RequestAwardApproval = () => {
 
             <p className="margin-y-3">
                 Review the agreement details below to ensure the signed award has been uploaded, CLINs have been
-                entered, and Vendor information is complete. The Budget Team will review everything before changing
-                the agreement to Awarded status in OPS. Once approved, you can complete Step 6 (Award) in the
-                Procurement Tracker.
+                entered, and Vendor information is complete. The Budget Team will review everything before changing the
+                agreement to Awarded status in OPS. Once approved, you can complete Step 6 (Award) in the Procurement
+                Tracker.
             </p>
+
+            {!isStep5Completed && (
+                <SimpleAlert
+                    type="warning"
+                    heading="Step 5 Not Completed"
+                    message="Step 5 (Pre-Award) must be completed before requesting Award Approval. Please complete Step 5 first."
+                    isClosable={false}
+                    headingLevel={2}
+                />
+            )}
 
             {hasApprovalBeenRequested && (
                 <SimpleAlert
@@ -85,8 +96,8 @@ export const RequestAwardApproval = () => {
             <section className="margin-top-4">
                 <h2>Add CLINs to Budget Lines</h2>
                 <p>
-                    Ensure all CLINs have been entered for this agreement. You can add or edit CLINs from the
-                    Agreement Details page.
+                    Ensure all CLINs have been entered for this agreement. You can add or edit CLINs from the Agreement
+                    Details page.
                 </p>
                 <a
                     href={`/agreements/${agreementId}?mode=edit`}
@@ -102,7 +113,7 @@ export const RequestAwardApproval = () => {
                     name="notes"
                     label="Notes (Optional)"
                     value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
+                    onChange={(_name, value) => setNotes(value)}
                     maxLength={750}
                     messages={notes.length > 750 ? ["Notes must be 750 characters or less"] : []}
                 />
@@ -120,7 +131,7 @@ export const RequestAwardApproval = () => {
                 <button
                     className="usa-button"
                     onClick={handleSubmit}
-                    disabled={isSubmitting || hasApprovalBeenRequested || hasBLIInReview}
+                    disabled={isSubmitting || hasApprovalBeenRequested || hasBLIInReview || !isStep5Completed}
                     data-cy="request-award-approval-submit"
                 >
                     {isSubmitting ? "Requesting..." : "Request Award Approval"}

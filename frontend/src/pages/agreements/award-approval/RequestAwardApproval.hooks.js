@@ -1,7 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useGetAgreementByIdQuery, useUpdateProcurementTrackerStepMutation } from "../../../api/opsAPI";
+import {
+    useGetAgreementByIdQuery,
+    useGetProcurementTrackersByAgreementIdQuery,
+    useUpdateProcurementTrackerStepMutation
+} from "../../../api/opsAPI";
 import { getLocalISODate } from "../../../helpers/utils";
+import { PROCUREMENT_STEP_STATUS } from "../../../components/Agreements/ProcurementTracker/ProcurementTracker.constants";
 
 /**
  * Custom hook for the Request Award Approval page
@@ -16,20 +21,36 @@ export default function useRequestAwardApproval(agreementId) {
 
     const [updateProcurementTrackerStep] = useUpdateProcurementTrackerStepMutation();
 
-    // Fetch agreement data with procurement tracker
-    const { data: agreement, isLoading } = useGetAgreementByIdQuery(agreementId, {
+    // Fetch agreement data
+    const { data: agreement, isLoading: isLoadingAgreement } = useGetAgreementByIdQuery(agreementId, {
         refetchOnMountOrArgChange: true
     });
 
-    // Get Step 6 from procurement tracker
-    const procurementTracker = agreement?.procurement_tracker;
-    const step6 = procurementTracker?.steps?.find((/** @type {any} */ step) => step.step_number === 6);
+    // Fetch procurement tracker data
+    const { data: trackersData, isLoading: isLoadingTrackers } = useGetProcurementTrackersByAgreementIdQuery(
+        agreementId,
+        {
+            skip: !agreementId,
+            refetchOnMountOrArgChange: true
+        }
+    );
+
+    // Get active tracker and steps
+    const trackers = trackersData?.data || [];
+    const activeTracker = trackers.find((tracker) => tracker.status === "ACTIVE");
+    const step5 = activeTracker?.steps?.find((/** @type {any} */ step) => step.step_number === 5);
+    const step6 = activeTracker?.steps?.find((/** @type {any} */ step) => step.step_number === 6);
+
+    // Check if Step 5 is completed (prerequisite)
+    const isStep5Completed = step5?.status === PROCUREMENT_STEP_STATUS.COMPLETED;
 
     // Check if approval has been requested
     const hasApprovalBeenRequested = step6?.approval_requested === true;
 
     // Check if any BLI is in review status
     const hasBLIInReview = agreement?.budget_line_items?.some((/** @type {any} */ bli) => bli.in_review) ?? false;
+
+    const isLoading = isLoadingAgreement || isLoadingTrackers;
 
     /**
      * Handle form submission - request award approval
@@ -53,22 +74,20 @@ export default function useRequestAwardApproval(agreementId) {
                 }
             }).unwrap();
 
-            // Navigate back to procurement tracker
-            navigate(`/agreements/${agreementId}/procurement-tracker`);
+            // Navigate back to procurement tracker with success state
+            navigate(`/agreements/${agreementId}/procurement-tracker`, { state: { success: true } });
         } catch (error) {
             console.error("Failed to request award approval:", error);
-            setSubmitError(
-                error?.data?.message || "Failed to request award approval. Please try again."
-            );
+            setSubmitError(error?.data?.message || "Failed to request award approval. Please try again.");
             setIsSubmitting(false);
         }
     };
 
     /**
-     * Handle cancel - navigate back to procurement tracker
+     * Handle cancel - navigate back to previous page
      */
     const handleCancel = () => {
-        navigate(`/agreements/${agreementId}/procurement-tracker`);
+        navigate(-1);
     };
 
     return {
@@ -81,6 +100,7 @@ export default function useRequestAwardApproval(agreementId) {
         submitError,
         isSubmitting,
         hasApprovalBeenRequested,
-        hasBLIInReview
+        hasBLIInReview,
+        isStep5Completed
     };
 }

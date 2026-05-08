@@ -99,208 +99,210 @@ const ProcurementTrackerStepSix = ({
                 />
             )}
 
-    {/* State 1: Read-Only Completed View */}
-    {isReadOnly && stepStatus === PROCUREMENT_STEP_STATUS.COMPLETED && (
-        <div className="display-flex">
-            <TermTag
-                iconName="check"
-                iconColor="green"
-                tagStyle="primaryDarkTextWhiteBackground"
-                label={`Completed by ${stepSixCompletedByUserName || "Unknown"} on ${stepSixDateCompletedLabel || "Unknown"}`}
-            />
-            {stepSixNotesLabel && (
-                <div className="margin-left-2">
-                    <strong>Notes:</strong> {stepSixNotesLabel}
-                </div>
-            )}
-        </div>
-    )}
-
-    {/* State 2: Active/Pending Edit Form */}
-    {!isReadOnly && (stepStatus === PROCUREMENT_STEP_STATUS.PENDING || stepStatus === PROCUREMENT_STEP_STATUS.ACTIVE) && (
-            <>
-                <p className="margin-top-0">
-                    This step tracks the final award milestone. Request Award Approval from the budget team, then
-                    complete this step after receiving the signed award.
-                </p>
-
-                {/* Target Completion Date */}
-                {!stepSixTargetCompletionDateLabel && (
-                    <div className="margin-bottom-3">
-                        <label
-                            className="usa-label margin-top-0"
-                            htmlFor="target-completion-date-step-6"
-                        >
-                            Target Completion Date (Optional)
-                        </label>
-                        <div className="display-flex flex-align-end">
-                            <MemoizedDatePicker
-                                name="target-completion-date-step-6"
-                                value={targetCompletionDate}
-                                onChange={
-                                    /** @param {any} e */ (e) => {
-                                        runValidate("targetCompletionDate", e.target.value);
-                                        setTargetCompletionDate(e.target.value);
-                                    }
-                                }
-                                minDate={getLocalISODate()}
-                                aria-label="target-completion-date-step-6"
-                                messages={validatorRes.getErrors("targetCompletionDate") || []}
-                            />
-                            <button
-                                className="usa-button margin-left-2"
-                                onClick={() => handleTargetCompletionDateSubmit(stepSixData?.id)}
-                                disabled={isTargetCompletionDateSaveDisabled}
-                                data-cy="save-target-completion-date-step-6"
-                            >
-                                Save
-                            </button>
+            {/* State 1: Read-Only Completed View */}
+            {isReadOnly && stepStatus === PROCUREMENT_STEP_STATUS.COMPLETED && (
+                <div className="display-flex">
+                    <TermTag
+                        iconName="check"
+                        iconColor="green"
+                        tagStyle="primaryDarkTextWhiteBackground"
+                        label={`Completed by ${stepSixCompletedByUserName || "Unknown"} on ${stepSixDateCompletedLabel || "Unknown"}`}
+                    />
+                    {stepSixNotesLabel && (
+                        <div className="margin-left-2">
+                            <strong>Notes:</strong> {stepSixNotesLabel}
                         </div>
-                    </div>
-                )}
-
-                {stepSixTargetCompletionDateLabel && (
-                    <div className="margin-bottom-3">
-                        <strong>Target Completion Date:</strong> {stepSixTargetCompletionDateLabel}
-                    </div>
-                )}
-
-                {/* Request Award Approval Button */}
-                <div className="margin-bottom-3">
-                    <button
-                        type="button"
-                        className="usa-button"
-                        onClick={() => navigate(`/agreements/${agreementId}/award-approval`)}
-                        disabled={isRequestBtnDisabled}
-                        title={
-                            isRequestBtnDisabled
-                                ? "Award Approval cannot be requested right now. Ensure this step is unlocked, Award Approval has not already been requested, and that no Budget Line Items are currently in review."
-                                : undefined
-                        }
-                        data-cy="request-award-approval-btn"
-                    >
-                        Request Award Approval
-                    </button>
-                    {stepSixData?.approval_requested && (
-                        <span className="margin-left-2">
-                            <FontAwesomeIcon
-                                icon={faCircleCheck}
-                                className="text-green margin-right-1"
-                            />
-                            Award Approval Requested
-                        </span>
                     )}
                 </div>
+            )}
 
-                <fieldset className="usa-fieldset margin-top-0">
-                    {/* Main Checkbox */}
-                    <div className="usa-checkbox">
-                        <input
-                            className="usa-checkbox__input"
-                            id="award-checkbox-step-6"
-                            type="checkbox"
-                            name="award-checkbox-step-6"
-                            checked={isAwardCheckboxChecked}
-                            onChange={(e) => setIsAwardCheckboxChecked(e.target.checked)}
-                            disabled={isAwardCheckboxDisabled}
-                            data-cy="award-checkbox-step-6"
-                        />
-                        <label
-                            className="usa-checkbox__label"
-                            htmlFor="award-checkbox-step-6"
-                        >
-                            I received the signed award and it has been uploaded. CLINs have been entered and I
-                            requested Award Approval by the Budget Team.
-                        </label>
-                    </div>
+            {/* State 2: Active/Pending Edit Form */}
+            {!isReadOnly &&
+                (stepStatus === PROCUREMENT_STEP_STATUS.PENDING || stepStatus === PROCUREMENT_STEP_STATUS.ACTIVE) && (
+                    <>
+                        <p className="margin-top-0">
+                            This step tracks the final award milestone. Request Award Approval from the budget team,
+                            then complete this step after receiving the signed award.
+                        </p>
 
-                    {/* Task Completed By */}
-                    <UsersComboBox
-                        selectedUser={selectedUser}
-                        setSelectedUser={setSelectedUser}
-                        users={authorizedUsers}
-                        label="Task Completed By"
-                        disabled={isUsersComboBoxDisabled}
-                        errorMessage={validatorRes.getErrors("users")?.[0]}
-                        onChange={(value) => runValidate("users", value)}
-                    />
+                        {/* Target Completion Date */}
+                        {!stepSixTargetCompletionDateLabel && (
+                            <div className="margin-bottom-3">
+                                <label
+                                    className="usa-label margin-top-0"
+                                    htmlFor="target-completion-date-step-6"
+                                >
+                                    Target Completion Date (Optional)
+                                </label>
+                                <div className="display-flex flex-align-end">
+                                    <MemoizedDatePicker
+                                        name="target-completion-date-step-6"
+                                        value={targetCompletionDate}
+                                        onChange={
+                                            /** @param {any} e */ (e) => {
+                                                runValidate("targetCompletionDate", e.target.value);
+                                                setTargetCompletionDate(e.target.value);
+                                            }
+                                        }
+                                        minDate={getLocalISODate()}
+                                        aria-label="target-completion-date-step-6"
+                                        messages={validatorRes.getErrors("targetCompletionDate") || []}
+                                    />
+                                    <button
+                                        className="usa-button margin-left-2"
+                                        onClick={() => handleTargetCompletionDateSubmit(stepSixData?.id)}
+                                        disabled={isTargetCompletionDateSaveDisabled}
+                                        data-cy="save-target-completion-date-step-6"
+                                    >
+                                        Save
+                                    </button>
+                                </div>
+                            </div>
+                        )}
 
-                    {/* Date Completed */}
-                    <MemoizedDatePicker
-                        name="date-completed-step-6"
-                        label="Date Completed"
-                        value={stepSixDateCompleted}
-                        onChange={
-                            /** @param {any} e */ (e) => {
-                                runValidate("dateCompleted", e.target.value);
-                                setStepSixDateCompleted(e.target.value);
-                            }
-                        }
-                        maxDate={getLocalISODate()}
-                        isDisabled={isAwardFieldsDisabled}
-                        aria-label="date-completed-step-6"
-                        messages={validatorRes.getErrors("dateCompleted") || []}
-                    />
+                        {stepSixTargetCompletionDateLabel && (
+                            <div className="margin-bottom-3">
+                                <strong>Target Completion Date:</strong> {stepSixTargetCompletionDateLabel}
+                            </div>
+                        )}
 
-                    {/* Notes */}
-                    <TextArea
-                        name="notes-step-6"
-                        label="Notes (Optional)"
-                        value={stepSixNotes}
-                        onChange={(e) => setStepSixNotes(e.target.value)}
-                        disabled={isAwardFieldsDisabled}
-                        maxLength={750}
-                        data-cy="notes-step-6"
-                    />
+                        {/* Request Award Approval Button */}
+                        <div className="margin-bottom-3">
+                            <button
+                                type="button"
+                                className="usa-button"
+                                onClick={() => navigate(`/agreements/${agreementId}/award-approval`)}
+                                disabled={isRequestBtnDisabled}
+                                title={
+                                    isRequestBtnDisabled
+                                        ? "Award Approval cannot be requested right now. Ensure this step is unlocked, Award Approval has not already been requested, and that no Budget Line Items are currently in review."
+                                        : undefined
+                                }
+                                data-cy="request-award-approval-btn"
+                            >
+                                Request Award Approval
+                            </button>
+                            {stepSixData?.approval_requested && (
+                                <span className="margin-left-2">
+                                    <FontAwesomeIcon
+                                        icon={faCircleCheck}
+                                        className="text-green margin-right-1"
+                                    />
+                                    Award Approval Requested
+                                </span>
+                            )}
+                        </div>
 
-                    {/* Action Buttons */}
-                    <div className="display-flex flex-justify">
-                        <button
-                            className="usa-button usa-button--unstyled"
-                            onClick={cancelModalStepSix}
-                            disabled={isDisabled}
-                            data-cy="cancel-step-6"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            className="usa-button"
-                            onClick={() => handleStepSixComplete(stepSixData?.id)}
-                            disabled={
-                                isDisabled ||
-                                validatorRes.hasErrors("dateCompleted") ||
-                                validatorRes.hasErrors("users") ||
-                                !selectedUser ||
-                                !stepSixDateCompleted ||
-                                !isAwardCheckboxChecked
-                            }
-                            data-cy="complete-step-6"
-                        >
-                            Complete Step 6
-                        </button>
-                    </div>
-                </fieldset>
-            </>
-    )}
+                        <fieldset className="usa-fieldset margin-top-0">
+                            {/* Main Checkbox */}
+                            <div className="usa-checkbox">
+                                <input
+                                    className="usa-checkbox__input"
+                                    id="award-checkbox-step-6"
+                                    type="checkbox"
+                                    name="award-checkbox-step-6"
+                                    checked={isAwardCheckboxChecked}
+                                    onChange={(e) => setIsAwardCheckboxChecked(e.target.checked)}
+                                    disabled={isAwardCheckboxDisabled}
+                                    data-cy="award-checkbox-step-6"
+                                />
+                                <label
+                                    className="usa-checkbox__label"
+                                    htmlFor="award-checkbox-step-6"
+                                >
+                                    I received the signed award and it has been uploaded. CLINs have been entered and I
+                                    requested Award Approval by the Budget Team.
+                                </label>
+                            </div>
 
-    {/* State 3: Completed Non-ReadOnly View */}
-    {!isReadOnly && stepStatus === PROCUREMENT_STEP_STATUS.COMPLETED && (
-            <div className="display-flex flex-align-center">
-                <FontAwesomeIcon
-                    icon={faCircleCheck}
-                    className="text-green margin-right-1"
-                    size="lg"
-                />
-                <span>
-                    Completed by {stepSixCompletedByUserName || "Unknown"} on {stepSixDateCompletedLabel || "Unknown"}
-                </span>
-                {stepSixNotesLabel && (
-                    <div className="margin-left-2">
-                        <strong>Notes:</strong> {stepSixNotesLabel}
-                    </div>
+                            {/* Task Completed By */}
+                            <UsersComboBox
+                                selectedUser={selectedUser}
+                                setSelectedUser={setSelectedUser}
+                                users={authorizedUsers}
+                                label="Task Completed By"
+                                disabled={isUsersComboBoxDisabled}
+                                errorMessage={validatorRes.getErrors("users")?.[0]}
+                                onChange={(value) => runValidate("users", value)}
+                            />
+
+                            {/* Date Completed */}
+                            <MemoizedDatePicker
+                                name="date-completed-step-6"
+                                label="Date Completed"
+                                value={stepSixDateCompleted}
+                                onChange={
+                                    /** @param {any} e */ (e) => {
+                                        runValidate("dateCompleted", e.target.value);
+                                        setStepSixDateCompleted(e.target.value);
+                                    }
+                                }
+                                maxDate={getLocalISODate()}
+                                isDisabled={isAwardFieldsDisabled}
+                                aria-label="date-completed-step-6"
+                                messages={validatorRes.getErrors("dateCompleted") || []}
+                            />
+
+                            {/* Notes */}
+                            <TextArea
+                                name="notes-step-6"
+                                label="Notes (Optional)"
+                                value={stepSixNotes}
+                                onChange={(e) => setStepSixNotes(e.target.value)}
+                                disabled={isAwardFieldsDisabled}
+                                maxLength={750}
+                                data-cy="notes-step-6"
+                            />
+
+                            {/* Action Buttons */}
+                            <div className="display-flex flex-justify">
+                                <button
+                                    className="usa-button usa-button--unstyled"
+                                    onClick={cancelModalStepSix}
+                                    disabled={isDisabled}
+                                    data-cy="cancel-step-6"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    className="usa-button"
+                                    onClick={() => handleStepSixComplete(stepSixData?.id)}
+                                    disabled={
+                                        isDisabled ||
+                                        validatorRes.hasErrors("dateCompleted") ||
+                                        validatorRes.hasErrors("users") ||
+                                        !selectedUser ||
+                                        !stepSixDateCompleted ||
+                                        !isAwardCheckboxChecked
+                                    }
+                                    data-cy="complete-step-6"
+                                >
+                                    Complete Step 6
+                                </button>
+                            </div>
+                        </fieldset>
+                    </>
                 )}
-            </div>
-    )}
+
+            {/* State 3: Completed Non-ReadOnly View */}
+            {!isReadOnly && stepStatus === PROCUREMENT_STEP_STATUS.COMPLETED && (
+                <div className="display-flex flex-align-center">
+                    <FontAwesomeIcon
+                        icon={faCircleCheck}
+                        className="text-green margin-right-1"
+                        size="lg"
+                    />
+                    <span>
+                        Completed by {stepSixCompletedByUserName || "Unknown"} on{" "}
+                        {stepSixDateCompletedLabel || "Unknown"}
+                    </span>
+                    {stepSixNotesLabel && (
+                        <div className="margin-left-2">
+                            <strong>Notes:</strong> {stepSixNotesLabel}
+                        </div>
+                    )}
+                </div>
+            )}
         </>
     );
 };

@@ -32,7 +32,7 @@ import ReportingPage from "./pages/reporting/ReportingPage";
 import UserAdmin from "./pages/users/admin/UserAdmin.jsx";
 import ReviewAgreement from "./pages/agreements/review/ReviewAgreement";
 import { RequestPreAwardApproval, ApprovePreAwardApproval } from "./pages/agreements/pre-award-approval";
-import RequestAwardApproval from "./pages/agreements/award-approval/RequestAwardApproval";
+import { RequestAwardApproval } from "./pages/agreements/award-approval";
 import UserDetail from "./pages/users/detail/UserDetail";
 import UploadDocument from "./components/Agreements/Documents/UploadDocument.jsx";
 import EditUser from "./pages/users/edit/EditUser";
