@@ -398,6 +398,7 @@ it("allows entering a decimal budget line amount", () => {
     cy.get("#can-combobox-input").type("G99MVT3{enter}");
     cy.get("#enteredAmount").clear().type("500.75");
 
-    // The decimal value should be accepted and retained by the input
+    // The decimal value should be accepted and retained by the input.
+    // No cleanup needed — the test stops before submitting, so no agreement is created.
     cy.get("#enteredAmount").should("have.value", "500.75");
 });

@@ -41,6 +41,31 @@ describe("CurrencyInput", () => {
         const input = screen.getByRole("textbox");
         await userEvent.type(input, "5.50");
 
-        expect(setEnteredAmount).toHaveBeenCalledWith(5.5);
+        expect(setEnteredAmount).toHaveBeenLastCalledWith(5.5);
+    });
+
+    it("clears the input when parent resets value to empty", () => {
+        const setEnteredAmount = vi.fn();
+        const onChange = vi.fn();
+
+        const { rerender } = render(
+            <CurrencyInput
+                name="amount"
+                value={500}
+                setEnteredAmount={setEnteredAmount}
+                onChange={onChange}
+            />
+        );
+
+        rerender(
+            <CurrencyInput
+                name="amount"
+                value=""
+                setEnteredAmount={setEnteredAmount}
+                onChange={onChange}
+            />
+        );
+
+        expect(screen.getByRole("textbox")).toHaveDisplayValue("");
     });
 });

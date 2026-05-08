@@ -1,5 +1,5 @@
 import cx from "clsx";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import CurrencyFormat from "react-currency-format";
 
 /**
@@ -32,6 +32,19 @@ const CurrencyInput = ({
     // displayValue holds the raw formatted string (e.g. "5.") so a trailing
     // decimal isn't stripped before the user finishes typing the cents.
     const [displayValue, setDisplayValue] = useState(value ?? "");
+    const displayValueRef = useRef(displayValue);
+    displayValueRef.current = displayValue;
+
+    useEffect(() => {
+        // Sync from parent when the logical value genuinely changes (e.g. form reset).
+        // Skip round-trip echoes of our own input so trailing decimals like "5." are preserved.
+        const incomingFloat = value == null || value === "" ? null : Number(value);
+        const currentFloat =
+            displayValueRef.current === "" ? null : parseFloat(String(displayValueRef.current).replace(/,/g, ""));
+        if (incomingFloat !== currentFloat) {
+            setDisplayValue(value ?? "");
+        }
+    }, [value]);
 
     function handleChange(e) {
         onChange(name, e.target.value);
