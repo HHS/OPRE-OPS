@@ -60,8 +60,9 @@ describe("CurrencyInput", () => {
         const input = screen.getByRole("textbox");
         await userEvent.type(input, "5.");
 
-        // Simulate the parent echoing back the floatValue (5) after onValueChange fires.
-        // The guard should block this round-trip and preserve the trailing decimal.
+        // userEvent.type flushes all effects before returning, so skipNextSyncRef.current
+        // is true when rerender delivers value={5}. The effect fires, sees the flag, and
+        // skips the sync — preserving the trailing decimal.
         rerender(
             <CurrencyInput
                 name="amount"
