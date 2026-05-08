@@ -227,8 +227,9 @@ export const ReviewBudgetTeamRequisition = () => {
                             className="usa-label"
                             htmlFor="requisition-date"
                         >
-                            Requisition Date <span className="text-secondary-dark">*</span>
+                            Requisition Date
                         </label>
+                        <div className="usa-hint">Required Information*</div>
                         <input
                             className="usa-input"
                             id="requisition-date"

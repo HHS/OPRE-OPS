@@ -57,8 +57,6 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
 
     // Auth - use separate selectors with shallowEqual to prevent infinite loops
     // @ts-expect-error - Redux state typing in JS files
-    const userId = useSelector((state) => state.auth?.activeUser?.id) ?? null;
-    // @ts-expect-error - Redux state typing in JS files
     const userRoles = useSelector((state) => state.auth?.activeUser?.roles ?? [], shallowEqual);
 
     const [updateProcurementTrackerStep] = useUpdateProcurementTrackerStepMutation();
@@ -127,8 +125,8 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
                         stepId: step5.id,
                         data: {
                             requisition_number: requisitionNumber,
-                            requisition_date: requisitionDate,
-                            requisition_approved_by: userId
+                            requisition_date: requisitionDate
+                            // requisition_approved_by is server-controlled and set automatically
                         }
                     }).unwrap();
 
