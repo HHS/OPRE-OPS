@@ -238,20 +238,14 @@ export const ReviewBudgetTeamRequisition = () => {
                 <div className="grid-row grid-gap margin-top-3">
                     <div className="grid-col-6">
                         <h3 className="font-sans-sm text-semibold margin-bottom-1">Submitter&apos;s Notes</h3>
-                        <div
-                            className="bg-base-lightest padding-2 radius-md"
-                            style={{ minHeight: "8.5rem", whiteSpace: "pre-wrap" }}
-                        >
+                        <div style={{ minHeight: "8.5rem", whiteSpace: "pre-wrap" }}>
                             {requestorNotes || "No notes provided"}
                         </div>
                     </div>
 
                     <div className="grid-col-6">
                         <h3 className="font-sans-sm text-semibold margin-bottom-1">Division Director Notes</h3>
-                        <div
-                            className="bg-base-lightest padding-2 radius-md"
-                            style={{ minHeight: "8.5rem", whiteSpace: "pre-wrap" }}
-                        >
+                        <div style={{ minHeight: "8.5rem", whiteSpace: "pre-wrap" }}>
                             {reviewerNotes || "No notes provided"}
                         </div>
                     </div>
