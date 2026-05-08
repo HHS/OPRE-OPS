@@ -264,3 +264,5 @@ docs/openapi_reports/yamllint_*
 
 *storybook.log
 storybook-static
+
+.worktrees/
