@@ -361,17 +361,19 @@ class AwardApprovalRequiredRule(ValidationRule):
 
         if not approval_status:
             raise ValidationError(
-                {"approval_status": "Award Approval request must be submitted and approved before completing this step."}
+                {
+                    "approval_status": "Award Approval request must be submitted and approved before completing this step."
+                }
             )
 
         if approval_status == "DECLINED":
-            raise ValidationError(
-                {"approval_status": "Cannot complete AWARD step - approval request was declined."}
-            )
+            raise ValidationError({"approval_status": "Cannot complete AWARD step - approval request was declined."})
 
         if approval_status != "APPROVED":
             raise ValidationError(
-                {"approval_status": f"Award Approval must be approved before completing this step. Current status: {approval_status}"}
+                {
+                    "approval_status": f"Award Approval must be approved before completing this step. Current status: {approval_status}"
+                }
             )
 
 
@@ -400,7 +402,10 @@ class AwardAgreementDataRequiredRule(ValidationRule):
             return
 
         # Get the agreement
-        if not procurement_tracker_step.procurement_tracker or not procurement_tracker_step.procurement_tracker.agreement:
+        if (
+            not procurement_tracker_step.procurement_tracker
+            or not procurement_tracker_step.procurement_tracker.agreement
+        ):
             raise ValidationError({"agreement": "Procurement tracker step is not linked to a valid agreement."})
 
         agreement = procurement_tracker_step.procurement_tracker.agreement
@@ -426,7 +431,9 @@ class AwardAgreementDataRequiredRule(ValidationRule):
 
         if not has_clin:
             raise ValidationError(
-                {"clins": "At least one CLIN is required for CONTRACT and AA agreements before completing the AWARD step."}
+                {
+                    "clins": "At least one CLIN is required for CONTRACT and AA agreements before completing the AWARD step."
+                }
             )
 
 

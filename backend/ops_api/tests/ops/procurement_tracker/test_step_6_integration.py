@@ -21,28 +21,19 @@ def step_6_test_data(app_ctx, loaded_db):
 
     # Ensure it's a contract agreement with vendor
     if not isinstance(agreement, ContractAgreement):
-        agreement = loaded_db.query(ContractAgreement).filter(
-            ContractAgreement.vendor_id.isnot(None)
-        ).first()
+        agreement = loaded_db.query(ContractAgreement).filter(ContractAgreement.vendor_id.isnot(None)).first()
 
     # Ensure CLINs exist
     clin_count = loaded_db.query(CLIN).filter(CLIN.agreement_id == agreement.id).count()
     if clin_count == 0:
         # Create a CLIN for testing
         clin = CLIN(
-            agreement_id=agreement.id,
-            clin_number="1001",
-            clin_description="Test CLIN for Step 6",
-            amount=100000.00
+            agreement_id=agreement.id, clin_number="1001", clin_description="Test CLIN for Step 6", amount=100000.00
         )
         loaded_db.add(clin)
 
     # Create a procurement tracker with Steps 1-6
-    tracker = ProcurementTracker(
-        agreement_id=agreement.id,
-        status="ACTIVE",
-        active_step_number=6
-    )
+    tracker = ProcurementTracker(agreement_id=agreement.id, status="ACTIVE", active_step_number=6)
     loaded_db.add(tracker)
     loaded_db.flush()
 
@@ -53,13 +44,13 @@ def step_6_test_data(app_ctx, loaded_db):
             ProcurementTrackerStepType.PRE_SOLICITATION,
             ProcurementTrackerStepType.SOLICITATION,
             ProcurementTrackerStepType.EVALUATION,
-            ProcurementTrackerStepType.PRE_AWARD
+            ProcurementTrackerStepType.PRE_AWARD,
         ]
         step = DefaultProcurementTrackerStep(
             procurement_tracker=tracker,
             step_number=step_num,
             step_type=step_types[step_num - 1],
-            status=ProcurementTrackerStepStatus.COMPLETED
+            status=ProcurementTrackerStepStatus.COMPLETED,
         )
         loaded_db.add(step)
 
@@ -69,17 +60,13 @@ def step_6_test_data(app_ctx, loaded_db):
         step_number=6,
         step_type=ProcurementTrackerStepType.AWARD,
         status=ProcurementTrackerStepStatus.ACTIVE,
-        award_approval_status="APPROVED"  # Simulate approval for testing
+        award_approval_status="APPROVED",  # Simulate approval for testing
     )
     loaded_db.add(step_6)
     loaded_db.commit()
     loaded_db.refresh(step_6)
 
-    yield {
-        "agreement": agreement,
-        "tracker": tracker,
-        "step_6": step_6
-    }
+    yield {"agreement": agreement, "tracker": tracker, "step_6": step_6}
 
     # Cleanup
     loaded_db.rollback()
@@ -93,13 +80,10 @@ def test_step_6_request_award_approval(auth_client, app_ctx, loaded_db, step_6_t
     payload = {
         "approval_requested": True,
         "approval_requested_date": date.today().isoformat(),
-        "requestor_notes": "Please review and approve the award."
+        "requestor_notes": "Please review and approve the award.",
     }
 
-    response = auth_client.patch(
-        f"/api/v1/procurement-tracker-steps/{step_6.id}",
-        json=payload
-    )
+    response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{step_6.id}", json=payload)
 
     assert response.status_code == 200
     data = response.json
@@ -127,8 +111,7 @@ def test_step_6_completion_full_flow(auth_client, app_ctx, loaded_db, step_6_tes
     # Step 1: Save target completion date
     target_date = "2026-06-01"
     response = auth_client.patch(
-        f"/api/v1/procurement-tracker-steps/{step_6.id}",
-        json={"target_completion_date": target_date}
+        f"/api/v1/procurement-tracker-steps/{step_6.id}", json={"target_completion_date": target_date}
     )
     assert response.status_code == 200
     assert response.json["target_completion_date"] == target_date
@@ -141,13 +124,10 @@ def test_step_6_completion_full_flow(auth_client, app_ctx, loaded_db, step_6_tes
         "status": "COMPLETED",
         "task_completed_by": user.id,
         "date_completed": date.today().isoformat(),
-        "notes": "Award received and uploaded."
+        "notes": "Award received and uploaded.",
     }
 
-    response = auth_client.patch(
-        f"/api/v1/procurement-tracker-steps/{step_6.id}",
-        json=completion_payload
-    )
+    response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{step_6.id}", json=completion_payload)
 
     assert response.status_code == 200
     data = response.json
@@ -162,9 +142,9 @@ def test_step_6_completion_full_flow(auth_client, app_ctx, loaded_db, step_6_tes
 
     # Verify agreement ProcurementAction.awarded_date set
     loaded_db.refresh(agreement)
-    procurement_action = loaded_db.query(ProcurementAction).filter(
-        ProcurementAction.agreement_id == agreement.id
-    ).first()
+    procurement_action = (
+        loaded_db.query(ProcurementAction).filter(ProcurementAction.agreement_id == agreement.id).first()
+    )
 
     assert procurement_action is not None, "ProcurementAction should exist"
     assert procurement_action.awarded_date is not None
@@ -183,13 +163,10 @@ def test_step_6_cannot_complete_without_approval(auth_client, app_ctx, loaded_db
     completion_payload = {
         "status": "COMPLETED",
         "task_completed_by": user.id,
-        "date_completed": date.today().isoformat()
+        "date_completed": date.today().isoformat(),
     }
 
-    response = auth_client.patch(
-        f"/api/v1/procurement-tracker-steps/{step_6.id}",
-        json=completion_payload
-    )
+    response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{step_6.id}", json=completion_payload)
 
     assert response.status_code == 400
     assert "approval" in response.json["message"].lower()
@@ -209,13 +186,10 @@ def test_step_6_cannot_complete_without_vendor(auth_client, app_ctx, loaded_db, 
     completion_payload = {
         "status": "COMPLETED",
         "task_completed_by": user.id,
-        "date_completed": date.today().isoformat()
+        "date_completed": date.today().isoformat(),
     }
 
-    response = auth_client.patch(
-        f"/api/v1/procurement-tracker-steps/{step_6.id}",
-        json=completion_payload
-    )
+    response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{step_6.id}", json=completion_payload)
 
     assert response.status_code == 400
     assert "vendor" in response.json["message"].lower()
@@ -234,13 +208,10 @@ def test_step_6_cannot_complete_without_clins(auth_client, app_ctx, loaded_db, s
     completion_payload = {
         "status": "COMPLETED",
         "task_completed_by": user.id,
-        "date_completed": date.today().isoformat()
+        "date_completed": date.today().isoformat(),
     }
 
-    response = auth_client.patch(
-        f"/api/v1/procurement-tracker-steps/{step_6.id}",
-        json=completion_payload
-    )
+    response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{step_6.id}", json=completion_payload)
 
     assert response.status_code == 400
     assert "clin" in response.json["message"].lower()
@@ -259,13 +230,10 @@ def test_step_6_field_mapping(auth_client, app_ctx, loaded_db, step_6_test_data)
         "notes": "Test notes for Step 6",
         "approval_requested": True,
         "approval_requested_date": date.today().isoformat(),
-        "requestor_notes": "Requester notes"
+        "requestor_notes": "Requester notes",
     }
 
-    response = auth_client.patch(
-        f"/api/v1/procurement-tracker-steps/{step_6.id}",
-        json=payload
-    )
+    response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{step_6.id}", json=payload)
 
     assert response.status_code == 200
     data = response.json
