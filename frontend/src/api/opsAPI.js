@@ -299,8 +299,10 @@ export const opsApi = createApi({
         getCanFilterOptions: builder.query({
             query: ({ fiscalYear }) => {
                 const queryParams = [];
-                if (fiscalYear) {
-                    queryParams.push(`fiscal_year=${fiscalYear}`);
+                if (fiscalYear && fiscalYear.length > 0) {
+                    fiscalYear.forEach((year) => {
+                        queryParams.push(`fiscal_year=${year}`);
+                    });
                 }
                 const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
                 return `/cans-filters/${queryString}`;
@@ -741,8 +743,10 @@ export const opsApi = createApi({
                 budgetMax
             }) => {
                 let queryParams = [];
-                if (fiscalYear) {
-                    queryParams.push(`fiscal_year=${fiscalYear}`);
+                if (fiscalYear && fiscalYear.length > 0) {
+                    fiscalYear.forEach((year) => {
+                        queryParams.push(`fiscal_year=${year}`);
+                    });
                 }
                 if (sortConditions) {
                     queryParams.push(`sort_conditions=${sortConditions}`);

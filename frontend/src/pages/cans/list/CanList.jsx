@@ -26,7 +26,6 @@ const CanList = () => {
     const navigate = useNavigate();
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
     const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(getCurrentFiscalYear());
-    const fiscalYear = Number(selectedFiscalYear);
     const [currentPage, setCurrentPage] = React.useState(1); // 1-indexed for UI
     const [pageSize] = React.useState(ITEMS_PER_PAGE);
     const [filters, setFilters] = React.useState({
@@ -36,6 +35,18 @@ const CanList = () => {
         can: [],
         budget: []
     });
+
+    // Determine fiscal year filter - send empty array when "All" is selected
+    const getFiscalYearFilter = () => {
+        if (selectedFiscalYear === "All") {
+            return [];
+        }
+        return [Number(selectedFiscalYear)];
+    };
+
+    const fiscalYearFilter = getFiscalYearFilter();
+    // For components that need a numeric fiscal year (summary cards, display)
+    const fiscalYear = fiscalYearFilter.length > 0 ? fiscalYearFilter[0] : Number(getCurrentFiscalYear());
 
     // Extract filter values for API
     const activePeriodIds = filters.activePeriod?.map((ap) => ap.id) || [];
@@ -55,7 +66,7 @@ const CanList = () => {
         isLoading,
         isFetching
     } = useGetCansQuery({
-        fiscalYear: selectedFiscalYear,
+        fiscalYear: fiscalYearFilter,
         sortConditions: sortCondition,
         sortDescending,
         page: currentPage - 1, // Convert to 0-indexed for API
@@ -75,7 +86,7 @@ const CanList = () => {
         isLoading: filterOptionsLoading,
         isFetching: filterOptionsFetching
     } = useGetCanFilterOptionsQuery({
-        fiscalYear: selectedFiscalYear
+        fiscalYear: fiscalYearFilter
     });
 
     // Extract cans array and metadata from wrapped response
