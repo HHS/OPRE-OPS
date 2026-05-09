@@ -165,6 +165,7 @@ class ProjectsService(OpsService[Project]):
             select(Project)
             .where(Project.id == id)
             .options(
+                selectinload(Project.team_leaders),
                 selectinload(Project.agreements).selectinload(Agreement.team_members),
                 selectinload(Project.agreements)
                 .selectinload(Agreement.budget_line_items)

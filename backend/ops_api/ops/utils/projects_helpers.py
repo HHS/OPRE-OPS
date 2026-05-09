@@ -33,10 +33,11 @@ def _collect_agreement_authorized_ids(agreement: Agreement) -> set[int]:
 
 
 def _collect_project_authorized_ids(project: Project) -> set[int]:
-    """Collect the set of user ids authorized for this project via creator/agreements."""
+    """Collect the set of user ids authorized for this project via creator/team leaders/agreements."""
     ids: set[int] = set()
     if project.created_by:
         ids.add(project.created_by)
+    ids.update(tl.id for tl in project.team_leaders)
     for agreement in project.agreements:
         ids |= _collect_agreement_authorized_ids(agreement)
     return ids
@@ -48,6 +49,7 @@ def check_project_user_association(project: Project, user: User) -> bool:
 
     Authorization is aggregated from across agreements within the project:
     - Project creator
+    - Project Team Leaders
     - Division Directors from any CAN/Portfolio on agreements within the project
     - Team Leaders from any CAN/Portfolio on agreements within the project
     - COR or ACOR from any agreement within the project

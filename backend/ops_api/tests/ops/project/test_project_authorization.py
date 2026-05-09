@@ -1,7 +1,7 @@
 import uuid
 
 import pytest
-from flask import url_for
+from flask import current_app, url_for
 
 from models import (
     CAN,
@@ -35,17 +35,36 @@ def unassociated_project(loaded_db):
 @pytest.fixture
 def project_created_by_basic_user(loaded_db):
     """Create a project where created_by = basic_user_auth_client (user 521)."""
-    from sqlalchemy import text
+    prev = current_app.config.get("SKIP_SETTING_CREATED_BY", False)
+    current_app.config["SKIP_SETTING_CREATED_BY"] = True
+    try:
+        project = ResearchProject(
+            project_type=ProjectType.RESEARCH,
+            title="Basic User Created Project",
+            short_title="BUCP" + uuid.uuid4().hex[:6],
+            description="Project created by user 521",
+            created_by=521,
+        )
+        loaded_db.add(project)
+        loaded_db.commit()
+        loaded_db.refresh(project)
+    finally:
+        current_app.config["SKIP_SETTING_CREATED_BY"] = prev
+    return project
 
+
+@pytest.fixture
+def project_with_basic_user_team_leader(loaded_db):
+    """Create a project where user 521 is a project team leader."""
+    user_521 = loaded_db.get(User, 521)
     project = ResearchProject(
         project_type=ProjectType.RESEARCH,
-        title="Basic User Created Project",
-        short_title="BUCP" + uuid.uuid4().hex[:6],
-        description="Project created by user 521",
+        title="Project TL Auth Test Project",
+        short_title="PTLA" + uuid.uuid4().hex[:6],
+        description="Project for project team leader auth testing",
+        team_leaders=[user_521],
     )
     loaded_db.add(project)
-    loaded_db.commit()
-    loaded_db.execute(text("UPDATE project SET created_by = :uid WHERE id = :pid"), {"uid": 521, "pid": project.id})
     loaded_db.commit()
     loaded_db.refresh(project)
     return project
@@ -127,20 +146,20 @@ class TestCheckProjectUserAssociation:
 
     def test_project_creator_is_authorized(self, app_ctx, loaded_db):
         user = loaded_db.get(User, 521)
-        project = ResearchProject(
-            project_type=ProjectType.RESEARCH,
-            title="Creator Test",
-            short_title="CT" + uuid.uuid4().hex[:6],
-        )
-        loaded_db.add(project)
-        loaded_db.commit()
-
-        # Set created_by via SQL to simulate what happens during a real API request
-        from sqlalchemy import text
-
-        loaded_db.execute(text("UPDATE project SET created_by = :uid WHERE id = :pid"), {"uid": 521, "pid": project.id})
-        loaded_db.commit()
-        loaded_db.refresh(project)
+        prev = current_app.config.get("SKIP_SETTING_CREATED_BY", False)
+        current_app.config["SKIP_SETTING_CREATED_BY"] = True
+        try:
+            project = ResearchProject(
+                project_type=ProjectType.RESEARCH,
+                title="Creator Test",
+                short_title="CT" + uuid.uuid4().hex[:6],
+                created_by=521,
+            )
+            loaded_db.add(project)
+            loaded_db.commit()
+            loaded_db.refresh(project)
+        finally:
+            current_app.config["SKIP_SETTING_CREATED_BY"] = prev
 
         assert project.created_by == 521
         assert check_project_user_association(project, user) is True
@@ -282,6 +301,19 @@ class TestCheckProjectUserAssociation:
 
         assert check_project_user_association(project, user) is True
 
+    def test_project_team_leader_is_authorized(self, app_ctx, loaded_db):
+        user = loaded_db.get(User, 521)
+        project = ResearchProject(
+            project_type=ProjectType.RESEARCH,
+            title="Project TL Test",
+            short_title="PTL" + uuid.uuid4().hex[:6],
+            team_leaders=[user],
+        )
+        loaded_db.add(project)
+        loaded_db.commit()
+
+        assert check_project_user_association(project, user) is True
+
     def test_portfolio_team_leader_is_authorized(self, app_ctx, loaded_db):
         user = loaded_db.get(User, 521)
 
@@ -410,6 +442,19 @@ class TestPatchProjectAuthorization:
 
         project = loaded_db.get(Project, project_created_by_basic_user.id)
         assert project.title == "Updated By Creator"
+
+    def test_patch_project_team_leader_can_edit(
+        self, basic_user_auth_client, loaded_db, project_with_basic_user_team_leader
+    ):
+        """User who is a project team leader can edit the project."""
+        data = {"title": "Updated By Project Team Leader"}
+        response = basic_user_auth_client.patch(
+            url_for("api.projects-item", id=project_with_basic_user_team_leader.id), json=data
+        )
+        assert response.status_code == 200
+
+        project = loaded_db.get(Project, project_with_basic_user_team_leader.id)
+        assert project.title == "Updated By Project Team Leader"
 
     def test_patch_project_team_member_can_edit(
         self, basic_user_auth_client, loaded_db, project_with_agreement_team_member
