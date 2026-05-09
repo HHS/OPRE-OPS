@@ -90,7 +90,8 @@ const ProcurementTrackerStepFive = ({
         !step5DateCompleted ||
         validatorRes.hasErrors() ||
         !stepFiveData?.id ||
-        stepFiveData?.approval_status !== ProcurementTrackerPreAwardApprovalStatus.APPROVED
+        stepFiveData?.approval_status !== ProcurementTrackerPreAwardApprovalStatus.APPROVED ||
+        !stepFiveData?.requisition_approved_by  // Budget team must approve requisition before completing step
     );
     return (
         <>

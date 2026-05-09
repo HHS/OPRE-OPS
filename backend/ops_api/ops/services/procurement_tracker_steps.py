@@ -459,10 +459,10 @@ class ProcurementTrackerStepService:
                 # DD declined - notify requester (existing behavior)
                 self._notify_requester_of_decline(step, agreement, current_user, notification_service)
 
-            # Auto-dismiss "in review" notifications for reviewers via bulk UPDATE
-            self._dismiss_notifications_by_title(
-                PreAwardNotificationTitle.APPROVAL_REQUEST, step.id, "'in review' notifications for reviewers"
-            )
+                # Only dismiss "in review" notification when DD declines (requester needs to see it until budget team approves)
+                self._dismiss_notifications_by_title(
+                    PreAwardNotificationTitle.APPROVAL_REQUEST, step.id, "'in review' notifications after decline"
+                )
 
         # Case 3: Budget Team Requisition Approval (OPS-1639)
         # Only send if requisition_approved_by changed from None → {user_id}
@@ -497,6 +497,13 @@ class ProcurementTrackerStepService:
                 PreAwardNotificationTitle.BUDGET_TEAM_REVIEW_REQUIRED,
                 step.id,
                 "budget team requisition review notifications",
+            )
+
+            # Also dismiss the original "in review" notification for requester (workflow complete)
+            self._dismiss_notifications_by_title(
+                PreAwardNotificationTitle.APPROVAL_REQUEST,
+                step.id,
+                "'in review' notification for requester after budget team approval",
             )
 
     def _notify_budget_team_for_requisition_review(self, step, agreement, current_user, notification_service):
