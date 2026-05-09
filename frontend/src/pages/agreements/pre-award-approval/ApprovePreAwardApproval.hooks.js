@@ -74,12 +74,13 @@ export default function useApprovePreAwardApproval(agreementId) {
     // Check if approval already processed (returns boolean, not null)
     const approvalAlreadyProcessed = Boolean(step5?.approval_status && step5.approval_status !== "PENDING");
 
-    // Permission check: user is Division Director, Deputy Director, Budget Team, or System Owner
+    // Permission check: user is Division Director, Deputy Director, or System Owner
+    // NOTE: BUDGET_TEAM is NOT authorized for DD pre-award approval, only for requisition approval
     const hasPermission = useMemo(() => {
         const userRoleNames = userRoles.map(/** @param {any} role */ (role) => role?.name);
 
-        // For BUDGET_TEAM and SYSTEM_OWNER, permission granted regardless of division
-        if (userRoleNames.includes("BUDGET_TEAM") || userRoleNames.includes("SYSTEM_OWNER")) {
+        // SYSTEM_OWNER has permission regardless of division
+        if (userRoleNames.includes("SYSTEM_OWNER")) {
             return true;
         }
 
