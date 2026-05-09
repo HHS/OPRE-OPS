@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { describe, it, expect, vi, beforeAll, beforeEach, afterEach, afterAll } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { server } from "../tests/mocks";
 import { http, HttpResponse } from "msw";
 import { setupStore } from "../store";
@@ -21,9 +21,7 @@ beforeEach(() => {
 });
 
 describe("opsAPI - Agreements Pagination", () => {
-    beforeAll(() => server.listen());
     afterEach(() => server.resetHandlers());
-    afterAll(() => server.close());
 
     describe("Query Parameter Construction", () => {
         it("should add pagination parameters when page and limit provided", async () => {
@@ -214,7 +212,9 @@ describe("opsAPI - Agreements Pagination", () => {
                 count: 50,
                 limit: 10,
                 offset: 0,
-                totals: null
+                totals: null,
+                procurement_overview: null,
+                procurement_step_summary: null
             });
         });
 
@@ -260,7 +260,9 @@ describe("opsAPI - Agreements Pagination", () => {
                 count: 50,
                 limit: 10,
                 offset: 0,
-                totals: null
+                totals: null,
+                procurement_overview: null,
+                procurement_step_summary: null
             });
         });
 
@@ -299,7 +301,9 @@ describe("opsAPI - Agreements Pagination", () => {
                 count: 2,
                 limit: 2,
                 offset: 0,
-                totals: null
+                totals: null,
+                procurement_overview: null,
+                procurement_step_summary: null
             });
         });
 
@@ -339,7 +343,9 @@ describe("opsAPI - Agreements Pagination", () => {
                 count: 0,
                 limit: 10,
                 offset: 0,
-                totals: null
+                totals: null,
+                procurement_overview: null,
+                procurement_step_summary: null
             });
         });
 
@@ -727,7 +733,9 @@ describe("opsAPI - Agreements Pagination", () => {
                 count: 0,
                 limit: 0,
                 offset: 0,
-                totals: null
+                totals: null,
+                procurement_overview: null,
+                procurement_step_summary: null
             });
         });
     });
@@ -793,9 +801,7 @@ describe("opsAPI - Agreements Pagination", () => {
 });
 
 describe("opsAPI - Wave 2 high-yield endpoint coverage", () => {
-    beforeAll(() => server.listen());
     afterEach(() => server.resetHandlers());
-    afterAll(() => server.close());
 
     it("normalizes fiscal year values in getAgreements query params", async () => {
         let capturedUrl = "";
@@ -986,6 +992,73 @@ describe("opsAPI - Wave 2 high-yield endpoint coverage", () => {
         expect(capturedUrl).toContain("enable_obe=true");
     });
 
+    it("builds getProcurementTrackersByAgreementIds query with agreement IDs", async () => {
+        let capturedUrl = "";
+        server.use(
+            http.get("*/api/v1/procurement-trackers/*", ({ request }) => {
+                capturedUrl = request.url;
+                return HttpResponse.json({ data: [{ id: 1 }, { id: 2 }] });
+            })
+        );
+
+        const storeRef = setupApiStore(opsApi);
+        const result = await storeRef.store.dispatch(
+            opsApi.endpoints.getProcurementTrackersByAgreementIds.initiate([10, 20, 30])
+        );
+
+        expect(capturedUrl).toContain("agreement_id=10");
+        expect(capturedUrl).toContain("agreement_id=20");
+        expect(capturedUrl).toContain("agreement_id=30");
+        expect(capturedUrl).toContain("limit=3");
+        expect(result.data).toEqual([{ id: 1 }, { id: 2 }]);
+    });
+
+    it("handles empty response for getProcurementTrackersByAgreementIds", async () => {
+        server.use(
+            http.get("*/api/v1/procurement-trackers/*", () => {
+                return HttpResponse.json({ data: [] });
+            })
+        );
+
+        const storeRef = setupApiStore(opsApi);
+        const result = await storeRef.store.dispatch(
+            opsApi.endpoints.getProcurementTrackersByAgreementIds.initiate([1])
+        );
+
+        expect(result.data).toEqual([]);
+    });
+
+    it("falls back to empty array when response has no data key", async () => {
+        server.use(
+            http.get("*/api/v1/procurement-trackers/*", () => {
+                return HttpResponse.json({});
+            })
+        );
+
+        const storeRef = setupApiStore(opsApi);
+        const result = await storeRef.store.dispatch(
+            opsApi.endpoints.getProcurementTrackersByAgreementIds.initiate([1])
+        );
+
+        expect(result.data).toEqual([]);
+    });
+
+    it("returns no results when empty agreement IDs array is passed", async () => {
+        let capturedUrl = "";
+        server.use(
+            http.get("*/api/v1/procurement-trackers/*", ({ request }) => {
+                capturedUrl = request.url;
+                return HttpResponse.json({ data: [] });
+            })
+        );
+
+        const storeRef = setupApiStore(opsApi);
+        await storeRef.store.dispatch(opsApi.endpoints.getProcurementTrackersByAgreementIds.initiate([]));
+
+        expect(capturedUrl).not.toContain("agreement_id=");
+        expect(capturedUrl).toContain("limit=0");
+    });
+
     it("sends POST payload for addAgreement mutation", async () => {
         let method = "";
         let payload = null;
@@ -1041,5 +1114,93 @@ describe("opsAPI - Wave 2 high-yield endpoint coverage", () => {
         await storeRef.store.dispatch(opsApi.endpoints.getPortfolios.initiate({ projectId: 42 }));
 
         expect(capturedUrl).toContain("project_id=42");
+    });
+});
+
+describe("opsAPI - getResearchProjects queryFn pagination", () => {
+    afterEach(() => server.resetHandlers());
+
+    it("returns all projects when total fits in a single batch", async () => {
+        const mockProjects = [
+            { id: 1, title: "Child Care Research", project_type: "RESEARCH" },
+            { id: 2, title: "Head Start Study", project_type: "RESEARCH" }
+        ];
+
+        server.use(
+            http.get("*/api/v1/projects/", ({ request }) => {
+                const url = new URL(request.url);
+                expect(url.searchParams.get("project_type")).toBe("RESEARCH");
+                expect(url.searchParams.get("limit")).toBe("50");
+                expect(url.searchParams.get("offset")).toBe("0");
+                return HttpResponse.json({ data: mockProjects, count: 2, limit: 50, offset: 0 });
+            })
+        );
+
+        const storeRef = setupApiStore(opsApi);
+        const result = await storeRef.store.dispatch(opsApi.endpoints.getResearchProjects.initiate(undefined));
+
+        expect(result.data).toEqual(mockProjects);
+        expect(result.data).toHaveLength(2);
+    });
+
+    it("paginates across multiple batches when total exceeds batch size", async () => {
+        const page1 = Array.from({ length: 50 }, (_, i) => ({ id: i + 1, title: `Project ${i + 1}` }));
+        const page2 = [{ id: 51, title: "Project 51" }];
+        let callCount = 0;
+
+        server.use(
+            http.get("*/api/v1/projects/", ({ request }) => {
+                const url = new URL(request.url);
+                callCount++;
+                const offset = parseInt(url.searchParams.get("offset") ?? "0");
+                if (offset === 0) {
+                    return HttpResponse.json({ data: page1, count: 51, limit: 50, offset: 0 });
+                }
+                return HttpResponse.json({ data: page2, count: 51, limit: 50, offset: 50 });
+            })
+        );
+
+        const storeRef = setupApiStore(opsApi);
+        const result = await storeRef.store.dispatch(opsApi.endpoints.getResearchProjects.initiate(undefined));
+
+        expect(callCount).toBe(2);
+        expect(result.data).toHaveLength(51);
+        expect(result.data[50]).toEqual(page2[0]);
+    });
+
+    it("returns all items immediately for legacy array response format", async () => {
+        const legacyProjects = [{ id: 1, title: "Legacy Project", project_type: "RESEARCH" }];
+
+        server.use(http.get("*/api/v1/projects/", () => HttpResponse.json(legacyProjects)));
+
+        const storeRef = setupApiStore(opsApi);
+        const result = await storeRef.store.dispatch(opsApi.endpoints.getResearchProjects.initiate(undefined));
+
+        expect(result.data).toEqual(legacyProjects);
+    });
+
+    it("surfaces an error when the API call fails", async () => {
+        server.use(
+            http.get("*/api/v1/projects/", () =>
+                HttpResponse.json({ message: "Internal Server Error" }, { status: 500 })
+            )
+        );
+
+        const storeRef = setupApiStore(opsApi);
+        const result = await storeRef.store.dispatch(opsApi.endpoints.getResearchProjects.initiate(undefined));
+
+        expect(result.error).toBeDefined();
+    });
+
+    it("breaks out of the loop when the backend returns an empty page", async () => {
+        // Guards against an infinite loop if `count` is mis-reported by the server
+        server.use(
+            http.get("*/api/v1/projects/", () => HttpResponse.json({ data: [], count: 99, limit: 50, offset: 0 }))
+        );
+
+        const storeRef = setupApiStore(opsApi);
+        const result = await storeRef.store.dispatch(opsApi.endpoints.getResearchProjects.initiate(undefined));
+
+        expect(result.data).toEqual([]);
     });
 });

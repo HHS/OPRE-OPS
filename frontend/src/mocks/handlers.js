@@ -451,6 +451,50 @@ export const procurementHandlers = [
             ...payload
         };
         return HttpResponse.json(procurementTrackerSteps[stepIndex]);
+    }),
+    http.get(`${BACKEND_DOMAIN}/api/v1/procurement-tracker-steps/pending-requisitions/`, () => {
+        // Mock data for budget team requisition review cards
+        return HttpResponse.json([
+            {
+                id: 101,
+                step_type: "PRE_AWARD",
+                approval_requested_by: 500,
+                approval_requested_date: "2026-04-15",
+                approval_responded_date: "2026-04-20",
+                procurement_tracker: {
+                    id: 1,
+                    agreement_id: 1,
+                    agreement: {
+                        id: 1,
+                        name: "Mock Agreement for Testing",
+                        agreement_total: 500000,
+                        budget_line_items: [
+                            {
+                                id: 1,
+                                line_description: "SC1",
+                                amount: 100000,
+                                status: "In Execution",
+                                date_needed: "2026-06-01"
+                            },
+                            {
+                                id: 2,
+                                line_description: "SC2",
+                                amount: 150000,
+                                status: "In Execution",
+                                date_needed: "2026-05-15"
+                            },
+                            {
+                                id: 3,
+                                line_description: "SC3",
+                                amount: 250000,
+                                status: "Planned",
+                                date_needed: "2026-08-01"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]);
     })
 ];
 

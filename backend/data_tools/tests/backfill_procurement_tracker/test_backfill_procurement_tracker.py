@@ -6,10 +6,6 @@ from sqlalchemy import select, text
 from data_tools.src.backfill_procurement_tracker import (
     backfill_procurement_records,
     get_agreements_with_in_execution_blis,
-    get_earliest_obligated_date_needed,
-    get_earliest_obligated_fiscal_year,
-    has_obligated_blis,
-    link_blis_to_action,
 )
 from data_tools.src.common.utils import get_or_create_sys_user
 from models import *  # noqa: F403, F401
@@ -20,6 +16,12 @@ from models.procurement_tracker import (
     ProcurementTracker,
     ProcurementTrackerStatus,
     ProcurementTrackerStepStatus,
+)
+from models.procurement_workflow import (
+    get_earliest_obligated_date_needed,
+    get_earliest_obligated_fiscal_year,
+    has_obligated_blis,
+    link_blis_to_action,
 )
 
 

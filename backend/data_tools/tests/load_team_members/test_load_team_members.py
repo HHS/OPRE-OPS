@@ -159,7 +159,7 @@ def test_create_models_by_maps_id(db_with_users_and_agreements):
     )
 
     assert len(events) == 1
-    assert events[0].created_by == 500
+    assert events[0].created_by == sys_user.id
     assert events[0].event_details["agreement_id"] == 999
 
 

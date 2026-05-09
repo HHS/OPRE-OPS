@@ -3,10 +3,11 @@ import { describe, it, expect, vi } from "vitest";
 import ProjectTypeSummaryCard from "./ProjectTypeSummaryCard";
 
 vi.mock("../../UI/DataViz/ResponsiveDonutWithInnerPercent", () => ({
-    default: ({ data }) => (
+    default: ({ data, ariaLabel }) => (
         <div
             data-testid="donut-chart"
             data-chart-values={JSON.stringify(data.map((d) => d.value))}
+            data-aria-label={ariaLabel}
         />
     )
 }));
@@ -78,17 +79,35 @@ describe("ProjectTypeSummaryCard", () => {
         expect(screen.getByText("30%")).toBeInTheDocument();
     });
 
-    it("shows >99% and <1% when dominant item would otherwise round to 100% alongside non-zero items", () => {
+    it("shows '<1%' for tiny non-zero peer and '99%' for the dominant type (Figma: no >99%)", () => {
         render(
             <ProjectTypeSummaryCard
                 title="FY 2025 Projects by Type"
                 summary={tinySliceSummary}
             />
         );
-        // Dominant item must not show 100% when other non-zero items exist
+        // Dominant item must not show 100% or >99% when other non-zero items exist
         expect(screen.queryByText("100%")).not.toBeInTheDocument();
-        expect(screen.getByText(">99%")).toBeInTheDocument();
+        expect(screen.queryByText(">99%")).not.toBeInTheDocument();
+        expect(screen.getByText("99%")).toBeInTheDocument();
         expect(screen.getByText("<1%")).toBeInTheDocument();
+    });
+
+    it("dominant type shows '99%' (not '>99%') when non-zero peers exist", () => {
+        render(
+            <ProjectTypeSummaryCard
+                title="FY 2025 Projects by Type"
+                summary={{
+                    amounts_by_type: {
+                        RESEARCH: { amount: 9960 },
+                        ADMINISTRATIVE_AND_SUPPORT: { amount: 40 }
+                    }
+                }}
+            />
+        );
+        expect(screen.getByText("99%")).toBeInTheDocument();
+        expect(screen.queryByText(">99%")).not.toBeInTheDocument();
+        expect(screen.queryByText("100%")).not.toBeInTheDocument();
     });
 
     it("renders the donut chart when totalAmount > 0", () => {
@@ -101,7 +120,7 @@ describe("ProjectTypeSummaryCard", () => {
         expect(screen.getByTestId("donut-chart")).toBeInTheDocument();
     });
 
-    it("applies minimum arc value so tiny non-zero slices are visible in the chart", () => {
+    it("passes real values to the donut chart (arc flooring now handled inside ResponsiveDonutWithInnerPercent)", () => {
         render(
             <ProjectTypeSummaryCard
                 title="FY 2025 Projects by Type"
@@ -112,18 +131,10 @@ describe("ProjectTypeSummaryCard", () => {
         const chartValues = JSON.parse(chart.getAttribute("data-chart-values"));
         const researchAmount = tinySliceSummary.amounts_by_type.RESEARCH.amount;
         const adminAmount = tinySliceSummary.amounts_by_type.ADMINISTRATIVE_AND_SUPPORT.amount;
-        const total = researchAmount + adminAmount;
-        const minValue = total * 0.01;
 
-        // Admin & Support real value (301500) is less than 1% of total — chart value should be floored to minValue
-        expect(chartValues[1]).toBeCloseTo(minValue, 0);
-
-        // Chart total should be preserved — sum of chart values equals the original total
-        const chartTotal = chartValues[0] + chartValues[1];
-        expect(chartTotal).toBeCloseTo(total, 0);
-
-        // Research should be slightly reduced to compensate for the floored Admin & Support slice
-        expect(chartValues[0]).toBeLessThan(researchAmount);
+        // Component now passes real values; donut floors internally.
+        expect(chartValues[0]).toBe(researchAmount);
+        expect(chartValues[1]).toBe(adminAmount);
     });
 
     it("does not alter chart values when all slices are already above the minimum", () => {
@@ -135,6 +146,7 @@ describe("ProjectTypeSummaryCard", () => {
         );
         const chart = screen.getByTestId("donut-chart");
         const chartValues = JSON.parse(chart.getAttribute("data-chart-values"));
+        // Real values passed through unchanged — component no longer floors locally
         expect(chartValues[0]).toBe(7000000);
         expect(chartValues[1]).toBe(3000000);
     });
@@ -167,5 +179,36 @@ describe("ProjectTypeSummaryCard", () => {
     it("handles undefined summary gracefully", () => {
         render(<ProjectTypeSummaryCard title="FY 2025 Projects by Type" />);
         expect(screen.queryByTestId("donut-chart")).not.toBeInTheDocument();
+    });
+
+    it("renders chart and legend correctly when only one project type has a non-zero value", () => {
+        render(
+            <ProjectTypeSummaryCard
+                title="FY 2025 Projects by Type"
+                summary={{
+                    amounts_by_type: {
+                        RESEARCH: { amount: 1000000 },
+                        ADMINISTRATIVE_AND_SUPPORT: { amount: 0 }
+                    }
+                }}
+            />
+        );
+        // totalAmount = 1000000 > 0 → chart is shown
+        expect(screen.getByTestId("donut-chart")).toBeInTheDocument();
+        // Sole non-zero type shows 100% (no non-zero peers)
+        expect(screen.getByText("100%")).toBeInTheDocument();
+        // Zero peer shows 0%
+        expect(screen.getByText("0%")).toBeInTheDocument();
+    });
+
+    it("forwards the ariaLabel prop to ResponsiveDonutWithInnerPercent", () => {
+        render(
+            <ProjectTypeSummaryCard
+                title="FY 2025 Projects by Type"
+                summary={testSummary}
+            />
+        );
+        const chart = screen.getByTestId("donut-chart");
+        expect(chart).toHaveAttribute("data-aria-label", "Donut chart showing project budget by type");
     });
 });

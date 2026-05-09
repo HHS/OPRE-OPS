@@ -11,25 +11,42 @@ from models.base import BaseModel
 class NotificationType(Enum):
     NOTIFICATION = auto()
     CHANGE_REQUEST_NOTIFICATION = auto()
+    PRE_AWARD_APPROVAL_NOTIFICATION = auto()
 
 
 class Notification(BaseModel):
     __tablename__ = "notification"
     id: Mapped[int] = BaseModel.get_pk_column()
     notification_type: Mapped[NotificationType] = mapped_column(
-        ENUM(NotificationType), default=NotificationType.NOTIFICATION, nullable=False, index=True
+        ENUM(NotificationType),
+        default=NotificationType.NOTIFICATION,
+        nullable=False,
+        index=True,
     )
     title: Mapped[Optional[str]] = mapped_column(String)
     message: Mapped[Optional[str]] = mapped_column(String)
     is_read: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
     expires: Mapped[Optional[Date]] = mapped_column(Date)
 
-    recipient_id: Mapped[Optional[int]] = mapped_column(ForeignKey("ops_user.id"))
-    recipient = relationship("User", back_populates="notifications", foreign_keys=[recipient_id])
+    recipient_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("ops_user.id")
+    )
+    recipient = relationship(
+        "User", back_populates="notifications", foreign_keys=[recipient_id]
+    )
 
     __table_args__ = (
-        Index("idx_notification_recipient_created", "recipient_id", text("created_on DESC")),
-        Index("idx_notification_complete", "is_read", "notification_type", text("created_on DESC")),
+        Index(
+            "idx_notification_recipient_created",
+            "recipient_id",
+            text("created_on DESC"),
+        ),
+        Index(
+            "idx_notification_complete",
+            "is_read",
+            "notification_type",
+            text("created_on DESC"),
+        ),
     )
 
     __mapper_args__ = {
@@ -40,7 +57,9 @@ class Notification(BaseModel):
 
 class ChangeRequestNotification(Notification):
     change_request_id: Mapped[Optional[int]] = mapped_column(
-        ForeignKey("change_request.id", ondelete="CASCADE"), index=True, nullable=True
+        ForeignKey("change_request.id", ondelete="CASCADE"),
+        index=True,
+        nullable=True,
     )
     change_request = relationship(
         "ChangeRequest",
@@ -49,4 +68,24 @@ class ChangeRequestNotification(Notification):
 
     __mapper_args__ = {
         "polymorphic_identity": NotificationType.CHANGE_REQUEST_NOTIFICATION,
+    }
+
+
+class PreAwardApprovalNotification(Notification):
+    """Notification for pre-award approval requests and responses."""
+
+    procurement_tracker_step_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("procurement_tracker_step.id", ondelete="CASCADE"),
+        index=True,
+        nullable=True,
+    )
+    procurement_tracker_step = relationship(
+        "ProcurementTrackerStep",
+        passive_deletes=True,
+    )
+
+    __mapper_args__ = {
+        "polymorphic_identity": (
+            NotificationType.PRE_AWARD_APPROVAL_NOTIFICATION
+        ),
     }

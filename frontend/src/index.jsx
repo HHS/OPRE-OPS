@@ -14,6 +14,8 @@ import Can from "./pages/cans/detail/Can";
 import CanList from "./pages/cans/list/CanList";
 import CreateProject from "./pages/projects/CreateProject";
 import ProjectDetail from "./pages/projects/detail/ProjectDetail";
+import ProjectSpending from "./pages/projects/detail/ProjectSpending";
+import ProjectFunding from "./pages/projects/detail/ProjectFunding";
 import EditAgreement from "./pages/agreements/EditAgreement";
 import ErrorBoundary from "./components/ErrorBoundary";
 import ErrorPage from "./pages/ErrorPage";
@@ -36,11 +38,15 @@ import EditUser from "./pages/users/edit/EditUser";
 import VersionPage from "./pages/version/VersionPage";
 import WhatsNext from "./pages/home/whats-next";
 import ProcurementMocksDebug from "./pages/dev/ProcurementMocksDebug";
+import RoleProtectedRoute from "./components/Auth/RoleProtectedRoute/RoleProtectedRoute";
+import { PROCUREMENT_DASHBOARD_ROLES } from "./components/Users/User.constants";
+import DataVizDebug from "./pages/dev/DataVizDebug";
 
 // NOTE: store muse be imported after react-router-dom to avoid access lexical declaration 'opsApi' before initialization
 
 //  USWDS
 import "./uswds/css/styles.css";
+import ProcurementDashboard from "./pages/procurementDashboard/ProcurementDashboardPage";
 
 // Cross-platform typography fixes (loaded after USWDS)
 import "./index.css";
@@ -207,6 +213,34 @@ const router = createBrowserRouter(
                     }}
                 />
                 <Route
+                    path="/projects/:id/spending"
+                    element={<ProjectSpending />}
+                    handle={{
+                        crumb: () => (
+                            <Link
+                                to="/projects"
+                                className="text-primary"
+                            >
+                                Projects
+                            </Link>
+                        )
+                    }}
+                />
+                <Route
+                    path="/projects/:id/funding"
+                    element={<ProjectFunding />}
+                    handle={{
+                        crumb: () => (
+                            <Link
+                                to="/projects"
+                                className="text-primary"
+                            >
+                                Projects
+                            </Link>
+                        )
+                    }}
+                />
+                <Route
                     path="/agreements"
                     element={<AgreementsList />}
                 />
@@ -282,6 +316,12 @@ const router = createBrowserRouter(
                     path="/reporting"
                     element={<ReportingPage />}
                 />
+                <Route element={<RoleProtectedRoute allowedRoles={PROCUREMENT_DASHBOARD_ROLES} />}>
+                    <Route
+                        path="/procurement-dashboard"
+                        element={<ProcurementDashboard />}
+                    />
+                </Route>
                 <Route
                     path="/cans/:id/*"
                     element={<Can />}
@@ -299,6 +339,10 @@ const router = createBrowserRouter(
                 <Route
                     path="/dev/procurement-mocks"
                     element={import.meta.env.DEV ? <ProcurementMocksDebug /> : <Navigate to="/error" />}
+                />
+                <Route
+                    path="/dev/data-viz"
+                    element={import.meta.env.DEV ? <DataVizDebug /> : <Navigate to="/error" />}
                 />
                 <Route
                     path="/user-admin"

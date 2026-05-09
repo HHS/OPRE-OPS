@@ -136,11 +136,13 @@ describe("BLIRow", () => {
         const createdBy = screen.getByText("TBD");
         const createdDate = screen.getByText("July 26, 2024");
         const notes = screen.getByText(/sc3/i);
+        const procurementShopLabel = screen.getByText("Procurement Shop");
 
         expect(expandedRow).toBeInTheDocument();
         expect(createdBy).toBeInTheDocument();
         expect(createdDate).toBeInTheDocument();
         expect(notes).toBeInTheDocument();
+        expect(procurementShopLabel).toBeInTheDocument();
     });
 
     it("should highlight changed fields for budget change", () => {

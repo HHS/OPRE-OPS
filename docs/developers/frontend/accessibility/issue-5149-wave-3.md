@@ -86,7 +86,7 @@ Use Wave 3 to convert the existing accessibility baseline and regression-gate sc
   - `npx cypress run --config-file ./cypress.config.js --headless --spec "cypress/e2e/agreementDetails.cy.js,cypress/e2e/budgetLineItemsList.cy.js,cypress/e2e/createAgreementWithValidations.cy.js,cypress/e2e/uploadDocument.cy.js"` passes
   - no structural allowlist-backed failures remain in that targeted regression set
 - Completed `svg-img-alt` burn-down for the remaining tracked specs:
-  - hid decorative portfolio legend and CAN funding icons from assistive tech in `frontend/src/components/Portfolios/PortfolioSummaryCards/PortfolioLegend.jsx` and `frontend/src/components/Portfolios/PortfolioFundingByCAN/PortfolioFundingByCAN.jsx`
+  - hid decorative portfolio legend and CAN funding icons from assistive tech in `frontend/src/components/Portfolios/PortfolioSummaryCards/PortfolioLegend.jsx` and `frontend/src/components/Portfolios/PortfolioFundingByCAN/PortfolioFundingByCAN.jsx` (note: `PortfolioFundingByCAN` was subsequently removed in #5515)
   - hid decorative external-link icon in `frontend/src/components/Portfolios/PortfolioHero/HeroDescription.jsx`
   - hid decorative budget line summary and change-action icons in `frontend/src/components/BudgetLineItems/BLIStatusSummaryCard/BLIStatusSummaryCard.jsx` and `frontend/src/components/BudgetLineItems/ChangeIcons/ChangeIcons.jsx`
   - removed the final `svg-img-alt` allowlist entries from `frontend/cypress/support/a11yAllowlist.js`

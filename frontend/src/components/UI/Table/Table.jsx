@@ -17,6 +17,7 @@ import styles from "./table.module.css";
  * @property {Function} [onClickHeader] - Function that runs when a header is clicked - optional.
  * @property {string | null} [selectedHeader] - The header that has been chosen as sort condition.
  * @property {boolean | null} [sortDescending] - Whether or not the table is sorted descending or not. Null means no special sort direction.
+ * @property {string} [className] - Additional class names to add to the table - optional.
  */
 
 /**
@@ -28,7 +29,15 @@ import styles from "./table.module.css";
  * @example
  * <Table tableHeadings={["Heading 1", "Heading 2", "Heading 3"]}>
  **/
-const Table = ({ children, tableHeadings, firstHeadingSlot, onClickHeader, selectedHeader = "", sortDescending }) => {
+const Table = ({
+    children,
+    tableHeadings,
+    firstHeadingSlot,
+    onClickHeader,
+    selectedHeader = "",
+    sortDescending,
+    className = ""
+}) => {
     /**
      * Adds a width to specific columns
      * @param {TableHeading} header - The heading to check
@@ -48,7 +57,7 @@ const Table = ({ children, tableHeadings, firstHeadingSlot, onClickHeader, selec
     };
 
     return (
-        <table className={`usa-table width-full usa-table--borderless ${styles.tableHover}`}>
+        <table className={`usa-table width-full usa-table--borderless ${styles.tableHover} ${className}`}>
             <thead>
                 <tr>
                     {firstHeadingSlot && firstHeadingSlot}

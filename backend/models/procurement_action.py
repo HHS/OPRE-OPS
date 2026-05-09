@@ -5,9 +5,10 @@ from decimal import Decimal
 from enum import Enum, auto
 from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import Date, ForeignKey, Integer, Numeric, String, Text, Index
+from loguru import logger
+from sqlalchemy import Date, ForeignKey, Integer, Numeric, String, Text, Index, select
 from sqlalchemy.dialects.postgresql import ENUM
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, Session, mapped_column, relationship
 
 from models.base import BaseModel
 
@@ -130,6 +131,69 @@ class ProcurementAction(BaseModel):
     agreement_total: Mapped[Optional[Decimal]] = mapped_column(
         Numeric(12, 2), nullable=True, comment="Cumulative agreement total after this action"
     )
+
+    _TERMINAL_STATUSES = frozenset({
+        ProcurementActionStatus.AWARDED,
+        ProcurementActionStatus.CERTIFIED,
+        ProcurementActionStatus.CANCELLED,
+    })
+
+    @classmethod
+    def get_or_create_for_agreement(
+        cls,
+        session: Session,
+        agreement: "Agreement",
+        award_type: "AwardType",
+        status: "ProcurementActionStatus" = ProcurementActionStatus.PLANNED,
+        date_awarded_obligated: Optional[date] = None,
+        created_by: Optional[int] = None,
+        include_terminal: bool = False,
+    ) -> tuple["ProcurementAction", bool]:
+        """
+        Find an existing ProcurementAction for the agreement + award_type,
+        or create one.
+
+        By default, actions in terminal statuses (AWARDED, CERTIFIED, CANCELLED)
+        are excluded so that a new action is created for a new procurement cycle.
+        Pass ``include_terminal=True`` to match any status (e.g. for backfill).
+
+        Uses ``FOR UPDATE`` row-level locking to prevent duplicate creation
+        under concurrent calls.
+
+        Returns (action, was_created).
+        """
+        query = (
+            select(cls)
+            .where(
+                cls.agreement_id == agreement.id,
+                cls.award_type == award_type,
+            )
+            .with_for_update()
+        )
+
+        if not include_terminal:
+            query = query.where(cls.status.not_in(list(cls._TERMINAL_STATUSES)))
+
+        existing = session.execute(query).scalar_one_or_none()
+
+        if existing:
+            return existing, False
+
+        action = cls(
+            agreement_id=agreement.id,
+            award_type=award_type,
+            status=status,
+            procurement_shop_id=agreement.awarding_entity_id,
+            date_awarded_obligated=date_awarded_obligated,
+            created_by=created_by,
+        )
+        session.add(action)
+        session.flush()
+        logger.info(
+            f"Created ProcurementAction ({award_type.name}) for Agreement {agreement.id} "
+            f"('{agreement.name}') with procurement_shop_id={agreement.awarding_entity_id}"
+        )
+        return action, True
 
     @BaseModel.display_name.getter
     def display_name(self):

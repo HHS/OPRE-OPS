@@ -7,3 +7,8 @@
 .tableHover th {
     padding: 0.5rem 0.5rem !important;
 }
+
+.verticalAlignTop td {
+    vertical-align: top;
+    padding-bottom: 0 !important;
+}

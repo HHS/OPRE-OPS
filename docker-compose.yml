@@ -102,3 +102,21 @@ services:
           ignore:
             - node_modules/
     restart: on-failure
+
+  # Storybook — opt-in for local development only.
+  # Run with: docker compose --profile storybook up storybook
+  # Accessible at http://localhost:6006
+  storybook:
+    build:
+      context: ./frontend/
+      dockerfile: Dockerfile.dev
+    profiles: [storybook]
+    environment:
+      - VITE_BACKEND_DOMAIN=${BACKEND_DOMAIN:-http://localhost:8080}
+    ports:
+      - "6006:6006"
+    volumes:
+      - ./frontend:/home/app
+      - /home/app/node_modules
+    command: bun run storybook
+    restart: on-failure

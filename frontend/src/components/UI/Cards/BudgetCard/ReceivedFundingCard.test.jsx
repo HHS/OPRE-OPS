@@ -66,6 +66,8 @@ describe("ReceivedFundingCard", () => {
                 totalFunding={5000}
             />
         );
+        // Right value is now the remainder (5000 - 1000 = 4000), so
+        // left width = 1000 / (1000 + 4000) = 20% — the correct proportion.
         expect(screen.getByTestId("line-graph-left-bar")).toHaveStyle("flex: 0 1 20%");
     });
 
@@ -89,5 +91,25 @@ describe("ReceivedFundingCard", () => {
             />
         );
         expect(screen.getByTestId("received-funding-card-text")).toHaveTextContent("Received $0 of $0");
+    });
+
+    it("clamps right bar value to 0 when totalReceived > totalFunding (over-budget)", () => {
+        // totalReceived=6000 > totalFunding=5000 → Math.max(5000 - 6000, 0) = 0
+        // ReverseLineGraph receives [{value:6000}, {value:0}]:
+        //  - left bar (received) is rendered (value > 0)
+        //  - right bar value=0 means leftIsFull fallback fires → leftBarFull class
+        render(
+            <ReceivedFundingCard
+                title="Test"
+                totalReceived={6000}
+                totalFunding={5000}
+            />
+        );
+        const leftBar = screen.getByTestId("line-graph-left-bar");
+        // leftPercent is undefined (no percent field on graphData), so the string branch
+        // runs: 6000 / (6000 + 0) = 100% → leftFlexWidth = 100
+        expect(leftBar).toHaveStyle({ flex: "0 1 100%" });
+        // Text still shows the raw over-budget values
+        expect(screen.getByTestId("received-funding-card-text")).toHaveTextContent("Received $6,000.00 of $5,000.00");
     });
 });

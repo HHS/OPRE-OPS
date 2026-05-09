@@ -4,7 +4,13 @@ import pytest
 from flask import url_for
 
 from models import AgreementChangeRequest, ChangeRequestStatus, User
-from models.notifications import ChangeRequestNotification, Notification
+from models.notifications import ChangeRequestNotification, Notification, PreAwardApprovalNotification
+from models.procurement_tracker import (
+    DefaultProcurementTrackerStep,
+    ProcurementTracker,
+    ProcurementTrackerStepStatus,
+    ProcurementTrackerStepType,
+)
 from ops_api.ops.resources.notifications import RecipientSchema
 
 
@@ -359,3 +365,56 @@ def test_notifications_get_by_agreement_id(
     assert response.json[0]["change_request"]["status"] == "APPROVED"
     assert response.json[0]["change_request"]["requested_change_diff"]["something"]["old"] == "old_value"
     assert response.json[0]["change_request"]["requested_change_diff"]["something"]["new"] == "new_value"
+
+
+def test_pre_award_notification_includes_step_with_approval_status(auth_client, loaded_db, test_admin_user, app_ctx):
+    """PreAwardApprovalNotification response includes nested step with approval_status."""
+    # Create a PRE_AWARD step with APPROVED status
+    tracker = loaded_db.get(ProcurementTracker, 1)
+    step = DefaultProcurementTrackerStep(
+        procurement_tracker_id=tracker.id,
+        step_number=999,
+        step_type=ProcurementTrackerStepType.PRE_AWARD,
+        status=ProcurementTrackerStepStatus.ACTIVE,
+        created_by=test_admin_user.id,
+    )
+    # Set pre-award specific fields after initialization
+    step.pre_award_approval_requested = True
+    step.pre_award_approval_requested_date = date.today()
+    step.pre_award_approval_status = "APPROVED"
+
+    loaded_db.add(step)
+    loaded_db.commit()
+
+    # Create PreAwardApprovalNotification linked to step
+    notification = PreAwardApprovalNotification(
+        title="Pre-Award Approval Approved",
+        message="Your pre-award request was approved",
+        is_read=False,
+        recipient_id=test_admin_user.id,
+        procurement_tracker_step_id=step.id,
+        created_by=test_admin_user.id,
+    )
+    loaded_db.add(notification)
+    loaded_db.commit()
+
+    # GET notification via API
+    response = auth_client.get(url_for("api.notifications-item", id=notification.id))
+
+    # Assert response includes procurement_tracker_step with approval_status
+    assert response.status_code == 200
+    data = response.json
+
+    assert data["notification_type"] == "PRE_AWARD_APPROVAL_NOTIFICATION"
+    assert "procurement_tracker_step" in data
+    assert data["procurement_tracker_step"] is not None
+
+    step_data = data["procurement_tracker_step"]
+    assert step_data["id"] == step.id
+    assert step_data["step_type"] == "PRE_AWARD"
+    assert step_data["approval_status"] == "APPROVED"
+
+    # Cleanup
+    loaded_db.delete(notification)
+    loaded_db.delete(step)
+    loaded_db.commit()

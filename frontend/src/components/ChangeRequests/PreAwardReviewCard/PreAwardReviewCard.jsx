@@ -10,6 +10,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 /**
  * PreAwardReviewCard component for displaying pending pre-award approval requests
+ *
+ * NOTE: This component does NOT use the shared ReviewCard base component because it serves a different
+ * purpose than change request cards. ReviewCard is designed for inline approve/reject actions on
+ * change requests, while this card (like BudgetTeamRequisitionReviewCard) is an informational card
+ * that links to a detail/approval page.
+ *
  * @component
  * @param {Object} props - Properties passed to component
  * @param {number} props.agreementId - The ID of the agreement

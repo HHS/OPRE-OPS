@@ -2,9 +2,9 @@ from enum import Enum
 from typing import Optional
 from decimal import Decimal
 
-from sqlalchemy import Date, ForeignKey, Index, Sequence, String, Text
+from sqlalchemy import Date, ForeignKey, Index, Sequence, String, Text, text
 from sqlalchemy.dialects.postgresql import ENUM
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column, object_session, relationship
 from typing_extensions import List
 
 from models.base import BaseModel
@@ -69,6 +69,55 @@ class Project(BaseModel):
     @BaseModel.display_name.getter
     def display_name(self):
         return self.title
+
+    _OP_INSERT = 0
+    _OP_UPDATE = 1
+    _OP_DELETE = 2
+
+    # All SQL below uses only hardcoded table names (no user input) and parameterized values.
+    # NOTE: insert_parent_ver column list must be kept in sync with the project table schema.
+    _SQL = {  # nosemgrep: python.sqlalchemy.security.audit.avoid-sqlalchemy-text.avoid-sqlalchemy-text
+        "insert_research": text("INSERT INTO research_project (id) VALUES (:id)"),  # nosemgrep
+        "insert_admin": text("INSERT INTO administrative_and_support_project (id) VALUES (:id)"),  # nosemgrep
+        "delete_research": text("DELETE FROM research_project WHERE id = :id"),  # nosemgrep
+        "delete_admin": text("DELETE FROM administrative_and_support_project WHERE id = :id"),  # nosemgrep
+        "insert_research_ver": text("INSERT INTO research_project_version (id, transaction_id, operation_type) VALUES (:id, :txn, :op)"),  # nosemgrep
+        "insert_admin_ver": text("INSERT INTO administrative_and_support_project_version (id, transaction_id, operation_type) VALUES (:id, :txn, :op)"),  # nosemgrep
+        "update_parent": text("UPDATE project SET project_type = :new_type WHERE id = :id"),  # nosemgrep
+        "new_txn": text("INSERT INTO transaction (issued_at) VALUES (NOW()) RETURNING id"),  # nosemgrep
+        "insert_parent_ver": text(  # nosemgrep
+            "INSERT INTO project_version (id, project_type, title, short_title, description, url,"
+            " created_by, updated_by, created_on, updated_on, transaction_id, operation_type)"
+            " SELECT id, project_type, title, short_title, description, url,"
+            " created_by, updated_by, created_on, updated_on, :txn, :op"
+            " FROM project WHERE id = :id"
+        ),
+    }
+    _TYPE_KEYS = {
+        ProjectType.RESEARCH: "research",
+        ProjectType.ADMINISTRATIVE_AND_SUPPORT: "admin",
+    }
+
+    def change_type(self, new_type: "ProjectType") -> None:
+        if self.project_type == new_type:
+            return
+
+        session = object_session(self)
+        old_key = self._TYPE_KEYS[self.project_type]
+        new_key = self._TYPE_KEYS[new_type]
+
+        txn_id = session.execute(self._SQL["new_txn"]).scalar()
+
+        # Mutate the live tables
+        session.execute(self._SQL[f"insert_{new_key}"], {"id": self.id})
+        session.execute(self._SQL["update_parent"], {"new_type": new_type.name, "id": self.id})
+        session.execute(self._SQL[f"delete_{old_key}"], {"id": self.id})
+
+        session.execute(self._SQL[f"insert_{old_key}_ver"], {"id": self.id, "txn": txn_id, "op": self._OP_DELETE})
+        session.execute(self._SQL[f"insert_{new_key}_ver"], {"id": self.id, "txn": txn_id, "op": self._OP_INSERT})
+        session.execute(self._SQL["insert_parent_ver"], {"id": self.id, "txn": txn_id, "op": self._OP_UPDATE})
+
+        session.expire_all()
 
     @property
     def project_metadata(self) -> dict:
@@ -137,7 +186,8 @@ class Project(BaseModel):
                 key=lambda x: x["name"],
             ),
             "project_officers": sorted(
-                [{"id": user_id, "name": name} for user_id, name in project_officer_dict.items()], key=lambda x: x["name"]
+                [{"id": user_id, "name": name} for user_id, name in project_officer_dict.items()],
+                key=lambda x: x["name"],
             ),
             "alternate_project_officers": sorted(
                 [{"id": user_id, "name": name} for user_id, name in alternate_project_officer_dict.items()],
@@ -251,15 +301,22 @@ class Project(BaseModel):
         # --- funding_by_portfolio ---
         portfolio_totals: dict[int, Decimal] = defaultdict(lambda: Decimal("0"))
         portfolio_names: dict[int, str] = {}
+        portfolio_abbr: dict[int, str | None] = {}
         for can in unique_cans:
             if can.portfolio:
                 for fb in can.funding_budgets:
                     if fb.fiscal_year == fiscal_year:
                         portfolio_totals[can.portfolio_id] += fb.budget or Decimal("0")
                         portfolio_names[can.portfolio_id] = can.portfolio.name
+                        portfolio_abbr[can.portfolio_id] = can.portfolio.abbreviation
 
         funding_by_portfolio = [
-            {"portfolio_id": pid, "portfolio": portfolio_names[pid], "amount": float(amt)}
+            {
+                "portfolio_id": pid,
+                "portfolio": portfolio_names[pid],
+                "amount": float(amt),
+                "abbreviation": portfolio_abbr[pid],
+            }
             for pid, amt in portfolio_totals.items()
         ]
 

@@ -1,17 +1,11 @@
-import { vi, describe, test, expect, beforeEach, afterEach } from "vitest";
+import { vi, describe, test, expect, afterEach } from "vitest";
 import { waitFor, screen } from "@testing-library/react";
 import { renderWithProviders } from "../test-utils";
 import { useGetRolesQuery, opsAuthApi } from "./opsAuthAPI.js";
 import { server } from "../tests/mocks";
 
-// Setup MSW server for integration tests
-beforeEach(() => {
-    server.listen({ onUnhandledRequest: "warn" });
-});
-
 afterEach(() => {
     server.resetHandlers();
-    server.close();
 });
 
 describe("opsAuthApi", () => {

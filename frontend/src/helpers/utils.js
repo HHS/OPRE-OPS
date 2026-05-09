@@ -32,42 +32,6 @@ export const calculatePercent = (numerator, denominator) => {
 };
 
 /**
- * Computes display-friendly percent values for an array of items.
- *
- * Returns the raw numeric/string percent tokens without a trailing "%".
- * The percent sign is appended later by `LegendItem` and other consumers.
- *
- * Handles the edge case where one dominant item rounds to 100 while other
- * non-zero items exist — which would otherwise render in the legend as a
- * contradictory combination like "100% + <1%". In that case this helper
- * returns ">99" for the dominant item instead.
- *
- * Rules applied per item:
- *   - Zero value                         → 0
- *   - Non-zero but rounds to 0          → "<1"
- *   - Rounds to 100 while other non-zero items exist → ">99"
- *   - Otherwise                         → rounded integer
- *
- * @param {Array<{value: number}>} items - Data items with a numeric `value` field
- * @param {number} total - Sum of all item values
- * @returns {Array<number|string>} - Parallel array of raw display percent values; "%" is appended later by consumers
- */
-export const computeDisplayPercents = (items, total) => {
-    if (total === 0) return items.map(() => 0);
-
-    const rounded = items.map((item) => {
-        if (item.value === 0) return 0;
-        const exact = (item.value / total) * 100;
-        const r = Math.round(exact);
-        return r === 0 ? "<1" : r;
-    });
-
-    // Check if any item shows 100 while others have non-zero amounts
-    const hasOtherNonZero = (idx) => items.some((item, i) => i !== idx && item.value > 0);
-
-    return rounded.map((r, idx) => (r === 100 && hasOtherNonZero(idx) ? ">99" : r));
-};
-/**
  * This function formats a date into a string in the format MM/DD/YYYY.
  * @param {Date} date - The date to format. This parameter is required.
  * @returns {string} The formatted date string.
@@ -602,3 +566,180 @@ export function convertToCurrency(value) {
         currency: "USD"
     });
 }
+
+// ---------------------------------------------------------------------------
+// Data-visualization percentage helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Computes a display-friendly percent string for a single item.
+ *
+ * - Returns 0 when value or total is zero.
+ * - Returns "<1" when a non-zero value rounds down to 0% (i.e. the item is
+ *   present but too small to show as 1%).
+ * - Otherwise returns the rounded integer percent.
+ *
+ * @param {number} value - The slice value.
+ * @param {number} total - The sum across all slices.
+ * @returns {number|string} Rounded integer percent, "<1", or 0.
+ */
+export const computeDisplayPercent = (value, total) => {
+    const numericValue = Number(value);
+    const numericTotal = Number(total);
+
+    if (!Number.isFinite(numericValue) || !Number.isFinite(numericTotal)) return 0;
+    if (numericTotal === 0 || numericValue === 0) return 0;
+
+    const exact = (numericValue / numericTotal) * 100;
+    const rounded = Math.round(exact);
+    return rounded === 0 ? "<1" : rounded;
+};
+
+/**
+ * Computes cross-item-normalised display percents for an array of data items.
+ *
+ * Rules applied across the full set:
+ * 1. Any non-zero item that rounds down to 0% is shown as "<1".
+ * 2. If a dominant item would round to 100% while at least one other non-zero
+ *    item exists, the dominant item is capped at 99 instead of 100.
+ *    Per the Figma design spec, plain "99%" is shown — never ">99%".
+ * 3. When all non-zero items can be displayed as whole numbers, use a
+ *    largest-remainder pass so the displayed integer labels add up to 100.
+ *
+ * The returned array mirrors the input with a `percent` field added/replaced.
+ * Original `value` fields are never modified.
+ *
+ * **Edge case — mixed display types**: When any item produces a string percent
+ * (i.e. `"<1"` or a capped `99`), the largest-remainder integer-sum pass is
+ * skipped for the entire set. In practice this means that when a tiny-slice
+ * item is present, the remaining numeric labels may sum to 99 rather than 100.
+ * This is an intentional tradeoff: fixing the misleading `0%` label is more
+ * important than perfect summing in those rare edge cases.
+ *
+ * @param {Array<{value: number}>} items - Data items. Must all have a numeric `value`.
+ * @returns {Array} Items with `percent` set to a number or the string "<1".
+ */
+export const computeDisplayPercents = (items) => {
+    if (!items || items.length === 0) return items;
+
+    const toFiniteNumber = (v) => {
+        const n = Number(v ?? 0);
+        return Number.isFinite(n) ? n : 0;
+    };
+
+    const total = items.reduce((sum, item) => sum + toFiniteNumber(item.value), 0);
+
+    if (total === 0) {
+        return items.map((item) => ({ ...item, percent: 0 }));
+    }
+
+    const nonZeroCount = items.filter((item) => toFiniteNumber(item.value) > 0).length;
+
+    const annotated = items.map((item, index) => {
+        const value = toFiniteNumber(item.value);
+        const exact = total > 0 ? (value / total) * 100 : 0;
+
+        return {
+            item,
+            index,
+            value,
+            exact,
+            isZero: value === 0,
+            isTiny: value > 0 && Math.round(exact) === 0,
+            isDominantCap: Math.round(exact) === 100 && nonZeroCount > 1
+        };
+    });
+
+    const hasStringDisplayPercent = annotated.some((entry) => entry.isTiny || entry.isDominantCap);
+
+    if (hasStringDisplayPercent) {
+        return annotated.map(({ item, value, exact }) => {
+            const base = computeDisplayPercent(value, total);
+
+            // Cap dominant item at 99 (not 100) when other non-zero items still exist.
+            // Figma spec: show "99%" — never ">99%" — to avoid contradictory labels.
+            if (Math.round(exact) === 100 && nonZeroCount > 1) {
+                return { ...item, percent: 99 };
+            }
+
+            return { ...item, percent: base };
+        });
+    }
+
+    const floored = annotated.map((entry) => ({
+        ...entry,
+        whole: Math.floor(entry.exact),
+        remainder: entry.exact - Math.floor(entry.exact)
+    }));
+
+    let remaining = 100 - floored.reduce((sum, entry) => sum + entry.whole, 0);
+
+    const extraPointIndexes = new Set(
+        floored
+            .filter((entry) => !entry.isZero)
+            .sort((a, b) => {
+                if (b.remainder !== a.remainder) return b.remainder - a.remainder;
+                if (b.value !== a.value) return b.value - a.value;
+                return a.index - b.index;
+            })
+            .slice(0, remaining)
+            .map((entry) => entry.index)
+    );
+
+    return floored.map(({ item, index, whole }) => ({
+        ...item,
+        percent: whole + (remaining > 0 && extraPointIndexes.has(index) ? 1 : 0)
+    }));
+};
+
+/**
+ * Ensures every non-zero slice is at least 1% of the total so it remains
+ * visible in a donut/arc chart, while preserving the original total used to
+ * compute arc proportions by reducing the added amount from larger slices.
+ *
+ * Only affects chart rendering — legend values and percents should always
+ * reflect the real amounts (pass legend data separately).
+ *
+ * @param {Array<{value: number}>} items - Data items with numeric `value`.
+ * @param {number} total - Sum of all real values.
+ * @returns {Array} Items with chart-safe `value` fields applied.
+ */
+export const applyMinimumArcValue = (items, total) => {
+    if (!items || items.length === 0 || total === 0) return items;
+
+    const minValue = total * 0.01;
+
+    // Check if any slice needs flooring before allocating
+    const needsAdjustment = items.some((item) => item.value > 0 && item.value < minValue);
+    if (!needsAdjustment) return items;
+
+    // Floor any non-zero slice that is below the minimum
+    const adjustedItems = items.map((item) => ({
+        ...item,
+        value: item.value > 0 && item.value < minValue ? minValue : item.value
+    }));
+
+    // How much was added in total by flooring
+    const addedValue = adjustedItems.reduce((sum, item, index) => sum + (item.value - items[index].value), 0);
+
+    if (addedValue <= 0) return items;
+
+    // Subtract the added amount proportionally from slices that are above the minimum
+    const reducibleTotal = adjustedItems.reduce(
+        (sum, item) => (item.value > minValue ? sum + (item.value - minValue) : sum),
+        0
+    );
+
+    // If we cannot redistribute without pushing other slices below minimum, return as-is
+    if (reducibleTotal < addedValue) return adjustedItems;
+
+    let remaining = addedValue;
+
+    return adjustedItems.map((item) => {
+        if (item.value <= minValue || remaining <= 0) return item;
+        const reducible = item.value - minValue;
+        const reduction = Math.min(reducible, (reducible / reducibleTotal) * addedValue, remaining);
+        remaining -= reduction;
+        return { ...item, value: item.value - reduction };
+    });
+};

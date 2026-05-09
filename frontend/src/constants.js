@@ -33,6 +33,13 @@ const constants = {
         { color: "var(--can-budget-by-fy-graph-4)" },
         { color: "var(--can-budget-by-fy-graph-5)" }
     ],
+    projectFundingByFYChartColors: [
+        { color: "var(--project-funding-by-fy-graph-1)" },
+        { color: "var(--project-funding-by-fy-graph-2)" },
+        { color: "var(--project-funding-by-fy-graph-3)" },
+        { color: "var(--project-funding-by-fy-graph-4)" },
+        { color: "var(--project-funding-by-fy-graph-5)" }
+    ],
     roles: [
         { name: "SYSTEM_OWNER", label: "System Owner" },
         { name: "VIEWER_EDITOR", label: "Viewer/Editor" },

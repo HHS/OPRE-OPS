@@ -1,6 +1,11 @@
 from typing import Any, Type
 
-from models import ChangeRequestNotification, Notification, NotificationType
+from models import (
+    ChangeRequestNotification,
+    Notification,
+    NotificationType,
+    PreAwardApprovalNotification,
+)
 from ops_api.ops.services.ops_service import OpsService, ResourceNotFoundError
 
 
@@ -8,9 +13,16 @@ class NotificationService(OpsService[Notification]):
     def __init__(self, db_session):
         self.db_session = db_session
 
-    def create(self, data: dict[str, Any]) -> Notification:
+    def create(self, data: dict[str, Any], commit: bool = True) -> Notification:
         """
         Create a new notification.
+
+        Args:
+            data: Notification data dictionary
+            commit: If True, commits immediately. If False, only flushes to get ID.
+
+        Returns:
+            Created notification instance
         """
         notification_type = data.get("notification_type", NotificationType.NOTIFICATION)
 
@@ -18,12 +30,19 @@ class NotificationService(OpsService[Notification]):
         cls: Type[Notification]
         if notification_type == NotificationType.CHANGE_REQUEST_NOTIFICATION:
             cls = ChangeRequestNotification
+        elif notification_type == NotificationType.PRE_AWARD_APPROVAL_NOTIFICATION:
+            cls = PreAwardApprovalNotification
         else:
             cls = Notification
 
         notification = cls(**data)
         self.db_session.add(notification)
-        self.db_session.commit()
+
+        if commit:
+            self.db_session.commit()
+        else:
+            self.db_session.flush()  # Get ID without committing
+
         return notification
 
     def update(self, notification_id: int, updated_fields: dict[str, Any]) -> tuple[Notification, int]:

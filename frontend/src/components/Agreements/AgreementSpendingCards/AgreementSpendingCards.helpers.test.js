@@ -67,4 +67,50 @@ describe("transformToChartData", () => {
         expect(result[6].id).toBe("DIRECT_OBLIGATION");
         expect(result[7].id).toBe("DIRECT_OBLIGATION_CONTINUING");
     });
+
+    it("each segment has a percent field", () => {
+        const result = transformToChartData(mockAgreementTypes, totalSpending);
+        result.forEach((segment) => {
+            expect(segment).toHaveProperty("percent");
+        });
+    });
+
+    it("dominant segment shows 99 (not 100 or '>99') when non-zero peers exist", () => {
+        const dominantTypes = [
+            { type: "CONTRACT", new: 996, continuing: 0 },
+            { type: "GRANT", new: 4, continuing: 0 }
+        ];
+        const result = transformToChartData(dominantTypes, 1000);
+        const contract = result.find((d) => d.id === "CONTRACT");
+        const grant = result.find((d) => d.id === "GRANT");
+        expect(contract.percent).toBe(99);
+        expect(grant.percent).toBe("<1");
+    });
+
+    it("3-way equal split: largest remainder assigns the extra point to the biggest segment", () => {
+        const equalTypes = [
+            { type: "CONTRACT", new: 333, continuing: 0 },
+            { type: "GRANT", new: 333, continuing: 0 },
+            { type: "DIRECT_OBLIGATION", new: 334, continuing: 0 }
+        ];
+        const result = transformToChartData(equalTypes, 1000);
+
+        expect(result.map((segment) => segment.percent)).toEqual([33, 33, 34]);
+    });
+
+    it("sub-1% non-zero segment shows '<1' instead of 0", () => {
+        const tinyTypes = [
+            { type: "CONTRACT", new: 996, continuing: 0 },
+            { type: "GRANT", new: 4, continuing: 0 }
+        ];
+        const result = transformToChartData(tinyTypes, 1000);
+        const grant = result.find((d) => d.id === "GRANT");
+        expect(grant.percent).toBe("<1");
+    });
+
+    it("single segment gets 100% (no non-zero peers — correct)", () => {
+        const singleType = [{ type: "CONTRACT", new: 1000, continuing: 0 }];
+        const result = transformToChartData(singleType, 1000);
+        expect(result[0].percent).toBe(100);
+    });
 });

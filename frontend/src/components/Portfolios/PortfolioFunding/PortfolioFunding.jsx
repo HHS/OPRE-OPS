@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import { useGetPortfolioCansByIdQuery, useLazyGetPortfolioFundingSummaryQuery } from "../../../api/opsAPI";
-import { calculatePercent } from "../../../helpers/utils";
+import { computeDisplayPercents } from "../../../helpers/utils";
 import CanCard from "../../CANs/CanCard/CanCard";
 import Card from "../../UI/Cards/Card";
 import LineGraphWithLegendCard from "../../UI/Cards/LineGraphWithLegendCard";
@@ -57,13 +57,15 @@ const PortfolioFunding = () => {
         }
     }, [portfolioId, fiscalYear, trigger]);
 
-    const data = [
+    // Build raw items then apply cross-item normalisation so the two
+    // complementary values are never computed independently — prevents the
+    // dominant value showing 100% while the other shows 0%.
+    const data = computeDisplayPercents([
         {
             id: 1,
             label: "Previous FYs Carry-Forward",
             value: carryForward,
             color: "var(--portfolio-carry-forward)",
-            percent: calculatePercent(carryForward, totalFunding),
             tagActiveStyle: "portfolioCarryForward"
         },
         {
@@ -71,10 +73,9 @@ const PortfolioFunding = () => {
             label: `FY ${fiscalYear} New Funding`,
             value: newFunding,
             color: "var(--portfolio-new-funding)",
-            percent: calculatePercent(newFunding, totalFunding),
             tagActiveStyle: "portfolioNewFunding"
         }
-    ];
+    ]);
 
     const maxBudget = Math.max(...fyBudgetChartData) === 0 ? 1 : Math.max(...fyBudgetChartData);
     const chartData = [

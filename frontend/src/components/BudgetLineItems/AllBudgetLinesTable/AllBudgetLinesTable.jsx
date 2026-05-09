@@ -1,6 +1,7 @@
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 import PaginationNav from "../../UI/PaginationNav/PaginationNav";
 import Table from "../../UI/Table";
+import tableStyles from "../../UI/Table/table.module.css";
 import AllBLIRow from "./AllBLIRow";
 import { All_BUDGET_LINES_TABLE_HEADINGS_LIST } from "./AllBudgetLinesTable.constants";
 import useAllBudgetLinesTable from "./AllBudgetLinesTable.hooks";
@@ -57,6 +58,7 @@ const AllBudgetLinesTable = ({
                 selectedHeader={sortConditions}
                 onClickHeader={setSortConditions}
                 sortDescending={sortDescending}
+                className={tableStyles.verticalAlignTop}
             >
                 {budgetLineItems?.length > 0 &&
                     budgetLineItems.map((budgetLine) => (

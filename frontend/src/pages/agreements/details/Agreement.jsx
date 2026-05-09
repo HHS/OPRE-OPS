@@ -1,15 +1,17 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
-import { Route, Routes, useNavigate, useParams } from "react-router-dom";
+import { Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
 import App from "../../../App";
 import { getUser } from "../../../api/getUser";
 import {
     useGetAgreementByIdQuery,
     useGetNotificationsByUserIdAndAgreementIdQuery,
-    useGetProcurementShopByIdQuery
+    useGetProcurementShopByIdQuery,
+    useGetProcurementTrackersByAgreementIdQuery
 } from "../../../api/opsAPI";
 import AgreementChangesAlert from "../../../components/Agreements/AgreementChangesAlert";
 import AgreementChangesResponseAlert from "../../../components/Agreements/AgreementChangesResponseAlert";
+import PreAwardApprovalAlert from "../../../components/Agreements/PreAwardApprovalAlert/PreAwardApprovalAlert";
 import DetailsTabs from "../../../components/Agreements/DetailsTabs";
 import DocumentView from "../../../components/Agreements/Documents/DocumentView";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
@@ -28,10 +30,35 @@ import AgreementProcurementTracker from "./AgreementProcurementTracker";
 
 const Agreement = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     // TODO: move logic into a custom hook aka Agreement.hooks.js
     const urlPathParams = useParams();
     const agreementId = urlPathParams?.id ? +urlPathParams.id : -1;
     const [isEditMode, setIsEditMode] = useState(false);
+    const [showPreAwardSuccessAlert, setShowPreAwardSuccessAlert] = useState(false);
+
+    // Consume success state from navigation and clear it to prevent re-display on back/forward
+    useEffect(() => {
+        if (location.state?.success) {
+            setShowPreAwardSuccessAlert(true);
+            // Clear location.state so alert doesn't reappear on browser back/forward navigation
+            navigate(location.pathname + location.search, {
+                replace: true,
+                state: {}
+            });
+        }
+    }, [location.state?.success, location.pathname, location.search, navigate]);
+
+    // Auto-dismiss success alert after 10 seconds
+    useEffect(() => {
+        if (showPreAwardSuccessAlert) {
+            const timer = setTimeout(() => {
+                setShowPreAwardSuccessAlert(false);
+            }, 10000);
+            return () => clearTimeout(timer);
+        }
+    }, [showPreAwardSuccessAlert]);
+
     const [projectOfficer, setProjectOfficer] = useState({ email: "", full_name: "", id: 0 });
     const [alternateProjectOfficer, setAlternateProjectOfficer] = useState({ email: "", full_name: "", id: 0 });
     const [hasAgreementChanged, setHasAgreementChanged] = useState(false);
@@ -44,12 +71,26 @@ const Agreement = () => {
     const [isTempUiAlertVisible, setIsTempUiAlertVisible] = useState(true);
     const [isApproveAlertVisible, setIsApproveAlertVisible] = useState(true);
     const [isDeclinedAlertVisible, setIsDeclinedAlertVisible] = useState(true);
+    const [isPreAwardAlertVisible] = useState(true);
+    const [isPreAwardInReviewAlertVisible, setIsPreAwardInReviewAlertVisible] = useState(true);
 
-    const searchParams = new URLSearchParams(location.search);
-    const mode = searchParams.get("mode") || undefined;
-    if (mode === "edit" && !isEditMode) {
-        setIsEditMode(true);
-    }
+    // Set edit mode based on URL query parameter
+    useEffect(() => {
+        const searchParams = new URLSearchParams(window.location.search);
+        const mode = searchParams.get("mode");
+        if (mode === "edit" && !isEditMode) {
+            setIsEditMode(true);
+        }
+    }, [isEditMode]);
+
+    // Exit edit mode when navigating between tabs
+    const previousPathnameRef = useRef(location.pathname);
+    useEffect(() => {
+        if (previousPathnameRef.current !== location.pathname) {
+            previousPathnameRef.current = location.pathname;
+            setIsEditMode((prev) => (prev ? false : prev));
+        }
+    }, [location.pathname]);
 
     /** @type {{data?: import("../../../types/AgreementTypes").Agreement | undefined, error?: Object, isLoading: boolean, isSuccess: boolean}} */
     const {
@@ -77,6 +118,11 @@ const Agreement = () => {
     if (query_response) {
         user_agreement_notifications = query_response.data;
     }
+
+    // Query procurement tracker to check for pre-award approval status
+    const { data: procurementTrackers } = useGetProcurementTrackersByAgreementIdQuery(agreementId, {
+        skip: !agreementId
+    });
 
     if (isSuccess && agreement) {
         doesAgreementHaveBlIsInReview = hasBlIsInReview(agreement.budget_line_items ?? []);
@@ -175,6 +221,14 @@ const Agreement = () => {
     const showReviewAlert = (doesAgreementHaveBlIsInReview || agreement?.in_review) && isAlertVisible;
     const showNonContractAlert = isAgreementNotDeveloped && isTempUiAlertVisible;
 
+    // Check if pre-award approval is in review (approval_requested but not yet approved/declined)
+    const trackers = procurementTrackers?.data || [];
+    const activeTracker = trackers.find((tracker) => tracker.status === "ACTIVE");
+    const preAwardStep = activeTracker?.steps?.find((step) => step.step_type === "PRE_AWARD");
+    const preAwardApprovalStatus = preAwardStep?.approval_status;
+    const isPreAwardInReview =
+        preAwardStep?.approval_requested && (preAwardApprovalStatus == null || preAwardApprovalStatus === "PENDING");
+
     const isAgreementAwarded = agreement?.is_awarded;
     return (
         <App breadCrumbName={agreement?.name}>
@@ -183,6 +237,25 @@ const Agreement = () => {
                     changeRequests={allChangeRequests}
                     isAlertVisible={isAlertVisible}
                     setIsAlertVisible={setIsAlertVisible}
+                />
+            )}
+            {showPreAwardSuccessAlert && (
+                <SimpleAlert
+                    type="success"
+                    heading="Agreement Sent to Pre-Award Approval"
+                    message="This agreement has been successfully sent to your Division Director to review. After it's approved, you can send the Final Consensus Memo and continue your progress in the Procurement Tracker."
+                    isClosable={true}
+                    setIsAlertVisible={setShowPreAwardSuccessAlert}
+                    headingLevel={2}
+                />
+            )}
+            {!showPreAwardSuccessAlert && isPreAwardInReview && isPreAwardInReviewAlertVisible && (
+                <SimpleAlert
+                    type="warning"
+                    heading="Pre-Award Approval In Review"
+                    isClosable={true}
+                    message="This agreement is In Review for Pre-Award Approval. Edits or changes cannot be made at this time."
+                    setIsAlertVisible={setIsPreAwardInReviewAlertVisible}
                 />
             )}
             {showNonContractAlert && (
@@ -215,15 +288,22 @@ const Agreement = () => {
             </h2>
 
             {user_agreement_notifications?.length > 0 && (
-                <AgreementChangesResponseAlert
-                    changeRequestNotifications={user_agreement_notifications}
-                    isApproveAlertVisible={isApproveAlertVisible}
-                    isDeclineAlertVisible={isDeclinedAlertVisible}
-                    setIsApproveAlertVisible={setIsApproveAlertVisible}
-                    setIsDeclineAlertVisible={setIsDeclinedAlertVisible}
-                    budgetLines={agreement?.budget_line_items ?? []}
-                />
+                <>
+                    <AgreementChangesResponseAlert
+                        changeRequestNotifications={user_agreement_notifications}
+                        isApproveAlertVisible={isApproveAlertVisible}
+                        isDeclineAlertVisible={isDeclinedAlertVisible}
+                        setIsApproveAlertVisible={setIsApproveAlertVisible}
+                        setIsDeclineAlertVisible={setIsDeclinedAlertVisible}
+                        budgetLines={agreement?.budget_line_items ?? []}
+                    />
+                    <PreAwardApprovalAlert
+                        notifications={user_agreement_notifications}
+                        isVisible={isPreAwardAlertVisible}
+                    />
+                </>
             )}
+
             <div>
                 <section className="display-flex flex-justify margin-top-3">
                     <DetailsTabs

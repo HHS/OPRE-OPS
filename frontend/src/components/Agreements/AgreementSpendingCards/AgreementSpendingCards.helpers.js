@@ -1,4 +1,4 @@
-import { calculatePercent } from "../../../helpers/utils";
+import { computeDisplayPercents } from "../../../helpers/utils";
 import { AGREEMENT_TYPE_ORDER } from "./AgreementSpendingCards.constants";
 
 /**
@@ -12,33 +12,37 @@ export const transformToChartData = (agreementTypes, totalSpending) => {
         return [];
     }
 
-    return AGREEMENT_TYPE_ORDER.flatMap((config) => {
+    // Build all segments first without percents so we can normalise across
+    // the full set in one pass — prevents independent-rounding sum drift and
+    // the 100% + <1% contradiction.
+    const segments = AGREEMENT_TYPE_ORDER.flatMap((config) => {
         const typeData = agreementTypes.find((at) => at.type === config.type);
         const newAmount = Number(typeData?.new || 0);
         const continuingAmount = Number(typeData?.continuing || 0);
 
-        const segments = [];
+        const result = [];
 
         if (newAmount > 0) {
-            segments.push({
+            result.push({
                 id: config.type,
                 label: `${config.label} (New)`,
                 value: newAmount,
-                color: config.color,
-                percent: calculatePercent(newAmount, totalSpending)
+                color: config.color
             });
         }
 
         if (continuingAmount > 0) {
-            segments.push({
+            result.push({
                 id: `${config.type}_CONTINUING`,
                 label: `${config.label} (Continuing)`,
                 value: continuingAmount,
-                color: config.continuingColor,
-                percent: calculatePercent(continuingAmount, totalSpending)
+                color: config.continuingColor
             });
         }
 
-        return segments;
+        return result;
     });
+
+    // Apply cross-item normalisation: 99-cap when dominant + <1% guard across all segments
+    return computeDisplayPercents(segments);
 };

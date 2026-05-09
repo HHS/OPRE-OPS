@@ -117,6 +117,7 @@ export default defineConfig(({ mode }) => {
                 exclude: [
                     "**/*.test.{jsx,js,tsx,ts}",
                     "**/*.spec.{jsx,js,tsx,ts}",
+                    "**/*.stories.{jsx,js,tsx,ts}",
                     "**/tests/**",
                     "**/uswds/**",
                     "**/node_modules/**",

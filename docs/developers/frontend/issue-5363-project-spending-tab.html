@@ -1,0 +1,1029 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Issue #5363 – Project Spending Tab: Build Plan</title>
+    <style>
+      /* ── Reset & base ── */
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: "Source Sans Pro", Arial, sans-serif;
+        font-size: 15px;
+        color: #1b1b1b;
+        background: #f0f0f0;
+        padding: 2rem;
+      }
+      a {
+        color: #005ea2;
+      }
+
+      /* ── Layout ── */
+      .page-wrapper {
+        max-width: 1100px;
+        margin: 0 auto;
+      }
+
+      /* ── Header ── */
+      .page-header {
+        background: #005ea2;
+        color: #fff;
+        padding: 1.5rem 2rem;
+        border-radius: 4px 4px 0 0;
+        margin-bottom: 0;
+      }
+      .page-header h1 {
+        font-size: 1.6rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+      }
+      .page-header p {
+        font-size: 0.9rem;
+        opacity: 0.85;
+      }
+
+      /* ── Sections ── */
+      .section {
+        background: #fff;
+        border: 1px solid #ddd;
+        border-top: none;
+        padding: 1.5rem 2rem;
+      }
+      .section + .section {
+        border-top: none;
+        margin-top: 1.5rem;
+        border-top: 1px solid #ddd;
+        border-radius: 0;
+      }
+      .section:last-child {
+        border-radius: 0 0 4px 4px;
+      }
+      .section h2 {
+        font-size: 1.15rem;
+        color: #005ea2;
+        border-bottom: 2px solid #dfe1e2;
+        padding-bottom: 0.5rem;
+        margin-bottom: 1rem;
+      }
+      .section h3 {
+        font-size: 1rem;
+        margin: 1rem 0 0.4rem;
+        color: #1b1b1b;
+      }
+      .section p,
+      .section li {
+        line-height: 1.6;
+        color: #3d4551;
+      }
+      .section ul,
+      .section ol {
+        padding-left: 1.4rem;
+        margin-top: 0.4rem;
+      }
+
+      /* ── Phase cards ── */
+      .phases {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1rem;
+        margin-top: 0.5rem;
+      }
+      .phase-card {
+        border: 1px solid #dfe1e2;
+        border-radius: 4px;
+        padding: 1rem 1.25rem;
+      }
+      .phase-card.active {
+        border-left: 4px solid #2e8540;
+      }
+      .phase-card.next {
+        border-left: 4px solid #fdb81e;
+      }
+      .phase-card.later {
+        border-left: 4px solid #aeb0b5;
+      }
+      .phase-tag {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.35rem;
+      }
+      .tag-active {
+        color: #2e8540;
+      }
+      .tag-next {
+        color: #9c5a00;
+      }
+      .tag-later {
+        color: #71767a;
+      }
+      .phase-card h3 {
+        margin: 0 0 0.5rem;
+        font-size: 0.95rem;
+      }
+      .phase-card ul {
+        padding-left: 1.2rem;
+        font-size: 0.88rem;
+        color: #3d4551;
+      }
+      .phase-card ul li {
+        margin-bottom: 0.25rem;
+        line-height: 1.5;
+      }
+
+      /* ── API response mock ── */
+      pre.api-sample {
+        background: #1b1b1b;
+        color: #a8ff78;
+        padding: 1rem;
+        border-radius: 4px;
+        font-size: 0.82rem;
+        overflow-x: auto;
+        margin-top: 0.75rem;
+        line-height: 1.5;
+      }
+
+      /* ── File tree ── */
+      .file-tree {
+        font-family: "Courier New", monospace;
+        font-size: 0.85rem;
+        background: #f8f8f8;
+        border: 1px solid #dfe1e2;
+        border-radius: 4px;
+        padding: 1rem;
+        margin-top: 0.5rem;
+        line-height: 1.8;
+      }
+      .file-tree .new-file {
+        color: #2e8540;
+        font-weight: 700;
+      }
+      .file-tree .modified-file {
+        color: #9c5a00;
+        font-weight: 700;
+      }
+
+      /* ── Figma mock ── */
+      .figma-mock {
+        border: 1px solid #dfe1e2;
+        border-radius: 4px;
+        background: #fff;
+        padding: 1.5rem;
+        margin-top: 0.75rem;
+        font-size: 0.9rem;
+      }
+      .figma-mock .tabs {
+        display: flex;
+        gap: 2rem;
+        border-bottom: 1px solid #dfe1e2;
+        padding-bottom: 0.5rem;
+        margin-bottom: 1.25rem;
+      }
+      .figma-mock .tab {
+        font-size: 0.85rem;
+        color: #71767a;
+        cursor: default;
+      }
+      .figma-mock .tab.selected {
+        color: #005ea2;
+        font-weight: 700;
+        border-bottom: 2px solid #005ea2;
+        padding-bottom: 0.5rem;
+        margin-bottom: -0.5rem;
+      }
+      .figma-mock .fy-select {
+        float: right;
+        font-size: 0.8rem;
+        color: #71767a;
+        border: 1px solid #71767a;
+        padding: 0.15rem 0.5rem;
+        border-radius: 2px;
+      }
+      .summary-cards {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-top: 0.5rem;
+      }
+      .summary-card {
+        border: 1px solid #dfe1e2;
+        border-radius: 4px;
+        padding: 1rem;
+        background: #f8f8f8;
+      }
+      .summary-card .card-title {
+        font-size: 0.75rem;
+        color: #71767a;
+        margin-bottom: 0.5rem;
+      }
+      .summary-card .big-num {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: #1b1b1b;
+        margin-bottom: 0.5rem;
+      }
+      .summary-card .sub-stat {
+        font-size: 0.8rem;
+        color: #3d4551;
+        margin-top: 0.25rem;
+      }
+      .donut-legend {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+        font-size: 0.8rem;
+      }
+      .donut-legend .legend-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .donut-legend .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+      .donut-area {
+        display: flex;
+        gap: 1.5rem;
+        align-items: center;
+      }
+      .donut-circle {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: conic-gradient(
+          #1b4f82 0% 50%,
+          #e27a00 50% 75%,
+          #2e8540 75% 100%
+        );
+        flex-shrink: 0;
+        position: relative;
+      }
+      .donut-circle::after {
+        content: "";
+        position: absolute;
+        inset: 20px;
+        background: #f8f8f8;
+        border-radius: 50%;
+      }
+      .table-mock {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 0.75rem;
+        font-size: 0.82rem;
+      }
+      .table-mock th {
+        text-align: left;
+        padding: 0.5rem 0.6rem;
+        border-bottom: 2px solid #1b1b1b;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+      .table-mock td {
+        padding: 0.6rem 0.6rem;
+        border-bottom: 1px solid #dfe1e2;
+        vertical-align: top;
+      }
+      .table-mock tr.expanded-row {
+        background: #f8f8f8;
+      }
+      .table-mock td.expanded-detail {
+        font-size: 0.78rem;
+        color: #71767a;
+        padding: 0.5rem 0.6rem 0.8rem 0.6rem;
+        background: #f8f8f8;
+      }
+      .note {
+        background: #e7f4e4;
+        border-left: 4px solid #2e8540;
+        padding: 0.6rem 1rem;
+        font-size: 0.85rem;
+        margin-top: 0.75rem;
+        border-radius: 0 4px 4px 0;
+      }
+      .warn {
+        background: #fef0c8;
+        border-left: 4px solid #fdb81e;
+        padding: 0.6rem 1rem;
+        font-size: 0.85rem;
+        margin-top: 0.75rem;
+        border-radius: 0 4px 4px 0;
+      }
+      .code-inline {
+        font-family: "Courier New", monospace;
+        background: #f0f0f0;
+        padding: 0 4px;
+        border-radius: 2px;
+        font-size: 0.88em;
+      }
+      table.decisions {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.88rem;
+        margin-top: 0.5rem;
+      }
+      table.decisions th {
+        background: #dfe1e2;
+        text-align: left;
+        padding: 0.5rem 0.75rem;
+        font-weight: 700;
+      }
+      table.decisions td {
+        padding: 0.5rem 0.75rem;
+        border-bottom: 1px solid #dfe1e2;
+        vertical-align: top;
+      }
+      table.decisions tr:last-child td {
+        border-bottom: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-wrapper">
+      <!-- ── Header ── -->
+      <div class="page-header">
+        <h1>Issue #5363 – Project Spending Tab</h1>
+        <p>
+          Build plan &amp; static mockup &middot; OPRE OPS &middot;
+          <a
+            href="https://github.com/HHS/OPRE-OPS/issues/5363"
+            style="color: #fff"
+            >GitHub Issue</a
+          >
+        </p>
+      </div>
+
+      <!-- ── Goal ── -->
+      <div class="section">
+        <h2>Goal</h2>
+        <p>
+          Implement the <strong>Project Spending</strong> tab on the project
+          detail page (<span class="code-inline">/projects/:id/spending</span>).
+          The tab currently exists in the nav but is disabled with a
+          <em>Coming Soon</em> tooltip. This plan outlines the incremental
+          delivery approach agreed on during planning.
+        </p>
+        <div class="note">
+          <strong>All three phases are now delivered</strong> and merged in
+          <a href="https://github.com/HHS/OPRE-OPS/pull/5554">PR #5554</a>.
+          The original priority order was: (1) Wire API call + DebugCode
+          &rarr; (2) Agreements table &rarr; (3) Summary cards / donut chart.
+        </div>
+      </div>
+
+      <!-- ── Phases ── -->
+      <div class="section">
+        <h2>Delivery Phases</h2>
+        <div class="phases">
+          <!-- Phase 1 -->
+          <div class="phase-card active">
+            <div class="phase-tag tag-active">Phase 1 &#x2013; Complete &#x2705;</div>
+            <h3>API Hook + DebugCode Display</h3>
+            <ul>
+              <li>
+                Add <span class="code-inline">getProjectSpendingById</span> RTK
+                Query endpoint to <span class="code-inline">opsAPI.js</span>
+              </li>
+              <li>
+                Create
+                <span class="code-inline">ProjectSpending.jsx</span> page
+                component that fetches and renders
+                <span class="code-inline">&lt;DebugCode&gt;</span>
+              </li>
+              <li>
+                Register
+                <span class="code-inline">/projects/:id/spending</span> route
+                in <span class="code-inline">index.jsx</span>
+              </li>
+              <li>
+                Un-disable the <em>Project Spending</em> tab in
+                <span class="code-inline">ProjectDetailTabs.jsx</span>
+              </li>
+              <li>Add placeholder heading / description copy</li>
+            </ul>
+          </div>
+
+          <!-- Phase 2 -->
+          <div class="phase-card active">
+            <div class="phase-tag tag-active">Phase 2 &#x2013; Complete &#x2705; (post-review: skeleton loader)</div>
+            <h3>Agreements Table</h3>
+            <ul>
+              <li>&#x2705; FY selector with only FYs that have spending data; defaults to highest FY (or current FY if present)</li>
+              <li>&#x2705; <span class="code-inline">ProjectSpendingAgreementsTable</span> + <span class="code-inline">ProjectSpendingAgreementRow</span></li>
+              <li>&#x2705; Columns: Agreement (linked), Type, Start, End, FY Total*, Agreement Total</li>
+              <li>&#x2705; Expandable rows: Description, Procurement Shop, Subtotal, Fees, Lifetime Obligated, Contract #, Award Type, Vendor</li>
+              <li>&#x2705; Hover effect via shared <span class="code-inline">table.module.css</span></li>
+              <li>&#x2705; Agreements filtered per FY via <span class="code-inline">agreements_by_fy</span> from spending endpoint</li>
+              <li>&#x2705; <span class="code-inline">ProjectSpendingAgreementsTableLoading</span> skeleton shown while the agreements fetch is in flight &mdash; consistent with <span class="code-inline">AgreementsTableLoading</span>, <span class="code-inline">ProjectsTableLoading</span>, and the other table skeletons across the app. Column headings (including dynamic &ldquo;FY <em>N</em> Total&rdquo;) and the expandable-row chevron column are preserved in the skeleton so the layout does not shift on data arrival.</li>
+              <li>&#x2705; <span class="code-inline">getTableHeadings(fiscalYear)</span> extracted to <span class="code-inline">ProjectSpendingAgreementsTable.constants.js</span> and shared between the main table and the loading component.</li>
+              <li>
+                &#x26A0;&#xFE0F; <strong>FY Total shows &#x201C;TBD&#x201D;</strong> &#x2014;
+                the spending endpoint returns project-level FY totals only, not per-agreement.
+                Requires backend change to <span class="code-inline">GET /projects/:id/spending/</span>
+                to add <span class="code-inline">agreements_fy_total</span>.
+                See <a href="#backend-ask">Backend Ask</a> below.
+              </li>
+            </ul>
+          </div>
+
+          <!-- Phase 3 -->
+          <div class="phase-card active">
+            <div class="phase-tag tag-active">Phase 3 &#x2013; Complete &#x2705; (post-review: null-FY guard)</div>
+            <h3>Summary Cards + Donut Chart</h3>
+            <ul>
+              <li>&#x2705; <span class="code-inline">ProjectSpendingTotalsCard</span>: FY Total (large <span class="code-inline">CurrencyWithSmallCents</span>), Lifetime Project Total, FY Agreement count</li>
+              <li>&#x2705; <span class="code-inline">DonutGraphWithLegendCard</span> wired to <span class="code-inline">spending_type_by_fiscal_year[fy]</span> using <span class="code-inline">AGREEMENT_TYPE_ORDER</span> colors and <span class="code-inline">computeDisplayPercents</span></li>
+              <li>&#x2705; CSS Grid (1fr 1fr, gap 1rem) for equal-height cards</li>
+              <li>&#x2705; Summary cards and footnote gated on <span class="code-inline">selectedFY !== null</span> to prevent a &#x201C;FY null&#x201D; flash before the default-FY <span class="code-inline">useEffect</span> fires</li>
+              <li>&#x2705; Footnote: <em>*Spending equals the sum of Budget Lines in Planned, Executing and Obligated Status</em></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Figma mockup ── -->
+      <div class="section">
+        <h2>UI Reference (from Figma)</h2>
+        <p>
+          Screenshot reference from the design — reproduced here as a static
+          HTML approximation for reference during development.
+        </p>
+
+        <div class="figma-mock">
+          <div style="overflow: hidden">
+            <span class="fy-select">Fiscal Year &nbsp; 2025 ⌃</span>
+            <div class="tabs">
+              <span class="tab">Project Details</span>
+              <span class="tab selected">Project Spending</span>
+              <span class="tab">Project Funding</span>
+            </div>
+          </div>
+
+          <h3 style="margin-bottom: 0.25rem">Project Spending Summary</h3>
+          <p style="font-size: 0.82rem; color: #71767a; margin-bottom: 0.75rem">
+            The summary below shows a breakdown of the project total for the
+            selected FY. Draft budget lines are not included in the Totals.
+          </p>
+
+          <div class="summary-cards">
+            <!-- Left: totals card -->
+            <div class="summary-card">
+              <div class="card-title">FY 2025 Project Total</div>
+              <div class="big-num">$&thinsp;1,500,000.<sup style="font-size:0.7em">00</sup></div>
+              <div class="sub-stat">Lifetime Project Total</div>
+              <div
+                class="sub-stat"
+                style="font-size: 0.9rem; font-weight: 600; color: #1b1b1b"
+              >
+                $5,000,000.00
+              </div>
+              <div class="sub-stat" style="margin-top: 0.5rem">
+                FY 2025 Agreements
+              </div>
+              <div
+                class="sub-stat"
+                style="font-size: 1.1rem; font-weight: 700; color: #1b1b1b"
+              >
+                5
+              </div>
+            </div>
+
+            <!-- Right: donut card -->
+            <div class="summary-card">
+              <div class="card-title">
+                FY 2025 Project Spending By Agreement Type
+              </div>
+              <div class="donut-area">
+                <div class="donut-legend">
+                  <div class="legend-row">
+                    <span
+                      class="dot"
+                      style="background: #1b4f82"
+                    ></span>
+                    Contracts &nbsp;
+                    <span style="color: #1b1b1b">$750,000.00</span> &nbsp;
+                    <strong>50%</strong>
+                  </div>
+                  <div class="legend-row">
+                    <span
+                      class="dot"
+                      style="background: #e27a00"
+                    ></span>
+                    Partner &nbsp;
+                    <span style="color: #1b1b1b">$375,000.00</span> &nbsp;
+                    <strong>25%</strong>
+                  </div>
+                  <div class="legend-row">
+                    <span
+                      class="dot"
+                      style="background: #2e8540"
+                    ></span>
+                    Grants &nbsp;
+                    <span style="color: #1b1b1b">$375,000.00</span> &nbsp;
+                    <strong>25%</strong>
+                  </div>
+                  <div class="legend-row">
+                    <span
+                      class="dot"
+                      style="background: #dfe1e2"
+                    ></span>
+                    Direct Obligations &nbsp;
+                    <span style="color: #1b1b1b">$0</span> &nbsp;
+                    <strong>0%</strong>
+                  </div>
+                </div>
+                <div class="donut-circle"></div>
+              </div>
+            </div>
+          </div>
+
+          <p
+            style="
+              font-size: 0.75rem;
+              color: #71767a;
+              margin-top: 0.5rem;
+              margin-bottom: 1.25rem;
+            "
+          >
+            *Spending equals the sum of Budget Lines in Planned, Executing and
+            Obligated Status
+          </p>
+
+          <h3 style="margin-bottom: 0.25rem">Agreements</h3>
+          <p style="font-size: 0.82rem; color: #71767a; margin-bottom: 0.75rem">
+            This is a list of all agreements within this project for the
+            selected FY.
+          </p>
+
+          <table class="table-mock">
+            <thead>
+              <tr>
+                <th>Agreement</th>
+                <th>Type</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>FY 2025 Total</th>
+                <th>Agreement Total</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Row 1: expanded -->
+              <tr>
+                <td>Using Innovative Data to Expl…</td>
+                <td>Contract</td>
+                <td>10/01/2023</td>
+                <td>10/01/2025</td>
+                <td>$750,000.00</td>
+                <td>$1,000,000.00</td>
+                <td>&#x2227;</td>
+              </tr>
+              <tr class="expanded-row">
+                <td
+                  colspan="7"
+                  class="expanded-detail"
+                >
+                  <div
+                    style="
+                      display: grid;
+                      grid-template-columns: repeat(5, 1fr);
+                      gap: 0.5rem;
+                    "
+                  >
+                    <div>
+                      <div style="color: #71767a">Description</div>
+                      <div>Lorem ipsum dolor sit amet, consectetur adipiscing…</div>
+                    </div>
+                    <div>
+                      <div style="color: #71767a">Procurement Shop</div>
+                      <div><strong>GCS - Fee Rate: 0%</strong></div>
+                    </div>
+                    <div>
+                      <div style="color: #71767a">Subtotal</div>
+                      <div>$1,000,000.00</div>
+                    </div>
+                    <div>
+                      <div style="color: #71767a">Fees</div>
+                      <div>$0</div>
+                    </div>
+                    <div>
+                      <div style="color: #71767a">Lifetime Obligated</div>
+                      <div>$250,000.00</div>
+                    </div>
+                    <div>
+                      <div style="color: #71767a">Contract #</div>
+                      <div>123456</div>
+                    </div>
+                    <div>
+                      <div style="color: #71767a">Award Type</div>
+                      <div><strong>Continuing Agreement</strong></div>
+                    </div>
+                    <div>
+                      <div style="color: #71767a">Research Type</div>
+                      <div><strong>Applied Research</strong></div>
+                    </div>
+                    <div>
+                      <div style="color: #71767a">Vendor</div>
+                      <div>Lorem ipsum dolor</div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              <!-- Row 2 -->
+              <tr>
+                <td>Agreement Title B</td>
+                <td>Partner - IAA</td>
+                <td>10/01/2024</td>
+                <td>10/01/2027</td>
+                <td>$100,000.00</td>
+                <td>$1,000,000.00</td>
+                <td>&#x2228;</td>
+              </tr>
+              <!-- Row 3 -->
+              <tr>
+                <td>Agreement Title C</td>
+                <td>Partner - IDDA</td>
+                <td>10/01/2024</td>
+                <td>10/01/2027</td>
+                <td>$100,000.00</td>
+                <td>$1,000,000.00</td>
+                <td>&#x2228;</td>
+              </tr>
+              <!-- Row 4 -->
+              <tr>
+                <td>Agreement Title D</td>
+                <td>Partner - AA</td>
+                <td>10/01/2024</td>
+                <td>10/01/2026</td>
+                <td>$175,000.00</td>
+                <td>$1,000,000.00</td>
+                <td>&#x2228;</td>
+              </tr>
+              <!-- Row 5 -->
+              <tr>
+                <td>Agreement Title E</td>
+                <td>Grant</td>
+                <td>10/01/2020</td>
+                <td>10/01/2026</td>
+                <td>$375,000.00</td>
+                <td>$1,000,000.00</td>
+                <td>&#x2228;</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── API ── -->
+      <div class="section">
+        <h2>Backend API</h2>
+        <p>
+          The endpoint <strong>already exists</strong> on the backend and is
+          fully tested:
+        </p>
+        <ul style="margin-top: 0.5rem">
+          <li>
+            <strong>URL:</strong>
+            <span class="code-inline">GET /api/v1/projects/&lt;id&gt;/spending/</span>
+          </li>
+          <li>
+            <strong>Auth:</strong> Requires JWT bearer token
+            (<span class="code-inline">Permission.RESEARCH_PROJECT GET</span>)
+          </li>
+          <li>
+            <strong>404:</strong> Returns 404 if project ID does not exist
+          </li>
+        </ul>
+
+        <h3>Sample Response</h3>
+        <pre class="api-sample">
+{
+  "total": "6000.00",
+  "total_by_fiscal_year": {
+    "2023": "1000.00",
+    "2024": "2000.00",
+    "2025": "3000.00"
+  },
+  "spending_type_by_fiscal_year": {
+    "2023": {
+      "contract": "1000.00",
+      "grant": "0",
+      "partner": "0",
+      "direct_obligation": "0"
+    },
+    "2025": {
+      "contract": "750000.00",
+      "grant": "375000.00",
+      "partner": "375000.00",
+      "direct_obligation": "0"
+    }
+  },
+  "agreements_by_fy": {
+    "2023": [42],
+    "2025": [42, 57, 83, 101, 112]
+  }
+}
+        </pre>
+
+        <div class="warn">
+          <strong>Note:</strong> The response contains only aggregate data.
+          Agreement <em>details</em> (name, type, start/end dates, vendor, etc.)
+          must be fetched separately using
+          <span class="code-inline">GET /api/v1/agreements/?project_id=&lt;id&gt;</span>
+          and then filtered by FY on the frontend. The spending endpoint gives us
+          the FY totals; the agreements endpoint gives us the metadata for the
+          table rows.
+        </div>
+      </div>
+
+      <!-- ── Files changed ── -->
+      <div class="section">
+        <h2>Files Added / Modified</h2>
+        <div class="file-tree">
+          frontend/src/<br />
+          &nbsp;&nbsp;api/<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="modified-file">opsAPI.js</span>
+          &nbsp;&nbsp;&#x2190; <span class="code-inline">getProjectSpendingById</span> + <span class="code-inline">transformResponse</span> on <span class="code-inline">getAgreementsByResearchProjectFilter</span><br />
+          &nbsp;&nbsp;components/Projects/<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="new-file">ProjectSpendingAgreementRow/</span> &nbsp;&#x2190; NEW (Phase 2) + unit tests<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="new-file">ProjectSpendingAgreementsTable/</span> &nbsp;&#x2190; NEW (Phase 2) + unit tests<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="new-file">ProjectSpendingAgreementsTable.constants.js</span> &nbsp;&#x2190; NEW &#x2013; shared <span class="code-inline">getTableHeadings(fiscalYear)</span> helper<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="new-file">ProjectSpendingAgreementsTableLoading.jsx</span> &nbsp;&#x2190; NEW &#x2013; shimmer skeleton; wraps <span class="code-inline">TableLoadingSkeleton</span> with <span class="code-inline">hasExpandableRows</span><br />
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="new-file">ProjectSpendingTotalsCard/</span> &nbsp;&#x2190; NEW (Phase 3) + unit tests<br />
+          &nbsp;&nbsp;pages/projects/<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;detail/<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="new-file">ProjectSpending.jsx</span>
+          &nbsp;&nbsp;&#x2190; NEW &#x2013; page: FY selector, summary cards, agreements table, DebugCode<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="modified-file">ProjectDetailTabs.jsx</span>
+          &nbsp;&nbsp;&#x2190; un-disable &#x201C;Project Spending&#x201D; tab<br />
+          &nbsp;&nbsp;<span class="modified-file">index.jsx</span>
+          &nbsp;&nbsp;&#x2190; register <span class="code-inline">/projects/:id/spending</span> route<br />
+          <br />
+          docs/developers/frontend/<br />
+          &nbsp;&nbsp;<span class="new-file">issue-5363-project-spending-tab.html</span>
+          &nbsp;&nbsp;&#x2190; this file
+        </div>
+      </div>
+
+      <!-- ── Data flow ── -->
+      <div class="section">
+        <h2>Data Flow (Phase 1)</h2>
+        <ol style="margin-top: 0.5rem">
+          <li>
+            User navigates to
+            <span class="code-inline">/projects/42/spending</span>
+          </li>
+          <li>
+            <span class="code-inline">ProjectSpending.jsx</span> reads
+            <span class="code-inline">:id</span> from URL params
+          </li>
+          <li>
+            Calls
+            <span class="code-inline">useGetProjectSpendingByIdQuery(projectId)</span>
+          </li>
+          <li>
+            RTK Query hits
+            <span class="code-inline">/api/v1/projects/42/spending/</span>
+          </li>
+          <li>
+            Response rendered inside
+            <span class="code-inline">&lt;DebugCode data={spendingData} /&gt;</span>
+            (dev-only)
+          </li>
+          <li>
+            Placeholder headings
+            <em>Project Spending Summary</em> and
+            <em>Agreements</em> already visible so UX can confirm layout
+            direction
+          </li>
+        </ol>
+
+        <h3>Phase 2 addition</h3>
+        <ol style="margin-top: 0.25rem">
+          <li>
+            Add local
+            <span class="code-inline">selectedFY</span> state (starts as
+            <span class="code-inline">null</span>; set by
+            <span class="code-inline">useEffect</span> once spending data
+            arrives — defaults to current FY if present, otherwise highest
+            available FY)
+          </li>
+          <li>
+            Also call
+            <span class="code-inline">useGetAgreementsByResearchProjectFilterQuery(projectId)</span>
+            to get full agreement objects
+          </li>
+          <li>
+            Derive <em>FY-filtered agreements</em> by cross-referencing
+            <span class="code-inline">agreements_by_fy[selectedFY]</span> IDs
+            against the agreements list
+          </li>
+          <li>
+            Render
+            <span class="code-inline">ProjectSpendingAgreementsTable</span>;
+            while <span class="code-inline">isAgreementsLoading</span> is true
+            show <span class="code-inline">ProjectSpendingAgreementsTableLoading</span> (shimmer skeleton)
+            so the layout is preserved and the empty-state is never shown during fetch
+          </li>
+        </ol>
+
+        <h3>Phase 3 addition</h3>
+        <ol style="margin-top: 0.25rem">
+          <li>
+            Derive summary values from spending data:
+            <span class="code-inline">fyTotal</span>,
+            <span class="code-inline">lifetimeTotal</span>,
+            <span class="code-inline">fyAgreementCount</span>,
+            and <span class="code-inline">donutData</span> (via
+            <span class="code-inline">computeDisplayPercents</span>)
+          </li>
+          <li>
+            Gate the entire summary section on
+            <span class="code-inline">selectedFY !== null</span> so
+            <span class="code-inline">ProjectSpendingTotalsCard</span> and
+            <span class="code-inline">DonutGraphWithLegendCard</span> never
+            render with an unset FY value
+          </li>
+          <li>
+            Render cards in a CSS Grid (1fr&thinsp;/&thinsp;1fr) so they remain
+            equal height across all FYs
+          </li>
+          <li>
+            Render footnote below the grid
+          </li>
+        </ol>
+      </div>
+
+      <!-- ── Decisions ── -->
+      <div class="section">
+        <h2>Key Decisions</h2>
+        <table class="decisions">
+          <thead>
+            <tr>
+              <th>Decision</th>
+              <th>Choice</th>
+              <th>Rationale</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Where does FY state live?</td>
+              <td>Local state in <span class="code-inline">ProjectSpending.jsx</span></td>
+              <td>
+                Only the spending tab needs it; no need for Redux or context.
+                Follows pattern used on CAN detail page.
+              </td>
+            </tr>
+            <tr>
+              <td>Agreements table data source</td>
+              <td>
+                Two calls: spending endpoint (for FY totals) +
+                <span class="code-inline">/agreements/?project_id=</span>
+                (for metadata)
+              </td>
+              <td>
+                The spending endpoint returns aggregate data only. Agreement
+                detail (name, dates, vendor…) lives on the agreements resource.
+                Avoids adding new backend surface for Phase 2.
+              </td>
+            </tr>
+            <tr>
+              <td>Route strategy</td>
+              <td>
+                New sibling route
+                <span class="code-inline">/projects/:id/spending</span>
+                (not nested outlet)
+              </td>
+              <td>
+                Consistent with existing
+                <span class="code-inline">/projects/:id</span> approach used for
+                tabs. ProjectDetailTabs is already navigation-based (not
+                React Router outlets).
+              </td>
+            </tr>
+            <tr>
+              <td>When to remove DebugCode</td>
+              <td>When the Agreements table (Phase 2) ships</td>
+              <td>
+                DebugCode is already dev-only (guarded by
+                <span class="code-inline">import.meta.env.DEV</span>), so it
+                is safe to leave in during Phase 1 without impacting
+                production users.
+              </td>
+            </tr>
+            <tr>
+              <td>Summary cards delivery</td>
+              <td>Phase 3 (shipped in same PR)</td>
+              <td>
+                Cards reuse
+                <span class="code-inline">DonutGraphWithLegendCard</span> wired
+                to <span class="code-inline">spending_type_by_fiscal_year[fy]</span>
+                and <span class="code-inline">ProjectSpendingTotalsCard</span>.
+                Both are gated on <span class="code-inline">selectedFY !== null</span>
+                to prevent a flash of &#x201C;FY null&#x201D; before the default-FY
+                effect fires.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Backend Ask ── -->
+      <div
+        class="section"
+        id="backend-ask"
+      >
+        <h2>Backend Ask &#x2014; FY Total Per Agreement</h2>
+        <p>
+          The <strong>FY Total</strong> column in the Agreements table currently shows
+          <code>&#x2014;</code> because the spending endpoint only returns project-level
+          FY totals, not per-agreement breakdowns.
+        </p>
+        <div class="warn">
+          <strong>Backend team request:</strong> Please add
+          <span class="code-inline">agreements_fy_total</span> to
+          <span class="code-inline">GET /api/v1/projects/&lt;id&gt;/spending/</span>.
+        </div>
+        <h3>Proposed response shape</h3>
+        <pre class="api-sample">
+// New field in ProjectSpendingMetadataSchema:
+"agreements_fy_total": {
+  "1":  { "2043": "1234567.00", "2044": "890000.00", "2045": "151217218.00" },
+  "2":  { "2043": "749316710.00", "2044": "267694002.00" },
+  "10": { "2043": "32289000.00" }
+}
+        </pre>
+        <h3>Backend implementation hint</h3>
+        <p>
+          The data is already iterated in <span class="code-inline">project_list_metadata</span>
+          in <span class="code-inline">backend/models/projects.py</span>.
+          A <span class="code-inline">defaultdict(lambda: defaultdict(Decimal))</span>
+          keyed by <span class="code-inline">agreement.id &#x2192; bli.fiscal_year</span>
+          inside the existing BLI loop would capture it with no extra DB queries.
+        </p>
+        <h3>Frontend change needed once available</h3>
+        <p>
+          In <span class="code-inline">ProjectSpendingAgreementRow.jsx</span>, replace
+          the <code>&#x2014;</code> placeholder with:
+        </p>
+        <pre class="api-sample">
+const fyTotal = Number(
+  spendingData?.agreements_fy_total?.[agreement.id]?.[fiscalYear] ?? 0
+);
+        </pre>
+      </div>
+
+      <!-- ── Acceptance ── -->
+      <div class="section">
+        <h2>Acceptance Criteria (All Phases)</h2>
+
+        <h3>Phase 1 &#x2705;</h3>
+        <ul>
+          <li>Navigating to <span class="code-inline">/projects/:id/spending</span> renders without errors.</li>
+          <li>The <em>Project Spending</em> tab is enabled — no "Coming Soon" tooltip or <code>disabled</code> attribute.</li>
+          <li>In dev mode a <span class="code-inline">DebugCode</span> block shows the raw JSON from the spending endpoint.</li>
+          <li>404 case shows "Project Not Found" (matches <span class="code-inline">ProjectDetail</span> behavior).</li>
+          <li>Loading state renders while requests are in flight.</li>
+          <li>No regressions on the Project Details tab.</li>
+        </ul>
+
+        <h3>Phase 2 &#x2705;</h3>
+        <ul>
+          <li>Fiscal Year selector shows only FYs with spending data; defaults to highest FY (current FY if present).</li>
+          <li>Agreements table renders: Agreement (linked), Type, Start, End, FY Total, Agreement Total columns.</li>
+          <li>FY Total shows real currency for single-agreement FYs; shows <code>TBD</code> for multi-agreement FYs (pending #5548).</li>
+          <li><span class="code-inline">ProjectSpendingAgreementsTableLoading</span> skeleton shown while the agreements fetch is in flight; table column headings (including dynamic FY label) and chevron column are preserved so no layout shift occurs on data arrival. Table never shows the empty state during a pending request.</li>
+          <li>Rows expand to show Description, Procurement Shop, Subtotal, Fees, Lifetime Obligated, Contract #, Award Type, Vendor.</li>
+          <li>Switching FY updates the table rows and column header (e.g. "FY 2043 Total" &#x2192; "FY 2044 Total").</li>
+          <li>Empty state "No agreements found for FY X" shown when FY has no agreements.</li>
+          <li>Table rows have hover highlight.</li>
+        </ul>
+
+        <h3>Phase 3 &#x2705;</h3>
+        <ul>
+          <li>Summary section stays hidden until <span class="code-inline">selectedFY</span> is resolved — no &#x201C;FY null&#x201D; flash on first render.</li>
+          <li>Left summary card shows FY Project Total (large), Lifetime Project Total, FY Agreement count.</li>
+          <li>Right card shows donut chart of spending by agreement type (Contracts, Partner, Grants, Direct Oblig.) with correct design-system colors.</li>
+          <li>Both cards are equal height at all FYs.</li>
+          <li>Footnote: <em>*Spending equals the sum of Budget Lines in Planned, Executing and Obligated Status</em>.</li>
+          <li>Summary cards update when FY selector changes.</li>
+        </ul>
+
+        <h3>Cypress E2E</h3>
+        <ul>
+          <li><span class="code-inline">projectDetails.cy.js</span>: spending tab is now <strong>enabled</strong> (no disabled assertion).</li>
+          <li><span class="code-inline">projectSpending.cy.js</span>: navigates to <span class="code-inline">/projects/1000/spending</span>, verifies heading, FY selector, summary cards, agreements table rows and expand/collapse.</li>
+        </ul>
+      </div>
+    </div>
+  </body>
+</html>

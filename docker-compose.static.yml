@@ -82,6 +82,7 @@ services:
       args:
         VITE_BACKEND_DOMAIN: ${BACKEND_DOMAIN:-http://localhost:8080}
         MODE: dev  # set this to production to create a production build
+        BUILD_STORYBOOK: "false"  # never build Storybook in the E2E stack — it causes >1h CI hangs
 
     ports:
       - "${FRONTEND_PORT:-3000}:3000"

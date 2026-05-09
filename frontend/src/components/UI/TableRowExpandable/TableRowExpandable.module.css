@@ -1,0 +1,7 @@
+.expandedRow dd {
+    font-weight: 600;
+}
+
+.expandedRow dd :global(.text-normal) {
+    font-weight: 400;
+}

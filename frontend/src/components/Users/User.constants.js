@@ -21,6 +21,13 @@ export const USER_ROLES = {
     SUPER_USER: "SUPER_USER"
 };
 
+export const PROCUREMENT_DASHBOARD_ROLES = [
+    USER_ROLES.PROCUREMENT_TEAM,
+    USER_ROLES.BUDGET_TEAM,
+    USER_ROLES.REVIEWER_APPROVER,
+    USER_ROLES.SUPER_USER
+];
+
 /**
  * Enum for User statuses.
  * This object maps the statuses that can be assigned to a user to their string representations.

@@ -110,6 +110,12 @@ const Tag = ({
                 case "portfolioNewFunding":
                     activeClass += " bg-brand-portfolio-new-funding text-white fake-bold";
                     break;
+                case "projectFundingCarryForward":
+                    activeClass += " bg-brand-project-funding-carry-forward text-white fake-bold";
+                    break;
+                case "projectFundingNewFunding":
+                    activeClass += " bg-brand-project-funding-new-funding text-white fake-bold";
+                    break;
                 case "darkOnProjectResearch":
                     activeClass += " bg-brand-data-viz-project-research text-ink fake-bold";
                     break;
