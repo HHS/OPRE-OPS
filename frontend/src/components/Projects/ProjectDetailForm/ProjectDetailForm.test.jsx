@@ -183,6 +183,69 @@ describe("ProjectDetailForm", () => {
         expect(select).toHaveValue("Admin & Support");
     });
 
+    test("renders Required Information hint under Project Type", () => {
+        renderComponent();
+        const hints = screen.getAllByText("Required Information*");
+        expect(hints.length).toBeGreaterThanOrEqual(2);
+    });
+
+    test("renders description hint from Figma spec", () => {
+        renderComponent();
+        expect(
+            screen.getByText(/brief description for internal purposes, not for the opre website/i)
+        ).toBeInTheDocument();
+    });
+
+    test("suite rejects project_type values outside the allowlist", () => {
+        const result = suite.run(
+            { title: "t", short_title: "", description: "", project_type: "Bogus" },
+            "project_type"
+        );
+        expect(result.getErrors("project_type")).toContain("Please select a valid project type");
+    });
+
+    test("suite accepts Research and Admin & Support as project_type", () => {
+        const research = suite.run(
+            { title: "t", short_title: "", description: "", project_type: "Research" },
+            "project_type"
+        );
+        expect(research.getErrors("project_type")).toEqual([]);
+
+        const admin = suite.run(
+            { title: "t", short_title: "", description: "", project_type: "Admin & Support" },
+            "project_type"
+        );
+        expect(admin.getErrors("project_type")).toEqual([]);
+    });
+
+    test("shows placeholder and disables save when projectType is empty", () => {
+        renderComponent({ projectType: "" });
+        const select = screen.getByLabelText(/project type/i);
+
+        expect(select).toHaveValue("");
+        expect(screen.getByText(/- select project type -/i)).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /save changes/i })).toBeDisabled();
+    });
+
+    test("placeholder option is disabled and hidden so users cannot re-select it", () => {
+        renderComponent({ projectType: "" });
+        const placeholder = screen.getByText(/- select project type -/i);
+
+        expect(placeholder).toBeDisabled();
+        expect(placeholder).toHaveAttribute("hidden");
+    });
+
+    test("selecting a valid type after empty initial value enables save", async () => {
+        renderComponent({ projectType: "" });
+        const user = userEvent.setup();
+        const select = screen.getByLabelText(/project type/i);
+
+        await user.selectOptions(select, "Research");
+
+        expect(select).toHaveValue("Research");
+        expect(screen.getByRole("button", { name: /save changes/i })).toBeEnabled();
+    });
+
     test("submits with updated project type in API format", async () => {
         renderComponent();
         const user = userEvent.setup();

@@ -57,7 +57,7 @@ const ProjectDetailsView = ({ project, isEditMode = false, toggleEditMode, canEd
     return (
         <section>
             <div className="display-flex flex-justify flex-align-center margin-top-4">
-                <h2 className="font-sans-lg margin-0">{isEditMode ? "Edit Project Details" : "Project Details"}</h2>
+                <h2 className="font-sans-lg margin-0">{isEditMode ? "Edit Project" : "Project Details"}</h2>
                 {canEdit && !isEditMode && (
                     <button
                         type="button"

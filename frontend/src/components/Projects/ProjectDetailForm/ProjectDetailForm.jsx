@@ -69,9 +69,22 @@ const ProjectDetailForm = ({
                 name="project_type"
                 label="Project Type"
                 onChange={(name, value) => {
+                    runValidate("project_type", value);
                     setType(value);
                 }}
                 value={type}
+                isRequired
+                messages={res.getErrors("project_type")}
+                className={cn("project_type")}
+            />
+            <Input
+                name="short_title"
+                label="Project Nickname or Acronym"
+                onChange={(name, value) => {
+                    setShortTitle(value);
+                }}
+                value={shortTitle}
+                inputStyle={{ maxWidth: "296px" }}
             />
             <Input
                 name="title"
@@ -84,23 +97,18 @@ const ProjectDetailForm = ({
                 isRequired
                 messages={res.getErrors("title")}
                 className={cn("title")}
-            />
-            <Input
-                name="short_title"
-                label="Project Nickname"
-                onChange={(name, value) => {
-                    setShortTitle(value);
-                }}
-                value={shortTitle}
+                inputStyle={{ maxWidth: "664px" }}
             />
             <TextArea
                 maxLength={1000}
                 name="description"
                 label="Description"
+                hintMsg="Brief description for internal purposes, not for the OPRE website."
                 value={description}
                 onChange={(name, value) => {
                     setDescription(value);
                 }}
+                textAreaStyle={{ height: "8.5rem", maxWidth: "664px" }}
             />
             <div className="grid-row flex-justify-end margin-top-8">
                 <button
@@ -114,7 +122,7 @@ const ProjectDetailForm = ({
                 <button
                     id="save-changes"
                     className="usa-button"
-                    disabled={title.length === 0 || res.hasErrors() || isSubmitting}
+                    disabled={title.length === 0 || !type || res.hasErrors() || isSubmitting}
                     data-cy="save-btn"
                 >
                     Save Changes

@@ -106,7 +106,16 @@ export default function useProjectDetailForm(
     };
 
     const runValidate = (name, value) => {
-        suite.run({ [name]: value }, name);
+        suite.run(
+            {
+                title,
+                short_title: shortTitle,
+                description,
+                project_type: type,
+                [name]: value
+            },
+            name
+        );
     };
 
     return {
