@@ -23,7 +23,7 @@ const StepLegendItem = ({ id, activeId, label, value, color, percent }) => {
     const isActive = activeId === id;
     const textColor = LIGHT_BACKGROUND_STEPS.includes(id) ? "#1B1B1B" : "#FFFFFF";
     return (
-        <div className="display-flex flex-justify margin-top-2 font-12px flex-align-center">
+        <div className="display-flex flex-justify margin-top-1 font-12px flex-align-center">
             <div className="display-flex flex-align-center flex-1">
                 <FontAwesomeIcon
                     icon={faCircle}

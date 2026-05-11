@@ -4,6 +4,7 @@ import { SORT_TYPES, useSortData } from "../../../hooks/use-sortable-data.hooks"
 import { tableSortCodes } from "../../../helpers/utils";
 import { PROCUREMENT_DETAILS_SORT_CODES } from "./ProcurementDetailsTable.constants";
 import { ProcurementDetailsTableRow } from "./ProcurementDetailsTableRow";
+import tableStyles from "../../../components/UI/Table/table.module.css";
 
 const TABLE_HEADINGS = [
     { heading: "Agreements", value: tableSortCodes.agreementCodes.AGREEMENT },
@@ -38,6 +39,7 @@ export const ProcurementDetailsTable = ({
             selectedHeader={sortCondition}
             onClickHeader={setSortConditions}
             sortDescending={sortDescending}
+            className={tableStyles.procurementDetailsTable}
         >
             {sortedAgreements.length > 0 &&
                 sortedAgreements.map((agreement) => (

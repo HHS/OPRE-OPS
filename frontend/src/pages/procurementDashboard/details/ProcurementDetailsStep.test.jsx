@@ -49,7 +49,8 @@ describe("ProcurementDetailsStep", () => {
         );
 
     it("renders agreement and BLI summary tags", () => {
-        renderComponent({ agreementsPerStep: 3 });
+        const agreements = [makeAgreement(), makeAgreement({ id: 11 }), makeAgreement({ id: 12 })];
+        renderComponent({ agreements, agreementsPerStep: 3 });
 
         const terms = screen.getAllByRole("term");
         const termTexts = terms.map((t) => t.textContent);

@@ -132,7 +132,7 @@ const ProcurementOverviewCard = ({ procurementOverview, fiscalYear, isLoading, e
                         data={statusData}
                         setActiveId={setActiveId}
                     />
-                    <div className="display-flex flex-justify-space-between margin-top-2">
+                    <div className="display-flex flex-justify-space-between">
                         {statusData.map((item) => (
                             <div
                                 key={item.label}
@@ -147,7 +147,7 @@ const ProcurementOverviewCard = ({ procurementOverview, fiscalYear, isLoading, e
                                     color={item.color}
                                     percent={parseInt(item.amountPercent)}
                                 />
-                                <div className="display-flex flex-align-center flex-justify-end">
+                                <div className="display-flex flex-align-center flex-justify-end padding-top-1">
                                     <span className={activeId === item.id ? "fake-bold" : ""}>
                                         {item.agreements} agreements
                                     </span>

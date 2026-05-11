@@ -201,13 +201,13 @@ export const ProcurementDetailsTableRow = ({
                 </div>
                 {/* Right section - Budget Lines summary */}
                 <div
-                    className="font-12px margin-right-1 padding-right-5"
+                    className="font-12px margin-right-1 padding-right-5 padding-left-5"
                     style={{
                         minWidth: "10rem",
                         flex: "0 0 auto"
                     }}
                 >
-                    <dt className="margin-0 text-base-dark margin-bottom-1">Budget Lines</dt>
+                    <dt className="margin-0 text-base-dark margin-bottom-1 ">Budget Lines</dt>
                     <dd className="margin-0">
                         <div className="display-flex flex-justify flex-align-center margin-bottom-05">
                             <span className="display-flex flex-align-center">
