@@ -143,7 +143,7 @@ class AgreementsService(OpsService[Agreement]):
 
         Raises:
             ValidationError: If validation fails (e.g., invalid services_component_ref)
-            ResourceNotFoundError: If referenced entities don'tracker exist (e.g., invalid can_id)
+            ResourceNotFoundError: If referenced entities don't exist (e.g., invalid can_id)
         """
         # STEP 0: Extract nested entity data from request
         budget_line_items_data = create_request.pop("budget_line_items", [])
@@ -271,7 +271,7 @@ class AgreementsService(OpsService[Agreement]):
 
         Raises:
             ValidationError: If services_component_ref is invalid
-            ResourceNotFoundError: If referenced CAN doesn'tracker exist
+            ResourceNotFoundError: If referenced CAN doesn't exist
         """
         bli_count = 0
 
