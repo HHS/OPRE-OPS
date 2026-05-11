@@ -6,15 +6,16 @@ import { ProcurementDetailsTable } from "./ProcurementDetailsTable";
 
 const STEP_DESCRIPTIONS = {
     "Acquisition Planning":
-        "The pre-solicitation package is being drafted and will be sent to the Procurement Shop to review.",
+        "Once the pre-solicitation package is drafted and signed by all parties, the COR will send it to the Procurement Shop and check this step as complete.",
     "Pre-Solicitation":
-        "The pre-solicitation package is being edited in collaboration with the Procurement Shop and when finalized, the final signed versions will get uploaded to the agreement.",
+        "The COR will edit the pre-solicitation package in collaboration with the Procurement Shop. Once the documents are finalized, they will upload the final and signed versions, and check this step as complete.",
     Solicitation:
-        "The Procurement Shop posts the Solicitation. When posted it is “on the street”. Proposals will come in along with vendor questions and evaluations will begin.",
-    Evaluation: "Technical evaluations and any potential negotiations are being completed to select a vendor.",
+        "Once the Procurement Shop has posted the Solicitation and it’s “on the street”, the COR will enter the Solicitation Start and End Dates. After all proposals are received, vendor questions have been answered, and evaluations are starting, they will check this step as complete.",
+    Evaluation:
+        "The COR and evaluation panel will complete the technical evaluations and any potential negotiations. Once they internally select a vendor, they will check this step as complete (internally means internal to OPRE, before they send the Final Consensus Memo to the Procurement Shop).",
     "Pre-Award":
-        "The Vendor Price Sheet is being reviewed and any edits or budget line status changes are made. When ready, it is sent to the Division Director to approve and then to the budget team to add the requisition information.",
-    Award: "Signed award is received and uploaded, CLINs are added and updates to the Vendor and Vendor Type are completed. The budget team will then review everything before changing the agreement to Awarded in OPS."
+        "All agreements need Pre-Award Approval before the Final Consensus Memo can be sent to the Procurement Shop. The COR will review the Vendor Price Sheet and make any edits or budget line status changes as needed. After final edits are approved by the Division Director(s), the Budget Team will submit the requisition and this step will be complete.",
+    Award: "Once the COR receives the signed award, they will upload the award document, add CLINs, and update the Vendor and Vendor Type. The budget team will review everything has been entered correctly before changing the agreement to Awarded in OPS (this will also change the budget lines in executing status to obligated status).."
 };
 
 const ProcurementDetailsStep = ({
