@@ -237,7 +237,7 @@ describe("ProjectDetailsView", () => {
 
     it("renders ProjectDetailForm when isEditMode is true", () => {
         renderComponent(baseProject, { canEdit: true, isEditMode: true });
-        expect(screen.getByText("Edit Project Details")).toBeInTheDocument();
+        expect(screen.getByText("Edit Project")).toBeInTheDocument();
         expect(screen.getByLabelText(/project title/i)).toBeInTheDocument();
         expect(screen.getByLabelText(/project nickname/i)).toBeInTheDocument();
         expect(screen.getByLabelText(/description/i)).toBeInTheDocument();

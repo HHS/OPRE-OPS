@@ -44,7 +44,7 @@ describe("Project Details Page", () => {
 
     it("enters edit mode and displays the form", () => {
         cy.get("[data-cy='project-details-edit-button']").click();
-        cy.contains("h2", "Edit Project Details").should("be.visible");
+        cy.contains("h2", "Edit Project").should("be.visible");
         cy.get("input[name='title']").should("be.visible");
         cy.get("input[name='short_title']").should("be.visible");
         cy.get("textarea[name='description']").should("be.visible");

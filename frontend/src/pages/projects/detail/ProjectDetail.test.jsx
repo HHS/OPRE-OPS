@@ -229,7 +229,7 @@ describe("ProjectDetail", () => {
 
         await user.click(screen.getByRole("button", { name: /edit/i }));
 
-        expect(screen.getByText("Edit Project Details")).toBeInTheDocument();
+        expect(screen.getByText("Edit Project")).toBeInTheDocument();
         expect(screen.getByLabelText("Project Title")).toBeInTheDocument();
     });
 
