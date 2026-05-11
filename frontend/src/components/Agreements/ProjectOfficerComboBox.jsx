@@ -30,7 +30,11 @@ export const ProjectOfficerComboBox = ({
     label
 }) => {
     const navigate = useNavigate();
-    const { data: users, error: errorUsers, isLoading: isLoadingUsers } = useGetUsersQuery({});
+    const {
+        data: users,
+        error: errorUsers,
+        isLoading: isLoadingUsers
+    } = useGetUsersQuery({ excludeReadOnlyUsers: true });
 
     if (isLoadingUsers) {
         return <div>Loading...</div>;
