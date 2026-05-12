@@ -31,7 +31,7 @@ const formatStepLabel = (stepType) => {
  * @property {number} totalSteps
  * @property {number} [activeStepNumber]
  * @property {import("react").ReactNode} [children]
- * @property {boolean} [isClosed=false]
+ * @property {boolean} [isClosed=true]
  * @property {boolean} [isReadOnly=false]
  * @property {number} [level=3]
  */
@@ -40,7 +40,7 @@ const formatStepLabel = (stepType) => {
  * @param {StepBuilderAccordionProps} props
  * @returns {import("react").ReactElement}
  */
-const DetailsBuilderAccordion = ({ step, totalSteps, children, isClosed = false, level = 3 }) => {
+const DetailsBuilderAccordion = ({ step, totalSteps, children, isClosed = true, level = 3 }) => {
     const heading = (
         <div
             className={`step-builder-accordion__heading step-builder-accordion__heading--active`}

@@ -69,7 +69,7 @@ const ProcurementDetails = ({
 
     return (
         <>
-            <h2 className="margin-top-10">Procurement Details</h2>
+            <h2 className="margin-top-4">Procurement Details</h2>
             <p className="line-height-alt-4 margin-bottom-5">
                 This is a detailed view of agreements currently in each procurement step for FY {fiscalYear}. Each step
                 includes a description of the tasks being completed, an overview of agreements, budget lines, and
@@ -81,7 +81,6 @@ const ProcurementDetails = ({
                         step={step}
                         totalSteps={WIZARD_STEPS.length}
                         key={`${step.id}`}
-                        isClosed={step.step_number !== 1}
                     >
                         <ProcurementDetailsStep
                             agreements={agreementsByStep[step.step_number] ?? []}

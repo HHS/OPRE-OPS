@@ -45,7 +45,7 @@ const ProcurementDetailsStep = ({
     return (
         <>
             <div>
-                <p className="line-height-alt-4 margin-bottom-5">{STEP_DESCRIPTIONS[stepType] ?? ""}</p>
+                <p className="line-height-alt-4 margin-bottom-1">{STEP_DESCRIPTIONS[stepType] ?? ""}</p>
             </div>
             {agreements?.length > 0 ? (
                 <>

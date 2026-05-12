@@ -17,7 +17,7 @@ import Tag from "../../../components/UI/Tag/Tag";
  * @param {StepLegendItemProps} props
  * @returns {JSX.Element}
  */
-const LIGHT_BACKGROUND_STEPS = [1, 2, 3, 4];
+const LIGHT_BACKGROUND_STEPS = [1, 2, 3, 4, 5];
 
 const StepLegendItem = ({ id, activeId, label, value, color, percent }) => {
     const isActive = activeId === id;
