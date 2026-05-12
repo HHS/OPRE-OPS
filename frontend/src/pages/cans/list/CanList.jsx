@@ -46,7 +46,7 @@ const CanList = () => {
 
     const fiscalYearFilter = getFiscalYearFilter();
     // For components that need a numeric fiscal year (summary cards, display)
-    const fiscalYear = fiscalYearFilter.length > 0 ? fiscalYearFilter[0] : Number(getCurrentFiscalYear());
+    const fiscalYear = fiscalYearFilter.length > 0 ? fiscalYearFilter[0] : undefined;
 
     // Extract filter values for API
     const activePeriodIds = filters.activePeriod?.map((ap) => ap.id) || [];
@@ -208,7 +208,7 @@ const CanList = () => {
                 SummaryCardsSection={
                     !isTableLoading && (
                         <CANSummaryCards
-                            fiscalYear={fiscalYear}
+                            fiscalYear={selectedFiscalYear === "All" ? "All FYs" : fiscalYear}
                             totalBudget={fundingSummaryData?.funding?.total_funding}
                             newFunding={fundingSummaryData?.funding?.new_funding}
                             carryForward={fundingSummaryData?.funding?.carry_forward_funding}

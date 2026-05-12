@@ -156,5 +156,11 @@ describe("CanList", () => {
             const lastCall = calls[calls.length - 1][0];
             expect(lastCall.fiscalYear).toEqual([]);
         });
+
+        await waitFor(() => {
+            const calls = useGetCansFundingQuery.mock.calls;
+            const lastCall = calls[calls.length - 1][0];
+            expect(lastCall.fiscalYear).toBeUndefined();
+        });
     });
 });
