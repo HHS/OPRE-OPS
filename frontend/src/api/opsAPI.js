@@ -702,7 +702,14 @@ export const opsApi = createApi({
             providesTags: ["AgreementReasons"]
         }),
         getUsers: builder.query({
-            query: () => `/users/`,
+            query: ({ excludeReadOnlyUsers } = {}) => {
+                const queryParams = [];
+                if (excludeReadOnlyUsers) {
+                    queryParams.push("exclude_read_only=true");
+                }
+                const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
+                return `/users/${queryString}`;
+            },
             transformResponse: (response) => (Array.isArray(response) ? response.map(normalizeUser) : response),
             providesTags: ["Users"]
         }),
