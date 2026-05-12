@@ -70,9 +70,10 @@ describe("ProjectDetailsView", () => {
     it("renders the description and right-column labels", () => {
         renderComponent(baseProject);
 
-        expect(
-            screen.getByRole("button", { name: "You do not have permission to edit this project" })
-        ).toHaveAttribute("aria-disabled", "true");
+        expect(screen.getByRole("button", { name: "You do not have permission to edit this project" })).toHaveAttribute(
+            "aria-disabled",
+            "true"
+        );
         expect(screen.getByRole("tooltip", { hidden: true })).toHaveTextContent(
             "You do not have permission to edit this project"
         );
