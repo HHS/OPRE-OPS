@@ -479,6 +479,13 @@ class ProcurementTrackerStepService:
                     "Procurement Shop and continue your progress in the Procurement Tracker."
                 )
 
+                # Include Director's approval notes if they exist
+                if step.pre_award_approval_reviewer_notes and step.pre_award_approval_reviewer_notes.strip():
+                    reviewer_notes_text = step.pre_award_approval_reviewer_notes.strip()
+                    # Escape Markdown metacharacters to ensure notes display literally
+                    reviewer_notes_text = escape_markdown(reviewer_notes_text)
+                    message += f"\n\nNotes: {reviewer_notes_text}"
+
                 notification_service.create(
                     {
                         "title": PreAwardNotificationTitle.REQUISITION_APPROVED,
