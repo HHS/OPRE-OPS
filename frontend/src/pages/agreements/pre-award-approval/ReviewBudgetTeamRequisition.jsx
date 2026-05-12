@@ -10,7 +10,7 @@ import icons from "../../../uswds/img/sprite.svg";
 import { PreAwardBudgetLinesReviewAccordion } from "./PreAwardBudgetLinesReviewAccordion";
 import FileUploadButton from "../../../components/UI/Button/FileUploadButton";
 import Input from "../../../components/UI/Form/Input";
-import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
+import SaveChangesAndExitModal from "../../../components/UI/Modals/SaveChangesAndExitModal";
 import useReviewBudgetTeamRequisition from "./ReviewBudgetTeamRequisition.hooks";
 
 /**
@@ -314,13 +314,15 @@ export const ReviewBudgetTeamRequisition = () => {
 
             {/* Confirmation Modal */}
             {showModal && (
-                <ConfirmationModal
+                <SaveChangesAndExitModal
                     heading={modalProps.heading}
+                    description={modalProps.description}
                     setShowModal={setShowModal}
                     actionButtonText={modalProps.actionButtonText}
                     secondaryButtonText={modalProps.secondaryButtonText}
                     handleConfirm={modalProps.handleConfirm}
                     handleSecondary={modalProps.handleSecondary}
+                    closeModal={() => setShowModal(false)}
                 />
             )}
         </App>

@@ -77,6 +77,8 @@ export const AgreementBudgetLinesHeader = ({
                                 className="usa-button--unstyled usa-button--disabled"
                                 aria-disabled="true"
                                 data-cy="edit-disabled"
+                                tabIndex={0}
+                                role="button"
                             >
                                 <FontAwesomeIcon
                                     icon={faPen}
