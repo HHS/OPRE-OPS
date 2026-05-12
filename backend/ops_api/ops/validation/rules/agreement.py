@@ -137,9 +137,7 @@ class ServiceRequirementTypeRule(ValidationRule):
     def validate(self, agreement: Agreement, context: ValidationContext) -> None:
         updated_fields = context.updated_fields
 
-        agreement_type = updated_fields.get("agreement_type") or (
-            agreement.agreement_type if agreement else None
-        )
+        agreement_type = updated_fields.get("agreement_type") or (agreement.agreement_type if agreement else None)
 
         if agreement_type not in (AgreementType.CONTRACT, AgreementType.AA):
             return
