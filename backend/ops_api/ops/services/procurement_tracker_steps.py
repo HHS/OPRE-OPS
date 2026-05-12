@@ -521,9 +521,13 @@ class ProcurementTrackerStepService:
         # TODO (PR3/PR4): This URL points to budget requisition review page to be implemented
         review_url = f"{fe_url}/agreements/{agreement.id}/review-budget-requisition"
 
+        # Fetch requester user object to include their name in the notification
+        requester = self.db_session.get(User, step.pre_award_approval_requested_by)
+        requester_name = requester.full_name if requester else "Unknown User"
+
         message = (
-            f"{current_user.full_name} has approved the Pre-Award request for Agreement {agreement.display_name}. "
-            f"Budget Team review and requisition entry is now required.\n\n[Review Agreement]({review_url})"
+            f"{current_user.full_name} approved the agreement for pre-award as requested by {requester_name} "
+            f"and it is now ready for the Budget Team to submit the requisition.\n\n[Review Agreement]({review_url})"
         )
 
         # Send notification to each budget team member
@@ -575,8 +579,9 @@ class ProcurementTrackerStepService:
         """
         Get user IDs who can approve pre-award requests.
 
-        Returns IDs of Division Directors, Deputy Division Directors,
-        Budget Team, and System Owners.
+        Returns IDs of Division Directors, Deputy Division Directors, and System Owners.
+        NOTE: BUDGET_TEAM is explicitly excluded here - they are notified separately
+        AFTER director approval (see _notify_budget_team_for_requisition_review).
 
         Args:
             agreement: The agreement to get reviewers for
@@ -594,13 +599,9 @@ class ProcurementTrackerStepService:
         reviewer_ids.update(directors)
         reviewer_ids.update(deputies)
 
-        # Get BUDGET_TEAM and SYSTEM_OWNER users
+        # Get SYSTEM_OWNER users (BUDGET_TEAM excluded - they are notified after DD approval)
         role_based_users = (
-            self.db_session.execute(
-                select(User.id).where(User.roles.any(Role.name.in_(["BUDGET_TEAM", "SYSTEM_OWNER"])))
-            )
-            .scalars()
-            .all()
+            self.db_session.execute(select(User.id).where(User.roles.any(Role.name == "SYSTEM_OWNER"))).scalars().all()
         )
         reviewer_ids.update(role_based_users)
 
@@ -757,8 +758,9 @@ class ProcurementTrackerStepService:
             )
         )
 
-        # If user is BUDGET_TEAM or SYSTEM_OWNER, they can see all pending approvals
-        if "BUDGET_TEAM" in user_role_names or "SYSTEM_OWNER" in user_role_names:
+        # If user is SYSTEM_OWNER, they can see all pending approvals
+        # NOTE: BUDGET_TEAM is excluded here - they use get_pending_requisitions_for_user() instead
+        if "SYSTEM_OWNER" in user_role_names:
             results = self.db_session.execute(stmt.distinct()).scalars().all()
             return list(results)
 

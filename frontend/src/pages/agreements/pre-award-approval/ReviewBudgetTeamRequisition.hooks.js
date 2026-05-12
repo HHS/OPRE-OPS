@@ -132,7 +132,7 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
                     setAlert({
                         type: "success",
                         heading: "Pre-Award Requisition approved",
-                        message: `Budget Team has approved the Pre-Award Requisition for Agreement ${agreement?.name}. The Final Consensus Memo can now be sent to the Procurement Shop.`,
+                        message: `"${agreement?.name}" agreement has been successfully approved for Pre-Award Requisition.`,
                         redirectUrl: "/agreements?filter=change-requests"
                     });
                 } catch (error) {

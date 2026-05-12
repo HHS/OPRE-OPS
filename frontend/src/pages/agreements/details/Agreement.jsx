@@ -328,6 +328,7 @@ const Agreement = () => {
                                 setIsEditMode={setIsEditMode}
                                 isAgreementNotDeveloped={isAgreementNotDeveloped}
                                 isAgreementAwarded={isAgreementAwarded ?? false}
+                                isPreAwardInReview={isPreAwardInReview}
                             />
                         }
                     />
@@ -340,6 +341,7 @@ const Agreement = () => {
                                 setIsEditMode={setIsEditMode}
                                 isAgreementNotDeveloped={isAgreementNotDeveloped}
                                 isAgreementAwarded={isAgreementAwarded ?? false}
+                                isPreAwardInReview={isPreAwardInReview}
                             />
                         }
                     />

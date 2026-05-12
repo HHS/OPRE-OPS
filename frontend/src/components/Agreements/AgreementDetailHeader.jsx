@@ -1,5 +1,6 @@
 import { faPen, faWarning } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import Tooltip from "../UI/USWDS/Tooltip";
 
 /**
  * @component - Agreement detail header.
@@ -10,6 +11,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
  * @param {function} props.setIsEditMode - The function to set the edit mode.
  * @param {boolean} props.isEditable - Whether the agreement is editable.
  * @param {boolean} props.hasUnsavedChanges - Whether there are unsaved changes.
+ * @param {boolean} [props.isPreAwardInReview] - Whether pre-award approval is in review.
  * @returns {JSX.Element} - The rendered component.
  */
 export const AgreementDetailHeader = ({
@@ -18,7 +20,8 @@ export const AgreementDetailHeader = ({
     isEditMode,
     setIsEditMode,
     isEditable,
-    hasUnsavedChanges = false
+    hasUnsavedChanges = false,
+    isPreAwardInReview = false
 }) => {
     return (
         <>
@@ -36,7 +39,8 @@ export const AgreementDetailHeader = ({
                         Unsaved Changes
                     </div>
                 )}
-                {!isEditMode && isEditable && (
+                {/* ENABLED EDIT BUTTON - when not in edit mode, is editable, and NOT in pre-award review */}
+                {!isEditMode && isEditable && !isPreAwardInReview && (
                     <button
                         type="button"
                         id="edit"
@@ -52,6 +56,25 @@ export const AgreementDetailHeader = ({
                         />
                         <span className="text-primary">Edit</span>
                     </button>
+                )}
+                {/* DISABLED EDIT BUTTON - when in pre-award review */}
+                {!isEditMode && isEditable && isPreAwardInReview && (
+                    <Tooltip label="This agreement is In Review for Pre-Award Approval. Edits or changes cannot be made at this time.">
+                        <span
+                            id="edit-disabled"
+                            className="usa-button--unstyled usa-button--disabled"
+                            aria-disabled="true"
+                            data-cy="edit-disabled"
+                        >
+                            <FontAwesomeIcon
+                                icon={faPen}
+                                size="2x"
+                                className="height-2 width-2 margin-right-1"
+                                aria-hidden="true"
+                            />
+                            <span>Edit</span>
+                        </span>
+                    </Tooltip>
                 )}
                 {isEditMode && (
                     <div className="margin-left-auto">
