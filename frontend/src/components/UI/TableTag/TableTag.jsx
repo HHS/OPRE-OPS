@@ -1,4 +1,5 @@
 import { convertCodeForDisplay } from "../../../helpers/utils";
+import { CHANGE_REQUESTS_TOOLTIP_LOADING } from "../../../hooks/useChangeRequests.hooks";
 import Tag from "../Tag";
 import Tooltip from "../USWDS/Tooltip";
 
@@ -19,7 +20,7 @@ const TableTag = ({ status, inReview = false, lockedMessage, isObe = false }) =>
     const statusText = convertCodeForDisplay("budgetLineStatus", status);
     let classNames = "";
 
-    if (inReview && lockedMessage) {
+    if (inReview && lockedMessage && lockedMessage !== CHANGE_REQUESTS_TOOLTIP_LOADING) {
         return (
             <Tooltip
                 label={lockedMessage}
