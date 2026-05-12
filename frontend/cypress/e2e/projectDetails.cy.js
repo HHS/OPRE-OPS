@@ -1,18 +1,18 @@
 /// <reference types="cypress" />
 import { terminalLog, testLogin } from "./utils";
 
-beforeEach(() => {
-    testLogin("system-owner");
-    cy.visit("/projects/1000");
-    cy.get("h1", { timeout: 10000 }).should("be.visible");
-});
-
 afterEach(() => {
     cy.injectAxe();
     cy.checkA11y(null, null, terminalLog);
 });
 
 describe("Project Details Page", () => {
+    beforeEach(() => {
+        testLogin("system-owner");
+        cy.visit("/projects/1000");
+        cy.get("h1", { timeout: 10000 }).should("be.visible");
+    });
+
     it("loads the seeded project details and disabled tab tooltips", () => {
         cy.url().should("include", "/projects/1000");
         cy.get("h1").should("contain", "Human Services Interoperability Support");
@@ -52,16 +52,61 @@ describe("Project Details Page", () => {
         cy.get("[data-cy='cancel-button']").should("be.visible");
     });
 
-    it.skip("edits project details and saves successfully", () => {
+    it("edits project details and saves successfully", () => {
+        const originalShortTitle = "HSS";
+        const updatedShortTitle = `HSS-${Date.now()}`;
+        cy.intercept("PATCH", "**/api/v1/projects/1000").as("patchProject");
+
         cy.get("[data-cy='project-details-edit-button']").click();
-        cy.get("input[name='short_title']").clear().type("Updated HSS");
+        cy.get("input[name='short_title']").clear().type(updatedShortTitle);
         cy.get("[data-cy='save-btn']").click();
+
+        cy.wait("@patchProject").then((interception) => {
+            expect(interception.response.statusCode).to.equal(200);
+            expect(interception.response.body.id).to.equal(1000);
+        });
         cy.contains("Project Updated").should("be.visible");
+        cy.get("[data-cy='project-nickname-tag']").should("contain", updatedShortTitle);
+
+        // Restore the seeded short_title so later tests (and the seeded fixture assertions
+        // above) keep passing when the spec reruns against the same database.
+        cy.get("[data-cy='project-details-edit-button']").click();
+        cy.get("input[name='short_title']").clear().type(originalShortTitle);
+        cy.get("[data-cy='save-btn']").click();
+        cy.wait("@patchProject").its("response.statusCode").should("equal", 200);
+    });
+
+    it("shows an error alert when the save request fails", () => {
+        cy.intercept("PATCH", "**/api/v1/projects/1000", { statusCode: 500, body: { error: "boom" } }).as(
+            "patchProjectError"
+        );
+        cy.get("[data-cy='project-details-edit-button']").click();
+        cy.get("input[name='short_title']").clear().type("Will Not Save");
+        cy.get("[data-cy='save-btn']").click();
+        cy.wait("@patchProjectError");
+        cy.contains("Error Updating Project").should("be.visible");
     });
 
     it("shows confirmation modal on cancel during edit", () => {
         cy.get("[data-cy='project-details-edit-button']").click();
         cy.get("[data-cy='cancel-button']").click();
         cy.contains("Are you sure you want to cancel editing").should("be.visible");
+    });
+});
+
+describe("Project Details Page — unauthorized user", () => {
+    beforeEach(() => {
+        testLogin("basic");
+        cy.visit("/projects/1000");
+        cy.get("h1", { timeout: 10000 }).should("be.visible");
+    });
+
+    it("disables the edit button when the user does not have permission", () => {
+        cy.get("[data-cy='project-details-edit-button']").should("have.attr", "aria-disabled", "true");
+        cy.get("[data-cy='project-details-edit-button']").should(
+            "have.attr",
+            "aria-label",
+            "You do not have permission to edit this project"
+        );
     });
 });
