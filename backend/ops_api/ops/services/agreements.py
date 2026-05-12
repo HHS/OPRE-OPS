@@ -148,7 +148,7 @@ class AgreementsService(OpsService[Agreement]):
         # Validate service_requirement_type for Contract and AA agreements
         agreement_type = create_request.get("agreement_type")
         if agreement_type in (AgreementType.CONTRACT, AgreementType.AA):
-            if not create_request.get("service_requirement_type"):
+            if create_request.get("service_requirement_type") is None:
                 raise ValidationError(
                     {"service_requirement_type": "Service Requirement Type is required for Contract and AA agreements."}
                 )

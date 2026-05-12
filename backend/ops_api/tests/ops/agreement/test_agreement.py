@@ -1387,6 +1387,18 @@ def test_post_iaa_agreement(auth_client, loaded_db, app_ctx):
     assert response.status_code == 200
 
 
+def test_agreements_post_contract_without_service_requirement_type_returns_400(auth_client, loaded_db, app_ctx):
+    response = auth_client.post(
+        url_for("api.agreements-group"),
+        json={
+            "agreement_type": AgreementType.CONTRACT.name,
+            "name": "Test Contract (missing SRT)",
+        },
+    )
+    assert response.status_code == 400
+    assert "service_requirement_type" in response.json
+
+
 def test_agreements_post(auth_client, loaded_db, app_ctx):
     response = auth_client.post(
         url_for("api.agreements-group"),
