@@ -1396,7 +1396,7 @@ def test_agreements_post_contract_without_service_requirement_type_returns_400(a
         },
     )
     assert response.status_code == 400
-    assert "service_requirement_type" in response.json
+    assert "service_requirement_type" in response.json["errors"]
 
 
 def test_agreements_post(auth_client, loaded_db, app_ctx):
