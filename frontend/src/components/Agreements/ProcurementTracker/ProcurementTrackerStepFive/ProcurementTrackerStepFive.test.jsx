@@ -1326,7 +1326,7 @@ describe("ProcurementTrackerStepFive", () => {
                     stepFiveData={{
                         ...mockStepData,
                         approval_status: "APPROVED",
-                        requisition_approved_by: 456  // Budget team has approved requisition
+                        requisition_approved_by: 456 // Budget team has approved requisition
                     }}
                     authorizedUsers={mockAllUsers}
                     isDisabled={false}
@@ -1354,7 +1354,7 @@ describe("ProcurementTrackerStepFive", () => {
                     stepFiveData={{
                         ...mockStepData,
                         approval_status: "APPROVED",
-                        requisition_approved_by: 456  // Budget team has approved requisition
+                        requisition_approved_by: 456 // Budget team has approved requisition
                     }}
                     authorizedUsers={mockAllUsers}
                     isDisabled={false}

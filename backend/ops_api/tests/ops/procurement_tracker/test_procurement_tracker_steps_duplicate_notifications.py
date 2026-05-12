@@ -215,8 +215,14 @@ def test_approval_transitions_are_idempotent(auth_client, test_pre_award_step, l
 
 
 def test_approval_response_auto_dismisses_in_review_notifications(auth_client, test_pre_award_step, loaded_db):
-    """Test that approval response auto-dismisses 'in review' notifications for reviewers."""
-    # Step 1: Request approval - creates "in review" notifications for reviewers
+    """Test that approval response auto-dismisses 'in review' notifications for reviewers.
+
+    NOTE: OPS-1639 changed the flow so DD approval sends to Budget Team, not auto-dismisses reviewer notifications.
+    Reviewer notifications are only created for Division Directors and SYSTEM_OWNER users (Budget Team excluded).
+    When DD approves, new notifications go to Budget Team, but the original 'Pre-Award Approval Request'
+    notifications to DDs remain unread (they are not auto-dismissed).
+    """
+    # Step 1: Request approval - creates "in review" notifications for reviewers (DD/SYSTEM_OWNER only)
     update_data = {
         "approval_requested": True,
         "approval_requested_date": date.today().isoformat(),
@@ -228,7 +234,7 @@ def test_approval_response_auto_dismisses_in_review_notifications(auth_client, t
     )
     assert response.status_code == 200
 
-    # Verify "in review" notifications were created
+    # Verify "in review" notifications were created (for DD/SYSTEM_OWNER, not Budget Team)
     in_review_notifications = loaded_db.scalars(
         select(Notification)
         .where(Notification.title == "Pre-Award Approval Request")
@@ -239,7 +245,7 @@ def test_approval_response_auto_dismisses_in_review_notifications(auth_client, t
     # Store the notification IDs to verify later
     reviewer_notification_ids = [n.id for n in in_review_notifications]
 
-    # Step 2: Approve request - should auto-dismiss reviewer notifications
+    # Step 2: Approve request - sends notification to Budget Team (not auto-dismiss)
     update_data = {
         "approval_status": "APPROVED",
         "reviewer_notes": "Looks good, approved",
@@ -250,10 +256,12 @@ def test_approval_response_auto_dismisses_in_review_notifications(auth_client, t
     )
     assert response.status_code == 200
 
-    # Step 3: Verify all "in review" notifications are marked as read
+    # Step 3: Verify "Pre-Award Approval Request" notifications remain (NOT auto-dismissed)
+    # OPS-1639: DD approval creates NEW notifications for Budget Team but does NOT dismiss original DD notifications
     for notification_id in reviewer_notification_ids:
         notification = loaded_db.get(Notification, notification_id)
-        assert notification.is_read, f"Notification {notification_id} should be auto-dismissed (marked as read)"
+        # These notifications should remain unread - they are NOT auto-dismissed in OPS-1639 flow
+        assert not notification.is_read, f"Notification {notification_id} should remain unread (OPS-1639: DD approval sends to Budget Team, does not auto-dismiss DD notifications)"
 
 
 def test_approval_response_includes_reviewer_notes_in_notification(auth_client, test_pre_award_step, loaded_db):
@@ -363,8 +371,8 @@ def test_approval_response_excludes_empty_reviewer_notes(auth_client, test_pre_a
     assert (
         "Notes:" not in notification.message
     ), f"Notes section should not appear when empty. Got: {notification.message}"
-    # Verify base message is present (budget team notification says "has approved" not "has been approved")
-    assert "has approved" in notification.message
+    # Verify base message is present (OPS-1639: budget team notification includes approver and requester names)
+    assert "approved the agreement for pre-award as requested by" in notification.message
 
 
 def test_decline_response_excludes_whitespace_only_reviewer_notes(auth_client, test_pre_award_step, loaded_db):
