@@ -50,7 +50,8 @@ const getJsonHeaders = () => ({
 
 const minAgreementWithoutProcShop = (uniqueSuffix) => ({
     agreement_type: "CONTRACT",
-    name: `Test Contract ${uniqueSuffix}`
+    name: `Test Contract ${uniqueSuffix}`,
+    service_requirement_type: "SEVERABLE"
 });
 
 const resolveProjectId = () => {

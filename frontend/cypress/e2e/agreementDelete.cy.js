@@ -79,12 +79,14 @@ const testAgreements = [
 let testAgreement = {
     agreement_type: "CONTRACT",
     name: "E2E Delete Agreement Test",
+    service_requirement_type: "SEVERABLE",
     project_officer_id: 520,
     alternate_project_officer_id: 522
 };
 let testAgreementToDelete = {
     agreement_type: "CONTRACT",
     name: "E2E Delete Agreement To Delete",
+    service_requirement_type: "SEVERABLE",
     project_officer_id: 520,
     alternate_project_officer_id: 523
 };
