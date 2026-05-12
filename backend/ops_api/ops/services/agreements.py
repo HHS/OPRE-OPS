@@ -145,6 +145,14 @@ class AgreementsService(OpsService[Agreement]):
             ValidationError: If validation fails (e.g., invalid services_component_ref)
             ResourceNotFoundError: If referenced entities don't exist (e.g., invalid can_id)
         """
+        # Validate service_requirement_type for Contract and AA agreements
+        agreement_type = create_request.get("agreement_type")
+        if agreement_type in (AgreementType.CONTRACT, AgreementType.AA):
+            if not create_request.get("service_requirement_type"):
+                raise ValidationError(
+                    {"service_requirement_type": "Service Requirement Type is required for Contract and AA agreements."}
+                )
+
         # STEP 0: Extract nested entity data from request
         budget_line_items_data = create_request.pop("budget_line_items", [])
         services_components_data = create_request.pop("services_components", [])
@@ -316,7 +324,7 @@ class AgreementsService(OpsService[Agreement]):
 
         return bli_count
 
-    def update(self, id: int, updated_fields: dict[str, Any]) -> tuple[Agreement, int]:
+    def update(self, id: int, updated_fields: dict[str, Any], partial: bool = True) -> tuple[Agreement, int]:
         """
         Update an existing agreement
         """
@@ -329,7 +337,7 @@ class AgreementsService(OpsService[Agreement]):
         else:
             validator = AgreementValidator()
 
-        validator.validate(agreement, user, updated_fields, self.db_session)
+        validator.validate(agreement, user, updated_fields, self.db_session, metadata={"full_update": not partial})
 
         agreement_cls = updated_fields.get("agreement_cls")
         del updated_fields["agreement_cls"]

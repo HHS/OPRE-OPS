@@ -1393,6 +1393,7 @@ def test_agreements_post(auth_client, loaded_db, app_ctx):
         json={
             "agreement_type": AgreementType.CONTRACT.name,
             "name": "Test Contract (for post)",
+            "service_requirement_type": "SEVERABLE",
         },
     )
     assert response.status_code == 201
@@ -1471,6 +1472,7 @@ def test_agreements_post_contract_with_vendor(
             "project_id": test_project.id,
             "awarding_entity_id": 2,
             "contract_type": "FIRM_FIXED_PRICE",
+            "service_requirement_type": "SEVERABLE",
             "research_methodologies": [
                 {
                     "id": 1,

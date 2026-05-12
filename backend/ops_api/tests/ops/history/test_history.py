@@ -135,6 +135,7 @@ def test_history_expanded_with_web_client(auth_client, loaded_db, test_user, tes
         "name": "Contract123",
         "description": "History Test Description",
         "product_service_code_id": 1,
+        "service_requirement_type": "SEVERABLE",
         "project_officer_id": test_user.id,
         "team_members": [
             {

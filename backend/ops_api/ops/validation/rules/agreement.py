@@ -1,6 +1,6 @@
 """Concrete validation rules for agreement updates."""
 
-from models import Agreement, BudgetLineItemStatus, ResearchMethodology, SpecialTopic
+from models import Agreement, AgreementType, BudgetLineItemStatus, ResearchMethodology, SpecialTopic
 from ops_api.ops.services.ops_service import (
     AuthorizationError,
     ResourceNotFoundError,
@@ -125,3 +125,34 @@ class ResearchMetadataRule(ValidationRule):
 
             if invalid_ids:
                 raise ValidationError({"special_topics": [f"Special Topic IDs do not exist: {invalid_ids}"]})
+
+
+class ServiceRequirementTypeRule(ValidationRule):
+    """Validates that Contract and AA agreements have service_requirement_type set."""
+
+    @property
+    def name(self) -> str:
+        return "Service Requirement Type Required"
+
+    def validate(self, agreement: Agreement, context: ValidationContext) -> None:
+        updated_fields = context.updated_fields
+
+        agreement_type = updated_fields.get("agreement_type") or (
+            agreement.agreement_type if agreement else None
+        )
+
+        if agreement_type not in (AgreementType.CONTRACT, AgreementType.AA):
+            return
+
+        if "service_requirement_type" in updated_fields:
+            if updated_fields["service_requirement_type"] is None:
+                raise ValidationError(
+                    {"service_requirement_type": "Service Requirement Type is required for Contract and AA agreements."}
+                )
+            return
+
+        if agreement and agreement.service_requirement_type is None:
+            if context.metadata.get("full_update"):
+                raise ValidationError(
+                    {"service_requirement_type": "Service Requirement Type is required for Contract and AA agreements."}
+                )
