@@ -261,7 +261,9 @@ def test_approval_response_auto_dismisses_in_review_notifications(auth_client, t
     for notification_id in reviewer_notification_ids:
         notification = loaded_db.get(Notification, notification_id)
         # These notifications should remain unread - they are NOT auto-dismissed in OPS-1639 flow
-        assert not notification.is_read, f"Notification {notification_id} should remain unread (OPS-1639: DD approval sends to Budget Team, does not auto-dismiss DD notifications)"
+        assert (
+            not notification.is_read
+        ), f"Notification {notification_id} should remain unread (OPS-1639: DD approval sends to Budget Team, does not auto-dismiss DD notifications)"
 
 
 def test_approval_response_includes_reviewer_notes_in_notification(auth_client, test_pre_award_step, loaded_db):
