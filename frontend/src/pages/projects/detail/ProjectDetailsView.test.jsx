@@ -70,11 +70,12 @@ describe("ProjectDetailsView", () => {
     it("renders the description and right-column labels", () => {
         renderComponent(baseProject);
 
-        expect(screen.getByRole("button", { name: "Edit Project Details coming soon" })).toHaveAttribute(
-            "aria-disabled",
-            "true"
+        expect(
+            screen.getByRole("button", { name: "You do not have permission to edit this project" })
+        ).toHaveAttribute("aria-disabled", "true");
+        expect(screen.getByRole("tooltip", { hidden: true })).toHaveTextContent(
+            "You do not have permission to edit this project"
         );
-        expect(screen.getByRole("tooltip", { hidden: true })).toHaveTextContent("Coming Soon");
         expect(screen.getByText("Description")).toBeInTheDocument();
         expect(screen.getByText("Interoperability activities description.")).toBeInTheDocument();
         expect(screen.getByText("Project Nickname")).toBeInTheDocument();

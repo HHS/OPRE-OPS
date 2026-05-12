@@ -77,14 +77,14 @@ const ProjectDetailsView = ({ project, isEditMode = false, toggleEditMode, canEd
                 )}
                 {!canEdit && !isEditMode && (
                     <Tooltip
-                        label="Coming Soon"
+                        label="You do not have permission to edit this project"
                         position="top"
                     >
                         <span className="display-inline-flex">
                             <button
                                 type="button"
                                 aria-disabled={true}
-                                aria-label="Edit Project Details coming soon"
+                                aria-label="You do not have permission to edit this project"
                                 data-cy="project-details-edit-button"
                                 className="usa-button usa-button--unstyled display-flex flex-align-center text-gray-50 cursor-not-allowed"
                                 onClick={(event) => {

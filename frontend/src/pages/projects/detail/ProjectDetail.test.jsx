@@ -53,7 +53,8 @@ const mockProject = {
     team_members: [
         { id: 500, full_name: "Chris Fortunato", email: "chris.fortunato@example.com" },
         { id: 503, full_name: "Amelia Popham", email: "amelia@example.com" }
-    ]
+    ],
+    _meta: { isEditable: true }
 };
 
 describe("ProjectDetail", () => {
@@ -202,7 +203,7 @@ describe("ProjectDetail", () => {
         expect(mockNavigate).not.toHaveBeenCalled();
     });
 
-    it("shows an enabled edit button for a logged-in user", () => {
+    it("shows an enabled edit button when _meta.isEditable is true", () => {
         mockUseGetProjectByIdQuery.mockReturnValue({
             data: mockProject,
             isLoading: false,
@@ -213,6 +214,19 @@ describe("ProjectDetail", () => {
 
         const editButton = screen.getByRole("button", { name: /edit/i });
         expect(editButton).not.toHaveAttribute("aria-disabled");
+    });
+
+    it("shows a disabled edit button when _meta.isEditable is false", () => {
+        mockUseGetProjectByIdQuery.mockReturnValue({
+            data: { ...mockProject, _meta: { isEditable: false } },
+            isLoading: false,
+            error: undefined
+        });
+
+        renderComponent();
+
+        const editButton = screen.getByRole("button", { name: /edit/i });
+        expect(editButton).toHaveAttribute("aria-disabled", "true");
     });
 
     it("switches to edit mode when edit button is clicked", async () => {

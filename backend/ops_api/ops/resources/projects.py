@@ -1,4 +1,5 @@
 from flask import Response, current_app, request
+from flask_jwt_extended import get_current_user
 from typing_extensions import List
 
 from models import AdministrativeAndSupportProject, Project, ProjectType, ResearchProject
@@ -9,6 +10,7 @@ from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.schemas.projects import (
+    MetaSchema,
     ProjectCreationRequestSchema,
     ProjectFundingRequestSchema,
     ProjectFundingResponseSchema,
@@ -22,6 +24,7 @@ from ops_api.ops.schemas.projects import (
 )
 from ops_api.ops.services.projects import ProjectsService
 from ops_api.ops.utils.events import OpsEventHandler
+from ops_api.ops.utils.projects_helpers import check_project_user_association
 from ops_api.ops.utils.response import make_response_with_headers
 
 
@@ -37,15 +40,18 @@ class ProjectItemAPI(BaseItemAPI):
         project = service.get(id)
         match project.project_type:
             case ProjectType.RESEARCH:
-                research_schema = ResearchProjectResponse()
-                serialized_project = research_schema.dump(project)
+                schema = ResearchProjectResponse(exclude=["_meta"])
             case ProjectType.ADMINISTRATIVE_AND_SUPPORT:
                 # No separate schema for admin project yet but there will be
-                admin_schema = ProjectResponse()
-                serialized_project = admin_schema.dump(project)
+                schema = ProjectResponse(exclude=["_meta"])
             case _:
-                general_schema = ProjectResponse()
-                serialized_project = general_schema.dump(project)
+                schema = ProjectResponse(exclude=["_meta"])
+        serialized_project = schema.dump(project)
+
+        current_user = get_current_user()
+        serialized_project["_meta"] = MetaSchema().dump(
+            {"isEditable": check_project_user_association(project, current_user)}
+        )
 
         return make_response_with_headers(serialized_project)
 

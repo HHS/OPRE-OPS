@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import App from "../../../App";
 import { useGetProjectByIdQuery } from "../../../api/opsAPI";
@@ -16,8 +15,6 @@ const ProjectDetail = () => {
     const navigate = useNavigate();
     const { id } = useParams();
     const projectId = id ? +id : -1;
-    const activeUser = useSelector((state) => state.auth.activeUser);
-    const canEdit = !!activeUser;
     const [isEditMode, setIsEditMode] = useState(false);
     const toggleEditMode = () => setIsEditMode((prev) => !prev);
 
@@ -32,6 +29,7 @@ const ProjectDetail = () => {
     });
 
     const is404 = error?.status === 404;
+    const canEdit = project?._meta?.isEditable ?? false;
 
     useEffect(() => {
         if (error && !is404) {
