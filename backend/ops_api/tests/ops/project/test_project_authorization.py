@@ -520,9 +520,7 @@ class TestGetProjectMetaIsEditable:
     def test_get_project_team_leader_is_editable(
         self, basic_user_auth_client, loaded_db, project_with_basic_user_team_leader
     ):
-        response = basic_user_auth_client.get(
-            url_for("api.projects-item", id=project_with_basic_user_team_leader.id)
-        )
+        response = basic_user_auth_client.get(url_for("api.projects-item", id=project_with_basic_user_team_leader.id))
         assert response.status_code == 200
         assert response.json["_meta"]["isEditable"] is True
 
