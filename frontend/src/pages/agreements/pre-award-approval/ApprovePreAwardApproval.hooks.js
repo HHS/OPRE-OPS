@@ -140,10 +140,18 @@ export default function useApprovePreAwardApproval(agreementId) {
                     // Show alert and navigate back to For Review tab
                     setAlert({
                         type: action === "APPROVED" ? "success" : "error",
-                        heading: `Pre-Award ${action === "APPROVED" ? "Approved" : "Declined"}`,
-                        message: `You have successfully ${actionText}d the pre-award approval request for ${agreement.display_name}.${
-                            reviewerNotes ? `\n\nNotes: ${reviewerNotes}` : ""
-                        }`,
+                        heading:
+                            action === "APPROVED"
+                                ? "Pre-Award Approved & Requisition Started"
+                                : "Pre-Award Declined",
+                        message:
+                            action === "APPROVED"
+                                ? `The "${agreement.display_name}" agreement has been successfully approved for Pre-Award. Next, the Budget Team will submit the requisition and then the COR will be notified to upload the Final Consensus Memo to the HHS Consolidated Acquisition Solution (HCAS). The agreement will be locked from editing until after it's awarded.${
+                                      reviewerNotes ? `\n\nNotes: ${reviewerNotes}` : ""
+                                  }`
+                                : `You have successfully ${actionText}d the pre-award approval request for ${agreement.display_name}.${
+                                      reviewerNotes ? `\n\nNotes: ${reviewerNotes}` : ""
+                                  }`,
                         redirectUrl: "/agreements?filter=change-requests"
                     });
                 } catch (error) {

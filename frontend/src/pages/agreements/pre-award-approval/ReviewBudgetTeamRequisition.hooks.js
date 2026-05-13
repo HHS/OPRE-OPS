@@ -132,7 +132,7 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
                     setAlert({
                         type: "success",
                         heading: "Pre-Award Requisition approved",
-                        message: `"${agreement?.name}" agreement has been successfully approved for Pre-Award Requisition.`,
+                        message: `"${agreement?.name}" agreement has been successfully approved for Pre-Award Requisition. The COR will be notified to upload the Final Consensus Memo to the HHS Consolidated Acquisition Solution (HCAS). The agreement will be locked from editing until after it's awarded.`,
                         redirectUrl: "/agreements?filter=change-requests"
                     });
                 } catch (error) {
