@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
 import ProjectDetail from "./ProjectDetail";
@@ -81,19 +81,22 @@ describe("ProjectDetail", () => {
         });
     });
 
-    const renderComponent = (id = "1000") =>
-        render(
+    const renderComponent = (id = "1000") => {
+        const router = createMemoryRouter(
+            [
+                {
+                    path: "/projects/:id",
+                    element: <ProjectDetail />
+                }
+            ],
+            { initialEntries: [`/projects/${id}`] }
+        );
+        return render(
             <Provider store={mockStore}>
-                <MemoryRouter initialEntries={[`/projects/${id}`]}>
-                    <Routes>
-                        <Route
-                            path="/projects/:id"
-                            element={<ProjectDetail />}
-                        />
-                    </Routes>
-                </MemoryRouter>
+                <RouterProvider router={router} />
             </Provider>
         );
+    };
 
     it("renders loading state when the project is loading", () => {
         mockUseGetProjectByIdQuery.mockReturnValue({
@@ -186,16 +189,18 @@ describe("ProjectDetail", () => {
         });
 
         // Render outside a :id route so useParams returns no id
+        const router = createMemoryRouter(
+            [
+                {
+                    path: "/projects",
+                    element: <ProjectDetail />
+                }
+            ],
+            { initialEntries: ["/projects"] }
+        );
         render(
             <Provider store={mockStore}>
-                <MemoryRouter initialEntries={["/projects"]}>
-                    <Routes>
-                        <Route
-                            path="/projects"
-                            element={<ProjectDetail />}
-                        />
-                    </Routes>
-                </MemoryRouter>
+                <RouterProvider router={router} />
             </Provider>
         );
 

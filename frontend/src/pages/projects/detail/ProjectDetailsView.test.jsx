@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi } from "vitest";
-import { MemoryRouter } from "react-router-dom";
+import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import ProjectDetailsView from "./ProjectDetailsView";
 
 vi.mock("react-router-dom", async () => {
@@ -49,17 +49,22 @@ const defaultToggleEditMode = vi.fn();
 const renderComponent = (
     project,
     { canEdit = false, isEditMode = false, toggleEditMode = defaultToggleEditMode } = {}
-) =>
-    render(
-        <MemoryRouter>
-            <ProjectDetailsView
-                project={project}
-                canEdit={canEdit}
-                isEditMode={isEditMode}
-                toggleEditMode={toggleEditMode}
-            />
-        </MemoryRouter>
-    );
+) => {
+    const router = createMemoryRouter([
+        {
+            path: "/",
+            element: (
+                <ProjectDetailsView
+                    project={project}
+                    canEdit={canEdit}
+                    isEditMode={isEditMode}
+                    toggleEditMode={toggleEditMode}
+                />
+            )
+        }
+    ]);
+    return render(<RouterProvider router={router} />);
+};
 
 describe("ProjectDetailsView", () => {
     it("renders a fallback message when project is null", () => {
