@@ -494,7 +494,7 @@ describe("CAN funding page", () => {
         // Tooltip should appear with the correct message
         cy.get(".usa-tooltip__body")
             .should("be.visible")
-            .and("contain", "Data from previous fiscal years cannot be edited.");
+            .and("contain", "Only data from the current fiscal year can be edited.");
         // Select current fiscal year
         cy.get("#fiscal-year-select").select(currentFiscalYear);
         // Edit button should be enabled
