@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 import ProjectDetailForm from "./ProjectDetailForm";
 import suite from "./suite";
@@ -30,17 +31,26 @@ vi.mock("../../../helpers/scrollToTop.helper", () => ({
 }));
 
 const renderComponent = (overrides = {}) => {
-    return render(
-        <ProjectDetailForm
-            projectId={mockProject.id}
-            projectTitle={mockProject.title}
-            projectShortTitle={mockProject.short_title}
-            projectDescription={mockProject.description}
-            projectType={mockProject.project_type}
-            toggleEditMode={mockToggleEditMode}
-            {...overrides}
-        />
+    const router = createMemoryRouter(
+        [
+            {
+                path: "/projects/:id",
+                element: (
+                    <ProjectDetailForm
+                        projectId={mockProject.id}
+                        projectTitle={mockProject.title}
+                        projectShortTitle={mockProject.short_title}
+                        projectDescription={mockProject.description}
+                        projectType={mockProject.project_type}
+                        toggleEditMode={mockToggleEditMode}
+                        {...overrides}
+                    />
+                )
+            }
+        ],
+        { initialEntries: ["/projects/1000"] }
     );
+    return render(<RouterProvider router={router} />);
 };
 
 describe("ProjectDetailForm", () => {

@@ -1,6 +1,7 @@
 import Input from "../../UI/Form/Input";
 import TextArea from "../../UI/Form/TextArea";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
+import SaveChangesAndExitModal from "../../UI/Modals/SaveChangesAndExitModal";
 import ProjectTypeSelect from "../ProjectTypeSelect/ProjectTypeSelect";
 import useProjectDetailForm from "./ProjectDetailForm.hooks";
 
@@ -44,7 +45,10 @@ const ProjectDetailForm = ({
         showModal,
         setShowModal,
         modalProps,
-        isSubmitting
+        isSubmitting,
+        showBlockerModal,
+        setShowBlockerModal,
+        blockerModalProps
     } = useProjectDetailForm(
         projectId,
         projectTitle,
@@ -63,6 +67,18 @@ const ProjectDetailForm = ({
                     actionButtonText={modalProps.actionButtonText}
                     secondaryButtonText={modalProps.secondaryButtonText}
                     handleConfirm={modalProps.handleConfirm}
+                />
+            )}
+            {showBlockerModal && (
+                <SaveChangesAndExitModal
+                    heading={blockerModalProps.heading}
+                    description={blockerModalProps.description}
+                    actionButtonText={blockerModalProps.actionButtonText}
+                    secondaryButtonText={blockerModalProps.secondaryButtonText}
+                    handleConfirm={blockerModalProps.handleConfirm}
+                    handleSecondary={blockerModalProps.handleSecondary}
+                    closeModal={blockerModalProps.closeModal}
+                    setShowModal={setShowBlockerModal}
                 />
             )}
             <ProjectTypeSelect

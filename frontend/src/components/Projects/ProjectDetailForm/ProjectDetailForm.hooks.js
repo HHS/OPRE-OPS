@@ -3,6 +3,7 @@ import classnames from "vest/classnames";
 import { useUpdateProjectMutation } from "../../../api/opsAPI";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import useAlert from "../../../hooks/use-alert.hooks";
+import useNavigationBlocker from "../../../hooks/useNavigationBlocker.hooks";
 import suite from "./suite.js";
 
 const DISPLAY_TO_API_TYPE = {
@@ -42,12 +43,49 @@ export default function useProjectDetailForm(
     const [updateProject, { isLoading: isSubmitting }] = useUpdateProjectMutation();
     const { setAlert } = useAlert();
 
+    const initialType = API_TO_DISPLAY_TYPE[projectType] ?? projectType;
+    const hasChanged =
+        title !== projectTitle ||
+        shortTitle !== projectShortTitle ||
+        description !== projectDescription ||
+        type !== initialType;
+
     let res = suite.get();
 
     const cn = classnames(suite.get(), {
         invalid: "usa-form-group--error",
         valid: "success",
         warning: "warning"
+    });
+
+    const saveChanges = React.useCallback(async () => {
+        const payload = {
+            title,
+            short_title: shortTitle,
+            description,
+            project_type: DISPLAY_TO_API_TYPE[type] ?? type
+        };
+
+        await updateProject({ id: projectId, data: payload }).unwrap();
+
+        setAlert({
+            type: "success",
+            heading: "Project Updated",
+            message: "The project has been successfully updated."
+        });
+    }, [projectId, title, shortTitle, description, type, updateProject, setAlert]);
+
+    const { showBlockerModal, setShowBlockerModal, blockerModalProps, setIsCancelling } = useNavigationBlocker({
+        hasChanged,
+        saveChanges,
+        onExit: toggleEditMode,
+        onSaveError: () => {
+            setAlert({
+                type: "error",
+                heading: "Error Updating Project",
+                message: "There was an error updating the project. Please try again."
+            });
+        }
     });
 
     const handleCancel = (e) => {
@@ -57,26 +95,17 @@ export default function useProjectDetailForm(
             heading: "Are you sure you want to cancel editing? Your changes will not be saved.",
             actionButtonText: "Cancel Edits",
             secondaryButtonText: "Continue Editing",
-            handleConfirm: () => cleanUp()
+            handleConfirm: () => {
+                setIsCancelling(true);
+                cleanUp();
+            }
         });
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const payload = {
-            title,
-            short_title: shortTitle,
-            description,
-            project_type: DISPLAY_TO_API_TYPE[type] ?? type
-        };
-
         try {
-            await updateProject({ id: projectId, data: payload }).unwrap();
-            setAlert({
-                type: "success",
-                heading: "Project Updated",
-                message: "The project has been successfully updated."
-            });
+            await saveChanges();
             cleanUp();
         } catch (err) {
             console.error("Error updating project:", err);
@@ -135,6 +164,9 @@ export default function useProjectDetailForm(
         setShowModal,
         showModal,
         modalProps,
-        isSubmitting
+        isSubmitting,
+        showBlockerModal,
+        setShowBlockerModal,
+        blockerModalProps
     };
 }
