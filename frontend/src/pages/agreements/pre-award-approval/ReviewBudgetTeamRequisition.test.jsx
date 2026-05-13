@@ -80,7 +80,14 @@ vi.mock("../../../components/UI/Form/Input", () => ({
 
 vi.mock("../../../components/UI/Modals/SaveChangesAndExitModal", () => ({
     default: (
-        /** @type {any} */ { heading, actionButtonText, secondaryButtonText, handleConfirm, handleSecondary, closeModal }
+        /** @type {any} */ {
+            heading,
+            actionButtonText,
+            secondaryButtonText,
+            handleConfirm,
+            handleSecondary,
+            closeModal
+        }
     ) => (
         <div data-testid="modal">
             <h2>{heading}</h2>
