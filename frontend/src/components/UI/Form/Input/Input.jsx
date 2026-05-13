@@ -14,6 +14,7 @@ import Tooltip from "../../USWDS/Tooltip";
  * @param {string} [props.value] - The value of the input field.(optional)
  * @param {string} [props.className] - Additional CSS classes to apply to the component (optional).
  * @param {boolean} [props.isRequired] - A flag to indicate if the input is required (optional).
+ * @param {boolean} [props.isRequiredNoShow] - A flag to indicate if the input is required but should not show the hint (optional).
  * @param {boolean} [props.isDisabled] - A flag to indicate if the input is disabled (optional).
  * @param {number} [props.maxLength] - The maximum number of characters allow (optional).
  * @param {string} [props.tooltipMsg] - Tooltip message
@@ -29,6 +30,7 @@ const Input = ({
     className,
     maxLength,
     isRequired = false,
+    isRequiredNoShow = false,
     isDisabled = false,
     tooltipMsg = ""
 }) => {
@@ -51,7 +53,10 @@ const Input = ({
                     {messages[0]}
                 </span>
             ) : (
-                <IsRequiredHelper isRequired={isRequired} />
+                <IsRequiredHelper
+                    isRequired={isRequired}
+                    isRequiredNoShow={isRequiredNoShow}
+                />
             )}
             {isDisabled ? (
                 <Tooltip
@@ -73,7 +78,7 @@ const Input = ({
                 <input
                     id={name}
                     name={name}
-                    className={`usa-input ${messages.length ? "usa-input--error" : ""} `}
+                    className={`usa-input width-mobile-lg ${messages.length ? "usa-input--error" : ""} `}
                     onChange={handleChange}
                     autoComplete="off"
                     autoCorrect="off"

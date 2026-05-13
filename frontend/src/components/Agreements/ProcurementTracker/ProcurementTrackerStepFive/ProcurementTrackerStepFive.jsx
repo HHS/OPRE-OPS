@@ -224,7 +224,21 @@ const ProcurementTrackerStepFive = ({
                                 >
                                     Request Pre-Award Approval
                                 </button>
-                                {stepFiveData?.approval_requested && !isRequisitionApproved && (
+                                {isApprovalDeclined && (
+                                    <div
+                                        className="usa-alert usa-alert--error usa-alert--slim margin-top-2"
+                                        role="alert"
+                                    >
+                                        <div className="usa-alert__body">
+                                            <p className="usa-alert__text">
+                                                This agreement has been declined for Pre-Award. Please do not upload the
+                                                Final Consensus Memo to the HHS Consolidated Acquisition Solution (HCAS)
+                                                until changes have been made and re-submitted for approval above.
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+                                {stepFiveData?.approval_requested && !isRequisitionApproved && !isApprovalDeclined && (
                                     <div
                                         className="usa-alert usa-alert--warning usa-alert--slim margin-top-2"
                                         role="status"

@@ -62,7 +62,7 @@ export const AgreementDetailHeader = ({
                     <Tooltip label="This agreement is In Review for Pre-Award Approval. Edits or changes cannot be made at this time.">
                         <span
                             id="edit-disabled"
-                            className="usa-button--unstyled usa-button--disabled"
+                            className="usa-button--unstyled usa-button--disabled display-flex flex-align-center"
                             aria-disabled="true"
                             data-cy="edit-disabled"
                             tabIndex={0}
@@ -70,7 +70,6 @@ export const AgreementDetailHeader = ({
                         >
                             <FontAwesomeIcon
                                 icon={faPen}
-                                size="2x"
                                 className="height-2 width-2 margin-right-1"
                                 aria-hidden="true"
                             />

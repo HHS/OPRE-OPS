@@ -221,13 +221,17 @@ const Agreement = () => {
     const showReviewAlert = (doesAgreementHaveBlIsInReview || agreement?.in_review) && isAlertVisible;
     const showNonContractAlert = isAgreementNotDeveloped && isTempUiAlertVisible;
 
-    // Check if pre-award approval is in review (approval_requested but not yet approved/declined)
+    // Check if pre-award approval is in review (approval_requested but not yet fully approved)
+    // Keep agreement locked through DD approval until Budget Team approves requisition
     const trackers = procurementTrackers?.data || [];
     const activeTracker = trackers.find((tracker) => tracker.status === "ACTIVE");
     const preAwardStep = activeTracker?.steps?.find((step) => step.step_type === "PRE_AWARD");
     const preAwardApprovalStatus = preAwardStep?.approval_status;
     const isPreAwardInReview =
-        preAwardStep?.approval_requested && (preAwardApprovalStatus == null || preAwardApprovalStatus === "PENDING");
+        preAwardStep?.approval_requested &&
+        (preAwardApprovalStatus == null ||
+            preAwardApprovalStatus === "PENDING" ||
+            (preAwardApprovalStatus === "APPROVED" && !preAwardStep?.requisition_approved_by));
 
     const isAgreementAwarded = agreement?.is_awarded;
     return (

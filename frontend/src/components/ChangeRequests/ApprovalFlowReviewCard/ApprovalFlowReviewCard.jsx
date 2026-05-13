@@ -36,6 +36,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
  * @param {string} props.navigationPath - Relative path to append to /agreements/{id}/
  * @param {string} props.dataCyPrefix - Prefix for data-cy and data-testid attributes
  * @param {string} props.buttonText - Button label text
+ * @param {string} [props.requestorNotes] - Optional notes from the requestor
  * @param {boolean} [props.isCondensed=false] - Whether the card is condensed
  * @param {boolean} [props.forceHover=false] - Whether to force hover state
  * @returns {JSX.Element} - The rendered component
@@ -52,6 +53,7 @@ function ApprovalFlowReviewCard({
     navigationPath,
     dataCyPrefix,
     buttonText,
+    requestorNotes,
     isCondensed = false,
     forceHover = false
 }) {
@@ -132,6 +134,14 @@ function ApprovalFlowReviewCard({
                     </dd>
                 </dl>
             </section>
+            {requestorNotes && (
+                <section className="margin-top-2">
+                    <dl className="font-12px">
+                        <dt className="text-base-dark margin-bottom-05">Notes</dt>
+                        <dd className="margin-0 text-pre-wrap">{requestorNotes}</dd>
+                    </dl>
+                </section>
+            )}
             <footer className="font-12px display-flex flex-justify flex-align-center">
                 <div className="text-base-dark display-flex flex-align-center">
                     <FontAwesomeIcon
@@ -174,6 +184,7 @@ ApprovalFlowReviewCard.propTypes = {
     navigationPath: PropTypes.string.isRequired,
     dataCyPrefix: PropTypes.string.isRequired,
     buttonText: PropTypes.string.isRequired,
+    requestorNotes: PropTypes.string,
     isCondensed: PropTypes.bool,
     forceHover: PropTypes.bool
 };

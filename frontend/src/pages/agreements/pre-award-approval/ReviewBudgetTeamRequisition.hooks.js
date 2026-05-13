@@ -81,9 +81,7 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
     const reviewerNotes = step5?.reviewer_notes || "";
 
     // Check if already processed
-    const approvalAlreadyProcessed = Boolean(
-        step5?.requisition_approved_by !== null && step5?.requisition_approved_by !== undefined
-    );
+    const approvalAlreadyProcessed = step5?.requisition_approved_by != null;
 
     // Permission check: BUDGET_TEAM or SYSTEM_OWNER
     const hasPermission = useMemo(() => {

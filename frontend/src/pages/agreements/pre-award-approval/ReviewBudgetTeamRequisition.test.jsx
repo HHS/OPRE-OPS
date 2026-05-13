@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { ReviewBudgetTeamRequisition } from "./ReviewBudgetTeamRequisition";
@@ -60,18 +60,20 @@ vi.mock("../../../components/UI/Accordion", () => ({
     )
 }));
 
-vi.mock("../../../components/UI/Form/Input", () => ({
-    default: (/** @type {any} */ { name, label, value, onChange, isDisabled, isRequired }) => (
-        <div data-testid={`input-${name}`}>
-            <label htmlFor={name}>
+vi.mock("../../../components/UI/USWDS/DatePicker", () => ({
+    default: (/** @type {any} */ { id, name, label, value, onChange, isDisabled, isRequired, hint }) => (
+        <div data-testid={`date-picker-${name}`}>
+            <label htmlFor={id}>
                 {label}
                 {isRequired && " *"}
             </label>
+            {hint && <div className="usa-hint">{hint}</div>}
             <input
-                id={name}
+                id={id}
                 name={name}
+                type="text"
                 value={value}
-                onChange={(e) => onChange(name, e.target.value)}
+                onChange={onChange}
                 disabled={isDisabled}
             />
         </div>
@@ -200,7 +202,7 @@ describe("ReviewBudgetTeamRequisition", () => {
             render(<ReviewBudgetTeamRequisition />);
 
             expect(screen.getByText("Pre-Award Requisition")).toBeInTheDocument();
-            expect(screen.getByTestId("input-requisition-number")).toBeInTheDocument();
+            expect(screen.getByLabelText("Requisition #")).toBeInTheDocument();
         });
     });
 
@@ -225,8 +227,7 @@ describe("ReviewBudgetTeamRequisition", () => {
 
             render(<ReviewBudgetTeamRequisition />);
 
-            const requisitionContainer = screen.getByTestId("input-requisition-number");
-            const requisitionInput = within(requisitionContainer).getByRole("textbox");
+            const requisitionInput = screen.getByLabelText("Requisition #");
             const dateInput = screen.getByLabelText("Requisition Date");
             const attestationCheckbox = screen.getByRole("checkbox");
 
@@ -264,7 +265,7 @@ describe("ReviewBudgetTeamRequisition", () => {
         it("should render requisition form fields", () => {
             render(<ReviewBudgetTeamRequisition />);
 
-            expect(screen.getByTestId("input-requisition-number")).toBeInTheDocument();
+            expect(screen.getByLabelText("Requisition #")).toBeInTheDocument();
             expect(screen.getByLabelText("Requisition Date")).toBeInTheDocument();
         });
 
@@ -320,8 +321,7 @@ describe("ReviewBudgetTeamRequisition", () => {
 
             render(<ReviewBudgetTeamRequisition />);
 
-            const container = screen.getByTestId("input-requisition-number");
-            const input = within(container).getByRole("textbox");
+            const input = screen.getByLabelText("Requisition #");
             await user.type(input, "REQ-12345");
 
             expect(mockSetRequisitionNumber).toHaveBeenCalled();

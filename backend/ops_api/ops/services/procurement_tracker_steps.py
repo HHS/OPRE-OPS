@@ -558,8 +558,9 @@ class ProcurementTrackerStepService:
 
         if step.pre_award_approval_requested_by:
             message = (
-                f"Your pre-award approval request for Agreement {agreement.display_name} "
-                f"has been declined by {current_user.full_name}."
+                "This agreement has been declined for Pre-Award. "
+                "Please do not upload the Final Consensus Memo to the HHS Consolidated Acquisition Solution (HCAS) "
+                "until changes have been made and re-submitted for approval."
             )
             if step.pre_award_approval_reviewer_notes and step.pre_award_approval_reviewer_notes.strip():
                 reviewer_notes_text = step.pre_award_approval_reviewer_notes.strip()
