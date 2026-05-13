@@ -21,6 +21,7 @@ import {
     findPeriodEnd,
     findPeriodStart
 } from "../../../helpers/servicesComponent.helpers";
+import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { actionOptions } from "./ReviewAgreement.constants";
 import useReviewAgreement from "./ReviewAgreement.hooks";
@@ -90,6 +91,12 @@ export const ReviewAgreement = () => {
             }
         }
     }, [isLoadingAgreement, errorAgreement, agreement, canUserEditAgreement, navigate]);
+
+    React.useEffect(() => {
+        if (isAlertActive && Object.entries(pageErrors).length > 0) {
+            scrollToTop();
+        }
+    }, [isAlertActive, pageErrors]);
 
     if (isLoadingAgreement) {
         return (
