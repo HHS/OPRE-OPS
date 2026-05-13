@@ -224,17 +224,14 @@ const ProcurementTrackerStepFive = ({
                                 >
                                     Request Pre-Award Approval
                                 </button>
-                                {isAwaitingBudgetTeam && (
+                                {stepFiveData?.approval_requested && !isRequisitionApproved && (
                                     <div
-                                        className="usa-alert usa-alert--info usa-alert--slim margin-top-2"
+                                        className="usa-alert usa-alert--warning usa-alert--slim margin-top-2"
                                         role="status"
                                     >
                                         <div className="usa-alert__body">
                                             <p className="usa-alert__text">
-                                                Your Pre-Award Approval request has been approved by your Division
-                                                Director. The Budget Team is now reviewing and will enter the
-                                                requisition information. You will be notified when the Budget Team
-                                                completes their review, after which you can complete this step.
+                                                This agreement is In Review for Pre-Award Approval. Edits or changes cannot be made at this time.
                                             </p>
                                         </div>
                                     </div>

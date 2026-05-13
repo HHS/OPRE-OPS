@@ -243,7 +243,7 @@ const Agreement = () => {
                 <SimpleAlert
                     type="success"
                     heading="Agreement Sent to Pre-Award Approval"
-                    message="This agreement has been successfully sent to your Division Director to review. After it's approved, you can send the Final Consensus Memo and continue your progress in the Procurement Tracker."
+                    message="This agreement has been successfully sent to your Division Director to review. After it's approved, the Budget Team will submit the requisition, and then you can upload the Final Consensus Memo to the HHS Consolidated Acquisition Solution (HCAS)."
                     isClosable={true}
                     setIsAlertVisible={setShowPreAwardSuccessAlert}
                     headingLevel={2}
@@ -254,7 +254,7 @@ const Agreement = () => {
                     type="warning"
                     heading="Pre-Award Approval In Review"
                     isClosable={true}
-                    message="This agreement is In Review for Pre-Award Approval. Edits or changes cannot be made at this time."
+                    message="This agreement is In Review for Pre-Award Approval. This includes an approval from the Division Director, as well as a requisition from the Budget Team. Edits or changes cannot be made at this time."
                     setIsAlertVisible={setIsPreAwardInReviewAlertVisible}
                 />
             )}
@@ -266,6 +266,22 @@ const Agreement = () => {
                     message="Agreements that are grants, other partner agreements (IAAs, IPAs, IDDAs), or direct obligations have not been developed yet, but are coming soon. You can view the budget lines for this agreement, but they are not currently editable. Some data or information might be missing from this view, but will be added as we work to develop this page. In order to update something on this agreement, please contact the Budget Team. If you want to be involved in the design for these pages, please let us know by submitting a Budget Support Request through ORBIT. Thank you for your patience."
                     setIsAlertVisible={setIsTempUiAlertVisible}
                 />
+            )}
+            {user_agreement_notifications?.length > 0 && (
+                <>
+                    <AgreementChangesResponseAlert
+                        changeRequestNotifications={user_agreement_notifications}
+                        isApproveAlertVisible={isApproveAlertVisible}
+                        isDeclineAlertVisible={isDeclinedAlertVisible}
+                        setIsApproveAlertVisible={setIsApproveAlertVisible}
+                        setIsDeclineAlertVisible={setIsDeclinedAlertVisible}
+                        budgetLines={agreement?.budget_line_items ?? []}
+                    />
+                    <PreAwardApprovalAlert
+                        notifications={user_agreement_notifications}
+                        isVisible={isPreAwardAlertVisible}
+                    />
+                </>
             )}
             {isAgreementAwarded && agreement?.agreement_type !== AgreementType.DIRECT_OBLIGATION && (
                 <Tag
@@ -286,23 +302,6 @@ const Agreement = () => {
             <h2 className={`font-sans-3xs text-normal margin-top-1 margin-bottom-2`}>
                 {`${agreement?.project?.title ?? ""}${agreement?.project?.short_title ? ` (${agreement.project.short_title})` : ""}`}
             </h2>
-
-            {user_agreement_notifications?.length > 0 && (
-                <>
-                    <AgreementChangesResponseAlert
-                        changeRequestNotifications={user_agreement_notifications}
-                        isApproveAlertVisible={isApproveAlertVisible}
-                        isDeclineAlertVisible={isDeclinedAlertVisible}
-                        setIsApproveAlertVisible={setIsApproveAlertVisible}
-                        setIsDeclineAlertVisible={setIsDeclinedAlertVisible}
-                        budgetLines={agreement?.budget_line_items ?? []}
-                    />
-                    <PreAwardApprovalAlert
-                        notifications={user_agreement_notifications}
-                        isVisible={isPreAwardAlertVisible}
-                    />
-                </>
-            )}
 
             <div>
                 <section className="display-flex flex-justify margin-top-3">
