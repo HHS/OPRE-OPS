@@ -231,7 +231,8 @@ const ProcurementTrackerStepFive = ({
                                     >
                                         <div className="usa-alert__body">
                                             <p className="usa-alert__text">
-                                                This agreement is In Review for Pre-Award Approval. Edits or changes cannot be made at this time.
+                                                This agreement is In Review for Pre-Award Approval. Edits or changes
+                                                cannot be made at this time.
                                             </p>
                                         </div>
                                     </div>

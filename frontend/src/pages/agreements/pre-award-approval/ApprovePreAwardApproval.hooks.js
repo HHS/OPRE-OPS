@@ -141,9 +141,7 @@ export default function useApprovePreAwardApproval(agreementId) {
                     setAlert({
                         type: action === "APPROVED" ? "success" : "error",
                         heading:
-                            action === "APPROVED"
-                                ? "Pre-Award Approved & Requisition Started"
-                                : "Pre-Award Declined",
+                            action === "APPROVED" ? "Pre-Award Approved & Requisition Started" : "Pre-Award Declined",
                         message:
                             action === "APPROVED"
                                 ? `The "${agreement.display_name}" agreement has been successfully approved for Pre-Award. Next, the Budget Team will submit the requisition and then the COR will be notified to upload the Final Consensus Memo to the HHS Consolidated Acquisition Solution (HCAS). The agreement will be locked from editing until after it's awarded.${
