@@ -172,15 +172,16 @@ export const ReviewBudgetTeamRequisition = () => {
                             <button
                                 type="button"
                                 className="usa-button--unstyled"
-                                style={{ padding: "0.5rem", cursor: "pointer" }}
-                                title="Download document"
-                                aria-label={`Download ${doc.document_name}`}
+                                style={{ padding: "0.5rem", cursor: "not-allowed", opacity: 0.5 }}
+                                title="Download not yet available"
+                                aria-label={`Download ${doc.document_name} (not yet available)`}
+                                disabled
                             >
                                 <svg
                                     className="usa-icon"
                                     aria-hidden="true"
                                     focusable="false"
-                                    style={{ fill: "#005ea2", width: "24px", height: "24px" }}
+                                    style={{ fill: "#757575", width: "24px", height: "24px" }}
                                 >
                                     <use href={`${icons}#file_download`}></use>
                                 </svg>
