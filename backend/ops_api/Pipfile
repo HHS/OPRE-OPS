@@ -25,6 +25,7 @@ requests = "==2.33.1"
 sqlalchemy = "==2.0.49"
 sqlalchemy-continuum = "==1.6.0"
 deepdiff = "==9.0.0"
+urllib3 = "==2.7.0"
 
 [dev-packages]
 black = {extras = ["d"], version = "==26.3.1"}
