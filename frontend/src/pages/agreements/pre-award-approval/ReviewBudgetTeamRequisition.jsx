@@ -210,28 +210,24 @@ export const ReviewBudgetTeamRequisition = () => {
                 <p>Complete the requisition outside of OPS and then enter the requisition information below.</p>
 
                 <div className="grid-row grid-gap margin-top-3">
-                    <div style={{ width: "calc(29.167% - 1rem + 16px)" }}>
-                        <fieldset
-                            className="usa-fieldset margin-top-3"
-                            disabled={isSubmitting || approvalAlreadyProcessed}
+                    <div className="grid-col-4 margin-top-3">
+                        <label
+                            className="usa-label margin-top-3"
+                            htmlFor="requisition-number"
                         >
-                            <label
-                                className="usa-label"
-                                htmlFor="requisition-number"
-                            >
-                                Requisition #
-                            </label>
-                            <div style={{ display: "flex" }}>
-                                <input
-                                    id="requisition-number"
-                                    name="requisition-number"
-                                    className="usa-input"
-                                    value={requisitionNumber}
-                                    onChange={(e) => setRequisitionNumber(e.target.value)}
-                                    maxLength={100}
-                                />
-                            </div>
-                        </fieldset>
+                            Requisition #
+                        </label>
+                        <input
+                            id="requisition-number"
+                            name="requisition-number"
+                            className="usa-input"
+                            value={requisitionNumber}
+                            onChange={(e) => setRequisitionNumber(e.target.value)}
+                            maxLength={100}
+                            disabled={isSubmitting || approvalAlreadyProcessed}
+                            required
+                            aria-required="true"
+                        />
                     </div>
 
                     <div className="grid-col-4">
@@ -242,8 +238,6 @@ export const ReviewBudgetTeamRequisition = () => {
                             hint="mm/dd/yyyy"
                             value={requisitionDate}
                             onChange={/** @param {any} e */ (e) => setRequisitionDate(e.target.value)}
-                            isRequired={true}
-                            isRequiredNoShow={true}
                             isDisabled={isSubmitting || approvalAlreadyProcessed}
                             maxDate={getLocalISODate()}
                             messages={[]}

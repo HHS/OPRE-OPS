@@ -445,11 +445,15 @@ export const statusToClassName = (status, styleType = "text") => {
 };
 
 export const formatDateForApi = (date) => {
-    if (date) {
-        const [month, day, year] = date.split("/");
-        return `${year}-${month}-${day}`;
-    }
-    return null;
+    if (!date) return null;
+
+    const parts = date.split("/");
+    if (parts.length !== 3) return null;
+
+    const [month, day, year] = parts;
+    if (!month || !day || !year) return null;
+
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
 };
 
 export const formatDateForScreen = (date) => {
