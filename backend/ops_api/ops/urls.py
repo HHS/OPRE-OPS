@@ -3,7 +3,6 @@ from flask import Blueprint
 from ops_api.ops.views import (
     AGREEMENT_AGENCY_ITEM_API_VIEW_FUNC,
     AGREEMENT_AGENCY_LIST_API_VIEW_FUNC,
-    AGREEMENT_CHECK_UNIQUE_API_VIEW_FUNC,
     AGREEMENT_HISTORY_LIST_API_VIEW_FUNC,
     AGREEMENT_ITEM_API_VIEW_FUNC,
     AGREEMENT_LIST_API_VIEW_FUNC,
@@ -283,10 +282,6 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/agreements-filters/",
         view_func=AGREEMENT_LIST_FILTER_OPTION_API_VIEW_FUNC,
-    )
-    api_bp.add_url_rule(
-        "/agreements/check-unique",
-        view_func=AGREEMENT_CHECK_UNIQUE_API_VIEW_FUNC,
     )
 
     api_bp.add_url_rule(

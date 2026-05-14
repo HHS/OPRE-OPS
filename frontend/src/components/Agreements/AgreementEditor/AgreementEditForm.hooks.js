@@ -6,7 +6,7 @@ import {
     useDeleteAgreementMutation,
     useGetProjectsQuery,
     useGetProductServiceCodesQuery,
-    useLazyCheckAgreementUniqueQuery,
+    useLazyGetAgreementsQuery,
     useUpdateAgreementMutation
 } from "../../../api/opsAPI";
 import { calculateAgreementTotal, cleanAgreementForApi, formatTeamMember } from "../../../helpers/agreement.helpers.js";
@@ -96,7 +96,7 @@ const useAgreementEditForm = (
 
     const [updateAgreement] = useUpdateAgreementMutation();
     const [deleteAgreement] = useDeleteAgreementMutation();
-    const [triggerCheckUnique] = useLazyCheckAgreementUniqueQuery();
+    const [triggerGetAgreements] = useLazyGetAgreementsQuery();
 
     const [uniquenessErrors, setUniquenessErrors] = React.useState({ name: [], nick_name: [] });
 
@@ -227,19 +227,23 @@ const useAgreementEditForm = (
                 return;
             }
             try {
-                const args = { field, value: trimmed };
-                if (field === "name") args.agreement_type = agreementType;
-                if (agreement?.id != null) args.exclude_id = agreement.id;
-                const result = await triggerCheckUnique(args).unwrap();
+                const filters =
+                    field === "name"
+                        ? { agreementName: [{ name: trimmed }], agreementType: [{ type: agreementType }] }
+                        : { nickName: [trimmed] };
+                const result = await triggerGetAgreements({ filters, page: 0, limit: 1 }).unwrap();
+                const matches = result?.agreements ?? [];
+                const excludeId = agreement?.id ?? null;
+                const conflict = matches.some((match) => match.id !== excludeId);
                 setUniquenessErrors((prev) => ({
                     ...prev,
-                    [field]: result?.unique === false ? [UNIQUE_ERROR_MESSAGES[field]] : []
+                    [field]: conflict ? [UNIQUE_ERROR_MESSAGES[field]] : []
                 }));
             } catch {
                 setUniquenessErrors((prev) => (prev[field].length === 0 ? prev : { ...prev, [field]: [] }));
             }
         },
-        [agreement?.id, agreementType, triggerCheckUnique]
+        [agreement?.id, agreementType, triggerGetAgreements]
     );
 
     const debouncedCheckUnique = React.useMemo(

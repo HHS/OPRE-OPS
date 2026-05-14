@@ -35,7 +35,6 @@ from ops_api.ops.resources.agreement_agency import (
 from ops_api.ops.resources.agreement_history import AgreementHistoryListAPI
 from ops_api.ops.resources.agreement_spending import AgreementSpendingItemAPI
 from ops_api.ops.resources.agreements import (
-    AgreementCheckUniqueAPI,
     AgreementItemAPI,
     AgreementListAPI,
     AgreementListFilterOptionAPI,
@@ -140,9 +139,6 @@ AGREEMENT_HISTORY_LIST_API_VIEW_FUNC = AgreementHistoryListAPI.as_view("agreemen
 
 # AGREEMENT FILTER OPTIONS ENDPOINT
 AGREEMENT_LIST_FILTER_OPTION_API_VIEW_FUNC = AgreementListFilterOptionAPI.as_view("agreements-filters", Agreement)
-
-# AGREEMENT CHECK-UNIQUE ENDPOINT
-AGREEMENT_CHECK_UNIQUE_API_VIEW_FUNC = AgreementCheckUniqueAPI.as_view("agreements-check-unique")
 
 # AGREEMENT AGENCY ENDPOINTS
 AGREEMENT_AGENCY_ITEM_API_VIEW_FUNC = AgreementAgencyItemAPI.as_view("agreement-agency-item", AgreementAgency)

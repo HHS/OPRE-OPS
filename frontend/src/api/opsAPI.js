@@ -94,6 +94,7 @@ export const opsApi = createApi({
                     budgetLineStatus,
                     portfolio,
                     agreementName,
+                    nickName,
                     agreementType,
                     projectTitle,
                     contractNumber,
@@ -124,6 +125,9 @@ export const opsApi = createApi({
                             queryParams.push(`name=${encodeURIComponent(agreementDisplayName)}`);
                         }
                     });
+                }
+                if (nickName) {
+                    nickName.forEach((value) => queryParams.push(`nick_name=${encodeURIComponent(value)}`));
                 }
                 if (agreementType) {
                     agreementType.forEach((type) =>
@@ -201,14 +205,6 @@ export const opsApi = createApi({
                 };
             },
             providesTags: ["Agreements", "BudgetLineItems"]
-        }),
-        checkAgreementUnique: builder.query({
-            query: ({ field, value, agreement_type, exclude_id }) => {
-                const params = new URLSearchParams({ field, value });
-                if (agreement_type) params.append("agreement_type", agreement_type);
-                if (exclude_id != null) params.append("exclude_id", String(exclude_id));
-                return `/agreements/check-unique?${params.toString()}`;
-            }
         }),
         getAgreementById: builder.query({
             query: (arg) => {
@@ -1220,7 +1216,6 @@ export const {
     useGetAgreementByIdQuery,
     useLazyGetAgreementByIdQuery,
     useLazyGetAgreementsQuery,
-    useLazyCheckAgreementUniqueQuery,
     useAddAgreementMutation,
     useUpdateAgreementMutation,
     useDeleteAgreementMutation,
