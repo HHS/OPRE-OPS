@@ -212,7 +212,7 @@ export const ReviewBudgetTeamRequisition = () => {
                 <div className="grid-row grid-gap margin-top-3">
                     <div className="grid-col-4">
                         <fieldset
-                            className="usa-fieldset"
+                            className="usa-fieldset margin-top-3"
                             disabled={isSubmitting || approvalAlreadyProcessed}
                         >
                             <label
@@ -221,13 +221,6 @@ export const ReviewBudgetTeamRequisition = () => {
                             >
                                 Requisition #
                             </label>
-                            <div
-                                className="usa-hint"
-                                style={{ visibility: "hidden" }}
-                                aria-hidden="true"
-                            >
-                                &nbsp;
-                            </div>
                             <input
                                 id="requisition-number"
                                 name="requisition-number"
@@ -246,9 +239,7 @@ export const ReviewBudgetTeamRequisition = () => {
                             label="Requisition Date"
                             hint="mm/dd/yyyy"
                             value={requisitionDate}
-                            onChange={
-                                /** @param {any} e */ (e) => setRequisitionDate(e.target.value)
-                            }
+                            onChange={/** @param {any} e */ (e) => setRequisitionDate(e.target.value)}
                             isRequired={true}
                             isRequiredNoShow={true}
                             isDisabled={isSubmitting || approvalAlreadyProcessed}
