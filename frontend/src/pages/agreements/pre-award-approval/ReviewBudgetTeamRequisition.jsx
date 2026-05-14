@@ -211,7 +211,7 @@ export const ReviewBudgetTeamRequisition = () => {
                 <p>Complete the requisition outside of OPS and then enter the requisition information below.</p>
 
                 <div className="grid-row grid-gap margin-top-3">
-                    <div className="grid-col-6">
+                    <div className="grid-col-4">
                         <Input
                             name="requisition-number"
                             label="Requisition #"
@@ -225,7 +225,7 @@ export const ReviewBudgetTeamRequisition = () => {
                         />
                     </div>
 
-                    <div className="grid-col-6">
+                    <div className="grid-col-4">
                         <MemoizedDatePicker
                             id="requisition-date"
                             name="requisitionDate"

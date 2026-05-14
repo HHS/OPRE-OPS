@@ -66,7 +66,7 @@ const Input = ({
                     <input
                         id={name}
                         name={name}
-                        className="usa-input width-mobile-lg"
+                        className="usa-input"
                         autoComplete="off"
                         autoCorrect="off"
                         value={value}
@@ -78,7 +78,7 @@ const Input = ({
                 <input
                     id={name}
                     name={name}
-                    className={`usa-input width-mobile-lg ${messages.length ? "usa-input--error" : ""} `}
+                    className={`usa-input ${messages.length ? "usa-input--error" : ""} `}
                     onChange={handleChange}
                     autoComplete="off"
                     autoCorrect="off"
