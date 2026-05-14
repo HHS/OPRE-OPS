@@ -243,7 +243,9 @@ class TestNotificationFlowFix:
         # Verify notification content
         for notification in budget_team_notifications:
             assert notification.title == "Budget Team Requisition Review Required"
-            assert "Budget Team review and requisition entry is now required" in notification.message
+            # Updated message includes both approver and requester names
+            assert "approved the agreement for pre-award as requested by" in notification.message
+            assert "ready for the Budget Team to submit the requisition" in notification.message
             assert notification.procurement_tracker_step_id == test_pre_award_step.id
 
     def test_dd_decline_still_notifies_requester(self, auth_client, test_pre_award_step, loaded_db):
@@ -353,8 +355,8 @@ class TestNotificationFlowFix:
 
         # Verify notification content
         assert notification.title == "Pre-Award Requisition Approved"
-        assert "approved the Pre-Award Requisition" in notification.message
-        assert "Final Consensus Memo can now be sent" in notification.message
+        assert "This agreement has been approved for Pre-Award" in notification.message
+        assert "send the Final Consensus Memo to the Procurement Shop" in notification.message
         assert notification.procurement_tracker_step_id == test_pre_award_step.id
 
     def test_budget_team_approval_auto_dismisses_review_notifications(

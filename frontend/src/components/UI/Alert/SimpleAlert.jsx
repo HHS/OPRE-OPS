@@ -1,6 +1,8 @@
 import React from "react";
 import { faClose } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import ReactMarkdown from "react-markdown";
+import MarkdownLink from "../Markdown/MarkdownLink";
 
 /**
     @typedef {Object} SimpleAlertProps
@@ -78,12 +80,18 @@ const SimpleAlert = ({
             >
                 <div>
                     {heading && React.createElement(headingTag, { className: "usa-alert__heading" }, heading)}
-                    <p
+                    <div
                         className="usa-alert__text"
                         style={{ whiteSpace: "pre-wrap" }}
                     >
-                        {message}
-                    </p>
+                        <ReactMarkdown
+                            components={{
+                                a: MarkdownLink
+                            }}
+                        >
+                            {message}
+                        </ReactMarkdown>
+                    </div>
                     {children}
                 </div>
                 {isClosable && (

@@ -16,9 +16,12 @@ const AgreementTabs = () => {
     const { search } = useLocation();
     const changeRequestsTotal = useChangeRequestTotal();
     const userRoles = useSelector((state) => state.auth?.activeUser?.roles) ?? [];
-    // Only display the "For Review" tab if the user has the REVIEWER_APPROVER or SUPER_USER role
+    // Only display the "For Review" tab if the user has the REVIEWER_APPROVER, SUPER_USER, or BUDGET_TEAM role
     const displayReviewTab = userRoles.some(
-        (role) => role?.name === USER_ROLES.REVIEWER_APPROVER || role?.name === USER_ROLES.SUPER_USER
+        (role) =>
+            role?.name === USER_ROLES.REVIEWER_APPROVER ||
+            role?.name === USER_ROLES.SUPER_USER ||
+            role?.name === USER_ROLES.BUDGET_TEAM
     );
 
     const paths = [

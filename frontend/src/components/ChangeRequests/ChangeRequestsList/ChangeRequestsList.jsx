@@ -112,6 +112,14 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
                     agreementId={step.procurement_tracker?.agreement?.id}
                     requestorId={step.approval_requested_by}
                     requestDate={step.approval_requested_date}
+                    executingBliCount={calculateExecutingBliCount(
+                        step.procurement_tracker?.agreement?.budget_line_items ?? []
+                    )}
+                    executingTotal={calculateExecutingTotal(
+                        step.procurement_tracker?.agreement?.budget_line_items ?? []
+                    )}
+                    obligateByDate={getObligateByDate(step.procurement_tracker?.agreement?.budget_line_items ?? [])}
+                    agreementTotal={step.procurement_tracker?.agreement?.agreement_total ?? 0}
                     requestorNotes={step.requestor_notes}
                 />
             ))}
