@@ -216,13 +216,23 @@ export const ReviewBudgetTeamRequisition = () => {
                             name="requisition-number"
                             label="Requisition #"
                             value={requisitionNumber}
-                            onChange={(name, value) => setRequisitionNumber(value)}
+                            onChange={
+                                /** @param {string} _ @param {string} value */ (_, value) =>
+                                    setRequisitionNumber(value)
+                            }
                             isDisabled={isSubmitting || approvalAlreadyProcessed}
                             messages={[]}
                             isRequired={true}
                             isRequiredNoShow={true}
                             maxLength={100}
                         />
+                        <div
+                            className="usa-hint"
+                            style={{ visibility: "hidden", marginTop: "-1rem" }}
+                            aria-hidden="true"
+                        >
+                            &nbsp;
+                        </div>
                     </div>
 
                     <div className="grid-col-4">
