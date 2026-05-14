@@ -221,14 +221,20 @@ export const ReviewBudgetTeamRequisition = () => {
                             >
                                 Requisition #
                             </label>
-                            <input
-                                id="requisition-number"
-                                name="requisition-number"
-                                className="usa-input"
-                                value={requisitionNumber}
-                                onChange={(e) => setRequisitionNumber(e.target.value)}
-                                maxLength={100}
-                            />
+                            <div style={{ display: "flex" }}>
+                                <input
+                                    id="requisition-number"
+                                    name="requisition-number"
+                                    className="usa-input"
+                                    value={requisitionNumber}
+                                    onChange={(e) => setRequisitionNumber(e.target.value)}
+                                    maxLength={100}
+                                />
+                                <div
+                                    style={{ width: "3em", marginLeft: "0.5rem" }}
+                                    aria-hidden="true"
+                                />
+                            </div>
                         </fieldset>
                     </div>
 
