@@ -196,7 +196,7 @@ const AgreementEditForm = ({
                 label="Agreement Title"
                 messages={[...res.getErrors("name"), ...uniquenessErrors.name]}
                 maxLength={200}
-                className={cn("name")}
+                className={`${cn("name")} ${uniquenessErrors.name.length > 0 ? "usa-form-group usa-form-group--error" : ""}`}
                 isRequired={true}
                 value={agreementTitle}
                 onChange={(name, value) => {
@@ -212,6 +212,7 @@ const AgreementEditForm = ({
                 label="Agreement Nickname or Acronym"
                 maxLength={40}
                 messages={uniquenessErrors.nick_name}
+                className={uniquenessErrors.nick_name.length > 0 ? "usa-form-group usa-form-group--error" : ""}
                 value={agreementNickName || ""}
                 onChange={(_, value) => setAgreementNickName(value)}
                 onBlur={(_, value) => checkUniqueOnBlur("nick_name", value)}
