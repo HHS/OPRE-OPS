@@ -9,7 +9,6 @@ import { convertCodeForDisplay, formatDateToMonthDayYear, getLocalISODate } from
 import icons from "../../../uswds/img/sprite.svg";
 import { PreAwardBudgetLinesReviewAccordion } from "./PreAwardBudgetLinesReviewAccordion";
 import FileUploadButton from "../../../components/UI/Button/FileUploadButton";
-import Input from "../../../components/UI/Form/Input";
 import SaveChangesAndExitModal from "../../../components/UI/Modals/SaveChangesAndExitModal";
 import useReviewBudgetTeamRequisition from "./ReviewBudgetTeamRequisition.hooks";
 
@@ -212,27 +211,32 @@ export const ReviewBudgetTeamRequisition = () => {
 
                 <div className="grid-row grid-gap margin-top-3">
                     <div className="grid-col-4">
-                        <Input
-                            name="requisition-number"
-                            label="Requisition #"
-                            value={requisitionNumber}
-                            onChange={
-                                /** @param {string} _ @param {string} value */ (_, value) =>
-                                    setRequisitionNumber(value)
-                            }
-                            isDisabled={isSubmitting || approvalAlreadyProcessed}
-                            messages={[]}
-                            isRequired={true}
-                            isRequiredNoShow={true}
-                            maxLength={100}
-                        />
-                        <div
-                            className="usa-hint"
-                            style={{ visibility: "hidden", marginTop: "-1rem" }}
-                            aria-hidden="true"
+                        <fieldset
+                            className="usa-fieldset"
+                            disabled={isSubmitting || approvalAlreadyProcessed}
                         >
-                            &nbsp;
-                        </div>
+                            <label
+                                className="usa-label"
+                                htmlFor="requisition-number"
+                            >
+                                Requisition #
+                            </label>
+                            <div
+                                className="usa-hint"
+                                style={{ visibility: "hidden" }}
+                                aria-hidden="true"
+                            >
+                                &nbsp;
+                            </div>
+                            <input
+                                id="requisition-number"
+                                name="requisition-number"
+                                className="usa-input"
+                                value={requisitionNumber}
+                                onChange={(e) => setRequisitionNumber(e.target.value)}
+                                maxLength={100}
+                            />
+                        </fieldset>
                     </div>
 
                     <div className="grid-col-4">
