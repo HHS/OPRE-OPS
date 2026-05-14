@@ -20,7 +20,7 @@ class TestAgreementValidator:
         """Test that validator initializes with default validators."""
         validator = AgreementValidator()
 
-        assert len(validator.validators) == 5
+        assert len(validator.validators) == 6
         assert all(hasattr(v, "validate") for v in validator.validators)
         assert all(hasattr(v, "name") for v in validator.validators)
 

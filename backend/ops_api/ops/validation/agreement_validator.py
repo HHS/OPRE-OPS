@@ -39,6 +39,7 @@ class AgreementValidator:
             ProcurementShopChangeRule,
             ResearchMetadataRule,
             ResourceExistsRule,
+            ServiceRequirementTypeRule,
         )
 
         return [
@@ -47,9 +48,17 @@ class AgreementValidator:
             AgreementTypeImmutableRule(),
             ProcurementShopChangeRule(),
             ResearchMetadataRule(),
+            ServiceRequirementTypeRule(),
         ]
 
-    def validate(self, agreement: Agreement, user: User, updated_fields: Dict[str, Any], db_session: Session) -> None:
+    def validate(
+        self,
+        agreement: Agreement,
+        user: User,
+        updated_fields: Dict[str, Any],
+        db_session: Session,
+        metadata: Dict[str, Any] = None,
+    ) -> None:
         """
         Execute all validation rules in sequence.
 
@@ -58,6 +67,7 @@ class AgreementValidator:
             user: The user making the request
             updated_fields: Dictionary of fields being updated
             db_session: Database session for queries
+            metadata: Optional metadata for validation context
 
         Raises:
             ValidationError: If any validation fails
@@ -65,7 +75,9 @@ class AgreementValidator:
             AuthorizationError: If authorization fails
         """
         # Create validation context
-        context = ValidationContext(user=user, updated_fields=updated_fields, db_session=db_session)
+        context = ValidationContext(
+            user=user, updated_fields=updated_fields, db_session=db_session, metadata=metadata or {}
+        )
 
         # Execute all validators
         for validator in self.validators:

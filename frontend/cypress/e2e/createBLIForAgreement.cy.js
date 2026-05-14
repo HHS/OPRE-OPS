@@ -6,6 +6,7 @@ import { terminalLog, testLogin } from "./utils";
 let minAgreement = {
     agreement_type: "CONTRACT",
     name: `E2E Create BLI No Crashing`,
+    service_requirement_type: "SEVERABLE",
     project_id: 1000,
     awarding_entity_id: 2 //GCS
 };

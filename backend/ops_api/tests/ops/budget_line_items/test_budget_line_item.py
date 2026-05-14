@@ -815,6 +815,7 @@ def test_budget_line_item_validation_create_invalid(auth_client, app, test_can, 
         "agreement_type": "CONTRACT",
         "agreement_reason": "NEW_REQ",
         "name": "TEST: Agreement for BLI Validation",
+        "service_requirement_type": "SEVERABLE",
         "team_members": [
             {
                 "id": 520,
@@ -862,6 +863,7 @@ def test_budget_line_item_validation_patch_to_invalid(auth_client, app, test_can
         "agreement_type": "CONTRACT",
         "agreement_reason": "NEW_REQ",
         "name": "TEST: Agreement for BLI Validation",
+        "service_requirement_type": "SEVERABLE",
         "team_members": [
             {
                 "id": 520,
@@ -919,6 +921,7 @@ def test_budget_line_item_validation_patch_to_zero_or_negative_amount(
         "agreement_type": "CONTRACT",
         "agreement_reason": "NEW_REQ",
         "name": "TEST: Agreement for BLI Validation",
+        "service_requirement_type": "SEVERABLE",
         "description": "Description",
         "awarding_entity_id": 2,
         "product_service_code_id": 1,
@@ -973,6 +976,7 @@ def test_budget_line_item_validation_patch_to_invalid_date(auth_client, app, tes
         "agreement_type": "CONTRACT",
         "agreement_reason": "NEW_REQ",
         "name": "TEST: Agreement for BLI Validation",
+        "service_requirement_type": "SEVERABLE",
         "description": "Description",
         "awarding_entity_id": 2,
         "product_service_code_id": 1,

@@ -407,7 +407,7 @@ def _update(id: int, message_prefix: str, meta: OpsEventHandler, partial: bool =
 
     data["agreement_cls"] = AGREEMENT_TYPE_TO_CLASS_MAPPING.get(old_agreement.agreement_type)
 
-    agreement, status_code = service.update(old_agreement.id, data)
+    agreement, status_code = service.update(old_agreement.id, data, partial=partial)
 
     response_schema = AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING.get(agreement.agreement_type)()
     agreement_dict = response_schema.dump(agreement)
