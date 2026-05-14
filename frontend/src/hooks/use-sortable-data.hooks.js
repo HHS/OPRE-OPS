@@ -47,7 +47,7 @@ const getBLIDiffComparableValue = (budgetLine, condition, totalFunding = 0) => {
         case tableSortCodes.budgetLineCodes.AGREEMENT_NAME:
             return budgetLine.agreement?.name ?? NO_DATA;
         case tableSortCodes.budgetLineCodes.OBLIGATE_BY:
-            return new Date(budgetLine.date_needed);
+            return budgetLine.date_needed ? new Date(budgetLine.date_needed) : new Date(0);
         case tableSortCodes.budgetLineCodes.FISCAL_YEAR:
             return budgetLine.fiscal_year ? budgetLine.fiscal_year : fiscalYearFromDate(budgetLine.date_needed);
         case tableSortCodes.budgetLineCodes.CAN_NUMBER:

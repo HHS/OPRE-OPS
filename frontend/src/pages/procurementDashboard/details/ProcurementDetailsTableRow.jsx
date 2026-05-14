@@ -68,7 +68,7 @@ export const ProcurementDetailsTableRow = ({
                 </Link>
             </td>
             <td data-cy="cor-name">{userNameById[agreement.project_officer_id] || ""}</td>
-            <td data-cy="proc-shop">{agreement.procurement_shop.abbr || ""}</td>
+            <td data-cy="proc-shop">{agreement.procurement_shop?.abbr || ""}</td>
             <td data-cy="total-executing">{convertToCurrency(totalExecuting)}</td>
             <td data-cy="target-date">
                 {targetDateByAgreementId[agreement.id]
