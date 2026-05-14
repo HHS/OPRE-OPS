@@ -5,6 +5,7 @@ import {
     useDeleteAgreementMutation,
     useGetProjectsQuery,
     useGetProductServiceCodesQuery,
+    useLazyCheckAgreementUniqueQuery,
     useUpdateAgreementMutation
 } from "../../../api/opsAPI";
 import { calculateAgreementTotal, cleanAgreementForApi, formatTeamMember } from "../../../helpers/agreement.helpers.js";
@@ -35,6 +36,11 @@ const AGREEMENT_FILTER_OPTIONS = [
     { label: "Grant", value: AGREEMENT_TYPES.GRANT },
     { label: "Direct Obligation", value: AGREEMENT_TYPES.DIRECT_OBLIGATION }
 ];
+
+const UNIQUE_ERROR_MESSAGES = {
+    name: "This title already exists. Try a different one",
+    nick_name: "This nickname already exists. Try a different one"
+};
 
 const useAgreementEditForm = (
     isAgreementAwarded,
@@ -89,6 +95,9 @@ const useAgreementEditForm = (
 
     const [updateAgreement] = useUpdateAgreementMutation();
     const [deleteAgreement] = useDeleteAgreementMutation();
+    const [triggerCheckUnique] = useLazyCheckAgreementUniqueQuery();
+
+    const [uniquenessErrors, setUniquenessErrors] = React.useState({ name: [], nick_name: [] });
 
     const {
         agreement,
@@ -206,6 +215,45 @@ const useAgreementEditForm = (
 
     let res = suite.get();
 
+    const checkUniqueOnBlur = React.useCallback(
+        async (field, value) => {
+            const trimmed = (value ?? "").trim();
+            if (!trimmed) {
+                setUniquenessErrors((prev) => (prev[field].length === 0 ? prev : { ...prev, [field]: [] }));
+                return;
+            }
+            if (field === "name" && !agreementType) {
+                return;
+            }
+            try {
+                const args = { field, value: trimmed };
+                if (field === "name") args.agreement_type = agreementType;
+                if (agreement?.id != null) args.exclude_id = agreement.id;
+                const result = await triggerCheckUnique(args).unwrap();
+                setUniquenessErrors((prev) => ({
+                    ...prev,
+                    [field]: result?.unique === false ? [UNIQUE_ERROR_MESSAGES[field]] : []
+                }));
+                // eslint-disable-next-line no-unused-vars
+            } catch (error) {
+                // On API error, clear uniqueness state and let backend save-time validation catch duplicates.
+                setUniquenessErrors((prev) => (prev[field].length === 0 ? prev : { ...prev, [field]: [] }));
+            }
+        },
+        [agreement?.id, agreementType, triggerCheckUnique]
+    );
+
+    // When agreement_type changes, re-check the title uniqueness because the
+    // backend constraint is scoped per type.
+    React.useEffect(() => {
+        if (agreementType && agreementTitle) {
+            checkUniqueOnBlur("name", agreementTitle);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [agreementType]);
+
+    const hasUniquenessErrors = uniquenessErrors.name.length > 0 || uniquenessErrors.nick_name.length > 0;
+
     const vendorDisabled = agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
     const isAgreementAA = agreementType === AGREEMENT_TYPES.AA;
     const shouldDisableBtn =
@@ -213,6 +261,7 @@ const useAgreementEditForm = (
         !agreement?.project_id ||
         !agreementType ||
         res.hasErrors() ||
+        hasUniquenessErrors ||
         (isAgreementAA && (!servicingAgency || !requestingAgency));
 
     const cn = classnames(suite.get(), {
@@ -559,6 +608,8 @@ const useAgreementEditForm = (
         handleCancel,
         handleOnChangeSelectedProcurementShop,
         runValidate,
+        checkUniqueOnBlur,
+        uniquenessErrors,
         isProcurementShopDisabled,
         disabledMessage,
         fundingMethod: FUNDING_METHOD,

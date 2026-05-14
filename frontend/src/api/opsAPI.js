@@ -202,6 +202,14 @@ export const opsApi = createApi({
             },
             providesTags: ["Agreements", "BudgetLineItems"]
         }),
+        checkAgreementUnique: builder.query({
+            query: ({ field, value, agreement_type, exclude_id }) => {
+                const params = new URLSearchParams({ field, value });
+                if (agreement_type) params.append("agreement_type", agreement_type);
+                if (exclude_id != null) params.append("exclude_id", String(exclude_id));
+                return `/agreements/check-unique?${params.toString()}`;
+            }
+        }),
         getAgreementById: builder.query({
             query: (arg) => {
                 if (typeof arg === "object" && arg !== null) {
@@ -1212,6 +1220,7 @@ export const {
     useGetAgreementByIdQuery,
     useLazyGetAgreementByIdQuery,
     useLazyGetAgreementsQuery,
+    useLazyCheckAgreementUniqueQuery,
     useAddAgreementMutation,
     useUpdateAgreementMutation,
     useDeleteAgreementMutation,

@@ -347,6 +347,44 @@ class AgreementTypeListAPI(MethodView):
         return make_response_with_headers([e.name for e in AgreementType])
 
 
+class AgreementCheckUniqueAPI(MethodView):
+    """Check whether a candidate agreement title or nickname is unique.
+
+    Used by the create/edit Agreement frontend to surface a duplicate-value
+    error inline before the user attempts to save.
+    """
+
+    @is_authorized(PermissionType.GET, Permission.AGREEMENT)
+    def get(self) -> Response:
+        field = request.args.get("field")
+        value = request.args.get("value", "")
+        agreement_type_param = request.args.get("agreement_type")
+        exclude_id_param = request.args.get("exclude_id")
+
+        if field not in ("name", "nick_name"):
+            raise ValidationError({"field": ["Must be 'name' or 'nick_name'."]})
+
+        agreement_type = None
+        if field == "name":
+            if not agreement_type_param:
+                raise ValidationError({"agreement_type": ["This field is required when checking 'name'."]})
+            try:
+                agreement_type = AgreementType[agreement_type_param]
+            except KeyError as err:
+                raise ValidationError({"agreement_type": ["Invalid agreement type provided."]}) from err
+
+        exclude_id = None
+        if exclude_id_param is not None:
+            try:
+                exclude_id = int(exclude_id_param)
+            except ValueError as err:
+                raise ValidationError({"exclude_id": ["Must be an integer."]}) from err
+
+        service = AgreementsService(current_app.db_session)
+        is_unique = service.check_unique(field, value, agreement_type, exclude_id)
+        return make_response_with_headers({"unique": is_unique})
+
+
 class AgreementListFilterOptionAPI(BaseItemAPI):
     """API endpoint for retrieving agreement filter options."""
 

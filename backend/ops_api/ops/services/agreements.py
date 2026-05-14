@@ -490,6 +490,38 @@ class AgreementsService(OpsService[Agreement]):
 
         return paginated_results, metadata
 
+    def check_unique(
+        self, field: str, value: str, agreement_type: AgreementType | None, exclude_id: int | None
+    ) -> bool:
+        """
+        Check whether a candidate ``value`` is unique for the given ``field``.
+
+        Mirrors the database constraints:
+        - ``name``: case-insensitive uniqueness scoped to ``agreement_type``
+          (composite unique index ``ix_agreement_name_type_lower``).
+        - ``nick_name``: globally unique (column-level ``unique=True``).
+
+        An empty/whitespace value is treated as having nothing to validate
+        and reported as unique.
+        """
+        if value is None or not value.strip():
+            return True
+
+        if field == "name":
+            query = select(Agreement.id).where(
+                func.lower(Agreement.name) == func.lower(value),
+                Agreement.agreement_type == agreement_type,
+            )
+        elif field == "nick_name":
+            query = select(Agreement.id).where(Agreement.nick_name == value)
+        else:
+            raise ValidationError({"field": [f"Unsupported field: {field!r}. Must be 'name' or 'nick_name'."]})
+
+        if exclude_id is not None:
+            query = query.where(Agreement.id != exclude_id)
+
+        return self.db_session.scalar(query.limit(1)) is None
+
     def _handle_proc_shop_change(self, agreement: Agreement, new_value: int) -> int | None:
         if agreement.awarding_entity_id == new_value:
             return None  # No change needed

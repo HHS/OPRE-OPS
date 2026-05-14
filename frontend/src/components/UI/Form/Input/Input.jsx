@@ -9,6 +9,7 @@ import Tooltip from "../../USWDS/Tooltip";
  * @param {string} props.name - The name of the input field.
  * @param {string} [props.label] - The label to display for the input field (optional).
  * @param {Function} props.onChange - A function to call when the input value changes.
+ * @param {Function} [props.onBlur] - A function to call when the input loses focus (optional).
  * @param {boolean} [props.pending] - A flag to indicate if the input is pending (optional).
  * @param {Array<String>} [props.messages] - An array of error messages to display (optional).
  * @param {string} [props.value] - The value of the input field.(optional)
@@ -23,6 +24,7 @@ const Input = ({
     name,
     label = name,
     onChange,
+    onBlur,
     pending = false,
     messages = [],
     value,
@@ -75,6 +77,7 @@ const Input = ({
                     name={name}
                     className={`usa-input ${messages.length ? "usa-input--error" : ""} `}
                     onChange={handleChange}
+                    onBlur={handleBlur}
                     autoComplete="off"
                     autoCorrect="off"
                     value={value}
@@ -87,6 +90,12 @@ const Input = ({
 
     function handleChange(e) {
         onChange(name, e.target.value);
+    }
+
+    function handleBlur(e) {
+        if (onBlur) {
+            onBlur(name, e.target.value);
+        }
     }
 };
 
