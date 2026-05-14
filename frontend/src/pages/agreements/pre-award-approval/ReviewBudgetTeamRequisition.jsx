@@ -210,7 +210,7 @@ export const ReviewBudgetTeamRequisition = () => {
                 <p>Complete the requisition outside of OPS and then enter the requisition information below.</p>
 
                 <div className="grid-row grid-gap margin-top-3">
-                    <div className="grid-col-4">
+                    <div style={{ width: "calc(29.167% - 1rem + 16px)" }}>
                         <fieldset
                             className="usa-fieldset margin-top-3"
                             disabled={isSubmitting || approvalAlreadyProcessed}
@@ -229,10 +229,6 @@ export const ReviewBudgetTeamRequisition = () => {
                                     value={requisitionNumber}
                                     onChange={(e) => setRequisitionNumber(e.target.value)}
                                     maxLength={100}
-                                />
-                                <div
-                                    style={{ width: "3em", marginLeft: "0.5rem" }}
-                                    aria-hidden="true"
                                 />
                             </div>
                         </fieldset>
