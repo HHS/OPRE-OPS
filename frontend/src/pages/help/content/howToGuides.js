@@ -167,6 +167,23 @@ export const data = [
       `
     },
     {
+        heading: "How to start the procurement tracker",
+        content: `
+1. Navigate to the agreement where you’d like to start the procurement tracker process
+1. Review the agreement to make sure its up to date and the budget lines you need to execute are currently in Executing Status
+    - Budget lines in Executing Status have been approved by a Division Director and will enable the procurement tracker tab
+1. Click on the Procurement Tracker tab
+    - To review each step, click on the plus or minus icon to open or close them
+1. Follow the instructions in each step of the Procurement Tracker
+    - The progress bar at the top will show the status of each step. The current step will show in blue. Upcoming steps will show in grey. Completed steps will show in dark blue.
+1. Add Target Completion Dates for when you think your tasks will be completed
+    - You can add Target Completion Dates for each step ahead of time or individually as you progress. These targets are typically aligned to milestone dates from the Procurement Shop, but can also be used as internal goal dates or the date you expect each step to be completed.
+    - Please note: Target Completion Dates cannot currently be edited, but you will be prompted to enter a new date if the Target Date passes without completion.
+1. When you complete the tasks outlined within each step, update Task Completed By, Date Completed and Notes, as needed
+    - Your progress through the procurement tracker will also be shared with the Procurement Team and Budget Team
+      `
+    },
+    {
         heading: "How to find a specific agreement",
         content: `
 1. Click on Agreements in the main navigation
