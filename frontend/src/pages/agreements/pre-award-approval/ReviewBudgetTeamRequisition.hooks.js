@@ -4,6 +4,9 @@ import { useSelector, shallowEqual } from "react-redux";
 import { useUpdateProcurementTrackerStepMutation } from "../../../api/opsAPI";
 import useAlert from "../../../hooks/use-alert.hooks";
 import usePreAwardApprovalData from "./usePreAwardApprovalData";
+import DatePicker from "../../../components/UI/USWDS/DatePicker";
+import { formatDateForApi } from "../../../helpers/utils";
+import React from "react";
 
 /**
  * Custom hook for the ReviewBudgetTeamRequisition page.
@@ -28,6 +31,7 @@ import usePreAwardApprovalData from "./usePreAwardApprovalData";
  *   setRequisitionDate: (value: string) => void,
  *   attestationChecked: boolean,
  *   setAttestationChecked: (value: boolean) => void,
+ *   MemoizedDatePicker,
  *   showModal: boolean,
  *   setShowModal: (value: boolean) => void,
  *   modalProps: any,
@@ -54,6 +58,8 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
     const [modalProps, setModalProps] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState("");
+
+    const MemoizedDatePicker = React.memo(DatePicker);
 
     // Auth - use separate selectors with shallowEqual to prevent infinite loops
     // @ts-expect-error - Redux state typing in JS files
@@ -122,7 +128,7 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
                         stepId: step5.id,
                         data: {
                             requisition_number: requisitionNumber,
-                            requisition_date: requisitionDate
+                            requisition_date: formatDateForApi(requisitionDate)
                             // requisition_approved_by is server-controlled and set automatically
                         }
                     }).unwrap();
@@ -183,6 +189,7 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
         setRequisitionDate,
         attestationChecked,
         setAttestationChecked,
+        MemoizedDatePicker,
 
         // UI state
         showModal,

@@ -5,7 +5,7 @@ import AgreementMetaAccordion from "../../../components/Agreements/AgreementMeta
 import AgreementCANReviewAccordion from "../../../components/Agreements/AgreementCANReviewAccordion";
 import Accordion from "../../../components/UI/Accordion";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
-import { convertCodeForDisplay, formatDateToMonthDayYear } from "../../../helpers/utils";
+import { convertCodeForDisplay, formatDateToMonthDayYear, getLocalISODate } from "../../../helpers/utils";
 import icons from "../../../uswds/img/sprite.svg";
 import { PreAwardBudgetLinesReviewAccordion } from "./PreAwardBudgetLinesReviewAccordion";
 import FileUploadButton from "../../../components/UI/Button/FileUploadButton";
@@ -42,6 +42,7 @@ export const ReviewBudgetTeamRequisition = () => {
         setRequisitionDate,
         attestationChecked,
         setAttestationChecked,
+        MemoizedDatePicker,
         showModal,
         setShowModal,
         modalProps,
@@ -219,26 +220,26 @@ export const ReviewBudgetTeamRequisition = () => {
                             isDisabled={isSubmitting || approvalAlreadyProcessed}
                             messages={[]}
                             isRequired={true}
+                            isRequiredNoShow={true}
                             maxLength={100}
                         />
                     </div>
 
                     <div className="grid-col-6">
-                        <label
-                            className="usa-label"
-                            htmlFor="requisition-date"
-                        >
-                            Requisition Date
-                        </label>
-                        <div className="usa-hint">Required Information*</div>
-                        <input
-                            className="usa-input"
+                        <MemoizedDatePicker
                             id="requisition-date"
-                            name="requisition-date"
-                            type="date"
+                            name="requisitionDate"
+                            label="Requisition Date"
+                            hint="mm/dd/yyyy"
                             value={requisitionDate}
-                            onChange={(e) => setRequisitionDate(e.target.value)}
-                            disabled={isSubmitting || approvalAlreadyProcessed}
+                            onChange={
+                                /** @param {any} e */ (e) => setRequisitionDate(e.target.value)
+                            }
+                            isRequired={true}
+                            isRequiredNoShow={true}
+                            isDisabled={isSubmitting || approvalAlreadyProcessed}
+                            maxDate={getLocalISODate()}
+                            messages={[]}
                         />
                     </div>
                 </div>
