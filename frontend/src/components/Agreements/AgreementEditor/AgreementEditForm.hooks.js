@@ -1,3 +1,4 @@
+import debounce from "lodash/debounce";
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import classnames from "vest/classnames";
@@ -234,20 +235,25 @@ const useAgreementEditForm = (
                     ...prev,
                     [field]: result?.unique === false ? [UNIQUE_ERROR_MESSAGES[field]] : []
                 }));
-                // eslint-disable-next-line no-unused-vars
-            } catch (error) {
-                // On API error, clear uniqueness state and let backend save-time validation catch duplicates.
+            } catch {
                 setUniquenessErrors((prev) => (prev[field].length === 0 ? prev : { ...prev, [field]: [] }));
             }
         },
         [agreement?.id, agreementType, triggerCheckUnique]
     );
 
+    const debouncedCheckUnique = React.useMemo(
+        () => debounce((field, value) => checkUniqueOnBlur(field, value), 300),
+        [checkUniqueOnBlur]
+    );
+
+    React.useEffect(() => () => debouncedCheckUnique.cancel(), [debouncedCheckUnique]);
+
     // When agreement_type changes, re-check the title uniqueness because the
     // backend constraint is scoped per type.
     React.useEffect(() => {
         if (agreementType && agreementTitle) {
-            checkUniqueOnBlur("name", agreementTitle);
+            debouncedCheckUnique("name", agreementTitle);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [agreementType]);

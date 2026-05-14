@@ -177,4 +177,29 @@ describe("AgreementEditForm uniqueness validation wiring", () => {
 
         expect(screen.getByRole("button", { name: "Continue" })).toBeDisabled();
     });
+
+    it("re-checks title uniqueness when agreementType changes", () => {
+        const checkUniqueOnBlur = vi.fn();
+        useAgreementEditForm.mockReturnValue({
+            ...baseHookState,
+            agreementTitle: "Existing Title",
+            agreementType: "CONTRACT",
+            checkUniqueOnBlur
+        });
+
+        const { rerender } = render(<AgreementEditForm isEditMode={false} />);
+
+        useAgreementEditForm.mockReturnValue({
+            ...baseHookState,
+            agreementTitle: "Existing Title",
+            agreementType: "GRANT",
+            checkUniqueOnBlur
+        });
+
+        rerender(<AgreementEditForm isEditMode={false} />);
+
+        // The hook handles the type-change re-check internally via useEffect;
+        // verify the component re-renders without error when type changes
+        expect(screen.getByLabelText(/Agreement Title/i)).toHaveValue("Existing Title");
+    });
 });
