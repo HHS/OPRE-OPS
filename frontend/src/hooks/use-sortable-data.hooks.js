@@ -143,12 +143,12 @@ const compareRows = (a, b, descending) => {
     return 0;
 };
 
-export const useSortData = (items, descending, sortCondition, sortType, totalFunding = 0) => {
+export const useSortData = (items, descending, sortCondition, sortType, sortContext = 0) => {
     let sortableItems = [...items];
     const getComparableValue = VALUE_RETRIEVAL_FUNCTIONS[sortType];
     return sortableItems.sort((a, b) => {
-        const aVal = getComparableValue(a, sortCondition, totalFunding);
-        const bVal = getComparableValue(b, sortCondition, totalFunding);
+        const aVal = getComparableValue(a, sortCondition, sortContext);
+        const bVal = getComparableValue(b, sortCondition, sortContext);
         return compareRows(aVal, bVal, descending);
     });
 };

@@ -1820,12 +1820,12 @@ def _make_mock_tracker_with_steps(active_step_number, steps, status=None):
 
 class TestComputeDaysInProcurementStep:
     def test_empty_list(self):
-        result = _compute_days_in_procurement_step([], fiscal_year=2025)
+        result = _compute_days_in_procurement_step([])
         assert result == {}
 
     def test_agreement_without_tracker(self):
         ag = _make_mock_procurement_agreement(trackers=[])
-        result = _compute_days_in_procurement_step([ag], fiscal_year=2025)
+        result = _compute_days_in_procurement_step([ag])
         assert result == {}
 
     def test_completed_step_uses_completed_date(self):
@@ -1833,7 +1833,7 @@ class TestComputeDaysInProcurementStep:
         tracker = _make_mock_tracker_with_steps(3, steps=[step])
         ag = _make_mock_procurement_agreement(trackers=[tracker], agreement_id=10)
 
-        result = _compute_days_in_procurement_step([ag], fiscal_year=2025)
+        result = _compute_days_in_procurement_step([ag])
 
         assert result == {3: {10: 10}}
 
@@ -1846,7 +1846,7 @@ class TestComputeDaysInProcurementStep:
         tracker = _make_mock_tracker_with_steps(2, steps=[step])
         ag = _make_mock_procurement_agreement(trackers=[tracker], agreement_id=5)
 
-        result = _compute_days_in_procurement_step([ag], fiscal_year=2025)
+        result = _compute_days_in_procurement_step([ag])
 
         assert result == {2: {5: 59}}
 
@@ -1857,7 +1857,7 @@ class TestComputeDaysInProcurementStep:
         tracker = _make_mock_tracker_with_steps(1, steps=[step], status=ProcurementTrackerStatus.INACTIVE)
         ag = _make_mock_procurement_agreement(trackers=[tracker], agreement_id=1)
 
-        result = _compute_days_in_procurement_step([ag], fiscal_year=2025)
+        result = _compute_days_in_procurement_step([ag])
         assert result == {}
 
     def test_skips_completed_tracker(self):
@@ -1867,7 +1867,7 @@ class TestComputeDaysInProcurementStep:
         tracker = _make_mock_tracker_with_steps(1, steps=[step], status=ProcurementTrackerStatus.COMPLETED)
         ag = _make_mock_procurement_agreement(trackers=[tracker], agreement_id=1)
 
-        result = _compute_days_in_procurement_step([ag], fiscal_year=2025)
+        result = _compute_days_in_procurement_step([ag])
         assert result == {}
 
     def test_skips_step_out_of_range(self):
@@ -1875,7 +1875,7 @@ class TestComputeDaysInProcurementStep:
         tracker = _make_mock_tracker_with_steps(7, steps=[step])
         ag = _make_mock_procurement_agreement(trackers=[tracker], agreement_id=1)
 
-        result = _compute_days_in_procurement_step([ag], fiscal_year=2025)
+        result = _compute_days_in_procurement_step([ag])
         assert result == {}
 
     def test_skips_step_zero(self):
@@ -1883,7 +1883,7 @@ class TestComputeDaysInProcurementStep:
         tracker = _make_mock_tracker_with_steps(0, steps=[step])
         ag = _make_mock_procurement_agreement(trackers=[tracker], agreement_id=1)
 
-        result = _compute_days_in_procurement_step([ag], fiscal_year=2025)
+        result = _compute_days_in_procurement_step([ag])
         assert result == {}
 
     def test_skips_step_without_start_date(self):
@@ -1891,7 +1891,7 @@ class TestComputeDaysInProcurementStep:
         tracker = _make_mock_tracker_with_steps(3, steps=[step])
         ag = _make_mock_procurement_agreement(trackers=[tracker], agreement_id=1)
 
-        result = _compute_days_in_procurement_step([ag], fiscal_year=2025)
+        result = _compute_days_in_procurement_step([ag])
         assert result == {}
 
     def test_skips_when_active_step_not_in_steps_list(self):
@@ -1899,7 +1899,7 @@ class TestComputeDaysInProcurementStep:
         tracker = _make_mock_tracker_with_steps(4, steps=[step])  # active_step_number=4 but only step 1 exists
         ag = _make_mock_procurement_agreement(trackers=[tracker], agreement_id=1)
 
-        result = _compute_days_in_procurement_step([ag], fiscal_year=2025)
+        result = _compute_days_in_procurement_step([ag])
         assert result == {}
 
     def test_multiple_agreements_same_step(self):
@@ -1911,7 +1911,7 @@ class TestComputeDaysInProcurementStep:
         tracker2 = _make_mock_tracker_with_steps(2, steps=[step2])
         ag2 = _make_mock_procurement_agreement(trackers=[tracker2], agreement_id=20)
 
-        result = _compute_days_in_procurement_step([ag1, ag2], fiscal_year=2025)
+        result = _compute_days_in_procurement_step([ag1, ag2])
 
         assert result == {2: {10: 5, 20: 20}}
 
@@ -1924,7 +1924,7 @@ class TestComputeDaysInProcurementStep:
         tracker2 = _make_mock_tracker_with_steps(5, steps=[step2])
         ag2 = _make_mock_procurement_agreement(trackers=[tracker2], agreement_id=2)
 
-        result = _compute_days_in_procurement_step([ag1, ag2], fiscal_year=2025)
+        result = _compute_days_in_procurement_step([ag1, ag2])
 
         assert result == {1: {1: 3}, 5: {2: 14}}
 
@@ -1941,7 +1941,7 @@ class TestComputeDaysInProcurementStep:
 
         ag = _make_mock_procurement_agreement(trackers=[completed_tracker, active_tracker], agreement_id=7)
 
-        result = _compute_days_in_procurement_step([ag], fiscal_year=2025)
+        result = _compute_days_in_procurement_step([ag])
 
         assert result == {4: {7: 10}}
         assert 2 not in result

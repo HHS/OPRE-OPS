@@ -15,7 +15,7 @@ const STEP_DESCRIPTIONS = {
         "The COR and evaluation panel will complete the technical evaluations and any potential negotiations. Once they internally select a vendor, they will check this step as complete (internally means internal to OPRE, before they send the Final Consensus Memo to the Procurement Shop).",
     "Pre-Award":
         "All agreements need Pre-Award Approval before the Final Consensus Memo can be sent to the Procurement Shop. The COR will review the Vendor Price Sheet and make any edits or budget line status changes as needed. After final edits are approved by the Division Director(s), the Budget Team will submit the requisition and this step will be complete.",
-    Award: "Once the COR receives the signed award, they will upload the award document, add CLINs, and update the Vendor and Vendor Type. The budget team will review everything has been entered correctly before changing the agreement to Awarded in OPS (this will also change the budget lines in executing status to obligated status).."
+    Award: "Once the COR receives the signed award, they will upload the award document, add CLINs, and update the Vendor and Vendor Type. The budget team will review everything has been entered correctly before changing the agreement to Awarded in OPS (this will also change the budget lines in executing status to obligated status)."
 };
 
 const ProcurementDetailsStep = ({

@@ -469,7 +469,7 @@ class AgreementsService(OpsService[Agreement]):
             )
             procurement_overview = _compute_procurement_overview(all_results, overview_fiscal_year)
             procurement_step_summary = _compute_procurement_step_summary(all_results, overview_fiscal_year)
-            procurement_days_in_step = _compute_days_in_procurement_step(all_results, overview_fiscal_year)
+            procurement_days_in_step = _compute_days_in_procurement_step(all_results)
 
         # Apply pagination slicing
         if filters.limit is not None and filters.offset is not None:
@@ -1008,7 +1008,7 @@ def _compute_procurement_step_summary(all_results: list[Agreement], fiscal_year:
 
 
 def _compute_days_in_procurement_step(
-    all_results: list[Agreement], fiscal_year: int | None
+    all_results: list[Agreement],
 ) -> dict[int, dict[int, int]]:
     """Compute days in procurement step for each agreement's active step.
 
