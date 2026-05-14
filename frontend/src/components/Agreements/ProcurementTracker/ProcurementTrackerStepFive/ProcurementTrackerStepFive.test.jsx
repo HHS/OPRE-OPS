@@ -1323,7 +1323,11 @@ describe("ProcurementTrackerStepFive", () => {
             render(
                 <ProcurementTrackerStepFive
                     stepStatus="PENDING"
-                    stepFiveData={{ ...mockStepData, approval_status: "APPROVED" }}
+                    stepFiveData={{
+                        ...mockStepData,
+                        approval_status: "APPROVED",
+                        requisition_approved_by: 456 // Budget team has approved requisition
+                    }}
                     authorizedUsers={mockAllUsers}
                     isDisabled={false}
                     isActiveStep={true}
@@ -1347,7 +1351,11 @@ describe("ProcurementTrackerStepFive", () => {
             render(
                 <ProcurementTrackerStepFive
                     stepStatus="PENDING"
-                    stepFiveData={{ ...mockStepData, approval_status: "APPROVED" }}
+                    stepFiveData={{
+                        ...mockStepData,
+                        approval_status: "APPROVED",
+                        requisition_approved_by: 456 // Budget team has approved requisition
+                    }}
                     authorizedUsers={mockAllUsers}
                     isDisabled={false}
                     isActiveStep={true}

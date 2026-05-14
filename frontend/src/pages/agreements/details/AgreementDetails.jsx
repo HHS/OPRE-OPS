@@ -15,6 +15,7 @@ import AgreementDetailsView from "./AgreementDetailsView";
  * @param {function} props.setIsEditMode - The function to set the edit mode.
  * @param {boolean} [props.isAgreementAwarded] - if the agreement is awarded
  * @param {boolean} [props.hasAgreementChanged] - if the agreement properties has changed
+ * @param {boolean} [props.isPreAwardInReview] - if the agreement is in review for pre-award approval
  * @returns {React.ReactElement} - The rendered component.
  */
 const AgreementDetails = ({
@@ -26,7 +27,8 @@ const AgreementDetails = ({
     setIsEditMode,
     isAgreementNotDeveloped,
     isAgreementAwarded = false,
-    hasAgreementChanged = false
+    hasAgreementChanged = false,
+    isPreAwardInReview = false
 }) => {
     const isSuperUser = useIsUserSuperUser();
     // eslint-disable-next-line no-unused-vars
@@ -45,6 +47,7 @@ const AgreementDetails = ({
                 setIsEditMode={setIsEditMode}
                 isEditable={isEditable}
                 hasUnsavedChanges={hasAgreementChanged}
+                isPreAwardInReview={isPreAwardInReview}
             />
 
             {isEditMode && isEditable ? (

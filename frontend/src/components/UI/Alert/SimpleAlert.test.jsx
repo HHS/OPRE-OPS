@@ -91,9 +91,9 @@ describe("SimpleAlert", () => {
                 type="success"
             />
         );
-        const message = screen.getByText(/Line 1/);
-        expect(message).toBeInTheDocument();
-        expect(message).toHaveStyle({ whiteSpace: "pre-wrap" });
+        // ReactMarkdown handles newlines by creating separate paragraphs
+        expect(screen.getByText(/Line 1/)).toBeInTheDocument();
+        expect(screen.getByText(/Line 2/)).toBeInTheDocument();
     });
     it("should render with custom heading level", () => {
         render(

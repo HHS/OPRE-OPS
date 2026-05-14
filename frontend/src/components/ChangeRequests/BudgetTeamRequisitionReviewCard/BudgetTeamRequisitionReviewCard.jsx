@@ -1,20 +1,12 @@
 import PropTypes from "prop-types";
-import { formatDateToMonthDayYear, convertToCurrency } from "../../../helpers/utils";
-import { useGetAgreementName } from "../../../hooks/lookup.hooks";
-import useGetUserFullNameFromId from "../../../hooks/user.hooks";
-import Tag from "../../UI/Tag/Tag";
-import { faClock } from "@fortawesome/free-regular-svg-icons";
-import { faEye } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import ApprovalFlowReviewCard from "../ApprovalFlowReviewCard";
 
 /**
- * BudgetTeamRequisitionReviewCard component for displaying pending budget team requisition reviews
- * Appears after Division Director approval, prompts budget team to enter requisition details
+ * BudgetTeamRequisitionReviewCard component for displaying pending budget team requisition reviews.
+ * Appears after Division Director approval, prompts budget team to enter requisition details.
  *
- * NOTE: This component does NOT use the shared ReviewCard base component because it serves a different
- * purpose than change request cards. ReviewCard is designed for inline approve/reject actions on
- * change requests, while this card (like PreAwardReviewCard) is an informational card that links
- * to a detail page. The card structure is intentionally customized to show budget-specific metadata.
+ * This is a thin wrapper around ApprovalFlowReviewCard that provides budget-team-specific
+ * configuration (heading with line break, navigation path, button text).
  *
  * @component
  * @param {Object} props - Properties passed to component
@@ -29,103 +21,21 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
  * @param {boolean} [props.forceHover=false] - Whether to force hover state
  * @returns {JSX.Element} - The rendered component
  */
-function BudgetTeamRequisitionReviewCard({
-    agreementId,
-    requestorId,
-    requestDate,
-    executingBliCount,
-    executingTotal,
-    obligateByDate,
-    agreementTotal,
-    isCondensed = false,
-    forceHover = false
-}) {
-    const agreementName = useGetAgreementName(agreementId);
-    const requestorName = useGetUserFullNameFromId(requestorId);
-
+function BudgetTeamRequisitionReviewCard(props) {
     return (
-        <div
-            className={`width-full flex-column padding-2 margin-top-4 bg-white hover:bg-base-lightest border-2px radius-lg ${
-                forceHover ? "bg-base-lightest border-base-lighter" : "border-base-light hover:border-base-lighter"
-            }`}
-            data-cy="budget-team-requisition-review-card"
-            style={{ minHeight: "8.375rem" }}
-        >
-            {!isCondensed && (
-                <header className="display-flex flex-justify">
-                    <div className="display-flex">
-                        <h2 className="margin-0 font-sans-sm">
-                            Pre-Award Requisition
-                            <br />
-                            Review
-                        </h2>
-                        <dl className="font-12px margin-0 margin-left-4">
-                            <dt className="margin-0 text-base-dark">Agreement</dt>
-                            <dd className="margin-0">{agreementName}</dd>
-                        </dl>
-                    </div>
-                </header>
-            )}
-            <section
-                className="display-flex flex-justify margin-y-1"
-                style={{ maxWidth: "50rem" }}
-            >
-                <dl className="font-12px grid-col-2">
-                    <dt className="text-base-dark">Requested by</dt>
-                    <dd className="margin-0">{requestorName || "Unknown"}</dd>
-                </dl>
-                <dl className="font-12px grid-col-2">
-                    <dt className="text-base-dark">BLs Executing</dt>
-                    <dd className="margin-0">
-                        <Tag
-                            tagStyle="darkTextLightBackground"
-                            text={executingBliCount.toString()}
-                            data-cy="executing-bli-count"
-                        />
-                    </dd>
-                </dl>
-                <dl className="font-12px grid-col-2">
-                    <dt className="text-base-dark">Executing Total</dt>
-                    <dd className="margin-0">{convertToCurrency(executingTotal)}</dd>
-                </dl>
-                {obligateByDate && (
-                    <dl className="font-12px grid-col-2">
-                        <dt className="text-base-dark">Obligate By</dt>
-                        <dd className="margin-0">{formatDateToMonthDayYear(obligateByDate)}</dd>
-                    </dl>
-                )}
-                <dl className="font-12px grid-col-2">
-                    <dt className="text-base-dark">Agreement Total</dt>
-                    <dd className="margin-0">{convertToCurrency(agreementTotal)}</dd>
-                </dl>
-            </section>
-            <footer className="font-12px display-flex flex-justify flex-align-center">
-                <div className="text-base-dark display-flex flex-align-center">
-                    <FontAwesomeIcon
-                        icon={faClock}
-                        className="height-2 width-2 margin-right-1"
-                        aria-hidden="true"
-                    />
-                    {formatDateToMonthDayYear(requestDate)}
-                </div>
-                {!isCondensed && (
-                    /* TODO (PR4): Wire navigation to budget requisition review page */
-                    <button
-                        type="button"
-                        className="usa-button--unstyled text-primary font-12px cursor-pointer"
-                        data-cy="review-agreement-button"
-                        aria-label={`Review agreement ${agreementName}`}
-                    >
-                        Review Agreement
-                        <FontAwesomeIcon
-                            icon={faEye}
-                            size="3x"
-                            className="height-2 width-2 margin-left-1"
-                        />
-                    </button>
-                )}
-            </footer>
-        </div>
+        <ApprovalFlowReviewCard
+            {...props}
+            headingText={
+                <>
+                    Pre-Award Requisition
+                    <br />
+                    Review
+                </>
+            }
+            navigationPath="review-budget-requisition"
+            dataCyPrefix="budget-team-requisition-review-card"
+            buttonText="Review Agreement"
+        />
     );
 }
 

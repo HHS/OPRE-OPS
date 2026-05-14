@@ -25,6 +25,7 @@ aiohttp = "==3.13.5"
 deepdiff = "==9.0.0"
 python-dotenv = "==1.2.2"
 ipython = "==9.13.0"
+urllib3 = "==2.7.0"
 
 [dev-packages]
 nox = "==2026.4.10"

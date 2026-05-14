@@ -30,7 +30,8 @@ const declinedNotification = {
     id: 2,
     notification_type: "PRE_AWARD_APPROVAL_NOTIFICATION",
     title: "Pre-Award Approval Response",
-    message: "Your pre-award approval request has been declined by Jane Smith.",
+    message:
+        "This agreement has been declined for Pre-Award. Please do not upload the Final Consensus Memo to the HHS Consolidated Acquisition Solution (HCAS) until changes have been made and re-submitted for approval.",
     is_read: false,
     procurement_tracker_step: {
         id: 5,
@@ -100,7 +101,7 @@ describe("PreAwardApprovalAlert", () => {
         );
 
         expect(screen.getByText("Pre-Award Approval Response")).toBeInTheDocument();
-        expect(screen.getByText(/Your pre-award approval request has been declined by Jane Smith/)).toBeInTheDocument();
+        expect(screen.getByText(/This agreement has been declined for Pre-Award/)).toBeInTheDocument();
     });
 
     it("should NOT render request alert (only shows Approved/Declined)", () => {
@@ -213,6 +214,6 @@ describe("PreAwardApprovalAlert", () => {
 
         expect(screen.getAllByText("Pre-Award Approval Response")).toHaveLength(2);
         expect(screen.getByText(/Your pre-award approval request has been approved by John Doe/)).toBeInTheDocument();
-        expect(screen.getByText(/Your pre-award approval request has been declined by Jane Smith/)).toBeInTheDocument();
+        expect(screen.getByText(/This agreement has been declined for Pre-Award/)).toBeInTheDocument();
     });
 });
