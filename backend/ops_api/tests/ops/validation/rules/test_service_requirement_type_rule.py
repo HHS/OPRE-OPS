@@ -171,6 +171,50 @@ class TestServiceRequirementTypeRule:
         rule = ServiceRequirementTypeRule()
         rule.validate(agreement, context)
 
+    def test_create_contract_without_service_requirement_type_fails(self, test_user, loaded_db, app_ctx):
+        context = ValidationContext(
+            user=test_user,
+            updated_fields={
+                "agreement_type": AgreementType.CONTRACT,
+                "name": "New Contract",
+            },
+            db_session=loaded_db,
+        )
+
+        rule = ServiceRequirementTypeRule()
+
+        with pytest.raises(ValidationError) as exc_info:
+            rule.validate(None, context)
+
+        assert "service_requirement_type" in exc_info.value.validation_errors
+
+    def test_create_contract_with_service_requirement_type_passes(self, test_user, loaded_db, app_ctx):
+        context = ValidationContext(
+            user=test_user,
+            updated_fields={
+                "agreement_type": AgreementType.CONTRACT,
+                "name": "New Contract",
+                "service_requirement_type": ServiceRequirementType.SEVERABLE,
+            },
+            db_session=loaded_db,
+        )
+
+        rule = ServiceRequirementTypeRule()
+        rule.validate(None, context)
+
+    def test_create_grant_without_service_requirement_type_passes(self, test_user, loaded_db, app_ctx):
+        context = ValidationContext(
+            user=test_user,
+            updated_fields={
+                "agreement_type": AgreementType.GRANT,
+                "name": "New Grant",
+            },
+            db_session=loaded_db,
+        )
+
+        rule = ServiceRequirementTypeRule()
+        rule.validate(None, context)
+
     def test_direct_agreement_with_null_service_requirement_type_passes(self, test_user, loaded_db, app_ctx):
         from models import DirectAgreement
 

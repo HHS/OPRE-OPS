@@ -149,7 +149,12 @@ class ServiceRequirementTypeRule(ValidationRule):
                 )
             return
 
-        if agreement and agreement.service_requirement_type is None:
+        if agreement is None:
+            raise ValidationError(
+                {"service_requirement_type": "Service Requirement Type is required for Contract and AA agreements."}
+            )
+
+        if agreement.service_requirement_type is None:
             if context.metadata.get("full_update"):
                 raise ValidationError(
                     {"service_requirement_type": "Service Requirement Type is required for Contract and AA agreements."}

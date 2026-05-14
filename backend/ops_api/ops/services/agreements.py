@@ -49,6 +49,8 @@ from ops_api.ops.utils.budget_line_items_helpers import create_budget_line_item_
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.validation.agreement_validator import AgreementValidator
 from ops_api.ops.validation.awarded_agreement_validator import AwardedAgreementValidator
+from ops_api.ops.validation.context import ValidationContext
+from ops_api.ops.validation.rules.agreement import ServiceRequirementTypeRule
 
 
 @dataclass
@@ -146,12 +148,14 @@ class AgreementsService(OpsService[Agreement]):
             ResourceNotFoundError: If referenced entities don't exist (e.g., invalid can_id)
         """
         # Validate service_requirement_type for Contract and AA agreements
-        agreement_type = create_request.get("agreement_type")
-        if agreement_type in (AgreementType.CONTRACT, AgreementType.AA):
-            if create_request.get("service_requirement_type") is None:
-                raise ValidationError(
-                    {"service_requirement_type": "Service Requirement Type is required for Contract and AA agreements."}
-                )
+        ServiceRequirementTypeRule().validate(
+            None,
+            ValidationContext(
+                user=get_current_user(),
+                updated_fields=create_request,
+                db_session=self.db_session,
+            ),
+        )
 
         # STEP 0: Extract nested entity data from request
         budget_line_items_data = create_request.pop("budget_line_items", [])

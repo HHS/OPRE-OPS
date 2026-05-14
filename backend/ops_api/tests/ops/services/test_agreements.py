@@ -79,7 +79,10 @@ def test_immediate_change_with_all_draft_and_update_fees(service):
     assert result is None
 
 
-def test_create_with_bad_research_methodologies(service):
+@patch("ops_api.ops.services.agreements.get_current_user")
+def test_create_with_bad_research_methodologies(mock_get_user, service):
+    mock_get_user.return_value = MagicMock(id=1)
+
     create_request = {
         "agreement_cls": ContractAgreement,
         "name": "Test Agreement",
@@ -608,6 +611,10 @@ class TestAgreementsAwardTypeFilter:
 class TestAgreementsAtomicCreation:
     """Test suite for atomic agreement creation with nested entities"""
 
+    @pytest.fixture(autouse=True)
+    def _mock_current_user(self, monkeypatch):
+        monkeypatch.setattr("ops_api.ops.services.agreements.get_current_user", lambda: MagicMock(id=1))
+
     def test_create_agreement_with_budget_line_items_without_services_component_ref(self, loaded_db, app_ctx):
         """Test that budget line items can be created without services_component_ref (backward compatibility)"""
         service = AgreementsService(loaded_db)
@@ -760,6 +767,10 @@ class TestAgreementsAtomicCreation:
 
 class TestAgreementsAtomicCreationRollback:
     """Test suite for transaction rollback behavior in atomic agreement creation"""
+
+    @pytest.fixture(autouse=True)
+    def _mock_current_user(self, monkeypatch):
+        monkeypatch.setattr("ops_api.ops.services.agreements.get_current_user", lambda: MagicMock(id=1))
 
     def test_invalid_can_id_causes_complete_rollback(self, loaded_db, app_ctx):
         """Test that invalid CAN ID causes complete rollback - no agreement or BLIs created"""
@@ -1096,6 +1107,10 @@ class TestAgreementsAtomicCreationRollback:
 
 class TestAgreementsDuplicateNameHandling:
     """Test suite for duplicate agreement name validation"""
+
+    @pytest.fixture(autouse=True)
+    def _mock_current_user(self, monkeypatch):
+        monkeypatch.setattr("ops_api.ops.services.agreements.get_current_user", lambda: MagicMock(id=1))
 
     def test_create_agreement_with_duplicate_name_raises_validation_error(self, loaded_db, app_ctx):
         """Test that creating an agreement with a duplicate name (same type) raises ValidationError"""
