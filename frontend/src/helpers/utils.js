@@ -453,7 +453,7 @@ export const formatDateForApi = (date) => {
     const [month, day, year] = parts;
     if (!month || !day || !year) return null;
 
-    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
 };
 
 export const formatDateForScreen = (date) => {
