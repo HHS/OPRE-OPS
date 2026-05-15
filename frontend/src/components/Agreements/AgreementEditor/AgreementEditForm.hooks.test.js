@@ -1,5 +1,5 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const triggerGetAgreementsMock = vi.fn();
 const unwrapMock = vi.fn();
@@ -14,6 +14,7 @@ const useUpdateAgreementMock = vi.fn();
 const useSelectorMock = vi.fn();
 const useLocationMock = vi.fn();
 const hasStateChangedMock = vi.fn();
+const scrollToCenterMock = vi.fn();
 
 vi.mock("react-router-dom", async (importOriginal) => {
     const actual = await importOriginal();
@@ -34,6 +35,10 @@ vi.mock("../../../api/opsAPI", () => ({
     useGetProductServiceCodesQuery: () => ({ data: [], error: null, isLoading: false }),
     useLazyGetAgreementsQuery: () => [triggerGetAgreementsMock],
     useUpdateAgreementMutation: () => [updateAgreementMock]
+}));
+
+vi.mock("../../../helpers/scrollToCenter.helper", () => ({
+    scrollToCenter: (...args) => scrollToCenterMock(...args)
 }));
 
 vi.mock("../../../hooks/use-alert.hooks", () => ({
@@ -284,5 +289,80 @@ describe("useAgreementEditForm uniqueness checks", () => {
         await waitFor(() => {
             expect(result.current.shouldDisableBtn).toBe(true);
         });
+    });
+});
+
+describe("useAgreementEditForm scrolls to first conflicting field on submit", () => {
+    let rafSpy;
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+        useLocationMock.mockReturnValue({ pathname: "/agreements/create" });
+        useSelectorMock.mockReturnValue(false);
+        hasStateChangedMock.mockReturnValue(false);
+        useEditAgreementDispatchMock.mockReturnValue(vi.fn());
+        useSetStateMock.mockReturnValue(vi.fn());
+        useUpdateAgreementMock.mockReturnValue(vi.fn());
+        useEditAgreementMock.mockReturnValue(makeEditState());
+        rafSpy = vi.spyOn(window, "requestAnimationFrame").mockImplementation((cb) => {
+            cb();
+            return 0;
+        });
+    });
+
+    afterEach(() => {
+        rafSpy.mockRestore();
+    });
+
+    it("handleContinue scrolls to the title field when the title is a duplicate", async () => {
+        useEditAgreementMock.mockReturnValue(makeEditState({ agreement_type: "CONTRACT", name: "Existing Title" }));
+        setLazyQueryResult(1);
+
+        const goToNext = vi.fn();
+        const { result } = renderUseAgreementEditForm({ goToNext });
+
+        await act(async () => {
+            await result.current.handleContinue();
+        });
+
+        expect(scrollToCenterMock).toHaveBeenCalledWith("name");
+        expect(goToNext).not.toHaveBeenCalled();
+        expect(updateAgreementMock).not.toHaveBeenCalled();
+    });
+
+    it("handleDraft scrolls to the nickname field when only the nickname is a duplicate", async () => {
+        useEditAgreementMock.mockReturnValue(
+            makeEditState({ agreement_type: "CONTRACT", name: "Unique Title", nick_name: "Taken" })
+        );
+        // First call resolves the title check (no conflict), second resolves the nickname check (conflict).
+        unwrapMock.mockResolvedValueOnce({ count: 0, agreements: [] });
+        unwrapMock.mockResolvedValueOnce({ count: 1, agreements: [] });
+        triggerGetAgreementsMock.mockReturnValue({ unwrap: unwrapMock });
+
+        const { result } = renderUseAgreementEditForm();
+
+        await act(async () => {
+            await result.current.handleDraft();
+        });
+
+        expect(scrollToCenterMock).toHaveBeenCalledWith("nickname");
+        expect(navigateMock).not.toHaveBeenCalledWith("/agreements");
+    });
+
+    it("does not scroll when both title and nickname pass uniqueness checks", async () => {
+        useEditAgreementMock.mockReturnValue(
+            makeEditState({ agreement_type: "CONTRACT", name: "Unique Title", nick_name: "UniqueNick" })
+        );
+        unwrapMock.mockResolvedValueOnce({ count: 0, agreements: [] });
+        unwrapMock.mockResolvedValueOnce({ count: 0, agreements: [] });
+        triggerGetAgreementsMock.mockReturnValue({ unwrap: unwrapMock });
+
+        const { result } = renderUseAgreementEditForm();
+
+        await act(async () => {
+            await result.current.handleContinue();
+        });
+
+        expect(scrollToCenterMock).not.toHaveBeenCalled();
     });
 });

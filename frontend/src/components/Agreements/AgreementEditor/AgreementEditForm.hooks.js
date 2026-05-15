@@ -10,6 +10,7 @@ import {
     useUpdateAgreementMutation
 } from "../../../api/opsAPI";
 import { calculateAgreementTotal, cleanAgreementForApi, formatTeamMember } from "../../../helpers/agreement.helpers.js";
+import { scrollToCenter } from "../../../helpers/scrollToCenter.helper";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import useAlert from "../../../hooks/use-alert.hooks";
 import useHasStateChanged from "../../../hooks/useHasStateChanged.hooks";
@@ -460,12 +461,19 @@ const useAgreementEditForm = (
             runUniqueCheck("name", agreementTitle),
             runUniqueCheck("nick_name", agreementNickName)
         ]);
-        return !nameConflict && !nickNameConflict;
+        if (nameConflict) return "name";
+        if (nickNameConflict) return "nickname";
+        return null;
     };
 
     const handleContinue = async () => {
-        const isUnique = await verifyUniquenessBeforeSubmit();
-        if (!isUnique) return;
+        const conflictFieldId = await verifyUniquenessBeforeSubmit();
+        if (conflictFieldId) {
+            // Defer to the next frame so the inline error message renders
+            // before the smooth scroll measures its target position.
+            requestAnimationFrame(() => scrollToCenter(conflictFieldId));
+            return;
+        }
 
         if (shouldRequestChange) {
             setShowModal(true);
@@ -502,8 +510,13 @@ const useAgreementEditForm = (
     };
 
     const handleDraft = async () => {
-        const isUnique = await verifyUniquenessBeforeSubmit();
-        if (!isUnique) return;
+        const conflictFieldId = await verifyUniquenessBeforeSubmit();
+        if (conflictFieldId) {
+            // Defer to the next frame so the inline error message renders
+            // before the smooth scroll measures its target position.
+            requestAnimationFrame(() => scrollToCenter(conflictFieldId));
+            return;
+        }
 
         try {
             await saveAgreement();
