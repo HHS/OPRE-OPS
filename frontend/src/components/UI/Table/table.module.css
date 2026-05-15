@@ -12,3 +12,8 @@
     vertical-align: top;
     padding-bottom: 0 !important;
 }
+
+.procurementDetailsTable td:nth-child(2),
+.procurementDetailsTable th:nth-child(2) {
+    padding-left: 2rem !important;
+}

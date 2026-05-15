@@ -11,7 +11,8 @@ export const SORT_TYPES = {
     BUDGET_LINES: "Budget Lines",
     CAN_BLI: "CAN Budget Line",
     CAN_FUNDING_RECEIVED: "CAN Funding Received",
-    CAN_TABLE: "CAN Table"
+    CAN_TABLE: "CAN Table",
+    PROCUREMENT_DETAILS: "Procurement Details"
 };
 
 const getAllBudgetLineComparableValue = (budgetLine, condition) => {
@@ -46,7 +47,7 @@ const getBLIDiffComparableValue = (budgetLine, condition, totalFunding = 0) => {
         case tableSortCodes.budgetLineCodes.AGREEMENT_NAME:
             return budgetLine.agreement?.name ?? NO_DATA;
         case tableSortCodes.budgetLineCodes.OBLIGATE_BY:
-            return new Date(budgetLine.date_needed);
+            return budgetLine.date_needed ? new Date(budgetLine.date_needed) : new Date(0);
         case tableSortCodes.budgetLineCodes.FISCAL_YEAR:
             return budgetLine.fiscal_year ? budgetLine.fiscal_year : fiscalYearFromDate(budgetLine.date_needed);
         case tableSortCodes.budgetLineCodes.CAN_NUMBER:
@@ -99,13 +100,38 @@ const convertStatusToOrdinalValue = (budgetLineStatus) => {
     return 100;
 };
 
+const getProcurementDetailsComparableValue = (agreement, condition, context = {}) => {
+    const { userNameById = {}, targetDateByAgreementId = {}, daysInStepByAgreementId = {} } = context;
+    switch (condition) {
+        case tableSortCodes.agreementCodes.AGREEMENT:
+            return (agreement.display_name ?? "").toLowerCase();
+        case "COR":
+            return (userNameById[agreement.project_officer_id] ?? "").toLowerCase();
+        case "PROC_SHOP":
+            return (agreement.procurement_shop?.abbr ?? "").toLowerCase();
+        case "TOTAL_EXECUTING":
+            return (agreement.budget_line_items ?? [])
+                .filter((bli) => bli.status === BLI_STATUS.EXECUTING)
+                .reduce((sum, bli) => sum + (bli.amount ?? 0), 0);
+        case "TARGET_DATE":
+            return targetDateByAgreementId[agreement.id]
+                ? new Date(targetDateByAgreementId[agreement.id])
+                : new Date(0);
+        case "DAYS_IN_STEP":
+            return daysInStepByAgreementId[agreement.id] ?? 0;
+        default:
+            return agreement;
+    }
+};
+
 const VALUE_RETRIEVAL_FUNCTIONS = {
     "All Budget Lines": getAllBudgetLineComparableValue,
     "BLI Diff": getBLIDiffComparableValue,
     "BLI Review": getBLIDiffComparableValue,
     "Budget Lines": getBLIDiffComparableValue,
     "CAN Budget Line": getBLIDiffComparableValue,
-    "CAN Funding Received": getFundingReceivedComparableValue
+    "CAN Funding Received": getFundingReceivedComparableValue,
+    "Procurement Details": getProcurementDetailsComparableValue
 };
 
 const compareRows = (a, b, descending) => {
@@ -117,12 +143,12 @@ const compareRows = (a, b, descending) => {
     return 0;
 };
 
-export const useSortData = (items, descending, sortCondition, sortType, totalFunding = 0) => {
+export const useSortData = (items, descending, sortCondition, sortType, sortContext = 0) => {
     let sortableItems = [...items];
     const getComparableValue = VALUE_RETRIEVAL_FUNCTIONS[sortType];
     return sortableItems.sort((a, b) => {
-        const aVal = getComparableValue(a, sortCondition, totalFunding);
-        const bVal = getComparableValue(b, sortCondition, totalFunding);
+        const aVal = getComparableValue(a, sortCondition, sortContext);
+        const bVal = getComparableValue(b, sortCondition, sortContext);
         return compareRows(aVal, bVal, descending);
     });
 };
