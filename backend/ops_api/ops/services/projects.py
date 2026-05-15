@@ -425,7 +425,27 @@ class ProjectsService(OpsService[Project]):
             The Project instance
         """
 
-        project = self.db_session.get(Project, id)
+        # Eager-load the relationships traversed by the response serializer
+        # (project_metadata) and by check_project_user_association, to avoid N+1 queries.
+        stmt = (
+            select(Project)
+            .where(Project.id == id)
+            .options(
+                selectinload(Project.team_leaders),
+                selectinload(Project.agreements).selectinload(Agreement.team_members),
+                selectinload(Project.agreements)
+                .selectinload(Agreement.budget_line_items)
+                .selectinload(BudgetLineItem.can)
+                .selectinload(CAN.portfolio)
+                .selectinload(Portfolio.division),
+                selectinload(Project.agreements)
+                .selectinload(Agreement.budget_line_items)
+                .selectinload(BudgetLineItem.can)
+                .selectinload(CAN.portfolio)
+                .selectinload(Portfolio.team_leaders),
+            )
+        )
+        project = self.db_session.scalar(stmt)
         if not project:
             raise ResourceNotFoundError("Project", id)
         return project

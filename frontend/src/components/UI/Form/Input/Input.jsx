@@ -18,6 +18,7 @@ import Tooltip from "../../USWDS/Tooltip";
  * @param {boolean} [props.isDisabled] - A flag to indicate if the input is disabled (optional).
  * @param {number} [props.maxLength] - The maximum number of characters allow (optional).
  * @param {string} [props.tooltipMsg] - Tooltip message
+ * @param {Object} [props.inputStyle] - Inline style applied to the input element (optional).
  * @returns {React.ReactElement} - The rendered input component.
  */
 const Input = ({
@@ -32,7 +33,8 @@ const Input = ({
     isRequired = false,
     isRequiredNoShow = false,
     isDisabled = false,
-    tooltipMsg = ""
+    tooltipMsg = "",
+    inputStyle
 }) => {
     return (
         <fieldset
@@ -72,6 +74,7 @@ const Input = ({
                         value={value}
                         maxLength={maxLength}
                         disabled={true}
+                        style={inputStyle}
                     />
                 </Tooltip>
             ) : (
@@ -85,6 +88,7 @@ const Input = ({
                     value={value}
                     maxLength={maxLength}
                     disabled={false}
+                    style={inputStyle}
                 />
             )}
         </fieldset>
