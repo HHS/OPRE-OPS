@@ -196,7 +196,9 @@ const AgreementEditForm = ({
                 label="Agreement Title"
                 messages={[...res.getErrors("name"), ...uniquenessErrors.name]}
                 maxLength={200}
-                className={`${cn("name")} ${uniquenessErrors.name.length > 0 ? "usa-form-group usa-form-group--error" : ""}`}
+                className={[cn("name"), uniquenessErrors.name.length > 0 && "usa-form-group usa-form-group--error"]
+                    .filter(Boolean)
+                    .join(" ")}
                 isRequired={true}
                 value={agreementTitle}
                 onChange={(name, value) => {

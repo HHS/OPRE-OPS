@@ -216,15 +216,15 @@ const useAgreementEditForm = (
 
     let res = suite.get();
 
-    const checkUniqueOnBlur = React.useCallback(
+    const runUniqueCheck = React.useCallback(
         async (field, value) => {
             const trimmed = (value ?? "").trim();
             if (!trimmed) {
                 setUniquenessErrors((prev) => (prev[field].length === 0 ? prev : { ...prev, [field]: [] }));
-                return;
+                return false;
             }
             if (field === "name" && !agreementType) {
-                return;
+                return false;
             }
             try {
                 const filters =
@@ -232,32 +232,48 @@ const useAgreementEditForm = (
                         ? { agreementName: [{ name: trimmed }], agreementType: [{ type: agreementType }] }
                         : { nickName: [trimmed] };
                 const result = await triggerGetAgreements({ filters, page: 0, limit: 1 }).unwrap();
-                const matches = result?.agreements ?? [];
-                const excludeId = agreement?.id ?? null;
-                const conflict = matches.some((match) => match.id !== excludeId);
+                const totalMatches = result?.count ?? 0;
+                // The current agreement (in edit mode) is itself in the result set when its
+                // saved value still matches the input. Treat that one row as not a conflict.
+                const currentMatchesInput =
+                    !!agreement?.id &&
+                    (field === "name"
+                        ? agreement?.agreement_type === agreementType &&
+                          (agreement?.name ?? "").toLowerCase() === trimmed.toLowerCase()
+                        : agreement?.nick_name === trimmed);
+                const conflict = totalMatches > (currentMatchesInput ? 1 : 0);
                 setUniquenessErrors((prev) => ({
                     ...prev,
                     [field]: conflict ? [UNIQUE_ERROR_MESSAGES[field]] : []
                 }));
+                return conflict;
             } catch {
                 setUniquenessErrors((prev) => (prev[field].length === 0 ? prev : { ...prev, [field]: [] }));
+                return false;
             }
         },
-        [agreement?.id, agreementType, triggerGetAgreements]
+        [
+            agreement?.id,
+            agreement?.agreement_type,
+            agreement?.name,
+            agreement?.nick_name,
+            agreementType,
+            triggerGetAgreements
+        ]
     );
 
-    const debouncedCheckUnique = React.useMemo(
-        () => debounce((field, value) => checkUniqueOnBlur(field, value), 300),
-        [checkUniqueOnBlur]
+    const checkUniqueOnBlur = React.useMemo(
+        () => debounce((field, value) => runUniqueCheck(field, value), 300),
+        [runUniqueCheck]
     );
 
-    React.useEffect(() => () => debouncedCheckUnique.cancel(), [debouncedCheckUnique]);
+    React.useEffect(() => () => checkUniqueOnBlur.cancel(), [checkUniqueOnBlur]);
 
     // When agreement_type changes, re-check the title uniqueness because the
     // backend constraint is scoped per type.
     React.useEffect(() => {
         if (agreementType && agreementTitle) {
-            debouncedCheckUnique("name", agreementTitle);
+            checkUniqueOnBlur("name", agreementTitle);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [agreementType]);
@@ -438,7 +454,19 @@ const useAgreementEditForm = (
         wasEditModeRef.current = isEditMode;
     }, [isEditMode, setIsCancelling]);
 
+    const verifyUniquenessBeforeSubmit = async () => {
+        checkUniqueOnBlur.cancel();
+        const [nameConflict, nickNameConflict] = await Promise.all([
+            runUniqueCheck("name", agreementTitle),
+            runUniqueCheck("nick_name", agreementNickName)
+        ]);
+        return !nameConflict && !nickNameConflict;
+    };
+
     const handleContinue = async () => {
+        const isUnique = await verifyUniquenessBeforeSubmit();
+        if (!isUnique) return;
+
         if (shouldRequestChange) {
             setShowModal(true);
             setModalProps({
@@ -474,6 +502,9 @@ const useAgreementEditForm = (
     };
 
     const handleDraft = async () => {
+        const isUnique = await verifyUniquenessBeforeSubmit();
+        if (!isUnique) return;
+
         try {
             await saveAgreement();
             setHasAgreementChanged(false);
