@@ -3,6 +3,7 @@ import classnames from "vest/classnames";
 import { useUpdateCanMutation } from "../../../api/opsAPI";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import useAlert from "../../../hooks/use-alert.hooks";
+import useNavigationBlocker from "../../../hooks/useNavigationBlocker.hooks";
 import suite from "./suite.js";
 /**
  * @description - Custom hook for the CAN Detail Form.
@@ -26,12 +27,50 @@ export default function useCanDetailForm(canId, canNumber, canNickname, canDescr
     const [updateCan] = useUpdateCanMutation();
     const { setAlert } = useAlert();
 
+    const hasChanged = nickName !== canNickname || description !== canDescription;
+
     let res = suite.get();
 
     const cn = classnames(suite.get(), {
         invalid: "usa-form-group--error",
         valid: "success",
         warning: "warning"
+    });
+
+    const saveChanges = React.useCallback(async () => {
+        const payload = {
+            number: canNumber,
+            portfolio_id: portfolioId,
+            nick_name: nickName,
+            description: description
+        };
+
+        await updateCan({
+            id: canId,
+            data: payload
+        }).unwrap();
+
+        setAlert({
+            type: "success",
+            heading: "CAN Updated",
+            message: `The CAN ${canNumber} has been successfully updated.`
+        });
+    }, [canId, canNumber, portfolioId, nickName, description, updateCan, setAlert]);
+
+    // No wasEditModeRef needed: this component unmounts when edit mode toggles off,
+    // so isCancelling resets naturally on remount.
+    const { showBlockerModal, setShowBlockerModal, blockerModalProps, setIsCancelling } = useNavigationBlocker({
+        hasChanged,
+        saveChanges,
+        onExit: toggleEditMode,
+        onSaveError: () => {
+            setAlert({
+                type: "error",
+                heading: "Error",
+                message: "An error occurred while updating the CAN.",
+                redirectUrl: "/error"
+            });
+        }
     });
 
     const handleCancel = (e) => {
@@ -41,31 +80,27 @@ export default function useCanDetailForm(canId, canNumber, canNickname, canDescr
             heading: "Are you sure you want to cancel editing? Your changes will not be saved.",
             actionButtonText: "Cancel Edits",
             secondaryButtonText: "Continue Editing",
-            handleConfirm: () => cleanUp()
+            handleConfirm: () => {
+                setIsCancelling(true);
+                cleanUp();
+            }
         });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        const payload = {
-            number: canNumber,
-            portfolio_id: portfolioId,
-            nick_name: nickName,
-            description: description
-        };
-
-        setAlert({
-            type: "success",
-            heading: "CAN Updated",
-            message: `The CAN ${canNumber} has been successfully updated.`
-        });
-
-        updateCan({
-            id: canId,
-            data: payload
-        });
-
-        cleanUp();
+        try {
+            await saveChanges();
+            cleanUp();
+        } catch (error) {
+            console.error("Error Updating CAN", error);
+            setAlert({
+                type: "error",
+                heading: "Error",
+                message: "An error occurred while updating the CAN.",
+                redirectUrl: "/error"
+            });
+        }
     };
 
     const cleanUp = () => {
@@ -103,6 +138,9 @@ export default function useCanDetailForm(canId, canNumber, canNickname, canDescr
         cn,
         setShowModal,
         showModal,
-        modalProps
+        modalProps,
+        showBlockerModal,
+        setShowBlockerModal,
+        blockerModalProps
     };
 }

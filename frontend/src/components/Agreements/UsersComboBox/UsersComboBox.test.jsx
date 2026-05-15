@@ -47,7 +47,7 @@ describe("UsersComboBox", () => {
             />
         );
 
-        expect(useGetUsersQuery).toHaveBeenCalledWith({}, { skip: false });
+        expect(useGetUsersQuery).toHaveBeenCalledWith({ excludeReadOnlyUsers: false }, { skip: false });
         expect(screen.getByText("Loading...")).toBeInTheDocument();
     });
 
@@ -203,7 +203,7 @@ describe("UsersComboBox", () => {
         );
 
         // Should call the API with skip: true
-        expect(useGetUsersQuery).toHaveBeenCalledWith({}, { skip: true });
+        expect(useGetUsersQuery).toHaveBeenCalledWith({ excludeReadOnlyUsers: false }, { skip: true });
 
         // Should render the combobox
         expect(screen.getByText("Choose a user")).toBeInTheDocument();
@@ -225,7 +225,7 @@ describe("UsersComboBox", () => {
         );
 
         // Should call the API with skip: false
-        expect(useGetUsersQuery).toHaveBeenCalledWith({}, { skip: false });
+        expect(useGetUsersQuery).toHaveBeenCalledWith({ excludeReadOnlyUsers: false }, { skip: false });
 
         // Should render the combobox
         expect(screen.getByText("Choose a user")).toBeInTheDocument();

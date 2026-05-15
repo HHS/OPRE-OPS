@@ -31,19 +31,26 @@ import ReleaseNotes from "./pages/home/release-notes";
 import ReportingPage from "./pages/reporting/ReportingPage";
 import UserAdmin from "./pages/users/admin/UserAdmin.jsx";
 import ReviewAgreement from "./pages/agreements/review/ReviewAgreement";
-import { RequestPreAwardApproval, ApprovePreAwardApproval } from "./pages/agreements/pre-award-approval";
+import {
+    RequestPreAwardApproval,
+    ApprovePreAwardApproval,
+    ReviewBudgetTeamRequisition
+} from "./pages/agreements/pre-award-approval";
 import UserDetail from "./pages/users/detail/UserDetail";
 import UploadDocument from "./components/Agreements/Documents/UploadDocument.jsx";
 import EditUser from "./pages/users/edit/EditUser";
 import VersionPage from "./pages/version/VersionPage";
 import WhatsNext from "./pages/home/whats-next";
 import ProcurementMocksDebug from "./pages/dev/ProcurementMocksDebug";
+import RoleProtectedRoute from "./components/Auth/RoleProtectedRoute/RoleProtectedRoute";
+import { PROCUREMENT_DASHBOARD_ROLES } from "./components/Users/User.constants";
 import DataVizDebug from "./pages/dev/DataVizDebug";
 
 // NOTE: store muse be imported after react-router-dom to avoid access lexical declaration 'opsApi' before initialization
 
 //  USWDS
 import "./uswds/css/styles.css";
+import ProcurementDashboard from "./pages/procurementDashboard/ProcurementDashboardPage";
 
 // Cross-platform typography fixes (loaded after USWDS)
 import "./index.css";
@@ -306,6 +313,20 @@ const router = createBrowserRouter(
                     }}
                 />
                 <Route
+                    path="/agreements/:id/review-budget-requisition"
+                    element={<ReviewBudgetTeamRequisition />}
+                    handle={{
+                        crumb: () => (
+                            <Link
+                                to="/agreements"
+                                className="text-primary"
+                            >
+                                Agreements
+                            </Link>
+                        )
+                    }}
+                />
+                <Route
                     path="/cans"
                     element={<CanList />}
                 />
@@ -313,6 +334,12 @@ const router = createBrowserRouter(
                     path="/reporting"
                     element={<ReportingPage />}
                 />
+                <Route element={<RoleProtectedRoute allowedRoles={PROCUREMENT_DASHBOARD_ROLES} />}>
+                    <Route
+                        path="/procurement-dashboard"
+                        element={<ProcurementDashboard />}
+                    />
+                </Route>
                 <Route
                     path="/cans/:id/*"
                     element={<Can />}

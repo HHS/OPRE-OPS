@@ -1,4 +1,5 @@
 import cx from "clsx";
+import { useState, useEffect, useRef } from "react";
 import CurrencyFormat from "react-currency-format";
 
 /**
@@ -28,6 +29,25 @@ const CurrencyInput = ({
     placeholder = "$",
     ...rest
 }) => {
+    // displayValue holds the raw formatted string (e.g. "5.") so a trailing
+    // decimal isn't stripped before the user finishes typing the cents.
+    const [displayValue, setDisplayValue] = useState(value ?? "");
+    // Set to true on each user keystroke so the useEffect skips the parent's
+    // round-trip echo and doesn't overwrite the in-progress display string.
+    const skipNextSyncRef = useRef(false);
+
+    useEffect(() => {
+        if (skipNextSyncRef.current) {
+            skipNextSyncRef.current = false;
+            return;
+        }
+        setDisplayValue(value ?? "");
+    }, [value]);
+
+    function handleChange(e) {
+        onChange(name, e.target.value);
+    }
+
     return (
         <div className={cx("usa-form-group", pending && "pending", className)}>
             <label
@@ -47,14 +67,15 @@ const CurrencyInput = ({
             <CurrencyFormat
                 id={name}
                 name={name}
-                value={value}
+                value={displayValue}
                 className={`usa-input ${messages.length ? "usa-input--error" : ""} `}
                 thousandSeparator={true}
                 decimalScale={2}
                 placeholder={placeholder}
                 onValueChange={(values) => {
+                    skipNextSyncRef.current = true;
+                    setDisplayValue(values.value);
                     const { floatValue } = values;
-                    // Explicitly check if floatValue is a number (including 0)
                     if (setEnteredAmount) {
                         setEnteredAmount(typeof floatValue === "number" ? floatValue : null);
                     }
@@ -64,9 +85,6 @@ const CurrencyInput = ({
             />
         </div>
     );
-    function handleChange(e) {
-        onChange(name, e.target.value);
-    }
 };
 
 export default CurrencyInput;

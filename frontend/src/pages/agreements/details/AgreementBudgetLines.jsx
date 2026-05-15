@@ -46,6 +46,7 @@ import icons from "../../../uswds/img/sprite.svg";
  * @param {boolean} props.isEditMode - Whether the edit mode is on.
  * @param {boolean} props.isAgreementNotDeveloped - Whether the agreement is not yet developed.
  * @param {boolean} props.isAgreementAwarded - Whether the agreement is awarded.
+ * @param {boolean} [props.isPreAwardInReview] - if the agreement is in review for pre-award approval
  * @param {Function} props.setIsEditMode - The function to set the edit mode.
  * @returns {JSX.Element} - The rendered component.
  */
@@ -54,7 +55,8 @@ const AgreementBudgetLines = ({
     isEditMode,
     setIsEditMode,
     isAgreementNotDeveloped,
-    isAgreementAwarded
+    isAgreementAwarded,
+    isPreAwardInReview = false
 }) => {
     // TODO: Create a custom hook for this business logix (./AgreementBudgetLines.hooks.js)
     const navigate = useNavigate();
@@ -171,6 +173,7 @@ const AgreementBudgetLines = ({
                         isEditMode={isEditMode}
                         setIsEditMode={setIsEditMode}
                         isEditable={canUserEditAgreement}
+                        isPreAwardInReview={isPreAwardInReview}
                     />
                     <div className="display-flex flex-justify">
                         <AgreementTotalCard

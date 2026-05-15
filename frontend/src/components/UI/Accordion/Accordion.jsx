@@ -19,9 +19,10 @@ import accordion from "@uswds/uswds/js/usa-accordion";
  * @param {string} [props.id] - Optional id for anchor linking.
  * @param {string} [props.dataCy] - Data attribute for testing.
  * @param {(isOpen: boolean) => void} [props.onToggle] - Optional callback fired on toggle.
+ * @param {React.Ref} ref - Forwarded ref to the accordion container div.
  * @returns {JSX.Element} - The rendered accordion component.
  */
-const Accordion = ({ heading, children, level = 4, isClosed = false, id, dataCy, onToggle }) => {
+const Accordion = React.forwardRef(({ heading, children, level = 4, isClosed = false, id, dataCy, onToggle }, ref) => {
     const accordionId = React.useId();
     const AccordionHeading = `h${level}`;
     const [isOpen, setIsOpen] = React.useState(!isClosed);
@@ -57,7 +58,14 @@ const Accordion = ({ heading, children, level = 4, isClosed = false, id, dataCy,
             id={id}
             className={`usa-accordion ${isOpen ? "padding-bottom-6" : ""}`}
             style={{ lineHeight: "inherit" }}
-            ref={accordionRef}
+            ref={(node) => {
+                accordionRef.current = node;
+                if (typeof ref === "function") {
+                    ref(node);
+                } else if (ref) {
+                    ref.current = node;
+                }
+            }}
             data-cy={dataCy}
         >
             <AccordionHeading className="usa-accordion__heading">
@@ -86,6 +94,8 @@ const Accordion = ({ heading, children, level = 4, isClosed = false, id, dataCy,
             </div>
         </div>
     );
-};
+});
+
+Accordion.displayName = "Accordion";
 
 export default Accordion;

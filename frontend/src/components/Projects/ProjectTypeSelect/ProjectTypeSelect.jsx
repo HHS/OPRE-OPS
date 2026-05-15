@@ -1,5 +1,19 @@
 import cx from "clsx";
+import IsRequiredHelper from "../../UI/Form/IsRequiredHelper";
 
+/**
+ * @component
+ * @param {Object} props
+ * @param {string} props.name
+ * @param {string} [props.label]
+ * @param {Function} props.onChange
+ * @param {boolean} [props.pending]
+ * @param {string[]} [props.messages]
+ * @param {string} props.value
+ * @param {string} [props.className]
+ * @param {boolean} [props.isRequired]
+ * @returns {React.ReactElement}
+ */
 export const ProjectTypeSelect = ({
     name,
     label = name,
@@ -7,9 +21,13 @@ export const ProjectTypeSelect = ({
     pending = false,
     messages = [],
     value,
-    className
+    className,
+    isRequired = false
 }) => {
-    const PROJECT_TYPES = ["Research"];
+    const PROJECT_TYPES = [
+        { value: "Research", label: "Research Projects" },
+        { value: "Admin & Support", label: "Admin/Support Projects" }
+    ];
 
     return (
         <div className={cx("usa-form-group", pending && "pending", className)}>
@@ -27,7 +45,9 @@ export const ProjectTypeSelect = ({
                 >
                     {messages[0]}
                 </span>
-            ) : null}
+            ) : (
+                <IsRequiredHelper isRequired={isRequired} />
+            )}
             <div className="display-flex flex-align-center margin-top-1">
                 <select
                     id={name}
@@ -37,13 +57,19 @@ export const ProjectTypeSelect = ({
                     value={value}
                     data-cy="project-type-select"
                 >
-                    <option value={0}>- Select Project Type -</option>
-                    {PROJECT_TYPES.map((type, index) => (
+                    <option
+                        value=""
+                        disabled
+                        hidden
+                    >
+                        - Select Project Type -
+                    </option>
+                    {PROJECT_TYPES.map((type) => (
                         <option
-                            key={index + 1}
-                            value={type}
+                            key={type.value}
+                            value={type.value}
                         >
-                            {type}
+                            {type.label}
                         </option>
                     ))}
                 </select>

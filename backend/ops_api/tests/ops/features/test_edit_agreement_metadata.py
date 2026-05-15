@@ -41,6 +41,7 @@ def test_contract(loaded_db, test_project, test_admin_user, test_vendor):
         name="Feature Test Contract",
         contract_number="CT0999",
         contract_type=ContractType.FIRM_FIXED_PRICE,
+        service_requirement_type=ServiceRequirementType.SEVERABLE,
         agreement_type=AgreementType.CONTRACT,
         project_id=test_project.id,
         project_officer_id=test_admin_user.id,
@@ -243,6 +244,7 @@ def test_contract_with_division_director(loaded_db, test_project):
         contract_number="CT0111",
         contract_type=ContractType.FIRM_FIXED_PRICE,
         agreement_type=AgreementType.CONTRACT,
+        service_requirement_type=ServiceRequirementType.SEVERABLE,
         project_id=test_project.id,
     )
     loaded_db.add(contract_agreement)

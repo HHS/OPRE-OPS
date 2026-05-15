@@ -9,11 +9,24 @@ import customStyles from "./FilterButton.module.css";
  * @param {Function} props.applyFilter - A function to call after clicking the Apply button.
  * @param {Function} props.resetFilter - A function to call after clicking the Reset button.
  * @param {Object[]} props.fieldsetList - An array of fieldsets to display in the modal.
+ * @param {boolean} [props.showModal] - Optional controlled state for modal visibility.
+ * @param {Function} [props.setShowModal] - Optional controlled setter for modal visibility.
  * @param {boolean} [props.disabled] - Whether the button is disabled.
  * @returns {JSX.Element} - The procurement shop select element.
  */
-export const FilterButton = ({ applyFilter, resetFilter, fieldsetList, disabled = false }) => {
-    const [showModal, setShowModal] = React.useState(false);
+export const FilterButton = ({
+    applyFilter,
+    resetFilter,
+    fieldsetList,
+    showModal: externalShowModal,
+    setShowModal: externalSetShowModal,
+    disabled = false
+}) => {
+    const [internalShowModal, setInternalShowModal] = React.useState(false);
+
+    // Use external state if provided, otherwise use internal state
+    const showModal = externalShowModal !== undefined ? externalShowModal : internalShowModal;
+    const setShowModal = externalSetShowModal || setInternalShowModal;
 
     const handleApplyFilter = () => {
         applyFilter();

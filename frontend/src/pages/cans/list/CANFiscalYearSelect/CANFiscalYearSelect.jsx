@@ -13,6 +13,7 @@ const CANFiscalYearSelect = ({ fiscalYear, setSelectedFiscalYear }) => {
         <FiscalYear
             fiscalYear={fiscalYear}
             handleChangeFiscalYear={setSelectedFiscalYear}
+            showAllOption={true}
         />
     );
 };

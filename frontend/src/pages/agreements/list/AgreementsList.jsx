@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { PacmanLoader } from "react-spinners";
 import {
     useGetAgreementsFilterOptionsQuery,
@@ -23,6 +24,7 @@ import { setAlert } from "../../../components/UI/Alert/alertSlice";
 import FiscalYear from "../../../components/UI/FiscalYear";
 import PaginationNav from "../../../components/UI/PaginationNav/PaginationNav";
 import { useSetSortConditions } from "../../../components/UI/Table/Table.hooks";
+import { USER_ROLES } from "../../../components/Users/User.constants";
 import { ITEMS_PER_PAGE } from "../../../constants";
 import { exportTableToXlsx } from "../../../helpers/tableExport.helpers";
 import { convertCodeForDisplay, formatDate, getCurrentFiscalYear } from "../../../helpers/utils";
@@ -40,6 +42,8 @@ import AgreementTabs from "./AgreementsTabs";
  */
 const AgreementsList = () => {
     const navigate = useNavigate();
+    const userRoles = useSelector((state) => state.auth?.activeUser?.roles) ?? [];
+    const isBudgetTeam = userRoles.some((role) => role?.name === USER_ROLES.BUDGET_TEAM);
     const [isExporting, setIsExporting] = useState(false);
     const [searchParams] = useSearchParams();
     const [filters, setFilters] = useState({
@@ -177,8 +181,9 @@ const AgreementsList = () => {
     }
     if (changeRequestUrl) {
         subtitle = "For Review";
-        details =
-            "This is a list of changes within your Division that require your review and approval. This list could include requests for budget changes, status changes or actions taking place during the procurement process.";
+        details = isBudgetTeam
+            ? "This is a list of agreements that have changes pending your review. This list could include Pre-Award Requisitions and Award."
+            : "This is a list of changes within your Division that require your review and approval. This list could include requests for budget changes, status changes or actions taking place during the procurement process.";
     }
 
     const handleExport = async () => {

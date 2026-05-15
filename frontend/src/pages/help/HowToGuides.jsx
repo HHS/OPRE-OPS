@@ -4,6 +4,7 @@ import remarkGfm from "remark-gfm";
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Accordion from "../../components/UI/Accordion";
+import { safeRedirectPath, safeRedirectSearch } from "../../helpers/safeRedirect.helpers";
 import { data } from "./content/howToGuides";
 import { buildAnchorIds, getAnchorIdFromHash } from "./helpCenterAnchors";
 
@@ -56,10 +57,13 @@ const HowToGuides = () => {
                             onToggle={(isOpen) => {
                                 if (!isOpen) return;
 
+                                // Guard pathname and search to silence Snyk's open-redirect taint
+                                // analysis: both come from react-router's location and are
+                                // same-origin in practice, but the sink doesn't know that.
                                 navigate(
                                     {
-                                        pathname: location.pathname,
-                                        search: location.search,
+                                        pathname: safeRedirectPath(location.pathname),
+                                        search: safeRedirectSearch(location.search),
                                         hash: `#${anchorId}`
                                     },
                                     { replace: true }
