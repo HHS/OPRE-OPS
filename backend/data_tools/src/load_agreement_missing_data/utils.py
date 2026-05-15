@@ -90,9 +90,7 @@ def get_or_create_vendor(vendor_name: str, sys_user: User, session: Session) -> 
     :param session: The database session.
     :return: The Vendor instance, or None if vendor_name is empty.
     """
-    vendor = session.execute(
-        select(Vendor).where(func.upper(Vendor.name) == vendor_name.upper())
-    ).scalar_one_or_none()
+    vendor = session.execute(select(Vendor).where(func.upper(Vendor.name) == vendor_name.upper())).scalar_one_or_none()
 
     if vendor:
         return vendor
@@ -117,11 +115,13 @@ def get_user_by_name(name: str, session: Session) -> Optional[User]:
     :param session: The database session.
     :return: The User instance, or None if not found.
     """
-    results = session.execute(
-        select(User).where(
-            func.upper(func.concat(User.first_name, " ", User.last_name)) == name.upper()
+    results = (
+        session.execute(
+            select(User).where(func.upper(func.concat(User.first_name, " ", User.last_name)) == name.upper())
         )
-    ).scalars().all()
+        .scalars()
+        .all()
+    )
 
     if len(results) > 1:
         logger.error(
