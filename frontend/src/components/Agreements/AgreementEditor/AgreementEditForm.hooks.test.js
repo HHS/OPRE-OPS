@@ -168,9 +168,7 @@ describe("useAgreementEditForm uniqueness checks", () => {
         });
 
         await waitFor(() => {
-            expect(result.current.uniquenessErrors.name).toEqual([
-                "This title already exists. Try a different one"
-            ]);
+            expect(result.current.uniquenessErrors.name).toEqual(["This title already exists. Try a different one"]);
         });
         expect(triggerGetAgreementsMock).toHaveBeenCalledWith({
             filters: {
@@ -222,9 +220,7 @@ describe("useAgreementEditForm uniqueness checks", () => {
         });
 
         await waitFor(() => {
-            expect(result.current.uniquenessErrors.name).toEqual([
-                "This title already exists. Try a different one"
-            ]);
+            expect(result.current.uniquenessErrors.name).toEqual(["This title already exists. Try a different one"]);
         });
     });
 
