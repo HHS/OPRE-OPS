@@ -33,6 +33,7 @@ from ops_api.ops.resources.agreement_agency import (
     AgreementAgencyListAPI,
 )
 from ops_api.ops.resources.agreement_history import AgreementHistoryListAPI
+from ops_api.ops.resources.agreement_spending import AgreementSpendingItemAPI
 from ops_api.ops.resources.agreements import (
     AgreementItemAPI,
     AgreementListAPI,
@@ -99,6 +100,7 @@ from ops_api.ops.resources.procurement_tracker_steps import (
     ProcurementTrackerStepItemAPI,
     ProcurementTrackerStepListAPI,
     ProcurementTrackerStepPendingApprovalsAPI,
+    ProcurementTrackerStepPendingRequisitionsAPI,
 )
 from ops_api.ops.resources.procurement_trackers import (
     ProcurementTrackerItemAPI,
@@ -130,6 +132,7 @@ from ops_api.ops.utils.version import VersionAPI
 # AGREEMENT ENDPOINTS
 AGREEMENT_ITEM_API_VIEW_FUNC = AgreementItemAPI.as_view("agreements-item", Agreement)
 AGREEMENT_LIST_API_VIEW_FUNC = AgreementListAPI.as_view("agreements-group", Agreement)
+AGREEMENT_SPENDING_ITEM_API_VIEW_FUNC = AgreementSpendingItemAPI.as_view("agreements-spending-item", Agreement)
 
 # Agreement History Endpoint
 AGREEMENT_HISTORY_LIST_API_VIEW_FUNC = AgreementHistoryListAPI.as_view("agreement-history", AgreementHistory)
@@ -193,6 +196,9 @@ PROCUREMENT_TRACKER_STEP_LIST_API_VIEW_FUNC = ProcurementTrackerStepListAPI.as_v
 )
 PROCUREMENT_TRACKER_STEP_PENDING_APPROVALS_API_VIEW_FUNC = ProcurementTrackerStepPendingApprovalsAPI.as_view(
     "procurement-tracker-steps-pending-approvals", ProcurementTrackerStep
+)
+PROCUREMENT_TRACKER_STEP_PENDING_REQUISITIONS_API_VIEW_FUNC = ProcurementTrackerStepPendingRequisitionsAPI.as_view(
+    "procurement-tracker-steps-pending-requisitions", ProcurementTrackerStep
 )
 # LOOKUP ENDPOINTS
 LOOKUP_AGREEMENT_REASON_LIST_API_VIEW_FUNC = AgreementReasonListAPI.as_view("lookups-agreement-reason-list")

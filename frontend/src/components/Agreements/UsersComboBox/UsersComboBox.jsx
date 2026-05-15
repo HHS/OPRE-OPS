@@ -13,6 +13,7 @@ import ComboBox from "../../UI/Form/ComboBox";
  * @param {string} [props.label] - The label for the input (optional).
  * @param {boolean} [props.isDisabled] - Whether the comboBox is disabled (optional).
  * @param {import("../../../types/UserTypes").SafeUser[] | null} [props.users] - Optional array of users to display. If not provided, users will be fetched from the API (optional).
+ * @param {boolean} [props.excludeReadOnlyUsers] - Whether to exclude read-only users (optional).
  * @returns {React.ReactElement} The UsersComboBox component.
  */
 const UsersComboBox = ({
@@ -23,13 +24,14 @@ const UsersComboBox = ({
     onChange = () => {},
     label = "Choose a user",
     isDisabled = false,
-    users = null
+    users = null,
+    excludeReadOnlyUsers = false
 }) => {
     const {
         data: fetchedUsers,
         error: errorUsers,
         isLoading: isLoadingUsers
-    } = useGetUsersQuery({}, { skip: users !== null });
+    } = useGetUsersQuery({ excludeReadOnlyUsers }, { skip: users !== null });
 
     const userData = users ?? fetchedUsers;
 

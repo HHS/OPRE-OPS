@@ -35,6 +35,7 @@ describe("useGetAllAgreements", () => {
         });
 
         expect(result.current.agreements).toEqual([]);
+        expect(result.current.metadata).toBeNull();
         expect(result.current.isError).toBe(false);
         expect(result.current.error).toBeNull();
         expect(triggerMock).not.toHaveBeenCalled();
@@ -42,7 +43,13 @@ describe("useGetAllAgreements", () => {
 
     it("fetches a single page when count <= limit", async () => {
         triggerMock.mockImplementation(() => ({
-            unwrap: () => Promise.resolve({ agreements: [{ id: 1 }, { id: 2 }], count: 2 })
+            unwrap: () =>
+                Promise.resolve({
+                    agreements: [{ id: 1 }, { id: 2 }],
+                    count: 2,
+                    procurement_overview: { total: 100 },
+                    procurement_step_summary: { steps: [] }
+                })
         }));
 
         const { result } = renderHook(() => useGetAllAgreements({ filters: { fiscalYear: [2026] } }));
@@ -52,6 +59,11 @@ describe("useGetAllAgreements", () => {
         });
 
         expect(result.current.agreements).toEqual([{ id: 1 }, { id: 2 }]);
+        expect(result.current.metadata).toEqual({
+            count: 2,
+            procurement_overview: { total: 100 },
+            procurement_step_summary: { steps: [] }
+        });
         expect(result.current.isError).toBe(false);
         expect(triggerMock).toHaveBeenCalledTimes(1);
         expect(triggerMock).toHaveBeenCalledWith(
@@ -70,7 +82,12 @@ describe("useGetAllAgreements", () => {
         triggerMock.mockImplementation(({ page }) => {
             if (page === 0) {
                 return {
-                    unwrap: () => Promise.resolve({ agreements: [{ id: 1 }, { id: 2 }], count: 120 })
+                    unwrap: () =>
+                        Promise.resolve({
+                            agreements: [{ id: 1 }, { id: 2 }],
+                            count: 120,
+                            procurement_overview: { total: 500 }
+                        })
                 };
             }
             if (page === 1) {
@@ -86,6 +103,7 @@ describe("useGetAllAgreements", () => {
         });
 
         expect(result.current.agreements).toEqual([{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }]);
+        expect(result.current.metadata).toEqual({ count: 120, procurement_overview: { total: 500 } });
         expect(triggerMock).toHaveBeenCalledTimes(3);
     });
 

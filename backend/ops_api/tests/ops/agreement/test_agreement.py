@@ -118,7 +118,7 @@ def test_agreements_get_all_by_budget_line_status(auth_client, loaded_db, app_ct
         query_string={"budget_line_status": BudgetLineItemStatus.DRAFT.name},
     )
     assert response.status_code == 200
-    assert len(response.json["data"]) == len(agreements)
+    assert response.json["count"] == len(agreements)
 
     # determine how many agreements in the DB are in budget line status "OBLIGATED"
     stmt = (
@@ -134,7 +134,7 @@ def test_agreements_get_all_by_budget_line_status(auth_client, loaded_db, app_ct
         query_string={"budget_line_status": BudgetLineItemStatus.OBLIGATED.name},
     )
     assert response.status_code == 200
-    assert len(response.json["data"]) == len(agreements)
+    assert response.json["count"] == len(agreements)
 
 
 def test_agreements_get_all_by_portfolio(auth_client, loaded_db, app_ctx):
@@ -594,12 +594,22 @@ def test_agreement_search(auth_client, loaded_db):
     assert response.status_code == 200
     assert len(response.json["data"]) == 0
 
+    # determine how many agreements match "contract" search
+    stmt = select(Agreement).distinct().where(Agreement.name.ilike("%contract%"))
+    expected_count = len(loaded_db.scalars(stmt).all())
+    assert expected_count > 0
+
     response = auth_client.get(
         url_for("api.agreements-group"),
         query_string={"search": "contract"},
     )
     assert response.status_code == 200
-    assert len(response.json["data"]) == 5
+    assert response.json["count"] == expected_count
+
+    # determine how many agreements match "Contract #" search
+    stmt = select(Agreement).distinct().where(Agreement.name.ilike("%Contract #%"))
+    expected_count = len(loaded_db.scalars(stmt).all())
+    assert expected_count > 0
 
     response = auth_client.get(
         url_for("api.agreements-group"),
@@ -607,7 +617,7 @@ def test_agreement_search(auth_client, loaded_db):
     )
 
     assert response.status_code == 200
-    assert len(response.json["data"]) == 4
+    assert response.json["count"] == expected_count
 
 
 def test_agreement_name_filter_partial_match(auth_client, loaded_db):
@@ -621,23 +631,31 @@ def test_agreement_name_filter_partial_match(auth_client, loaded_db):
     assert len(response.json["data"]) == 0
 
     # Test partial match with lowercase "contract" should match agreements with "Contract" in name
+    stmt = select(Agreement).distinct().where(Agreement.name.ilike("%contract%"))
+    expected_count = len(loaded_db.scalars(stmt).all())
+    assert expected_count > 0
+
     response = auth_client.get(
         url_for("api.agreements-group"),
         query_string={"name": "contract", "exact_match": "false"},
     )
     assert response.status_code == 200
-    assert len(response.json["data"]) == 5
+    assert response.json["count"] == expected_count
     # Verify all results contain "contract" in their name (case-insensitive)
     for agreement in response.json["data"]:
         assert "contract" in agreement["name"].lower()
 
     # Test partial match with "Contract #" should match agreements starting with "Contract #"
+    stmt = select(Agreement).distinct().where(Agreement.name.ilike("%Contract #%"))
+    expected_count = len(loaded_db.scalars(stmt).all())
+    assert expected_count > 0
+
     response = auth_client.get(
         url_for("api.agreements-group"),
         query_string={"name": "Contract #", "exact_match": "false"},
     )
     assert response.status_code == 200
-    assert len(response.json["data"]) == 4
+    assert response.json["count"] == expected_count
     # Verify all results contain "Contract #" in their name (case-insensitive)
     for agreement in response.json["data"]:
         assert "contract #" in agreement["name"].lower()
@@ -1369,12 +1387,25 @@ def test_post_iaa_agreement(auth_client, loaded_db, app_ctx):
     assert response.status_code == 200
 
 
+def test_agreements_post_contract_without_service_requirement_type_returns_400(auth_client, loaded_db, app_ctx):
+    response = auth_client.post(
+        url_for("api.agreements-group"),
+        json={
+            "agreement_type": AgreementType.CONTRACT.name,
+            "name": "Test Contract (missing SRT)",
+        },
+    )
+    assert response.status_code == 400
+    assert "service_requirement_type" in response.json["errors"]
+
+
 def test_agreements_post(auth_client, loaded_db, app_ctx):
     response = auth_client.post(
         url_for("api.agreements-group"),
         json={
             "agreement_type": AgreementType.CONTRACT.name,
             "name": "Test Contract (for post)",
+            "service_requirement_type": "SEVERABLE",
         },
     )
     assert response.status_code == 201
@@ -1453,6 +1484,7 @@ def test_agreements_post_contract_with_vendor(
             "project_id": test_project.id,
             "awarding_entity_id": 2,
             "contract_type": "FIRM_FIXED_PRICE",
+            "service_requirement_type": "SEVERABLE",
             "research_methodologies": [
                 {
                     "id": 1,

@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from decimal import Decimal
 from typing import Any, Optional, Sequence
 
+from flask_jwt_extended import get_current_user
 from loguru import logger
 from sqlalchemy import distinct, or_, select
 from sqlalchemy.orm import selectinload
@@ -19,8 +20,8 @@ from models import (
     ResearchProject,
     User,
 )
-from ops_api.ops.services.ops_service import OpsService, ResourceNotFoundError, ValidationError
-from ops_api.ops.utils.query_helpers import QueryHelper
+from ops_api.ops.services.ops_service import AuthorizationError, OpsService, ResourceNotFoundError, ValidationError
+from ops_api.ops.utils.projects_helpers import check_project_user_association
 
 
 @dataclass
@@ -71,12 +72,8 @@ class ProjectsService(OpsService[Project]):
         Validate that the immutable fields are not changed on the project.
         Raises ValidationError if any fields are invalid.
         """
-        # Validate that immutable fields aren't being changed
         if "id" in updated_fields and project.id != updated_fields.get("id"):
             raise ValidationError({"id": ["ID cannot be changed"]})
-
-        if "project_type" in updated_fields and project.project_type != updated_fields.get("project_type"):
-            raise ValidationError({"project_type": ["Project type cannot be changed"]})
 
     def _validate_and_convert_team_leaders(self, team_leaders_data) -> list[User]:
         """
@@ -160,13 +157,43 @@ class ProjectsService(OpsService[Project]):
         Raises:
             ResourceNotFoundError: If the project doesn't exist
             ValidationError: If trying to change immutable fields or invalid data
+            AuthorizationError: If the user is not authorized to update the project
         """
-        # Get the existing project
-        project = self.db_session.get(Project, id)
+        # Eager-load the relationships traversed by check_project_user_association
+        # to keep the authorization check to a single query.
+        stmt = (
+            select(Project)
+            .where(Project.id == id)
+            .options(
+                selectinload(Project.team_leaders),
+                selectinload(Project.agreements).selectinload(Agreement.team_members),
+                selectinload(Project.agreements)
+                .selectinload(Agreement.budget_line_items)
+                .selectinload(BudgetLineItem.can)
+                .selectinload(CAN.portfolio)
+                .selectinload(Portfolio.division),
+                selectinload(Project.agreements)
+                .selectinload(Agreement.budget_line_items)
+                .selectinload(BudgetLineItem.can)
+                .selectinload(CAN.portfolio)
+                .selectinload(Portfolio.team_leaders),
+            )
+        )
+        project = self.db_session.scalar(stmt)
         if not project:
             raise ResourceNotFoundError("Project", id)
 
+        user = get_current_user()
+        if not check_project_user_association(project, user):
+            raise AuthorizationError(f"update Project {id}", "Project")
+
         self._check_immutable_fields(project, updated_fields)
+
+        # Handle project type change via raw SQL on the model
+        new_type = updated_fields.pop("project_type", None)
+        if new_type and new_type != project.project_type:
+            project.change_type(new_type)
+            project = self.db_session.get(Project, id)
 
         # Remove origination_date if updating an admin project (not a valid field for that type)
         if project.project_type == ProjectType.ADMINISTRATIVE_AND_SUPPORT:
@@ -225,12 +252,10 @@ class ProjectsService(OpsService[Project]):
         Returns:
             SQLAlchemy select statement
         """
+        # Base query with all necessary eager loading
         stmt = (
             select(ResearchProject)
             .distinct(ResearchProject.id)
-            .join(Agreement, isouter=True)
-            .join(BudgetLineItem, isouter=True)
-            .join(CAN, isouter=True)
             .options(
                 selectinload(ResearchProject.agreements).selectinload(Agreement.services_components),
                 selectinload(ResearchProject.agreements)
@@ -242,35 +267,63 @@ class ProjectsService(OpsService[Project]):
             )
         )
 
-        query_helper = QueryHelper(stmt)
+        # For filtering, we use EXISTS subqueries to ensure each filter can match different
+        # related records. This prevents the issue where a single joined row must satisfy
+        # multiple conditions across different tables (e.g., one agreement for fiscal year
+        # and a different agreement for agreement name).
+        where_clauses = []
 
-        # Apply portfolio filter (OR logic - match any portfolio)
+        # Apply portfolio filter using EXISTS subquery
         if filters.portfolio_id:
-            query_helper.add_column_in_list(CAN.portfolio_id, filters.portfolio_id)
+            portfolio_subquery = (
+                select(1)
+                .select_from(Agreement)
+                .join(BudgetLineItem)
+                .join(CAN)
+                .where(Agreement.project_id == ResearchProject.id)
+                .where(CAN.portfolio_id.in_(filters.portfolio_id))
+                .exists()
+            )
+            where_clauses.append(portfolio_subquery)
 
-        # Apply fiscal year filter (OR logic - match any fiscal year)
+        # Apply fiscal year filter using EXISTS subquery
         if filters.fiscal_year:
-            if len(filters.fiscal_year) == 1:
-                fiscal_year = filters.fiscal_year[0]
-                query_helper.add_column_equals(BudgetLineItem.fiscal_year, fiscal_year)
-            else:
-                # Multiple fiscal years - use IN clause
-                query_helper.add_column_in_list(BudgetLineItem.fiscal_year, filters.fiscal_year)
+            fy_subquery = (
+                select(1)
+                .select_from(Agreement)
+                .join(BudgetLineItem)
+                .where(Agreement.project_id == ResearchProject.id)
+                .where(BudgetLineItem.fiscal_year.in_(filters.fiscal_year))
+                .exists()
+            )
+            where_clauses.append(fy_subquery)
 
         # Apply project search filter on project title (OR logic, exact match on title/short title)
         if filters.project_search:
-            query_helper.where_clauses.append(
-                or_(Project.title.in_(filters.project_search), Project.short_title.in_(filters.project_search))
+            where_clauses.append(
+                or_(
+                    ResearchProject.title.in_(filters.project_search),
+                    ResearchProject.short_title.in_(filters.project_search),
+                )
             )
 
-        # Apply agreement search filter on agreement name and nick_name (exact match - OR logic)
-        # Projects are returned if any agreement has name OR nick_name matching any search term
+        # Apply agreement search filter using EXISTS subquery
         if filters.agreement_search:
-            query_helper.where_clauses.append(
-                or_(Agreement.name.in_(filters.agreement_search), Agreement.nick_name.in_(filters.agreement_search))
+            agreement_subquery = (
+                select(1)
+                .select_from(Agreement)
+                .where(Agreement.project_id == ResearchProject.id)
+                .where(
+                    or_(Agreement.name.in_(filters.agreement_search), Agreement.nick_name.in_(filters.agreement_search))
+                )
+                .exists()
             )
+            where_clauses.append(agreement_subquery)
 
-        stmt = query_helper.get_stmt()
+        # Apply all where clauses
+        if where_clauses:
+            stmt = stmt.where(*where_clauses)
+
         logger.debug(f"SQL: {stmt}")
 
         return stmt
@@ -285,55 +338,78 @@ class ProjectsService(OpsService[Project]):
         Returns:
             SQLAlchemy select statement
         """
+        # Base query with all necessary eager loading
         stmt = (
             select(AdministrativeAndSupportProject)
             .distinct(AdministrativeAndSupportProject.id)
-            .join(Agreement, isouter=True)
-            .join(BudgetLineItem, isouter=True)
-            .join(CAN, isouter=True)
             .options(
-                selectinload(ResearchProject.agreements).selectinload(Agreement.services_components),
-                selectinload(ResearchProject.agreements)
+                selectinload(AdministrativeAndSupportProject.agreements).selectinload(Agreement.services_components),
+                selectinload(AdministrativeAndSupportProject.agreements)
                 .selectinload(Agreement.budget_line_items)
                 .selectinload(BudgetLineItem.can),
-                selectinload(ResearchProject.agreements).selectinload(Agreement.special_topics),
-                selectinload(ResearchProject.agreements).selectinload(Agreement.research_methodologies),
-                selectinload(ResearchProject.agreements).selectinload(Agreement.team_members),
+                selectinload(AdministrativeAndSupportProject.agreements).selectinload(Agreement.special_topics),
+                selectinload(AdministrativeAndSupportProject.agreements).selectinload(Agreement.research_methodologies),
+                selectinload(AdministrativeAndSupportProject.agreements).selectinload(Agreement.team_members),
             )
         )
 
-        query_helper = QueryHelper(stmt)
+        # For filtering, we use EXISTS subqueries to ensure each filter can match different
+        # related records. This prevents the issue where a single joined row must satisfy
+        # multiple conditions across different tables (e.g., one agreement for fiscal year
+        # and a different agreement for agreement name).
+        where_clauses = []
 
-        # Apply portfolio filter (OR logic - match any portfolio)
+        # Apply portfolio filter using EXISTS subquery
         if filters.portfolio_id:
-            query_helper.add_column_in_list(CAN.portfolio_id, filters.portfolio_id)
+            portfolio_subquery = (
+                select(1)
+                .select_from(Agreement)
+                .join(BudgetLineItem)
+                .join(CAN)
+                .where(Agreement.project_id == AdministrativeAndSupportProject.id)
+                .where(CAN.portfolio_id.in_(filters.portfolio_id))
+                .exists()
+            )
+            where_clauses.append(portfolio_subquery)
 
-        # Apply fiscal year filter (OR logic - match any fiscal year)
+        # Apply fiscal year filter using EXISTS subquery
         if filters.fiscal_year:
-            if len(filters.fiscal_year) == 1:
-                fiscal_year = filters.fiscal_year[0]
-                query_helper.add_column_equals(BudgetLineItem.fiscal_year, fiscal_year)
-            else:
-                # Multiple fiscal years - use IN clause
-                query_helper.add_column_in_list(BudgetLineItem.fiscal_year, filters.fiscal_year)
+            fy_subquery = (
+                select(1)
+                .select_from(Agreement)
+                .join(BudgetLineItem)
+                .where(Agreement.project_id == AdministrativeAndSupportProject.id)
+                .where(BudgetLineItem.fiscal_year.in_(filters.fiscal_year))
+                .exists()
+            )
+            where_clauses.append(fy_subquery)
 
-        # Apply project search filter on project title (AND logic - must match all search terms)
+        # Apply project search filter on project title (OR logic, exact match on title/short title)
         if filters.project_search:
-            query_helper.where_clauses.append(
+            where_clauses.append(
                 or_(
-                    Project.title.in_(filters.project_search),
-                    Project.short_title.in_(filters.project_search),
+                    AdministrativeAndSupportProject.title.in_(filters.project_search),
+                    AdministrativeAndSupportProject.short_title.in_(filters.project_search),
                 )
             )
 
-        # Apply agreement search filter on agreement name and nick_name (exact match - OR logic)
-        # Projects are returned if any agreement has name OR nick_name matching any search term
+        # Apply agreement search filter using EXISTS subquery
         if filters.agreement_search:
-            query_helper.where_clauses.append(
-                or_(Agreement.name.in_(filters.agreement_search), Agreement.nick_name.in_(filters.agreement_search))
+            agreement_subquery = (
+                select(1)
+                .select_from(Agreement)
+                .where(Agreement.project_id == AdministrativeAndSupportProject.id)
+                .where(
+                    or_(Agreement.name.in_(filters.agreement_search), Agreement.nick_name.in_(filters.agreement_search))
+                )
+                .exists()
             )
+            where_clauses.append(agreement_subquery)
 
-        stmt = query_helper.get_stmt()
+        # Apply all where clauses
+        if where_clauses:
+            stmt = stmt.where(*where_clauses)
+
         logger.debug(f"SQL: {stmt}")
 
         return stmt
@@ -349,7 +425,27 @@ class ProjectsService(OpsService[Project]):
             The Project instance
         """
 
-        project = self.db_session.get(Project, id)
+        # Eager-load the relationships traversed by the response serializer
+        # (project_metadata) and by check_project_user_association, to avoid N+1 queries.
+        stmt = (
+            select(Project)
+            .where(Project.id == id)
+            .options(
+                selectinload(Project.team_leaders),
+                selectinload(Project.agreements).selectinload(Agreement.team_members),
+                selectinload(Project.agreements)
+                .selectinload(Agreement.budget_line_items)
+                .selectinload(BudgetLineItem.can)
+                .selectinload(CAN.portfolio)
+                .selectinload(Portfolio.division),
+                selectinload(Project.agreements)
+                .selectinload(Agreement.budget_line_items)
+                .selectinload(BudgetLineItem.can)
+                .selectinload(CAN.portfolio)
+                .selectinload(Portfolio.team_leaders),
+            )
+        )
+        project = self.db_session.scalar(stmt)
         if not project:
             raise ResourceNotFoundError("Project", id)
         return project
@@ -624,7 +720,7 @@ class ProjectsService(OpsService[Project]):
         )
         project_types = sorted([pt.name for pt in self.db_session.scalars(project_types_query).all()])
 
-        # Step 6: Agreement names and nick_names - Query both and create a sorted list
+        # Step 6: Agreement names and nick_names - Query both and create a sorted list of dicts
         agreement_names_query = (
             select(Agreement.id, Agreement.name, Agreement.nick_name)
             .join(Project, Agreement.project_id == Project.id)
@@ -632,16 +728,19 @@ class ProjectsService(OpsService[Project]):
             .where(Agreement.name.isnot(None))
         )
 
-        # Collect all names and nick_names into a single sorted list
-        # Don't need ids because the match query matches directly on name and nick_name.
-        agreement_values = set()  # Use set to avoid duplicates
-        for _, a_name, a_nick_name in self.db_session.execute(agreement_names_query).all():
-            if a_name:
-                agreement_values.add(a_name)
-            if a_nick_name:
-                agreement_values.add(a_nick_name)
+        # Collect all names and nick_names into a list of dicts with ids
+        # Use a dict keyed by name to avoid duplicates while preserving id
+        agreement_values_dict = {}  # Key: name, Value: id
+        for a_id, a_name, a_nick_name in self.db_session.execute(agreement_names_query).all():
+            if a_name and a_name not in agreement_values_dict:
+                agreement_values_dict[a_name] = a_id
+            if a_nick_name and a_nick_name not in agreement_values_dict:
+                agreement_values_dict[a_nick_name] = a_id
 
-        agreement_names = sorted(list(agreement_values))
+        # Convert to list of dicts and sort by name
+        agreement_names = sorted(
+            [{"id": a_id, "name": name} for name, a_id in agreement_values_dict.items()], key=lambda x: x["name"]
+        )
 
         # Build response
         filters = {

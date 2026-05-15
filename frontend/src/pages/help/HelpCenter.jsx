@@ -4,6 +4,7 @@ import App from "../../App";
 import PageHeader from "../../components/UI/PageHeader";
 import Tabs from "../../components/UI/Tabs";
 import { HELP_CENTER_EXPORT_URL } from "../../constants";
+import { safeRedirectPath } from "../../helpers/safeRedirect.helpers";
 import icons from "../../uswds/img/sprite.svg";
 import FAQ from "./FAQ";
 import Feedback from "./Feedback";
@@ -15,8 +16,11 @@ const HelpCenter = () => {
     const navigate = useNavigate();
     useEffect(() => {
         const currentPath = window.location.pathname;
-        if (currentPath.endsWith("/")) {
-            navigate(currentPath.slice(0, -1), { replace: true });
+        if (currentPath.endsWith("/") && currentPath.length > 1) {
+            // Validate the trimmed path before redirecting — keeps Snyk's
+            // open-redirect taint analysis happy and guards against protocol-
+            // relative shapes like "//foo/" → "//foo".
+            navigate(safeRedirectPath(currentPath.slice(0, -1)), { replace: true });
         }
     }, [navigate]);
 

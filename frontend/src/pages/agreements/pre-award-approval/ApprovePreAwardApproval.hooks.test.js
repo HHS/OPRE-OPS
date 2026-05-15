@@ -197,7 +197,7 @@ describe("useApprovePreAwardApproval", () => {
         expect(result.current.approvalAlreadyProcessed).toBe(true);
     });
 
-    it("should grant permission to BUDGET_TEAM users", () => {
+    it("should NOT grant permission to BUDGET_TEAM users (they only enter requisitions after DD approval)", () => {
         const store = createTestStore({
             activeUser: {
                 id: 200,
@@ -208,7 +208,7 @@ describe("useApprovePreAwardApproval", () => {
 
         const { result } = renderHook(() => useApprovePreAwardApproval(1), { wrapper });
 
-        expect(result.current.hasPermission).toBe(true);
+        expect(result.current.hasPermission).toBe(false);
     });
 
     it("should grant permission to SYSTEM_OWNER users", () => {

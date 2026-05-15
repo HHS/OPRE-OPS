@@ -52,4 +52,5 @@ export type Project = {
     updated_on?: string;
     created_by?: any;
     updated_by?: any;
+    _meta?: { isEditable: boolean };
 };

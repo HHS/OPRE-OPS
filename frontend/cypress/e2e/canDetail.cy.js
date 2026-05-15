@@ -478,9 +478,35 @@ describe("CAN funding page", () => {
             .and("contain", "$6,000,000.00")
             .and("contain", "60%");
     });
+    it("disables edit button and shows tooltip for previous fiscal years", () => {
+        cy.visit("/cans/515/funding");
+        // Select a previous fiscal year (2024 is before current fiscal year)
+        cy.get("#fiscal-year-select").select("2024");
+        // Edit button should be disabled
+        cy.get("#edit").should("be.disabled");
+        // Edit button should have disabled styling (greyed out text)
+        cy.get("#edit span").should("have.class", "text-base-light");
+        cy.get("#edit svg").should("have.class", "text-base-light");
+        // Edit button should have not-allowed cursor
+        cy.get("#edit").should("have.css", "cursor", "not-allowed");
+        // Hover over the edit button to trigger tooltip (force: true needed for disabled elements)
+        cy.get("#edit").trigger("mouseover", { force: true });
+        // Tooltip should appear with the correct message
+        cy.get(".usa-tooltip__body")
+            .should("be.visible")
+            .and("contain", "Only data from the current fiscal year can be edited.");
+        // Select current fiscal year
+        cy.get("#fiscal-year-select").select(currentFiscalYear);
+        // Edit button should be enabled
+        cy.get("#edit").should("not.be.disabled");
+        // Edit button should have normal styling
+        cy.get("#edit span").should("have.class", "text-primary");
+        cy.get("#edit svg").should("have.class", "text-primary");
+    });
     it("handles budget form", () => {
         cy.visit(`/cans/${can527.number}/funding`);
-        cy.get("#edit", { timeout: 20000 }).should("be.visible").click();
+        cy.get("#edit", { timeout: 20000 }).should("be.visible").and("not.be.disabled");
+        cy.get("#edit").click();
         closeWelcomeModalIfPresent();
         // cy.get("#carry-forward-card").should("contain", "$ 578,023.00");
         cy.get("#save-changes", { timeout: 20000 }).should("be.disabled");
@@ -840,10 +866,124 @@ describe("CAN funding page", () => {
     });
 });
 
-// const checkCANHistory = () => {
-//     cy.get("h3").should("have.text", "History");
-//     cy.get('[data-cy="can-history-container"]').should("exist");
-//     cy.get('[data-cy="can-history-container"]').scrollIntoView();
-//     cy.get('[data-cy="can-history-list"]').should("exist");
-//     cy.get('[data-cy="can-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]').should("exist");
-// };
+describe("CAN unsaved changes navigation blocking", () => {
+    it("blocks navigation when CAN detail form has unsaved changes and allows leaving without saving", () => {
+        cy.visit("/cans/502/");
+        cy.get("#fiscal-year-select").select(currentFiscalYear);
+        cy.get("#edit").click();
+        cy.get("h2").should("contain", "Edit CAN Details");
+        // make a change
+        cy.get("#can-nickName").clear();
+        cy.get("#can-nickName").type("Unsaved Nickname");
+        // try to navigate away via tab
+        cy.get('[data-cy="details-tab-CAN Funding"]').click();
+        // blocker modal should appear
+        cy.get(".usa-modal__heading").should("contain", "You have unsaved changes");
+        cy.get(".usa-prose").should("contain", "Do you want to save your changes before leaving this page?");
+        // click "Leave without saving"
+        cy.get("[data-cy='cancel-action']").click();
+        // should navigate to funding tab
+        cy.url().should("include", "/funding");
+        // should no longer be in edit mode
+        cy.get("h2").should("contain", "CAN Funding");
+        cy.get('[data-cy="details-tab-CAN Details"]').click();
+        cy.get("#edit").should("be.visible").and("not.be.disabled");
+    });
+
+    it("saves changes and navigates when choosing save on CAN detail form blocker", () => {
+        cy.visit("/cans/502/");
+        cy.get("#fiscal-year-select").select(currentFiscalYear);
+        cy.get("#edit").click();
+        // make a change
+        cy.get("#can-nickName").clear();
+        cy.get("#can-nickName").type("Blocker Save Test");
+        // try to navigate away
+        cy.get('[data-cy="details-tab-CAN Spending"]').click();
+        // blocker modal should appear
+        cy.get(".usa-modal__heading").should("contain", "You have unsaved changes");
+        // click "Save Changes"
+        cy.get("[data-cy='confirm-action']").click();
+        // should navigate to spending tab
+        cy.url().should("include", "/spending");
+        // alert should show success
+        cy.get(".usa-alert__body").should("contain", "The CAN G99PHS9 has been successfully updated.");
+        // revert the change
+        cy.visit("/cans/502/");
+        cy.get("#fiscal-year-select").select(currentFiscalYear);
+        cy.get("#edit").click();
+        cy.get("#can-nickName").clear();
+        cy.get("#can-nickName").type(can502Nickname);
+        cy.get("#save-changes").click();
+    });
+
+    it("allows navigation without modal when no CAN detail changes were made", () => {
+        cy.visit("/cans/502/");
+        cy.get("#fiscal-year-select").select(currentFiscalYear);
+        cy.get("#edit").click();
+        cy.get("h2").should("contain", "Edit CAN Details");
+        // do NOT make any changes, just navigate away
+        cy.get('[data-cy="details-tab-CAN Funding"]').click();
+        // should navigate directly without a modal
+        cy.get(".usa-modal__heading").should("not.exist");
+        cy.url().should("include", "/funding");
+        cy.get("h2").should("contain", "CAN Funding");
+    });
+
+    it("closes the blocker modal and stays on CAN detail page when pressing Escape", () => {
+        cy.visit("/cans/502/");
+        cy.get("#fiscal-year-select").select(currentFiscalYear);
+        cy.get("#edit").click();
+        // make a change
+        cy.get("#can-nickName").clear();
+        cy.get("#can-nickName").type("Escape Test");
+        // try to navigate away
+        cy.get('[data-cy="details-tab-CAN Funding"]').click();
+        cy.get(".usa-modal__heading").should("contain", "You have unsaved changes");
+        // press Escape to close the modal
+        cy.get("body").type("{esc}");
+        cy.get(".usa-modal__heading").should("not.exist");
+        // should still be on the detail page in edit mode
+        cy.url().should("include", "/cans/502");
+        cy.url().should("not.include", "/funding");
+        cy.get("#can-nickName").should("have.value", "Escape Test");
+    });
+
+    it("blocks navigation when CAN funding form has unsaved changes", () => {
+        cy.visit(`/cans/${can527.number}/funding`);
+        cy.get("#edit", { timeout: 20000 }).should("be.visible").and("not.be.disabled");
+        cy.get("#edit").click();
+        closeWelcomeModalIfPresent();
+        cy.get("[data-cy=budget-received-card]").should("contain", "Received");
+        waitForCurrencyContent("[data-cy=budget-received-card]");
+        // make a change to the budget
+        setMoneyInputValue("#budget-amount", "9999999");
+        cy.get("#add-fy-budget").click();
+        // try to navigate away
+        cy.get('[data-cy="details-tab-CAN Details"]').click();
+        // blocker modal should appear
+        cy.get(".usa-modal__heading").should("contain", "You have unsaved changes");
+        // click "Leave without saving"
+        cy.get("[data-cy='cancel-action']").click();
+        // should navigate to details tab
+        cy.url().should("match", /\/cans\/527\/?$/);
+        cy.get("h2").should("contain", "CAN Details");
+        cy.get('[data-cy="details-tab-CAN Funding"]').click();
+        cy.get("#edit").should("be.visible").and("not.be.disabled");
+    });
+
+    it("allows navigation without modal when no CAN funding changes were made", () => {
+        cy.visit(`/cans/${can527.number}/funding`);
+        cy.get("#fiscal-year-select").select(currentFiscalYear);
+        cy.get("#edit", { timeout: 20000 }).should("be.visible").and("not.be.disabled");
+        cy.get("#edit").click();
+        closeWelcomeModalIfPresent();
+        cy.get("[data-cy=budget-received-card]").should("contain", "Received");
+        waitForCurrencyContent("[data-cy=budget-received-card]");
+        // do NOT make any changes, just navigate away
+        cy.get('[data-cy="details-tab-CAN Details"]').click();
+        // should navigate directly without a modal
+        cy.get(".usa-modal__heading").should("not.exist");
+        cy.url().should("match", /\/cans\/527\/?$/);
+        cy.get("h2").should("contain", "CAN Details");
+    });
+});
