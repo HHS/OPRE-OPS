@@ -918,7 +918,7 @@ describe("opsAPI - Wave 2 high-yield endpoint coverage", () => {
         );
 
         const storeRef = setupApiStore(opsApi);
-        await storeRef.store.dispatch(opsApi.endpoints.getCanFilterOptions.initiate({ fiscalYear: 2026 }));
+        await storeRef.store.dispatch(opsApi.endpoints.getCanFilterOptions.initiate({ fiscalYear: [2026] }));
 
         expect(capturedUrl).toContain("fiscal_year=2026");
     });
