@@ -384,6 +384,9 @@ describe("ReviewBudgetTeamRequisition", () => {
         it("should enable approve button when form is valid", () => {
             mockUseReviewBudgetTeamRequisition.mockReturnValue({
                 ...defaultHookReturn,
+                requisitionNumber: "REQ-12345",
+                requisitionDate: "05/12/2026",
+                attestationChecked: true,
                 isFormValid: vi.fn(() => true)
             });
 

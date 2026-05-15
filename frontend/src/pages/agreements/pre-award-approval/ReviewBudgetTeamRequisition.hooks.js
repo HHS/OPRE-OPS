@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, shallowEqual } from "react-redux";
 import { useUpdateProcurementTrackerStepMutation } from "../../../api/opsAPI";
@@ -6,7 +6,6 @@ import useAlert from "../../../hooks/use-alert.hooks";
 import usePreAwardApprovalData from "./usePreAwardApprovalData";
 import DatePicker from "../../../components/UI/USWDS/DatePicker";
 import { formatDateForApi } from "../../../helpers/utils";
-import React from "react";
 
 /**
  * Custom hook for the ReviewBudgetTeamRequisition page.
@@ -97,7 +96,8 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
 
     // Form validation
     const isFormValid = () => {
-        return requisitionNumber.trim() !== "" && requisitionDate !== "" && attestationChecked;
+        const formattedDate = formatDateForApi(requisitionDate);
+        return requisitionNumber.trim() !== "" && formattedDate !== null && attestationChecked;
     };
 
     // Approve handler

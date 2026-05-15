@@ -5,7 +5,7 @@ import AgreementMetaAccordion from "../../../components/Agreements/AgreementMeta
 import AgreementCANReviewAccordion from "../../../components/Agreements/AgreementCANReviewAccordion";
 import Accordion from "../../../components/UI/Accordion";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
-import { convertCodeForDisplay, formatDateToMonthDayYear, getLocalISODate } from "../../../helpers/utils";
+import { convertCodeForDisplay, formatDateToMonthDayYear } from "../../../helpers/utils";
 import icons from "../../../uswds/img/sprite.svg";
 import { PreAwardBudgetLinesReviewAccordion } from "./PreAwardBudgetLinesReviewAccordion";
 import FileUploadButton from "../../../components/UI/Button/FileUploadButton";
@@ -239,8 +239,8 @@ export const ReviewBudgetTeamRequisition = () => {
                             value={requisitionDate}
                             onChange={/** @param {any} e */ (e) => setRequisitionDate(e.target.value)}
                             isDisabled={isSubmitting || approvalAlreadyProcessed}
-                            maxDate={getLocalISODate()}
                             messages={[]}
+                            isRequiredNoShow={true}
                         />
                     </div>
                 </div>
