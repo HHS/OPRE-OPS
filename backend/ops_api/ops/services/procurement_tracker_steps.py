@@ -340,13 +340,22 @@ class ProcurementTrackerStepService:
         Detect when requisition is being approved and auto-set audit fields.
 
         Budget team approves by providing requisition_number and requisition_date.
-        Approval triggers when BOTH fields are present (allows partial updates followed by completion).
+        Approval triggers when BOTH fields are present AND is_draft flag is not True.
+
+        When is_draft=True, the update is treated as a partial save and approval logic is skipped.
+        This allows users to save requisition # and date separately without triggering approval.
 
         Args:
             step: The ProcurementTrackerStep being updated
             data: The update data dictionary
             current_user: User making the update
         """
+        # Skip approval logic for draft saves
+        is_draft_save = data.get("is_draft", False)
+        if is_draft_save:
+            logger.debug("Draft save detected (is_draft=True), skipping approval logic")
+            return
+
         # Check if not already approved
         if step.pre_award_requisition_approved_by is not None:
             return  # Already approved, nothing to do
