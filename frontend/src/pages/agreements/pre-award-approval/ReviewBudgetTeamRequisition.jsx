@@ -48,6 +48,7 @@ export const ReviewBudgetTeamRequisition = () => {
         isSubmitting,
         submitError,
         handleApprove,
+        handleSaveDraft,
         handleCancel,
         isFormValid,
         hasPermission,
@@ -300,6 +301,17 @@ export const ReviewBudgetTeamRequisition = () => {
                     data-cy="cancel-requisition-btn"
                 >
                     Cancel
+                </button>
+
+                {/* Save Draft Button */}
+                <button
+                    className="usa-button usa-button--outline margin-right-2"
+                    type="button"
+                    onClick={handleSaveDraft}
+                    disabled={isSubmitting || approvalAlreadyProcessed}
+                    data-cy="save-draft-btn"
+                >
+                    Save Draft
                 </button>
 
                 <button

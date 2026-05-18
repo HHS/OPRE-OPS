@@ -143,6 +143,61 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
         });
     };
 
+    // Save Draft handler (partial save without approval)
+    const handleSaveDraft = async () => {
+        // Validate at least one field is filled
+        if (!requisitionNumber.trim() && !requisitionDate) {
+            setSubmitError("Please enter at least a Requisition # or Requisition Date to save.");
+            return;
+        }
+
+        if (!step5?.id) {
+            setSubmitError("Unable to save: procurement tracker step not found");
+            return;
+        }
+
+        setIsSubmitting(true);
+        setSubmitError("");
+
+        try {
+            // Build request data - only include fields with values
+            /** @type {Record<string, any>} */
+            const data = {
+                is_draft: true // CRITICAL: Prevents approval trigger
+            };
+
+            // Only send requisition_number if it has a value
+            if (requisitionNumber.trim()) {
+                data.requisition_number = requisitionNumber;
+            }
+
+            // Only send requisition_date if it has a value
+            if (requisitionDate) {
+                data.requisition_date = requisitionDate;
+            }
+
+            // Call same mutation as approve, but with is_draft flag
+            // Server knows this is a draft save and will NOT trigger approval
+            await updateProcurementTrackerStep({
+                stepId: step5.id,
+                data
+            }).unwrap();
+
+            // Success: Show success message and redirect
+            setAlert({
+                type: "success",
+                heading: "Draft saved",
+                message: "Requisition information has been saved. You can return later to complete the approval.",
+                redirectUrl: "/agreements?filter=change-requests"
+            });
+
+            setIsSubmitting(false);
+        } catch (error) {
+            setSubmitError(/** @type {any} */ (error)?.data?.error || "Failed to save draft");
+            setIsSubmitting(false);
+        }
+    };
+
     // Cancel handler
     const handleCancel = () => {
         setShowModal(true);
@@ -193,6 +248,7 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
 
         // Handlers
         handleApprove,
+        handleSaveDraft,
         handleCancel,
         isFormValid,
 
