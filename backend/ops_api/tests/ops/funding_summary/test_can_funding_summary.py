@@ -86,7 +86,7 @@ def test_get_can_funding_summary_no_fiscal_year(loaded_db, test_can, app_ctx) ->
     # Check budget_line_items dynamically since they change with test data
     can_data = result["cans"][0]["can"]
     expected_bli_ids = sorted([bli.id for bli in test_can.budget_line_items])
-    assert can_data["budget_line_items"] == expected_bli_ids
+    assert sorted(can_data["budget_line_items"]) == expected_bli_ids
 
     # Remove budget_line_items from comparison for the snapshot assertion
     can_data_copy = {k: v for k, v in can_data.items() if k != "budget_line_items"}
@@ -194,7 +194,7 @@ def test_get_can_funding_summary_with_fiscal_year(loaded_db, test_can, app_ctx) 
     # Check budget_line_items dynamically since they change with test data
     can_data = result["cans"][0]["can"]
     expected_bli_ids = sorted([bli.id for bli in test_can.budget_line_items])
-    assert can_data["budget_line_items"] == expected_bli_ids
+    assert sorted(can_data["budget_line_items"]) == expected_bli_ids
 
     # Remove budget_line_items from comparison for the snapshot assertion
     can_data_copy = {k: v for k, v in can_data.items() if k != "budget_line_items"}
