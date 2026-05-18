@@ -2,6 +2,7 @@ import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import classnames from "vest/classnames";
 import {
+    useAddAgreementMutation,
     useDeleteAgreementMutation,
     useGetProjectsQuery,
     useGetProductServiceCodesQuery,
@@ -89,6 +90,7 @@ const useAgreementEditForm = (
 
     const [updateAgreement] = useUpdateAgreementMutation();
     const [deleteAgreement] = useDeleteAgreementMutation();
+    const [addAgreement] = useAddAgreementMutation();
 
     const {
         agreement,
@@ -416,12 +418,34 @@ const useAgreementEditForm = (
 
     const handleDraft = async () => {
         try {
-            await saveAgreement();
+            const result = await saveAgreement();
+            if (result === false && !agreement.id) {
+                const data = {
+                    ...agreement,
+                    team_members: (agreement.team_members ?? []).map((team_member) => {
+                        return formatTeamMember(team_member);
+                    }),
+                    requesting_agency_id: requestingAgency ? requestingAgency.id : null,
+                    servicing_agency_id: servicingAgency ? servicingAgency.id : null
+                };
+                const { cleanData } = cleanAgreementForApi(data);
+                await addAgreement(cleanData).unwrap();
+                setAlert({
+                    type: "success",
+                    heading: "Agreement Draft Saved",
+                    message: `The agreement ${agreement.name} has been successfully created.`
+                });
+            }
             setHasAgreementChanged(false);
             navigate("/agreements");
             // eslint-disable-next-line no-unused-vars
         } catch (error) {
-            // Error already handled in saveAgreement with alert and redirect
+            setAlert({
+                type: "error",
+                heading: "Error",
+                message: "An error occurred while saving the agreement.",
+                redirectUrl: "/error"
+            });
             return;
         }
     };
