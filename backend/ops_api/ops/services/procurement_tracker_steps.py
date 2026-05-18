@@ -350,6 +350,20 @@ class ProcurementTrackerStepService:
             data: The update data dictionary
             current_user: User making the update
         """
+        # Check if requisition fields are being modified
+        requisition_fields_present = "requisition_number" in data or "requisition_date" in data
+
+        # Enforce BUDGET_TEAM authorization for any requisition field modification
+        if requisition_fields_present:
+            from ops_api.ops.services.ops_service import AuthorizationError
+
+            user_role_names = [role.name for role in current_user.roles]
+            if "BUDGET_TEAM" not in user_role_names and "SYSTEM_OWNER" not in user_role_names:
+                raise AuthorizationError(
+                    f"User {current_user.id} does not have BUDGET_TEAM or SYSTEM_OWNER role required for requisition entry",
+                    "ProcurementTrackerStep",
+                )
+
         # Skip approval logic for draft saves
         is_draft_save = data.get("is_draft", False)
         if is_draft_save:
@@ -823,7 +837,7 @@ class ProcurementTrackerStepService:
 
         Returns steps where:
         - DD has approved (approval_status = 'APPROVED')
-        - Budget team hasn't entered requisition yet (requisition_number IS NULL)
+        - Budget team hasn't approved requisition yet (requisition_approved_by IS NULL)
         - User has BUDGET_TEAM role
 
         Args:

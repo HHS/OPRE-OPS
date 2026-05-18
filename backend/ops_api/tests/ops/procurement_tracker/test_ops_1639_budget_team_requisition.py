@@ -794,33 +794,26 @@ class TestDraftSaveFeature:
             final_requester_notifications == initial_requester_notifications
         ), "Requester should NOT be notified on draft saves"
 
-    def test_non_budget_team_user_cannot_save_draft(self, basic_user_auth_client, test_pre_award_step, loaded_db):
+    def test_non_budget_team_user_cannot_save_requisition_draft(self, basic_user_auth_client, test_pre_award_step, loaded_db):
         """
-        Permission check: Non-budget team users cannot save requisition drafts.
+        Permission check: Non-budget team users cannot save requisition data (draft or approval).
+        Only BUDGET_TEAM and SYSTEM_OWNER roles can modify requisition_number or requisition_date fields.
         """
         # Setup: DD approved
         test_pre_award_step.pre_award_approval_status = "APPROVED"
         loaded_db.commit()
 
-        # Attempt draft save by non-BUDGET_TEAM user (user 521 - basic user)
+        # Attempt draft save by non-BUDGET_TEAM user (user 521 - basic user with VIEWER_EDITOR role)
         update_data = {"requisition_number": "REQ-12345", "is_draft": True}
 
         response = basic_user_auth_client.patch(
             f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}", json=update_data
         )
 
-        # Should succeed with save but cannot trigger approval
-        # (Permission check happens in _handle_requisition_approval, not in draft save)
-        # So draft save should succeed
-        assert response.status_code == 200
-
-        # But when they try to approve (is_draft=False), it should fail
-        response_approve = basic_user_auth_client.patch(
-            f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}",
-            json={"requisition_number": "REQ-12345", "requisition_date": "2026-05-15", "is_draft": False},
-        )
-
-        assert response_approve.status_code == 403
+        # Should fail with 403 Forbidden (VIEWER_EDITOR lacks BUDGET_TEAM role)
+        assert response.status_code == 403
+        assert "User 521" in response.json["message"]
+        assert "not authorized" in response.json["message"].lower()
 
     def test_is_draft_field_not_persisted_to_database(self, budget_team_auth_client, test_pre_award_step, loaded_db):
         """
