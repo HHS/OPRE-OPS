@@ -229,4 +229,55 @@ describe("useAgreementEditForm - handleDraft", () => {
         );
         expect(navigateMock).not.toHaveBeenCalledWith("/agreements");
     });
+
+    it("does not set error alert when updateAgreement fails (saveAgreement handles it)", async () => {
+        editAgreementMockData = {
+            agreement: {
+                id: 123,
+                name: "Existing Agreement",
+                agreement_type: "CONTRACT",
+                team_members: [{ id: 1, full_name: "Test User" }],
+                requesting_agency: { id: 1 },
+                servicing_agency: { id: 2 },
+                _meta: { immutable_awarded_fields: [] }
+            },
+            selected_project: { id: 1 },
+            selected_procurement_shop: null,
+            selected_product_service_code: null,
+            selected_project_officer: null,
+            selected_alternate_project_officer: null
+        };
+
+        updateAgreementMock.mockReturnValue({ unwrap: () => Promise.reject(new Error("Update failed")) });
+
+        const { result } = renderHook(() =>
+            useAgreementEditForm(
+                false,
+                false,
+                mockSetHasAgreementChanged,
+                mockGoBack,
+                mockGoToNext,
+                false,
+                false,
+                mockSetIsEditMode,
+                null,
+                null
+            )
+        );
+
+        await act(async () => {
+            await result.current.handleDraft();
+        });
+
+        expect(addAgreementMock).not.toHaveBeenCalled();
+        expect(setAlertMock).toHaveBeenCalledTimes(1);
+        expect(setAlertMock).toHaveBeenCalledWith(
+            expect.objectContaining({
+                type: "error",
+                heading: "Error",
+                redirectUrl: "/error"
+            })
+        );
+        expect(navigateMock).not.toHaveBeenCalledWith("/agreements");
+    });
 });

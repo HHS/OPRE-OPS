@@ -440,12 +440,14 @@ const useAgreementEditForm = (
             navigate("/agreements");
             // eslint-disable-next-line no-unused-vars
         } catch (error) {
-            setAlert({
-                type: "error",
-                heading: "Error",
-                message: "An error occurred while saving the agreement.",
-                redirectUrl: "/error"
-            });
+            if (!agreement.id) {
+                setAlert({
+                    type: "error",
+                    heading: "Error",
+                    message: "An error occurred while saving the agreement.",
+                    redirectUrl: "/error"
+                });
+            }
             return;
         }
     };
