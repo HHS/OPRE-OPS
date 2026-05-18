@@ -794,7 +794,9 @@ class TestDraftSaveFeature:
             final_requester_notifications == initial_requester_notifications
         ), "Requester should NOT be notified on draft saves"
 
-    def test_non_budget_team_user_cannot_save_requisition_draft(self, basic_user_auth_client, test_pre_award_step, loaded_db):
+    def test_non_budget_team_user_cannot_save_requisition_draft(
+        self, basic_user_auth_client, test_pre_award_step, loaded_db
+    ):
         """
         Permission check: Non-budget team users cannot save requisition data (draft or approval).
         Only BUDGET_TEAM and SYSTEM_OWNER roles can modify requisition_number or requisition_date fields.
