@@ -1196,7 +1196,7 @@ export const opsApi = createApi({
                     body: data
                 };
             },
-            invalidatesTags: ["ProcurementTrackers", "Procurement Tracker Steps"]
+            invalidatesTags: ["ProcurementTrackers", "Procurement Tracker Steps", "Budget Requisitions"]
         }),
         getPendingPreAwardApprovals: builder.query({
             query: () => `/procurement-tracker-steps/pending-approvals/`,

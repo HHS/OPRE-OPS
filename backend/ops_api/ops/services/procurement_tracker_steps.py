@@ -844,6 +844,7 @@ class ProcurementTrackerStepService:
             return []
 
         # Query for steps awaiting budget team requisition entry
+        # OPS-1639: Check approval status, not field emptiness (supports draft saves)
         stmt = (
             select(DefaultProcurementTrackerStep)
             .join(DefaultProcurementTrackerStep.procurement_tracker)
@@ -857,8 +858,7 @@ class ProcurementTrackerStepService:
                 and_(
                     DefaultProcurementTrackerStep.step_type == ProcurementTrackerStepType.PRE_AWARD,
                     DefaultProcurementTrackerStep.pre_award_approval_status == "APPROVED",
-                    DefaultProcurementTrackerStep.pre_award_requisition_number.is_(None),
-                    DefaultProcurementTrackerStep.pre_award_requisition_date.is_(None),
+                    DefaultProcurementTrackerStep.pre_award_requisition_approved_by.is_(None),
                 )
             )
             .order_by(DefaultProcurementTrackerStep.pre_award_approval_responded_date.desc())

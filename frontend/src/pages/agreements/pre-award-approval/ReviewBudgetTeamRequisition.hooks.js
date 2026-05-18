@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, shallowEqual } from "react-redux";
 import { useUpdateProcurementTrackerStepMutation } from "../../../api/opsAPI";
@@ -80,6 +80,18 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
     const requestorNotes = step5?.requestor_notes || "";
     const reviewerNotes = step5?.reviewer_notes || "";
 
+    // Load saved draft values when step5 data arrives
+    useEffect(() => {
+        if (step5) {
+            if (step5.requisition_number) {
+                setRequisitionNumber(step5.requisition_number);
+            }
+            if (step5.requisition_date) {
+                setRequisitionDate(step5.requisition_date);
+            }
+        }
+    }, [step5]);
+
     // Check if already processed
     const approvalAlreadyProcessed = step5?.requisition_approved_by != null;
 
@@ -146,7 +158,7 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
     // Save Draft handler (partial save without approval)
     const handleSaveDraft = async () => {
         // Validate at least one field is filled
-        if (!requisitionNumber.trim() && !requisitionDate) {
+        if (!requisitionNumber.trim() && !requisitionDate.trim()) {
             setSubmitError("Please enter at least a Requisition # or Requisition Date to save.");
             return;
         }
@@ -172,7 +184,7 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
             }
 
             // Only send requisition_date if it has a value
-            if (requisitionDate) {
+            if (requisitionDate.trim()) {
                 data.requisition_date = requisitionDate;
             }
 
