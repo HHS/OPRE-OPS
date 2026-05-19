@@ -478,9 +478,35 @@ describe("CAN funding page", () => {
             .and("contain", "$6,000,000.00")
             .and("contain", "60%");
     });
+    it("disables edit button and shows tooltip for previous fiscal years", () => {
+        cy.visit("/cans/515/funding");
+        // Select a previous fiscal year (2024 is before current fiscal year)
+        cy.get("#fiscal-year-select").select("2024");
+        // Edit button should be disabled
+        cy.get("#edit").should("be.disabled");
+        // Edit button should have disabled styling (greyed out text)
+        cy.get("#edit span").should("have.class", "text-base-light");
+        cy.get("#edit svg").should("have.class", "text-base-light");
+        // Edit button should have not-allowed cursor
+        cy.get("#edit").should("have.css", "cursor", "not-allowed");
+        // Hover over the edit button to trigger tooltip (force: true needed for disabled elements)
+        cy.get("#edit").trigger("mouseover", { force: true });
+        // Tooltip should appear with the correct message
+        cy.get(".usa-tooltip__body")
+            .should("be.visible")
+            .and("contain", "Only data from the current fiscal year can be edited.");
+        // Select current fiscal year
+        cy.get("#fiscal-year-select").select(currentFiscalYear);
+        // Edit button should be enabled
+        cy.get("#edit").should("not.be.disabled");
+        // Edit button should have normal styling
+        cy.get("#edit span").should("have.class", "text-primary");
+        cy.get("#edit svg").should("have.class", "text-primary");
+    });
     it("handles budget form", () => {
         cy.visit(`/cans/${can527.number}/funding`);
-        cy.get("#edit", { timeout: 20000 }).should("be.visible").click();
+        cy.get("#edit", { timeout: 20000 }).should("be.visible").and("not.be.disabled");
+        cy.get("#edit").click();
         closeWelcomeModalIfPresent();
         // cy.get("#carry-forward-card").should("contain", "$ 578,023.00");
         cy.get("#save-changes", { timeout: 20000 }).should("be.disabled");
@@ -924,7 +950,8 @@ describe("CAN unsaved changes navigation blocking", () => {
 
     it("blocks navigation when CAN funding form has unsaved changes", () => {
         cy.visit(`/cans/${can527.number}/funding`);
-        cy.get("#edit", { timeout: 20000 }).should("be.visible").click();
+        cy.get("#edit", { timeout: 20000 }).should("be.visible").and("not.be.disabled");
+        cy.get("#edit").click();
         closeWelcomeModalIfPresent();
         cy.get("[data-cy=budget-received-card]").should("contain", "Received");
         waitForCurrencyContent("[data-cy=budget-received-card]");
@@ -946,7 +973,9 @@ describe("CAN unsaved changes navigation blocking", () => {
 
     it("allows navigation without modal when no CAN funding changes were made", () => {
         cy.visit(`/cans/${can527.number}/funding`);
-        cy.get("#edit", { timeout: 20000 }).should("be.visible").click();
+        cy.get("#fiscal-year-select").select(currentFiscalYear);
+        cy.get("#edit", { timeout: 20000 }).should("be.visible").and("not.be.disabled");
+        cy.get("#edit").click();
         closeWelcomeModalIfPresent();
         cy.get("[data-cy=budget-received-card]").should("contain", "Received");
         waitForCurrencyContent("[data-cy=budget-received-card]");

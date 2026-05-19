@@ -9,6 +9,7 @@ import Tooltip from "../../USWDS/Tooltip";
  * @param {string} props.name - The name of the input field.
  * @param {string} [props.label] - The label to display for the input field (optional).
  * @param {Function} props.onChange - A function to call when the input value changes.
+ * @param {Function} [props.onBlur] - A function to call when the input loses focus (optional).
  * @param {boolean} [props.pending] - A flag to indicate if the input is pending (optional).
  * @param {Array<String>} [props.messages] - An array of error messages to display (optional).
  * @param {string} [props.value] - The value of the input field.(optional)
@@ -18,12 +19,14 @@ import Tooltip from "../../USWDS/Tooltip";
  * @param {boolean} [props.isDisabled] - A flag to indicate if the input is disabled (optional).
  * @param {number} [props.maxLength] - The maximum number of characters allow (optional).
  * @param {string} [props.tooltipMsg] - Tooltip message
+ * @param {Object} [props.inputStyle] - Inline style applied to the input element (optional).
  * @returns {React.ReactElement} - The rendered input component.
  */
 const Input = ({
     name,
     label = name,
     onChange,
+    onBlur,
     pending = false,
     messages = [],
     value,
@@ -32,7 +35,8 @@ const Input = ({
     isRequired = false,
     isRequiredNoShow = false,
     isDisabled = false,
-    tooltipMsg = ""
+    tooltipMsg = "",
+    inputStyle
 }) => {
     return (
         <fieldset
@@ -72,6 +76,7 @@ const Input = ({
                         value={value}
                         maxLength={maxLength}
                         disabled={true}
+                        style={inputStyle}
                     />
                 </Tooltip>
             ) : (
@@ -80,11 +85,13 @@ const Input = ({
                     name={name}
                     className={`usa-input width-mobile-lg ${messages.length ? "usa-input--error" : ""} `}
                     onChange={handleChange}
+                    onBlur={handleBlur}
                     autoComplete="off"
                     autoCorrect="off"
                     value={value}
                     maxLength={maxLength}
                     disabled={false}
+                    style={inputStyle}
                 />
             )}
         </fieldset>
@@ -92,6 +99,12 @@ const Input = ({
 
     function handleChange(e) {
         onChange(name, e.target.value);
+    }
+
+    function handleBlur(e) {
+        if (onBlur) {
+            onBlur(name, e.target.value);
+        }
     }
 };
 

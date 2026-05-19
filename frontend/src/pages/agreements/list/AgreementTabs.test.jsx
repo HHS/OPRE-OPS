@@ -109,6 +109,22 @@ describe("AgreementTabs", () => {
         expect(screen.getByText("For Review")).toBeInTheDocument();
     });
 
+    test("does render for budget team", () => {
+        useSelector.mockReturnValue([{ id: 4, name: "BUDGET_TEAM" }]);
+
+        render(
+            <Provider store={store}>
+                <BrowserRouter>
+                    <AgreementTabs />
+                </BrowserRouter>
+            </Provider>
+        );
+
+        expect(screen.getByText("All Agreements")).toBeInTheDocument();
+        expect(screen.getByText("My Agreements")).toBeInTheDocument();
+        expect(screen.getByText("For Review")).toBeInTheDocument();
+    });
+
     test("applies correct class based on location", () => {
         useLocation.mockReturnValueOnce({
             search: "?filter=my-agreements"
