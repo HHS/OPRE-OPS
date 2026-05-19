@@ -47,7 +47,11 @@ const CanHistoryPanel = ({ canId, fiscalYear }) => {
 
     useEffect(() => {
         if (canHistoryResponse?.items?.length > 0) {
-            setCanHistory((c) => [...c, ...canHistoryResponse.items]);
+            setCanHistory((c) => {
+                const existingIds = new Set(c.map((item) => item.id));
+                const newItems = canHistoryResponse.items.filter((item) => !existingIds.has(item.id));
+                return newItems.length > 0 ? [...c, ...newItems] : c;
+            });
         }
         if (!isLoading && canHistoryResponse) {
             if (offset + limit >= canHistoryResponse.count) {
