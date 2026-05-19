@@ -34,14 +34,11 @@ const AgreementDetails = ({
     // eslint-disable-next-line no-unused-vars
     let { budget_line_items: _, ...agreement_details } = agreement;
     const isEditable = isSuperUser || (agreement?._meta.isEditable && !isAgreementNotDeveloped);
-    const isCreatingAgreement = location.pathname === "/agreements/create";
-    const isEditingAgreement = location.pathname.startsWith("/agreements/edit");
-    const isWizardMode = isCreatingAgreement || isEditingAgreement;
 
     return (
         <article>
             <AgreementDetailHeader
-                heading={isWizardMode ? "Agreement Details" : "Edit Agreement Details"}
+                heading={isEditMode ? "Edit Agreement Details" : "Agreement Details"}
                 details=""
                 isEditMode={isEditMode}
                 setIsEditMode={setIsEditMode}

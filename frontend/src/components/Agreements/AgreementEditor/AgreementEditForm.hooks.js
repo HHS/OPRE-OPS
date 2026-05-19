@@ -1,3 +1,4 @@
+import debounce from "lodash/debounce";
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import classnames from "vest/classnames";
@@ -6,9 +7,11 @@ import {
     useDeleteAgreementMutation,
     useGetProjectsQuery,
     useGetProductServiceCodesQuery,
+    useLazyGetAgreementsQuery,
     useUpdateAgreementMutation
 } from "../../../api/opsAPI";
 import { calculateAgreementTotal, cleanAgreementForApi, formatTeamMember } from "../../../helpers/agreement.helpers.js";
+import { scrollToCenter } from "../../../helpers/scrollToCenter.helper";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import useAlert from "../../../hooks/use-alert.hooks";
 import useHasStateChanged from "../../../hooks/useHasStateChanged.hooks";
@@ -36,6 +39,11 @@ const AGREEMENT_FILTER_OPTIONS = [
     { label: "Grant", value: AGREEMENT_TYPES.GRANT },
     { label: "Direct Obligation", value: AGREEMENT_TYPES.DIRECT_OBLIGATION }
 ];
+
+const UNIQUE_ERROR_MESSAGES = {
+    name: "This title already exists. Try a different one",
+    nick_name: "This nickname already exists. Try a different one"
+};
 
 const useAgreementEditForm = (
     isAgreementAwarded,
@@ -91,6 +99,9 @@ const useAgreementEditForm = (
     const [updateAgreement] = useUpdateAgreementMutation();
     const [deleteAgreement] = useDeleteAgreementMutation();
     const [addAgreement] = useAddAgreementMutation();
+    const [triggerGetAgreements] = useLazyGetAgreementsQuery();
+
+    const [uniquenessErrors, setUniquenessErrors] = React.useState({ name: [], nick_name: [] });
 
     const {
         agreement,
@@ -208,6 +219,70 @@ const useAgreementEditForm = (
 
     let res = suite.get();
 
+    const runUniqueCheck = React.useCallback(
+        async (field, value) => {
+            const trimmed = (value ?? "").trim();
+            if (!trimmed) {
+                setUniquenessErrors((prev) => (prev[field].length === 0 ? prev : { ...prev, [field]: [] }));
+                return false;
+            }
+            if (field === "name" && !agreementType) {
+                return false;
+            }
+            try {
+                const filters =
+                    field === "name"
+                        ? { agreementName: [{ name: trimmed }], agreementType: [{ type: agreementType }] }
+                        : { nickName: [trimmed] };
+                const result = await triggerGetAgreements({ filters, page: 0, limit: 1 }).unwrap();
+                const totalMatches = result?.count ?? 0;
+                // The current agreement (in edit mode) is itself in the result set when its
+                // saved value still matches the input. Treat that one row as not a conflict.
+                const currentMatchesInput =
+                    !!agreement?.id &&
+                    (field === "name"
+                        ? agreement?.agreement_type === agreementType &&
+                          (agreement?.name ?? "").toLowerCase() === trimmed.toLowerCase()
+                        : agreement?.nick_name === trimmed);
+                const conflict = totalMatches > (currentMatchesInput ? 1 : 0);
+                setUniquenessErrors((prev) => ({
+                    ...prev,
+                    [field]: conflict ? [UNIQUE_ERROR_MESSAGES[field]] : []
+                }));
+                return conflict;
+            } catch {
+                setUniquenessErrors((prev) => (prev[field].length === 0 ? prev : { ...prev, [field]: [] }));
+                return false;
+            }
+        },
+        [
+            agreement?.id,
+            agreement?.agreement_type,
+            agreement?.name,
+            agreement?.nick_name,
+            agreementType,
+            triggerGetAgreements
+        ]
+    );
+
+    const checkUniqueOnBlur = React.useMemo(
+        () => debounce((field, value) => runUniqueCheck(field, value), 300),
+        [runUniqueCheck]
+    );
+
+    React.useEffect(() => () => checkUniqueOnBlur.cancel(), [checkUniqueOnBlur]);
+
+    // When agreement_type changes, re-check the title uniqueness because the
+    // backend constraint is scoped per type.
+    React.useEffect(() => {
+        if (agreementType && agreementTitle) {
+            checkUniqueOnBlur("name", agreementTitle);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [agreementType]);
+
+    const hasUniquenessErrors = uniquenessErrors.name.length > 0 || uniquenessErrors.nick_name.length > 0;
+
     const vendorDisabled = agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
     const isAgreementAA = agreementType === AGREEMENT_TYPES.AA;
     const shouldDisableBtn =
@@ -215,6 +290,7 @@ const useAgreementEditForm = (
         !agreement?.project_id ||
         !agreementType ||
         res.hasErrors() ||
+        hasUniquenessErrors ||
         (isAgreementAA && (!servicingAgency || !requestingAgency));
 
     const cn = classnames(suite.get(), {
@@ -381,7 +457,26 @@ const useAgreementEditForm = (
         wasEditModeRef.current = isEditMode;
     }, [isEditMode, setIsCancelling]);
 
+    const verifyUniquenessBeforeSubmit = async () => {
+        checkUniqueOnBlur.cancel();
+        const [nameConflict, nickNameConflict] = await Promise.all([
+            runUniqueCheck("name", agreementTitle),
+            runUniqueCheck("nick_name", agreementNickName)
+        ]);
+        if (nameConflict) return "name";
+        if (nickNameConflict) return "nickname";
+        return null;
+    };
+
     const handleContinue = async () => {
+        const conflictFieldId = await verifyUniquenessBeforeSubmit();
+        if (conflictFieldId) {
+            // Defer to the next frame so the inline error message renders
+            // before the smooth scroll measures its target position.
+            requestAnimationFrame(() => scrollToCenter(conflictFieldId));
+            return;
+        }
+
         if (shouldRequestChange) {
             setShowModal(true);
             setModalProps({
@@ -417,6 +512,14 @@ const useAgreementEditForm = (
     };
 
     const handleDraft = async () => {
+        const conflictFieldId = await verifyUniquenessBeforeSubmit();
+        if (conflictFieldId) {
+            // Defer to the next frame so the inline error message renders
+            // before the smooth scroll measures its target position.
+            requestAnimationFrame(() => scrollToCenter(conflictFieldId));
+            return;
+        }
+
         try {
             const result = await saveAgreement();
             if (result === false && !agreement.id) {
@@ -585,6 +688,8 @@ const useAgreementEditForm = (
         handleCancel,
         handleOnChangeSelectedProcurementShop,
         runValidate,
+        checkUniqueOnBlur,
+        uniquenessErrors,
         isProcurementShopDisabled,
         disabledMessage,
         fundingMethod: FUNDING_METHOD,
