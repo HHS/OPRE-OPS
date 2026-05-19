@@ -22,18 +22,24 @@ export const ProcurementDetailsTableRow = ({
     agreement,
     userNameById,
     targetDateByAgreementId,
-    daysInStepByAgreementId
+    daysInStepByAgreementId,
+    fiscalYear
 }) => {
     const { isExpanded, setIsExpanded, setIsRowActive } = useTableRow();
     const isSuccess = !!agreement;
     const agreementName = isSuccess ? getAgreementName(agreement) : NO_DATA;
 
-    const totalExecuting = useMemo(
+    const budgetLineItems = useMemo(
+        () => (agreement.budget_line_items ?? []).filter((bli) => bli.fiscal_year === fiscalYear),
+        [agreement, fiscalYear]
+    );
+
+    const totalExecutingPlusFees = useMemo(
         () =>
-            (agreement.budget_line_items ?? [])
+            budgetLineItems
                 .filter((bli) => bli.status === BLI_STATUS.EXECUTING)
-                .reduce((sum, bli) => sum + (bli.amount ?? 0), 0),
-        [agreement]
+                .reduce((sum, bli) => sum + (bli.amount ?? 0) + (bli.fees ?? 0), 0),
+        [budgetLineItems]
     );
 
     const earliestPoPStart = useMemo(() => {
@@ -49,7 +55,6 @@ export const ProcurementDetailsTableRow = ({
     const agreementSubTotal = isSuccess ? (agreement?.agreement_subtotal ?? 0) : 0;
     const agreementFees = isSuccess ? (agreement?.total_agreement_fees ?? 0) : 0;
 
-    const budgetLineItems = agreement.budget_line_items ?? [];
     const getStatusCount = (status) => budgetLineItems.filter((bli) => bli.status === status).length;
 
     const TableRowData = (
@@ -68,7 +73,7 @@ export const ProcurementDetailsTableRow = ({
             </td>
             <td data-cy="cor-name">{userNameById[agreement.project_officer_id] || ""}</td>
             <td data-cy="proc-shop">{agreement.procurement_shop?.abbr || ""}</td>
-            <td data-cy="total-executing">{convertToCurrency(totalExecuting)}</td>
+            <td data-cy="total-executing">{convertToCurrency(totalExecutingPlusFees)}</td>
             <td data-cy="target-date">
                 {targetDateByAgreementId[agreement.id]
                     ? formatDateNeeded(targetDateByAgreementId[agreement.id])

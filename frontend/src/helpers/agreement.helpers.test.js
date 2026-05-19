@@ -1,6 +1,7 @@
 import {
     calculateAgreementTotal,
     calculateFeeTotal,
+    cleanAgreementForApi,
     getProcurementShopSubTotal,
     getProcurementShopFees,
     getAgreementType,
@@ -595,5 +596,25 @@ describe("calculateFeeTotal", () => {
         const result = calculateFeeTotal([{ amount: 333, status: BLI_STATUS.PLANNED }], 3.3);
         // 333 * 3.3 / 100 = 10.989
         expect(result).toBe(10.989);
+    });
+});
+
+describe("cleanAgreementForApi", () => {
+    it("converts empty nick_name string to null", () => {
+        const data = { id: 1, name: "Test Agreement", nick_name: "" };
+        const { cleanData } = cleanAgreementForApi(data);
+        expect(cleanData.nick_name).toBeNull();
+    });
+
+    it("preserves non-empty nick_name", () => {
+        const data = { id: 1, name: "Test Agreement", nick_name: "My Nickname" };
+        const { cleanData } = cleanAgreementForApi(data);
+        expect(cleanData.nick_name).toBe("My Nickname");
+    });
+
+    it("preserves null nick_name", () => {
+        const data = { id: 1, name: "Test Agreement", nick_name: null };
+        const { cleanData } = cleanAgreementForApi(data);
+        expect(cleanData.nick_name).toBeNull();
     });
 });

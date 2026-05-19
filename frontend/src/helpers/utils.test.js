@@ -10,6 +10,7 @@ import {
     fromUpperCaseToTitleCase,
     timeAgo,
     formatDateToMonthDayYear,
+    formatDateForApi,
     computeDisplayPercent,
     computeDisplayPercents,
     applyMinimumArcValue
@@ -180,6 +181,47 @@ describe("formatDateToMonthDayYear", () => {
 
     test("handles empty string", () => {
         expect(formatDateToMonthDayYear("")).toBeNull();
+    });
+});
+
+describe("formatDateForApi", () => {
+    test("formats valid MM/DD/YYYY date strings correctly", () => {
+        expect(formatDateForApi("03/20/2024")).toBe("2024-03-20");
+        expect(formatDateForApi("12/31/2025")).toBe("2025-12-31");
+        expect(formatDateForApi("01/01/2026")).toBe("2026-01-01");
+    });
+
+    test("pads single-digit months and days with leading zeros", () => {
+        expect(formatDateForApi("3/5/2024")).toBe("2024-03-05");
+        expect(formatDateForApi("1/9/2025")).toBe("2025-01-09");
+        expect(formatDateForApi("12/5/2026")).toBe("2026-12-05");
+    });
+
+    test("returns null for null and undefined inputs", () => {
+        expect(formatDateForApi(null)).toBeNull();
+        expect(formatDateForApi(undefined)).toBeNull();
+    });
+
+    test("returns null for empty string", () => {
+        expect(formatDateForApi("")).toBeNull();
+    });
+
+    test("returns null for invalid formats (non-slash delimited)", () => {
+        expect(formatDateForApi("2024-03-20")).toBeNull();
+        expect(formatDateForApi("03.20.2024")).toBeNull();
+        expect(formatDateForApi("invalid")).toBeNull();
+    });
+
+    test("returns null for wrong number of parts", () => {
+        expect(formatDateForApi("3/20")).toBeNull();
+        expect(formatDateForApi("3")).toBeNull();
+        expect(formatDateForApi("3/20/2024/extra")).toBeNull();
+    });
+
+    test("returns null for missing month, day, or year parts", () => {
+        expect(formatDateForApi("/20/2024")).toBeNull();
+        expect(formatDateForApi("3//2024")).toBeNull();
+        expect(formatDateForApi("3/20/")).toBeNull();
     });
 });
 

@@ -89,6 +89,7 @@ const ProcurementDetails = ({
                             userNameById={userNameById}
                             targetDateByAgreementId={targetDateByStepAndAgreement[step.step_number] ?? {}}
                             daysInStepByAgreementId={daysInStep[step.step_number] ?? {}}
+                            fiscalYear={fiscalYear}
                         />
                     </DetailsBuilderAccordion>
                 );

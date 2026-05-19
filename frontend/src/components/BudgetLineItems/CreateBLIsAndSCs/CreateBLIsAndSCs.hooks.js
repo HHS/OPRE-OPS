@@ -831,7 +831,8 @@ const useCreateBLIsAndSCs = (
                     // creating new agreement
                     const newServicesComponents = servicesComponents
                         .filter((sc) => !("created_on" in sc))
-                        .map(({ display_title, ...sc }) => ({
+                        // eslint-disable-next-line no-unused-vars
+                        .map(({ display_title, has_changed, popStartDate, popEndDate, mode, ...sc }) => ({
                             ...sc,
                             ref: display_title
                         }));
@@ -880,10 +881,14 @@ const useCreateBLIsAndSCs = (
                     const changedServicesComponents = existingServicesComponents.filter((sc) => sc.has_changed);
 
                     const serviceComponentsCreationPromises = newServicesComponents.map((sc) => {
-                        return addServicesComponent(sc).unwrap();
+                        // eslint-disable-next-line no-unused-vars
+                        const { display_title, has_changed, popStartDate, popEndDate, mode, ...cleanSc } = sc;
+                        return addServicesComponent(cleanSc).unwrap();
                     });
                     const serviceComponentsUpdatePromises = changedServicesComponents.map((sc) => {
-                        return updateServicesComponent({ id: sc.id, data: sc }).unwrap();
+                        // eslint-disable-next-line no-unused-vars
+                        const { display_title, has_changed, popStartDate, popEndDate, mode, ...cleanSc } = sc;
+                        return updateServicesComponent({ id: sc.id, data: cleanSc }).unwrap();
                     });
 
                     const createdServiceComponents = await Promise.all(serviceComponentsCreationPromises);
