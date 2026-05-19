@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 import { ProcurementDetailsTableRow } from "./ProcurementDetailsTableRow";
+import { getCurrentFiscalYear } from "../../../helpers/utils";
 
 vi.mock("../../../components/UI/TableRowExpandable", () => ({
     default: ({ tableRowData, expandedData }) => (
@@ -19,6 +20,8 @@ vi.mock("../../../components/UI/TableRowExpandable/TableRowExpandable.hooks", ()
         setIsRowActive: vi.fn()
     })
 }));
+
+const fiscalYear = Number(getCurrentFiscalYear());
 
 const makeAgreement = (overrides = {}) => ({
     id: 10,
@@ -40,7 +43,7 @@ const renderRow = (props = {}) => {
         userNameById: { 500: "Jane Doe" },
         targetDateByAgreementId: {},
         daysInStepByAgreementId: {},
-        fiscalYear: 2026
+        fiscalYear
     };
 
     return render(
@@ -81,9 +84,9 @@ describe("ProcurementDetailsTableRow", () => {
     it("computes total executing from IN_EXECUTION BLIs including fees", () => {
         const agreement = makeAgreement({
             budget_line_items: [
-                { id: 1, status: "IN_EXECUTION", amount: 40000, fees: 2000, fiscal_year: 2026 },
-                { id: 2, status: "IN_EXECUTION", amount: 60000, fees: 3000, fiscal_year: 2026 },
-                { id: 3, status: "DRAFT", amount: 20000, fees: 1000, fiscal_year: 2026 }
+                { id: 1, status: "IN_EXECUTION", amount: 40000, fees: 2000, fiscal_year: fiscalYear },
+                { id: 2, status: "IN_EXECUTION", amount: 60000, fees: 3000, fiscal_year: fiscalYear },
+                { id: 3, status: "DRAFT", amount: 20000, fees: 1000, fiscal_year: fiscalYear }
             ]
         });
 
@@ -96,20 +99,20 @@ describe("ProcurementDetailsTableRow", () => {
     it("excludes BLIs from other fiscal years in total executing and status counts", () => {
         const agreement = makeAgreement({
             budget_line_items: [
-                { id: 1, status: "IN_EXECUTION", amount: 50000, fees: 2500, fiscal_year: 2026 },
-                { id: 2, status: "IN_EXECUTION", amount: 750000, fees: 5000, fiscal_year: 2025 },
-                { id: 3, status: "IN_EXECUTION", amount: 250000, fees: 3000, fiscal_year: 2027 },
-                { id: 4, status: "DRAFT", amount: 10000, fees: 0, fiscal_year: 2026 },
-                { id: 5, status: "DRAFT", amount: 99000, fees: 0, fiscal_year: 2025 },
-                { id: 6, status: "DRAFT", amount: 5000, fees: 0, fiscal_year: 2026 }
+                { id: 1, status: "IN_EXECUTION", amount: 50000, fees: 2500, fiscal_year: fiscalYear },
+                { id: 2, status: "IN_EXECUTION", amount: 750000, fees: 5000, fiscal_year: fiscalYear - 1 },
+                { id: 3, status: "IN_EXECUTION", amount: 250000, fees: 3000, fiscal_year: fiscalYear + 1 },
+                { id: 4, status: "DRAFT", amount: 10000, fees: 0, fiscal_year: fiscalYear },
+                { id: 5, status: "DRAFT", amount: 99000, fees: 0, fiscal_year: fiscalYear - 1 },
+                { id: 6, status: "DRAFT", amount: 5000, fees: 0, fiscal_year: fiscalYear }
             ]
         });
 
-        renderRow({ agreement, fiscalYear: 2026 });
+        renderRow({ agreement, fiscalYear });
 
-        // Total executing: only FY2026 IN_EXECUTION BLI ($50,000 + $2,500 = $52,500)
+        // Total executing: only current FY IN_EXECUTION BLI ($50,000 + $2,500 = $52,500)
         expect(screen.getByText("$52,500.00")).toBeInTheDocument();
-        // Status counts should only reflect FY2026 BLIs: 2 Draft, 0 Planned, 1 Executing, 0 Obligated
+        // Status counts should only reflect current FY BLIs: 2 Draft, 0 Planned, 1 Executing, 0 Obligated
         const statusCounts = screen.getAllByText("2");
         expect(statusCounts.length).toBeGreaterThanOrEqual(1); // 2 Drafts in FY2026
     });
@@ -155,17 +158,17 @@ describe("ProcurementDetailsTableRow", () => {
     it("renders budget line status counts from agreement budget_line_items filtered by fiscal year", () => {
         const agreement = makeAgreement({
             budget_line_items: [
-                { id: 1, status: "DRAFT", amount: 1000, fiscal_year: 2026 },
-                { id: 2, status: "DRAFT", amount: 2000, fiscal_year: 2026 },
-                { id: 3, status: "DRAFT", amount: 3000, fiscal_year: 2026 },
-                { id: 4, status: "PLANNED", amount: 4000, fiscal_year: 2026 },
-                { id: 5, status: "PLANNED", amount: 5000, fiscal_year: 2026 },
-                { id: 6, status: "PLANNED", amount: 6000, fiscal_year: 2026 },
-                { id: 7, status: "PLANNED", amount: 7000, fiscal_year: 2026 },
-                { id: 8, status: "PLANNED", amount: 8000, fiscal_year: 2026 },
-                { id: 9, status: "IN_EXECUTION", amount: 9000, fiscal_year: 2026 },
-                { id: 10, status: "IN_EXECUTION", amount: 10000, fiscal_year: 2026 },
-                { id: 11, status: "OBLIGATED", amount: 11000, fiscal_year: 2026 }
+                { id: 1, status: "DRAFT", amount: 1000, fiscal_year: fiscalYear },
+                { id: 2, status: "DRAFT", amount: 2000, fiscal_year: fiscalYear },
+                { id: 3, status: "DRAFT", amount: 3000, fiscal_year: fiscalYear },
+                { id: 4, status: "PLANNED", amount: 4000, fiscal_year: fiscalYear },
+                { id: 5, status: "PLANNED", amount: 5000, fiscal_year: fiscalYear },
+                { id: 6, status: "PLANNED", amount: 6000, fiscal_year: fiscalYear },
+                { id: 7, status: "PLANNED", amount: 7000, fiscal_year: fiscalYear },
+                { id: 8, status: "PLANNED", amount: 8000, fiscal_year: fiscalYear },
+                { id: 9, status: "IN_EXECUTION", amount: 9000, fiscal_year: fiscalYear },
+                { id: 10, status: "IN_EXECUTION", amount: 10000, fiscal_year: fiscalYear },
+                { id: 11, status: "OBLIGATED", amount: 11000, fiscal_year: fiscalYear }
             ]
         });
 
