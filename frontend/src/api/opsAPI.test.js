@@ -214,7 +214,8 @@ describe("opsAPI - Agreements Pagination", () => {
                 offset: 0,
                 totals: null,
                 procurement_overview: null,
-                procurement_step_summary: null
+                procurement_step_summary: null,
+                procurement_days_in_step: null
             });
         });
 
@@ -262,7 +263,8 @@ describe("opsAPI - Agreements Pagination", () => {
                 offset: 0,
                 totals: null,
                 procurement_overview: null,
-                procurement_step_summary: null
+                procurement_step_summary: null,
+                procurement_days_in_step: null
             });
         });
 
@@ -303,7 +305,8 @@ describe("opsAPI - Agreements Pagination", () => {
                 offset: 0,
                 totals: null,
                 procurement_overview: null,
-                procurement_step_summary: null
+                procurement_step_summary: null,
+                procurement_days_in_step: null
             });
         });
 
@@ -345,7 +348,8 @@ describe("opsAPI - Agreements Pagination", () => {
                 offset: 0,
                 totals: null,
                 procurement_overview: null,
-                procurement_step_summary: null
+                procurement_step_summary: null,
+                procurement_days_in_step: null
             });
         });
 
@@ -735,7 +739,8 @@ describe("opsAPI - Agreements Pagination", () => {
                 offset: 0,
                 totals: null,
                 procurement_overview: null,
-                procurement_step_summary: null
+                procurement_step_summary: null,
+                procurement_days_in_step: null
             });
         });
     });
@@ -918,7 +923,7 @@ describe("opsAPI - Wave 2 high-yield endpoint coverage", () => {
         );
 
         const storeRef = setupApiStore(opsApi);
-        await storeRef.store.dispatch(opsApi.endpoints.getCanFilterOptions.initiate({ fiscalYear: 2026 }));
+        await storeRef.store.dispatch(opsApi.endpoints.getCanFilterOptions.initiate({ fiscalYear: [2026] }));
 
         expect(capturedUrl).toContain("fiscal_year=2026");
     });

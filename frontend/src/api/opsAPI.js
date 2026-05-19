@@ -94,6 +94,7 @@ export const opsApi = createApi({
                     budgetLineStatus,
                     portfolio,
                     agreementName,
+                    nickName,
                     agreementType,
                     projectTitle,
                     contractNumber,
@@ -124,6 +125,9 @@ export const opsApi = createApi({
                             queryParams.push(`name=${encodeURIComponent(agreementDisplayName)}`);
                         }
                     });
+                }
+                if (nickName) {
+                    nickName.forEach((value) => queryParams.push(`nick_name=${encodeURIComponent(value)}`));
                 }
                 if (agreementType) {
                     agreementType.forEach((type) =>
@@ -174,7 +178,8 @@ export const opsApi = createApi({
                         offset: response.offset,
                         totals: response.totals ?? null,
                         procurement_overview: response.procurement_overview ?? null,
-                        procurement_step_summary: response.procurement_step_summary ?? null
+                        procurement_step_summary: response.procurement_step_summary ?? null,
+                        procurement_days_in_step: response.procurement_days_in_step ?? null
                     };
                 }
                 // Backward compatibility with old "agreements" key
@@ -186,7 +191,8 @@ export const opsApi = createApi({
                         offset: response.offset,
                         totals: response.totals ?? null,
                         procurement_overview: response.procurement_overview ?? null,
-                        procurement_step_summary: response.procurement_step_summary ?? null
+                        procurement_step_summary: response.procurement_step_summary ?? null,
+                        procurement_days_in_step: response.procurement_days_in_step ?? null
                     };
                 }
                 // Legacy array format (no pagination)
@@ -197,7 +203,8 @@ export const opsApi = createApi({
                     offset: 0,
                     totals: null,
                     procurement_overview: null,
-                    procurement_step_summary: null
+                    procurement_step_summary: null,
+                    procurement_days_in_step: null
                 };
             },
             providesTags: ["Agreements", "BudgetLineItems"]
@@ -299,8 +306,10 @@ export const opsApi = createApi({
         getCanFilterOptions: builder.query({
             query: ({ fiscalYear }) => {
                 const queryParams = [];
-                if (fiscalYear) {
-                    queryParams.push(`fiscal_year=${fiscalYear}`);
+                if (fiscalYear && fiscalYear.length > 0) {
+                    fiscalYear.forEach((year) => {
+                        queryParams.push(`fiscal_year=${year}`);
+                    });
                 }
                 const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
                 return `/cans-filters/${queryString}`;
@@ -663,6 +672,15 @@ export const opsApi = createApi({
             }),
             invalidatesTags: ["ResearchProjects"]
         }),
+        updateProject: builder.mutation({
+            query: ({ id, data }) => ({
+                url: `/projects/${id}`,
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: data
+            }),
+            invalidatesTags: ["ResearchProjects"]
+        }),
         updateBudgetLineItemStatus: builder.mutation({
             query: ({ id, status }) => ({
                 url: `/budget-line-items/${id}`,
@@ -748,8 +766,10 @@ export const opsApi = createApi({
                 budgetMax
             }) => {
                 let queryParams = [];
-                if (fiscalYear) {
-                    queryParams.push(`fiscal_year=${fiscalYear}`);
+                if (fiscalYear && fiscalYear.length > 0) {
+                    fiscalYear.forEach((year) => {
+                        queryParams.push(`fiscal_year=${year}`);
+                    });
                 }
                 if (sortConditions) {
                     queryParams.push(`sort_conditions=${sortConditions}`);
@@ -1241,6 +1261,7 @@ export const {
     useGetResearchProjectsQuery,
     useGetResearchProjectsByPortfolioQuery,
     useAddResearchProjectsMutation,
+    useUpdateProjectMutation,
     useUpdateBudgetLineItemStatusMutation,
     useGetAgreementTypesQuery,
     useGetProductServiceCodesQuery,

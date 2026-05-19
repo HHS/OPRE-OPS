@@ -1,9 +1,9 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import CurrencyFormat from "react-currency-format";
-import LegendItem from "../../components/UI/Cards/LineGraphWithLegendCard/LegendItem";
-import HorizontalStackedBar from "../../components/UI/DataViz/HorizontalStackedBar/HorizontalStackedBar";
-import RoundedBox from "../../components/UI/RoundedBox";
-import Tag from "../../components/UI/Tag/Tag";
+import LegendItem from "../../../components/UI/Cards/LineGraphWithLegendCard/LegendItem";
+import HorizontalStackedBar from "../../../components/UI/DataViz/HorizontalStackedBar/HorizontalStackedBar";
+import RoundedBox from "../../../components/UI/RoundedBox";
+import Tag from "../../../components/UI/Tag/Tag";
 
 const STATUS_COLORS = {
     PLANNED: "var(--data-viz-bl-by-status-2)",
@@ -65,6 +65,7 @@ const buildStatusData = (procurementOverview) => {
  * @returns {JSX.Element}
  */
 const ProcurementOverviewCard = ({ procurementOverview, fiscalYear, isLoading, error }) => {
+    const [activeId, setActiveId] = useState(null);
     const { statusData, totalAmount, totalAgreements } = useMemo(
         () => buildStatusData(procurementOverview),
         [procurementOverview]
@@ -127,8 +128,11 @@ const ProcurementOverviewCard = ({ procurementOverview, fiscalYear, isLoading, e
             </div>
             {hasData ? (
                 <>
-                    <HorizontalStackedBar data={statusData} />
-                    <div className="display-flex flex-justify-space-between margin-top-2">
+                    <HorizontalStackedBar
+                        data={statusData}
+                        setActiveId={setActiveId}
+                    />
+                    <div className="display-flex flex-justify-space-between">
                         {statusData.map((item) => (
                             <div
                                 key={item.label}
@@ -136,18 +140,22 @@ const ProcurementOverviewCard = ({ procurementOverview, fiscalYear, isLoading, e
                                 style={{ width: "25%" }}
                             >
                                 <LegendItem
+                                    activeId={activeId}
                                     id={item.id}
-                                    label={item.label}
+                                    label={item.label === "In Execution" ? "Executing" : item.label}
                                     value={item.amount}
                                     color={item.color}
                                     percent={parseInt(item.amountPercent)}
-                                    tagStyleActive="darkTextWhiteBackground"
                                 />
-                                <div className="display-flex flex-align-center flex-justify-end">
-                                    <span>{item.agreements} agreements</span>
+                                <div className="display-flex flex-align-center flex-justify-end padding-top-1">
+                                    <span className={activeId === item.id ? "fake-bold" : ""}>
+                                        {item.agreements} agreements
+                                    </span>
                                     <Tag
                                         tagStyle="darkTextWhiteBackground"
                                         text={item.agreementsPercent}
+                                        label={item.label === "In Execution" ? "Executing" : item.label}
+                                        active={activeId === item.id}
                                         className="margin-left-1"
                                     />
                                 </div>

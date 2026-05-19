@@ -8,9 +8,10 @@ import { useGetAllAgreements } from "../../hooks/useGetAllAgreements";
 import { BLI_STATUS } from "../../helpers/budgetLines.helpers";
 import { exportMultiSheetToXlsx } from "../../helpers/tableExport.helpers";
 import { getCurrentFiscalYear } from "../../helpers/utils";
-import ProcShopFilter from "./ProcShopFilter";
-import ProcurementDashboardTabs from "./ProcurementDashboardTabs";
-import ProcurementSummaryCards from "./ProcurementSummaryCards";
+import ProcShopFilter from "./summary/ProcShopFilter";
+import ProcurementDashboardTabs from "./summary/ProcurementDashboardTabs";
+import ProcurementSummaryCards from "./summary/ProcurementSummaryCards";
+import ProcurementDetails from "./details/ProcurementDetails";
 
 const CURRENT_FISCAL_YEAR = Number(getCurrentFiscalYear());
 
@@ -53,6 +54,7 @@ const ProcurementDashboard = () => {
 
     const procurementOverview = metadata?.procurement_overview ?? null;
     const procurementStepSummary = metadata?.procurement_step_summary ?? null;
+    const procurementDaysInStep = metadata?.procurement_days_in_step ?? null;
 
     const agreementIds = useMemo(() => agreements.map((a) => a.id), [agreements]);
 
@@ -171,6 +173,13 @@ const ProcurementDashboard = () => {
                         error={error}
                     />
                 }
+            />
+            <ProcurementDetails
+                fiscalYear={CURRENT_FISCAL_YEAR}
+                agreements={agreements}
+                procurementTrackers={procurementTrackers}
+                procurementStepSummary={procurementStepSummary}
+                procurementDaysInStep={procurementDaysInStep}
             />
         </App>
     );

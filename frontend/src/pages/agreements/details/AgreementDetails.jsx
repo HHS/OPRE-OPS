@@ -15,6 +15,7 @@ import AgreementDetailsView from "./AgreementDetailsView";
  * @param {function} props.setIsEditMode - The function to set the edit mode.
  * @param {boolean} [props.isAgreementAwarded] - if the agreement is awarded
  * @param {boolean} [props.hasAgreementChanged] - if the agreement properties has changed
+ * @param {boolean} [props.isPreAwardInReview] - if the agreement is in review for pre-award approval
  * @returns {React.ReactElement} - The rendered component.
  */
 const AgreementDetails = ({
@@ -26,25 +27,24 @@ const AgreementDetails = ({
     setIsEditMode,
     isAgreementNotDeveloped,
     isAgreementAwarded = false,
-    hasAgreementChanged = false
+    hasAgreementChanged = false,
+    isPreAwardInReview = false
 }) => {
     const isSuperUser = useIsUserSuperUser();
     // eslint-disable-next-line no-unused-vars
     let { budget_line_items: _, ...agreement_details } = agreement;
     const isEditable = isSuperUser || (agreement?._meta.isEditable && !isAgreementNotDeveloped);
-    const isCreatingAgreement = location.pathname === "/agreements/create";
-    const isEditingAgreement = location.pathname.startsWith("/agreements/edit");
-    const isWizardMode = isCreatingAgreement || isEditingAgreement;
 
     return (
         <article>
             <AgreementDetailHeader
-                heading={isWizardMode ? "Agreement Details" : "Edit Agreement Details"}
+                heading={isEditMode ? "Edit Agreement Details" : "Agreement Details"}
                 details=""
                 isEditMode={isEditMode}
                 setIsEditMode={setIsEditMode}
                 isEditable={isEditable}
                 hasUnsavedChanges={hasAgreementChanged}
+                isPreAwardInReview={isPreAwardInReview}
             />
 
             {isEditMode && isEditable ? (

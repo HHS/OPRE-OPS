@@ -73,9 +73,11 @@ const ProcurementTrackerStepFive = ({
     // Disabled flags for form controls
     const isApprovalDeclined = stepFiveData?.approval_status === "DECLINED";
     const isApprovalApproved = stepFiveData?.approval_status === "APPROVED";
+    const isRequisitionApproved = !!stepFiveData?.requisition_approved_by;
+    const isAwaitingBudgetTeam = isApprovalApproved && !isRequisitionApproved;
     const isTargetCompletionDateSaveDisabled =
         isDisabled || validatorRes.hasErrors("targetCompletionDate") || !targetCompletionDate || !stepFiveData?.id;
-    const isPreAwardCheckboxDisabled = isDisabled || !isActiveStep || !isApprovalApproved;
+    const isPreAwardCheckboxDisabled = isDisabled || !isActiveStep || !isApprovalApproved || isAwaitingBudgetTeam;
     const isUsersComboBoxDisabled = isDisabled || !isPreAwardComplete || authorizedUsers.length === 0;
     const isPreAwardFieldsDisabled = isDisabled || !isPreAwardComplete;
     const hasBLIInReview = budgetLineItems?.some((bli) => bli.in_review) ?? false;
@@ -90,7 +92,8 @@ const ProcurementTrackerStepFive = ({
         !step5DateCompleted ||
         validatorRes.hasErrors() ||
         !stepFiveData?.id ||
-        stepFiveData?.approval_status !== ProcurementTrackerPreAwardApprovalStatus.APPROVED
+        stepFiveData?.approval_status !== ProcurementTrackerPreAwardApprovalStatus.APPROVED ||
+        !stepFiveData?.requisition_approved_by // Budget team must approve requisition before completing step
     );
     return (
         <>
@@ -221,6 +224,33 @@ const ProcurementTrackerStepFive = ({
                                 >
                                     Request Pre-Award Approval
                                 </button>
+                                {isApprovalDeclined && (
+                                    <div
+                                        className="usa-alert usa-alert--error usa-alert--slim margin-top-2"
+                                        role="alert"
+                                    >
+                                        <div className="usa-alert__body">
+                                            <p className="usa-alert__text">
+                                                This agreement has been declined for Pre-Award. Please do not upload the
+                                                Final Consensus Memo to the HHS Consolidated Acquisition Solution (HCAS)
+                                                until changes have been made and re-submitted for approval above.
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+                                {stepFiveData?.approval_requested && !isRequisitionApproved && !isApprovalDeclined && (
+                                    <div
+                                        className="usa-alert usa-alert--warning usa-alert--slim margin-top-2"
+                                        role="status"
+                                    >
+                                        <div className="usa-alert__body">
+                                            <p className="usa-alert__text">
+                                                This agreement is In Review for Pre-Award Approval. Edits or changes
+                                                cannot be made at this time.
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         }
 

@@ -328,5 +328,13 @@ export const data = [
     {
         heading: "Project Officer",
         content: `The federal staff member responsible for a given agreement and decisions related to it. For contracts, the Project Officer is the COR. For grants, the Project Officer is the FPO.`
+    },
+    {
+        heading: "Continuing Agreement",
+        content: `An Agreement that is awarded and continuing on into the next fiscal year after its award`
+    },
+    {
+        heading: "New Agreement",
+        content: `An agreement that is new within the fiscal year. These agreements are considered new until the fiscal year after its award, in which they then become a Continuing Agreement.`
     }
 ];
