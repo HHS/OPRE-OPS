@@ -24,14 +24,15 @@ const ProcurementDetailsStep = ({
     stepType,
     userNameById,
     targetDateByAgreementId,
-    daysInStepByAgreementId
+    daysInStepByAgreementId,
+    fiscalYear
 }) => {
     const executingBLIs = useMemo(
         () =>
             agreements
                 .flatMap((agreement) => agreement.budget_line_items ?? [])
-                .filter((bli) => bli.status === BLI_STATUS.EXECUTING),
-        [agreements]
+                .filter((bli) => bli.status === BLI_STATUS.EXECUTING && bli.fiscal_year === fiscalYear),
+        [agreements, fiscalYear]
     );
 
     const executingBLICount = executingBLIs.length;
@@ -42,6 +43,8 @@ const ProcurementDetailsStep = ({
     );
 
     const totalFees = useMemo(() => executingBLIs.reduce((sum, bli) => sum + (bli.fees ?? 0), 0), [executingBLIs]);
+
+    const totalExecutingPlusFees = totalExecuting + totalFees;
     return (
         <>
             <div>
@@ -76,7 +79,7 @@ const ProcurementDetailsStep = ({
                             <dd className="margin-0 margin-top-1">
                                 <Tag
                                     tagStyle="primaryDarkTextLightBackground"
-                                    text={convertToCurrency(totalExecuting)}
+                                    text={convertToCurrency(totalExecutingPlusFees)}
                                 />
                             </dd>
                         </dl>
@@ -95,6 +98,7 @@ const ProcurementDetailsStep = ({
                         userNameById={userNameById}
                         targetDateByAgreementId={targetDateByAgreementId}
                         daysInStepByAgreementId={daysInStepByAgreementId}
+                        fiscalYear={fiscalYear}
                     />
                 </>
             ) : (
