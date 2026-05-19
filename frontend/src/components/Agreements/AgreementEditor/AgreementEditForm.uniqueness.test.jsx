@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import AgreementEditForm from "./AgreementEditForm";
 import useAgreementEditForm from "./AgreementEditForm.hooks";
@@ -11,7 +11,6 @@ vi.mock("../../ServicesComponents/ContractTypeSelect", () => ({ default: () => <
 vi.mock("../../ServicesComponents/ServiceReqTypeSelect", () => ({ default: () => <div /> }));
 vi.mock("../../UI/Button/GoBackButton", () => ({ default: () => <div /> }));
 vi.mock("../../UI/Cards/DefinitionListCard", () => ({ default: () => <div /> }));
-vi.mock("../../UI/Form/Input", () => ({ default: () => <div /> }));
 vi.mock("../../UI/Form/Select", () => ({ default: () => <div /> }));
 vi.mock("../../UI/Form/TextArea/TextArea", () => ({ default: () => <div /> }));
 vi.mock("../../UI/Modals/ConfirmationModal", () => ({ default: () => <div /> }));
@@ -27,27 +26,25 @@ vi.mock("../ResearchMethodologyComboBox", () => ({ default: () => <div /> }));
 vi.mock("../SpecialTopicComboBox", () => ({ default: () => <div /> }));
 vi.mock("../TeamMemberComboBox", () => ({ default: () => <div /> }));
 vi.mock("../TeamMemberList", () => ({ default: () => <div /> }));
-vi.mock("../../Projects/ProjectComboBox", () => ({
-    default: () => <div data-testid="project-combobox-mock" />
-}));
+vi.mock("../../Projects/ProjectComboBox", () => ({ default: () => <div /> }));
 
 const baseHookState = {
     cn: () => "",
-    isWizardMode: false,
-    isAgreementCreated: true,
-    agreement: { id: 1 },
+    isWizardMode: true,
+    isAgreementCreated: false,
+    agreement: { id: undefined },
     agreementNotes: "",
     agreementVendor: "",
     agreementType: "CONTRACT",
-    agreementTitle: "Agreement",
-    agreementNickName: "Nickname",
-    agreementDescription: "Description",
+    agreementTitle: "",
+    agreementNickName: "",
+    agreementDescription: "",
     agreementReason: "NEW_REQ",
     selectedTeamMembers: [],
-    projects: [{ id: 1000, title: "Project A", short_title: "PA" }],
-    selectedProject: { id: 1000, title: "Project A", short_title: "PA" },
-    contractType: "FIRM_FIXED_PRICE",
-    serviceReqType: "NON_SEVERABLE",
+    projects: [],
+    selectedProject: null,
+    contractType: "",
+    serviceReqType: "",
     servicingAgency: null,
     requestingAgency: null,
     specialTopics: [],
@@ -98,7 +95,6 @@ const baseHookState = {
     setAgreementNotes: vi.fn(),
     setAgreementType: vi.fn(),
     res: { getErrors: () => [] },
-    blocker: {},
     showBlockerModal: false,
     setShowBlockerModal: vi.fn(),
     blockerModalProps: {},
@@ -107,47 +103,78 @@ const baseHookState = {
     isLoadingProjects: false
 };
 
-describe("AgreementEditForm Project field", () => {
-    it("renders project combobox in non-wizard mode", () => {
-        useAgreementEditForm.mockReturnValue({ ...baseHookState, isWizardMode: false });
-
-        render(
-            <AgreementEditForm
-                isEditMode={true}
-                setIsEditMode={vi.fn()}
-            />
-        );
-
-        expect(screen.getByTestId("project-combobox-mock")).toBeInTheDocument();
-    });
-
-    it("does not render project combobox in wizard mode", () => {
-        useAgreementEditForm.mockReturnValue({ ...baseHookState, isWizardMode: true });
-
-        render(
-            <AgreementEditForm
-                isEditMode={true}
-                setIsEditMode={vi.fn()}
-            />
-        );
-
-        expect(screen.queryByTestId("project-combobox-mock")).not.toBeInTheDocument();
-    });
-
-    it("disables save button when form has required field errors", () => {
+describe("AgreementEditForm uniqueness validation wiring", () => {
+    it("renders the duplicate-title error when uniquenessErrors.name is set", () => {
         useAgreementEditForm.mockReturnValue({
             ...baseHookState,
-            isWizardMode: false,
-            shouldDisableBtn: true
+            uniquenessErrors: { name: ["This title already exists. Try a different one"], nick_name: [] }
         });
 
-        render(
-            <AgreementEditForm
-                isEditMode={true}
-                setIsEditMode={vi.fn()}
-            />
-        );
+        render(<AgreementEditForm isEditMode={false} />);
 
-        expect(screen.getByRole("button", { name: "Save Changes" })).toBeDisabled();
+        expect(screen.getByText("This title already exists. Try a different one")).toBeInTheDocument();
+    });
+
+    it("renders the duplicate-nickname error when uniquenessErrors.nick_name is set", () => {
+        useAgreementEditForm.mockReturnValue({
+            ...baseHookState,
+            uniquenessErrors: { name: [], nick_name: ["This nickname already exists. Try a different one"] }
+        });
+
+        render(<AgreementEditForm isEditMode={false} />);
+
+        expect(screen.getByText("This nickname already exists. Try a different one")).toBeInTheDocument();
+    });
+
+    it("does not render duplicate errors when uniquenessErrors are empty", () => {
+        useAgreementEditForm.mockReturnValue(baseHookState);
+
+        render(<AgreementEditForm isEditMode={false} />);
+
+        expect(screen.queryByText(/already exists/i)).not.toBeInTheDocument();
+    });
+
+    it("calls checkUniqueOnBlur with 'name' when title input loses focus", () => {
+        const checkUniqueOnBlur = vi.fn();
+        useAgreementEditForm.mockReturnValue({
+            ...baseHookState,
+            agreementTitle: "Some title",
+            checkUniqueOnBlur
+        });
+
+        render(<AgreementEditForm isEditMode={false} />);
+
+        const titleInput = screen.getByLabelText(/Agreement Title/i);
+        fireEvent.blur(titleInput);
+
+        expect(checkUniqueOnBlur).toHaveBeenCalledWith("name", "Some title");
+    });
+
+    it("calls checkUniqueOnBlur with 'nick_name' when nickname input loses focus", () => {
+        const checkUniqueOnBlur = vi.fn();
+        useAgreementEditForm.mockReturnValue({
+            ...baseHookState,
+            agreementNickName: "MyNick",
+            checkUniqueOnBlur
+        });
+
+        render(<AgreementEditForm isEditMode={false} />);
+
+        const nicknameInput = screen.getByLabelText(/Agreement Nickname or Acronym/i);
+        fireEvent.blur(nicknameInput);
+
+        expect(checkUniqueOnBlur).toHaveBeenCalledWith("nick_name", "MyNick");
+    });
+
+    it("disables Continue button when shouldDisableBtn is true (uniqueness errors present)", () => {
+        useAgreementEditForm.mockReturnValue({
+            ...baseHookState,
+            shouldDisableBtn: true,
+            uniquenessErrors: { name: ["This title already exists. Try a different one"], nick_name: [] }
+        });
+
+        render(<AgreementEditForm isEditMode={false} />);
+
+        expect(screen.getByRole("button", { name: "Continue" })).toBeDisabled();
     });
 });

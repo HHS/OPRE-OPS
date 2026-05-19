@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import React from "react";
 import { ReviewBudgetTeamRequisition } from "./ReviewBudgetTeamRequisition";
 
 // Mock dependencies with spread pattern to preserve real exports
@@ -112,12 +113,16 @@ vi.mock("../../../components/UI/Button/FileUploadButton", () => ({
 import { useParams, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import useReviewBudgetTeamRequisition from "./ReviewBudgetTeamRequisition.hooks";
+import DatePicker from "../../../components/UI/USWDS/DatePicker";
 
 describe("ReviewBudgetTeamRequisition", () => {
     /** @type {import('vitest').Mock} */
     let mockNavigate;
     /** @type {import('vitest').Mock} */
     let mockUseReviewBudgetTeamRequisition;
+
+    // Create MemoizedDatePicker for test mock
+    const MemoizedDatePicker = React.memo(DatePicker);
 
     const defaultHookReturn = {
         agreement: {
@@ -142,6 +147,7 @@ describe("ReviewBudgetTeamRequisition", () => {
         setRequisitionDate: vi.fn(),
         attestationChecked: false,
         setAttestationChecked: vi.fn(),
+        MemoizedDatePicker,
         showModal: false,
         setShowModal: vi.fn(),
         modalProps: {},
@@ -228,7 +234,7 @@ describe("ReviewBudgetTeamRequisition", () => {
             render(<ReviewBudgetTeamRequisition />);
 
             const requisitionInput = screen.getByLabelText("Requisition #");
-            const dateInput = screen.getByLabelText("Requisition Date");
+            const dateInput = screen.getByLabelText(/Requisition Date/);
             const attestationCheckbox = screen.getByRole("checkbox");
 
             expect(requisitionInput).toBeDisabled();
@@ -266,7 +272,7 @@ describe("ReviewBudgetTeamRequisition", () => {
             render(<ReviewBudgetTeamRequisition />);
 
             expect(screen.getByLabelText("Requisition #")).toBeInTheDocument();
-            expect(screen.getByLabelText("Requisition Date")).toBeInTheDocument();
+            expect(screen.getByLabelText(/Requisition Date/)).toBeInTheDocument();
         });
 
         it("should render attestation checkbox", () => {
@@ -338,7 +344,7 @@ describe("ReviewBudgetTeamRequisition", () => {
 
             render(<ReviewBudgetTeamRequisition />);
 
-            const dateInput = screen.getByLabelText("Requisition Date");
+            const dateInput = screen.getByLabelText(/Requisition Date/);
             await user.type(dateInput, "2026-05-12");
 
             expect(mockSetRequisitionDate).toHaveBeenCalled();
@@ -378,6 +384,9 @@ describe("ReviewBudgetTeamRequisition", () => {
         it("should enable approve button when form is valid", () => {
             mockUseReviewBudgetTeamRequisition.mockReturnValue({
                 ...defaultHookReturn,
+                requisitionNumber: "REQ-12345",
+                requisitionDate: "05/12/2026",
+                attestationChecked: true,
                 isFormValid: vi.fn(() => true)
             });
 

@@ -94,6 +94,7 @@ export const opsApi = createApi({
                     budgetLineStatus,
                     portfolio,
                     agreementName,
+                    nickName,
                     agreementType,
                     projectTitle,
                     contractNumber,
@@ -124,6 +125,9 @@ export const opsApi = createApi({
                             queryParams.push(`name=${encodeURIComponent(agreementDisplayName)}`);
                         }
                     });
+                }
+                if (nickName) {
+                    nickName.forEach((value) => queryParams.push(`nick_name=${encodeURIComponent(value)}`));
                 }
                 if (agreementType) {
                     agreementType.forEach((type) =>
