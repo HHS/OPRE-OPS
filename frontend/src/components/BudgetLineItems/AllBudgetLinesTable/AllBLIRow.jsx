@@ -13,6 +13,7 @@ import { AWARD_TYPE_LABELS } from "../../../pages/agreements/agreements.constant
 import TableRowExpandable from "../../UI/TableRowExpandable";
 import { expandedRowBGColor } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
+import tableStyles from "../../UI/Table/table.module.css";
 import TableTag from "../../UI/TableTag";
 import TextClip from "../../UI/Text/TextClip";
 import { useGetPortfolioByIdQuery } from "../../../api/opsAPI";
@@ -41,6 +42,7 @@ const AllBLIRow = ({ budgetLine }) => {
     const agreementLinkLabel =
         budgetLine?.agreement?.name?.trim() ||
         (budgetLine?.agreement?.id ? `Agreement ${budgetLine.agreement.id}` : "Agreement details");
+    const hasAgreementLink = Boolean(budgetLine?.agreement?.id);
 
     const TableRowData = (
         <>
@@ -185,6 +187,7 @@ const AllBLIRow = ({ budgetLine }) => {
             isExpanded={isExpanded}
             setIsExpanded={setIsExpanded}
             setIsRowActive={setIsRowActive}
+            className={hasAgreementLink ? tableStyles.noPaddingBottom : undefined}
             data-testid={`budget-line-row-${budgetLine?.id}`}
         />
     );
