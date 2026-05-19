@@ -3566,8 +3566,11 @@ paths:
       operationId: updateProject
       summary: Update an existing Project
       description: |
-        Update a Project by ID. The project_type field cannot be changed.
-        Only the fields provided in the request body will be updated.
+        Update a Project by ID. Only the fields provided in the request body
+        will be updated. Authorization is enforced per-project: only users
+        associated with the project (creator, team leaders, agreement team
+        members, COR/ACOR, division directors, portfolio team leaders) and
+        users with the BUDGET_TEAM or SYSTEM_OWNER roles may update a project.
       parameters:
         - $ref: "#/components/parameters/simulatedError"
         - in: path
@@ -3611,6 +3614,8 @@ paths:
           description: Bad Request - Invalid input or validation error
         "401":
           description: Unauthorized
+        "403":
+          description: Forbidden - User is not authorized to update this project
         "404":
           description: Not Found - Project does not exist
         "500":
@@ -6700,6 +6705,17 @@ components:
           type: string
           enum: [RESEARCH, ADMINISTRATIVE_AND_SUPPORT]
           example: RESEARCH
+        _meta:
+          type: object
+          description: |
+            Server-computed metadata for this project, scoped to the current user.
+          properties:
+            isEditable:
+              type: boolean
+              description: |
+                True when the current user is authorized to update this project
+                (see PATCH /projects/{id} for the authorization rules).
+              example: true
       required:
         - title
     ResearchProjects:
@@ -8272,6 +8288,17 @@ components:
           type: string
           format: date-time
           example: "2023-04-06T20:33:38.292475Z"
+        _meta:
+          type: object
+          description: |
+            Server-computed metadata for this project, scoped to the current user.
+          properties:
+            isEditable:
+              type: boolean
+              description: |
+                True when the current user is authorized to update this project
+                (see PATCH /projects/{id} for the authorization rules).
+              example: true
       required:
         - id
         - project_type

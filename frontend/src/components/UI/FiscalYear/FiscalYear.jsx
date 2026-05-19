@@ -14,7 +14,7 @@ const FiscalYear = ({ fiscalYear, handleChangeFiscalYear, fiscalYears = [], show
 
     return (
         <div
-            className="display-flex flex-justify flex-align-center"
+            className="display-flex flex-justify flex-align-center flex-align-baseline"
             style={{ width: "10.625rem" }}
         >
             <label

@@ -500,3 +500,31 @@ class TestPatchProjectAuthorization:
         data = {"title": "Should Not Update"}
         response = no_perms_auth_client.patch(url_for("api.projects-item", id=unassociated_project.id), json=data)
         assert response.status_code == 403
+
+
+class TestGetProjectMetaIsEditable:
+    """GET /projects/<id> returns _meta.isEditable matching the backend authorization rules."""
+
+    def test_get_project_unassociated_user_is_not_editable(
+        self, basic_user_auth_client, loaded_db, unassociated_project
+    ):
+        response = basic_user_auth_client.get(url_for("api.projects-item", id=unassociated_project.id))
+        assert response.status_code == 200
+        assert response.json["_meta"]["isEditable"] is False
+
+    def test_get_project_creator_is_editable(self, basic_user_auth_client, loaded_db, project_created_by_basic_user):
+        response = basic_user_auth_client.get(url_for("api.projects-item", id=project_created_by_basic_user.id))
+        assert response.status_code == 200
+        assert response.json["_meta"]["isEditable"] is True
+
+    def test_get_project_team_leader_is_editable(
+        self, basic_user_auth_client, loaded_db, project_with_basic_user_team_leader
+    ):
+        response = basic_user_auth_client.get(url_for("api.projects-item", id=project_with_basic_user_team_leader.id))
+        assert response.status_code == 200
+        assert response.json["_meta"]["isEditable"] is True
+
+    def test_get_project_budget_team_is_editable(self, budget_team_auth_client, loaded_db, unassociated_project):
+        response = budget_team_auth_client.get(url_for("api.projects-item", id=unassociated_project.id))
+        assert response.status_code == 200
+        assert response.json["_meta"]["isEditable"] is True

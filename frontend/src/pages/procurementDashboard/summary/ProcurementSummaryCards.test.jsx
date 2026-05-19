@@ -3,7 +3,7 @@ import { describe, it, expect, vi } from "vitest";
 import ProcurementSummaryCards from "./ProcurementSummaryCards";
 
 // Mock chart components that rely on D3/SVG rendering
-vi.mock("../../components/UI/DataViz/ResponsiveDonutWithInnerPercent", () => ({
+vi.mock("../../../components/UI/DataViz/ResponsiveDonutWithInnerPercent", () => ({
     default: ({ data }) => (
         <div data-testid="donut-chart">
             {data.map((d) => (
@@ -18,11 +18,11 @@ vi.mock("../../components/UI/DataViz/ResponsiveDonutWithInnerPercent", () => ({
     )
 }));
 
-vi.mock("../../components/UI/DataViz/ResponsiveDonutWithInnerPercent/CustomLayerComponent", () => ({
+vi.mock("../../../components/UI/DataViz/ResponsiveDonutWithInnerPercent/CustomLayerComponent", () => ({
     default: () => () => null
 }));
 
-vi.mock("../../components/UI/DataViz/LineBar", () => ({
+vi.mock("../../../components/UI/DataViz/LineBar", () => ({
     default: ({ title, total }) => (
         <div data-testid={`line-bar-${title}`}>
             {title}: {total}
@@ -30,7 +30,7 @@ vi.mock("../../components/UI/DataViz/LineBar", () => ({
     )
 }));
 
-vi.mock("../../components/UI/DataViz/HorizontalStackedBar/HorizontalStackedBar", () => ({
+vi.mock("../../../components/UI/DataViz/HorizontalStackedBar/HorizontalStackedBar", () => ({
     default: ({ data }) => (
         <div data-testid="stacked-bar">
             {data.map((d) => (

@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import Card from "../../components/UI/Cards/Card";
-import LineBar from "../../components/UI/DataViz/LineBar";
+import Card from "../../../components/UI/Cards/Card";
+import LineBar from "../../../components/UI/DataViz/LineBar";
 import ProcurementOverviewCard from "./ProcurementOverviewCard";
 import ProcurementStepSummaryCard from "./ProcurementStepSummaryCard";
 
@@ -83,7 +83,7 @@ const ProcurementSummaryCards = ({ procurementOverview, procurementStepSummary, 
                 isLoading={isLoading}
                 error={error}
             />
-            <div className="display-flex flex-justify margin-top-2 gap-2">
+            <div className="display-flex flex-justify margin-top-5">
                 <ProcurementStepSummaryCard
                     stepData={stepData}
                     fiscalYear={fiscalYear}
