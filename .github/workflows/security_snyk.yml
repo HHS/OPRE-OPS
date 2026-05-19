@@ -8,6 +8,7 @@ jobs:
   snyk-frontend:
     name: Snyk SCA for Frontend
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: read
       security-events: write
@@ -72,6 +73,7 @@ jobs:
   snyk-backend-api:
     name: Snyk SCA for Backend API
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: read
       security-events: write
@@ -88,17 +90,7 @@ jobs:
             exit 1
           fi
 
-      - name: Setup Python
-        uses: actions/setup-python@28f2168f4d98ee0445e3c6321f6e6616c83dd5ec # v4.3.0
-        with:
-          python-version: '3.14'
-
-      - name: Install pipenv
-        run: pip install pipenv
-
-      - name: Install dependencies
-        working-directory: backend/ops_api
-        run: pipenv install --dev
+      - uses: ./.github/actions/setup-python
 
       - name: Run Snyk test
         id: snyk_test
@@ -139,6 +131,7 @@ jobs:
   snyk-backend-data-tools:
     name: Snyk SCA for Data Tools
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: read
       security-events: write
