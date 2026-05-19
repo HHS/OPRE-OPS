@@ -41,7 +41,7 @@ export const ReviewBudgetTeamRequisition = () => {
         setRequisitionDate,
         attestationChecked,
         setAttestationChecked,
-        MemoizedDatePicker,
+        DatePicker,
         showModal,
         setShowModal,
         modalProps,
@@ -231,7 +231,7 @@ export const ReviewBudgetTeamRequisition = () => {
                     </div>
 
                     <div className="grid-col-4">
-                        <MemoizedDatePicker
+                        <DatePicker
                             id="requisition-date"
                             name="requisitionDate"
                             label="Requisition Date"

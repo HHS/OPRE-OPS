@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, shallowEqual } from "react-redux";
 import { useUpdateProcurementTrackerStepMutation } from "../../../api/opsAPI";
@@ -30,7 +30,7 @@ import { formatDateForApi } from "../../../helpers/utils";
  *   setRequisitionDate: (value: string) => void,
  *   attestationChecked: boolean,
  *   setAttestationChecked: (value: boolean) => void,
- *   MemoizedDatePicker,
+ *   DatePicker,
  *   showModal: boolean,
  *   setShowModal: (value: boolean) => void,
  *   modalProps: any,
@@ -57,8 +57,6 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
     const [modalProps, setModalProps] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState("");
-
-    const MemoizedDatePicker = React.memo(DatePicker);
 
     // Auth - use separate selectors with shallowEqual to prevent infinite loops
     // @ts-expect-error - Redux state typing in JS files
@@ -189,7 +187,7 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
         setRequisitionDate,
         attestationChecked,
         setAttestationChecked,
-        MemoizedDatePicker,
+        DatePicker,
 
         // UI state
         showModal,

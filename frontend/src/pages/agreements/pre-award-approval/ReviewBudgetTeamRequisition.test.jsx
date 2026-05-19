@@ -1,7 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import React from "react";
 import { ReviewBudgetTeamRequisition } from "./ReviewBudgetTeamRequisition";
 
 // Mock dependencies with spread pattern to preserve real exports
@@ -121,9 +120,6 @@ describe("ReviewBudgetTeamRequisition", () => {
     /** @type {import('vitest').Mock} */
     let mockUseReviewBudgetTeamRequisition;
 
-    // Create MemoizedDatePicker for test mock
-    const MemoizedDatePicker = React.memo(DatePicker);
-
     const defaultHookReturn = {
         agreement: {
             id: 1,
@@ -147,7 +143,7 @@ describe("ReviewBudgetTeamRequisition", () => {
         setRequisitionDate: vi.fn(),
         attestationChecked: false,
         setAttestationChecked: vi.fn(),
-        MemoizedDatePicker,
+        DatePicker,
         showModal: false,
         setShowModal: vi.fn(),
         modalProps: {},
