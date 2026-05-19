@@ -26,14 +26,15 @@ const CanHistoryPanel = ({ canId, fiscalYear }) => {
      */
     const [canHistory, setCanHistory] = useState(initialHistory);
 
+    const limit = 5;
     const {
-        data: canHistoryItems,
+        data: canHistoryResponse,
         isError,
         isLoading,
         isFetching
     } = useGetCanHistoryQuery({
         canId,
-        limit: 5,
+        limit,
         offset: offset,
         fiscalYear: fiscalYear
     });
@@ -45,21 +46,23 @@ const CanHistoryPanel = ({ canId, fiscalYear }) => {
     }, [fiscalYear, initialHistory]);
 
     useEffect(() => {
-        if (canHistoryItems && canHistoryItems.length > 0) {
-            setCanHistory((c) => [...c, ...canHistoryItems]);
+        if (canHistoryResponse?.items?.length > 0) {
+            setCanHistory((c) => [...c, ...canHistoryResponse.items]);
         }
-        if (!isLoading && canHistoryItems && canHistoryItems.length === 0) {
-            setStopped(true);
+        if (!isLoading && canHistoryResponse) {
+            if (offset + limit >= canHistoryResponse.count) {
+                setStopped(true);
+            }
         }
         if (isError) {
             setStopped(true);
         }
-    }, [canHistoryItems, isLoading, isError]);
+    }, [canHistoryResponse, isLoading, isError, offset, limit]);
 
     const fetchMoreData = () => {
         if (stopped) return;
         if (!isFetching) {
-            setOffset(offset + 5);
+            setOffset(offset + limit);
         }
         return Promise.resolve();
     };

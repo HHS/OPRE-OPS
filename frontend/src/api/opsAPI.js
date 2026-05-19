@@ -922,6 +922,10 @@ export const opsApi = createApi({
                 const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
                 return `/cans/${canId}/history/${queryString}`;
             },
+            transformResponse: (response) => ({
+                items: response.data,
+                count: response.count
+            }),
             providesTags: ["Cans"]
         }),
         getNotificationsByUserId: builder.query({
