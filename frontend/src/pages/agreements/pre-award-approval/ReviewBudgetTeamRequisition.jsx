@@ -9,7 +9,6 @@ import { convertCodeForDisplay, formatDateToMonthDayYear } from "../../../helper
 import icons from "../../../uswds/img/sprite.svg";
 import { PreAwardBudgetLinesReviewAccordion } from "./PreAwardBudgetLinesReviewAccordion";
 import FileUploadButton from "../../../components/UI/Button/FileUploadButton";
-import Input from "../../../components/UI/Form/Input";
 import SaveChangesAndExitModal from "../../../components/UI/Modals/SaveChangesAndExitModal";
 import useReviewBudgetTeamRequisition from "./ReviewBudgetTeamRequisition.hooks";
 
@@ -42,6 +41,7 @@ export const ReviewBudgetTeamRequisition = () => {
         setRequisitionDate,
         attestationChecked,
         setAttestationChecked,
+        MemoizedDatePicker,
         showModal,
         setShowModal,
         modalProps,
@@ -210,35 +210,37 @@ export const ReviewBudgetTeamRequisition = () => {
                 <p>Complete the requisition outside of OPS and then enter the requisition information below.</p>
 
                 <div className="grid-row grid-gap margin-top-3">
-                    <div className="grid-col-6">
-                        <Input
+                    <div className="grid-col-4 margin-top-3">
+                        <label
+                            className="usa-label margin-top-3"
+                            htmlFor="requisition-number"
+                        >
+                            Requisition #
+                        </label>
+                        <input
+                            id="requisition-number"
                             name="requisition-number"
-                            label="Requisition #"
+                            className="usa-input"
                             value={requisitionNumber}
-                            onChange={(name, value) => setRequisitionNumber(value)}
-                            isDisabled={isSubmitting || approvalAlreadyProcessed}
-                            messages={[]}
-                            isRequired={true}
+                            onChange={(e) => setRequisitionNumber(e.target.value)}
                             maxLength={100}
+                            disabled={isSubmitting || approvalAlreadyProcessed}
+                            required
+                            aria-required="true"
                         />
                     </div>
 
-                    <div className="grid-col-6">
-                        <label
-                            className="usa-label"
-                            htmlFor="requisition-date"
-                        >
-                            Requisition Date
-                        </label>
-                        <div className="usa-hint">Required Information*</div>
-                        <input
-                            className="usa-input"
+                    <div className="grid-col-4">
+                        <MemoizedDatePicker
                             id="requisition-date"
-                            name="requisition-date"
-                            type="date"
+                            name="requisitionDate"
+                            label="Requisition Date"
+                            hint="mm/dd/yyyy"
                             value={requisitionDate}
-                            onChange={(e) => setRequisitionDate(e.target.value)}
-                            disabled={isSubmitting || approvalAlreadyProcessed}
+                            onChange={/** @param {any} e */ (e) => setRequisitionDate(e.target.value)}
+                            isDisabled={isSubmitting || approvalAlreadyProcessed}
+                            messages={[]}
+                            isRequiredNoShow={true}
                         />
                     </div>
                 </div>

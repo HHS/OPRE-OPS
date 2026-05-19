@@ -127,6 +127,8 @@ function DatePicker({
                     aria-labelledby={`${id}-label`}
                     aria-describedby={hint ? `${id}-hint` : undefined}
                     disabled={isDisabled}
+                    required={isRequired || isRequiredNoShow}
+                    aria-required={isRequired || isRequiredNoShow}
                     // Removed value and onChange to handle as uncontrolled
                 />
             </div>
