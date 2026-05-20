@@ -136,4 +136,19 @@ describe("AgreementHistoryPanel", () => {
             expect(mockGetAgreementHistoryByIdAndPage).toHaveBeenCalledWith(42, 1);
         });
     });
+
+    it("stops scrolling and clears loading state on API error", async () => {
+        mockGetAgreementHistoryByIdAndPage.mockRejectedValue(new Error("Network error"));
+
+        render(<AgreementHistoryPanel agreementId={1} />);
+        triggerIntersection();
+
+        await waitFor(() => {
+            expect(mockGetAgreementHistoryByIdAndPage).toHaveBeenCalledWith(1, 1);
+        });
+
+        await waitFor(() => {
+            expect(screen.queryByTestId("infinite-scroll-trigger")).not.toBeInTheDocument();
+        });
+    });
 });
