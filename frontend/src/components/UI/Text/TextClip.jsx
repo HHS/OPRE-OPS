@@ -22,7 +22,7 @@ const TextClip = ({ text, maxLines = 2 }) => {
         if (!el) return;
 
         const checkOverflow = () => {
-            const overflowing = el.scrollWidth > el.clientWidth || el.scrollHeight > el.clientHeight;
+            const overflowing = el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1;
             setIsOverflowing((prev) => (prev === overflowing ? prev : overflowing));
         };
 
