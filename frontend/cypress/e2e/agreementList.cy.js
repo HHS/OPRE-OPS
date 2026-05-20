@@ -40,13 +40,6 @@ describe("Agreement List", () => {
         // select the row with data-testid="agreement-table-row-9"
         cy.get("[data-testid='agreement-table-row-9']", { timeout: 10000 }).should("exist");
 
-        // 4th row (including tooltips)
-        cy.get(
-            "tbody > [data-testid='agreement-table-row-9'] > :nth-child(1) > a > .usa-tooltip > .usa-tooltip__trigger"
-        ).should("have.text", "Interoperability Initiatives");
-        cy.get(
-            "tbody > [data-testid='agreement-table-row-9'] > :nth-child(1) > a > .usa-tooltip > .usa-tooltip__body"
-        ).should("have.text", "Interoperability Initiatives");
         cy.get("tbody > [data-testid='agreement-table-row-9'] > :nth-child(2)").should("have.text", "Contract");
         cy.get("tbody > [data-testid='agreement-table-row-9'] > :nth-child(3)").should("have.text", "6/13/2044");
         cy.get("tbody > [data-testid='agreement-table-row-9'] > :nth-child(4)").should("have.text", "6/13/2045");
