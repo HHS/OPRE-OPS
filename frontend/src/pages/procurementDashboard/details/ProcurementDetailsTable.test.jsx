@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 import { ProcurementDetailsTable } from "./ProcurementDetailsTable";
+import { getCurrentFiscalYear } from "../../../helpers/utils";
 
 vi.mock("../../../components/UI/TableRowExpandable", () => ({
     default: ({ tableRowData }) => <tr data-testid="expandable-row">{tableRowData}</tr>
@@ -34,7 +35,8 @@ describe("ProcurementDetailsTable", () => {
         agreements: [],
         userNameById: {},
         targetDateByAgreementId: {},
-        daysInStepByAgreementId: {}
+        daysInStepByAgreementId: {},
+        fiscalYear: Number(getCurrentFiscalYear())
     };
 
     const renderComponent = (props = {}) =>
