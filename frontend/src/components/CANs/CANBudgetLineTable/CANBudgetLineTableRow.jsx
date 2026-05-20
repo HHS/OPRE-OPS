@@ -8,6 +8,7 @@ import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import TableRowExpandable from "../../UI/TableRowExpandable";
 import { expandedRowBGColor } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
+import tableStyles from "../../UI/Table/table.module.css";
 import TableTag from "../../UI/TableTag";
 import TextClip from "../../UI/Text/TextClip";
 import { getProcurementShopLabel } from "../../../helpers/budgetLines.helpers";
@@ -61,6 +62,7 @@ const CANBudgetLineTableRow = ({
     const resolvedAgreementName =
         agreementName?.trim() ||
         (budgetLine?.agreement?.id ? `Agreement ${budgetLine.agreement.id}` : "Agreement details");
+    const hasAgreementLink = Boolean(budgetLine.agreement);
 
     const TableRowData = (
         <>
@@ -74,7 +76,6 @@ const CANBudgetLineTableRow = ({
                     >
                         <TextClip
                             text={agreementName?.trim() || `${budgetLine.agreement.id}`}
-                            tooltipThreshold={30}
                             maxLines={1}
                         />
                     </Link>
@@ -173,6 +174,7 @@ const CANBudgetLineTableRow = ({
             isExpanded={isExpanded}
             setIsExpanded={setIsExpanded}
             setIsRowActive={setIsRowActive}
+            className={hasAgreementLink ? tableStyles.noPaddingBottom : undefined}
         />
     );
 };
