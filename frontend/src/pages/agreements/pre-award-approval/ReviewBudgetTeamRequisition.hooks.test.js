@@ -473,7 +473,9 @@ describe("useReviewBudgetTeamRequisition", () => {
 
             await waitFor(() => {
                 // Error message comes from isFormValid failing (formatDateForApi returned null)
-                expect(result.current.submitError).toBe("Please fill in all required fields and check the attestation.");
+                expect(result.current.submitError).toBe(
+                    "Please fill in all required fields and check the attestation."
+                );
                 expect(result.current.showModal).toBe(false);
             });
         });

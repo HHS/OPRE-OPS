@@ -128,11 +128,14 @@ it("BLI Status Change", () => {
             cy.get('input[id="Change Draft Budget Lines to Planned Status"]', { timeout: 10000 })
                 .should("be.visible")
                 .check({ force: true });
-            cy.get(`input[id="${bliId}"]`, { timeout: 10000 }).should("be.enabled");
             // Ensure the "check all" box is actually checked in CI
             cy.get("#check-all-0", { timeout: 10000 }).should("be.visible").check({ force: true });
             cy.get("#check-all-0", { timeout: 10000 }).should("be.checked");
-            cy.get(`input[id="${bliId}"]`, { timeout: 10000 }).should("be.checked");
+            cy.get('[type="checkbox"]', { timeout: 10000 })
+                .should("have.length", 2)
+                .each((checkbox) => {
+                    cy.wrap(checkbox).should("be.checked");
+                });
             cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
             cy.get('[data-cy="review-card"]').within(() => {
                 cy.contains(bliId);

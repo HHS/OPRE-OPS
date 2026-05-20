@@ -101,7 +101,7 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
                 }
             }
         }
-    }, [step5]);
+    }, [step5?.id, step5?.requisition_number, step5?.requisition_date]);
 
     // Check if already processed
     const approvalAlreadyProcessed = step5?.requisition_approved_by != null;
@@ -187,7 +187,7 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
             // Build request data - only include fields with values
             /** @type {Record<string, any>} */
             const data = {
-                is_draft: true // CRITICAL: Prevents approval trigger
+                is_draft: true
             };
 
             // Only send requisition_number if it has a value
@@ -206,8 +206,6 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
                 data.requisition_date = formattedDate;
             }
 
-            // Call same mutation as approve, but with is_draft flag
-            // Server knows this is a draft save and will NOT trigger approval
             await updateProcurementTrackerStep({
                 stepId: step5.id,
                 data

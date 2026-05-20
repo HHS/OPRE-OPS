@@ -169,7 +169,7 @@ class ProcurementTrackerStepService:
                 "approval_responded_by": "pre_award_approval_responded_by",
                 "approval_responded_date": "pre_award_approval_responded_date",
                 "reviewer_notes": "pre_award_approval_reviewer_notes",
-                # OPS-1639: Budget team requisition fields (user-provided only)
+                # Budget team requisition fields (user-provided only)
                 "requisition_number": "pre_award_requisition_number",
                 "requisition_date": "pre_award_requisition_date",
                 # requisition_approved_by and requisition_approved_date are SERVER-CONTROLLED
@@ -189,10 +189,13 @@ class ProcurementTrackerStepService:
         else:
             active_mapping = {}
 
-        # Server-control requisition approval audit fields (OPS-1639)
+        # Server-control requisition approval audit fields
         # Must be checked BEFORE field mapping, since we need to detect the transition
         if step.step_type == ProcurementTrackerStepType.PRE_AWARD:
             self._handle_requisition_approval(step, data, current_user)
+
+        # Pop is_draft before field update loop (request-only flag, not a model field)
+        data.pop("is_draft", None)
 
         # Update fields
         for key, value in data.items():
@@ -390,13 +393,13 @@ class ProcurementTrackerStepService:
         )
 
         if requisition_being_approved:
-            # Verify BUDGET_TEAM role authorization
+            # Verify BUDGET_TEAM or SYSTEM_OWNER role authorization
             from ops_api.ops.services.ops_service import AuthorizationError
 
             user_role_names = [role.name for role in current_user.roles]
-            if "BUDGET_TEAM" not in user_role_names:
+            if "BUDGET_TEAM" not in user_role_names and "SYSTEM_OWNER" not in user_role_names:
                 raise AuthorizationError(
-                    f"User {current_user.id} does not have BUDGET_TEAM role required for requisition approval",
+                    f"User {current_user.id} does not have BUDGET_TEAM or SYSTEM_OWNER role required for requisition approval",
                     "ProcurementTrackerStep",
                 )
 
@@ -475,7 +478,7 @@ class ProcurementTrackerStepService:
 
         if approval_response_transitioned:
             if new_approval_status == "APPROVED":
-                # OPS-1639: DD approved - notify BUDGET_TEAM members (not requester)
+                # DD approved - notify BUDGET_TEAM members (not requester)
                 self._notify_budget_team_for_requisition_review(step, agreement, current_user, notification_service)
 
             elif new_approval_status == "DECLINED":
@@ -487,7 +490,7 @@ class ProcurementTrackerStepService:
                     PreAwardNotificationTitle.APPROVAL_REQUEST, step.id, "'in review' notifications after decline"
                 )
 
-        # Case 3: Budget Team Requisition Approval (OPS-1639)
+        # Case 3: Budget Team Requisition Approval
         # Only send if requisition_approved_by changed from None → {user_id}
         new_requisition_approved_by = step.pre_award_requisition_approved_by
         requisition_approval_transitioned = (
@@ -858,7 +861,7 @@ class ProcurementTrackerStepService:
             return []
 
         # Query for steps awaiting budget team requisition entry
-        # OPS-1639: Check approval status, not field emptiness (supports draft saves)
+        # Check approval status, not field emptiness (supports draft saves)
         stmt = (
             select(DefaultProcurementTrackerStep)
             .join(DefaultProcurementTrackerStep.procurement_tracker)
