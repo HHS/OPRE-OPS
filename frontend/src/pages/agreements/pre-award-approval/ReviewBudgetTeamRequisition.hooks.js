@@ -37,6 +37,7 @@ import { formatDateForApi, formatDateForScreen } from "../../../helpers/utils";
  *   isSubmitting: boolean,
  *   submitError: string,
  *   handleApprove: () => void,
+ *   handleSaveDraft: () => void,
  *   handleCancel: () => void,
  *   isFormValid: () => boolean,
  *   hasPermission: boolean,
@@ -92,7 +93,8 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
                 setRequisitionNumber(step5.requisition_number);
             }
             if (step5.requisition_date) {
-                // Convert backend date format (YYYY-MM-DD) to display format (MM/DD/YYYY)
+                // Backend always sends YYYY-MM-DD format
+                // Convert to display format (MM/DD/YYYY) for the DatePicker
                 const displayDate = formatDateForScreen(step5.requisition_date);
                 if (displayDate) {
                     setRequisitionDate(displayDate);
@@ -193,9 +195,15 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
                 data.requisition_number = requisitionNumber;
             }
 
-            // Only send requisition_date if it has a value
+            // Only send requisition_date if it has a value and it's valid
             if (requisitionDate.trim()) {
-                data.requisition_date = formatDateForApi(requisitionDate);
+                const formattedDate = formatDateForApi(requisitionDate);
+                if (formattedDate === null) {
+                    setSubmitError("Invalid date format. Please use MM/DD/YYYY format.");
+                    setIsSubmitting(false);
+                    return;
+                }
+                data.requisition_date = formattedDate;
             }
 
             // Call same mutation as approve, but with is_draft flag

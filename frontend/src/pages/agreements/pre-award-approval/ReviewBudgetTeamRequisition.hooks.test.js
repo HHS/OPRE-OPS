@@ -432,5 +432,87 @@ describe("useReviewBudgetTeamRequisition", () => {
                 expect(result.current.isFormValid()).toBe(false);
             });
         });
+
+        it("should reject invalid date format via isFormValid check", async () => {
+            usePreAwardApprovalData.mockReturnValue({
+                agreement: { id: 1, name: "Test Agreement" },
+                isLoading: false,
+                allBudgetLines: [],
+                executingTotal: 0,
+                projectOfficerName: "",
+                alternateProjectOfficerName: "",
+                servicesComponents: [],
+                groupedBudgetLinesByServicesComponent: [],
+                preAwardMemoDocuments: [],
+                step5: {
+                    id: 1,
+                    requisition_number: null,
+                    requisition_date: null,
+                    requisition_approved_by: null
+                },
+                preAwardRequestorName: "",
+                preAwardApprovalRequestedDate: ""
+            });
+
+            const { result } = renderHook(() => useReviewBudgetTeamRequisition(1), { wrapper });
+
+            result.current.setRequisitionNumber("REQ-12345");
+            result.current.setRequisitionDate("invalid"); // Invalid format - formatDateForApi returns null
+            result.current.setAttestationChecked(true);
+
+            await waitFor(() => {
+                expect(result.current.requisitionNumber).toBe("REQ-12345");
+                expect(result.current.requisitionDate).toBe("invalid");
+                expect(result.current.attestationChecked).toBe(true);
+                // isFormValid should return false because formatDateForApi returns null
+                expect(result.current.isFormValid()).toBe(false);
+            });
+
+            // Call handleApprove - should fail due to isFormValid check
+            await result.current.handleApprove();
+
+            await waitFor(() => {
+                // Error message comes from isFormValid failing (formatDateForApi returned null)
+                expect(result.current.submitError).toBe("Please fill in all required fields and check the attestation.");
+                expect(result.current.showModal).toBe(false);
+            });
+        });
+
+        it("should reject invalid date format in handleSaveDraft", async () => {
+            usePreAwardApprovalData.mockReturnValue({
+                agreement: { id: 1, name: "Test Agreement" },
+                isLoading: false,
+                allBudgetLines: [],
+                executingTotal: 0,
+                projectOfficerName: "",
+                alternateProjectOfficerName: "",
+                servicesComponents: [],
+                groupedBudgetLinesByServicesComponent: [],
+                preAwardMemoDocuments: [],
+                step5: {
+                    id: 1,
+                    requisition_number: null,
+                    requisition_date: null,
+                    requisition_approved_by: null
+                },
+                preAwardRequestorName: "",
+                preAwardApprovalRequestedDate: ""
+            });
+
+            const { result } = renderHook(() => useReviewBudgetTeamRequisition(1), { wrapper });
+
+            result.current.setRequisitionDate("invalid-date-format");
+
+            await waitFor(() => {
+                expect(result.current.requisitionDate).toBe("invalid-date-format");
+            });
+
+            await result.current.handleSaveDraft();
+
+            await waitFor(() => {
+                expect(result.current.submitError).toBe("Invalid date format. Please use MM/DD/YYYY format.");
+                expect(mockUpdateProcurementTrackerStep).not.toHaveBeenCalled();
+            });
+        });
     });
 });
