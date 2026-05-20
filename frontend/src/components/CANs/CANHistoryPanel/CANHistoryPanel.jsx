@@ -53,7 +53,7 @@ const CanHistoryPanel = ({ canId, fiscalYear }) => {
                 return newItems.length > 0 ? [...c, ...newItems] : c;
             });
         }
-        if (!isLoading && canHistoryResponse) {
+        if (!isLoading && !isFetching && canHistoryResponse) {
             if (offset + limit >= canHistoryResponse.count) {
                 setStopped(true);
             }
@@ -61,7 +61,7 @@ const CanHistoryPanel = ({ canId, fiscalYear }) => {
         if (isError) {
             setStopped(true);
         }
-    }, [canHistoryResponse, isLoading, isError, offset, limit]);
+    }, [canHistoryResponse, isLoading, isFetching, isError, offset, limit]);
 
     const fetchMoreData = () => {
         if (stopped) return;
