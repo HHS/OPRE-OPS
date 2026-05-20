@@ -610,9 +610,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AgreementHistory"
-        "404":
-          description: Not Found
+                $ref: "#/components/schemas/AgreementHistoryResponse"
   /agreements/{id}/spending/:
     get:
       tags:
@@ -6723,12 +6721,31 @@ components:
       type: array
       items:
         $ref: "#/components/schemas/ResearchProjectListItem"
-    AgreementHistory:
-      description: List of Agreement History records
-      type: array
-      items:
-        anyOf:
-          - $ref: "#/components/schemas/AgreementHistoryItem"
+    AgreementHistoryResponse:
+      description: Paginated Agreement History response
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/AgreementHistoryItem"
+        count:
+          type: integer
+          description: Total number of history records matching the query
+          example: 25
+        limit:
+          type: integer
+          description: Maximum number of records per page
+          example: 10
+        offset:
+          type: integer
+          description: Number of records skipped
+          example: 0
+      required:
+        - data
+        - count
+        - limit
+        - offset
     AgreementHistoryItem:
       type: object
       properties:
