@@ -5,7 +5,7 @@ import { useUpdateProcurementTrackerStepMutation } from "../../../api/opsAPI";
 import useAlert from "../../../hooks/use-alert.hooks";
 import usePreAwardApprovalData from "./usePreAwardApprovalData";
 import DatePicker from "../../../components/UI/USWDS/DatePicker";
-import { formatDateForApi } from "../../../helpers/utils";
+import { formatDateForApi, formatDateForScreen } from "../../../helpers/utils";
 
 /**
  * Custom hook for the ReviewBudgetTeamRequisition page.
@@ -92,7 +92,11 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
                 setRequisitionNumber(step5.requisition_number);
             }
             if (step5.requisition_date) {
-                setRequisitionDate(step5.requisition_date);
+                // Convert backend date format (YYYY-MM-DD) to display format (MM/DD/YYYY)
+                const displayDate = formatDateForScreen(step5.requisition_date);
+                if (displayDate) {
+                    setRequisitionDate(displayDate);
+                }
             }
         }
     }, [step5]);
@@ -191,7 +195,7 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
 
             // Only send requisition_date if it has a value
             if (requisitionDate.trim()) {
-                data.requisition_date = requisitionDate;
+                data.requisition_date = formatDateForApi(requisitionDate);
             }
 
             // Call same mutation as approve, but with is_draft flag
