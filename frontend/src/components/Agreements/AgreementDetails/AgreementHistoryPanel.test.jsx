@@ -138,6 +138,7 @@ describe("AgreementHistoryPanel", () => {
     });
 
     it("stops scrolling and clears loading state on API error", async () => {
+        const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
         mockGetAgreementHistoryByIdAndPage.mockRejectedValue(new Error("Network error"));
 
         render(<AgreementHistoryPanel agreementId={1} />);
@@ -150,5 +151,8 @@ describe("AgreementHistoryPanel", () => {
         await waitFor(() => {
             expect(screen.queryByTestId("infinite-scroll-trigger")).not.toBeInTheDocument();
         });
+
+        expect(consoleSpy).toHaveBeenCalledWith("Error loading agreement history:", expect.any(Error));
+        consoleSpy.mockRestore();
     });
 });

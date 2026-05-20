@@ -26,7 +26,8 @@ const AgreementHistoryPanel = ({ agreementId }) => {
             if (response.offset + response.limit >= response.count) {
                 setStopped(true);
             }
-        } catch {
+        } catch (error) {
+            console.error("Error loading agreement history:", error);
             setStopped(true);
         } finally {
             setIsLoading(false);
