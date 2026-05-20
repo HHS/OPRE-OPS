@@ -67,7 +67,6 @@ export const ProcurementDetailsTableRow = ({
                 >
                     <TextClip
                         text={agreementName}
-                        tooltipThreshold={10}
                         maxLines={2}
                     />
                 </Link>
