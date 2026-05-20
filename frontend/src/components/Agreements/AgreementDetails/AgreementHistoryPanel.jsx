@@ -19,13 +19,18 @@ const AgreementHistoryPanel = ({ agreementId }) => {
     const fetchMoreData = async () => {
         if (stopped) return;
         setIsLoading(true);
-        const response = await getAgreementHistoryByIdAndPage(agreementId, page);
-        setAgreementHistory([...agreementHistory, ...response.data]);
-        setPage(page + 1);
-        if (response.offset + response.limit >= response.count) {
+        try {
+            const response = await getAgreementHistoryByIdAndPage(agreementId, page);
+            setAgreementHistory([...agreementHistory, ...response.data]);
+            setPage(page + 1);
+            if (response.offset + response.limit >= response.count) {
+                setStopped(true);
+            }
+        } catch {
             setStopped(true);
+        } finally {
+            setIsLoading(false);
         }
-        setIsLoading(false);
     };
 
     const sortedAgreementHistory = agreementHistory?.sort((a, b) => {
