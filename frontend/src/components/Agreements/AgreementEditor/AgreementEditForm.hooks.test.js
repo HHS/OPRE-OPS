@@ -252,6 +252,19 @@ describe("useAgreementEditForm uniqueness checks", () => {
         });
     });
 
+    it("skips the nickname uniqueness check when the value is only whitespace", async () => {
+        useEditAgreementMock.mockReturnValue(makeEditState({ agreement_type: "CONTRACT" }));
+        const { result } = renderUseAgreementEditForm();
+
+        await act(async () => {
+            result.current.checkUniqueOnBlur("nick_name", "   ");
+            await result.current.checkUniqueOnBlur.flush();
+        });
+
+        expect(triggerGetAgreementsMock).not.toHaveBeenCalled();
+        expect(result.current.uniquenessErrors.nick_name).toEqual([]);
+    });
+
     it("clears errors and does not throw when the API call fails", async () => {
         useEditAgreementMock.mockReturnValue(makeEditState({ agreement_type: "CONTRACT" }));
         unwrapMock.mockRejectedValueOnce(new Error("network down"));
