@@ -11,6 +11,7 @@ from models import (
     BudgetLineItemStatus,
     Division,
     Portfolio,
+    ProcurementTracker,
 )
 from ops_api.ops.services.ops_service import AuthorizationError, ResourceNotFoundError
 from ops_api.ops.utils.agreements_helpers import associated_with_agreement
@@ -98,6 +99,42 @@ def is_bli_editable(budget_line_item):
         editable = False
 
     return editable
+
+
+def is_pre_award_in_review(agreement):
+    """
+    Check if the agreement's pre-award approval is currently in review.
+
+    Returns True if pre-award approval has been requested and is awaiting decision.
+    This includes states where:
+    - Approval is requested and status is None (pending Division Director review)
+    - Approval status is PENDING
+    - Approval status is APPROVED but requisition_approved_by is None (awaiting Budget Team)
+
+    Args:
+        agreement: Agreement object to check
+
+    Returns:
+        bool: True if pre-award is in review, False otherwise
+    """
+    if not agreement or not agreement.procurement_tracker_id:
+        return False
+
+    tracker = current_app.db_session.query(ProcurementTracker).get(agreement.procurement_tracker_id)
+    if not tracker:
+        return False
+
+    pre_award_step = next((step for step in tracker.steps if step.step_type == "PRE_AWARD"), None)
+
+    if not pre_award_step or not pre_award_step.approval_requested:
+        return False
+
+    # In review if: no status, PENDING, or APPROVED but awaiting requisition
+    return (
+        pre_award_step.approval_status is None
+        or pre_award_step.approval_status == "PENDING"
+        or (pre_award_step.approval_status == "APPROVED" and pre_award_step.requisition_approved_by is None)
+    )
 
 
 def bli_associated_with_agreement(id: int) -> bool:

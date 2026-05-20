@@ -45,6 +45,7 @@ from ops_api.ops.utils.budget_line_items_helpers import (
     bli_associated_with_agreement,
     create_budget_line_item_instance,
     is_bli_editable,
+    is_pre_award_in_review,
     update_data,
 )
 from ops_api.ops.utils.users import is_super_user
@@ -623,6 +624,10 @@ class BudgetLineItemService:
             raise ValidationError({"agreement_id": "Changing the agreement_id of a Budget Line Item is not allowed."})
         if not is_bli_editable(budget_line_item):
             raise ValidationError({"status": "Budget Line Item is not in an editable state."})
+
+        # Check if the agreement's pre-award approval is in review
+        if is_pre_award_in_review(budget_line_item.agreement):
+            raise ValidationError({"status": "Cannot modify Budget Line Items while Pre-Award Approval is in review."})
 
         sc = self.db_session.get(ServicesComponent, updated_fields.get("services_component_id"))
         if sc and sc.agreement_id != budget_line_item.agreement_id:
