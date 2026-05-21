@@ -10,73 +10,88 @@ def test_get_can_history(loaded_db, app_ctx):
     count = loaded_db.query(CANHistory).where(CANHistory.can_id == test_can_id).count()
     can_history_service = CANHistoryService()
     # Set a limit higher than our test data so we can get all results
-    response = can_history_service.get(test_can_id, 1000, 0, 2025)
-    assert len(response) == count
+    results, metadata = can_history_service.get(test_can_id, 1000, 0, 2025)
+    assert len(results) == count
+    assert metadata["count"] == count
+    assert metadata["limit"] == 1000
+    assert metadata["offset"] == 0
 
 
 def test_get_can_history_custom_length(app_ctx):
     test_can_id = 500
     test_limit = 5
     can_history_service = CANHistoryService()
-    # Set a limit higher than our test data so we can get all results
-    response = can_history_service.get(test_can_id, test_limit, 0, 2025)
-    assert len(response) == test_limit
+    results, metadata = can_history_service.get(test_can_id, test_limit, 0, 2025)
+    assert len(results) == test_limit
+    assert metadata["limit"] == test_limit
+    assert metadata["count"] >= test_limit
 
 
 def test_get_can_history_custom_offset(app_ctx):
     test_can_id = 500
     can_history_service = CANHistoryService()
-    # Set a limit higher than our test data so we can get all results
-    response = can_history_service.get(test_can_id, 4, 1, 2025)
-    offset_first_CAN = response[0]  # CANHistory#26
-    offset_second_CAN = response[1]  # CANHistory#28
+    results, metadata = can_history_service.get(test_can_id, 4, 1, 2025)
+    offset_first_CAN = results[0]  # CANHistory#26
+    offset_second_CAN = results[1]  # CANHistory#28
     # The CAN with ID 500 has ops events with id 1, then starting at ops event id 18 and moving forward
     # Therefore, we expect the ops_event_id to be 18 for the first item in the list offset by 1
     assert offset_first_CAN.ops_event_id == 26
     assert offset_first_CAN.history_type == CANHistoryType.CAN_NICKNAME_EDITED
     assert offset_second_CAN.ops_event_id == 28
     assert offset_second_CAN.history_type == CANHistoryType.CAN_FUNDING_CREATED
+    assert metadata["offset"] == 1
 
 
 def test_get_can_history_custom_fiscal_year(app_ctx):
     test_can_id = 516
     can_history_service = CANHistoryService()
     # Set a fiscal year which returns no cans
-    response = can_history_service.get(test_can_id, 5, 0, 2025)
-    assert len(response) == 0
+    results, metadata = can_history_service.get(test_can_id, 5, 0, 2025)
+    assert len(results) == 0
+    assert metadata["count"] == 0
 
     # Set a fiscal year which returns one can
-    response_2 = can_history_service.get(test_can_id, 5, 0, 2026)
-    assert len(response_2) == 1
+    results_2, metadata_2 = can_history_service.get(test_can_id, 5, 0, 2026)
+    assert len(results_2) == 1
+    assert metadata_2["count"] == 1
 
 
 def test_get_can_history_nonexistent_can(app_ctx):
     test_can_id = 300
     can_history_service = CANHistoryService()
     # Try to get a non-existent CAN and return an empty result instead of throwing any errors.
-    response = can_history_service.get(test_can_id, 10, 0, 2025)
-    assert len(response) == 0
+    results, metadata = can_history_service.get(test_can_id, 10, 0, 2025)
+    assert len(results) == 0
+    assert metadata["count"] == 0
 
 
 def test_get_can_history_ascending_sort(app_ctx):
     test_can_id = 501
     can_history_service = CANHistoryService()
-    ascending_sort_response = can_history_service.get(test_can_id, 10, 0, 2025, True)
+    ascending_sort_response, _ = can_history_service.get(test_can_id, 10, 0, 2025, True)
     oldest_can_history_event = ascending_sort_response[0]
     assert len(ascending_sort_response) == 2
     assert oldest_can_history_event.history_type == CANHistoryType.CAN_DATA_IMPORT
 
-    descending_sort_response = can_history_service.get(test_can_id, 10, 0, 2025, False)
+    descending_sort_response, _ = can_history_service.get(test_can_id, 10, 0, 2025, False)
     assert len(descending_sort_response) == 2
     newest_can_history_event = descending_sort_response[0]
     assert newest_can_history_event.history_type == CANHistoryType.CAN_NICKNAME_EDITED
+
+
+def test_get_can_history_offset_beyond_total(app_ctx):
+    test_can_id = 501
+    can_history_service = CANHistoryService()
+    results, metadata = can_history_service.get(test_can_id, 10, 1000, 2025)
+    assert len(results) == 0
+    assert metadata["count"] > 0
+    assert metadata["offset"] == 1000
 
 
 def test_get_can_history_list_from_api(auth_client, mocker, app_ctx):
     test_can_id = 500
     mock_can_history_list = []
     for x in range(1, 11):
-        # These should be CanHistoryItem objects and not JSON objects ******
         mock_can_history_list.append(
             CANHistory(
                 can_id=500,
@@ -90,18 +105,20 @@ def test_get_can_history_list_from_api(auth_client, mocker, app_ctx):
         )
 
     mocker_get_can_history = mocker.patch("ops_api.ops.services.can_history.CANHistoryService.get")
-    mocker_get_can_history.return_value = mock_can_history_list
+    mocker_get_can_history.return_value = (mock_can_history_list, {"count": 10, "limit": 10, "offset": 0})
 
     response = auth_client.get(f"/api/v1/cans/{test_can_id}/history/?fiscal_year=2025")
     assert response.status_code == 200
-    assert len(response.json) == 10
+    assert len(response.json["data"]) == 10
+    assert response.json["count"] == 10
+    assert response.json["limit"] == 10
+    assert response.json["offset"] == 0
 
 
 def test_get_can_history_list_from_api_with_params(auth_client, mocker, app_ctx):
     test_can_id = 500
     mock_can_history_list = []
     for x in range(1, 6):
-        # These should be CanHistoryItem objects and not JSON objects ******
         mock_can_history_list.append(
             CANHistory(
                 can_id=500,
@@ -115,11 +132,14 @@ def test_get_can_history_list_from_api_with_params(auth_client, mocker, app_ctx)
         )
 
     mocker_get_can_history = mocker.patch("ops_api.ops.services.can_history.CANHistoryService.get")
-    mocker_get_can_history.return_value = mock_can_history_list
+    mocker_get_can_history.return_value = (mock_can_history_list, {"count": 20, "limit": 5, "offset": 1})
 
     response = auth_client.get(f"/api/v1/cans/{test_can_id}/history/?fiscal_year=2025&limit=5&offset=1")
     assert response.status_code == 200
-    assert len(response.json) == 5
+    assert len(response.json["data"]) == 5
+    assert response.json["count"] == 20
+    assert response.json["limit"] == 5
+    assert response.json["offset"] == 1
 
 
 def test_get_can_history_list_from_api_with_bad_limit(auth_client, app_ctx):
@@ -141,33 +161,34 @@ def test_get_can_history_list_from_api_with_no_can_id(auth_client, app_ctx):
 
 def test_get_can_history_from_api_no_fiscal_year(auth_client, mocker, app_ctx):
     test_can_id = 500
-    mock_can_history_list = []
     mocker_get_can_history = mocker.patch("ops_api.ops.services.can_history.CANHistoryService.get")
-    mocker_get_can_history.return_value = mock_can_history_list
+    mocker_get_can_history.return_value = ([], {"count": 0, "limit": 10, "offset": 0})
     response = auth_client.get(f"/api/v1/cans/{test_can_id}/history/")
     mocker_get_can_history.assert_called_once_with(test_can_id, 10, 0, 0, False)
     assert response.status_code == 200
+    assert response.json["data"] == []
+    assert response.json["count"] == 0
 
 
 def test_get_can_history_from_api_asc_sort(auth_client, mocker, app_ctx):
     test_can_id = 500
-    mock_can_history_list = []
     mocker_get_can_history = mocker.patch("ops_api.ops.services.can_history.CANHistoryService.get")
-    mocker_get_can_history.return_value = mock_can_history_list
+    mocker_get_can_history.return_value = ([], {"count": 0, "limit": 10, "offset": 0})
     response = auth_client.get(f"/api/v1/cans/{test_can_id}/history/?sort_asc=true")
     mocker_get_can_history.assert_called_once_with(test_can_id, 10, 0, 0, True)
     assert response.status_code == 200
+    assert response.json["data"] == []
 
 
 def test_get_can_history_list_from_api_with_nonexistent_can(auth_client, mocker, app_ctx):
     test_can_id = 400
-    mock_can_history_list = []
     mocker_get_can_history = mocker.patch("ops_api.ops.services.can_history.CANHistoryService.get")
-    mocker_get_can_history.return_value = mock_can_history_list
+    mocker_get_can_history.return_value = ([], {"count": 0, "limit": 5, "offset": 1})
 
     response = auth_client.get(f"/api/v1/cans/{test_can_id}/history/?limit=5&offset=1")
     assert response.status_code == 200
-    assert len(response.json) == 0
+    assert len(response.json["data"]) == 0
+    assert response.json["count"] == 0
 
 
 def test_create_can_can_history_event(loaded_db, test_create_can_history_item, app_ctx):
