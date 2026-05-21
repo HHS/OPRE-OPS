@@ -63,11 +63,16 @@ const AgreementBudgetLines = ({
     const [isExporting, setIsExporting] = React.useState(false);
     const [includeDrafts, setIncludeDrafts] = React.useState(false);
     const isSuperUser = useIsUserSuperUser();
-    const canUserEditAgreement = isSuperUser || (agreement?._meta.isEditable && !isAgreementNotDeveloped);
     const { data: servicesComponents, isLoading: isServicesComponentsLoading } = useGetServicesComponentsListQuery(
         agreement?.id
     );
     const allBudgetLinesInReview = areAllBudgetLinesInReview(agreement?.budget_line_items ?? []);
+
+    // Regular users must have permission and agreement must be in editable state
+    const canRegularUserEdit = agreement?._meta.isEditable && !isAgreementNotDeveloped && !allBudgetLinesInReview;
+
+    // Pre-award in review blocks everyone; otherwise super users bypass checks, regular users must pass all
+    const isAgreementEditable = !isPreAwardInReview && (isSuperUser || canRegularUserEdit);
     const filters = { agreementIds: [agreement?.id] };
 
     // details for AgreementTotalBudgetLinesCard
@@ -174,7 +179,7 @@ const AgreementBudgetLines = ({
                         setIncludeDrafts={setIncludeDrafts}
                         isEditMode={isEditMode}
                         setIsEditMode={setIsEditMode}
-                        isEditable={canUserEditAgreement}
+                        isEditable={isAgreementEditable}
                         isPreAwardInReview={isPreAwardInReview}
                     />
                     <div className="display-flex flex-justify">
@@ -243,7 +248,7 @@ const AgreementBudgetLines = ({
                         isReviewMode={false}
                         selectedProcurementShop={agreement?.procurement_shop}
                         selectedResearchProject={agreement?.project}
-                        canUserEditBudgetLines={canUserEditAgreement}
+                        canUserEditBudgetLines={isAgreementEditable}
                         wizardSteps={[]}
                         continueBtnText="Save & Exit"
                         currentStep={0}
@@ -302,7 +307,7 @@ const AgreementBudgetLines = ({
 
             {!isEditMode && (
                 <div className="grid-row flex-justify-end margin-top-1">
-                    {canUserEditAgreement && !isAgreementNotDeveloped && !allBudgetLinesInReview && !isPreAwardInReview ? (
+                    {isAgreementEditable ? (
                         <Link
                             className="usa-button margin-top-4 margin-right-0"
                             to={`/agreements/review/${agreement?.id}`}

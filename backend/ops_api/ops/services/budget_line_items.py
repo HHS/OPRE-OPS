@@ -625,8 +625,8 @@ class BudgetLineItemService:
         if not is_bli_editable(budget_line_item):
             raise ValidationError({"status": "Budget Line Item is not in an editable state."})
 
-        # Check if the agreement's pre-award approval is in review
-        if is_pre_award_in_review(budget_line_item.agreement):
+        # Check if the agreement's pre-award approval is in review (super users can bypass)
+        if not current_user.is_superuser and is_pre_award_in_review(budget_line_item.agreement):
             raise ValidationError({"status": "Cannot modify Budget Line Items while Pre-Award Approval is in review."})
 
         sc = self.db_session.get(ServicesComponent, updated_fields.get("services_component_id"))
