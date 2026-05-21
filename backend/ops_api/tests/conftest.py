@@ -220,11 +220,13 @@ def db_service(request, worker_id, tmp_path_factory) -> Generator[Engine, None, 
     with FileLock(str(template_lock)):
         if not template_flag.exists():
             with admin_engine.connect() as conn:
-                conn.execute(text(
-                    "SELECT pg_terminate_backend(pid) "
-                    "FROM pg_stat_activity "
-                    "WHERE datname = 'postgres' AND pid <> pg_backend_pid()"
-                ))
+                conn.execute(
+                    text(
+                        "SELECT pg_terminate_backend(pid) "
+                        "FROM pg_stat_activity "
+                        "WHERE datname = 'postgres' AND pid <> pg_backend_pid()"
+                    )
+                )
                 conn.execute(text(f"DROP DATABASE IF EXISTS {template_db}"))
                 conn.execute(text(f"CREATE DATABASE {template_db} TEMPLATE postgres"))
                 conn.execute(text(f"GRANT ALL PRIVILEGES ON DATABASE {template_db} TO ops"))
@@ -235,11 +237,13 @@ def db_service(request, worker_id, tmp_path_factory) -> Generator[Engine, None, 
     clone_lock = root_tmp / "db_clone.lock"
     with FileLock(str(clone_lock)):
         with admin_engine.connect() as conn:
-            conn.execute(text(
-                f"SELECT pg_terminate_backend(pid) "
-                f"FROM pg_stat_activity "
-                f"WHERE datname = '{template_db}' AND pid <> pg_backend_pid()"
-            ))
+            conn.execute(
+                text(
+                    f"SELECT pg_terminate_backend(pid) "
+                    f"FROM pg_stat_activity "
+                    f"WHERE datname = '{template_db}' AND pid <> pg_backend_pid()"
+                )
+            )
             conn.execute(text(f"DROP DATABASE IF EXISTS {db_name}"))
             conn.execute(text(f"CREATE DATABASE {db_name} TEMPLATE {template_db}"))
             conn.execute(text(f"GRANT ALL PRIVILEGES ON DATABASE {db_name} TO ops"))
@@ -251,11 +255,13 @@ def db_service(request, worker_id, tmp_path_factory) -> Generator[Engine, None, 
 
     engine.dispose()
     with admin_engine.connect() as conn:
-        conn.execute(text(
-            f"SELECT pg_terminate_backend(pid) "
-            f"FROM pg_stat_activity "
-            f"WHERE datname = '{db_name}' AND pid <> pg_backend_pid()"
-        ))
+        conn.execute(
+            text(
+                f"SELECT pg_terminate_backend(pid) "
+                f"FROM pg_stat_activity "
+                f"WHERE datname = '{db_name}' AND pid <> pg_backend_pid()"
+            )
+        )
         conn.execute(text(f"DROP DATABASE IF EXISTS {db_name}"))
     admin_engine.dispose()
 
