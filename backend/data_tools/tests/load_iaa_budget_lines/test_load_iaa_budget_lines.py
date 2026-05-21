@@ -335,7 +335,7 @@ def test_create_models_upsert(db_for_iaa_test_with_data):
         db_for_iaa_test_with_data.execute(
             select(OpsDBHistory)
             .where(OpsDBHistory.class_name == "IAABudgetLineItem")
-            .order_by(OpsDBHistory.created_on.desc())
+            .order_by(OpsDBHistory.id.desc())
         )
         .scalars()
         .all()
@@ -388,7 +388,7 @@ def test_create_models_upsert(db_for_iaa_test_with_data):
         db_for_iaa_test_with_data.execute(
             select(OpsDBHistory)
             .where(OpsDBHistory.class_name == "IAABudgetLineItem")
-            .order_by(OpsDBHistory.created_on.desc())
+            .order_by(OpsDBHistory.id.desc())
         )
         .scalars()
         .all()

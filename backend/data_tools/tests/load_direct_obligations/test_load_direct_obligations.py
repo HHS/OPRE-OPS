@@ -191,7 +191,7 @@ def test_create_models_upsert(db_for_direct_obligations):
     history_record = db_for_direct_obligations.execute(
         select(OpsDBHistory)
         .where(OpsDBHistory.class_name == "DirectAgreement")
-        .order_by(OpsDBHistory.created_on.desc())
+        .order_by(OpsDBHistory.id.desc())
     ).scalar()
     assert history_record is not None
     assert history_record.event_type == OpsDBHistoryType.NEW
@@ -228,7 +228,7 @@ def test_create_models_upsert(db_for_direct_obligations):
     history_record = db_for_direct_obligations.execute(
         select(OpsDBHistory)
         .where(OpsDBHistory.class_name == "DirectAgreement")
-        .order_by(OpsDBHistory.created_on.desc())
+        .order_by(OpsDBHistory.id.desc())
     ).scalar()
     assert history_record is not None
     assert history_record.event_type == OpsDBHistoryType.UPDATED

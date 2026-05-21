@@ -178,7 +178,7 @@ def test_create_models_upsert(loaded_db):
     history_record = loaded_db.execute(
         select(OpsDBHistory)
         .where(OpsDBHistory.class_name == "ResearchProject")
-        .order_by(OpsDBHistory.created_on.desc())
+        .order_by(OpsDBHistory.id.desc())
     ).scalar()
     assert history_record is not None
     assert history_record.event_type == OpsDBHistoryType.NEW
