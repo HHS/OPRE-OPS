@@ -769,6 +769,66 @@ def test_appropriation_missing_year(mocker):
     assert funding_details.appropriation == "75--0401"
 
 
+def test_create_models_fallback_lookup_by_number(db_with_portfolios):
+    """When SYS_CAN_ID doesn't match but CAN_NBR does, the existing CAN is updated."""
+    sys_user = get_or_create_sys_user(db_with_portfolios)
+
+    data_initial = CANData(
+        FISCAL_YEAR=2023,
+        SYS_CAN_ID=500,
+        CAN_NBR="G99HRF2",
+        CAN_DESCRIPTION="Original description",
+        FUND="AAXXXX20231DAD",
+        ALLOWANCE="0000000001",
+        ALLOTMENT_ORG="YZC6S1JUGUN",
+        SUB_ALLOWANCE="9KRZ2ND",
+        CURRENT_FY_FUNDING_YTD=880000.0,
+        APPROP_PREFIX="XX",
+        APPROP_POSTFIX="XXXX",
+        APPROP_YEAR="23",
+        PORTFOLIO="HMRF",
+        FUNDING_SOURCE="OPRE",
+        METHOD_OF_TRANSFER="DIRECT",
+        NICK_NAME="HMRF-OPRE",
+        FUNDING_PARTNER="partner 1",
+    )
+    create_models(data_initial, sys_user, db_with_portfolios)
+
+    can = db_with_portfolios.get(CAN, 500)
+    assert can is not None
+    assert can.number == "G99HRF2"
+
+    data_different_id = CANData(
+        FISCAL_YEAR=2023,
+        SYS_CAN_ID=9999,
+        CAN_NBR="G99HRF2",
+        CAN_DESCRIPTION="Updated via number fallback",
+        FUND="AAXXXX20231DAD",
+        ALLOWANCE="0000000001",
+        ALLOTMENT_ORG="YZC6S1JUGUN",
+        SUB_ALLOWANCE="9KRZ2ND",
+        CURRENT_FY_FUNDING_YTD=880000.0,
+        APPROP_PREFIX="XX",
+        APPROP_POSTFIX="XXXX",
+        APPROP_YEAR="23",
+        PORTFOLIO="HMRF",
+        FUNDING_SOURCE="OPRE",
+        METHOD_OF_TRANSFER="DIRECT",
+        NICK_NAME="HMRF-OPRE-Updated",
+        FUNDING_PARTNER="partner 1",
+    )
+    create_models(data_different_id, sys_user, db_with_portfolios)
+
+    can = db_with_portfolios.get(CAN, 500)
+    assert can is not None
+    assert can.number == "G99HRF2"
+    assert can.description == "Updated via number fallback"
+    assert can.nick_name == "HMRF-OPRE-Updated"
+
+    all_cans = db_with_portfolios.execute(select(CAN).where(CAN.number == "G99HRF2")).scalars().all()
+    assert len(all_cans) == 1
+
+
 @pytest.mark.skip(reason="Need to update the test data")
 def test_create_models_invalid_fund_code(db_with_portfolios):
     data = CANData(

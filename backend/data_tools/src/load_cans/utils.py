@@ -132,6 +132,8 @@ def create_models(data: CANData, sys_user: User, session: Session) -> None:
         is_new = False
 
         can = session.get(CAN, data.SYS_CAN_ID) if data.SYS_CAN_ID else None
+        if not can:
+            can = session.execute(select(CAN).where(CAN.number == data.CAN_NBR)).scalar_one_or_none()
 
         if can:
             can.number = data.CAN_NBR
