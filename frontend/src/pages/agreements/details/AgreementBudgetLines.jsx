@@ -79,6 +79,8 @@ const AgreementBudgetLines = ({
         switch (true) {
             case isAgreementNotDeveloped:
                 return "Agreements that are grants, other partner agreements (IAAs, IPAs, IDDAs), \nor direct obligations have not been developed yet, but are coming soon.";
+            case isPreAwardInReview:
+                return "This agreement is In Review for Pre-Award Approval. Edits or changes cannot be made at this time.";
             case allBudgetLinesInReview:
                 return "Budget lines In Review Status cannot be sent for status changes";
             default:
@@ -300,7 +302,7 @@ const AgreementBudgetLines = ({
 
             {!isEditMode && (
                 <div className="grid-row flex-justify-end margin-top-1">
-                    {canUserEditAgreement && !isAgreementNotDeveloped && !allBudgetLinesInReview ? (
+                    {canUserEditAgreement && !isAgreementNotDeveloped && !allBudgetLinesInReview && !isPreAwardInReview ? (
                         <Link
                             className="usa-button margin-top-4 margin-right-0"
                             to={`/agreements/review/${agreement?.id}`}
