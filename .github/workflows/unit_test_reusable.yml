@@ -17,7 +17,7 @@ jobs:
       # Stand up the system stack, to have something to poke
       - name: Run backend unit tests
         working-directory: ./backend/ops_api/
-        run: pipenv run pytest --cov
+        run: pipenv run pytest -n 4 --cov
 
   backend-data-tools:
     name: Data-Tools Unit Tests
