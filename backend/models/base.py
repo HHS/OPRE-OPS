@@ -99,7 +99,7 @@ class BaseModel(Base):
     )
     created_on: Mapped[Optional[datetime]] = mapped_column(default=func.now())
     updated_on: Mapped[Optional[datetime]] = mapped_column(
-        default=func.now(), onupdate=func.now()
+        default=func.now(), onupdate=func.clock_timestamp()
     )
 
     @classmethod
