@@ -11,7 +11,6 @@ from models import (
     BudgetLineItemStatus,
     Division,
     Portfolio,
-    ProcurementTracker,
 )
 from ops_api.ops.services.ops_service import AuthorizationError, ResourceNotFoundError
 from ops_api.ops.utils.agreements_helpers import associated_with_agreement
