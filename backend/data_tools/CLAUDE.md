@@ -67,9 +67,14 @@ pipenv run pytest tests/load_projects/test_load_projects.py::test_transform_crea
 # Run with verbose output
 pipenv run pytest -v
 
-# Run with coverage report
-pipenv run pytest --cov=src --cov-report=html
+# Run with coverage (used in CI)
+pipenv run pytest --cov
+
+# Run with coverage and HTML report
+pipenv run pytest --cov --cov-report=html
 ```
+
+Coverage is not enabled by default so that running individual tests stays fast. CI always runs with `--cov`.
 
 **Important:** Tests mirror the source structure. Tests for `src/load_projects/utils.py` live under `tests/load_projects/`. Many tests use the `loaded_db` fixture, which brings up Postgres via pytest-docker and applies history triggers.
 
