@@ -3123,7 +3123,7 @@ def test_cannot_update_bli_when_pre_award_in_review(auth_client, loaded_db, app_
         step_number=5,
         approval_requested=True,
         approval_status=None,  # In review - awaiting decision
-        created_by=1
+        created_by=1,
     )
     loaded_db.add(pre_award_step)
 
@@ -3160,7 +3160,7 @@ def test_can_update_bli_when_pre_award_not_in_review(auth_client, loaded_db, app
         step_type="PRE_AWARD",
         step_number=5,
         approval_requested=False,  # Not requested yet
-        created_by=1
+        created_by=1,
     )
     loaded_db.add(pre_award_step)
 
@@ -3201,7 +3201,7 @@ def test_can_update_bli_when_pre_award_declined(auth_client, loaded_db, app_ctx)
         step_number=5,
         approval_requested=True,
         approval_status="DECLINED",  # Declined - can edit again
-        created_by=1
+        created_by=1,
     )
     loaded_db.add(pre_award_step)
 
@@ -3243,7 +3243,7 @@ def test_cannot_update_bli_when_pre_award_approved_but_awaiting_requisition(auth
         approval_requested=True,
         approval_status="APPROVED",
         requisition_approved_by=None,  # Still awaiting budget team
-        created_by=1
+        created_by=1,
     )
     loaded_db.add(pre_award_step)
 
@@ -3282,7 +3282,7 @@ def test_can_update_bli_when_pre_award_fully_approved(auth_client, loaded_db, ap
         approval_requested=True,
         approval_status="APPROVED",
         requisition_approved_by=1,  # Budget team approved
-        created_by=1
+        created_by=1,
     )
     loaded_db.add(pre_award_step)
 
