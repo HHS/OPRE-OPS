@@ -204,6 +204,70 @@ paths:
                         type: number
                         format: float
                         description: Total executing amount
+                  procurement_overview:
+                    type: object
+                    nullable: true
+                    description: Procurement overview data grouped by BLI status
+                    properties:
+                      status_data:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            status:
+                              type: string
+                              example: PLANNED
+                            label:
+                              type: string
+                              example: Planned
+                            amount:
+                              type: number
+                              format: float
+                            amount_percent:
+                              type: number
+                              format: float
+                            agreements:
+                              type: integer
+                            agreements_percent:
+                              type: number
+                              format: float
+                      total_amount:
+                        type: number
+                        format: float
+                      total_agreements:
+                        type: integer
+                  procurement_step_summary:
+                    type: object
+                    nullable: true
+                    description: Agreement counts and dollar amounts per procurement step (1-6)
+                    properties:
+                      step_data:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            step:
+                              type: integer
+                              minimum: 1
+                              maximum: 6
+                            agreements:
+                              type: integer
+                            agreements_percent:
+                              type: number
+                              format: float
+                            amount:
+                              type: number
+                              format: float
+                      total_agreement_count:
+                        type: integer
+                  procurement_days_in_step:
+                    type: object
+                    nullable: true
+                    description: Days each agreement has spent in its active procurement step, keyed by step number then agreement ID
+                    additionalProperties:
+                      type: object
+                      additionalProperties:
+                        type: integer
                 required:
                   - data
                   - count
@@ -5606,11 +5670,30 @@ components:
         - portfolio_id
         - number
     CANHistoryList:
-      description: A list of CAN objects with their history
-      type: array
-      items:
-        anyOf:
-          - $ref: "#/components/schemas/CANHistoryItem"
+      description: Paginated list of CAN history items
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/CANHistoryItem"
+        count:
+          type: integer
+          description: Total number of history items matching the query
+          example: 25
+        limit:
+          type: integer
+          description: Maximum number of items returned
+          example: 10
+        offset:
+          type: integer
+          description: Number of items skipped
+          example: 0
+      required:
+        - data
+        - count
+        - limit
+        - offset
     CANHistoryItem:
       description: A single CAN object with its history
       type: object

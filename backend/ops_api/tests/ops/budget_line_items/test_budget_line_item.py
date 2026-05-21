@@ -2361,17 +2361,19 @@ def test_get_aa_budget_lines(auth_client, db_for_aa_agreement, test_can):
     )
     assert response.status_code == 200
     assert len(response.json) == 2
-    assert response.json[0]["agreement_id"] == aa_agreement.id
-    assert response.json[0]["status"] == BudgetLineItemStatus.DRAFT.name
-    assert response.json[0]["can_id"] == test_can.id
-    assert response.json[0]["budget_line_item_type"] == AgreementType.AA.name
-    assert response.json[0]["line_description"] == "Test Line Item 1"
-    assert response.json[0]["comments"] == "Test Comments 1"
-    assert response.json[0]["amount"] == 100.00
-    assert response.json[0]["is_obe"] is False
-    assert response.json[0]["date_needed"] == "2043-01-01"
-    assert response.json[0]["proc_shop_fee_percentage"] == 0.0
-    assert response.json[0]["procurement_shop_fee_id"] is None
+
+    items = sorted(response.json, key=lambda x: x["line_description"])
+    assert items[0]["agreement_id"] == aa_agreement.id
+    assert items[0]["status"] == BudgetLineItemStatus.DRAFT.name
+    assert items[0]["can_id"] == test_can.id
+    assert items[0]["budget_line_item_type"] == AgreementType.AA.name
+    assert items[0]["line_description"] == "Test Line Item 1"
+    assert items[0]["comments"] == "Test Comments 1"
+    assert items[0]["amount"] == 100.00
+    assert items[0]["is_obe"] is False
+    assert items[0]["date_needed"] == "2043-01-01"
+    assert items[0]["proc_shop_fee_percentage"] == 0.0
+    assert items[0]["procurement_shop_fee_id"] is None
 
     # cleanup
     db_for_aa_agreement.delete(bli1)

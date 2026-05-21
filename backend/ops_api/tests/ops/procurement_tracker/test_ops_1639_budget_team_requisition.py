@@ -599,3 +599,242 @@ class TestAPISchemaFields:
         # Verify in response
         data = response.json
         assert data["requisition_approved_date"] == date.today().isoformat()  # Server-controlled
+
+
+class TestDraftSaveFeature:
+    """Test OPS-1639 draft save functionality with is_draft flag."""
+
+    def test_draft_save_with_only_requisition_number(self, budget_team_auth_client, test_pre_award_step, loaded_db):
+        """User can save draft with only requisition number without triggering approval."""
+        # Setup: DD approved
+        test_pre_award_step.pre_award_approval_status = "APPROVED"
+        loaded_db.commit()
+
+        # Save draft with only requisition number
+        update_data = {"requisition_number": "REQ-12345", "is_draft": True}
+
+        response = budget_team_auth_client.patch(
+            f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}", json=update_data
+        )
+
+        # Assert: 200 success
+        assert response.status_code == 200
+
+        # Assert: Data saved
+        loaded_db.refresh(test_pre_award_step)
+        assert test_pre_award_step.pre_award_requisition_number == "REQ-12345"
+
+        # Assert: Approval NOT triggered
+        assert test_pre_award_step.pre_award_requisition_approved_by is None
+        assert test_pre_award_step.pre_award_requisition_approved_date is None
+
+    def test_draft_save_with_only_requisition_date(self, budget_team_auth_client, test_pre_award_step, loaded_db):
+        """User can save draft with only requisition date without triggering approval."""
+        # Setup: DD approved
+        test_pre_award_step.pre_award_approval_status = "APPROVED"
+        loaded_db.commit()
+
+        # Save draft with only requisition date
+        update_data = {"requisition_date": "2026-05-15", "is_draft": True}
+
+        response = budget_team_auth_client.patch(
+            f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}", json=update_data
+        )
+
+        assert response.status_code == 200
+
+        loaded_db.refresh(test_pre_award_step)
+        assert test_pre_award_step.pre_award_requisition_date == date(2026, 5, 15)
+        assert test_pre_award_step.pre_award_requisition_approved_by is None
+
+    def test_draft_save_with_both_fields_does_not_trigger_approval(
+        self, budget_team_auth_client, test_pre_award_step, loaded_db
+    ):
+        """
+        CRITICAL: User can save draft with BOTH fields and it should NOT trigger approval.
+        This is the key scenario that was broken before is_draft flag.
+        """
+        # Setup: DD approved
+        test_pre_award_step.pre_award_approval_status = "APPROVED"
+        loaded_db.commit()
+
+        # Save draft with BOTH fields
+        update_data = {"requisition_number": "REQ-12345", "requisition_date": "2026-05-15", "is_draft": True}
+
+        response = budget_team_auth_client.patch(
+            f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}", json=update_data
+        )
+
+        assert response.status_code == 200
+        loaded_db.refresh(test_pre_award_step)
+
+        # Data is saved
+        assert test_pre_award_step.pre_award_requisition_number == "REQ-12345"
+        assert test_pre_award_step.pre_award_requisition_date == date(2026, 5, 15)
+
+        # But approval is NOT triggered
+        assert test_pre_award_step.pre_award_requisition_approved_by is None
+        assert test_pre_award_step.pre_award_requisition_approved_date is None
+
+    def test_incremental_draft_saves_do_not_trigger_approval(
+        self, budget_team_auth_client, test_pre_award_step, loaded_db
+    ):
+        """
+        CRITICAL: User can save req # as draft, then date as draft, without triggering approval.
+        This is the incremental save scenario.
+        """
+        # Setup: DD approved
+        test_pre_award_step.pre_award_approval_status = "APPROVED"
+        loaded_db.commit()
+
+        # First draft save: requisition number only
+        response1 = budget_team_auth_client.patch(
+            f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}",
+            json={"requisition_number": "REQ-12345", "is_draft": True},
+        )
+        assert response1.status_code == 200
+
+        # Verify first save succeeded without approval
+        loaded_db.refresh(test_pre_award_step)
+        assert test_pre_award_step.pre_award_requisition_number == "REQ-12345"
+        assert test_pre_award_step.pre_award_requisition_approved_by is None
+
+        # Second draft save: requisition date only
+        response2 = budget_team_auth_client.patch(
+            f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}",
+            json={"requisition_date": "2026-05-15", "is_draft": True},
+        )
+        assert response2.status_code == 200
+
+        # Verify second save succeeded WITHOUT triggering approval
+        # (This would have failed before is_draft flag)
+        loaded_db.refresh(test_pre_award_step)
+        assert test_pre_award_step.pre_award_requisition_number == "REQ-12345"
+        assert test_pre_award_step.pre_award_requisition_date == date(2026, 5, 15)
+        assert test_pre_award_step.pre_award_requisition_approved_by is None  # Still None!
+
+    def test_approval_save_without_is_draft_flag_triggers_approval(
+        self, budget_team_auth_client, test_pre_award_step, loaded_db
+    ):
+        """
+        Normal approval flow (without is_draft flag) should still work as before.
+        """
+        # Setup: DD approved
+        test_pre_award_step.pre_award_approval_status = "APPROVED"
+        loaded_db.commit()
+
+        # Save both fields WITHOUT is_draft flag (defaults to False)
+        response = budget_team_auth_client.patch(
+            f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}",
+            json={"requisition_number": "REQ-12345", "requisition_date": "2026-05-15"},
+        )
+
+        assert response.status_code == 200
+        loaded_db.refresh(test_pre_award_step)
+
+        # Data is saved
+        assert test_pre_award_step.pre_award_requisition_number == "REQ-12345"
+        assert test_pre_award_step.pre_award_requisition_date == date(2026, 5, 15)
+
+        # Approval IS triggered (normal behavior)
+        assert test_pre_award_step.pre_award_requisition_approved_by == 523  # Budget team user
+        assert test_pre_award_step.pre_award_requisition_approved_date is not None
+
+    def test_explicit_is_draft_false_triggers_approval(self, budget_team_auth_client, test_pre_award_step, loaded_db):
+        """
+        Explicitly setting is_draft=False should trigger approval (same as omitting the flag).
+        """
+        # Setup: DD approved
+        test_pre_award_step.pre_award_approval_status = "APPROVED"
+        loaded_db.commit()
+
+        # Save both fields with explicit is_draft=False
+        response = budget_team_auth_client.patch(
+            f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}",
+            json={"requisition_number": "REQ-12345", "requisition_date": "2026-05-15", "is_draft": False},
+        )
+
+        assert response.status_code == 200
+        loaded_db.refresh(test_pre_award_step)
+
+        # Approval IS triggered
+        assert test_pre_award_step.pre_award_requisition_approved_by == 523
+        assert test_pre_award_step.pre_award_requisition_approved_date is not None
+
+    def test_draft_save_does_not_send_notifications(self, budget_team_auth_client, test_pre_award_step, loaded_db):
+        """
+        Draft saves should NOT trigger notifications to the requester.
+        """
+        # Setup: DD approved
+        test_pre_award_step.pre_award_approval_status = "APPROVED"
+        loaded_db.commit()
+
+        requester_id = test_pre_award_step.pre_award_approval_requested_by
+
+        # Get initial notification count for requester
+        initial_requester_notifications = loaded_db.scalar(
+            select(func.count()).select_from(Notification).where(Notification.recipient_id == requester_id)
+        )
+
+        # Save draft with both fields
+        update_data = {"requisition_number": "REQ-12345", "requisition_date": "2026-05-15", "is_draft": True}
+
+        response = budget_team_auth_client.patch(
+            f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}", json=update_data
+        )
+
+        assert response.status_code == 200
+
+        # Verify NO notifications sent
+        final_requester_notifications = loaded_db.scalar(
+            select(func.count()).select_from(Notification).where(Notification.recipient_id == requester_id)
+        )
+
+        assert (
+            final_requester_notifications == initial_requester_notifications
+        ), "Requester should NOT be notified on draft saves"
+
+    def test_non_budget_team_user_cannot_save_requisition_draft(
+        self, basic_user_auth_client, test_pre_award_step, loaded_db
+    ):
+        """
+        Permission check: Non-budget team users cannot save requisition data (draft or approval).
+        Only BUDGET_TEAM and SYSTEM_OWNER roles can modify requisition_number or requisition_date fields.
+        """
+        # Setup: DD approved
+        test_pre_award_step.pre_award_approval_status = "APPROVED"
+        loaded_db.commit()
+
+        # Attempt draft save by non-BUDGET_TEAM user (user 521 - basic user with VIEWER_EDITOR role)
+        update_data = {"requisition_number": "REQ-12345", "is_draft": True}
+
+        response = basic_user_auth_client.patch(
+            f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}", json=update_data
+        )
+
+        # Should fail with 403 Forbidden (VIEWER_EDITOR lacks BUDGET_TEAM role)
+        assert response.status_code == 403
+        assert "User 521" in response.json["message"]
+        assert "not authorized" in response.json["message"].lower()
+
+    def test_is_draft_field_not_persisted_to_database(self, budget_team_auth_client, test_pre_award_step, loaded_db):
+        """
+        The is_draft field is request-only and should NOT be persisted to the database.
+        """
+        # Setup: DD approved
+        test_pre_award_step.pre_award_approval_status = "APPROVED"
+        loaded_db.commit()
+
+        # Save draft
+        update_data = {"requisition_number": "REQ-12345", "is_draft": True}
+
+        response = budget_team_auth_client.patch(
+            f"/api/v1/procurement-tracker-steps/{test_pre_award_step.id}", json=update_data
+        )
+
+        assert response.status_code == 200
+        loaded_db.refresh(test_pre_award_step)
+
+        # Verify is_draft is NOT an attribute on the model
+        assert not hasattr(test_pre_award_step, "is_draft")
+        assert not hasattr(test_pre_award_step, "pre_award_is_draft")
