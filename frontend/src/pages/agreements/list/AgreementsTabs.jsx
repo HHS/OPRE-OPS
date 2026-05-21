@@ -63,7 +63,8 @@ const AgreementTabs = () => {
                     </Link>
                     {hasChangeRequestsOnReviewTab && (
                         <span
-                            className={`margin-left-neg-1 position-absolute bottom-2 ${tabStyles.notificationCircle}`}
+                            className={`position-absolute bottom-2 ${tabStyles.notificationCircle}`}
+                            style={{ marginLeft: "2px" }}
                         >
                             {changeRequestsTotal}
                         </span>
