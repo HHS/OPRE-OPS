@@ -22,6 +22,10 @@ from models import (
     ContractBudgetLineItem,
     ProcurementShop,
     ProcurementShopFee,
+    ProcurementTracker,
+    ProcurementTrackerStatus,
+    ProcurementTrackerStep,
+    ProcurementTrackerType,
     ProductServiceCode,
     Project,
     ServiceRequirementType,
@@ -3106,14 +3110,17 @@ def test_get_budget_line_items_filter_by_portfolio_with_can_number_sort(auth_cli
 
 def test_cannot_update_bli_when_pre_award_in_review(auth_client, loaded_db, app_ctx):
     """Test that BLI cannot be updated when pre-award approval is in review"""
-    from models import ProcurementTracker, ProcurementTrackerStep
-
     # Get an existing BLI from agreement 1
     bli = loaded_db.get(BudgetLineItem, 15000)
     agreement = loaded_db.get(Agreement, bli.agreement_id)
 
     # Create procurement tracker with pre-award step in review
-    tracker = ProcurementTracker(agreement_id=agreement.id, created_by=1)
+    tracker = ProcurementTracker(
+        agreement_id=agreement.id,
+        tracker_type=ProcurementTrackerType.DEFAULT,
+        status=ProcurementTrackerStatus.ACTIVE,
+        created_by=1,
+    )
     loaded_db.add(tracker)
     loaded_db.flush()
 
@@ -3126,9 +3133,6 @@ def test_cannot_update_bli_when_pre_award_in_review(auth_client, loaded_db, app_
         created_by=1,
     )
     loaded_db.add(pre_award_step)
-
-    # Link tracker to agreement
-    agreement.procurement_tracker_id = tracker.id
     loaded_db.commit()
 
     # Attempt to update the BLI
@@ -3144,14 +3148,17 @@ def test_cannot_update_bli_when_pre_award_in_review(auth_client, loaded_db, app_
 
 def test_can_update_bli_when_pre_award_not_in_review(auth_client, loaded_db, app_ctx):
     """Test that BLI can be updated when pre-award approval is not in review"""
-    from models import ProcurementTracker, ProcurementTrackerStep
-
     # Get an existing BLI from agreement 1
     bli = loaded_db.get(BudgetLineItem, 15001)
     agreement = loaded_db.get(Agreement, bli.agreement_id)
 
     # Create procurement tracker with pre-award step NOT in review
-    tracker = ProcurementTracker(agreement_id=agreement.id, created_by=1)
+    tracker = ProcurementTracker(
+        agreement_id=agreement.id,
+        tracker_type=ProcurementTrackerType.DEFAULT,
+        status=ProcurementTrackerStatus.ACTIVE,
+        created_by=1,
+    )
     loaded_db.add(tracker)
     loaded_db.flush()
 
@@ -3163,9 +3170,6 @@ def test_can_update_bli_when_pre_award_not_in_review(auth_client, loaded_db, app
         created_by=1,
     )
     loaded_db.add(pre_award_step)
-
-    # Link tracker to agreement
-    agreement.procurement_tracker_id = tracker.id
     loaded_db.commit()
 
     original_amount = bli.amount
@@ -3184,14 +3188,17 @@ def test_can_update_bli_when_pre_award_not_in_review(auth_client, loaded_db, app
 
 def test_can_update_bli_when_pre_award_declined(auth_client, loaded_db, app_ctx):
     """Test that BLI can be updated when pre-award approval has been declined"""
-    from models import ProcurementTracker, ProcurementTrackerStep
-
     # Get an existing BLI from agreement 1
     bli = loaded_db.get(BudgetLineItem, 15002)
     agreement = loaded_db.get(Agreement, bli.agreement_id)
 
     # Create procurement tracker with pre-award declined
-    tracker = ProcurementTracker(agreement_id=agreement.id, created_by=1)
+    tracker = ProcurementTracker(
+        agreement_id=agreement.id,
+        tracker_type=ProcurementTrackerType.DEFAULT,
+        status=ProcurementTrackerStatus.ACTIVE,
+        created_by=1,
+    )
     loaded_db.add(tracker)
     loaded_db.flush()
 
@@ -3204,9 +3211,6 @@ def test_can_update_bli_when_pre_award_declined(auth_client, loaded_db, app_ctx)
         created_by=1,
     )
     loaded_db.add(pre_award_step)
-
-    # Link tracker to agreement
-    agreement.procurement_tracker_id = tracker.id
     loaded_db.commit()
 
     original_amount = bli.amount
@@ -3225,14 +3229,17 @@ def test_can_update_bli_when_pre_award_declined(auth_client, loaded_db, app_ctx)
 
 def test_cannot_update_bli_when_pre_award_approved_but_awaiting_requisition(auth_client, loaded_db, app_ctx):
     """Test that BLI cannot be updated when pre-award is approved but awaiting budget team requisition approval"""
-    from models import ProcurementTracker, ProcurementTrackerStep
-
     # Get an existing BLI from agreement 1
     bli = loaded_db.get(BudgetLineItem, 15003)
     agreement = loaded_db.get(Agreement, bli.agreement_id)
 
     # Create procurement tracker with pre-award approved but awaiting requisition
-    tracker = ProcurementTracker(agreement_id=agreement.id, created_by=1)
+    tracker = ProcurementTracker(
+        agreement_id=agreement.id,
+        tracker_type=ProcurementTrackerType.DEFAULT,
+        status=ProcurementTrackerStatus.ACTIVE,
+        created_by=1,
+    )
     loaded_db.add(tracker)
     loaded_db.flush()
 
@@ -3246,9 +3253,6 @@ def test_cannot_update_bli_when_pre_award_approved_but_awaiting_requisition(auth
         created_by=1,
     )
     loaded_db.add(pre_award_step)
-
-    # Link tracker to agreement
-    agreement.procurement_tracker_id = tracker.id
     loaded_db.commit()
 
     # Attempt to update the BLI
@@ -3264,14 +3268,17 @@ def test_cannot_update_bli_when_pre_award_approved_but_awaiting_requisition(auth
 
 def test_can_update_bli_when_pre_award_fully_approved(auth_client, loaded_db, app_ctx):
     """Test that BLI can be updated when pre-award is fully approved (including requisition)"""
-    from models import ProcurementTracker, ProcurementTrackerStep
-
     # Get an existing BLI from agreement 1
     bli = loaded_db.get(BudgetLineItem, 15004)
     agreement = loaded_db.get(Agreement, bli.agreement_id)
 
     # Create procurement tracker with pre-award fully approved
-    tracker = ProcurementTracker(agreement_id=agreement.id, created_by=1)
+    tracker = ProcurementTracker(
+        agreement_id=agreement.id,
+        tracker_type=ProcurementTrackerType.DEFAULT,
+        status=ProcurementTrackerStatus.ACTIVE,
+        created_by=1,
+    )
     loaded_db.add(tracker)
     loaded_db.flush()
 
@@ -3285,9 +3292,6 @@ def test_can_update_bli_when_pre_award_fully_approved(auth_client, loaded_db, ap
         created_by=1,
     )
     loaded_db.add(pre_award_step)
-
-    # Link tracker to agreement
-    agreement.procurement_tracker_id = tracker.id
     loaded_db.commit()
 
     original_amount = bli.amount
