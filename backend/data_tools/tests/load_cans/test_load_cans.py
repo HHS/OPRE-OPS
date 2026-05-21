@@ -11,6 +11,7 @@ from data_tools.src.load_cans.utils import (
     CANData,
     create_can_data,
     create_models,
+    get_or_create_funding_details,
     validate_all,
     validate_data,
     validate_fund_code,
@@ -283,7 +284,7 @@ def test_main(db_with_portfolios):
     assert can_2.funding_details.allowance == "0000000006"
     assert can_2.funding_details.sub_allowance == "G4N2ZIV"
     assert can_2.funding_details.allotment == "KCTQYEKJ4F6"
-    assert can_2.funding_details.appropriation == "XX-21-XXXX"
+    assert can_2.funding_details.appropriation == "XX-2125-XXXX"
     assert can_2.funding_details.method_of_transfer == CANMethodOfTransfer.IAA
     assert can_2.funding_details.funding_source == CANFundingSource.OPRE
     assert can_2.funding_details.funding_partner == "partner 2"
@@ -616,6 +617,156 @@ def test_validate_fund_code_discretionary_or_mandatory():
     with pytest.raises(ValueError) as e_info:
         validate_fund_code(data)
     assert e_info.value.args[0] == "Invalid discretionary or mandatory R"
+
+
+def test_appropriation_one_year_can(mocker):
+    """One-year CAN: APPROP_YEAR is 2 digits (e.g. '25')."""
+    data = CANData(
+        FISCAL_YEAR=2025,
+        SYS_CAN_ID=600,
+        CAN_NBR="G99TEST1",
+        CAN_DESCRIPTION="One Year CAN",
+        FUND="AAXXXX20251DAD",
+        ALLOWANCE="0000000001",
+        ALLOTMENT_ORG="YZC6S1JUGUN",
+        SUB_ALLOWANCE="9KRZ2ND",
+        CURRENT_FY_FUNDING_YTD=100000.0,
+        APPROP_PREFIX="75",
+        APPROP_POSTFIX="0401",
+        APPROP_YEAR="25",
+        PORTFOLIO="HMRF",
+        FUNDING_SOURCE="OPRE",
+        METHOD_OF_TRANSFER="DIRECT",
+        NICK_NAME="One-Year",
+        FUNDING_PARTNER="partner 1",
+    )
+
+    sys_user = mocker.MagicMock()
+    sys_user.id = 1
+
+    funding_details = get_or_create_funding_details(data, sys_user, None)
+
+    assert funding_details.appropriation == "75-25-0401"
+
+
+def test_appropriation_multi_year_can(mocker):
+    """Multi-year CAN: APPROP_YEAR is 4 digits (e.g. '2526')."""
+    data = CANData(
+        FISCAL_YEAR=2025,
+        SYS_CAN_ID=601,
+        CAN_NBR="G99TEST2",
+        CAN_DESCRIPTION="Multi Year CAN",
+        FUND="AAXXXX20252DAD",
+        ALLOWANCE="0000000001",
+        ALLOTMENT_ORG="YZC6S1JUGUN",
+        SUB_ALLOWANCE="9KRZ2ND",
+        CURRENT_FY_FUNDING_YTD=200000.0,
+        APPROP_PREFIX="75",
+        APPROP_POSTFIX="0401",
+        APPROP_YEAR="2526",
+        PORTFOLIO="HMRF",
+        FUNDING_SOURCE="OPRE",
+        METHOD_OF_TRANSFER="DIRECT",
+        NICK_NAME="Multi-Year",
+        FUNDING_PARTNER="partner 1",
+    )
+
+    sys_user = mocker.MagicMock()
+    sys_user.id = 1
+
+    funding_details = get_or_create_funding_details(data, sys_user, None)
+
+    assert funding_details.appropriation == "75-2526-0401"
+
+
+def test_appropriation_zero_year_can(mocker):
+    """Zero-year (no-year) CAN: APPROP_YEAR is 'X'."""
+    data = CANData(
+        FISCAL_YEAR=2025,
+        SYS_CAN_ID=602,
+        CAN_NBR="G99TEST3",
+        CAN_DESCRIPTION="Zero Year CAN",
+        FUND="AAXXXX20250DAD",
+        ALLOWANCE="0000000001",
+        ALLOTMENT_ORG="YZC6S1JUGUN",
+        SUB_ALLOWANCE="9KRZ2ND",
+        CURRENT_FY_FUNDING_YTD=300000.0,
+        APPROP_PREFIX="75",
+        APPROP_POSTFIX="0401",
+        APPROP_YEAR="X",
+        PORTFOLIO="HMRF",
+        FUNDING_SOURCE="OPRE",
+        METHOD_OF_TRANSFER="DIRECT",
+        NICK_NAME="Zero-Year",
+        FUNDING_PARTNER="partner 1",
+    )
+
+    sys_user = mocker.MagicMock()
+    sys_user.id = 1
+
+    funding_details = get_or_create_funding_details(data, sys_user, None)
+
+    assert funding_details.appropriation == "75-X-0401"
+
+
+def test_appropriation_missing_prefix_and_postfix(mocker):
+    """APPROP_PREFIX and APPROP_POSTFIX are None — appropriation still includes the year."""
+    data = CANData(
+        FISCAL_YEAR=2025,
+        SYS_CAN_ID=603,
+        CAN_NBR="G99TEST4",
+        CAN_DESCRIPTION="No Prefix/Postfix CAN",
+        FUND="AAXXXX20251DAD",
+        ALLOWANCE="0000000001",
+        ALLOTMENT_ORG="YZC6S1JUGUN",
+        SUB_ALLOWANCE="9KRZ2ND",
+        CURRENT_FY_FUNDING_YTD=400000.0,
+        APPROP_PREFIX=None,
+        APPROP_POSTFIX=None,
+        APPROP_YEAR="25",
+        PORTFOLIO="HMRF",
+        FUNDING_SOURCE="OPRE",
+        METHOD_OF_TRANSFER="DIRECT",
+        NICK_NAME="No-Prefix",
+        FUNDING_PARTNER="partner 1",
+    )
+
+    sys_user = mocker.MagicMock()
+    sys_user.id = 1
+
+    funding_details = get_or_create_funding_details(data, sys_user, None)
+
+    assert funding_details.appropriation == "-25-"
+
+
+def test_appropriation_missing_year(mocker):
+    """APPROP_YEAR is None — appropriation uses empty string for the year component."""
+    data = CANData(
+        FISCAL_YEAR=2025,
+        SYS_CAN_ID=604,
+        CAN_NBR="G99TEST5",
+        CAN_DESCRIPTION="No Year CAN",
+        FUND="AAXXXX20251DAD",
+        ALLOWANCE="0000000001",
+        ALLOTMENT_ORG="YZC6S1JUGUN",
+        SUB_ALLOWANCE="9KRZ2ND",
+        CURRENT_FY_FUNDING_YTD=500000.0,
+        APPROP_PREFIX="75",
+        APPROP_POSTFIX="0401",
+        APPROP_YEAR=None,
+        PORTFOLIO="HMRF",
+        FUNDING_SOURCE="OPRE",
+        METHOD_OF_TRANSFER="DIRECT",
+        NICK_NAME="No-Year",
+        FUNDING_PARTNER="partner 1",
+    )
+
+    sys_user = mocker.MagicMock()
+    sys_user.id = 1
+
+    funding_details = get_or_create_funding_details(data, sys_user, None)
+
+    assert funding_details.appropriation == "75--0401"
 
 
 @pytest.mark.skip(reason="Need to update the test data")

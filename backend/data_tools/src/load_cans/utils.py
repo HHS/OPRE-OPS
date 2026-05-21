@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import List, Optional
 
 from loguru import logger
-from sqlalchemy import and_, select
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from models import (
@@ -52,22 +52,32 @@ class CANData:
 
         self.FISCAL_YEAR = int(self.FISCAL_YEAR)
         if isinstance(self.SYS_CAN_ID, str):
-            self.SYS_CAN_ID = int(self.SYS_CAN_ID) if self.SYS_CAN_ID.isdigit() else None
+            self.SYS_CAN_ID = (
+                int(self.SYS_CAN_ID) if self.SYS_CAN_ID.isdigit() else None
+            )
         self.CAN_NBR = str(self.CAN_NBR)
-        self.CAN_DESCRIPTION = str(self.CAN_DESCRIPTION) if self.CAN_DESCRIPTION else None
+        self.CAN_DESCRIPTION = (
+            str(self.CAN_DESCRIPTION) if self.CAN_DESCRIPTION else None
+        )
         self.FUND = str(self.FUND) if self.FUND else None
         self.ALLOWANCE = str(self.ALLOWANCE) if self.ALLOWANCE else None
         self.ALLOTMENT_ORG = str(self.ALLOTMENT_ORG) if self.ALLOTMENT_ORG else None
         self.SUB_ALLOWANCE = str(self.SUB_ALLOWANCE) if self.SUB_ALLOWANCE else None
-        self.CURRENT_FY_FUNDING_YTD = float(self.CURRENT_FY_FUNDING_YTD) if self.CURRENT_FY_FUNDING_YTD else None
+        self.CURRENT_FY_FUNDING_YTD = (
+            float(self.CURRENT_FY_FUNDING_YTD) if self.CURRENT_FY_FUNDING_YTD else None
+        )
         self.APPROP_PREFIX = str(self.APPROP_PREFIX) if self.APPROP_PREFIX else None
         self.APPROP_POSTFIX = str(self.APPROP_POSTFIX) if self.APPROP_POSTFIX else None
         self.APPROP_YEAR = str(self.APPROP_YEAR) if self.APPROP_YEAR else None
         self.PORTFOLIO = str(self.PORTFOLIO).upper() if self.PORTFOLIO else None
         self.FUNDING_SOURCE = str(self.FUNDING_SOURCE) if self.FUNDING_SOURCE else None
-        self.METHOD_OF_TRANSFER = str(self.METHOD_OF_TRANSFER).upper() if self.METHOD_OF_TRANSFER else None
+        self.METHOD_OF_TRANSFER = (
+            str(self.METHOD_OF_TRANSFER).upper() if self.METHOD_OF_TRANSFER else None
+        )
         self.NICK_NAME = str(self.NICK_NAME) if self.NICK_NAME else None
-        self.FUNDING_PARTNER = str(self.FUNDING_PARTNER) if self.FUNDING_PARTNER else None
+        self.FUNDING_PARTNER = (
+            str(self.FUNDING_PARTNER) if self.FUNDING_PARTNER else None
+        )
 
 
 def create_can_data(data: dict) -> CANData:
@@ -113,20 +123,11 @@ def validate_all(data: List[CANData]) -> bool:
 
 def create_models(data: CANData, sys_user: User, session: Session) -> None:
     """
-    Create and persist the CAN and CANFundingDetails models.
-
-    The CANData does not contain a SYS_ID for the CANFundDetails model.
-    A check is made to see if the funding details already exist in the database by comparing the fields.
-    If the funding details do not exist, a new instance is created and persisted to the database.
-    If it does exist, the existing instance is associated with the CAN model.
-    This means that the funding details are not duplicated in the database but is also not updated if the data changes.
-    The CAN model is upserted, however.
+    Upsert a CAN and its associated CANFundingDetails.
 
     :param data: The CanData instance to convert.
     :param sys_user: The system user to use.
     :param session: The database session to use.
-
-    :return: A list of BaseModel instances.
     """
     logger.debug(f"Creating models for {data}")
 
@@ -137,59 +138,63 @@ def create_models(data: CANData, sys_user: User, session: Session) -> None:
         if not portfolio:
             raise ValueError(f"Portfolio not found for {data.PORTFOLIO}")
 
-        can = CAN(
-            id=data.SYS_CAN_ID if data.SYS_CAN_ID else None,
-            number=data.CAN_NBR,
-            description=data.CAN_DESCRIPTION,
-            nick_name=data.NICK_NAME,
-            created_by=sys_user.id,
-            updated_by=sys_user.id,
-        )
-
-        can.portfolio = portfolio
-
-        existing_can = session.get(CAN, data.SYS_CAN_ID)
-
-        # Set the created_on and updated_on fields based on the fiscal year
         base_date = datetime(data.FISCAL_YEAR - 1, 10, 1)
+        is_new = False
 
-        if existing_can:
-            can.created_on = existing_can.created_on
+        can = session.get(CAN, data.SYS_CAN_ID) if data.SYS_CAN_ID else None
+
+        if can:
+            can.number = data.CAN_NBR
+            can.description = data.CAN_DESCRIPTION
+            can.nick_name = data.NICK_NAME
+            can.portfolio = portfolio
+            can.updated_by = sys_user.id
             can.updated_on = datetime.now()
         else:
-            can.created_on = base_date
-            can.updated_on = base_date
-
-        event = OpsEvent(
-            event_type=OpsEventType.CREATE_NEW_CAN,
-            event_status=OpsEventStatus.SUCCESS,
-            event_details={"new_can": can.to_dict()},
-            created_by=sys_user.id,
-        )
+            is_new = True
+            can = CAN(
+                id=data.SYS_CAN_ID if data.SYS_CAN_ID else None,
+                number=data.CAN_NBR,
+                description=data.CAN_DESCRIPTION,
+                nick_name=data.NICK_NAME,
+                portfolio=portfolio,
+                created_by=sys_user.id,
+                updated_by=sys_user.id,
+                created_on=base_date,
+                updated_on=base_date,
+            )
 
         try:
             validate_fund_code(data)
-            can.funding_details = get_or_create_funding_details(data, sys_user, session)
+            can.funding_details = get_or_create_funding_details(
+                data, sys_user, can.funding_details
+            )
         except ValueError as e:
-            logger.info(f"Skipping creating funding details for {data} due to invalid fund code. {e}")
+            logger.info(
+                f"Skipping creating funding details for {data} due to invalid fund code. {e}"
+            )
 
-        new_can = session.merge(can)
+        if is_new:
+            session.add(can)
+
         if os.getenv("DRY_RUN"):
             logger.info("Dry run enabled. Rolling back transaction.")
             session.rollback()
         else:
             session.commit()
-            can.id = new_can.id
             logger.info(f"Upserted CAN {can.number} with id {can.id}")
 
-            # TODO: Handle CAN update events better to make use of that event as well.
-
-            # Update the event with the upserted CAN's id in case it's a new can
-            event.event_details = {"new_can": can.to_dict()}
-
+            event = OpsEvent(
+                event_type=OpsEventType.CREATE_NEW_CAN,
+                event_status=OpsEventStatus.SUCCESS,
+                event_details={"new_can": can.to_dict()},
+                created_by=sys_user.id,
+            )
             session.add(event)
             session.commit()
-            logger.info(f"Created Ops Event for creating (or updating) CAN with id {can.id} and of number {can.number}")
+            logger.info(
+                f"Created Ops Event for CAN with id {can.id} and number {can.number}"
+            )
 
             can_history_trigger_func(event, session, sys_user)
 
@@ -198,13 +203,20 @@ def create_models(data: CANData, sys_user: User, session: Session) -> None:
         raise e
 
 
-def get_or_create_funding_details(data: CANData, sys_user: User, session: Session) -> CANFundingDetails:
+def get_or_create_funding_details(
+    data: CANData,
+    sys_user: User,
+    existing: Optional[CANFundingDetails],
+) -> CANFundingDetails:
     """
-    Get or create a CANFundingDetails instance.
+    Update the existing CANFundingDetails if present, or create a new one.
+
+    The CAN-to-FundingDetails relationship is 1:1, so lookup is done via
+    the CAN's existing funding_details rather than a field-based query.
 
     :param data: The CANData instance to use.
     :param sys_user: The system user to use.
-    :param session: The database session to use.
+    :param existing: The CAN's current funding_details, or None.
 
     :return: A CANFundingDetails instance.
     """
@@ -214,48 +226,48 @@ def get_or_create_funding_details(data: CANData, sys_user: User, session: Sessio
     sub_allowance = data.SUB_ALLOWANCE
     allotment = data.ALLOTMENT_ORG
 
-    appropriation_year = data.APPROP_YEAR[0:2] if data.APPROP_YEAR else ""
-    appropriation = "-".join([data.APPROP_PREFIX or "", appropriation_year, data.APPROP_POSTFIX or ""])
+    appropriation = "-".join(
+        [data.APPROP_PREFIX or "", data.APPROP_YEAR or "", data.APPROP_POSTFIX or ""]
+    )
 
     method_of_transfer = CANMethodOfTransfer[data.METHOD_OF_TRANSFER]
     funding_source = (
-        CANFundingSource[data.FUNDING_SOURCE] if data.FUNDING_SOURCE != "ACF - MOU" else CANFundingSource.ACF_MOU
+        CANFundingSource[data.FUNDING_SOURCE]
+        if data.FUNDING_SOURCE != "ACF - MOU"
+        else CANFundingSource.ACF_MOU
     )
     funding_partner = data.FUNDING_PARTNER
-    existing_funding_details = session.execute(
-        select(CANFundingDetails).where(
-            and_(
-                CANFundingDetails.fiscal_year == fiscal_year,
-                CANFundingDetails.fund_code == fund_code,
-                CANFundingDetails.allowance == allowance,
-                CANFundingDetails.sub_allowance == sub_allowance,
-                CANFundingDetails.allotment == allotment,
-                CANFundingDetails.appropriation == appropriation,
-                CANFundingDetails.method_of_transfer == method_of_transfer,
-                CANFundingDetails.funding_source == funding_source,
-                CANFundingDetails.funding_partner == funding_partner,
-            )
-        )
-    ).scalar_one_or_none()
-    if not existing_funding_details:
-        funding_details = CANFundingDetails(
-            fiscal_year=fiscal_year,
-            fund_code=fund_code,
-            allowance=allowance,
-            sub_allowance=sub_allowance,
-            allotment=allotment,
-            appropriation=appropriation,
-            method_of_transfer=method_of_transfer,
-            funding_source=funding_source,
-            funding_partner=funding_partner,
-            created_by=sys_user.id,
-            updated_by=sys_user.id,
-            created_on=datetime(data.FISCAL_YEAR - 1, 10, 1),
-            updated_on=datetime(data.FISCAL_YEAR - 1, 10, 1),
-        )
-        return funding_details
-    else:
-        return existing_funding_details
+
+    if existing:
+        existing.fiscal_year = fiscal_year
+        existing.fund_code = fund_code
+        existing.allowance = allowance
+        existing.sub_allowance = sub_allowance
+        existing.allotment = allotment
+        existing.appropriation = appropriation
+        existing.method_of_transfer = method_of_transfer
+        existing.funding_source = funding_source
+        existing.funding_partner = funding_partner
+        existing.updated_by = sys_user.id
+        existing.updated_on = datetime.now()
+        return existing
+
+    funding_details = CANFundingDetails(
+        fiscal_year=fiscal_year,
+        fund_code=fund_code,
+        allowance=allowance,
+        sub_allowance=sub_allowance,
+        allotment=allotment,
+        appropriation=appropriation,
+        method_of_transfer=method_of_transfer,
+        funding_source=funding_source,
+        funding_partner=funding_partner,
+        created_by=sys_user.id,
+        updated_by=sys_user.id,
+        created_on=datetime(data.FISCAL_YEAR - 1, 10, 1),
+        updated_on=datetime(data.FISCAL_YEAR - 1, 10, 1),
+    )
+    return funding_details
 
 
 def validate_fund_code(data: CANData) -> None:
@@ -283,7 +295,9 @@ def validate_fund_code(data: CANData) -> None:
         raise ValueError(f"Invalid category {category}")
     discretionary_or_mandatory = data.FUND[13]
     if discretionary_or_mandatory not in ["D", "M"]:
-        raise ValueError(f"Invalid discretionary or mandatory {discretionary_or_mandatory}")
+        raise ValueError(
+            f"Invalid discretionary or mandatory {discretionary_or_mandatory}"
+        )
 
 
 def create_all_models(data: List[CANData], sys_user: User, session: Session) -> None:
