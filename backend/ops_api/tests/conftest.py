@@ -22,8 +22,10 @@ if sys.platform != "win32":
         soft, hard = resource.getrlimit(resource.RLIMIT_NOFILE)
         if soft != resource.RLIM_INFINITY and soft < 4096:
             resource.setrlimit(resource.RLIMIT_NOFILE, (min(4096, hard), hard))
-    except (ImportError, OSError, ValueError):
-        pass
+    except (ImportError, OSError, ValueError) as exc:
+        import warnings
+
+        warnings.warn(f"Could not raise RLIMIT_NOFILE to 4096: {exc}", stacklevel=1)
 
 from collections.abc import Generator
 from datetime import datetime, timezone
@@ -233,6 +235,7 @@ def db_service(request, worker_id, tmp_path_factory) -> Generator[Engine, None, 
             template_flag.write_text("created")
 
     # Clone from the template for this worker (no connections to contend with).
+    # worker_id comes from xdist (always "gw0", "gw1", etc.) — safe for DDL interpolation.
     db_name = f"test_{worker_id}"
     clone_lock = root_tmp / "db_clone.lock"
     with FileLock(str(clone_lock)):
@@ -249,7 +252,7 @@ def db_service(request, worker_id, tmp_path_factory) -> Generator[Engine, None, 
             conn.execute(text(f"GRANT ALL PRIVILEGES ON DATABASE {db_name} TO ops"))
 
     worker_url = f"postgresql://ops:ops@{docker_ip}:5432/{db_name}"  # pragma: allowlist secret
-    engine = create_engine(worker_url, echo=True)
+    engine = create_engine(worker_url, echo=False)
 
     yield engine
 

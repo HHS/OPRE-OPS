@@ -98,6 +98,8 @@ class BaseModel(Base):
         ForeignKey("ops_user.id"), default=None
     )
     created_on: Mapped[Optional[datetime]] = mapped_column(default=func.now())
+    # clock_timestamp() returns wall-clock time rather than transaction-start time,
+    # giving distinct values for rows updated at different points within one transaction.
     updated_on: Mapped[Optional[datetime]] = mapped_column(
         default=func.now(), onupdate=func.clock_timestamp()
     )

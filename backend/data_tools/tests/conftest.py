@@ -165,6 +165,7 @@ def db_service(request, worker_id, tmp_path_factory) -> Generator[tuple[Session,
             template_flag.write_text("created")
 
     # Clone the database for this worker.
+    # worker_id comes from xdist (always "gw0", "gw1", etc.) — safe for DDL interpolation.
     db_name = f"test_{worker_id}"
     clone_lock = root_tmp / "db_clone.lock"
     with FileLock(str(clone_lock)):
@@ -261,6 +262,9 @@ def loaded_db(db_service, monkeypatch) -> Generator[Session, None, None]:
 
         def __exit__(self, *args):
             pass
+
+        def __getattr__(self, name):
+            return getattr(db_session, name)
 
     monkeypatch.setattr("data_tools.src.load_data.scoped_session", _CliSessionProxy)
 
