@@ -117,10 +117,11 @@ def is_pre_award_in_review(agreement):
     Returns:
         bool: True if pre-award is in review, False otherwise
     """
-    if not agreement or not agreement.procurement_tracker_id:
+    if not agreement or not agreement.procurement_trackers:
         return False
 
-    tracker = current_app.db_session.query(ProcurementTracker).get(agreement.procurement_tracker_id)
+    # Get the active procurement tracker
+    tracker = next((t for t in agreement.procurement_trackers if t.status == "ACTIVE"), None)
     if not tracker:
         return False
 
