@@ -1,11 +1,11 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, shallowEqual } from "react-redux";
 import { useUpdateProcurementTrackerStepMutation } from "../../../api/opsAPI";
 import useAlert from "../../../hooks/use-alert.hooks";
 import usePreAwardApprovalData from "./usePreAwardApprovalData";
 import DatePicker from "../../../components/UI/USWDS/DatePicker";
-import { formatDateForApi } from "../../../helpers/utils";
+import { formatDateForApi, formatDateForScreen } from "../../../helpers/utils";
 
 /**
  * Custom hook for the ReviewBudgetTeamRequisition page.
@@ -37,6 +37,7 @@ import { formatDateForApi } from "../../../helpers/utils";
  *   isSubmitting: boolean,
  *   submitError: string,
  *   handleApprove: () => void,
+ *   handleSaveDraft: () => void,
  *   handleCancel: () => void,
  *   isFormValid: () => boolean,
  *   hasPermission: boolean,
@@ -84,6 +85,23 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
 
     const requestorNotes = step5?.requestor_notes || "";
     const reviewerNotes = step5?.reviewer_notes || "";
+
+    // Load saved draft values when step5 data arrives
+    useEffect(() => {
+        if (step5) {
+            if (step5.requisition_number) {
+                setRequisitionNumber(step5.requisition_number);
+            }
+            if (step5.requisition_date) {
+                // Backend always sends YYYY-MM-DD format
+                // Convert to display format (MM/DD/YYYY) for the DatePicker
+                const displayDate = formatDateForScreen(step5.requisition_date);
+                if (displayDate) {
+                    setRequisitionDate(displayDate);
+                }
+            }
+        }
+    }, [step5?.id, step5?.requisition_number, step5?.requisition_date]);
 
     // Check if already processed
     const approvalAlreadyProcessed = step5?.requisition_approved_by != null;
@@ -149,6 +167,65 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
         });
     };
 
+    // Save Draft handler (partial save without approval)
+    const handleSaveDraft = async () => {
+        // Validate at least one field is filled
+        if (!requisitionNumber.trim() && !requisitionDate.trim()) {
+            setSubmitError("Please enter at least a Requisition # or Requisition Date to save.");
+            return;
+        }
+
+        if (!step5?.id) {
+            setSubmitError("Unable to save: procurement tracker step not found");
+            return;
+        }
+
+        setIsSubmitting(true);
+        setSubmitError("");
+
+        try {
+            // Build request data - only include fields with values
+            /** @type {Record<string, any>} */
+            const data = {
+                is_draft: true
+            };
+
+            // Only send requisition_number if it has a value
+            if (requisitionNumber.trim()) {
+                data.requisition_number = requisitionNumber;
+            }
+
+            // Only send requisition_date if it has a value and it's valid
+            if (requisitionDate.trim()) {
+                const formattedDate = formatDateForApi(requisitionDate);
+                if (formattedDate === null) {
+                    setSubmitError("Invalid date format. Please use MM/DD/YYYY format.");
+                    setIsSubmitting(false);
+                    return;
+                }
+                data.requisition_date = formattedDate;
+            }
+
+            await updateProcurementTrackerStep({
+                stepId: step5.id,
+                data
+            }).unwrap();
+
+            // Success: Show success message and redirect
+            setAlert({
+                type: "success",
+                heading: "Draft saved",
+                message: "Requisition information has been saved. You can return later to complete the approval.",
+                redirectUrl: "/agreements?filter=change-requests"
+            });
+
+            setIsSubmitting(false);
+        } catch (error) {
+            setSubmitError(/** @type {any} */ (error)?.data?.error || "Failed to save draft");
+            setIsSubmitting(false);
+        }
+    };
+
     // Cancel handler
     const handleCancel = () => {
         setShowModal(true);
@@ -200,6 +277,7 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
 
         // Handlers
         handleApprove,
+        handleSaveDraft,
         handleCancel,
         isFormValid,
 
