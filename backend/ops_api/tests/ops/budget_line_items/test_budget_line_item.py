@@ -3119,7 +3119,7 @@ def test_cannot_update_bli_when_pre_award_in_review(auth_client, loaded_db, app_
         agreement_id=agreement.id,
         tracker_type=ProcurementTrackerType.DEFAULT,
         status=ProcurementTrackerStatus.ACTIVE,
-        created_by=1,
+        created_by=503,
     )
     loaded_db.add(tracker)
     loaded_db.flush()
@@ -3130,7 +3130,7 @@ def test_cannot_update_bli_when_pre_award_in_review(auth_client, loaded_db, app_
         step_number=5,
         approval_requested=True,
         approval_status=None,  # In review - awaiting decision
-        created_by=1,
+        created_by=503,
     )
     loaded_db.add(pre_award_step)
     loaded_db.commit()
@@ -3157,7 +3157,7 @@ def test_can_update_bli_when_pre_award_not_in_review(auth_client, loaded_db, app
         agreement_id=agreement.id,
         tracker_type=ProcurementTrackerType.DEFAULT,
         status=ProcurementTrackerStatus.ACTIVE,
-        created_by=1,
+        created_by=503,
     )
     loaded_db.add(tracker)
     loaded_db.flush()
@@ -3167,7 +3167,7 @@ def test_can_update_bli_when_pre_award_not_in_review(auth_client, loaded_db, app
         step_type="PRE_AWARD",
         step_number=5,
         approval_requested=False,  # Not requested yet
-        created_by=1,
+        created_by=503,
     )
     loaded_db.add(pre_award_step)
     loaded_db.commit()
