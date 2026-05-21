@@ -532,7 +532,8 @@ const useAgreementEditForm = (
                     servicing_agency_id: servicingAgency ? servicingAgency.id : null
                 };
                 const { cleanData } = cleanAgreementForApi(data);
-                await addAgreement(cleanData).unwrap();
+                const response = await addAgreement(cleanData).unwrap();
+                console.log(`CREATE: agreement draft saved: ${JSON.stringify(response, null, 2)}`);
                 setAlert({
                     type: "success",
                     heading: "Agreement Draft Saved",
