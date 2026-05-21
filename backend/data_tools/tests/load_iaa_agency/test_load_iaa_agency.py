@@ -196,9 +196,7 @@ def test_create_models_upsert(db_for_iaa_agency_with_class_code):
 
     # Check history records
     history_record = db_for_iaa_agency_with_class_code.execute(
-        select(OpsDBHistory)
-        .where(OpsDBHistory.class_name == "IAACustomerAgency")
-        .order_by(OpsDBHistory.id.desc())
+        select(OpsDBHistory).where(OpsDBHistory.class_name == "IAACustomerAgency").order_by(OpsDBHistory.id.desc())
     ).scalar()
     assert history_record is not None
     assert history_record.event_type == OpsDBHistoryType.NEW
