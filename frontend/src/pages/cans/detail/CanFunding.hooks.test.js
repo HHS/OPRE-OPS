@@ -142,7 +142,7 @@ describe("useCanFunding", () => {
         });
 
         act(() => {
-            result.current.handleAddBudget({ preventDefault: vi.fn() });
+            result.current.handleAddBudget();
         });
 
         expect(result.current.budgetForm).toEqual({ submittedAmount: 1200, isSubmitted: true });
@@ -235,7 +235,7 @@ describe("useCanFunding", () => {
         });
 
         act(() => {
-            result.current.handleAddBudget({ preventDefault: vi.fn() });
+            result.current.handleAddBudget();
         });
 
         act(() => {
@@ -336,7 +336,7 @@ describe("useCanFunding", () => {
         });
 
         act(() => {
-            result.current.handleAddBudget({ preventDefault: vi.fn() });
+            result.current.handleAddBudget();
         });
 
         await act(async () => {
@@ -379,7 +379,7 @@ describe("useCanFunding", () => {
         });
 
         act(() => {
-            result.current.handleAddBudget({ preventDefault: vi.fn() });
+            result.current.handleAddBudget();
         });
 
         act(() => {
@@ -469,5 +469,48 @@ describe("useCanFunding", () => {
 
         expect(addCanFundingReceivedMock).not.toHaveBeenCalled();
         expect(deleteCanFundingReceivedMock).not.toHaveBeenCalled();
+    });
+
+    describe("validation", () => {
+        it("runValidate flags budget below received funding and updates res", () => {
+            const { result } = renderUseCanFunding();
+
+            let validationResult;
+            act(() => {
+                validationResult = result.current.runValidate("budget-amount", "100");
+            });
+
+            expect(validationResult.hasErrors("budget-amount")).toBe(true);
+            expect(result.current.res.getErrors("budget-amount")).toContain(
+                "Amount must be greater than or equal to received funding"
+            );
+        });
+
+        it("runValidate passes when budget is at or above received funding", () => {
+            const { result } = renderUseCanFunding();
+
+            let validationResult;
+            act(() => {
+                validationResult = result.current.runValidate("budget-amount", "1000");
+            });
+
+            expect(validationResult.hasErrors("budget-amount")).toBe(false);
+            expect(result.current.res.getErrors("budget-amount")).toEqual([]);
+        });
+
+        it("clearValidationError removes errors for the field and updates res", () => {
+            const { result } = renderUseCanFunding();
+
+            act(() => {
+                result.current.runValidate("budget-amount", "100");
+            });
+            expect(result.current.res.getErrors("budget-amount").length).toBeGreaterThan(0);
+
+            act(() => {
+                result.current.clearValidationError("budget-amount");
+            });
+
+            expect(result.current.res.getErrors("budget-amount")).toEqual([]);
+        });
     });
 });
