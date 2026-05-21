@@ -71,16 +71,16 @@ describe("buildPortfolioChartData", () => {
         expect(result[2].color).toBe("var(--portfolio-bar-graph-hs)"); // palette[2], not OCDO's own slot
     });
 
-    it("falls back to FALLBACK_COLOR when palette is exhausted (>13 portfolios)", () => {
-        const manyPortfolios = Array.from({ length: 14 }, (_, i) => ({
+    it("falls back to FALLBACK_COLOR when palette is exhausted (>14 portfolios)", () => {
+        const manyPortfolios = Array.from({ length: 15 }, (_, i) => ({
             portfolio_id: 100 + i,
             portfolio: `Portfolio ${i}`,
             amount: 100000,
             abbreviation: `UNK${i}`
         }));
         const result = buildPortfolioChartData(manyPortfolios);
-        // First 13 get palette colors, 14th falls back
-        expect(result[13].color).toBe("var(--data-viz-bl-by-status-1)");
+        // First 14 get palette colors, 15th falls back
+        expect(result[14].color).toBe("var(--data-viz-bl-by-status-1)");
     });
     it("applies computeDisplayPercents so percents sum correctly", () => {
         const result = buildPortfolioChartData(mockFundingByPortfolio);
