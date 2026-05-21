@@ -52,32 +52,22 @@ class CANData:
 
         self.FISCAL_YEAR = int(self.FISCAL_YEAR)
         if isinstance(self.SYS_CAN_ID, str):
-            self.SYS_CAN_ID = (
-                int(self.SYS_CAN_ID) if self.SYS_CAN_ID.isdigit() else None
-            )
+            self.SYS_CAN_ID = int(self.SYS_CAN_ID) if self.SYS_CAN_ID.isdigit() else None
         self.CAN_NBR = str(self.CAN_NBR)
-        self.CAN_DESCRIPTION = (
-            str(self.CAN_DESCRIPTION) if self.CAN_DESCRIPTION else None
-        )
+        self.CAN_DESCRIPTION = str(self.CAN_DESCRIPTION) if self.CAN_DESCRIPTION else None
         self.FUND = str(self.FUND) if self.FUND else None
         self.ALLOWANCE = str(self.ALLOWANCE) if self.ALLOWANCE else None
         self.ALLOTMENT_ORG = str(self.ALLOTMENT_ORG) if self.ALLOTMENT_ORG else None
         self.SUB_ALLOWANCE = str(self.SUB_ALLOWANCE) if self.SUB_ALLOWANCE else None
-        self.CURRENT_FY_FUNDING_YTD = (
-            float(self.CURRENT_FY_FUNDING_YTD) if self.CURRENT_FY_FUNDING_YTD else None
-        )
+        self.CURRENT_FY_FUNDING_YTD = float(self.CURRENT_FY_FUNDING_YTD) if self.CURRENT_FY_FUNDING_YTD else None
         self.APPROP_PREFIX = str(self.APPROP_PREFIX) if self.APPROP_PREFIX else None
         self.APPROP_POSTFIX = str(self.APPROP_POSTFIX) if self.APPROP_POSTFIX else None
         self.APPROP_YEAR = str(self.APPROP_YEAR) if self.APPROP_YEAR else None
         self.PORTFOLIO = str(self.PORTFOLIO).upper() if self.PORTFOLIO else None
         self.FUNDING_SOURCE = str(self.FUNDING_SOURCE) if self.FUNDING_SOURCE else None
-        self.METHOD_OF_TRANSFER = (
-            str(self.METHOD_OF_TRANSFER).upper() if self.METHOD_OF_TRANSFER else None
-        )
+        self.METHOD_OF_TRANSFER = str(self.METHOD_OF_TRANSFER).upper() if self.METHOD_OF_TRANSFER else None
         self.NICK_NAME = str(self.NICK_NAME) if self.NICK_NAME else None
-        self.FUNDING_PARTNER = (
-            str(self.FUNDING_PARTNER) if self.FUNDING_PARTNER else None
-        )
+        self.FUNDING_PARTNER = str(self.FUNDING_PARTNER) if self.FUNDING_PARTNER else None
 
 
 def create_can_data(data: dict) -> CANData:
@@ -166,13 +156,9 @@ def create_models(data: CANData, sys_user: User, session: Session) -> None:
 
         try:
             validate_fund_code(data)
-            can.funding_details = get_or_create_funding_details(
-                data, sys_user, can.funding_details
-            )
+            can.funding_details = get_or_create_funding_details(data, sys_user, can.funding_details)
         except ValueError as e:
-            logger.info(
-                f"Skipping creating funding details for {data} due to invalid fund code. {e}"
-            )
+            logger.info(f"Skipping creating funding details for {data} due to invalid fund code. {e}")
 
         if is_new:
             session.add(can)
@@ -192,9 +178,7 @@ def create_models(data: CANData, sys_user: User, session: Session) -> None:
             )
             session.add(event)
             session.commit()
-            logger.info(
-                f"Created Ops Event for CAN with id {can.id} and number {can.number}"
-            )
+            logger.info(f"Created Ops Event for CAN with id {can.id} and number {can.number}")
 
             can_history_trigger_func(event, session, sys_user)
 
@@ -226,15 +210,11 @@ def get_or_create_funding_details(
     sub_allowance = data.SUB_ALLOWANCE
     allotment = data.ALLOTMENT_ORG
 
-    appropriation = "-".join(
-        [data.APPROP_PREFIX or "", data.APPROP_YEAR or "", data.APPROP_POSTFIX or ""]
-    )
+    appropriation = "-".join([data.APPROP_PREFIX or "", data.APPROP_YEAR or "", data.APPROP_POSTFIX or ""])
 
     method_of_transfer = CANMethodOfTransfer[data.METHOD_OF_TRANSFER]
     funding_source = (
-        CANFundingSource[data.FUNDING_SOURCE]
-        if data.FUNDING_SOURCE != "ACF - MOU"
-        else CANFundingSource.ACF_MOU
+        CANFundingSource[data.FUNDING_SOURCE] if data.FUNDING_SOURCE != "ACF - MOU" else CANFundingSource.ACF_MOU
     )
     funding_partner = data.FUNDING_PARTNER
 
@@ -295,9 +275,7 @@ def validate_fund_code(data: CANData) -> None:
         raise ValueError(f"Invalid category {category}")
     discretionary_or_mandatory = data.FUND[13]
     if discretionary_or_mandatory not in ["D", "M"]:
-        raise ValueError(
-            f"Invalid discretionary or mandatory {discretionary_or_mandatory}"
-        )
+        raise ValueError(f"Invalid discretionary or mandatory {discretionary_or_mandatory}")
 
 
 def create_all_models(data: List[CANData], sys_user: User, session: Session) -> None:
