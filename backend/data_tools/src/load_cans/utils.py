@@ -172,9 +172,8 @@ def create_models(data: CANData, sys_user: User, session: Session) -> None:
             session.commit()
             logger.info(f"Upserted CAN {can.number} with id {can.id}")
 
-            event_type = OpsEventType.CREATE_NEW_CAN if is_new else OpsEventType.UPDATE_CAN
             event = OpsEvent(
-                event_type=event_type,
+                event_type=OpsEventType.CREATE_NEW_CAN,
                 event_status=OpsEventStatus.SUCCESS,
                 event_details={"new_can": can.to_dict()},
                 created_by=sys_user.id,
