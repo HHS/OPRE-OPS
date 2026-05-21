@@ -169,7 +169,7 @@ class ProcurementTrackerStepService:
                 "approval_responded_by": "pre_award_approval_responded_by",
                 "approval_responded_date": "pre_award_approval_responded_date",
                 "reviewer_notes": "pre_award_approval_reviewer_notes",
-                # OPS-1639: Budget team requisition fields (user-provided only)
+                # Budget team requisition fields (user-provided only)
                 "requisition_number": "pre_award_requisition_number",
                 "requisition_date": "pre_award_requisition_date",
                 # requisition_approved_by and requisition_approved_date are SERVER-CONTROLLED
@@ -189,10 +189,13 @@ class ProcurementTrackerStepService:
         else:
             active_mapping = {}
 
-        # Server-control requisition approval audit fields (OPS-1639)
+        # Server-control requisition approval audit fields
         # Must be checked BEFORE field mapping, since we need to detect the transition
         if step.step_type == ProcurementTrackerStepType.PRE_AWARD:
             self._handle_requisition_approval(step, data, current_user)
+
+        # Pop is_draft before field update loop (request-only flag, not a model field)
+        data.pop("is_draft", None)
 
         # Update fields
         for key, value in data.items():
@@ -340,13 +343,36 @@ class ProcurementTrackerStepService:
         Detect when requisition is being approved and auto-set audit fields.
 
         Budget team approves by providing requisition_number and requisition_date.
-        Approval triggers when BOTH fields are present (allows partial updates followed by completion).
+        Approval triggers when BOTH fields are present AND is_draft flag is not True.
+
+        When is_draft=True, the update is treated as a partial save and approval logic is skipped.
+        This allows users to save requisition # and date separately without triggering approval.
 
         Args:
             step: The ProcurementTrackerStep being updated
             data: The update data dictionary
             current_user: User making the update
         """
+        # Check if requisition fields are being modified
+        requisition_fields_present = "requisition_number" in data or "requisition_date" in data
+
+        # Enforce BUDGET_TEAM authorization for any requisition field modification
+        if requisition_fields_present:
+            from ops_api.ops.services.ops_service import AuthorizationError
+
+            user_role_names = [role.name for role in current_user.roles]
+            if "BUDGET_TEAM" not in user_role_names and "SYSTEM_OWNER" not in user_role_names:
+                raise AuthorizationError(
+                    f"User {current_user.id} does not have BUDGET_TEAM or SYSTEM_OWNER role required for requisition entry",
+                    "ProcurementTrackerStep",
+                )
+
+        # Skip approval logic for draft saves
+        is_draft_save = data.get("is_draft", False)
+        if is_draft_save:
+            logger.debug("Draft save detected (is_draft=True), skipping approval logic")
+            return
+
         # Check if not already approved
         if step.pre_award_requisition_approved_by is not None:
             return  # Already approved, nothing to do
@@ -367,13 +393,13 @@ class ProcurementTrackerStepService:
         )
 
         if requisition_being_approved:
-            # Verify BUDGET_TEAM role authorization
+            # Verify BUDGET_TEAM or SYSTEM_OWNER role authorization
             from ops_api.ops.services.ops_service import AuthorizationError
 
             user_role_names = [role.name for role in current_user.roles]
-            if "BUDGET_TEAM" not in user_role_names:
+            if "BUDGET_TEAM" not in user_role_names and "SYSTEM_OWNER" not in user_role_names:
                 raise AuthorizationError(
-                    f"User {current_user.id} does not have BUDGET_TEAM role required for requisition approval",
+                    f"User {current_user.id} does not have BUDGET_TEAM or SYSTEM_OWNER role required for requisition approval",
                     "ProcurementTrackerStep",
                 )
 
@@ -452,7 +478,7 @@ class ProcurementTrackerStepService:
 
         if approval_response_transitioned:
             if new_approval_status == "APPROVED":
-                # OPS-1639: DD approved - notify BUDGET_TEAM members (not requester)
+                # DD approved - notify BUDGET_TEAM members (not requester)
                 self._notify_budget_team_for_requisition_review(step, agreement, current_user, notification_service)
 
             elif new_approval_status == "DECLINED":
@@ -464,7 +490,7 @@ class ProcurementTrackerStepService:
                     PreAwardNotificationTitle.APPROVAL_REQUEST, step.id, "'in review' notifications after decline"
                 )
 
-        # Case 3: Budget Team Requisition Approval (OPS-1639)
+        # Case 3: Budget Team Requisition Approval
         # Only send if requisition_approved_by changed from None → {user_id}
         new_requisition_approved_by = step.pre_award_requisition_approved_by
         requisition_approval_transitioned = (
@@ -814,7 +840,7 @@ class ProcurementTrackerStepService:
 
         Returns steps where:
         - DD has approved (approval_status = 'APPROVED')
-        - Budget team hasn't entered requisition yet (requisition_number IS NULL)
+        - Budget team hasn't approved requisition yet (requisition_approved_by IS NULL)
         - User has BUDGET_TEAM role
 
         Args:
@@ -835,6 +861,7 @@ class ProcurementTrackerStepService:
             return []
 
         # Query for steps awaiting budget team requisition entry
+        # Check approval status, not field emptiness (supports draft saves)
         stmt = (
             select(DefaultProcurementTrackerStep)
             .join(DefaultProcurementTrackerStep.procurement_tracker)
@@ -848,8 +875,7 @@ class ProcurementTrackerStepService:
                 and_(
                     DefaultProcurementTrackerStep.step_type == ProcurementTrackerStepType.PRE_AWARD,
                     DefaultProcurementTrackerStep.pre_award_approval_status == "APPROVED",
-                    DefaultProcurementTrackerStep.pre_award_requisition_number.is_(None),
-                    DefaultProcurementTrackerStep.pre_award_requisition_date.is_(None),
+                    DefaultProcurementTrackerStep.pre_award_requisition_approved_by.is_(None),
                 )
             )
             .order_by(DefaultProcurementTrackerStep.pre_award_approval_responded_date.desc())
