@@ -82,6 +82,12 @@ export const PORTFOLIO_ORDER = [
         color: "var(--portfolio-bar-graph-od)", // Gold
         column: 3
     },
+    {
+        abbreviation: "DB",
+        division: "DFS",
+        color: "var(--portfolio-bar-graph-db)", // Dark Blue
+        column: 3
+    },
 
     // Column 4 - Non-OPRE & OCDO
     {
