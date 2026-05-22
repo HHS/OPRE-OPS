@@ -314,6 +314,7 @@ const CanFunding = ({
                                     cn={cn}
                                     res={res}
                                     runValidate={runValidate}
+                                    clearValidationError={clearValidationError}
                                     cancelFundingReceived={cancelFundingReceived}
                                 />
                             </div>

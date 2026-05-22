@@ -344,10 +344,7 @@ export default function useCanFunding(
         });
     };
 
-    /** @param {React.FormEvent<HTMLFormElement>} e */
-    const handleAddFundingReceived = (e) => {
-        e.preventDefault();
-
+    const handleAddFundingReceived = () => {
         // Update total received first using the functional update pattern
 
         // update the table data
