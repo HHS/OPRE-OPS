@@ -20,11 +20,13 @@ from models import (
     ChangeRequestType,
     ContractAgreement,
     ContractBudgetLineItem,
+    DefaultProcurementTrackerStep,
     ProcurementShop,
     ProcurementShopFee,
     ProcurementTracker,
     ProcurementTrackerStatus,
     ProcurementTrackerStep,
+    ProcurementTrackerStepType,
     ProcurementTrackerType,
     ProductServiceCode,
     Project,
@@ -3124,12 +3126,13 @@ def test_cannot_update_bli_when_pre_award_in_review(auth_client, loaded_db, app_
     loaded_db.add(tracker)
     loaded_db.flush()
 
-    pre_award_step = ProcurementTrackerStep(
+    pre_award_step = DefaultProcurementTrackerStep(
         procurement_tracker_id=tracker.id,
-        step_type="PRE_AWARD",
+        step_type=ProcurementTrackerStepType.PRE_AWARD,
+        step_class="default_step",
         step_number=5,
-        approval_requested=True,
-        approval_status=None,  # In review - awaiting decision
+        pre_award_approval_requested=True,
+        pre_award_approval_status=None,  # In review - awaiting decision
         created_by=503,
     )
     loaded_db.add(pre_award_step)
@@ -3162,11 +3165,12 @@ def test_can_update_bli_when_pre_award_not_in_review(auth_client, loaded_db, app
     loaded_db.add(tracker)
     loaded_db.flush()
 
-    pre_award_step = ProcurementTrackerStep(
+    pre_award_step = DefaultProcurementTrackerStep(
         procurement_tracker_id=tracker.id,
-        step_type="PRE_AWARD",
+        step_type=ProcurementTrackerStepType.PRE_AWARD,
+        step_class="default_step",
         step_number=5,
-        approval_requested=False,  # Not requested yet
+        pre_award_approval_requested=False,  # Not requested yet
         created_by=503,
     )
     loaded_db.add(pre_award_step)
@@ -3197,18 +3201,19 @@ def test_can_update_bli_when_pre_award_declined(auth_client, loaded_db, app_ctx)
         agreement_id=agreement.id,
         tracker_type=ProcurementTrackerType.DEFAULT,
         status=ProcurementTrackerStatus.ACTIVE,
-        created_by=1,
+        created_by=503,
     )
     loaded_db.add(tracker)
     loaded_db.flush()
 
-    pre_award_step = ProcurementTrackerStep(
+    pre_award_step = DefaultProcurementTrackerStep(
         procurement_tracker_id=tracker.id,
-        step_type="PRE_AWARD",
+        step_type=ProcurementTrackerStepType.PRE_AWARD,
+        step_class="default_step",
         step_number=5,
-        approval_requested=True,
-        approval_status="DECLINED",  # Declined - can edit again
-        created_by=1,
+        pre_award_approval_requested=True,
+        pre_award_approval_status="DECLINED",  # Declined - can edit again
+        created_by=503,
     )
     loaded_db.add(pre_award_step)
     loaded_db.commit()
@@ -3238,19 +3243,20 @@ def test_cannot_update_bli_when_pre_award_approved_but_awaiting_requisition(auth
         agreement_id=agreement.id,
         tracker_type=ProcurementTrackerType.DEFAULT,
         status=ProcurementTrackerStatus.ACTIVE,
-        created_by=1,
+        created_by=503,
     )
     loaded_db.add(tracker)
     loaded_db.flush()
 
-    pre_award_step = ProcurementTrackerStep(
+    pre_award_step = DefaultProcurementTrackerStep(
         procurement_tracker_id=tracker.id,
-        step_type="PRE_AWARD",
+        step_type=ProcurementTrackerStepType.PRE_AWARD,
+        step_class="default_step",
         step_number=5,
-        approval_requested=True,
-        approval_status="APPROVED",
-        requisition_approved_by=None,  # Still awaiting budget team
-        created_by=1,
+        pre_award_approval_requested=True,
+        pre_award_approval_status="APPROVED",
+        pre_award_requisition_approved_by=None,  # Still awaiting budget team
+        created_by=503,
     )
     loaded_db.add(pre_award_step)
     loaded_db.commit()
@@ -3277,19 +3283,20 @@ def test_can_update_bli_when_pre_award_fully_approved(auth_client, loaded_db, ap
         agreement_id=agreement.id,
         tracker_type=ProcurementTrackerType.DEFAULT,
         status=ProcurementTrackerStatus.ACTIVE,
-        created_by=1,
+        created_by=503,
     )
     loaded_db.add(tracker)
     loaded_db.flush()
 
-    pre_award_step = ProcurementTrackerStep(
+    pre_award_step = DefaultProcurementTrackerStep(
         procurement_tracker_id=tracker.id,
-        step_type="PRE_AWARD",
+        step_type=ProcurementTrackerStepType.PRE_AWARD,
+        step_class="default_step",
         step_number=5,
-        approval_requested=True,
-        approval_status="APPROVED",
-        requisition_approved_by=1,  # Budget team approved
-        created_by=1,
+        pre_award_approval_requested=True,
+        pre_award_approval_status="APPROVED",
+        pre_award_requisition_approved_by=503,  # Budget team approved
+        created_by=503,
     )
     loaded_db.add(pre_award_step)
     loaded_db.commit()
