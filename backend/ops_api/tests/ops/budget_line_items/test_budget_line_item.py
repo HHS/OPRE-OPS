@@ -3140,7 +3140,7 @@ def test_cannot_update_bli_when_pre_award_in_review(auth_client, loaded_db, app_
 
     # Attempt to update the BLI
     data = {"amount": 999999.99}
-    url = url_for("api.budget-line-item-item", id=bli.id)
+    url = url_for("api.budget-line-items-item", id=bli.id)
 
     response = auth_client.patch(url, json=data)
 
@@ -3180,7 +3180,7 @@ def test_can_update_bli_when_pre_award_not_in_review(auth_client, loaded_db, app
 
     # Attempt to update the BLI
     data = {"amount": 888888.88}
-    url = url_for("api.budget-line-item-item", id=bli.id)
+    url = url_for("api.budget-line-items-item", id=bli.id)
 
     response = auth_client.patch(url, json=data)
 
@@ -3222,7 +3222,7 @@ def test_can_update_bli_when_pre_award_declined(auth_client, loaded_db, app_ctx)
 
     # Attempt to update the BLI
     data = {"amount": 777777.77}
-    url = url_for("api.budget-line-item-item", id=bli.id)
+    url = url_for("api.budget-line-items-item", id=bli.id)
 
     response = auth_client.patch(url, json=data)
 
@@ -3263,7 +3263,7 @@ def test_cannot_update_bli_when_pre_award_approved_but_awaiting_requisition(auth
 
     # Attempt to update the BLI
     data = {"amount": 666666.66}
-    url = url_for("api.budget-line-item-item", id=bli.id)
+    url = url_for("api.budget-line-items-item", id=bli.id)
 
     response = auth_client.patch(url, json=data)
 
@@ -3305,7 +3305,7 @@ def test_can_update_bli_when_pre_award_fully_approved(auth_client, loaded_db, ap
 
     # Attempt to update the BLI
     data = {"amount": 555555.55}
-    url = url_for("api.budget-line-item-item", id=bli.id)
+    url = url_for("api.budget-line-items-item", id=bli.id)
 
     response = auth_client.patch(url, json=data)
 
