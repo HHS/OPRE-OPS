@@ -120,20 +120,27 @@ def is_pre_award_in_review(agreement):
         return False
 
     # Get the active procurement tracker
-    tracker = next((t for t in agreement.procurement_trackers if t.status == "ACTIVE"), None)
+    from models import ProcurementTrackerStatus, ProcurementTrackerStepType
+
+    tracker = next((t for t in agreement.procurement_trackers if t.status == ProcurementTrackerStatus.ACTIVE), None)
     if not tracker:
         return False
 
-    pre_award_step = next((step for step in tracker.steps if step.step_type == "PRE_AWARD"), None)
+    pre_award_step = next(
+        (step for step in tracker.steps if step.step_type == ProcurementTrackerStepType.PRE_AWARD), None
+    )
 
-    if not pre_award_step or not pre_award_step.approval_requested:
+    if not pre_award_step or not pre_award_step.pre_award_approval_requested:
         return False
 
     # In review if: no status, PENDING, or APPROVED but awaiting requisition
     return (
-        pre_award_step.approval_status is None
-        or pre_award_step.approval_status == "PENDING"
-        or (pre_award_step.approval_status == "APPROVED" and pre_award_step.requisition_approved_by is None)
+        pre_award_step.pre_award_approval_status is None
+        or pre_award_step.pre_award_approval_status == "PENDING"
+        or (
+            pre_award_step.pre_award_approval_status == "APPROVED"
+            and pre_award_step.pre_award_requisition_approved_by is None
+        )
     )
 
 
