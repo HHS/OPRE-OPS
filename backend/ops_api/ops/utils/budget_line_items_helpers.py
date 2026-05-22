@@ -105,10 +105,8 @@ def is_pre_award_in_review(agreement):
     Check if the agreement's pre-award approval is currently in review.
 
     Returns True if pre-award approval has been requested and is awaiting decision.
-    This includes states where:
-    - Approval is requested and status is None (pending Division Director review)
-    - Approval status is PENDING
-    - Approval status is APPROVED but requisition_approved_by is None (awaiting Budget Team)
+    Uses defensive logic: explicitly checks for terminal states (fully approved or declined),
+    and treats all other cases as "in review" when approval has been requested.
 
     Args:
         agreement: Agreement object to check
@@ -133,15 +131,19 @@ def is_pre_award_in_review(agreement):
     if not pre_award_step or not pre_award_step.pre_award_approval_requested:
         return False
 
-    # In review if: no status, PENDING, or APPROVED but awaiting requisition
-    return (
-        pre_award_step.pre_award_approval_status is None
-        or pre_award_step.pre_award_approval_status == "PENDING"
-        or (
-            pre_award_step.pre_award_approval_status == "APPROVED"
-            and pre_award_step.pre_award_requisition_approved_by is None
-        )
-    )
+    # Explicitly check for terminal states (approval process complete)
+    if (
+        pre_award_step.pre_award_approval_status == "APPROVED"
+        and pre_award_step.pre_award_requisition_approved_by is not None
+    ):
+        return False  # Fully approved - not in review
+
+    if pre_award_step.pre_award_approval_status == "DECLINED":
+        return False  # Declined - not in review
+
+    # All other cases when approval is requested: in review
+    # This includes None, "PENDING", "APPROVED" without requisition, and any unexpected values
+    return True
 
 
 def bli_associated_with_agreement(id: int) -> bool:

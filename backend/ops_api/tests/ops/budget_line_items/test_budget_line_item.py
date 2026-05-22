@@ -3189,6 +3189,49 @@ def test_can_update_bli_when_pre_award_not_in_review(auth_client, loaded_db, app
     assert bli.amount != original_amount
 
 
+def test_cannot_update_bli_when_pre_award_pending(auth_client, loaded_db, app_ctx):
+    """Test that BLI cannot be updated when pre-award approval status is PENDING"""
+    # Get an existing BLI from agreement 1
+    bli = loaded_db.get(BudgetLineItem, 15005)
+    agreement = loaded_db.get(Agreement, bli.agreement_id)
+
+    # Create procurement tracker with pre-award pending
+    tracker = ProcurementTracker(
+        agreement_id=agreement.id,
+        tracker_type=ProcurementTrackerType.DEFAULT,
+        status=ProcurementTrackerStatus.ACTIVE,
+        created_by=503,
+    )
+    loaded_db.add(tracker)
+    loaded_db.flush()
+
+    pre_award_step = DefaultProcurementTrackerStep(
+        procurement_tracker_id=tracker.id,
+        step_type=ProcurementTrackerStepType.PRE_AWARD,
+        step_class="default_step",
+        step_number=5,
+        pre_award_approval_requested=True,
+        pre_award_approval_status="PENDING",  # Explicitly test PENDING state
+        created_by=503,
+    )
+    loaded_db.add(pre_award_step)
+    loaded_db.commit()
+
+    # Set BLI to editable status (PLANNED) so regular user can modify it
+    bli.status = BudgetLineItemStatus.PLANNED
+    loaded_db.commit()
+
+    # Attempt to update the BLI
+    data = {"amount": 444444.44}
+    url = url_for("api.budget-line-items-item", id=bli.id)
+
+    response = auth_client.patch(url, json=data)
+
+    # Should fail with validation error
+    assert response.status_code == 400
+    assert response.json["errors"]["status"] == "Cannot modify Budget Line Items while Pre-Award Approval is in review."
+
+
 def test_can_update_bli_when_pre_award_declined(auth_client, loaded_db, app_ctx):
     """Test that BLI can be updated when pre-award approval has been declined"""
     # Get an existing BLI from agreement 1

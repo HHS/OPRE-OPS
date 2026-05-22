@@ -98,16 +98,23 @@ const ProcurementTrackerStepFive = ({
     );
 
     // Calculate which specific condition is blocking the pre-award approval request
-    // Precedence order: step not active > approval already requested > BLI in review
+    // Precedence order (most actionable first): BLI in review > approval already requested > step not active > global disabled
     const getPreAwardTooltipMessage = () => {
+        // Most actionable: user can resolve BLI reviews immediately
+        if (hasBLIInReview) {
+            return "Budget lines In Review Status must be approved or declined before you can request pre-award approval";
+        }
+        // Less actionable: user typically waits for reviewer (but can be explicit about the state)
+        if (stepFiveData?.approval_requested && stepFiveData?.approval_status !== "DECLINED") {
+            return "Pre-Award Approval has already been requested";
+        }
+        // Requires completing prior step, usually obvious from UI
         if (!isActiveStep) {
             return "Complete Step 4 before requesting Pre-Award Approval";
         }
-        if (stepFiveData?.approval_requested && !isApprovalDeclined) {
-            return "Pre-Award Approval has already been requested";
-        }
-        if (hasBLIInReview) {
-            return "Budget lines In Review Status must be approved or declined before you can request pre-award approval";
+        // Generic fallback for global disabled state (no tracker, agreement not editable, etc.)
+        if (isDisabled) {
+            return "Pre-Award Approval cannot be requested at this time";
         }
         return ""; // No tooltip when button is enabled
     };

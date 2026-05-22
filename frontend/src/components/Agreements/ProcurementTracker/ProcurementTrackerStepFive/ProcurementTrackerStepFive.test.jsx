@@ -1863,8 +1863,8 @@ describe("ProcurementTrackerStepFive", () => {
             expect(button).not.toBeDisabled();
         });
 
-        it("follows precedence order: step not active > approval requested > BLI in review", () => {
-            // When all conditions are true, should show step not active message (highest precedence)
+        it("follows precedence order: BLI in review > approval requested > step not active (most actionable first)", () => {
+            // When all conditions are true, should show BLI in review message (most actionable)
             render(
                 <ProcurementTrackerStepFive
                     stepStatus="PENDING"
@@ -1879,7 +1879,10 @@ describe("ProcurementTrackerStepFive", () => {
             );
 
             const tooltip = screen.getByTestId("tooltip");
-            expect(tooltip).toHaveAttribute("data-label", "Complete Step 4 before requesting Pre-Award Approval");
+            expect(tooltip).toHaveAttribute(
+                "data-label",
+                "Budget lines In Review Status must be approved or declined before you can request pre-award approval"
+            );
         });
 
         it("allows re-requesting when approval is declined", () => {
