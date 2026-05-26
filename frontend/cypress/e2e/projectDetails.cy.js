@@ -68,6 +68,12 @@ describe("Project Details Page", () => {
         cy.contains("Project Updated").should("be.visible");
         cy.get("[data-cy='project-nickname-tag']").should("contain", updatedShortTitle);
 
+        cy.get("[data-cy='project-history-container']").should("be.visible");
+        cy.get("[data-cy='project-history-list']").within(() => {
+            cy.get("[data-cy='log-item-title']").first().should("contain", "Project Nickname");
+            cy.get("[data-cy='log-item-message']").first().should("contain", updatedShortTitle);
+        });
+
         // Restore the seeded short_title so later tests (and the seeded fixture assertions
         // above) keep passing when the spec reruns against the same database.
         cy.get("[data-cy='project-details-edit-button']").click();
