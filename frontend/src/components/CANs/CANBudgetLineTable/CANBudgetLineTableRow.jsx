@@ -8,7 +8,6 @@ import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import TableRowExpandable from "../../UI/TableRowExpandable";
 import { expandedRowBGColor } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
-import tableStyles from "../../UI/Table/table.module.css";
 import TableTag from "../../UI/TableTag";
 import TextClip from "../../UI/Text/TextClip";
 import { getProcurementShopLabel } from "../../../helpers/budgetLines.helpers";
@@ -62,26 +61,27 @@ const CANBudgetLineTableRow = ({
     const resolvedAgreementName =
         agreementName?.trim() ||
         (budgetLine?.agreement?.id ? `Agreement ${budgetLine.agreement.id}` : "Agreement details");
-    const hasAgreementLink = Boolean(budgetLine.agreement);
 
     const TableRowData = (
         <>
             <td>{blId}</td>
             <td>
-                {budgetLine.agreement ? (
-                    <Link
-                        className="text-ink text-no-underline"
-                        to={`/agreements/${budgetLine.agreement.id}`}
-                        aria-label={resolvedAgreementName}
-                    >
-                        <TextClip
-                            text={agreementName?.trim() || `${budgetLine.agreement.id}`}
-                            maxLines={1}
-                        />
-                    </Link>
-                ) : (
-                    <span className="text-ink">{agreementName}</span>
-                )}
+                <div style={{ height: "1.5rem", overflow: "visible", position: "relative" }}>
+                    {budgetLine.agreement ? (
+                        <Link
+                            className="text-ink text-no-underline"
+                            to={`/agreements/${budgetLine.agreement.id}`}
+                            aria-label={resolvedAgreementName}
+                        >
+                            <TextClip
+                                text={agreementName?.trim() || `${budgetLine.agreement.id}`}
+                                maxLines={1}
+                            />
+                        </Link>
+                    ) : (
+                        <span className="text-ink">{agreementName}</span>
+                    )}
+                </div>
             </td>
             <td>{obligateDate}</td>
             <td>{fiscalYear}</td>
@@ -174,7 +174,6 @@ const CANBudgetLineTableRow = ({
             isExpanded={isExpanded}
             setIsExpanded={setIsExpanded}
             setIsRowActive={setIsRowActive}
-            className={hasAgreementLink ? tableStyles.noPaddingBottom : undefined}
         />
     );
 };

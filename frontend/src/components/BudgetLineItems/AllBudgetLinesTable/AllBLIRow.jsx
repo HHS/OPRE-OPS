@@ -13,7 +13,6 @@ import { AWARD_TYPE_LABELS } from "../../../pages/agreements/agreements.constant
 import TableRowExpandable from "../../UI/TableRowExpandable";
 import { expandedRowBGColor } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
-import tableStyles from "../../UI/Table/table.module.css";
 import TableTag from "../../UI/TableTag";
 import TextClip from "../../UI/Text/TextClip";
 import { useGetPortfolioByIdQuery } from "../../../api/opsAPI";
@@ -42,44 +41,49 @@ const AllBLIRow = ({ budgetLine }) => {
     const agreementLinkLabel =
         budgetLine?.agreement?.name?.trim() ||
         (budgetLine?.agreement?.id ? `Agreement ${budgetLine.agreement.id}` : "Agreement details");
-    const hasAgreementLink = Boolean(budgetLine?.agreement?.id);
 
     const TableRowData = (
         <>
             <td data-cy="bli-id">{budgetLine.id}</td>
             <td data-cy="agreement-name">
-                {budgetLine?.agreement?.id ? (
-                    <Link
-                        to={`/agreements/${budgetLine.agreement.id}`}
-                        className="text-ink text-no-underline"
-                        aria-label={agreementLinkLabel}
-                    >
+                <div style={{ height: "1.5rem", overflow: "visible", position: "relative" }}>
+                    {budgetLine?.agreement?.id ? (
+                        <Link
+                            to={`/agreements/${budgetLine.agreement.id}`}
+                            className="text-ink text-no-underline"
+                            aria-label={agreementLinkLabel}
+                        >
+                            <TextClip
+                                text={agreementName}
+                                maxLines={1}
+                            />
+                        </Link>
+                    ) : (
                         <TextClip
                             text={agreementName}
                             maxLines={1}
                         />
-                    </Link>
-                ) : (
-                    <TextClip
-                        text={agreementName}
-                        maxLines={1}
-                    />
-                )}
+                    )}
+                </div>
             </td>
             <td data-cy="agreement-type">
-                <TextClip
-                    text={convertCodeForDisplay("agreementType", budgetLine?.agreement?.agreement_type) || NO_DATA}
-                    maxLines={1}
-                />
+                <div style={{ height: "1.5rem", overflow: "visible", position: "relative" }}>
+                    <TextClip
+                        text={convertCodeForDisplay("agreementType", budgetLine?.agreement?.agreement_type) || NO_DATA}
+                        maxLines={1}
+                    />
+                </div>
             </td>
             <td data-cy="service-component">{serviceComponentName}</td>
             <td data-cy="date-needed">{formatDateNeeded(budgetLine?.date_needed ?? "")}</td>
             <td data-cy="can">{budgetLine?.can?.display_name}</td>
             <td data-cy="portfolio-name">
-                <TextClip
-                    text={isPortfolioLoading ? "Loading..." : (budgetLinePortfolio?.abbreviation ?? NO_DATA)}
-                    maxLines={1}
-                />
+                <div style={{ height: "1.5rem", overflow: "visible", position: "relative" }}>
+                    <TextClip
+                        text={isPortfolioLoading ? "Loading..." : (budgetLinePortfolio?.abbreviation ?? NO_DATA)}
+                        maxLines={1}
+                    />
+                </div>
             </td>
             <td data-cy="amount">
                 <CurrencyFormat
@@ -187,7 +191,6 @@ const AllBLIRow = ({ budgetLine }) => {
             isExpanded={isExpanded}
             setIsExpanded={setIsExpanded}
             setIsRowActive={setIsRowActive}
-            className={hasAgreementLink ? tableStyles.noPaddingBottom : undefined}
             data-testid={`budget-line-row-${budgetLine?.id}`}
         />
     );
