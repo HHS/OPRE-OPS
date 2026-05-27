@@ -59,7 +59,7 @@ describe("ChangeRequestList", () => {
             </Provider>
         );
         expect(useGetChangeRequestsListQuery).toHaveBeenCalledWith(
-            { userId: 500 },
+            { userId: 500, limit: 10, offset: 0 },
             { refetchOnMountOrArgChange: true, skip: false }
         );
         expect(screen.getByText(/no changes/i)).toBeInTheDocument();
@@ -98,7 +98,7 @@ describe("ChangeRequestList", () => {
         );
 
         expect(useGetChangeRequestsListQuery).toHaveBeenCalledWith(
-            { userId: 500 },
+            { userId: 500, limit: 10, offset: 0 },
             { refetchOnMountOrArgChange: true, skip: false }
         );
 
@@ -129,7 +129,7 @@ describe("ChangeRequestList", () => {
         );
 
         expect(useGetChangeRequestsListQuery).toHaveBeenCalledWith(
-            { userId: null },
+            { userId: null, limit: 10, offset: 0 },
             { refetchOnMountOrArgChange: true, skip: true }
         );
         expect(screen.getByText(/no changes/i)).toBeInTheDocument();
