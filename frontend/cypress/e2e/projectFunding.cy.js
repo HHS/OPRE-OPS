@@ -20,15 +20,11 @@ afterEach(() => {
 describe("Project Funding Tab", () => {
     it("renders the project title and Project Funding tab as selected", () => {
         cy.get("h1").should("contain", "Human Services Interoperability Support");
-        cy.get("[data-cy='project-tab-Project Funding']")
-            .should("be.visible")
-            .and("not.be.disabled");
+        cy.get("[data-cy='project-tab-Project Funding']").should("be.visible").and("not.be.disabled");
     });
 
     it("shows the FY selector defaulting to the current fiscal year", () => {
-        cy.get("#fiscal-year-select")
-            .should("be.visible")
-            .and("have.value", String(currentFY));
+        cy.get("#fiscal-year-select").should("be.visible").and("have.value", String(currentFY));
     });
 
     it("renders the Project Funding Summary section heading and all three cards", () => {

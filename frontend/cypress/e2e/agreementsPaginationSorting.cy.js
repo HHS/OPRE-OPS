@@ -1,5 +1,5 @@
 /// <reference types="cypress" />
-import {terminalLog, testLogin} from "./utils";
+import { terminalLog, testLogin } from "./utils";
 
 describe("Agreements List - Pagination Sorting", () => {
     beforeEach(() => {
@@ -22,7 +22,7 @@ describe("Agreements List - Pagination Sorting", () => {
         cy.get("thead th").contains("Agreement").click();
 
         // Wait for sorted data to load
-        cy.get(".usa-table tbody tr", {timeout: 10000}).should("have.length.at.least", 1);
+        cy.get(".usa-table tbody tr", { timeout: 10000 }).should("have.length.at.least", 1);
 
         // Should reset to page 1
         cy.get("button.usa-current").should("contain", "1");
@@ -33,7 +33,7 @@ describe("Agreements List - Pagination Sorting", () => {
         cy.get("thead th").contains("Agreement").click();
 
         // Wait for sorted data to load
-        cy.get(".usa-table tbody tr", {timeout: 10000}).should("have.length.at.least", 1);
+        cy.get(".usa-table tbody tr", { timeout: 10000 }).should("have.length.at.least", 1);
 
         // Navigate to page 2 and verify data loads
         cy.get("button[aria-label='Next page']").then(($nextBtn) => {
@@ -41,7 +41,7 @@ describe("Agreements List - Pagination Sorting", () => {
                 cy.wrap($nextBtn).click();
 
                 // Verify page 2 has data (sort order is maintained)
-                cy.get("tbody tr", {timeout: 10000}).should("have.length.at.least", 1);
+                cy.get("tbody tr", { timeout: 10000 }).should("have.length.at.least", 1);
             }
         });
     });

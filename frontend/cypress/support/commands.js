@@ -1,4 +1,3 @@
-
 // ***********************************************
 // This example commands.js shows you how to
 // create various custom commands and overwrite
@@ -105,9 +104,7 @@ const violationHandler = (violations) => {
         return;
     }
 
-    const details = unallowed
-        .map((violation) => `${violation.id} (${violation.impact || "unknown"})`)
-        .join(", ");
+    const details = unallowed.map((violation) => `${violation.id} (${violation.impact || "unknown"})`).join(", ");
     throw new Error(`A11y regression gate failed for ${currentSpec}. Unallowlisted violations: ${details}`);
 };
 

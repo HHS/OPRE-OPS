@@ -1,5 +1,5 @@
 /// <reference types="cypress" />
-import {terminalLog, testLogin} from "./utils";
+import { terminalLog, testLogin } from "./utils";
 
 describe("Agreements List - Pagination", () => {
     beforeEach(() => {
@@ -66,10 +66,12 @@ describe("Agreements List - Pagination", () => {
         it("should hide Next button on last page", () => {
             // Navigate to last page (need to find what the last page is)
             // Get all page number buttons
-            cy.get("button[aria-label^='Page']").last().then(($lastButton) => {
-                // Click the last page number
-                $lastButton.click();
-            });
+            cy.get("button[aria-label^='Page']")
+                .last()
+                .then(($lastButton) => {
+                    // Click the last page number
+                    $lastButton.click();
+                });
 
             // Next button should be hidden on last page
             cy.get("button[aria-label='Next page']").should("not.be.visible");
