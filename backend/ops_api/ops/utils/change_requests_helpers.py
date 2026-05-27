@@ -109,7 +109,8 @@ def find_in_review_requests_by_user(user_id: int, limit: int = 10, offset: int =
             if cr.agreement_id in reviewable_agreement_ids:
                 filtered_results.append(cr)
 
-    return filtered_results[offset : offset + limit]
+    total_count = len(filtered_results)
+    return filtered_results[offset : offset + limit], total_count
 
 
 def build_review_outcome_title_and_message(

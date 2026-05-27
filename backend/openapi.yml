@@ -4747,9 +4747,26 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/GenericChangeRequest"
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/GenericChangeRequest"
+                  count:
+                    type: integer
+                    description: Total number of change requests after permission filtering, before pagination
+                  limit:
+                    type: integer
+                    description: Maximum number of change requests returned
+                  offset:
+                    type: integer
+                    description: Number of change requests skipped
+                required:
+                  - data
+                  - count
+                  - limit
+                  - offset
         "400":
           description: Bad Request
         "401":

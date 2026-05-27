@@ -1124,9 +1124,14 @@ export const opsApi = createApi({
             invalidatesTags: ["ServicesComponents", "Agreements", "BudgetLineItems", "AgreementHistory"]
         }),
         getChangeRequestsList: builder.query({
-            query: ({ userId }) => ({
-                url: `/change-requests/${userId ? `?userId=${userId}` : ""}`
-            }),
+            query: ({ userId, limit, offset }) => {
+                const params = new URLSearchParams();
+                if (userId) params.append("userId", userId);
+                if (limit !== undefined) params.append("limit", limit);
+                if (offset !== undefined) params.append("offset", offset);
+                const qs = params.toString();
+                return { url: `/change-requests/${qs ? `?${qs}` : ""}` };
+            },
             providesTags: ["ChangeRequests"]
         }),
         updateChangeRequest: builder.mutation({

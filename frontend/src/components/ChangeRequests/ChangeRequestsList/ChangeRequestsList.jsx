@@ -25,12 +25,13 @@ const BLI_STATUS_IN_EXECUTION = "In Execution";
 function ChangeRequestsList({ handleReviewChangeRequest }) {
     const navigate = useNavigate();
     const userId = useSelector((state) => state.auth?.activeUser?.id) ?? null;
-    /** @type {{data?: ChangeRequest[] | undefined, isError: boolean, isLoading: boolean}} */
+    /** @type {{data?: {data: ChangeRequest[], count: number, limit: number, offset: number} | undefined, isError: boolean, isLoading: boolean}} */
     const {
-        data: changeRequests,
+        data: changeRequestsResponse,
         isLoading: loadingChangeRequests,
         isError: errorChangeRequests
     } = useGetChangeRequestsListQuery({ userId }, { skip: !userId, refetchOnMountOrArgChange: true });
+    const changeRequests = changeRequestsResponse?.data;
 
     // Fetch pending pre-award approvals
     const {

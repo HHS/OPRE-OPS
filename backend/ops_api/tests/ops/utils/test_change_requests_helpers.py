@@ -94,13 +94,14 @@ def test_find_in_review_requests_by_user_with_pagination(loaded_db, app_ctx):
     loaded_db.flush()
 
     # Derrek can only review division 6; with a page size of 3 his lone CR still appears
-    results = cr_helpers.find_in_review_requests_by_user(user_id=director_derrek.id, limit=3, offset=0)
+    results, total = cr_helpers.find_in_review_requests_by_user(user_id=director_derrek.id, limit=3, offset=0)
     result_ids = [r.id for r in results]
     assert cr1.id not in result_ids
     assert cr2.id not in result_ids
     assert cr3.id not in result_ids
     assert cr4.id in result_ids
     assert len(results) == 1
+    assert total == 1
 
 
 def test_get_division_ids_user_can_review_for(loaded_db, app_ctx):
@@ -158,10 +159,11 @@ def test_find_in_review_requests_by_user(mock_get_agreement_ids, mock_get_divisi
     mock_get_division_ids.return_value = {1}
     mock_get_agreement_ids.return_value = {42}
 
-    result = cr_helpers.find_in_review_requests_by_user(user_id=123)
+    result, total = cr_helpers.find_in_review_requests_by_user(user_id=123)
     assert cr1 in result
     assert cr2 in result
     assert cr3 not in result  # filtered out — managing_division_id 999 not in {1}
+    assert total == 2
 
 
 @pytest.mark.parametrize(
