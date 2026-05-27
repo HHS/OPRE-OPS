@@ -11,6 +11,8 @@ from models import (
     BudgetLineItemStatus,
     Division,
     Portfolio,
+    ProcurementTrackerStatus,
+    ProcurementTrackerStepType,
 )
 from ops_api.ops.services.ops_service import AuthorizationError, ResourceNotFoundError
 from ops_api.ops.utils.agreements_helpers import associated_with_agreement
@@ -118,8 +120,6 @@ def is_pre_award_in_review(agreement):
         return False
 
     # Get the active procurement tracker
-    from models import ProcurementTrackerStatus, ProcurementTrackerStepType
-
     tracker = next((t for t in agreement.procurement_trackers if t.status == ProcurementTrackerStatus.ACTIVE), None)
     if not tracker:
         return False
