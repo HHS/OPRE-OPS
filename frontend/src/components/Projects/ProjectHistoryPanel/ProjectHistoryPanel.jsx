@@ -40,7 +40,7 @@ const ProjectHistoryPanel = ({ projectId }) => {
             }
             setPage(page + 1);
         } catch (error) {
-            console.log("Error loading project history:", error);
+            console.error("Error loading project history:", error);
             setStopped(true);
         } finally {
             setIsLoading(false);
