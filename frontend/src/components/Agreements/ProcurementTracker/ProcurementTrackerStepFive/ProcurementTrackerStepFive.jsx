@@ -3,6 +3,7 @@ import { getLocalISODate } from "../../../../helpers/utils";
 import TextArea from "../../../UI/Form/TextArea";
 import ConfirmationModal from "../../../UI/Modals/ConfirmationModal";
 import TermTag from "../../../UI/Term/TermTag";
+import Tooltip from "../../../UI/USWDS/Tooltip/Tooltip";
 import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepFive from "./ProcurementTrackerStepFive.hooks";
 import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
@@ -95,6 +96,29 @@ const ProcurementTrackerStepFive = ({
         stepFiveData?.approval_status !== ProcurementTrackerPreAwardApprovalStatus.APPROVED ||
         !stepFiveData?.requisition_approved_by // Budget team must approve requisition before completing step
     );
+
+    // Calculate which specific condition is blocking the pre-award approval request
+    // Precedence order (most actionable first): BLI in review > approval already requested > step not active > global disabled
+    const getPreAwardTooltipMessage = () => {
+        // Most actionable: user can resolve BLI reviews immediately
+        if (hasBLIInReview) {
+            return "Budget lines In Review Status must be approved or declined before you can request pre-award approval";
+        }
+        // Less actionable: user typically waits for reviewer (but can be explicit about the state)
+        if (stepFiveData?.approval_requested && stepFiveData?.approval_status !== "DECLINED") {
+            return "Pre-Award Approval has already been requested";
+        }
+        // Requires completing prior step, usually obvious from UI
+        if (!isActiveStep) {
+            return "Complete Step 4 before requesting Pre-Award Approval";
+        }
+        // Generic fallback for global disabled state (no tracker, agreement not editable, etc.)
+        if (isDisabled) {
+            return "Pre-Award Approval cannot be requested at this time";
+        }
+        return ""; // No tooltip when button is enabled
+    };
+
     return (
         <>
             {showModal && (
@@ -210,20 +234,20 @@ const ProcurementTrackerStepFive = ({
                                     Before completing this step, you may request Pre-Award Approval from your Division
                                     Director.
                                 </p>
-                                <button
-                                    type="button"
-                                    className="usa-button"
-                                    onClick={() => navigate(`/agreements/${agreementId}/pre-award-approval`)}
-                                    disabled={isRequestBtnDisabled}
-                                    title={
-                                        isRequestBtnDisabled
-                                            ? "Pre-Award Approval cannot be requested right now. Ensure this step is unlocked, Pre-Award Approval has not already been requested, and that no Budget Line Items are currently in review."
-                                            : undefined
-                                    }
-                                    data-cy="request-pre-award-approval-btn"
+                                <Tooltip
+                                    label={getPreAwardTooltipMessage()}
+                                    position="top"
                                 >
-                                    Request Pre-Award Approval
-                                </button>
+                                    <button
+                                        type="button"
+                                        className="usa-button"
+                                        onClick={() => navigate(`/agreements/${agreementId}/pre-award-approval`)}
+                                        disabled={isRequestBtnDisabled}
+                                        data-cy="request-pre-award-approval-btn"
+                                    >
+                                        Request Pre-Award Approval
+                                    </button>
+                                </Tooltip>
                                 {isApprovalDeclined && (
                                     <div
                                         className="usa-alert usa-alert--error usa-alert--slim margin-top-2"
