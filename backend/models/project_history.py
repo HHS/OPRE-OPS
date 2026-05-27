@@ -261,17 +261,21 @@ def create_project_update_history_event(
 
 def add_history_events(events: List[ProjectHistory], session: Session) -> None:
     """Add ProjectHistory events to the session, skipping any that look like duplicates of existing rows."""
+    if not events:
+        return
+
+    project_id_record = events[0].project_id_record
+    existing_items = (
+        session.query(ProjectHistory)
+        .where(ProjectHistory.project_id_record == project_id_record)
+        .all()
+    )
+
+    for item in session.new:
+        if isinstance(item, ProjectHistory) and item.project_id_record == project_id_record:
+            existing_items.append(item)
+
     for event in events:
-        existing_items = (
-            session.query(ProjectHistory)
-            .where(ProjectHistory.project_id_record == event.project_id_record)
-            .all()
-        )
-
-        for item in session.new:
-            if isinstance(item, ProjectHistory) and item.project_id_record == event.project_id_record:
-                existing_items.append(item)
-
         duplicate_found = False
         for item in existing_items:
             if (
@@ -284,6 +288,7 @@ def add_history_events(events: List[ProjectHistory], session: Session) -> None:
 
         if not duplicate_found:
             session.add(event)
+            existing_items.append(event)
 
 
 def is_timespan_within_one_minute(datetime_to_check: str, reference_datetime: str) -> bool:
