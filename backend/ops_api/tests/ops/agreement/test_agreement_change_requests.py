@@ -238,8 +238,8 @@ def test_update_procurement_shop_creates_change_request_e2e(
     )
 
     assert request.status_code == 200
-    assert len(request.json) == 1
-    assert matching_crs[0].id == request.json[0]["id"]
+    assert len(request.json["data"]) == 1
+    assert matching_crs[0].id == request.json["data"][0]["id"]
 
     # approve the change request
     response = division_director_auth_client.patch(
