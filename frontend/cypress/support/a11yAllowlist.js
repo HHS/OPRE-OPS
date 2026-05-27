@@ -24,7 +24,9 @@ export const validateA11yAllowlist = () => {
         }
 
         if (!dateOnlyRegex.test(entry.expiresOn)) {
-            throw new Error(`Invalid expiresOn value for accessibility allowlist entry ${entry.id}: ${entry.expiresOn}`);
+            throw new Error(
+                `Invalid expiresOn value for accessibility allowlist entry ${entry.id}: ${entry.expiresOn}`
+            );
         }
         if (entry.expiresOn < today) {
             throw new Error(
