@@ -177,7 +177,7 @@ describe("AgreementsList - Pagination", () => {
 
         // Mock the change requests query (used by AgreementTabs)
         useGetChangeRequestsListQuery.mockReturnValue({
-            data: [],
+            data: { data: [], count: 0, limit: 10, offset: 0 },
             error: undefined,
             isLoading: false
         });
@@ -594,7 +594,7 @@ describe("AgreementsList - Fiscal Year Filtering", () => {
 
         // Mock the change requests query
         useGetChangeRequestsListQuery.mockReturnValue({
-            data: [],
+            data: { data: [], count: 0, limit: 10, offset: 0 },
             error: undefined,
             isLoading: false
         });

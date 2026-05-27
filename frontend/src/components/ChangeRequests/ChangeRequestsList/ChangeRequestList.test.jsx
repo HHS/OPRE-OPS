@@ -44,7 +44,7 @@ describe("ChangeRequestList", () => {
     const store = mockStore(initialState);
 
     it("renders without any change requests", () => {
-        useGetChangeRequestsListQuery.mockReturnValue({ data: {} });
+        useGetChangeRequestsListQuery.mockReturnValue({ data: { data: [], count: 0, limit: 10, offset: 0 } });
         useGetPendingPreAwardApprovalsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
         useGetPendingBudgetRequisitionsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
         useGetAgreementByIdQuery.mockReturnValue("Agreement Name");
@@ -67,7 +67,9 @@ describe("ChangeRequestList", () => {
     it("renders with change requests", async () => {
         const mockChangeRequests = [{ ...changeRequests[0] }, { ...changeRequests[1] }, { ...changeRequests[2] }];
 
-        useGetChangeRequestsListQuery.mockReturnValue({ data: mockChangeRequests });
+        useGetChangeRequestsListQuery.mockReturnValue({
+            data: { data: mockChangeRequests, count: mockChangeRequests.length, limit: 10, offset: 0 }
+        });
         useGetPendingPreAwardApprovalsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
         useGetPendingBudgetRequisitionsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
         useGetAgreementByIdQuery.mockReturnValue("Agreement Name");
@@ -114,7 +116,7 @@ describe("ChangeRequestList", () => {
             }
         });
 
-        useGetChangeRequestsListQuery.mockReturnValue({ data: undefined, isLoading: false, isError: false });
+        useGetChangeRequestsListQuery.mockReturnValue({ data: undefined, isLoading: false, isError: false }); // undefined simulates unloaded
         useGetPendingPreAwardApprovalsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
         useGetPendingBudgetRequisitionsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
 
