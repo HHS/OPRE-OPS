@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useState } from "react";
 import { useSelector } from "react-redux";
 import {
     useGetChangeRequestsListQuery,
@@ -10,10 +11,11 @@ import ProcurementShopReviewCard from "../ProcurementShopReviewCard";
 import StatusChangeReviewCard from "../StatusChangeReviewCard";
 import PreAwardReviewCard from "../PreAwardReviewCard";
 import BudgetTeamRequisitionReviewCard from "../BudgetTeamRequisitionReviewCard";
+import PaginationNav from "../../UI/PaginationNav/PaginationNav";
 import { useNavigate } from "react-router-dom";
 
-// Budget Line Item status constant
 const BLI_STATUS_IN_EXECUTION = "In Execution";
+const PAGE_SIZE = 10;
 
 /**
  * @component Change Requests List component.
@@ -25,13 +27,20 @@ const BLI_STATUS_IN_EXECUTION = "In Execution";
 function ChangeRequestsList({ handleReviewChangeRequest }) {
     const navigate = useNavigate();
     const userId = useSelector((state) => state.auth?.activeUser?.id) ?? null;
+    const [currentPage, setCurrentPage] = useState(1); // 1-indexed for UI
+
     /** @type {{data?: {data: ChangeRequest[], count: number, limit: number, offset: number} | undefined, isError: boolean, isLoading: boolean}} */
     const {
         data: changeRequestsResponse,
         isLoading: loadingChangeRequests,
         isError: errorChangeRequests
-    } = useGetChangeRequestsListQuery({ userId }, { skip: !userId, refetchOnMountOrArgChange: true });
+    } = useGetChangeRequestsListQuery(
+        { userId, limit: PAGE_SIZE, offset: (currentPage - 1) * PAGE_SIZE },
+        { skip: !userId, refetchOnMountOrArgChange: true }
+    );
     const changeRequests = changeRequestsResponse?.data;
+    const totalCount = changeRequestsResponse?.count || 0;
+    const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
     // Fetch pending pre-award approvals
     const {
@@ -47,7 +56,6 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
         isError: errorBudgetRequisitions
     } = useGetPendingBudgetRequisitionsQuery(undefined, { refetchOnMountOrArgChange: true });
 
-    // Calculate sum and count of budget lines in EXECUTING status
     const calculateExecutingTotal = (budgetLineItems = []) => {
         return budgetLineItems
             .filter((bli) => bli.status === BLI_STATUS_IN_EXECUTION)
@@ -58,7 +66,6 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
         return budgetLineItems.filter((bli) => bli.status === BLI_STATUS_IN_EXECUTION).length;
     };
 
-    // Get the earliest obligate-by date from executing BLIs
     const getObligateByDate = (budgetLineItems = []) => {
         const executingBlis = budgetLineItems.filter(
             (bli) => bli.status === BLI_STATUS_IN_EXECUTION && bli.date_needed
@@ -182,6 +189,16 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
                         )}
                     </React.Fragment>
                 )
+            )}
+
+            {totalPages > 1 && (
+                <div className="margin-top-3">
+                    <PaginationNav
+                        currentPage={currentPage}
+                        setCurrentPage={setCurrentPage}
+                        totalPages={totalPages}
+                    />
+                </div>
             )}
         </>
     ) : (
