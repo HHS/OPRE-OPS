@@ -22,7 +22,7 @@ export default function useCan() {
     const isBudgetTeam = userRoles?.some((role) => role?.name === USER_ROLES.BUDGET_TEAM);
 
     const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(getCurrentFiscalYear());
-    const fiscalYear = Number(selectedFiscalYear);
+    const fiscalYear = selectedFiscalYear === "All" ? null : Number(selectedFiscalYear);
     const canId = parseInt(urlPathParams.id ?? "-1");
     const initialModalProps = {
         heading: "",
@@ -60,21 +60,23 @@ export default function useCan() {
         data: CANFunding,
         isLoading: CANFundingLoading,
         isFetching: isCANFundingFetching
-    } = useGetCanFundingQuery({ id: canId, fiscalYear: fiscalYear }, { refetchOnMountOrArgChange: true });
+    } = useGetCanFundingQuery({ id: canId, fiscalYear }, { refetchOnMountOrArgChange: true });
 
-    const { data: previousFYfundingSummary } = useGetCanFundingQuery({
-        id: canId,
-        fiscalYear: fiscalYear - 1
-    });
+    const { data: previousFYfundingSummary } = useGetCanFundingQuery(
+        { id: canId, fiscalYear: fiscalYear ? fiscalYear - 1 : null },
+        { skip: !fiscalYear }
+    );
 
     const budgetLineItemsByFiscalYear = React.useMemo(() => {
-        if (!fiscalYear || !can) return [];
+        if (!can) return [];
+        if (!fiscalYear) return can?.budget_line_items ?? [];
 
         return can?.budget_line_items?.filter((bli) => bli.fiscal_year === fiscalYear) ?? [];
     }, [can, fiscalYear]);
 
     const fundingReceivedByFiscalYear = React.useMemo(() => {
-        if (!fiscalYear || !can) return [];
+        if (!can) return [];
+        if (!fiscalYear) return can?.funding_received ?? [];
 
         return can?.funding_received?.filter((fr) => fr.fiscal_year === fiscalYear) ?? [];
     }, [can, fiscalYear]);

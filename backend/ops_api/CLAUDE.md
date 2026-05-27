@@ -10,7 +10,13 @@ Flask REST API backend for OPRE OPS. Run all commands from `backend/ops_api/` un
 pipenv run pytest                                            # All tests
 pipenv run pytest tests/ops/resources/test_agreements.py     # Specific file
 pipenv run pytest tests/ops/resources/test_agreements.py::test_get_agreement_by_id  # Specific test
+pipenv run pytest -n 4                                       # Parallel (4 workers)
+pipenv run pytest -n auto                                    # Parallel (auto-detect cores)
+pipenv run pytest --cov                                      # With coverage (used in CI)
+pipenv run pytest --cov --cov-report=html                    # Coverage with HTML report
 ```
+
+Coverage is not enabled by default so that running individual tests stays fast. CI always runs with `--cov`.
 
 Test files mirror source structure: `ops/resources/agreements.py` → `tests/ops/resources/test_agreements.py`.
 
