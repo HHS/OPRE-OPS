@@ -92,7 +92,7 @@ describe("Approve Cross Division Change Requests", () => {
                         }
                     })
                     .then((changeRequestsResponse) => {
-                        const pendingChangeRequestIds = (changeRequestsResponse.body || [])
+                        const pendingChangeRequestIds = (changeRequestsResponse.body?.data || [])
                             .filter((changeRequest) => changeRequest.status === "IN_REVIEW")
                             .filter((changeRequest) => !preserveChangeRequestIds.includes(changeRequest.id))
                             .map((changeRequest) => changeRequest.id);
