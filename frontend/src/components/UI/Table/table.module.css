@@ -12,6 +12,12 @@
     vertical-align: top;
 }
 
+.textClipContainer {
+    height: 1.5rem;
+    overflow: visible;
+    position: relative;
+}
+
 .procurementDetailsTable td:nth-child(2),
 .procurementDetailsTable th:nth-child(2) {
     padding-left: 2rem !important;

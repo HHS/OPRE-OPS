@@ -13,6 +13,7 @@ import { AWARD_TYPE_LABELS } from "../../../pages/agreements/agreements.constant
 import TableRowExpandable from "../../UI/TableRowExpandable";
 import { expandedRowBGColor } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
+import tableStyles from "../../UI/Table/table.module.css";
 import TableTag from "../../UI/TableTag";
 import TextClip from "../../UI/Text/TextClip";
 import { useGetPortfolioByIdQuery } from "../../../api/opsAPI";
@@ -46,7 +47,7 @@ const AllBLIRow = ({ budgetLine }) => {
         <>
             <td data-cy="bli-id">{budgetLine.id}</td>
             <td data-cy="agreement-name">
-                <div style={{ height: "1.5rem", overflow: "visible", position: "relative" }}>
+                <div className={tableStyles.textClipContainer}>
                     {budgetLine?.agreement?.id ? (
                         <Link
                             to={`/agreements/${budgetLine.agreement.id}`}
@@ -67,7 +68,7 @@ const AllBLIRow = ({ budgetLine }) => {
                 </div>
             </td>
             <td data-cy="agreement-type">
-                <div style={{ height: "1.5rem", overflow: "visible", position: "relative" }}>
+                <div className={tableStyles.textClipContainer}>
                     <TextClip
                         text={convertCodeForDisplay("agreementType", budgetLine?.agreement?.agreement_type) || NO_DATA}
                         maxLines={1}
@@ -78,7 +79,7 @@ const AllBLIRow = ({ budgetLine }) => {
             <td data-cy="date-needed">{formatDateNeeded(budgetLine?.date_needed ?? "")}</td>
             <td data-cy="can">{budgetLine?.can?.display_name}</td>
             <td data-cy="portfolio-name">
-                <div style={{ height: "1.5rem", overflow: "visible", position: "relative" }}>
+                <div className={tableStyles.textClipContainer}>
                     <TextClip
                         text={isPortfolioLoading ? "Loading..." : (budgetLinePortfolio?.abbreviation ?? NO_DATA)}
                         maxLines={1}

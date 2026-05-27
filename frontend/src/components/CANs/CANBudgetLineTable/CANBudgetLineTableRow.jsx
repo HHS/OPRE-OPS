@@ -8,6 +8,7 @@ import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import TableRowExpandable from "../../UI/TableRowExpandable";
 import { expandedRowBGColor } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
+import tableStyles from "../../UI/Table/table.module.css";
 import TableTag from "../../UI/TableTag";
 import TextClip from "../../UI/Text/TextClip";
 import { getProcurementShopLabel } from "../../../helpers/budgetLines.helpers";
@@ -66,7 +67,7 @@ const CANBudgetLineTableRow = ({
         <>
             <td>{blId}</td>
             <td>
-                <div style={{ height: "1.5rem", overflow: "visible", position: "relative" }}>
+                <div className={tableStyles.textClipContainer}>
                     {budgetLine.agreement ? (
                         <Link
                             className="text-ink text-no-underline"
