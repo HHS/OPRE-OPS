@@ -325,8 +325,8 @@ export const cleanAgreementForApi = (data) => {
     ];
 
     const cleanData = omit(data, fieldsToRemove);
-    if (cleanData.nick_name === "") {
-        cleanData.nick_name = null;
+    if (typeof cleanData.nick_name === "string") {
+        cleanData.nick_name = cleanData.nick_name.trim() || null;
     }
 
     return {
