@@ -83,6 +83,7 @@ const CanFunding = ({
         handleSubmit,
         modalProps,
         runValidate,
+        clearValidationError,
         cn,
         res,
         setShowModal,
@@ -281,6 +282,7 @@ const CanFunding = ({
                                     fiscalYear={fiscalYear}
                                     handleAddBudget={handleAddBudget}
                                     runValidate={runValidate}
+                                    clearValidationError={clearValidationError}
                                     setBudgetAmount={handleEnteredBudgetAmount}
                                 />
                             </div>
@@ -312,6 +314,7 @@ const CanFunding = ({
                                     cn={cn}
                                     res={res}
                                     runValidate={runValidate}
+                                    clearValidationError={clearValidationError}
                                     cancelFundingReceived={cancelFundingReceived}
                                 />
                             </div>

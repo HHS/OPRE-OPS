@@ -142,7 +142,7 @@ describe("useCanFunding", () => {
         });
 
         act(() => {
-            result.current.handleAddBudget({ preventDefault: vi.fn() });
+            result.current.handleAddBudget();
         });
 
         expect(result.current.budgetForm).toEqual({ submittedAmount: 1200, isSubmitted: true });
@@ -164,7 +164,7 @@ describe("useCanFunding", () => {
         });
 
         act(() => {
-            result.current.handleAddFundingReceived({ preventDefault: vi.fn() });
+            result.current.handleAddFundingReceived();
         });
 
         expect(result.current.totalReceived).toBe(475);
@@ -190,7 +190,7 @@ describe("useCanFunding", () => {
         });
 
         act(() => {
-            result.current.handleAddFundingReceived({ preventDefault: vi.fn() });
+            result.current.handleAddFundingReceived();
         });
 
         expect(result.current.totalReceived).toBe(550);
@@ -235,7 +235,7 @@ describe("useCanFunding", () => {
         });
 
         act(() => {
-            result.current.handleAddBudget({ preventDefault: vi.fn() });
+            result.current.handleAddBudget();
         });
 
         act(() => {
@@ -244,7 +244,7 @@ describe("useCanFunding", () => {
         });
 
         act(() => {
-            result.current.handleAddFundingReceived({ preventDefault: vi.fn() });
+            result.current.handleAddFundingReceived();
         });
 
         await waitFor(() => {
@@ -261,7 +261,7 @@ describe("useCanFunding", () => {
         });
 
         act(() => {
-            result.current.handleAddFundingReceived({ preventDefault: vi.fn() });
+            result.current.handleAddFundingReceived();
         });
 
         await waitFor(() => {
@@ -336,7 +336,7 @@ describe("useCanFunding", () => {
         });
 
         act(() => {
-            result.current.handleAddBudget({ preventDefault: vi.fn() });
+            result.current.handleAddBudget();
         });
 
         await act(async () => {
@@ -379,7 +379,7 @@ describe("useCanFunding", () => {
         });
 
         act(() => {
-            result.current.handleAddBudget({ preventDefault: vi.fn() });
+            result.current.handleAddBudget();
         });
 
         act(() => {
@@ -388,7 +388,7 @@ describe("useCanFunding", () => {
         });
 
         act(() => {
-            result.current.handleAddFundingReceived({ preventDefault: vi.fn() });
+            result.current.handleAddFundingReceived();
         });
 
         await act(async () => {
@@ -407,7 +407,7 @@ describe("useCanFunding", () => {
         });
 
         act(() => {
-            result.current.handleAddFundingReceived({ preventDefault: vi.fn() });
+            result.current.handleAddFundingReceived();
         });
 
         const stagedTempId = result.current.enteredFundingReceived.find((f) => f.id === "TBD")?.tempId ?? "";
@@ -422,7 +422,7 @@ describe("useCanFunding", () => {
         });
 
         act(() => {
-            result.current.handleAddFundingReceived({ preventDefault: vi.fn() });
+            result.current.handleAddFundingReceived();
         });
 
         await act(async () => {
@@ -450,7 +450,7 @@ describe("useCanFunding", () => {
         });
 
         act(() => {
-            result.current.handleAddFundingReceived({ preventDefault: vi.fn() });
+            result.current.handleAddFundingReceived();
         });
 
         const stagedTempId = result.current.enteredFundingReceived.find((f) => f.id === "TBD")?.tempId ?? "";
@@ -469,5 +469,107 @@ describe("useCanFunding", () => {
 
         expect(addCanFundingReceivedMock).not.toHaveBeenCalled();
         expect(deleteCanFundingReceivedMock).not.toHaveBeenCalled();
+    });
+
+    describe("validation", () => {
+        it("runValidate flags budget below received funding and updates res", () => {
+            const { result } = renderUseCanFunding();
+
+            let validationResult;
+            act(() => {
+                validationResult = result.current.runValidate("budget-amount", "100");
+            });
+
+            expect(validationResult.hasErrors("budget-amount")).toBe(true);
+            expect(result.current.res.getErrors("budget-amount")).toContain(
+                "Amount must be greater than or equal to received funding"
+            );
+        });
+
+        it("runValidate passes when budget is at or above received funding", () => {
+            const { result } = renderUseCanFunding();
+
+            let validationResult;
+            act(() => {
+                validationResult = result.current.runValidate("budget-amount", "1000");
+            });
+
+            expect(validationResult.hasErrors("budget-amount")).toBe(false);
+            expect(result.current.res.getErrors("budget-amount")).toEqual([]);
+        });
+
+        it("clearValidationError removes errors for the field and updates res", () => {
+            const { result } = renderUseCanFunding();
+
+            act(() => {
+                result.current.runValidate("budget-amount", "100");
+            });
+            expect(result.current.res.getErrors("budget-amount").length).toBeGreaterThan(0);
+
+            act(() => {
+                result.current.clearValidationError("budget-amount");
+            });
+
+            expect(result.current.res.getErrors("budget-amount")).toEqual([]);
+        });
+
+        it("runValidate flags funding received above remaining FY budget and updates res", () => {
+            const { result } = renderUseCanFunding({ isEditMode: true });
+
+            act(() => {
+                result.current.handleEnteredBudgetAmount("1000");
+            });
+            act(() => {
+                result.current.handleAddBudget();
+            });
+
+            let validationResult;
+            act(() => {
+                validationResult = result.current.runValidate("funding-received-amount", "10000");
+            });
+
+            expect(validationResult.hasErrors("funding-received-amount")).toBe(true);
+            expect(result.current.res.getErrors("funding-received-amount")).toContain("Amount cannot exceed FY Budget");
+        });
+
+        it("runValidate passes when funding received is within remaining FY budget", () => {
+            const { result } = renderUseCanFunding({ isEditMode: true });
+
+            act(() => {
+                result.current.handleEnteredBudgetAmount("1000");
+            });
+            act(() => {
+                result.current.handleAddBudget();
+            });
+
+            let validationResult;
+            act(() => {
+                validationResult = result.current.runValidate("funding-received-amount", "100");
+            });
+
+            expect(validationResult.hasErrors("funding-received-amount")).toBe(false);
+            expect(result.current.res.getErrors("funding-received-amount")).toEqual([]);
+        });
+
+        it("clearValidationError removes funding-received-amount errors", () => {
+            const { result } = renderUseCanFunding({ isEditMode: true });
+
+            act(() => {
+                result.current.handleEnteredBudgetAmount("1000");
+            });
+            act(() => {
+                result.current.handleAddBudget();
+            });
+            act(() => {
+                result.current.runValidate("funding-received-amount", "10000");
+            });
+            expect(result.current.res.getErrors("funding-received-amount").length).toBeGreaterThan(0);
+
+            act(() => {
+                result.current.clearValidationError("funding-received-amount");
+            });
+
+            expect(result.current.res.getErrors("funding-received-amount")).toEqual([]);
+        });
     });
 });

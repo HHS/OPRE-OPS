@@ -9,8 +9,9 @@ import CurrencyInput from "../../UI/Form/CurrencyInput";
  * @property {(arg: string) => string} cn
  * @property {Object} res
  * @property {number} fiscalYear
- * @property {(e: React.FormEvent<HTMLFormElement>) => void} handleAddBudget
- * @property {(name: string, value: string) => void} runValidate
+ * @property {() => void} handleAddBudget
+ * @property {(name: string, value: string) => { hasErrors: (name: string) => boolean }} runValidate
+ * @property {(name: string) => void} clearValidationError
  * @property {(value: string) => void} setBudgetAmount
  */
 
@@ -28,6 +29,7 @@ const CANBudgetForm = ({
     fiscalYear,
     handleAddBudget,
     runValidate,
+    clearValidationError,
     setBudgetAmount
 }) => {
     const buttonText = totalFunding ? "Update FY Budget" : "Add FY Budget";
@@ -35,20 +37,27 @@ const CANBudgetForm = ({
     return (
         <form
             onSubmit={(e) => {
-                handleAddBudget(e);
+                e.preventDefault();
+                const result = runValidate("budget-amount", String(budgetAmount ?? ""));
+                if (!result.hasErrors("budget-amount")) {
+                    handleAddBudget();
+                }
             }}
         >
             <div style={{ width: "383px", marginTop: `${showCarryForwardCard ? "0" : "-24px"}` }}>
                 <CurrencyInput
                     name="budget-amount"
                     label={`FY ${fiscalYear} CAN Budget`}
-                    onChange={(name, value) => {
-                        runValidate("budget-amount", value);
+                    onChange={() => {
+                        clearValidationError("budget-amount");
                     }}
                     setEnteredAmount={setBudgetAmount}
                     value={budgetAmount || ""}
                     messages={res.getErrors("budget-amount")}
                     className={cn("budget-amount")}
+                    onBlur={(e) => {
+                        runValidate("budget-amount", e.target.value);
+                    }}
                 />
             </div>
             <button
