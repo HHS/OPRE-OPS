@@ -321,13 +321,15 @@ export const ReviewAgreement = () => {
                 >
                     Edit
                 </button>
-                {!isSubmissionReady || !(agreementValidationResults && agreementValidationResults.isValid()) ? (
+                {!isSubmissionReady ||
+                (agreementValidationResults && !agreementValidationResults.isValid()) ||
+                hasBLIError ? (
                     <Tooltip
                         key={isSubmissionReady ? "submission-ready" : "submission-not-ready"}
                         label={
                             !isSubmissionReady
-                                ? "In order to send to approval, select a status change and budge line(s)"
-                                : "In order to send to approval, click edit to resolve any errors"
+                                ? "In order to send to approval, select a status change and budget line(s)"
+                                : "In order to send this agreement to approval, click edit to update the required information."
                         }
                         position="top"
                     >
