@@ -175,7 +175,10 @@ const AgreementMetaAccordion = ({
                     )}
                     <div className="display-flex">
                         {agreement?.division_directors && agreement?.division_directors.length > 0 ? (
-                            <dl className="grid-col-4 margin-0 margin-top-2">
+                            <dl
+                                className="grid-col-4 margin-0 margin-top-2"
+                                data-cy="agreement-meta-division-directors"
+                            >
                                 <dt className="margin-0 text-base-dark grid-col-12">Division Director(s)</dt>
                                 {agreement.division_directors.map((director, index) => (
                                     <dd
@@ -195,7 +198,10 @@ const AgreementMetaAccordion = ({
                             </dl>
                         )}
                         {agreement?.team_leaders && agreement?.team_leaders.length > 0 ? (
-                            <dl className="grid-col-4 margin-0 margin-top-2">
+                            <dl
+                                className="grid-col-4 margin-0 margin-top-2"
+                                data-cy="agreement-meta-team-leaders"
+                            >
                                 <dt className="margin-0 text-base-dark grid-col-12">Team Leader(s)</dt>
                                 {agreement.team_leaders.map((leader, index) => (
                                     <dd
@@ -260,7 +266,10 @@ const TeamMembers = ({ teamMembers, renderTerm }) => {
         }
 
         return (
-            <dl className="margin-0 margin-top-2">
+            <dl
+                className="margin-0 margin-top-2"
+                data-cy="agreement-meta-team-members"
+            >
                 <dt className="margin-0 text-base-dark grid-col-12">Team Members</dt>
                 {teamMemberRows.map((row, rowIndex) => (
                     <dd
@@ -287,7 +296,10 @@ const TeamMembers = ({ teamMembers, renderTerm }) => {
 
     // Single column layout for 3 or fewer team members
     return (
-        <dl className="margin-0 margin-top-2">
+        <dl
+            className="margin-0 margin-top-2"
+            data-cy="agreement-meta-team-members"
+        >
             <dt className="margin-0 text-base-dark grid-col-12">Team Members</dt>
             {teamMembers.map((member) => (
                 <dd
