@@ -117,10 +117,11 @@ class ChangeRequestService(OpsService[ChangeRequest]):
         reviewer_user_id = data.get("reviewer_user_id")
         if not reviewer_user_id:
             raise ValidationError({"reviewer_user_id": "This field is required."})
+        # Get in review users, provide default limit of 10 and offset of 0
         page, total_count = find_in_review_requests_by_user(
             int(reviewer_user_id),
-            data.get("limit"),
-            data.get("offset"),
+            data.get("limit", 10),
+            data.get("offset", 0),
         )
 
         return page, {"count": total_count, "limit": data.get("limit"), "offset": data.get("offset")}
