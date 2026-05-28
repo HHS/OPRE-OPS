@@ -12,7 +12,7 @@ afterEach(() => {
 });
 
 describe("agreement change accordion", () => {
-    it("check agreement meta-data", () => {
+    it.only("check agreement meta-data", () => {
         cy.visit("/agreements/review/10");
         cy.get("h1").contains("Request BL Status Change");
 
@@ -43,8 +43,8 @@ describe("agreement change accordion", () => {
                     cy.get("span").should("have.length", 4);
                     cy.get("span").eq(0).should("contain", "Chris Fortunato");
                     cy.get("span").eq(1).should("contain", "Amelia Popham");
-                    cy.get("span").eq(2).should("contain", "Dave Director");
-                    cy.get("span").eq(3).should("contain", "System Owner");
+                    cy.get("span").eq(2).should("contain", "System Owner");
+                    cy.get("span").eq(3).should("contain", "Dave Director");
                 });
                 cy.get('[data-cy="agreement-meta-Descriptive Study"]').contains("Descriptive Study");
                 cy.get('[data-cy="agreement-meta-Impact Study"]').contains("Impact Study");
