@@ -296,7 +296,7 @@ describe("Procurement Shop Change Requests at the card level", () => {
                     .and("contain", "4.8%")
                     .and("contain", "$48,000.00");
 
-                cy.get("[data-cy='review-card']").eq(1).trigger("mouseover");
+                cy.get("[data-cy='review-card']").first().trigger("mouseover");
                 cy.get("#approve").click();
                 // usa-modal__content class should exist
                 cy.get(".usa-modal__content").should("exist");
@@ -422,7 +422,7 @@ describe("Procurement Shop Change Requests at the card level", () => {
                     .and("contain", "4.8%")
                     .and("contain", "$48,000.00");
 
-                cy.get("[data-cy='review-card']").eq(1).trigger("mouseover");
+                cy.get("[data-cy='review-card']").first().trigger("mouseover");
                 cy.get("#decline").click();
                 // usa-modal__content class should exist
                 cy.get(".usa-modal__content").should("exist");
@@ -538,7 +538,7 @@ describe("Procurement Shop Change Requests at the agreement level", () => {
 
                 cy.visit("/agreements?filter=change-requests");
                 cy.get("[data-cy='review-card']").should("exist");
-                cy.get("[data-cy='approve-agreement']").eq(1).click();
+                cy.get("[data-cy='approve-agreement']").first().click();
                 cy.get("h1").contains(/approval for budget change/i); // check for proc_shop card
                 // NOTE: After Approval toggle is default on
                 cy.get("[data-cy='review-card']").contains(/procurement shop/i);
@@ -685,7 +685,7 @@ describe("Procurement Shop Change Requests at the agreement level", () => {
 
                 cy.visit("/agreements?filter=change-requests");
                 cy.get("[data-cy='review-card']").should("exist");
-                cy.get("[data-cy='approve-agreement']").eq(1).click();
+                cy.get("[data-cy='approve-agreement']").first().click();
                 cy.get("h1").contains(/approval for budget change/i); // check for proc_shop card
                 // NOTE: After Approval toggle is default on
                 cy.get("[data-cy='review-card']").contains(/procurement shop/i);
