@@ -27,8 +27,8 @@ const baseBli = {
     amount: 1_000_000,
     status: BLI_STATUS.DRAFT,
     date_needed: "2044-01-01",
-    proc_shop_fee_percentage: 0.005,
-    services_component_id: testAgreement.awarding_entity_id
+    proc_shop_fee_percentage: 5,
+    services_component_id: 1
 };
 
 describe("Change Requests List - Pagination", () => {
@@ -119,7 +119,7 @@ describe("Change Requests List - Pagination", () => {
         cy.visit("/agreements?filter=change-requests");
 
         // Intercept the first page request
-        cy.intercept("GET", "**/change-requests/?*limit=10&offset=0*").as("page1");
+        cy.intercept({ method: "GET", url: "**/change-requests/*", query: { limit: "10", offset: "0" } }).as("page1");
 
         // Wait for page 1 to load and assert 10 items in response
         cy.wait("@page1").then((interception) => {
@@ -134,7 +134,7 @@ describe("Change Requests List - Pagination", () => {
         cy.get("button.usa-current").should("contain", "1");
 
         // Intercept the page 2 request before clicking
-        cy.intercept("GET", "**/change-requests/?*limit=10&offset=10*").as("page2");
+        cy.intercept({ method: "GET", url: "**/change-requests/*", query: { limit: "10", offset: "10" } }).as("page2");
 
         // Click to page 2
         cy.get("button[aria-label='Page 2']").click();
