@@ -72,6 +72,15 @@ if (typeof window !== "undefined") {
     window.IntersectionObserver = vi.fn(function () {
         this.observe = observe;
     });
+
+    if (!window.ResizeObserver) {
+        window.ResizeObserver = vi.fn(function () {
+            this.observe = vi.fn();
+            this.unobserve = vi.fn();
+            this.disconnect = vi.fn();
+        });
+        global.ResizeObserver = window.ResizeObserver;
+    }
 }
 
 ApplicationContext.registerApplicationContext(TestApplicationContext);

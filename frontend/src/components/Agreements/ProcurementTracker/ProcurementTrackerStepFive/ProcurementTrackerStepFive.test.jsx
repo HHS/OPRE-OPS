@@ -119,6 +119,17 @@ vi.mock("../../../UI/Modals/ConfirmationModal", () => ({
     )
 }));
 
+vi.mock("../../../UI/USWDS/Tooltip/Tooltip", () => ({
+    default: ({ label, children }) => (
+        <span
+            data-testid="tooltip"
+            data-label={label || ""}
+        >
+            {children}
+        </span>
+    )
+}));
+
 describe("ProcurementTrackerStepFive", () => {
     const mockCancelModalStep5 = vi.fn();
     const mockSetIsPreAwardComplete = vi.fn();
@@ -1323,7 +1334,11 @@ describe("ProcurementTrackerStepFive", () => {
             render(
                 <ProcurementTrackerStepFive
                     stepStatus="PENDING"
-                    stepFiveData={{ ...mockStepData, approval_status: "APPROVED" }}
+                    stepFiveData={{
+                        ...mockStepData,
+                        approval_status: "APPROVED",
+                        requisition_approved_by: 456 // Budget team has approved requisition
+                    }}
                     authorizedUsers={mockAllUsers}
                     isDisabled={false}
                     isActiveStep={true}
@@ -1347,7 +1362,11 @@ describe("ProcurementTrackerStepFive", () => {
             render(
                 <ProcurementTrackerStepFive
                     stepStatus="PENDING"
-                    stepFiveData={{ ...mockStepData, approval_status: "APPROVED" }}
+                    stepFiveData={{
+                        ...mockStepData,
+                        approval_status: "APPROVED",
+                        requisition_approved_by: 456 // Budget team has approved requisition
+                    }}
                     authorizedUsers={mockAllUsers}
                     isDisabled={false}
                     isActiveStep={true}
@@ -1753,6 +1772,138 @@ describe("ProcurementTrackerStepFive", () => {
             );
 
             expect(container).toBeEmptyDOMElement();
+        });
+    });
+
+    describe("Request Pre-Award Approval Button Tooltip", () => {
+        it("shows tooltip when step is not active", () => {
+            render(
+                <ProcurementTrackerStepFive
+                    stepStatus="PENDING"
+                    stepFiveData={{ id: 5, approval_requested: false }}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    isActiveStep={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
+                    budgetLineItems={[]}
+                />
+            );
+
+            const tooltip = screen.getByTestId("tooltip");
+            expect(tooltip).toHaveAttribute("data-label", "Complete Step 4 before requesting Pre-Award Approval");
+
+            const button = within(tooltip).getByRole("button", { name: /Request Pre-Award Approval/i });
+            expect(button).toBeDisabled();
+        });
+
+        it("shows tooltip when approval already requested", () => {
+            render(
+                <ProcurementTrackerStepFive
+                    stepStatus="PENDING"
+                    stepFiveData={{ id: 5, approval_requested: true, approval_status: null }}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    isActiveStep={true}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
+                    budgetLineItems={[]}
+                />
+            );
+
+            const tooltip = screen.getByTestId("tooltip");
+            expect(tooltip).toHaveAttribute("data-label", "Pre-Award Approval has already been requested");
+
+            const button = within(tooltip).getByRole("button", { name: /Request Pre-Award Approval/i });
+            expect(button).toBeDisabled();
+        });
+
+        it("shows tooltip when BLIs are in review", () => {
+            render(
+                <ProcurementTrackerStepFive
+                    stepStatus="PENDING"
+                    stepFiveData={{ id: 5, approval_requested: false }}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    isActiveStep={true}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
+                    budgetLineItems={[{ id: 1, in_review: true }]}
+                />
+            );
+
+            const tooltip = screen.getByTestId("tooltip");
+            expect(tooltip).toHaveAttribute(
+                "data-label",
+                "Budget lines In Review Status must be approved or declined before you can request pre-award approval"
+            );
+
+            const button = within(tooltip).getByRole("button", { name: /Request Pre-Award Approval/i });
+            expect(button).toBeDisabled();
+        });
+
+        it("shows no tooltip when button is enabled", () => {
+            render(
+                <ProcurementTrackerStepFive
+                    stepStatus="PENDING"
+                    stepFiveData={{ id: 5, approval_requested: false }}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    isActiveStep={true}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
+                    budgetLineItems={[{ id: 1, in_review: false }]}
+                />
+            );
+
+            const tooltip = screen.getByTestId("tooltip");
+            expect(tooltip).toHaveAttribute("data-label", "");
+
+            const button = within(tooltip).getByRole("button", { name: /Request Pre-Award Approval/i });
+            expect(button).not.toBeDisabled();
+        });
+
+        it("follows precedence order: BLI in review > approval requested > step not active (most actionable first)", () => {
+            // When all conditions are true, should show BLI in review message (most actionable)
+            render(
+                <ProcurementTrackerStepFive
+                    stepStatus="PENDING"
+                    stepFiveData={{ id: 5, approval_requested: true, approval_status: null }}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    isActiveStep={false}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
+                    budgetLineItems={[{ id: 1, in_review: true }]}
+                />
+            );
+
+            const tooltip = screen.getByTestId("tooltip");
+            expect(tooltip).toHaveAttribute(
+                "data-label",
+                "Budget lines In Review Status must be approved or declined before you can request pre-award approval"
+            );
+        });
+
+        it("allows re-requesting when approval is declined", () => {
+            render(
+                <ProcurementTrackerStepFive
+                    stepStatus="PENDING"
+                    stepFiveData={{ id: 5, approval_requested: true, approval_status: "DECLINED" }}
+                    authorizedUsers={mockAllUsers}
+                    isDisabled={false}
+                    isActiveStep={true}
+                    handleSetCompletedStepNumber={mockHandleSetCompletedStepNumber}
+                    agreementId={13}
+                    budgetLineItems={[]}
+                />
+            );
+
+            const tooltip = screen.getByTestId("tooltip");
+            expect(tooltip).toHaveAttribute("data-label", "");
+
+            const button = within(tooltip).getByRole("button", { name: /Request Pre-Award Approval/i });
+            expect(button).not.toBeDisabled();
         });
     });
 });

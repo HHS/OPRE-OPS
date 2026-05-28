@@ -1,4 +1,5 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import CanList from "./CanList";
 import { useGetCanFilterOptionsQuery, useGetCansFundingQuery, useGetCansQuery } from "../../../api/opsAPI";
@@ -38,7 +39,16 @@ vi.mock("./CANFilterTags", () => ({
 }));
 
 vi.mock("./CANFiscalYearSelect", () => ({
-    default: () => <div data-testid="can-fiscal-year-select">FY</div>
+    default: ({ fiscalYear, setSelectedFiscalYear }) => (
+        <select
+            data-testid="can-fiscal-year-select"
+            value={fiscalYear}
+            onChange={(e) => setSelectedFiscalYear(e.target.value)}
+        >
+            <option value={fiscalYear}>{fiscalYear}</option>
+            <option value="All">All</option>
+        </select>
+    )
 }));
 
 vi.mock("../../../components/UI/Table/Table.hooks", () => ({
@@ -108,5 +118,49 @@ describe("CanList", () => {
 
         expect(screen.getByTestId("can-table")).toBeInTheDocument();
         expect(screen.getByTestId("can-summary-cards")).toBeInTheDocument();
+    });
+
+    it("sends empty fiscalYear array when 'All' is selected, resulting in no fiscal_year query param", async () => {
+        const user = userEvent.setup();
+
+        render(<CanList />);
+
+        // Initially, should call with current fiscal year as array
+        expect(useGetCansQuery).toHaveBeenCalledWith(
+            expect.objectContaining({
+                fiscalYear: expect.any(Array)
+            })
+        );
+
+        // Get the initial call's fiscalYear to verify it's not empty
+        const initialCall = useGetCansQuery.mock.calls[0][0];
+        expect(initialCall.fiscalYear).toHaveLength(1);
+
+        // Change fiscal year to "All"
+        const fiscalYearSelect = screen.getByTestId("can-fiscal-year-select");
+        await user.selectOptions(fiscalYearSelect, "All");
+
+        // Wait for the component to re-render with new params
+        await waitFor(() => {
+            // Find the most recent call
+            const calls = useGetCansQuery.mock.calls;
+            const lastCall = calls[calls.length - 1][0];
+
+            // Verify fiscalYear is an empty array (which results in no query param)
+            expect(lastCall.fiscalYear).toEqual([]);
+        });
+
+        // Also verify the filter options query receives empty array
+        await waitFor(() => {
+            const calls = useGetCanFilterOptionsQuery.mock.calls;
+            const lastCall = calls[calls.length - 1][0];
+            expect(lastCall.fiscalYear).toEqual([]);
+        });
+
+        await waitFor(() => {
+            const calls = useGetCansFundingQuery.mock.calls;
+            const lastCall = calls[calls.length - 1][0];
+            expect(lastCall.fiscalYear).toBeUndefined();
+        });
     });
 });

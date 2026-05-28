@@ -409,6 +409,17 @@ class ProcurementTrackerStepPatchRequestSchema(Schema):
     requisition_date = fields.Date(required=False, allow_none=True)
     # requisition_approved_by and requisition_approved_date are SERVER-CONTROLLED - not accepted from client
 
+    # OPS-1639: Draft save flag (request-only, not persisted to database)
+    is_draft = fields.Boolean(
+        required=False,
+        allow_none=True,
+        load_default=False,
+        metadata={
+            "description": "When true, saves requisition data without triggering approval logic. "
+            "Allows users to save partial data and return later to complete approval."
+        },
+    )
+
 
 class ProcurementTrackerStepSchema(Schema):
     """Schema for procurement tracker step serialization."""

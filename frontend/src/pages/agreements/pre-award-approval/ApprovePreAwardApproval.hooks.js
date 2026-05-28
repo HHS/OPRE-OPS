@@ -74,12 +74,13 @@ export default function useApprovePreAwardApproval(agreementId) {
     // Check if approval already processed (returns boolean, not null)
     const approvalAlreadyProcessed = Boolean(step5?.approval_status && step5.approval_status !== "PENDING");
 
-    // Permission check: user is Division Director, Deputy Director, Budget Team, or System Owner
+    // Permission check: user is Division Director, Deputy Director, or System Owner
+    // NOTE: BUDGET_TEAM is NOT authorized for DD pre-award approval, only for requisition approval
     const hasPermission = useMemo(() => {
         const userRoleNames = userRoles.map(/** @param {any} role */ (role) => role?.name);
 
-        // For BUDGET_TEAM and SYSTEM_OWNER, permission granted regardless of division
-        if (userRoleNames.includes("BUDGET_TEAM") || userRoleNames.includes("SYSTEM_OWNER")) {
+        // SYSTEM_OWNER has permission regardless of division
+        if (userRoleNames.includes("SYSTEM_OWNER")) {
             return true;
         }
 
@@ -139,10 +140,16 @@ export default function useApprovePreAwardApproval(agreementId) {
                     // Show alert and navigate back to For Review tab
                     setAlert({
                         type: action === "APPROVED" ? "success" : "error",
-                        heading: `Pre-Award ${action === "APPROVED" ? "Approved" : "Declined"}`,
-                        message: `You have successfully ${actionText}d the pre-award approval request for ${agreement.display_name}.${
-                            reviewerNotes ? `\n\nNotes: ${reviewerNotes}` : ""
-                        }`,
+                        heading:
+                            action === "APPROVED" ? "Pre-Award Approved & Requisition Started" : "Pre-Award Declined",
+                        message:
+                            action === "APPROVED"
+                                ? `The "${agreement.display_name}" agreement has been successfully approved for Pre-Award. Next, the Budget Team will submit the requisition and then the COR will be notified to upload the Final Consensus Memo to the HHS Consolidated Acquisition Solution (HCAS). The agreement will be locked from editing until after it's awarded.${
+                                      reviewerNotes ? `\n\nNotes: ${reviewerNotes}` : ""
+                                  }`
+                                : `The "${agreement.display_name}" agreement has been declined for Pre Award. The budget team will not submit the requisition and the COR will not upload the Final Consensus Memo to the HHS Consolidated Acquisition Solution (HCAS) until changes have been addressed and re-submitted for approval.${
+                                      reviewerNotes ? `\n\nNotes: ${reviewerNotes}` : ""
+                                  }`,
                         redirectUrl: "/agreements?filter=change-requests"
                     });
                 } catch (error) {

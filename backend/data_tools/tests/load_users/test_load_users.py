@@ -374,7 +374,7 @@ def test_create_models_upsert(db_with_roles):
 
     # make sure the history records are created
     history_record = db_with_roles.execute(
-        select(OpsDBHistory).where(OpsDBHistory.class_name == "User").order_by(OpsDBHistory.created_on.desc())
+        select(OpsDBHistory).where(OpsDBHistory.class_name == "User").order_by(OpsDBHistory.id.desc())
     ).scalar()
     assert history_record is not None
     assert history_record.event_type == OpsDBHistoryType.NEW

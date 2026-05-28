@@ -2,7 +2,7 @@ from datetime import date, datetime
 from decimal import Decimal
 from typing import Optional
 
-from marshmallow import Schema, fields, pre_dump
+from marshmallow import EXCLUDE, Schema, fields, pre_dump
 
 from models import ProjectSortCondition, ProjectType
 from ops_api.ops.schemas.pagination import PaginationListSchema
@@ -23,6 +23,13 @@ class ProjectListGetRequestSchema(PaginationListSchema):
     sort_field = fields.List(fields.Enum(ProjectSortCondition), required=False, load_default=[])
     sort_descending = fields.List(fields.Boolean(), required=False, load_default=[])
     sort_fiscal_year = fields.List(fields.Integer(), required=False, load_default=[])
+
+
+class MetaSchema(Schema):
+    class Meta:
+        unknown = EXCLUDE
+
+    isEditable = fields.Bool(load_default=False, dump_default=False)
 
 
 class TeamLeaders(Schema):
@@ -112,6 +119,7 @@ class ProjectResponse(Schema):
     division_directors: Optional[list[IdNamePair]] = fields.List(fields.Nested(IdNamePair), dump_default=[])
     project_officers: Optional[list[IdNamePair]] = fields.List(fields.Nested(IdNamePair), dump_default=[])
     alternate_project_officers: Optional[list[IdNamePair]] = fields.List(fields.Nested(IdNamePair), dump_default=[])
+    _meta = fields.Nested(MetaSchema, required=True)
 
     @pre_dump
     def extract_metadata(self, data, **kwargs):

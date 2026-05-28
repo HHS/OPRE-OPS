@@ -78,7 +78,10 @@ const ProjectsList = () => {
 
     const handleChangeFiscalYear = (newValue) => {
         setSelectedFiscalYear(newValue);
+        setFilters((prev) => ({ ...prev, fiscalYear: [] }));
     };
+
+    const fiscalYearDropdownValue = filters.fiscalYear.length >= 2 ? "Multi" : selectedFiscalYear;
 
     const fiscalYearDisplay = selectedFiscalYear === "All" ? "All FYs" : `FY ${selectedFiscalYear}`;
 
@@ -105,7 +108,7 @@ const ProjectsList = () => {
                     TabsSection={
                         <div className="margin-left-auto">
                             <FiscalYear
-                                fiscalYear={selectedFiscalYear}
+                                fiscalYear={fiscalYearDropdownValue}
                                 handleChangeFiscalYear={handleChangeFiscalYear}
                                 showAllOption={true}
                             />
@@ -180,7 +183,7 @@ const ProjectsList = () => {
                 TabsSection={
                     <div className="margin-left-auto">
                         <FiscalYear
-                            fiscalYear={selectedFiscalYear}
+                            fiscalYear={fiscalYearDropdownValue}
                             handleChangeFiscalYear={handleChangeFiscalYear}
                             showAllOption={true}
                         />

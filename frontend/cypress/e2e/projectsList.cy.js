@@ -333,6 +333,67 @@ describe("Projects List Page", () => {
         cy.contains("span", "Filters Applied:").should("not.exist");
     });
 
+    it("shows 'Multi' in the fiscal year dropdown when 2+ fiscal years are selected via filter modal", () => {
+        cy.get("button").contains("Filter").click();
+
+        // Select FY 2043 — menu closes after each selection (closeMenuOnSelect=true)
+        cy.get(".fiscal-year-combobox__control").click();
+        cy.get(".fiscal-year-combobox__menu").should("be.visible");
+        cy.get(".fiscal-year-combobox__menu").contains("FY 2043").click();
+        cy.get(".fiscal-year-combobox__menu").should("not.exist");
+        // Re-open to select FY 2044
+        cy.get(".fiscal-year-combobox__control").click();
+        cy.get(".fiscal-year-combobox__menu").should("be.visible");
+        cy.get(".fiscal-year-combobox__menu").contains("FY 2044").click();
+
+        cy.get("button").contains("Apply").click();
+
+        // Verify both filter tags are displayed
+        getAppliedFilters().within(() => {
+            cy.contains("FY 2043", { timeout: 10000 }).should("exist");
+            cy.contains("FY 2044").should("exist");
+        });
+
+        // The fiscal year dropdown should show "Multi" (disabled sentinel option)
+        cy.get("#fiscal-year-select option:selected").should("have.text", "Multi");
+
+        // Reset
+        cy.get("button").contains("Filter").click();
+        cy.get("button").contains("Reset").click();
+        cy.get("button").contains("Apply").click();
+        cy.contains("span", "Filters Applied:").should("not.exist");
+    });
+
+    it("clears fiscal year filter tags when the fiscal year dropdown changes", () => {
+        // Apply two fiscal years via the filter modal
+        cy.get("button").contains("Filter").click();
+        // Select FY 2043 — menu closes after each selection (closeMenuOnSelect=true)
+        cy.get(".fiscal-year-combobox__control").click();
+        cy.get(".fiscal-year-combobox__menu").should("be.visible");
+        cy.get(".fiscal-year-combobox__menu").contains("FY 2043").click();
+        cy.get(".fiscal-year-combobox__menu").should("not.exist");
+        // Re-open to select FY 2044
+        cy.get(".fiscal-year-combobox__control").click();
+        cy.get(".fiscal-year-combobox__menu").should("be.visible");
+        cy.get(".fiscal-year-combobox__menu").contains("FY 2044").click();
+        cy.get("button").contains("Apply").click();
+
+        // Confirm the "Multi" state and both tags are visible
+        cy.get("#fiscal-year-select option:selected", { timeout: 10000 }).should("have.text", "Multi");
+        getAppliedFilters().within(() => {
+            cy.contains("FY 2043").should("exist");
+            cy.contains("FY 2044").should("exist");
+        });
+
+        // Change the dropdown to a single year
+        cy.get("#fiscal-year-select").select("2044");
+
+        // Fiscal year filter tags should be cleared — entire "Filters Applied" section disappears
+        cy.get("tbody tr", { timeout: 15000 }).should("have.length.greaterThan", 0);
+        cy.get("#fiscal-year-select").should("have.value", "2044");
+        cy.contains("span", "Filters Applied:").should("not.exist");
+    });
+
     it("clears unapplied filter values when filter is closed and reopened but keeps applied values", () => {
         // Apply initial filters
         cy.get("button").contains("Filter").click();

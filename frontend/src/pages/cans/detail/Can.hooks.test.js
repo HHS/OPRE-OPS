@@ -265,6 +265,40 @@ describe("useCan", () => {
         expect(result.current.isTableLoading).toBe(true);
     });
 
+    it("handles 'All' fiscal year selection without infinite loop", async () => {
+        useGetCanFundingQueryMock.mockImplementation(({ fiscalYear }) => {
+            if (fiscalYear === 2025) {
+                return { data: { funding: { available_funding: 75 } }, isLoading: false };
+            }
+            return {
+                data: {
+                    funding: {
+                        total_funding: 1500,
+                        planned_funding: 300,
+                        obligated_funding: 100,
+                        in_execution_funding: 200,
+                        in_draft_funding: 400,
+                        received_funding: 300
+                    }
+                },
+                isLoading: false
+            };
+        });
+
+        const { result } = renderHook(() => useCan());
+
+        act(() => {
+            result.current.setSelectedFiscalYear("All");
+        });
+
+        await waitFor(() => {
+            expect(result.current.fiscalYear).toBeNull();
+        });
+
+        expect(result.current.budgetLineItemsByFiscalYear.map((item) => item.id)).toEqual([11, 12, 13]);
+        expect(result.current.fundingReceivedByFiscalYear.map((item) => item.id)).toEqual([1, 2]);
+    });
+
     it("resets isEditMode when location.pathname changes", () => {
         const { result, rerender } = renderHook(() => useCan());
 
