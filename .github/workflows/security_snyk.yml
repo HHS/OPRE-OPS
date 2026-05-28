@@ -32,7 +32,7 @@ jobs:
 
       - name: Generate package-lock.json
         working-directory: frontend
-        run: npm install --package-lock-only --ignore-scripts
+        run: npm install --package-lock-only --ignore-scripts --legacy-peer-deps
 
       - name: Run Snyk test
         id: snyk_test
