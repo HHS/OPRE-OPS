@@ -76,6 +76,7 @@ def get_reviewable_agreement_ids_for_user(user_id: int) -> set[int]:
     """Return agreement IDs where the user is a division director or deputy via BLI→CAN→Portfolio→Division."""
     stmt = (
         select(Agreement.id)
+        .distinct()
         .join(Agreement.budget_line_items)
         .join(BudgetLineItem.can)
         .join(CAN.portfolio)
