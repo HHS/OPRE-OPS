@@ -90,14 +90,17 @@ jobs:
             exit 1
           fi
 
+      - name: Setup Snyk CLI
+        uses: snyk/actions/setup@9cf6ca713d71123d2d229cc3d7f145b96ea3c518 # master
+
+      - uses: ./.github/actions/setup-python
+
       - name: Run Snyk test
         id: snyk_test
-        uses: snyk/actions/python@9cf6ca713d71123d2d229cc3d7f145b96ea3c518 # master
         continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          args: --file=backend/ops_api/Pipfile.lock --severity-threshold=high --sarif-file-output=snyk-backend-api.sarif
+        run: snyk test --file=backend/ops_api/Pipfile --severity-threshold=high --sarif-file-output=snyk-backend-api.sarif
 
       - name: Verify Snyk scan produced results
         if: steps.snyk_test.outcome == 'failure' && hashFiles('snyk-backend-api.sarif') == ''
@@ -107,13 +110,10 @@ jobs:
 
       - name: Run Snyk monitor
         id: snyk_monitor
-        uses: snyk/actions/python@9cf6ca713d71123d2d229cc3d7f145b96ea3c518 # master
         continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          command: monitor
-          args: --file=backend/ops_api/Pipfile.lock
+        run: snyk monitor --file=backend/ops_api/Pipfile
 
       - name: Warn if Snyk monitor failed
         if: steps.snyk_monitor.outcome == 'failure'
@@ -146,14 +146,27 @@ jobs:
             exit 1
           fi
 
+      - name: Setup Snyk CLI
+        uses: snyk/actions/setup@9cf6ca713d71123d2d229cc3d7f145b96ea3c518 # master
+
+      - name: Setup Python
+        uses: actions/setup-python@28f2168f4d98ee0445e3c6321f6e6616c83dd5ec # v4.3.0
+        with:
+          python-version: '3.14'
+
+      - name: Install pipenv
+        run: pip install pipenv
+
+      - name: Install dependencies
+        working-directory: backend/data_tools
+        run: pipenv install --dev
+
       - name: Run Snyk test
         id: snyk_test
-        uses: snyk/actions/python@9cf6ca713d71123d2d229cc3d7f145b96ea3c518 # master
         continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          args: --file=backend/data_tools/Pipfile.lock --severity-threshold=high --sarif-file-output=snyk-backend-data-tools.sarif
+        run: snyk test --file=backend/data_tools/Pipfile --severity-threshold=high --sarif-file-output=snyk-backend-data-tools.sarif
 
       - name: Verify Snyk scan produced results
         if: steps.snyk_test.outcome == 'failure' && hashFiles('snyk-backend-data-tools.sarif') == ''
@@ -163,13 +176,10 @@ jobs:
 
       - name: Run Snyk monitor
         id: snyk_monitor
-        uses: snyk/actions/python@9cf6ca713d71123d2d229cc3d7f145b96ea3c518 # master
         continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          command: monitor
-          args: --file=backend/data_tools/Pipfile.lock
+        run: snyk monitor --file=backend/data_tools/Pipfile
 
       - name: Warn if Snyk monitor failed
         if: steps.snyk_monitor.outcome == 'failure'
