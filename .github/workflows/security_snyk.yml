@@ -1,0 +1,193 @@
+---
+name: Snyk SCA
+
+on:
+  workflow_call:
+
+jobs:
+  snyk-frontend:
+    name: Snyk SCA for Frontend
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Verify SNYK_TOKEN is configured
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: |
+          if [ -z "$SNYK_TOKEN" ]; then
+            echo "::error::SNYK_TOKEN secret is not configured. Snyk scanning cannot proceed."
+            exit 1
+          fi
+
+      - name: Setup Node
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version-file: "frontend/.nvmrc"
+
+      - name: Generate package-lock.json
+        working-directory: frontend
+        run: npm install --package-lock-only --ignore-scripts --legacy-peer-deps
+
+      - name: Run Snyk test
+        id: snyk_test
+        uses: snyk/actions/node@9cf6ca713d71123d2d229cc3d7f145b96ea3c518 # master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --file=frontend/package-lock.json --severity-threshold=high --sarif-file-output=snyk-frontend.sarif
+
+      - name: Verify Snyk scan produced results
+        if: steps.snyk_test.outcome == 'failure' && hashFiles('snyk-frontend.sarif') == ''
+        run: |
+          echo "::error::Snyk test failed without producing a SARIF file — this indicates a scan infrastructure failure, not a vulnerability finding."
+          exit 1
+
+      - name: Run Snyk monitor
+        id: snyk_monitor
+        uses: snyk/actions/node@9cf6ca713d71123d2d229cc3d7f145b96ea3c518 # master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          command: monitor
+          args: --file=frontend/package-lock.json
+
+      - name: Warn if Snyk monitor failed
+        if: steps.snyk_monitor.outcome == 'failure'
+        run: echo "::warning::Snyk monitor failed to register the project for continuous monitoring."
+
+      - name: Upload SARIF
+        if: always() && hashFiles('snyk-frontend.sarif') != ''
+        uses: github/codeql-action/upload-sarif@68bde559dea0fdcac2102bfdf6230c5f70eb485e # v4
+        with:
+          sarif_file: snyk-frontend.sarif
+          category: snyk-frontend
+
+  snyk-backend-api:
+    name: Snyk SCA for Backend API
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Verify SNYK_TOKEN is configured
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: |
+          if [ -z "$SNYK_TOKEN" ]; then
+            echo "::error::SNYK_TOKEN secret is not configured. Snyk scanning cannot proceed."
+            exit 1
+          fi
+
+      - name: Setup Snyk CLI
+        uses: snyk/actions/setup@9cf6ca713d71123d2d229cc3d7f145b96ea3c518 # master
+
+      - uses: ./.github/actions/setup-python
+
+      - name: Run Snyk test
+        id: snyk_test
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: snyk test --file=backend/ops_api/Pipfile --severity-threshold=high --sarif-file-output=snyk-backend-api.sarif
+
+      - name: Verify Snyk scan produced results
+        if: steps.snyk_test.outcome == 'failure' && hashFiles('snyk-backend-api.sarif') == ''
+        run: |
+          echo "::error::Snyk test failed without producing a SARIF file — this indicates a scan infrastructure failure, not a vulnerability finding."
+          exit 1
+
+      - name: Run Snyk monitor
+        id: snyk_monitor
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: snyk monitor --file=backend/ops_api/Pipfile
+
+      - name: Warn if Snyk monitor failed
+        if: steps.snyk_monitor.outcome == 'failure'
+        run: echo "::warning::Snyk monitor failed to register the project for continuous monitoring."
+
+      - name: Upload SARIF
+        if: always() && hashFiles('snyk-backend-api.sarif') != ''
+        uses: github/codeql-action/upload-sarif@68bde559dea0fdcac2102bfdf6230c5f70eb485e # v4
+        with:
+          sarif_file: snyk-backend-api.sarif
+          category: snyk-backend-api
+
+  snyk-backend-data-tools:
+    name: Snyk SCA for Data Tools
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Verify SNYK_TOKEN is configured
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: |
+          if [ -z "$SNYK_TOKEN" ]; then
+            echo "::error::SNYK_TOKEN secret is not configured. Snyk scanning cannot proceed."
+            exit 1
+          fi
+
+      - name: Setup Snyk CLI
+        uses: snyk/actions/setup@9cf6ca713d71123d2d229cc3d7f145b96ea3c518 # master
+
+      - name: Setup Python
+        uses: actions/setup-python@28f2168f4d98ee0445e3c6321f6e6616c83dd5ec # v4.3.0
+        with:
+          python-version: '3.14'
+
+      - name: Install pipenv
+        run: pip install pipenv
+
+      - name: Install dependencies
+        working-directory: backend/data_tools
+        run: pipenv install --dev
+
+      - name: Run Snyk test
+        id: snyk_test
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: snyk test --file=backend/data_tools/Pipfile --severity-threshold=high --sarif-file-output=snyk-backend-data-tools.sarif
+
+      - name: Verify Snyk scan produced results
+        if: steps.snyk_test.outcome == 'failure' && hashFiles('snyk-backend-data-tools.sarif') == ''
+        run: |
+          echo "::error::Snyk test failed without producing a SARIF file — this indicates a scan infrastructure failure, not a vulnerability finding."
+          exit 1
+
+      - name: Run Snyk monitor
+        id: snyk_monitor
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: snyk monitor --file=backend/data_tools/Pipfile
+
+      - name: Warn if Snyk monitor failed
+        if: steps.snyk_monitor.outcome == 'failure'
+        run: echo "::warning::Snyk monitor failed to register the project for continuous monitoring."
+
+      - name: Upload SARIF
+        if: always() && hashFiles('snyk-backend-data-tools.sarif') != ''
+        uses: github/codeql-action/upload-sarif@68bde559dea0fdcac2102bfdf6230c5f70eb485e # v4
+        with:
+          sarif_file: snyk-backend-data-tools.sarif
+          category: snyk-backend-data-tools
