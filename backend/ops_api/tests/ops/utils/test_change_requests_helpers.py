@@ -4,6 +4,7 @@ import pytest
 
 from models import (
     AgreementChangeRequest,
+    BudgetLineItem,
     BudgetLineItemChangeRequest,
     BudgetLineItemStatus,
     ChangeRequest,
@@ -64,6 +65,44 @@ def test_build_approve_url_raises_on_unrecognized():
         cr_helpers.build_approve_url(cr, agreement_id=1, fe_url="http://localhost")
 
 
+def test_find_in_review_requests_by_user_with_pagination(loaded_db, app_ctx):
+    dave_director = loaded_db.get(User, 522)  # Dave Director — division 4
+    director_derrek = loaded_db.get(User, 525)  # Director Derrek
+
+    # Assign Derrek as director of division 6
+    division_6: Division = loaded_db.get(Division, 6)
+    division_6.division_director_id = director_derrek.id
+    loaded_db.flush()
+
+    bli = loaded_db.get(BudgetLineItem, 15000)
+
+    def make_bli_cr(division_id: int) -> BudgetLineItemChangeRequest:
+        cr = BudgetLineItemChangeRequest()
+        cr.status = ChangeRequestStatus.IN_REVIEW
+        cr.budget_line_item_id = bli.id
+        cr.agreement_id = bli.agreement_id
+        cr.created_by = dave_director.id
+        cr.managing_division_id = division_id
+        cr.requested_change_data = {"amount": 100}
+        loaded_db.add(cr)
+        return cr
+
+    cr1 = make_bli_cr(4)
+    cr2 = make_bli_cr(4)
+    cr3 = make_bli_cr(4)
+    cr4 = make_bli_cr(6)
+    loaded_db.flush()
+
+    # Derrek can only review division 6; with a page size of 3 his lone CR still appears
+    results = cr_helpers.find_in_review_requests_by_user(user_id=director_derrek.id, limit=3, offset=0)
+    result_ids = [r.id for r in results]
+    assert cr1.id not in result_ids
+    assert cr2.id not in result_ids
+    assert cr3.id not in result_ids
+    assert cr4.id in result_ids
+    assert len(results) == 1
+
+
 def test_get_division_ids_user_can_review_for(loaded_db, app_ctx):
     director = User(
         first_name="Jane",
@@ -108,28 +147,21 @@ def test_get_division_ids_user_can_review_for(loaded_db, app_ctx):
 
 @patch("ops_api.ops.utils.change_requests_helpers.current_app", new_callable=Mock)
 @patch("ops_api.ops.utils.change_requests_helpers.get_division_ids_user_can_review_for")
-@patch("ops_api.ops.utils.change_requests_helpers.get_division_directors_for_agreement")
-def test_find_in_review_requests_by_user(mock_get_division_directors, mock_get_division_ids, mock_app, app_ctx):
-    # Mocks 3 change requests
+@patch("ops_api.ops.utils.change_requests_helpers.get_reviewable_agreement_ids_for_user")
+def test_find_in_review_requests_by_user(mock_get_agreement_ids, mock_get_division_ids, mock_app, app_ctx):
     cr1 = Mock(spec=BudgetLineItemChangeRequest, managing_division_id=1)
-    cr2 = Mock(spec=AgreementChangeRequest, agreement="AGREEMENT")
+    cr2 = Mock(spec=AgreementChangeRequest, agreement_id=42)
     cr3 = Mock(spec=BudgetLineItemChangeRequest, managing_division_id=999)  # Should be filtered out
 
-    # Mock the return values for the database session to return the 3 change requests
-    mock_app.db_session.execute.return_value.scalars.return_value.all.return_value = [
-        cr1,
-        cr2,
-        cr3,
-    ]
+    mock_app.db_session.execute.return_value.scalars.return_value.all.return_value = [cr1, cr2, cr3]
 
-    # Mocks the helper functions
     mock_get_division_ids.return_value = {1}
-    mock_get_division_directors.return_value = ([123], [])
+    mock_get_agreement_ids.return_value = {42}
 
     result = cr_helpers.find_in_review_requests_by_user(user_id=123)
     assert cr1 in result
     assert cr2 in result
-    assert cr3 not in result  # cr3 should be filtered out due to managing_division_id not being in {1}
+    assert cr3 not in result  # filtered out — managing_division_id 999 not in {1}
 
 
 @pytest.mark.parametrize(
