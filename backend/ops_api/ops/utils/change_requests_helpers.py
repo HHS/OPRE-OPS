@@ -110,7 +110,7 @@ def find_in_review_requests_by_user(user_id: int, limit: int = 10, offset: int =
         select(cr_poly)
         .where(ChangeRequest.status == ChangeRequestStatus.IN_REVIEW)
         .where(or_(bli_filter, agr_filter))
-        .order_by(ChangeRequest.id)
+        .order_by(ChangeRequest.id.desc())
     )
 
     count_stmt = select(func.count()).select_from(stmt.subquery())
