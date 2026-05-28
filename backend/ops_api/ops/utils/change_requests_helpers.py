@@ -1,7 +1,7 @@
 from typing import Type
 
 from flask import current_app
-from sqlalchemy import or_, select
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.orm import with_polymorphic
 
 from models import (
@@ -72,9 +72,9 @@ def get_division_ids_user_can_review_for(user_id: int) -> set[int]:
     return {row[0] for row in current_app.db_session.execute(stmt).all()}
 
 
-def get_reviewable_agreement_ids_for_user(user_id: int) -> set[int]:
-    """Return agreement IDs where the user is a division director or deputy via BLI→CAN→Portfolio→Division."""
-    stmt = (
+def _get_reviewable_agreement_ids_subquery(user_id: int):
+    """Subquery returning agreement IDs where the user is a division director or deputy via BLI→CAN→Portfolio→Division."""
+    return (
         select(Agreement.id)
         .distinct()
         .join(Agreement.budget_line_items)
@@ -87,31 +87,36 @@ def get_reviewable_agreement_ids_for_user(user_id: int) -> set[int]:
                 Division.deputy_division_director_id == user_id,
             )
         )
+        .scalar_subquery()
     )
-    return {row[0] for row in current_app.db_session.execute(stmt).all()}
 
 
 def find_in_review_requests_by_user(user_id: int, limit: int = 10, offset: int = 0):
     cr_poly = with_polymorphic(ChangeRequest, [AgreementChangeRequest, BudgetLineItemChangeRequest])
 
     reviewable_division_ids = get_division_ids_user_can_review_for(user_id)
-    reviewable_agreement_ids = get_reviewable_agreement_ids_for_user(user_id)
+    reviewable_agreement_ids_subq = _get_reviewable_agreement_ids_subquery(user_id)
 
-    stmt = select(cr_poly).where(cr_poly.status == ChangeRequestStatus.IN_REVIEW).order_by(ChangeRequest.id)
+    bli_filter = and_(
+        ChangeRequest.change_request_type == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST,
+        BudgetLineItemChangeRequest.managing_division_id.in_(reviewable_division_ids),
+    )
+    agr_filter = and_(
+        ChangeRequest.change_request_type == ChangeRequestType.AGREEMENT_CHANGE_REQUEST,
+        AgreementChangeRequest.agreement_id.in_(reviewable_agreement_ids_subq),
+    )
 
-    results = current_app.db_session.execute(stmt).scalars().all()
-    filtered_results = []
+    stmt = (
+        select(cr_poly)
+        .where(ChangeRequest.status == ChangeRequestStatus.IN_REVIEW)
+        .where(or_(bli_filter, agr_filter))
+        .order_by(ChangeRequest.id)
+    )
 
-    for cr in results:
-        if isinstance(cr, BudgetLineItemChangeRequest):
-            if cr.managing_division_id in reviewable_division_ids:
-                filtered_results.append(cr)
-        elif isinstance(cr, AgreementChangeRequest):
-            if cr.agreement_id in reviewable_agreement_ids:
-                filtered_results.append(cr)
-
-    total_count = len(filtered_results)
-    return filtered_results[offset : offset + limit], total_count
+    count_stmt = select(func.count()).select_from(stmt.subquery())
+    total_count = current_app.db_session.execute(count_stmt).scalar()
+    results = current_app.db_session.execute(stmt.limit(limit).offset(offset)).scalars().all()
+    return results, total_count
 
 
 def build_review_outcome_title_and_message(

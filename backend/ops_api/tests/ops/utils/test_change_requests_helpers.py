@@ -148,21 +148,22 @@ def test_get_division_ids_user_can_review_for(loaded_db, app_ctx):
 
 @patch("ops_api.ops.utils.change_requests_helpers.current_app", new_callable=Mock)
 @patch("ops_api.ops.utils.change_requests_helpers.get_division_ids_user_can_review_for")
-@patch("ops_api.ops.utils.change_requests_helpers.get_reviewable_agreement_ids_for_user")
-def test_find_in_review_requests_by_user(mock_get_agreement_ids, mock_get_division_ids, mock_app, app_ctx):
+def test_find_in_review_requests_by_user(mock_get_division_ids, mock_app, app_ctx):
     cr1 = Mock(spec=BudgetLineItemChangeRequest, managing_division_id=1)
     cr2 = Mock(spec=AgreementChangeRequest, agreement_id=42)
-    cr3 = Mock(spec=BudgetLineItemChangeRequest, managing_division_id=999)  # Should be filtered out
 
-    mock_app.db_session.execute.return_value.scalars.return_value.all.return_value = [cr1, cr2, cr3]
+    # execute is called twice: first for COUNT, then for the paginated results
+    count_result = Mock()
+    count_result.scalar.return_value = 2
+    rows_result = Mock()
+    rows_result.scalars.return_value.all.return_value = [cr1, cr2]
+    mock_app.db_session.execute.side_effect = [count_result, rows_result]
 
     mock_get_division_ids.return_value = {1}
-    mock_get_agreement_ids.return_value = {42}
 
     result, total = cr_helpers.find_in_review_requests_by_user(user_id=123)
     assert cr1 in result
     assert cr2 in result
-    assert cr3 not in result  # filtered out — managing_division_id 999 not in {1}
     assert total == 2
 
 
