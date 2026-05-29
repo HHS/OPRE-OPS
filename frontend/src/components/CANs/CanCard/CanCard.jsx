@@ -7,6 +7,7 @@ import ReverseLineGraph from "../../UI/DataViz/LineGraph/ReverseLineGraph";
 import Tag from "../../UI/Tag";
 import style from "./styles.module.css";
 import { Link } from "react-router-dom";
+import { NO_DATA } from "../../../constants";
 
 /**
  * @component CanCard
@@ -87,7 +88,7 @@ const CanCard = ({ canId, fiscalYear }) => {
                     <dt className="margin-0 text-base-dark">CAN</dt>
                     <dd className="text-semibold margin-0 margin-bottom-2">{can.display_name}</dd>
                     <dt className="margin-0 text-base-dark">Nickname</dt>
-                    <dd className="text-semibold margin-0 margin-bottom-2">{can.nick_name}</dd>
+                    <dd className="text-semibold margin-0 margin-bottom-2">{can.nick_name ?? NO_DATA}</dd>
                     <dt className="margin-0 text-base-dark">Active Period</dt>
                     <dd className="text-semibold margin-0 margin-bottom-2">
                         {can.active_period} {can.active_period > 1 ? "years" : "year"}

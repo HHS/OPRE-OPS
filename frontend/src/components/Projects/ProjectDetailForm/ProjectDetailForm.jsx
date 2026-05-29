@@ -116,7 +116,6 @@ const ProjectDetailForm = ({
                 inputStyle={{ maxWidth: "664px" }}
             />
             <TextArea
-                maxLength={1000}
                 name="description"
                 label="Description"
                 hintMsg="Brief description for internal purposes, not for the OPRE website."

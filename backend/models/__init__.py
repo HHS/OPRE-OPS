@@ -16,6 +16,7 @@ from .procurement_shops import *
 from .procurement_tracker import *
 from .procurement_action import *
 from .projects import *
+from .project_history import *
 from .services_components import *
 from .users import *
 from .vendors import *
