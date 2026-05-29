@@ -580,9 +580,14 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
             data.pop("pre_award_approval_responded_by", None)
             data.pop("pre_award_approval_responded_date", None)
             data.pop("pre_award_approval_reviewer_notes", None)
+            data.pop("pre_award_requisition_number", None)
+            data.pop("pre_award_requisition_date", None)
+            data.pop("pre_award_requisition_approved_by", None)
+            data.pop("pre_award_requisition_approved_date", None)
             data.pop("pre_award_completed_by_user", None)
             data.pop("pre_award_requested_by_user", None)
             data.pop("pre_award_approval_responded_by_user", None)
+            data.pop("pre_award_requisition_approved_by_user", None)
 
         # Handle PRE_SOLICITATION-specific fields
         elif self.step_type == ProcurementTrackerStepType.PRE_SOLICITATION:
@@ -631,9 +636,14 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
             data.pop("pre_award_approval_responded_by", None)
             data.pop("pre_award_approval_responded_date", None)
             data.pop("pre_award_approval_reviewer_notes", None)
+            data.pop("pre_award_requisition_number", None)
+            data.pop("pre_award_requisition_date", None)
+            data.pop("pre_award_requisition_approved_by", None)
+            data.pop("pre_award_requisition_approved_date", None)
             data.pop("pre_award_completed_by_user", None)
             data.pop("pre_award_requested_by_user", None)
             data.pop("pre_award_approval_responded_by_user", None)
+            data.pop("pre_award_requisition_approved_by_user", None)
 
         # Handle SOLICITATION-specific fields
         elif self.step_type == ProcurementTrackerStepType.SOLICITATION:
@@ -682,9 +692,14 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
             data.pop("pre_award_approval_responded_by", None)
             data.pop("pre_award_approval_responded_date", None)
             data.pop("pre_award_approval_reviewer_notes", None)
+            data.pop("pre_award_requisition_number", None)
+            data.pop("pre_award_requisition_date", None)
+            data.pop("pre_award_requisition_approved_by", None)
+            data.pop("pre_award_requisition_approved_date", None)
             data.pop("pre_award_completed_by_user", None)
             data.pop("pre_award_requested_by_user", None)
             data.pop("pre_award_approval_responded_by_user", None)
+            data.pop("pre_award_requisition_approved_by_user", None)
 
         # Handle EVALUATION-specific fields
         elif self.step_type == ProcurementTrackerStepType.EVALUATION:
@@ -733,9 +748,14 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
             data.pop("pre_award_approval_responded_by", None)
             data.pop("pre_award_approval_responded_date", None)
             data.pop("pre_award_approval_reviewer_notes", None)
+            data.pop("pre_award_requisition_number", None)
+            data.pop("pre_award_requisition_date", None)
+            data.pop("pre_award_requisition_approved_by", None)
+            data.pop("pre_award_requisition_approved_date", None)
             data.pop("pre_award_completed_by_user", None)
             data.pop("pre_award_requested_by_user", None)
             data.pop("pre_award_approval_responded_by_user", None)
+            data.pop("pre_award_requisition_approved_by_user", None)
 
         # Handle PRE_AWARD-specific fields
         elif self.step_type == ProcurementTrackerStepType.PRE_AWARD:
@@ -757,6 +777,12 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
             data["approval_responded_date"] = data.pop("pre_award_approval_responded_date", None)
             data["reviewer_notes"] = data.pop("pre_award_approval_reviewer_notes", None)
 
+            # Map budget team requisition fields
+            data["requisition_number"] = data.pop("pre_award_requisition_number", None)
+            data["requisition_date"] = data.pop("pre_award_requisition_date", None)
+            data["requisition_approved_by"] = data.pop("pre_award_requisition_approved_by", None)
+            data["requisition_approved_date"] = data.pop("pre_award_requisition_approved_date", None)
+
             # Map the relationship
             if "pre_award_completed_by_user" in data:
                 data["completed_by_user"] = data.pop("pre_award_completed_by_user", None)
@@ -768,6 +794,10 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
             # Map the approval responded by user relationship
             if "pre_award_approval_responded_by_user" in data:
                 data["approval_responded_by_user"] = data.pop("pre_award_approval_responded_by_user", None)
+
+            # Map the requisition approved by user relationship
+            if "pre_award_requisition_approved_by_user" in data:
+                data["requisition_approved_by_user"] = data.pop("pre_award_requisition_approved_by_user", None)
 
             # Remove ACQUISITION_PLANNING-specific fields
             data.pop("acquisition_planning_task_completed_by", None)
