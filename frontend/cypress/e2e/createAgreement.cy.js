@@ -402,3 +402,44 @@ it("allows entering a decimal budget line amount", () => {
     // No cleanup needed — the test stops before submitting, so no agreement is created.
     cy.get("#enteredAmount").should("have.value", "500.75");
 });
+
+it("can save a draft agreement from step 2", () => {
+    cy.intercept("POST", "**/agreements").as("postAgreement");
+
+    // Step One - Select a Project
+    cy.get("#project-combobox-input").type("Human Services Interoperability Support{enter}");
+    cy.get("#continue").click();
+
+    // Step Two - Fill minimum required fields
+    cy.get("#agreement-type-filter").select("CONTRACT");
+    cy.get("#name").type("E2E Draft Save Test");
+    cy.get("#contract-type").select("FIRM_FIXED_PRICE");
+    cy.get("#service_requirement_type").select("SEVERABLE");
+
+    // Click Save Draft
+    const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
+    cy.get("[data-cy='save-draft-btn']").click();
+
+    // Verify the POST was made and agreement was created
+    cy.wait("@postAgreement").then((interception) => {
+        const { statusCode, body } = interception.response;
+        expect(statusCode).to.equal(201);
+        expect(body.message).to.contain("Agreement created");
+        const agreementId = body.id;
+
+        // Verify navigation to agreements list
+        cy.url().should("include", "/agreements");
+
+        // Cleanup: delete the test agreement
+        cy.request({
+            method: "DELETE",
+            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+            headers: {
+                Authorization: bearer_token,
+                Accept: "application/json"
+            }
+        }).then((response) => {
+            expect(response.status).to.eq(200);
+        });
+    });
+});

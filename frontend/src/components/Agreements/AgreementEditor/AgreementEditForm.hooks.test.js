@@ -1,6 +1,7 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+const addAgreementMock = vi.fn();
 const triggerGetAgreementsMock = vi.fn();
 const unwrapMock = vi.fn();
 const updateAgreementMock = vi.fn();
@@ -30,6 +31,7 @@ vi.mock("react-redux", () => ({
 }));
 
 vi.mock("../../../api/opsAPI", () => ({
+    useAddAgreementMutation: () => [addAgreementMock],
     useDeleteAgreementMutation: () => [deleteAgreementMock],
     useGetProjectsQuery: () => ({ data: { projects: [] }, error: null, isLoading: false }),
     useGetProductServiceCodesQuery: () => ({ data: [], error: null, isLoading: false }),
@@ -364,5 +366,122 @@ describe("useAgreementEditForm scrolls to first conflicting field on submit", ()
         });
 
         expect(scrollToCenterMock).not.toHaveBeenCalled();
+    });
+});
+
+describe("useAgreementEditForm - handleDraft creates new agreements", () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        useLocationMock.mockReturnValue({ pathname: "/agreements/create" });
+        useSelectorMock.mockReturnValue(false);
+        hasStateChangedMock.mockReturnValue(true);
+        useEditAgreementDispatchMock.mockReturnValue(vi.fn());
+        useSetStateMock.mockReturnValue(vi.fn());
+        useUpdateAgreementMock.mockReturnValue(vi.fn());
+        addAgreementMock.mockReturnValue({ unwrap: () => Promise.resolve({ id: 1 }) });
+        updateAgreementMock.mockReturnValue({ unwrap: () => Promise.resolve({}) });
+        unwrapMock.mockResolvedValue({ count: 0, agreements: [] });
+        triggerGetAgreementsMock.mockReturnValue({ unwrap: unwrapMock });
+    });
+
+    it("calls addAgreement when agreement has no id (new draft)", async () => {
+        useEditAgreementMock.mockReturnValue(
+            makeEditState({
+                name: "Test Agreement",
+                agreement_type: "CONTRACT",
+                team_members: [{ id: 1, full_name: "Test User" }]
+            })
+        );
+
+        const { result } = renderUseAgreementEditForm();
+
+        await act(async () => {
+            await result.current.handleDraft();
+        });
+
+        expect(addAgreementMock).toHaveBeenCalled();
+        expect(setAlertMock).toHaveBeenCalledWith(
+            expect.objectContaining({
+                type: "success",
+                heading: "Agreement Draft Saved"
+            })
+        );
+        expect(navigateMock).toHaveBeenCalledWith("/agreements");
+    });
+
+    it("does NOT call addAgreement when agreement has an id (existing agreement)", async () => {
+        useEditAgreementMock.mockReturnValue(
+            makeEditState({
+                id: 123,
+                name: "Existing Agreement",
+                agreement_type: "CONTRACT",
+                team_members: [{ id: 1, full_name: "Test User" }]
+            })
+        );
+
+        const { result } = renderUseAgreementEditForm();
+
+        await act(async () => {
+            await result.current.handleDraft();
+        });
+
+        expect(addAgreementMock).not.toHaveBeenCalled();
+        expect(navigateMock).toHaveBeenCalledWith("/agreements");
+    });
+
+    it("shows error alert when addAgreement fails", async () => {
+        useEditAgreementMock.mockReturnValue(
+            makeEditState({
+                name: "Test Agreement",
+                agreement_type: "CONTRACT",
+                team_members: []
+            })
+        );
+        addAgreementMock.mockReturnValue({ unwrap: () => Promise.reject(new Error("API error")) });
+
+        const { result } = renderUseAgreementEditForm();
+
+        await act(async () => {
+            await result.current.handleDraft();
+        });
+
+        expect(addAgreementMock).toHaveBeenCalled();
+        expect(setAlertMock).toHaveBeenCalledWith(
+            expect.objectContaining({
+                type: "error",
+                heading: "Error",
+                message: "An error occurred while saving the agreement."
+            })
+        );
+        expect(navigateMock).not.toHaveBeenCalledWith("/agreements");
+    });
+
+    it("does not set error alert when updateAgreement fails (saveAgreement handles it)", async () => {
+        useEditAgreementMock.mockReturnValue(
+            makeEditState({
+                id: 123,
+                name: "Existing Agreement",
+                agreement_type: "CONTRACT",
+                team_members: [{ id: 1, full_name: "Test User" }]
+            })
+        );
+        updateAgreementMock.mockReturnValue({ unwrap: () => Promise.reject(new Error("Update failed")) });
+
+        const { result } = renderUseAgreementEditForm();
+
+        await act(async () => {
+            await result.current.handleDraft();
+        });
+
+        expect(addAgreementMock).not.toHaveBeenCalled();
+        expect(setAlertMock).toHaveBeenCalledTimes(1);
+        expect(setAlertMock).toHaveBeenCalledWith(
+            expect.objectContaining({
+                type: "error",
+                heading: "Error",
+                redirectUrl: "/error"
+            })
+        );
+        expect(navigateMock).not.toHaveBeenCalledWith("/agreements");
     });
 });
