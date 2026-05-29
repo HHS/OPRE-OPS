@@ -230,10 +230,6 @@ const ProcurementTrackerStepFive = ({
                         {/* Pre-Award Approval Request Section */}
                         {
                             <div className="margin-bottom-3">
-                                <p>
-                                    Before completing this step, you may request Pre-Award Approval from your Division
-                                    Director.
-                                </p>
                                 <Tooltip
                                     label={getPreAwardTooltipMessage()}
                                     position="top"
