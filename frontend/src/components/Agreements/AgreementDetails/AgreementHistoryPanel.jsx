@@ -21,8 +21,8 @@ const AgreementHistoryPanel = ({ agreementId }) => {
         setIsLoading(true);
         try {
             const response = await getAgreementHistoryByIdAndPage(agreementId, page);
-            setAgreementHistory(prev => [...prev, ...response.data]);
-            setPage(prev => prev + 1);
+            setAgreementHistory((prev) => [...prev, ...response.data]);
+            setPage((prev) => prev + 1);
             if (response.offset + response.limit >= response.count) {
                 setStopped(true);
             }
