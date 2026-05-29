@@ -239,7 +239,7 @@ def test_change_request_list(auth_client, app, test_user, test_admin_user, test_
     # verify no change request in list to review for this user
     response = auth_client.get(url_for("api.change-requests-list"), query_string={"userId": test_admin_user.id})
     assert response.status_code == 200
-    assert len(response.json) == 0
+    assert len(response.json["data"]) == 0
 
     # create a change request
     change_request1 = BudgetLineItemChangeRequest()
@@ -264,8 +264,9 @@ def test_change_request_list(auth_client, app, test_user, test_admin_user, test_
     # verify there is one change request in the list to review for this user
     response = auth_client.get(url_for("api.change-requests-list"), query_string={"userId": test_admin_user.id})
     assert response.status_code == 200
-    assert len(response.json) == 1
-    cr1 = response.json[0]
+    assert response.json["count"] == 1
+    assert len(response.json["data"]) == 1
+    cr1 = response.json["data"][0]
     assert "has_budget_change" in cr1
     assert not cr1["has_status_change"]
     assert "has_status_change" in cr1
@@ -287,7 +288,8 @@ def test_change_request_list(auth_client, app, test_user, test_admin_user, test_
     # verify there is two change requests in the list to review for this user
     response = auth_client.get(url_for("api.change-requests-list"), query_string={"userId": test_admin_user.id})
     assert response.status_code == 200
-    assert len(response.json) == 2
+    assert response.json["count"] == 2
+    assert len(response.json["data"]) == 2
 
     # review (approve/reject) the change requests
     change_request1.status = ChangeRequestStatus.APPROVED
@@ -300,7 +302,7 @@ def test_change_request_list(auth_client, app, test_user, test_admin_user, test_
     response = auth_client.get(url_for("api.change-requests-list"), query_string={"userId": test_admin_user.id})
 
     assert response.status_code == 200
-    assert len(response.json) == 0
+    assert len(response.json["data"]) == 0
 
     # cleanup
     division1.division_director_id = 522

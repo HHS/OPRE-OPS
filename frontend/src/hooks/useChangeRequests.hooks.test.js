@@ -71,13 +71,18 @@ describe("useChangeRequestTotal", () => {
 
     it("returns total count with active user id", () => {
         useSelectorMock.mockImplementation((selector) => selector({ auth: { activeUser: { id: 8 } } }));
-        useGetChangeRequestsListQueryMock.mockReturnValue({ data: [{ id: 1 }, { id: 2 }] });
+        useGetChangeRequestsListQueryMock.mockReturnValue({
+            data: { data: [{ id: 1 }, { id: 2 }], count: 2, limit: 10, offset: 0 }
+        });
         useGetPendingPreAwardApprovalsQueryMock.mockReturnValue({ data: [] });
         useGetPendingBudgetRequisitionsQueryMock.mockReturnValue({ data: [] });
 
         const { result } = renderHook(() => useChangeRequestTotal());
 
-        expect(useGetChangeRequestsListQueryMock).toHaveBeenCalledWith({ userId: 8 }, { skip: false });
+        expect(useGetChangeRequestsListQueryMock).toHaveBeenCalledWith(
+            { userId: 8, limit: 10, offset: 0 },
+            { skip: false }
+        );
         expect(result.current).toBe(2);
     });
 
@@ -89,7 +94,10 @@ describe("useChangeRequestTotal", () => {
 
         const { result } = renderHook(() => useChangeRequestTotal());
 
-        expect(useGetChangeRequestsListQueryMock).toHaveBeenCalledWith({ userId: null }, { skip: true });
+        expect(useGetChangeRequestsListQueryMock).toHaveBeenCalledWith(
+            { userId: null, limit: 10, offset: 0 },
+            { skip: true }
+        );
         expect(result.current).toBe(0);
     });
 });
