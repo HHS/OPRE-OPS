@@ -254,6 +254,19 @@ describe("useAgreementEditForm uniqueness checks", () => {
         });
     });
 
+    it("skips the nickname uniqueness check when the value is only whitespace", async () => {
+        useEditAgreementMock.mockReturnValue(makeEditState({ agreement_type: "CONTRACT" }));
+        const { result } = renderUseAgreementEditForm();
+
+        await act(async () => {
+            result.current.checkUniqueOnBlur("nick_name", "   ");
+            await result.current.checkUniqueOnBlur.flush();
+        });
+
+        expect(triggerGetAgreementsMock).not.toHaveBeenCalled();
+        expect(result.current.uniquenessErrors.nick_name).toEqual([]);
+    });
+
     it("clears errors and does not throw when the API call fails", async () => {
         useEditAgreementMock.mockReturnValue(makeEditState({ agreement_type: "CONTRACT" }));
         unwrapMock.mockRejectedValueOnce(new Error("network down"));
@@ -366,6 +379,42 @@ describe("useAgreementEditForm scrolls to first conflicting field on submit", ()
         });
 
         expect(scrollToCenterMock).not.toHaveBeenCalled();
+    });
+
+    it("handleContinue treats whitespace-only nickname as empty and does not block submission", async () => {
+        useEditAgreementMock.mockReturnValue(
+            makeEditState({ agreement_type: "CONTRACT", name: "Valid Title", nick_name: "   " })
+        );
+        // Title check passes (no conflict), nickname is whitespace so no API call for it
+        unwrapMock.mockResolvedValueOnce({ count: 0, agreements: [] });
+        triggerGetAgreementsMock.mockReturnValue({ unwrap: unwrapMock });
+
+        const goToNext = vi.fn();
+        const { result } = renderUseAgreementEditForm({ goToNext });
+
+        await act(async () => {
+            await result.current.handleContinue();
+        });
+
+        expect(scrollToCenterMock).not.toHaveBeenCalled();
+        expect(result.current.uniquenessErrors.nick_name).toEqual([]);
+    });
+
+    it("handleDraft treats whitespace-only nickname as empty and does not block submission", async () => {
+        useEditAgreementMock.mockReturnValue(
+            makeEditState({ agreement_type: "CONTRACT", name: "Valid Title", nick_name: "\t\n" })
+        );
+        unwrapMock.mockResolvedValueOnce({ count: 0, agreements: [] });
+        triggerGetAgreementsMock.mockReturnValue({ unwrap: unwrapMock });
+
+        const { result } = renderUseAgreementEditForm();
+
+        await act(async () => {
+            await result.current.handleDraft();
+        });
+
+        expect(scrollToCenterMock).not.toHaveBeenCalled();
+        expect(result.current.uniquenessErrors.nick_name).toEqual([]);
     });
 });
 
