@@ -1321,6 +1321,7 @@ export const {
     useGetSpecialTopicsQuery,
     useGetProcurementTrackersByAgreementIdQuery,
     useGetProcurementTrackersByAgreementIdsQuery,
+    useLazyGetProcurementTrackersByAgreementIdsQuery,
     useUpdateProcurementTrackerStepMutation,
     useGetPendingPreAwardApprovalsQuery,
     useGetPendingBudgetRequisitionsQuery
