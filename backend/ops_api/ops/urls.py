@@ -58,6 +58,7 @@ from ops_api.ops.views import (
     PRODUCT_SERVICE_CODE_ITEM_API_VIEW_FUNC,
     PRODUCT_SERVICE_CODE_LIST_API_VIEW_FUNC,
     PROJECT_FUNDING_API_VIEW_FUNC,
+    PROJECT_HISTORY_LIST_API_VIEW_FUNC,
     PROJECT_ITEM_API_VIEW_FUNC,
     PROJECT_LIST_API_VIEW_FUNC,
     PROJECT_LIST_FILTER_OPTION_API_VIEW_FUNC,
@@ -253,6 +254,10 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/projects/<int:id>/spending/",
         view_func=PROJECT_SPENDING_ITEM_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/projects/<int:id>/history/",
+        view_func=PROJECT_HISTORY_LIST_API_VIEW_FUNC,
     )
 
     api_bp.add_url_rule(

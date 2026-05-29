@@ -57,6 +57,8 @@ export const agreement = {
     agreement_reason: "RECOMPETE",
     agreement_type: "CONTRACT",
     nick_name: "AACFRC",
+    division_directors: ["Jane Smith"],
+    team_leaders: ["Bob Johnson"],
     budget_line_items: [
         {
             agreement_id: 1,

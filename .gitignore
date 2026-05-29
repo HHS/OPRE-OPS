@@ -269,3 +269,4 @@ docs/openapi_reports/yamllint_*
 storybook-static
 
 .worktrees/
+progress/

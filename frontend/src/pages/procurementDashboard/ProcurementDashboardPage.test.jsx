@@ -9,20 +9,22 @@ import { opsApi } from "../../api/opsAPI";
 
 const mockUseGetAllAgreements = vi.fn();
 const mockUseGetProcurementShopsQuery = vi.fn();
-const mockUseGetProcurementTrackersByAgreementIdsQuery = vi.fn();
+const mockUseGetAllProcurementTrackers = vi.fn();
 const mockExportMultiSheetToXlsx = vi.fn();
 
 vi.mock("../../hooks/useGetAllAgreements", () => ({
     useGetAllAgreements: (params, opts) => mockUseGetAllAgreements(params, opts)
 }));
 
+vi.mock("../../hooks/useGetAllProcurementTrackers", () => ({
+    useGetAllProcurementTrackers: (ids, opts) => mockUseGetAllProcurementTrackers(ids, opts)
+}));
+
 vi.mock("../../api/opsAPI", async () => {
     const actual = await vi.importActual("../../api/opsAPI");
     return {
         ...actual,
-        useGetProcurementShopsQuery: () => mockUseGetProcurementShopsQuery(),
-        useGetProcurementTrackersByAgreementIdsQuery: (ids, opts) =>
-            mockUseGetProcurementTrackersByAgreementIdsQuery(ids, opts)
+        useGetProcurementShopsQuery: () => mockUseGetProcurementShopsQuery()
     };
 });
 
@@ -107,8 +109,11 @@ describe("ProcurementDashboardPage", () => {
             isLoading: false,
             error: null
         });
-        mockUseGetProcurementTrackersByAgreementIdsQuery.mockReturnValue({
-            data: [{ agreement_id: 10, active_step_number: 3 }]
+        mockUseGetAllProcurementTrackers.mockReturnValue({
+            procurementTrackers: [{ agreement_id: 10, active_step_number: 3 }],
+            isLoading: false,
+            isError: false,
+            error: null
         });
     });
 
@@ -211,7 +216,12 @@ describe("ProcurementDashboardPage", () => {
             isLoading: false,
             error: null
         });
-        mockUseGetProcurementTrackersByAgreementIdsQuery.mockReturnValue({ data: [] });
+        mockUseGetAllProcurementTrackers.mockReturnValue({
+            procurementTrackers: [],
+            isLoading: false,
+            isError: false,
+            error: null
+        });
 
         const user = userEvent.setup();
         renderWithProviders(<ProcurementDashboard />);

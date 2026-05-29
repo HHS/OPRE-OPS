@@ -606,6 +606,24 @@ describe("cleanAgreementForApi", () => {
         expect(cleanData.nick_name).toBeNull();
     });
 
+    it("converts whitespace-only nick_name to null", () => {
+        const data = { id: 1, name: "Test Agreement", nick_name: "   " };
+        const { cleanData } = cleanAgreementForApi(data);
+        expect(cleanData.nick_name).toBeNull();
+    });
+
+    it("converts tabs and newlines nick_name to null", () => {
+        const data = { id: 1, name: "Test Agreement", nick_name: "\t\n\r" };
+        const { cleanData } = cleanAgreementForApi(data);
+        expect(cleanData.nick_name).toBeNull();
+    });
+
+    it("trims surrounding whitespace from nick_name", () => {
+        const data = { id: 1, name: "Test Agreement", nick_name: "  My Nickname  " };
+        const { cleanData } = cleanAgreementForApi(data);
+        expect(cleanData.nick_name).toBe("My Nickname");
+    });
+
     it("preserves non-empty nick_name", () => {
         const data = { id: 1, name: "Test Agreement", nick_name: "My Nickname" };
         const { cleanData } = cleanAgreementForApi(data);
