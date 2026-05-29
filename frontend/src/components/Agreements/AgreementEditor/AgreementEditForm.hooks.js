@@ -539,6 +539,7 @@ const useAgreementEditForm = (
                     heading: "Agreement Draft Saved",
                     message: `The agreement ${agreement.name} has been successfully created.`
                 });
+                scrollToTop();
             }
             setHasAgreementChanged(false);
             navigate("/agreements");
