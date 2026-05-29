@@ -42,11 +42,15 @@ export const useChangeRequestsForAgreement = (agreementId) => {
  */
 export const useChangeRequestTotal = () => {
     const userId = useSelector((state) => state.auth?.activeUser?.id) ?? null;
-    const { data: changeRequests } = useGetChangeRequestsListQuery({ userId }, { skip: !userId });
+    const { data: changeRequestsResponse } = useGetChangeRequestsListQuery(
+        // Limit and offset are hardcoded, but we're only really using the count from the response in this hook.
+        { userId, limit: 10, offset: 0 },
+        { skip: !userId }
+    );
     const { data: preAwardApprovals } = useGetPendingPreAwardApprovalsQuery(undefined, { skip: !userId });
     const { data: budgetRequisitions } = useGetPendingBudgetRequisitionsQuery(undefined, { skip: !userId });
 
-    const changeRequestsCount = changeRequests?.length || 0;
+    const changeRequestsCount = changeRequestsResponse?.count || 0;
     const preAwardApprovalsCount = preAwardApprovals?.length || 0;
     const budgetRequisitionsCount = budgetRequisitions?.length || 0;
 

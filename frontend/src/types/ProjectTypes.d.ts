@@ -54,3 +54,14 @@ export type Project = {
     updated_by?: any;
     _meta?: { isEditable: boolean };
 };
+
+export type ProjectHistoryItem = {
+    id: number;
+    project_id: number | null;
+    project_id_record: number;
+    ops_event_id: number | null;
+    history_title: string;
+    history_message: string;
+    timestamp: string;
+    history_type: string;
+};

@@ -29,6 +29,7 @@ from ops_api.ops.home_page.views import home
 from ops_api.ops.services.agreement_messages import agreement_history_trigger
 from ops_api.ops.services.can_messages import can_history_trigger
 from ops_api.ops.services.message_bus import MessageBus
+from ops_api.ops.services.project_messages import project_history_trigger
 from ops_api.ops.urls import register_api
 from ops_api.ops.utils.api_helpers import is_deployed_system
 from ops_api.ops.utils.core import is_fake_user, is_unit_test
@@ -242,6 +243,10 @@ def initialize_event_subscriptions():
     MessageBus.subscribe_globally(OpsEventType.UPDATE_SERVICES_COMPONENT, agreement_history_trigger)
     MessageBus.subscribe_globally(OpsEventType.DELETE_SERVICES_COMPONENT, agreement_history_trigger)
     MessageBus.subscribe_globally(OpsEventType.UPDATE_PROCUREMENT_TRACKER_STEP, agreement_history_trigger)
+
+    # Subscribe to events that should generate project history events
+    MessageBus.subscribe_globally(OpsEventType.CREATE_PROJECT, project_history_trigger)
+    MessageBus.subscribe_globally(OpsEventType.UPDATE_PROJECT, project_history_trigger)
 
 
 def before_request_function(app: Flask, request: request):

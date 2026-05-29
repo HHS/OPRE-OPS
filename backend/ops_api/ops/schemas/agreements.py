@@ -1,4 +1,4 @@
-from marshmallow import EXCLUDE, Schema, fields
+from marshmallow import EXCLUDE, Schema, fields, pre_load
 
 from models import (
     AcquisitionType,
@@ -70,6 +70,12 @@ class AgreementData(Schema):
         allow_none=True,
         load_default=[],
     )
+
+    @pre_load
+    def normalize_nick_name(self, data, **kwargs):
+        if "nick_name" in data and isinstance(data["nick_name"], str):
+            data["nick_name"] = data["nick_name"].strip() or None
+        return data
 
     # Nested entities for atomic creation
     budget_line_items = fields.List(

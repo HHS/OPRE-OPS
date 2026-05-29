@@ -3,7 +3,8 @@ import { useLocation } from "react-router-dom";
 import icons from "../../uswds/img/sprite.svg";
 import App from "../../App";
 import TablePageLayout from "../../components/Layouts/TablePageLayout";
-import { useGetProcurementShopsQuery, useGetProcurementTrackersByAgreementIdsQuery } from "../../api/opsAPI";
+import { useGetProcurementShopsQuery } from "../../api/opsAPI";
+import { useGetAllProcurementTrackers } from "../../hooks/useGetAllProcurementTrackers";
 import { useGetAllAgreements } from "../../hooks/useGetAllAgreements";
 import { BLI_STATUS } from "../../helpers/budgetLines.helpers";
 import { exportMultiSheetToXlsx } from "../../helpers/tableExport.helpers";
@@ -58,9 +59,7 @@ const ProcurementDashboard = () => {
 
     const agreementIds = useMemo(() => agreements.map((a) => a.id), [agreements]);
 
-    const { data: procurementTrackers = [] } = useGetProcurementTrackersByAgreementIdsQuery(agreementIds, {
-        skip: agreementIds.length === 0
-    });
+    const { procurementTrackers } = useGetAllProcurementTrackers(agreementIds, { skip: agreementIds.length === 0 });
 
     const handleExport = useCallback(() => {
         // Build a lookup from agreement ID to its active procurement step number
