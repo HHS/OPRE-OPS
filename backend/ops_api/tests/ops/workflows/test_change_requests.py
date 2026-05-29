@@ -89,7 +89,7 @@ def test_budget_line_item_patch_with_budgets_change_requests(
     agreement_id = 1
     history_service = AgreementHistoryService(session)
     # initialize hist count
-    hists = history_service.get(agreement_id, limit=100, offset=0)
+    hists, _ = history_service.get(agreement_id, limit=100, offset=0)
     prev_hist_count = len(hists)
 
     #  create PLANNED BLI
@@ -108,7 +108,7 @@ def test_budget_line_item_patch_with_budgets_change_requests(
     bli_id = bli.id
 
     # verify agreement history added
-    hists = history_service.get(agreement_id, limit=100, offset=0)
+    hists, _ = history_service.get(agreement_id, limit=100, offset=0)
 
     #  submit PATCH BLI which triggers a budget change requests
     data = {"amount": 222.22, "can_id": 501, "date_needed": "2032-02-02"}
@@ -120,7 +120,7 @@ def test_budget_line_item_patch_with_budgets_change_requests(
     assert len(change_requests_in_review) == 3
 
     # verify agreement history added for 3 change requests
-    hists = history_service.get(agreement_id, limit=100, offset=0)
+    hists, _ = history_service.get(agreement_id, limit=100, offset=0)
     hist_count = len(hists)
     # 4 change requests
     assert hist_count == prev_hist_count + 3
@@ -210,7 +210,7 @@ def test_budget_line_item_patch_with_budgets_change_requests(
         assert response.status_code == 200
 
     # verify agreement history added for 3 reviews
-    hists = history_service.get(agreement_id, limit=100, offset=0)
+    hists, _ = history_service.get(agreement_id, limit=100, offset=0)
     hist_count = len(hists)
     assert hist_count == prev_hist_count + 3
     prev_hist_count = hist_count
@@ -327,8 +327,8 @@ def test_budget_line_item_patch_with_status_change_requests(
 
     # initialize hist count
     response = division_director_auth_client.get(url_for("api.agreement-history", id=agreement_id, limit=100))
-    assert response.status_code in [200, 404]
-    prev_hist_count = len(response.json) if response.status_code == 200 else 0
+    assert response.status_code == 200
+    prev_hist_count = len(response.json["data"])
 
     #  create DRAFT BLI with missing required fields
     bli = GrantBudgetLineItem(
@@ -386,7 +386,7 @@ def test_budget_line_item_patch_with_status_change_requests(
     # # verify agreement history added for 1 change request
     response = division_director_auth_client.get(url_for("api.agreement-history", id=agreement_id, limit=100))
     assert response.status_code == 200
-    hist_count = len(response.json)
+    hist_count = len(response.json["data"])
     assert hist_count == prev_hist_count + 1
     prev_hist_count = hist_count
 
@@ -440,7 +440,7 @@ def test_budget_line_item_patch_with_status_change_requests(
 
     # verify agreement history added for 1 review and 1 update
     response = division_director_auth_client.get(url_for("api.agreement-history", id=agreement_id, limit=100))
-    hist_count = len(response.json)
+    hist_count = len(response.json["data"])
     assert hist_count == prev_hist_count + 1
     prev_hist_count = hist_count
 

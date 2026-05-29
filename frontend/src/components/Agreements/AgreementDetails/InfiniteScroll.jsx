@@ -39,6 +39,7 @@ const InfiniteScroll = ({ fetchMoreData, isLoading }) => {
         <div
             ref={observerRef}
             style={{ minHeight: "2em" }}
+            data-testid="infinite-scroll-trigger"
         />
     );
 };
