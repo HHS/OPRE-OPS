@@ -275,6 +275,20 @@ const ProcurementTrackerStepFive = ({
                                         </div>
                                     </div>
                                 )}
+                                {isRequisitionApproved && (
+                                    <div
+                                        className="usa-alert usa-alert--success usa-alert--slim margin-top-2"
+                                        role="status"
+                                    >
+                                        <div className="usa-alert__body">
+                                            <p className="usa-alert__text">
+                                                This agreement has been approved for Pre-Award. Please upload the Final
+                                                Consensus Memo to the HHS Consolidated Acquisition Solution (HCAS), and
+                                                continue your progress in the Procurement Tracker.
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         }
 
