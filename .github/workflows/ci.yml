@@ -22,7 +22,7 @@ jobs:
           fetch-depth: 0
       - name: TruffleHog OSS
         id: trufflehog
-        uses: trufflesecurity/trufflehog@17456f8c7d042d8c82c9a8ca9e937231f9f42e26 # v3.95.2
+        uses: trufflesecurity/trufflehog@37b77001d0174ebec2fcca2bd83ff83a6d45a3ab # v3.95.3
         env:
           GITHUB_HEAD_REF_SAFE: ${{ github.head_ref }}
         continue-on-error: true
@@ -107,6 +107,14 @@ jobs:
       security-events: write
     name: Semgrep Scan
     uses: ./.github/workflows/security_semgrep.yml
+
+  snyk-analysis:
+    permissions:
+      contents: read
+      security-events: write
+    name: Snyk SCA
+    secrets: inherit
+    uses: ./.github/workflows/security_snyk.yml
 
   lint:
     name: Linting

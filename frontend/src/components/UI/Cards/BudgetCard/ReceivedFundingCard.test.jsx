@@ -47,12 +47,12 @@ describe("ReceivedFundingCard", () => {
         expect(screen.getByText("Received")).toBeInTheDocument();
     });
 
-    it("does not render the 'Received' tag when totalFunding is 0", () => {
+    it("does not render the 'Received' tag when totalReceived is 0", () => {
         render(
             <ReceivedFundingCard
                 title="Test"
-                totalReceived={1000}
-                totalFunding={0}
+                totalReceived={0}
+                totalFunding={4500000}
             />
         );
         expect(screen.queryByText("Received")).not.toBeInTheDocument();
@@ -71,15 +71,15 @@ describe("ReceivedFundingCard", () => {
         expect(screen.getByTestId("line-graph-left-bar")).toHaveStyle("flex: 0 1 20%");
     });
 
-    it("does not render the ReverseLineGraph when totalFunding is 0", () => {
+    it("does not render the ReverseLineGraph when totalReceived is 0", () => {
         render(
             <ReceivedFundingCard
                 title="Test"
-                totalReceived={1000}
-                totalFunding={0}
+                totalReceived={0}
+                totalFunding={4500000}
             />
         );
-        expect(screen.queryByRole("img", { hidden: true })).not.toBeInTheDocument();
+        expect(screen.queryByTestId("line-graph-left-bar")).not.toBeInTheDocument();
     });
 
     it("handles zero totalReceived and totalFunding gracefully", () => {
