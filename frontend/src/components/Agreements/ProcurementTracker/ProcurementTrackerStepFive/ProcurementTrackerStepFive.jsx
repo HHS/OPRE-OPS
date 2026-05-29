@@ -133,11 +133,12 @@ const ProcurementTrackerStepFive = ({
             {isReadOnly && (
                 <div>
                     <p>
-                        Edit the Agreement to match the Vendor Price Sheet and ensure any final Budget Changes are
-                        approved, if needed. Request Pre-Award Approval from the Procurement Shop. If you have a target
-                        completion date for when the Final Consensus Memo will be sent, enter it below. Once you receive
-                        Pre-Award Approval and send the Final Consensus Memo to the Procurement Shop, check this task as
-                        complete.
+                        All agreements need Pre-Award Approval before the Final Consensus Memo can be sent to the
+                        Procurement Shop. Review the Vendor Price Sheet and make any edits or budget line status changes
+                        as needed. After final edits are approved by the Division Director(s), come back here and click
+                        Request Pre-Award Approval. Once you receive Pre-Award Approval, check this step as complete. If
+                        you have a target completion date for when the Final Consensus Memo will be sent, enter it
+                        below.
                     </p>
                     {stepStatus === PROCUREMENT_STEP_STATUS.COMPLETED && (
                         <div className="display-flex flex-align-center margin-top-5">
@@ -181,14 +182,15 @@ const ProcurementTrackerStepFive = ({
                 (stepStatus === PROCUREMENT_STEP_STATUS.PENDING || stepStatus === PROCUREMENT_STEP_STATUS.ACTIVE) && (
                     <fieldset className="usa-fieldset">
                         <p>
-                            Edit the Agreement to match the Vendor Price Sheet and ensure any final Budget Changes are
-                            approved, if needed. Request Pre-Award Approval from the Procurement Shop. If you have a
-                            target completion date for when the Final Consensus Memo will be sent, enter it below. Once
-                            you receive Pre-Award Approval and send the Final Consensus Memo to the Procurement Shop,
-                            check this task as complete.
+                            All agreements need Pre-Award Approval before the Final Consensus Memo can be sent to the
+                            Procurement Shop. Review the Vendor Price Sheet and make any edits or budget line status
+                            changes as needed. After final edits are approved by the Division Director(s), come back
+                            here and click Request Pre-Award Approval. Once you receive Pre-Award Approval, check this
+                            step as complete. If you have a target completion date for when the Final Consensus Memo
+                            will be sent, enter it below.
                         </p>
 
-                        <div className="display-flex flex-align-end margin-bottom-2">
+                        <div className="display-flex flex-align-end margin-bottom-4">
                             {stepFiveData?.target_completion_date ? (
                                 <TermTag
                                     term="Target Completion Date"
