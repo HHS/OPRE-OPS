@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import CANFundingReceivedForm from "./CanFundingReceivedForm";
@@ -13,7 +13,8 @@ describe("CANFundingReceivedForm", () => {
         },
         receivedFundingAmount: "",
         handleSubmit: vi.fn(),
-        runValidate: vi.fn(),
+        runValidate: vi.fn(() => ({ hasErrors: () => false })),
+        clearValidationError: vi.fn(),
         setReceivedFundingAmount: vi.fn(),
         notes: "",
         setNotes: vi.fn()
@@ -54,17 +55,77 @@ describe("CANFundingReceivedForm", () => {
         expect(defaultProps.setReceivedFundingAmount).toHaveBeenCalledWith(1000);
     });
 
-    it("calls handleSubmit when form is submitted", async () => {
-        render(
-            <CANFundingReceivedForm
-                {...defaultProps}
-                receivedFundingAmount="1000"
-            />
-        );
+    it("calls runValidate on blur", () => {
+        render(<CANFundingReceivedForm {...defaultProps} />);
+
+        fireEvent.blur(screen.getByLabelText(/Funding Received/i), {
+            target: { value: "1,000" }
+        });
+
+        expect(defaultProps.runValidate).toHaveBeenCalledWith("funding-received-amount", "1,000");
+    });
+
+    it("does not call runValidate on input change", () => {
+        const props = {
+            ...defaultProps,
+            runValidate: vi.fn(() => ({ hasErrors: () => false })),
+            clearValidationError: vi.fn()
+        };
+        render(<CANFundingReceivedForm {...props} />);
+
+        fireEvent.change(screen.getByLabelText(/Funding Received/i), {
+            target: { value: "1000" }
+        });
+
+        expect(props.runValidate).not.toHaveBeenCalled();
+    });
+
+    it("clears validation error on input change", () => {
+        const props = {
+            ...defaultProps,
+            clearValidationError: vi.fn()
+        };
+        render(<CANFundingReceivedForm {...props} />);
+
+        fireEvent.change(screen.getByLabelText(/Funding Received/i), {
+            target: { value: "1000" }
+        });
+
+        expect(props.clearValidationError).toHaveBeenCalledWith("funding-received-amount");
+    });
+
+    it("calls handleSubmit when validation passes on submit", async () => {
+        const props = {
+            ...defaultProps,
+            handleSubmit: vi.fn(),
+            runValidate: vi.fn(() => ({ hasErrors: () => false })),
+            receivedFundingAmount: "1000"
+        };
+        render(<CANFundingReceivedForm {...props} />);
 
         await user.click(screen.getByRole("button", { name: /Add Funding Received/i }));
 
-        expect(defaultProps.handleSubmit).toHaveBeenCalled();
+        expect(props.runValidate).toHaveBeenCalledWith("funding-received-amount", "1000");
+        expect(props.handleSubmit).toHaveBeenCalled();
+    });
+
+    it("blocks handleSubmit when validation fails on submit", async () => {
+        const props = {
+            ...defaultProps,
+            handleSubmit: vi.fn(),
+            runValidate: vi.fn(() => ({ hasErrors: () => true })),
+            receivedFundingAmount: "1000",
+            res: {
+                ...defaultProps.res,
+                hasErrors: vi.fn().mockReturnValue(false)
+            }
+        };
+        render(<CANFundingReceivedForm {...props} />);
+
+        await user.click(screen.getByRole("button", { name: /Add Funding Received/i }));
+
+        expect(props.runValidate).toHaveBeenCalledWith("funding-received-amount", "1000");
+        expect(props.handleSubmit).not.toHaveBeenCalled();
     });
 
     it("disables submit button when form is invalid", () => {
@@ -79,5 +140,18 @@ describe("CANFundingReceivedForm", () => {
         );
 
         expect(screen.getByRole("button", { name: /Add Funding Received/i })).toBeDisabled();
+    });
+
+    it("displays validation errors when present", () => {
+        const propsWithError = {
+            ...defaultProps,
+            res: {
+                hasErrors: vi.fn().mockReturnValue(true),
+                getErrors: vi.fn().mockReturnValue(["Amount cannot exceed FY Budget"])
+            }
+        };
+
+        render(<CANFundingReceivedForm {...propsWithError} />);
+        expect(screen.getByText("Amount cannot exceed FY Budget")).toBeInTheDocument();
     });
 });

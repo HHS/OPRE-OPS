@@ -7,9 +7,10 @@ import icons from "../../../uswds/img/sprite.svg";
  * @property {(arg: string) => string} cn
  * @property {Object} res
  * @property {string} receivedFundingAmount
- * @property {(e: React.FormEvent<HTMLFormElement>) => void} handleSubmit
+ * @property {() => void} handleSubmit
  * @property {boolean} isEditing
- * @property {(name: string, value: string) => void} runValidate
+ * @property {(name: string, value: string) => { hasErrors: (name: string) => boolean }} runValidate
+ * @property {(name: string) => void} clearValidationError
  * @property {(value: string) => void} setReceivedFundingAmount
  * @property {string} notes
  * @property {(value: string) => void} setNotes
@@ -26,6 +27,7 @@ const CANFundingReceivedForm = ({
     cn,
     res,
     runValidate,
+    clearValidationError,
     handleSubmit,
     isEditing,
     receivedFundingAmount,
@@ -40,15 +42,22 @@ const CANFundingReceivedForm = ({
     return (
         <form
             onSubmit={(e) => {
-                handleSubmit(e);
+                e.preventDefault();
+                const result = runValidate("funding-received-amount", String(receivedFundingAmount ?? ""));
+                if (!result.hasErrors("funding-received-amount")) {
+                    handleSubmit();
+                }
             }}
         >
             <div style={{ width: "383px" }}>
                 <CurrencyInput
                     name="funding-received-amount"
                     label="Funding Received"
-                    onChange={(name, value) => {
-                        runValidate("funding-received-amount", value);
+                    onChange={() => {
+                        clearValidationError("funding-received-amount");
+                    }}
+                    onBlur={(e) => {
+                        runValidate("funding-received-amount", e.target.value);
                     }}
                     setEnteredAmount={setReceivedFundingAmount}
                     value={receivedFundingAmount || ""}

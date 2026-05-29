@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import App from "../../../App";
 import { useGetProjectByIdQuery } from "../../../api/opsAPI";
-import DebugCode from "../../../components/DebugCode";
 import ProjectDetailTabs from "./ProjectDetailTabs";
 import ProjectDetailsView from "./ProjectDetailsView";
 
@@ -71,7 +70,6 @@ const ProjectDetail = () => {
                 toggleEditMode={toggleEditMode}
                 canEdit={canEdit}
             />
-            <DebugCode data={project} />
         </App>
     );
 };

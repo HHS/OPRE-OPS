@@ -134,6 +134,14 @@ export default function useCanFunding(
     };
 
     const [fundingReceivedForm, setFundingReceivedForm] = React.useState(initialFundingReceivedForm);
+    const [, setValidationVersion] = React.useState(0);
+
+    React.useEffect(() => {
+        const unsubscribe = suite.subscribe(() => {
+            setValidationVersion((v) => v + 1);
+        });
+        return unsubscribe;
+    }, []);
 
     const [addCanFundingBudget] = useAddCanFundingBudgetsMutation();
     const [updateCanFundingBudget] = useUpdateCanFundingBudgetMutation();
@@ -306,10 +314,7 @@ export default function useCanFunding(
         }
     };
 
-    /** @param {React.FormEvent<HTMLFormElement>} e */
-    const handleAddBudget = (e) => {
-        e.preventDefault();
-
+    const handleAddBudget = () => {
         const nextForm = {
             ...budgetForm,
             submittedAmount: budgetEnteredAmount,
@@ -339,10 +344,7 @@ export default function useCanFunding(
         });
     };
 
-    /** @param {React.FormEvent<HTMLFormElement>} e */
-    const handleAddFundingReceived = (e) => {
-        e.preventDefault();
-
+    const handleAddFundingReceived = () => {
         // Update total received first using the functional update pattern
 
         // update the table data
@@ -555,10 +557,10 @@ export default function useCanFunding(
      * Executes validation for a specific form field
      * @param {string} name - The name of the form field to validate
      * @param {number|string} value - The value to validate for the given field
-     * @returns {void}
+     * @returns {import("vest").SuiteResult<string, string>} Vest suite result, exposing `hasErrors(name)` and `getErrors(name)`
      */
     const runValidate = (name, value) => {
-        suite.run(
+        return suite.run(
             {
                 remainingAmount: +budgetForm.submittedAmount - totalReceived + +fundingReceivedForm.originalAmount,
                 receivedFunding,
@@ -566,6 +568,15 @@ export default function useCanFunding(
             },
             name
         );
+    };
+
+    /**
+     * Clears any existing validation error for a single field without re-running validation.
+     * @param {string} name - The name of the form field whose error should be cleared
+     * @returns {void}
+     */
+    const clearValidationError = (name) => {
+        suite.resetField(name);
     };
 
     /**
@@ -606,6 +617,7 @@ export default function useCanFunding(
         handleSubmit,
         modalProps,
         runValidate,
+        clearValidationError,
         res,
         cn,
         setShowModal,
