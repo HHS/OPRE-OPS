@@ -31,8 +31,21 @@ describe("agreement change accordion", () => {
                 cy.get('[data-cy="agreement-meta-procurement-shop"]').contains("GCS");
                 cy.get('[data-cy="agreement-meta-reason"]').contains("Recompete");
                 cy.get('[data-cy="agreement-meta-vendor"]').contains("Vendor 1");
-                cy.get('[data-cy="agreement-meta-division-directors"]').should("contain", NO_DATA);
-                cy.get('[data-cy="agreement-meta-team-leaders"]').should("contain", NO_DATA);
+                cy.get('[data-cy="agreement-meta-division-directors"]').within(() => {
+                    cy.get("dd").should("have.length", 1);
+                    cy.get("dd").eq(0).should("contain", "Dave Director");
+                });
+                cy.get('[data-cy="agreement-meta-team-leaders"]').within(() => {
+                    cy.get("dd").should("have.length", 1);
+                    cy.get("dd").eq(0).should("contain", "Amy Madigan");
+                });
+                cy.get('[data-cy="agreement-meta-team-members"]').within(() => {
+                    cy.get("span").should("have.length", 4);
+                    cy.get("span").eq(0).should("contain", "Chris Fortunato");
+                    cy.get("span").eq(1).should("contain", "Amelia Popham");
+                    cy.get("span").eq(2).should("contain", "System Owner");
+                    cy.get("span").eq(3).should("contain", "Dave Director");
+                });
                 cy.get('[data-cy="agreement-meta-Descriptive Study"]').contains("Descriptive Study");
                 cy.get('[data-cy="agreement-meta-Impact Study"]').contains("Impact Study");
                 cy.get('[data-cy="agreement-meta-Special Topic 1"]').contains("Special Topic 1");
