@@ -21,6 +21,7 @@ from models import (
     ProcurementTrackerStep,
     ProductServiceCode,
     Project,
+    ProjectHistory,
     ResearchMethodology,
     ResearchType,
     ServicesComponent,
@@ -110,6 +111,7 @@ from ops_api.ops.resources.product_service_code import (
     ProductServiceCodeItemAPI,
     ProductServiceCodeListAPI,
 )
+from ops_api.ops.resources.project_history import ProjectHistoryListAPI
 from ops_api.ops.resources.projects import ProjectFundingAPI, ProjectItemAPI, ProjectListAPI, ProjectListFilterOptionAPI
 from ops_api.ops.resources.projects_spending import ProjectSpendingItemAPI
 from ops_api.ops.resources.reporting_summary import ReportingSummaryListAPI
@@ -246,6 +248,7 @@ PROJECT_LIST_API_VIEW_FUNC = ProjectListAPI.as_view("projects-group", Project)
 PROJECT_LIST_FILTER_OPTION_API_VIEW_FUNC = ProjectListFilterOptionAPI.as_view("projects-filters", Project)
 PROJECT_SPENDING_ITEM_API_VIEW_FUNC = ProjectSpendingItemAPI.as_view("projects-spending-item", Project)
 PROJECT_FUNDING_API_VIEW_FUNC = ProjectFundingAPI.as_view("projects-funding", Project)
+PROJECT_HISTORY_LIST_API_VIEW_FUNC = ProjectHistoryListAPI.as_view("project-history", ProjectHistory)
 
 RESEARCH_METHODOLOGY_ITEM_API_VIEW_FUNC = ResearchMethodologyItemAPI.as_view(
     "research-methodology-item", ResearchMethodology
