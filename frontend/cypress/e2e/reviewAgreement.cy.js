@@ -12,7 +12,7 @@ afterEach(() => {
 });
 
 describe("agreement change accordion", () => {
-    it.only("check agreement meta-data", () => {
+    it("check agreement meta-data", () => {
         cy.visit("/agreements/review/10");
         cy.get("h1").contains("Request BL Status Change");
 
