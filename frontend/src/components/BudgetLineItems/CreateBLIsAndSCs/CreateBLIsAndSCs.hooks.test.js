@@ -91,8 +91,9 @@ vi.mock("../../../hooks/user.hooks", () => ({
     useGetLoggedInUserFullName: () => "Reviewer User"
 }));
 
+const useEditAgreementMock = vi.fn(() => editAgreementMockData);
 vi.mock("../../Agreements/AgreementEditor/AgreementEditorContext.hooks", () => ({
-    useEditAgreement: () => editAgreementMockData
+    useEditAgreement: () => useEditAgreementMock()
 }));
 
 vi.mock("../BudgetLinesForm/datePickerSuite", () => {
@@ -266,5 +267,140 @@ describe("useCreateBLIsAndSCs", () => {
 
         expect(suiteModule.default.run).toHaveBeenCalledWith({ budgetLines: [] });
         expect(result.current.budgetLinePageErrorsExist).toBe(true);
+    });
+
+    it("does not send UI-only fields in services_components when creating a new agreement", async () => {
+        useEditAgreementMock.mockReturnValue({
+            agreement: { team_members: [] },
+            services_components: [
+                {
+                    number: 1,
+                    optional: false,
+                    description: "Base period",
+                    period_start: "2026-01-01",
+                    period_end: "2026-12-31",
+                    display_title: "Base Period 1",
+                    has_changed: true,
+                    popStartDate: "01/01/2026",
+                    popEndDate: "12/31/2026",
+                    mode: "edit"
+                }
+            ],
+            deleted_services_components_ids: []
+        });
+
+        addAgreementMock.mockReturnValue({ unwrap: () => Promise.resolve({ id: 99 }) });
+
+        const { result } = renderHook(() =>
+            useCreateBLIsAndSCs(
+                true,
+                false,
+                [],
+                vi.fn(),
+                goBackMock,
+                vi.fn(),
+                { agreement_type: "CONTRACT", display_name: "AGR-NEW" },
+                { fee_percentage: 5, abbr: "PSC" },
+                setIsEditModeMock,
+                "none",
+                true,
+                false,
+                "Save & Exit",
+                1
+            )
+        );
+
+        await act(async () => {
+            await result.current.handleSave(false);
+        });
+
+        expect(addAgreementMock).toHaveBeenCalled();
+        const payload = addAgreementMock.mock.calls[0][0];
+        const sc = payload.services_components[0];
+
+        expect(sc).not.toHaveProperty("has_changed");
+        expect(sc).not.toHaveProperty("popStartDate");
+        expect(sc).not.toHaveProperty("popEndDate");
+        expect(sc).not.toHaveProperty("mode");
+        expect(sc).toHaveProperty("number", 1);
+        expect(sc).toHaveProperty("ref", "Base Period 1");
+    });
+
+    it("does not send UI-only fields in services_components when editing an existing agreement", async () => {
+        useEditAgreementMock.mockReturnValue({
+            agreement: { id: 42, team_members: [] },
+            services_components: [
+                {
+                    number: 1,
+                    optional: false,
+                    description: "New SC",
+                    period_start: "2026-01-01",
+                    period_end: "2026-12-31",
+                    display_title: "Base Period 1",
+                    popStartDate: "01/01/2026",
+                    popEndDate: "12/31/2026",
+                    mode: "add"
+                },
+                {
+                    id: 77,
+                    number: 2,
+                    optional: true,
+                    description: "Existing SC",
+                    period_start: "2026-06-01",
+                    period_end: "2027-05-31",
+                    display_title: "Option Period 2",
+                    created_on: "2026-01-15",
+                    has_changed: true,
+                    popStartDate: "06/01/2026",
+                    popEndDate: "05/31/2027",
+                    mode: "edit"
+                }
+            ],
+            deleted_services_components_ids: []
+        });
+
+        addServicesComponentMock.mockReturnValue({ unwrap: () => Promise.resolve({ id: 88, number: 1 }) });
+        updateServicesComponentMock.mockReturnValue({ unwrap: () => Promise.resolve({ id: 77, number: 2 }) });
+
+        const { result } = renderHook(() =>
+            useCreateBLIsAndSCs(
+                true,
+                false,
+                [],
+                vi.fn(),
+                goBackMock,
+                vi.fn(),
+                { id: 42, agreement_type: "CONTRACT", display_name: "AGR-42" },
+                { fee_percentage: 5, abbr: "PSC" },
+                setIsEditModeMock,
+                "none",
+                true,
+                false,
+                "Save & Exit",
+                1
+            )
+        );
+
+        await act(async () => {
+            await result.current.handleSave(false);
+        });
+
+        expect(addServicesComponentMock).toHaveBeenCalled();
+        const createdSc = addServicesComponentMock.mock.calls[0][0];
+        expect(createdSc).not.toHaveProperty("has_changed");
+        expect(createdSc).not.toHaveProperty("popStartDate");
+        expect(createdSc).not.toHaveProperty("popEndDate");
+        expect(createdSc).not.toHaveProperty("mode");
+        expect(createdSc).not.toHaveProperty("display_title");
+        expect(createdSc).toHaveProperty("number", 1);
+
+        expect(updateServicesComponentMock).toHaveBeenCalled();
+        const updateCall = updateServicesComponentMock.mock.calls[0][0];
+        expect(updateCall.data).not.toHaveProperty("has_changed");
+        expect(updateCall.data).not.toHaveProperty("popStartDate");
+        expect(updateCall.data).not.toHaveProperty("popEndDate");
+        expect(updateCall.data).not.toHaveProperty("mode");
+        expect(updateCall.data).not.toHaveProperty("display_title");
+        expect(updateCall.data).toHaveProperty("number", 2);
     });
 });

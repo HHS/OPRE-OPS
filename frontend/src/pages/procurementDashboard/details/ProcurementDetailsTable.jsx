@@ -19,7 +19,8 @@ export const ProcurementDetailsTable = ({
     agreements,
     userNameById,
     targetDateByAgreementId,
-    daysInStepByAgreementId
+    daysInStepByAgreementId,
+    fiscalYear
 }) => {
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
 
@@ -49,6 +50,7 @@ export const ProcurementDetailsTable = ({
                         userNameById={userNameById}
                         targetDateByAgreementId={targetDateByAgreementId}
                         daysInStepByAgreementId={daysInStepByAgreementId}
+                        fiscalYear={fiscalYear}
                     />
                 ))}
         </Table>

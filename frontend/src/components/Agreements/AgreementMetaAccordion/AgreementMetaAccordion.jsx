@@ -36,6 +36,9 @@ const AgreementMetaAccordion = ({
     const MORE_THAN_THREE_RESEARCH_METHODS =
         agreement?.research_methodologies && agreement?.research_methodologies.length > 3;
     const MORE_THAN_THREE_SPECIAL_TOPICS = agreement?.special_topics && agreement?.special_topics.length > 3;
+    const MORE_THAN_THREE_DIVISION_DIRECTORS =
+        agreement?.division_directors && agreement?.division_directors.length > 3;
+    const MORE_THAN_THREE_TEAM_LEADERS = agreement?.team_leaders && agreement?.team_leaders.length > 3;
     /**
      * Renders a Term component.
      * @component
@@ -171,10 +174,52 @@ const AgreementMetaAccordion = ({
                         </dl>
                     )}
                     <div className="display-flex">
-                        <dl className="grid-col-4 margin-0">
-                            {renderTerm("division-directors", "Division Director(s)", NO_DATA)}
-                        </dl>
-                        <dl className="grid-col-4 margin-0">{renderTerm("team-leaders", "Team Leader(s)", NO_DATA)}</dl>
+                        {agreement?.division_directors && agreement?.division_directors.length > 0 ? (
+                            <dl
+                                className="grid-col-4 margin-0 margin-top-2"
+                                data-cy="agreement-meta-division-directors"
+                            >
+                                <dt className="margin-0 text-base-dark grid-col-12">Division Director(s)</dt>
+                                {agreement.division_directors.map((director, index) => (
+                                    <dd
+                                        key={index}
+                                        className={`text-semibold margin-0 margin-top-05 ${
+                                            MORE_THAN_THREE_DIVISION_DIRECTORS ? "grid-col-6" : "grid-col-12"
+                                        }`}
+                                        data-cy={`agreement-meta-division-director-${index}`}
+                                    >
+                                        {director}
+                                    </dd>
+                                ))}
+                            </dl>
+                        ) : (
+                            <dl className="grid-col-4 margin-0">
+                                {renderTerm("division-directors", "Division Director(s)", NO_DATA)}
+                            </dl>
+                        )}
+                        {agreement?.team_leaders && agreement?.team_leaders.length > 0 ? (
+                            <dl
+                                className="grid-col-4 margin-0 margin-top-2"
+                                data-cy="agreement-meta-team-leaders"
+                            >
+                                <dt className="margin-0 text-base-dark grid-col-12">Team Leader(s)</dt>
+                                {agreement.team_leaders.map((leader, index) => (
+                                    <dd
+                                        key={index}
+                                        className={`text-semibold margin-0 margin-top-05 ${
+                                            MORE_THAN_THREE_TEAM_LEADERS ? "grid-col-6" : "grid-col-12"
+                                        }`}
+                                        data-cy={`agreement-meta-team-leader-${index}`}
+                                    >
+                                        {leader}
+                                    </dd>
+                                ))}
+                            </dl>
+                        ) : (
+                            <dl className="grid-col-4 margin-0">
+                                {renderTerm("team-leaders", "Team Leader(s)", NO_DATA)}
+                            </dl>
+                        )}
                     </div>
                     <div className="display-flex">
                         <dl className="grid-col-4 margin-0">
@@ -221,7 +266,10 @@ const TeamMembers = ({ teamMembers, renderTerm }) => {
         }
 
         return (
-            <dl className="margin-0 margin-top-2">
+            <dl
+                className="margin-0 margin-top-2"
+                data-cy="agreement-meta-team-members"
+            >
                 <dt className="margin-0 text-base-dark grid-col-12">Team Members</dt>
                 {teamMemberRows.map((row, rowIndex) => (
                     <dd
@@ -248,7 +296,10 @@ const TeamMembers = ({ teamMembers, renderTerm }) => {
 
     // Single column layout for 3 or fewer team members
     return (
-        <dl className="margin-0 margin-top-2">
+        <dl
+            className="margin-0 margin-top-2"
+            data-cy="agreement-meta-team-members"
+        >
             <dt className="margin-0 text-base-dark grid-col-12">Team Members</dt>
             {teamMembers.map((member) => (
                 <dd

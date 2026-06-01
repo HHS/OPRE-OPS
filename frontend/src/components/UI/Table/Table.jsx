@@ -53,6 +53,9 @@ const Table = ({
         if (header.heading === "Type") {
             return { width: "9rem", whiteSpace: "nowrap" };
         }
+        if (header.heading === "SC") {
+            return { width: "9rem", whiteSpace: "nowrap" };
+        }
         return { whiteSpace: "nowrap" };
     };
 

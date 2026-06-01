@@ -1578,3 +1578,77 @@ class TestGetProjectDisplayName:
             short_title = ""
 
         assert get_project_display_name(FakeProject()) == "Child Welfare Research"
+
+
+class TestAgreementHistoryAPI:
+    def test_get_agreement_history_returns_wrapped_response(self, auth_client, mocker):
+        mock_results = [
+            AgreementHistory(
+                agreement_id=1,
+                agreement_id_record=1,
+                ops_event_id=1,
+                history_title="Agreement Created",
+                history_message="Agreement created by Test User.",
+                timestamp="2025-01-01T00:00:00.000000Z",
+                history_type=AgreementHistoryType.AGREEMENT_CREATED,
+            )
+        ]
+        mock_metadata = {"count": 1, "limit": 10, "offset": 0}
+        mocker.patch(
+            "ops_api.ops.services.agreement_history.AgreementHistoryService.get",
+            return_value=(mock_results, mock_metadata),
+        )
+
+        response = auth_client.get("/api/v1/agreements/1/history/")
+        assert response.status_code == 200
+        assert len(response.json["data"]) == 1
+        assert response.json["count"] == 1
+        assert response.json["limit"] == 10
+        assert response.json["offset"] == 0
+        assert response.json["data"][0]["history_title"] == "Agreement Created"
+
+    def test_get_agreement_history_empty_returns_200_not_404(self, auth_client, mocker):
+        mocker.patch(
+            "ops_api.ops.services.agreement_history.AgreementHistoryService.get",
+            return_value=([], {"count": 0, "limit": 10, "offset": 0}),
+        )
+
+        response = auth_client.get("/api/v1/agreements/1/history/")
+        assert response.status_code == 200
+        assert response.json["data"] == []
+        assert response.json["count"] == 0
+
+    def test_get_agreement_history_offset_beyond_total(self, auth_client, mocker):
+        mocker.patch(
+            "ops_api.ops.services.agreement_history.AgreementHistoryService.get",
+            return_value=([], {"count": 5, "limit": 10, "offset": 100}),
+        )
+
+        response = auth_client.get("/api/v1/agreements/1/history/?limit=10&offset=100")
+        assert response.status_code == 200
+        assert response.json["data"] == []
+        assert response.json["count"] == 5
+        assert response.json["offset"] == 100
+
+    def test_get_agreement_history_respects_limit_and_offset_params(self, auth_client, mocker):
+        mock_results = [
+            AgreementHistory(
+                agreement_id=1,
+                agreement_id_record=1,
+                ops_event_id=2,
+                history_title="Agreement Updated",
+                history_message="Agreement updated.",
+                timestamp="2025-01-02T00:00:00.000000Z",
+                history_type=AgreementHistoryType.AGREEMENT_UPDATED,
+            )
+        ]
+        mocker.patch(
+            "ops_api.ops.services.agreement_history.AgreementHistoryService.get",
+            return_value=(mock_results, {"count": 20, "limit": 5, "offset": 10}),
+        )
+
+        response = auth_client.get("/api/v1/agreements/1/history/?limit=5&offset=10")
+        assert response.status_code == 200
+        assert response.json["count"] == 20
+        assert response.json["limit"] == 5
+        assert response.json["offset"] == 10

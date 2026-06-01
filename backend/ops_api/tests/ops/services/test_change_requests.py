@@ -94,10 +94,10 @@ def test_delete_not_found(service, mock_db_session):
 
 def test_get_list_uses_find_in_review_requests_by_user(service):
     with patch("ops_api.ops.services.change_requests.find_in_review_requests_by_user") as mock_find:
-        mock_find.return_value = [Mock()]
-        results, pagination = service.get_list({"reviewer_user_id": 1})
+        mock_find.return_value = [Mock()], 1
+        results, pagination = service.get_list({"reviewer_user_id": 1, "limit": 10, "offset": 0})
 
         assert isinstance(results, list)
         assert len(results) == 1
-        assert pagination is None
-        mock_find.assert_called_once_with(1, None, None)
+        assert pagination == {"count": 1, "limit": 10, "offset": 0}
+        mock_find.assert_called_once_with(1, 10, 0)

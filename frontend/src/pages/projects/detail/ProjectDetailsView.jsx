@@ -1,6 +1,7 @@
 import { faPen } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import ProjectDetailForm from "../../../components/Projects/ProjectDetailForm";
+import ProjectHistoryPanel from "../../../components/Projects/ProjectHistoryPanel";
 import Tag from "../../../components/UI/Tag/Tag";
 import { TagList } from "../../../components/UI/Tag";
 import Tooltip from "../../../components/UI/USWDS/Tooltip";
@@ -127,7 +128,7 @@ const ProjectDetailsView = ({ project, isEditMode = false, toggleEditMode, canEd
                         </dl>
 
                         <h3 className="text-base-dark margin-top-5 margin-bottom-0 text-normal font-12px">History</h3>
-                        <p className="font-12px text-base margin-top-1">History coming soon.</p>
+                        <ProjectHistoryPanel projectId={project.id} />
                     </div>
 
                     {/* RIGHT COLUMN */}

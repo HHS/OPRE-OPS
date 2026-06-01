@@ -72,14 +72,20 @@ export const PORTFOLIO_ORDER = [
     {
         abbreviation: "DO",
         division: "DECONI",
-        color: "var(--portfolio-bar-graph-dd)", // Gold
+        color: "var(--portfolio-bar-graph-dd)",
         aliases: ["DD"],
         column: 3
     },
     {
         abbreviation: "OD",
         division: "OD",
-        color: "var(--portfolio-bar-graph-od)", // Gold
+        color: "var(--portfolio-bar-graph-od)",
+        column: 3
+    },
+    {
+        abbreviation: "DB",
+        division: "DFS",
+        color: "var(--portfolio-bar-graph-dd)",
         column: 3
     },
 

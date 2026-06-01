@@ -324,9 +324,14 @@ export const cleanAgreementForApi = (data) => {
         "updated_on"
     ];
 
+    const cleanData = omit(data, fieldsToRemove);
+    if (typeof cleanData.nick_name === "string") {
+        cleanData.nick_name = cleanData.nick_name.trim() || null;
+    }
+
     return {
         id: data.id,
-        cleanData: omit(data, fieldsToRemove)
+        cleanData
     };
 };
 
