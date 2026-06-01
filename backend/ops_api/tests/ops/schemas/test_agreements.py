@@ -10,12 +10,48 @@ import pytest
 from marshmallow import ValidationError
 
 from ops_api.ops.schemas.agreements import (
+    AgreementData,
     AgreementRequestSchema,
     ContractAgreementData,
     GrantAgreementData,
 )
 from ops_api.ops.schemas.budget_line_items import NestedBudgetLineItemRequestSchema, SimpleAgreementSchema
 from ops_api.ops.schemas.services_component import NestedServicesComponentRequestSchema
+
+
+class TestNickNameNormalization:
+    """Test the @pre_load normalize_nick_name hook on AgreementData."""
+
+    def _load_nick_name(self, nick_name_value, *, omit=False):
+        schema = AgreementData()
+        data = {"name": "Test", "agreement_type": "CONTRACT"}
+        if not omit:
+            data["nick_name"] = nick_name_value
+        return schema.load(data)
+
+    def test_whitespace_only_becomes_none(self):
+        result = self._load_nick_name("   ")
+        assert result["nick_name"] is None
+
+    def test_tabs_and_newlines_become_none(self):
+        result = self._load_nick_name("\t\n\r")
+        assert result["nick_name"] is None
+
+    def test_empty_string_becomes_none(self):
+        result = self._load_nick_name("")
+        assert result["nick_name"] is None
+
+    def test_value_with_surrounding_whitespace_is_trimmed(self):
+        result = self._load_nick_name("  My Nickname  ")
+        assert result["nick_name"] == "My Nickname"
+
+    def test_none_value_stays_none(self):
+        result = self._load_nick_name(None)
+        assert result["nick_name"] is None
+
+    def test_missing_field_defaults_to_none(self):
+        result = self._load_nick_name(None, omit=True)
+        assert result.get("nick_name") is None
 
 
 class TestAgreementRequestSchemaPagination:

@@ -8,6 +8,7 @@ import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import TableRowExpandable from "../../UI/TableRowExpandable";
 import { expandedRowBGColor } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
+import tableStyles from "../../UI/Table/table.module.css";
 import TableTag from "../../UI/TableTag";
 import TextClip from "../../UI/Text/TextClip";
 import { getProcurementShopLabel } from "../../../helpers/budgetLines.helpers";
@@ -66,21 +67,22 @@ const CANBudgetLineTableRow = ({
         <>
             <td>{blId}</td>
             <td>
-                {budgetLine.agreement ? (
-                    <Link
-                        className="text-ink text-no-underline"
-                        to={`/agreements/${budgetLine.agreement.id}`}
-                        aria-label={resolvedAgreementName}
-                    >
-                        <TextClip
-                            text={agreementName?.trim() || `${budgetLine.agreement.id}`}
-                            tooltipThreshold={30}
-                            maxLines={1}
-                        />
-                    </Link>
-                ) : (
-                    <span className="text-ink">{agreementName}</span>
-                )}
+                <div className={tableStyles.textClipContainer}>
+                    {budgetLine.agreement ? (
+                        <Link
+                            className="text-ink text-no-underline"
+                            to={`/agreements/${budgetLine.agreement.id}`}
+                            aria-label={resolvedAgreementName}
+                        >
+                            <TextClip
+                                text={agreementName?.trim() || `${budgetLine.agreement.id}`}
+                                maxLines={1}
+                            />
+                        </Link>
+                    ) : (
+                        <span className="text-ink">{agreementName}</span>
+                    )}
+                </div>
             </td>
             <td>{obligateDate}</td>
             <td>{fiscalYear}</td>

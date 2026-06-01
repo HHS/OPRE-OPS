@@ -13,6 +13,7 @@ import { AWARD_TYPE_LABELS } from "../../../pages/agreements/agreements.constant
 import TableRowExpandable from "../../UI/TableRowExpandable";
 import { expandedRowBGColor } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
+import tableStyles from "../../UI/Table/table.module.css";
 import TableTag from "../../UI/TableTag";
 import TextClip from "../../UI/Text/TextClip";
 import { useGetPortfolioByIdQuery } from "../../../api/opsAPI";
@@ -46,38 +47,44 @@ const AllBLIRow = ({ budgetLine }) => {
         <>
             <td data-cy="bli-id">{budgetLine.id}</td>
             <td data-cy="agreement-name">
-                {budgetLine?.agreement?.id ? (
-                    <Link
-                        to={`/agreements/${budgetLine.agreement.id}`}
-                        className="text-ink text-no-underline"
-                        aria-label={agreementLinkLabel}
-                    >
+                <div className={tableStyles.textClipContainer}>
+                    {budgetLine?.agreement?.id ? (
+                        <Link
+                            to={`/agreements/${budgetLine.agreement.id}`}
+                            className="text-ink text-no-underline"
+                            aria-label={agreementLinkLabel}
+                        >
+                            <TextClip
+                                text={agreementName}
+                                maxLines={1}
+                            />
+                        </Link>
+                    ) : (
                         <TextClip
                             text={agreementName}
                             maxLines={1}
                         />
-                    </Link>
-                ) : (
-                    <TextClip
-                        text={agreementName}
-                        maxLines={1}
-                    />
-                )}
+                    )}
+                </div>
             </td>
             <td data-cy="agreement-type">
-                <TextClip
-                    text={convertCodeForDisplay("agreementType", budgetLine?.agreement?.agreement_type) || NO_DATA}
-                    maxLines={1}
-                />
+                <div className={tableStyles.textClipContainer}>
+                    <TextClip
+                        text={convertCodeForDisplay("agreementType", budgetLine?.agreement?.agreement_type) || NO_DATA}
+                        maxLines={1}
+                    />
+                </div>
             </td>
             <td data-cy="service-component">{serviceComponentName}</td>
             <td data-cy="date-needed">{formatDateNeeded(budgetLine?.date_needed ?? "")}</td>
             <td data-cy="can">{budgetLine?.can?.display_name}</td>
             <td data-cy="portfolio-name">
-                <TextClip
-                    text={isPortfolioLoading ? "Loading..." : (budgetLinePortfolio?.abbreviation ?? NO_DATA)}
-                    maxLines={1}
-                />
+                <div className={tableStyles.textClipContainer}>
+                    <TextClip
+                        text={isPortfolioLoading ? "Loading..." : (budgetLinePortfolio?.abbreviation ?? NO_DATA)}
+                        maxLines={1}
+                    />
+                </div>
             </td>
             <td data-cy="amount">
                 <CurrencyFormat

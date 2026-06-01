@@ -194,7 +194,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.wait(1000);
                 // Increase timeout for CI environments where page rendering can be slower
                 // Check for alert in a single assertion chain so Cypress retries the entire check
-                cy.get(".usa-alert__body", {timeout: 30000})
+                cy.get(".usa-alert__body", { timeout: 30000 })
                     .should("be.visible")
                     .and("contain", "Changes Approved")
                     .and("contain", testAgreement.name)
@@ -372,9 +372,9 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.wait(500);
                 // Increase timeout for CI environments where page rendering can be slower
                 // First check if alert exists and log its content for debugging
-                cy.get(".usa-alert__body", {timeout: 30000}).should("exist");
+                cy.get(".usa-alert__body", { timeout: 30000 }).should("exist");
                 // Check for alert in a single assertion chain so Cypress retries the entire check
-                cy.get(".usa-alert__body", {timeout: 30000})
+                cy.get(".usa-alert__body", { timeout: 30000 })
                     .should("be.visible")
                     .and("contain", "Changes Approved")
                     .and("contain", testAgreement.name)
@@ -677,14 +677,15 @@ const waitForAgreementHistory = (agreementId, startedAt = Date.now()) => {
             failOnStatusCode: false
         })
         .then((response) => {
-            const hasEntries = response.status === 200 && Array.isArray(response.body) && response.body.length > 0;
+            const hasEntries =
+                response.status === 200 && Array.isArray(response.body.data) && response.body.data.length > 0;
             if (hasEntries) {
                 return;
             }
             const elapsedMs = Date.now() - startedAt;
             if (elapsedMs >= HISTORY_TIMEOUT_MS) {
                 expect(response.status, "agreement history status").to.eq(200);
-                expect(response.body, "agreement history entries").to.be.an("array").and.have.length.greaterThan(0);
+                expect(response.body.data, "agreement history entries").to.be.an("array").and.have.length.greaterThan(0);
                 return;
             }
             cy.wait(HISTORY_POLL_INTERVAL_MS);
@@ -697,7 +698,7 @@ const checkAgreementHistory = () => {
     cy.get('[data-cy="details-left-col"] > :nth-child(4)').should("have.text", "History");
     cy.get('[data-cy="agreement-history-container"]').should("exist");
     cy.get('[data-cy="agreement-history-container"]').scrollIntoView();
-    cy.get('[data-cy="agreement-history-container"]').scrollTo("bottom");
+    cy.get('[data-cy="agreement-history-container"]').scrollTo("bottom", { ensureScrollable: false });
     cy.get('[data-cy="agreement-history-list"]', { timeout: 60000 }).should("exist");
     cy.get('[data-cy="agreement-history-list"] > :nth-child(1)', { timeout: 60000 }).should("exist");
     cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]', {

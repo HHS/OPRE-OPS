@@ -72,6 +72,7 @@ const Can = () => {
                     <CANFiscalYearSelect
                         fiscalYear={fiscalYear}
                         setSelectedFiscalYear={setSelectedFiscalYear}
+                        showAllOption={false}
                     />
                 )}
             </section>

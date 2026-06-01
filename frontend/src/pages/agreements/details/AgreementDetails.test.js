@@ -250,7 +250,7 @@ describe("AgreementDetails", () => {
             </Provider>
         );
 
-        expect(screen.getByText("Edit Agreement Details")).toBeInTheDocument();
+        expect(screen.getByText("Agreement Details")).toBeInTheDocument();
         expect(screen.getByText("Agreement Type")).toBeInTheDocument();
         expect(screen.getAllByText("Assisted Acquisition (AA)").length).toBeGreaterThan(0);
         expect(screen.getByText("COR")).toBeInTheDocument();
@@ -398,7 +398,7 @@ describe("AgreementDetails", () => {
 
         // Should show edit button for super users even on non-contract agreements
         expect(screen.getByRole("button", { name: /Edit/i })).toBeInTheDocument();
-        expect(screen.getByText("Edit Agreement Details")).toBeInTheDocument();
+        expect(screen.getByText("Agreement Details")).toBeInTheDocument();
     });
 
     test("allows super user to edit when agreement._meta.isEditable is false", () => {
@@ -447,7 +447,7 @@ describe("AgreementDetails", () => {
 
         // Should show edit button for super users even when agreement is not normally editable
         expect(screen.getByRole("button", { name: /Edit/i })).toBeInTheDocument();
-        expect(screen.getByText("Edit Agreement Details")).toBeInTheDocument();
+        expect(screen.getByText("Agreement Details")).toBeInTheDocument();
     });
 
     test("regular user cannot edit when isAgreementNotDeveloped is true", () => {
@@ -492,7 +492,7 @@ describe("AgreementDetails", () => {
 
         // Should NOT show edit button for regular users on non-contract agreements
         expect(screen.queryByRole("button", { name: /Edit/i })).not.toBeInTheDocument();
-        expect(screen.getByText("Edit Agreement Details")).toBeInTheDocument();
+        expect(screen.getByText("Agreement Details")).toBeInTheDocument();
     });
 
     test("renders awarded agreement with contract number", () => {
@@ -718,6 +718,67 @@ describe("AgreementDetails", () => {
 
             // "Editing..." indicator should appear in edit mode
             expect(screen.getByText("Editing...")).toBeInTheDocument();
+        });
+    });
+
+    describe("header text", () => {
+        test("renders 'Agreement Details' when not in edit mode", () => {
+            TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
+                return agreementHistoryData;
+            });
+            mockIntersectionObserver();
+
+            render(
+                <Provider store={store}>
+                    <Router
+                        location={history.location}
+                        navigator={history}
+                    >
+                        <AgreementDetails
+                            agreement={agreement}
+                            projectOfficer={projectOfficer}
+                            alternateProjectOfficer={projectOfficer}
+                            isEditMode={false}
+                            setIsEditMode={mockFn}
+                            setHasAgreementChanged={mockFn}
+                            isAgreementNotDeveloped={false}
+                            isAgreementAwarded={false}
+                        />
+                    </Router>
+                </Provider>
+            );
+
+            expect(screen.getByText("Agreement Details")).toBeInTheDocument();
+            expect(screen.queryByText("Edit Agreement Details")).not.toBeInTheDocument();
+        });
+
+        test("renders 'Edit Agreement Details' when in edit mode", () => {
+            TestApplicationContext.helpers().callBackend.mockImplementation(async () => {
+                return agreementHistoryData;
+            });
+            mockIntersectionObserver();
+
+            render(
+                <Provider store={store}>
+                    <Router
+                        location={history.location}
+                        navigator={history}
+                    >
+                        <AgreementDetails
+                            agreement={agreement}
+                            projectOfficer={projectOfficer}
+                            alternateProjectOfficer={projectOfficer}
+                            isEditMode={true}
+                            setIsEditMode={mockFn}
+                            setHasAgreementChanged={mockFn}
+                            isAgreementNotDeveloped={false}
+                            isAgreementAwarded={false}
+                        />
+                    </Router>
+                </Provider>
+            );
+
+            expect(screen.getByText("Edit Agreement Details")).toBeInTheDocument();
         });
     });
 });
