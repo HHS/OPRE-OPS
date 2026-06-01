@@ -36,15 +36,15 @@ __all__ = [
 # ============================================================================
 
 
-class ProcurementTrackerStatus(Enum):
+class ProcurementTrackerStatus(str, Enum):
     """Status of the procurement tracker"""
 
-    ACTIVE = auto()
-    INACTIVE = auto()
-    COMPLETED = auto()
+    ACTIVE = "ACTIVE"
+    INACTIVE = "INACTIVE"
+    COMPLETED = "COMPLETED"
 
     def __str__(self):
-        return self.name
+        return self.value
 
 
 class ProcurementTrackerType(str, Enum):
@@ -56,30 +56,30 @@ class ProcurementTrackerType(str, Enum):
         return self.value
 
 
-class ProcurementTrackerStepType(Enum):
+class ProcurementTrackerStepType(str, Enum):
     """Type of procurement workflow step"""
 
-    ACQUISITION_PLANNING = auto()
-    PRE_SOLICITATION = auto()
-    SOLICITATION = auto()
-    EVALUATION = auto()
-    PRE_AWARD = auto()
-    AWARD = auto()
+    ACQUISITION_PLANNING = "ACQUISITION_PLANNING"
+    PRE_SOLICITATION = "PRE_SOLICITATION"
+    SOLICITATION = "SOLICITATION"
+    EVALUATION = "EVALUATION"
+    PRE_AWARD = "PRE_AWARD"
+    AWARD = "AWARD"
 
     def __str__(self):
-        return self.name
+        return self.value
 
 
-class ProcurementTrackerStepStatus(Enum):
+class ProcurementTrackerStepStatus(str, Enum):
     """Status of an individual tracker step"""
 
-    PENDING = auto()
-    ACTIVE = auto()
-    COMPLETED = auto()
-    SKIPPED = auto()
+    PENDING = "PENDING"
+    ACTIVE = "ACTIVE"
+    COMPLETED = "COMPLETED"
+    SKIPPED = "SKIPPED"
 
     def __str__(self):
-        return self.name
+        return self.value
 
 
 # ============================================================================
