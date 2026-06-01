@@ -534,3 +534,53 @@ describe("useAgreementEditForm - handleDraft creates new agreements", () => {
         expect(navigateMock).not.toHaveBeenCalledWith("/agreements");
     });
 });
+
+describe("useAgreementEditForm - runValidate project_officer validation", () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        useLocationMock.mockReturnValue({ pathname: "/agreements/1/edit" });
+        useSelectorMock.mockReturnValue(false);
+        hasStateChangedMock.mockReturnValue(false);
+        useEditAgreementDispatchMock.mockReturnValue(vi.fn());
+        useSetStateMock.mockReturnValue(vi.fn());
+        useUpdateAgreementMock.mockReturnValue(vi.fn());
+    });
+
+    it("clears project_officer validation error when a valid officer id is provided via override", () => {
+        useEditAgreementMock.mockReturnValue(
+            makeEditState({
+                agreement_type: "CONTRACT",
+                project_officer_id: null
+            })
+        );
+
+        const { result, rerender } = renderUseAgreementEditForm({ isReviewMode: true });
+
+        act(() => {
+            result.current.runValidate("project_officer", 5, { project_officer_id: 5 });
+        });
+        rerender();
+
+        const errors = result.current.res.getErrors("project_officer");
+        expect(errors).toEqual([]);
+    });
+
+    it("shows project_officer validation error when value is null (cleared)", () => {
+        useEditAgreementMock.mockReturnValue(
+            makeEditState({
+                agreement_type: "CONTRACT",
+                project_officer_id: 5
+            })
+        );
+
+        const { result, rerender } = renderUseAgreementEditForm({ isReviewMode: true });
+
+        act(() => {
+            result.current.runValidate("project_officer", null, { project_officer_id: null });
+        });
+        rerender();
+
+        const errors = result.current.res.getErrors("project_officer");
+        expect(errors).toContain("This is required information");
+    });
+});

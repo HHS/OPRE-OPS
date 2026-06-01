@@ -46,7 +46,7 @@ export const ProjectOfficerComboBox = ({
 
     const handleChange = (user) => {
         setSelectedProjectOfficer(user);
-        onChange("project_officer", user.id);
+        onChange("project_officer", user?.id ?? null);
     };
 
     return (
