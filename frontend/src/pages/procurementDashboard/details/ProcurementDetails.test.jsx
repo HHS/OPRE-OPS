@@ -118,9 +118,7 @@ describe("ProcurementDetails", () => {
 
     it("excludes agreements without executing BLIs in the fiscal year", () => {
         const draftBli = { fiscal_year: 2025, status: "DRAFT", amount: 100, fees: 0 };
-        const agreements = [
-            makeAgreement({ id: 1, display_name: "Draft Only", budget_line_items: [draftBli] })
-        ];
+        const agreements = [makeAgreement({ id: 1, display_name: "Draft Only", budget_line_items: [draftBli] })];
 
         const procurementTrackers = [{ agreement_id: 1, active_step_number: 1, steps: [] }];
 
