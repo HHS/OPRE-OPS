@@ -14,11 +14,14 @@ export default {
         }
     },
     decorators: [
-        (Story) => (
-            <div id="root">
-                <Story />
-            </div>
-        )
+        (Story) => {
+            if (!document.getElementById("root")) {
+                const root = document.createElement("div");
+                root.id = "root";
+                document.body.appendChild(root);
+            }
+            return <Story />;
+        }
     ],
     args: {
         applyFilter: fn(),
@@ -69,6 +72,13 @@ export default {
 export const Default = {
     args: {
         showModal: false
+    }
+};
+
+/** Open modal state — filter fieldsets and action buttons are visible. */
+export const Open = {
+    args: {
+        showModal: true
     }
 };
 
