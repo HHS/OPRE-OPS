@@ -159,7 +159,7 @@ vi.mock("../../../constants", () => ({
         STEP_3: true,
         STEP_4: true,
         STEP_5: false,
-        STEP_6: false
+        STEP_6: true
     }
 }));
 
@@ -991,9 +991,9 @@ describe("AgreementProcurementTracker", () => {
 
                 expect(screen.getByText(expectedInstructionalText)).toBeInTheDocument();
 
-                // Step 3 has a checkbox, other steps don't
+                // Steps 3 and 6 have checkboxes, other steps don't
                 const checkbox = screen.queryByRole("checkbox");
-                const shouldHaveCheckbox = activeStepNumber === 3;
+                const shouldHaveCheckbox = activeStepNumber === 3 || activeStepNumber === 6;
 
                 expect(checkbox !== null).toBe(shouldHaveCheckbox);
             }

@@ -121,8 +121,8 @@ const ProcurementTrackerStepSix = ({
                 (stepStatus === PROCUREMENT_STEP_STATUS.PENDING || stepStatus === PROCUREMENT_STEP_STATUS.ACTIVE) && (
                     <>
                         <p className="margin-top-0">
-                            This step tracks the final award milestone. Request Award Approval from the budget team,
-                            then complete this step after receiving the signed award.
+                            Once you receive the signed award, click Request Award Approval below. After approval is
+                            granted, complete this step by marking the award as received.
                         </p>
 
                         {/* Target Completion Date */}
