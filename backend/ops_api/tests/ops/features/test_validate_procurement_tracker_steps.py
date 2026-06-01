@@ -20,12 +20,10 @@ from models import (
     DefaultProcurementTracker,
     ProcurementAction,
     ProcurementActionStatus,
-    ProcurementTracker,
     ProcurementTrackerStatus,
     ProcurementTrackerStep,
     ProcurementTrackerStepStatus,
     ProcurementTrackerStepType,
-    ProcurementTrackerType,
 )
 
 
@@ -359,10 +357,9 @@ def procurement_tracker_with_incomplete_step_4(loaded_db, context):
     """Create procurement tracker with Step 4 in PENDING status"""
     agreement = context["agreement"]
 
-    procurement_tracker = ProcurementTracker(
+    procurement_tracker = DefaultProcurementTracker(
         agreement_id=agreement.id,
         status=ProcurementTrackerStatus.ACTIVE,
-        tracker_type=ProcurementTrackerType.DEFAULT,
         active_step_number=5,
     )
     loaded_db.add(procurement_tracker)
@@ -427,7 +424,7 @@ def procurement_tracker_with_completed_step(loaded_db, context):
 def procurement_tracker_no_steps(loaded_db, context):
     agreement = context["agreement"]
 
-    procurement_tracker = ProcurementTracker(agreement_id=agreement.id, tracker_type=ProcurementTrackerType.DEFAULT)
+    procurement_tracker = DefaultProcurementTracker(agreement_id=agreement.id)
     loaded_db.add(procurement_tracker)
     loaded_db.commit()
 
@@ -855,7 +852,7 @@ def check_successful_response(context, loaded_db, setup_and_teardown):
     procurement_tracker_id = response.get_json().get("procurement_tracker_id")
     step_number = response.get_json().get("step_number")
 
-    procurement_tracker = loaded_db.query(ProcurementTracker).filter_by(id=procurement_tracker_id).first()
+    procurement_tracker = loaded_db.query(DefaultProcurementTracker).filter_by(id=procurement_tracker_id).first()
     assert procurement_tracker.active_step_number == step_number + 1
 
     # Check that step number 2 has step_start_date set to today
@@ -878,7 +875,7 @@ def check_successful_completion_response(context, loaded_db, setup_and_teardown)
     assert response.status_code == 200
     procurement_tracker_id = response.get_json().get("procurement_tracker_id")
 
-    procurement_tracker = loaded_db.query(ProcurementTracker).filter_by(id=procurement_tracker_id).first()
+    procurement_tracker = loaded_db.query(DefaultProcurementTracker).filter_by(id=procurement_tracker_id).first()
     # Steps aren't 0 based so active step should equal length of step list
     assert procurement_tracker.active_step_number == len(procurement_tracker.steps)
 
