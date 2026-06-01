@@ -99,9 +99,10 @@ describe("ProcurementDetails", () => {
     });
 
     it("groups agreements into steps based on tracker active_step_number", () => {
+        const executingBli = { fiscal_year: 2025, status: "IN_EXECUTION", amount: 100, fees: 0 };
         const agreements = [
-            makeAgreement({ id: 1, display_name: "Agreement Step 1" }),
-            makeAgreement({ id: 2, display_name: "Agreement Step 3" })
+            makeAgreement({ id: 1, display_name: "Agreement Step 1", budget_line_items: [executingBli] }),
+            makeAgreement({ id: 2, display_name: "Agreement Step 3", budget_line_items: [executingBli] })
         ];
 
         const procurementTrackers = [
@@ -115,12 +116,26 @@ describe("ProcurementDetails", () => {
         expect(rows).toHaveLength(2);
     });
 
+    it("excludes agreements without executing BLIs in the fiscal year", () => {
+        const draftBli = { fiscal_year: 2025, status: "DRAFT", amount: 100, fees: 0 };
+        const agreements = [
+            makeAgreement({ id: 1, display_name: "Draft Only", budget_line_items: [draftBli] })
+        ];
+
+        const procurementTrackers = [{ agreement_id: 1, active_step_number: 1, steps: [] }];
+
+        renderComponent({ agreements, procurementTrackers });
+
+        expect(screen.queryByTestId("expandable-row")).not.toBeInTheDocument();
+    });
+
     it("resolves user display names from the users query", () => {
         mockUseGetUsersQuery.mockReturnValue({
             data: [{ id: 500, display_name: "Jane Doe" }]
         });
 
-        const agreements = [makeAgreement({ id: 1, project_officer_id: 500 })];
+        const executingBli = { fiscal_year: 2025, status: "IN_EXECUTION", amount: 100, fees: 0 };
+        const agreements = [makeAgreement({ id: 1, project_officer_id: 500, budget_line_items: [executingBli] })];
         const procurementTrackers = [{ agreement_id: 1, active_step_number: 1, steps: [] }];
 
         renderComponent({ agreements, procurementTrackers });
@@ -133,7 +148,8 @@ describe("ProcurementDetails", () => {
             data: [{ id: 500, full_name: "Jane M. Doe" }]
         });
 
-        const agreements = [makeAgreement({ id: 1, project_officer_id: 500 })];
+        const executingBli = { fiscal_year: 2025, status: "IN_EXECUTION", amount: 100, fees: 0 };
+        const agreements = [makeAgreement({ id: 1, project_officer_id: 500, budget_line_items: [executingBli] })];
         const procurementTrackers = [{ agreement_id: 1, active_step_number: 1, steps: [] }];
 
         renderComponent({ agreements, procurementTrackers });
