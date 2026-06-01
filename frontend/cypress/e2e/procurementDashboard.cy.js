@@ -25,6 +25,32 @@ describe("Procurement Dashboard - Role-Based Access", () => {
     });
 });
 
+describe("Procurement Dashboard - Summary/Details Consistency", () => {
+    beforeEach(() => {
+        testLogin("procurement-team");
+        cy.visit("/procurement-dashboard");
+        cy.get("[data-cy='procurement-overview-card']", { timeout: 30000 }).should("exist");
+    });
+
+    it("step accordion agreement counts match summary card counts", () => {
+        getAgreementCount().then((totalFromOverview) => {
+            // Expand all detail accordions
+            cy.get("[data-cy^='step-builder-accordion-']").each(($accordion) => {
+                cy.wrap($accordion).find("button.usa-accordion__button").click();
+            });
+
+            // Sum agreement counts from each expanded step
+            cy.get("[data-cy='details-step-agreements-count']").then(($counts) => {
+                let totalFromDetails = 0;
+                $counts.each((_, el) => {
+                    totalFromDetails += parseInt(el.textContent, 10) || 0;
+                });
+                expect(totalFromDetails).to.equal(totalFromOverview);
+            });
+        });
+    });
+});
+
 describe("Procurement Dashboard - Authorized User", () => {
     beforeEach(() => {
         testLogin("procurement-team");
