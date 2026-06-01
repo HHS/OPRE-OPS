@@ -32,7 +32,7 @@ import {
     findPeriodStart
 } from "../../../helpers/servicesComponent.helpers";
 import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
-import { useIsUserSuperUser } from "../../../hooks/user.hooks";
+import { useIsUserSuperUser, useIsUserReadOnly } from "../../../hooks/user.hooks";
 import { handleExport } from "../../../helpers/budgetLines.helpers";
 import { exportTableToXlsx } from "../../../helpers/tableExport.helpers.js";
 import { PacmanLoader } from "react-spinners";
@@ -63,6 +63,7 @@ const AgreementBudgetLines = ({
     const [isExporting, setIsExporting] = React.useState(false);
     const [includeDrafts, setIncludeDrafts] = React.useState(false);
     const isSuperUser = useIsUserSuperUser();
+    const isReadOnly = useIsUserReadOnly();
     const { data: servicesComponents, isLoading: isServicesComponentsLoading } = useGetServicesComponentsListQuery(
         agreement?.id
     );
@@ -305,7 +306,7 @@ const AgreementBudgetLines = ({
                 <p className="text-center">You have not added any Budget Lines yet.</p>
             )}
 
-            {!isEditMode && (
+            {!isEditMode && !isReadOnly && (
                 <div className="grid-row flex-justify-end margin-top-1">
                     {isAgreementEditable ? (
                         <Link

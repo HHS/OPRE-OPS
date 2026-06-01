@@ -44,6 +44,9 @@ Cypress.Commands.add("FakeAuth", (user) => {
             case "power-user":
                 cy.contains("Power User").click();
                 break;
+            case "read-only-user":
+                cy.contains("Read Only User").click();
+                break;
             default:
                 // Handle any unspecified user types if necessary
                 break;

@@ -24,6 +24,7 @@ import {
 import { TABLE_HEADINGS_LIST } from "./AgreementsTable.constants";
 import { AWARD_TYPE_LABELS } from "../../../pages/agreements/agreements.constants";
 import { useHandleDeleteAgreement, useHandleEditAgreement, useNavigateAgreementReview } from "./AgreementsTable.hooks";
+import { useIsUserReadOnly } from "../../../hooks/user.hooks";
 
 /**
  * Renders a row in the agreements table.
@@ -54,6 +55,7 @@ export const AgreementTableRow = ({ agreement }) => {
 
     const areAllBudgetLinesInDraftStatus = isSuccess ? areAllBudgetLinesInStatus(agreement, BLI_STATUS.DRAFT) : false;
     const isSuperUser = useSelector((state) => state.auth?.activeUser?.is_superuser) ?? false;
+    const isReadOnly = useIsUserReadOnly();
 
     const canUserEditAgreement = isSuccess && agreement?._meta.isEditable;
     const areThereAnyBudgetLines = isSuccess ? isThereAnyBudgetLines(agreement) : false;
@@ -88,7 +90,7 @@ export const AgreementTableRow = ({ agreement }) => {
     }
     const lockedMessage = getLockedMessage();
 
-    const changeIcons = (
+    const changeIcons = !isReadOnly ? (
         <ChangeIcons
             item={agreement ?? {}}
             isItemEditable={isEditable ?? false}
@@ -100,7 +102,7 @@ export const AgreementTableRow = ({ agreement }) => {
             sendToReviewIcon={!forApprovalUrl}
             handleSubmitItemForApproval={handleSubmitAgreementForApproval}
         />
-    );
+    ) : null;
 
     const TableRowData = (
         <>
@@ -250,12 +252,14 @@ export const AgreementTableRow = ({ agreement }) => {
                     <dt className="margin-0 text-base-dark">Vendor</dt>
                     <dd className="margin-0">{vendor}</dd>
                 </dl>
-                <div
-                    className="flex-align-self-end margin-bottom-1"
-                    data-cy="change-icons-expanded"
-                >
-                    {changeIcons}
-                </div>
+                {!isReadOnly && (
+                    <div
+                        className="flex-align-self-end margin-bottom-1"
+                        data-cy="change-icons-expanded"
+                    >
+                        {changeIcons}
+                    </div>
+                )}
             </div>
         </td>
     );

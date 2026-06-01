@@ -1,12 +1,13 @@
 import React from "react";
 import { useSelector } from "react-redux";
 import { NavLink, useLocation } from "react-router-dom";
-import { PROCUREMENT_DASHBOARD_ROLES } from "../../Users/User.constants";
+import { PROCUREMENT_DASHBOARD_ROLES, USER_ROLES } from "../../Users/User.constants";
 
 const NavMenu = () => {
     const activeUser = useSelector((state) => state.auth?.activeUser);
     const isUserAdmin = activeUser?.roles?.some((role) => role?.name === "USER_ADMIN");
     const hasProcurementAccess = activeUser?.roles?.some((role) => PROCUREMENT_DASHBOARD_ROLES.includes(role?.name));
+    const isReadOnlyUser = activeUser?.roles?.some((role) => role?.name === USER_ROLES.READ_ONLY);
 
     const [isMenuOpen, setIsMenuOpen] = React.useState(null);
     const location = useLocation();
@@ -131,29 +132,31 @@ const NavMenu = () => {
                         </NavLink>
                     </li>
                 )}
-                <li className="usa-nav__primary-item">
-                    <button
-                        type="button"
-                        className="usa-accordion__button usa-nav__link"
-                        aria-expanded={isMenuOpen === "create"}
-                        aria-controls="basic-mega-nav-section-two"
-                        onClick={() => setIsMenuOpen(isMenuOpen === "create" ? null : "create")}
-                    >
-                        <span>Create</span>
-                    </button>
-                    <ul
-                        id="basic-mega-nav-section-two"
-                        className="usa-nav__submenu"
-                        style={{ display: isMenuOpen === "create" ? "block" : "none" }}
-                    >
-                        <li className="usa-nav__submenu-item">
-                            <NavLink to="/projects/create">Project</NavLink>
-                        </li>
-                        <li className="usa-nav__submenu-item">
-                            <NavLink to="/agreements/create">Agreement</NavLink>
-                        </li>
-                    </ul>
-                </li>
+                {!isReadOnlyUser && (
+                    <li className="usa-nav__primary-item">
+                        <button
+                            type="button"
+                            className="usa-accordion__button usa-nav__link"
+                            aria-expanded={isMenuOpen === "create"}
+                            aria-controls="basic-mega-nav-section-two"
+                            onClick={() => setIsMenuOpen(isMenuOpen === "create" ? null : "create")}
+                        >
+                            <span>Create</span>
+                        </button>
+                        <ul
+                            id="basic-mega-nav-section-two"
+                            className="usa-nav__submenu"
+                            style={{ display: isMenuOpen === "create" ? "block" : "none" }}
+                        >
+                            <li className="usa-nav__submenu-item">
+                                <NavLink to="/projects/create">Project</NavLink>
+                            </li>
+                            <li className="usa-nav__submenu-item">
+                                <NavLink to="/agreements/create">Agreement</NavLink>
+                            </li>
+                        </ul>
+                    </li>
+                )}
                 <li className="usa-nav__primary-item margin-left-auto">
                     <NavLink
                         to="/help-center/"
