@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { PacmanLoader } from "react-spinners";
 import { useGetProjectsQuery, useLazyGetProjectsQuery, useGetProjectsFilterOptionsQuery } from "../../../api/opsAPI";
 import App from "../../../App";
-import DebugCode from "../../../components/DebugCode";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import ProjectSummaryCardsSection from "../../../components/Projects/ProjectSummaryCardsSection";
 import ProjectsTable from "../../../components/Projects/ProjectsTable";
@@ -218,9 +217,7 @@ const ProjectsList = () => {
                         )}
                     </>
                 }
-            >
-                <DebugCode data={projectsResponse} />
-            </TablePageLayout>
+            ></TablePageLayout>
         </App>
     );
 };

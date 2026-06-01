@@ -166,7 +166,6 @@ describe("ProjectFunding", () => {
         expect(screen.getByTestId("project-funding-by-can-card")).toBeInTheDocument();
         expect(screen.getByTestId("project-funding-by-fy-card")).toBeInTheDocument();
         expect(screen.getByTestId("project-funding-cans-table")).toBeInTheDocument();
-        expect(screen.getByTestId("debug-code")).toBeInTheDocument();
     });
 
     it("passes CAN data to the table", () => {
