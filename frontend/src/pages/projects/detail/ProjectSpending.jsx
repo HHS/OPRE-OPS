@@ -6,7 +6,6 @@ import {
     useGetProjectByIdQuery,
     useGetProjectSpendingByIdQuery
 } from "../../../api/opsAPI";
-import DebugCode from "../../../components/DebugCode";
 import FiscalYear from "../../../components/UI/FiscalYear";
 import DonutGraphWithLegendCard from "../../../components/UI/Cards/DonutGraphWithLegendCard";
 import { AGREEMENT_TYPE_ORDER } from "../../../components/Agreements/AgreementSpendingCards/AgreementSpendingCards.constants";
@@ -231,15 +230,6 @@ const ProjectSpending = () => {
                         />
                     ))}
             </section>
-
-            <DebugCode
-                title="Project Spending API Response"
-                data={spendingData}
-            />
-            <DebugCode
-                title="Agreements (raw list / filtered)"
-                data={{ all: allAgreements, forFY: agreementsForFY, selectedFY }}
-            />
         </App>
     );
 };
