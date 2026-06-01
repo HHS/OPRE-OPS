@@ -440,7 +440,7 @@ def test_create_models_upsert(db_for_test_with_data):
         db_for_test_with_data.execute(
             select(OpsDBHistory)
             .where(OpsDBHistory.class_name == "GrantBudgetLineItem")
-            .order_by(OpsDBHistory.created_on.desc())
+            .order_by(OpsDBHistory.id.desc())
         )
         .scalars()
         .all()
@@ -504,7 +504,7 @@ def test_create_models_upsert(db_for_test_with_data):
         db_for_test_with_data.execute(
             select(OpsDBHistory)
             .where(OpsDBHistory.class_name == "GrantBudgetLineItem")
-            .order_by(OpsDBHistory.created_on.desc())
+            .order_by(OpsDBHistory.id.desc())
         )
         .scalars()
         .all()
@@ -512,7 +512,7 @@ def test_create_models_upsert(db_for_test_with_data):
     assert history_records[0].event_type == OpsDBHistoryType.UPDATED
     assert history_records[0].row_key == str(bli_model.id)
     assert history_records[0].created_by == sys_user.id
-    assert history_records[1].event_type == OpsDBHistoryType.UPDATED
+    assert history_records[1].event_type == OpsDBHistoryType.NEW
     assert history_records[1].row_key == str(bli_model.id)
     assert history_records[1].created_by == sys_user.id
 
@@ -571,7 +571,7 @@ def test_create_models_upsert(db_for_test_with_data):
         db_for_test_with_data.execute(
             select(OpsDBHistory)
             .where(OpsDBHistory.class_name == "GrantBudgetLineItem")
-            .order_by(OpsDBHistory.created_on.desc())
+            .order_by(OpsDBHistory.id.desc())
         )
         .scalars()
         .all()
@@ -579,6 +579,6 @@ def test_create_models_upsert(db_for_test_with_data):
     assert history_records[0].event_type == OpsDBHistoryType.UPDATED
     assert history_records[0].row_key == str(bli_model.id)
     assert history_records[0].created_by == sys_user.id
-    assert history_records[1].event_type == OpsDBHistoryType.UPDATED
+    assert history_records[1].event_type == OpsDBHistoryType.NEW
     assert history_records[1].row_key == str(bli_model.id)
     assert history_records[1].created_by == sys_user.id

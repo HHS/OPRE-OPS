@@ -29,6 +29,11 @@ vi.mock("../../../App", () => ({
     default: ({ children }) => <div data-testid="app-wrapper">{children}</div>
 }));
 
+vi.mock("../../../components/Projects/ProjectHistoryPanel", () => ({
+    __esModule: true,
+    default: () => <div data-testid="project-history-panel" />
+}));
+
 const mockProject = {
     id: 1000,
     title: "Human Services Interoperability Support",

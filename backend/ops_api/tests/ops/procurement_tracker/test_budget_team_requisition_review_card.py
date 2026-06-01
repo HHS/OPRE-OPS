@@ -88,9 +88,12 @@ def test_get_pending_requisitions_returns_approved_without_requisition(
 def test_get_pending_requisitions_excludes_completed(
     budget_team_auth_client, test_budget_team_requisition_step, loaded_db
 ):
-    """Steps with requisition_number filled are excluded."""
-    # Set requisition number (budget team completed it)
+    """Steps with requisition approved are excluded (not pending drafts)."""
+    # Set requisition approved (budget team completed it)
     test_budget_team_requisition_step.pre_award_requisition_number = "REQ-2026-12345"
+    test_budget_team_requisition_step.pre_award_requisition_date = date.today()
+    test_budget_team_requisition_step.pre_award_requisition_approved_by = 500
+    test_budget_team_requisition_step.pre_award_requisition_approved_date = date.today()
     loaded_db.commit()
 
     response = budget_team_auth_client.get("/api/v1/procurement-tracker-steps/pending-requisitions/")
@@ -98,7 +101,7 @@ def test_get_pending_requisitions_excludes_completed(
 
     data = response.json
     step_ids = [step["id"] for step in data]
-    # Should NOT include our test step anymore
+    # Should NOT include our test step anymore (it's approved, not pending)
     assert test_budget_team_requisition_step.id not in step_ids
 
 

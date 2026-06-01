@@ -1,3 +1,4 @@
+import React from "react";
 import CurrencyFormat from "react-currency-format";
 import { useGetCanFundingQuery } from "../../../api/opsAPI";
 import { calculatePercent, formatDateNeeded } from "../../../helpers/utils";
@@ -6,6 +7,7 @@ import ReverseLineGraph from "../../UI/DataViz/LineGraph/ReverseLineGraph";
 import Tag from "../../UI/Tag";
 import style from "./styles.module.css";
 import { Link } from "react-router-dom";
+import { NO_DATA } from "../../../constants";
 
 /**
  * @component CanCard
@@ -16,6 +18,9 @@ import { Link } from "react-router-dom";
  * @returns {JSX.Element} - The CAN card
  */
 const CanCard = ({ canId, fiscalYear }) => {
+    const [receivedExpectedActiveId, setReceivedExpectedActiveId] = React.useState(0);
+    const [spendingAvailableActiveId, setSpendingAvailableActiveId] = React.useState(0);
+
     const { data: canFundingData, isLoading } = useGetCanFundingQuery(
         { id: canId, fiscalYear: fiscalYear },
         { refetchOnMountOrArgChange: true }
@@ -83,7 +88,7 @@ const CanCard = ({ canId, fiscalYear }) => {
                     <dt className="margin-0 text-base-dark">CAN</dt>
                     <dd className="text-semibold margin-0 margin-bottom-2">{can.display_name}</dd>
                     <dt className="margin-0 text-base-dark">Nickname</dt>
-                    <dd className="text-semibold margin-0 margin-bottom-2">{can.nick_name}</dd>
+                    <dd className="text-semibold margin-0 margin-bottom-2">{can.nick_name ?? NO_DATA}</dd>
                     <dt className="margin-0 text-base-dark">Active Period</dt>
                     <dd className="text-semibold margin-0 margin-bottom-2">
                         {can.active_period} {can.active_period > 1 ? "years" : "year"}
@@ -131,7 +136,10 @@ const CanCard = ({ canId, fiscalYear }) => {
                     className="margin-top-3"
                 >
                     <div className="display-flex flex-justify font-12px margin-bottom-05">
-                        <div>
+                        <div
+                            data-testid="received-label"
+                            className={receivedExpectedActiveId === 1 ? "fake-bold" : ""}
+                        >
                             <CurrencyFormat
                                 value={canFundingData?.funding?.received_funding ?? 0}
                                 displayType={"text"}
@@ -142,7 +150,10 @@ const CanCard = ({ canId, fiscalYear }) => {
                             />{" "}
                             <span>Received</span>
                         </div>
-                        <div>
+                        <div
+                            data-testid="expected-label"
+                            className={receivedExpectedActiveId === 2 ? "fake-bold" : ""}
+                        >
                             <CurrencyFormat
                                 value={canFundingData?.funding?.expected_funding ?? 0}
                                 displayType={"text"}
@@ -154,14 +165,20 @@ const CanCard = ({ canId, fiscalYear }) => {
                             <span>Expected</span>
                         </div>
                     </div>
-                    <ReverseLineGraph data={receivedExpectedData} />
+                    <ReverseLineGraph
+                        data={receivedExpectedData}
+                        setActiveId={setReceivedExpectedActiveId}
+                    />
                 </section>
                 <section
                     id="spending-available-chart"
                     className="margin-top-3"
                 >
                     <div className="display-flex flex-justify font-12px margin-bottom-05">
-                        <div>
+                        <div
+                            data-testid="spending-label"
+                            className={spendingAvailableActiveId === 1 ? "fake-bold" : ""}
+                        >
                             <CurrencyFormat
                                 value={spendingAmount ?? 0}
                                 displayType={"text"}
@@ -172,7 +189,10 @@ const CanCard = ({ canId, fiscalYear }) => {
                             />{" "}
                             <span>Spending</span>
                         </div>
-                        <div>
+                        <div
+                            data-testid="available-label"
+                            className={spendingAvailableActiveId === 2 ? "fake-bold" : ""}
+                        >
                             <CurrencyFormat
                                 value={canFundingData?.funding?.available_funding ?? 0}
                                 displayType={"text"}
@@ -187,6 +207,7 @@ const CanCard = ({ canId, fiscalYear }) => {
                     <LineGraph
                         data={spendingAvailableData}
                         isStriped={true}
+                        setActiveId={setSpendingAvailableActiveId}
                     />
                 </section>
             </div>

@@ -1,8 +1,17 @@
-"""Configuration for pytest tests."""
+"""Configuration for pytest tests.
+
+Supports two execution modes:
+- Sequential: `pipenv run pytest` (uses pytest-docker for container lifecycle)
+- Parallel: `pipenv run pytest -n auto` (xdist workers share one Docker instance,
+  each gets its own database cloned from the seeded template)
+"""
 
 # flake8: noqa: S404,S607,S602
+import os
 import subprocess
 import sys
+import time
+import timeit
 
 # Raise soft limit for open files to avoid OSError: [Errno 24] Too many open files
 # when running the full suite (many app/session/connection instances per test).
@@ -13,19 +22,20 @@ if sys.platform != "win32":
         soft, hard = resource.getrlimit(resource.RLIMIT_NOFILE)
         if soft != resource.RLIM_INFINITY and soft < 4096:
             resource.setrlimit(resource.RLIMIT_NOFILE, (min(4096, hard), hard))
-    except (ImportError, OSError, ValueError):
-        # resource is Unix-only; setrlimit can fail (permissions, limits). Continue with default.
-        pass
+    except (ImportError, OSError, ValueError) as exc:
+        import warnings
+
+        warnings.warn(f"Could not raise RLIMIT_NOFILE to 4096: {exc}", stacklevel=1)
 
 from collections.abc import Generator
 from datetime import datetime, timezone
 from typing import Type
 
 import pytest
+from filelock import FileLock
 from flask import Flask
 from flask.testing import FlaskClient
-from pytest_docker.plugin import Services
-from sqlalchemy import create_engine, delete, text
+from sqlalchemy import create_engine, event, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
@@ -38,7 +48,6 @@ from models import (
     CANFundingBudget,
     CANFundingDetails,
     ChangeRequestStatus,
-    OpsDBHistory,
     OpsEvent,
     ProcurementShop,
     Project,
@@ -58,16 +67,233 @@ from tests.auth_client import (
     SystemOwnerAuthClient,
 )
 
+# ---------------------------------------------------------------------------
+# Docker / database infrastructure
+# ---------------------------------------------------------------------------
+
+COMPOSE_FILE = os.path.join(os.path.dirname(__file__), "docker-compose.yml")
+DOCKER_PROJECT_NAME = "pytest-ops-api"
+
+
+def pytest_sessionfinish(session, exitstatus):
+    """Tear down Docker containers after xdist controller finishes.
+
+    In sequential mode, pytest-docker handles teardown. In xdist mode, the
+    controller process (not a worker) tears down the shared containers.
+    """
+    # Skip if this is a worker process
+    if os.environ.get("PYTEST_XDIST_WORKER"):
+        return
+
+    # Only tear down if xdist was actually used
+    if session.config.pluginmanager.has_plugin("dsession"):
+        try:
+            subprocess.run(
+                f"docker compose -f {COMPOSE_FILE} -p {DOCKER_PROJECT_NAME} down -v",
+                shell=True,
+                check=True,
+                capture_output=True,
+            )
+        except subprocess.CalledProcessError:
+            pass
+
+
+def is_responsive(db: Engine) -> bool:
+    try:
+        with db.connect() as connection:
+            connection.execute(text("SELECT 1;"))
+        return True
+    except OperationalError:
+        return False
+
+
+def is_loaded(db: Engine) -> bool:
+    try:
+        if is_responsive(db):
+            result = subprocess.run(
+                'docker ps -f "name=pytest-data-import" -a | grep "Exited (0)"',
+                shell=True,
+                check=True,
+            )
+            print(f"result: {result}")
+            return True
+    except subprocess.CalledProcessError:
+        return False
+    else:
+        return False
+
+
+def _wait_for_db(engine: Engine, timeout: float = 120.0, pause: float = 1.0) -> None:
+    ref = timeit.default_timer()
+    while (timeit.default_timer() - ref) < timeout:
+        if is_loaded(engine):
+            return
+        time.sleep(pause)
+    raise TimeoutError("Timed out waiting for database to be seeded.")
+
+
+def _docker_compose(cmd: str) -> None:
+    subprocess.run(
+        f"docker compose -f {COMPOSE_FILE} -p {DOCKER_PROJECT_NAME} {cmd}",
+        shell=True,
+        check=True,
+    )
+
+
+# Provide worker_id fixture if pytest-xdist is not installed
+try:
+    import xdist  # noqa: F401
+except ImportError:
+
+    @pytest.fixture(scope="session")
+    def worker_id():
+        return "master"
+
+
+# --- pytest-docker fixtures (used in sequential mode only) ---
+
+
+@pytest.fixture(scope="session")
+def docker_cleanup() -> str:
+    return "down -v"
+
+
+@pytest.fixture(scope="session")
+def docker_compose_command() -> str:
+    return "docker compose"
+
+
+@pytest.fixture(scope="session")
+def docker_compose_project_name() -> str:
+    return DOCKER_PROJECT_NAME
+
+
+# ---------------------------------------------------------------------------
+# db_service — the core fixture that provides a per-worker database engine
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture(scope="session")
+def db_service(request, worker_id, tmp_path_factory) -> Generator[Engine, None, None]:
+    """Provide a database engine.
+
+    Sequential mode (worker_id == "master"):
+        Uses pytest-docker to manage container lifecycle normally.
+
+    Parallel mode (xdist workers):
+        Coordinates Docker startup via file lock. Each worker clones the seeded
+        database for full isolation.
+    """
+    docker_ip = "127.0.0.1"
+    admin_url = f"postgresql://postgres:local_password@{docker_ip}:5432/postgres"  # pragma: allowlist secret
+
+    if worker_id == "master":
+        # Sequential mode — delegate to pytest-docker fixtures
+        docker_services = request.getfixturevalue("docker_services")
+        admin_engine = create_engine(admin_url, isolation_level="AUTOCOMMIT")
+        docker_services.wait_until_responsive(timeout=120.0, pause=1.0, check=lambda: is_loaded(admin_engine))
+
+        engine = create_engine(
+            f"postgresql://ops:ops@{docker_ip}:5432/postgres",  # pragma: allowlist secret
+            echo=True,
+        )
+        yield engine
+        engine.dispose()
+        admin_engine.dispose()
+        return
+
+    # --- xdist worker mode ---
+    root_tmp = tmp_path_factory.getbasetemp().parent
+    lock = root_tmp / "docker_startup.lock"
+    flag = root_tmp / "docker_started"
+
+    with FileLock(str(lock)):
+        if not flag.exists():
+            _docker_compose("up --build -d")
+            flag.write_text("started")
+
+    admin_engine = create_engine(admin_url, isolation_level="AUTOCOMMIT", pool_pre_ping=True)
+    _wait_for_db(admin_engine)
+
+    # Create a dedicated template DB (once) so workers don't contend on 'postgres'.
+    template_db = "ops_test_template"
+    template_lock = root_tmp / "template_create.lock"
+    template_flag = root_tmp / "template_created"
+    with FileLock(str(template_lock)):
+        if not template_flag.exists():
+            with admin_engine.connect() as conn:
+                conn.execute(
+                    text(
+                        "SELECT pg_terminate_backend(pid) "
+                        "FROM pg_stat_activity "
+                        "WHERE datname = 'postgres' AND pid <> pg_backend_pid()"
+                    )
+                )
+                conn.execute(text(f"DROP DATABASE IF EXISTS {template_db}"))
+                conn.execute(text(f"CREATE DATABASE {template_db} TEMPLATE postgres"))
+                conn.execute(text(f"GRANT ALL PRIVILEGES ON DATABASE {template_db} TO ops"))
+            template_flag.write_text("created")
+
+    # Clone from the template for this worker (no connections to contend with).
+    # worker_id comes from xdist (always "gw0", "gw1", etc.) — safe for DDL interpolation.
+    db_name = f"test_{worker_id}"
+    clone_lock = root_tmp / "db_clone.lock"
+    with FileLock(str(clone_lock)):
+        with admin_engine.connect() as conn:
+            conn.execute(
+                text(
+                    f"SELECT pg_terminate_backend(pid) "
+                    f"FROM pg_stat_activity "
+                    f"WHERE datname = '{template_db}' AND pid <> pg_backend_pid()"
+                )
+            )
+            conn.execute(text(f"DROP DATABASE IF EXISTS {db_name}"))
+            conn.execute(text(f"CREATE DATABASE {db_name} TEMPLATE {template_db}"))
+            conn.execute(text(f"GRANT ALL PRIVILEGES ON DATABASE {db_name} TO ops"))
+
+    worker_url = f"postgresql://ops:ops@{docker_ip}:5432/{db_name}"  # pragma: allowlist secret
+    engine = create_engine(worker_url, echo=False)
+
+    yield engine
+
+    engine.dispose()
+    with admin_engine.connect() as conn:
+        conn.execute(
+            text(
+                f"SELECT pg_terminate_backend(pid) "
+                f"FROM pg_stat_activity "
+                f"WHERE datname = '{db_name}' AND pid <> pg_backend_pid()"
+            )
+        )
+        conn.execute(text(f"DROP DATABASE IF EXISTS {db_name}"))
+    admin_engine.dispose()
+
+
+# ---------------------------------------------------------------------------
+# Flask app fixtures
+# ---------------------------------------------------------------------------
+
 
 @pytest.fixture()
 def app(db_service) -> Generator[Flask, None, None]:
-    """Make and return the flask app."""
+    """Make and return the flask app, bound to this worker's database."""
     app = create_app()
+
+    # Override the engine/session to use the worker-specific database.
+    # Don't dispose db_service — it's session-scoped and shared across tests.
+    if str(app.engine.url) != str(db_service.url):
+        app.engine.dispose()
+        app.engine = db_service
+        app.db_session.configure(bind=db_service)
+
     yield app
 
-    # Cleanup: dispose of the database engine to free connections
-    if hasattr(app, "engine"):
-        app.engine.dispose()
+
+@pytest.fixture()
+def app_ctx(app: Flask) -> Generator[None, None, None]:
+    """Activate the ApplicationContext for the flask app."""
+    with app.app_context():
+        yield
 
 
 @pytest.fixture()
@@ -138,11 +364,48 @@ def power_user_auth_client(app: Flask) -> FlaskClient:
     return app.test_client()
 
 
+# ---------------------------------------------------------------------------
+# Database session with SAVEPOINT isolation
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture()
+def loaded_db(app: Flask, app_ctx: None) -> Generator[Session, None, None]:
+    """Provide a DB session wrapped in a transaction that rolls back after each test.
+
+    Uses a SAVEPOINT so that application code calling session.commit() does not
+    actually persist changes — everything is rolled back at the end of the test.
+    """
+    session = app.db_session
+    connection = app.engine.connect()
+    transaction = connection.begin()
+
+    session.configure(bind=connection)
+    connection.begin_nested()
+
+    @event.listens_for(session, "after_transaction_end")
+    def restart_savepoint(sess, trans):
+        if trans.nested and not trans._parent.nested:
+            connection.begin_nested()
+
+    yield session
+
+    event.remove(session, "after_transaction_end", restart_savepoint)
+    session.close()
+    transaction.rollback()
+    connection.close()
+    session.configure(bind=app.engine)
+
+
+# ---------------------------------------------------------------------------
+# Test data fixtures
+# ---------------------------------------------------------------------------
+
+
 @pytest.fixture()
 def test_change_request(app: Flask, test_user, test_bli) -> BudgetLineItemChangeRequest:
     session = app.db_session
 
-    # create a change request
     change_request1 = BudgetLineItemChangeRequest()
     change_request1.status = ChangeRequestStatus.IN_REVIEW
     change_request1.budget_line_item_id = test_bli.id
@@ -155,159 +418,60 @@ def test_change_request(app: Flask, test_user, test_bli) -> BudgetLineItemChange
 
     yield change_request1
 
-    session.delete(change_request1)
-    session.commit()
-
-
-def is_responsive(db: Engine) -> bool:
-    """Check if the DB is responsive."""
-    try:
-        with db.connect() as connection:
-            connection.execute(text("SELECT 1;"))
-        return True
-    except OperationalError:
-        return False
-
-
-def is_loaded(db: Engine) -> bool:
-    """Check if the DB is up."""
-    try:
-        if is_responsive(db):
-            # This will wait until the data-import is complete
-            result = subprocess.run(
-                'docker ps -f "name=pytest-data-import" -a | grep "Exited (0)"',
-                shell=True,
-                check=True,
-            )
-            print(f"result: {result}")
-            return True
-    except subprocess.CalledProcessError:
-        return False
-    else:
-        return False
-
-
-@pytest.fixture(scope="session")
-def db_service(docker_ip: str, docker_services: Services) -> Engine:
-    """Ensure that DB is up and responsive."""
-
-    connection_string = f"postgresql://postgres:local_password@{docker_ip}:5432/postgres"  # pragma: allowlist secret
-    engine = create_engine(connection_string, echo=True, future=True)
-    docker_services.wait_until_responsive(timeout=120.0, pause=1.0, check=lambda: is_loaded(engine))
-    return engine
-
-
-# If you need the 'test container' to stick around, change this to return False
-@pytest.fixture(scope="session")
-def docker_cleanup() -> str:
-    """Return the command to shut down docker compose."""
-    # return False
-    return "down -v"
-
-
-# Overwrite the default 'docker-compose' command with the v2 'docker compose' command.
-@pytest.fixture(scope="session")
-def docker_compose_command() -> str:
-    """Return the command for docker compose."""
-    return "docker compose"
-
-
-@pytest.fixture()
-def loaded_db(app: Flask, app_ctx: None) -> Session:
-    """Get SQLAlchemy Session."""
-
-    session = app.db_session
-
-    yield session
-
-    # cleanup
-    session.rollback()
-
-    session.execute(delete(OpsDBHistory))
-
-    session.commit()
-    session.close()
-
-
-@pytest.fixture()
-def app_ctx(app: Flask) -> Generator[None, None, None]:
-    """Activate the ApplicationContext for the flask app."""
-    with app.app_context():
-        yield
+    # No manual cleanup needed — SAVEPOINT rollback handles it
 
 
 @pytest.fixture()
 def test_user(loaded_db) -> User | None:
-    """Get a test user.
-
-    N.B. This user has an SYSTEM_OWNER role whose status is INACTIVE.
-    """
+    """N.B. This user has an SYSTEM_OWNER role whose status is INACTIVE."""
     return loaded_db.get(User, 500)
 
 
 @pytest.fixture()
 def test_admin_user(loaded_db) -> User | None:
-    """Get a test SYSTEM_OWNER user - also the user associated with the auth_client.
-
-    N.B. This user has a SYSTEM_OWNER role whose status is ACTIVE.
-    """
+    """N.B. This user has a SYSTEM_OWNER role whose status is ACTIVE."""
     return loaded_db.get(User, 503)
 
 
 @pytest.fixture()
 def test_division_director(loaded_db) -> User | None:
-    """Get a test SYSTEM_OWNER user - also the user associated with the auth_client.
-
-    N.B. This user has a SYSTEM_OWNER role whose status is ACTIVE.
-    """
     return loaded_db.get(User, 522)
 
 
 @pytest.fixture()
 def test_non_admin_user(loaded_db) -> User | None:
-    """Get a basic test user
-
-    N.B. This user has an non-SYSTEM_OWNER role whose status is ACTIVE.
-    """
+    """N.B. This user has a non-SYSTEM_OWNER role whose status is ACTIVE."""
     return loaded_db.get(User, 521)
 
 
 @pytest.fixture()
 def test_budget_team_user(loaded_db):
-    """Get a test budget team user
-
-    N.B. This user has an non-SYSTEM_OWNER role whose status is ACTIVE.
-    """
+    """N.B. This user has a non-SYSTEM_OWNER role whose status is ACTIVE."""
     return loaded_db.get(User, 523)
 
 
 @pytest.fixture()
 def test_vendor(loaded_db) -> Vendor | None:
-    """Get a test Vendor."""
     return loaded_db.get(Vendor, 100)
 
 
 @pytest.fixture()
 def test_project(loaded_db) -> Project | None:
-    """Get a test Project."""
     return loaded_db.get(Project, 1000)
 
 
 @pytest.fixture()
 def test_can(loaded_db) -> CAN | None:
-    """Get a test CAN."""
     return loaded_db.get(CAN, 500)
 
 
 @pytest.fixture()
 def test_cans(loaded_db) -> list[Type[CAN] | None]:
-    """Get two test CANs."""
     return [loaded_db.get(CAN, 500), loaded_db.get(CAN, 501)]
 
 
 @pytest.fixture()
 def test_create_can_history_item(loaded_db) -> OpsEvent | None:
-    """Get OPS Event item for creation of CAN 500"""
     return loaded_db.get(OpsEvent, 1)
 
 
@@ -324,7 +488,6 @@ def unadded_can():
 
 @pytest.fixture()
 def test_bli(loaded_db) -> BudgetLineItem | None:
-    """Get a test BudgetLineItem."""
     return loaded_db.get(BudgetLineItem, 15000)
 
 
@@ -335,13 +498,11 @@ def utc_today():
 
 @pytest.fixture
 def test_can_funding_budget(loaded_db) -> CANFundingBudget | None:
-    """Get a test CANFundingBudget."""
     return loaded_db.get(CANFundingBudget, 1)
 
 
 @pytest.fixture
 def test_can_funding_details(loaded_db) -> CANFundingDetails | None:
-    """Get a test CANFundingDetail."""
     return loaded_db.get(CANFundingDetails, 1)
 
 
@@ -385,9 +546,4 @@ def db_for_aa_agreement(loaded_db):
 
     yield loaded_db
 
-    loaded_db.delete(requesting_agency)
-    loaded_db.delete(servicing_agency)
-    loaded_db.delete(vendor)
-    loaded_db.delete(project)
-    loaded_db.delete(procurement_shop)
-    loaded_db.commit()
+    # No manual cleanup needed — SAVEPOINT rollback handles it

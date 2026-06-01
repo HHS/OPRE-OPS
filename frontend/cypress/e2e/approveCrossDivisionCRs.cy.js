@@ -92,7 +92,7 @@ describe("Approve Cross Division Change Requests", () => {
                         }
                     })
                     .then((changeRequestsResponse) => {
-                        const pendingChangeRequestIds = (changeRequestsResponse.body || [])
+                        const pendingChangeRequestIds = (changeRequestsResponse.body?.data || [])
                             .filter((changeRequest) => changeRequest.status === "IN_REVIEW")
                             .filter((changeRequest) => !preserveChangeRequestIds.includes(changeRequest.id))
                             .map((changeRequest) => changeRequest.id);
@@ -143,54 +143,59 @@ describe("Approve Cross Division Change Requests", () => {
             // create BLI WITHIN division
             .then((agreementId) => {
                 const bliData = { ...testBLIWithinDivision, agreement_id: agreementId };
-                return cy.request({
-                    method: "POST",
-                    url: "http://localhost:8080/api/v1/budget-line-items/",
-                    body: bliData,
-                    headers: {
-                        Authorization: bearer_token,
-                        Accept: "application/json"
-                    }
-                }).then((response) => {
-                    expect(response.status).to.eq(201);
-                    expect(response.body.id).to.exist;
-                    const bliId1 = response.body.id;
-
-                    // Create the second BLI (outside division)
-                    const bliData2 = { ...testBLIOutsideDivision, agreement_id: agreementId };
-                    return cy.request({
+                return cy
+                    .request({
                         method: "POST",
                         url: "http://localhost:8080/api/v1/budget-line-items/",
-                        body: bliData2,
+                        body: bliData,
                         headers: {
                             Authorization: bearer_token,
                             Accept: "application/json"
                         }
-                    }).then((response2) => {
-                        expect(response2.status).to.eq(201);
-                        expect(response2.body.id).to.exist;
-                        const bliId2 = response2.body.id;
-                        return { agreementId, bliId1, bliId2 };
+                    })
+                    .then((response) => {
+                        expect(response.status).to.eq(201);
+                        expect(response.body.id).to.exist;
+                        const bliId1 = response.body.id;
+
+                        // Create the second BLI (outside division)
+                        const bliData2 = { ...testBLIOutsideDivision, agreement_id: agreementId };
+                        return cy
+                            .request({
+                                method: "POST",
+                                url: "http://localhost:8080/api/v1/budget-line-items/",
+                                body: bliData2,
+                                headers: {
+                                    Authorization: bearer_token,
+                                    Accept: "application/json"
+                                }
+                            })
+                            .then((response2) => {
+                                expect(response2.status).to.eq(201);
+                                expect(response2.body.id).to.exist;
+                                const bliId2 = response2.body.id;
+                                return { agreementId, bliId1, bliId2 };
+                            });
                     });
-                });
             })
             // submit PATCH CR for approval via REST
             .then(({ agreementId, bliId1, bliId2 }) => {
                 let crId1;
                 // Submit PATCH for first BLI
-                return cy.request({
-                    method: "PATCH",
-                    url: `http://localhost:8080/api/v1/budget-line-items/${bliId1}`,
-                    body: {
-                        id: bliId1,
-                        status: BLI_STATUS.PLANNED,
-                        requestor_notes: "Test requestor notes for BLI 1"
-                    },
-                    headers: {
-                        Authorization: bearer_token,
-                        Accept: "application/json"
-                    }
-                })
+                return cy
+                    .request({
+                        method: "PATCH",
+                        url: `http://localhost:8080/api/v1/budget-line-items/${bliId1}`,
+                        body: {
+                            id: bliId1,
+                            status: BLI_STATUS.PLANNED,
+                            requestor_notes: "Test requestor notes for BLI 1"
+                        },
+                        headers: {
+                            Authorization: bearer_token,
+                            Accept: "application/json"
+                        }
+                    })
                     .then((response) => {
                         expect(response.status).to.eq(202);
                         expect(response.body.id).to.exist;

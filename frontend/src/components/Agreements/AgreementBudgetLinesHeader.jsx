@@ -35,7 +35,7 @@ export const AgreementBudgetLinesHeader = ({
                     {heading}
                 </h2>
 
-                <div>
+                <div className="display-flex flex-align-baseline">
                     <button
                         type="button"
                         id="toggleDraftBLIs"
@@ -65,26 +65,30 @@ export const AgreementBudgetLinesHeader = ({
                                 className="text-primary height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
                                 title="edit"
                                 data-position="top"
+                                style={{ top: "-2px" }}
                             />
                             <span className="text-primary">Edit</span>
                         </button>
                     )}
                     {/* DISABLED EDIT BUTTON */}
                     {!isEditMode && isEditable && isPreAwardInReview && (
-                        <Tooltip label="This agreement is In Review for Pre-Award Approval. Edits or changes cannot be made at this time.">
+                        <Tooltip
+                            label="This agreement is In Review for Pre-Award Approval. Edits or changes cannot be made at this time."
+                            className="display-flex flex-align-baseline"
+                        >
                             <span
                                 id="edit-disabled"
-                                className="usa-button--unstyled usa-button--disabled"
+                                className="usa-button--unstyled usa-button--disabled display-flex flex-align-baseline"
                                 aria-disabled="true"
                                 data-cy="edit-disabled"
-                                tabIndex={0}
-                                role="button"
                             >
                                 <FontAwesomeIcon
                                     icon={faPen}
                                     size="2x"
                                     className="height-2 width-2 margin-right-1"
+                                    style={{ position: "relative", top: "2px" }}
                                     aria-hidden="true"
+                                    data-position="top"
                                 />
                                 <span>Edit</span>
                             </span>

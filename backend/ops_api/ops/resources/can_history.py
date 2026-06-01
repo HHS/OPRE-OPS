@@ -21,7 +21,7 @@ class CANHistoryListAPI(BaseListAPI):
     @error_simulator
     def get(self, id: int) -> Response:
         data = self._get_schema.dump(self._get_schema.load(request.args))
-        result = self.service.get(
+        result, metadata = self.service.get(
             id,
             data.get("limit"),
             data.get("offset"),
@@ -29,4 +29,10 @@ class CANHistoryListAPI(BaseListAPI):
             data.get("sort_asc"),
         )
         can_history_schema = CANHistoryItemSchema()
-        return make_response_with_headers([can_history_schema.dump(can_history) for can_history in result])
+        response_data = {
+            "data": [can_history_schema.dump(can_history) for can_history in result],
+            "count": metadata["count"],
+            "limit": metadata["limit"],
+            "offset": metadata["offset"],
+        }
+        return make_response_with_headers(response_data)

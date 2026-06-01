@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 import ProcurementDetailsStep from "./ProcurementDetailsStep";
+import { getCurrentFiscalYear } from "../../../helpers/utils";
 
 vi.mock("../../../components/UI/TableRowExpandable", () => ({
     default: ({ tableRowData }) => <tr data-testid="expandable-row">{tableRowData}</tr>
@@ -29,13 +30,16 @@ const makeAgreement = (overrides = {}) => ({
     ...overrides
 });
 
+const fiscalYear = Number(getCurrentFiscalYear());
+
 describe("ProcurementDetailsStep", () => {
     const defaultProps = {
         agreements: [],
         agreementsPerStep: 0,
         userNameById: {},
         targetDateByAgreementId: {},
-        daysInStepByAgreementId: {}
+        daysInStepByAgreementId: {},
+        fiscalYear
     };
 
     const renderComponent = (props = {}) =>
@@ -65,13 +69,15 @@ describe("ProcurementDetailsStep", () => {
             makeAgreement({
                 id: 1,
                 budget_line_items: [
-                    { id: 100, status: "IN_EXECUTION", amount: 50000, fees: 2500 },
-                    { id: 101, status: "DRAFT", amount: 10000, fees: 500 }
+                    { id: 100, status: "IN_EXECUTION", amount: 50000, fees: 2500, fiscal_year: fiscalYear },
+                    { id: 101, status: "DRAFT", amount: 10000, fees: 500, fiscal_year: fiscalYear }
                 ]
             }),
             makeAgreement({
                 id: 2,
-                budget_line_items: [{ id: 200, status: "IN_EXECUTION", amount: 30000, fees: 1500 }]
+                budget_line_items: [
+                    { id: 200, status: "IN_EXECUTION", amount: 30000, fees: 1500, fiscal_year: fiscalYear }
+                ]
             })
         ];
 
@@ -79,10 +85,32 @@ describe("ProcurementDetailsStep", () => {
 
         // 2 executing BLIs and 2 agreementsPerStep both render as "2"
         expect(screen.getAllByText("2")).toHaveLength(2);
-        // Total executing: $50,000 + $30,000 = $80,000.00
-        expect(screen.getByText("$80,000.00")).toBeInTheDocument();
+        // Total executing (amount + fees): ($50,000 + $2,500) + ($30,000 + $1,500) = $84,000.00
+        expect(screen.getByText("$84,000.00")).toBeInTheDocument();
         // Total fees: $2,500 + $1,500 = $4,000.00
         expect(screen.getByText("$4,000.00")).toBeInTheDocument();
+    });
+
+    it("excludes executing BLIs from other fiscal years", () => {
+        const agreements = [
+            makeAgreement({
+                id: 1,
+                budget_line_items: [
+                    { id: 100, status: "IN_EXECUTION", amount: 50000, fees: 2500, fiscal_year: fiscalYear },
+                    { id: 101, status: "IN_EXECUTION", amount: 750000, fees: 5000, fiscal_year: fiscalYear - 1 },
+                    { id: 102, status: "IN_EXECUTION", amount: 250000, fees: 3000, fiscal_year: fiscalYear + 1 }
+                ]
+            })
+        ];
+
+        renderComponent({ agreements, agreementsPerStep: 1, fiscalYear });
+
+        // 1 executing BLI matches current FY (agreementsPerStep also shows "1")
+        expect(screen.getAllByText("1")).toHaveLength(2);
+        // Total executing (amount + fees): $50,000 + $2,500 = $52,500 (shown in summary tag and table row)
+        expect(screen.getAllByText("$52,500.00")).toHaveLength(2);
+        // Total fees: only the current FY BLI fees ($2,500)
+        expect(screen.getAllByText("$2,500.00").length).toBeGreaterThanOrEqual(1);
     });
 
     it("shows zero values when no executing BLIs", () => {

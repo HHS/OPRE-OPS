@@ -94,6 +94,7 @@ export const opsApi = createApi({
                     budgetLineStatus,
                     portfolio,
                     agreementName,
+                    nickName,
                     agreementType,
                     projectTitle,
                     contractNumber,
@@ -124,6 +125,9 @@ export const opsApi = createApi({
                             queryParams.push(`name=${encodeURIComponent(agreementDisplayName)}`);
                         }
                     });
+                }
+                if (nickName) {
+                    nickName.forEach((value) => queryParams.push(`nick_name=${encodeURIComponent(value)}`));
                 }
                 if (agreementType) {
                     agreementType.forEach((type) =>
@@ -938,6 +942,10 @@ export const opsApi = createApi({
                 const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
                 return `/cans/${canId}/history/${queryString}`;
             },
+            transformResponse: (response) => ({
+                items: response.data,
+                count: response.count
+            }),
             providesTags: ["Cans"]
         }),
         getNotificationsByUserId: builder.query({
@@ -1116,9 +1124,14 @@ export const opsApi = createApi({
             invalidatesTags: ["ServicesComponents", "Agreements", "BudgetLineItems", "AgreementHistory"]
         }),
         getChangeRequestsList: builder.query({
-            query: ({ userId }) => ({
-                url: `/change-requests/${userId ? `?userId=${userId}` : ""}`
-            }),
+            query: ({ userId, limit, offset }) => {
+                const params = new URLSearchParams();
+                if (userId) params.append("userId", userId);
+                if (limit !== undefined) params.append("limit", limit);
+                if (offset !== undefined) params.append("offset", offset);
+                const qs = params.toString();
+                return { url: `/change-requests/${qs ? `?${qs}` : ""}` };
+            },
             providesTags: ["ChangeRequests"]
         }),
         updateChangeRequest: builder.mutation({
@@ -1196,7 +1209,7 @@ export const opsApi = createApi({
                     body: data
                 };
             },
-            invalidatesTags: ["ProcurementTrackers", "Procurement Tracker Steps"]
+            invalidatesTags: ["ProcurementTrackers", "Procurement Tracker Steps", "Budget Requisitions"]
         }),
         getPendingPreAwardApprovals: builder.query({
             query: () => `/procurement-tracker-steps/pending-approvals/`,
@@ -1313,6 +1326,7 @@ export const {
     useGetSpecialTopicsQuery,
     useGetProcurementTrackersByAgreementIdQuery,
     useGetProcurementTrackersByAgreementIdsQuery,
+    useLazyGetProcurementTrackersByAgreementIdsQuery,
     useUpdateProcurementTrackerStepMutation,
     useGetPendingPreAwardApprovalsQuery,
     useGetPendingBudgetRequisitionsQuery

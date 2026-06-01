@@ -75,6 +75,74 @@ describe("AgreementMetaAccordion", () => {
         expect(allTBDs.length).toBeGreaterThan(0);
     });
 
+    describe("Division Directors and Team Leaders", () => {
+        it("should display division director names when present", () => {
+            render(
+                <AgreementMetaAccordion
+                    agreement={agreement}
+                    instructions="test instructions"
+                    projectOfficerName="John Doe"
+                    convertCodeForDisplay={convertCodeForDisplay}
+                />
+            );
+
+            expect(screen.getByText("Division Director(s)")).toBeInTheDocument();
+            expect(screen.getByText("Jane Smith")).toBeInTheDocument();
+        });
+
+        it("should display team leader names when present", () => {
+            render(
+                <AgreementMetaAccordion
+                    agreement={agreement}
+                    instructions="test instructions"
+                    projectOfficerName="John Doe"
+                    convertCodeForDisplay={convertCodeForDisplay}
+                />
+            );
+
+            expect(screen.getByText("Team Leader(s)")).toBeInTheDocument();
+            expect(screen.getByText("Bob Johnson")).toBeInTheDocument();
+        });
+
+        it("should show NO_DATA when division_directors is empty", () => {
+            const agreementWithoutDDs = {
+                ...agreement,
+                division_directors: []
+            };
+
+            render(
+                <AgreementMetaAccordion
+                    agreement={agreementWithoutDDs}
+                    instructions="test instructions"
+                    projectOfficerName="John Doe"
+                    convertCodeForDisplay={convertCodeForDisplay}
+                />
+            );
+
+            expect(screen.getByText("Division Director(s)")).toBeInTheDocument();
+            expect(screen.getAllByText(NO_DATA).length).toBeGreaterThan(0);
+        });
+
+        it("should show NO_DATA when team_leaders is empty", () => {
+            const agreementWithoutTLs = {
+                ...agreement,
+                team_leaders: []
+            };
+
+            render(
+                <AgreementMetaAccordion
+                    agreement={agreementWithoutTLs}
+                    instructions="test instructions"
+                    projectOfficerName="John Doe"
+                    convertCodeForDisplay={convertCodeForDisplay}
+                />
+            );
+
+            expect(screen.getByText("Team Leader(s)")).toBeInTheDocument();
+            expect(screen.getAllByText(NO_DATA).length).toBeGreaterThan(0);
+        });
+    });
+
     describe("Contract Number conditional rendering", () => {
         it("should show contract number for awarded CONTRACT agreements", () => {
             const contractAgreement = {

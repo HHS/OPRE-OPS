@@ -51,9 +51,9 @@ const ReceivedFundingCard = ({ title, totalReceived, totalFunding }) => {
                     dollarsClasses="font-sans-xl text-bold margin-bottom-0"
                     centsStyles={{ fontSize: "10px" }}
                 />
-                {totalFunding > 0 && <Tag tagStyle={"budgetAvailable"}>Received</Tag>}
+                {totalReceived > 0 && <Tag tagStyle={"budgetAvailable"}>Received</Tag>}
             </div>
-            {totalFunding > 0 && (
+            {totalReceived > 0 && (
                 <div
                     id="currency-summary-card"
                     className="margin-top-2"

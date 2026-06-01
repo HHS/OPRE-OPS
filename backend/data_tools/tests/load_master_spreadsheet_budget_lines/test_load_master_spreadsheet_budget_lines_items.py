@@ -186,6 +186,13 @@ def db_with_data(loaded_db):
         loaded_db.add(can)
     loaded_db.commit()
 
+    # Create test user
+    user = loaded_db.get(User, 1)
+    if not user:
+        user = User(id=1, email="system.admin@localhost")
+        loaded_db.add(user)
+        loaded_db.commit()
+
     yield loaded_db
 
     if g_agreement:
@@ -351,9 +358,7 @@ def test_create_model(db_with_data):
     # Check history records
     history_records = (
         db_with_data.execute(
-            select(OpsDBHistory)
-            .where(OpsDBHistory.row_key == str(bli_model.id))
-            .order_by(OpsDBHistory.created_on.desc())
+            select(OpsDBHistory).where(OpsDBHistory.row_key == str(bli_model.id)).order_by(OpsDBHistory.id.desc())
         )
         .scalars()
         .all()
@@ -714,9 +719,7 @@ def test_create_model_lock_in_proc_shop(db_with_data):
     # Check history records
     history_records = (
         db_with_data.execute(
-            select(OpsDBHistory)
-            .where(OpsDBHistory.row_key == str(bli_model.id))
-            .order_by(OpsDBHistory.created_on.desc())
+            select(OpsDBHistory).where(OpsDBHistory.row_key == str(bli_model.id)).order_by(OpsDBHistory.id.desc())
         )
         .scalars()
         .all()
@@ -828,9 +831,7 @@ def test_create_model_lock_in_proc_shop_fee_not_found(db_with_data):
     # Check history records
     history_records = (
         db_with_data.execute(
-            select(OpsDBHistory)
-            .where(OpsDBHistory.row_key == str(bli_model.id))
-            .order_by(OpsDBHistory.created_on.desc())
+            select(OpsDBHistory).where(OpsDBHistory.row_key == str(bli_model.id)).order_by(OpsDBHistory.id.desc())
         )
         .scalars()
         .all()
@@ -967,9 +968,7 @@ def test_create_model_for_aa_agreement(db_for_aas):
     # Check history records
     history_records = (
         db_for_aas.execute(
-            select(OpsDBHistory)
-            .where(OpsDBHistory.row_key == str(bli_model.id))
-            .order_by(OpsDBHistory.created_on.desc())
+            select(OpsDBHistory).where(OpsDBHistory.row_key == str(bli_model.id)).order_by(OpsDBHistory.id.desc())
         )
         .scalars()
         .all()
