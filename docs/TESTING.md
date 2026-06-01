@@ -371,7 +371,7 @@ Scenario: [Error case description]
 ### Step Definition Pattern
 
 ```python
-# tests/ops/features/test_feature_name.py
+# backend/ops_api/tests/ops/features/test_feature_name.py
 import pytest
 from pytest_bdd import given, scenario, then, when
 
@@ -403,7 +403,7 @@ def step_then(context):
 
 ### Shared Step Definitions
 
-Create reusable step definitions in `tests/ops/features/conftest.py`:
+Create reusable step definitions in `backend/ops_api/tests/ops/features/conftest.py`:
 
 ```python
 # Common authentication steps
@@ -814,9 +814,12 @@ vi.mock("./MyComponent.hooks", () => ({
 
 **Authentication:**
 ```javascript
-cy.FakeAuth("system-owner");  // Full permissions
-cy.FakeAuth("basic-user");    // Limited permissions
+cy.FakeAuth("system-owner");       // Full permissions
+cy.FakeAuth("basic");              // Limited permissions
 cy.FakeAuth("division-director");  // Division-level access
+cy.FakeAuth("budget-team");        // Budget team member
+cy.FakeAuth("procurement-team");   // Procurement team member
+cy.FakeAuth("power-user");         // Power user
 ```
 
 **State Synchronization:**
@@ -1021,22 +1024,25 @@ jobs:
   prepare-matrix:
     runs-on: ubuntu-latest
     outputs:
-      specs: ${{ steps.list-specs.outputs.specs }}
+      files: ${{ steps.set-files.outputs.FILES }}
     steps:
-      - id: list-specs
+      - id: set-files
         run: |
-          SPECS=$(find frontend/cypress/e2e -name "*.cy.js" -printf "%P\n" | jq -R -s -c 'split("\n")[:-1]')
-          echo "specs=$SPECS" >> $GITHUB_OUTPUT
+          FILE_LIST=$(ls frontend/cypress/e2e/*.cy.js | jq -R -s -c 'split("\n")[:-1]')
+          echo "FILES=$FILE_LIST" >> $GITHUB_OUTPUT
 
   e2e:
     needs: prepare-matrix
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        spec: ${{ fromJson(needs.prepare-matrix.outputs.specs) }}
+        file: ${{ fromJson(needs.prepare-matrix.outputs.files) }}
     steps:
       - run: docker compose up -d
-      - run: cd frontend && bun run test:e2e:ci -- --spec "cypress/e2e/${{ matrix.spec }}"
+      - name: Run Cypress
+        working-directory: frontend
+        run: |
+          dbus-run-session -- npx cypress run --config-file ./cypress.config.ci.js --headless --spec "${{ matrix.file }}"
 ```
 
 ### Pre-commit Hooks
@@ -1105,7 +1111,7 @@ docker compose -f docker-compose.static.yml up  # Static builds for E2E
 - `frontend/src/hooks/useSortableData.test.js` - Custom hooks
 
 **Frontend Integration Test:**
-- `frontend/src/api/opsAPI.test.js` - RTK Query endpoints (1042 lines)
+- `frontend/src/api/opsAPI.test.js` - RTK Query endpoints (comprehensive integration suite)
 - `frontend/src/hooks/user.hooks.test.js` - Redux hooks with state
 
 **E2E Test:**
