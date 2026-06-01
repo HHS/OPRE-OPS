@@ -47,13 +47,13 @@ class ProcurementTrackerStatus(Enum):
         return self.name
 
 
-class ProcurementTrackerType(Enum):
+class ProcurementTrackerType(str, Enum):
     """Type of procurement tracker workflow"""
 
-    DEFAULT = auto()
+    DEFAULT = "DEFAULT"
 
     def __str__(self):
-        return self.name
+        return self.value
 
 
 class ProcurementTrackerStepType(Enum):
