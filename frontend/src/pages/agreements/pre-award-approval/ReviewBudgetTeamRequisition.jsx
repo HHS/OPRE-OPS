@@ -81,9 +81,9 @@ export const ReviewBudgetTeamRequisition = () => {
 
             <p className="margin-y-3">
                 Review the agreement details and Final Consensus Memo attached below. This agreement has been approved
-                by the Division Director for Pre-Award, and the Final Consensus Memo will be sent to the Procurement
-                Shop after the Budget Team completes the Requisition Request. Complete the Requisition Request outside
-                of OPS and then enter the Requisition # and Date.
+                by the Division Director for Pre-Award. After the Budget Team completes the requisition, the COR will
+                upload the Final Consensus Memo to the HHS Consolidated Acquisition Solution (HCAS). Complete the
+                Requisition Request outside of OPS and then enter the Requisition # and Date below.
             </p>
 
             {submitError && (
@@ -272,7 +272,7 @@ export const ReviewBudgetTeamRequisition = () => {
             </Accordion>
 
             {/* Attestation Checkbox */}
-            <div className="margin-top-4 maxw-tablet">
+            <div className="margin-top-3">
                 <div className="usa-checkbox">
                     <input
                         className="usa-checkbox__input"

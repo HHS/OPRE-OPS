@@ -87,9 +87,9 @@ export const ApprovePreAwardApproval = () => {
 
             <p className="margin-y-3">
                 Review the agreement details and Final Consensus Memo to make sure everything looks up to date. Once you
-                approve, the Budget Team will add the Requisition # and Requisition Date. Then the COR will send the
-                Final Consensus Memo to the Procurement Shop. The agreement will be locked from editing until the
-                contract is Awarded.
+                approve, the Budget Team will add the Requisition # and Requisition Date. Then the COR will upload the
+                Final Consensus Memo to the HHS Consolidated Acquisition Solution (HCAS). The agreement will be locked
+                from editing until the contract is Awarded.
             </p>
 
             {approvalAlreadyProcessed && (
@@ -242,7 +242,7 @@ export const ApprovePreAwardApproval = () => {
             )}
 
             {/* Approval Confirmation Checkbox */}
-            <div className="margin-top-3 maxw-tablet">
+            <div className="margin-top-3">
                 <div className="usa-checkbox">
                     <input
                         className="usa-checkbox__input"
@@ -257,8 +257,9 @@ export const ApprovePreAwardApproval = () => {
                         className="usa-checkbox__label"
                         htmlFor="understand-approval"
                     >
-                        I understand that approving for Pre-Award means the Requisition will be submitted and the Final
-                        Consensus Memo will be sent to the Procurement Shop
+                        I understand that approving for Pre-Award means the Requisition will be submitted by the Budget
+                        Team and then the COR will upload the Final Consensus Memo to the HHS Consolidated Acquisition
+                        Solution (HCAS).
                     </label>
                 </div>
             </div>
