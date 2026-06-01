@@ -11,13 +11,36 @@ from models.procurement_tracker import DefaultProcurementTrackerStep, Procuremen
 @pytest.fixture
 def test_award_step(app_ctx, loaded_db):
     """Create a test AWARD step that can be safely modified."""
+    from models import ContractAgreement
+    from models.services_components import CLIN
+
     tracker = loaded_db.get(ProcurementTracker, 1)
+
+    # Ensure the agreement has vendor and CLINs to pass validation
+    agreement = tracker.agreement
+    if isinstance(agreement, ContractAgreement):
+        # Set vendor if not set
+        if not agreement.vendor_id:
+            agreement.vendor_id = 1  # Use existing vendor from test data
+            loaded_db.commit()
+
+        # Ensure at least one CLIN exists
+        clin_count = loaded_db.query(CLIN).filter(CLIN.agreement_id == agreement.id).count()
+        if clin_count == 0:
+            clin = CLIN(
+                agreement_id=agreement.id,
+                number=1,
+                name="Test CLIN for validation",
+            )
+            loaded_db.add(clin)
+            loaded_db.commit()
 
     step = DefaultProcurementTrackerStep(
         procurement_tracker=tracker,
         step_number=998,  # Use unique number
         step_type=ProcurementTrackerStepType.AWARD,
         status=ProcurementTrackerStepStatus.ACTIVE,
+        award_approval_status="APPROVED",  # Set approval to bypass approval check
     )
     loaded_db.add(step)
     loaded_db.commit()
@@ -47,7 +70,7 @@ def test_award_completion_fails_without_task_completed_by(auth_client, app_ctx, 
 
     response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{test_award_step.id}", json=update_data)
     assert response.status_code == 400
-    assert "task_completed_by" in response.json["message"]
+    assert "task_completed_by" in response.json["errors"]
 
 
 def test_award_completion_fails_without_date_completed(auth_client, app_ctx, loaded_db, test_award_step):
@@ -59,7 +82,7 @@ def test_award_completion_fails_without_date_completed(auth_client, app_ctx, loa
 
     response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{test_award_step.id}", json=update_data)
     assert response.status_code == 400
-    assert "date_completed" in response.json["message"]
+    assert "date_completed" in response.json["errors"]
 
 
 def test_award_completion_fails_with_future_date(auth_client, app_ctx, loaded_db, test_award_step):
@@ -73,8 +96,8 @@ def test_award_completion_fails_with_future_date(auth_client, app_ctx, loaded_db
 
     response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{test_award_step.id}", json=update_data)
     assert response.status_code == 400
-    assert "date_completed" in response.json["message"]
-    assert "future" in response.json["message"].lower()
+    assert "date_completed" in response.json["errors"]
+    assert "future" in response.json["errors"]["date_completed"].lower()
 
 
 def test_award_completion_succeeds_with_valid_data(auth_client, app_ctx, loaded_db, test_award_step):
@@ -123,7 +146,10 @@ def test_award_completion_fails_without_approval(auth_client, app_ctx, loaded_db
 
     response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{test_award_step.id}", json=update_data)
     assert response.status_code == 400
-    assert "approval" in response.json["message"].lower()
+    assert "errors" in response.json
+    # Check if any error message contains "approval"
+    error_messages = " ".join(str(v) for v in response.json["errors"].values())
+    assert "approval" in error_messages.lower()
 
 
 def test_award_completion_succeeds_with_approval_approved(auth_client, app_ctx, loaded_db, test_award_step):
@@ -161,7 +187,10 @@ def test_award_completion_fails_with_declined_approval(auth_client, app_ctx, loa
 
     response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{test_award_step.id}", json=update_data)
     assert response.status_code == 400
-    assert "declined" in response.json["message"].lower()
+    assert "errors" in response.json
+    # Check if any error message contains "declined"
+    error_messages = " ".join(str(v) for v in response.json["errors"].values())
+    assert "declined" in error_messages.lower()
 
 
 def test_award_completion_fails_with_pending_approval(auth_client, app_ctx, loaded_db, test_award_step):
@@ -178,4 +207,7 @@ def test_award_completion_fails_with_pending_approval(auth_client, app_ctx, load
 
     response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{test_award_step.id}", json=update_data)
     assert response.status_code == 400
-    assert "pending" in response.json["message"].lower()
+    assert "errors" in response.json
+    # Check if any error message contains "pending"
+    error_messages = " ".join(str(v) for v in response.json["errors"].values())
+    assert "pending" in error_messages.lower()

@@ -89,7 +89,10 @@ def test_award_completion_fails_without_vendor(auth_client, app_ctx, loaded_db, 
         f"/api/v1/procurement-tracker-steps/{test_procurement_tracker_with_award.id}", json=update_data
     )
     assert response.status_code == 400
-    assert "vendor" in response.json["message"].lower()
+    assert "errors" in response.json
+    # Check if any error message contains "vendor"
+    error_messages = " ".join(str(v) for v in response.json["errors"].values())
+    assert "vendor" in error_messages.lower()
 
 
 def test_award_completion_fails_without_clins(
@@ -110,7 +113,10 @@ def test_award_completion_fails_without_clins(
         f"/api/v1/procurement-tracker-steps/{test_procurement_tracker_with_award.id}", json=update_data
     )
     assert response.status_code == 400
-    assert "clin" in response.json["message"].lower()
+    assert "errors" in response.json
+    # Check if any error message contains "clin"
+    error_messages = " ".join(str(v) for v in response.json["errors"].values())
+    assert "clin" in error_messages.lower()
 
 
 def test_award_completion_succeeds_with_vendor_and_clins(
