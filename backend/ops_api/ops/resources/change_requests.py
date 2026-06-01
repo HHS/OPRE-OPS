@@ -52,13 +52,17 @@ class ChangeRequestListAPI(BaseListAPI):
         }
 
         service = ChangeRequestService(current_app.db_session)
-        change_requests, _ = service.get_list(data=filters)
+        change_requests, metadata = service.get_list(data=filters)
 
-        if change_requests:
-            response = make_response_with_headers(self._response_schema_collection.dump(change_requests))
-        else:
-            response = make_response_with_headers([], 200)
-        return response
+        data = self._response_schema_collection.dump(change_requests) if change_requests else []
+        return make_response_with_headers(
+            {
+                "data": data,
+                "count": metadata["count"],
+                "limit": metadata["limit"],
+                "offset": metadata["offset"],
+            }
+        )
 
 
 class ChangeRequestItemAPI(BaseItemAPI):

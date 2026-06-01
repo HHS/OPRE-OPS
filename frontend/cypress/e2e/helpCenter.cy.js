@@ -19,9 +19,7 @@ describe("Help Center", () => {
 
     it("supports deep links for How-to Guide accordion items", () => {
         cy.visit("/help-center#how-to-find-your-user-role");
-        cy.get("button")
-            .contains("How to find your user role")
-            .should("have.attr", "aria-expanded", "true");
+        cy.get("button").contains("How to find your user role").should("have.attr", "aria-expanded", "true");
 
         cy.get("button").contains("How to view notifications").click();
         cy.url().should("include", "#how-to-view-notifications");
@@ -35,9 +33,7 @@ describe("Help Center", () => {
 
     it("supports deep links for FAQ accordion items", () => {
         cy.visit("/help-center/faq#how-do-i-learn-how-to-use-ops");
-        cy.get("button")
-            .contains("How do I learn how to use OPS?")
-            .should("have.attr", "aria-expanded", "true");
+        cy.get("button").contains("How do I learn how to use OPS?").should("have.attr", "aria-expanded", "true");
 
         cy.get("button").contains("What is OPS?").click();
         cy.url().should("include", "#what-is-ops");

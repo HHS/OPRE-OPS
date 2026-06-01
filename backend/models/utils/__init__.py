@@ -240,3 +240,55 @@ def generate_agreement_events_update(old_serialized_obj, new_serialized_obj, own
             "research_methodologies_ids_added": added_research_methodologies,
         }
     return updates
+
+
+def _extract_team_leader_ids(team_leaders) -> set:
+    """Pull team-leader IDs out of either a list of dicts or a list of ints. Filters out missing IDs."""
+    ids = set()
+    for entry in team_leaders or []:
+        if isinstance(entry, dict):
+            tl_id = entry.get("id")
+        else:
+            tl_id = entry
+        if tl_id is not None:
+            ids.add(tl_id)
+    return ids
+
+
+def generate_project_events_update(old_serialized_obj, new_serialized_obj, owner_id, updated_by_id):
+    """Generates updates for project events, including scalar property diffs and team-leader add/remove."""
+    updates = generate_events_update(old_serialized_obj, new_serialized_obj, owner_id, updated_by_id)
+
+    # Drop changes for fields that are derived/computed and not user-editable on the project itself.
+    # These show up in DeepDiff because the metadata changes between fetches but should not generate history.
+    derived_fields = {
+        "project_metadata",
+        "special_topics",
+        "research_methodologies",
+        "team_members",
+        "division_directors",
+        "project_officers",
+        "alternate_project_officers",
+        "project_start",
+        "project_end",
+        "created_on",
+        "updated_on",
+        "_meta",
+    }
+    if updates.get("changes"):
+        updates["changes"] = {k: v for k, v in updates["changes"].items() if k not in derived_fields}
+
+    old_team_leader_ids = _extract_team_leader_ids(old_serialized_obj.get("team_leaders"))
+    new_team_leader_ids = _extract_team_leader_ids(new_serialized_obj.get("team_leaders"))
+    removed = sorted(old_team_leader_ids - new_team_leader_ids)
+    added = sorted(new_team_leader_ids - old_team_leader_ids)
+
+    if removed or added:
+        updates["team_leader_changes"] = {
+            "user_ids_removed": removed,
+            "user_ids_added": added,
+        }
+    # team_leaders itself can show up in changes via DeepDiff; remove it since the diff is captured above.
+    if updates.get("changes"):
+        updates["changes"].pop("team_leaders", None)
+    return updates

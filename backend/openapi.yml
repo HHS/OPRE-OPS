@@ -674,9 +674,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AgreementHistory"
-        "404":
-          description: Not Found
+                $ref: "#/components/schemas/AgreementHistoryResponse"
   /agreements/{id}/spending/:
     get:
       tags:
@@ -3783,6 +3781,51 @@ paths:
         "404":
           description: Not Found - Project does not exist
 
+  /projects/{id}/history/:
+    get:
+      tags:
+        - Project History
+      operationId: getAllProjectHistory
+      summary: Get a paginated list of Project history items, sorted by timestamp newest first by default
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: id
+          description: Project Id
+          required: true
+          schema:
+            type: integer
+          example: 1000
+        - name: offset
+          in: query
+          schema:
+            type: integer
+          example: 0
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+          example: 10
+        - name: sort_asc
+          in: query
+          description: Optional parameter that sets whether to sort the results in ascending (oldest to newest) order
+          schema:
+            type: boolean
+          example: true
+      description: Get ProjectHistory entries for a project.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectHistoryList"
+        "401":
+          description: Insufficient Privileges to use this endpoint.
+        "403":
+          description: Forbidden
+
   /projects-filters/:
     get:
       tags:
@@ -4747,9 +4790,26 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/GenericChangeRequest"
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/GenericChangeRequest"
+                  count:
+                    type: integer
+                    description: Total number of change requests after permission filtering, before pagination
+                  limit:
+                    type: integer
+                    description: Maximum number of change requests returned
+                  offset:
+                    type: integer
+                    description: Number of change requests skipped
+                required:
+                  - data
+                  - count
+                  - limit
+                  - offset
         "400":
           description: Bad Request
         "401":
@@ -5747,6 +5807,84 @@ components:
         - id
         - can_id
         - ops_event_id
+    ProjectHistoryList:
+      description: Paginated list of Project history items
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProjectHistoryItem"
+        count:
+          type: integer
+          description: Total number of history items matching the query
+          example: 25
+        limit:
+          type: integer
+          description: Maximum number of items returned
+          example: 10
+        offset:
+          type: integer
+          description: Number of items skipped
+          example: 0
+      required:
+        - data
+        - count
+        - limit
+        - offset
+    ProjectHistoryItem:
+      description: A single Project history record
+      type: object
+      properties:
+        id:
+          type: integer
+          description: The unique identifier for the history record.
+          example: 2
+        project_id:
+          type: integer
+          nullable: true
+          description: FK to the Project (null if the project has been deleted).
+          example: 1000
+        project_id_record:
+          type: integer
+          description: Stable Project id reference that survives deletion.
+          example: 1000
+        ops_event_id:
+          type: integer
+          nullable: true
+          description: FK to the OPS event that triggered the history record.
+          example: 4
+        history_title:
+          type: string
+          description: Short title of the history event.
+          example: "Change to Project Title"
+        history_message:
+          type: string
+          description: Human-readable description of the history event in Markdown format.
+          example: "Amelia Popham changed the Project Title from Foo to Bar."
+        timestamp:
+          type: string
+          description: The timestamp of when the history event was created.
+          format: date-time
+          example: "2026-05-26T12:00:00.000000Z"
+        history_type:
+          type: string
+          enum:
+            - PROJECT_CREATED
+            - PROJECT_TITLE_EDITED
+            - PROJECT_SHORT_TITLE_EDITED
+            - PROJECT_DESCRIPTION_EDITED
+            - PROJECT_URL_EDITED
+            - PROJECT_TYPE_EDITED
+            - PROJECT_TEAM_LEADER_ADDED
+            - PROJECT_TEAM_LEADER_REMOVED
+          example: "PROJECT_TITLE_EDITED"
+      required:
+        - id
+        - project_id_record
+        - history_title
+        - history_message
+        - timestamp
     FundingReceived:
       description: Funding Received Object
       type: object
@@ -6806,12 +6944,31 @@ components:
       type: array
       items:
         $ref: "#/components/schemas/ResearchProjectListItem"
-    AgreementHistory:
-      description: List of Agreement History records
-      type: array
-      items:
-        anyOf:
-          - $ref: "#/components/schemas/AgreementHistoryItem"
+    AgreementHistoryResponse:
+      description: Paginated Agreement History response
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/AgreementHistoryItem"
+        count:
+          type: integer
+          description: Total number of history records matching the query
+          example: 25
+        limit:
+          type: integer
+          description: Maximum number of records per page
+          example: 10
+        offset:
+          type: integer
+          description: Number of records skipped
+          example: 0
+      required:
+        - data
+        - count
+        - limit
+        - offset
     AgreementHistoryItem:
       type: object
       properties:

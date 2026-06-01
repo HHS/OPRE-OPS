@@ -217,7 +217,13 @@ const AgreementEditForm = ({
                 className={uniquenessErrors.nick_name.length > 0 ? "usa-form-group usa-form-group--error" : ""}
                 value={agreementNickName || ""}
                 onChange={(_, value) => setAgreementNickName(value)}
-                onBlur={(_, value) => checkUniqueOnBlur("nick_name", value)}
+                onBlur={(_, value) => {
+                    const trimmed = value?.trim() || "";
+                    if (trimmed !== value) {
+                        setAgreementNickName(trimmed);
+                    }
+                    checkUniqueOnBlur("nick_name", trimmed);
+                }}
             />
             {!isWizardMode && (
                 <ProjectComboBox
@@ -472,7 +478,7 @@ const AgreementEditForm = ({
                     messages={res.getErrors("project_officer")}
                     onChange={(name, value) => {
                         if (isReviewMode) {
-                            runValidate(name, value);
+                            runValidate(name, value, { project_officer_id: value });
                         }
                     }}
                     overrideStyles={{ width: "15em" }}

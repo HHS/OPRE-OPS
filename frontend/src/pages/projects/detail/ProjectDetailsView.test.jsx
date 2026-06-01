@@ -21,6 +21,11 @@ vi.mock("../../../hooks/use-alert.hooks", () => ({
     default: () => ({ setAlert: vi.fn() })
 }));
 
+vi.mock("../../../components/Projects/ProjectHistoryPanel", () => ({
+    __esModule: true,
+    default: () => <div data-testid="project-history-panel" />
+}));
+
 const baseProject = {
     id: 1000,
     title: "Human Services Interoperability Support",
@@ -220,10 +225,10 @@ describe("ProjectDetailsView", () => {
         expect(toggleFn).toHaveBeenCalledTimes(1);
     });
 
-    it("renders History placeholder", () => {
+    it("renders History panel", () => {
         renderComponent(baseProject);
         expect(screen.getByText("History")).toBeInTheDocument();
-        expect(screen.getByText("History coming soon.")).toBeInTheDocument();
+        expect(screen.getByTestId("project-history-panel")).toBeInTheDocument();
     });
 
     it("renders 'Admin & Support' tag for ADMINISTRATIVE_AND_SUPPORT project type", () => {

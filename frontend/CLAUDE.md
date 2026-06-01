@@ -125,6 +125,23 @@ bun run format       # Format code (Prettier)
 - Tests are co-located with their components (`.test.jsx` files)
 - E2E tests use **Cypress** in `cypress/e2e/*.cy.js`
 
+## scrollToTop After Success Alerts
+
+Always call `scrollToTop()` after `setAlert({ type: "success", ... })` in action handlers that navigate away from the current page. This ensures the user sees the success alert banner at the top before the page transitions.
+
+```javascript
+// CORRECT — scrollToTop after success alert, before navigate
+setAlert({ type: "success", heading: "Saved", message: "..." });
+scrollToTop();
+navigate("/agreements");
+
+// INCORRECT — user may miss the alert if scrolled down on a long form
+setAlert({ type: "success", heading: "Saved", message: "..." });
+navigate("/agreements");
+```
+
+Import from `src/helpers/scrollToTop.helper`. Do NOT call `scrollToTop()` on error paths.
+
 ## Fee Percentage Format Convention
 
 **CRITICAL**: Fee percentages are whole numbers (e.g., `5.0` = 5%). The `calculateTotal` helper in `src/helpers/agreement.helpers.js` divides by 100 internally.
