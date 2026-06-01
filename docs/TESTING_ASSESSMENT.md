@@ -28,14 +28,14 @@
 | Metric | Backend | Frontend | E2E |
 |--------|---------|----------|-----|
 | **Framework** | pytest + pytest-bdd | Vitest + RTL | Cypress |
-| **Test Files** | 122+ | 277 | 46 specs |
+| **Test Files** | 122+ | 277 | 48 specs |
 | **Coverage** | Tracked via pytest-cov | 90% required | N/A |
 | **CI Execution** | ~5-10 min | ~5-10 min | ~20-30 min (parallel) |
 | **Flaky Test Rate** | Low | Low | ~10-15% (requires 3 retries) |
 
 ### Top 5 Priorities
 
-1. **Reduce E2E test count from 46 → 15-20** by migrating appropriate tests down the pyramid
+1. **Reduce E2E test count from 48 → 15-20** by migrating appropriate tests down the pyramid
 2. **Address flaky E2E tests** (currently requiring 3 retries in CI)
 3. **Expand BDD coverage** from ~10 features to 15-20 critical business scenarios
 4. **Standardize test patterns** across frontend and backend with documented examples
@@ -160,13 +160,13 @@ BDD Tests: ~10 feature files
 
 ### ✅ Accessibility Testing Integrated
 
-**What:** All E2E tests include inline `cy.checkA11y()` calls.
+**What:** Accessibility testing is integrated via cypress-axe (aXe-core) for key landing pages.
 
-**Tool:** cypress-axe (aXe-core integration)
+**Tool:** cypress-axe with `cy.checkA11y()` in `afterEach` hooks
 
-**Coverage:** Every view tested for accessibility violations.
+**Coverage:** Limited (2 of 48 E2E specs: Help Center, Home page). Expansion to critical user flows is planned.
 
-**Benefit:** Accessibility regression detection as part of normal development workflow.
+**Benefit:** Accessibility regression detection for tested pages as part of normal development workflow.
 
 ---
 
