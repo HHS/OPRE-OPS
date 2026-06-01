@@ -148,7 +148,6 @@ class ProcurementTracker(BaseModel):
 
     # Polymorphic configuration
     __mapper_args__ = {
-        "polymorphic_identity": "procurement_tracker",
         "polymorphic_on": "tracker_type",
     }
 
