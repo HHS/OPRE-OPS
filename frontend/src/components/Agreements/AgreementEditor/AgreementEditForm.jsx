@@ -478,7 +478,7 @@ const AgreementEditForm = ({
                     messages={res.getErrors("project_officer")}
                     onChange={(name, value) => {
                         if (isReviewMode) {
-                            runValidate(name, value);
+                            runValidate(name, value, { project_officer_id: value });
                         }
                     }}
                     overrideStyles={{ width: "15em" }}
