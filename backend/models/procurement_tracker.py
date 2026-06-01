@@ -147,9 +147,16 @@ class ProcurementTracker(BaseModel):
     )
 
     # Polymorphic configuration
+    # Note: Base class is abstract - only subclasses should be instantiated
     __mapper_args__ = {
         "polymorphic_on": "tracker_type",
     }
+
+    def __init__(self, *args, **kwargs):
+        # Prevent direct instantiation of base class
+        if self.__class__ == ProcurementTracker:
+            raise TypeError("ProcurementTracker is abstract - use DefaultProcurementTracker instead")
+        super().__init__(*args, **kwargs)
 
     @BaseModel.display_name.getter
     def display_name(self):
