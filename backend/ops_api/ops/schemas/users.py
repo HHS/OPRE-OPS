@@ -15,7 +15,7 @@ class CreateUserSchema(Schema):
     first_name: Optional[str] = fields.String(load_default=None)
     last_name: Optional[str] = fields.String(load_default=None)
     division: Optional[int] = fields.Integer(load_default=None)
-    status: Optional[UserStatus] = fields.Enum(UserStatus, load_default=UserStatus.INACTIVE)
+    status: Optional[UserStatus] = fields.Enum(UserStatus, load_default=UserStatus.INACTIVE, by_value=True)
     roles: Optional[list[str]] = fields.List(fields.String(), load_default=[])
 
 
@@ -46,7 +46,7 @@ class RoleSchema(Schema):
 class UserResponse(Schema):
     id: int = fields.Integer(required=True)
     oidc_id: UUID = fields.UUID(required=True)
-    status: UserStatus = fields.Enum(UserStatus, required=True)
+    status: UserStatus = fields.Enum(UserStatus, required=True, by_value=True)
     hhs_id: Optional[str] = fields.String(allow_none=True)
     email: str = fields.String(required=True)
     first_name: Optional[str] = fields.String(allow_none=True)

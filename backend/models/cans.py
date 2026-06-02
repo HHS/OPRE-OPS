@@ -14,12 +14,15 @@ from models.base import BaseModel
 from models.portfolios import Portfolio
 
 
-class CANMethodOfTransfer(Enum):
-    DIRECT = auto()
-    COST_SHARE = auto()
-    IAA = auto()
-    IDDA = auto()
-    OTHER = auto()
+class CANMethodOfTransfer(str, Enum):
+    def __str__(self):
+        return self.value
+
+    DIRECT = "DIRECT"
+    COST_SHARE = "COST_SHARE"
+    IAA = "IAA"
+    IDDA = "IDDA"
+    OTHER = "OTHER"
 
 
 class CANStatus(Enum):
@@ -40,17 +43,20 @@ class CANSortCondition(Enum):
     AVAILABLE_BUDGET = "AVAILABLE_BUDGET"
 
 
-class CANFundingSource(Enum):
+class CANFundingSource(str, Enum):
     """The Funding Source for the CAN.
 
     This is the source of the money that is being allocated to the CAN.
     """
 
-    OPRE = auto()
-    ACF = auto()
-    ACF_MOU = auto()
-    HHS = auto()
-    OTHER = auto()
+    def __str__(self):
+        return self.value
+
+    OPRE = "OPRE"
+    ACF = "ACF"
+    ACF_MOU = "ACF_MOU"
+    HHS = "HHS"
+    OTHER = "OTHER"
 
 
 class CAN(BaseModel):

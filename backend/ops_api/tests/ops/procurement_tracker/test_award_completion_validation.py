@@ -44,7 +44,6 @@ def test_award_step(app_ctx, loaded_db):
         step_number=998,  # Use unique number
         step_type=ProcurementTrackerStepType.AWARD,
         status=ProcurementTrackerStepStatus.ACTIVE,
-        award_approval_status="APPROVED",  # Set approval to bypass approval check
     )
     loaded_db.add(step)
     loaded_db.commit()
@@ -67,6 +66,10 @@ def test_award_step(app_ctx, loaded_db):
 
 def test_award_completion_fails_without_task_completed_by(auth_client, app_ctx, loaded_db, test_award_step):
     """Test that AWARD step completion fails without task_completed_by."""
+    # Set approval to bypass approval check
+    test_award_step.award_approval_status = "APPROVED"
+    loaded_db.commit()
+
     update_data = {
         "status": "COMPLETED",
         "date_completed": date.today().isoformat(),
@@ -79,6 +82,10 @@ def test_award_completion_fails_without_task_completed_by(auth_client, app_ctx, 
 
 def test_award_completion_fails_without_date_completed(auth_client, app_ctx, loaded_db, test_award_step):
     """Test that AWARD step completion fails without date_completed."""
+    # Set approval to bypass approval check
+    test_award_step.award_approval_status = "APPROVED"
+    loaded_db.commit()
+
     update_data = {
         "status": "COMPLETED",
         "task_completed_by": 500,  # Admin user from test data
@@ -91,6 +98,10 @@ def test_award_completion_fails_without_date_completed(auth_client, app_ctx, loa
 
 def test_award_completion_fails_with_future_date(auth_client, app_ctx, loaded_db, test_award_step):
     """Test that AWARD step completion fails with future date_completed."""
+    # Set approval to bypass approval check
+    test_award_step.award_approval_status = "APPROVED"
+    loaded_db.commit()
+
     future_date = date.today() + timedelta(days=1)
     update_data = {
         "status": "COMPLETED",
@@ -106,6 +117,10 @@ def test_award_completion_fails_with_future_date(auth_client, app_ctx, loaded_db
 
 def test_award_completion_succeeds_with_valid_data(auth_client, app_ctx, loaded_db, test_award_step):
     """Test that AWARD step completion succeeds with valid data."""
+    # Set approval to bypass approval check
+    test_award_step.award_approval_status = "APPROVED"
+    loaded_db.commit()
+
     update_data = {
         "status": "COMPLETED",
         "task_completed_by": 500,
