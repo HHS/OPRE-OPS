@@ -8,7 +8,7 @@ export default {
         docs: {
             description: {
                 component:
-                    "Site-wide footer with a \"Return to top\" button, agency information, and " +
+                    'Site-wide footer with a "Return to top" button, agency information, and ' +
                     "the HHS/OPRE identifier section."
             }
         }

@@ -36,7 +36,12 @@ export const WithListDescription = {
     args: {
         heading: "The following changes will be saved",
         description: [
-            { id: 1, title: "Budget Line #1", created_on: "2025-03-15", message: "Amount changed from $50,000 to $75,000" },
+            {
+                id: 1,
+                title: "Budget Line #1",
+                created_on: "2025-03-15",
+                message: "Amount changed from $50,000 to $75,000"
+            },
             { id: 2, title: "Budget Line #2", created_on: "2025-03-15", message: "CAN changed from G99ABC to G99XYZ" }
         ],
         actionButtonText: "Save Changes",
