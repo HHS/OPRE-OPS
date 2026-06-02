@@ -58,7 +58,10 @@ const ProcurementDetailsStep = ({
                     >
                         <dl className="margin-0 font-12px">
                             <dt className="margin-0 text-base-dark margin-top-3">Agreements</dt>
-                            <dd className="margin-0 margin-top-1">
+                            <dd
+                                className="margin-0 margin-top-1"
+                                data-cy="details-step-agreements-count"
+                            >
                                 <Tag
                                     tagStyle="primaryDarkTextLightBackground"
                                     text={agreementsPerStep}

@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { useGetUsersQuery } from "../../../api/opsAPI";
+import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import DetailsBuilderAccordion from "./DetailsBuilderAccordion";
 import ProcurementDetailsStep from "./ProcurementDetailsStep";
 
@@ -51,21 +52,25 @@ const ProcurementDetails = ({
     const daysInStep = procurementDaysInStep ?? {};
 
     const agreementsByStep = useMemo(() => {
-        const stepToAgreementIds = {};
+        const agreementById = Object.fromEntries(agreements.map((agreement) => [agreement.id, agreement]));
+        const result = {};
+
         for (const tracker of procurementTrackers) {
-            if (!stepToAgreementIds[tracker.active_step_number]) {
-                stepToAgreementIds[tracker.active_step_number] = new Set();
-            }
-            stepToAgreementIds[tracker.active_step_number].add(tracker.agreement_id);
+            const agreement = agreementById[tracker.agreement_id];
+            if (!agreement) continue;
+
+            const hasExecutingBli = (agreement.budget_line_items || []).some(
+                (bli) => bli.fiscal_year === fiscalYear && bli.status === BLI_STATUS.EXECUTING
+            );
+            if (!hasExecutingBli) continue;
+
+            const step = tracker.active_step_number;
+            if (!result[step]) result[step] = [];
+            result[step].push(agreement);
         }
 
-        const result = {};
-        for (const stepNumber of Object.keys(stepToAgreementIds)) {
-            const ids = stepToAgreementIds[stepNumber];
-            result[stepNumber] = agreements.filter((a) => ids.has(a.id));
-        }
         return result;
-    }, [agreements, procurementTrackers]);
+    }, [agreements, procurementTrackers, fiscalYear]);
 
     return (
         <>
