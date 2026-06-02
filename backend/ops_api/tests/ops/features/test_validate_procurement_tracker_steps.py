@@ -278,11 +278,7 @@ def agreement_with_ops_user_and_procurement_action(bdd_client, test_non_admin_us
     loaded_db.flush()
 
     # Create a CLIN for the agreement (required for Award step)
-    clin = CLIN(
-        agreement_id=contract_agreement.id,
-        number=1001,
-        name="Test CLIN for Award"
-    )
+    clin = CLIN(agreement_id=contract_agreement.id, number=1001, name="Test CLIN for Award")
     loaded_db.add(clin)
     loaded_db.commit()
     loaded_db.flush()

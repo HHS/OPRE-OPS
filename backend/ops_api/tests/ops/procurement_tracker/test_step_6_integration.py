@@ -224,9 +224,7 @@ def test_step_6_cannot_complete_without_clins(auth_client, app_ctx, loaded_db):
 
     # Create tracker and Step 6
     tracker = DefaultProcurementTracker(
-        agreement_id=agreement.id,
-        status=ProcurementTrackerStatus.ACTIVE,
-        active_step_number=6
+        agreement_id=agreement.id, status=ProcurementTrackerStatus.ACTIVE, active_step_number=6
     )
     loaded_db.add(tracker)
     loaded_db.flush()
