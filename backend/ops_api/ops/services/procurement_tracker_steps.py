@@ -174,6 +174,20 @@ class ProcurementTrackerStepService:
                 "requisition_date": "pre_award_requisition_date",
                 # requisition_approved_by and requisition_approved_date are SERVER-CONTROLLED
             },
+            "award": {
+                "task_completed_by": "award_task_completed_by",
+                "date_completed": "award_date_completed",
+                "notes": "award_notes",
+                "target_completion_date": "award_target_completion_date",
+                "approval_requested": "award_approval_requested",
+                "approval_requested_date": "award_approval_requested_date",
+                "approval_requested_by": "award_approval_requested_by",
+                "requestor_notes": "award_requestor_notes",
+                "approval_status": "award_approval_status",
+                "approval_responded_by": "award_approval_responded_by",
+                "approval_responded_date": "award_approval_responded_date",
+                "reviewer_notes": "award_approval_reviewer_notes",
+            },
         }
 
         if step.step_type == ProcurementTrackerStepType.ACQUISITION_PLANNING:
@@ -186,6 +200,8 @@ class ProcurementTrackerStepService:
             active_mapping = field_mapping["evaluation"]
         elif step.step_type == ProcurementTrackerStepType.PRE_AWARD:
             active_mapping = field_mapping["pre_award"]
+        elif step.step_type == ProcurementTrackerStepType.AWARD:
+            active_mapping = field_mapping["award"]
         else:
             active_mapping = {}
 
@@ -213,25 +229,32 @@ class ProcurementTrackerStepService:
 
         # Always set approval_requested_by to current user when approval is requested
         # This is server-controlled and never accepted from the client
-        if data.get("approval_requested") is True:
-            # Clear previous response fields to allow new review cycle (e.g., after decline)
-            step.pre_award_approval_status = None
-            step.pre_award_approval_responded_by = None
-            step.pre_award_approval_responded_date = None
-            step.pre_award_approval_reviewer_notes = None
-            logger.debug("Cleared previous approval response fields for new request")
+        # Determine field prefix based on step type
+        approval_prefix = None
+        if step.step_type == ProcurementTrackerStepType.PRE_AWARD:
+            approval_prefix = "pre_award_"
+        elif step.step_type == ProcurementTrackerStepType.AWARD:
+            approval_prefix = "award_"
 
-            step.pre_award_approval_requested_by = current_user.id
-            logger.debug(f"Set pre_award_approval_requested_by = {current_user.id} (server-controlled)")
+        if approval_prefix and data.get("approval_requested") is True:
+            # Clear previous response fields to allow new review cycle (e.g., after decline)
+            setattr(step, f"{approval_prefix}approval_status", None)
+            setattr(step, f"{approval_prefix}approval_responded_by", None)
+            setattr(step, f"{approval_prefix}approval_responded_date", None)
+            setattr(step, f"{approval_prefix}approval_reviewer_notes", None)
+            logger.debug(f"Cleared previous {approval_prefix}approval response fields for new request")
+
+            setattr(step, f"{approval_prefix}approval_requested_by", current_user.id)
+            logger.debug(f"Set {approval_prefix}approval_requested_by = {current_user.id} (server-controlled)")
 
         # Always set approval_responded_by and date when approval_status is set
         # These are server-controlled and never accepted from the client
-        if data.get("approval_status") in ["APPROVED", "DECLINED"]:
-            step.pre_award_approval_responded_by = current_user.id
-            step.pre_award_approval_responded_date = date.today()
+        if approval_prefix and data.get("approval_status") in ["APPROVED", "DECLINED"]:
+            setattr(step, f"{approval_prefix}approval_responded_by", current_user.id)
+            setattr(step, f"{approval_prefix}approval_responded_date", date.today())
             logger.debug(
-                f"Set pre_award_approval_responded_by = {current_user.id}, "
-                f"pre_award_approval_responded_date = {date.today()} (server-controlled)"
+                f"Set {approval_prefix}approval_responded_by = {current_user.id}, "
+                f"{approval_prefix}approval_responded_date = {date.today()} (server-controlled)"
             )
 
         # Handle COMPLETED status

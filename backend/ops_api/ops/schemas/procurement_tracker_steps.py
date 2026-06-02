@@ -45,36 +45,49 @@ class ProcurementTrackerStepNotificationSchema(Schema):
     """
 
     id = fields.Integer(required=True)
-    step_type = fields.Enum(ProcurementTrackerStepType, required=True, by_value=False)
+    step_type = fields.Enum(ProcurementTrackerStepType, required=True, by_value=True)
     approval_status = fields.String(allow_none=True)
     approval_requested = fields.Boolean(allow_none=True)
 
     @pre_dump
-    def map_pre_award_fields(self, data, **kwargs):
-        """Map pre-award prefixed fields to generic API names."""
+    def map_step_approval_fields(self, data, **kwargs):
+        """Map step-specific prefixed fields to generic API names for approval workflows."""
         # Handle dict inputs (from to_dict() or test fixtures)
         if isinstance(data, dict):
             step_type = data.get("step_type")
-            if step_type != ProcurementTrackerStepType.PRE_AWARD:
-                return data
-            return {
-                "id": data.get("id"),
-                "step_type": step_type,
-                "approval_status": data.get("pre_award_approval_status"),
-                "approval_requested": data.get("pre_award_approval_requested"),
-            }
+            if step_type == ProcurementTrackerStepType.PRE_AWARD:
+                return {
+                    "id": data.get("id"),
+                    "step_type": step_type,
+                    "approval_status": data.get("pre_award_approval_status"),
+                    "approval_requested": data.get("pre_award_approval_requested"),
+                }
+            elif step_type == ProcurementTrackerStepType.AWARD:
+                return {
+                    "id": data.get("id"),
+                    "step_type": step_type,
+                    "approval_status": data.get("award_approval_status"),
+                    "approval_requested": data.get("award_approval_requested"),
+                }
+            return data
 
         # Handle ORM object inputs
         step_type = getattr(data, "step_type", None)
-        if step_type != ProcurementTrackerStepType.PRE_AWARD:
-            return data
-
-        return {
-            "id": data.id,
-            "step_type": step_type,
-            "approval_status": data.pre_award_approval_status,
-            "approval_requested": data.pre_award_approval_requested,
-        }
+        if step_type == ProcurementTrackerStepType.PRE_AWARD:
+            return {
+                "id": data.id,
+                "step_type": step_type,
+                "approval_status": data.pre_award_approval_status,
+                "approval_requested": data.pre_award_approval_requested,
+            }
+        elif step_type == ProcurementTrackerStepType.AWARD:
+            return {
+                "id": data.id,
+                "step_type": step_type,
+                "approval_status": data.award_approval_status,
+                "approval_requested": data.award_approval_requested,
+            }
+        return data
 
 
 class ProcurementTrackerStepResponseSchema(Schema):
@@ -90,8 +103,8 @@ class ProcurementTrackerStepResponseSchema(Schema):
     procurement_tracker = fields.Nested(NestedProcurementTrackerSchema, allow_none=True)
     step_number = fields.Integer(required=True)
     step_class = fields.String(required=True)
-    step_type = fields.Enum(ProcurementTrackerStepType, required=True, by_value=False)
-    status = fields.Enum(ProcurementTrackerStepStatus, required=True, by_value=False)
+    step_type = fields.Enum(ProcurementTrackerStepType, required=True, by_value=True)
+    status = fields.Enum(ProcurementTrackerStepStatus, required=True, by_value=True)
     step_start_date = fields.Date(allow_none=True)
     step_completed_date = fields.Date(allow_none=True)
 
@@ -208,6 +221,21 @@ class ProcurementTrackerStepResponseSchema(Schema):
             data["requisition_approved_by"] = getattr(obj, "pre_award_requisition_approved_by", None)
             data["requisition_approved_date"] = getattr(obj, "pre_award_requisition_approved_date", None)
 
+        elif obj.step_type == ProcurementTrackerStepType.AWARD:
+            # OPS-1640: Award step fields
+            data["task_completed_by"] = getattr(obj, "award_task_completed_by", None)
+            data["date_completed"] = getattr(obj, "award_date_completed", None)
+            data["notes"] = getattr(obj, "award_notes", None)
+            data["target_completion_date"] = getattr(obj, "award_target_completion_date", None)
+            data["approval_requested"] = getattr(obj, "award_approval_requested", None)
+            data["approval_requested_date"] = getattr(obj, "award_approval_requested_date", None)
+            data["approval_requested_by"] = getattr(obj, "award_approval_requested_by", None)
+            data["requestor_notes"] = getattr(obj, "award_requestor_notes", None)
+            data["approval_status"] = getattr(obj, "award_approval_status", None)
+            data["approval_responded_by"] = getattr(obj, "award_approval_responded_by", None)
+            data["approval_responded_date"] = getattr(obj, "award_approval_responded_date", None)
+            data["reviewer_notes"] = getattr(obj, "award_approval_reviewer_notes", None)
+
         return data
 
     @post_dump
@@ -297,6 +325,31 @@ class ProcurementTrackerStepResponseSchema(Schema):
             # Remove SOLICITATION-only fields
             data.pop("solicitation_period_start_date", None)
             data.pop("solicitation_period_end_date", None)
+        elif step_type in ("AWARD", ProcurementTrackerStepType.AWARD):
+            preserve_keys = base_fields | {
+                "target_completion_date",
+                "task_completed_by",
+                "date_completed",
+                "notes",
+                "approval_requested",
+                "approval_requested_date",
+                "approval_requested_by",
+                "requestor_notes",
+                "approval_status",
+                "approval_responded_by",
+                "approval_responded_date",
+                "reviewer_notes",
+            }
+            # Remove PRE_SOLICITATION-only fields
+            data.pop("draft_solicitation_date", None)
+            # Remove SOLICITATION-only fields
+            data.pop("solicitation_period_start_date", None)
+            data.pop("solicitation_period_end_date", None)
+            # Remove PRE_AWARD requisition fields
+            data.pop("requisition_number", None)
+            data.pop("requisition_date", None)
+            data.pop("requisition_approved_by", None)
+            data.pop("requisition_approved_date", None)
         else:
             preserve_keys = base_fields
             # Remove all step-specific fields for other step types
@@ -325,7 +378,7 @@ class ProcurementTrackerStepResponseSchema(Schema):
 class ProcurementTrackerStepPatchRequestSchema(Schema):
     """Schema for PATCH requests to update procurement tracker steps."""
 
-    status = fields.Enum(ProcurementTrackerStepStatus, required=True, by_value=False)
+    status = fields.Enum(ProcurementTrackerStepStatus, required=True, by_value=True)
 
     # Fields shared by Acquisition Planning, Pre-Solicitation, Solicitation, and Evaluation steps
     task_completed_by = fields.Integer(required=False, allow_none=True)
@@ -378,8 +431,8 @@ class ProcurementTrackerStepSchema(Schema):
     id = fields.Integer(required=True)
     procurement_tracker_id = fields.Integer(required=True)
     step_number = fields.Integer(required=True)
-    step_type = fields.Enum(ProcurementTrackerStepType, required=True)
-    status = fields.Enum(ProcurementTrackerStepStatus, required=True)
+    step_type = fields.Enum(ProcurementTrackerStepType, required=True, by_value=True)
+    status = fields.Enum(ProcurementTrackerStepStatus, required=True, by_value=True)
     step_start_date = fields.Date(allow_none=True)
     step_completed_date = fields.Date(allow_none=True)
 
@@ -481,6 +534,21 @@ class ProcurementTrackerStepSchema(Schema):
             data["requisition_approved_by"] = getattr(obj, "pre_award_requisition_approved_by", None)
             data["requisition_approved_date"] = getattr(obj, "pre_award_requisition_approved_date", None)
 
+        elif obj.step_type == ProcurementTrackerStepType.AWARD:
+            # OPS-1640: Award step fields
+            data["task_completed_by"] = getattr(obj, "award_task_completed_by", None)
+            data["date_completed"] = getattr(obj, "award_date_completed", None)
+            data["notes"] = getattr(obj, "award_notes", None)
+            data["target_completion_date"] = getattr(obj, "award_target_completion_date", None)
+            data["approval_requested"] = getattr(obj, "award_approval_requested", None)
+            data["approval_requested_date"] = getattr(obj, "award_approval_requested_date", None)
+            data["approval_requested_by"] = getattr(obj, "award_approval_requested_by", None)
+            data["requestor_notes"] = getattr(obj, "award_requestor_notes", None)
+            data["approval_status"] = getattr(obj, "award_approval_status", None)
+            data["approval_responded_by"] = getattr(obj, "award_approval_responded_by", None)
+            data["approval_responded_date"] = getattr(obj, "award_approval_responded_date", None)
+            data["reviewer_notes"] = getattr(obj, "award_approval_reviewer_notes", None)
+
         return data
 
     @post_dump
@@ -578,6 +646,32 @@ class ProcurementTrackerStepSchema(Schema):
             # Remove SOLICITATION-only fields
             data.pop("solicitation_period_start_date", None)
             data.pop("solicitation_period_end_date", None)
+        elif step_type in ("AWARD", ProcurementTrackerStepType.AWARD):
+            award_fields = {
+                "target_completion_date",
+                "task_completed_by",
+                "date_completed",
+                "notes",
+                "approval_requested",
+                "approval_requested_date",
+                "approval_requested_by",
+                "requestor_notes",
+                "approval_status",
+                "approval_responded_by",
+                "approval_responded_date",
+                "reviewer_notes",
+            }
+            preserve_keys = base_fields | award_fields
+            # Remove PRE_SOLICITATION-only fields
+            data.pop("draft_solicitation_date", None)
+            # Remove SOLICITATION-only fields
+            data.pop("solicitation_period_start_date", None)
+            data.pop("solicitation_period_end_date", None)
+            # Remove PRE_AWARD requisition fields
+            data.pop("requisition_number", None)
+            data.pop("requisition_date", None)
+            data.pop("requisition_approved_by", None)
+            data.pop("requisition_approved_date", None)
         else:
             preserve_keys = base_fields
             # Remove all step-specific fields for other step types

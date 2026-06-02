@@ -75,6 +75,9 @@ class ProcurementTrackerStepsValidator:
         """
         from ops_api.ops.validation.rules.procurement_tracker_step import (
             AcquisitionPlanningRequiredFieldsRule,
+            AwardAgreementDataRequiredRule,
+            AwardApprovalRequiredRule,
+            AwardCompletionRequiredFieldsRule,
             CompletedByUpdateAuthorizationRule,
             EvaluationCompletionRequiredFieldsRule,
             NoBLIsInReviewForApprovalRequestRule,
@@ -141,6 +144,18 @@ class ProcurementTrackerStepsValidator:
                 PreAwardApprovalResponseAuthorizationRule(),
                 PreAwardApprovalResponseValidationRule(),
                 PreAwardCompletionRequiredFieldsRule(),
+                CompletedByUpdateAuthorizationRule(),
+                NoUpdatingCompletedProcurementStepRule(),
+                NoFutureCompletionDateUpdateValidationRule(),
+                NoPastTargetCompletionDateUpdateRule(),
+            ]
+        elif procurement_tracker_step.step_type == ProcurementTrackerStepType.AWARD:
+            return [
+                ResourceExistsRule(),
+                UserAssociationRule(),
+                AwardAgreementDataRequiredRule(),
+                AwardApprovalRequiredRule(),
+                AwardCompletionRequiredFieldsRule(),
                 CompletedByUpdateAuthorizationRule(),
                 NoUpdatingCompletedProcurementStepRule(),
                 NoFutureCompletionDateUpdateValidationRule(),

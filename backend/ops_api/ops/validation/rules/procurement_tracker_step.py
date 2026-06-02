@@ -295,6 +295,148 @@ class PreAwardCompletionRequiredFieldsRule(ValidationRule):
             )
 
 
+class AwardCompletionRequiredFieldsRule(ValidationRule):
+    """
+    Validates that required fields are present when completing the AWARD step.
+    Only runs when status is being set to COMPLETED.
+    """
+
+    @property
+    def name(self) -> str:
+        return "AWARD Completion Required Fields Check"
+
+    def validate(self, procurement_tracker_step: ProcurementTrackerStep, context: ValidationContext) -> None:
+        mapping = {
+            "task_completed_by": "award_task_completed_by",
+            "date_completed": "award_date_completed",
+        }
+
+        if not is_procurement_tracker_step_updated_to_complete(context):
+            return
+
+        updated_fields = context.updated_fields
+        award_required_fields = ["task_completed_by", "date_completed"]
+
+        # Check for missing fields
+        missing_fields = [field for field in award_required_fields if field not in updated_fields]
+
+        # Check if missing fields are populated on model
+        final_missing_fields = [
+            field for field in missing_fields if getattr(procurement_tracker_step, mapping[field], None) is None
+        ]
+
+        # Check if any provided fields are explicitly set to None
+        null_fields = [
+            field for field in award_required_fields if field in updated_fields and updated_fields[field] is None
+        ]
+
+        # Combine missing and null fields
+        invalid_fields = list(set(final_missing_fields + null_fields))
+
+        if invalid_fields:
+            raise ValidationError(
+                {field: f"{field} is required when completing AWARD step." for field in invalid_fields}
+            )
+
+
+class AwardApprovalRequiredRule(ValidationRule):
+    """
+    Validates that Award Approval has been approved before completing the AWARD step.
+    Only runs when status is being set to COMPLETED.
+
+    Note: This creates intentional asymmetry with PRE_AWARD, which does not gate completion
+    on approval status. For AWARD steps, approval is mandatory per OPS-1640 requirements.
+    """
+
+    @property
+    def name(self) -> str:
+        return "AWARD Approval Required Check"
+
+    def validate(self, procurement_tracker_step: ProcurementTrackerStep, context: ValidationContext) -> None:
+        if not is_procurement_tracker_step_updated_to_complete(context):
+            return
+
+        # Check if approval status is APPROVED
+        approval_status = procurement_tracker_step.award_approval_status
+
+        if not approval_status:
+            raise ValidationError(
+                {
+                    "approval_status": "Award Approval request must be submitted and approved before completing this step."
+                }
+            )
+
+        if approval_status == "DECLINED":
+            raise ValidationError({"approval_status": "Cannot complete AWARD step - approval request was declined."})
+
+        if approval_status != "APPROVED":
+            raise ValidationError(
+                {
+                    "approval_status": f"Award Approval must be approved before completing this step. Current status: {approval_status}"
+                }
+            )
+
+
+class AwardAgreementDataRequiredRule(ValidationRule):
+    """
+    Validates that the agreement has required data before completing the AWARD step:
+    - Vendor must exist for CONTRACT and AA agreement types
+    - At least one CLIN must exist for CONTRACT and AA agreement types
+    Only runs when status is being set to COMPLETED.
+
+    Note: IAA agreements use agencies instead of vendors and don't have CLINs, so they are excluded.
+    GRANT and DIRECT_OBLIGATION types don't use procurement trackers.
+    """
+
+    @property
+    def name(self) -> str:
+        return "AWARD Agreement Data Required Check"
+
+    def validate(self, procurement_tracker_step: ProcurementTrackerStep, context: ValidationContext) -> None:
+        from sqlalchemy import select
+
+        from models import AgreementType
+        from models.services_components import CLIN
+
+        if not is_procurement_tracker_step_updated_to_complete(context):
+            return
+
+        # Get the agreement
+        if (
+            not procurement_tracker_step.procurement_tracker
+            or not procurement_tracker_step.procurement_tracker.agreement
+        ):
+            raise ValidationError({"agreement": "Procurement tracker step is not linked to a valid agreement."})
+
+        agreement = procurement_tracker_step.procurement_tracker.agreement
+
+        # Only validate for CONTRACT and AA types
+        # IAA agreements use agencies instead of vendors and don't have CLINs
+        # GRANT and DIRECT_OBLIGATION types don't use procurement trackers
+        if agreement.agreement_type not in [AgreementType.CONTRACT, AgreementType.AA]:
+            return
+
+        # Validate Vendor exists (use defensive getattr for polymorphic agreement types)
+        vendor_id = getattr(agreement, "vendor_id", None)
+        if not vendor_id:
+            raise ValidationError(
+                {"vendor": "Vendor is required for CONTRACT and AA agreements before completing the AWARD step."}
+            )
+
+        # Validate at least one CLIN exists (use .first() for efficiency)
+        has_clin = (
+            context.db_session.execute(select(CLIN).where(CLIN.agreement_id == agreement.id).limit(1)).first()
+            is not None
+        )
+
+        if not has_clin:
+            raise ValidationError(
+                {
+                    "clins": "At least one CLIN is required for CONTRACT and AA agreements before completing the AWARD step."
+                }
+            )
+
+
 class NoPastTargetCompletionDateUpdateRule(ValidationRule):
     """
     Validates that the target_completion_date is not in the past when being updated for pre-solicitation, evaluation, and pre-award steps.
@@ -384,6 +526,8 @@ class CompletionAuthorizationRule(ValidationRule):
             task_completed_by_id = procurement_tracker_step.evaluation_task_completed_by
         elif procurement_tracker_step.step_type == ProcurementTrackerStepType.PRE_AWARD:
             task_completed_by_id = procurement_tracker_step.pre_award_task_completed_by
+        elif procurement_tracker_step.step_type == ProcurementTrackerStepType.AWARD:
+            task_completed_by_id = procurement_tracker_step.award_task_completed_by
         # If task_completed_by is not set, the CompletionRequiredFieldsRule will catch it
         if not task_completed_by_id:
             return

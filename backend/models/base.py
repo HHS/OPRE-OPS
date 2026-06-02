@@ -53,7 +53,7 @@ def setup_schema(base: Base) -> callable:
                     # handle enums
                     if isinstance(column.type, sqlalchemy.sql.sqltypes.Enum):
                         schema_class._declared_fields[column.key] = fields.Enum(
-                            column.type.enum_class
+                            column.type.enum_class, by_value=True
                         )
 
                     # handle list of enums
