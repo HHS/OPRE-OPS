@@ -1,6 +1,6 @@
 """User models."""
 
-from enum import Enum, auto
+from enum import Enum
 from typing import List, Optional
 
 from sqlalchemy import ForeignKey, Sequence, String
@@ -32,10 +32,13 @@ class UserGroup(BaseModel):
         return f"User Group: user_id={self.user_id}; group_id={self.group_id}"
 
 
-class UserStatus(Enum):
-    ACTIVE = auto()
-    INACTIVE = auto()
-    LOCKED = auto()
+class UserStatus(str, Enum):
+    def __str__(self):
+        return self.value
+
+    ACTIVE = "ACTIVE"
+    INACTIVE = "INACTIVE"
+    LOCKED = "LOCKED"
 
 
 class User(BaseModel):

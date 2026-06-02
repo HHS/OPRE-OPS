@@ -46,10 +46,10 @@ class BudgetLineItemStatus(str, Enum):
     def __str__(self):
         return str(self.value)
 
-    DRAFT = "Draft"
-    PLANNED = "Planned"
-    IN_EXECUTION = "In Execution"
-    OBLIGATED = "Obligated"
+    DRAFT = "DRAFT"
+    PLANNED = "PLANNED"
+    IN_EXECUTION = "IN_EXECUTION"
+    OBLIGATED = "OBLIGATED"
 
 
 class BudgetLineSortCondition(Enum):

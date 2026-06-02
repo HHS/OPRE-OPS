@@ -11,6 +11,7 @@ from models.procurement_tracker import (
     ProcurementTrackerStepType,
 )
 from models.services_components import CLIN
+from models.vendors import Vendor
 
 
 @pytest.fixture
@@ -99,8 +100,11 @@ def test_award_completion_fails_without_clins(
     auth_client, app_ctx, loaded_db, test_procurement_tracker_with_award, test_contract_agreement
 ):
     """Test that AWARD step completion fails when CLINs are missing for contracts."""
-    # Add vendor but no CLINs
-    test_contract_agreement.vendor_id = 1  # Existing vendor from test data
+    # Create and add vendor but no CLINs
+    vendor = Vendor(name="Test Vendor for Award", duns="123456789")
+    loaded_db.add(vendor)
+    loaded_db.flush()
+    test_contract_agreement.vendor_id = vendor.id
     loaded_db.commit()
 
     update_data = {
@@ -123,8 +127,11 @@ def test_award_completion_succeeds_with_vendor_and_clins(
     auth_client, app_ctx, loaded_db, test_procurement_tracker_with_award, test_contract_agreement
 ):
     """Test that AWARD step completion succeeds when vendor and CLINs exist."""
-    # Add vendor
-    test_contract_agreement.vendor_id = 1  # Existing vendor from test data
+    # Create and add vendor
+    vendor = Vendor(name="Test Vendor for Award Success", duns="987654321")
+    loaded_db.add(vendor)
+    loaded_db.flush()
+    test_contract_agreement.vendor_id = vendor.id
     loaded_db.commit()
 
     # Add CLIN

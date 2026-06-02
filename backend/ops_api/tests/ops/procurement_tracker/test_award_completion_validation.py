@@ -13,15 +13,19 @@ def test_award_step(app_ctx, loaded_db):
     """Create a test AWARD step that can be safely modified."""
     from models import ContractAgreement
     from models.services_components import CLIN
+    from models.vendors import Vendor
 
     tracker = loaded_db.get(ProcurementTracker, 1)
 
     # Ensure the agreement has vendor and CLINs to pass validation
     agreement = tracker.agreement
     if isinstance(agreement, ContractAgreement):
-        # Set vendor if not set
+        # Create vendor if not set
         if not agreement.vendor_id:
-            agreement.vendor_id = 1  # Use existing vendor from test data
+            vendor = Vendor(name="Test Vendor for Award Validation", duns="111222333")
+            loaded_db.add(vendor)
+            loaded_db.flush()
+            agreement.vendor_id = vendor.id
             loaded_db.commit()
 
         # Ensure at least one CLIN exists
