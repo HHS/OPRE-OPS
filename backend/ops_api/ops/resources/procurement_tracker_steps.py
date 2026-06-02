@@ -68,9 +68,11 @@ class ProcurementTrackerStepItemAPI(BaseItemAPI):
                 old_step_dict, updated_step.to_dict(), updated_step.procurement_tracker.agreement_id, current_user.id
             )
 
-            event_meta.metadata.update(
-                {"procurement_tracker_step_updates": events_update, "procurement_tracker_step": updated_step.to_dict()}
-            )
+            event_meta.metadata.update({
+                "step_id": updated_step.id,
+                "procurement_tracker_step_updates": events_update,
+                "procurement_tracker_step": updated_step.to_dict()
+            })
 
             # Serialize and return response
             serialized_data = self._response_schema.dump(updated_step)

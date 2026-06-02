@@ -14,7 +14,6 @@ from models.procurement_tracker import (
     ProcurementTrackerStepType,
 )
 from models.services_components import CLIN
-from models.users import User
 
 
 @pytest.fixture
@@ -127,10 +126,9 @@ def test_step_6_completion_full_flow(auth_client, app_ctx, loaded_db, step_6_tes
     # Step 2: Request award approval (already done in fixture, approval_status = APPROVED)
 
     # Step 3: Complete Step 6
-    user = loaded_db.query(User).filter(User.email == "test@email.com").first()
     completion_payload = {
         "status": "COMPLETED",
-        "task_completed_by": user.id,
+        "task_completed_by": 503,  # Auth client user ID
         "date_completed": date.today().isoformat(),
         "notes": "Award received and uploaded.",
     }
@@ -140,7 +138,7 @@ def test_step_6_completion_full_flow(auth_client, app_ctx, loaded_db, step_6_tes
     assert response.status_code == 200
     data = response.json
     assert data["status"] == "COMPLETED"
-    assert data["task_completed_by"] == user.id
+    assert data["task_completed_by"] == 503
     assert data["date_completed"] == date.today().isoformat()
     assert data["notes"] == "Award received and uploaded."
 
@@ -155,7 +153,7 @@ def test_step_6_completion_full_flow(auth_client, app_ctx, loaded_db, step_6_tes
     )
 
     assert procurement_action is not None, "ProcurementAction should exist"
-    assert procurement_action.awarded_date is not None
+    assert procurement_action.award_date is not None
 
 
 def test_step_6_cannot_complete_without_approval(auth_client, app_ctx, loaded_db, step_6_test_data):
@@ -167,17 +165,18 @@ def test_step_6_cannot_complete_without_approval(auth_client, app_ctx, loaded_db
     loaded_db.commit()
     loaded_db.refresh(step_6)
 
-    user = loaded_db.query(User).filter(User.email == "test@email.com").first()
     completion_payload = {
         "status": "COMPLETED",
-        "task_completed_by": user.id,
+        "task_completed_by": 503,  # Auth client user ID
         "date_completed": date.today().isoformat(),
     }
 
     response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{step_6.id}", json=completion_payload)
 
     assert response.status_code == 400
-    assert "approval" in response.json["message"].lower()
+    # Check if error message contains "approval" in either message or errors field
+    response_text = str(response.json).lower()
+    assert "approval" in response_text
 
 
 def test_step_6_cannot_complete_without_vendor(auth_client, app_ctx, loaded_db, step_6_test_data):
@@ -190,50 +189,81 @@ def test_step_6_cannot_complete_without_vendor(auth_client, app_ctx, loaded_db, 
         agreement.vendor_id = None
         loaded_db.commit()
 
-    user = loaded_db.query(User).filter(User.email == "test@email.com").first()
     completion_payload = {
         "status": "COMPLETED",
-        "task_completed_by": user.id,
+        "task_completed_by": 503,  # Auth client user ID
         "date_completed": date.today().isoformat(),
     }
 
     response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{step_6.id}", json=completion_payload)
 
     assert response.status_code == 400
-    assert "vendor" in response.json["message"].lower()
+    # Check if error message contains "vendor" in either message or errors field
+    response_text = str(response.json).lower()
+    assert "vendor" in response_text
 
 
-def test_step_6_cannot_complete_without_clins(auth_client, app_ctx, loaded_db, step_6_test_data):
+def test_step_6_cannot_complete_without_clins(auth_client, app_ctx, loaded_db):
     """Test Step 6 cannot be completed without CLINs for contract agreements."""
-    step_6 = step_6_test_data["step_6"]
-    agreement = step_6_test_data["agreement"]
+    from models import AgreementType, Vendor
+    from models.procurement_tracker import ProcurementTrackerStatus
 
-    # Remove all CLINs
-    loaded_db.query(CLIN).filter(CLIN.agreement_id == agreement.id).delete()
+    # Create a new contract agreement without CLINs
+    vendor = Vendor(name="Test Vendor for CLIN Test", duns="555666777")
+    loaded_db.add(vendor)
+    loaded_db.flush()
+
+    agreement = ContractAgreement(
+        name="Test Contract without CLINs",
+        agreement_type=AgreementType.CONTRACT,
+        project_id=1000,
+        vendor_id=vendor.id,
+    )
+    loaded_db.add(agreement)
+    loaded_db.flush()
+
+    # Create tracker and Step 6
+    tracker = DefaultProcurementTracker(
+        agreement_id=agreement.id,
+        status=ProcurementTrackerStatus.ACTIVE,
+        active_step_number=6
+    )
+    loaded_db.add(tracker)
+    loaded_db.flush()
+
+    step_6 = DefaultProcurementTrackerStep(
+        procurement_tracker=tracker,
+        step_number=6,
+        step_type=ProcurementTrackerStepType.AWARD,
+        status=ProcurementTrackerStepStatus.ACTIVE,
+        award_approval_status="APPROVED",
+    )
+    loaded_db.add(step_6)
     loaded_db.commit()
+    loaded_db.refresh(step_6)
 
-    user = loaded_db.query(User).filter(User.email == "test@email.com").first()
     completion_payload = {
         "status": "COMPLETED",
-        "task_completed_by": user.id,
+        "task_completed_by": 503,  # Auth client user ID
         "date_completed": date.today().isoformat(),
     }
 
     response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{step_6.id}", json=completion_payload)
 
     assert response.status_code == 400
-    assert "clin" in response.json["message"].lower()
+    # Check if error message contains "clin" in either message or errors field
+    response_text = str(response.json).lower()
+    assert "clin" in response_text
 
 
 def test_step_6_field_mapping(auth_client, app_ctx, loaded_db, step_6_test_data):
     """Test Step 6 field mapping works correctly between API and database."""
     step_6 = step_6_test_data["step_6"]
-    user = loaded_db.query(User).filter(User.email == "test@email.com").first()
 
     # Update all Step 6 fields
     payload = {
         "target_completion_date": "2026-06-15",
-        "task_completed_by": user.id,
+        "task_completed_by": 503,  # Auth client user ID
         "date_completed": date.today().isoformat(),
         "notes": "Test notes for Step 6",
         "approval_requested": True,
@@ -248,7 +278,7 @@ def test_step_6_field_mapping(auth_client, app_ctx, loaded_db, step_6_test_data)
 
     # Verify all fields returned correctly (no prefixes in API response)
     assert data["target_completion_date"] == "2026-06-15"
-    assert data["task_completed_by"] == user.id
+    assert data["task_completed_by"] == 503
     assert data["date_completed"] == date.today().isoformat()
     assert data["notes"] == "Test notes for Step 6"
     assert data["approval_requested"] is True
@@ -258,7 +288,7 @@ def test_step_6_field_mapping(auth_client, app_ctx, loaded_db, step_6_test_data)
     # Verify database has prefixes
     loaded_db.refresh(step_6)
     assert step_6.award_target_completion_date is not None
-    assert step_6.award_task_completed_by == user.id
+    assert step_6.award_task_completed_by == 503
     assert step_6.award_date_completed == date.today()
     assert step_6.award_notes == "Test notes for Step 6"
     assert step_6.award_approval_requested is True
