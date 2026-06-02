@@ -45,7 +45,7 @@ class ProcurementTrackerStepNotificationSchema(Schema):
     """
 
     id = fields.Integer(required=True)
-    step_type = fields.Enum(ProcurementTrackerStepType, required=True, by_value=False)
+    step_type = fields.Enum(ProcurementTrackerStepType, required=True, by_value=True)
     approval_status = fields.String(allow_none=True)
     approval_requested = fields.Boolean(allow_none=True)
 
@@ -103,8 +103,8 @@ class ProcurementTrackerStepResponseSchema(Schema):
     procurement_tracker = fields.Nested(NestedProcurementTrackerSchema, allow_none=True)
     step_number = fields.Integer(required=True)
     step_class = fields.String(required=True)
-    step_type = fields.Enum(ProcurementTrackerStepType, required=True, by_value=False)
-    status = fields.Enum(ProcurementTrackerStepStatus, required=True, by_value=False)
+    step_type = fields.Enum(ProcurementTrackerStepType, required=True, by_value=True)
+    status = fields.Enum(ProcurementTrackerStepStatus, required=True, by_value=True)
     step_start_date = fields.Date(allow_none=True)
     step_completed_date = fields.Date(allow_none=True)
 
@@ -378,7 +378,7 @@ class ProcurementTrackerStepResponseSchema(Schema):
 class ProcurementTrackerStepPatchRequestSchema(Schema):
     """Schema for PATCH requests to update procurement tracker steps."""
 
-    status = fields.Enum(ProcurementTrackerStepStatus, required=True, by_value=False)
+    status = fields.Enum(ProcurementTrackerStepStatus, required=True, by_value=True)
 
     # Fields shared by Acquisition Planning, Pre-Solicitation, Solicitation, and Evaluation steps
     task_completed_by = fields.Integer(required=False, allow_none=True)
@@ -431,8 +431,8 @@ class ProcurementTrackerStepSchema(Schema):
     id = fields.Integer(required=True)
     procurement_tracker_id = fields.Integer(required=True)
     step_number = fields.Integer(required=True)
-    step_type = fields.Enum(ProcurementTrackerStepType, required=True)
-    status = fields.Enum(ProcurementTrackerStepStatus, required=True)
+    step_type = fields.Enum(ProcurementTrackerStepType, required=True, by_value=True)
+    status = fields.Enum(ProcurementTrackerStepStatus, required=True, by_value=True)
     step_start_date = fields.Date(allow_none=True)
     step_completed_date = fields.Date(allow_none=True)
 

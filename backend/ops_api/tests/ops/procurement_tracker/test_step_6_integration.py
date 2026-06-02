@@ -37,7 +37,11 @@ def step_6_test_data(app_ctx, loaded_db):
         loaded_db.add(clin)
 
     # Create a procurement tracker with Steps 1-6
-    tracker = DefaultProcurementTracker(agreement_id=agreement.id, status="ACTIVE", active_step_number=6)
+    from models.procurement_tracker import ProcurementTrackerStatus
+
+    tracker = DefaultProcurementTracker(
+        agreement_id=agreement.id, status=ProcurementTrackerStatus.ACTIVE, active_step_number=6
+    )
     loaded_db.add(tracker)
     loaded_db.flush()
 
