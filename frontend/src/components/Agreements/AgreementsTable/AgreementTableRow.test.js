@@ -269,6 +269,39 @@ describe("AgreementTableRow", () => {
         });
     });
 
+    describe("Read-Only User Permissions", () => {
+        test("read-only user does not see edit icon on hover", async () => {
+            renderComponent([{ id: 1, name: USER_ROLES.READ_ONLY, is_superuser: false }], baseAgreement);
+
+            const user = userEvent.setup();
+            const tableRow = screen.getByTestId("agreement-table-row-1");
+            await user.hover(tableRow);
+
+            expect(screen.queryByTestId("edit-row")).not.toBeInTheDocument();
+        });
+
+        test("read-only user does not see delete icon on hover", async () => {
+            renderComponent([{ id: 1, name: USER_ROLES.READ_ONLY, is_superuser: false }], baseAgreement);
+
+            const user = userEvent.setup();
+            const tableRow = screen.getByTestId("agreement-table-row-1");
+            await user.hover(tableRow);
+
+            expect(screen.queryByTestId("delete-row")).not.toBeInTheDocument();
+        });
+
+        test("read-only user does not see change icons in the expanded row", async () => {
+            renderComponent([{ id: 1, name: USER_ROLES.READ_ONLY, is_superuser: false }], baseAgreement);
+
+            const user = userEvent.setup();
+            const expandButton = screen.getByTestId("expand-row");
+            await user.click(expandButton);
+
+            expect(screen.queryByTestId("edit-row")).not.toBeInTheDocument();
+            expect(screen.queryByTestId("delete-row")).not.toBeInTheDocument();
+        });
+    });
+
     describe("Regular User Edit Permissions", () => {
         test("regular user cannot edit non-editable agreements", async () => {
             const nonEditableAgreement = {

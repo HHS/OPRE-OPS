@@ -46,4 +46,17 @@ describe("NavMenu", () => {
 
         expect(screen.getByRole("button", { name: "Create" })).toBeInTheDocument();
     });
+
+    it("renders the Create menu item when the user has no roles", () => {
+        renderWithRoles([]);
+
+        expect(screen.getByRole("button", { name: "Create" })).toBeInTheDocument();
+    });
+
+    it("hides the Project and Agreement sub-links for read-only users", () => {
+        renderWithRoles([{ name: "READ_ONLY" }]);
+
+        expect(screen.queryByRole("link", { name: "Project" })).not.toBeInTheDocument();
+        expect(screen.queryByRole("link", { name: "Agreement" })).not.toBeInTheDocument();
+    });
 });
