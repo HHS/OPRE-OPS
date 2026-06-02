@@ -22,6 +22,11 @@ const mockResWithGroupErrors = {
 
 const noopCn = () => "";
 
+const fieldErrorCn = (field) => {
+    if (field === "enteredDay" || field === "enteredYear") return "usa-form-group--error";
+    return "";
+};
+
 export default {
     title: "UI/Form/DesiredAwardDate",
     component: DesiredAwardDate,
@@ -97,7 +102,7 @@ export const WithFieldErrors = {
                 isReviewMode={true}
                 runValidate={() => {}}
                 res={mockResWithFieldErrors}
-                cn={noopCn}
+                cn={fieldErrorCn}
             />
         );
     }

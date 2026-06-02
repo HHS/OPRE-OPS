@@ -1,3 +1,4 @@
+import { fn } from "storybook/test";
 import DatePicker from "./DatePicker";
 
 export default {
@@ -30,7 +31,7 @@ export const Default = {
         id: "award-date",
         name: "award-date",
         label: "Award Date",
-        onChange: () => {}
+        onChange: fn()
     }
 };
 
@@ -42,7 +43,7 @@ export const WithMinMaxDates = {
         hint: "Must be within the current fiscal year",
         minDate: "2025-10-01",
         maxDate: "2026-09-30",
-        onChange: () => {}
+        onChange: fn()
     }
 };
 
@@ -52,7 +53,7 @@ export const Required = {
         name: "start-date",
         label: "Start Date",
         isRequired: true,
-        onChange: () => {}
+        onChange: fn()
     }
 };
 
@@ -62,7 +63,7 @@ export const WithErrors = {
         name: "end-date",
         label: "End Date",
         messages: ["End date must be after start date"],
-        onChange: () => {}
+        onChange: fn()
     }
 };
 
@@ -73,6 +74,6 @@ export const Disabled = {
         label: "Locked Date",
         value: "2025-06-15",
         isDisabled: true,
-        onChange: () => {}
+        onChange: fn()
     }
 };

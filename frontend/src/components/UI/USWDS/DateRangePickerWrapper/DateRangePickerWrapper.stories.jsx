@@ -1,3 +1,4 @@
+import { fn } from "storybook/test";
 import DatePicker from "../DatePicker/DatePicker";
 import DateRangePickerWrapper from "./DateRangePickerWrapper";
 
@@ -23,13 +24,13 @@ export const Default = {
                 id="start-date"
                 name="start-date"
                 label="Start Date"
-                onChange={() => {}}
+                onChange={fn()}
             />
             <DatePicker
                 id="end-date"
                 name="end-date"
                 label="End Date"
-                onChange={() => {}}
+                onChange={fn()}
             />
         </DateRangePickerWrapper>
     )
@@ -47,7 +48,7 @@ export const WithConstraints = {
                 label="Period of Performance Start"
                 minDate="2024-10-01"
                 maxDate="2025-09-30"
-                onChange={() => {}}
+                onChange={fn()}
             />
             <DatePicker
                 id="period-end"
@@ -55,7 +56,7 @@ export const WithConstraints = {
                 label="Period of Performance End"
                 minDate="2024-10-01"
                 maxDate="2025-09-30"
-                onChange={() => {}}
+                onChange={fn()}
             />
         </DateRangePickerWrapper>
     )
