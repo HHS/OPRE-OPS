@@ -280,9 +280,8 @@ def agreement_with_ops_user_and_procurement_action(bdd_client, test_non_admin_us
     # Create a CLIN for the agreement (required for Award step)
     clin = CLIN(
         agreement_id=contract_agreement.id,
-        clin_number="1001",
-        clin_description="Test CLIN for Award",
-        amount=100000.00
+        number=1001,
+        name="Test CLIN for Award"
     )
     loaded_db.add(clin)
     loaded_db.commit()
@@ -468,6 +467,11 @@ def procurement_tracker_with_uncompleted_final_step(loaded_db, context):
         created_by=agreement.created_by,
         procurement_action=procurement_action.id,
     )
+
+    # Mark all prior steps as completed (Steps 1-5 must be completed before completing Step 6)
+    for step in procurement_tracker.steps[:-1]:  # All except the final step
+        step.status = ProcurementTrackerStepStatus.COMPLETED
+        step.step_completed_date = date.today()
 
     loaded_db.add(procurement_tracker)
     loaded_db.commit()
