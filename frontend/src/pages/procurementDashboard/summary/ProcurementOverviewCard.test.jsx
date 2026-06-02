@@ -73,7 +73,7 @@ describe("ProcurementOverviewCard", () => {
             />
         );
 
-        expect(screen.getByText("$350,000")).toBeInTheDocument();
+        expect(screen.getByText("$350,000.00")).toBeInTheDocument();
     });
 
     it("includes fees in the amount calculations", () => {
@@ -86,7 +86,7 @@ describe("ProcurementOverviewCard", () => {
             />
         );
 
-        expect(screen.getByText("$105,000")).toBeInTheDocument();
+        expect(screen.getAllByText("$105,000.00").length).toBeGreaterThanOrEqual(1);
     });
 
     it("filters BLIs by fiscal year", () => {
@@ -100,7 +100,7 @@ describe("ProcurementOverviewCard", () => {
             />
         );
 
-        expect(screen.getByText("$100,000")).toBeInTheDocument();
+        expect(screen.getAllByText("$100,000.00").length).toBeGreaterThanOrEqual(1);
     });
 
     it("displays correct agreement count", () => {
@@ -206,7 +206,7 @@ describe("ProcurementOverviewCard", () => {
         );
 
         // With null overview, buildStatusData returns empty arrays and 0 totals
-        const allZeroDollars = screen.getAllByText("$0");
+        const allZeroDollars = screen.getAllByText("$0.00");
         expect(allZeroDollars.length).toBeGreaterThanOrEqual(1);
 
         const agreementTexts = screen.getAllByText(/0 agreements/);
@@ -224,6 +224,24 @@ describe("ProcurementOverviewCard", () => {
             />
         );
 
-        expect(screen.getByText("$100,000")).toBeInTheDocument();
+        expect(screen.getAllByText("$100,000.00").length).toBeGreaterThanOrEqual(1);
+    });
+
+    it("limits total amount display to 2 decimal places", () => {
+        const overview = makeOverview(
+            [makeStatusItem("Planned", "PLANNED", 100_000.456, 100, 1, 100)],
+            100_000.456,
+            1
+        );
+
+        render(
+            <ProcurementOverviewCard
+                procurementOverview={overview}
+                fiscalYear={fiscalYear}
+            />
+        );
+
+        expect(screen.getAllByText("$100,000.46").length).toBeGreaterThanOrEqual(1);
+        expect(screen.queryByText("$100,000.456")).not.toBeInTheDocument();
     });
 });

@@ -4,6 +4,7 @@ import LegendItem from "../../../components/UI/Cards/LineGraphWithLegendCard/Leg
 import HorizontalStackedBar from "../../../components/UI/DataViz/HorizontalStackedBar/HorizontalStackedBar";
 import RoundedBox from "../../../components/UI/RoundedBox";
 import Tag from "../../../components/UI/Tag/Tag";
+import { computeDisplayPercent } from "../../../helpers/utils";
 
 const STATUS_COLORS = {
     PLANNED: "var(--data-viz-bl-by-status-2)",
@@ -18,18 +19,23 @@ const buildStatusData = (procurementOverview) => {
 
     const { status_data, total_amount, total_agreements } = procurementOverview;
 
-    const statusData = status_data.map((item, index) => ({
-        id: index + 1,
-        label: item.label,
-        color: STATUS_COLORS[item.status] || "var(--data-viz-bl-by-status-2)",
-        amount: item.amount,
-        amountPercent: `${item.amount_percent}%`,
-        agreements: item.agreements,
-        agreementsPercent: `${item.agreements_percent}%`,
-        percent: total_amount > 0 ? (item.amount / total_amount) * 100 : 0,
-        abbreviation: item.label,
-        value: item.amount
-    }));
+    const statusData = status_data.map((item, index) => {
+        const amountDisplayPercent = computeDisplayPercent(item.amount, total_amount);
+        const agreementsDisplayPercent = computeDisplayPercent(item.agreements, total_agreements);
+        return {
+            id: index + 1,
+            label: item.label,
+            color: STATUS_COLORS[item.status] || "var(--data-viz-bl-by-status-2)",
+            amount: item.amount,
+            amountDisplayPercent,
+            amountPercent: `${amountDisplayPercent}%`,
+            agreements: item.agreements,
+            agreementsPercent: `${agreementsDisplayPercent}%`,
+            percent: total_amount > 0 ? (item.amount / total_amount) * 100 : 0,
+            abbreviation: item.label,
+            value: item.amount
+        };
+    });
 
     return { statusData, totalAmount: total_amount, totalAgreements: total_agreements };
 };
@@ -113,6 +119,7 @@ const ProcurementOverviewCard = ({ procurementOverview, fiscalYear, isLoading, e
                     displayType="text"
                     thousandSeparator={true}
                     prefix="$"
+                    decimalScale={2}
                     fixedDecimalScale={true}
                     renderText={(value) => <span className="text-bold margin-bottom-0 font-sans-xl">{value}</span>}
                 />
@@ -145,7 +152,7 @@ const ProcurementOverviewCard = ({ procurementOverview, fiscalYear, isLoading, e
                                     label={item.label === "In Execution" ? "Executing" : item.label}
                                     value={item.amount}
                                     color={item.color}
-                                    percent={parseInt(item.amountPercent)}
+                                    percent={item.amountDisplayPercent}
                                 />
                                 <div className="display-flex flex-align-center flex-justify-end padding-top-1">
                                     <span className={activeId === item.id ? "fake-bold" : ""}>
