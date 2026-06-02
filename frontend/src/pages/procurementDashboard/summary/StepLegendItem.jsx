@@ -35,7 +35,12 @@ const StepLegendItem = ({ id, activeId, label, value, color, percent }) => {
                 />
                 <span className={isActive ? "fake-bold" : ""}>{label}</span>
             </div>
-            <span className={`flex-1 text-center ${isActive ? "fake-bold" : ""}`}>{value}</span>
+            <span
+                className={`flex-1 text-center ${isActive ? "fake-bold" : ""}`}
+                data-cy="step-legend-agreement-count"
+            >
+                {value}
+            </span>
             <div className="flex-1 text-right">
                 <Tag
                     tagStyle="darkTextWhiteBackground"
