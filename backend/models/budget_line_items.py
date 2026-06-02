@@ -42,7 +42,7 @@ from models.change_requests import (
 )
 
 
-class BudgetLineItemStatus(Enum):
+class BudgetLineItemStatus(str, Enum):
     def __str__(self):
         return str(self.value)
 
