@@ -228,11 +228,7 @@ describe("ProcurementOverviewCard", () => {
     });
 
     it("limits total amount display to 2 decimal places", () => {
-        const overview = makeOverview(
-            [makeStatusItem("Planned", "PLANNED", 100_000.456, 100, 1, 100)],
-            100_000.456,
-            1
-        );
+        const overview = makeOverview([makeStatusItem("Planned", "PLANNED", 100_000.456, 100, 1, 100)], 100_000.456, 1);
 
         render(
             <ProcurementOverviewCard
