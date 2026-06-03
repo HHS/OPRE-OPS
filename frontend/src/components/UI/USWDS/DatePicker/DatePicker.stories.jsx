@@ -11,6 +11,10 @@ export default {
                     "Wraps the USWDS date picker with OPS-specific behavior: error messages, required indicators, " +
                     "disabled state, and min/max date constraints. " +
                     "See also: [USWDS Date Picker](https://designsystem.digital.gov/components/date-picker/)"
+            },
+            story: {
+                inline: false,
+                height: "500px"
             }
         }
     },

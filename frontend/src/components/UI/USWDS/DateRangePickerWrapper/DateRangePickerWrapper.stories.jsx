@@ -12,6 +12,10 @@ export default {
                     "Wraps two USWDS DatePicker components to coordinate date range selection. " +
                     "Uses USWDS date-range-picker JavaScript for constraint enforcement. " +
                     "See also: [USWDS Date Range Picker](https://designsystem.digital.gov/components/date-range-picker/)"
+            },
+            story: {
+                inline: false,
+                height: "500px"
             }
         }
     }
