@@ -5,11 +5,16 @@ export default {
     title: "UI/Modals/ConfirmationModal",
     component: ConfirmationModal,
     parameters: {
+        layout: "fullscreen",
         docs: {
             description: {
                 component:
                     "Two-action modal with confirm and cancel buttons. Includes keyboard focus trapping " +
                     "(Tab wraps around) and Escape to close. Renders inline using USWDS modal markup."
+            },
+            story: {
+                inline: false,
+                height: "400px"
             }
         }
     },

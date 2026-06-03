@@ -5,11 +5,16 @@ export default {
     title: "UI/Modals/ContainerModal",
     component: ContainerModal,
     parameters: {
+        layout: "fullscreen",
         docs: {
             description: {
                 component:
                     "Container-style modal for embedding custom content (forms, tables, etc.) with a single cancel button. " +
                     "Includes keyboard focus trapping and Escape to close."
+            },
+            story: {
+                inline: false,
+                height: "400px"
             }
         }
     },

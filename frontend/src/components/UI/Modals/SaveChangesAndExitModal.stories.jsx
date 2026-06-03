@@ -5,11 +5,16 @@ export default {
     title: "UI/Modals/SaveChangesAndExitModal",
     component: SaveChangesAndExitModal,
     parameters: {
+        layout: "fullscreen",
         docs: {
             description: {
                 component:
                     "Two-action modal for save-and-exit flows. Primary button saves changes; secondary button " +
                     "discards or cancels. Includes keyboard focus trapping and Escape to close."
+            },
+            story: {
+                inline: false,
+                height: "400px"
             }
         }
     },
