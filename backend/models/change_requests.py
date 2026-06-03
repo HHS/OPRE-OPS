@@ -13,16 +13,22 @@ from models import BaseModel
 # ---=== CHANGE REQUESTS ===---
 
 
-class ChangeRequestStatus(Enum):
-    IN_REVIEW = auto()
-    APPROVED = auto()
-    REJECTED = auto()
+class ChangeRequestStatus(str, Enum):
+    def __str__(self):
+        return self.value
+
+    IN_REVIEW = "IN_REVIEW"
+    APPROVED = "APPROVED"
+    REJECTED = "REJECTED"
 
 
-class ChangeRequestType(Enum):
-    CHANGE_REQUEST = auto()
-    AGREEMENT_CHANGE_REQUEST = auto()
-    BUDGET_LINE_ITEM_CHANGE_REQUEST = auto()
+class ChangeRequestType(str, Enum):
+    def __str__(self):
+        return self.value
+
+    CHANGE_REQUEST = "CHANGE_REQUEST"
+    AGREEMENT_CHANGE_REQUEST = "AGREEMENT_CHANGE_REQUEST"
+    BUDGET_LINE_ITEM_CHANGE_REQUEST = "BUDGET_LINE_ITEM_CHANGE_REQUEST"
 
 
 class ChangeRequest(BaseModel):
