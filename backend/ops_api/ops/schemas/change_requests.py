@@ -6,9 +6,9 @@ from ops_api.ops.schemas.users import SafeUserSchema
 
 class ChangeRequestResponseSchema(Schema):
     id = fields.Int(required=True)
-    change_request_type = fields.Enum(ChangeRequestType, required=True)
+    change_request_type = fields.Enum(ChangeRequestType, required=True, by_value=True)
     display_name = fields.String(required=True)
-    status = fields.Enum(ChangeRequestStatus, required=True)
+    status = fields.Enum(ChangeRequestStatus, required=True, by_value=True)
     requested_change_data = fields.Dict(required=True)
     requested_change_diff = fields.Dict(required=True)
     requestor_notes = fields.String(load_default=None, dump_default=None, allow_none=True)

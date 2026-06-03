@@ -44,6 +44,7 @@ class RequestBodySchema(Schema):
         BudgetLineItemStatus,
         allow_none=True,
         load_default=None,
+        by_value=True,
     )
     line_description = fields.Str(allow_none=True, load_default=None)
     can_id = fields.Int(allow_none=True, load_default=None)
