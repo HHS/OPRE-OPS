@@ -3,7 +3,6 @@ import CurrencyFormat from "react-currency-format";
 import LegendItem from "../../../components/UI/Cards/LineGraphWithLegendCard/LegendItem";
 import HorizontalStackedBar from "../../../components/UI/DataViz/HorizontalStackedBar/HorizontalStackedBar";
 import RoundedBox from "../../../components/UI/RoundedBox";
-import Tag from "../../../components/UI/Tag/Tag";
 import { computeDisplayPercent } from "../../../helpers/utils";
 
 const STATUS_COLORS = {
@@ -21,7 +20,6 @@ const buildStatusData = (procurementOverview) => {
 
     const statusData = status_data.map((item, index) => {
         const amountDisplayPercent = computeDisplayPercent(item.amount, total_amount);
-        const agreementsDisplayPercent = computeDisplayPercent(item.agreements, total_agreements);
         return {
             id: index + 1,
             label: item.label,
@@ -29,8 +27,6 @@ const buildStatusData = (procurementOverview) => {
             amount: item.amount,
             amountDisplayPercent,
             amountPercent: `${amountDisplayPercent}%`,
-            agreements: item.agreements,
-            agreementsPercent: `${agreementsDisplayPercent}%`,
             percent: total_amount > 0 ? (item.amount / total_amount) * 100 : 0,
             abbreviation: item.label,
             value: item.amount
@@ -105,9 +101,9 @@ const ProcurementOverviewCard = ({ procurementOverview, fiscalYear, isLoading, e
         <RoundedBox
             dataCy="procurement-overview-card"
             style={{
-                padding: hasData ? "20px 30px 30px 30px" : "20px 30px 20px 30px",
+                padding: "20px 30px 20px 30px",
                 width: "100%",
-                ...(!hasData && { minHeight: "auto" })
+                minHeight: "auto"
             }}
         >
             <h3 className="margin-0 margin-bottom-2 font-12px text-base-dark text-normal">
@@ -154,18 +150,6 @@ const ProcurementOverviewCard = ({ procurementOverview, fiscalYear, isLoading, e
                                     color={item.color}
                                     percent={item.amountDisplayPercent}
                                 />
-                                <div className="display-flex flex-align-center flex-justify-end padding-top-1">
-                                    <span className={activeId === item.id ? "fake-bold" : ""}>
-                                        {item.agreements} agreements
-                                    </span>
-                                    <Tag
-                                        tagStyle="darkTextWhiteBackground"
-                                        text={item.agreementsPercent}
-                                        label={item.label === "In Execution" ? "Executing" : item.label}
-                                        active={activeId === item.id}
-                                        className="margin-left-1"
-                                    />
-                                </div>
                             </div>
                         ))}
                     </div>

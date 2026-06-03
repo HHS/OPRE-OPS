@@ -174,7 +174,7 @@ describe("ProcurementOverviewCard", () => {
         expect(legendTags[2]).toHaveTextContent("25%");
     });
 
-    it("counts agreements per status correctly (an agreement can appear in multiple statuses)", () => {
+    it("displays only the total agreement count (not per-status)", () => {
         const overview = makeOverview(
             [
                 makeStatusItem("Planned", "PLANNED", 150_000, 43, 2, 50),
@@ -192,9 +192,9 @@ describe("ProcurementOverviewCard", () => {
             />
         );
 
-        // Total "3 agreements" + per-status: "2 agreements", "1 agreements", "1 agreements"
         const agreementTexts = screen.getAllByText(/\d+ agreement/);
-        expect(agreementTexts).toHaveLength(4);
+        expect(agreementTexts).toHaveLength(1);
+        expect(agreementTexts[0]).toHaveTextContent("3 agreements");
     });
 
     it("handles empty/null procurementOverview", () => {
