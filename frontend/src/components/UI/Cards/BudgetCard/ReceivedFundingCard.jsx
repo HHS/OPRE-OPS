@@ -1,4 +1,4 @@
-import CurrencyFormat from "react-currency-format";
+import { formatCurrency } from "../../../../helpers/currencyFormat.helpers";
 import CurrencyWithSmallCents from "../../CurrencyWithSmallCents/CurrencyWithSmallCents";
 import ReverseLineGraph from "../../DataViz/LineGraph/ReverseLineGraph";
 import RoundedBox from "../../RoundedBox";
@@ -64,24 +64,9 @@ const ReceivedFundingCard = ({ title, totalReceived, totalFunding }) => {
             <div className="font-12px margin-top-2 display-flex flex-justify-end">
                 <div data-testid="received-funding-card-text">
                     Received{" "}
-                    <CurrencyFormat
-                        value={totalReceived ?? 0}
-                        displayType={"text"}
-                        thousandSeparator={true}
-                        prefix={"$"}
-                        decimalScale={totalReceived > 0 ? 2 : 0}
-                        fixedDecimalScale
-                    />{" "}
+                    {formatCurrency(totalReceived ?? 0)}{" "}
                     of{" "}
-                    <CurrencyFormat
-                        value={totalFunding ?? 0}
-                        displayType={"text"}
-                        thousandSeparator={true}
-                        prefix={"$"}
-                        renderText={(totalFunding) => <span>{totalFunding}</span>}
-                        decimalScale={totalFunding > 0 ? 2 : 0}
-                        fixedDecimalScale
-                    />
+                    <span>{formatCurrency(totalFunding ?? 0)}</span>
                 </div>
             </div>
         </RoundedBox>

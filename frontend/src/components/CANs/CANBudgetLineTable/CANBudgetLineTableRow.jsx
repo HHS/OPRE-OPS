@@ -1,7 +1,7 @@
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import CurrencyFormat from "react-currency-format";
 import { Link } from "react-router-dom";
+import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import { formatDateToMonthDayYear } from "../../../helpers/utils";
 import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
@@ -87,14 +87,7 @@ const CANBudgetLineTableRow = ({
             <td>{obligateDate}</td>
             <td>{fiscalYear}</td>
             <td>
-                <CurrencyFormat
-                    value={budgetLine.total ?? 0}
-                    displayType={"text"}
-                    thousandSeparator={true}
-                    prefix={"$"}
-                    decimalScale={2}
-                    fixedDecimalScale={true}
-                />
+                {formatCurrency(budgetLine.total ?? 0)}
             </td>
             <td>{percentOfCAN}%</td>
             <td>
@@ -141,27 +134,13 @@ const CANBudgetLineTableRow = ({
                 <dl className="grid-col-auto margin-top-0 font-12px">
                     <dt className="margin-0 text-base-dark">SubTotal</dt>
                     <dd className="margin-0">
-                        <CurrencyFormat
-                            value={amount}
-                            displayType={"text"}
-                            thousandSeparator={true}
-                            prefix={"$"}
-                            decimalScale={2}
-                            fixedDecimalScale={true}
-                        />
+                        {formatCurrency(amount)}
                     </dd>
                 </dl>
                 <dl className="grid-col-auto margin-top-0 font-12px">
                     <dt className="margin-0 text-base-dark">Fees</dt>
                     <dd className="margin-0">
-                        <CurrencyFormat
-                            value={feeTotal}
-                            displayType={"text"}
-                            thousandSeparator={true}
-                            prefix={"$"}
-                            decimalScale={2}
-                            fixedDecimalScale={true}
-                        />
+                        {formatCurrency(feeTotal)}
                     </dd>
                 </dl>
             </div>

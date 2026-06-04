@@ -1,6 +1,6 @@
 import { faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import CurrencyFormat from "react-currency-format";
+import { formatCurrency } from "../../../../helpers/currencyFormat.helpers";
 import { calculatePercent } from "../../../../helpers/utils";
 import CurrencyWithSmallCents from "../../CurrencyWithSmallCents/CurrencyWithSmallCents";
 import LineGraph from "../../DataViz/LineGraph";
@@ -88,25 +88,9 @@ const BigBudgetCard = ({ title, totalSpending, totalFunding }) => {
                     <div className="font-12px margin-top-2 display-flex flex-justify-end">
                         <div>
                             Spending {""}
-                            <CurrencyFormat
-                                value={totalSpending ?? 0}
-                                displayType={"text"}
-                                thousandSeparator={true}
-                                prefix={"$"}
-                                renderText={(totalSpending) => <span>{totalSpending}</span>}
-                                decimalScale={totalSpending > 0 ? 2 : 0}
-                                fixedDecimalScale
-                            />{" "}
+                            <span>{formatCurrency(totalSpending ?? 0)}</span>{" "}
                             of{" "}
-                            <CurrencyFormat
-                                value={totalFunding ?? 0}
-                                displayType={"text"}
-                                thousandSeparator={true}
-                                prefix={"$"}
-                                renderText={(totalFunding) => <span>{totalFunding}</span>}
-                                decimalScale={totalFunding > 0 ? 2 : 0}
-                                fixedDecimalScale
-                            />
+                            <span>{formatCurrency(totalFunding ?? 0)}</span>
                         </div>
                     </div>
                 </div>

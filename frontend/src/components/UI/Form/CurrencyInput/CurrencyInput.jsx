@@ -1,10 +1,9 @@
 import cx from "clsx";
-import { useState, useEffect, useRef } from "react";
-import CurrencyFormat from "react-currency-format";
+import CurrencyInputField from "react-currency-input-field";
 
 /**
  * A form input component for currency values.
- * @description best used with  state that is not in object form, but as a string or number.
+ * @description best used with state that is not in object form, but as a string or number.
  * @param {Object} props - The component props.
  * @param {string} props.name - The name of the input field.
  * @param {string} [props.label] - The label to display for the input field (optional).
@@ -29,25 +28,6 @@ const CurrencyInput = ({
     placeholder = "$",
     ...rest
 }) => {
-    // displayValue holds the raw formatted string (e.g. "5.") so a trailing
-    // decimal isn't stripped before the user finishes typing the cents.
-    const [displayValue, setDisplayValue] = useState(value ?? "");
-    // Set to true on each user keystroke so the useEffect skips the parent's
-    // round-trip echo and doesn't overwrite the in-progress display string.
-    const skipNextSyncRef = useRef(false);
-
-    useEffect(() => {
-        if (skipNextSyncRef.current) {
-            skipNextSyncRef.current = false;
-            return;
-        }
-        setDisplayValue(value ?? "");
-    }, [value]);
-
-    function handleChange(e) {
-        onChange(name, e.target.value);
-    }
-
     return (
         <div className={cx("usa-form-group", pending && "pending", className)}>
             <label
@@ -64,23 +44,24 @@ const CurrencyInput = ({
                     {messages[0]}
                 </span>
             )}
-            <CurrencyFormat
+            <CurrencyInputField
                 id={name}
                 name={name}
-                value={displayValue}
+                value={value ?? ""}
                 className={`usa-input ${messages.length ? "usa-input--error" : ""} `}
-                thousandSeparator={true}
-                decimalScale={2}
+                groupSeparator=","
+                decimalSeparator="."
+                decimalsLimit={2}
                 placeholder={placeholder}
-                onValueChange={(values) => {
-                    skipNextSyncRef.current = true;
-                    setDisplayValue(values.value);
-                    const { floatValue } = values;
+                onValueChange={(rawValue, _name, values) => {
                     if (setEnteredAmount) {
-                        setEnteredAmount(typeof floatValue === "number" ? floatValue : null);
+                        const f = values?.float;
+                        setEnteredAmount(typeof f === "number" ? f : null);
+                    }
+                    if (onChange) {
+                        onChange(name, rawValue ?? "");
                     }
                 }}
-                onChange={handleChange}
                 {...rest}
             />
         </div>

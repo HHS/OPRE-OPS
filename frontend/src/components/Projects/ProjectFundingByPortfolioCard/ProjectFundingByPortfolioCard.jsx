@@ -1,5 +1,5 @@
 import { useState } from "react";
-import CurrencyFormat from "react-currency-format";
+import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import CurrencyCard from "../../UI/Cards/CurrencyCard";
@@ -70,17 +70,7 @@ const ProjectFundingByPortfolioCard = ({ fiscalYear, fundingByPortfolio = [] }) 
                                             aria-hidden="true"
                                         />
                                         <span className={isActive ? "fake-bold" : ""}>{item.abbreviation}</span>
-                                        <CurrencyFormat
-                                            value={item.value}
-                                            displayType="text"
-                                            thousandSeparator=","
-                                            prefix="$"
-                                            decimalScale={2}
-                                            fixedDecimalScale
-                                            renderText={(value) => (
-                                                <span className={isActive ? "fake-bold" : ""}>{value}</span>
-                                            )}
-                                        />
+                                        <span className={isActive ? "fake-bold" : ""}>{formatCurrency(item.value)}</span>
                                         <span className={isActive ? "fake-bold" : ""}>{item.percent}%</span>
                                     </div>
                                 );

@@ -1,5 +1,4 @@
-import CurrencyFormat from "react-currency-format";
-import { getDecimalScale } from "../../../../helpers/currencyFormat.helpers";
+import { formatCurrency } from "../../../../helpers/currencyFormat.helpers";
 import CurrencyCard from "../../../UI/Cards/CurrencyCard";
 
 /**
@@ -26,14 +25,7 @@ const AgreementTotalCard = ({ total, subtotal, fees, procurementShopAbbr = "TBD"
                     data-cy="currency-summary-card-subtotal"
                     className="text-semibold"
                 >
-                    <CurrencyFormat
-                        value={subtotal}
-                        displayType={"text"}
-                        thousandSeparator={true}
-                        decimalScale={getDecimalScale(subtotal)}
-                        fixedDecimalScale={true}
-                        prefix={"$"}
-                    />
+                    {formatCurrency(subtotal)}
                 </div>
                 <div className="display-flex">
                     <div>
@@ -44,14 +36,7 @@ const AgreementTotalCard = ({ total, subtotal, fees, procurementShopAbbr = "TBD"
                             data-cy="currency-summary-card-fees"
                             className="text-semibold"
                         >
-                            <CurrencyFormat
-                                value={fees}
-                                displayType={"text"}
-                                thousandSeparator={true}
-                                decimalScale={getDecimalScale(fees)}
-                                fixedDecimalScale={true}
-                                prefix={"$"}
-                            />
+                            {formatCurrency(fees)}
                         </div>
                     </div>
                     <div className="margin-left-10">

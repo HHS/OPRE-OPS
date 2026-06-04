@@ -1,5 +1,5 @@
 import React from "react";
-import CurrencyFormat from "react-currency-format";
+import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import { useGetCanFundingQuery } from "../../../api/opsAPI";
 import { calculatePercent, formatDateNeeded } from "../../../helpers/utils";
 import LineGraph from "../../UI/DataViz/LineGraph";
@@ -51,9 +51,9 @@ const CanCard = ({ canId, fiscalYear }) => {
     ];
 
     const spendingAmount =
-        canFundingData?.funding?.planned_funding +
-        canFundingData?.funding?.in_execution_funding +
-        canFundingData?.funding?.obligated_funding;
+        Number(canFundingData?.funding?.planned_funding || 0) +
+        Number(canFundingData?.funding?.in_execution_funding || 0) +
+        Number(canFundingData?.funding?.obligated_funding || 0);
 
     const spendingPercent = calculatePercent(spendingAmount, canFundingData?.funding?.total_funding);
     const spendingAvailableData = [
@@ -120,16 +120,12 @@ const CanCard = ({ canId, fiscalYear }) => {
                         TBD
                     </span>
                 ) : (
-                    <CurrencyFormat
+                    <span
                         className="text-bold"
                         style={{ fontSize: "20px" }}
-                        value={canFundingData?.funding?.total_funding}
-                        displayType={"text"}
-                        thousandSeparator={true}
-                        prefix="$"
-                        decimalScale={2}
-                        fixedDecimalScale
-                    />
+                    >
+                        {formatCurrency(canFundingData?.funding?.total_funding)}
+                    </span>
                 )}
                 <section
                     id="received-expected-chart"
@@ -140,28 +136,14 @@ const CanCard = ({ canId, fiscalYear }) => {
                             data-testid="received-label"
                             className={receivedExpectedActiveId === 1 ? "fake-bold" : ""}
                         >
-                            <CurrencyFormat
-                                value={canFundingData?.funding?.received_funding ?? 0}
-                                displayType={"text"}
-                                thousandSeparator={true}
-                                prefix={"$"}
-                                decimalScale={canFundingData?.funding?.received_funding === 0 ? 0 : 2}
-                                fixedDecimalScale
-                            />{" "}
+                            {formatCurrency(canFundingData?.funding?.received_funding ?? 0)}{" "}
                             <span>Received</span>
                         </div>
                         <div
                             data-testid="expected-label"
                             className={receivedExpectedActiveId === 2 ? "fake-bold" : ""}
                         >
-                            <CurrencyFormat
-                                value={canFundingData?.funding?.expected_funding ?? 0}
-                                displayType={"text"}
-                                thousandSeparator={true}
-                                prefix={"$"}
-                                decimalScale={canFundingData?.funding?.expected_funding === 0 ? 0 : 2}
-                                fixedDecimalScale
-                            />{" "}
+                            {formatCurrency(canFundingData?.funding?.expected_funding ?? 0)}{" "}
                             <span>Expected</span>
                         </div>
                     </div>
@@ -179,28 +161,14 @@ const CanCard = ({ canId, fiscalYear }) => {
                             data-testid="spending-label"
                             className={spendingAvailableActiveId === 1 ? "fake-bold" : ""}
                         >
-                            <CurrencyFormat
-                                value={spendingAmount ?? 0}
-                                displayType={"text"}
-                                thousandSeparator={true}
-                                prefix={"$"}
-                                decimalScale={spendingAmount === 0 ? 0 : 2}
-                                fixedDecimalScale
-                            />{" "}
+                            {formatCurrency(spendingAmount ?? 0)}{" "}
                             <span>Spending</span>
                         </div>
                         <div
                             data-testid="available-label"
                             className={spendingAvailableActiveId === 2 ? "fake-bold" : ""}
                         >
-                            <CurrencyFormat
-                                value={canFundingData?.funding?.available_funding ?? 0}
-                                displayType={"text"}
-                                thousandSeparator={true}
-                                prefix={"$"}
-                                decimalScale={canFundingData?.funding?.available_funding === 0 ? 0 : 2}
-                                fixedDecimalScale
-                            />{" "}
+                            {formatCurrency(canFundingData?.funding?.available_funding ?? 0)}{" "}
                             <span>Available</span>
                         </div>
                     </div>

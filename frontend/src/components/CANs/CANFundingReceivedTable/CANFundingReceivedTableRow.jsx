@@ -1,6 +1,6 @@
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import CurrencyFormat from "react-currency-format";
+import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import { NO_DATA } from "../../../constants";
 import { calculatePercent, formatDateToMonthDayYear } from "../../../helpers/utils";
 import ChangeIcons from "../../BudgetLineItems/ChangeIcons";
@@ -97,14 +97,7 @@ const CANFundingReceivedTableRow = ({
             <td>{fundingReceived.id}</td>
             <td>{fundingReceived.fiscal_year}</td>
             <td>
-                <CurrencyFormat
-                    value={fundingReceived.funding ?? 0}
-                    displayType={"text"}
-                    thousandSeparator={true}
-                    prefix={"$"}
-                    decimalScale={2}
-                    fixedDecimalScale
-                />
+                {formatCurrency(fundingReceived.funding ?? 0)}
             </td>
             <td>{calculatePercent(fundingReceived.funding ?? 0, +totalFunding)}%</td>
             {isRowActive && isEditMode ? (

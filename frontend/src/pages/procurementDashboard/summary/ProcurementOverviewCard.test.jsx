@@ -73,7 +73,7 @@ describe("ProcurementOverviewCard", () => {
             />
         );
 
-        expect(screen.getByText("$350,000")).toBeInTheDocument();
+        expect(screen.getByText("$350,000.00")).toBeInTheDocument();
     });
 
     it("includes fees in the amount calculations", () => {
@@ -86,7 +86,7 @@ describe("ProcurementOverviewCard", () => {
             />
         );
 
-        expect(screen.getByText("$105,000")).toBeInTheDocument();
+        expect(screen.getAllByText("$105,000.00")[0]).toBeInTheDocument();
     });
 
     it("filters BLIs by fiscal year", () => {
@@ -100,7 +100,7 @@ describe("ProcurementOverviewCard", () => {
             />
         );
 
-        expect(screen.getByText("$100,000")).toBeInTheDocument();
+        expect(screen.getAllByText("$100,000.00")[0]).toBeInTheDocument();
     });
 
     it("displays correct agreement count", () => {
@@ -224,6 +224,6 @@ describe("ProcurementOverviewCard", () => {
             />
         );
 
-        expect(screen.getByText("$100,000")).toBeInTheDocument();
+        expect(screen.getAllByText("$100,000.00")[0]).toBeInTheDocument();
     });
 });

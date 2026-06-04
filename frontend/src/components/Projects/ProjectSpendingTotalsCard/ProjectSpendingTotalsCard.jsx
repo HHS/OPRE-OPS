@@ -1,4 +1,4 @@
-import CurrencyFormat from "react-currency-format";
+import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import CurrencyWithSmallCents from "../../UI/CurrencyWithSmallCents/CurrencyWithSmallCents";
 import RoundedBox from "../../UI/RoundedBox";
 
@@ -31,15 +31,7 @@ const ProjectSpendingTotalsCard = ({ fiscalYear, fyTotal, lifetimeTotal, fyAgree
             <dl className="margin-top-3 margin-bottom-0 font-12px">
                 <dt className="text-base-dark margin-0">Lifetime Project Total</dt>
                 <dd className="margin-0 margin-top-05 text-bold">
-                    <CurrencyFormat
-                        value={lifetimeTotal}
-                        displayType="text"
-                        thousandSeparator={true}
-                        prefix="$"
-                        decimalScale={2}
-                        fixedDecimalScale={true}
-                        renderText={(value) => value}
-                    />
+                    {formatCurrency(lifetimeTotal)}
                 </dd>
 
                 <dt className="text-base-dark margin-0 margin-top-2">FY {fiscalYear} Agreements</dt>

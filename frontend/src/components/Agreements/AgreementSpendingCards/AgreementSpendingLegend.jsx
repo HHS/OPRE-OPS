@@ -1,6 +1,6 @@
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import CurrencyFormat from "react-currency-format";
+import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import { AGREEMENT_TYPE_ORDER } from "./AgreementSpendingCards.constants";
 import styles from "./AgreementSpendingLegend.module.scss";
 
@@ -32,15 +32,7 @@ const AgreementSpendingLegend = ({ agreementTypes = [], activeId = null }) => {
                     >
                         <div className={styles.legendHeader}>
                             <span className={styles.typeLabel}>{config.label}</span>
-                            <CurrencyFormat
-                                value={total}
-                                displayType={"text"}
-                                thousandSeparator={true}
-                                prefix={"$"}
-                                decimalScale={2}
-                                fixedDecimalScale
-                                renderText={(value) => <span className={styles.totalValue}>{value}</span>}
-                            />
+                            <span className={styles.totalValue}>{formatCurrency(total)}</span>
                         </div>
                         <div className={styles.subRow}>
                             <FontAwesomeIcon
@@ -49,17 +41,7 @@ const AgreementSpendingLegend = ({ agreementTypes = [], activeId = null }) => {
                                 style={{ color: config.color }}
                             />
                             <span className={`${styles.subValue} ${newBoldClass}`}>New</span>
-                            <CurrencyFormat
-                                value={newAmount}
-                                displayType={"text"}
-                                thousandSeparator={true}
-                                prefix={"$"}
-                                decimalScale={2}
-                                fixedDecimalScale
-                                renderText={(value) => (
-                                    <span className={`${styles.subValue} ${newBoldClass}`}>{value}</span>
-                                )}
-                            />
+                            <span className={`${styles.subValue} ${newBoldClass}`}>{formatCurrency(newAmount)}</span>
                         </div>
                         <div className={styles.subRow}>
                             <FontAwesomeIcon
@@ -68,17 +50,7 @@ const AgreementSpendingLegend = ({ agreementTypes = [], activeId = null }) => {
                                 style={{ color: config.continuingColor }}
                             />
                             <span className={`${styles.subValue} ${contBoldClass}`}>Cont.</span>
-                            <CurrencyFormat
-                                value={continuingAmount}
-                                displayType={"text"}
-                                thousandSeparator={true}
-                                prefix={"$"}
-                                decimalScale={2}
-                                fixedDecimalScale
-                                renderText={(value) => (
-                                    <span className={`${styles.subValue} ${contBoldClass}`}>{value}</span>
-                                )}
-                            />
+                            <span className={`${styles.subValue} ${contBoldClass}`}>{formatCurrency(continuingAmount)}</span>
                         </div>
                     </div>
                 );

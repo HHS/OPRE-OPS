@@ -1,6 +1,5 @@
 import { faPen } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import CurrencyFormat from "react-currency-format";
 import CANBudgetByFYCard from "../../../components/CANs/CANBudgetByFYCard/CANBudgetByFYCard";
 import CANBudgetForm from "../../../components/CANs/CANBudgetForm";
 import CANFundingInfoCard from "../../../components/CANs/CANFundingInfoCard";
@@ -261,14 +260,10 @@ const CanFunding = ({
                                         id="carry-forward-card"
                                     >
                                         <p className="margin-0 text-base-dark">Previous FYs Carry Forward</p>
-                                        <CurrencyFormat
-                                            value={carryForwardFunding}
-                                            displayType="text"
-                                            thousandSeparator={true}
-                                            decimalScale={2}
-                                            fixedDecimalScale={true}
-                                            prefix="$ "
-                                        />
+                                        {`$ ${new Intl.NumberFormat("en-US", {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2
+                                        }).format(carryForwardFunding)}`}
                                     </RoundedBox>
                                 )}
                                 <CANBudgetForm

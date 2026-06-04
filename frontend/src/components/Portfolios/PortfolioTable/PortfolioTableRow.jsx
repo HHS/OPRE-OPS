@@ -1,6 +1,5 @@
-import CurrencyFormat from "react-currency-format";
 import { Link } from "react-router-dom";
-import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
+import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import { NO_DATA } from "../../../constants";
 
 /**
@@ -42,41 +41,20 @@ const PortfolioTableRow = ({ portfolio, fiscalYear }) => {
             </td>
             <td>
                 {totalFunding > 0 ? (
-                    <CurrencyFormat
-                        value={totalFunding}
-                        displayType={"text"}
-                        thousandSeparator={true}
-                        prefix={"$"}
-                        decimalScale={getDecimalScale(totalFunding)}
-                        fixedDecimalScale={true}
-                    />
+                    formatCurrency(totalFunding)
                 ) : (
                     <span className="text-ink">{NO_DATA}</span>
                 )}
             </td>
             <td>
                 {spending > 0 ? (
-                    <CurrencyFormat
-                        value={spending}
-                        displayType={"text"}
-                        thousandSeparator={true}
-                        prefix={"$"}
-                        decimalScale={getDecimalScale(spending)}
-                        fixedDecimalScale={true}
-                    />
+                    formatCurrency(spending)
                 ) : (
                     <span className="text-ink">{NO_DATA}</span>
                 )}
             </td>
             <td>
-                <CurrencyFormat
-                    value={availableFunding}
-                    displayType={"text"}
-                    thousandSeparator={true}
-                    prefix={"$"}
-                    decimalScale={getDecimalScale(availableFunding)}
-                    fixedDecimalScale={true}
-                />
+                {formatCurrency(availableFunding)}
             </td>
         </tr>
     );

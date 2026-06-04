@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import CurrencyFormat from "react-currency-format";
+import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import { formatActivePeriod, getTableHeadings } from "./ProjectFundingCANsTable.constants";
 
 /**
@@ -68,24 +68,10 @@ const ProjectFundingCANsTable = ({ cans = [], fiscalYear }) => {
                         <td>{can.portfolio}</td>
                         <td>{formatActivePeriod(can.active_period)}</td>
                         <td>
-                            <CurrencyFormat
-                                value={can.fy_funding}
-                                displayType="text"
-                                thousandSeparator=","
-                                prefix="$"
-                                decimalScale={2}
-                                fixedDecimalScale
-                            />
+                            {formatCurrency(can.fy_funding)}
                         </td>
                         <td>
-                            <CurrencyFormat
-                                value={can.lifetime_funding}
-                                displayType="text"
-                                thousandSeparator=","
-                                prefix="$"
-                                decimalScale={2}
-                                fixedDecimalScale
-                            />
+                            {formatCurrency(can.lifetime_funding)}
                         </td>
                     </tr>
                 ))}

@@ -1,6 +1,6 @@
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import CurrencyFormat from "react-currency-format";
+import { formatCurrency } from "../../../../helpers/currencyFormat.helpers";
 import Tag from "../../Tag";
 
 /**
@@ -45,22 +45,12 @@ const LegendItem = ({ activeId, id, label, value, color, percent, tagStyleActive
                 </div>
             </div>
             <div>
-                <CurrencyFormat
-                    value={value}
-                    displayType={"text"}
-                    thousandSeparator={true}
-                    prefix={"$"}
-                    decimalScale={value === 0 ? 0 : 2}
-                    renderText={(value) => (
-                        <span
-                            className={isGraphActive ? "fake-bold" : ""}
-                            data-testid="value-container"
-                        >
-                            {value}
-                        </span>
-                    )}
-                    fixedDecimalScale
-                />
+                <span
+                    className={isGraphActive ? "fake-bold" : ""}
+                    data-testid="value-container"
+                >
+                    {formatCurrency(value)}
+                </span>
                 <Tag
                     className="margin-left-1"
                     tagStyle="darkTextWhiteBackground"

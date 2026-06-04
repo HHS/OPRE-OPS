@@ -1,6 +1,5 @@
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import CurrencyFormat from "react-currency-format";
 import { useLocation } from "react-router-dom";
 import {
     BLILabel,
@@ -9,7 +8,7 @@ import {
     getProcurementShopFeeTooltip,
     getProcurementShopLabel
 } from "../../../helpers/budgetLines.helpers";
-import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
+import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import { scrollToCenter } from "../../../helpers/scrollToCenter.helper";
 import { fiscalYearFromDate, formatDateNeeded } from "../../../helpers/utils";
 import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
@@ -102,15 +101,7 @@ const BLIRow = ({
                 {isBudgetLineObe ? "None" : canLabel(budgetLine)}
             </td>
             <td className={addErrorClassIfNotFound(budgetLine?.amount, isReviewMode)}>
-                <CurrencyFormat
-                    value={budgetLine?.amount || 0}
-                    displayType={"text"}
-                    thousandSeparator={true}
-                    prefix={"$"}
-                    decimalScale={getDecimalScale(budgetLine?.amount || 0)}
-                    fixedDecimalScale={true}
-                    renderText={(value) => value}
-                />
+                {formatCurrency(budgetLine?.amount || 0)}
             </td>
             <td>
                 <Tooltip
@@ -118,28 +109,12 @@ const BLIRow = ({
                     position="left"
                 >
                     <span>
-                        <CurrencyFormat
-                            value={budgetLine?.fees}
-                            displayType={"text"}
-                            thousandSeparator={true}
-                            prefix={"$"}
-                            renderText={(value) => value}
-                            decimalScale={getDecimalScale(budgetLine?.fees || 0)}
-                            fixedDecimalScale={true}
-                        />
+                        {formatCurrency(budgetLine?.fees)}
                     </span>
                 </Tooltip>
             </td>
             <td>
-                <CurrencyFormat
-                    value={budgetLineTotalPlusFees}
-                    displayType={"text"}
-                    thousandSeparator={true}
-                    prefix={"$"}
-                    decimalScale={getDecimalScale(budgetLineTotalPlusFees || 0)}
-                    fixedDecimalScale={true}
-                    renderText={(value) => value}
-                />
+                {formatCurrency(budgetLineTotalPlusFees)}
             </td>
             <td>
                 {isRowActive && !isExpanded && !readOnly ? (

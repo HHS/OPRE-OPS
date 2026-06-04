@@ -1,6 +1,5 @@
-import CurrencyFormat from "react-currency-format";
 import { Link } from "react-router-dom";
-import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
+import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import Tooltip from "../../UI/USWDS/Tooltip";
 import { displayActivePeriod } from "./CANTableRow.helpers";
 import { NO_DATA } from "../../../constants";
@@ -44,14 +43,7 @@ const CANTableRow = ({ activePeriod, canId, fundingSummary, name, nickname, obli
             <td>{obligateBy}</td>
             <td>
                 {totalFunding > 0 ? (
-                    <CurrencyFormat
-                        value={totalFunding}
-                        displayType={"text"}
-                        thousandSeparator={true}
-                        prefix={"$"}
-                        decimalScale={getDecimalScale(totalFunding)}
-                        fixedDecimalScale={true}
-                    />
+                    formatCurrency(totalFunding)
                 ) : (
                     <span className="text-ink">{NO_DATA}</span>
                 )}
@@ -60,25 +52,11 @@ const CANTableRow = ({ activePeriod, canId, fundingSummary, name, nickname, obli
                 <td>TBD</td>
             ) : (
                 <td>
-                    <CurrencyFormat
-                        value={fundingReceived}
-                        displayType={"text"}
-                        thousandSeparator={true}
-                        prefix={"$"}
-                        decimalScale={getDecimalScale(fundingReceived)}
-                        fixedDecimalScale={true}
-                    />
+                    {formatCurrency(fundingReceived)}
                 </td>
             )}
             <td>
-                <CurrencyFormat
-                    value={availableFunds}
-                    displayType={"text"}
-                    thousandSeparator={true}
-                    prefix={"$"}
-                    decimalScale={getDecimalScale(availableFunds)}
-                    fixedDecimalScale={true}
-                />
+                {formatCurrency(availableFunds)}
             </td>
         </tr>
     );

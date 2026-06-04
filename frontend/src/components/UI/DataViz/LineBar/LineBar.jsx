@@ -1,6 +1,5 @@
-import CurrencyFormat from "react-currency-format";
 import { NO_DATA } from "../../../../constants";
-import { getDecimalScale } from "../../../../helpers/currencyFormat.helpers";
+import { formatCurrency } from "../../../../helpers/currencyFormat.helpers";
 import styles from "./LineBar.styles.module.css";
 
 /**
@@ -31,14 +30,7 @@ const LineBar = ({ title, ratio, color, total, iterator }) => {
                 {total === 0 && iterator === 0 ? (
                     NO_DATA
                 ) : (
-                    <CurrencyFormat
-                        value={total}
-                        displayType="text"
-                        thousandSeparator=","
-                        prefix="$"
-                        decimalScale={getDecimalScale(total)}
-                        fixedDecimalScale={true}
-                    />
+                    formatCurrency(total)
                 )}
             </div>
         </div>
