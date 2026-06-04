@@ -32,15 +32,19 @@ const CurrencyInput = ({
     // displayValue holds the raw typed string (e.g. "5.") so a trailing
     // decimal isn't stripped before the user finishes typing the cents.
     const [displayValue, setDisplayValue] = useState(value ?? "");
-    // Set on each user keystroke so the parent's float echo doesn't
-    // overwrite the in-progress display string on the next render.
-    const skipNextSyncRef = useRef(false);
+    // The parent typically echoes our raw string back as a parsed number
+    // (e.g. raw "5." -> float 5 -> rendered "5"). Track both forms of the
+    // last-emitted value so the echo is identifiable and can be ignored,
+    // while genuine parent-driven changes (e.g. reset to "") still apply.
+    const lastEmittedRef = useRef({ raw: String(value ?? ""), float: typeof value === "number" ? value : NaN });
 
     useEffect(() => {
-        if (skipNextSyncRef.current) {
-            skipNextSyncRef.current = false;
-            return;
-        }
+        const incomingStr = String(value ?? "");
+        const incomingNum = typeof value === "number" ? value : Number(value);
+        const { raw, float } = lastEmittedRef.current;
+        const isEcho = incomingStr === raw || (Number.isFinite(incomingNum) && incomingNum === float);
+        if (isEcho) return;
+        lastEmittedRef.current = { raw: incomingStr, float: Number.isFinite(incomingNum) ? incomingNum : NaN };
         setDisplayValue(value ?? "");
     }, [value]);
 
@@ -70,11 +74,12 @@ const CurrencyInput = ({
                 decimalsLimit={2}
                 placeholder={placeholder}
                 onValueChange={(rawValue, _name, values) => {
-                    skipNextSyncRef.current = true;
+                    const f = values?.float;
+                    const floatValue = typeof f === "number" ? f : NaN;
+                    lastEmittedRef.current = { raw: rawValue ?? "", float: floatValue };
                     setDisplayValue(rawValue ?? "");
                     if (setEnteredAmount) {
-                        const f = values?.float;
-                        setEnteredAmount(typeof f === "number" ? f : null);
+                        setEnteredAmount(Number.isFinite(floatValue) ? floatValue : null);
                     }
                     if (onChange) {
                         onChange(name, rawValue ?? "");

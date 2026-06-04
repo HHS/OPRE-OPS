@@ -82,6 +82,36 @@ describe("CurrencyInput", () => {
         expect(onChange).toHaveBeenLastCalledWith("amount", expect.any(String));
     });
 
+    it("clears the input when parent resets value after user typed", async () => {
+        const setEnteredAmount = vi.fn();
+
+        const ResettableWrapper = () => {
+            const [value, setValue] = useState("");
+            return (
+                <>
+                    <CurrencyInput
+                        name="amount"
+                        value={value}
+                        setEnteredAmount={(v) => {
+                            setEnteredAmount(v);
+                            setValue(v ?? "");
+                        }}
+                        onChange={() => {}}
+                    />
+                    <button onClick={() => setValue("")}>reset</button>
+                </>
+            );
+        };
+
+        render(<ResettableWrapper />);
+        const input = screen.getByRole("textbox");
+        await userEvent.type(input, "1000000");
+        expect(input).toHaveDisplayValue("1,000,000");
+
+        await userEvent.click(screen.getByText("reset"));
+        expect(input).toHaveDisplayValue("");
+    });
+
     it("clears the input when parent resets value to empty", () => {
         const setEnteredAmount = vi.fn();
         const onChange = vi.fn();
