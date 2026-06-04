@@ -91,13 +91,13 @@ const CANFYBudgetRangeSlider = ({
             <div className="margin-top-1 display-flex flex-justify-center font-12px padding-right-10">
                 <span>
                     {`$ ${new Intl.NumberFormat("en-US", {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0
                     }).format(minValue)}`}
                     <span> to </span>
                     {`$ ${new Intl.NumberFormat("en-US", {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0
                     }).format(maxValue)}`}
                 </span>
             </div>
