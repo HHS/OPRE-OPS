@@ -50,7 +50,9 @@ const AgreementSpendingLegend = ({ agreementTypes = [], activeId = null }) => {
                                 style={{ color: config.continuingColor }}
                             />
                             <span className={`${styles.subValue} ${contBoldClass}`}>Cont.</span>
-                            <span className={`${styles.subValue} ${contBoldClass}`}>{formatCurrency(continuingAmount)}</span>
+                            <span className={`${styles.subValue} ${contBoldClass}`}>
+                                {formatCurrency(continuingAmount)}
+                            </span>
                         </div>
                     </div>
                 );

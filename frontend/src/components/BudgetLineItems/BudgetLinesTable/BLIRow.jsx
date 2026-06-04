@@ -108,14 +108,10 @@ const BLIRow = ({
                     label={getProcurementShopFeeTooltip(budgetLine)}
                     position="left"
                 >
-                    <span>
-                        {formatCurrency(budgetLine?.fees)}
-                    </span>
+                    <span>{formatCurrency(budgetLine?.fees)}</span>
                 </Tooltip>
             </td>
-            <td>
-                {formatCurrency(budgetLineTotalPlusFees)}
-            </td>
+            <td>{formatCurrency(budgetLineTotalPlusFees)}</td>
             <td>
                 {isRowActive && !isExpanded && !readOnly ? (
                     <div>{changeIcons}</div>

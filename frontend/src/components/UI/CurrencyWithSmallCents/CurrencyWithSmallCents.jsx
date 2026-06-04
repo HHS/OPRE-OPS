@@ -20,9 +20,7 @@ const CurrencyWithSmallCents = ({ amount, dollarsClasses, centsClasses, centsSty
 
     return (
         <div>
-            <span className={`${dollarsClasses} text-bold margin-bottom-0`}>
-                $ {formattedDollars}
-            </span>
+            <span className={`${dollarsClasses} text-bold margin-bottom-0`}>$ {formattedDollars}</span>
             {displayCents && (
                 <span
                     className={`${centsClasses} text-bold margin-bottom-0`}

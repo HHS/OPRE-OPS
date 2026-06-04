@@ -30,9 +30,7 @@ const ProjectSpendingTotalsCard = ({ fiscalYear, fyTotal, lifetimeTotal, fyAgree
 
             <dl className="margin-top-3 margin-bottom-0 font-12px">
                 <dt className="text-base-dark margin-0">Lifetime Project Total</dt>
-                <dd className="margin-0 margin-top-05 text-bold">
-                    {formatCurrency(lifetimeTotal)}
-                </dd>
+                <dd className="margin-0 margin-top-05 text-bold">{formatCurrency(lifetimeTotal)}</dd>
 
                 <dt className="text-base-dark margin-0 margin-top-2">FY {fiscalYear} Agreements</dt>
                 <dd className="margin-0 margin-top-05 font-sans-lg text-bold">{fyAgreementCount}</dd>

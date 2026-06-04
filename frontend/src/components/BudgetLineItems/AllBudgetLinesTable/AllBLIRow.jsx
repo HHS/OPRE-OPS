@@ -85,9 +85,7 @@ const AllBLIRow = ({ budgetLine }) => {
                     />
                 </div>
             </td>
-            <td data-cy="amount">
-                {formatCurrency(budgetLineTotalPlusFees)}
-            </td>
+            <td data-cy="amount">{formatCurrency(budgetLineTotalPlusFees)}</td>
             <td data-cy="status">
                 <TableTag
                     inReview={isBudgetLineInReview}
@@ -129,15 +127,11 @@ const AllBLIRow = ({ budgetLine }) => {
                 </dl>
                 <dl className="grid-col-auto margin-top-0 font-12px">
                     <dt className="margin-0 text-base-dark">Subtotal</dt>
-                    <dd className="margin-0">
-                        {formatCurrency(budgetLine?.amount ?? 0)}
-                    </dd>
+                    <dd className="margin-0">{formatCurrency(budgetLine?.amount ?? 0)}</dd>
                 </dl>
                 <dl className="grid-col-auto margin-top-0 font-12px">
                     <dt className="margin-0 text-base-dark">Fees</dt>
-                    <dd className="margin-0">
-                        {formatCurrency(feeTotal)}
-                    </dd>
+                    <dd className="margin-0">{formatCurrency(feeTotal)}</dd>
                 </dl>
             </div>
             <p className="font-12px margin-0 margin-top-1 text-base-dark">

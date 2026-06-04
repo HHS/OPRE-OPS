@@ -136,15 +136,13 @@ const CanCard = ({ canId, fiscalYear }) => {
                             data-testid="received-label"
                             className={receivedExpectedActiveId === 1 ? "fake-bold" : ""}
                         >
-                            {formatCurrency(canFundingData?.funding?.received_funding ?? 0)}{" "}
-                            <span>Received</span>
+                            {formatCurrency(canFundingData?.funding?.received_funding ?? 0)} <span>Received</span>
                         </div>
                         <div
                             data-testid="expected-label"
                             className={receivedExpectedActiveId === 2 ? "fake-bold" : ""}
                         >
-                            {formatCurrency(canFundingData?.funding?.expected_funding ?? 0)}{" "}
-                            <span>Expected</span>
+                            {formatCurrency(canFundingData?.funding?.expected_funding ?? 0)} <span>Expected</span>
                         </div>
                     </div>
                     <ReverseLineGraph
@@ -161,15 +159,13 @@ const CanCard = ({ canId, fiscalYear }) => {
                             data-testid="spending-label"
                             className={spendingAvailableActiveId === 1 ? "fake-bold" : ""}
                         >
-                            {formatCurrency(spendingAmount ?? 0)}{" "}
-                            <span>Spending</span>
+                            {formatCurrency(spendingAmount ?? 0)} <span>Spending</span>
                         </div>
                         <div
                             data-testid="available-label"
                             className={spendingAvailableActiveId === 2 ? "fake-bold" : ""}
                         >
-                            {formatCurrency(canFundingData?.funding?.available_funding ?? 0)}{" "}
-                            <span>Available</span>
+                            {formatCurrency(canFundingData?.funding?.available_funding ?? 0)} <span>Available</span>
                         </div>
                     </div>
                     <LineGraph

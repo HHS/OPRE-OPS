@@ -117,9 +117,7 @@ export const ProcurementDetailsTableRow = ({
                         </dl>
                         <dl className="font-12px margin-top-0">
                             <dt className="margin-0 text-base-dark">Subtotal</dt>
-                            <dd className="margin-0">
-                                {formatCurrency(agreementSubTotal)}
-                            </dd>
+                            <dd className="margin-0">{formatCurrency(agreementSubTotal)}</dd>
                         </dl>
                     </div>
                     {/* Row 2: Initial Req. #, Initial Req. Date, Initial Req. Amount, Fees */}
@@ -137,15 +135,11 @@ export const ProcurementDetailsTableRow = ({
                         </dl>
                         <dl className="font-12px margin-top-0">
                             <dt className="margin-0 text-base-dark">Initial Req. Amount</dt>
-                            <dd className="margin-0">
-                                {formatCurrency(0)}
-                            </dd>
+                            <dd className="margin-0">{formatCurrency(0)}</dd>
                         </dl>
                         <dl className="font-12px margin-top-0">
                             <dt className="margin-0 text-base-dark">Fees</dt>
-                            <dd className="margin-0">
-                                {formatCurrency(agreementFees)}
-                            </dd>
+                            <dd className="margin-0">{formatCurrency(agreementFees)}</dd>
                         </dl>
                     </div>
                     {/* Row 3: Final Req. #, Final Req. Date, Final Req. Amount, Procurement Shop */}
@@ -160,9 +154,7 @@ export const ProcurementDetailsTableRow = ({
                         </dl>
                         <dl className="font-12px margin-top-0">
                             <dt className="margin-0 text-base-dark">Final Req. Amount</dt>
-                            <dd className="margin-0">
-                                {formatCurrency(0)}
-                            </dd>
+                            <dd className="margin-0">{formatCurrency(0)}</dd>
                         </dl>
                         <dl className="font-12px margin-top-0">
                             <dt className="margin-0 text-base-dark">Procurement Shop</dt>

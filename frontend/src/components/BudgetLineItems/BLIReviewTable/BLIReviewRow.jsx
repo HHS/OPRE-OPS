@@ -168,15 +168,9 @@ const BLIReviewRow = ({
                 <td className={dateNeededClasses}>{dateNeededFormatted}</td>
                 <td>{fiscalYear}</td>
                 <td className={canNumberClasses}>{canNumber}</td>
-                <td className={amountClasses}>
-                    {formatCurrency(amount)}
-                </td>
-                <td>
-                    {formatCurrency(feeValue)}
-                </td>
-                <td>
-                    {formatCurrency(totalWithFees)}
-                </td>
+                <td className={amountClasses}>{formatCurrency(amount)}</td>
+                <td>{formatCurrency(feeValue)}</td>
+                <td>{formatCurrency(totalWithFees)}</td>
                 <td>
                     <TableTag
                         status={budgetLine?.status}

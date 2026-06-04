@@ -23,6 +23,6 @@ export const formatCurrency = (value) => {
         style: "currency",
         currency: "USD",
         minimumFractionDigits: decimals,
-        maximumFractionDigits: decimals,
+        maximumFractionDigits: decimals
     }).format(num);
 };

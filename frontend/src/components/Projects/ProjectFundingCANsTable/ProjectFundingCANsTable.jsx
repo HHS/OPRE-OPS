@@ -67,12 +67,8 @@ const ProjectFundingCANsTable = ({ cans = [], fiscalYear }) => {
                         </td>
                         <td>{can.portfolio}</td>
                         <td>{formatActivePeriod(can.active_period)}</td>
-                        <td>
-                            {formatCurrency(can.fy_funding)}
-                        </td>
-                        <td>
-                            {formatCurrency(can.lifetime_funding)}
-                        </td>
+                        <td>{formatCurrency(can.fy_funding)}</td>
+                        <td>{formatCurrency(can.lifetime_funding)}</td>
                     </tr>
                 ))}
             </tbody>

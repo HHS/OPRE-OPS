@@ -96,9 +96,7 @@ const CANFundingReceivedTableRow = ({
         <>
             <td>{fundingReceived.id}</td>
             <td>{fundingReceived.fiscal_year}</td>
-            <td>
-                {formatCurrency(fundingReceived.funding ?? 0)}
-            </td>
+            <td>{formatCurrency(fundingReceived.funding ?? 0)}</td>
             <td>{calculatePercent(fundingReceived.funding ?? 0, +totalFunding)}%</td>
             {isRowActive && isEditMode ? (
                 <td>

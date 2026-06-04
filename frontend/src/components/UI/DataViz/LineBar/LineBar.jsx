@@ -26,13 +26,7 @@ const LineBar = ({ title, ratio, color, total, iterator }) => {
                     style={{ backgroundColor: color, width: `${ratio * 100}%` }}
                 />
             </div>
-            <div className={styles.amount}>
-                {total === 0 && iterator === 0 ? (
-                    NO_DATA
-                ) : (
-                    formatCurrency(total)
-                )}
-            </div>
+            <div className={styles.amount}>{total === 0 && iterator === 0 ? NO_DATA : formatCurrency(total)}</div>
         </div>
     );
 };

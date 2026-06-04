@@ -88,8 +88,7 @@ const BigBudgetCard = ({ title, totalSpending, totalFunding }) => {
                     <div className="font-12px margin-top-2 display-flex flex-justify-end">
                         <div>
                             Spending {""}
-                            <span>{formatCurrency(totalSpending ?? 0)}</span>{" "}
-                            of{" "}
+                            <span>{formatCurrency(totalSpending ?? 0)}</span> of{" "}
                             <span>{formatCurrency(totalFunding ?? 0)}</span>
                         </div>
                     </div>

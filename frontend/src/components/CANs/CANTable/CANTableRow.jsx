@@ -41,23 +41,9 @@ const CANTableRow = ({ activePeriod, canId, fundingSummary, name, nickname, obli
             <td>{portfolio}</td>
             <td>{displayActivePeriod(activePeriod)}</td>
             <td>{obligateBy}</td>
-            <td>
-                {totalFunding > 0 ? (
-                    formatCurrency(totalFunding)
-                ) : (
-                    <span className="text-ink">{NO_DATA}</span>
-                )}
-            </td>
-            {fundingReceived === 0 ? (
-                <td>TBD</td>
-            ) : (
-                <td>
-                    {formatCurrency(fundingReceived)}
-                </td>
-            )}
-            <td>
-                {formatCurrency(availableFunds)}
-            </td>
+            <td>{totalFunding > 0 ? formatCurrency(totalFunding) : <span className="text-ink">{NO_DATA}</span>}</td>
+            {fundingReceived === 0 ? <td>TBD</td> : <td>{formatCurrency(fundingReceived)}</td>}
+            <td>{formatCurrency(availableFunds)}</td>
         </tr>
     );
 };

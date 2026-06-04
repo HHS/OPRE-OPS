@@ -57,20 +57,8 @@ const ProjectTableRow = ({ project, selectedFiscalYear }) => {
             <td>{convertCodeForDisplay("project", project.project_type)}</td>
             <td>{formatProjectDate(project.start_date)}</td>
             <td>{formatProjectDate(project.end_date)}</td>
-            <td>
-                {fyTotal !== null ? (
-                    formatCurrency(fyTotal)
-                ) : (
-                    NO_DATA
-                )}
-            </td>
-            <td>
-                {projectTotal !== null && projectTotal > 0 ? (
-                    formatCurrency(projectTotal)
-                ) : (
-                    NO_DATA
-                )}
-            </td>
+            <td>{fyTotal !== null ? formatCurrency(fyTotal) : NO_DATA}</td>
+            <td>{projectTotal !== null && projectTotal > 0 ? formatCurrency(projectTotal) : NO_DATA}</td>
         </>
     );
 

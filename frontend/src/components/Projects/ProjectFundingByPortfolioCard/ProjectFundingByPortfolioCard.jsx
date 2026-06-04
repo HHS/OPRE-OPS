@@ -70,7 +70,9 @@ const ProjectFundingByPortfolioCard = ({ fiscalYear, fundingByPortfolio = [] }) 
                                             aria-hidden="true"
                                         />
                                         <span className={isActive ? "fake-bold" : ""}>{item.abbreviation}</span>
-                                        <span className={isActive ? "fake-bold" : ""}>{formatCurrency(item.value)}</span>
+                                        <span className={isActive ? "fake-bold" : ""}>
+                                            {formatCurrency(item.value)}
+                                        </span>
                                         <span className={isActive ? "fake-bold" : ""}>{item.percent}%</span>
                                     </div>
                                 );

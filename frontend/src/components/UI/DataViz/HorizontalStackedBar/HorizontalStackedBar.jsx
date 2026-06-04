@@ -80,9 +80,7 @@ const HorizontalStackedBar = ({ data, setActiveId = () => {} }) => {
                         data-testid={`portfolio-bar-segment-${segment.abbreviation}`}
                     >
                         <span className="usa-sr-only">
-                            {segment.label}:{" "}
-                            {formatCurrency(segment.value)}{" "}
-                            ({segment.percent}%)
+                            {segment.label}: {formatCurrency(segment.value)} ({segment.percent}%)
                         </span>
                     </div>
                 );

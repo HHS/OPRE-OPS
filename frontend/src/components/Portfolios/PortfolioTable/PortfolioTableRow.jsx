@@ -39,23 +39,9 @@ const PortfolioTableRow = ({ portfolio, fiscalYear }) => {
                         : NO_DATA}
                 </Link>
             </td>
-            <td>
-                {totalFunding > 0 ? (
-                    formatCurrency(totalFunding)
-                ) : (
-                    <span className="text-ink">{NO_DATA}</span>
-                )}
-            </td>
-            <td>
-                {spending > 0 ? (
-                    formatCurrency(spending)
-                ) : (
-                    <span className="text-ink">{NO_DATA}</span>
-                )}
-            </td>
-            <td>
-                {formatCurrency(availableFunding)}
-            </td>
+            <td>{totalFunding > 0 ? formatCurrency(totalFunding) : <span className="text-ink">{NO_DATA}</span>}</td>
+            <td>{spending > 0 ? formatCurrency(spending) : <span className="text-ink">{NO_DATA}</span>}</td>
+            <td>{formatCurrency(availableFunding)}</td>
         </tr>
     );
 };

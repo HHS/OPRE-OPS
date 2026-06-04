@@ -86,9 +86,7 @@ const CANBudgetLineTableRow = ({
             </td>
             <td>{obligateDate}</td>
             <td>{fiscalYear}</td>
-            <td>
-                {formatCurrency(budgetLine.total ?? 0)}
-            </td>
+            <td>{formatCurrency(budgetLine.total ?? 0)}</td>
             <td>{percentOfCAN}%</td>
             <td>
                 <TableTag
@@ -133,15 +131,11 @@ const CANBudgetLineTableRow = ({
 
                 <dl className="grid-col-auto margin-top-0 font-12px">
                     <dt className="margin-0 text-base-dark">SubTotal</dt>
-                    <dd className="margin-0">
-                        {formatCurrency(amount)}
-                    </dd>
+                    <dd className="margin-0">{formatCurrency(amount)}</dd>
                 </dl>
                 <dl className="grid-col-auto margin-top-0 font-12px">
                     <dt className="margin-0 text-base-dark">Fees</dt>
-                    <dd className="margin-0">
-                        {formatCurrency(feeTotal)}
-                    </dd>
+                    <dd className="margin-0">{formatCurrency(feeTotal)}</dd>
                 </dl>
             </div>
         </td>

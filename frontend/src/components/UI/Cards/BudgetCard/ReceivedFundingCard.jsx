@@ -63,10 +63,7 @@ const ReceivedFundingCard = ({ title, totalReceived, totalFunding }) => {
             )}
             <div className="font-12px margin-top-2 display-flex flex-justify-end">
                 <div data-testid="received-funding-card-text">
-                    Received{" "}
-                    {formatCurrency(totalReceived ?? 0)}{" "}
-                    of{" "}
-                    <span>{formatCurrency(totalFunding ?? 0)}</span>
+                    Received {formatCurrency(totalReceived ?? 0)} of <span>{formatCurrency(totalFunding ?? 0)}</span>
                 </div>
             </div>
         </RoundedBox>
