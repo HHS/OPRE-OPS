@@ -3,7 +3,7 @@ import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import LegendItem from "../../../components/UI/Cards/LineGraphWithLegendCard/LegendItem";
 import HorizontalStackedBar from "../../../components/UI/DataViz/HorizontalStackedBar/HorizontalStackedBar";
 import RoundedBox from "../../../components/UI/RoundedBox";
-import Tag from "../../../components/UI/Tag/Tag";
+import { computeDisplayPercents } from "../../../helpers/utils";
 
 const STATUS_COLORS = {
     PLANNED: "var(--data-viz-bl-by-status-2)",
@@ -18,17 +18,22 @@ const buildStatusData = (procurementOverview) => {
 
     const { status_data, total_amount, total_agreements } = procurementOverview;
 
-    const statusData = status_data.map((item, index) => ({
+    const statusItems = status_data.map((item, index) => ({
         id: index + 1,
         label: item.label,
         color: STATUS_COLORS[item.status] || "var(--data-viz-bl-by-status-2)",
         amount: item.amount,
-        amountPercent: `${item.amount_percent}%`,
-        agreements: item.agreements,
-        agreementsPercent: `${item.agreements_percent}%`,
-        percent: total_amount > 0 ? (item.amount / total_amount) * 100 : 0,
         abbreviation: item.label,
         value: item.amount
+    }));
+
+    const withPercents = computeDisplayPercents(statusItems);
+
+    const statusData = withPercents.map((item) => ({
+        ...item,
+        amountDisplayPercent: item.percent,
+        amountPercent: `${item.percent}%`,
+        percent: total_amount > 0 ? (item.amount / total_amount) * 100 : 0
     }));
 
     return { statusData, totalAmount: total_amount, totalAgreements: total_agreements };
@@ -77,7 +82,7 @@ const ProcurementOverviewCard = ({ procurementOverview, fiscalYear, isLoading, e
         return (
             <RoundedBox
                 dataCy="procurement-overview-card"
-                style={{ padding: "20px 30px 30px 30px", width: "100%" }}
+                style={{ padding: "20px 30px 20px 30px", width: "100%" }}
             >
                 <p>Loading procurement overview...</p>
             </RoundedBox>
@@ -88,7 +93,7 @@ const ProcurementOverviewCard = ({ procurementOverview, fiscalYear, isLoading, e
         return (
             <RoundedBox
                 dataCy="procurement-overview-card"
-                style={{ padding: "20px 30px 30px 30px", width: "100%" }}
+                style={{ padding: "20px 30px 20px 30px", width: "100%" }}
             >
                 <p>Error loading procurement data.</p>
             </RoundedBox>
@@ -99,9 +104,9 @@ const ProcurementOverviewCard = ({ procurementOverview, fiscalYear, isLoading, e
         <RoundedBox
             dataCy="procurement-overview-card"
             style={{
-                padding: hasData ? "20px 30px 30px 30px" : "20px 30px 20px 30px",
+                padding: "20px 30px 20px 30px",
                 width: "100%",
-                ...(!hasData && { minHeight: "auto" })
+                minHeight: "auto"
             }}
         >
             <h3 className="margin-0 margin-bottom-2 font-12px text-base-dark text-normal">
@@ -138,20 +143,8 @@ const ProcurementOverviewCard = ({ procurementOverview, fiscalYear, isLoading, e
                                     label={item.label === "In Execution" ? "Executing" : item.label}
                                     value={item.amount}
                                     color={item.color}
-                                    percent={parseInt(item.amountPercent)}
+                                    percent={item.amountDisplayPercent}
                                 />
-                                <div className="display-flex flex-align-center flex-justify-end padding-top-1">
-                                    <span className={activeId === item.id ? "fake-bold" : ""}>
-                                        {item.agreements} agreements
-                                    </span>
-                                    <Tag
-                                        tagStyle="darkTextWhiteBackground"
-                                        text={item.agreementsPercent}
-                                        label={item.label === "In Execution" ? "Executing" : item.label}
-                                        active={activeId === item.id}
-                                        className="margin-left-1"
-                                    />
-                                </div>
                             </div>
                         ))}
                     </div>

@@ -86,7 +86,7 @@ describe("ProcurementOverviewCard", () => {
             />
         );
 
-        expect(screen.getAllByText("$105,000.00")[0]).toBeInTheDocument();
+        expect(screen.getAllByText("$105,000.00").length).toBeGreaterThanOrEqual(1);
     });
 
     it("filters BLIs by fiscal year", () => {
@@ -100,7 +100,7 @@ describe("ProcurementOverviewCard", () => {
             />
         );
 
-        expect(screen.getAllByText("$100,000.00")[0]).toBeInTheDocument();
+        expect(screen.getAllByText("$100,000.00").length).toBeGreaterThanOrEqual(1);
     });
 
     it("displays correct agreement count", () => {
@@ -174,7 +174,7 @@ describe("ProcurementOverviewCard", () => {
         expect(legendTags[2]).toHaveTextContent("25%");
     });
 
-    it("counts agreements per status correctly (an agreement can appear in multiple statuses)", () => {
+    it("displays only the total agreement count (not per-status)", () => {
         const overview = makeOverview(
             [
                 makeStatusItem("Planned", "PLANNED", 150_000, 43, 2, 50),
@@ -192,9 +192,9 @@ describe("ProcurementOverviewCard", () => {
             />
         );
 
-        // Total "3 agreements" + per-status: "2 agreements", "1 agreements", "1 agreements"
         const agreementTexts = screen.getAllByText(/\d+ agreement/);
-        expect(agreementTexts).toHaveLength(4);
+        expect(agreementTexts).toHaveLength(1);
+        expect(agreementTexts[0]).toHaveTextContent("3 agreements");
     });
 
     it("handles empty/null procurementOverview", () => {
@@ -224,6 +224,20 @@ describe("ProcurementOverviewCard", () => {
             />
         );
 
-        expect(screen.getAllByText("$100,000.00")[0]).toBeInTheDocument();
+        expect(screen.getAllByText("$100,000.00").length).toBeGreaterThanOrEqual(1);
+    });
+
+    it("limits total amount display to 2 decimal places", () => {
+        const overview = makeOverview([makeStatusItem("Planned", "PLANNED", 100_000.456, 100, 1, 100)], 100_000.456, 1);
+
+        render(
+            <ProcurementOverviewCard
+                procurementOverview={overview}
+                fiscalYear={fiscalYear}
+            />
+        );
+
+        expect(screen.getAllByText("$100,000.46").length).toBeGreaterThanOrEqual(1);
+        expect(screen.queryByText("$100,000.456")).not.toBeInTheDocument();
     });
 });

@@ -193,7 +193,7 @@ describe("HorizontalStackedBar", () => {
         expect(segments).toHaveLength(2);
     });
 
-    it("tiny segment (value < 1% of total) gets minimum flexBasis of 1%", () => {
+    it("tiny segment (value < 1% of total) gets minimum width", () => {
         const tinyData = [
             { id: 1, label: "Large", abbreviation: "LARGE", value: 990, color: "blue", percent: 99 },
             { id: 2, label: "Tiny", abbreviation: "TINY", value: 1, color: "green", percent: "<1" }
@@ -205,8 +205,7 @@ describe("HorizontalStackedBar", () => {
             />
         );
         const segments = screen.getAllByRole("button");
-        // Tiny segment: 1/991 = ~0.1% — floored to 1%
-        expect(segments[1]).toHaveStyle({ flexBasis: "1%" });
+        expect(segments[1]).toHaveStyle({ minWidth: "4px" });
     });
 
     it("renders correct data-cy attributes", () => {
