@@ -206,7 +206,7 @@ describe("ProcurementOverviewCard", () => {
         );
 
         // With null overview, buildStatusData returns empty arrays and 0 totals
-        const allZeroDollars = screen.getAllByText("$0.00");
+        const allZeroDollars = screen.getAllByText("$0");
         expect(allZeroDollars.length).toBeGreaterThanOrEqual(1);
 
         const agreementTexts = screen.getAllByText(/0 agreements/);

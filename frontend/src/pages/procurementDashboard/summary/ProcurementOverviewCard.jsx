@@ -3,7 +3,7 @@ import CurrencyFormat from "react-currency-format";
 import LegendItem from "../../../components/UI/Cards/LineGraphWithLegendCard/LegendItem";
 import HorizontalStackedBar from "../../../components/UI/DataViz/HorizontalStackedBar/HorizontalStackedBar";
 import RoundedBox from "../../../components/UI/RoundedBox";
-import { computeDisplayPercent } from "../../../helpers/utils";
+import { computeDisplayPercents } from "../../../helpers/utils";
 
 const STATUS_COLORS = {
     PLANNED: "var(--data-viz-bl-by-status-2)",
@@ -18,20 +18,23 @@ const buildStatusData = (procurementOverview) => {
 
     const { status_data, total_amount, total_agreements } = procurementOverview;
 
-    const statusData = status_data.map((item, index) => {
-        const amountDisplayPercent = computeDisplayPercent(item.amount, total_amount);
-        return {
-            id: index + 1,
-            label: item.label,
-            color: STATUS_COLORS[item.status] || "var(--data-viz-bl-by-status-2)",
-            amount: item.amount,
-            amountDisplayPercent,
-            amountPercent: `${amountDisplayPercent}%`,
-            percent: total_amount > 0 ? (item.amount / total_amount) * 100 : 0,
-            abbreviation: item.label,
-            value: item.amount
-        };
-    });
+    const statusItems = status_data.map((item, index) => ({
+        id: index + 1,
+        label: item.label,
+        color: STATUS_COLORS[item.status] || "var(--data-viz-bl-by-status-2)",
+        amount: item.amount,
+        abbreviation: item.label,
+        value: item.amount
+    }));
+
+    const withPercents = computeDisplayPercents(statusItems);
+
+    const statusData = withPercents.map((item) => ({
+        ...item,
+        amountDisplayPercent: item.percent,
+        amountPercent: `${item.percent}%`,
+        percent: total_amount > 0 ? (item.amount / total_amount) * 100 : 0
+    }));
 
     return { statusData, totalAmount: total_amount, totalAgreements: total_agreements };
 };
@@ -115,7 +118,7 @@ const ProcurementOverviewCard = ({ procurementOverview, fiscalYear, isLoading, e
                     displayType="text"
                     thousandSeparator={true}
                     prefix="$"
-                    decimalScale={2}
+                    decimalScale={totalAmount === 0 ? 0 : 2}
                     fixedDecimalScale={true}
                     renderText={(value) => <span className="text-bold margin-bottom-0 font-sans-xl">{value}</span>}
                 />
