@@ -50,6 +50,8 @@ const CanCard = ({ canId, fiscalYear }) => {
         }
     ];
 
+    // The funding API returns these fields as numeric strings ("1000000.00"); a bare `+`
+    // would concatenate them. Coerce each addend so the sum is numeric.
     const spendingAmount =
         Number(canFundingData?.funding?.planned_funding || 0) +
         Number(canFundingData?.funding?.in_execution_funding || 0) +
