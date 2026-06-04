@@ -115,6 +115,36 @@ describe("ApprovalFlowReviewCard", () => {
         });
     });
 
+    describe("Requestor Notes (Conditional)", () => {
+        it("should render 'Notes' field when requestorNotes is provided", () => {
+            renderComponent({ requestorNotes: "Please prioritize this request" });
+
+            expect(screen.getByText("Notes")).toBeInTheDocument();
+            expect(screen.getByText("Please prioritize this request")).toBeInTheDocument();
+        });
+
+        it("should not render 'Notes' field when requestorNotes is not provided", () => {
+            renderComponent({ requestorNotes: undefined });
+
+            expect(screen.queryByText("Notes")).not.toBeInTheDocument();
+        });
+
+        it("should not render 'Notes' field when requestorNotes is empty string", () => {
+            renderComponent({ requestorNotes: "" });
+
+            expect(screen.queryByText("Notes")).not.toBeInTheDocument();
+        });
+
+        it("should adjust grid layout when requestorNotes is present", () => {
+            renderComponent({ requestorNotes: "Test notes" });
+
+            // When notes are present, BLs Executing should be in a different column
+            expect(screen.getByText("Notes")).toBeInTheDocument();
+            expect(screen.getByText("BLs Executing")).toBeInTheDocument();
+            expect(screen.getByText("Executing Total")).toBeInTheDocument();
+        });
+    });
+
     describe("Obligate By Date (Conditional)", () => {
         it("should render 'Obligate By' field when obligateByDate is provided", () => {
             renderComponent({ obligateByDate: "2024-12-31" });
