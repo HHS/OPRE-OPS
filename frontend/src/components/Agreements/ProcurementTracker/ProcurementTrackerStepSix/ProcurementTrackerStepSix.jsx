@@ -121,22 +121,27 @@ const ProcurementTrackerStepSix = ({
                 (stepStatus === PROCUREMENT_STEP_STATUS.PENDING || stepStatus === PROCUREMENT_STEP_STATUS.ACTIVE) && (
                     <>
                         <p className="margin-top-0">
-                            Once you receive the signed award, click Request Award Approval below. After approval is
-                            granted, complete this step by marking the award as received.
+                            Once you receive the signed award, please send it to the Budget Team and click Request Award
+                            Approval below. During this process you will add CLINs, and update the Vendor and Vendor
+                            Type. The budget team will review everything has been entered correctly before changing the
+                            agreement to Awarded in OPS. Enter the Target Completion Date as the date you expect to
+                            receive the signed award, and once you Request Award Approval, check this step as complete.
                         </p>
 
-                        {/* Target Completion Date */}
-                        {!stepSixTargetCompletionDateLabel && (
-                            <div className="margin-bottom-3">
-                                <label
-                                    className="usa-label margin-top-0"
-                                    htmlFor="target-completion-date-step-6"
-                                >
-                                    Target Completion Date (Optional)
-                                </label>
-                                <div className="display-flex flex-align-end">
+                        <div className="display-flex flex-align-end margin-bottom-2">
+                            {stepSixTargetCompletionDateLabel ? (
+                                <TermTag
+                                    term="Target Completion Date"
+                                    description={stepSixTargetCompletionDateLabel}
+                                />
+                            ) : (
+                                <>
                                     <MemoizedDatePicker
-                                        name="target-completion-date-step-6"
+                                        id="target-completion-date-step-6"
+                                        name="targetCompletionDate"
+                                        label="Target Completion Date (optional)"
+                                        messages={validatorRes.getErrors("targetCompletionDate") || []}
+                                        hint="mm/dd/yyyy"
                                         value={targetCompletionDate}
                                         onChange={
                                             /** @param {any} e */ (e) => {
@@ -145,26 +150,22 @@ const ProcurementTrackerStepSix = ({
                                             }
                                         }
                                         minDate={getLocalISODate()}
-                                        aria-label="target-completion-date-step-6"
-                                        messages={validatorRes.getErrors("targetCompletionDate") || []}
+                                        isDisabled={isDisabled}
                                     />
                                     <button
-                                        className="usa-button margin-left-2"
-                                        onClick={() => handleTargetCompletionDateSubmit(stepSixData?.id)}
-                                        disabled={isTargetCompletionDateSaveDisabled}
+                                        type="button"
+                                        className="usa-button usa-button--unstyled margin-bottom-1 margin-left-2"
                                         data-cy="save-target-completion-date-step-6"
+                                        disabled={isTargetCompletionDateSaveDisabled}
+                                        onClick={() => {
+                                            handleTargetCompletionDateSubmit(stepSixData?.id);
+                                        }}
                                     >
                                         Save
                                     </button>
-                                </div>
-                            </div>
-                        )}
-
-                        {stepSixTargetCompletionDateLabel && (
-                            <div className="margin-bottom-3">
-                                <strong>Target Completion Date:</strong> {stepSixTargetCompletionDateLabel}
-                            </div>
-                        )}
+                                </>
+                            )}
+                        </div>
 
                         {/* Request Award Approval Button */}
                         <div className="margin-bottom-3">
@@ -215,49 +216,54 @@ const ProcurementTrackerStepSix = ({
                                 </label>
                             </div>
 
-                            {/* Task Completed By */}
-                            <UsersComboBox
-                                selectedUser={selectedUser}
-                                setSelectedUser={setSelectedUser}
-                                users={authorizedUsers}
-                                label="Task Completed By"
-                                disabled={isUsersComboBoxDisabled}
-                                errorMessage={validatorRes.getErrors("users")?.[0]}
-                                onChange={(value) => runValidate("users", value)}
-                            />
+                            {/* Task Completed By and Date Completed */}
+                            <div className="display-flex flex-align-center">
+                                <UsersComboBox
+                                    className="width-card-lg margin-top-5"
+                                    selectedUser={selectedUser}
+                                    setSelectedUser={setSelectedUser}
+                                    users={authorizedUsers}
+                                    label="Task Completed By"
+                                    isDisabled={isUsersComboBoxDisabled}
+                                    messages={validatorRes.getErrors("users") || []}
+                                    onChange={(name, value) => runValidate(name, value)}
+                                />
 
-                            {/* Date Completed */}
-                            <MemoizedDatePicker
-                                name="date-completed-step-6"
-                                label="Date Completed"
-                                value={stepSixDateCompleted}
-                                onChange={
-                                    /** @param {any} e */ (e) => {
-                                        runValidate("dateCompleted", e.target.value);
-                                        setStepSixDateCompleted(e.target.value);
+                                <MemoizedDatePicker
+                                    id="date-completed-step-6"
+                                    name="dateCompleted"
+                                    className="margin-left-4"
+                                    label="Date Completed"
+                                    hint="mm/dd/yyyy"
+                                    value={stepSixDateCompleted}
+                                    onChange={
+                                        /** @param {any} e */ (e) => {
+                                            runValidate("dateCompleted", e.target.value);
+                                            setStepSixDateCompleted(e.target.value);
+                                        }
                                     }
-                                }
-                                maxDate={getLocalISODate()}
-                                isDisabled={isAwardFieldsDisabled}
-                                aria-label="date-completed-step-6"
-                                messages={validatorRes.getErrors("dateCompleted") || []}
-                            />
+                                    maxDate={getLocalISODate()}
+                                    isDisabled={isAwardFieldsDisabled}
+                                    messages={validatorRes.getErrors("dateCompleted") || []}
+                                />
+                            </div>
 
                             {/* Notes */}
                             <TextArea
                                 name="notes-step-6"
-                                label="Notes (Optional)"
+                                label="Notes (optional)"
+                                className="margin-top-2"
                                 value={stepSixNotes}
-                                onChange={(e) => setStepSixNotes(e.target.value)}
-                                disabled={isAwardFieldsDisabled}
+                                onChange={/** @param {any} _ @param {any} value */ (_, value) => setStepSixNotes(value)}
+                                isDisabled={isAwardFieldsDisabled}
                                 maxLength={750}
                                 data-cy="notes-step-6"
                             />
 
-                            {/* Action Buttons */}
-                            <div className="display-flex flex-justify">
+                            <div className="margin-top-2 display-flex flex-justify-end">
                                 <button
-                                    className="usa-button usa-button--unstyled"
+                                    type="button"
+                                    className="usa-button usa-button--unstyled margin-right-2"
                                     onClick={cancelModalStepSix}
                                     disabled={isDisabled}
                                     data-cy="cancel-step-6"
@@ -265,6 +271,7 @@ const ProcurementTrackerStepSix = ({
                                     Cancel
                                 </button>
                                 <button
+                                    type="button"
                                     className="usa-button"
                                     onClick={() => handleStepSixComplete(stepSixData?.id)}
                                     disabled={
