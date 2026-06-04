@@ -225,7 +225,7 @@ describe("ProcurementTrackerStepFive", () => {
 
             expect(
                 screen.getByText(
-                    /Edit the Agreement to match the Vendor Price Sheet and ensure any final Budget Changes are approved/i
+                    /Review the Vendor Price Sheet and make any edits or budget line status changes as needed/i
                 )
             ).toBeInTheDocument();
         });
