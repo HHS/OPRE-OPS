@@ -54,18 +54,15 @@ const HorizontalStackedBar = ({ data, setActiveId = () => {} }) => {
     return (
         <div className={styles.stackedBarContainer}>
             {segments.map((segment) => {
-                // Derive proportional width from value so that a string percent
-                // ("<1") doesn't break the CSS layout.
                 const rawWidth = total > 0 ? (segment.value / total) * 100 : 0;
-                // Ensure a minimum visible width for tiny non-zero segments
-                const flexWidth = rawWidth > 0 && rawWidth < 1 ? 1 : rawWidth;
 
                 return (
                     <div
                         key={segment.id}
                         className={styles.segment}
                         style={{
-                            flexBasis: `${flexWidth}%`,
+                            flexBasis: `${rawWidth}%`,
+                            minWidth: rawWidth > 0 && rawWidth < 1 ? "4px" : undefined,
                             backgroundColor: segment.color
                         }}
                         onMouseEnter={() => handleMouseEnter(segment.id)}

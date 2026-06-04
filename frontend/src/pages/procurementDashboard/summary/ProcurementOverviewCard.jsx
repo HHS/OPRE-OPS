@@ -82,7 +82,7 @@ const ProcurementOverviewCard = ({ procurementOverview, fiscalYear, isLoading, e
         return (
             <RoundedBox
                 dataCy="procurement-overview-card"
-                style={{ padding: "20px 30px 30px 30px", width: "100%" }}
+                style={{ padding: "20px 30px 20px 30px", width: "100%" }}
             >
                 <p>Loading procurement overview...</p>
             </RoundedBox>
@@ -93,7 +93,7 @@ const ProcurementOverviewCard = ({ procurementOverview, fiscalYear, isLoading, e
         return (
             <RoundedBox
                 dataCy="procurement-overview-card"
-                style={{ padding: "20px 30px 30px 30px", width: "100%" }}
+                style={{ padding: "20px 30px 20px 30px", width: "100%" }}
             >
                 <p>Error loading procurement data.</p>
             </RoundedBox>
