@@ -133,12 +133,12 @@ const ProcurementTrackerStepFive = ({
             {isReadOnly && (
                 <div>
                     <p>
-                        All agreements need Pre-Award Approval before the Final Consensus Memo can be sent to the
-                        Procurement Shop. Review the Vendor Price Sheet and make any edits or budget line status changes
-                        as needed. After final edits are approved by the Division Director(s), come back here and click
-                        Request Pre-Award Approval. Once you receive Pre-Award Approval, check this step as complete. If
-                        you have a target completion date for when the Final Consensus Memo will be sent, enter it
-                        below.
+                        All agreements need Pre-Award Approval before the Final Consensus Memo can be sent to the HHS
+                        Consolidated Acquisition Solution (HCAS). Review the Vendor Price Sheet and make any edits or
+                        budget line status changes as needed. After final edits are approved by the Division Director(s),
+                        come back here and click Request Pre-Award Approval. Once you receive Pre-Award Approval, check
+                        this step as complete. If you have a target completion date for when the Final Consensus Memo
+                        will be sent, enter it below.
                     </p>
                     {stepStatus === PROCUREMENT_STEP_STATUS.COMPLETED && (
                         <div className="display-flex flex-align-center margin-top-5">
@@ -151,7 +151,7 @@ const ProcurementTrackerStepFive = ({
                             <p className="margin-y-0">
                                 The Agreement was edited to match the Vendor Price Sheet and any final Budget Changes
                                 were approved, if needed. Pre-Award Approval was received and the Final Consensus Memo
-                                has been sent to the Procurement Shop.
+                                has been sent to the HHS Consolidated Acquisition Solution (HCAS).
                             </p>
                         </div>
                     )}
@@ -182,11 +182,11 @@ const ProcurementTrackerStepFive = ({
                 (stepStatus === PROCUREMENT_STEP_STATUS.PENDING || stepStatus === PROCUREMENT_STEP_STATUS.ACTIVE) && (
                     <fieldset className="usa-fieldset">
                         <p>
-                            All agreements need Pre-Award Approval before the Final Consensus Memo can be sent to the
-                            Procurement Shop. Review the Vendor Price Sheet and make any edits or budget line status
-                            changes as needed. After final edits are approved by the Division Director(s), come back
-                            here and click Request Pre-Award Approval. Once you receive Pre-Award Approval, check this
-                            step as complete. If you have a target completion date for when the Final Consensus Memo
+                            All agreements need Pre-Award Approval before the Final Consensus Memo can be sent to the HHS
+                            Consolidated Acquisition Solution (HCAS). Review the Vendor Price Sheet and make any edits or
+                            budget line status changes as needed. After final edits are approved by the Division Director(s),
+                            come back here and click Request Pre-Award Approval. Once you receive Pre-Award Approval, check
+                            this step as complete. If you have a target completion date for when the Final Consensus Memo
                             will be sent, enter it below.
                         </p>
 
@@ -307,7 +307,7 @@ const ProcurementTrackerStepFive = ({
                             >
                                 The Agreement was edited to match the Vendor Price Sheet and any final Budget Changes
                                 were approved, if needed. I received Pre-Award Approval and the Final Consensus Memo has
-                                been sent to the Procurement Shop.
+                                been sent to the HHS Consolidated Acquisition Solution (HCAS).
                             </label>
                         </div>
                         <div className="display-flex flex-align-center">
@@ -384,7 +384,7 @@ const ProcurementTrackerStepFive = ({
                     <p>
                         OPRE edits the Agreement to match the Vendor Price Sheet and ensures any final Budget Changes
                         are approved, if needed. Once OPRE receives Pre-Award Approval and sends the Final Consensus
-                        Memo to the Procurement Shop, this step is marked complete.
+                        Memo to the HHS Consolidated Acquisition Solution (HCAS), this step is marked complete.
                     </p>
                     <div className="display-flex flex-align-center margin-top-5">
                         <FontAwesomeIcon
@@ -397,7 +397,7 @@ const ProcurementTrackerStepFive = ({
                         <p className="margin-y-0">
                             The Agreement was edited to match the Vendor Price Sheet and any final Budget Changes were
                             approved, if needed. Pre-Award Approval was received and the Final Consensus Memo has been
-                            sent to the Procurement Shop.
+                            sent to the HHS Consolidated Acquisition Solution (HCAS).
                         </p>
                     </div>
                     <dl className="display-flex flex-wrap">

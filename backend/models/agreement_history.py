@@ -1023,7 +1023,8 @@ def create_procurement_tracker_step_update_history_event(
 
         if status == "APPROVED":
             # Extract first name from full name (e.g., "Dave Director" -> "Dave")
-            approver_first_name = event_user.full_name.split()[0] if event_user.full_name else "Unknown"
+            name_parts = event_user.full_name.split() if event_user.full_name else []
+            approver_first_name = name_parts[0] if name_parts else "Unknown"
             history_title = "Pre-Award Approved & Requisition Started"
             history_message = (
                 f"Director {approver_first_name} approved this agreement for pre-award as requested by {requester_name}. "
@@ -1032,7 +1033,8 @@ def create_procurement_tracker_step_update_history_event(
             )
         elif status == "DECLINED":
             # Extract first name from full name (e.g., "Dave Director" -> "Dave")
-            approver_first_name = event_user.full_name.split()[0] if event_user.full_name else "Unknown"
+            name_parts = event_user.full_name.split() if event_user.full_name else []
+            approver_first_name = name_parts[0] if name_parts else "Unknown"
             history_title = "Pre-Award Declined"
             history_message = f"Director {approver_first_name} declined this agreement for pre-award as requested by {requester_name}."
         else:
