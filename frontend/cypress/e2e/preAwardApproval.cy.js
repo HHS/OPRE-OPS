@@ -5,11 +5,10 @@ import { testLogin } from "./utils";
 // Agreement 13: Procurement Tracker Test Contract (has pre-award approval workflow)
 const TEST_AGREEMENT_ID = 13;
 
-beforeEach(() => {
-    testLogin("division-director");
-});
-
 describe("Pre-Award Approval - Division Director Flow", () => {
+    beforeEach(() => {
+        testLogin("division-director");
+    });
     it("loads the approval page and displays all major sections", () => {
         cy.visit(`/agreements/${TEST_AGREEMENT_ID}/review-pre-award`);
 
