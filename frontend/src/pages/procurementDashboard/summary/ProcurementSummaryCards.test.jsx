@@ -282,7 +282,7 @@ describe("ProcurementSummaryCards", () => {
         expect(stepTotals.reduce((sum, v) => sum + v, 0)).toBe(0);
 
         // Overview total and all status values show $0
-        const allZeroDollars = screen.getAllByText("$0.00");
+        const allZeroDollars = screen.getAllByText("$0");
         expect(allZeroDollars.length).toBeGreaterThanOrEqual(1);
     });
 
