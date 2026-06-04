@@ -4,6 +4,7 @@ import { convertToCurrency, formatDateToMonthDayYear } from "../../../helpers/ut
 import { useGetAgreementName } from "../../../hooks/lookup.hooks";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import Tag from "../../UI/Tag/Tag";
+import TermTag from "../TermTag";
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import { faEye } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -32,6 +33,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
  * @param {number} props.executingTotal - Total amount of executing budget line items
  * @param {string} [props.obligateByDate] - Earliest obligate-by date from executing BLIs
  * @param {number} props.agreementTotal - Total agreement amount
+ * @param {string} [props.requestorNotes] - Notes from the requestor
  * @param {string|React.ReactNode} props.headingText - Card heading text (can include JSX like <br/>)
  * @param {string} props.navigationPath - Relative path to append to /agreements/{id}/
  * @param {string} props.dataCyPrefix - Prefix for data-cy and data-testid attributes
@@ -48,6 +50,7 @@ function ApprovalFlowReviewCard({
     executingTotal,
     obligateByDate,
     agreementTotal,
+    requestorNotes,
     headingText,
     navigationPath,
     dataCyPrefix,
@@ -107,10 +110,20 @@ function ApprovalFlowReviewCard({
                 <dd className="margin-0">{requestorName || "Unknown"}</dd>
             </dl>
 
-            {/* Row 2, Col 2: BLs Executing */}
+            {/* Row 2, Col 2-3: Requestor Notes (conditional, spans 2 columns) */}
+            {requestorNotes && (
+                <TermTag
+                    label="Notes"
+                    value={requestorNotes}
+                    className="margin-0"
+                    style={{ gridColumn: "2 / 4" }}
+                />
+            )}
+
+            {/* Row 2, Col 2/4: BLs Executing (col 2 if no notes, col 4 if notes) */}
             <dl
                 className="font-12px margin-0 display-flex flex-column"
-                style={{ gap: "0.5rem" }}
+                style={{ gridColumn: requestorNotes ? "4" : "2", gap: "0.5rem" }}
             >
                 <dt className="text-base-dark">BLs Executing</dt>
                 <dd className="margin-0">
@@ -122,10 +135,10 @@ function ApprovalFlowReviewCard({
                 </dd>
             </dl>
 
-            {/* Row 2, Col 3: Executing Total */}
+            {/* Row 2, Col 3/5: Executing Total (col 3 if no notes, col 5 if notes) */}
             <dl
                 className="font-12px margin-0 display-flex flex-column"
-                style={{ gap: "0.5rem" }}
+                style={{ gridColumn: requestorNotes ? "5" : "3", gap: "0.5rem" }}
             >
                 <dt className="text-base-dark">Executing Total</dt>
                 <dd className="margin-0">
@@ -136,7 +149,7 @@ function ApprovalFlowReviewCard({
                 </dd>
             </dl>
 
-            {/* Row 2, Col 4: Obligate By (conditional) */}
+            {/* Row 3: Obligate By (conditional) and Agreement Total */}
             {obligateByDate && (
                 <dl
                     className="font-12px margin-0 display-flex flex-column"
@@ -152,10 +165,9 @@ function ApprovalFlowReviewCard({
                 </dl>
             )}
 
-            {/* Row 2, Col 5: Agreement Total */}
             <dl
                 className="font-12px margin-0 display-flex flex-column"
-                style={{ gridColumn: obligateByDate ? "5" : "4 / 6", gap: "0.5rem" }}
+                style={{ gridColumn: obligateByDate ? "2" : "1 / 3", gap: "0.5rem" }}
             >
                 <dt className="text-base-dark">Agreement Total</dt>
                 <dd className="margin-0">
@@ -208,6 +220,7 @@ ApprovalFlowReviewCard.propTypes = {
     executingTotal: PropTypes.number.isRequired,
     obligateByDate: PropTypes.string,
     agreementTotal: PropTypes.number.isRequired,
+    requestorNotes: PropTypes.string,
     headingText: PropTypes.oneOfType([PropTypes.string, PropTypes.node]).isRequired,
     navigationPath: PropTypes.string.isRequired,
     dataCyPrefix: PropTypes.string.isRequired,

@@ -17,6 +17,7 @@ import ApprovalFlowReviewCard from "../ApprovalFlowReviewCard";
  * @param {number} props.executingTotal - Total amount of executing budget line items
  * @param {string} [props.obligateByDate] - Earliest obligate-by date from executing BLIs
  * @param {number} props.agreementTotal - Total agreement amount
+ * @param {string} [props.requestorNotes] - Notes from the requestor
  * @param {boolean} [props.isCondensed=false] - Whether the card is condensed
  * @param {boolean} [props.forceHover=false] - Whether to force hover state
  * @returns {JSX.Element} - The rendered component
@@ -41,6 +42,7 @@ PreAwardReviewCard.propTypes = {
     executingTotal: PropTypes.number.isRequired,
     obligateByDate: PropTypes.string,
     agreementTotal: PropTypes.number.isRequired,
+    requestorNotes: PropTypes.string,
     isCondensed: PropTypes.bool,
     forceHover: PropTypes.bool
 };
