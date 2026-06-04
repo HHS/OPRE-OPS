@@ -11,13 +11,19 @@ import { getCents } from "./util";
  * @returns {React.JSX.Element} - The rendered component
  */
 const CurrencyWithSmallCents = ({ amount, dollarsClasses, centsClasses, centsStyles }) => {
-    const dollarValue = parseInt(amount) === 0 || isNaN(amount) ? "0" : parseInt(amount).toString();
-    const centsValue = getCents(amount);
+    const numericAmount = Number(amount);
+    const safeAmount = Number.isFinite(numericAmount) ? numericAmount : 0;
+    // Derive sign from the raw amount, not the truncated dollar value: for
+    // amounts in (-1, 0) like -0.5, parseInt(-0.5) is 0 and the sign would be lost.
+    const isNegative = safeAmount < 0;
+    const absDollars = Math.trunc(Math.abs(safeAmount));
+    const dollarValue = absDollars.toString();
+    const centsValue = getCents(safeAmount);
 
     const displayCents = dollarValue !== "0" || centsValue !== "00";
-
-    const isNegative = parseInt(dollarValue) < 0;
-    const formattedDollars = new Intl.NumberFormat("en-US").format(Math.abs(parseInt(dollarValue)));
+    const formattedDollars = new Intl.NumberFormat("en-US").format(absDollars);
+    // Render the sign outside the "$ " prefix to preserve the "-$ 1,234" format
+    // that legacy callers (canDetail.cy.js) rely on.
     const sign = isNegative ? "-" : "";
 
     return (
