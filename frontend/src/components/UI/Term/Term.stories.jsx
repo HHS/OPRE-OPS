@@ -24,7 +24,26 @@ export default {
         label: { control: "text", description: "Display label (defaults to name)" },
         value: { control: "text", description: "Display value" },
         pending: { control: "boolean", description: "Pending state styling" },
-        messages: { control: "object", description: "Array of error messages" }
+        errorMessage: {
+            control: "text",
+            description: "Validation error message (leave empty for none)",
+            table: { category: "Errors" }
+        },
+        messages: { table: { disable: true } },
+        dataCy: { table: { disable: true } },
+        className: { table: { disable: true } }
+    },
+    render: ({ name, label, value, pending, errorMessage }) => {
+        const messages = errorMessage ? [errorMessage] : [];
+        return (
+            <Term
+                name={name}
+                label={label}
+                value={value}
+                pending={pending}
+                messages={messages}
+            />
+        );
     }
 };
 
@@ -33,7 +52,8 @@ export const Default = {
     args: {
         name: "project",
         label: "Project",
-        value: "Human Services"
+        value: "Human Services",
+        errorMessage: ""
     }
 };
 
@@ -42,7 +62,8 @@ export const WithLabel = {
     args: {
         name: "agreement_type",
         label: "Agreement Type",
-        value: "Contract"
+        value: "Contract",
+        errorMessage: ""
     }
 };
 
@@ -52,7 +73,8 @@ export const Pending = {
         name: "budget",
         label: "Total Budget",
         value: "$500,000",
-        pending: true
+        pending: true,
+        errorMessage: ""
     }
 };
 
@@ -62,7 +84,7 @@ export const WithErrors = {
         name: "amount",
         label: "Amount",
         value: "",
-        messages: ["This field is required"]
+        errorMessage: "This field is required"
     }
 };
 
@@ -70,6 +92,7 @@ export const WithErrors = {
 export const TBDValue = {
     args: {
         name: "project_officer",
-        label: "Project Officer"
+        label: "Project Officer",
+        errorMessage: ""
     }
 };
