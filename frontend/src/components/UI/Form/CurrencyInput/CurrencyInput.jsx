@@ -1,4 +1,5 @@
 import cx from "clsx";
+import { useState, useEffect, useRef } from "react";
 import CurrencyInputField from "react-currency-input-field";
 
 /**
@@ -28,6 +29,21 @@ const CurrencyInput = ({
     placeholder = "$",
     ...rest
 }) => {
+    // displayValue holds the raw typed string (e.g. "5.") so a trailing
+    // decimal isn't stripped before the user finishes typing the cents.
+    const [displayValue, setDisplayValue] = useState(value ?? "");
+    // Set on each user keystroke so the parent's float echo doesn't
+    // overwrite the in-progress display string on the next render.
+    const skipNextSyncRef = useRef(false);
+
+    useEffect(() => {
+        if (skipNextSyncRef.current) {
+            skipNextSyncRef.current = false;
+            return;
+        }
+        setDisplayValue(value ?? "");
+    }, [value]);
+
     return (
         <div className={cx("usa-form-group", pending && "pending", className)}>
             <label
@@ -47,13 +63,15 @@ const CurrencyInput = ({
             <CurrencyInputField
                 id={name}
                 name={name}
-                value={value ?? ""}
+                value={displayValue}
                 className={`usa-input ${messages.length ? "usa-input--error" : ""} `}
                 groupSeparator=","
                 decimalSeparator="."
                 decimalsLimit={2}
                 placeholder={placeholder}
                 onValueChange={(rawValue, _name, values) => {
+                    skipNextSyncRef.current = true;
+                    setDisplayValue(rawValue ?? "");
                     if (setEnteredAmount) {
                         const f = values?.float;
                         setEnteredAmount(typeof f === "number" ? f : null);
