@@ -104,7 +104,7 @@ function ApprovalFlowReviewCard({
             {/* Row 2, Col 1: Requested by */}
             <dl
                 className="font-12px margin-0 display-flex flex-column"
-                style={{ gap: "0.5rem" }}
+                style={{ gridRow: "2", gridColumn: "1", gap: "0.5rem" }}
             >
                 <dt className="text-base-dark">Requested by</dt>
                 <dd className="margin-0">{requestorName || "Unknown"}</dd>
@@ -112,18 +112,19 @@ function ApprovalFlowReviewCard({
 
             {/* Row 2, Col 2-3: Requestor Notes (conditional, spans 2 columns) */}
             {requestorNotes && (
-                <TermTag
-                    label="Notes"
-                    value={requestorNotes}
-                    className="margin-0"
-                    style={{ gridColumn: "2 / 4" }}
-                />
+                <div style={{ gridRow: "2", gridColumn: "2 / 4" }}>
+                    <TermTag
+                        label="Notes"
+                        value={requestorNotes}
+                        className="margin-0"
+                    />
+                </div>
             )}
 
             {/* Row 2, Col 2/4: BLs Executing (col 2 if no notes, col 4 if notes) */}
             <dl
                 className="font-12px margin-0 display-flex flex-column"
-                style={{ gridColumn: requestorNotes ? "4" : "2", gap: "0.5rem" }}
+                style={{ gridRow: "2", gridColumn: requestorNotes ? "4" : "2", gap: "0.5rem" }}
             >
                 <dt className="text-base-dark">BLs Executing</dt>
                 <dd className="margin-0">
@@ -138,7 +139,7 @@ function ApprovalFlowReviewCard({
             {/* Row 2, Col 3/5: Executing Total (col 3 if no notes, col 5 if notes) */}
             <dl
                 className="font-12px margin-0 display-flex flex-column"
-                style={{ gridColumn: requestorNotes ? "5" : "3", gap: "0.5rem" }}
+                style={{ gridRow: "2", gridColumn: requestorNotes ? "5" : "3", gap: "0.5rem" }}
             >
                 <dt className="text-base-dark">Executing Total</dt>
                 <dd className="margin-0">
@@ -153,7 +154,7 @@ function ApprovalFlowReviewCard({
             {obligateByDate && (
                 <dl
                     className="font-12px margin-0 display-flex flex-column"
-                    style={{ gap: "0.5rem" }}
+                    style={{ gridRow: "3", gridColumn: "1", gap: "0.5rem" }}
                 >
                     <dt className="text-base-dark">Obligate By</dt>
                     <dd className="margin-0">
@@ -167,7 +168,7 @@ function ApprovalFlowReviewCard({
 
             <dl
                 className="font-12px margin-0 display-flex flex-column"
-                style={{ gridColumn: obligateByDate ? "2" : "1 / 3", gap: "0.5rem" }}
+                style={{ gridRow: "3", gridColumn: obligateByDate ? "2 / 6" : "1 / 6", gap: "0.5rem" }}
             >
                 <dt className="text-base-dark">Agreement Total</dt>
                 <dd className="margin-0">
