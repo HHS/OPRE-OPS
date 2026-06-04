@@ -1240,7 +1240,8 @@ def test_agreement_history_pre_award_approval_declined(loaded_db, app_ctx):
     assert history_item.history_title == "Pre-Award Declined"
     assert history_item.agreement_id == tracker.agreement_id
     assert (
-        history_item.history_message == "Director User declined this agreement for pre-award as requested by Amelia Popham."
+        history_item.history_message
+        == "Director User declined this agreement for pre-award as requested by Amelia Popham."
     )
 
 
