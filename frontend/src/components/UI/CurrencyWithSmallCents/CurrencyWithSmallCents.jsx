@@ -16,11 +16,15 @@ const CurrencyWithSmallCents = ({ amount, dollarsClasses, centsClasses, centsSty
 
     const displayCents = dollarValue !== "0" || centsValue !== "00";
 
-    const formattedDollars = new Intl.NumberFormat("en-US").format(parseInt(dollarValue));
+    const isNegative = parseInt(dollarValue) < 0;
+    const formattedDollars = new Intl.NumberFormat("en-US").format(Math.abs(parseInt(dollarValue)));
+    const sign = isNegative ? "-" : "";
 
     return (
         <div>
-            <span className={`${dollarsClasses} text-bold margin-bottom-0`}>$ {formattedDollars}</span>
+            <span className={`${dollarsClasses} text-bold margin-bottom-0`}>
+                {sign}$ {formattedDollars}
+            </span>
             {displayCents && (
                 <span
                     className={`${centsClasses} text-bold margin-bottom-0`}
