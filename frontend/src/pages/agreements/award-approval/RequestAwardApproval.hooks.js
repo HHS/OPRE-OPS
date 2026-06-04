@@ -5,6 +5,7 @@ import {
     useGetProcurementTrackersByAgreementIdQuery,
     useUpdateProcurementTrackerStepMutation
 } from "../../../api/opsAPI";
+import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import { getLocalISODate } from "../../../helpers/utils";
 import { PROCUREMENT_STEP_STATUS } from "../../../components/Agreements/ProcurementTracker/ProcurementTracker.constants";
 
@@ -40,6 +41,10 @@ export default function useRequestAwardApproval(agreementId) {
     const activeTracker = trackers.find((tracker) => tracker.status === "ACTIVE");
     const step5 = activeTracker?.steps?.find((/** @type {any} */ step) => step.step_number === 5);
     const step6 = activeTracker?.steps?.find((/** @type {any} */ step) => step.step_number === 6);
+
+    // Get project officer names
+    const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
+    const alternateProjectOfficerName = useGetUserFullNameFromId(agreement?.alternate_project_officer_id);
 
     // Check if Step 5 is completed (prerequisite)
     const isStep5Completed = step5?.status === PROCUREMENT_STEP_STATUS.COMPLETED;
@@ -101,6 +106,8 @@ export default function useRequestAwardApproval(agreementId) {
         isSubmitting,
         hasApprovalBeenRequested,
         hasBLIInReview,
-        isStep5Completed
+        isStep5Completed,
+        projectOfficerName,
+        alternateProjectOfficerName
     };
 }

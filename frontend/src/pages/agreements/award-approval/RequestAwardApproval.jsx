@@ -2,8 +2,10 @@ import { useParams } from "react-router-dom";
 import App from "../../../App";
 import PageHeader from "../../../components/UI/PageHeader";
 import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
+import Accordion from "../../../components/UI/Accordion";
 import TextArea from "../../../components/UI/Form/TextArea";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
+import { convertCodeForDisplay } from "../../../helpers/utils";
 import useRequestAwardApproval from "./RequestAwardApproval.hooks";
 
 /**
@@ -25,7 +27,9 @@ export const RequestAwardApproval = () => {
         isSubmitting,
         hasApprovalBeenRequested,
         hasBLIInReview,
-        isStep5Completed
+        isStep5Completed,
+        projectOfficerName,
+        alternateProjectOfficerName
     } = useRequestAwardApproval(agreementId);
 
     if (isLoading) {
@@ -86,15 +90,22 @@ export const RequestAwardApproval = () => {
                 />
             )}
 
-            {/* Review Agreement Details */}
-            <section className="margin-top-4">
-                <h2>Review Agreement Details</h2>
-                <AgreementMetaAccordion agreement={agreement} />
-            </section>
+            {/* Agreement Details */}
+            <AgreementMetaAccordion
+                agreement={agreement}
+                projectOfficerName={projectOfficerName}
+                alternateProjectOfficerName={alternateProjectOfficerName}
+                convertCodeForDisplay={convertCodeForDisplay}
+                instructions="Review the agreement details below to ensure the signed award has been uploaded, CLINs have been entered, and Vendor information is complete."
+                changeRequestType={agreement?.change_request_type}
+                isAgreementAwarded={true}
+            />
 
             {/* Add CLINs to Budget Lines */}
-            <section className="margin-top-4">
-                <h2>Add CLINs to Budget Lines</h2>
+            <Accordion
+                heading="Add CLINs to Budget Lines"
+                level={2}
+            >
                 <p>
                     Ensure all CLINs have been entered for this agreement. You can add or edit CLINs from the Agreement
                     Details page.
@@ -105,10 +116,10 @@ export const RequestAwardApproval = () => {
                 >
                     Go to Agreement Details
                 </a>
-            </section>
+            </Accordion>
 
             {/* Notes (Optional) */}
-            <section className="margin-top-4">
+            <div className="margin-top-4">
                 <TextArea
                     name="notes"
                     label="Notes (Optional)"
@@ -117,7 +128,7 @@ export const RequestAwardApproval = () => {
                     maxLength={750}
                     messages={notes.length > 750 ? ["Notes must be 750 characters or less"] : []}
                 />
-            </section>
+            </div>
 
             {/* Action Buttons */}
             <div className="display-flex flex-justify margin-top-4">
