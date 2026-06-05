@@ -161,7 +161,19 @@ describe("ProcurementTrackerStepSix", () => {
         runValidate: mockRunValidate,
         validatorRes: mockValidatorRes,
         stepSixTargetCompletionDateLabel: "",
-        MemoizedDatePicker: ({ label, hint, value, onChange, maxDate, minDate, id, name, messages, className, isDisabled }) => (
+        MemoizedDatePicker: ({
+            label,
+            hint,
+            value,
+            onChange,
+            maxDate,
+            minDate,
+            id,
+            name,
+            messages,
+            className,
+            isDisabled
+        }) => (
             <div
                 data-testid="date-picker"
                 data-picker-id={id}
@@ -313,7 +325,9 @@ describe("ProcurementTrackerStepSix", () => {
             expect(dateCompleted).toHaveAttribute("data-max-date", "2024-01-30");
 
             // Find hint within the Date Completed picker by using the picker with that specific ID
-            const dateCompletedPicker = screen.getAllByTestId("date-picker").find((el) => el.getAttribute("data-picker-id") === "date-completed-step-6");
+            const dateCompletedPicker = screen
+                .getAllByTestId("date-picker")
+                .find((el) => el.getAttribute("data-picker-id") === "date-completed-step-6");
             const hint = within(dateCompletedPicker).getByText("mm/dd/yyyy");
             expect(hint).toBeInTheDocument();
         });

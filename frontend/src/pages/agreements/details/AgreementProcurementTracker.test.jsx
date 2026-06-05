@@ -950,7 +950,11 @@ describe("AgreementProcurementTracker", () => {
         it.each([
             [3, "SOLICITATION", /Once the Procurement Shop has posted the Solicitation/],
             [5, "PRE_AWARD", /All agreements need Pre-Award Approval before the Final Consensus Memo/],
-            [6, "AWARD", /Once you receive the signed award, please send it to the Budget Team and click Request Award Approval below/]
+            [
+                6,
+                "AWARD",
+                /Once you receive the signed award, please send it to the Budget Team and click Request Award Approval below/
+            ]
         ])(
             "renders step %i instructional content when that step is active",
             (activeStepNumber, activeStepType, expectedInstructionalText) => {

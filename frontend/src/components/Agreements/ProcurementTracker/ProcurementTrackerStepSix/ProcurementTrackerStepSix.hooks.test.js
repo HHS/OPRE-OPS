@@ -254,7 +254,9 @@ describe("useProcurementTrackerStepSix", () => {
         });
 
         it("handles undefined stepSixData gracefully", () => {
-            const { result } = renderHook(() => useProcurementTrackerStepSix(undefined, mockHandleSetCompletedStepNumber));
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepSix(undefined, mockHandleSetCompletedStepNumber)
+            );
 
             expect(result.current.stepSixCompletedByUserName).toBeDefined();
             expect(result.current.stepSixDateCompletedLabel).toBeDefined();
