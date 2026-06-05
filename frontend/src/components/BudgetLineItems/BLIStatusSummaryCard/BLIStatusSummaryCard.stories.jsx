@@ -14,12 +14,27 @@ export default {
         }
     },
     argTypes: {
-        titlePrefix: { control: "text" },
-        totalDraftAmount: { control: { type: "number", min: 0, step: 25_000 } },
-        totalPlannedAmount: { control: { type: "number", min: 0, step: 25_000 } },
-        totalExecutingAmount: { control: { type: "number", min: 0, step: 25_000 } },
-        totalObligatedAmount: { control: { type: "number", min: 0, step: 25_000 } },
-        totalAmount: { control: { type: "number", min: 0, step: 25_000 } }
+        titlePrefix: { control: "text", table: { category: "General" } },
+        totalDraftAmount: {
+            control: { type: "number", min: 0, step: 25_000 },
+            table: { category: "Amounts by Status" }
+        },
+        totalPlannedAmount: {
+            control: { type: "number", min: 0, step: 25_000 },
+            table: { category: "Amounts by Status" }
+        },
+        totalExecutingAmount: {
+            control: { type: "number", min: 0, step: 25_000 },
+            table: { category: "Amounts by Status" }
+        },
+        totalObligatedAmount: {
+            control: { type: "number", min: 0, step: 25_000 },
+            table: { category: "Amounts by Status" }
+        },
+        totalAmount: {
+            control: { type: "number", min: 0, step: 25_000 },
+            table: { category: "Totals" }
+        }
     }
 };
 

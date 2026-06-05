@@ -14,13 +14,31 @@ export default {
         }
     },
     argTypes: {
-        fiscalYear: { control: { type: "number" } },
-        totalBudget: { control: { type: "number", min: 0, step: 100_000 } },
-        newFunding: { control: { type: "number", min: 0, step: 100_000 } },
-        carryForward: { control: { type: "number", min: 0, step: 100_000 } },
-        plannedFunding: { control: { type: "number", min: 0, step: 100_000 } },
-        obligatedFunding: { control: { type: "number", min: 0, step: 100_000 } },
-        inExecutionFunding: { control: { type: "number", min: 0, step: 100_000 } }
+        fiscalYear: { control: { type: "number" }, table: { category: "General" } },
+        totalBudget: {
+            control: { type: "number", min: 0, step: 100_000 },
+            table: { category: "Funding Sources" }
+        },
+        newFunding: {
+            control: { type: "number", min: 0, step: 100_000 },
+            table: { category: "Funding Sources" }
+        },
+        carryForward: {
+            control: { type: "number", min: 0, step: 100_000 },
+            table: { category: "Funding Sources" }
+        },
+        plannedFunding: {
+            control: { type: "number", min: 0, step: 100_000 },
+            table: { category: "Spending by Status" }
+        },
+        obligatedFunding: {
+            control: { type: "number", min: 0, step: 100_000 },
+            table: { category: "Spending by Status" }
+        },
+        inExecutionFunding: {
+            control: { type: "number", min: 0, step: 100_000 },
+            table: { category: "Spending by Status" }
+        }
     }
 };
 

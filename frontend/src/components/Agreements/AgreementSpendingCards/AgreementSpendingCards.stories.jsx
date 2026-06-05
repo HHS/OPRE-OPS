@@ -1,5 +1,42 @@
 import AgreementSpendingCards from "./AgreementSpendingCards";
 
+const buildSpendingData = (args) => {
+    const types = [
+        {
+            type: "CONTRACT",
+            total: args.contractTotal,
+            new: args.contractNew,
+            continuing: args.contractContinuing
+        },
+        {
+            type: "PARTNER",
+            total: args.partnerTotal,
+            new: args.partnerNew,
+            continuing: args.partnerContinuing
+        },
+        {
+            type: "GRANT",
+            total: args.grantTotal,
+            new: args.grantNew,
+            continuing: args.grantContinuing
+        },
+        {
+            type: "DIRECT_OBLIGATION",
+            total: args.directObligationTotal,
+            new: args.directObligationNew,
+            continuing: args.directObligationContinuing
+        }
+    ];
+    const agreement_types = types.filter((t) => t.total > 0);
+    const total_spending = agreement_types.reduce((sum, t) => sum + t.total, 0);
+    return { total_spending, agreement_types };
+};
+
+const amountControl = (category) => ({
+    control: { type: "number", min: 0, step: 50_000 },
+    table: { category }
+});
+
 export default {
     title: "Features/Agreements/AgreementSpendingCards",
     component: AgreementSpendingCards,
@@ -15,28 +52,60 @@ export default {
         }
     },
     argTypes: {
-        fiscalYear: { control: { type: "number" } }
-    }
+        fiscalYear: { control: { type: "number" }, table: { category: "General" } },
+        contractTotal: amountControl("Contract"),
+        contractNew: amountControl("Contract"),
+        contractContinuing: amountControl("Contract"),
+        partnerTotal: amountControl("Partner"),
+        partnerNew: amountControl("Partner"),
+        partnerContinuing: amountControl("Partner"),
+        grantTotal: amountControl("Grant"),
+        grantNew: amountControl("Grant"),
+        grantContinuing: amountControl("Grant"),
+        directObligationTotal: amountControl("Direct Obligation"),
+        directObligationNew: amountControl("Direct Obligation"),
+        directObligationContinuing: amountControl("Direct Obligation")
+    },
+    render: (args) => (
+        <AgreementSpendingCards
+            fiscalYear={args.fiscalYear}
+            spendingData={buildSpendingData(args)}
+        />
+    )
 };
 
 export const Populated = {
     args: {
         fiscalYear: 2025,
-        spendingData: {
-            total_spending: 5_100_000,
-            agreement_types: [
-                { type: "CONTRACT", total: 2_500_000, new: 1_500_000, continuing: 1_000_000 },
-                { type: "PARTNER", total: 600_000, new: 400_000, continuing: 200_000 },
-                { type: "GRANT", total: 1_500_000, new: 800_000, continuing: 700_000 },
-                { type: "DIRECT_OBLIGATION", total: 500_000, new: 300_000, continuing: 200_000 }
-            ]
-        }
+        contractTotal: 2_500_000,
+        contractNew: 1_500_000,
+        contractContinuing: 1_000_000,
+        partnerTotal: 600_000,
+        partnerNew: 400_000,
+        partnerContinuing: 200_000,
+        grantTotal: 1_500_000,
+        grantNew: 800_000,
+        grantContinuing: 700_000,
+        directObligationTotal: 500_000,
+        directObligationNew: 300_000,
+        directObligationContinuing: 200_000
     }
 };
 
 export const Empty = {
     args: {
         fiscalYear: 2025,
-        spendingData: { total_spending: 0, agreement_types: [] }
+        contractTotal: 0,
+        contractNew: 0,
+        contractContinuing: 0,
+        partnerTotal: 0,
+        partnerNew: 0,
+        partnerContinuing: 0,
+        grantTotal: 0,
+        grantNew: 0,
+        grantContinuing: 0,
+        directObligationTotal: 0,
+        directObligationNew: 0,
+        directObligationContinuing: 0
     }
 };

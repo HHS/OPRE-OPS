@@ -1,6 +1,18 @@
 import ProjectTypeSummaryCard from "./ProjectTypeSummaryCard";
 import { PROJECT_TYPE_RESEARCH, PROJECT_TYPE_ADMIN_SUPPORT } from "../ProjectTypes.constants";
 
+const buildSummary = ({ researchAmount, adminSupportAmount }) => ({
+    amounts_by_type: {
+        [PROJECT_TYPE_RESEARCH]: { amount: researchAmount },
+        [PROJECT_TYPE_ADMIN_SUPPORT]: { amount: adminSupportAmount }
+    }
+});
+
+const amountControl = {
+    control: { type: "number", min: 0, step: 25_000 },
+    table: { category: "Amounts by Project Type" }
+};
+
 export default {
     title: "Features/Projects/ProjectTypeSummaryCard",
     component: ProjectTypeSummaryCard,
@@ -14,25 +26,30 @@ export default {
         }
     },
     argTypes: {
-        title: { control: "text" }
-    }
+        title: { control: "text", table: { category: "General" } },
+        researchAmount: amountControl,
+        adminSupportAmount: amountControl
+    },
+    render: (args) => (
+        <ProjectTypeSummaryCard
+            title={args.title}
+            summary={buildSummary(args)}
+        />
+    )
 };
 
 export const Populated = {
     args: {
         title: "Project Spending by Type",
-        summary: {
-            amounts_by_type: {
-                [PROJECT_TYPE_RESEARCH]: { amount: 800_000 },
-                [PROJECT_TYPE_ADMIN_SUPPORT]: { amount: 400_000 }
-            }
-        }
+        researchAmount: 800_000,
+        adminSupportAmount: 400_000
     }
 };
 
 export const Empty = {
     args: {
         title: "Project Spending by Type",
-        summary: { amounts_by_type: {} }
+        researchAmount: 0,
+        adminSupportAmount: 0
     }
 };
