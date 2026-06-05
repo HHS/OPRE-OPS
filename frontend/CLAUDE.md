@@ -160,24 +160,21 @@ const fee = calculateTotal(budgetLines, 5.0 / 100); // Results in 0.05% fee rate
 
 Currency values in the UI must render with exactly two decimal places (rounded, not truncated). Never display a raw float like `$130,143,958.5836`.
 
-When using `react-currency-format`, set both `decimalScale={2}` and `fixedDecimalScale={true}`. Match the existing codebase pattern of suppressing cents only on a true zero by using `decimalScale={value === 0 ? 0 : 2}`, so `$0` (not `$0.00`) shows for empty states — see `src/components/UI/Cards/LineGraphWithLegendCard/LegendItem.jsx` and `src/components/Portfolios/PortfolioSummaryCards/PortfolioLegend.jsx`.
+For **display-only** (read-only) currency, use the `formatCurrency()` helper from `src/helpers/currencyFormat.helpers.js`. It already enforces the project convention: zero renders as `$0` (no decimals), non-zero renders with exactly two decimals (e.g., `$1,234.50`). Null, undefined, NaN, and Infinity coerce to `$0`.
 
 ```jsx
-// CORRECT — rounds to 2 decimals, $0 for zero
-<CurrencyFormat
-    value={amount}
-    displayType="text"
-    thousandSeparator={true}
-    prefix="$"
-    decimalScale={amount === 0 ? 0 : 2}
-    fixedDecimalScale
-/>
+import { formatCurrency } from "../../helpers/currencyFormat.helpers";
 
-// INCORRECT — fixedDecimalScale without decimalScale leaks raw float digits
-<CurrencyFormat value={amount} fixedDecimalScale={true} prefix="$" />
+// CORRECT — handles zero suppression and 2-decimal rounding internally
+<span>{formatCurrency(amount)}</span>
+
+// INCORRECT — manual Intl.NumberFormat without the zero-suppression rule
+<span>{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount)}</span>
 ```
 
-For card totals rendered at large font sizes (`font-sans-xl` / 2 rem or larger), use `src/components/UI/CurrencyWithSmallCents/CurrencyWithSmallCents.jsx` to render dollars in the large font and cents in a smaller font. This is required — large bold cents at 32 px+ look disproportionate. See `BudgetCard`, `BigBudgetCard`, `CurrencyCard`, and `ReceivedFundingCard` for existing usage. Cards with smaller text sizes for amounts (e.g., legend rows, table cells) can render cents at the same size as the dollars using standard `CurrencyFormat`.
+For **form inputs** accepting currency, use the `CurrencyInput` component (`src/components/UI/Form/CurrencyInput/CurrencyInput.jsx`), which wraps `react-currency-input-field`.
+
+For card totals rendered at large font sizes (`font-sans-xl` / 2 rem or larger), use `src/components/UI/CurrencyWithSmallCents/CurrencyWithSmallCents.jsx` to render dollars in the large font and cents in a smaller font. This is required — large bold cents at 32 px+ look disproportionate. See `BudgetCard`, `BigBudgetCard`, `CurrencyCard`, and `ReceivedFundingCard` for existing usage. Cards with smaller text sizes for amounts (e.g., legend rows, table cells) can render cents at the same size as the dollars using `formatCurrency()`.
 
 ### Percentages: Use the `<1%` and 99-Cap Conventions
 
@@ -214,7 +211,7 @@ The `Tag` component renders these values verbatim, so a `percent` of `"<1"` disp
 - `src/components/UI/CurrencyWithSmallCents/CurrencyWithSmallCents.jsx`: Required for large-font (font-sans-xl+) currency totals on cards
 - `src/helpers/agreement.helpers.js`: Agreement calculation helpers
 - `src/helpers/utils.js`: Shared helpers including `computeDisplayPercents` / `computeDisplayPercent` and `convertToCurrency`
-- `src/helpers/currencyFormat.helpers.js`: `getDecimalScale` and other currency-formatting helpers
+- `src/helpers/currencyFormat.helpers.js`: `formatCurrency` helper for display-only currency rendering
 - `src/pages/`: Page-level components (route targets)
 - `cypress/e2e/`: E2E test specs
 - `cypress/support/commands.js`: Custom Cypress commands
