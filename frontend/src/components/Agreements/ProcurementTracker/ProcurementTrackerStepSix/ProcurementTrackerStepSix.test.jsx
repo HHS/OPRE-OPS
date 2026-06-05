@@ -16,10 +16,16 @@ vi.mock("../../../../helpers/utils", async (importOriginal) => {
     };
 });
 vi.mock("../../../UI/Term/TermTag", () => ({
-    default: ({ term, description }) => (
+    default: ({ term, description, label }) => (
         <div data-testid="term-tag">
-            <dt>{term}</dt>
-            <dd>{description}</dd>
+            {label ? (
+                <span>{label}</span>
+            ) : (
+                <>
+                    <dt>{term}</dt>
+                    <dd>{description}</dd>
+                </>
+            )}
         </div>
     )
 }));
@@ -306,7 +312,9 @@ describe("ProcurementTrackerStepSix", () => {
             expect(dateCompleted).toBeInTheDocument();
             expect(dateCompleted).toHaveAttribute("data-max-date", "2024-01-30");
 
-            const hint = screen.getByText("mm/dd/yyyy");
+            // Find hint within the Date Completed picker by using the picker with that specific ID
+            const dateCompletedPicker = screen.getAllByTestId("date-picker").find((el) => el.getAttribute("data-picker-id") === "date-completed-step-6");
+            const hint = within(dateCompletedPicker).getByText("mm/dd/yyyy");
             expect(hint).toBeInTheDocument();
         });
     });
