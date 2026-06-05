@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
-import { convertToCurrency, formatDateToMonthDayYear } from "../../../helpers/utils";
+import { convertToCurrency, formatDate, formatDateToMonthDayYear } from "../../../helpers/utils";
 import { useGetAgreementName } from "../../../hooks/lookup.hooks";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import Tag from "../../UI/Tag/Tag";
@@ -74,7 +74,7 @@ function ApprovalFlowReviewCard({
             style={{
                 minHeight: "8.375rem",
                 display: "grid",
-                gridTemplateColumns: "repeat(5, 1fr)",
+                gridTemplateColumns: "repeat(6, 1fr)",
                 gridTemplateRows: "auto auto auto",
                 gap: "1rem"
             }}
@@ -87,30 +87,30 @@ function ApprovalFlowReviewCard({
                 <h2 className="margin-0 font-sans-sm">{headingText}</h2>
             </div>
 
-            {/* Row 1, Col 2-5: Agreement */}
+            {/* Row 1, Col 2-7: Agreement */}
             {!isCondensed && (
                 <dl
                     className="font-12px margin-0 display-flex flex-column"
-                    style={{ gridColumn: "2 / 6", gap: "0.5rem" }}
+                    style={{ gridColumn: "2 / 7", gap: "0.5rem" }}
                 >
                     <dt className="text-base-dark">Agreement</dt>
                     <dd className="margin-0">{agreementName}</dd>
                 </dl>
             )}
 
-            {/* Row 2, Col 1: Requested by */}
+            {/* Requested by */}
             <dl
                 className="font-12px margin-0 display-flex flex-column"
-                style={{ gridRow: "2", gridColumn: "1", gap: "0.5rem" }}
+                style={{ gap: "0.5rem" }}
             >
                 <dt className="text-base-dark">Requested by</dt>
                 <dd className="margin-0">{requestorName || "Unknown"}</dd>
             </dl>
 
-            {/* Row 2, Col 2: BLs Executing */}
+            {/* BLs Executing */}
             <dl
                 className="font-12px margin-0 display-flex flex-column"
-                style={{ gridRow: "2", gridColumn: "2", gap: "0.5rem" }}
+                style={{ gap: "0.5rem" }}
             >
                 <dt className="text-base-dark">BLs Executing</dt>
                 <dd className="margin-0">
@@ -122,10 +122,10 @@ function ApprovalFlowReviewCard({
                 </dd>
             </dl>
 
-            {/* Row 2, Col 3: Executing Total */}
+            {/* Executing Total */}
             <dl
                 className="font-12px margin-0 display-flex flex-column"
-                style={{ gridRow: "2", gridColumn: "3", gap: "0.5rem" }}
+                style={{ gap: "0.5rem" }}
             >
                 <dt className="text-base-dark">Executing Total</dt>
                 <dd className="margin-0">
@@ -136,39 +136,53 @@ function ApprovalFlowReviewCard({
                 </dd>
             </dl>
 
-            {/* Row 3: Obligate By (conditional) and Agreement Total */}
-            {obligateByDate && (
+            {/* Obligate By Date (conditional) and Agreement Total on same row */}
+            {obligateByDate ? (
+                <>
+                    <dl
+                        className="font-12px margin-0 display-flex flex-column"
+                        style={{ gap: "0.5rem" }}
+                    >
+                        <dt className="text-base-dark">Obligate By Date</dt>
+                        <dd className="margin-0">
+                            <Tag
+                                tagStyle="primaryDarkTextLightBackground"
+                                text={formatDate(new Date(obligateByDate))}
+                            />
+                        </dd>
+                    </dl>
+                    <dl
+                        className="font-12px margin-0 display-flex flex-column"
+                        style={{ gridColumn: "5 / 7", gap: "0.5rem" }}
+                    >
+                        <dt className="text-base-dark">Agreement Total</dt>
+                        <dd className="margin-0">
+                            <Tag
+                                tagStyle="primaryDarkTextLightBackground"
+                                text={convertToCurrency(agreementTotal)}
+                            />
+                        </dd>
+                    </dl>
+                </>
+            ) : (
                 <dl
                     className="font-12px margin-0 display-flex flex-column"
-                    style={{ gridRow: "3", gridColumn: "1", gap: "0.5rem" }}
+                    style={{ gridColumn: "1 / 3", gap: "0.5rem" }}
                 >
-                    <dt className="text-base-dark">Obligate By</dt>
+                    <dt className="text-base-dark">Agreement Total</dt>
                     <dd className="margin-0">
                         <Tag
                             tagStyle="primaryDarkTextLightBackground"
-                            text={formatDateToMonthDayYear(obligateByDate)}
+                            text={convertToCurrency(agreementTotal)}
                         />
                     </dd>
                 </dl>
             )}
 
-            <dl
-                className="font-12px margin-0 display-flex flex-column"
-                style={{ gridRow: "3", gridColumn: obligateByDate ? "2 / 6" : "1 / 6", gap: "0.5rem" }}
-            >
-                <dt className="text-base-dark">Agreement Total</dt>
-                <dd className="margin-0">
-                    <Tag
-                        tagStyle="primaryDarkTextLightBackground"
-                        text={convertToCurrency(agreementTotal)}
-                    />
-                </dd>
-            </dl>
-
             {/* Footer Row: Date and Button */}
             <footer
                 className="font-12px display-flex flex-justify flex-align-center"
-                style={{ gridColumn: "1 / 6" }}
+                style={{ gridColumn: "1 / 7" }}
             >
                 <div className="text-base-dark display-flex flex-align-center">
                     <FontAwesomeIcon

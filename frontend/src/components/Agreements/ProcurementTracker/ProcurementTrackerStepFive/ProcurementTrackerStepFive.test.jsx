@@ -468,7 +468,11 @@ describe("ProcurementTrackerStepFive", () => {
                 />
             );
 
-            expect(screen.getByText(/OPRE edits the Agreement to match the Vendor Price Sheet/i)).toBeInTheDocument();
+            expect(
+                screen.getByText(
+                    /All agreements need Pre-Award Approval before the Final Consensus Memo can be sent to the Procurement Shop/i
+                )
+            ).toBeInTheDocument();
         });
 
         it("displays completed status message with check icon", () => {

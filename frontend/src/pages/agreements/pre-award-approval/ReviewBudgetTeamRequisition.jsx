@@ -252,27 +252,23 @@ export const ReviewBudgetTeamRequisition = () => {
                 heading="Notes"
                 level={2}
             >
-                <p>Notes can be shared between the Submitter and Reviewer, if needed.</p>
+                <p className="margin-bottom-5">Notes can be shared between the Submitter and Reviewer, if needed.</p>
 
-                <div className="grid-row grid-gap margin-top-3">
+                <div className="grid-row grid-gap">
                     <div className="grid-col-6">
-                        <h3 className="font-sans-sm text-semibold margin-bottom-3">Submitter&apos;s Notes</h3>
-                        <div style={{ minHeight: "8.5rem", whiteSpace: "pre-wrap" }}>
-                            {requestorNotes || "No notes provided"}
-                        </div>
+                        <h3 className="font-sans-lg text-semibold margin-bottom-3">Submitter&apos;s Notes</h3>
+                        <div style={{ whiteSpace: "pre-wrap" }}>{requestorNotes || "No notes provided"}</div>
                     </div>
 
                     <div className="grid-col-6">
-                        <h3 className="font-sans-sm text-semibold margin-bottom-3">Division Director Notes</h3>
-                        <div style={{ minHeight: "8.5rem", whiteSpace: "pre-wrap" }}>
-                            {reviewerNotes || "No notes provided"}
-                        </div>
+                        <h3 className="font-sans-lg text-semibold margin-bottom-3">Division Director Notes</h3>
+                        <div style={{ whiteSpace: "pre-wrap" }}>{reviewerNotes || "No notes provided"}</div>
                     </div>
                 </div>
             </Accordion>
 
             {/* Attestation Checkbox */}
-            <div className="margin-top-3">
+            <div className="margin-top-2">
                 <div className="usa-checkbox">
                     <input
                         className="usa-checkbox__input"

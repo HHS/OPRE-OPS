@@ -116,33 +116,33 @@ describe("ApprovalFlowReviewCard", () => {
     });
 
     describe("Obligate By Date (Conditional)", () => {
-        it("should render 'Obligate By' field when obligateByDate is provided", () => {
+        it("should render 'Obligate By Date' field when obligateByDate is provided", () => {
             renderComponent({ obligateByDate: "2024-12-31" });
 
-            expect(screen.getByText("Obligate By")).toBeInTheDocument();
-            expect(screen.getByText("December 31, 2024")).toBeInTheDocument();
+            expect(screen.getByText("Obligate By Date")).toBeInTheDocument();
+            expect(screen.getByText("12/31/2024")).toBeInTheDocument();
         });
 
-        it("should not render 'Obligate By' field when obligateByDate is not provided", () => {
+        it("should not render 'Obligate By Date' field when obligateByDate is not provided", () => {
             renderComponent({ obligateByDate: undefined });
 
-            expect(screen.queryByText("Obligate By")).not.toBeInTheDocument();
+            expect(screen.queryByText("Obligate By Date")).not.toBeInTheDocument();
         });
 
         it("should adjust Agreement Total grid column when obligateByDate is present", () => {
             renderComponent({ obligateByDate: "2024-12-31" });
 
-            // Verify both Obligate By and Agreement Total are present
-            expect(screen.getByText("Obligate By")).toBeInTheDocument();
+            // Verify both Obligate By Date and Agreement Total are present
+            expect(screen.getByText("Obligate By Date")).toBeInTheDocument();
             expect(screen.getByText("Agreement Total")).toBeInTheDocument();
             // Grid layout is tested via CSS Grid Layout describe block
         });
 
-        it("should span Agreement Total across columns 4-6 when obligateByDate is absent", () => {
+        it("should span Agreement Total across columns 1-2 when obligateByDate is absent", () => {
             renderComponent({ obligateByDate: undefined });
 
-            // Verify Agreement Total is present but Obligate By is not
-            expect(screen.queryByText("Obligate By")).not.toBeInTheDocument();
+            // Verify Agreement Total is present but Obligate By Date is not
+            expect(screen.queryByText("Obligate By Date")).not.toBeInTheDocument();
             expect(screen.getByText("Agreement Total")).toBeInTheDocument();
         });
     });
@@ -279,13 +279,13 @@ describe("ApprovalFlowReviewCard", () => {
     });
 
     describe("CSS Grid Layout", () => {
-        it("should use CSS Grid with 5 columns", () => {
+        it("should use CSS Grid with 6 columns", () => {
             renderComponent();
 
             const card = screen.getByTestId("pre-award-review-card");
             expect(card).toHaveStyle({
                 display: "grid",
-                gridTemplateColumns: "repeat(5, 1fr)",
+                gridTemplateColumns: "repeat(6, 1fr)",
                 gridTemplateRows: "auto auto auto"
             });
         });
