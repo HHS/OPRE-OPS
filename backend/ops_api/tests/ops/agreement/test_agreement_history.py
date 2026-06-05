@@ -928,7 +928,7 @@ def test_agreement_history_pre_award_step(loaded_db, app_ctx):
     assert new_agreement_history_item.history_title == "Pre-Award Completed"
     assert (
         new_agreement_history_item.history_message
-        == "User Demo completed step 5 of the Procurement Tracker. Pre-Award Approval was received and the Final Consensus Memo was sent to the Procurement Shop."
+        == "User Demo completed step 5 of the Procurement Tracker. Pre-Award Approval was received and the Final Consensus Memo was sent to the HHS Consolidated Acquisition Solution (HCAS)."
     )
 
 

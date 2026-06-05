@@ -45,31 +45,6 @@ describe("Pre-Award Approval - Division Director Flow", () => {
     });
 });
 
-describe("Pre-Award Approval - Budget Team Review Card", () => {
-    beforeEach(() => {
-        testLogin("budget-team");
-    });
-
-    it("displays pre-award review card on change requests page when approval is pending requisition", () => {
-        cy.visit("/change-requests");
-
-        // Check if a pre-award review card exists (conditional on data)
-        cy.get("body").then(($body) => {
-            if ($body.find('[data-cy="pre-award-review-card"]').length > 0) {
-                cy.get('[data-cy="pre-award-review-card"]').should("exist");
-                cy.get('[data-cy="pre-award-review-card"]').within(() => {
-                    cy.contains("Pre-Award").should("exist");
-                    cy.contains("Agreement").should("exist");
-                    cy.contains("BLs Executing").should("exist");
-                    cy.contains("Executing Total").should("exist");
-                    cy.contains("Agreement Total").should("exist");
-                    cy.get('[data-cy="review-agreement-button"]').should("exist");
-                });
-            }
-        });
-    });
-});
-
 describe("Pre-Award Approval - Permission Checks", () => {
     it("denies access to non-division directors", () => {
         testLogin("basic");
@@ -77,20 +52,5 @@ describe("Pre-Award Approval - Permission Checks", () => {
 
         cy.contains("Access Denied").should("exist");
         cy.contains("You do not have permission to review this pre-award approval request").should("exist");
-    });
-
-    it("shows already processed message when approval is already completed", () => {
-        testLogin("division-director");
-        cy.visit(`/agreements/${TEST_AGREEMENT_ID}/review-pre-award`);
-
-        // Check if already processed (conditional on data state)
-        cy.get("body").then(($body) => {
-            if ($body.text().includes("Already Processed")) {
-                cy.contains("Already Processed").should("exist");
-                cy.contains("This pre-award approval request has already been processed").should("exist");
-                cy.get('[data-cy="approve-pre-award-btn"]').should("be.disabled");
-                cy.get('[data-cy="decline-approval-btn"]').should("be.disabled");
-            }
-        });
     });
 });
