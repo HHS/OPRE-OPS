@@ -177,7 +177,7 @@ When using `react-currency-format`, set both `decimalScale={2}` and `fixedDecima
 <CurrencyFormat value={amount} fixedDecimalScale={true} prefix="$" />
 ```
 
-For prominent summary totals, `src/components/UI/CurrencyWithSmallCents/CurrencyWithSmallCents.jsx` is available as an option to render dollars in a larger font and cents in a smaller font (used by some Portfolio and Agreement summary cards). It is not required — use it when you want that visual hierarchy.
+For card totals rendered at large font sizes (`font-sans-xl` / 2 rem or larger), use `src/components/UI/CurrencyWithSmallCents/CurrencyWithSmallCents.jsx` to render dollars in the large font and cents in a smaller font. This is required — large bold cents at 32 px+ look disproportionate. See `BudgetCard`, `BigBudgetCard`, `CurrencyCard`, and `ReceivedFundingCard` for existing usage. Cards with smaller text sizes for amounts (e.g., legend rows, table cells) can render cents at the same size as the dollars using standard `CurrencyFormat`.
 
 ### Percentages: Use the `<1%` and 99-Cap Conventions
 
@@ -211,7 +211,7 @@ The `Tag` component renders these values verbatim, so a `percent` of `"<1"` disp
 - `src/api/opsAuthAPI.js`: Authentication-specific endpoints
 - `src/store.js`: Redux store configuration
 - `src/components/UI/`: Shared UI components
-- `src/components/UI/CurrencyWithSmallCents/CurrencyWithSmallCents.jsx`: Optional component for rendering dollars and cents at different font sizes
+- `src/components/UI/CurrencyWithSmallCents/CurrencyWithSmallCents.jsx`: Required for large-font (font-sans-xl+) currency totals on cards
 - `src/helpers/agreement.helpers.js`: Agreement calculation helpers
 - `src/helpers/utils.js`: Shared helpers including `computeDisplayPercents` / `computeDisplayPercent` and `convertToCurrency`
 - `src/helpers/currencyFormat.helpers.js`: `getDecimalScale` and other currency-formatting helpers
