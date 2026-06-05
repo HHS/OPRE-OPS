@@ -17,12 +17,15 @@ export default {
     component: PortfolioBudgetSummary,
     decorators: [
         (Story) => (
-            <>
-                {/* CSS module `width: 29.125rem` on RoundedBox wins over USWDS `width-full`
-                    in Storybook's dev-mode cascade. Override by targeting the hardcoded id. */}
-                <style>{"#big-budget-summary-card { width: 100% !important; }"}</style>
+            // CSS module `width: 29.125rem` on RoundedBox wins over USWDS `width-full`
+            // in Storybook's dev-mode cascade. Scope the override to this story's wrapper
+            // so the !important rule does not leak across stories sharing the same id.
+            <div className="portfolio-budget-summary-story-wrapper">
+                <style>
+                    {".portfolio-budget-summary-story-wrapper #big-budget-summary-card { width: 100% !important; }"}
+                </style>
                 <Story />
-            </>
+            </div>
         )
     ],
     parameters: {
