@@ -8,11 +8,6 @@ import {
 } from "../../../api/opsAPI";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import { getLocalISODate } from "../../../helpers/utils";
-import {
-    calculateAgreementTotal,
-    getAgreementSubTotal,
-    getAgreementFeesFromBackend
-} from "../../../helpers/agreement.helpers";
 import { groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
 import { PROCUREMENT_STEP_STATUS } from "../../../components/Agreements/ProcurementTracker/ProcurementTracker.constants";
 
@@ -56,16 +51,8 @@ export default function useRequestAwardApproval(agreementId) {
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
     const alternateProjectOfficerName = useGetUserFullNameFromId(agreement?.alternate_project_officer_id);
 
-    // Calculate agreement totals for display cards (only if agreement is loaded)
-    const budgetLineItems = agreement?.budget_line_items ?? [];
-    const includeDrafts = false; // Award approval only shows non-draft items
-
-    const agreementTotal = agreement ? calculateAgreementTotal(budgetLineItems, null, includeDrafts) : 0;
-    const agreementSubtotal = agreement ? getAgreementSubTotal(budgetLineItems, includeDrafts) : 0;
-    const agreementFees = agreement ? getAgreementFeesFromBackend(agreement, includeDrafts) : 0;
-
     // Get all budget lines for display
-    const allBudgetLines = budgetLineItems;
+    const allBudgetLines = agreement?.budget_line_items ?? [];
 
     // Group all budget lines by services component for display
     const groupedBudgetLinesByServicesComponent = groupByServicesComponent(allBudgetLines, servicesComponents || []);
@@ -133,10 +120,6 @@ export default function useRequestAwardApproval(agreementId) {
         isStep5Completed,
         projectOfficerName,
         alternateProjectOfficerName,
-        agreementTotal,
-        agreementSubtotal,
-        agreementFees,
-        budgetLineItems,
         allBudgetLines,
         servicesComponents,
         groupedBudgetLinesByServicesComponent

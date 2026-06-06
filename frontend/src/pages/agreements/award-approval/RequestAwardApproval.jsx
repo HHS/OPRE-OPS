@@ -2,9 +2,6 @@ import { useParams } from "react-router-dom";
 import App from "../../../App";
 import PageHeader from "../../../components/UI/PageHeader";
 import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
-import AgreementTotalCard from "../../../components/Agreements/AgreementDetailsCards/AgreementTotalCard";
-import BLIsByFYSummaryCard from "../../../components/Agreements/AgreementDetailsCards/BLIsByFYSummaryCard";
-import Accordion from "../../../components/UI/Accordion";
 import AgreementBLIAccordion from "../../../components/Agreements/AgreementBLIAccordion";
 import AgreementBLIReviewTable from "../../../components/BudgetLineItems/BLIReviewTable";
 import ServicesComponentAccordion from "../../../components/ServicesComponents/ServicesComponentAccordion";
@@ -41,10 +38,6 @@ export const RequestAwardApproval = () => {
         isStep5Completed,
         projectOfficerName,
         alternateProjectOfficerName,
-        agreementTotal,
-        agreementSubtotal,
-        agreementFees,
-        budgetLineItems,
         allBudgetLines,
         servicesComponents,
         groupedBudgetLinesByServicesComponent
@@ -120,34 +113,9 @@ export const RequestAwardApproval = () => {
             />
 
             {/* Add CLINs to Budget Lines */}
-            <Accordion
-                heading="Add CLINs to Budget Lines"
-                level={2}
-            >
-                <p>
-                    Hover over each budget line and click Add CLIN to enter the Contract Line Item Number as outlined in
-                    the award. The budget team will double check the CLINs match the award exactly.
-                </p>
-
-                {/* Budget summary cards */}
-                <div className="display-flex flex-justify margin-top-4">
-                    <AgreementTotalCard
-                        total={agreementTotal}
-                        subtotal={agreementSubtotal}
-                        fees={agreementFees}
-                        procurementShopAbbr={agreement?.procurement_shop?.abbr}
-                    />
-                    <BLIsByFYSummaryCard
-                        budgetLineItems={budgetLineItems}
-                        currentProcShopFeePercentage={agreement?.procurement_shop?.fee_percentage ?? 0}
-                    />
-                </div>
-            </Accordion>
-
-            {/* Budget Lines Review */}
             <AgreementBLIAccordion
-                title="Review Budget Lines"
-                instructions="Please review the Services Components and Budget Lines below to ensure everything is up to date."
+                title="Add CLINs to Budget Lines"
+                instructions="Hover over each budget line and click Add CLIN to enter the Contract Line Item Number as outlined in the award. The budget team will double check the CLINs match the award exactly."
                 budgetLineItems={allBudgetLines}
                 agreement={agreement}
                 afterApproval={false}
