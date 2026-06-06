@@ -8,7 +8,6 @@ import Accordion from "../../../components/UI/Accordion";
 import AgreementBLIAccordion from "../../../components/Agreements/AgreementBLIAccordion";
 import AgreementBLIReviewTable from "../../../components/BudgetLineItems/BLIReviewTable";
 import ServicesComponentAccordion from "../../../components/ServicesComponents/ServicesComponentAccordion";
-import ReviewExecutingTotalAccordion from "../../../components/BudgetLineItems/ReviewExecutingTotalAccordion/ReviewExecutingTotalAccordion";
 import TextArea from "../../../components/UI/Form/TextArea";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import { convertCodeForDisplay } from "../../../helpers/utils";
@@ -47,7 +46,6 @@ export const RequestAwardApproval = () => {
         agreementFees,
         budgetLineItems,
         allBudgetLines,
-        executingTotal,
         servicesComponents,
         groupedBudgetLinesByServicesComponent
     } = useRequestAwardApproval(agreementId);
@@ -193,9 +191,6 @@ export const RequestAwardApproval = () => {
                         }
                     )}
             </AgreementBLIAccordion>
-
-            {/* Review Executing Total */}
-            <ReviewExecutingTotalAccordion executingTotal={executingTotal} />
 
             {/* Notes (Optional) */}
             <div className="margin-top-4">

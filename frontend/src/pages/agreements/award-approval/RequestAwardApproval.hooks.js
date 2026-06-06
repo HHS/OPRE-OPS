@@ -13,7 +13,7 @@ import {
     getAgreementSubTotal,
     getAgreementFeesFromBackend
 } from "../../../helpers/agreement.helpers";
-import { groupByServicesComponent, budgetLinesTotal } from "../../../helpers/budgetLines.helpers";
+import { groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
 import { PROCUREMENT_STEP_STATUS } from "../../../components/Agreements/ProcurementTracker/ProcurementTracker.constants";
 
 /**
@@ -56,22 +56,16 @@ export default function useRequestAwardApproval(agreementId) {
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
     const alternateProjectOfficerName = useGetUserFullNameFromId(agreement?.alternate_project_officer_id);
 
-    // Calculate agreement totals for display cards
+    // Calculate agreement totals for display cards (only if agreement is loaded)
     const budgetLineItems = agreement?.budget_line_items ?? [];
     const includeDrafts = false; // Award approval only shows non-draft items
 
-    const agreementTotal = calculateAgreementTotal(budgetLineItems, null, includeDrafts);
-    const agreementSubtotal = getAgreementSubTotal(budgetLineItems, includeDrafts);
-    const agreementFees = getAgreementFeesFromBackend(agreement, includeDrafts);
+    const agreementTotal = agreement ? calculateAgreementTotal(budgetLineItems, null, includeDrafts) : 0;
+    const agreementSubtotal = agreement ? getAgreementSubTotal(budgetLineItems, includeDrafts) : 0;
+    const agreementFees = agreement ? getAgreementFeesFromBackend(agreement, includeDrafts) : 0;
 
     // Get all budget lines for display
     const allBudgetLines = budgetLineItems;
-
-    // Get executing budget lines for total calculation
-    const executingBudgetLines = budgetLineItems.filter((/** @type {any} */ bli) => bli.status === "IN_EXECUTION");
-
-    // Calculate total of executing budget lines only
-    const executingTotal = budgetLinesTotal(executingBudgetLines);
 
     // Group all budget lines by services component for display
     const groupedBudgetLinesByServicesComponent = groupByServicesComponent(allBudgetLines, servicesComponents || []);
@@ -144,7 +138,6 @@ export default function useRequestAwardApproval(agreementId) {
         agreementFees,
         budgetLineItems,
         allBudgetLines,
-        executingTotal,
         servicesComponents,
         groupedBudgetLinesByServicesComponent
     };
