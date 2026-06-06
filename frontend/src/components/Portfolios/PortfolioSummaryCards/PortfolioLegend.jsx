@@ -1,6 +1,6 @@
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import CurrencyFormat from "react-currency-format";
+import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import Tag from "../../UI/Tag";
 import styles from "./PortfolioLegend.module.scss";
 
@@ -68,15 +68,7 @@ const PortfolioLegend = ({ data, activeId = 0 }) => {
                             </span>
                         </div>
                         <div className={styles.valueAndPercent}>
-                            <CurrencyFormat
-                                value={item.value}
-                                displayType={"text"}
-                                thousandSeparator={true}
-                                prefix={"$"}
-                                decimalScale={item.value === 0 ? 0 : 2}
-                                renderText={(value) => <span className={isActive ? "fake-bold" : ""}>{value}</span>}
-                                fixedDecimalScale
-                            />
+                            <span className={isActive ? "fake-bold" : ""}>{formatCurrency(item.value)}</span>
                             <Tag
                                 className={`${styles.percentTag}`}
                                 tagStyle="darkTextWhiteBackground"

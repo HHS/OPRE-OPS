@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import CurrencyFormat from "react-currency-format";
+import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import LegendItem from "../../../components/UI/Cards/LineGraphWithLegendCard/LegendItem";
 import HorizontalStackedBar from "../../../components/UI/DataViz/HorizontalStackedBar/HorizontalStackedBar";
 import RoundedBox from "../../../components/UI/RoundedBox";
@@ -113,15 +113,7 @@ const ProcurementOverviewCard = ({ procurementOverview, fiscalYear, isLoading, e
                 FY {fiscalYear} Procurement Overview
             </h3>
             <div className={`display-flex flex-align-end${hasData ? " margin-bottom-3" : ""}`}>
-                <CurrencyFormat
-                    value={totalAmount}
-                    displayType="text"
-                    thousandSeparator={true}
-                    prefix="$"
-                    decimalScale={totalAmount === 0 ? 0 : 2}
-                    fixedDecimalScale={true}
-                    renderText={(value) => <span className="text-bold margin-bottom-0 font-sans-xl">{value}</span>}
-                />
+                <span className="text-bold margin-bottom-0 font-sans-xl">{formatCurrency(totalAmount)}</span>
                 <span className="font-sans-xs margin-left-1 margin-bottom-05">
                     total for FY {fyShort} procurement across
                 </span>

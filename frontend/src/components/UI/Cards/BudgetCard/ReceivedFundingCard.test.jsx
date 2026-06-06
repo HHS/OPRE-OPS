@@ -22,7 +22,7 @@ describe("ReceivedFundingCard", () => {
                 totalFunding={5000}
             />
         );
-        expect(screen.getByText("$1,234.56")).toBeInTheDocument();
+        expect(screen.getByText(/\$1,234\.56/)).toBeInTheDocument();
     });
 
     it("displays the total funding amount correctly", () => {

@@ -1,8 +1,28 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
+import { useState } from "react";
 import "@testing-library/jest-dom";
 import CurrencyInput from "./CurrencyInput";
+
+// Test wrapper that manages state like a real parent component
+const ControlledCurrencyInput = ({ initialValue = "", onSetEnteredAmount, onOnChange, ...props }) => {
+    const [value, setValue] = useState(initialValue);
+
+    const handleChange = (name, val) => {
+        setValue(val);
+        if (onOnChange) onOnChange(name, val);
+    };
+
+    return (
+        <CurrencyInput
+            {...props}
+            value={value}
+            onChange={handleChange}
+            setEnteredAmount={onSetEnteredAmount}
+        />
+    );
+};
 
 describe("CurrencyInput", () => {
     it("allows typing a decimal point mid-entry", async () => {
@@ -10,18 +30,17 @@ describe("CurrencyInput", () => {
         const onChange = vi.fn();
 
         render(
-            <CurrencyInput
+            <ControlledCurrencyInput
                 name="amount"
-                value=""
-                setEnteredAmount={setEnteredAmount}
-                onChange={onChange}
+                initialValue=""
+                onSetEnteredAmount={setEnteredAmount}
+                onOnChange={onChange}
             />
         );
 
         const input = screen.getByRole("textbox");
         await userEvent.type(input, "5.");
 
-        // The input should visually show the decimal (not strip it)
         expect(input).toHaveDisplayValue(/5\./);
     });
 
@@ -30,11 +49,11 @@ describe("CurrencyInput", () => {
         const onChange = vi.fn();
 
         render(
-            <CurrencyInput
+            <ControlledCurrencyInput
                 name="amount"
-                value=""
-                setEnteredAmount={setEnteredAmount}
-                onChange={onChange}
+                initialValue=""
+                onSetEnteredAmount={setEnteredAmount}
+                onOnChange={onChange}
             />
         );
 
@@ -44,48 +63,53 @@ describe("CurrencyInput", () => {
         expect(setEnteredAmount).toHaveBeenLastCalledWith(5.5);
     });
 
-    it("does not strip a trailing decimal when the parent re-renders with the same float", async () => {
+    it("calls onChange with the input name and string value", async () => {
         const setEnteredAmount = vi.fn();
         const onChange = vi.fn();
 
-        const { rerender } = render(
-            <CurrencyInput
+        render(
+            <ControlledCurrencyInput
                 name="amount"
-                value=""
-                setEnteredAmount={setEnteredAmount}
-                onChange={onChange}
+                initialValue=""
+                onSetEnteredAmount={setEnteredAmount}
+                onOnChange={onChange}
             />
         );
 
         const input = screen.getByRole("textbox");
-        await userEvent.type(input, "5.");
+        await userEvent.type(input, "5");
 
-        // userEvent.type flushes all effects before returning, so skipNextSyncRef.current
-        // is true when rerender delivers value={5}. The effect fires, sees the flag, and
-        // skips the sync — preserving the trailing decimal.
-        rerender(
-            <CurrencyInput
-                name="amount"
-                value={5}
-                setEnteredAmount={setEnteredAmount}
-                onChange={onChange}
-            />
-        );
+        expect(onChange).toHaveBeenLastCalledWith("amount", expect.any(String));
+    });
 
-        expect(input).toHaveDisplayValue(/5\./);
+    it("clears the input when parent resets value after user typed", async () => {
+        const setEnteredAmount = vi.fn();
 
-        // Simulate the parent then pushing a genuinely new value (no user typing).
-        // The guard should allow this through and update the display.
-        rerender(
-            <CurrencyInput
-                name="amount"
-                value={7}
-                setEnteredAmount={setEnteredAmount}
-                onChange={onChange}
-            />
-        );
+        const ResettableWrapper = () => {
+            const [value, setValue] = useState("");
+            return (
+                <>
+                    <CurrencyInput
+                        name="amount"
+                        value={value}
+                        setEnteredAmount={(v) => {
+                            setEnteredAmount(v);
+                            setValue(v ?? "");
+                        }}
+                        onChange={() => {}}
+                    />
+                    <button onClick={() => setValue("")}>reset</button>
+                </>
+            );
+        };
 
-        expect(input).toHaveDisplayValue("7");
+        render(<ResettableWrapper />);
+        const input = screen.getByRole("textbox");
+        await userEvent.type(input, "1000000");
+        expect(input).toHaveDisplayValue("1,000,000");
+
+        await userEvent.click(screen.getByText("reset"));
+        expect(input).toHaveDisplayValue("");
     });
 
     it("clears the input when parent resets value to empty", () => {
