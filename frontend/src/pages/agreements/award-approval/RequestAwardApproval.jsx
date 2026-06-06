@@ -5,9 +5,19 @@ import AgreementMetaAccordion from "../../../components/Agreements/AgreementMeta
 import AgreementTotalCard from "../../../components/Agreements/AgreementDetailsCards/AgreementTotalCard";
 import BLIsByFYSummaryCard from "../../../components/Agreements/AgreementDetailsCards/BLIsByFYSummaryCard";
 import Accordion from "../../../components/UI/Accordion";
+import AgreementBLIAccordion from "../../../components/Agreements/AgreementBLIAccordion";
+import AgreementBLIReviewTable from "../../../components/BudgetLineItems/BLIReviewTable";
+import ServicesComponentAccordion from "../../../components/ServicesComponents/ServicesComponentAccordion";
+import ReviewExecutingTotalAccordion from "../../../components/BudgetLineItems/ReviewExecutingTotalAccordion/ReviewExecutingTotalAccordion";
 import TextArea from "../../../components/UI/Form/TextArea";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import { convertCodeForDisplay } from "../../../helpers/utils";
+import {
+    findDescription,
+    findIfOptional,
+    findPeriodEnd,
+    findPeriodStart
+} from "../../../helpers/servicesComponent.helpers";
 import useRequestAwardApproval from "./RequestAwardApproval.hooks";
 
 /**
@@ -35,7 +45,11 @@ export const RequestAwardApproval = () => {
         agreementTotal,
         agreementSubtotal,
         agreementFees,
-        budgetLineItems
+        budgetLineItems,
+        allBudgetLines,
+        executingTotal,
+        servicesComponents,
+        groupedBudgetLinesByServicesComponent
     } = useRequestAwardApproval(agreementId);
 
     if (isLoading) {
@@ -131,6 +145,57 @@ export const RequestAwardApproval = () => {
                     />
                 </div>
             </Accordion>
+
+            {/* Budget Lines Review */}
+            <AgreementBLIAccordion
+                title="Review Budget Lines"
+                instructions="Please review the Services Components and Budget Lines below to ensure everything is up to date."
+                budgetLineItems={allBudgetLines}
+                agreement={agreement}
+                afterApproval={false}
+                setAfterApproval={() => {}}
+                action=""
+            >
+                {groupedBudgetLinesByServicesComponent &&
+                    groupedBudgetLinesByServicesComponent.length > 0 &&
+                    groupedBudgetLinesByServicesComponent.map(
+                        (/** @type {any} */ group, /** @type {number} */ index) => {
+                            const budgetLineScGroupingLabel = group.serviceComponentGroupingLabel
+                                ? group.serviceComponentGroupingLabel
+                                : group.servicesComponentNumber;
+                            return (
+                                <ServicesComponentAccordion
+                                    key={`${group.servicesComponentNumber}-${index}`}
+                                    servicesComponentNumber={group.servicesComponentNumber}
+                                    serviceComponentGroupingLabel={group.serviceComponentGroupingLabel}
+                                    withMetadata={true}
+                                    periodStart={findPeriodStart(servicesComponents, budgetLineScGroupingLabel)}
+                                    periodEnd={findPeriodEnd(servicesComponents, budgetLineScGroupingLabel)}
+                                    description={findDescription(servicesComponents, budgetLineScGroupingLabel)}
+                                    optional={findIfOptional(servicesComponents, budgetLineScGroupingLabel)}
+                                    serviceRequirementType={agreement?.service_requirement_type}
+                                >
+                                    {group.budgetLines.length > 0 ? (
+                                        <AgreementBLIReviewTable
+                                            readOnly={true}
+                                            budgetLines={group.budgetLines}
+                                            isReviewMode={true}
+                                            servicesComponentNumber={group.servicesComponentNumber}
+                                            action=""
+                                        />
+                                    ) : (
+                                        <p className="text-center margin-y-7">
+                                            No budget lines in this services component.
+                                        </p>
+                                    )}
+                                </ServicesComponentAccordion>
+                            );
+                        }
+                    )}
+            </AgreementBLIAccordion>
+
+            {/* Review Executing Total */}
+            <ReviewExecutingTotalAccordion executingTotal={executingTotal} />
 
             {/* Notes (Optional) */}
             <div className="margin-top-4">

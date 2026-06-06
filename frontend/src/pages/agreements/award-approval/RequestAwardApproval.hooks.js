@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import {
     useGetAgreementByIdQuery,
     useGetProcurementTrackersByAgreementIdQuery,
-    useUpdateProcurementTrackerStepMutation
+    useUpdateProcurementTrackerStepMutation,
+    useGetServicesComponentsListQuery
 } from "../../../api/opsAPI";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import { getLocalISODate } from "../../../helpers/utils";
@@ -12,6 +13,7 @@ import {
     getAgreementSubTotal,
     getAgreementFeesFromBackend
 } from "../../../helpers/agreement.helpers";
+import { groupByServicesComponent, budgetLinesTotal } from "../../../helpers/budgetLines.helpers";
 import { PROCUREMENT_STEP_STATUS } from "../../../components/Agreements/ProcurementTracker/ProcurementTracker.constants";
 
 /**
@@ -41,6 +43,9 @@ export default function useRequestAwardApproval(agreementId) {
         }
     );
 
+    // Fetch services components
+    const { data: servicesComponents } = useGetServicesComponentsListQuery(agreementId, { skip: !agreementId });
+
     // Get active tracker and steps
     const trackers = trackersData?.data || [];
     const activeTracker = trackers.find((tracker) => tracker.status === "ACTIVE");
@@ -58,6 +63,18 @@ export default function useRequestAwardApproval(agreementId) {
     const agreementTotal = calculateAgreementTotal(budgetLineItems, null, includeDrafts);
     const agreementSubtotal = getAgreementSubTotal(budgetLineItems, includeDrafts);
     const agreementFees = getAgreementFeesFromBackend(agreement, includeDrafts);
+
+    // Get all budget lines for display
+    const allBudgetLines = budgetLineItems;
+
+    // Get executing budget lines for total calculation
+    const executingBudgetLines = budgetLineItems.filter((/** @type {any} */ bli) => bli.status === "IN_EXECUTION");
+
+    // Calculate total of executing budget lines only
+    const executingTotal = budgetLinesTotal(executingBudgetLines);
+
+    // Group all budget lines by services component for display
+    const groupedBudgetLinesByServicesComponent = groupByServicesComponent(allBudgetLines, servicesComponents || []);
 
     // Check if Step 5 is completed (prerequisite)
     const isStep5Completed = step5?.status === PROCUREMENT_STEP_STATUS.COMPLETED;
@@ -125,6 +142,10 @@ export default function useRequestAwardApproval(agreementId) {
         agreementTotal,
         agreementSubtotal,
         agreementFees,
-        budgetLineItems
+        budgetLineItems,
+        allBudgetLines,
+        executingTotal,
+        servicesComponents,
+        groupedBudgetLinesByServicesComponent
     };
 }
