@@ -7,6 +7,11 @@ import {
 } from "../../../api/opsAPI";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import { getLocalISODate } from "../../../helpers/utils";
+import {
+    calculateAgreementTotal,
+    getAgreementSubTotal,
+    getAgreementFeesFromBackend
+} from "../../../helpers/agreement.helpers";
 import { PROCUREMENT_STEP_STATUS } from "../../../components/Agreements/ProcurementTracker/ProcurementTracker.constants";
 
 /**
@@ -45,6 +50,14 @@ export default function useRequestAwardApproval(agreementId) {
     // Get project officer names
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
     const alternateProjectOfficerName = useGetUserFullNameFromId(agreement?.alternate_project_officer_id);
+
+    // Calculate agreement totals for display cards
+    const budgetLineItems = agreement?.budget_line_items ?? [];
+    const includeDrafts = false; // Award approval only shows non-draft items
+
+    const agreementTotal = calculateAgreementTotal(budgetLineItems, null, includeDrafts);
+    const agreementSubtotal = getAgreementSubTotal(budgetLineItems, includeDrafts);
+    const agreementFees = getAgreementFeesFromBackend(agreement, includeDrafts);
 
     // Check if Step 5 is completed (prerequisite)
     const isStep5Completed = step5?.status === PROCUREMENT_STEP_STATUS.COMPLETED;
@@ -108,6 +121,10 @@ export default function useRequestAwardApproval(agreementId) {
         hasBLIInReview,
         isStep5Completed,
         projectOfficerName,
-        alternateProjectOfficerName
+        alternateProjectOfficerName,
+        agreementTotal,
+        agreementSubtotal,
+        agreementFees,
+        budgetLineItems
     };
 }

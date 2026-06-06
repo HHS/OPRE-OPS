@@ -2,6 +2,8 @@ import { useParams } from "react-router-dom";
 import App from "../../../App";
 import PageHeader from "../../../components/UI/PageHeader";
 import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
+import AgreementTotalCard from "../../../components/Agreements/AgreementDetailsCards/AgreementTotalCard";
+import BLIsByFYSummaryCard from "../../../components/Agreements/AgreementDetailsCards/BLIsByFYSummaryCard";
 import Accordion from "../../../components/UI/Accordion";
 import TextArea from "../../../components/UI/Form/TextArea";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
@@ -29,7 +31,11 @@ export const RequestAwardApproval = () => {
         hasBLIInReview,
         isStep5Completed,
         projectOfficerName,
-        alternateProjectOfficerName
+        alternateProjectOfficerName,
+        agreementTotal,
+        agreementSubtotal,
+        agreementFees,
+        budgetLineItems
     } = useRequestAwardApproval(agreementId);
 
     if (isLoading) {
@@ -107,9 +113,24 @@ export const RequestAwardApproval = () => {
                 level={2}
             >
                 <p>
-                    Ensure all CLINs have been entered for this agreement. You can add or edit CLINs from the Agreement
-                    Details page.
+                    Hover over each budget line and click Add CLIN to enter the Contract Line Item Number as outlined in
+                    the award. The budget team will double check the CLINs match the award exactly.
                 </p>
+
+                {/* Budget summary cards */}
+                <div className="display-flex flex-justify margin-top-3 margin-bottom-3">
+                    <AgreementTotalCard
+                        total={agreementTotal}
+                        subtotal={agreementSubtotal}
+                        fees={agreementFees}
+                        procurementShopAbbr={agreement?.procurement_shop?.abbr}
+                    />
+                    <BLIsByFYSummaryCard
+                        budgetLineItems={budgetLineItems}
+                        currentProcShopFeePercentage={agreement?.procurement_shop?.fee_percentage ?? 0}
+                    />
+                </div>
+
                 <a
                     href={`/agreements/${agreementId}?mode=edit`}
                     className="usa-button usa-button--outline"
