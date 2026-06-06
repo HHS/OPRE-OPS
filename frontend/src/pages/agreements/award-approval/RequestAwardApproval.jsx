@@ -118,7 +118,7 @@ export const RequestAwardApproval = () => {
                 </p>
 
                 {/* Budget summary cards */}
-                <div className="display-flex flex-justify margin-top-3 margin-bottom-3">
+                <div className="display-flex flex-justify margin-top-4">
                     <AgreementTotalCard
                         total={agreementTotal}
                         subtotal={agreementSubtotal}
@@ -130,13 +130,6 @@ export const RequestAwardApproval = () => {
                         currentProcShopFeePercentage={agreement?.procurement_shop?.fee_percentage ?? 0}
                     />
                 </div>
-
-                <a
-                    href={`/agreements/${agreementId}?mode=edit`}
-                    className="usa-button usa-button--outline"
-                >
-                    Go to Agreement Details
-                </a>
             </Accordion>
 
             {/* Notes (Optional) */}
