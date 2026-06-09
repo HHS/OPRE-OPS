@@ -1,8 +1,7 @@
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import CurrencyFormat from "react-currency-format";
 import { getBudgetLineCreatedDate, getProcurementShopLabel } from "../../../helpers/budgetLines.helpers";
-import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
+import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import { fiscalYearFromDate, formatDateNeeded } from "../../../helpers/utils";
 import useGetUserFullNameFromId, { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
 import TableRowExpandable from "../../UI/TableRowExpandable";
@@ -169,39 +168,9 @@ const BLIReviewRow = ({
                 <td className={dateNeededClasses}>{dateNeededFormatted}</td>
                 <td>{fiscalYear}</td>
                 <td className={canNumberClasses}>{canNumber}</td>
-                <td className={amountClasses}>
-                    <CurrencyFormat
-                        value={amount}
-                        displayType="text"
-                        thousandSeparator
-                        prefix="$"
-                        decimalScale={getDecimalScale(amount)}
-                        fixedDecimalScale
-                        renderText={(value) => value}
-                    />
-                </td>
-                <td>
-                    <CurrencyFormat
-                        value={feeValue}
-                        displayType="text"
-                        thousandSeparator
-                        prefix="$"
-                        decimalScale={getDecimalScale(feeValue)}
-                        fixedDecimalScale
-                        renderText={(value) => value}
-                    />
-                </td>
-                <td>
-                    <CurrencyFormat
-                        value={totalWithFees}
-                        displayType="text"
-                        thousandSeparator
-                        prefix="$"
-                        decimalScale={getDecimalScale(totalWithFees)}
-                        fixedDecimalScale
-                        renderText={(value) => value}
-                    />
-                </td>
+                <td className={amountClasses}>{formatCurrency(amount)}</td>
+                <td>{formatCurrency(feeValue)}</td>
+                <td>{formatCurrency(totalWithFees)}</td>
                 <td>
                     <TableTag
                         status={budgetLine?.status}

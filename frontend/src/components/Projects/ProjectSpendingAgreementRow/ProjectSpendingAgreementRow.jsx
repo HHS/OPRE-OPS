@@ -1,9 +1,8 @@
-import CurrencyFormat from "react-currency-format";
+import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import { Link } from "react-router-dom";
 import { useGetAgreementSpendingByIdQuery } from "../../../api/opsAPI";
 import { NO_DATA } from "../../../constants";
 import { getAgreementType } from "../../../helpers/agreement.helpers";
-import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import TableRowExpandable from "../../UI/TableRowExpandable";
 import { expandedRowBGColor } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
@@ -74,32 +73,8 @@ const ProjectSpendingAgreementRow = ({ agreement, fiscalYear, fyTotal }) => {
             <td data-cy="agreement-type">{agreementType}</td>
             <td data-cy="agreement-start-date">{agreementStartDate}</td>
             <td data-cy="agreement-end-date">{agreementEndDate}</td>
-            <td data-cy="agreement-fy-total">
-                {resolvedFyTotal != null ? (
-                    <CurrencyFormat
-                        value={resolvedFyTotal}
-                        displayType="text"
-                        thousandSeparator={true}
-                        prefix="$"
-                        decimalScale={getDecimalScale(resolvedFyTotal)}
-                        fixedDecimalScale={true}
-                        renderText={(value) => value}
-                    />
-                ) : (
-                    NO_DATA
-                )}
-            </td>
-            <td data-cy="agreement-total">
-                <CurrencyFormat
-                    value={agreementTotal}
-                    displayType="text"
-                    thousandSeparator={true}
-                    prefix="$"
-                    decimalScale={getDecimalScale(agreementTotal)}
-                    fixedDecimalScale={true}
-                    renderText={(value) => value}
-                />
-            </td>
+            <td data-cy="agreement-fy-total">{resolvedFyTotal != null ? formatCurrency(resolvedFyTotal) : NO_DATA}</td>
+            <td data-cy="agreement-total">{formatCurrency(agreementTotal)}</td>
         </>
     );
 
@@ -135,51 +110,21 @@ const ProjectSpendingAgreementRow = ({ agreement, fiscalYear, fyTotal }) => {
                     style={{ marginLeft: "2.5rem" }}
                 >
                     <dt className="margin-0 text-base-dark">Subtotal</dt>
-                    <dd className="margin-0">
-                        <CurrencyFormat
-                            value={agreementSubTotal}
-                            displayType="text"
-                            thousandSeparator={true}
-                            prefix="$"
-                            decimalScale={getDecimalScale(agreementSubTotal)}
-                            fixedDecimalScale={true}
-                            renderText={(value) => value}
-                        />
-                    </dd>
+                    <dd className="margin-0">{formatCurrency(agreementSubTotal)}</dd>
                 </dl>
                 <dl
                     className="font-12px"
                     style={{ marginLeft: "2.5rem" }}
                 >
                     <dt className="margin-0 text-base-dark">Fees</dt>
-                    <dd className="margin-0">
-                        <CurrencyFormat
-                            value={agreementFees}
-                            displayType="text"
-                            thousandSeparator={true}
-                            prefix="$"
-                            decimalScale={getDecimalScale(agreementFees)}
-                            fixedDecimalScale={true}
-                            renderText={(value) => value}
-                        />
-                    </dd>
+                    <dd className="margin-0">{formatCurrency(agreementFees)}</dd>
                 </dl>
                 <dl
                     className="font-12px"
                     style={{ marginLeft: "2.5rem" }}
                 >
                     <dt className="margin-0 text-base-dark">Lifetime Obligated</dt>
-                    <dd className="margin-0">
-                        <CurrencyFormat
-                            value={lifetimeObligated}
-                            displayType="text"
-                            thousandSeparator={true}
-                            prefix="$"
-                            decimalScale={getDecimalScale(lifetimeObligated)}
-                            fixedDecimalScale={true}
-                            renderText={(value) => value}
-                        />
-                    </dd>
+                    <dd className="margin-0">{formatCurrency(lifetimeObligated)}</dd>
                 </dl>
             </div>
             {/* Row 2: Contract #, Award Type, Vendor */}

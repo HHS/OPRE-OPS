@@ -86,7 +86,7 @@ describe("CanCard", () => {
         expect(screen.getByText("$10,000,000.00")).toBeInTheDocument(); // Total funding
         expect(screen.getByText("$6,000,000.00")).toBeInTheDocument(); // Received funding
         expect(screen.getByText("$4,000,000.00")).toBeInTheDocument(); // Expected funding
-        expect(screen.getByText("$1,000,000.00")).toBeInTheDocument(); // Spending = planned + executing + obligated = 1M + 2M + 0
+        expect(screen.getByText("$3,000,000.00")).toBeInTheDocument(); // Spending = planned + executing + obligated = 1M + 2M + 0 = 3M
         expect(screen.getByText("$7,000,000.00")).toBeInTheDocument(); // Available funding
 
         // Check if chart sections are rendered

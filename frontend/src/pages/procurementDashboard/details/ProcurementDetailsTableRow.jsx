@@ -12,8 +12,7 @@ import { NO_DATA } from "../../../constants";
 import { expandedRowBGColor } from "../../../components/UI/TableRowExpandable/TableRowExpandable.helpers";
 import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { convertToCurrency, formatDateNeeded } from "../../../helpers/utils";
-import CurrencyFormat from "react-currency-format";
-import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
+import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Tag from "../../../components/UI/Tag";
@@ -118,17 +117,7 @@ export const ProcurementDetailsTableRow = ({
                         </dl>
                         <dl className="font-12px margin-top-0">
                             <dt className="margin-0 text-base-dark">Subtotal</dt>
-                            <dd className="margin-0">
-                                <CurrencyFormat
-                                    value={agreementSubTotal}
-                                    displayType={"text"}
-                                    thousandSeparator={true}
-                                    prefix={"$"}
-                                    decimalScale={getDecimalScale(agreementSubTotal)}
-                                    fixedDecimalScale={true}
-                                    renderText={(value) => value}
-                                />
-                            </dd>
+                            <dd className="margin-0">{formatCurrency(agreementSubTotal)}</dd>
                         </dl>
                     </div>
                     {/* Row 2: Initial Req. #, Initial Req. Date, Initial Req. Amount, Fees */}
@@ -146,31 +135,11 @@ export const ProcurementDetailsTableRow = ({
                         </dl>
                         <dl className="font-12px margin-top-0">
                             <dt className="margin-0 text-base-dark">Initial Req. Amount</dt>
-                            <dd className="margin-0">
-                                <CurrencyFormat
-                                    value={0}
-                                    displayType={"text"}
-                                    thousandSeparator={true}
-                                    prefix={"$"}
-                                    decimalScale={getDecimalScale(0)}
-                                    fixedDecimalScale={true}
-                                    renderText={(value) => value}
-                                />
-                            </dd>
+                            <dd className="margin-0">{formatCurrency(0)}</dd>
                         </dl>
                         <dl className="font-12px margin-top-0">
                             <dt className="margin-0 text-base-dark">Fees</dt>
-                            <dd className="margin-0">
-                                <CurrencyFormat
-                                    value={agreementFees}
-                                    displayType={"text"}
-                                    thousandSeparator={true}
-                                    prefix={"$"}
-                                    decimalScale={getDecimalScale(agreementFees)}
-                                    fixedDecimalScale={true}
-                                    renderText={(value) => value}
-                                />
-                            </dd>
+                            <dd className="margin-0">{formatCurrency(agreementFees)}</dd>
                         </dl>
                     </div>
                     {/* Row 3: Final Req. #, Final Req. Date, Final Req. Amount, Procurement Shop */}
@@ -185,17 +154,7 @@ export const ProcurementDetailsTableRow = ({
                         </dl>
                         <dl className="font-12px margin-top-0">
                             <dt className="margin-0 text-base-dark">Final Req. Amount</dt>
-                            <dd className="margin-0">
-                                <CurrencyFormat
-                                    value={0}
-                                    displayType={"text"}
-                                    thousandSeparator={true}
-                                    prefix={"$"}
-                                    decimalScale={getDecimalScale(0)}
-                                    fixedDecimalScale={true}
-                                    renderText={(value) => value}
-                                />
-                            </dd>
+                            <dd className="margin-0">{formatCurrency(0)}</dd>
                         </dl>
                         <dl className="font-12px margin-top-0">
                             <dt className="margin-0 text-base-dark">Procurement Shop</dt>

@@ -1,4 +1,4 @@
-import CurrencyFormat from "react-currency-format";
+import { formatCurrency } from "../../../../helpers/currencyFormat.helpers";
 import styles from "./HorizontalStackedBar.module.scss";
 
 /**
@@ -77,16 +77,7 @@ const HorizontalStackedBar = ({ data, setActiveId = () => {} }) => {
                         data-testid={`portfolio-bar-segment-${segment.abbreviation}`}
                     >
                         <span className="usa-sr-only">
-                            {segment.label}:{" "}
-                            <CurrencyFormat
-                                value={segment.value}
-                                displayType={"text"}
-                                thousandSeparator={true}
-                                prefix={"$"}
-                                decimalScale={2}
-                                fixedDecimalScale
-                            />{" "}
-                            ({segment.percent}%)
+                            {segment.label}: {formatCurrency(segment.value)} ({segment.percent}%)
                         </span>
                     </div>
                 );

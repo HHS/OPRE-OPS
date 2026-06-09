@@ -24,9 +24,9 @@ describe("CANFYBudgetRangeSlider", () => {
         );
 
         expect(screen.getByText("FY Budget")).toBeInTheDocument();
-        expect(screen.getByText("$ 100")).toBeInTheDocument();
+        expect(screen.getByText(/\$\s*100(?!\.)/)).toBeInTheDocument();
         expect(screen.getByText("to")).toBeInTheDocument();
-        expect(screen.getByText("$ 500")).toBeInTheDocument();
+        expect(screen.getByText(/\$\s*500(?!\.)/)).toBeInTheDocument();
     });
 
     it("should update budget when slider is moved", async () => {

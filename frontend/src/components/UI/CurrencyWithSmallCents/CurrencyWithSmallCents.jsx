@@ -1,5 +1,4 @@
 import PropTypes from "prop-types";
-import CurrencyFormat from "react-currency-format";
 import { getCents } from "./util";
 
 /**
@@ -12,33 +11,33 @@ import { getCents } from "./util";
  * @returns {React.JSX.Element} - The rendered component
  */
 const CurrencyWithSmallCents = ({ amount, dollarsClasses, centsClasses, centsStyles }) => {
-    const dollarValue = parseInt(amount) === 0 || isNaN(amount) ? "0" : parseInt(amount).toString();
-    const centsValue = getCents(amount);
+    const numericAmount = Number(amount);
+    const safeAmount = Number.isFinite(numericAmount) ? numericAmount : 0;
+    // Derive sign from the raw amount, not the truncated dollar value: for
+    // amounts in (-1, 0) like -0.5, parseInt(-0.5) is 0 and the sign would be lost.
+    const isNegative = safeAmount < 0;
+    const absDollars = Math.trunc(Math.abs(safeAmount));
+    const dollarValue = absDollars.toString();
+    const centsValue = getCents(safeAmount);
 
     const displayCents = dollarValue !== "0" || centsValue !== "00";
+    const formattedDollars = new Intl.NumberFormat("en-US").format(absDollars);
+    // Render the sign outside the "$ " prefix to preserve the "-$ 1,234" format
+    // that legacy callers (canDetail.cy.js) rely on.
+    const sign = isNegative ? "-" : "";
 
     return (
         <div>
-            <CurrencyFormat
-                value={dollarValue}
-                displayType={"text"}
-                thousandSeparator={true}
-                prefix={"$ "}
-                renderText={(value) => <span className={`${dollarsClasses} text-bold margin-bottom-0`}>{value}</span>}
-            />
+            <span className={`${dollarsClasses} text-bold margin-bottom-0`}>
+                {sign}$ {formattedDollars}
+            </span>
             {displayCents && (
-                <CurrencyFormat
-                    value={centsValue}
-                    displayType={"text"}
-                    renderText={(value) => (
-                        <span
-                            className={`${centsClasses} text-bold margin-bottom-0`}
-                            style={centsStyles}
-                        >
-                            .{value}
-                        </span>
-                    )}
-                />
+                <span
+                    className={`${centsClasses} text-bold margin-bottom-0`}
+                    style={centsStyles}
+                >
+                    .{centsValue}
+                </span>
             )}
         </div>
     );
