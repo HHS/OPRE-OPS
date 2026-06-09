@@ -29,6 +29,7 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
     const navigate = useNavigate();
     const userId = useSelector((state) => state.auth?.activeUser?.id) ?? null;
     const [currentPage, setCurrentPage] = useState(1); // 1-indexed for UI
+    const changeRequestPageSize = 1000; // Should pretty much always be below 1000. Just using a large number to avoid needing to use backend paging.
 
     /** @type {{data?: {data: ChangeRequest[], count: number, limit: number, offset: number} | undefined, isError: boolean, isLoading: boolean}} */
     const {
@@ -36,7 +37,7 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
         isLoading: loadingChangeRequests,
         isError: errorChangeRequests
     } = useGetChangeRequestsListQuery(
-        { userId, limit: 1000, offset: 0 },
+        { userId, limit: changeRequestPageSize, offset: 0 },
         { skip: !userId, refetchOnMountOrArgChange: true }
     );
     const changeRequests = changeRequestsResponse?.data ?? [];
@@ -88,24 +89,32 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
         return null;
     }
 
-    const taggedBudgetRequisitions = (budgetRequisitions ?? []).map((/** @type {ProcurementTrackerPreAwardStep} */ step) => ({
-        _type: "budgetRequisition",
-        _sortDate: step.approval_requested_date ?? "",
-        item: step
-    }));
-    const taggedPreAwardApprovals = (preAwardApprovals ?? []).map((/** @type {ProcurementTrackerPreAwardStep} */ step) => ({
-        _type: "preAward",
-        _sortDate: step.approval_requested_date ?? "",
-        item: step
-    }));
-    const taggedChangeRequests = changeRequests.map((cr) => ({
-        _type: "changeRequest",
-        _sortDate: cr.created_on ?? "",
-        item: cr
-    }));
+    const taggedBudgetRequisitions = (budgetRequisitions ?? []).map(
+        (/** @type {ProcurementTrackerPreAwardStep} */ step) => ({
+            _type: "budgetRequisition",
+            _sortDate: step.approval_requested_date ?? "",
+            item: step
+        })
+    );
+    const taggedPreAwardApprovals = (preAwardApprovals ?? []).map(
+        (/** @type {ProcurementTrackerPreAwardStep} */ step) => ({
+            _type: "preAward",
+            _sortDate: step.approval_requested_date ?? "",
+            item: step
+        })
+    );
+    // Expand each change request into one entry per card type so that allItems
+    // has a 1:1 relationship with rendered cards, keeping pagination counts accurate.
+    const taggedChangeRequests = changeRequests.flatMap((/** @type {ChangeRequest} */ cr) => {
+        const cards = [];
+        if (cr.has_proc_shop_change) cards.push({ _type: "crProcShop", _sortDate: cr.created_on ?? "", item: cr });
+        if (cr.has_budget_change) cards.push({ _type: "crBudget", _sortDate: cr.created_on ?? "", item: cr });
+        if (cr.has_status_change) cards.push({ _type: "crStatus", _sortDate: cr.created_on ?? "", item: cr });
+        return cards;
+    });
 
-    const allItems = [...taggedBudgetRequisitions, ...taggedPreAwardApprovals, ...taggedChangeRequests].sort(
-        (a, b) => (b._sortDate > a._sortDate ? 1 : b._sortDate < a._sortDate ? -1 : 0)
+    const allItems = [...taggedBudgetRequisitions, ...taggedPreAwardApprovals, ...taggedChangeRequests].sort((a, b) =>
+        b._sortDate > a._sortDate ? 1 : b._sortDate < a._sortDate ? -1 : b.item.id - a.item.id
     );
 
     const totalPages = Math.ceil(allItems.length / PAGE_SIZE);
@@ -127,7 +136,10 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
                             executingTotal={calculateExecutingTotal(
                                 item.procurement_tracker?.agreement?.budget_line_items ?? []
                             )}
-                            obligateByDate={getObligateByDate(item.procurement_tracker?.agreement?.budget_line_items ?? []) ?? undefined}
+                            obligateByDate={
+                                getObligateByDate(item.procurement_tracker?.agreement?.budget_line_items ?? []) ??
+                                undefined
+                            }
                             agreementTotal={item.procurement_tracker?.agreement?.agreement_total ?? 0}
                         />
                     );
@@ -145,64 +157,57 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
                             executingTotal={calculateExecutingTotal(
                                 item.procurement_tracker?.agreement?.budget_line_items ?? []
                             )}
-                            obligateByDate={getObligateByDate(item.procurement_tracker?.agreement?.budget_line_items ?? []) ?? undefined}
+                            obligateByDate={
+                                getObligateByDate(item.procurement_tracker?.agreement?.budget_line_items ?? []) ??
+                                undefined
+                            }
                             agreementTotal={item.procurement_tracker?.agreement?.agreement_total ?? 0}
                             requestorNotes={item.requestor_notes}
                         />
                     );
                 }
-                // changeRequest — may render 1-3 cards per item
                 /** @type {ChangeRequest} */
-                const changeRequest = item;
+                const cr = item;
+                if (_type === "crProcShop") {
+                    return (
+                        <ProcurementShopReviewCard
+                            key={`cr-proc-shop-${cr.id}`}
+                            changeRequestId={cr.id}
+                            agreementId={cr.agreement_id}
+                            requesterName={cr.created_by_user.display_name ?? cr.created_by_user.full_name}
+                            requestDate={cr.created_on}
+                            handleReviewChangeRequest={handleReviewChangeRequest}
+                            oldAwardingEntityId={cr?.requested_change_diff?.awarding_entity_id?.old ?? 0}
+                            newAwardingEntityId={cr?.requested_change_diff?.awarding_entity_id?.new ?? 0}
+                        />
+                    );
+                }
+                if (_type === "crBudget") {
+                    return (
+                        <BudgetChangeReviewCard
+                            key={`cr-budget-${cr.id}`}
+                            changeRequestId={cr.id}
+                            agreementId={cr.agreement_id}
+                            requestDate={cr.created_on}
+                            requesterName={cr.created_by_user?.display_name ?? cr.created_by_user?.full_name}
+                            bliId={cr.budget_line_item_id ?? 0}
+                            changeTo={cr.requested_change_diff}
+                            handleReviewChangeRequest={handleReviewChangeRequest}
+                        />
+                    );
+                }
+                // crStatus
                 return (
-                    <React.Fragment key={changeRequest.id}>
-                        {changeRequest.has_proc_shop_change && (
-                            <ProcurementShopReviewCard
-                                changeRequestId={changeRequest.id}
-                                agreementId={changeRequest.agreement_id}
-                                requesterName={
-                                    changeRequest.created_by_user.display_name ??
-                                    changeRequest.created_by_user.full_name
-                                }
-                                requestDate={changeRequest.created_on}
-                                handleReviewChangeRequest={handleReviewChangeRequest}
-                                oldAwardingEntityId={
-                                    changeRequest?.requested_change_diff?.awarding_entity_id?.old ?? 0
-                                }
-                                newAwardingEntityId={
-                                    changeRequest?.requested_change_diff?.awarding_entity_id?.new ?? 0
-                                }
-                            />
-                        )}
-                        {changeRequest.has_budget_change && (
-                            <BudgetChangeReviewCard
-                                changeRequestId={changeRequest.id}
-                                agreementId={changeRequest.agreement_id}
-                                requestDate={changeRequest.created_on}
-                                requesterName={
-                                    changeRequest.created_by_user?.display_name ??
-                                    changeRequest.created_by_user?.full_name
-                                }
-                                bliId={changeRequest.budget_line_item_id ?? 0}
-                                changeTo={changeRequest.requested_change_diff}
-                                handleReviewChangeRequest={handleReviewChangeRequest}
-                            />
-                        )}
-                        {changeRequest.has_status_change && (
-                            <StatusChangeReviewCard
-                                changeRequestId={changeRequest.id}
-                                agreementId={changeRequest.agreement_id}
-                                requestDate={changeRequest.created_on}
-                                requesterName={
-                                    changeRequest.created_by_user?.display_name ??
-                                    changeRequest.created_by_user?.full_name
-                                }
-                                bliId={changeRequest.budget_line_item_id ?? 0}
-                                changeTo={changeRequest.requested_change_diff}
-                                handleReviewChangeRequest={handleReviewChangeRequest}
-                            />
-                        )}
-                    </React.Fragment>
+                    <StatusChangeReviewCard
+                        key={`cr-status-${cr.id}`}
+                        changeRequestId={cr.id}
+                        agreementId={cr.agreement_id}
+                        requestDate={cr.created_on}
+                        requesterName={cr.created_by_user?.display_name ?? cr.created_by_user?.full_name}
+                        bliId={cr.budget_line_item_id ?? 0}
+                        changeTo={cr.requested_change_diff}
+                        handleReviewChangeRequest={handleReviewChangeRequest}
+                    />
                 );
             })}
 
