@@ -190,53 +190,57 @@ describe("Change Requests List - Pagination", () => {
     });
 
     after(() => {
+        // Agreement 19: division-director declines the pending pre-award approval, removing it from the list.
+        testLogin("division-director");
+        cy.then(() => {
+            const ddToken = `Bearer ${window.localStorage.getItem("access_token")}`;
+            cy.request({
+                method: "GET",
+                url: `http://localhost:8080/api/v1/procurement-trackers/?agreement_id=${PRE_AWARD_PENDING_AGREEMENT_ID}`,
+                headers: { Authorization: ddToken },
+                failOnStatusCode: false
+            }).then((res) => {
+                if (res.status !== 200) return;
+                const preAwardStep = res.body.data?.[0]?.steps?.find((s) => s.step_type === "PRE_AWARD");
+                if (preAwardStep?.approval_status === null || preAwardStep?.approval_status === undefined) {
+                    cy.request({
+                        method: "PATCH",
+                        url: `http://localhost:8080/api/v1/procurement-tracker-steps/${preAwardStep.id}`,
+                        body: { approval_status: "DECLINED" },
+                        headers: { Authorization: ddToken, "Content-Type": "application/json" },
+                        failOnStatusCode: false
+                    });
+                }
+            });
+        });
+
+        // Agreement 20: budget-team submits the requisition, removing it from the pending requisitions list.
+        testLogin("budget-team");
+        cy.then(() => {
+            const btToken = `Bearer ${window.localStorage.getItem("access_token")}`;
+            cy.request({
+                method: "GET",
+                url: `http://localhost:8080/api/v1/procurement-trackers/?agreement_id=${PRE_AWARD_APPROVED_AGREEMENT_ID}`,
+                headers: { Authorization: btToken },
+                failOnStatusCode: false
+            }).then((res) => {
+                if (res.status !== 200) return;
+                const preAwardStep = res.body.data?.[0]?.steps?.find((s) => s.step_type === "PRE_AWARD");
+                if (preAwardStep && !preAwardStep.requisition_approved_by) {
+                    cy.request({
+                        method: "PATCH",
+                        url: `http://localhost:8080/api/v1/procurement-tracker-steps/${preAwardStep.id}`,
+                        body: { requisition_number: "CLEANUP-REQ-001", requisition_date: "2026-01-20" },
+                        headers: { Authorization: btToken, "Content-Type": "application/json" },
+                        failOnStatusCode: false
+                    });
+                }
+            });
+        });
+
         testLogin("system-owner");
         cy.then(() => {
             const token = `Bearer ${window.localStorage.getItem("access_token")}`;
-
-            // Reset both procurement tracker agreements back to pre-test state
-            [PRE_AWARD_PENDING_AGREEMENT_ID, PRE_AWARD_APPROVED_AGREEMENT_ID].forEach((agreementId) => {
-                cy.request({
-                    method: "GET",
-                    url: `http://localhost:8080/api/v1/procurement-trackers/?agreement_id=${agreementId}`,
-                    headers: { Authorization: token },
-                    failOnStatusCode: false
-                }).then((res) => {
-                    if (res.status !== 200) return;
-                    const tracker = res.body.data?.[0];
-                    if (!tracker) return;
-
-                    const stepsSorted = [...tracker.steps].sort((a, b) => a.step_number - b.step_number);
-                    const preAwardStep = stepsSorted.find((s) => s.step_type === "PRE_AWARD");
-
-                    if (preAwardStep) {
-                        cy.request({
-                            method: "PATCH",
-                            url: `http://localhost:8080/api/v1/procurement-tracker-steps/${preAwardStep.id}`,
-                            body: {
-                                approval_requested: false,
-                                approval_requested_date: null,
-                                approval_status: null,
-                                status: "PENDING"
-                            },
-                            headers: { Authorization: token, "Content-Type": "application/json" },
-                            failOnStatusCode: false
-                        });
-                    }
-
-                    stepsSorted
-                        .filter((s) => s.step_number <= 4)
-                        .forEach((step) => {
-                            cy.request({
-                                method: "PATCH",
-                                url: `http://localhost:8080/api/v1/procurement-tracker-steps/${step.id}`,
-                                body: { status: "PENDING" },
-                                headers: { Authorization: token, "Content-Type": "application/json" },
-                                failOnStatusCode: false
-                            });
-                        });
-                });
-            });
 
             bliIds.forEach((id) => {
                 cy.request({
