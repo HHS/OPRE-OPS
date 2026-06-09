@@ -102,7 +102,7 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
                 }
             }
         }
-    }, [step5?.id, step5?.requisition_number, step5?.requisition_date, step5]);
+    }, [step5]);
 
     // Check if already processed
     const approvalAlreadyProcessed = step5?.requisition_approved_by != null;

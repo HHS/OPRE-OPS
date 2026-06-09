@@ -470,7 +470,7 @@ describe("ProcurementTrackerStepFive", () => {
 
             expect(
                 screen.getByText(
-                    /All agreements need Pre-Award Approval before the Final Consensus Memo can be sent to the Procurement Shop/i
+                    /All agreements need Pre-Award Approval before the Final Consensus Memo can be sent to the HHS Consolidated Acquisition Solution \(HCAS\)/i
                 )
             ).toBeInTheDocument();
         });
