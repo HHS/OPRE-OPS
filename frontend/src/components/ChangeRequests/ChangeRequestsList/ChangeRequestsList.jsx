@@ -13,6 +13,7 @@ import PreAwardReviewCard from "../PreAwardReviewCard";
 import BudgetTeamRequisitionReviewCard from "../BudgetTeamRequisitionReviewCard";
 import PaginationNav from "../../UI/PaginationNav/PaginationNav";
 import { useNavigate } from "react-router-dom";
+/** @typedef {import("../../../types/ProcurementTrackerTypes").ProcurementTrackerPreAwardStep} ProcurementTrackerPreAwardStep */
 
 const BLI_STATUS_IN_EXECUTION = "In Execution";
 const PAGE_SIZE = 10;
@@ -35,12 +36,10 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
         isLoading: loadingChangeRequests,
         isError: errorChangeRequests
     } = useGetChangeRequestsListQuery(
-        { userId, limit: PAGE_SIZE, offset: (currentPage - 1) * PAGE_SIZE },
+        { userId, limit: 1000, offset: 0 },
         { skip: !userId, refetchOnMountOrArgChange: true }
     );
-    const changeRequests = changeRequestsResponse?.data;
-    const totalCount = changeRequestsResponse?.count || 0;
-    const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+    const changeRequests = changeRequestsResponse?.data ?? [];
 
     // Fetch pending pre-award approvals
     const {
@@ -89,77 +88,94 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
         return null;
     }
 
-    const hasChangeRequests = changeRequests && changeRequests.length > 0;
-    const hasPreAwardApprovals = preAwardApprovals && preAwardApprovals.length > 0;
-    const hasBudgetRequisitions = budgetRequisitions && budgetRequisitions.length > 0;
+    const taggedBudgetRequisitions = (budgetRequisitions ?? []).map((/** @type {ProcurementTrackerPreAwardStep} */ step) => ({
+        _type: "budgetRequisition",
+        _sortDate: step.approval_requested_date ?? "",
+        item: step
+    }));
+    const taggedPreAwardApprovals = (preAwardApprovals ?? []).map((/** @type {ProcurementTrackerPreAwardStep} */ step) => ({
+        _type: "preAward",
+        _sortDate: step.approval_requested_date ?? "",
+        item: step
+    }));
+    const taggedChangeRequests = changeRequests.map((cr) => ({
+        _type: "changeRequest",
+        _sortDate: cr.created_on ?? "",
+        item: cr
+    }));
 
-    return hasChangeRequests || hasPreAwardApprovals || hasBudgetRequisitions ? (
+    const allItems = [...taggedBudgetRequisitions, ...taggedPreAwardApprovals, ...taggedChangeRequests].sort(
+        (a, b) => (b._sortDate > a._sortDate ? 1 : b._sortDate < a._sortDate ? -1 : 0)
+    );
+
+    const totalPages = Math.ceil(allItems.length / PAGE_SIZE);
+    const pageItems = allItems.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+    return allItems.length > 0 ? (
         <>
-            {/* Budget Team Requisition Cards */}
-            {budgetRequisitions?.map((step) => (
-                <BudgetTeamRequisitionReviewCard
-                    key={`budget-requisition-${step.id}`}
-                    agreementId={step.procurement_tracker?.agreement?.id}
-                    requestorId={step.approval_requested_by}
-                    requestDate={step.approval_requested_date}
-                    executingBliCount={calculateExecutingBliCount(
-                        step.procurement_tracker?.agreement?.budget_line_items ?? []
-                    )}
-                    executingTotal={calculateExecutingTotal(
-                        step.procurement_tracker?.agreement?.budget_line_items ?? []
-                    )}
-                    obligateByDate={getObligateByDate(step.procurement_tracker?.agreement?.budget_line_items ?? [])}
-                    agreementTotal={step.procurement_tracker?.agreement?.agreement_total ?? 0}
-                />
-            ))}
-
-            {/* Pre-Award Approval Cards */}
-            {preAwardApprovals?.map((step) => (
-                <PreAwardReviewCard
-                    key={`pre-award-${step.id}`}
-                    agreementId={step.procurement_tracker?.agreement?.id}
-                    requestorId={step.approval_requested_by}
-                    requestDate={step.approval_requested_date}
-                    executingBliCount={calculateExecutingBliCount(
-                        step.procurement_tracker?.agreement?.budget_line_items ?? []
-                    )}
-                    executingTotal={calculateExecutingTotal(
-                        step.procurement_tracker?.agreement?.budget_line_items ?? []
-                    )}
-                    obligateByDate={getObligateByDate(step.procurement_tracker?.agreement?.budget_line_items ?? [])}
-                    agreementTotal={step.procurement_tracker?.agreement?.agreement_total ?? 0}
-                    requestorNotes={step.requestor_notes}
-                />
-            ))}
-
-            {/* Change Request Cards */}
-            {changeRequests?.map(
-                /** @param {ChangeRequest} changeRequest */
-                (changeRequest) => (
+            {pageItems.map(({ _type, item }) => {
+                if (_type === "budgetRequisition") {
+                    return (
+                        <BudgetTeamRequisitionReviewCard
+                            key={`budget-requisition-${item.id}`}
+                            agreementId={item.procurement_tracker?.agreement?.id}
+                            requestorId={item.approval_requested_by}
+                            requestDate={item.approval_requested_date}
+                            executingBliCount={calculateExecutingBliCount(
+                                item.procurement_tracker?.agreement?.budget_line_items ?? []
+                            )}
+                            executingTotal={calculateExecutingTotal(
+                                item.procurement_tracker?.agreement?.budget_line_items ?? []
+                            )}
+                            obligateByDate={getObligateByDate(item.procurement_tracker?.agreement?.budget_line_items ?? []) ?? undefined}
+                            agreementTotal={item.procurement_tracker?.agreement?.agreement_total ?? 0}
+                        />
+                    );
+                }
+                if (_type === "preAward") {
+                    return (
+                        <PreAwardReviewCard
+                            key={`pre-award-${item.id}`}
+                            agreementId={item.procurement_tracker?.agreement?.id}
+                            requestorId={item.approval_requested_by}
+                            requestDate={item.approval_requested_date}
+                            executingBliCount={calculateExecutingBliCount(
+                                item.procurement_tracker?.agreement?.budget_line_items ?? []
+                            )}
+                            executingTotal={calculateExecutingTotal(
+                                item.procurement_tracker?.agreement?.budget_line_items ?? []
+                            )}
+                            obligateByDate={getObligateByDate(item.procurement_tracker?.agreement?.budget_line_items ?? []) ?? undefined}
+                            agreementTotal={item.procurement_tracker?.agreement?.agreement_total ?? 0}
+                            requestorNotes={item.requestor_notes}
+                        />
+                    );
+                }
+                // changeRequest — may render 1-3 cards per item
+                /** @type {ChangeRequest} */
+                const changeRequest = item;
+                return (
                     <React.Fragment key={changeRequest.id}>
                         {changeRequest.has_proc_shop_change && (
-                            <>
-                                <ProcurementShopReviewCard
-                                    changeRequestId={changeRequest.id}
-                                    agreementId={changeRequest.agreement_id}
-                                    requesterName={
-                                        changeRequest.created_by_user.display_name ??
-                                        changeRequest.created_by_user.full_name
-                                    }
-                                    requestDate={changeRequest.created_on}
-                                    handleReviewChangeRequest={handleReviewChangeRequest}
-                                    oldAwardingEntityId={
-                                        changeRequest?.requested_change_diff?.awarding_entity_id?.old ?? 0
-                                    }
-                                    newAwardingEntityId={
-                                        changeRequest?.requested_change_diff?.awarding_entity_id?.new ?? 0
-                                    }
-                                />
-                            </>
+                            <ProcurementShopReviewCard
+                                changeRequestId={changeRequest.id}
+                                agreementId={changeRequest.agreement_id}
+                                requesterName={
+                                    changeRequest.created_by_user.display_name ??
+                                    changeRequest.created_by_user.full_name
+                                }
+                                requestDate={changeRequest.created_on}
+                                handleReviewChangeRequest={handleReviewChangeRequest}
+                                oldAwardingEntityId={
+                                    changeRequest?.requested_change_diff?.awarding_entity_id?.old ?? 0
+                                }
+                                newAwardingEntityId={
+                                    changeRequest?.requested_change_diff?.awarding_entity_id?.new ?? 0
+                                }
+                            />
                         )}
                         {changeRequest.has_budget_change && (
                             <BudgetChangeReviewCard
-                                key={changeRequest.id}
                                 changeRequestId={changeRequest.id}
                                 agreementId={changeRequest.agreement_id}
                                 requestDate={changeRequest.created_on}
@@ -174,7 +190,6 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
                         )}
                         {changeRequest.has_status_change && (
                             <StatusChangeReviewCard
-                                key={changeRequest.id}
                                 changeRequestId={changeRequest.id}
                                 agreementId={changeRequest.agreement_id}
                                 requestDate={changeRequest.created_on}
@@ -188,8 +203,8 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
                             />
                         )}
                     </React.Fragment>
-                )
-            )}
+                );
+            })}
 
             {totalPages > 1 && (
                 <div className="margin-top-3">

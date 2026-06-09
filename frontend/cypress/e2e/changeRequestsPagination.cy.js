@@ -3,8 +3,14 @@
 import { BLI_STATUS } from "../../src/helpers/budgetLines.helpers";
 import { terminalLog, testLogin } from "./utils";
 
-const TOTAL_BLIS = 11;
+const TOTAL_CR_BLIS = 11;
 const PAGE_SIZE = 10;
+
+// Agreement 19: used to set up a pending pre-award approval (visible to division-director).
+// Agreement 20: used to set up an approved pre-award step (becomes a budget requisition for budget-team).
+// Both have project_officer_id: 500 and CANs under division 4 (Dave Director's division).
+const PRE_AWARD_PENDING_AGREEMENT_ID = 19;
+const PRE_AWARD_APPROVED_AGREEMENT_ID = 20;
 
 const testAgreement = {
     agreement_type: "CONTRACT",
@@ -31,13 +37,112 @@ const baseBli = {
     services_component_id: 1
 };
 
+/**
+ * Fetches the PRE_AWARD step for an agreement and completes steps 1-4 (if not already COMPLETED),
+ * then calls onReady(preAwardStepId) so the caller can further patch the PRE_AWARD step.
+ */
+const setupPreAwardStep = (agreementId, token, onReady) => {
+    cy.request({
+        method: "GET",
+        url: `http://localhost:8080/api/v1/procurement-trackers/?agreement_id=${agreementId}`,
+        headers: { Authorization: token }
+    }).then((res) => {
+        expect(res.status).to.eq(200);
+        const tracker = res.body.data[0];
+        expect(tracker).to.exist;
+
+        const stepsSorted = [...tracker.steps].sort((a, b) => a.step_number - b.step_number);
+        const stepsToComplete = stepsSorted.filter((s) => s.step_number <= 4 && s.status !== "COMPLETED");
+        const preAwardStep = stepsSorted.find((s) => s.step_type === "PRE_AWARD");
+
+        const completeStep = (steps) => {
+            if (steps.length === 0) {
+                cy.then(() => onReady(preAwardStep));
+                return;
+            }
+            const [step, ...rest] = steps;
+            cy.request({
+                method: "PATCH",
+                url: `http://localhost:8080/api/v1/procurement-tracker-steps/${step.id}`,
+                body: { status: "COMPLETED", task_completed_by: 500, date_completed: "2026-01-10" },
+                headers: { Authorization: token, "Content-Type": "application/json" }
+            }).then((patchRes) => {
+                expect(patchRes.status).to.be.oneOf([200, 202]);
+                completeStep(rest);
+            });
+        };
+
+        completeStep(stepsToComplete);
+    });
+};
+
 describe("Change Requests List - Pagination", () => {
     let agreementId;
     let bliIds = [];
     let budgetTeamToken;
+    let divisionDirectorToken;
 
     before(() => {
-        // Create agreement and 11 BLIs as budget-team, then patch each DRAFT→PLANNED to create CRs
+        testLogin("system-owner");
+        cy.then(() => {
+            const systemOwnerToken = `Bearer ${window.localStorage.getItem("access_token")}`;
+
+            // --- Agreement 19: pending pre-award approval (visible to division-director) ---
+            setupPreAwardStep(PRE_AWARD_PENDING_AGREEMENT_ID, systemOwnerToken, (preAwardStep) => {
+                if (!preAwardStep.approval_requested) {
+                    cy.request({
+                        method: "PATCH",
+                        url: `http://localhost:8080/api/v1/procurement-tracker-steps/${preAwardStep.id}`,
+                        body: { approval_requested: true, approval_requested_date: "2026-01-15" },
+                        headers: { Authorization: systemOwnerToken, "Content-Type": "application/json" }
+                    }).then((res) => {
+                        expect(res.status).to.be.oneOf([200, 202]);
+                    });
+                }
+            });
+
+            // --- Agreement 20: approved pre-award (visible to budget-team as requisition) ---
+            setupPreAwardStep(PRE_AWARD_APPROVED_AGREEMENT_ID, systemOwnerToken, (preAwardStep) => {
+                if (!preAwardStep.approval_requested) {
+                    cy.request({
+                        method: "PATCH",
+                        url: `http://localhost:8080/api/v1/procurement-tracker-steps/${preAwardStep.id}`,
+                        body: { approval_requested: true, approval_requested_date: "2026-01-12" },
+                        headers: { Authorization: systemOwnerToken, "Content-Type": "application/json" }
+                    }).then((res) => {
+                        expect(res.status).to.be.oneOf([200, 202]);
+                    });
+                }
+            });
+        });
+
+        // Approve the agreement 20 pre-award step as division-director so it becomes a requisition
+        testLogin("division-director");
+        cy.then(() => {
+            divisionDirectorToken = `Bearer ${window.localStorage.getItem("access_token")}`;
+
+            cy.request({
+                method: "GET",
+                url: `http://localhost:8080/api/v1/procurement-trackers/?agreement_id=${PRE_AWARD_APPROVED_AGREEMENT_ID}`,
+                headers: { Authorization: divisionDirectorToken }
+            }).then((res) => {
+                expect(res.status).to.eq(200);
+                const tracker = res.body.data[0];
+                const preAwardStep = tracker.steps.find((s) => s.step_type === "PRE_AWARD");
+                if (preAwardStep.approval_status !== "APPROVED") {
+                    cy.request({
+                        method: "PATCH",
+                        url: `http://localhost:8080/api/v1/procurement-tracker-steps/${preAwardStep.id}`,
+                        body: { approval_status: "APPROVED" },
+                        headers: { Authorization: divisionDirectorToken, "Content-Type": "application/json" }
+                    }).then((patchRes) => {
+                        expect(patchRes.status).to.be.oneOf([200, 202]);
+                    });
+                }
+            });
+        });
+
+        // --- Create agreement + 11 BLIs with status-change CRs (visible to division-director) ---
         testLogin("budget-team");
         cy.then(() => {
             budgetTeamToken = `Bearer ${window.localStorage.getItem("access_token")}`;
@@ -51,7 +156,6 @@ describe("Change Requests List - Pagination", () => {
                 expect(res.status).to.eq(201);
                 agreementId = res.body.id;
 
-                // Create TOTAL_BLIS BLIs sequentially then patch each to PLANNED
                 const createAndPatch = (remaining, acc) => {
                     if (remaining === 0) return cy.wrap(acc);
                     return cy
@@ -78,7 +182,7 @@ describe("Change Requests List - Pagination", () => {
                         });
                 };
 
-                createAndPatch(TOTAL_BLIS, []).then((ids) => {
+                createAndPatch(TOTAL_CR_BLIS, []).then((ids) => {
                     bliIds = ids;
                 });
             });
@@ -86,10 +190,54 @@ describe("Change Requests List - Pagination", () => {
     });
 
     after(() => {
-        // Delete BLIs and agreement as system-owner
         testLogin("system-owner");
         cy.then(() => {
             const token = `Bearer ${window.localStorage.getItem("access_token")}`;
+
+            // Reset both procurement tracker agreements back to pre-test state
+            [PRE_AWARD_PENDING_AGREEMENT_ID, PRE_AWARD_APPROVED_AGREEMENT_ID].forEach((agreementId) => {
+                cy.request({
+                    method: "GET",
+                    url: `http://localhost:8080/api/v1/procurement-trackers/?agreement_id=${agreementId}`,
+                    headers: { Authorization: token },
+                    failOnStatusCode: false
+                }).then((res) => {
+                    if (res.status !== 200) return;
+                    const tracker = res.body.data?.[0];
+                    if (!tracker) return;
+
+                    const stepsSorted = [...tracker.steps].sort((a, b) => a.step_number - b.step_number);
+                    const preAwardStep = stepsSorted.find((s) => s.step_type === "PRE_AWARD");
+
+                    if (preAwardStep) {
+                        cy.request({
+                            method: "PATCH",
+                            url: `http://localhost:8080/api/v1/procurement-tracker-steps/${preAwardStep.id}`,
+                            body: {
+                                approval_requested: false,
+                                approval_requested_date: null,
+                                approval_status: null,
+                                status: "PENDING"
+                            },
+                            headers: { Authorization: token, "Content-Type": "application/json" },
+                            failOnStatusCode: false
+                        });
+                    }
+
+                    stepsSorted
+                        .filter((s) => s.step_number <= 4)
+                        .forEach((step) => {
+                            cy.request({
+                                method: "PATCH",
+                                url: `http://localhost:8080/api/v1/procurement-tracker-steps/${step.id}`,
+                                body: { status: "PENDING" },
+                                headers: { Authorization: token, "Content-Type": "application/json" },
+                                failOnStatusCode: false
+                            });
+                        });
+                });
+            });
+
             bliIds.forEach((id) => {
                 cy.request({
                     method: "DELETE",
@@ -98,13 +246,15 @@ describe("Change Requests List - Pagination", () => {
                     failOnStatusCode: false
                 });
             });
-            cy.request({
-                method: "DELETE",
-                url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
-                headers: { Authorization: token }
-            }).then((res) => {
-                expect(res.status).to.eq(200);
-            });
+            if (agreementId) {
+                cy.request({
+                    method: "DELETE",
+                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                    headers: { Authorization: token }
+                }).then((res) => {
+                    expect(res.status).to.eq(200);
+                });
+            }
         });
     });
 
@@ -113,40 +263,55 @@ describe("Change Requests List - Pagination", () => {
         cy.checkA11y(null, null, terminalLog);
     });
 
-    it("shows 10 change requests on page 1 and 1 change request on page 2", () => {
-        // Log in as division director (Dave Director, division 4)
+    it("shows 10 items on page 1, shows pagination, and a pre-award approval card appears somewhere in the list", () => {
         testLogin("division-director");
         cy.visit("/agreements?filter=change-requests");
 
-        // Intercept the first page request
-        cy.intercept({ method: "GET", url: "**/change-requests/*", query: { limit: "10", offset: "0" } }).as("page1");
+        cy.intercept({ method: "GET", url: "**/change-requests/**" }).as("changeRequests");
+        cy.intercept({ method: "GET", url: "**/procurement-tracker-steps/pending-approvals/" }).as("preAwardApprovals");
+        cy.wait(["@changeRequests", "@preAwardApprovals"]);
 
-        // Wait for page 1 to load and assert 10 items in response
-        cy.wait("@page1").then((interception) => {
-            expect(interception.response.statusCode).to.eq(200);
-            const body = interception.response.body;
-            expect(body.count).to.be.at.least(TOTAL_BLIS);
-            expect(body.data.length).to.eq(PAGE_SIZE);
-        });
+        // Page 1 should show exactly PAGE_SIZE items
+        cy.get("[data-cy='review-card']").should("have.length", PAGE_SIZE);
 
         // Pagination nav should be visible
         cy.get("nav[aria-label='Pagination']").should("exist");
         cy.get("button.usa-current").should("contain", "1");
 
-        // Intercept the page 2 request before clicking
-        cy.intercept({ method: "GET", url: "**/change-requests/*", query: { limit: "10", offset: "10" } }).as("page2");
+        // Walk through pages until the pre-award card is found.
+        // It sorts after the freshly-created CRs (which have newer dates), so it won't be on page 1.
+        const findPreAwardCard = () => {
+            cy.get("body").then(($body) => {
+                if ($body.find("[data-cy='pre-award-review-card']").length > 0) return;
+                cy.get("button.usa-current")
+                    .invoke("text")
+                    .then((currentPageText) => {
+                        const nextPage = parseInt(currentPageText.trim()) + 1;
+                        cy.get("body").then(($b) => {
+                            if ($b.find(`button[aria-label="Page ${nextPage}"]`).length === 0) {
+                                // No more pages — force the assertion to fail with a clear message
+                                cy.get("[data-cy='pre-award-review-card']").should("exist");
+                            } else {
+                                cy.get(`button[aria-label="Page ${nextPage}"]`).click();
+                                findPreAwardCard();
+                            }
+                        });
+                    });
+            });
+        };
 
-        // Click to page 2
-        cy.get("button[aria-label='Page 2']").click();
+        findPreAwardCard();
+    });
 
-        // Wait for page 2 response and assert exactly 1 item
-        cy.wait("@page2").then((interception) => {
-            expect(interception.response.statusCode).to.eq(200);
-            const body = interception.response.body;
-            expect(body.data.length).to.eq(1);
-        });
+    it("shows at least one budget requisition card when logged in as budget-team", () => {
+        testLogin("budget-team");
+        cy.visit("/agreements?filter=change-requests");
 
-        // Current page indicator should show 2
-        cy.get("button.usa-current").should("contain", "2");
+        cy.intercept({ method: "GET", url: "**/procurement-tracker-steps/pending-requisitions/" }).as(
+            "budgetRequisitions"
+        );
+        cy.wait("@budgetRequisitions");
+
+        cy.get("[data-cy='budget-team-requisition-review-card']").should("have.length.at.least", 1);
     });
 });
