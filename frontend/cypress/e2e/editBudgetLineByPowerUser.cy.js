@@ -146,8 +146,7 @@ describe("Power User tests", () => {
                         cy.get("[data-cy='edit-row']").click();
                         cy.get("#allServicesComponentSelect").select("SC1");
                         waitForBudgetLineFormReady();
-                        cy.get("#need-by-date").clear();
-                        cy.get("#need-by-date").type("02/02/2048");
+                        setNeedByDate("02/02/2048");
                         cy.get("#can-combobox-input").clear();
                         cy.get("#can-combobox-input").type("G99MVT3{enter}");
                         cy.get("#enteredAmount").clear();
@@ -243,8 +242,7 @@ describe("Power User tests", () => {
                         cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
                         cy.get("[data-cy='edit-row']").click();
                         waitForBudgetLineFormReady();
-                        cy.get("#need-by-date").clear();
-                        cy.get("#need-by-date").type("02/02/2048");
+                        setNeedByDate("02/02/2048");
                         cy.get("#can-combobox-input").clear();
                         cy.get("#can-combobox-input").type("G99MVT3{enter}");
                         cy.get("#enteredAmount").clear();
@@ -352,8 +350,7 @@ describe("Power User tests", () => {
                         cy.get("[data-cy='edit-row']").click();
                         cy.get("#allServicesComponentSelect").select("SC1");
                         waitForBudgetLineFormReady();
-                        cy.get("#need-by-date").clear();
-                        cy.get("#need-by-date").type("02/02/2048");
+                        setNeedByDate("02/02/2048");
                         cy.get("#can-combobox-input").clear();
                         cy.get("#can-combobox-input").type("G99MVT3{enter}");
                         cy.get("#enteredAmount").clear();
@@ -450,8 +447,7 @@ describe("Power User tests", () => {
                         cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
                         cy.get("[data-cy='edit-row']").click();
                         waitForBudgetLineFormReady();
-                        cy.get("#need-by-date").clear();
-                        cy.get("#need-by-date").type("02/02/2048");
+                        setNeedByDate("02/02/2048");
                         cy.get("#can-combobox-input").clear();
                         cy.get("#can-combobox-input").type("G99MVT3{enter}");
                         cy.get("#enteredAmount").clear();
@@ -546,8 +542,7 @@ describe("Power User tests", () => {
                         cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
                         cy.get("[data-cy='edit-row']").click();
                         waitForBudgetLineFormReady();
-                        cy.get("#need-by-date").clear();
-                        cy.get("#need-by-date").type("02/02/2048");
+                        setNeedByDate("02/02/2048");
                         cy.get("#can-combobox-input").clear();
                         cy.get("#can-combobox-input").type("G99MVT3{enter}");
                         cy.get("#enteredAmount").clear();
