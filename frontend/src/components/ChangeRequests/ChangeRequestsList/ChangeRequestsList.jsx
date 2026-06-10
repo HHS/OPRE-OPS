@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import {
     useGetChangeRequestsListQuery,
@@ -75,20 +75,6 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
         return new Date(Math.min(...dates)).toISOString().split("T")[0];
     };
 
-    // Handle navigation to error page in useEffect to avoid setState during render
-    React.useEffect(() => {
-        if (errorChangeRequests || errorPreAwardApprovals || errorBudgetRequisitions) {
-            navigate("/error");
-        }
-    }, [errorChangeRequests, errorPreAwardApprovals, errorBudgetRequisitions, navigate]);
-
-    if (loadingChangeRequests || loadingPreAwardApprovals || loadingBudgetRequisitions) {
-        return <h1>Loading...</h1>;
-    }
-    if (errorChangeRequests || errorPreAwardApprovals || errorBudgetRequisitions) {
-        return null;
-    }
-
     const taggedBudgetRequisitions = (budgetRequisitions ?? []).map(
         (/** @type {ProcurementTrackerPreAwardStep} */ step) => ({
             _type: "budgetRequisition",
@@ -119,6 +105,27 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
 
     const totalPages = Math.ceil(allItems.length / PAGE_SIZE);
     const pageItems = allItems.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+    // Handle navigation to error page in useEffect to avoid setState during render
+    React.useEffect(() => {
+        if (errorChangeRequests || errorPreAwardApprovals || errorBudgetRequisitions) {
+            navigate("/error");
+        }
+    }, [errorChangeRequests, errorPreAwardApprovals, errorBudgetRequisitions, navigate]);
+
+    // Clamp currentPage when allItems shrinks (e.g. after approving an item reduces totalPages)
+    useEffect(() => {
+        if (currentPage > totalPages && totalPages > 0) {
+            setCurrentPage(totalPages);
+        }
+    }, [currentPage, totalPages]);
+
+    if (loadingChangeRequests || loadingPreAwardApprovals || loadingBudgetRequisitions) {
+        return <h1>Loading...</h1>;
+    }
+    if (errorChangeRequests || errorPreAwardApprovals || errorBudgetRequisitions) {
+        return null;
+    }
 
     return allItems.length > 0 ? (
         <>
