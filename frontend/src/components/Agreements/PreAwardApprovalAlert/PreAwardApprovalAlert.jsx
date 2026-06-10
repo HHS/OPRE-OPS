@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useEffect, useCallback, useRef } from "react";
 import PropTypes from "prop-types";
 import SimpleAlert from "../../UI/Alert/SimpleAlert";
 import { useDismissNotificationMutation } from "../../../api/opsAPI";
@@ -48,9 +48,37 @@ function PreAwardApprovalAlert({ notifications, isVisible }) {
         [notifications]
     );
 
-    const handleDismiss = (notificationId) => {
-        dismissNotification(notificationId);
-    };
+    const handleDismiss = useCallback(
+        (notificationId) => {
+            dismissNotification(notificationId);
+        },
+        [dismissNotification]
+    );
+
+    // Track which notification IDs have timers to prevent duplicate timers
+    const timerRefs = useRef(new Map());
+
+    // Auto-dismiss approved notifications after 6 seconds (each notification gets its own timer)
+    useEffect(() => {
+        const timers = timerRefs.current;
+
+        preAwardNotifications.forEach((notification) => {
+            if (isApprovedNotification(notification) && !timers.has(notification.id)) {
+                const timer = setTimeout(() => {
+                    handleDismiss(notification.id);
+                    timers.delete(notification.id);
+                }, 6000);
+
+                timers.set(notification.id, timer);
+            }
+        });
+
+        // Cleanup all timers on unmount or when notifications change
+        return () => {
+            timers.forEach((timer) => clearTimeout(timer));
+            timers.clear();
+        };
+    }, [preAwardNotifications, handleDismiss]);
 
     // Don't render if not visible or no notifications
     if (!isVisible || preAwardNotifications.length === 0) {
