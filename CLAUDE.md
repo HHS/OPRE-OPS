@@ -51,6 +51,31 @@ docker compose up db data-import --build  # Database + test data only
 docker system prune --volumes         # Clean state between E2E runs
 ```
 
+## Pre-Commit Workflow
+
+**ALWAYS run these checks before committing and pushing:**
+
+### Frontend Changes
+```bash
+cd frontend
+bun run format              # Auto-fix formatting
+bun run lint --fix          # Auto-fix linting issues
+bun run test --watch=false  # Run all unit tests
+```
+
+### Backend Changes
+```bash
+cd backend/ops_api
+pipenv run black --config ./pyproject.toml .  # Auto-format
+pipenv run nox -s lint                        # Linting check
+pipenv run pytest                             # Run all tests
+```
+
+**Why this matters:** Pre-commit hooks will catch some issues, but running these manually first:
+- Prevents CI failures from formatting/linting
+- Catches test failures before pushing
+- Saves time by finding issues locally
+
 ## Commit Message Standards
 
 Uses **Conventional Commits** enforced by commitlint.

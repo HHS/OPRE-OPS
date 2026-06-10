@@ -60,6 +60,11 @@ const waitForBudgetLineFormReady = () => {
     cy.get("#can-combobox-input", { timeout: 30000 }).should("not.be.disabled");
 };
 
+const setNeedByDate = (value) => {
+    cy.get("#need-by-date", { timeout: 30000 }).should("be.visible").and("not.be.disabled").clear();
+    cy.get("#need-by-date", { timeout: 30000 }).should("not.be.disabled").type(value);
+};
+
 beforeEach(() => {
     // append a unique identifier to the agreement name to avoid conflicts
     const uniqueId = Date.now();
@@ -625,7 +630,7 @@ describe("Power User tests", () => {
                 cy.get("#allServicesComponentSelect").select("SC1");
                 waitForBudgetLineFormReady();
                 cy.get("#enteredAmount").type("2_222_222");
-                cy.get("#need-by-date").type("01/01/2048");
+                setNeedByDate("01/01/2048");
                 cy.get("#can-combobox-input").type("G99MVT3{enter}");
                 cy.get("#add-budget-line").click();
                 // validate budget line creation
@@ -634,8 +639,7 @@ describe("Power User tests", () => {
                 cy.get("[data-cy='edit-row']").click();
                 // edit DRAFT budget line
                 waitForBudgetLineFormReady();
-                cy.get("#need-by-date").clear();
-                cy.get("#need-by-date").type("02/02/2048");
+                setNeedByDate("02/02/2048");
                 cy.get("#enteredAmount").clear();
                 cy.get("#enteredAmount").type("1_000_000");
                 cy.get("#can-combobox-input").clear();
