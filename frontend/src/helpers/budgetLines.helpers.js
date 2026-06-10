@@ -123,9 +123,17 @@ export const groupByServicesComponent = (budgetLines, servicesComponents = []) =
         handleBLIArrayProp(budgetLines);
 
         const groupedBudgetLinesBySc = budgetLines.reduce((acc, budgetLine) => {
-            const servicesComponentNumber = budgetLine.services_component_number ?? 0;
+            // Try to get services_component_number from the BLI, or look it up by ID
+            let servicesComponentNumber = budgetLine.services_component_number;
+            if (servicesComponentNumber == null && budgetLine.services_component_id) {
+                const sc = servicesComponents.find((sc) => sc.id === budgetLine.services_component_id);
+                servicesComponentNumber = sc?.number ?? 0;
+            } else {
+                servicesComponentNumber = servicesComponentNumber ?? 0;
+            }
+
             const serviceComponentGroupingLabel =
-                budgetLine.serviceComponentGroupingLabel ?? String(budgetLine.services_component_number ?? 0);
+                budgetLine.serviceComponentGroupingLabel ?? String(servicesComponentNumber);
 
             const index = acc.findIndex((item) => item.serviceComponentGroupingLabel === serviceComponentGroupingLabel);
 
