@@ -103,8 +103,8 @@ describe("ProjectFundingCANsTable", () => {
         expect(screen.queryByTestId("project-funding-cans-table")).not.toBeInTheDocument();
     });
 
-    it("renders $0.00 for zero fy_funding", () => {
+    it("renders $0 for zero fy_funding", () => {
         renderComponent([mockCANs[1]]);
-        expect(screen.getAllByText("$0.00").length).toBeGreaterThan(0);
+        expect(screen.getAllByText("$0").length).toBeGreaterThan(0);
     });
 });

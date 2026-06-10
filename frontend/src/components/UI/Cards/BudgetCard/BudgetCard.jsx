@@ -1,6 +1,6 @@
 import { faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import CurrencyFormat from "react-currency-format";
+import { formatCurrency } from "../../../../helpers/currencyFormat.helpers";
 import CurrencyWithSmallCents from "../../CurrencyWithSmallCents/CurrencyWithSmallCents";
 import LineGraph from "../../DataViz/LineGraph";
 import RoundedBox from "../../RoundedBox";
@@ -84,25 +84,8 @@ const BudgetCard = ({ cardId, title, totalSpending, totalFunding }) => {
             )}
             <div className="font-12px margin-top-2 display-flex flex-justify-end">
                 <div>
-                    &#42;Spending{" "}
-                    <CurrencyFormat
-                        value={totalSpending ?? 0}
-                        displayType={"text"}
-                        thousandSeparator={true}
-                        prefix={"$"}
-                        decimalScale={totalSpending > 0 ? 2 : 0}
-                        fixedDecimalScale
-                    />{" "}
-                    of{" "}
-                    <CurrencyFormat
-                        value={totalFunding ?? 0}
-                        displayType={"text"}
-                        thousandSeparator={true}
-                        prefix={"$"}
-                        renderText={(totalFunding) => <span>{totalFunding}</span>}
-                        decimalScale={totalFunding > 0 ? 2 : 0}
-                        fixedDecimalScale
-                    />
+                    &#42;Spending {formatCurrency(totalSpending ?? 0)} of{" "}
+                    <span>{formatCurrency(totalFunding ?? 0)}</span>
                 </div>
             </div>
             <p

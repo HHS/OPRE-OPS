@@ -356,7 +356,7 @@ class TestNotificationFlowFix:
         # Verify notification content
         assert notification.title == "Pre-Award Requisition Approved"
         assert "This agreement has been approved for Pre-Award" in notification.message
-        assert "send the Final Consensus Memo to the Procurement Shop" in notification.message
+        assert "HHS Consolidated Acquisition Solution (HCAS)" in notification.message
         assert notification.procurement_tracker_step_id == test_pre_award_step.id
 
     def test_budget_team_approval_auto_dismisses_review_notifications(

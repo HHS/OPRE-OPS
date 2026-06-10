@@ -1,10 +1,9 @@
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import CurrencyFormat from "react-currency-format";
 import { Link } from "react-router-dom";
 import { NO_DATA } from "../../../constants";
 import { getBudgetLineCreatedDate, getProcurementShopLabel } from "../../../helpers/budgetLines.helpers";
-import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
+import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import { convertCodeForDisplay, formatDateNeeded } from "../../../helpers/utils";
 import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
 import { useGetServicesComponentDisplayName } from "../../../hooks/useServicesComponents.hooks";
@@ -86,16 +85,7 @@ const AllBLIRow = ({ budgetLine }) => {
                     />
                 </div>
             </td>
-            <td data-cy="amount">
-                <CurrencyFormat
-                    value={budgetLineTotalPlusFees}
-                    displayType={"text"}
-                    thousandSeparator={true}
-                    prefix={"$"}
-                    decimalScale={getDecimalScale(budgetLineTotalPlusFees)}
-                    fixedDecimalScale={true}
-                />
-            </td>
+            <td data-cy="amount">{formatCurrency(budgetLineTotalPlusFees)}</td>
             <td data-cy="status">
                 <TableTag
                     inReview={isBudgetLineInReview}
@@ -137,29 +127,11 @@ const AllBLIRow = ({ budgetLine }) => {
                 </dl>
                 <dl className="grid-col-auto margin-top-0 font-12px">
                     <dt className="margin-0 text-base-dark">Subtotal</dt>
-                    <dd className="margin-0">
-                        <CurrencyFormat
-                            value={budgetLine?.amount ?? 0}
-                            displayType={"text"}
-                            thousandSeparator={true}
-                            prefix={"$"}
-                            decimalScale={getDecimalScale(budgetLine?.amount ?? 0)}
-                            fixedDecimalScale={true}
-                        />
-                    </dd>
+                    <dd className="margin-0">{formatCurrency(budgetLine?.amount ?? 0)}</dd>
                 </dl>
                 <dl className="grid-col-auto margin-top-0 font-12px">
                     <dt className="margin-0 text-base-dark">Fees</dt>
-                    <dd className="margin-0">
-                        <CurrencyFormat
-                            value={feeTotal}
-                            displayType={"text"}
-                            thousandSeparator={true}
-                            prefix={"$"}
-                            decimalScale={getDecimalScale(feeTotal)}
-                            fixedDecimalScale={true}
-                        />
-                    </dd>
+                    <dd className="margin-0">{formatCurrency(feeTotal)}</dd>
                 </dl>
             </div>
             <p className="font-12px margin-0 margin-top-1 text-base-dark">

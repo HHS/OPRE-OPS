@@ -524,8 +524,9 @@ class ProcurementTrackerStepService:
             # Budget team approved requisition - notify original requester
             if step.pre_award_approval_requested_by:
                 message = (
-                    "This agreement has been approved for Pre-Award. Please send the Final Consensus Memo to the "
-                    "Procurement Shop and continue your progress in the Procurement Tracker."
+                    "This agreement has been approved for Pre-Award. The Division Director has approved and the "
+                    "Budget Team has submitted the requisition. Please upload the Final Consensus Memo to the HHS "
+                    "Consolidated Acquisition Solution (HCAS), and continue your progress in the Procurement Tracker."
                 )
 
                 # Include Director's approval notes if they exist

@@ -1,10 +1,9 @@
-import CurrencyFormat from "react-currency-format";
 import { Link, useSearchParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { NO_DATA } from "../../../constants";
 import { getAgreementType, isNotDevelopedYet } from "../../../helpers/agreement.helpers";
 import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
-import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
+import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import ChangeIcons from "../../BudgetLineItems/ChangeIcons";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 import TableRowExpandable from "../../UI/TableRowExpandable";
@@ -121,31 +120,9 @@ export const AgreementTableRow = ({ agreement }) => {
             <td data-cy="agreement-type">{agreementType || ""}</td>
             <td data-cy="agreement-start-date">{agreementStartDate}</td>
             <td data-cy="agreement-end-date">{agreementEndDate}</td>
-            <td data-cy="agreement-total">
-                <CurrencyFormat
-                    value={agreementTotal}
-                    displayType={"text"}
-                    thousandSeparator={true}
-                    prefix={"$"}
-                    decimalScale={getDecimalScale(agreementTotal)}
-                    fixedDecimalScale={true}
-                    renderText={(value) => value}
-                />
-            </td>
+            <td data-cy="agreement-total">{formatCurrency(agreementTotal)}</td>
             <td data-cy="fy-obligated-amount">
-                {isRowActive && !isExpanded ? (
-                    <div>{changeIcons}</div>
-                ) : (
-                    <CurrencyFormat
-                        value={fyObligatedAmount}
-                        displayType={"text"}
-                        thousandSeparator={true}
-                        prefix={"$"}
-                        decimalScale={getDecimalScale(fyObligatedAmount)}
-                        fixedDecimalScale={true}
-                        renderText={(value) => value}
-                    />
-                )}
+                {isRowActive && !isExpanded ? <div>{changeIcons}</div> : formatCurrency(fyObligatedAmount)}
             </td>
         </>
     );
@@ -176,51 +153,21 @@ export const AgreementTableRow = ({ agreement }) => {
                     style={{ marginLeft: "2.5rem" }}
                 >
                     <dt className="margin-0 text-base-dark">Subtotal</dt>
-                    <dd className="margin-0">
-                        <CurrencyFormat
-                            value={agreementSubTotal}
-                            displayType={"text"}
-                            thousandSeparator={true}
-                            prefix={"$"}
-                            decimalScale={getDecimalScale(agreementSubTotal)}
-                            fixedDecimalScale={true}
-                            renderText={(value) => value}
-                        />
-                    </dd>
+                    <dd className="margin-0">{formatCurrency(agreementSubTotal)}</dd>
                 </dl>
                 <dl
                     className="font-12px"
                     style={{ marginLeft: "2.5rem" }}
                 >
                     <dt className="margin-0 text-base-dark">Fees</dt>
-                    <dd className="margin-0">
-                        <CurrencyFormat
-                            value={agreementFees}
-                            displayType={"text"}
-                            thousandSeparator={true}
-                            prefix={"$"}
-                            decimalScale={getDecimalScale(agreementFees)}
-                            fixedDecimalScale={true}
-                            renderText={(value) => value}
-                        />
-                    </dd>
+                    <dd className="margin-0">{formatCurrency(agreementFees)}</dd>
                 </dl>
                 <dl
                     className="font-12px"
                     style={{ marginLeft: "2.5rem" }}
                 >
                     <dt className="margin-0 text-base-dark">Lifetime Obligated</dt>
-                    <dd className="margin-0">
-                        <CurrencyFormat
-                            value={lifetimeObligated}
-                            displayType={"text"}
-                            thousandSeparator={true}
-                            prefix={"$"}
-                            decimalScale={getDecimalScale(lifetimeObligated)}
-                            fixedDecimalScale={true}
-                            renderText={(value) => value}
-                        />
-                    </dd>
+                    <dd className="margin-0">{formatCurrency(lifetimeObligated)}</dd>
                 </dl>
             </div>
             <div

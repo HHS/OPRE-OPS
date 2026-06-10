@@ -225,7 +225,7 @@ describe("ProcurementTrackerStepFive", () => {
 
             expect(
                 screen.getByText(
-                    /Edit the Agreement to match the Vendor Price Sheet and ensure any final Budget Changes are approved/i
+                    /Review the Vendor Price Sheet and make any edits or budget line status changes as needed/i
                 )
             ).toBeInTheDocument();
         });
@@ -468,7 +468,11 @@ describe("ProcurementTrackerStepFive", () => {
                 />
             );
 
-            expect(screen.getByText(/OPRE edits the Agreement to match the Vendor Price Sheet/i)).toBeInTheDocument();
+            expect(
+                screen.getByText(
+                    /All agreements need Pre-Award Approval before the Final Consensus Memo can be sent to the HHS Consolidated Acquisition Solution \(HCAS\)/i
+                )
+            ).toBeInTheDocument();
         });
 
         it("displays completed status message with check icon", () => {

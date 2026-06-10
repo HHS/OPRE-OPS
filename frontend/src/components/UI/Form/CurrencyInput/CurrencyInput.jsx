@@ -1,10 +1,10 @@
 import cx from "clsx";
 import { useState, useEffect, useRef } from "react";
-import CurrencyFormat from "react-currency-format";
+import CurrencyInputField from "react-currency-input-field";
 
 /**
  * A form input component for currency values.
- * @description best used with  state that is not in object form, but as a string or number.
+ * @description best used with state that is not in object form, but as a string or number.
  * @param {Object} props - The component props.
  * @param {string} props.name - The name of the input field.
  * @param {string} [props.label] - The label to display for the input field (optional).
@@ -29,24 +29,24 @@ const CurrencyInput = ({
     placeholder = "$",
     ...rest
 }) => {
-    // displayValue holds the raw formatted string (e.g. "5.") so a trailing
+    // displayValue holds the raw typed string (e.g. "5.") so a trailing
     // decimal isn't stripped before the user finishes typing the cents.
     const [displayValue, setDisplayValue] = useState(value ?? "");
-    // Set to true on each user keystroke so the useEffect skips the parent's
-    // round-trip echo and doesn't overwrite the in-progress display string.
-    const skipNextSyncRef = useRef(false);
+    // The parent typically echoes our raw string back as a parsed number
+    // (e.g. raw "5." -> float 5 -> rendered "5"). Track both forms of the
+    // last-emitted value so the echo is identifiable and can be ignored,
+    // while genuine parent-driven changes (e.g. reset to "") still apply.
+    const lastEmittedRef = useRef({ raw: String(value ?? ""), float: typeof value === "number" ? value : NaN });
 
     useEffect(() => {
-        if (skipNextSyncRef.current) {
-            skipNextSyncRef.current = false;
-            return;
-        }
+        const incomingStr = String(value ?? "");
+        const incomingNum = typeof value === "number" ? value : Number(value);
+        const { raw, float } = lastEmittedRef.current;
+        const isEcho = incomingStr === raw || (Number.isFinite(incomingNum) && incomingNum === float);
+        if (isEcho) return;
+        lastEmittedRef.current = { raw: incomingStr, float: Number.isFinite(incomingNum) ? incomingNum : NaN };
         setDisplayValue(value ?? "");
     }, [value]);
-
-    function handleChange(e) {
-        onChange(name, e.target.value);
-    }
 
     return (
         <div className={cx("usa-form-group", pending && "pending", className)}>
@@ -64,23 +64,27 @@ const CurrencyInput = ({
                     {messages[0]}
                 </span>
             )}
-            <CurrencyFormat
+            <CurrencyInputField
                 id={name}
                 name={name}
                 value={displayValue}
                 className={`usa-input ${messages.length ? "usa-input--error" : ""} `}
-                thousandSeparator={true}
-                decimalScale={2}
+                groupSeparator=","
+                decimalSeparator="."
+                decimalsLimit={2}
                 placeholder={placeholder}
-                onValueChange={(values) => {
-                    skipNextSyncRef.current = true;
-                    setDisplayValue(values.value);
-                    const { floatValue } = values;
+                onValueChange={(rawValue, _name, values) => {
+                    const f = values?.float;
+                    const floatValue = typeof f === "number" ? f : NaN;
+                    lastEmittedRef.current = { raw: rawValue ?? "", float: floatValue };
+                    setDisplayValue(rawValue ?? "");
                     if (setEnteredAmount) {
-                        setEnteredAmount(typeof floatValue === "number" ? floatValue : null);
+                        setEnteredAmount(Number.isFinite(floatValue) ? floatValue : null);
+                    }
+                    if (onChange) {
+                        onChange(name, rawValue ?? "");
                     }
                 }}
-                onChange={handleChange}
                 {...rest}
             />
         </div>

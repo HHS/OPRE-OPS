@@ -1,7 +1,6 @@
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
-import CurrencyFormat from "react-currency-format";
 import { computeDisplayPercents } from "../../../helpers/utils";
 import ResponsiveDonutWithInnerPercent from "../../UI/DataViz/ResponsiveDonutWithInnerPercent";
 import CustomLayerComponent from "../../UI/DataViz/ResponsiveDonutWithInnerPercent/CustomLayerComponent";
@@ -92,15 +91,12 @@ const BLIStatusSummaryCard = ({
                     </div>
                 </div>
                 <div>
-                    <CurrencyFormat
-                        value={value}
-                        displayType={"text"}
-                        thousandSeparator={true}
-                        prefix={"$ "}
-                        decimalScale={value === 0 ? 0 : 2}
-                        fixedDecimalScale
-                        renderText={(value) => <span className={isGraphActive ? "fake-bold" : ""}>{value}</span>}
-                    />
+                    <span className={isGraphActive ? "fake-bold" : ""}>
+                        {`$ ${new Intl.NumberFormat("en-US", {
+                            minimumFractionDigits: value === 0 ? 0 : 2,
+                            maximumFractionDigits: value === 0 ? 0 : 2
+                        }).format(value)}`}
+                    </span>
                     <Tag
                         className="margin-left-1"
                         tagStyle="darkTextWhiteBackground"

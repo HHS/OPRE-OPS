@@ -935,7 +935,7 @@ def test_agreement_history_pre_award_step(loaded_db, app_ctx):
     assert new_agreement_history_item.history_title == "Pre-Award Completed"
     assert (
         new_agreement_history_item.history_message
-        == "User Demo completed step 5 of the Procurement Tracker. Pre-Award Approval was received and the Final Consensus Memo was sent to the Procurement Shop."
+        == "User Demo completed step 5 of the Procurement Tracker. Pre-Award Approval was received and the Final Consensus Memo was sent to the HHS Consolidated Acquisition Solution (HCAS)."
     )
 
 
@@ -1135,11 +1135,13 @@ def test_agreement_history_pre_award_approval_approved(loaded_db, app_ctx):
     history_item = history_items[0]
 
     assert history_item.history_type == AgreementHistoryType.PROCUREMENT_TRACKER_STEP_UPDATED
-    assert history_item.history_title == "Pre-Award Approval Approved"
+    assert history_item.history_title == "Pre-Award Approved & Requisition Started"
     assert history_item.agreement_id == tracker.agreement_id
     assert (
-        history_item.history_message == "User Demo approved the agreement for pre-award as requested by Amelia Popham. "
-        "The requisition will be submitted by the Budget Team before the Final Consensus Memo is sent to the procurement shop."
+        history_item.history_message
+        == "Director User approved this agreement for pre-award as requested by Amelia Popham. "
+        "Next, the Budget Team will submit the requisition and then the COR will be notified to upload the "
+        "Final Consensus Memo to the HHS Consolidated Acquisition Solution (HCAS)."
     )
 
 
@@ -1239,10 +1241,11 @@ def test_agreement_history_pre_award_approval_declined(loaded_db, app_ctx):
     history_item = history_items[0]
 
     assert history_item.history_type == AgreementHistoryType.PROCUREMENT_TRACKER_STEP_UPDATED
-    assert history_item.history_title == "Pre-Award Approval Declined"
+    assert history_item.history_title == "Pre-Award Declined"
     assert history_item.agreement_id == tracker.agreement_id
     assert (
-        history_item.history_message == "User Demo declined this agreement for pre-award as requested by Amelia Popham."
+        history_item.history_message
+        == "Director User declined this agreement for pre-award as requested by Amelia Popham."
     )
 
 
@@ -1339,12 +1342,14 @@ def test_agreement_history_pre_award_approval_unknown_requester(loaded_db, app_c
     history_item = history_items[0]
 
     assert history_item.history_type == AgreementHistoryType.PROCUREMENT_TRACKER_STEP_UPDATED
-    assert history_item.history_title == "Pre-Award Approval Approved"
+    assert history_item.history_title == "Pre-Award Approved & Requisition Started"
     assert history_item.agreement_id == tracker.agreement_id
     assert "Unknown User" in history_item.history_message
     assert (
-        history_item.history_message == "User Demo approved the agreement for pre-award as requested by Unknown User. "
-        "The requisition will be submitted by the Budget Team before the Final Consensus Memo is sent to the procurement shop."
+        history_item.history_message
+        == "Director User approved this agreement for pre-award as requested by Unknown User. "
+        "Next, the Budget Team will submit the requisition and then the COR will be notified to upload the "
+        "Final Consensus Memo to the HHS Consolidated Acquisition Solution (HCAS)."
     )
 
 
