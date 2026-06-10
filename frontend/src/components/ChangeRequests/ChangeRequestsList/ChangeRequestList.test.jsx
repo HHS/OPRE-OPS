@@ -44,7 +44,7 @@ describe("ChangeRequestList", () => {
     const store = mockStore(initialState);
 
     it("renders without any change requests", () => {
-        useGetChangeRequestsListQuery.mockReturnValue({ data: { data: [], count: 0, limit: 10, offset: 0 } });
+        useGetChangeRequestsListQuery.mockReturnValue({ data: { data: [], count: 0, limit: 1000, offset: 0 } });
         useGetPendingPreAwardApprovalsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
         useGetPendingBudgetRequisitionsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
         useGetAgreementByIdQuery.mockReturnValue("Agreement Name");
@@ -59,7 +59,7 @@ describe("ChangeRequestList", () => {
             </Provider>
         );
         expect(useGetChangeRequestsListQuery).toHaveBeenCalledWith(
-            { userId: 500, limit: 10, offset: 0 },
+            { userId: 500, limit: 1000, offset: 0 },
             { refetchOnMountOrArgChange: true, skip: false }
         );
         expect(screen.getByText(/no changes/i)).toBeInTheDocument();
@@ -98,7 +98,7 @@ describe("ChangeRequestList", () => {
         );
 
         expect(useGetChangeRequestsListQuery).toHaveBeenCalledWith(
-            { userId: 500, limit: 10, offset: 0 },
+            { userId: 500, limit: 1000, offset: 0 },
             { refetchOnMountOrArgChange: true, skip: false }
         );
 
@@ -129,7 +129,7 @@ describe("ChangeRequestList", () => {
         );
 
         expect(useGetChangeRequestsListQuery).toHaveBeenCalledWith(
-            { userId: null, limit: 10, offset: 0 },
+            { userId: null, limit: 1000, offset: 0 },
             { refetchOnMountOrArgChange: true, skip: true }
         );
         expect(screen.getByText(/no changes/i)).toBeInTheDocument();
