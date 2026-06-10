@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
-import { convertToCurrency, formatDateToMonthDayYear } from "../../../helpers/utils";
+import { convertToCurrency, formatDate, formatDateToMonthDayYear } from "../../../helpers/utils";
 import { useGetAgreementName } from "../../../hooks/lookup.hooks";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import Tag from "../../UI/Tag/Tag";
@@ -36,7 +36,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
  * @param {string} props.navigationPath - Relative path to append to /agreements/{id}/
  * @param {string} props.dataCyPrefix - Prefix for data-cy and data-testid attributes
  * @param {string} props.buttonText - Button label text
- * @param {string} [props.requestorNotes] - Optional notes from the requestor
  * @param {boolean} [props.isCondensed=false] - Whether the card is condensed
  * @param {boolean} [props.forceHover=false] - Whether to force hover state
  * @returns {JSX.Element} - The rendered component
@@ -53,7 +52,6 @@ function ApprovalFlowReviewCard({
     navigationPath,
     dataCyPrefix,
     buttonText,
-    requestorNotes,
     isCondensed = false,
     forceHover = false
 }) {
@@ -68,63 +66,109 @@ function ApprovalFlowReviewCard({
 
     return (
         <div
-            className={`width-full flex-column padding-2 margin-top-4 bg-white hover:bg-base-lightest border-2px radius-lg ${
+            className={`width-full padding-2 margin-top-4 bg-white hover:bg-base-lightest border-2px radius-lg ${
                 forceHover ? "bg-base-lightest border-base-lighter" : "border-base-light hover:border-base-lighter"
             }`}
             data-cy={dataCyPrefix}
             data-testid={dataCyPrefix}
-            style={{ minHeight: "8.375rem" }}
+            style={{
+                minHeight: "8.375rem",
+                display: "grid",
+                gridTemplateColumns: "repeat(6, 1fr)",
+                gridTemplateRows: "auto auto auto",
+                gap: "1rem"
+            }}
         >
-            {!isCondensed && (
-                <header className="display-flex flex-justify">
-                    <div className="display-flex">
-                        <h2 className="margin-0 font-sans-sm">{headingText}</h2>
-                        <dl className="font-12px margin-0 margin-left-4">
-                            <dt className="margin-0 text-base-dark">Agreement</dt>
-                            <dd className="margin-0">{agreementName}</dd>
-                        </dl>
-                    </div>
-                </header>
-            )}
-            <section
-                className="display-flex flex-justify margin-y-1"
-                style={{ maxWidth: "50rem" }}
+            {/* Row 1, Col 1: Heading */}
+            <div
+                className="grid-col-1"
+                style={{ whiteSpace: "nowrap" }}
             >
-                <dl className="font-12px grid-col-2">
-                    <dt className="text-base-dark">Requested by</dt>
-                    <dd className="margin-0">{requestorName || "Unknown"}</dd>
+                <h2 className="margin-0 font-sans-sm">{headingText}</h2>
+            </div>
+
+            {/* Row 1, Col 2-7: Agreement */}
+            {!isCondensed && (
+                <dl
+                    className="font-12px margin-0 display-flex flex-column"
+                    style={{ gridColumn: "2 / 7", gap: "0.5rem" }}
+                >
+                    <dt className="text-base-dark">Agreement</dt>
+                    <dd className="margin-0">{agreementName}</dd>
                 </dl>
-                <dl className="font-12px grid-col-2">
-                    <dt className="text-base-dark">BLs Executing</dt>
-                    <dd className="margin-0">
-                        <Tag
-                            tagStyle="primaryDarkTextLightBackground"
-                            text={executingBliCount.toString()}
-                            data-cy="executing-bli-count"
-                        />
-                    </dd>
-                </dl>
-                <dl className="font-12px grid-col-2">
-                    <dt className="text-base-dark">Executing Total</dt>
-                    <dd className="margin-0">
-                        <Tag
-                            tagStyle="primaryDarkTextLightBackground"
-                            text={convertToCurrency(executingTotal)}
-                        />
-                    </dd>
-                </dl>
-                {obligateByDate && (
-                    <dl className="font-12px grid-col-2">
-                        <dt className="text-base-dark">Obligate By</dt>
+            )}
+
+            {/* Requested by */}
+            <dl
+                className="font-12px margin-0 display-flex flex-column"
+                style={{ gap: "0.5rem" }}
+            >
+                <dt className="text-base-dark">Requested by</dt>
+                <dd className="margin-0">{requestorName || "Unknown"}</dd>
+            </dl>
+
+            {/* BLs Executing */}
+            <dl
+                className="font-12px margin-0 display-flex flex-column"
+                style={{ gap: "0.5rem" }}
+            >
+                <dt className="text-base-dark">BLs Executing</dt>
+                <dd className="margin-0">
+                    <Tag
+                        tagStyle="primaryDarkTextLightBackground"
+                        text={executingBliCount.toString()}
+                        data-cy="executing-bli-count"
+                    />
+                </dd>
+            </dl>
+
+            {/* Executing Total */}
+            <dl
+                className="font-12px margin-0 display-flex flex-column"
+                style={{ gap: "0.5rem" }}
+            >
+                <dt className="text-base-dark">Executing Total</dt>
+                <dd className="margin-0">
+                    <Tag
+                        tagStyle="primaryDarkTextLightBackground"
+                        text={convertToCurrency(executingTotal)}
+                    />
+                </dd>
+            </dl>
+
+            {/* Obligate By Date (conditional) and Agreement Total on same row */}
+            {obligateByDate ? (
+                <>
+                    <dl
+                        className="font-12px margin-0 display-flex flex-column"
+                        style={{ gap: "0.5rem" }}
+                    >
+                        <dt className="text-base-dark">Obligate By Date</dt>
                         <dd className="margin-0">
                             <Tag
                                 tagStyle="primaryDarkTextLightBackground"
-                                text={formatDateToMonthDayYear(obligateByDate)}
+                                text={formatDate(new Date(obligateByDate))}
                             />
                         </dd>
                     </dl>
-                )}
-                <dl className="font-12px grid-col-2">
+                    <dl
+                        className="font-12px margin-0 display-flex flex-column"
+                        style={{ gridColumn: "5 / 7", gap: "0.5rem" }}
+                    >
+                        <dt className="text-base-dark">Agreement Total</dt>
+                        <dd className="margin-0">
+                            <Tag
+                                tagStyle="primaryDarkTextLightBackground"
+                                text={convertToCurrency(agreementTotal)}
+                            />
+                        </dd>
+                    </dl>
+                </>
+            ) : (
+                <dl
+                    className="font-12px margin-0 display-flex flex-column"
+                    style={{ gridColumn: "1 / 3", gap: "0.5rem" }}
+                >
                     <dt className="text-base-dark">Agreement Total</dt>
                     <dd className="margin-0">
                         <Tag
@@ -133,16 +177,13 @@ function ApprovalFlowReviewCard({
                         />
                     </dd>
                 </dl>
-            </section>
-            {requestorNotes && (
-                <section className="margin-top-2">
-                    <dl className="font-12px">
-                        <dt className="text-base-dark margin-bottom-05">Notes</dt>
-                        <dd className="margin-0 text-pre-wrap">{requestorNotes}</dd>
-                    </dl>
-                </section>
             )}
-            <footer className="font-12px display-flex flex-justify flex-align-center">
+
+            {/* Footer Row: Date and Button */}
+            <footer
+                className="font-12px display-flex flex-justify flex-align-center"
+                style={{ gridColumn: "1 / 7" }}
+            >
                 <div className="text-base-dark display-flex flex-align-center">
                     <FontAwesomeIcon
                         icon={faClock}
@@ -184,7 +225,6 @@ ApprovalFlowReviewCard.propTypes = {
     navigationPath: PropTypes.string.isRequired,
     dataCyPrefix: PropTypes.string.isRequired,
     buttonText: PropTypes.string.isRequired,
-    requestorNotes: PropTypes.string,
     isCondensed: PropTypes.bool,
     forceHover: PropTypes.bool
 };

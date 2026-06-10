@@ -81,9 +81,9 @@ export const ReviewBudgetTeamRequisition = () => {
 
             <p className="margin-y-3">
                 Review the agreement details and Final Consensus Memo attached below. This agreement has been approved
-                by the Division Director for Pre-Award, and the Final Consensus Memo will be sent to the Procurement
-                Shop after the Budget Team completes the Requisition Request. Complete the Requisition Request outside
-                of OPS and then enter the Requisition # and Date.
+                by the Division Director for Pre-Award. After the Budget Team completes the requisition, the COR will
+                upload the Final Consensus Memo to the HHS Consolidated Acquisition Solution (HCAS). Complete the
+                Requisition Request outside of OPS and then enter the Requisition # and Date below.
             </p>
 
             {submitError && (
@@ -252,27 +252,23 @@ export const ReviewBudgetTeamRequisition = () => {
                 heading="Notes"
                 level={2}
             >
-                <p>Notes can be shared between the Submitter and Reviewer, if needed.</p>
+                <p className="margin-bottom-5">Notes can be shared between the Submitter and Reviewer, if needed.</p>
 
-                <div className="grid-row grid-gap margin-top-3">
+                <div className="grid-row grid-gap">
                     <div className="grid-col-6">
-                        <h3 className="font-sans-sm text-semibold margin-bottom-3">Submitter&apos;s Notes</h3>
-                        <div style={{ minHeight: "8.5rem", whiteSpace: "pre-wrap" }}>
-                            {requestorNotes || "No notes provided"}
-                        </div>
+                        <h3 className="font-sans-lg text-semibold margin-bottom-3">Submitter&apos;s Notes</h3>
+                        <div style={{ whiteSpace: "pre-wrap" }}>{requestorNotes || "No notes provided"}</div>
                     </div>
 
                     <div className="grid-col-6">
-                        <h3 className="font-sans-sm text-semibold margin-bottom-3">Division Director Notes</h3>
-                        <div style={{ minHeight: "8.5rem", whiteSpace: "pre-wrap" }}>
-                            {reviewerNotes || "No notes provided"}
-                        </div>
+                        <h3 className="font-sans-lg text-semibold margin-bottom-3">Division Director Notes</h3>
+                        <div style={{ whiteSpace: "pre-wrap" }}>{reviewerNotes || "No notes provided"}</div>
                     </div>
                 </div>
             </Accordion>
 
             {/* Attestation Checkbox */}
-            <div className="margin-top-4 maxw-tablet">
+            <div className="margin-top-2">
                 <div className="usa-checkbox">
                     <input
                         className="usa-checkbox__input"

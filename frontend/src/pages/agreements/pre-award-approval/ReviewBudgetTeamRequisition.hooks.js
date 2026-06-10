@@ -6,6 +6,7 @@ import useAlert from "../../../hooks/use-alert.hooks";
 import usePreAwardApprovalData from "./usePreAwardApprovalData";
 import DatePicker from "../../../components/UI/USWDS/DatePicker";
 import { formatDateForApi, formatDateForScreen } from "../../../helpers/utils";
+import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 
 /**
  * Custom hook for the ReviewBudgetTeamRequisition page.
@@ -101,7 +102,7 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
                 }
             }
         }
-    }, [step5?.id, step5?.requisition_number, step5?.requisition_date]);
+    }, [step5]);
 
     // Check if already processed
     const approvalAlreadyProcessed = step5?.requisition_approved_by != null;
@@ -154,9 +155,10 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
                     setAlert({
                         type: "success",
                         heading: "Pre-Award Requisition approved",
-                        message: `"${agreement?.name}" agreement has been successfully approved for Pre-Award Requisition. The COR will be notified to upload the Final Consensus Memo to the HHS Consolidated Acquisition Solution (HCAS). The agreement will be locked from editing until after it's awarded.`,
-                        redirectUrl: "/agreements?filter=change-requests"
+                        message: `"${agreement?.name}" agreement has been successfully approved for Pre-Award Requisition. The COR will be notified to upload the Final Consensus Memo to the HHS Consolidated Acquisition Solution (HCAS). The agreement will be locked from editing until after it's awarded.`
                     });
+                    scrollToTop();
+                    navigate("/agreements?filter=change-requests");
                 } catch (error) {
                     setSubmitError(
                         /** @type {any} */ (error)?.data?.error || "Failed to approve pre-award requisition"
@@ -215,9 +217,10 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
             setAlert({
                 type: "success",
                 heading: "Draft saved",
-                message: "Requisition information has been saved. You can return later to complete the approval.",
-                redirectUrl: "/agreements?filter=change-requests"
+                message: "Requisition information has been saved. You can return later to complete the approval."
             });
+            scrollToTop();
+            navigate("/agreements?filter=change-requests");
 
             setIsSubmitting(false);
         } catch (error) {

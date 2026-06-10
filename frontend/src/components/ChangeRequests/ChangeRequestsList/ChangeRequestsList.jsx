@@ -128,7 +128,6 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
                     )}
                     obligateByDate={getObligateByDate(step.procurement_tracker?.agreement?.budget_line_items ?? [])}
                     agreementTotal={step.procurement_tracker?.agreement?.agreement_total ?? 0}
-                    requestorNotes={step.requestor_notes}
                 />
             ))}
 
