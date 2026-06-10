@@ -252,7 +252,7 @@ describe("PreAwardApprovalAlert", () => {
             expect(mockDismissNotification).toHaveBeenCalledWith(1);
         });
 
-        it("should NOT auto-dismiss declined notifications", () => {
+        it("should auto-dismiss declined notifications", () => {
             render(
                 <Provider store={store}>
                     <PreAwardApprovalAlert
@@ -271,11 +271,11 @@ describe("PreAwardApprovalAlert", () => {
                 vi.advanceTimersByTime(6000);
             });
 
-            // Dismiss should NOT have been called for declined notification
-            expect(mockDismissNotification).not.toHaveBeenCalled();
+            // Dismiss should have been called for declined notification
+            expect(mockDismissNotification).toHaveBeenCalledWith(2);
         });
 
-        it("should auto-dismiss only approved notifications when both types present", () => {
+        it("should auto-dismiss all notifications when both types present", () => {
             render(
                 <Provider store={store}>
                     <PreAwardApprovalAlert
@@ -291,10 +291,10 @@ describe("PreAwardApprovalAlert", () => {
                 vi.advanceTimersByTime(6000);
             });
 
-            // Dismiss should only be called for the approved notification (id: 1)
-            expect(mockDismissNotification).toHaveBeenCalledTimes(1);
+            // Dismiss should be called for both notifications
+            expect(mockDismissNotification).toHaveBeenCalledTimes(2);
             expect(mockDismissNotification).toHaveBeenCalledWith(1);
-            expect(mockDismissNotification).not.toHaveBeenCalledWith(2);
+            expect(mockDismissNotification).toHaveBeenCalledWith(2);
         });
     });
 });
