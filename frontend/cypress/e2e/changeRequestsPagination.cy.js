@@ -269,10 +269,9 @@ describe("Change Requests List - Pagination", () => {
 
     it("shows 10 items on page 1, shows pagination, and a pre-award approval card appears somewhere in the list", () => {
         testLogin("division-director");
-        cy.visit("/agreements?filter=change-requests");
-
         cy.intercept({ method: "GET", url: "**/change-requests/**" }).as("changeRequests");
         cy.intercept({ method: "GET", url: "**/procurement-tracker-steps/pending-approvals/" }).as("preAwardApprovals");
+        cy.visit("/agreements?filter=change-requests");
         cy.wait(["@changeRequests", "@preAwardApprovals"]);
 
         // Page 1 should show exactly PAGE_SIZE items
@@ -309,11 +308,10 @@ describe("Change Requests List - Pagination", () => {
 
     it("shows at least one budget requisition card when logged in as budget-team", () => {
         testLogin("budget-team");
-        cy.visit("/agreements?filter=change-requests");
-
         cy.intercept({ method: "GET", url: "**/procurement-tracker-steps/pending-requisitions/" }).as(
             "budgetRequisitions"
         );
+        cy.visit("/agreements?filter=change-requests");
         cy.wait("@budgetRequisitions");
 
         cy.get("[data-cy='budget-team-requisition-review-card']").should("have.length.at.least", 1);
