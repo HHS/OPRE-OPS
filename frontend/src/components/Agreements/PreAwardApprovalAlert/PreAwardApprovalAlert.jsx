@@ -62,6 +62,16 @@ function PreAwardApprovalAlert({ notifications, isVisible }) {
     useEffect(() => {
         const timers = timerRefs.current;
 
+        // Cancel timers for notifications that are no longer in the list
+        const currentIds = new Set(preAwardNotifications.map((n) => n.id));
+        timers.forEach((timer, id) => {
+            if (!currentIds.has(id)) {
+                clearTimeout(timer);
+                timers.delete(id);
+            }
+        });
+
+        // Start new timers for approved notifications
         preAwardNotifications.forEach((notification) => {
             if (isApprovedNotification(notification) && !timers.has(notification.id)) {
                 const timer = setTimeout(() => {
@@ -73,7 +83,7 @@ function PreAwardApprovalAlert({ notifications, isVisible }) {
             }
         });
 
-        // Cleanup all timers on unmount or when notifications change
+        // Cleanup all timers on unmount
         return () => {
             timers.forEach((timer) => clearTimeout(timer));
             timers.clear();
