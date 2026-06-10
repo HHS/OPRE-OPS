@@ -344,4 +344,69 @@ describe("CreateBLIsAndSCs", () => {
 
         expect(screen.getByTestId("services-components")).toBeInTheDocument();
     });
+
+    test("hideFooterButtons hides the Cancel/Continue action row", () => {
+        const mockStore = createMockStore();
+        const contractAgreement = { ...agreement, agreement_type: AgreementType.CONTRACT };
+
+        render(
+            <Provider store={mockStore}>
+                <BrowserRouter>
+                    <CreateBLIsAndSCs
+                        budgetLines={contractAgreement.budget_line_items}
+                        selectedResearchProject={contractAgreement}
+                        selectedAgreement={contractAgreement}
+                        selectedProcurementShop={contractAgreement.procurement_shop}
+                        isEditMode={true}
+                        continueBtnText="Save Changes"
+                        wizardSteps={wizardSteps}
+                        workflow="none"
+                        currentStep={1}
+                        isReviewMode={false}
+                        canUserEditBudgetLines={false}
+                        setIsEditMode={setIsEditMode}
+                        includeDrafts={true}
+                        setIncludeDrafts={setIncludeDrafts}
+                        hideFooterButtons={true}
+                    />
+                </BrowserRouter>
+            </Provider>
+        );
+
+        expect(screen.queryByTestId("continue-btn")).not.toBeInTheDocument();
+        expect(screen.queryByTestId("cancel-button")).not.toBeInTheDocument();
+    });
+
+    test("registerBatchSave receives the batch save handler", () => {
+        const mockStore = createMockStore();
+        const contractAgreement = { ...agreement, agreement_type: AgreementType.CONTRACT };
+        const registerBatchSave = vi.fn();
+
+        render(
+            <Provider store={mockStore}>
+                <BrowserRouter>
+                    <CreateBLIsAndSCs
+                        budgetLines={contractAgreement.budget_line_items}
+                        selectedResearchProject={contractAgreement}
+                        selectedAgreement={contractAgreement}
+                        selectedProcurementShop={contractAgreement.procurement_shop}
+                        isEditMode={true}
+                        continueBtnText="Save Changes"
+                        wizardSteps={wizardSteps}
+                        workflow="none"
+                        currentStep={1}
+                        isReviewMode={false}
+                        canUserEditBudgetLines={false}
+                        setIsEditMode={setIsEditMode}
+                        includeDrafts={true}
+                        setIncludeDrafts={setIncludeDrafts}
+                        registerBatchSave={registerBatchSave}
+                    />
+                </BrowserRouter>
+            </Provider>
+        );
+
+        expect(registerBatchSave).toHaveBeenCalled();
+        expect(typeof registerBatchSave.mock.calls[0][0]).toBe("function");
+    });
 });

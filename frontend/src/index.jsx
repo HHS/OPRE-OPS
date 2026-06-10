@@ -30,6 +30,7 @@ import ProjectsList from "./pages/projects/list/ProjectsList";
 import ReleaseNotes from "./pages/home/release-notes";
 import ReportingPage from "./pages/reporting/ReportingPage";
 import UserAdmin from "./pages/users/admin/UserAdmin.jsx";
+import EditAgreementAndBudgetLines from "./pages/agreements/review/EditAgreementAndBudgetLines";
 import ReviewAgreement from "./pages/agreements/review/ReviewAgreement";
 import {
     RequestPreAwardApproval,
@@ -255,6 +256,20 @@ const router = createBrowserRouter(
                 <Route
                     path="/agreements/edit/:id/*"
                     element={<EditAgreement />}
+                />
+                <Route
+                    path="/agreements/review/:id/edit"
+                    element={<EditAgreementAndBudgetLines />}
+                    handle={{
+                        crumb: () => (
+                            <Link
+                                to="/agreements"
+                                className="text-primary"
+                            >
+                                Agreements
+                            </Link>
+                        )
+                    }}
                 />
                 <Route
                     path="/agreements/review/:id/*"

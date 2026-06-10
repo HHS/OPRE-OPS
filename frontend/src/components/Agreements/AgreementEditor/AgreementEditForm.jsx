@@ -1,3 +1,4 @@
+import React from "react";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { AgreementFields } from "../../../pages/agreements/agreements.constants";
 import ContractTypeSelect from "../../ServicesComponents/ContractTypeSelect";
@@ -40,6 +41,8 @@ import useAgreementEditForm from "./AgreementEditForm.hooks";
  * @param {string} [props.cancelHeading] - The heading for the cancel modal. - optional
  * @param {boolean} [props.isAgreementAwarded] - Whether any budget lines are obligated. - optional
  * @param {boolean} [props.areAnyBudgetLinesPlanned] - Whether any budget lines are planned. - optional
+ * @param {boolean} [props.hideFooterButtons] - Whether to hide the bottom action row (Cancel / Save Draft / Save Changes). - optional
+ * @param {function} [props.registerSave] - Callback that receives `{ saveAgreement, verifyUniquenessBeforeSubmit }` so a parent can trigger save externally. - optional
  * @returns {React.ReactElement} - The rendered component.
  */
 const AgreementEditForm = ({
@@ -52,7 +55,9 @@ const AgreementEditForm = ({
     selectedAgreementId,
     cancelHeading,
     isAgreementAwarded = false,
-    areAnyBudgetLinesPlanned = false
+    areAnyBudgetLinesPlanned = false,
+    hideFooterButtons = false,
+    registerSave
 }) => {
     const {
         cn,
@@ -123,6 +128,8 @@ const AgreementEditForm = ({
         showBlockerModal,
         setShowBlockerModal,
         blockerModalProps,
+        saveAgreement,
+        verifyUniquenessBeforeSubmit,
         isLoadingProductServiceCodes
     } = useAgreementEditForm(
         isAgreementAwarded,
@@ -138,6 +145,12 @@ const AgreementEditForm = ({
     );
 
     const awardedImmutableFieldsTooltipMsg = "This information cannot be edited on awarded agreements";
+
+    React.useEffect(() => {
+        if (registerSave) {
+            registerSave({ saveAgreement, verifyUniquenessBeforeSubmit });
+        }
+    }, [registerSave, saveAgreement, verifyUniquenessBeforeSubmit]);
 
     if (isLoadingProductServiceCodes) {
         return <div>Loading...</div>;
@@ -518,40 +531,42 @@ const AgreementEditForm = ({
                 value={agreementNotes || ""}
                 onChange={(name, value) => setAgreementNotes(value)}
             />
-            <div className="grid-row flex-justify margin-top-8">
-                {isWizardMode ? <GoBackButton handleGoBack={goBack} /> : <div />}
-                <div>
-                    <button
-                        type="button"
-                        className="usa-button usa-button--unstyled margin-right-2"
-                        data-cy="cancel-button"
-                        onClick={handleCancel}
-                    >
-                        Cancel
-                    </button>
-                    {isWizardMode && (
+            {!hideFooterButtons && (
+                <div className="grid-row flex-justify margin-top-8">
+                    {isWizardMode ? <GoBackButton handleGoBack={goBack} /> : <div />}
+                    <div>
                         <button
                             type="button"
-                            className="usa-button usa-button--outline"
-                            onClick={handleDraft}
-                            disabled={!isReviewMode && shouldDisableBtn}
-                            data-cy="save-draft-btn"
+                            className="usa-button usa-button--unstyled margin-right-2"
+                            data-cy="cancel-button"
+                            onClick={handleCancel}
                         >
-                            Save Draft
+                            Cancel
                         </button>
-                    )}
-                    <button
-                        type="button"
-                        id="continue"
-                        className="usa-button"
-                        onClick={handleContinue}
-                        disabled={shouldDisableBtn}
-                        data-cy="continue-btn"
-                    >
-                        {isWizardMode ? "Continue" : "Save Changes"}
-                    </button>
+                        {isWizardMode && (
+                            <button
+                                type="button"
+                                className="usa-button usa-button--outline"
+                                onClick={handleDraft}
+                                disabled={!isReviewMode && shouldDisableBtn}
+                                data-cy="save-draft-btn"
+                            >
+                                Save Draft
+                            </button>
+                        )}
+                        <button
+                            type="button"
+                            id="continue"
+                            className="usa-button"
+                            onClick={handleContinue}
+                            disabled={shouldDisableBtn}
+                            data-cy="continue-btn"
+                        >
+                            {isWizardMode ? "Continue" : "Save Changes"}
+                        </button>
+                    </div>
                 </div>
-            </div>
+            )}
         </>
     );
 };

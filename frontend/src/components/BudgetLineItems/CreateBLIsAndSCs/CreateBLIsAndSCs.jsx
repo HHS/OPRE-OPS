@@ -1,3 +1,4 @@
+import React from "react";
 import EditModeTitle from "../../../pages/agreements/EditModeTitle";
 import AgreementBudgetLinesHeader from "../../Agreements/AgreementBudgetLinesHeader";
 import AgreementTotalCard from "../../Agreements/AgreementDetailsCards/AgreementTotalCard";
@@ -36,6 +37,9 @@ import { findIfOptional } from "../../../helpers/servicesComponent.helpers";
  * @param {"agreement" | "none"} props.workflow - The workflow type.
  * @param {boolean} props.includeDrafts - Whether to include drafts budget lines.
  * @param {Function} props.setIncludeDrafts - A function to set the include drafts state.
+ * @param {boolean} [props.hideFooterButtons] - Whether to hide the bottom action row (Cancel / Continue / Save Changes). - optional
+ * @param {boolean} [props.hideWizardChrome] - Whether to suppress the step indicator, edit-mode title, and project summary card in the agreement workflow. - optional
+ * @param {function} [props.registerBatchSave] - Callback that receives the in-memory batch save handler so a parent can trigger save externally. - optional
  * @returns {JSX.Element} - The rendered component.
  */
 export const CreateBLIsAndSCs = ({
@@ -55,7 +59,10 @@ export const CreateBLIsAndSCs = ({
     isReviewMode,
     workflow,
     includeDrafts,
-    setIncludeDrafts
+    setIncludeDrafts,
+    hideFooterButtons = false,
+    hideWizardChrome = false,
+    registerBatchSave
 }) => {
     const {
         blocker,
@@ -117,6 +124,12 @@ export const CreateBLIsAndSCs = ({
 
     const isAgreementWorkflowOrCanEditBudgetLines = workflow === "agreement" || canUserEditBudgetLines;
 
+    React.useEffect(() => {
+        if (registerBatchSave) {
+            registerBatchSave(handleSave);
+        }
+    }, [registerBatchSave, handleSave]);
+
     return (
         <>
             {showModal && (
@@ -144,16 +157,20 @@ export const CreateBLIsAndSCs = ({
 
             {workflow === "agreement" && (
                 <>
-                    <EditModeTitle isEditMode={isEditMode || isReviewMode} />
-                    <StepIndicator
-                        steps={wizardSteps}
-                        currentStep={currentStep}
-                    />
-                    <ProjectAgreementSummaryCard
-                        selectedResearchProject={selectedResearchProject}
-                        selectedAgreement={selectedAgreement}
-                        selectedProcurementShop={selectedProcurementShop}
-                    />
+                    {!hideWizardChrome && (
+                        <>
+                            <EditModeTitle isEditMode={isEditMode || isReviewMode} />
+                            <StepIndicator
+                                steps={wizardSteps}
+                                currentStep={currentStep}
+                            />
+                            <ProjectAgreementSummaryCard
+                                selectedResearchProject={selectedResearchProject}
+                                selectedAgreement={selectedAgreement}
+                                selectedProcurementShop={selectedProcurementShop}
+                            />
+                        </>
+                    )}
                     {isAgreementWorkflowOrCanEditBudgetLines && (
                         <ServicesComponents
                             serviceRequirementType={selectedAgreement.service_requirement_type ?? ""}
@@ -280,30 +297,32 @@ export const CreateBLIsAndSCs = ({
             ) : (
                 <p className="text-center margin-y-7">You have not added any Budget Lines yet.</p>
             )}
-            <div className="display-flex flex-justify margin-top-1">
-                {workflow === "agreement" && <GoBackButton handleGoBack={handleGoBack} />}
-                <div className={workflow === "agreement" ? "" : "margin-left-auto"}>
-                    <button
-                        type="button"
-                        className="usa-button usa-button--unstyled margin-right-2"
-                        data-cy="cancel-button"
-                        onClick={handleCancel}
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        type="button"
-                        className="usa-button"
-                        data-cy="continue-btn"
-                        onClick={() => {
-                            handleSave(false);
-                        }}
-                        disabled={(isReviewMode && !res.isValid()) || !isAgreementWorkflowOrCanEditBudgetLines}
-                    >
-                        {isReviewMode ? "Save Changes" : continueBtnText}
-                    </button>
+            {!hideFooterButtons && (
+                <div className="display-flex flex-justify margin-top-1">
+                    {workflow === "agreement" && <GoBackButton handleGoBack={handleGoBack} />}
+                    <div className={workflow === "agreement" ? "" : "margin-left-auto"}>
+                        <button
+                            type="button"
+                            className="usa-button usa-button--unstyled margin-right-2"
+                            data-cy="cancel-button"
+                            onClick={handleCancel}
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="button"
+                            className="usa-button"
+                            data-cy="continue-btn"
+                            onClick={() => {
+                                handleSave(false);
+                            }}
+                            disabled={(isReviewMode && !res.isValid()) || !isAgreementWorkflowOrCanEditBudgetLines}
+                        >
+                            {isReviewMode ? "Save Changes" : continueBtnText}
+                        </button>
+                    </div>
                 </div>
-            </div>
+            )}
         </>
     );
 };

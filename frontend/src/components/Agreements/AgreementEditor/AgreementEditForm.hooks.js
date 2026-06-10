@@ -713,6 +713,7 @@ const useAgreementEditForm = (
         setShowBlockerModal,
         blockerModalProps,
         saveAgreement,
+        verifyUniquenessBeforeSubmit,
         isLoadingProductServiceCodes,
         isLoadingProjects
     };

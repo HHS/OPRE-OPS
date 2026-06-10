@@ -103,6 +103,7 @@ const baseHookState = {
     setShowBlockerModal: vi.fn(),
     blockerModalProps: {},
     saveAgreement: vi.fn(),
+    verifyUniquenessBeforeSubmit: vi.fn().mockResolvedValue(null),
     isLoadingProductServiceCodes: false,
     isLoadingProjects: false
 };
@@ -149,5 +150,42 @@ describe("AgreementEditForm Project field", () => {
         );
 
         expect(screen.getByRole("button", { name: "Save Changes" })).toBeDisabled();
+    });
+
+    it("hides the footer action row when hideFooterButtons is true", () => {
+        useAgreementEditForm.mockReturnValue({ ...baseHookState, isWizardMode: false });
+
+        render(
+            <AgreementEditForm
+                isEditMode={true}
+                setIsEditMode={vi.fn()}
+                hideFooterButtons={true}
+            />
+        );
+
+        expect(screen.queryByRole("button", { name: "Save Changes" })).not.toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "Cancel" })).not.toBeInTheDocument();
+    });
+
+    it("invokes registerSave with saveAgreement and verifyUniquenessBeforeSubmit", () => {
+        const saveAgreement = vi.fn();
+        const verifyUniquenessBeforeSubmit = vi.fn();
+        useAgreementEditForm.mockReturnValue({
+            ...baseHookState,
+            isWizardMode: false,
+            saveAgreement,
+            verifyUniquenessBeforeSubmit
+        });
+        const registerSave = vi.fn();
+
+        render(
+            <AgreementEditForm
+                isEditMode={true}
+                setIsEditMode={vi.fn()}
+                registerSave={registerSave}
+            />
+        );
+
+        expect(registerSave).toHaveBeenCalledWith({ saveAgreement, verifyUniquenessBeforeSubmit });
     });
 });
