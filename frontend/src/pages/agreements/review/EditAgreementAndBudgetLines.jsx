@@ -76,6 +76,20 @@ const EditAgreementAndBudgetLines = () => {
         navigate(`/agreements/review/${agreementId}`);
     };
 
+    // Suppresses the inner success alert/redirect from CreateBLIsAndSCs and replaces it
+    // with one that returns the user to the review page. Only fires when the BLI save
+    // path runs `showSuccessMessage` (no financial-snapshot approval modal). When the
+    // approval modal IS triggered, that flow owns its own alert + redirect.
+    const continueOverRide = useCallback(() => {
+        setAlert({
+            type: "success",
+            heading: "Changes Saved",
+            message: "Your changes have been saved.",
+            redirectUrl: `/agreements/review/${agreementId}`
+        });
+        scrollToTop();
+    }, [agreementId, setAlert]);
+
     const handlePageSave = async () => {
         if (isSaving) return;
         setIsSaving(true);
@@ -87,20 +101,12 @@ const EditAgreementAndBudgetLines = () => {
             }
 
             if (hasAgreementChanged && saveAgreementRef.current) {
-                await saveAgreementRef.current(null, true);
+                await saveAgreementRef.current(null);
             }
 
             if (saveBLIsAndSCsRef.current) {
                 await saveBLIsAndSCsRef.current(false);
             }
-
-            setAlert({
-                type: "success",
-                heading: "Changes Saved",
-                message: "Your changes have been saved.",
-                redirectUrl: `/agreements/review/${agreementId}`
-            });
-            scrollToTop();
         } catch (error) {
             console.error("Error saving agreement and budget lines:", error);
         } finally {
@@ -176,6 +182,7 @@ const EditAgreementAndBudgetLines = () => {
                     hideFooterButtons={true}
                     hideWizardChrome={true}
                     registerBatchSave={registerBatchSave}
+                    continueOverRide={continueOverRide}
                 />
                 <div className="grid-row flex-justify-end margin-top-4">
                     <button
