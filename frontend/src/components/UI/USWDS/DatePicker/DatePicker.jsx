@@ -43,33 +43,44 @@ function DatePicker({
 }) {
     const datePickerRef = useRef(null);
     const inputRef = useRef(null);
+    const onChangeRef = useRef(onChange);
+    const nameRef = useRef(name);
+
+    useEffect(() => {
+        onChangeRef.current = onChange;
+        nameRef.current = name;
+    }, [onChange, name]);
 
     useEffect(() => {
         const datePickerElement = datePickerRef.current;
         datePicker.on(datePickerElement);
         inputRef.current = datePicker.getDatePickerContext(datePickerElement).externalInputEl;
-        inputRef.current.value = value || ""; // Set initial value for uncontrolled input
 
         const handleInputChange = (event) => {
-            onChange({
+            onChangeRef.current({
                 target: {
-                    name: name,
+                    name: nameRef.current,
                     value: event.target.value
                 }
             });
         };
 
-        // Add event listener
         inputRef.current.addEventListener("change", handleInputChange);
 
         return () => {
-            // Ensure the input exists before attempting to remove the event listener
             if (inputRef.current) {
                 inputRef.current.removeEventListener("change", handleInputChange);
             }
             datePicker.off(datePickerElement);
         };
-    }, [onChange, value, name]); // Adding dependencies might ensure proper initialization and cleanup
+    }, []);
+
+    // Sync external value into the uncontrolled input without re-initializing USWDS
+    useEffect(() => {
+        if (inputRef.current && inputRef.current.value !== (value || "")) {
+            inputRef.current.value = value || "";
+        }
+    }, [value]);
 
     const datePickerAttributes = {
         ...(minDate && { "data-min-date": getDateString(minDate) }),
