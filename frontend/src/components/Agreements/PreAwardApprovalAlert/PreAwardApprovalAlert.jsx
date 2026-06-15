@@ -58,7 +58,7 @@ function PreAwardApprovalAlert({ notifications, isVisible }) {
     // Track which notification IDs have timers to prevent duplicate timers
     const timerRefs = useRef(new Map());
 
-    // Auto-dismiss all notifications after 6 seconds (each notification gets its own timer)
+    // Auto-dismiss approved notifications after 6 seconds (each notification gets its own independent timer)
     useEffect(() => {
         const timers = timerRefs.current;
 
@@ -71,7 +71,7 @@ function PreAwardApprovalAlert({ notifications, isVisible }) {
             }
         });
 
-        // Start new timers for all notifications
+        // Start new timers for notifications that don't have timers yet
         preAwardNotifications.forEach((notification) => {
             if (!timers.has(notification.id)) {
                 const timer = setTimeout(() => {
@@ -82,13 +82,16 @@ function PreAwardApprovalAlert({ notifications, isVisible }) {
                 timers.set(notification.id, timer);
             }
         });
+    }, [preAwardNotifications, handleDismiss]);
 
-        // Cleanup all timers on unmount
+    // Cleanup all timers on unmount only
+    useEffect(() => {
+        const timers = timerRefs.current;
         return () => {
             timers.forEach((timer) => clearTimeout(timer));
             timers.clear();
         };
-    }, [preAwardNotifications, handleDismiss]);
+    }, []);
 
     // Don't render if not visible or no notifications
     if (!isVisible || preAwardNotifications.length === 0) {

@@ -125,16 +125,27 @@ export const groupByServicesComponent = (budgetLines, servicesComponents = []) =
         const groupedBudgetLinesBySc = budgetLines.reduce((acc, budgetLine) => {
             // Try to get services_component_number from the BLI, or look it up by ID
             let servicesComponentNumber = budgetLine.services_component_number;
+            let sc = null;
             if (servicesComponentNumber == null && budgetLine.services_component_id) {
                 // Use loose equality to handle both numeric and string IDs from form submissions
-                const sc = servicesComponents.find((sc) => sc.id == budgetLine.services_component_id);
+                sc = servicesComponents.find((sc) => sc.id == budgetLine.services_component_id);
                 servicesComponentNumber = sc?.number ?? 0;
             } else {
                 servicesComponentNumber = servicesComponentNumber ?? 0;
             }
 
-            const serviceComponentGroupingLabel =
-                budgetLine.serviceComponentGroupingLabel ?? String(servicesComponentNumber);
+            // Reconstruct label from service component data if missing, including sub_component
+            let serviceComponentGroupingLabel = budgetLine.serviceComponentGroupingLabel;
+            if (!serviceComponentGroupingLabel) {
+                // If we haven't looked up the SC yet, do it now
+                if (!sc && budgetLine.services_component_id) {
+                    sc = servicesComponents.find((sc) => sc.id == budgetLine.services_component_id);
+                }
+                // Create label matching the pattern used elsewhere: number or "number-sub_component"
+                serviceComponentGroupingLabel = sc?.sub_component
+                    ? `${servicesComponentNumber}-${sc.sub_component}`
+                    : String(servicesComponentNumber);
+            }
 
             const index = acc.findIndex((item) => item.serviceComponentGroupingLabel === serviceComponentGroupingLabel);
 

@@ -296,5 +296,70 @@ describe("PreAwardApprovalAlert", () => {
             expect(mockDismissNotification).toHaveBeenCalledWith(1);
             expect(mockDismissNotification).toHaveBeenCalledWith(2);
         });
+
+        it("should preserve existing timers when new notifications arrive", () => {
+            const firstNotification = {
+                id: 1,
+                notification_type: "PRE_AWARD_APPROVAL_NOTIFICATION",
+                is_read: false,
+                procurement_tracker_step: { approval_status: "APPROVED" }
+            };
+            const secondNotification = {
+                id: 2,
+                notification_type: "PRE_AWARD_APPROVAL_NOTIFICATION",
+                is_read: false,
+                procurement_tracker_step: { approval_status: "DECLINED" }
+            };
+
+            // Start with one notification
+            const { rerender } = render(
+                <Provider store={store}>
+                    <PreAwardApprovalAlert
+                        notifications={[firstNotification]}
+                        isVisible={true}
+                    />
+                </Provider>
+            );
+
+            // First notification's timer starts at 0ms
+            expect(mockDismissNotification).not.toHaveBeenCalled();
+
+            // Advance timer partway (3 seconds)
+            act(() => {
+                vi.advanceTimersByTime(3000);
+            });
+
+            // Should NOT have dismissed yet
+            expect(mockDismissNotification).not.toHaveBeenCalled();
+
+            // Re-render with a second notification added (gets its own 6s timer from now)
+            rerender(
+                <Provider store={store}>
+                    <PreAwardApprovalAlert
+                        notifications={[firstNotification, secondNotification]}
+                        isVisible={true}
+                    />
+                </Provider>
+            );
+
+            // Advance 3 more seconds (total 6 seconds for first notification)
+            act(() => {
+                vi.advanceTimersByTime(3000);
+            });
+
+            // First notification should dismiss at 6 seconds total (not restarted to 9s)
+            expect(mockDismissNotification).toHaveBeenCalledTimes(1);
+            expect(mockDismissNotification).toHaveBeenCalledWith(1);
+
+            // Second notification should still be counting (only 3s elapsed for it)
+            // Advance 3 more seconds (total 6s for second notification)
+            act(() => {
+                vi.advanceTimersByTime(3000);
+            });
+
+            // Second notification should now also dismiss
+            expect(mockDismissNotification).toHaveBeenCalledTimes(2);
+            expect(mockDismissNotification).toHaveBeenCalledWith(2);
+        });
     });
 });

@@ -268,6 +268,39 @@ describe("groupByServicesComponent", () => {
             }
         ]);
     });
+
+    it("should include sub_component in fallback label when serviceComponentGroupingLabel is missing", () => {
+        const budgetLines = [
+            // BLI with explicit label (should use as-is)
+            { id: 1, services_component_id: 1, serviceComponentGroupingLabel: "10-A" },
+            // BLI with missing label and SC with sub_component (should reconstruct "10-A")
+            { id: 2, services_component_id: 1 },
+            // BLI with missing label and SC without sub_component (should use "20")
+            { id: 3, services_component_id: 2 }
+        ];
+        const servicesComponents = [
+            { id: 1, number: 10, sub_component: "A" },
+            { id: 2, number: 20, sub_component: null }
+        ];
+
+        const result = groupByServicesComponent(budgetLines, servicesComponents);
+
+        expect(result).toEqual([
+            {
+                servicesComponentNumber: 10,
+                serviceComponentGroupingLabel: "10-A",
+                budgetLines: [
+                    { id: 1, services_component_id: 1, serviceComponentGroupingLabel: "10-A" },
+                    { id: 2, services_component_id: 1 }
+                ]
+            },
+            {
+                servicesComponentNumber: 20,
+                serviceComponentGroupingLabel: "20",
+                budgetLines: [{ id: 3, services_component_id: 2 }]
+            }
+        ]);
+    });
 });
 describe("isBLIPermanent", () => {
     it("should return true if the budget line is permanent", () => {
