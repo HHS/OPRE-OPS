@@ -209,7 +209,9 @@ describe("ChangeRequestList", () => {
             has_budget_change: true,
             has_status_change: false
         });
-        const elevenCRs = Array.from({ length: 11 }, (_, i) => makeCR(i + 1, `2024-06-${String(i + 1).padStart(2, "0")}T00:00:00`));
+        const elevenCRs = Array.from({ length: 11 }, (_, i) =>
+            makeCR(i + 1, `2024-06-${String(i + 1).padStart(2, "0")}T00:00:00`)
+        );
 
         useGetChangeRequestsListQuery.mockReturnValue({
             data: { data: elevenCRs, count: 11, limit: 1000, offset: 0 }
