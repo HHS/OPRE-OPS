@@ -18,6 +18,13 @@ _Write out steps for how someone could test this PR against the acceptance crite
 - [ ] Accessibility changes included and validated against WCAG 2.1 AA intent
 - [ ] Any temporary suppression includes `A11Y-SUPPRESSION` metadata (owner, expires, rationale)
 
+## Storybook
+
+- [ ] No UI component changes in this PR
+- [ ] Story added for new component in `src/components/UI/`
+- [ ] Story updated to reflect changed props/states
+- [ ] N/A — change is page-specific or non-visual
+
 ## Screenshots
 
 _If relevant, e.g. for a front-end feature_
