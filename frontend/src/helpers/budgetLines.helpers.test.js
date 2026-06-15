@@ -240,6 +240,34 @@ describe("groupByServicesComponent", () => {
             }
         ]);
     });
+
+    it("should lookup service component number by ID when services_component_id is a string", () => {
+        const budgetLines = [
+            // BLI with string ID (can occur from form submissions)
+            { id: 1, services_component_id: "1" },
+            // BLI with string ID
+            { id: 2, services_component_id: "2" }
+        ];
+        const servicesComponents = [
+            { id: 1, number: 10 },
+            { id: 2, number: 20 }
+        ];
+
+        const result = groupByServicesComponent(budgetLines, servicesComponents);
+
+        expect(result).toEqual([
+            {
+                servicesComponentNumber: 10,
+                serviceComponentGroupingLabel: "10",
+                budgetLines: [{ id: 1, services_component_id: "1" }]
+            },
+            {
+                servicesComponentNumber: 20,
+                serviceComponentGroupingLabel: "20",
+                budgetLines: [{ id: 2, services_component_id: "2" }]
+            }
+        ]);
+    });
 });
 describe("isBLIPermanent", () => {
     it("should return true if the budget line is permanent", () => {

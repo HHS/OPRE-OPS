@@ -126,7 +126,8 @@ export const groupByServicesComponent = (budgetLines, servicesComponents = []) =
             // Try to get services_component_number from the BLI, or look it up by ID
             let servicesComponentNumber = budgetLine.services_component_number;
             if (servicesComponentNumber == null && budgetLine.services_component_id) {
-                const sc = servicesComponents.find((sc) => sc.id === budgetLine.services_component_id);
+                // Use loose equality to handle both numeric and string IDs from form submissions
+                const sc = servicesComponents.find((sc) => sc.id == budgetLine.services_component_id);
                 servicesComponentNumber = sc?.number ?? 0;
             } else {
                 servicesComponentNumber = servicesComponentNumber ?? 0;
