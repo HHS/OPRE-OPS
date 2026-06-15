@@ -353,6 +353,19 @@ Every story automatically receives two global decorators (configured in `.storyb
 
 `*.stories.jsx` files are excluded from the 90% Vitest coverage gate. Stories are documentation, not tests.
 
+### How to Add a Story
+
+1. Create `ComponentName.stories.jsx` next to `ComponentName.jsx` (same directory, same base name).
+2. Default-export the CSF meta object — `{ title: "UI/<Path>", component }` — using the title hierarchy table above.
+3. Named-export each variant as a CSF object. Use `args` for props, `parameters.store.preloadedState` to seed Redux state, and `parameters.reactRouter.initialEntries` to set the initial route. Reference `frontend/src/components/UI/Alert/Alert.stories.jsx` (Redux-seeded variants) and `frontend/src/components/UI/Button/GoBackButton/GoBackButton.stories.jsx` (`argTypes` + `fn()`).
+4. Run `bun run storybook` to verify locally; `bun run lint` runs `eslint-plugin-storybook` over story files and `.storybook/` config.
+
+### Enforcement
+
+- `eslint-plugin-storybook` (flat config in `frontend/eslint.config.js`) lints `*.stories.*` files and `.storybook/main.*` for CSF correctness and config errors. Run via `bun run lint`.
+- The `Storybook Build` GitHub Actions workflow runs `bun run build-storybook` on PRs that touch `frontend/src/components/**` or `frontend/.storybook/**`.
+- A `Stories Coverage Check` job in the same workflow emits a non-blocking warning when an added/changed component under `src/components/UI/` lacks a co-located `*.stories.jsx`.
+
 See [`frontend/.storybook/README.md`](./frontend/.storybook/README.md) for full conventions and [`docs/adr/031-storybook-for-component-documentation.md`](./docs/adr/031-storybook-for-component-documentation.md) for the architectural decision record.
 
 ## Important Notes
