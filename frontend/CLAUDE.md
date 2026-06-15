@@ -74,6 +74,14 @@ src/components/UI/Alert/
 
 **Coverage**: `*.stories.jsx` files are excluded from the 90% coverage gate.
 
+**How to add a story:**
+1. Create `ComponentName.stories.jsx` next to `ComponentName.jsx`.
+2. Default-export `{ title: "UI/<Path>", component }` per the title hierarchy in `.storybook/README.md`.
+3. Named-export each variant as a CSF object — use `args` for props and `parameters.store.preloadedState` / `parameters.reactRouter.initialEntries` for context. See `src/components/UI/Alert/Alert.stories.jsx` and `src/components/UI/Button/GoBackButton/GoBackButton.stories.jsx` for reference.
+4. Run `bun run storybook` to verify; `bun run lint` runs `eslint-plugin-storybook` over story files and `.storybook/` config.
+
+**Enforcement**: PRs that touch `frontend/src/components/**` or `frontend/.storybook/**` must pass the `Storybook Build` workflow. A non-blocking `Stories Coverage Check` warns when an added/changed `src/components/UI/` component lacks a co-located `*.stories.jsx`.
+
 See [`.storybook/README.md`](.storybook/README.md) for the full conventions guide.
 
 ### Code Quality
