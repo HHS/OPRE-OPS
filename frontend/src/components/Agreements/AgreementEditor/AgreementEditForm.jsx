@@ -43,6 +43,7 @@ import useAgreementEditForm from "./AgreementEditForm.hooks";
  * @param {boolean} [props.areAnyBudgetLinesPlanned] - Whether any budget lines are planned. - optional
  * @param {boolean} [props.hideFooterButtons] - Whether to hide the bottom action row (Cancel / Save Draft / Save Changes). - optional
  * @param {function} [props.registerSave] - Callback that receives `{ saveAgreement, verifyUniquenessBeforeSubmit }` so a parent can trigger save externally. - optional
+ * @param {function} [props.onValidityChange] - Called with `true` when the form is valid (no required-field, vest, or uniqueness errors), `false` otherwise. - optional
  * @returns {React.ReactElement} - The rendered component.
  */
 const AgreementEditForm = ({
@@ -57,7 +58,8 @@ const AgreementEditForm = ({
     isAgreementAwarded = false,
     areAnyBudgetLinesPlanned = false,
     hideFooterButtons = false,
-    registerSave
+    registerSave,
+    onValidityChange
 }) => {
     const {
         cn,
@@ -151,6 +153,12 @@ const AgreementEditForm = ({
             registerSave({ saveAgreement, verifyUniquenessBeforeSubmit });
         }
     }, [registerSave, saveAgreement, verifyUniquenessBeforeSubmit]);
+
+    React.useEffect(() => {
+        if (onValidityChange) {
+            onValidityChange(!shouldDisableBtn);
+        }
+    }, [onValidityChange, shouldDisableBtn]);
 
     if (isLoadingProductServiceCodes) {
         return <div>Loading...</div>;

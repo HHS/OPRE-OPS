@@ -8,6 +8,7 @@ import { EditAgreementProvider } from "../../../components/Agreements/AgreementE
 import CreateBLIsAndSCs from "../../../components/BudgetLineItems/CreateBLIsAndSCs";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import { BLI_STATUS, hasAnyBliInSelectedStatus } from "../../../helpers/budgetLines.helpers";
+import { scrollToCenter } from "../../../helpers/scrollToCenter.helper";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import useAlert from "../../../hooks/use-alert.hooks";
 
@@ -31,6 +32,8 @@ const EditAgreementAndBudgetLines = () => {
     const [hasAgreementChanged, setHasAgreementChanged] = useState(false);
     const [includeDrafts, setIncludeDrafts] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
+    const [isAgreementFormValid, setIsAgreementFormValid] = useState(true);
+    const [isBudgetLinesValid, setIsBudgetLinesValid] = useState(true);
 
     const saveAgreementRef = useRef(null);
     const verifyUniquenessRef = useRef(null);
@@ -96,19 +99,25 @@ const EditAgreementAndBudgetLines = () => {
         try {
             const conflictField = await verifyUniquenessRef.current?.();
             if (conflictField) {
-                setIsSaving(false);
+                requestAnimationFrame(() => scrollToCenter(conflictField));
                 return;
             }
 
             if (hasAgreementChanged && saveAgreementRef.current) {
-                await saveAgreementRef.current(null);
+                await saveAgreementRef.current(null, false, true);
             }
 
             if (saveBLIsAndSCsRef.current) {
-                await saveBLIsAndSCsRef.current(false);
+                await saveBLIsAndSCsRef.current(false, true);
             }
         } catch (error) {
             console.error("Error saving agreement and budget lines:", error);
+            const detail = error?.data?.error || error?.message || "Please try again.";
+            setAlert({
+                type: "error",
+                heading: "Error saving changes",
+                message: `An error occurred while saving. ${detail}`
+            });
         } finally {
             setIsSaving(false);
         }
@@ -167,6 +176,7 @@ const EditAgreementAndBudgetLines = () => {
                     areAnyBudgetLinesPlanned={areAnyBudgetLinesPlanned}
                     hideFooterButtons={true}
                     registerSave={registerAgreementSave}
+                    onValidityChange={setIsAgreementFormValid}
                 />
                 <CreateBLIsAndSCs
                     workflow="agreement"
@@ -183,6 +193,7 @@ const EditAgreementAndBudgetLines = () => {
                     hideWizardChrome={true}
                     registerBatchSave={registerBatchSave}
                     continueOverRide={continueOverRide}
+                    onValidityChange={setIsBudgetLinesValid}
                 />
                 <div className="grid-row flex-justify-end margin-top-4">
                     <button
@@ -198,7 +209,7 @@ const EditAgreementAndBudgetLines = () => {
                         className="usa-button"
                         data-cy="save-edit-agreement-btn"
                         onClick={handlePageSave}
-                        disabled={isSaving}
+                        disabled={isSaving || !isAgreementFormValid || !isBudgetLinesValid}
                     >
                         Save changes
                     </button>

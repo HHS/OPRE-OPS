@@ -40,6 +40,7 @@ import { findIfOptional } from "../../../helpers/servicesComponent.helpers";
  * @param {boolean} [props.hideFooterButtons] - Whether to hide the bottom action row (Cancel / Continue / Save Changes). - optional
  * @param {boolean} [props.hideWizardChrome] - Whether to suppress the step indicator, edit-mode title, and project summary card in the agreement workflow. - optional
  * @param {function} [props.registerBatchSave] - Callback that receives the in-memory batch save handler so a parent can trigger save externally. - optional
+ * @param {function} [props.onValidityChange] - Called with `true` when the budget-lines form is valid (no vest errors and the user is allowed to edit), `false` otherwise. Only meaningful in review mode. - optional
  * @returns {JSX.Element} - The rendered component.
  */
 export const CreateBLIsAndSCs = ({
@@ -62,7 +63,8 @@ export const CreateBLIsAndSCs = ({
     setIncludeDrafts,
     hideFooterButtons = false,
     hideWizardChrome = false,
-    registerBatchSave
+    registerBatchSave,
+    onValidityChange
 }) => {
     const {
         blocker,
@@ -129,6 +131,13 @@ export const CreateBLIsAndSCs = ({
             registerBatchSave(handleSave);
         }
     }, [registerBatchSave, handleSave]);
+
+    const isBLIsValid = res.isValid() && isAgreementWorkflowOrCanEditBudgetLines;
+    React.useEffect(() => {
+        if (onValidityChange) {
+            onValidityChange(isBLIsValid);
+        }
+    }, [onValidityChange, isBLIsValid]);
 
     return (
         <>

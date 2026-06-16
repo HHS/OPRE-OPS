@@ -111,6 +111,20 @@ const useAgreementEditForm = (
         selected_project_officer: selectedProjectOfficer,
         selected_alternate_project_officer: selectedAlternateProjectOfficer
     } = useEditAgreement();
+
+    // Capture the original agreement identity once at mount. The reducer mutates
+    // agreement.name/nick_name/agreement_type as the user types, so comparing
+    // against `agreement?.name` would treat the typed-in duplicate as "the
+    // current row" and suppress the conflict. We need the pre-edit baseline.
+    const originalAgreementRef = React.useRef(null);
+    if (originalAgreementRef.current === null && agreement?.id) {
+        originalAgreementRef.current = {
+            id: agreement.id,
+            name: agreement.name,
+            nick_name: agreement.nick_name,
+            agreement_type: agreement.agreement_type
+        };
+    }
     const {
         notes: agreementNotes,
         vendor: agreementVendor,
@@ -238,12 +252,15 @@ const useAgreementEditForm = (
                 const totalMatches = result?.count ?? 0;
                 // The current agreement (in edit mode) is itself in the result set when its
                 // saved value still matches the input. Treat that one row as not a conflict.
+                // Compare against the original (pre-edit) values, not the live reducer state,
+                // since `agreement.name` / `nick_name` get mutated as the user types.
+                const original = originalAgreementRef.current;
                 const currentMatchesInput =
-                    !!agreement?.id &&
+                    !!original?.id &&
                     (field === "name"
-                        ? agreement?.agreement_type === agreementType &&
-                          (agreement?.name ?? "").toLowerCase() === trimmed.toLowerCase()
-                        : agreement?.nick_name === trimmed);
+                        ? original.agreement_type === agreementType &&
+                          (original.name ?? "").toLowerCase() === trimmed.toLowerCase()
+                        : original.nick_name === trimmed);
                 const conflict = totalMatches > (currentMatchesInput ? 1 : 0);
                 setUniquenessErrors((prev) => ({
                     ...prev,
@@ -255,14 +272,7 @@ const useAgreementEditForm = (
                 return false;
             }
         },
-        [
-            agreement?.id,
-            agreement?.agreement_type,
-            agreement?.name,
-            agreement?.nick_name,
-            agreementType,
-            triggerGetAgreements
-        ]
+        [agreementType, triggerGetAgreements]
     );
 
     const checkUniqueOnBlur = React.useMemo(
@@ -353,7 +363,7 @@ const useAgreementEditForm = (
     };
 
     const saveAgreement = React.useCallback(
-        async (redirectUrl = null, skipChangeCheck = false) => {
+        async (redirectUrl = null, skipChangeCheck = false, suppressErrorAlert = false) => {
             const data = {
                 ...agreement,
                 team_members: selectedTeamMembers.map((team_member) => {
@@ -408,12 +418,14 @@ const useAgreementEditForm = (
                     return true;
                 } catch (rejected) {
                     console.error(`UPDATE: agreement updated failed: ${JSON.stringify(rejected, null, 2)}`);
-                    setAlert({
-                        type: "error",
-                        heading: "Error",
-                        message: "An error occurred while saving the agreement.",
-                        redirectUrl: "/error"
-                    });
+                    if (!suppressErrorAlert) {
+                        setAlert({
+                            type: "error",
+                            heading: "Error",
+                            message: "An error occurred while saving the agreement.",
+                            redirectUrl: "/error"
+                        });
+                    }
                     // Don't call scrollToTop on error - let the redirect happen
                     throw rejected; // Re-throw to prevent further execution
                 }
