@@ -100,7 +100,11 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
     });
 
     const allItems = [...taggedBudgetRequisitions, ...taggedPreAwardApprovals, ...taggedChangeRequests].sort((a, b) =>
-        b._sortDate > a._sortDate ? 1 : b._sortDate < a._sortDate ? -1 : b.item.id - a.item.id
+        b._sortDate > a._sortDate ? 1
+            : b._sortDate < a._sortDate ? -1
+            : a._type < b._type ? -1
+            : a._type > b._type ? 1
+            : b.item.id - a.item.id
     );
 
     const totalPages = Math.ceil(allItems.length / PAGE_SIZE);
@@ -181,7 +185,7 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
                             key={`cr-proc-shop-${cr.id}`}
                             changeRequestId={cr.id}
                             agreementId={cr.agreement_id}
-                            requesterName={cr.created_by_user.display_name ?? cr.created_by_user.full_name}
+                            requesterName={cr.created_by_user?.display_name ?? cr.created_by_user?.full_name}
                             requestDate={cr.created_on}
                             handleReviewChangeRequest={handleReviewChangeRequest}
                             oldAwardingEntityId={cr?.requested_change_diff?.awarding_entity_id?.old ?? 0}
