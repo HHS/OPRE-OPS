@@ -123,6 +123,12 @@ const EditAgreementAndBudgetLines = () => {
         }
     };
 
+    useEffect(() => {
+        if (errorAgreement || errorServicesComponent) {
+            navigate("/error");
+        }
+    }, [errorAgreement, errorServicesComponent, navigate]);
+
     if (isLoadingAgreement || isLoadingServicesComponents) {
         return (
             <App breadCrumbName="Edit Agreement and Budget Lines">
@@ -132,7 +138,6 @@ const EditAgreementAndBudgetLines = () => {
     }
 
     if (errorAgreement || errorServicesComponent) {
-        navigate("/error");
         return null;
     }
 
