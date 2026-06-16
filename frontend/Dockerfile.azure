@@ -56,7 +56,7 @@ RUN VITE_BACKEND_DOMAIN=${VITE_BACKEND_DOMAIN} VITE_ENABLE_MSW=${VITE_ENABLE_MSW
     fi
 
 # ---- Release Stage ----
-FROM alpine:3.24.0 as release
+FROM alpine:3.24.1 as release
 
 # hadolint ignore=DL3018
 RUN apk update && apk upgrade --no-cache && apk add --no-cache nginx && rm -rf /var/cache/apk/*
