@@ -969,3 +969,179 @@ def test_optional_services_component_for_power_user(
 
     # Test data should be fully removed from DB
     loaded_db.commit()
+
+
+def test_planned_bli_can_update_services_component_without_change_request(
+    auth_client,
+    loaded_db,
+    test_can,
+    test_contract,
+    test_services_component,
+    app_ctx,
+):
+    """A PLANNED BLI can have its services_component_id changed directly, without creating a change request."""
+    agreement = test_contract
+
+    sc2 = ServicesComponent(
+        agreement=agreement,
+        number=100,
+        optional=False,
+    )
+    loaded_db.add(sc2)
+
+    bli = ContractBudgetLineItem(
+        line_description="Planned BLI for SC update test",
+        agreement_id=agreement.id,
+        date_needed=datetime.now() + timedelta(days=1),
+        can_id=test_can.id,
+        status=BudgetLineItemStatus.PLANNED,
+        amount=1000.00,
+        services_component_id=test_services_component.id,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    assert bli.change_requests_in_review is None
+
+    response = auth_client.patch(
+        url_for("api.budget-line-items-item", id=bli.id),
+        json={"services_component_id": sc2.id},
+    )
+
+    assert response.status_code == 200, "PLANNED BLI services_component_id update should return 200, not 202"
+
+    loaded_db.refresh(bli)
+    assert bli.services_component_id == sc2.id, "services_component_id should be updated directly"
+    assert bli.change_requests_in_review is None, "No change request should be created for services_component_id update"
+
+    loaded_db.delete(bli)
+    loaded_db.delete(sc2)
+    loaded_db.commit()
+
+
+def test_planned_bli_can_update_line_description_without_change_request(
+    auth_client,
+    loaded_db,
+    test_can,
+    test_contract,
+    test_services_component,
+    app_ctx,
+):
+    """A PLANNED BLI can have its line_description changed directly, without creating a change request."""
+    agreement = test_contract
+
+    bli = ContractBudgetLineItem(
+        line_description="Original Description",
+        agreement_id=agreement.id,
+        date_needed=datetime.now() + timedelta(days=1),
+        can_id=test_can.id,
+        status=BudgetLineItemStatus.PLANNED,
+        amount=1000.00,
+        services_component_id=test_services_component.id,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    assert bli.change_requests_in_review is None
+
+    response = auth_client.patch(
+        url_for("api.budget-line-items-item", id=bli.id),
+        json={"line_description": "Updated Description"},
+    )
+
+    assert response.status_code == 200, "PLANNED BLI line_description update should return 200, not 202"
+
+    loaded_db.refresh(bli)
+    assert bli.line_description == "Updated Description", "line_description should be updated directly"
+    assert bli.change_requests_in_review is None, "No change request should be created for line_description update"
+
+    loaded_db.delete(bli)
+    loaded_db.commit()
+
+
+def test_in_execution_bli_can_update_services_component_without_change_request(
+    auth_client,
+    loaded_db,
+    test_can,
+    test_contract,
+    test_services_component,
+    app_ctx,
+):
+    """An IN_EXECUTION BLI can have its services_component_id changed directly, without creating a change request."""
+    agreement = test_contract
+
+    sc2 = ServicesComponent(
+        agreement=agreement,
+        number=100,
+        optional=False,
+    )
+    loaded_db.add(sc2)
+
+    bli = ContractBudgetLineItem(
+        line_description="In Execution BLI for SC update test",
+        agreement_id=agreement.id,
+        date_needed=datetime.now() + timedelta(days=1),
+        can_id=test_can.id,
+        status=BudgetLineItemStatus.IN_EXECUTION,
+        amount=1000.00,
+        services_component_id=test_services_component.id,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    assert bli.change_requests_in_review is None
+
+    response = auth_client.patch(
+        url_for("api.budget-line-items-item", id=bli.id),
+        json={"services_component_id": sc2.id},
+    )
+
+    assert response.status_code == 200, "IN_EXECUTION BLI services_component_id update should return 200, not 202"
+
+    loaded_db.refresh(bli)
+    assert bli.services_component_id == sc2.id, "services_component_id should be updated directly"
+    assert bli.change_requests_in_review is None, "No change request should be created for services_component_id update"
+
+    loaded_db.delete(bli)
+    loaded_db.delete(sc2)
+    loaded_db.commit()
+
+
+def test_in_execution_bli_can_update_line_description_without_change_request(
+    auth_client,
+    loaded_db,
+    test_can,
+    test_contract,
+    test_services_component,
+    app_ctx,
+):
+    """An IN_EXECUTION BLI can have its line_description changed directly, without creating a change request."""
+    agreement = test_contract
+
+    bli = ContractBudgetLineItem(
+        line_description="Original Description",
+        agreement_id=agreement.id,
+        date_needed=datetime.now() + timedelta(days=1),
+        can_id=test_can.id,
+        status=BudgetLineItemStatus.IN_EXECUTION,
+        amount=1000.00,
+        services_component_id=test_services_component.id,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+
+    assert bli.change_requests_in_review is None
+
+    response = auth_client.patch(
+        url_for("api.budget-line-items-item", id=bli.id),
+        json={"line_description": "Updated Description"},
+    )
+
+    assert response.status_code == 200, "IN_EXECUTION BLI line_description update should return 200, not 202"
+
+    loaded_db.refresh(bli)
+    assert bli.line_description == "Updated Description", "line_description should be updated directly"
+    assert bli.change_requests_in_review is None, "No change request should be created for line_description update"
+
+    loaded_db.delete(bli)
+    loaded_db.commit()
