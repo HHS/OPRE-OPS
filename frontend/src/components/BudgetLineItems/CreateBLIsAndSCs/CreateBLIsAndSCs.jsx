@@ -140,7 +140,7 @@ export const CreateBLIsAndSCs = ({
         let cancelled = false;
         (async () => {
             try {
-                await handleSaveRef.current?.(false, true);
+                await handleSaveRef.current?.(false, true, true);
                 if (!cancelled) onSavedRef.current?.({ ok: true });
             } catch (error) {
                 if (!cancelled) onSavedRef.current?.({ ok: false, error });

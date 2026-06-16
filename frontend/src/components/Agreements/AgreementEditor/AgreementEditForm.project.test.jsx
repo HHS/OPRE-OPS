@@ -199,7 +199,7 @@ describe("AgreementEditForm Project field", () => {
 
         await waitFor(() => expect(onSaved).toHaveBeenCalledWith({ ok: true }));
         expect(verifyUniquenessBeforeSubmit).toHaveBeenCalled();
-        expect(saveAgreement).toHaveBeenCalledWith(null, false, true);
+        expect(saveAgreement).toHaveBeenCalledWith(null, false, true, true);
     });
 
     it("reports the conflict field via onSaved when uniqueness check fails", async () => {

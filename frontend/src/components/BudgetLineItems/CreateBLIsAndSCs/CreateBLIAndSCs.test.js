@@ -420,7 +420,7 @@ describe("CreateBLIsAndSCs", () => {
 
         rerender(renderWithTrigger(1));
         await waitFor(() => expect(onSaved).toHaveBeenCalledWith({ ok: true }));
-        expect(handleSave).toHaveBeenCalledWith(false, true);
+        expect(handleSave).toHaveBeenCalledWith(false, true, true);
 
         // Restore the default mock so other tests aren't affected.
         vi.mocked(useCreateBLIsAndSCs).mockImplementation(origImpl);

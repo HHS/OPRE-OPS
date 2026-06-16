@@ -24,7 +24,8 @@ import useAlert from "../../../hooks/use-alert.hooks";
 const EditAgreementAndBudgetLines = () => {
     const navigate = useNavigate();
     const urlPathParams = useParams();
-    const agreementId = parseInt(urlPathParams.id ?? "");
+    const agreementId = Number(urlPathParams.id);
+    const isValidId = Number.isFinite(agreementId);
     const { setAlert } = useAlert();
 
     const [projectOfficer, setProjectOfficer] = useState({});
@@ -46,7 +47,7 @@ const EditAgreementAndBudgetLines = () => {
         isLoading: isLoadingAgreement
     } = useGetAgreementByIdQuery(agreementId, {
         refetchOnMountOrArgChange: true,
-        skip: !agreementId
+        skip: !isValidId
     });
 
     const {
@@ -55,7 +56,7 @@ const EditAgreementAndBudgetLines = () => {
         isLoading: isLoadingServicesComponents
     } = useGetServicesComponentsListQuery(agreementId, {
         refetchOnMountOrArgChange: true,
-        skip: !agreementId
+        skip: !isValidId
     });
 
     useEffect(() => {
@@ -70,20 +71,6 @@ const EditAgreementAndBudgetLines = () => {
     const handleCancel = () => {
         navigate(`/agreements/review/${agreementId}`);
     };
-
-    // Suppresses the inner success alert/redirect from CreateBLIsAndSCs and replaces it
-    // with one that returns the user to the review page. Only fires when the BLI save
-    // path runs `showSuccessMessage` (no financial-snapshot approval modal). When the
-    // approval modal IS triggered, that flow owns its own alert + redirect.
-    const continueOverRide = useCallback(() => {
-        setAlert({
-            type: "success",
-            heading: "Changes Saved",
-            message: "Your changes have been saved.",
-            redirectUrl: `/agreements/review/${agreementId}`
-        });
-        scrollToTop();
-    }, [agreementId, setAlert]);
 
     const handlePageSave = () => {
         if (isSaving) return;
@@ -125,17 +112,29 @@ const EditAgreementAndBudgetLines = () => {
         (result) => {
             if (!result.ok) {
                 reportSaveError(result.error);
+                setIsSaving(false);
+                return;
             }
+            // Both saves succeeded — set the single page-level success alert and redirect
+            // back to the review page. Children have suppressed their own success alerts
+            // so this is the one source of truth for the user-facing message.
+            setAlert({
+                type: "success",
+                heading: "Changes Saved",
+                message: "Your changes have been saved.",
+                redirectUrl: `/agreements/review/${agreementId}`
+            });
+            scrollToTop();
             setIsSaving(false);
         },
-        [reportSaveError]
+        [reportSaveError, setAlert, agreementId]
     );
 
     useEffect(() => {
-        if (errorAgreement || errorServicesComponent) {
+        if (!isValidId || errorAgreement || errorServicesComponent) {
             navigate("/error");
         }
-    }, [errorAgreement, errorServicesComponent, navigate]);
+    }, [isValidId, errorAgreement, errorServicesComponent, navigate]);
 
     if (isLoadingAgreement || isLoadingServicesComponents) {
         return (
@@ -145,7 +144,7 @@ const EditAgreementAndBudgetLines = () => {
         );
     }
 
-    if (errorAgreement || errorServicesComponent) {
+    if (!isValidId || errorAgreement || errorServicesComponent) {
         return null;
     }
 
@@ -206,7 +205,6 @@ const EditAgreementAndBudgetLines = () => {
                     hideWizardChrome={true}
                     saveTrigger={bliSaveTrigger}
                     onSaved={handleBLISaved}
-                    continueOverRide={continueOverRide}
                     onValidityChange={setIsBudgetLinesValid}
                 />
                 <div className="grid-row flex-justify-end margin-top-4">

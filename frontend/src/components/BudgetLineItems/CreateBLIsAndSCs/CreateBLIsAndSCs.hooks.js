@@ -824,7 +824,7 @@ const useCreateBLIsAndSCs = (
     };
 
     const handleSave = React.useCallback(
-        async (savedViaModal, suppressErrorAlert = false) => {
+        async (savedViaModal, suppressErrorAlert = false, suppressSuccessAlert = false) => {
             try {
                 let isThereAnyBLIsFinancialSnapshotChanged = false;
                 if (!agreement.id) {
@@ -936,7 +936,9 @@ const useCreateBLIsAndSCs = (
                 datePickerSuite.reset();
                 resetForm();
                 setIsEditMode(false);
-                showSuccessMessage(isThereAnyBLIsFinancialSnapshotChanged, savedViaModal);
+                if (!suppressSuccessAlert) {
+                    showSuccessMessage(isThereAnyBLIsFinancialSnapshotChanged, savedViaModal);
+                }
             } catch (error) {
                 console.error("Error:", error);
                 if (suppressErrorAlert) {

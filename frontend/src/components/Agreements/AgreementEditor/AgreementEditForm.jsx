@@ -172,7 +172,7 @@ const AgreementEditForm = ({
                     onSavedRef.current?.({ ok: false, conflictField });
                     return;
                 }
-                await saveAgreementRef.current?.(null, false, true);
+                await saveAgreementRef.current?.(null, false, true, true);
                 if (!cancelled) onSavedRef.current?.({ ok: true });
             } catch (error) {
                 if (!cancelled) onSavedRef.current?.({ ok: false, error });

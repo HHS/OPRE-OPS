@@ -363,7 +363,12 @@ const useAgreementEditForm = (
     };
 
     const saveAgreement = React.useCallback(
-        async (redirectUrl = null, skipChangeCheck = false, suppressErrorAlert = false) => {
+        async (
+            redirectUrl = null,
+            skipChangeCheck = false,
+            suppressErrorAlert = false,
+            suppressSuccessAlert = false
+        ) => {
             const data = {
                 ...agreement,
                 team_members: selectedTeamMembers.map((team_member) => {
@@ -382,39 +387,41 @@ const useAgreementEditForm = (
                 try {
                     const fulfilled = await updateAgreement({ id: id, data: cleanData }).unwrap();
                     console.log(`UPDATE: agreement updated: ${JSON.stringify(fulfilled, null, 2)}`);
-                    if (shouldRequestChange) {
-                        const oldTotal = calculateAgreementTotal(
-                            agreement?.budget_line_items ?? [],
-                            procurementShop?.fee_percentage ?? 0
-                        );
-                        const newTotal = calculateAgreementTotal(
-                            agreement?.budget_line_items ?? [],
-                            selectedProcurementShop?.fee_percentage ?? 0
-                        );
-                        const procurementShopChanges = `Procurement Shop: ${procurementShop?.name} (${procurementShop?.abbr}) to ${selectedProcurementShop.name} (${selectedProcurementShop.abbr})`;
-                        const feeRateChanges = `Fee Rate: ${procurementShop?.fee_percentage}% to ${selectedProcurementShop.fee_percentage}%`;
-                        const feeTotalChanges = `Fee Total: $${oldTotal} to $${newTotal}`;
+                    if (!suppressSuccessAlert) {
+                        if (shouldRequestChange) {
+                            const oldTotal = calculateAgreementTotal(
+                                agreement?.budget_line_items ?? [],
+                                procurementShop?.fee_percentage ?? 0
+                            );
+                            const newTotal = calculateAgreementTotal(
+                                agreement?.budget_line_items ?? [],
+                                selectedProcurementShop?.fee_percentage ?? 0
+                            );
+                            const procurementShopChanges = `Procurement Shop: ${procurementShop?.name} (${procurementShop?.abbr}) to ${selectedProcurementShop.name} (${selectedProcurementShop.abbr})`;
+                            const feeRateChanges = `Fee Rate: ${procurementShop?.fee_percentage}% to ${selectedProcurementShop.fee_percentage}%`;
+                            const feeTotalChanges = `Fee Total: $${oldTotal} to $${newTotal}`;
 
-                        setAlert({
-                            type: "success",
-                            heading: "Changes Sent to Approval",
-                            message:
-                                `Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.\n\n` +
-                                `<strong>Pending Changes:</strong>\n` +
-                                `<ul><li>${procurementShopChanges}</li>` +
-                                `<li>${feeRateChanges}</li>` +
-                                `<li>${feeTotalChanges}</li></ul>`,
-                            redirectUrl: redirectUrl
-                        });
-                    } else {
-                        setAlert({
-                            type: "success",
-                            heading: "Agreement Updated",
-                            message: `The agreement ${agreement.name} has been successfully updated.`,
-                            redirectUrl: redirectUrl
-                        });
+                            setAlert({
+                                type: "success",
+                                heading: "Changes Sent to Approval",
+                                message:
+                                    `Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.\n\n` +
+                                    `<strong>Pending Changes:</strong>\n` +
+                                    `<ul><li>${procurementShopChanges}</li>` +
+                                    `<li>${feeRateChanges}</li>` +
+                                    `<li>${feeTotalChanges}</li></ul>`,
+                                redirectUrl: redirectUrl
+                            });
+                        } else {
+                            setAlert({
+                                type: "success",
+                                heading: "Agreement Updated",
+                                message: `The agreement ${agreement.name} has been successfully updated.`,
+                                redirectUrl: redirectUrl
+                            });
+                        }
+                        scrollToTop();
                     }
-                    scrollToTop();
                     return true;
                 } catch (rejected) {
                     console.error(`UPDATE: agreement updated failed: ${JSON.stringify(rejected, null, 2)}`);
