@@ -100,11 +100,15 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
     });
 
     const allItems = [...taggedBudgetRequisitions, ...taggedPreAwardApprovals, ...taggedChangeRequests].sort((a, b) =>
-        b._sortDate > a._sortDate ? 1
-            : b._sortDate < a._sortDate ? -1
-            : a._type < b._type ? -1
-            : a._type > b._type ? 1
-            : b.item.id - a.item.id
+        b._sortDate > a._sortDate
+            ? 1
+            : b._sortDate < a._sortDate
+              ? -1
+              : a._type < b._type
+                ? -1
+                : a._type > b._type
+                  ? 1
+                  : b.item.id - a.item.id
     );
 
     const totalPages = Math.ceil(allItems.length / PAGE_SIZE);
