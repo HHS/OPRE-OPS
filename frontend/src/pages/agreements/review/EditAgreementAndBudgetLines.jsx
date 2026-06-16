@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import App from "../../../App";
 import { getUser } from "../../../api/getUser";
@@ -29,15 +29,16 @@ const EditAgreementAndBudgetLines = () => {
 
     const [projectOfficer, setProjectOfficer] = useState({});
     const [alternateProjectOfficer, setAlternateProjectOfficer] = useState({});
-    const [hasAgreementChanged, setHasAgreementChanged] = useState(false);
     const [includeDrafts, setIncludeDrafts] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [isAgreementFormValid, setIsAgreementFormValid] = useState(true);
     const [isBudgetLinesValid, setIsBudgetLinesValid] = useState(true);
 
-    const saveAgreementRef = useRef(null);
-    const verifyUniquenessRef = useRef(null);
-    const saveBLIsAndSCsRef = useRef(null);
+    // Save coordination via incrementing triggers. Each child runs its save when
+    // its trigger increments, then reports back through `onSaved`. We chain them
+    // so the agreement saves first, then the budget lines.
+    const [agreementSaveTrigger, setAgreementSaveTrigger] = useState(0);
+    const [bliSaveTrigger, setBliSaveTrigger] = useState(0);
 
     const {
         data: agreement,
@@ -66,15 +67,6 @@ const EditAgreementAndBudgetLines = () => {
         }
     }, [agreement]);
 
-    const registerAgreementSave = useCallback(({ saveAgreement, verifyUniquenessBeforeSubmit }) => {
-        saveAgreementRef.current = saveAgreement;
-        verifyUniquenessRef.current = verifyUniquenessBeforeSubmit;
-    }, []);
-
-    const registerBatchSave = useCallback((handleSave) => {
-        saveBLIsAndSCsRef.current = handleSave;
-    }, []);
-
     const handleCancel = () => {
         navigate(`/agreements/review/${agreementId}`);
     };
@@ -93,35 +85,51 @@ const EditAgreementAndBudgetLines = () => {
         scrollToTop();
     }, [agreementId, setAlert]);
 
-    const handlePageSave = async () => {
+    const handlePageSave = () => {
         if (isSaving) return;
         setIsSaving(true);
-        try {
-            const conflictField = await verifyUniquenessRef.current?.();
-            if (conflictField) {
-                requestAnimationFrame(() => scrollToCenter(conflictField));
-                return;
-            }
+        // Kick off the agreement save first; BLI save chains in `handleAgreementSaved`.
+        setAgreementSaveTrigger((n) => n + 1);
+    };
 
-            if (hasAgreementChanged && saveAgreementRef.current) {
-                await saveAgreementRef.current(null, false, true);
-            }
-
-            if (saveBLIsAndSCsRef.current) {
-                await saveBLIsAndSCsRef.current(false, true);
-            }
-        } catch (error) {
-            console.error("Error saving agreement and budget lines:", error);
+    const reportSaveError = useCallback(
+        (error) => {
             const detail = error?.data?.error || error?.message || "Please try again.";
             setAlert({
                 type: "error",
                 heading: "Error saving changes",
                 message: `An error occurred while saving. ${detail}`
             });
-        } finally {
+        },
+        [setAlert]
+    );
+
+    const handleAgreementSaved = useCallback(
+        (result) => {
+            if (!result.ok) {
+                if (result.conflictField) {
+                    requestAnimationFrame(() => scrollToCenter(result.conflictField));
+                } else {
+                    reportSaveError(result.error);
+                }
+                setIsSaving(false);
+                return;
+            }
+            // Agreement saved (or skipped because unchanged): chain into BLI save.
+            setBliSaveTrigger((n) => n + 1);
+        },
+        [reportSaveError]
+    );
+
+    const handleBLISaved = useCallback(
+        (result) => {
+            if (!result.ok) {
+                reportSaveError(result.error);
+            }
             setIsSaving(false);
-        }
-    };
+        },
+        [reportSaveError]
+    );
 
     useEffect(() => {
         if (errorAgreement || errorServicesComponent) {
@@ -175,12 +183,12 @@ const EditAgreementAndBudgetLines = () => {
             >
                 <h1 className="font-sans-lg margin-bottom-2">Edit Agreement Details</h1>
                 <AgreementEditForm
-                    setHasAgreementChanged={setHasAgreementChanged}
                     isReviewMode={true}
                     isAgreementAwarded={isAgreementAwarded}
                     areAnyBudgetLinesPlanned={areAnyBudgetLinesPlanned}
                     hideFooterButtons={true}
-                    registerSave={registerAgreementSave}
+                    saveTrigger={agreementSaveTrigger}
+                    onSaved={handleAgreementSaved}
                     onValidityChange={setIsAgreementFormValid}
                 />
                 <CreateBLIsAndSCs
@@ -196,7 +204,8 @@ const EditAgreementAndBudgetLines = () => {
                     continueBtnText="Save Changes"
                     hideFooterButtons={true}
                     hideWizardChrome={true}
-                    registerBatchSave={registerBatchSave}
+                    saveTrigger={bliSaveTrigger}
+                    onSaved={handleBLISaved}
                     continueOverRide={continueOverRide}
                     onValidityChange={setIsBudgetLinesValid}
                 />

@@ -42,7 +42,8 @@ import useAgreementEditForm from "./AgreementEditForm.hooks";
  * @param {boolean} [props.isAgreementAwarded] - Whether any budget lines are obligated. - optional
  * @param {boolean} [props.areAnyBudgetLinesPlanned] - Whether any budget lines are planned. - optional
  * @param {boolean} [props.hideFooterButtons] - Whether to hide the bottom action row (Cancel / Save Draft / Save Changes). - optional
- * @param {function} [props.registerSave] - Callback that receives `{ saveAgreement, verifyUniquenessBeforeSubmit }` so a parent can trigger save externally. - optional
+ * @param {number} [props.saveTrigger] - Increment from a parent to request a save. The form runs uniqueness check then save and reports back via `onSaved`. - optional
+ * @param {function} [props.onSaved] - Called with `{ ok, conflictField?, error? }` after a `saveTrigger`-driven save attempt completes. - optional
  * @param {function} [props.onValidityChange] - Called with `true` when the form is valid (no required-field, vest, or uniqueness errors), `false` otherwise. - optional
  * @returns {React.ReactElement} - The rendered component.
  */
@@ -58,7 +59,8 @@ const AgreementEditForm = ({
     isAgreementAwarded = false,
     areAnyBudgetLinesPlanned = false,
     hideFooterButtons = false,
-    registerSave,
+    saveTrigger,
+    onSaved,
     onValidityChange
 }) => {
     const {
@@ -148,11 +150,38 @@ const AgreementEditForm = ({
 
     const awardedImmutableFieldsTooltipMsg = "This information cannot be edited on awarded agreements";
 
+    // Refs let the saveTrigger effect read the latest functions without re-running
+    // every time those callbacks are recreated.
+    const saveAgreementRef = React.useRef(saveAgreement);
+    const verifyUniquenessRef = React.useRef(verifyUniquenessBeforeSubmit);
+    const onSavedRef = React.useRef(onSaved);
     React.useEffect(() => {
-        if (registerSave) {
-            registerSave({ saveAgreement, verifyUniquenessBeforeSubmit });
-        }
-    }, [registerSave, saveAgreement, verifyUniquenessBeforeSubmit]);
+        saveAgreementRef.current = saveAgreement;
+        verifyUniquenessRef.current = verifyUniquenessBeforeSubmit;
+        onSavedRef.current = onSaved;
+    });
+
+    React.useEffect(() => {
+        if (!saveTrigger) return;
+        let cancelled = false;
+        (async () => {
+            try {
+                const conflictField = await verifyUniquenessRef.current?.();
+                if (cancelled) return;
+                if (conflictField) {
+                    onSavedRef.current?.({ ok: false, conflictField });
+                    return;
+                }
+                await saveAgreementRef.current?.(null, false, true);
+                if (!cancelled) onSavedRef.current?.({ ok: true });
+            } catch (error) {
+                if (!cancelled) onSavedRef.current?.({ ok: false, error });
+            }
+        })();
+        return () => {
+            cancelled = true;
+        };
+    }, [saveTrigger]);
 
     React.useEffect(() => {
         if (onValidityChange) {

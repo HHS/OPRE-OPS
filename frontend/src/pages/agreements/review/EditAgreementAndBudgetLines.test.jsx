@@ -53,14 +53,27 @@ vi.mock("../../../components/Agreements/AgreementEditor/AgreementEditorContext",
     EditAgreementProvider: ({ children }) => <div data-testid="edit-agreement-provider">{children}</div>
 }));
 
-vi.mock("../../../components/Agreements/AgreementEditor/AgreementEditForm", () => ({
-    default: ({ hideFooterButtons, registerSave, isReviewMode }) => {
-        if (registerSave) {
-            registerSave({
-                saveAgreement: vi.fn().mockResolvedValue(true),
-                verifyUniquenessBeforeSubmit: vi.fn().mockResolvedValue(null)
-            });
-        }
+// Test doubles for the children: each one watches `saveTrigger` and reports the
+// configured fake result through `onSaved`. Tests can override `nextAgreementResult`
+// or `nextBLIResult` to simulate failure paths without touching the real components.
+let nextAgreementResult = { ok: true };
+let nextBLIResult = { ok: true };
+const agreementSaveSpy = vi.fn();
+const bliSaveSpy = vi.fn();
+
+vi.mock("../../../components/Agreements/AgreementEditor/AgreementEditForm", async () => {
+    const { useEffect, useRef } = await vi.importActual("react");
+    function MockAgreementEditForm({ hideFooterButtons, isReviewMode, saveTrigger, onSaved }) {
+        // Latch on the trigger value: only respond when it actually increments.
+        // The page's `onSaved` callback may change reference across renders, so
+        // depending on it would cause an infinite re-render loop.
+        const lastSeenTrigger = useRef(saveTrigger);
+        useEffect(() => {
+            if (!saveTrigger || saveTrigger === lastSeenTrigger.current) return;
+            lastSeenTrigger.current = saveTrigger;
+            agreementSaveSpy(saveTrigger);
+            onSaved?.(nextAgreementResult);
+        });
         return (
             <div data-testid="agreement-edit-form">
                 <span data-testid="agreement-edit-form-hide-footer">{String(!!hideFooterButtons)}</span>
@@ -68,13 +81,19 @@ vi.mock("../../../components/Agreements/AgreementEditor/AgreementEditForm", () =
             </div>
         );
     }
-}));
+    return { default: MockAgreementEditForm };
+});
 
-vi.mock("../../../components/BudgetLineItems/CreateBLIsAndSCs", () => ({
-    default: ({ hideFooterButtons, hideWizardChrome, registerBatchSave, isReviewMode }) => {
-        if (registerBatchSave) {
-            registerBatchSave(vi.fn().mockResolvedValue(undefined));
-        }
+vi.mock("../../../components/BudgetLineItems/CreateBLIsAndSCs", async () => {
+    const { useEffect, useRef } = await vi.importActual("react");
+    function MockCreateBLIsAndSCs({ hideFooterButtons, hideWizardChrome, isReviewMode, saveTrigger, onSaved }) {
+        const lastSeenTrigger = useRef(saveTrigger);
+        useEffect(() => {
+            if (!saveTrigger || saveTrigger === lastSeenTrigger.current) return;
+            lastSeenTrigger.current = saveTrigger;
+            bliSaveSpy(saveTrigger);
+            onSaved?.(nextBLIResult);
+        });
         return (
             <div data-testid="create-blis-and-scs">
                 <span data-testid="blis-hide-footer">{String(!!hideFooterButtons)}</span>
@@ -83,7 +102,8 @@ vi.mock("../../../components/BudgetLineItems/CreateBLIsAndSCs", () => ({
             </div>
         );
     }
-}));
+    return { default: MockCreateBLIsAndSCs };
+});
 
 const buildStore = () =>
     configureStore({
@@ -111,6 +131,10 @@ const renderPage = () =>
 describe("EditAgreementAndBudgetLines", () => {
     beforeEach(() => {
         navigateMock.mockReset();
+        agreementSaveSpy.mockReset();
+        bliSaveSpy.mockReset();
+        nextAgreementResult = { ok: true };
+        nextBLIResult = { ok: true };
         mockAgreementResult = { data: mockAgreement, error: null, isLoading: false };
     });
 
@@ -139,13 +163,42 @@ describe("EditAgreementAndBudgetLines", () => {
         expect(navigateMock).toHaveBeenCalledWith("/agreements/review/42");
     });
 
-    it("triggers the registered save handlers when Save changes is clicked", async () => {
+    it("chains agreement save then BLI save when Save changes is clicked", async () => {
         renderPage();
         fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
-        // Saving should ultimately not throw and the button should be re-enabled
+        await waitFor(() => {
+            expect(agreementSaveSpy).toHaveBeenCalled();
+            expect(bliSaveSpy).toHaveBeenCalled();
+        });
         await waitFor(() => {
             expect(screen.getByRole("button", { name: "Save changes" })).not.toBeDisabled();
         });
+    });
+
+    it("does not run the BLI save when the agreement save fails", async () => {
+        nextAgreementResult = { ok: false, error: { message: "boom" } };
+        renderPage();
+        fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+        await waitFor(() => {
+            expect(agreementSaveSpy).toHaveBeenCalled();
+        });
+        // Give the page a moment to (incorrectly) chain the BLI save if the contract is broken.
+        await new Promise((r) => setTimeout(r, 0));
+        expect(bliSaveSpy).not.toHaveBeenCalled();
+        await waitFor(() => {
+            expect(screen.getByRole("button", { name: "Save changes" })).not.toBeDisabled();
+        });
+    });
+
+    it("does not run the BLI save when the agreement save reports a conflict field", async () => {
+        nextAgreementResult = { ok: false, conflictField: "name" };
+        renderPage();
+        fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+        await waitFor(() => {
+            expect(agreementSaveSpy).toHaveBeenCalled();
+        });
+        await new Promise((r) => setTimeout(r, 0));
+        expect(bliSaveSpy).not.toHaveBeenCalled();
     });
 
     it("renders an access denied screen when the agreement is not editable", () => {

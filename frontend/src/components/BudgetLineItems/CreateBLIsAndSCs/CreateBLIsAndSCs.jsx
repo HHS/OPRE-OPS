@@ -39,7 +39,8 @@ import { findIfOptional } from "../../../helpers/servicesComponent.helpers";
  * @param {Function} props.setIncludeDrafts - A function to set the include drafts state.
  * @param {boolean} [props.hideFooterButtons] - Whether to hide the bottom action row (Cancel / Continue / Save Changes). - optional
  * @param {boolean} [props.hideWizardChrome] - Whether to suppress the step indicator, edit-mode title, and project summary card in the agreement workflow. - optional
- * @param {function} [props.registerBatchSave] - Callback that receives the in-memory batch save handler so a parent can trigger save externally. - optional
+ * @param {number} [props.saveTrigger] - Increment from a parent to request a batch save. The component runs `handleSave(false, true)` and reports back via `onSaved`. - optional
+ * @param {function} [props.onSaved] - Called with `{ ok, error? }` after a `saveTrigger`-driven save attempt completes. - optional
  * @param {function} [props.onValidityChange] - Called with `true` when the budget-lines form is valid (no vest errors and the user is allowed to edit), `false` otherwise. Only meaningful in review mode. - optional
  * @returns {JSX.Element} - The rendered component.
  */
@@ -63,7 +64,8 @@ export const CreateBLIsAndSCs = ({
     setIncludeDrafts,
     hideFooterButtons = false,
     hideWizardChrome = false,
-    registerBatchSave,
+    saveTrigger,
+    onSaved,
     onValidityChange
 }) => {
     const {
@@ -126,11 +128,28 @@ export const CreateBLIsAndSCs = ({
 
     const isAgreementWorkflowOrCanEditBudgetLines = workflow === "agreement" || canUserEditBudgetLines;
 
+    const handleSaveRef = React.useRef(handleSave);
+    const onSavedRef = React.useRef(onSaved);
     React.useEffect(() => {
-        if (registerBatchSave) {
-            registerBatchSave(handleSave);
-        }
-    }, [registerBatchSave, handleSave]);
+        handleSaveRef.current = handleSave;
+        onSavedRef.current = onSaved;
+    });
+
+    React.useEffect(() => {
+        if (!saveTrigger) return;
+        let cancelled = false;
+        (async () => {
+            try {
+                await handleSaveRef.current?.(false, true);
+                if (!cancelled) onSavedRef.current?.({ ok: true });
+            } catch (error) {
+                if (!cancelled) onSavedRef.current?.({ ok: false, error });
+            }
+        })();
+        return () => {
+            cancelled = true;
+        };
+    }, [saveTrigger]);
 
     const isBLIsValid = res.isValid() && isAgreementWorkflowOrCanEditBudgetLines;
     React.useEffect(() => {

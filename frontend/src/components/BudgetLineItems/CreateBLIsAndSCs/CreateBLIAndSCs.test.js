@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { test, describe, expect, vi } from "vitest";
 import { Provider } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
@@ -378,17 +378,25 @@ describe("CreateBLIsAndSCs", () => {
         expect(screen.queryByTestId("cancel-button")).not.toBeInTheDocument();
     });
 
-    test("registerBatchSave receives the batch save handler", () => {
+    test("runs handleSave and reports ok via onSaved when saveTrigger increments", async () => {
         const mockStore = createMockStore();
         const contractAgreement = { ...agreement, agreement_type: AgreementType.CONTRACT };
-        const registerBatchSave = vi.fn();
+        const handleSave = vi.fn().mockResolvedValue(undefined);
+        const useCreateBLIsAndSCs = (await import("./CreateBLIsAndSCs.hooks")).default;
+        // Wrap the existing default mock to keep all the fields (totals, suites, etc.)
+        // but inject our handleSave so we can observe the trigger-driven call.
+        const origImpl = vi.mocked(useCreateBLIsAndSCs).getMockImplementation();
+        vi.mocked(useCreateBLIsAndSCs).mockImplementation((...args) => ({
+            ...origImpl(...args),
+            handleSave
+        }));
 
-        render(
+        const onSaved = vi.fn();
+        const renderWithTrigger = (saveTrigger) => (
             <Provider store={mockStore}>
                 <BrowserRouter>
                     <CreateBLIsAndSCs
                         budgetLines={contractAgreement.budget_line_items}
-                        selectedResearchProject={contractAgreement}
                         selectedAgreement={contractAgreement}
                         selectedProcurementShop={contractAgreement.procurement_shop}
                         isEditMode={true}
@@ -401,13 +409,20 @@ describe("CreateBLIsAndSCs", () => {
                         setIsEditMode={setIsEditMode}
                         includeDrafts={true}
                         setIncludeDrafts={setIncludeDrafts}
-                        registerBatchSave={registerBatchSave}
+                        saveTrigger={saveTrigger}
+                        onSaved={onSaved}
                     />
                 </BrowserRouter>
             </Provider>
         );
+        const { rerender } = render(renderWithTrigger(0));
+        expect(onSaved).not.toHaveBeenCalled();
 
-        expect(registerBatchSave).toHaveBeenCalled();
-        expect(typeof registerBatchSave.mock.calls[0][0]).toBe("function");
+        rerender(renderWithTrigger(1));
+        await waitFor(() => expect(onSaved).toHaveBeenCalledWith({ ok: true }));
+        expect(handleSave).toHaveBeenCalledWith(false, true);
+
+        // Restore the default mock so other tests aren't affected.
+        vi.mocked(useCreateBLIsAndSCs).mockImplementation(origImpl);
     });
 });
