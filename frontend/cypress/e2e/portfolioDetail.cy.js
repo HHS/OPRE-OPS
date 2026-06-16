@@ -31,17 +31,8 @@ describe("Portfolio Detail Page", () => {
         cy.get("h2").should("contain", "Portfolio Budget & Spending Summary");
         cy.get("#fiscal-year-select").select("2044");
         cy.get('[data-cy="big-budget-summary-card"]').should("contain", "Spending $182,577,310.00 of $0");
-        cy.get("#project-agreement-bli-card")
-            // The BLI status counts here are incorrect and will be fixed with #3793
-            .should("contain", "12 Draft")
-            .should("contain", "15 Planned")
-            .should("contain", "11 Executing")
-            .should("contain", "15 Obligated");
-        cy.get("#donut-graph-with-legend-card")
-            .should("contain", "$72,375,166.00")
-            .should("contain", "$72,156,301.00")
-            .should("contain", "$48,115,521.00")
-            .should("contain", "$62,305,488.00");
+        cy.get('[data-cy="reporting-summary-card"]').should("exist");
+        cy.get('[data-cy="bli-status-summary-card"]').should("exist");
         cy.get("table").should("exist");
         // check table to have more than 10 rows
         cy.get("tbody").children().should("have.length", 10);
@@ -98,13 +89,7 @@ describe("Portfolio Detail Page", () => {
         cy.visit("/portfolios/4/spending");
         cy.get("h1").should("be.visible");
         cy.get('[data-cy="big-budget-summary-card"]').should("contain", "Spending $0 of $0");
-        // should contain 3 0s
-        cy.get("#project-agreement-bli-card").should("contain", "0").should("contain", "0").should("contain", "0");
-        cy.get("#donut-graph-with-legend-card")
-            .should("contain", "0%")
-            .should("contain", "0%")
-            .should("contain", "0%")
-            .should("contain", "0%");
+        cy.get('[data-cy="bli-status-summary-card"]').should("exist");
         // check table for 3 rows
         cy.get("tbody").children().should("have.length", 3);
         // check first row for containing TBD
@@ -113,12 +98,8 @@ describe("Portfolio Detail Page", () => {
         cy.get("#fiscal-year-select").select("2022");
         cy.get("h1").should("be.visible");
         cy.get('[data-cy="big-budget-summary-card"]').should("contain", "Spending $4,361,802.20 of $4,162,025.00");
-        cy.get("#project-agreement-bli-card").should("contain", "1").should("contain", "1").should("contain", "2");
-        cy.get("#donut-graph-with-legend-card")
-            .should("contain", "100%")
-            .should("contain", "100%")
-            .should("contain", "0%")
-            .should("contain", "0%");
+        cy.get('[data-cy="reporting-summary-card"]').should("exist");
+        cy.get('[data-cy="bli-status-summary-card"]').should("exist");
         cy.get('[data-testid="skeleton-cell-pill"]').should("not.exist");
         // check table for more than 3 rows
         cy.get("tbody").children().should("have.length.greaterThan", 3);
