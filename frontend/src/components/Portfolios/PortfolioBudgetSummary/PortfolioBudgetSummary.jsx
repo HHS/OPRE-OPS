@@ -1,7 +1,8 @@
-import { calculatePercent } from "../../../helpers/utils";
+import AgreementSpendingCards from "../../Agreements/AgreementSpendingCards";
+import AgreementSpendingSummaryCard from "../../Agreements/AgreementSpendingSummaryCard";
+import BLIStatusSummaryCard from "../../BudgetLineItems/BLIStatusSummaryCard";
+import ReportingCountCard from "../../Reporting/ReportingCountCard";
 import BigBudgetCard from "../../UI/Cards/BudgetCard/BigBudgetCard";
-import DonutGraphWithLegendCard from "../../UI/Cards/DonutGraphWithLegendCard";
-import ProjectAgreementBLICard from "../../UI/Cards/ProjectAgreementBLICard";
 
 /**
  * @typedef {Object} PortfolioBudgetSummaryProps
@@ -11,9 +12,12 @@ import ProjectAgreementBLICard from "../../UI/Cards/ProjectAgreementBLICard";
  * @property {number} obligatedFunding
  * @property {number} plannedFunding
  * @property {number} inDraftFunding
- * @property {Array<import("../../UI/Cards/ProjectAgreementBLICard/ProjectAgreementBLICard").ItemCount>} projectTypesCount
- * @property {Array<import("../../UI/Cards/ProjectAgreementBLICard/ProjectAgreementBLICard").ItemCount>} budgetLineTypesCount
- * @property {Array<import("../../UI/Cards/ProjectAgreementBLICard/ProjectAgreementBLICard").ItemCount>} agreementTypesCount
+ * @property {number} [contractTotal]
+ * @property {number} [partnerTotal]
+ * @property {number} [grantTotal]
+ * @property {number} [directObligationTotal]
+ * @property {Object} [spendingData]
+ * @property {Object} [counts]
  */
 
 /**
@@ -24,47 +28,21 @@ import ProjectAgreementBLICard from "../../UI/Cards/ProjectAgreementBLICard";
 
 const PortfolioBudgetSummary = ({
     fiscalYear,
-    projectTypesCount,
-    budgetLineTypesCount,
-    agreementTypesCount,
     inDraftFunding,
     totalFunding,
     inExecutionFunding,
     obligatedFunding,
-    plannedFunding
+    plannedFunding,
+    contractTotal = 0,
+    partnerTotal = 0,
+    grantTotal = 0,
+    directObligationTotal = 0,
+    spendingData,
+    counts
 }) => {
     const totalSpending = Number(plannedFunding) + Number(obligatedFunding) + Number(inExecutionFunding);
-
-    const graphData = [
-        {
-            id: 1,
-            label: "Draft",
-            value: Math.round(inDraftFunding) || 0,
-            color: "var(--neutral-lighter)",
-            percent: calculatePercent(inDraftFunding, totalFunding)
-        },
-        {
-            id: 2,
-            label: "Planned",
-            value: Math.round(plannedFunding) || 0,
-            color: "var(--data-viz-bl-by-status-2)",
-            percent: calculatePercent(plannedFunding, totalFunding)
-        },
-        {
-            id: 3,
-            label: "Executing",
-            value: Math.round(inExecutionFunding) || 0,
-            color: "var(--data-viz-bl-by-status-3)",
-            percent: calculatePercent(inExecutionFunding, totalFunding)
-        },
-        {
-            id: 4,
-            label: "Obligated",
-            value: Math.round(obligatedFunding) || 0,
-            color: "var(--data-viz-bl-by-status-4)",
-            percent: calculatePercent(obligatedFunding, totalFunding)
-        }
-    ];
+    const totalBLIAmount =
+        Number(inDraftFunding) + Number(plannedFunding) + Number(inExecutionFunding) + Number(obligatedFunding);
 
     return (
         <section>
@@ -73,16 +51,33 @@ const PortfolioBudgetSummary = ({
                 totalSpending={totalSpending}
                 totalFunding={totalFunding}
             />
-            <div className="display-flex flex-justify margin-top-2">
-                <ProjectAgreementBLICard
+            <div className="margin-top-4">
+                <AgreementSpendingCards
                     fiscalYear={fiscalYear}
-                    projects={projectTypesCount}
-                    budgetLines={budgetLineTypesCount}
-                    agreements={agreementTypesCount}
+                    spendingData={spendingData}
                 />
-                <DonutGraphWithLegendCard
-                    data={graphData}
-                    title={`FY ${fiscalYear} Budget Lines by Status`}
+            </div>
+            <div className="margin-top-4">
+                <ReportingCountCard
+                    fiscalYear={fiscalYear}
+                    counts={counts}
+                />
+            </div>
+            <div className="margin-top-4 margin-bottom-10 display-flex flex-justify gap-4">
+                <AgreementSpendingSummaryCard
+                    titlePrefix={`FY ${fiscalYear}`}
+                    contractTotal={contractTotal}
+                    partnerTotal={partnerTotal}
+                    grantTotal={grantTotal}
+                    directObligationTotal={directObligationTotal}
+                />
+                <BLIStatusSummaryCard
+                    titlePrefix={`FY ${fiscalYear}`}
+                    totalDraftAmount={inDraftFunding}
+                    totalPlannedAmount={plannedFunding}
+                    totalExecutingAmount={inExecutionFunding}
+                    totalObligatedAmount={obligatedFunding}
+                    totalAmount={totalBLIAmount}
                 />
             </div>
         </section>

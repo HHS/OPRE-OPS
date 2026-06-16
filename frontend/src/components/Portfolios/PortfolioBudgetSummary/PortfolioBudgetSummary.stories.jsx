@@ -1,14 +1,7 @@
 import PortfolioBudgetSummary from "./PortfolioBudgetSummary";
 
-const buildItemCounts = (entries) => entries.filter(([, count]) => count > 0).map(([type, count]) => ({ type, count }));
-
 const fundingControl = (category) => ({
     control: { type: "number", min: 0, step: 100_000 },
-    table: { category }
-});
-
-const countControl = (category) => ({
-    control: { type: "number", min: 0, step: 1 },
     table: { category }
 });
 
@@ -17,9 +10,6 @@ export default {
     component: PortfolioBudgetSummary,
     decorators: [
         (Story) => (
-            // CSS module `width: 29.125rem` on RoundedBox wins over USWDS `width-full`
-            // in Storybook's dev-mode cascade. Scope the override to this story's wrapper
-            // so the !important rule does not leak across stories sharing the same id.
             <div className="portfolio-budget-summary-story-wrapper">
                 <style>
                     {".portfolio-budget-summary-story-wrapper #big-budget-summary-card { width: 100% !important; }"}
@@ -32,9 +22,9 @@ export default {
         docs: {
             description: {
                 component:
-                    "Top-level portfolio summary: a `BigBudgetCard` for available budget, a " +
-                    "`ProjectAgreementBLICard` showing counts by project/agreement/budget-line type, and a " +
-                    "`DonutGraphWithLegendCard` for budget lines by status."
+                    "Top-level portfolio summary: a `BigBudgetCard` for available budget, " +
+                    "`AgreementSpendingCards` for spending by agreement type, `ReportingCountCard` for counts, " +
+                    "and two side-by-side cards (`AgreementSpendingSummaryCard` + `BLIStatusSummaryCard`)."
             }
         }
     },
@@ -45,49 +35,64 @@ export default {
         plannedFunding: fundingControl("Funding"),
         inExecutionFunding: fundingControl("Funding"),
         obligatedFunding: fundingControl("Funding"),
-        researchProjectCount: countControl("Project Counts"),
-        adminSupportProjectCount: countControl("Project Counts"),
-        contractAgreementCount: countControl("Agreement Counts"),
-        grantAgreementCount: countControl("Agreement Counts"),
-        directObligationAgreementCount: countControl("Agreement Counts"),
-        iaaAgreementCount: countControl("Agreement Counts"),
-        aaAgreementCount: countControl("Agreement Counts"),
-        miscellaneousAgreementCount: countControl("Agreement Counts"),
-        partnerAgreementCount: countControl("Agreement Counts"),
-        draftBudgetLineCount: countControl("Budget Line Counts"),
-        plannedBudgetLineCount: countControl("Budget Line Counts"),
-        inExecutionBudgetLineCount: countControl("Budget Line Counts"),
-        obligatedBudgetLineCount: countControl("Budget Line Counts")
+        contractTotal: fundingControl("Agreement Totals"),
+        partnerTotal: fundingControl("Agreement Totals"),
+        grantTotal: fundingControl("Agreement Totals"),
+        directObligationTotal: fundingControl("Agreement Totals")
+    }
+};
+
+const sampleSpendingData = {
+    total_spending: 5_500_000,
+    agreement_types: [
+        { type: "CONTRACT", label: "Contracts", total: 3_000_000, percent: 55, new: 1_800_000, continuing: 1_200_000 },
+        { type: "PARTNER", label: "Partner", total: 1_500_000, percent: 27, new: 500_000, continuing: 1_000_000 },
+        { type: "GRANT", label: "Grants", total: 800_000, percent: 15, new: 800_000, continuing: 0 },
+        { type: "DIRECT_OBLIGATION", label: "Direct Oblig.", total: 200_000, percent: 4, new: 200_000, continuing: 0 }
+    ]
+};
+
+const sampleCounts = {
+    projects: {
+        total: 6,
+        types: [
+            { type: "RESEARCH", count: 4 },
+            { type: "ADMINISTRATIVE_AND_SUPPORT", count: 2 }
+        ]
     },
-    render: (args) => (
-        <PortfolioBudgetSummary
-            fiscalYear={args.fiscalYear}
-            totalFunding={args.totalFunding}
-            inDraftFunding={args.inDraftFunding}
-            plannedFunding={args.plannedFunding}
-            inExecutionFunding={args.inExecutionFunding}
-            obligatedFunding={args.obligatedFunding}
-            projectTypesCount={buildItemCounts([
-                ["RESEARCH", args.researchProjectCount],
-                ["ADMINISTRATIVE_AND_SUPPORT", args.adminSupportProjectCount]
-            ])}
-            agreementTypesCount={buildItemCounts([
-                ["CONTRACT", args.contractAgreementCount],
-                ["GRANT", args.grantAgreementCount],
-                ["DIRECT_OBLIGATION", args.directObligationAgreementCount],
-                ["IAA", args.iaaAgreementCount],
-                ["AA", args.aaAgreementCount],
-                ["MISCELLANEOUS", args.miscellaneousAgreementCount],
-                ["PARTNER", args.partnerAgreementCount]
-            ])}
-            budgetLineTypesCount={buildItemCounts([
-                ["DRAFT", args.draftBudgetLineCount],
-                ["PLANNED", args.plannedBudgetLineCount],
-                ["IN_EXECUTION", args.inExecutionBudgetLineCount],
-                ["OBLIGATED", args.obligatedBudgetLineCount]
-            ])}
-        />
-    )
+    agreements: {
+        total: 11,
+        types: [
+            { type: "CONTRACT", count: 5 },
+            { type: "PARTNER", count: 3 },
+            { type: "GRANT", count: 2 },
+            { type: "DIRECT_OBLIGATION", count: 1 }
+        ]
+    },
+    new_agreements: {
+        total: 4,
+        types: [
+            { type: "CONTRACT", count: 2 },
+            { type: "GRANT", count: 2 }
+        ]
+    },
+    continuing_agreements: {
+        total: 7,
+        types: [
+            { type: "CONTRACT", count: 3 },
+            { type: "PARTNER", count: 3 },
+            { type: "DIRECT_OBLIGATION", count: 1 }
+        ]
+    },
+    budget_lines: {
+        total: 15,
+        types: [
+            { type: "DRAFT", count: 2 },
+            { type: "PLANNED", count: 6 },
+            { type: "IN_EXECUTION", count: 4 },
+            { type: "OBLIGATED", count: 3 }
+        ]
+    }
 };
 
 export const Populated = {
@@ -98,19 +103,12 @@ export const Populated = {
         plannedFunding: 2_000_000,
         inExecutionFunding: 1_500_000,
         obligatedFunding: 1_000_000,
-        researchProjectCount: 4,
-        adminSupportProjectCount: 2,
-        contractAgreementCount: 5,
-        grantAgreementCount: 3,
-        directObligationAgreementCount: 1,
-        iaaAgreementCount: 0,
-        aaAgreementCount: 0,
-        miscellaneousAgreementCount: 0,
-        partnerAgreementCount: 0,
-        draftBudgetLineCount: 2,
-        plannedBudgetLineCount: 6,
-        inExecutionBudgetLineCount: 4,
-        obligatedBudgetLineCount: 3
+        contractTotal: 3_000_000,
+        partnerTotal: 1_500_000,
+        grantTotal: 800_000,
+        directObligationTotal: 200_000,
+        spendingData: sampleSpendingData,
+        counts: sampleCounts
     }
 };
 
@@ -122,18 +120,11 @@ export const Empty = {
         plannedFunding: 0,
         inExecutionFunding: 0,
         obligatedFunding: 0,
-        researchProjectCount: 0,
-        adminSupportProjectCount: 0,
-        contractAgreementCount: 0,
-        grantAgreementCount: 0,
-        directObligationAgreementCount: 0,
-        iaaAgreementCount: 0,
-        aaAgreementCount: 0,
-        miscellaneousAgreementCount: 0,
-        partnerAgreementCount: 0,
-        draftBudgetLineCount: 0,
-        plannedBudgetLineCount: 0,
-        inExecutionBudgetLineCount: 0,
-        obligatedBudgetLineCount: 0
+        contractTotal: 0,
+        partnerTotal: 0,
+        grantTotal: 0,
+        directObligationTotal: 0,
+        spendingData: null,
+        counts: null
     }
 };

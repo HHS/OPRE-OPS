@@ -4,6 +4,7 @@ import PortfolioSpending from "./PortfolioSpending";
 
 const useOutletContextMock = vi.fn();
 const useGetPortfolioCansByIdQueryMock = vi.fn();
+const useGetReportingSummaryQueryMock = vi.fn();
 const useLazyGetBudgetLineItemQueryMock = vi.fn();
 
 vi.mock("react-router-dom", async (importOriginal) => {
@@ -16,6 +17,7 @@ vi.mock("react-router-dom", async (importOriginal) => {
 
 vi.mock("../../../api/opsAPI", () => ({
     useGetPortfolioCansByIdQuery: (...args) => useGetPortfolioCansByIdQueryMock(...args),
+    useGetReportingSummaryQuery: (...args) => useGetReportingSummaryQueryMock(...args),
     useLazyGetBudgetLineItemQuery: (...args) => useLazyGetBudgetLineItemQueryMock(...args)
 }));
 
@@ -32,7 +34,6 @@ describe("PortfolioSpending", () => {
         useOutletContextMock.mockReturnValue({
             portfolioId: 7,
             fiscalYear: 2026,
-            projectTypesCount: [],
             inDraftFunding: 10,
             totalFunding: 100,
             inExecutionFunding: 20,
@@ -40,6 +41,7 @@ describe("PortfolioSpending", () => {
             plannedFunding: 40
         });
 
+        useGetReportingSummaryQueryMock.mockReturnValue({ data: undefined });
         useLazyGetBudgetLineItemQueryMock.mockReturnValue([vi.fn(), { isLoading: false }]);
     });
 
