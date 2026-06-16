@@ -1,4 +1,4 @@
-import React from "react";
+import { useEffect, useRef } from "react";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { AgreementFields } from "../../../pages/agreements/agreements.constants";
 import ContractTypeSelect from "../../ServicesComponents/ContractTypeSelect";
@@ -152,16 +152,16 @@ const AgreementEditForm = ({
 
     // Refs let the saveTrigger effect read the latest functions without re-running
     // every time those callbacks are recreated.
-    const saveAgreementRef = React.useRef(saveAgreement);
-    const verifyUniquenessRef = React.useRef(verifyUniquenessBeforeSubmit);
-    const onSavedRef = React.useRef(onSaved);
-    React.useEffect(() => {
+    const saveAgreementRef = useRef(saveAgreement);
+    const verifyUniquenessRef = useRef(verifyUniquenessBeforeSubmit);
+    const onSavedRef = useRef(onSaved);
+    useEffect(() => {
         saveAgreementRef.current = saveAgreement;
         verifyUniquenessRef.current = verifyUniquenessBeforeSubmit;
         onSavedRef.current = onSaved;
     });
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (!saveTrigger) return;
         let cancelled = false;
         (async () => {
@@ -183,7 +183,7 @@ const AgreementEditForm = ({
         };
     }, [saveTrigger]);
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (onValidityChange) {
             onValidityChange(!shouldDisableBtn);
         }

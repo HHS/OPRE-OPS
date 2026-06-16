@@ -1,4 +1,4 @@
-import React from "react";
+import { useEffect, useRef } from "react";
 import EditModeTitle from "../../../pages/agreements/EditModeTitle";
 import AgreementBudgetLinesHeader from "../../Agreements/AgreementBudgetLinesHeader";
 import AgreementTotalCard from "../../Agreements/AgreementDetailsCards/AgreementTotalCard";
@@ -128,14 +128,14 @@ export const CreateBLIsAndSCs = ({
 
     const isAgreementWorkflowOrCanEditBudgetLines = workflow === "agreement" || canUserEditBudgetLines;
 
-    const handleSaveRef = React.useRef(handleSave);
-    const onSavedRef = React.useRef(onSaved);
-    React.useEffect(() => {
+    const handleSaveRef = useRef(handleSave);
+    const onSavedRef = useRef(onSaved);
+    useEffect(() => {
         handleSaveRef.current = handleSave;
         onSavedRef.current = onSaved;
     });
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (!saveTrigger) return;
         let cancelled = false;
         (async () => {
@@ -152,7 +152,7 @@ export const CreateBLIsAndSCs = ({
     }, [saveTrigger]);
 
     const isBLIsValid = res.isValid() && isAgreementWorkflowOrCanEditBudgetLines;
-    React.useEffect(() => {
+    useEffect(() => {
         if (onValidityChange) {
             onValidityChange(isBLIsValid);
         }

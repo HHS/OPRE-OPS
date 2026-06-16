@@ -469,7 +469,7 @@ const useAgreementEditForm = (
         wasEditModeRef.current = isEditMode;
     }, [isEditMode, setIsCancelling]);
 
-    const verifyUniquenessBeforeSubmit = async () => {
+    const verifyUniquenessBeforeSubmit = React.useCallback(async () => {
         checkUniqueOnBlur.cancel();
         const [nameConflict, nickNameConflict] = await Promise.all([
             runUniqueCheck("name", agreementTitle),
@@ -478,7 +478,7 @@ const useAgreementEditForm = (
         if (nameConflict) return "name";
         if (nickNameConflict) return "nickname";
         return null;
-    };
+    }, [checkUniqueOnBlur, runUniqueCheck, agreementTitle, agreementNickName]);
 
     const handleContinue = async () => {
         const conflictFieldId = await verifyUniquenessBeforeSubmit();
