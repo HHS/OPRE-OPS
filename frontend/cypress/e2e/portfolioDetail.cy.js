@@ -34,6 +34,7 @@ describe("Portfolio Detail Page", () => {
         cy.get('[data-cy="reporting-summary-card"]').should("exist");
         cy.get('[data-cy="bli-status-summary-card"]').should("exist");
         cy.get("table").should("exist");
+        cy.get('[data-testid="skeleton-cell-pill"]').should("not.exist");
         // check table to have more than 10 rows
         cy.get("tbody").children().should("have.length", 10);
         // check table to only have FY 2044  in the FY column
