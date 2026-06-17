@@ -34,7 +34,7 @@ export default {
         inDraftFunding: fundingControl("Funding"),
         plannedFunding: fundingControl("Funding"),
         inExecutionFunding: fundingControl("Funding"),
-        obligatedFunding: fundingControl("Funding"),
+        obligatedFunding: fundingControl("Funding")
     }
 };
 
