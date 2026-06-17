@@ -578,6 +578,9 @@ class BudgetLineItemService:
         self.db_session.add(budget_line_item)
         self.db_session.commit()
 
+    # Fields that can always be edited directly, even on PLANNED/EXECUTING BLIs, without a change request.
+    ALWAYS_DIRECT_EDIT_FIELDS = {"services_component_id", "line_description"}
+
     def _handle_change_requests(
         self,
         budget_line_item: BudgetLineItem,
@@ -598,6 +601,15 @@ class BudgetLineItemService:
         changed_budget_or_status_prop_keys = list(
             set(change_data.keys()) & (set(BudgetLineItemChangeRequest.budget_field_names + ["status"]))
         )
+
+        # Apply whitelisted fields directly without a change request.
+        direct_edit_fields = {k: v for k, v in updated_fields.items() if k in self.ALWAYS_DIRECT_EDIT_FIELDS}
+        if direct_edit_fields:
+            update_data(budget_line_item, direct_edit_fields)
+            budget_line_item.updated_on = datetime.now()
+            budget_line_item.updated_by = get_current_user().id
+            self.db_session.add(budget_line_item)
+            self.db_session.commit()
 
         if changed_budget_or_status_prop_keys:
             change_request_service = ChangeRequestService(self.db_session)
