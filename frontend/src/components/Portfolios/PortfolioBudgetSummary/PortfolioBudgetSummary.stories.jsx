@@ -35,10 +35,6 @@ export default {
         plannedFunding: fundingControl("Funding"),
         inExecutionFunding: fundingControl("Funding"),
         obligatedFunding: fundingControl("Funding"),
-        contractTotal: fundingControl("Agreement Totals"),
-        partnerTotal: fundingControl("Agreement Totals"),
-        grantTotal: fundingControl("Agreement Totals"),
-        directObligationTotal: fundingControl("Agreement Totals")
     }
 };
 
@@ -103,10 +99,6 @@ export const Populated = {
         plannedFunding: 2_000_000,
         inExecutionFunding: 1_500_000,
         obligatedFunding: 1_000_000,
-        contractTotal: 3_000_000,
-        partnerTotal: 1_500_000,
-        grantTotal: 800_000,
-        directObligationTotal: 200_000,
         spendingData: sampleSpendingData,
         counts: sampleCounts
     }
@@ -120,10 +112,6 @@ export const Empty = {
         plannedFunding: 0,
         inExecutionFunding: 0,
         obligatedFunding: 0,
-        contractTotal: 0,
-        partnerTotal: 0,
-        grantTotal: 0,
-        directObligationTotal: 0,
         spendingData: null,
         counts: null
     }

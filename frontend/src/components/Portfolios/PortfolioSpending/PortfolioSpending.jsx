@@ -37,10 +37,10 @@ const PortfolioSpending = () => {
         }
     );
 
-    const { data: reportingSummaryResponse } = useGetReportingSummaryQuery({
-        fiscalYear,
-        portfolioIds: [portfolioId]
-    });
+    const { data: reportingSummaryResponse } = useGetReportingSummaryQuery(
+        { fiscalYear, portfolioIds: [portfolioId] },
+        { skip: !portfolioId || !fiscalYear }
+    );
 
     const agreementSpendingData = reportingSummaryResponse?.spending;
     const reportingSummaryData = reportingSummaryResponse?.counts;
@@ -96,12 +96,6 @@ const PortfolioSpending = () => {
                 plannedFunding={plannedFunding}
                 spendingData={agreementSpendingData}
                 counts={reportingSummaryData}
-                contractTotal={agreementSpendingData?.agreement_types?.find((t) => t.type === "CONTRACT")?.total ?? 0}
-                partnerTotal={agreementSpendingData?.agreement_types?.find((t) => t.type === "PARTNER")?.total ?? 0}
-                grantTotal={agreementSpendingData?.agreement_types?.find((t) => t.type === "GRANT")?.total ?? 0}
-                directObligationTotal={
-                    agreementSpendingData?.agreement_types?.find((t) => t.type === "DIRECT_OBLIGATION")?.total ?? 0
-                }
             />
             <section>
                 <h2>Portfolio Budget Lines</h2>

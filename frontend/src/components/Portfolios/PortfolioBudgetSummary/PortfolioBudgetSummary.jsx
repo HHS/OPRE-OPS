@@ -12,10 +12,6 @@ import BigBudgetCard from "../../UI/Cards/BudgetCard/BigBudgetCard";
  * @property {number} obligatedFunding
  * @property {number} plannedFunding
  * @property {number} inDraftFunding
- * @property {number} [contractTotal]
- * @property {number} [partnerTotal]
- * @property {number} [grantTotal]
- * @property {number} [directObligationTotal]
  * @property {Object} [spendingData]
  * @property {Object} [counts]
  */
@@ -33,16 +29,18 @@ const PortfolioBudgetSummary = ({
     inExecutionFunding,
     obligatedFunding,
     plannedFunding,
-    contractTotal = 0,
-    partnerTotal = 0,
-    grantTotal = 0,
-    directObligationTotal = 0,
     spendingData,
     counts
 }) => {
     const totalSpending = Number(plannedFunding) + Number(obligatedFunding) + Number(inExecutionFunding);
     const totalBLIAmount =
         Number(inDraftFunding) + Number(plannedFunding) + Number(inExecutionFunding) + Number(obligatedFunding);
+
+    const agreementTypes = spendingData?.agreement_types ?? [];
+    const contractTotal = agreementTypes.find((t) => t.type === "CONTRACT")?.total ?? 0;
+    const partnerTotal = agreementTypes.find((t) => t.type === "PARTNER")?.total ?? 0;
+    const grantTotal = agreementTypes.find((t) => t.type === "GRANT")?.total ?? 0;
+    const directObligationTotal = agreementTypes.find((t) => t.type === "DIRECT_OBLIGATION")?.total ?? 0;
 
     return (
         <section>
