@@ -716,6 +716,8 @@ const useAgreementEditForm = (
         fundingMethod: FUNDING_METHOD,
         agreementFilterOptions: AGREEMENT_FILTER_OPTIONS,
         handleAgreementFilterChange,
+        procurementShop,
+        shouldRequestChange,
         setAgreementDescription,
         setAgreementNickName,
         setAgreementReason,

@@ -45,6 +45,7 @@ import useAgreementEditForm from "./AgreementEditForm.hooks";
  * @param {number} [props.saveTrigger] - Increment from a parent to request a save. The form runs uniqueness check then save and reports back via `onSaved`. - optional
  * @param {function} [props.onSaved] - Called with `{ ok, conflictField?, error? }` after a `saveTrigger`-driven save attempt completes. - optional
  * @param {function} [props.onValidityChange] - Called with `true` when the form is valid (no required-field, vest, or uniqueness errors), `false` otherwise. - optional
+ * @param {function} [props.onProcurementShopChangeStateChange] - Called when the "needs Division Director approval" state changes, with `{ shouldRequestChange, oldProcurementShop, newProcurementShop }`. Lets a parent host its own confirmation modal. - optional
  * @returns {React.ReactElement} - The rendered component.
  */
 const AgreementEditForm = ({
@@ -61,7 +62,8 @@ const AgreementEditForm = ({
     hideFooterButtons = false,
     saveTrigger,
     onSaved,
-    onValidityChange
+    onValidityChange,
+    onProcurementShopChangeStateChange
 }) => {
     const {
         cn,
@@ -134,7 +136,9 @@ const AgreementEditForm = ({
         blockerModalProps,
         saveAgreement,
         verifyUniquenessBeforeSubmit,
-        isLoadingProductServiceCodes
+        isLoadingProductServiceCodes,
+        procurementShop,
+        shouldRequestChange
     } = useAgreementEditForm(
         isAgreementAwarded,
         areAnyBudgetLinesPlanned,
@@ -188,6 +192,15 @@ const AgreementEditForm = ({
             onValidityChange(!shouldDisableBtn);
         }
     }, [onValidityChange, shouldDisableBtn]);
+
+    useEffect(() => {
+        if (!onProcurementShopChangeStateChange) return;
+        onProcurementShopChangeStateChange({
+            shouldRequestChange,
+            oldProcurementShop: procurementShop,
+            newProcurementShop: selectedProcurementShop
+        });
+    }, [onProcurementShopChangeStateChange, shouldRequestChange, procurementShop, selectedProcurementShop]);
 
     if (isLoadingProductServiceCodes) {
         return <div>Loading...</div>;
