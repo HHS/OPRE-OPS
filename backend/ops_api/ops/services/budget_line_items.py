@@ -655,76 +655,95 @@ class BudgetLineItemService:
 
     @staticmethod
     def _validation_change_status_higher_than_draft(budget_line_item, updated_fields):
+        if not (
+            (
+                "status" in updated_fields
+                and updated_fields["status"] != budget_line_item.status
+                and budget_line_item.status in [BudgetLineItemStatus.DRAFT]
+            )
+            or (budget_line_item.status not in [BudgetLineItemStatus.DRAFT])
+        ):
+            return
+
+        bli_required_fields = (
+            BudgetLineItem.get_required_fields_for_status_change()
+            if not is_super_user(current_user, current_app)
+            else []
+        )
+        missing_fields = BudgetLineItemService._get_missing_fields(bli_required_fields, budget_line_item, updated_fields)
+        if missing_fields:
+            raise ValidationError({"status": "Budget Line Item is missing required fields."})
+
+        BudgetLineItemService._validate_agreement_for_status_change(budget_line_item, updated_fields)
+        BudgetLineItemService._validate_amount_and_date_for_status_change(budget_line_item, updated_fields)
+
+        current_can_id = budget_line_item.can_id
+        final_can_id = updated_fields.get("can_id") if updated_fields.get("can_id") is not None else current_can_id
+        if not final_can_id:
+            raise ValidationError({"can_id": "BLI must have a valid CAN when status is not DRAFT"})
+
+    @staticmethod
+    def _validate_agreement_for_status_change(budget_line_item, updated_fields):
+        if not budget_line_item.agreement and (
+            "agreement_id" not in updated_fields or updated_fields.get("agreement_id") is None
+        ):
+            raise ValidationError({"status": "Budget Line Item must be associated with an Agreement."})
+
+        agreement_required_fields = budget_line_item.agreement.__class__.get_required_fields_for_status_change()
+        missing_fields = BudgetLineItemService._get_missing_fields(
+            agreement_required_fields, budget_line_item.agreement, updated_fields
+        )
+        if missing_fields:
+            raise ValidationError({"status": "Budget Line Item's agreement is missing required fields."})
+
         if (
-            "status" in updated_fields
-            and updated_fields["status"] != budget_line_item.status
-            and budget_line_item.status in [BudgetLineItemStatus.DRAFT]
-        ) or (budget_line_item.status not in [BudgetLineItemStatus.DRAFT]):
-            # check required fields on budget line item
-            bli_required_fields = (
-                BudgetLineItem.get_required_fields_for_status_change()
-                if not is_super_user(current_user, current_app)
-                else []
+            budget_line_item.agreement.agreement_reason
+            in [AgreementReason.RECOMPETE, AgreementReason.LOGICAL_FOLLOW_ON]
+            and not budget_line_item.agreement.vendor_id
+        ):
+            raise ValidationError({"status": "Agreement vendor is required for Recompete or Logical Follow On."})
+
+    @staticmethod
+    def _validate_amount_and_date_for_status_change(budget_line_item, updated_fields):
+        current_amount = budget_line_item.amount
+        final_amount = updated_fields.get("amount") if updated_fields.get("amount") is not None else current_amount
+        if final_amount is None or not isinstance(final_amount, (Decimal, float, int)) or final_amount <= 0:
+            raise ValidationError({"amount": "Amount must be greater than 0."})
+
+        today = date.today()
+        current_date_needed = budget_line_item.date_needed
+        final_date_needed = (
+            updated_fields.get("date_needed")
+            if updated_fields.get("date_needed") is not None
+            else current_date_needed
+        )
+
+        if final_date_needed is None:
+            raise ValidationError({"date_needed": "BLI must have a Need By Date when status is not DRAFT"})
+
+        if not is_super_user(current_user, current_app) and final_date_needed <= today:
+            raise ValidationError(
+                {"date_needed": "BLI must have a Need By Date in the future when status is not DRAFT"}
             )
 
-            missing_fields = BudgetLineItemService._get_missing_fields(
-                bli_required_fields, budget_line_item, updated_fields
+        BudgetLineItemService._validate_date_within_sc_window(budget_line_item, final_date_needed)
+
+    @staticmethod
+    def _validate_date_within_sc_window(budget_line_item, final_date_needed):
+        """Validate that date_needed falls within [sc_start_date, sc_end_date] (inclusive) for non-superusers."""
+        if is_super_user(current_user, current_app):
+            return
+        sc_start_date = budget_line_item.agreement.sc_start_date if budget_line_item.agreement else None
+        sc_end_date = budget_line_item.agreement.sc_end_date if budget_line_item.agreement else None
+        bli_in_window = (final_date_needed >= sc_start_date if sc_start_date else True) and (
+            final_date_needed <= sc_end_date if sc_end_date else True
+        )
+        if not bli_in_window:
+            raise ValidationError(
+                {
+                    "date_needed": "BLI must have a Need By Date within the agreement's start and end dates when status is not DRAFT"
+                }
             )
-            if missing_fields:
-                raise ValidationError({"status": "Budget Line Item is missing required fields."})
-
-            # check required fields on agreement
-            if not budget_line_item.agreement and (
-                "agreement_id" not in updated_fields or updated_fields.get("agreement_id") is None
-            ):
-                raise ValidationError({"status": "Budget Line Item must be associated with an Agreement."})
-
-            agreement_required_fields = budget_line_item.agreement.__class__.get_required_fields_for_status_change()
-            missing_fields = BudgetLineItemService._get_missing_fields(
-                agreement_required_fields, budget_line_item.agreement, updated_fields
-            )
-            if missing_fields:
-                raise ValidationError({"status": "Budget Line Item's agreement is missing required fields."})
-
-            # check if the agreement reason is Recompete or Logical Follow On and if the vendor_id is set
-            if (
-                budget_line_item.agreement.agreement_reason
-                in [AgreementReason.RECOMPETE, AgreementReason.LOGICAL_FOLLOW_ON]
-                and not budget_line_item.agreement.vendor_id
-            ):
-                raise ValidationError({"status": "Agreement vendor is required for Recompete or Logical Follow On."})
-
-            # Check amount is set and greater than 0
-            current_amount = budget_line_item.amount
-            requested_amount = updated_fields.get("amount")
-            final_amount = requested_amount if requested_amount is not None else current_amount
-
-            if final_amount is None or not isinstance(final_amount, (Decimal, float, int)) or final_amount <= 0:
-                raise ValidationError({"amount": "Amount must be greater than 0."})
-
-            # Check if the date_needed is set and in the future
-            today = date.today()
-            current_date_needed = budget_line_item.date_needed
-            requested_date_needed = updated_fields.get("date_needed")
-            final_date_needed = requested_date_needed if requested_date_needed is not None else current_date_needed
-
-            # Validate that date_needed is not None for all users
-            if final_date_needed is None:
-                raise ValidationError({"date_needed": "BLI must have a Need By Date when status is not DRAFT"})
-
-            # Validate that date_needed is not in the past for non-superusers
-            if not is_super_user(current_user, current_app) and final_date_needed <= today:
-                raise ValidationError(
-                    {"date_needed": "BLI must have a Need By Date in the future when status is not DRAFT"}
-                )
-
-            # Check if the can_id is set
-            current_can_id = budget_line_item.can_id
-            requested_can_id = updated_fields.get("can_id")
-            final_can_id = requested_can_id if requested_can_id is not None else current_can_id
-
-            if not final_can_id:
-                raise ValidationError({"can_id": "BLI must have a valid CAN when status is not DRAFT"})
 
     @staticmethod
     def _get_missing_fields(required_fields: list[str], obj: Any, updated_fields: dict[str, Any]) -> list[str]:

@@ -1786,8 +1786,8 @@ def test_put_aa_budget_line_items_update_status(db_for_aa_agreement, auth_client
         number=99,
         optional=False,
         description="Test SC description",
-        period_start=datetime.date(2024, 1, 1),
-        period_end=datetime.date(2024, 6, 30),
+        period_start=datetime.date(2043, 1, 1),
+        period_end=datetime.date(2099, 12, 31),
     )
     loaded_db.add(sc)
     loaded_db.commit()
@@ -1911,8 +1911,8 @@ def test_patch_aa_budget_line_items_update_status(db_for_aa_agreement, auth_clie
         number=99,
         optional=False,
         description="Test SC description",
-        period_start=datetime.date(2024, 1, 1),
-        period_end=datetime.date(2024, 6, 30),
+        period_start=datetime.date(2043, 1, 1),
+        period_end=datetime.date(2099, 12, 31),
     )
     loaded_db.add(sc)
     loaded_db.commit()
@@ -2115,8 +2115,8 @@ def test_put_aa_budget_line_items_non_draft(db_for_aa_agreement, auth_client, te
         number=99,
         optional=False,
         description="Test SC description",
-        period_start=datetime.date(2024, 1, 1),
-        period_end=datetime.date(2024, 6, 30),
+        period_start=datetime.date(2043, 1, 1),
+        period_end=datetime.date(2099, 12, 31),
     )
     loaded_db.add(sc)
     loaded_db.commit()
@@ -2207,8 +2207,8 @@ def test_patch_aa_budget_line_items_non_draft(db_for_aa_agreement, auth_client, 
         number=99,
         optional=False,
         description="Test SC description",
-        period_start=datetime.date(2024, 1, 1),
-        period_end=datetime.date(2024, 6, 30),
+        period_start=datetime.date(2043, 1, 1),
+        period_end=datetime.date(2099, 12, 31),
     )
     loaded_db.add(sc)
     loaded_db.commit()
@@ -2519,8 +2519,8 @@ def test_user_change_can_in_contract_bli(
         number=99,
         optional=False,
         description="Test SC description",
-        period_start=datetime.date(2024, 1, 1),
-        period_end=datetime.date(2024, 6, 30),
+        period_start=datetime.date(2043, 1, 1),
+        period_end=datetime.date(2099, 12, 31),
     )
     loaded_db.add(sc)
     loaded_db.commit()
@@ -2528,11 +2528,11 @@ def test_user_change_can_in_contract_bli(
     bli = ContractBudgetLineItem(
         line_description=f"{bli_status} BLI",
         agreement_id=agreement.id,
-        date_needed=datetime.datetime.now() + datetime.timedelta(days=1),
+        date_needed=datetime.date(2043, 6, 1),
         can_id=test_can.id,
         status=bli_status,
         amount=5000,
-        services_component_id=agreement.awarding_entity_id,
+        services_component_id=sc.id,
     )
     loaded_db.add(bli)
     loaded_db.commit()
@@ -3361,3 +3361,140 @@ def test_can_update_bli_when_pre_award_fully_approved(auth_client, loaded_db, ap
     loaded_db.refresh(bli)
     if response.status_code == 200:
         assert bli.amount != original_amount
+
+
+# ---------------------------------------------------------------------------
+# SC period_start / period_end window validation for date_needed
+# ---------------------------------------------------------------------------
+# The validation rule: for a non-DRAFT BLI, date_needed must fall within
+# [earliest SC period_start, latest SC period_end] (bounds inclusive).
+#
+# The validation is driven by agreement.sc_start_date / agreement.sc_end_date,
+# which are properties that compute min(period_start) / max(period_end) across
+# all ServicesComponents on the agreement.
+# ---------------------------------------------------------------------------
+
+_SC_START = datetime.date(2044, 3, 1)
+_SC_END = datetime.date(2044, 9, 30)
+
+
+@pytest.fixture()
+def agreement_and_bli_for_sc_window(auth_client, app, test_project, test_can):
+    """
+    A PLANNED ContractBudgetLineItem on an agreement that has two SCs whose
+    combined period window is [_SC_START, _SC_END].  date_needed is initialised
+    to _SC_START so the BLI is always valid at fixture creation time.
+    """
+    session = app.db_session
+
+    resp = auth_client.post(
+        "/api/v1/agreements/",
+        json={
+            "agreement_type": "CONTRACT",
+            "agreement_reason": "NEW_REQ",
+            "name": "TEST: SC period window validation",
+            "contract_type": "FIRM_FIXED_PRICE",
+            "service_requirement_type": "NON_SEVERABLE",
+            "description": "Agreement for SC period_start/period_end window test",
+            "awarding_entity_id": 2,
+            "product_service_code_id": 1,
+            "project_id": test_project.id,
+            "project_officer_id": 520,
+        },
+    )
+    assert resp.status_code == 201
+    agreement_id = resp.json["id"]
+
+    sc1 = ServicesComponent(
+        number=1,
+        agreement_id=agreement_id,
+        period_start=_SC_START,
+        period_end=datetime.date(2044, 6, 30),
+    )
+    sc2 = ServicesComponent(
+        number=2,
+        agreement_id=agreement_id,
+        period_start=datetime.date(2044, 7, 1),
+        period_end=_SC_END,
+    )
+    session.add_all([sc1, sc2])
+    session.flush()  # populate sc1.id / sc2.id before the BLI references one
+
+    bli = ContractBudgetLineItem(
+        line_description="SC window test BLI",
+        agreement_id=agreement_id,
+        services_component_id=sc1.id,
+        status=BudgetLineItemStatus.PLANNED,
+        can_id=test_can.id,
+        amount=500_000.00,
+        date_needed=_SC_START,
+    )
+    session.add(bli)
+    session.commit()
+
+    yield agreement_id, bli.id
+
+    session.delete(bli)
+    agreement = session.get(ContractAgreement, agreement_id)
+    session.delete(agreement)
+    session.commit()
+
+
+def test_sc_window_date_needed_before_start_is_invalid(auth_client, agreement_and_bli_for_sc_window, app_ctx):
+    """date_needed one day before the earliest SC period_start must be rejected."""
+    _, bli_id = agreement_and_bli_for_sc_window
+    one_day_before = _SC_START - datetime.timedelta(days=1)
+
+    resp = auth_client.patch(f"/api/v1/budget-line-items/{bli_id}", json={"date_needed": one_day_before.isoformat()})
+
+    assert resp.status_code == 400
+    assert resp.json["message"] == "Validation failed"
+
+
+def test_sc_window_date_needed_after_end_is_invalid(auth_client, agreement_and_bli_for_sc_window, app_ctx):
+    """date_needed one day after the latest SC period_end must be rejected."""
+    _, bli_id = agreement_and_bli_for_sc_window
+    one_day_after = _SC_END + datetime.timedelta(days=1)
+
+    resp = auth_client.patch(f"/api/v1/budget-line-items/{bli_id}", json={"date_needed": one_day_after.isoformat()})
+
+    assert resp.status_code == 400
+    assert resp.json["message"] == "Validation failed"
+
+
+def test_sc_window_date_needed_exactly_on_start_is_valid(auth_client, agreement_and_bli_for_sc_window, app_ctx):
+    """date_needed equal to the earliest SC period_start is valid (inclusive lower bound)."""
+    _, bli_id = agreement_and_bli_for_sc_window
+
+    resp = auth_client.patch(f"/api/v1/budget-line-items/{bli_id}", json={"date_needed": _SC_START.isoformat()})
+
+    assert resp.status_code in (200, 202)
+
+
+def test_sc_window_date_needed_exactly_on_end_is_valid(auth_client, agreement_and_bli_for_sc_window, app_ctx):
+    """date_needed equal to the latest SC period_end is valid (inclusive upper bound)."""
+    _, bli_id = agreement_and_bli_for_sc_window
+
+    resp = auth_client.patch(f"/api/v1/budget-line-items/{bli_id}", json={"date_needed": _SC_END.isoformat()})
+
+    assert resp.status_code in (200, 202)
+
+
+def test_sc_window_date_needed_in_first_sc_period_is_valid(auth_client, agreement_and_bli_for_sc_window, app_ctx):
+    """date_needed clearly inside the first SC period is valid."""
+    _, bli_id = agreement_and_bli_for_sc_window
+    mid_first_sc = datetime.date(2044, 5, 1)
+
+    resp = auth_client.patch(f"/api/v1/budget-line-items/{bli_id}", json={"date_needed": mid_first_sc.isoformat()})
+
+    assert resp.status_code in (200, 202)
+
+
+def test_sc_window_date_needed_in_second_sc_period_is_valid(auth_client, agreement_and_bli_for_sc_window, app_ctx):
+    """date_needed clearly inside the second SC period is valid."""
+    _, bli_id = agreement_and_bli_for_sc_window
+    mid_second_sc = datetime.date(2044, 8, 15)
+
+    resp = auth_client.patch(f"/api/v1/budget-line-items/{bli_id}", json={"date_needed": mid_second_sc.isoformat()})
+
+    assert resp.status_code in (200, 202)
