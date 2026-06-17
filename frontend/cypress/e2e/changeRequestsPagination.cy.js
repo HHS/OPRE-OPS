@@ -5,6 +5,10 @@ import { terminalLog, testLogin } from "./utils";
 
 const TOTAL_CR_BLIS = 11;
 const PAGE_SIZE = 10;
+const CHANGE_REQUEST_TYPES = {
+    BUDGET: "Budget Change",
+    STATUS: "Status Change"
+};
 
 // Agreement 19: used to set up a pending pre-award approval (visible to division-director).
 // Agreement 20: used to set up an approved pre-award step (becomes a budget requisition for budget-team).
@@ -315,5 +319,157 @@ describe("Change Requests List - Pagination", () => {
         cy.wait("@budgetRequisitions");
 
         cy.get("[data-cy='budget-team-requisition-review-card']").should("have.length.at.least", 1);
+    });
+});
+
+describe("Change Requests List - Secondary sort (type tiebreaker)", () => {
+    // What we can verify: when two CRs on the same agreement share the same created_on timestamp
+    // (possible when both are created in the same request cycle), the cards are ordered
+    // deterministically by _type ("Budget Change" < "Status Change" alphabetically).
+    //
+    // Setup: create two PLANNED BLIs, then submit a budget-amount CR against the first and a
+    // status CR against the second in rapid succession. Each BLI has its own CR so neither is
+    // in_review when the other CR is submitted. Confirm the budget card appears before the status
+    // card on the page regardless of item.id order.
+    let agreementId;
+    let bliIds;
+    let budgetTeamToken;
+    let tiebreakAgreementName;
+
+    const tiebreakAgreement = {
+        agreement_type: "CONTRACT",
+        agreement_reason: "NEW_REQ",
+        contract_type: "FIRM_FIXED_PRICE",
+        description: "E2E sort tiebreaker test",
+        service_requirement_type: "NON_SEVERABLE",
+        project_id: 1000,
+        product_service_code_id: 1,
+        awarding_entity_id: 2,
+        project_officer_id: 500,
+        team_members: [{ id: 520 }, { id: 504 }]
+    };
+
+    const baseBli = {
+        line_description: "SC1",
+        can_id: 501,
+        amount: 1_000_000,
+        status: BLI_STATUS.DRAFT,
+        date_needed: "2044-01-01",
+        proc_shop_fee_percentage: 5,
+        services_component_id: 1
+    };
+
+    beforeEach(() => {
+        agreementId = null;
+        bliIds = [];
+        tiebreakAgreementName = `E2E Sort Tiebreaker ${Date.now()}`;
+
+        testLogin("budget-team");
+        cy.then(() => {
+            budgetTeamToken = `Bearer ${window.localStorage.getItem("access_token")}`;
+
+            cy.request({
+                method: "POST",
+                url: "http://localhost:8080/api/v1/agreements/",
+                body: { ...tiebreakAgreement, name: tiebreakAgreementName },
+                headers: { Authorization: budgetTeamToken, "Content-Type": "application/json" }
+            }).then((agreementRes) => {
+                expect(agreementRes.status).to.eq(201);
+                agreementId = agreementRes.body.id;
+
+                // Create two BLIs directly as PLANNED so neither is in_review before we submit CRs.
+                // BLI A gets a budget-amount CR; BLI B gets a status CR.
+                // Both live on the same agreement, which is what the sort tiebreaker needs.
+                cy.request({
+                    method: "POST",
+                    url: "http://localhost:8080/api/v1/budget-line-items/",
+                    body: { ...baseBli, agreement_id: agreementId, status: BLI_STATUS.PLANNED },
+                    headers: { Authorization: budgetTeamToken }
+                }).then((bliARes) => {
+                    expect(bliARes.status).to.eq(201);
+                    const bliAId = bliARes.body.id;
+
+                    cy.request({
+                        method: "POST",
+                        url: "http://localhost:8080/api/v1/budget-line-items/",
+                        body: { ...baseBli, agreement_id: agreementId, status: BLI_STATUS.PLANNED },
+                        headers: { Authorization: budgetTeamToken }
+                    }).then((bliBRes) => {
+                        expect(bliBRes.status).to.eq(201);
+                        const bliBId = bliBRes.body.id;
+                        bliIds = [bliAId, bliBId];
+
+                        // Submit the status CR first, then the budget CR.
+                        // The list sorts descending by created_on, so the budget CR (created last,
+                        // most recent timestamp) sorts to position 0. When timestamps tie, the
+                        // _type tiebreaker ("crBudget" < "crStatus") also puts budget first.
+                        cy.request({
+                            method: "PATCH",
+                            url: `http://localhost:8080/api/v1/budget-line-items/${bliAId}`,
+                            body: { id: bliAId, status: BLI_STATUS.EXECUTING },
+                            headers: { Authorization: budgetTeamToken }
+                        }).then((statusCrRes) => {
+                            expect(statusCrRes.status).to.eq(202);
+                        });
+
+                        cy.request({
+                            method: "PATCH",
+                            url: `http://localhost:8080/api/v1/budget-line-items/${bliBId}`,
+                            body: { id: bliBId, amount: 999_999 },
+                            headers: { Authorization: budgetTeamToken }
+                        }).then((budgetCrRes) => {
+                            expect(budgetCrRes.status).to.eq(202);
+                        });
+                    });
+                });
+            });
+        });
+    });
+
+    afterEach(() => {
+        cy.injectAxe();
+        cy.checkA11y(null, null, terminalLog);
+
+        testLogin("system-owner");
+        cy.then(() => {
+            const token = `Bearer ${window.localStorage.getItem("access_token")}`;
+            bliIds.forEach((id) => {
+                cy.request({
+                    method: "DELETE",
+                    url: `http://localhost:8080/api/v1/budget-line-items/${id}`,
+                    headers: { Authorization: token },
+                    failOnStatusCode: false
+                });
+            });
+            if (agreementId) {
+                cy.request({
+                    method: "DELETE",
+                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                    headers: { Authorization: token }
+                }).then((res) => {
+                    expect(res.status).to.eq(200);
+                });
+            }
+        });
+    });
+
+    it("renders Budget Change card before Status Change card for the same agreement", () => {
+        testLogin("division-director");
+        cy.intercept({ method: "GET", url: "**/change-requests/**" }).as("changeRequests");
+        cy.visit("/agreements?filter=change-requests");
+        cy.wait("@changeRequests");
+
+        // Find the cards for this agreement. The two CRs are submitted in rapid succession so they
+        // may share the same created_on second. With the _type tiebreaker, the Budget Change card
+        // always appears before the Status Change card regardless of item.id order.
+        cy.get("[data-cy='review-card']")
+            .filter(`:contains("${tiebreakAgreementName}")`)
+            .then(($cards) => {
+                expect($cards.length).to.be.at.least(2);
+
+                // Budget Change must appear before Status Change
+                cy.wrap($cards.eq(0)).contains(CHANGE_REQUEST_TYPES.BUDGET);
+                cy.wrap($cards.eq(1)).contains(CHANGE_REQUEST_TYPES.STATUS);
+            });
     });
 });
