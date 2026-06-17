@@ -126,6 +126,13 @@ export function editAgreementReducer(state, action) {
                 )
             };
         }
+        case "RESEED_SERVICES_COMPONENTS": {
+            return {
+                ...state,
+                services_components: action.payload ?? [],
+                deleted_services_components_ids: []
+            };
+        }
         case "SET_RESEARCH_METHODOLOGIES": {
             return {
                 ...state,

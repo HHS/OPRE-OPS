@@ -40,6 +40,10 @@ const EditAgreementAndBudgetLines = () => {
     // so the agreement saves first, then the budget lines.
     const [agreementSaveTrigger, setAgreementSaveTrigger] = useState(0);
     const [bliSaveTrigger, setBliSaveTrigger] = useState(0);
+    // Bumped after a save failure + SC refetch to tell the editor context to
+    // reseed services_components from canonical server data (reverting any
+    // optimistic edits the user had made).
+    const [servicesComponentsReseedKey, setServicesComponentsReseedKey] = useState(0);
 
     const {
         data: agreement,
@@ -53,7 +57,8 @@ const EditAgreementAndBudgetLines = () => {
     const {
         data: servicesComponents,
         error: errorServicesComponent,
-        isLoading: isLoadingServicesComponents
+        isLoading: isLoadingServicesComponents,
+        refetch: refetchServicesComponents
     } = useGetServicesComponentsListQuery(agreementId, {
         refetchOnMountOrArgChange: true,
         skip: !isValidId
@@ -91,9 +96,23 @@ const EditAgreementAndBudgetLines = () => {
         [setAlert]
     );
 
+    const revertOptimisticServicesComponents = useCallback(async () => {
+        try {
+            await refetchServicesComponents().unwrap();
+        } catch (err) {
+            // If refetch fails, fall back to whatever cache we have. The reseed
+            // still pulls from the current prop, which is the last known good list.
+            console.error("Failed to refetch services components after save error", err);
+        }
+        setServicesComponentsReseedKey((n) => n + 1);
+    }, [refetchServicesComponents]);
+
     const handleAgreementSaved = useCallback(
         (result) => {
             if (!result.ok) {
+                // The user may have already made optimistic SC edits in the
+                // editor context; refetch + reseed reverts them on failure.
+                revertOptimisticServicesComponents();
                 if (result.conflictField) {
                     requestAnimationFrame(() => scrollToCenter(result.conflictField));
                 } else {
@@ -105,12 +124,15 @@ const EditAgreementAndBudgetLines = () => {
             // Agreement saved (or skipped because unchanged): chain into BLI save.
             setBliSaveTrigger((n) => n + 1);
         },
-        [reportSaveError]
+        [reportSaveError, revertOptimisticServicesComponents]
     );
 
     const handleBLISaved = useCallback(
         (result) => {
             if (!result.ok) {
+                // Reseed services components from the server so optimistic edits
+                // (e.g. PoP end date) revert to persisted values on save failure.
+                revertOptimisticServicesComponents();
                 reportSaveError(result.error);
                 setIsSaving(false);
                 return;
@@ -127,7 +149,7 @@ const EditAgreementAndBudgetLines = () => {
             scrollToTop();
             setIsSaving(false);
         },
-        [reportSaveError, setAlert, agreementId]
+        [reportSaveError, setAlert, agreementId, revertOptimisticServicesComponents]
     );
 
     useEffect(() => {
@@ -179,6 +201,7 @@ const EditAgreementAndBudgetLines = () => {
                 projectOfficer={projectOfficer}
                 alternateProjectOfficer={alternateProjectOfficer}
                 servicesComponents={servicesComponents ?? []}
+                servicesComponentsReseedKey={servicesComponentsReseedKey}
             >
                 <h1 className="font-sans-lg margin-bottom-2">Edit Agreement Details</h1>
                 <AgreementEditForm
