@@ -136,48 +136,31 @@ function ApprovalFlowReviewCard({
                 </dd>
             </dl>
 
-            {/* Obligate By Date (conditional) and Agreement Total on same row */}
-            {obligateByDate ? (
-                <>
-                    <dl
-                        className="font-12px margin-0 display-flex flex-column"
-                        style={{ gap: "0.5rem" }}
-                    >
-                        <dt className="text-base-dark">Obligate By Date</dt>
-                        <dd className="margin-0">
-                            <Tag
-                                tagStyle="primaryDarkTextLightBackground"
-                                text={formatDate(new Date(obligateByDate))}
-                            />
-                        </dd>
-                    </dl>
-                    <dl
-                        className="font-12px margin-0 display-flex flex-column"
-                        style={{ gridColumn: "5 / 7", gap: "0.5rem" }}
-                    >
-                        <dt className="text-base-dark">Agreement Total</dt>
-                        <dd className="margin-0">
-                            <Tag
-                                tagStyle="primaryDarkTextLightBackground"
-                                text={convertToCurrency(agreementTotal)}
-                            />
-                        </dd>
-                    </dl>
-                </>
-            ) : (
-                <dl
-                    className="font-12px margin-0 display-flex flex-column"
-                    style={{ gridColumn: "1 / 3", gap: "0.5rem" }}
-                >
-                    <dt className="text-base-dark">Agreement Total</dt>
-                    <dd className="margin-0">
-                        <Tag
-                            tagStyle="primaryDarkTextLightBackground"
-                            text={convertToCurrency(agreementTotal)}
-                        />
-                    </dd>
-                </dl>
-            )}
+            {/* Obligate By Date and Agreement Total on same row */}
+            <dl
+                className="font-12px margin-0 display-flex flex-column"
+                style={{ gap: "0.5rem" }}
+            >
+                <dt className="text-base-dark">Obligate By Date</dt>
+                <dd className="margin-0">
+                    <Tag
+                        tagStyle="primaryDarkTextLightBackground"
+                        text={obligateByDate ? formatDate(new Date(obligateByDate)) : "None"}
+                    />
+                </dd>
+            </dl>
+            <dl
+                className="font-12px margin-0 display-flex flex-column"
+                style={{ gridColumn: "5 / 7", gap: "0.5rem" }}
+            >
+                <dt className="text-base-dark">Agreement Total</dt>
+                <dd className="margin-0">
+                    <Tag
+                        tagStyle="primaryDarkTextLightBackground"
+                        text={convertToCurrency(agreementTotal)}
+                    />
+                </dd>
+            </dl>
 
             {/* Footer Row: Date and Button */}
             <footer
