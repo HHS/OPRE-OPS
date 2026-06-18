@@ -41,7 +41,7 @@ pytest-mock = "==3.15.1"
 pytest-xdist = "==3.8.0"
 filelock = "==3.29.4"
 ipython = "==9.14.1"
-locust = "==2.44.3"
+locust = "==2.44.4"
 
 [requires]
 python_version = "3.14"
