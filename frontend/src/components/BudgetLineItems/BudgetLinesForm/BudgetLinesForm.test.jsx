@@ -7,6 +7,12 @@ import BudgetLinesForm from "./BudgetLinesForm";
 import suite from "./suite";
 import { USER_ROLES } from "../../Users/User.constants";
 
+// Mount-tracking counters for DatePicker stability regression test.
+// A bug where a `React.memo(DatePicker)` wrapper is recreated inside the
+// component body causes React to unmount and remount the DatePicker on every
+// parent re-render, which produced a Cypress race on `#need-by-date`.
+const datePickerMountTracker = { mounts: 0, unmounts: 0 };
+
 // Create mock store with different user roles for testing
 const createMockStore = (userRoles = [], is_superuser = false) => {
     return configureStore({
@@ -61,17 +67,28 @@ vi.mock("../../UI/Form/CurrencyInput", () => ({
     )
 }));
 
-vi.mock("../../UI/USWDS/DatePicker", () => ({
-    default: ({ messages, className }) => (
-        <div
-            data-testid="date-picker"
-            data-messages={JSON.stringify(messages)}
-            className={className}
-        >
-            Date Picker
-        </div>
-    )
-}));
+vi.mock("../../UI/USWDS/DatePicker", async () => {
+    const { useEffect } = await import("react");
+    const DatePickerMock = ({ messages, className }) => {
+        useEffect(() => {
+            datePickerMountTracker.mounts += 1;
+            return () => {
+                datePickerMountTracker.unmounts += 1;
+            };
+        }, []);
+        return (
+            <div
+                data-testid="date-picker"
+                data-messages={JSON.stringify(messages)}
+                className={className}
+            >
+                Date Picker
+            </div>
+        );
+    };
+    // Mirror the real module — its default export is itself memoized.
+    return { default: DatePickerMock };
+});
 
 vi.mock("../../UI/Form/TextArea/TextArea", () => ({
     default: () => <div data-testid="text-area">Text Area</div>
@@ -289,6 +306,45 @@ describe("BudgetLinesForm Validation Integration", () => {
             // Should show success classes since validation doesn't run when not editing
             const canComboBox = screen.getByTestId("can-combobox");
             expect(canComboBox).toHaveClass("success");
+        });
+
+        it("should keep the DatePicker mounted across parent re-renders", () => {
+            // Regression for the inline `React.memo(DatePicker)` wrapper that
+            // was recreated on every render and caused the DatePicker to
+            // unmount/remount on each parent state change. That race made
+            // `cy.clear()` on `#need-by-date` time out in Cypress whenever a
+            // sibling field (e.g. `#enteredAmount`) updated parent state.
+            const regularUserStore = createMockStore([{ id: 3, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }]);
+            datePickerMountTracker.mounts = 0;
+            datePickerMountTracker.unmounts = 0;
+
+            const { rerender } = render(
+                <Provider store={regularUserStore}>
+                    <BudgetLinesForm {...defaultProps} />
+                </Provider>
+            );
+            expect(datePickerMountTracker.mounts).toBe(1);
+
+            // Simulate sibling-state churn (e.g. user typing into the amount).
+            rerender(
+                <Provider store={regularUserStore}>
+                    <BudgetLinesForm
+                        {...defaultProps}
+                        enteredAmount={1500}
+                    />
+                </Provider>
+            );
+            rerender(
+                <Provider store={regularUserStore}>
+                    <BudgetLinesForm
+                        {...defaultProps}
+                        enteredAmount={2000}
+                    />
+                </Provider>
+            );
+
+            expect(datePickerMountTracker.mounts).toBe(1);
+            expect(datePickerMountTracker.unmounts).toBe(0);
         });
 
         it("should not validate when not in review mode and is draft", () => {

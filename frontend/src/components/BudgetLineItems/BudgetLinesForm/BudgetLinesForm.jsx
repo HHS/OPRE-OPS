@@ -1,6 +1,5 @@
 import { faAdd, faWarning } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React from "react";
 import { useSelector } from "react-redux";
 import classnames from "vest/classnames";
 import CanComboBox from "../../CANs/CanComboBox";
@@ -64,8 +63,6 @@ export const BudgetLinesForm = ({
     let canCn = "success";
     let enteredAmountCn = "success";
     let needByDateCn = "success";
-
-    const MemoizedDatePicker = React.memo(DatePicker);
 
     // validate all budget line fields if in review mode and is editing
     if (isEditing) {
@@ -149,7 +146,7 @@ export const BudgetLinesForm = ({
                         </div>
                     </div>
                     <div className="grid-col-6">
-                        <MemoizedDatePicker
+                        <DatePicker
                             id="need-by-date"
                             name="needByDate"
                             label="Obligate by Date"

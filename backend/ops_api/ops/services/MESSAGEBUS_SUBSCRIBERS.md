@@ -222,7 +222,7 @@ def my_subscriber(event: OpsEvent, session: Session) -> None:
 
 ## Type Safety
 
-The `MessageBusSubscriber` protocol provides type checking. IDEs and type checkers (mypy) will verify:
+The `MessageBusSubscriber` protocol provides type checking. IDEs and type checkers will verify:
 
 - Subscribers have the correct signature
 - Parameters are properly typed
