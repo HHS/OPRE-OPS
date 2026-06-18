@@ -10,12 +10,6 @@ import CurrencyInput from "../../../components/UI/Form/CurrencyInput";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import TermTag from "../../../components/UI/Term/TermTag";
 import { convertCodeForDisplay } from "../../../helpers/utils";
-import {
-    findDescription,
-    findIfOptional,
-    findPeriodEnd,
-    findPeriodStart
-} from "../../../helpers/servicesComponent.helpers";
 import useRequestAwardApproval from "./RequestAwardApproval.hooks";
 
 /**
@@ -63,7 +57,7 @@ export const RequestAwardApproval = () => {
         projectOfficerName,
         alternateProjectOfficerName,
         allBudgetLines,
-        servicesComponents,
+        servicesComponentLookup,
         groupedBudgetLinesByServicesComponent,
         vendors,
         selectedVendor,
@@ -165,16 +159,18 @@ export const RequestAwardApproval = () => {
                             const budgetLineScGroupingLabel = group.serviceComponentGroupingLabel
                                 ? group.serviceComponentGroupingLabel
                                 : group.servicesComponentNumber;
+                            // Use Map lookup instead of array search for O(1) performance
+                            const sc = servicesComponentLookup.get(budgetLineScGroupingLabel);
                             return (
                                 <ServicesComponentAccordion
                                     key={`${group.servicesComponentNumber}-${index}`}
                                     servicesComponentNumber={group.servicesComponentNumber}
                                     serviceComponentGroupingLabel={group.serviceComponentGroupingLabel}
                                     withMetadata={true}
-                                    periodStart={findPeriodStart(servicesComponents, budgetLineScGroupingLabel)}
-                                    periodEnd={findPeriodEnd(servicesComponents, budgetLineScGroupingLabel)}
-                                    description={findDescription(servicesComponents, budgetLineScGroupingLabel)}
-                                    optional={findIfOptional(servicesComponents, budgetLineScGroupingLabel)}
+                                    periodStart={sc?.period_start}
+                                    periodEnd={sc?.period_end}
+                                    description={sc?.description}
+                                    optional={sc?.optional}
                                     serviceRequirementType={agreement?.service_requirement_type}
                                 >
                                     {group.budgetLines.length > 0 ? (

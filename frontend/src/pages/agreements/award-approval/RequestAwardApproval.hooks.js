@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     useGetAgreementByIdQuery,
@@ -13,6 +13,9 @@ import { groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
 import { PROCUREMENT_STEP_STATUS } from "../../../components/Agreements/ProcurementTracker/ProcurementTracker.constants";
 import DatePicker from "../../../components/UI/USWDS/DatePicker";
 import suite from "./RequestAwardApproval.suite";
+
+// Memoize DatePicker outside the hook to avoid recreating on every render
+const MemoizedDatePicker = React.memo(DatePicker);
 
 /**
  * Custom hook for the Request Award Approval page
@@ -35,9 +38,6 @@ export default function useRequestAwardApproval(agreementId) {
 
     // Validation
     const [validationResult, setValidationResult] = useState(suite.get());
-
-    // Memoized DatePicker component
-    const MemoizedDatePicker = React.memo(DatePicker);
 
     const [updateProcurementTrackerStep] = useUpdateProcurementTrackerStepMutation();
 
@@ -72,10 +72,27 @@ export default function useRequestAwardApproval(agreementId) {
     const alternateProjectOfficerName = useGetUserFullNameFromId(agreement?.alternate_project_officer_id);
 
     // Get all budget lines for display
-    const allBudgetLines = agreement?.budget_line_items ?? [];
+    // Memoized to prevent reference changes on every render
+    const allBudgetLines = useMemo(() => agreement?.budget_line_items ?? [], [agreement?.budget_line_items]);
 
     // Group all budget lines by services component for display
-    const groupedBudgetLinesByServicesComponent = groupByServicesComponent(allBudgetLines, servicesComponents || []);
+    // Memoized to avoid expensive re-computation on every render
+    const groupedBudgetLinesByServicesComponent = useMemo(
+        () => groupByServicesComponent(allBudgetLines, servicesComponents || []),
+        [allBudgetLines, servicesComponents]
+    );
+
+    // Create a lookup map for services components to avoid repeated array searches
+    // Each component in the map is indexed by its grouping label
+    const servicesComponentLookup = useMemo(() => {
+        if (!servicesComponents) return new Map();
+        return new Map(
+            servicesComponents.map((sc) => {
+                const scGroupingLabel = sc.sub_component ? `${sc.number}-${String(sc.sub_component)}` : `${sc.number}`;
+                return [scGroupingLabel, sc];
+            })
+        );
+    }, [servicesComponents]);
 
     // Check if Step 5 is completed (prerequisite)
     const isStep5Completed = step5?.status === PROCUREMENT_STEP_STATUS.COMPLETED;
@@ -171,6 +188,7 @@ export default function useRequestAwardApproval(agreementId) {
         alternateProjectOfficerName,
         allBudgetLines,
         servicesComponents,
+        servicesComponentLookup,
         groupedBudgetLinesByServicesComponent,
         vendors,
         selectedVendor,

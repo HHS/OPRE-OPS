@@ -83,7 +83,8 @@ export const opsApi = createApi({
         "Cans",
         "ProcurementTrackers",
         "Procurement Tracker Steps",
-        "Budget Requisitions"
+        "Budget Requisitions",
+        "Vendors"
     ],
     baseQuery: getBaseQueryWithReauth(baseQuery),
     endpoints: (builder) => ({
