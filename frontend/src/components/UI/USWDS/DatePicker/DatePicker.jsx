@@ -82,6 +82,15 @@ function DatePicker({
         }
     }, [value]);
 
+    // USWDS clones the React-rendered input once at mount to build the visible
+    // external input, so subsequent className changes on the React node don't
+    // reach it. Toggle the error class directly on the cloned input.
+    useEffect(() => {
+        if (inputRef.current) {
+            inputRef.current.classList.toggle("usa-input--error", messages.length > 0);
+        }
+    }, [messages.length]);
+
     const datePickerAttributes = {
         ...(minDate && { "data-min-date": getDateString(minDate) }),
         ...(maxDate && { "data-max-date": getDateString(maxDate) })
