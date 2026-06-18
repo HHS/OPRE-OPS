@@ -343,8 +343,8 @@ export const RequestAwardApproval = () => {
                     label="Notes (Optional)"
                     value={notes}
                     onChange={(_name, value) => setNotes(value)}
-                    maxLength={750}
-                    messages={notes.length > 750 ? ["Notes must be 750 characters or less"] : []}
+                    maxLength={150}
+                    messages={notes.length > 150 ? ["Notes must be 150 characters or less"] : []}
                 />
             </div>
 
@@ -365,6 +365,7 @@ export const RequestAwardApproval = () => {
                         hasApprovalBeenRequested ||
                         hasBLIInReview ||
                         !isStep5Completed ||
+                        validationResult.hasErrors() ||
                         !selectedVendor ||
                         !contractNumber ||
                         !awardAmount ||

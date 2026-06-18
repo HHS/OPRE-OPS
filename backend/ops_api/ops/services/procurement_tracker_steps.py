@@ -187,6 +187,11 @@ class ProcurementTrackerStepService:
                 "approval_responded_by": "award_approval_responded_by",
                 "approval_responded_date": "award_approval_responded_date",
                 "reviewer_notes": "award_approval_reviewer_notes",
+                # OPS-1640: Award vendor and contract information fields
+                "vendor_id": "award_vendor_id",
+                "contract_number": "award_contract_number",
+                "award_amount": "award_amount",
+                "award_date": "award_date",
             },
         }
 
