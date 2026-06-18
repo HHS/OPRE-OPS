@@ -239,6 +239,8 @@ export const CreateBLIsAndSCs = ({
                     datePickerSuite={datePickerSuite}
                     hasUnsavedChanges={hasUnsavedChanges}
                     workflow={workflow}
+                    scStartDate={selectedAgreement.sc_start_date ?? null}
+                    scEndDate={selectedAgreement.sc_end_date ?? null}
                 />
             )}
 

@@ -32,6 +32,8 @@ import DatePicker from "../../UI/USWDS/DatePicker";
  * @param {boolean} props.hasUnsavedChanges - if there any unsaved BLI changes
  * @param {boolean} props.isBudgetLineNotDraft - Whether the budget line is not in draft mode.
  * @param {"agreement" | "none"} props.workflow - The workflow type.
+ * @param {string | null} [props.scStartDate] - The earliest SC start date (YYYY-MM-DD) from the agreement.
+ * @param {string | null} [props.scEndDate] - The latest SC end date (YYYY-MM-DD) from the agreement.
  * @returns {React.ReactElement} - The rendered component.
  */
 export const BudgetLinesForm = ({
@@ -54,7 +56,9 @@ export const BudgetLinesForm = ({
     datePickerSuite,
     hasUnsavedChanges,
     isBudgetLineNotDraft = false,
-    workflow
+    workflow,
+    scStartDate = null,
+    scEndDate = null
 }) => {
     const isSuperUser = useSelector((state) => state.auth?.activeUser?.is_superuser) ?? false;
     let dateRes = datePickerSuite.get();
@@ -91,7 +95,9 @@ export const BudgetLinesForm = ({
         if (!isBudgetLineNotDraft) {
             datePickerSuite.run(
                 {
-                    needByDate
+                    needByDate,
+                    scStartDate,
+                    scEndDate
                 },
                 isSuperUser
             );
@@ -115,6 +121,8 @@ export const BudgetLinesForm = ({
         datePickerSuite.run(
             {
                 needByDate,
+                scStartDate,
+                scEndDate,
                 ...{ [name]: value }
             },
             isSuperUser
