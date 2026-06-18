@@ -64,7 +64,6 @@ export default function useProcurementTrackerStepFive(stepFiveData, handleSetCom
                 data: payload
             }).unwrap();
             setTargetCompletionDate("");
-            console.log("Procurement Tracker Step 5 Updated");
         } catch (error) {
             console.error("Failed to update Procurement Tracker Step 5", error);
             setAlert({
@@ -104,8 +103,6 @@ export default function useProcurementTrackerStepFive(stepFiveData, handleSetCom
             if (handleSetCompletedStepNumber) {
                 handleSetCompletedStepNumber(5);
             }
-
-            console.log("Procurement Tracker Step 5 Completed");
         } catch (error) {
             console.error("Failed to complete Procurement Tracker Step 5", error);
             setAlert({
