@@ -420,6 +420,12 @@ class ProcurementTrackerStepPatchRequestSchema(Schema):
         },
     )
 
+    # OPS-1640: Award vendor and contract information fields
+    vendor_id = fields.Integer(required=False, allow_none=True)
+    contract_number = fields.String(required=False, allow_none=True, validate=validate.Length(max=100))
+    award_amount = fields.Float(required=False, allow_none=True)
+    award_date = fields.Date(required=False, allow_none=True)
+
 
 class ProcurementTrackerStepSchema(Schema):
     """Schema for procurement tracker step serialization."""

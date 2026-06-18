@@ -27,6 +27,7 @@
     {
       "name": "Vendor 1",
       "duns": "123456789",
+      "vendor_type": "SMALL_BUSINESS",
       "active": true,
       "contacts": [
         {
@@ -42,6 +43,7 @@
     {
       "name": "Vendor 2",
       "duns": "987654321",
+      "vendor_type": "LARGE_BUSINESS",
       "active": true,
       "contacts": [
         {
@@ -57,6 +59,7 @@
     {
       "name": "Vendor 3",
       "duns": "123456780",
+      "vendor_type": "WOMAN_OWNED",
       "active": false,
       "contacts": [
         {

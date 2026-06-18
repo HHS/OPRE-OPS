@@ -10,6 +10,7 @@ from sqlalchemy import (
     Date,
     ForeignKey,
     Integer,
+    Numeric,
     String,
     Text,
     Index,
@@ -558,6 +559,27 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
         nullable=True,
     )
 
+    # AWARD vendor information fields (OPS-1640)
+    award_vendor_id: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        ForeignKey("vendor.id"),
+        nullable=True,
+    )
+
+    # AWARD contract/award information fields (OPS-1640)
+    award_contract_number: Mapped[Optional[str]] = mapped_column(
+        String(100),
+        nullable=True,
+    )
+    award_amount: Mapped[Optional[float]] = mapped_column(
+        Numeric(12, 2),
+        nullable=True,
+    )
+    award_date: Mapped[Optional[date]] = mapped_column(
+        Date,
+        nullable=True,
+    )
+
     # Relationship for award completed by user
     award_completed_by_user: Mapped[Optional["User"]] = relationship(
         "User",
@@ -576,6 +598,13 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
     award_approval_responded_by_user: Mapped[Optional["User"]] = relationship(
         "User",
         foreign_keys=[award_approval_responded_by],
+        viewonly=True,
+    )
+
+    # Relationship for award vendor
+    award_vendor: Mapped[Optional["Vendor"]] = relationship(
+        "Vendor",
+        foreign_keys=[award_vendor_id],
         viewonly=True,
     )
 
@@ -693,6 +722,11 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
             data.pop("award_completed_by_user", None)
             data.pop("award_approval_requested_by_user", None)
             data.pop("award_approval_responded_by_user", None)
+            data.pop("award_vendor_id", None)
+            data.pop("award_vendor", None)
+            data.pop("award_contract_number", None)
+            data.pop("award_amount", None)
+            data.pop("award_date", None)
 
         # Handle PRE_SOLICITATION-specific fields
         elif self.step_type == ProcurementTrackerStepType.PRE_SOLICITATION:
@@ -770,6 +804,11 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
             data.pop("award_completed_by_user", None)
             data.pop("award_approval_requested_by_user", None)
             data.pop("award_approval_responded_by_user", None)
+            data.pop("award_vendor_id", None)
+            data.pop("award_vendor", None)
+            data.pop("award_contract_number", None)
+            data.pop("award_amount", None)
+            data.pop("award_date", None)
 
         # Handle SOLICITATION-specific fields
         elif self.step_type == ProcurementTrackerStepType.SOLICITATION:
@@ -847,6 +886,11 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
             data.pop("award_completed_by_user", None)
             data.pop("award_approval_requested_by_user", None)
             data.pop("award_approval_responded_by_user", None)
+            data.pop("award_vendor_id", None)
+            data.pop("award_vendor", None)
+            data.pop("award_contract_number", None)
+            data.pop("award_amount", None)
+            data.pop("award_date", None)
 
         # Handle EVALUATION-specific fields
         elif self.step_type == ProcurementTrackerStepType.EVALUATION:
@@ -924,6 +968,11 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
             data.pop("award_completed_by_user", None)
             data.pop("award_approval_requested_by_user", None)
             data.pop("award_approval_responded_by_user", None)
+            data.pop("award_vendor_id", None)
+            data.pop("award_vendor", None)
+            data.pop("award_contract_number", None)
+            data.pop("award_amount", None)
+            data.pop("award_date", None)
 
         # Handle PRE_AWARD-specific fields
         elif self.step_type == ProcurementTrackerStepType.PRE_AWARD:
@@ -1012,6 +1061,11 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
             data.pop("award_completed_by_user", None)
             data.pop("award_approval_requested_by_user", None)
             data.pop("award_approval_responded_by_user", None)
+            data.pop("award_vendor_id", None)
+            data.pop("award_vendor", None)
+            data.pop("award_contract_number", None)
+            data.pop("award_amount", None)
+            data.pop("award_date", None)
 
         # Handle AWARD-specific fields (OPS-1640)
         elif self.step_type == ProcurementTrackerStepType.AWARD:
@@ -1044,6 +1098,28 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
             # Map the approval responded by user relationship
             if "award_approval_responded_by_user" in data:
                 data["approval_responded_by_user"] = data.pop("award_approval_responded_by_user", None)
+
+            # Map vendor and award information fields (OPS-1640)
+            data["vendor_id"] = data.pop("award_vendor_id", None)
+            # Serialize vendor relationship
+            if "award_vendor" in data and data["award_vendor"]:
+                vendor = data.pop("award_vendor")
+                data["vendor"] = (
+                    {
+                        "id": vendor.id,
+                        "name": vendor.name,
+                        "duns": vendor.duns,
+                        "vendor_type": vendor.vendor_type.name if vendor.vendor_type else None,
+                    }
+                    if vendor
+                    else None
+                )
+            else:
+                data.pop("award_vendor", None)
+                data["vendor"] = None
+            data["contract_number"] = data.pop("award_contract_number", None)
+            data["award_amount"] = float(data.pop("award_amount")) if data.get("award_amount") is not None else None
+            data["award_date"] = data.pop("award_date", None)
 
             # Remove ACQUISITION_PLANNING-specific fields
             data.pop("acquisition_planning_task_completed_by", None)
@@ -1160,6 +1236,11 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
             data.pop("award_completed_by_user", None)
             data.pop("award_approval_requested_by_user", None)
             data.pop("award_approval_responded_by_user", None)
+            data.pop("award_vendor_id", None)
+            data.pop("award_vendor", None)
+            data.pop("award_contract_number", None)
+            data.pop("award_amount", None)
+            data.pop("award_date", None)
 
         return data
 
@@ -1288,9 +1369,7 @@ class DefaultProcurementTracker(ProcurementTracker):
         )
 
         if not include_inactive:
-            linked_query = linked_query.where(
-                ProcurementTracker.status == ProcurementTrackerStatus.ACTIVE
-            )
+            linked_query = linked_query.where(ProcurementTracker.status == ProcurementTrackerStatus.ACTIVE)
 
         existing = session.execute(linked_query).scalar_one_or_none()
 
@@ -1308,9 +1387,7 @@ class DefaultProcurementTracker(ProcurementTracker):
         )
 
         if not include_inactive:
-            unlinked_query = unlinked_query.where(
-                ProcurementTracker.status == ProcurementTrackerStatus.ACTIVE
-            )
+            unlinked_query = unlinked_query.where(ProcurementTracker.status == ProcurementTrackerStatus.ACTIVE)
 
         unlinked = session.execute(unlinked_query).scalars().first()
 

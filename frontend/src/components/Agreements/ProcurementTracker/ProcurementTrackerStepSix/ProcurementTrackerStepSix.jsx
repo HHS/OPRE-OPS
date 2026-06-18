@@ -183,15 +183,6 @@ const ProcurementTrackerStepSix = ({
                             >
                                 Request Award Approval
                             </button>
-                            {stepSixData?.approval_requested && (
-                                <span className="margin-left-2">
-                                    <FontAwesomeIcon
-                                        icon={faCircleCheck}
-                                        className="text-green margin-right-1"
-                                    />
-                                    Award Approval Requested
-                                </span>
-                            )}
                         </div>
 
                         <fieldset className="usa-fieldset margin-top-0">

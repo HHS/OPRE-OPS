@@ -1,15 +1,18 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     useGetAgreementByIdQuery,
     useGetProcurementTrackersByAgreementIdQuery,
     useUpdateProcurementTrackerStepMutation,
-    useGetServicesComponentsListQuery
+    useGetServicesComponentsListQuery,
+    useGetVendorsQuery
 } from "../../../api/opsAPI";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
-import { getLocalISODate } from "../../../helpers/utils";
+import { getLocalISODate, formatDateForApi } from "../../../helpers/utils";
 import { groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
 import { PROCUREMENT_STEP_STATUS } from "../../../components/Agreements/ProcurementTracker/ProcurementTracker.constants";
+import DatePicker from "../../../components/UI/USWDS/DatePicker";
+import suite from "./RequestAwardApproval.suite";
 
 /**
  * Custom hook for the Request Award Approval page
@@ -22,7 +25,24 @@ export default function useRequestAwardApproval(agreementId) {
     const [submitError, setSubmitError] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // Vendor Information fields
+    const [selectedVendor, setSelectedVendor] = useState(null); // {id, name, duns}
+
+    // Award Information fields
+    const [contractNumber, setContractNumber] = useState("");
+    const [awardAmount, setAwardAmount] = useState("");
+    const [awardDate, setAwardDate] = useState("");
+
+    // Validation
+    const [validationResult, setValidationResult] = useState(suite.get());
+
+    // Memoized DatePicker component
+    const MemoizedDatePicker = React.memo(DatePicker);
+
     const [updateProcurementTrackerStep] = useUpdateProcurementTrackerStepMutation();
+
+    // Fetch vendors
+    const { data: vendors = [], isLoading: isLoadingVendors } = useGetVendorsQuery();
 
     // Fetch agreement data
     const { data: agreement, isLoading: isLoadingAgreement } = useGetAgreementByIdQuery(agreementId, {
@@ -66,7 +86,15 @@ export default function useRequestAwardApproval(agreementId) {
     // Check if any BLI is in review status
     const hasBLIInReview = agreement?.budget_line_items?.some((/** @type {any} */ bli) => bli.in_review) ?? false;
 
-    const isLoading = isLoadingAgreement || isLoadingTrackers;
+    const isLoading = isLoadingAgreement || isLoadingTrackers || isLoadingVendors;
+
+    /**
+     * Run validation for a specific field
+     */
+    const runValidate = (fieldName, value) => {
+        suite.run({ [fieldName]: value }, fieldName);
+        setValidationResult(suite.get());
+    };
 
     /**
      * Handle form submission - request award approval
@@ -74,6 +102,22 @@ export default function useRequestAwardApproval(agreementId) {
     const handleSubmit = async () => {
         if (!step6?.id) {
             setSubmitError("Step 6 not found for this agreement.");
+            return;
+        }
+
+        // Run validation on all fields before submitting
+        const allData = {
+            vendor: selectedVendor?.id,
+            contractNumber,
+            awardAmount,
+            awardDate
+        };
+        suite.run(allData);
+        const finalValidation = suite.get();
+
+        if (finalValidation.hasErrors()) {
+            setValidationResult(finalValidation);
+            setSubmitError("Please correct the errors in the form before submitting.");
             return;
         }
 
@@ -86,12 +130,17 @@ export default function useRequestAwardApproval(agreementId) {
                 data: {
                     approval_requested: true,
                     approval_requested_date: getLocalISODate(),
-                    requestor_notes: notes.trim() || null
+                    requestor_notes: notes.trim() || null,
+                    vendor_id: selectedVendor?.id,
+                    contract_number: contractNumber.trim(),
+                    award_amount: parseFloat(awardAmount),
+                    award_date: formatDateForApi(awardDate)
                 }
             }).unwrap();
 
-            // Navigate back to procurement tracker with success state
-            navigate(`/agreements/${agreementId}/procurement-tracker`, { state: { success: true } });
+            navigate(`/agreements/${agreementId}/procurement-tracker`, {
+                state: { awardApprovalSuccess: true }
+            });
         } catch (error) {
             console.error("Failed to request award approval:", error);
             setSubmitError(error?.data?.message || "Failed to request award approval. Please try again.");
@@ -122,6 +171,18 @@ export default function useRequestAwardApproval(agreementId) {
         alternateProjectOfficerName,
         allBudgetLines,
         servicesComponents,
-        groupedBudgetLinesByServicesComponent
+        groupedBudgetLinesByServicesComponent,
+        vendors,
+        selectedVendor,
+        setSelectedVendor,
+        contractNumber,
+        setContractNumber,
+        awardAmount,
+        setAwardAmount,
+        awardDate,
+        setAwardDate,
+        runValidate,
+        validationResult,
+        MemoizedDatePicker
     };
 }

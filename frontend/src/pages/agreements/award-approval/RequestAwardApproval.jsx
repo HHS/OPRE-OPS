@@ -6,7 +6,9 @@ import AgreementBLIAccordion from "../../../components/Agreements/AgreementBLIAc
 import AgreementBLIReviewTable from "../../../components/BudgetLineItems/BLIReviewTable";
 import ServicesComponentAccordion from "../../../components/ServicesComponents/ServicesComponentAccordion";
 import TextArea from "../../../components/UI/Form/TextArea";
+import CurrencyInput from "../../../components/UI/Form/CurrencyInput";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
+import TermTag from "../../../components/UI/Term/TermTag";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import {
     findDescription,
@@ -15,6 +17,28 @@ import {
     findPeriodStart
 } from "../../../helpers/servicesComponent.helpers";
 import useRequestAwardApproval from "./RequestAwardApproval.hooks";
+
+/**
+ * Format vendor type enum for display
+ * @param {string} vendorType - Vendor type enum value
+ * @returns {string} - Formatted vendor type
+ */
+const formatVendorType = (vendorType) => {
+    if (!vendorType) return "";
+
+    const typeMap = {
+        SMALL_BUSINESS: "Small Business",
+        EIGHT_A: "8(a)",
+        HUBZONE: "HUBZone",
+        WOMAN_OWNED: "Woman-Owned Small Business",
+        VETERAN_OWNED: "Veteran-Owned Small Business",
+        SERVICE_DISABLED_VETERAN_OWNED: "Service-Disabled Veteran-Owned Small Business",
+        LARGE_BUSINESS: "Large Business",
+        OTHER: "Other"
+    };
+
+    return typeMap[vendorType] || vendorType;
+};
 
 /**
  * @component - Renders a page for requesting award approval from the Budget Team.
@@ -40,7 +64,19 @@ export const RequestAwardApproval = () => {
         alternateProjectOfficerName,
         allBudgetLines,
         servicesComponents,
-        groupedBudgetLinesByServicesComponent
+        groupedBudgetLinesByServicesComponent,
+        vendors,
+        selectedVendor,
+        setSelectedVendor,
+        contractNumber,
+        setContractNumber,
+        awardAmount,
+        setAwardAmount,
+        awardDate,
+        setAwardDate,
+        runValidate,
+        validationResult,
+        MemoizedDatePicker
     } = useRequestAwardApproval(agreementId);
 
     if (isLoading) {
@@ -160,6 +196,146 @@ export const RequestAwardApproval = () => {
                     )}
             </AgreementBLIAccordion>
 
+            {/* Vendor Information */}
+            <fieldset className="usa-fieldset margin-top-4">
+                <legend className="usa-legend usa-legend--large">Vendor Information</legend>
+                <p className="margin-top-1 margin-bottom-3">
+                    Select the vendor for this contract. The Unique Entity ID and Vendor Type will be populated
+                    automatically.
+                </p>
+
+                <div className="grid-row grid-gap margin-top-3">
+                    <div className="grid-col-4">
+                        <label
+                            className="usa-label"
+                            htmlFor="vendor"
+                        >
+                            Vendor
+                        </label>
+                        <select
+                            id="vendor"
+                            name="vendor"
+                            className="usa-select"
+                            value={selectedVendor?.id || ""}
+                            onChange={(e) => {
+                                const vendorId = parseInt(e.target.value);
+                                const vendor = vendors.find((v) => v.id === vendorId);
+                                setSelectedVendor(vendor || null);
+                                runValidate("vendor", vendorId);
+                            }}
+                            required
+                            aria-required="true"
+                            data-cy="vendor-select"
+                        >
+                            <option value="">- Select Vendor -</option>
+                            {vendors.map((vendor) => (
+                                <option
+                                    key={vendor.id}
+                                    value={vendor.id}
+                                >
+                                    {vendor.name}
+                                </option>
+                            ))}
+                        </select>
+                        {validationResult.getErrors("vendor")?.length > 0 && (
+                            <div
+                                className="usa-error-message"
+                                role="alert"
+                            >
+                                {validationResult.getErrors("vendor")[0]}
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="grid-col-4">
+                        <TermTag
+                            term="Unique Entity ID (SAM.gov ID)"
+                            description={selectedVendor?.duns || "—"}
+                            data-cy="vendor-unique-entity-id-input"
+                        />
+                    </div>
+
+                    <div className="grid-col-4">
+                        <TermTag
+                            term="Vendor Type"
+                            description={formatVendorType(selectedVendor?.vendor_type) || "—"}
+                            data-cy="vendor-type-input"
+                        />
+                    </div>
+                </div>
+            </fieldset>
+
+            {/* Award Information */}
+            <fieldset className="usa-fieldset margin-top-4">
+                <legend className="usa-legend usa-legend--large">Award Information</legend>
+                <p className="margin-top-1">Add the award information for this contract.</p>
+
+                <div className="grid-row grid-gap">
+                    <div className="grid-col-4 margin-top-3">
+                        <label
+                            className="usa-label"
+                            htmlFor="contractNumber"
+                        >
+                            Contract #
+                        </label>
+                        <input
+                            id="contractNumber"
+                            name="contractNumber"
+                            className="usa-input"
+                            type="text"
+                            value={contractNumber}
+                            onChange={(e) => {
+                                setContractNumber(e.target.value);
+                                runValidate("contractNumber", e.target.value);
+                            }}
+                            required
+                            aria-required="true"
+                            data-cy="contract-number-input"
+                        />
+                        {validationResult.getErrors("contractNumber")?.length > 0 && (
+                            <div
+                                className="usa-error-message"
+                                role="alert"
+                            >
+                                {validationResult.getErrors("contractNumber")[0]}
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="grid-col-4 margin-top-3">
+                        <CurrencyInput
+                            name="awardAmount"
+                            label="Award Amount"
+                            value={awardAmount}
+                            onChange={(_name, value) => {
+                                setAwardAmount(value);
+                                runValidate("awardAmount", value);
+                            }}
+                            messages={validationResult.getErrors("awardAmount") || []}
+                            isRequiredNoShow={true}
+                            dataCy="award-amount-input"
+                        />
+                    </div>
+
+                    <div className="grid-col-4 ">
+                        <MemoizedDatePicker
+                            id="awardDate"
+                            name="awardDate"
+                            label="Award Date"
+                            hint="mm/dd/yyyy"
+                            value={awardDate}
+                            onChange={(e) => {
+                                setAwardDate(e.target.value);
+                                runValidate("awardDate", e.target.value);
+                            }}
+                            messages={validationResult.getErrors("awardDate") || []}
+                            isRequiredNoShow={true}
+                            dataCy="award-date-input"
+                        />
+                    </div>
+                </div>
+            </fieldset>
+
             {/* Notes (Optional) */}
             <div className="margin-top-4">
                 <TextArea
@@ -184,7 +360,16 @@ export const RequestAwardApproval = () => {
                 <button
                     className="usa-button"
                     onClick={handleSubmit}
-                    disabled={isSubmitting || hasApprovalBeenRequested || hasBLIInReview || !isStep5Completed}
+                    disabled={
+                        isSubmitting ||
+                        hasApprovalBeenRequested ||
+                        hasBLIInReview ||
+                        !isStep5Completed ||
+                        !selectedVendor ||
+                        !contractNumber ||
+                        !awardAmount ||
+                        !awardDate
+                    }
                     data-cy="request-award-approval-submit"
                 >
                     {isSubmitting ? "Requesting..." : "Request Award Approval"}

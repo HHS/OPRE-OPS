@@ -803,19 +803,6 @@ describe("ProcurementTrackerStepSix", () => {
 
             expect(mockNavigate).toHaveBeenCalledWith("/agreements/123/award-approval");
         });
-
-        it("shows approval requested indicator when approval is requested", () => {
-            const props = {
-                ...defaultProps,
-                stepSixData: {
-                    ...defaultProps.stepSixData,
-                    approval_requested: true
-                }
-            };
-            render(<ProcurementTrackerStepSix {...props} />);
-
-            expect(screen.getByText(/Award Approval Requested/i)).toBeInTheDocument();
-        });
     });
 
     describe("Confirmation Modal", () => {
