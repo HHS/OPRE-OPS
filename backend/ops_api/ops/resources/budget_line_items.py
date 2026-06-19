@@ -8,7 +8,7 @@ from loguru import logger
 from marshmallow import ValidationError
 from marshmallow.experimental.context import Context
 
-from models import BaseModel, BudgetLineItem, OpsEventType
+from models import BaseModel, BudgetLineItem, BudgetLineItemStatus, OpsEventType
 from models.utils import generate_events_update
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
@@ -106,12 +106,26 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         Permission.BUDGET_LINE_ITEM,
     )
     def delete(self, id: int) -> Response:
-        with OpsEventHandler(OpsEventType.DELETE_BLI) as meta:
-            service: OpsService[BudgetLineItem] = BudgetLineItemService(current_app.db_session)
-            old_bli: BudgetLineItem = service.get(id)
-            service.delete(id)
-            meta.metadata.update({"deleted_bli": old_bli.to_dict()})
-            return make_response_with_headers({"message": "BudgetLineItem deleted", "id": id}, 200)
+        service: OpsService[BudgetLineItem] = BudgetLineItemService(current_app.db_session)
+        old_bli: BudgetLineItem = service.get(id)
+        old_bli_dict = old_bli.to_dict()
+
+        # Peek at how the delete will be handled so we only emit a DELETE_BLI audit event for an
+        # actual hard-delete. PLANNED/IN_EXECUTION deletions route to a change request (202) and
+        # emit their own CREATE_CHANGE_REQUEST event inside the service; emitting DELETE_BLI here
+        # would write a spurious "Budget Line Deleted" history record on mere request submission.
+        is_immediate_delete = is_super_user(current_user, current_app) or old_bli.status == BudgetLineItemStatus.DRAFT
+
+        if is_immediate_delete:
+            with OpsEventHandler(OpsEventType.DELETE_BLI) as meta:
+                _, status_code = service.delete(id)
+                meta.metadata.update({"deleted_bli": old_bli_dict})
+                return make_response_with_headers({"message": "BudgetLineItem deleted", "id": id}, status_code)
+
+        _, status_code = service.delete(id)
+        return make_response_with_headers(
+            {"message": "BudgetLineItem deletion submitted for approval", "id": id}, status_code
+        )
 
 
 class BudgetLineItemsListAPI(BaseListAPI):

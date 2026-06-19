@@ -222,14 +222,15 @@ def test_executing_bli_list_meta_at_pre_award(auth_client, executing_bli, make_t
     assert "Pre-Award" in meta["lockedMessage"]
 
 
-def test_edit_executing_bli_meta_is_editable_not_deletable(auth_client, executing_bli, app_ctx):
-    """The GET _meta exposes isEditable True but isDeletable False for an executing BLI (non-super)."""
+def test_edit_executing_bli_meta_is_editable_and_deletable(auth_client, executing_bli, app_ctx):
+    """The GET _meta exposes isEditable and isDeletable True for an executing BLI (non-super).
+    Deletion routes through an approval request (see the deletion tests), but the control is live."""
     response = auth_client.get(url_for("api.budget-line-items-item", id=executing_bli.id))
 
     assert response.status_code == 200
     meta = response.json["_meta"]
     assert meta["isEditable"] is True
-    assert meta["isDeletable"] is False
+    assert meta["isDeletable"] is True
     assert meta["lockedMessage"] is None
 
 

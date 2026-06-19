@@ -133,26 +133,17 @@ def get_bli_locked_message(budget_line_item, in_review: bool, is_super: bool) ->
     return None
 
 
-# Statuses that can be deleted immediately (hard delete) without an approval workflow.
-IMMEDIATE_DELETE_STATUSES = [
-    BudgetLineItemStatus.DRAFT,
-    BudgetLineItemStatus.PLANNED,
-]
-
-
 def compute_bli_is_deletable(budget_line_item, in_review: bool, is_super: bool) -> bool:
     """Single source of truth for whether the delete control should be enabled.
 
-    PR1 preserves today's delete behavior: a BLI is deletable when it is editable AND its
-    status is one of the immediate-delete statuses (DRAFT/PLANNED), or the user is a super
-    user. This deliberately keeps IN_EXECUTION non-deletable even though it is now editable,
-    so making executing BLIs editable does not auto-enable their delete button.
+    A BLI is deletable whenever it is editable (DRAFT/PLANNED/IN_EXECUTION, not in review, not
+    OBE, agreement not at Pre-Award/Award), or the user is a super user. DRAFT deletes
+    immediately; PLANNED/IN_EXECUTION deletions route through an approval change request (handled
+    in the service). The delete control is therefore enabled in exactly the same cases as edit.
     """
     if budget_line_item is None:
         return False
-    if not compute_bli_editable(budget_line_item, in_review, is_super):
-        return False
-    return is_super or budget_line_item.status in IMMEDIATE_DELETE_STATUSES
+    return compute_bli_editable(budget_line_item, in_review, is_super)
 
 
 def is_bli_editable(budget_line_item):

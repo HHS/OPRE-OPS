@@ -253,12 +253,13 @@ def test_compute_bli_editable_obligated_super_can_edit():
     [
         (BudgetLineItemStatus.DRAFT, True),
         (BudgetLineItemStatus.PLANNED, True),
-        (BudgetLineItemStatus.IN_EXECUTION, False),
+        (BudgetLineItemStatus.IN_EXECUTION, True),
         (BudgetLineItemStatus.OBLIGATED, False),
     ],
 )
 def test_compute_bli_is_deletable_by_status_non_super(status, expected):
-    """PR1 keeps today's delete eligibility: DRAFT/PLANNED deletable, IN_EXECUTION not (yet)."""
+    """Deletability now mirrors editability: DRAFT/PLANNED/IN_EXECUTION deletable (PLANNED/EXECUTING
+    route through an approval request), OBLIGATED not. DRAFT deletes immediately."""
     bli = _FakeBLI(status)
     assert compute_bli_is_deletable(bli, in_review=False, is_super=False) is expected
 

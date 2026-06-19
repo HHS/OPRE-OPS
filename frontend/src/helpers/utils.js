@@ -203,7 +203,8 @@ export const codesToDisplayText = {
         amount: "Amount",
         can_id: "CAN",
         date_needed: "Obligate By Date",
-        status: "Status"
+        status: "Status",
+        delete: "Deleted"
     },
     methodOfTransfer: {
         DIRECT: "Direct",

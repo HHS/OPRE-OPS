@@ -40,6 +40,9 @@ def build_approve_url(change_request: ChangeRequest, agreement_id: int, fe_url: 
         change_type = "status-change"
     elif getattr(change_request, "has_budget_change", False):
         change_type = "budget-change"
+    elif getattr(change_request, "has_delete_change", False):
+        # A deletion request reviews on the budget-change surface (BudgetChangeReviewCard).
+        change_type = "budget-change"
     elif getattr(change_request, "has_proc_shop_change", False):
         change_type = "procurement-shop-change"
     else:
