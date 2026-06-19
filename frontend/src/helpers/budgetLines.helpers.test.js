@@ -413,13 +413,36 @@ describe("areAllBudgetLinesInReview helpers", () => {
 });
 
 describe("getTooltipLabel", () => {
-    it("returns the executing-status tooltip", () => {
+    it("prefers the backend-supplied lockedMessage when present", () => {
+        const result = getTooltipLabel({
+            status: BLI_STATUS.EXECUTING,
+            _meta: { lockedMessage: "This budget line can't be edited because the agreement has reached Pre-Award." }
+        });
+        expect(result).toBe("This budget line can't be edited because the agreement has reached Pre-Award.");
+    });
+    it("returns an empty string for an executing budget line with no lockedMessage (now editable)", () => {
         const result = getTooltipLabel({ status: BLI_STATUS.EXECUTING });
-        expect(result).toBe("If you need to edit a budget line in Executing Status, please contact the budget team");
+        expect(result).toBe("");
     });
     it("returns the obligated-status tooltip", () => {
         const result = getTooltipLabel({ status: BLI_STATUS.OBLIGATED });
         expect(result).toBe("Obligated budget lines cannot be edited");
+    });
+    it("returns the OBE tooltip", () => {
+        const result = getTooltipLabel({ status: BLI_STATUS.PLANNED, is_obe: true });
+        expect(result).toBe("Budget lines that are overcome by events (OBE) cannot be edited");
+    });
+    it("gives lockedMessage precedence over the OBLIGATED branch", () => {
+        const result = getTooltipLabel({ status: BLI_STATUS.OBLIGATED, _meta: { lockedMessage: "Locked X" } });
+        expect(result).toBe("Locked X");
+    });
+    it("gives lockedMessage precedence over the OBE branch", () => {
+        const result = getTooltipLabel({
+            status: BLI_STATUS.PLANNED,
+            is_obe: true,
+            _meta: { lockedMessage: "Locked Y" }
+        });
+        expect(result).toBe("Locked Y");
     });
     it("returns an empty string for any other status", () => {
         const result = getTooltipLabel({ status: "SOMETHING_ELSE" });

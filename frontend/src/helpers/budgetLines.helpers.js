@@ -265,8 +265,10 @@ export const areAllBudgetLinesInReview = (budgetlines) => {
  */
 export const getTooltipLabel = (budgetLine) => {
     let label = "";
-    if (budgetLine?.status === BLI_STATUS.EXECUTING) {
-        label = "If you need to edit a budget line in Executing Status, please contact the budget team";
+    // The backend computes a human-readable reason a BLI is locked when the frontend cannot derive
+    // it on its own (e.g. the agreement has reached Pre-Award/Award). Prefer it when present.
+    if (budgetLine?._meta?.lockedMessage) {
+        label = budgetLine._meta.lockedMessage;
     } else if (budgetLine?.status === BLI_STATUS.OBLIGATED) {
         label = "Obligated budget lines cannot be edited";
     } else if (budgetLine?.is_obe === true) {

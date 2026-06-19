@@ -151,7 +151,9 @@ describe("agreement details", () => {
             .should("contain", "Obligated budget lines cannot be edited");
     });
 
-    it("should not allow editing EXECUTING BLIs", () => {
+    it("should allow editing EXECUTING BLIs before the agreement reaches Pre-Award", () => {
+        // Per issue #5819, IN_EXECUTION BLIs are now editable like PLANNED ones (unless the
+        // agreement's procurement tracker has reached Pre-Award/Award, i.e. step >= 5).
         cy.visit("/agreements/10/budget-lines");
         cy.get("#edit").click();
         // Wait for edit mode to render the editable table
@@ -160,13 +162,7 @@ describe("agreement details", () => {
         cy.get("[data-testid='budget-line-row-15004']").as("executingRow");
         cy.get("@executingRow").find("[data-cy='expand-row']").click();
         cy.get("@executingRow").next("[data-testid='expanded-data']").as("executingExpandedRow");
-        cy.get("@executingExpandedRow")
-            .find("[data-cy='edit-row']")
-            .should("be.disabled")
-            .closest(".usa-tooltip")
-            .find(".usa-tooltip__body")
-            .should("contain", "Executing Status")
-            .and("contain", "budget team");
+        cy.get("@executingExpandedRow").find("[data-cy='edit-row']").should("not.be.disabled");
     });
 
     it("Should allow the user to export BLIs for an agreement", () => {
