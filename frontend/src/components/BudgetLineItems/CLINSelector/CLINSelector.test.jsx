@@ -8,7 +8,13 @@ describe("CLINSelector", () => {
     const budgetLineId = 123;
 
     const renderComponent = (props = {}) => {
-        return render(<CLINSelector onAddCLIN={mockOnAddCLIN} budgetLineId={budgetLineId} {...props} />);
+        return render(
+            <CLINSelector
+                onAddCLIN={mockOnAddCLIN}
+                budgetLineId={budgetLineId}
+                {...props}
+            />
+        );
     };
 
     beforeEach(() => {
