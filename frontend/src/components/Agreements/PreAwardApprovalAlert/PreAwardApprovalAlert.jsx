@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useEffect, useCallback, useRef } from "react";
 import PropTypes from "prop-types";
 import SimpleAlert from "../../UI/Alert/SimpleAlert";
 import { useDismissNotificationMutation } from "../../../api/opsAPI";
@@ -48,9 +48,50 @@ function PreAwardApprovalAlert({ notifications, isVisible }) {
         [notifications]
     );
 
-    const handleDismiss = (notificationId) => {
-        dismissNotification(notificationId);
-    };
+    const handleDismiss = useCallback(
+        (notificationId) => {
+            dismissNotification(notificationId);
+        },
+        [dismissNotification]
+    );
+
+    // Track which notification IDs have timers to prevent duplicate timers
+    const timerRefs = useRef(new Map());
+
+    // Auto-dismiss approved notifications after 6 seconds (each notification gets its own independent timer)
+    useEffect(() => {
+        const timers = timerRefs.current;
+
+        // Cancel timers for notifications that are no longer in the list
+        const currentIds = new Set(preAwardNotifications.map((n) => n.id));
+        timers.forEach((timer, id) => {
+            if (!currentIds.has(id)) {
+                clearTimeout(timer);
+                timers.delete(id);
+            }
+        });
+
+        // Start new timers for notifications that don't have timers yet
+        preAwardNotifications.forEach((notification) => {
+            if (!timers.has(notification.id)) {
+                const timer = setTimeout(() => {
+                    handleDismiss(notification.id);
+                    timers.delete(notification.id);
+                }, 6000);
+
+                timers.set(notification.id, timer);
+            }
+        });
+    }, [preAwardNotifications, handleDismiss]);
+
+    // Cleanup all timers on unmount only
+    useEffect(() => {
+        const timers = timerRefs.current;
+        return () => {
+            timers.forEach((timer) => clearTimeout(timer));
+            timers.clear();
+        };
+    }, []);
 
     // Don't render if not visible or no notifications
     if (!isVisible || preAwardNotifications.length === 0) {

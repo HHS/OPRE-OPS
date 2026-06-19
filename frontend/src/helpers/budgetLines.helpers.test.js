@@ -200,6 +200,107 @@ describe("groupByServicesComponent", () => {
 
         expect(result).toThrowError(/budgetLine must be an object/i);
     });
+
+    it("should lookup service component number by ID when services_component_number is missing", () => {
+        const budgetLines = [
+            // BLI with both ID and number (should use number directly)
+            { id: 1, services_component_id: 1, services_component_number: 10 },
+            // BLI with only ID (should lookup number from servicesComponents array)
+            { id: 2, services_component_id: 2, services_component_number: null },
+            // BLI with only ID (should lookup number from servicesComponents array)
+            { id: 3, services_component_id: 1 },
+            // BLI with no ID or number (should default to 0)
+            { id: 4 }
+        ];
+        const servicesComponents = [
+            { id: 1, number: 10 },
+            { id: 2, number: 20 }
+        ];
+
+        const result = groupByServicesComponent(budgetLines, servicesComponents);
+
+        expect(result).toEqual([
+            {
+                servicesComponentNumber: 10,
+                serviceComponentGroupingLabel: "10",
+                budgetLines: [
+                    { id: 1, services_component_id: 1, services_component_number: 10 },
+                    { id: 3, services_component_id: 1 }
+                ]
+            },
+            {
+                servicesComponentNumber: 20,
+                serviceComponentGroupingLabel: "20",
+                budgetLines: [{ id: 2, services_component_id: 2, services_component_number: null }]
+            },
+            {
+                servicesComponentNumber: 0,
+                serviceComponentGroupingLabel: "0",
+                budgetLines: [{ id: 4 }]
+            }
+        ]);
+    });
+
+    it("should lookup service component number by ID when services_component_id is a string", () => {
+        const budgetLines = [
+            // BLI with string ID (can occur from form submissions)
+            { id: 1, services_component_id: "1" },
+            // BLI with string ID
+            { id: 2, services_component_id: "2" }
+        ];
+        const servicesComponents = [
+            { id: 1, number: 10 },
+            { id: 2, number: 20 }
+        ];
+
+        const result = groupByServicesComponent(budgetLines, servicesComponents);
+
+        expect(result).toEqual([
+            {
+                servicesComponentNumber: 10,
+                serviceComponentGroupingLabel: "10",
+                budgetLines: [{ id: 1, services_component_id: "1" }]
+            },
+            {
+                servicesComponentNumber: 20,
+                serviceComponentGroupingLabel: "20",
+                budgetLines: [{ id: 2, services_component_id: "2" }]
+            }
+        ]);
+    });
+
+    it("should include sub_component in fallback label when serviceComponentGroupingLabel is missing", () => {
+        const budgetLines = [
+            // BLI with explicit label (should use as-is)
+            { id: 1, services_component_id: 1, serviceComponentGroupingLabel: "10-A" },
+            // BLI with missing label and SC with sub_component (should reconstruct "10-A")
+            { id: 2, services_component_id: 1 },
+            // BLI with missing label and SC without sub_component (should use "20")
+            { id: 3, services_component_id: 2 }
+        ];
+        const servicesComponents = [
+            { id: 1, number: 10, sub_component: "A" },
+            { id: 2, number: 20, sub_component: null }
+        ];
+
+        const result = groupByServicesComponent(budgetLines, servicesComponents);
+
+        expect(result).toEqual([
+            {
+                servicesComponentNumber: 10,
+                serviceComponentGroupingLabel: "10-A",
+                budgetLines: [
+                    { id: 1, services_component_id: 1, serviceComponentGroupingLabel: "10-A" },
+                    { id: 2, services_component_id: 1 }
+                ]
+            },
+            {
+                servicesComponentNumber: 20,
+                serviceComponentGroupingLabel: "20",
+                budgetLines: [{ id: 3, services_component_id: 2 }]
+            }
+        ]);
+    });
 });
 describe("isBLIPermanent", () => {
     it("should return true if the budget line is permanent", () => {
