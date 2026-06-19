@@ -97,7 +97,9 @@ export const CreateBLIsAndSCs = ({
         isAgreementNotYetDeveloped,
         hasUnsavedChanges,
         setHasUnsavedChanges,
-        setServicesComponentNumber
+        setServicesComponentNumber,
+        effectiveScStartDate,
+        effectiveScEndDate
     } = useCreateBLIsAndSCs(
         isEditMode,
         isReviewMode,
@@ -239,8 +241,8 @@ export const CreateBLIsAndSCs = ({
                     datePickerSuite={datePickerSuite}
                     hasUnsavedChanges={hasUnsavedChanges}
                     workflow={workflow}
-                    scStartDate={selectedAgreement.sc_start_date ?? null}
-                    scEndDate={selectedAgreement.sc_end_date ?? null}
+                    scStartDate={effectiveScStartDate}
+                    scEndDate={effectiveScEndDate}
                 />
             )}
 

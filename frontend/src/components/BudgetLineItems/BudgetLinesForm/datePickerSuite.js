@@ -20,7 +20,7 @@ const suite = create((data = {}, isSuperUser) => {
         const enteredDate = new Date(data.needByDate);
         enforce(enteredDate.getTime()).greaterThan(today.getTime());
     });
-    if (DATE_FORMAT_REGEX.test(data.needByDate) && (data.scStartDate || data.scEndDate)) {
+    if (data.needByDate && DATE_FORMAT_REGEX.test(data.needByDate) && (data.scStartDate || data.scEndDate)) {
         test("needByDate", "Date must fall within the agreement's period of performance", () => {
             const [month, day, year] = data.needByDate.split("/");
             const enteredDateStr = `${year}-${month}-${day}`;

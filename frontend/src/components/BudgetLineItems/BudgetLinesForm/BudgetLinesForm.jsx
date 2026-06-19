@@ -1,5 +1,6 @@
 import { faAdd, faWarning } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React from "react";
 import { useSelector } from "react-redux";
 import classnames from "vest/classnames";
 import CanComboBox from "../../CANs/CanComboBox";
@@ -61,6 +62,15 @@ export const BudgetLinesForm = ({
     scEndDate = null
 }) => {
     const isSuperUser = useSelector((state) => state.auth?.activeUser?.is_superuser) ?? false;
+
+    // Re-run the suite whenever the SC window changes so the PoP boundary check
+    // reflects unsaved service components without waiting for a user interaction.
+    const [, forceUpdate] = React.useReducer((n) => n + 1, 0);
+    React.useEffect(() => {
+        datePickerSuite.run({ needByDate, scStartDate, scEndDate }, isSuperUser);
+        forceUpdate();
+    }, [scStartDate, scEndDate, needByDate, isSuperUser, isBudgetLineNotDraft, datePickerSuite]);
+
     let dateRes = datePickerSuite.get();
 
     let scCn = "success";
