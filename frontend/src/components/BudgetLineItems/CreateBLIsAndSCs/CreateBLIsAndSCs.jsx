@@ -205,14 +205,19 @@ export const CreateBLIsAndSCs = ({
                             agreementId={selectedAgreement.id}
                             continueBtnText={continueBtnText}
                             workflow={workflow}
+                            isReviewMode={isReviewMode}
                             setHasUnsavedChanges={setHasUnsavedChanges}
                             hasUnsavedChanges={hasUnsavedChanges}
                         />
                     )}
-                    <div className="margin-top-3">
+                    <div className={isReviewMode ? "margin-top-8" : "margin-top-3"}>
                         <FormHeader
-                            heading="Add Budget Lines"
-                            details="Add Budget lines to each Services Component to outline how the work will be funded."
+                            heading={isReviewMode ? "Edit Budget Lines" : "Add Budget Lines"}
+                            details={
+                                isReviewMode
+                                    ? undefined
+                                    : "Add Budget lines to each Services Component to outline how the work will be funded."
+                            }
                         />
                     </div>
                     <div className="display-flex flex-justify margin-y-2">

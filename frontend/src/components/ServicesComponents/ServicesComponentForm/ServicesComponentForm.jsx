@@ -27,6 +27,7 @@ import ServicesComponentSelect from "../ServicesComponentSelect";
  * @param {Function} props.handleCancel - Function to handle form cancellation.
  * @param {number[]} props.servicesComponentsNumbers - The service component numbers.
  * @param {boolean} props.isEditMode - Whether the form is in edit mode.
+ * @param {boolean} [props.isReviewMode] - Whether the form is in review mode (single-page edit screen).
  * @param {boolean} props.hasUnsavedChanges - Whether there are unsaved changes in the form.
  * @param {"agreement" | "none"} props.workflow - The workflow type.
  * @returns {React.ReactElement} The rendered ServicesComponentForm component.
@@ -43,6 +44,7 @@ function ServicesComponentForm({
     handleCancel,
     servicesComponentsNumbers = [],
     isEditMode,
+    isReviewMode = false,
     hasUnsavedChanges,
     workflow
 }) {
@@ -63,15 +65,22 @@ function ServicesComponentForm({
         return option;
     });
 
-    const heading = isEditMode ? "Edit Services Components" : "Create Services Components";
-    const details = isEditMode
-        ? "When adding a new SC, a Services Component must be selected from the dropdown."
-        : "Create the structure of the agreement using Services Components to describe the work being done. After you outline the Services Components, you will add Budget Lines to fund that work. When adding a new SC, a Services Component must be selected from the dropdown.";
+    const heading = isEditMode || isReviewMode ? "Edit Services Components" : "Create Services Components";
+    let details;
+    if (isReviewMode) {
+        details = undefined;
+    } else if (isEditMode) {
+        details = "When adding a new SC, a Services Component must be selected from the dropdown.";
+    } else {
+        details =
+            "Create the structure of the agreement using Services Components to describe the work being done. After you outline the Services Components, you will add Budget Lines to fund that work. When adding a new SC, a Services Component must be selected from the dropdown.";
+    }
 
     return (
         <form
             onSubmit={handleSubmit}
             id="services-component-form"
+            className={isReviewMode ? "margin-top-8" : undefined}
         >
             <div className="display-flex flex-align-center">
                 <div>
