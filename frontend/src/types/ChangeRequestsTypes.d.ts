@@ -12,6 +12,7 @@ export type ChangeRequest = {
     has_budget_change?: boolean;
     has_status_change?: boolean;
     has_proc_shop_change?: boolean;
+    has_delete_change?: boolean;
     id: number;
     managing_division_id: number | null;
     requested_change_data: {
@@ -20,6 +21,7 @@ export type ChangeRequest = {
         can_id?: number;
         status?: string;
         awarding_entity_id?: number;
+        delete?: boolean;
     };
     requested_change_diff: {
         amount?: {
@@ -40,6 +42,10 @@ export type ChangeRequest = {
         };
         awarding_entity_id?: {
             new: number;
+            old: number;
+        };
+        delete?: {
+            new: string;
             old: number;
         };
     };
