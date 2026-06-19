@@ -670,7 +670,9 @@ class BudgetLineItemService:
             if not is_super_user(current_user, current_app)
             else []
         )
-        missing_fields = BudgetLineItemService._get_missing_fields(bli_required_fields, budget_line_item, updated_fields)
+        missing_fields = BudgetLineItemService._get_missing_fields(
+            bli_required_fields, budget_line_item, updated_fields
+        )
         if missing_fields:
             raise ValidationError({"status": "Budget Line Item is missing required fields."})
 
@@ -713,9 +715,7 @@ class BudgetLineItemService:
         today = date.today()
         current_date_needed = budget_line_item.date_needed
         final_date_needed = (
-            updated_fields.get("date_needed")
-            if updated_fields.get("date_needed") is not None
-            else current_date_needed
+            updated_fields.get("date_needed") if updated_fields.get("date_needed") is not None else current_date_needed
         )
 
         if final_date_needed is None:
