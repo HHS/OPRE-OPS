@@ -238,7 +238,7 @@ const ProcurementTrackerStepFive = ({
                                 >
                                     <button
                                         type="button"
-                                        className="usa-button"
+                                        className="usa-button usa-button--outline"
                                         onClick={() => navigate(`/agreements/${agreementId}/pre-award-approval`)}
                                         disabled={isRequestBtnDisabled}
                                         data-cy="request-pre-award-approval-btn"
