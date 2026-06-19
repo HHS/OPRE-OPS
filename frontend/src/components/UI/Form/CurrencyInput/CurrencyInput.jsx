@@ -53,7 +53,14 @@ const CurrencyInput = ({
     }, [value]);
 
     return (
-        <div className={cx("usa-form-group", pending && "pending", className)}>
+        <div
+            className={cx(
+                "usa-form-group",
+                pending && "pending",
+                messages.length && "usa-form-group--error",
+                className
+            )}
+        >
             <label
                 className={`usa-label ${messages.length ? "usa-label--error" : ""} `}
                 htmlFor={name}
