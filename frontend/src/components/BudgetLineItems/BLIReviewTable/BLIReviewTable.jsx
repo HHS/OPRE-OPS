@@ -21,6 +21,9 @@ import { BUDGET_LINE_TABLE_HEADERS_LIST } from "./BLIReviewTable.constants";
  * @param {Function} [props.setMainToggleSelected] - A function to set the main toggle selected.
  * @param {Number} props.servicesComponentNumber - The Number of the services component.
  * @param {string} props.action - The action of the review
+ * @param {Function} [props.onAddCLINClick] - Callback when "+ CLIN" is clicked with budgetLine.id
+ * @param {Boolean} [props.showCLINColumn] - Whether to show the CLIN column (Award page only)
+ * @param {Object} [props.clinAssignments] - Map of budgetLineId to CLIN number assignments
  * @returns {React.ReactElement} - The rendered table component.
  */
 const AgreementBLIReviewTable = ({
@@ -32,7 +35,10 @@ const AgreementBLIReviewTable = ({
     setMainToggleSelected = () => {},
     servicesComponentNumber,
     action,
-    readOnly = false
+    readOnly = false,
+    onAddCLINClick,
+    showCLINColumn = false,
+    clinAssignments = {}
 }) => {
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
 
@@ -51,6 +57,15 @@ const AgreementBLIReviewTable = ({
 
     const areSomeBudgetLinesActionable = budgetLines.some((budgetLine) => budgetLine.actionable);
     const showCheckboxes = !!setSelectedBLIs;
+
+    // Filter headers based on showCLINColumn flag
+    const tableHeaders = useMemo(() => {
+        if (showCLINColumn) {
+            return BUDGET_LINE_TABLE_HEADERS_LIST;
+        }
+        // Remove CLIN column header when showCLINColumn is false
+        return BUDGET_LINE_TABLE_HEADERS_LIST.filter((header) => header.heading !== "CLIN");
+    }, [showCLINColumn]);
 
     const firstHeadingSlot = showCheckboxes ? (
         <th>
@@ -85,7 +100,7 @@ const AgreementBLIReviewTable = ({
     return (
         <>
             <Table
-                tableHeadings={BUDGET_LINE_TABLE_HEADERS_LIST}
+                tableHeadings={tableHeaders}
                 firstHeadingSlot={firstHeadingSlot}
                 selectedHeader={sortCondition}
                 sortDescending={sortDescending}
@@ -100,6 +115,9 @@ const AgreementBLIReviewTable = ({
                         action={action}
                         showCheckbox={showCheckboxes}
                         readOnly={readOnly}
+                        onAddCLINClick={onAddCLINClick}
+                        showCLINColumn={showCLINColumn}
+                        clinAssignments={clinAssignments}
                     />
                 ))}
             </Table>

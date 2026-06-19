@@ -17,7 +17,7 @@ describe("Request Award Approval Page", () => {
     it("displays notes textarea", () => {
         cy.contains("label", "Notes").should("be.visible");
         cy.get("textarea[name='notes']").should("be.visible");
-        cy.contains("Maximum 750 characters").should("be.visible");
+        cy.contains("Maximum 150 characters").should("be.visible");
     });
 
     it("allows user to type notes", () => {

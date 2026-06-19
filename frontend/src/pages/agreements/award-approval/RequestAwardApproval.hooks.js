@@ -5,7 +5,8 @@ import {
     useGetProcurementTrackersByAgreementIdQuery,
     useUpdateProcurementTrackerStepMutation,
     useGetServicesComponentsListQuery,
-    useGetVendorsQuery
+    useGetVendorsQuery,
+    useUpdateBudgetLineItemMutation
 } from "../../../api/opsAPI";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import { getLocalISODate, formatDateForApi } from "../../../helpers/utils";
@@ -28,6 +29,9 @@ export default function useRequestAwardApproval(agreementId) {
     const [submitError, setSubmitError] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // CLIN assignments (budgetLineId -> clinNumber mapping)
+    const [clinAssignments, setClinAssignments] = useState({});
+
     // Vendor Information fields
     const [selectedVendor, setSelectedVendor] = useState(null); // {id, name, duns}
 
@@ -40,6 +44,7 @@ export default function useRequestAwardApproval(agreementId) {
     const [validationResult, setValidationResult] = useState(suite.get());
 
     const [updateProcurementTrackerStep] = useUpdateProcurementTrackerStepMutation();
+    const [updateBudgetLineItem] = useUpdateBudgetLineItemMutation();
 
     // Fetch vendors
     const { data: vendors = [], isLoading: isLoadingVendors } = useGetVendorsQuery();
@@ -142,6 +147,20 @@ export default function useRequestAwardApproval(agreementId) {
         setSubmitError("");
 
         try {
+            // First, update all CLIN assignments for budget lines
+            const clinUpdatePromises = Object.entries(clinAssignments).map(([budgetLineId, clinNumber]) =>
+                updateBudgetLineItem({
+                    id: parseInt(budgetLineId),
+                    data: { clin_number: clinNumber }
+                }).unwrap()
+            );
+
+            // Wait for all CLIN updates to complete
+            if (clinUpdatePromises.length > 0) {
+                await Promise.all(clinUpdatePromises);
+            }
+
+            // Then request award approval
             await updateProcurementTrackerStep({
                 stepId: step6.id,
                 data: {
@@ -201,6 +220,8 @@ export default function useRequestAwardApproval(agreementId) {
         setAwardDate,
         runValidate,
         validationResult,
-        MemoizedDatePicker
+        MemoizedDatePicker,
+        clinAssignments,
+        setClinAssignments
     };
 }

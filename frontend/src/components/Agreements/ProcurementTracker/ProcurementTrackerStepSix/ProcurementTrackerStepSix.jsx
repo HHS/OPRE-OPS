@@ -171,7 +171,7 @@ const ProcurementTrackerStepSix = ({
                         <div className="margin-bottom-3">
                             <button
                                 type="button"
-                                className="usa-button"
+                                className="usa-button usa-button--outline"
                                 onClick={() => navigate(`/agreements/${agreementId}/award-approval`)}
                                 disabled={isRequestBtnDisabled}
                                 title={
