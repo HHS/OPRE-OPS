@@ -2547,7 +2547,8 @@ def test_user_change_can_in_contract_bli(
 
     if bli_status == BudgetLineItemStatus.DRAFT:
         assert response.status_code == 200, f"User should be able to change the CAN in {bli_status} bli."
-    elif bli_status == BudgetLineItemStatus.PLANNED:
+    elif bli_status in (BudgetLineItemStatus.PLANNED, BudgetLineItemStatus.IN_EXECUTION):
+        # Per issue #5819, IN_EXECUTION budget changes now route through a change request like PLANNED.
         assert response.status_code == 202, f"User should be able to change the CAN in {bli_status} bli."
         assert bli.in_review is True
         assert len(bli.change_requests_in_review) == 1, "BLI should have one CR in review"

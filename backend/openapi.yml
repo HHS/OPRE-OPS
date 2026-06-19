@@ -4414,7 +4414,12 @@ paths:
       tags:
         - Budget Line Items
       operationId: updateBudgetLineItem
-      description: Update a budget line item (full update)
+      description: >-
+        Update a budget line item (full update). PLANNED and IN_EXECUTION budget line items are
+        editable: non-budget changes (e.g. line_description, services_component_id, comments) apply
+        directly and return 200, while budget-field changes (amount, can_id, date_needed) route
+        through an approval change request and return 202. Editing is blocked (400) once the
+        agreement reaches Pre-Award/Award or while the BLI is already in review.
       requestBody:
         required: true
         content:
@@ -4423,7 +4428,13 @@ paths:
               $ref: "#/components/schemas/BudgetLineItemRequest"
       responses:
         "200":
-          description: OK
+          description: OK — changes applied directly
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BudgetLineItem"
+        "202":
+          description: Accepted — a change request was created and is awaiting approval
           content:
             application/json:
               schema:
@@ -4440,7 +4451,10 @@ paths:
       tags:
         - Budget Line Items
       operationId: partialUpdateBudgetLineItem
-      description: Partially update a budget line item
+      description: >-
+        Partially update a budget line item. Same routing as PUT: non-budget changes apply directly
+        (200), budget-field changes (amount, can_id, date_needed) route through an approval change
+        request (202).
       requestBody:
         required: true
         content:
@@ -4449,7 +4463,13 @@ paths:
               $ref: "#/components/schemas/BudgetLineItemRequest"
       responses:
         "200":
-          description: OK
+          description: OK — changes applied directly
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BudgetLineItem"
+        "202":
+          description: Accepted — a change request was created and is awaiting approval
           content:
             application/json:
               schema:
@@ -8583,6 +8603,19 @@ components:
         isEditable:
           type: boolean
           description: Whether the budget line item is associated with an agreement and can be edited
+        isDeletable:
+          type: boolean
+          description: >-
+            Whether the delete control should be enabled for this budget line item. A DRAFT BLI
+            deletes immediately; PLANNED/IN_EXECUTION deletions route through an approval change
+            request. False when the BLI is not editable (e.g. in review, OBE, or the agreement has
+            reached Pre-Award/Award).
+        lockedMessage:
+          type: string
+          nullable: true
+          description: >-
+            Server-computed human-readable reason the budget line item is locked when the frontend
+            cannot derive it on its own (e.g. the agreement has reached Pre-Award). Null when editable.
         total_count:
           type: integer
           description: Total number of budget line items in the system matching the query
@@ -8764,6 +8797,18 @@ components:
         isEditable:
           type: boolean
           default: false
+        isDeletable:
+          type: boolean
+          default: false
+          description: >-
+            Whether the delete control should be enabled for this budget line item. DRAFT deletes
+            immediately; PLANNED/IN_EXECUTION deletions route through an approval change request.
+        lockedMessage:
+          type: string
+          nullable: true
+          description: >-
+            Server-computed reason the budget line item is locked (e.g. the agreement has reached
+            Pre-Award) that the frontend cannot derive on its own. Null when editable.
         immutable_awarded_fields:
           type: array
           items:
