@@ -9,12 +9,13 @@ const CLIN_OPTIONS = Array.from({ length: 10 }, (_, i) => ({
 }));
 
 /**
- * CLINSelector - Inline component for selecting and adding a CLIN to a budget line item
+ * CLINSelector - Inline component for selecting and adding/updating a CLIN to a budget line item
  * Displays a dropdown and button with a red alert message
+ * Button text changes to "Update CLIN" when editing an existing CLIN, "Add CLIN" when assigning new
  * @param {Object} props
- * @param {Function} props.onAddCLIN - Callback when Add CLIN is clicked (receives clinNumber)
+ * @param {Function} props.onAddCLIN - Callback when Add/Update CLIN is clicked (receives clinNumber)
  * @param {number} props.budgetLineId - The budget line item ID being edited
- * @param {number} [props.currentClinNumber] - Currently assigned CLIN number (if any)
+ * @param {number} [props.currentClinNumber] - Currently assigned CLIN number (if any) - determines button text
  * @returns {JSX.Element}
  */
 const CLINSelector = ({ onAddCLIN, budgetLineId, currentClinNumber }) => {
@@ -25,6 +26,9 @@ const CLINSelector = ({ onAddCLIN, budgetLineId, currentClinNumber }) => {
             onAddCLIN(parseInt(selectedCLIN)); // Pass CLIN number (1-10)
         }
     };
+
+    // Show "Update CLIN" if there's a current CLIN number (editing existing), otherwise "Add CLIN"
+    const buttonText = currentClinNumber ? "Update CLIN" : "Add CLIN";
 
     return (
         <div className="margin-bottom-2">
@@ -71,7 +75,7 @@ const CLINSelector = ({ onAddCLIN, budgetLineId, currentClinNumber }) => {
                     disabled={!selectedCLIN}
                     data-cy="add-clin-button"
                 >
-                    Add CLIN
+                    {buttonText}
                 </button>
             </div>
         </div>

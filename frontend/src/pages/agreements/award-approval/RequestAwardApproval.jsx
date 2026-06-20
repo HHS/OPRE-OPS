@@ -9,6 +9,7 @@ import ServicesComponentAccordion from "../../../components/ServicesComponents/S
 import TextArea from "../../../components/UI/Form/TextArea";
 import CurrencyInput from "../../../components/UI/Form/CurrencyInput";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
+import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import useRequestAwardApproval from "./RequestAwardApproval.hooks";
 import CLINSelector from "../../../components/BudgetLineItems/CLINSelector";
@@ -62,8 +63,8 @@ export const RequestAwardApproval = () => {
         // Show success toast
         setAlert({
             type: "success",
-            heading: "Success",
             message: `Budget line ${selectedBudgetLineId} was updated. When you're done adding CLINs, click Send to Approval below.`,
+            isCloseable: false,
             isToastMessage: true
         });
 
@@ -100,7 +101,10 @@ export const RequestAwardApproval = () => {
         validationResult,
         MemoizedDatePicker,
         clinAssignments,
-        setClinAssignments
+        setClinAssignments,
+        showModal,
+        setShowModal,
+        modalProps
     } = useRequestAwardApproval(agreementId);
 
     // Check if any non-Draft BLIs are missing CLINs
@@ -114,6 +118,16 @@ export const RequestAwardApproval = () => {
 
     return (
         <App breadCrumbName="Request Award Approval">
+            {showModal && (
+                <ConfirmationModal
+                    heading={modalProps.heading}
+                    setShowModal={modalProps.closeModal || setShowModal}
+                    actionButtonText={modalProps.actionButtonText}
+                    secondaryButtonText={modalProps.secondaryButtonText}
+                    handleConfirm={modalProps.handleConfirm}
+                />
+            )}
+
             <PageHeader
                 title="Request Award Approval"
                 subTitle={agreement?.name}

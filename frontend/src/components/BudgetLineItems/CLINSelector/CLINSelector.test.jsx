@@ -83,14 +83,22 @@ describe("CLINSelector", () => {
         expect(dropdown).toHaveValue("7");
     });
 
-    it("should enable Add CLIN button when currentClinNumber is provided", () => {
+    it("should show 'Update CLIN' button when currentClinNumber is provided", () => {
         renderComponent({ currentClinNumber: 4 });
 
-        const addButton = screen.getByRole("button", { name: "Add CLIN" });
-        expect(addButton).not.toBeDisabled();
+        const updateButton = screen.getByRole("button", { name: "Update CLIN" });
+        expect(updateButton).toBeInTheDocument();
+        expect(updateButton).not.toBeDisabled();
     });
 
-    it("should allow changing selection from pre-selected CLIN", async () => {
+    it("should show 'Add CLIN' button when no currentClinNumber is provided", () => {
+        renderComponent();
+
+        const addButton = screen.getByRole("button", { name: "Add CLIN" });
+        expect(addButton).toBeInTheDocument();
+    });
+
+    it("should allow changing selection from pre-selected CLIN and call onAddCLIN", async () => {
         const user = userEvent.setup();
         renderComponent({ currentClinNumber: 2 });
 
@@ -99,8 +107,8 @@ describe("CLINSelector", () => {
 
         await user.selectOptions(dropdown, "9");
 
-        const addButton = screen.getByRole("button", { name: "Add CLIN" });
-        await user.click(addButton);
+        const updateButton = screen.getByRole("button", { name: "Update CLIN" });
+        await user.click(updateButton);
 
         expect(mockOnAddCLIN).toHaveBeenCalledWith(9);
     });
