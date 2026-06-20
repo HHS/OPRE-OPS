@@ -72,6 +72,9 @@ const ProcurementTrackerStepSix = ({
 
     // Disabled flags for form controls
     const isApprovalApproved = stepSixData?.approval_status === "APPROVED";
+    const isApprovalRequested =
+        stepSixData?.approval_requested &&
+        (stepSixData?.approval_status == null || stepSixData?.approval_status === "PENDING");
     const isTargetCompletionDateSaveDisabled =
         isDisabled || validatorRes.hasErrors("targetCompletionDate") || !targetCompletionDate || !stepSixData?.id;
     const isAwardCheckboxDisabled = isDisabled || !isActiveStep || !isApprovalApproved;
@@ -184,6 +187,21 @@ const ProcurementTrackerStepSix = ({
                                 Request Award Approval
                             </button>
                         </div>
+
+                        {/* Inline success message when approval has been requested */}
+                        {isApprovalRequested && (
+                            <div
+                                className="usa-alert usa-alert--success usa-alert--slim margin-top-2"
+                                role="status"
+                            >
+                                <div className="usa-alert__body">
+                                    <p className="usa-alert__text">
+                                        This agreement has been submitted for Award Approval. Please complete step 6
+                                        below.
+                                    </p>
+                                </div>
+                            </div>
+                        )}
 
                         <fieldset className="usa-fieldset margin-top-0">
                             {/* Main Checkbox */}

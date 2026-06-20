@@ -68,12 +68,12 @@ const Agreement = () => {
         }
     }, [showPreAwardSuccessAlert]);
 
-    // Auto-dismiss award success alert after 10 seconds
+    // Auto-dismiss award success alert after 6 seconds
     useEffect(() => {
         if (showAwardSuccessAlert) {
             const timer = setTimeout(() => {
                 setShowAwardSuccessAlert(false);
-            }, 10000);
+            }, 6000);
             return () => clearTimeout(timer);
         }
     }, [showAwardSuccessAlert]);
