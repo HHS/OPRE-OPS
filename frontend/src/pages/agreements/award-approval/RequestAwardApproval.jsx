@@ -16,6 +16,11 @@ import useRequestAwardApproval from "./RequestAwardApproval.hooks";
 import CLINSelector from "../../../components/BudgetLineItems/CLINSelector";
 import useAlert from "../../../hooks/use-alert.hooks";
 import SummaryBox from "../../../components/Agreements/SummaryBox";
+import FileUploadButton from "../../../components/UI/Button/FileUploadButton";
+
+// Feature flag for upload signed award functionality - will be used once backend support is ready
+// eslint-disable-next-line no-unused-vars
+const ENABLE_UPLOAD_SIGNED_AWARD = false;
 
 /**
  * Format vendor type enum for display
@@ -315,14 +320,16 @@ export const RequestAwardApproval = () => {
                             )}
                         </div>
 
-                        <SummaryBox
-                            leftLabel="Unique Entity ID (SAM.gov ID)"
-                            leftValue={selectedVendor?.duns || "—"}
-                            rightLabel="Vendor Type"
-                            rightValue={formatVendorType(selectedVendor?.vendor_type) || "—"}
-                            dataCy="vendor-info-box"
-                            className="grid-col-5 margin-left-3 margin-top-3"
-                        />
+                        {selectedVendor && (
+                            <SummaryBox
+                                leftLabel="Unique Entity ID (SAM.gov ID)"
+                                leftValue={selectedVendor?.duns || "—"}
+                                rightLabel="Vendor Type"
+                                rightValue={formatVendorType(selectedVendor?.vendor_type) || "—"}
+                                dataCy="vendor-info-box"
+                                className="grid-col-5 margin-left-3 margin-top-3"
+                            />
+                        )}
                     </div>
                 </fieldset>
             </Accordion>
@@ -408,6 +415,27 @@ export const RequestAwardApproval = () => {
                 </fieldset>
             </Accordion>
 
+            {/* Upload Signed Award */}
+            <Accordion
+                heading="Upload Signed Award"
+                level={3}
+            >
+                <p>Please upload the signed Award.</p>
+
+                <div className="usa-form-group margin-top-3">
+                    <FileUploadButton
+                        id="signed-award-upload"
+                        acceptedFileTypes=".pdf,.doc,.docx,.xls,.xlsx"
+                        onFileChange={() => {}}
+                        selectedFile={null}
+                        label="Signed Award"
+                        disabled={true}
+                        disabledTooltip="Documents tab is coming soon! For now, please upload to the OPRE preferred tool to share documents."
+                        buttonText="Upload File"
+                    />
+                </div>
+            </Accordion>
+
             {/* Notes (Optional) */}
             <div className="margin-top-4">
                 <TextArea
@@ -445,7 +473,7 @@ export const RequestAwardApproval = () => {
                     }
                     data-cy="request-award-approval-submit"
                 >
-                    {isSubmitting ? "Requesting..." : "Request Award Approval"}
+                    {isSubmitting ? "Submitting..." : "Send to Approval"}
                 </button>
             </div>
         </App>

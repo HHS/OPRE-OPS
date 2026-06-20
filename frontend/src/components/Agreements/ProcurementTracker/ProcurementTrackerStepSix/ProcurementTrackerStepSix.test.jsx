@@ -268,15 +268,15 @@ describe("ProcurementTrackerStepSix", () => {
             expect(label).toBeInTheDocument();
         });
 
-        it("renders Request Award Approval button", () => {
+        it("renders Send to Approval button", () => {
             render(<ProcurementTrackerStepSix {...defaultProps} />);
 
-            const button = screen.getByRole("button", { name: /Request Award Approval/i });
+            const button = screen.getByRole("button", { name: /Send to Approval/i });
             expect(button).toBeInTheDocument();
             expect(button).not.toBeDisabled();
         });
 
-        it("renders Request Award Approval button as disabled when approval already requested", () => {
+        it("renders Send to Approval button as disabled when approval already requested", () => {
             const props = {
                 ...defaultProps,
                 stepSixData: {
@@ -287,18 +287,18 @@ describe("ProcurementTrackerStepSix", () => {
             };
             render(<ProcurementTrackerStepSix {...props} />);
 
-            const button = screen.getByRole("button", { name: /Request Award Approval/i });
+            const button = screen.getByRole("button", { name: /Send to Approval/i });
             expect(button).toBeDisabled();
         });
 
-        it("renders Request Award Approval button as disabled when BLI is in review", () => {
+        it("renders Send to Approval button as disabled when BLI is in review", () => {
             const props = {
                 ...defaultProps,
                 budgetLineItems: [{ id: 1, in_review: true }]
             };
             render(<ProcurementTrackerStepSix {...props} />);
 
-            const button = screen.getByRole("button", { name: /Request Award Approval/i });
+            const button = screen.getByRole("button", { name: /Send to Approval/i });
             expect(button).toBeDisabled();
         });
 
@@ -794,11 +794,11 @@ describe("ProcurementTrackerStepSix", () => {
         });
     });
 
-    describe("Request Award Approval Button", () => {
+    describe("Send to Approval Button", () => {
         it("navigates to award approval page when clicked", () => {
             render(<ProcurementTrackerStepSix {...defaultProps} />);
 
-            const button = screen.getByRole("button", { name: /Request Award Approval/i });
+            const button = screen.getByRole("button", { name: /Send to Approval/i });
             fireEvent.click(button);
 
             expect(mockNavigate).toHaveBeenCalledWith("/agreements/123/award-approval");

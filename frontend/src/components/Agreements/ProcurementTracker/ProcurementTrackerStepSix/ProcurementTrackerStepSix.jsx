@@ -184,7 +184,7 @@ const ProcurementTrackerStepSix = ({
                                 }
                                 data-cy="request-award-approval-btn"
                             >
-                                Request Award Approval
+                                Send to Approval
                             </button>
                         </div>
 
