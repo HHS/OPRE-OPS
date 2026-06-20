@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useBlocker } from "react-router-dom";
 import { useSelector, shallowEqual } from "react-redux";
 import { useUpdateProcurementTrackerStepMutation } from "../../../api/opsAPI";
 import useAlert from "../../../hooks/use-alert.hooks";
@@ -59,6 +59,7 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
     const [modalProps, setModalProps] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState("");
+    const [isNavigating, setIsNavigating] = useState(false);
 
     const MemoizedDatePicker = React.memo(DatePicker);
 
@@ -119,6 +120,48 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
         return requisitionNumber.trim() !== "" && formattedDate !== null && attestationChecked;
     };
 
+    /**
+     * Track if any changes have been made to the form
+     */
+    const hasChanged = useMemo(() => {
+        return requisitionNumber.trim() !== "" || requisitionDate !== "" || attestationChecked;
+    }, [requisitionNumber, requisitionDate, attestationChecked]);
+
+    /**
+     * Navigation blocker - prevents accidental navigation when there are unsaved changes
+     */
+    const blocker = useBlocker(
+        ({ currentLocation, nextLocation }) =>
+            !isNavigating && hasChanged && currentLocation.pathname !== nextLocation.pathname
+    );
+
+    // Handle blocker state changes
+    useEffect(() => {
+        if (blocker.state === "blocked") {
+            setShowModal(true);
+            setModalProps({
+                heading: "Are you sure you want to cancel?",
+                description: "Any information you have entered will be discarded.",
+                actionButtonText: "Continue Editing",
+                secondaryButtonText: "Discard Changes",
+                handleConfirm: () => {
+                    setShowModal(false);
+                },
+                handleSecondary: async () => {
+                    setShowModal(false);
+                    setIsNavigating(true);
+                    // Small delay to let state update before proceeding
+                    await new Promise((resolve) => setTimeout(resolve, 0));
+                    blocker.proceed?.();
+                },
+                closeModal: () => {
+                    setShowModal(false);
+                    blocker.reset?.();
+                }
+            });
+        }
+    }, [blocker.state, blocker]);
+
     // Approve handler
     const handleApprove = async () => {
         if (!step5?.id) {
@@ -151,6 +194,9 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
                             // requisition_approved_by is server-controlled and set automatically
                         }
                     }).unwrap();
+
+                    // Allow navigation after successful approval
+                    setIsNavigating(true);
 
                     setAlert({
                         type: "success",
@@ -213,6 +259,9 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
                 data
             }).unwrap();
 
+            // Allow navigation after successful save
+            setIsNavigating(true);
+
             // Success: Show success message and redirect
             setAlert({
                 type: "success",
@@ -231,6 +280,12 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
 
     // Cancel handler
     const handleCancel = () => {
+        if (!hasChanged) {
+            // No changes, navigate immediately
+            navigate("/agreements?filter=change-requests");
+            return;
+        }
+
         setShowModal(true);
         setModalProps({
             heading: "Are you sure you want to cancel?",
@@ -241,7 +296,11 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
                 setShowModal(false);
             },
             handleSecondary: () => {
+                setIsNavigating(true);
                 navigate("/agreements?filter=change-requests");
+            },
+            closeModal: () => {
+                setShowModal(false);
             }
         });
     };

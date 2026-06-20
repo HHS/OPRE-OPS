@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useBlocker } from "react-router-dom";
 import {
     useGetAgreementByIdQuery,
     useGetProcurementTrackersByAgreementIdQuery,
@@ -28,6 +28,11 @@ export default function useRequestAwardApproval(agreementId) {
     const [notes, setNotes] = useState("");
     const [submitError, setSubmitError] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Modal state for cancel confirmation and navigation blocking
+    const [showModal, setShowModal] = useState(false);
+    const [modalProps, setModalProps] = useState({});
+    const [isNavigating, setIsNavigating] = useState(false);
 
     // CLIN assignments (budgetLineId -> clinNumber mapping)
     const [clinAssignments, setClinAssignments] = useState({});
@@ -111,6 +116,51 @@ export default function useRequestAwardApproval(agreementId) {
     const isLoading = isLoadingAgreement || isLoadingTrackers || isLoadingVendors;
 
     /**
+     * Track if any changes have been made to the form
+     */
+    const hasChanged = useMemo(() => {
+        return (
+            notes.trim() !== "" ||
+            selectedVendor !== null ||
+            contractNumber.trim() !== "" ||
+            awardAmount !== "" ||
+            awardDate !== "" ||
+            Object.keys(clinAssignments).length > 0
+        );
+    }, [notes, selectedVendor, contractNumber, awardAmount, awardDate, clinAssignments]);
+
+    /**
+     * Navigation blocker - prevents accidental navigation when there are unsaved changes
+     */
+    const blocker = useBlocker(
+        ({ currentLocation, nextLocation }) =>
+            !isNavigating && hasChanged && currentLocation.pathname !== nextLocation.pathname
+    );
+
+    // Handle blocker state changes
+    React.useEffect(() => {
+        if (blocker.state === "blocked") {
+            setShowModal(true);
+            setModalProps({
+                heading: "Are you sure you want to cancel? Your changes will not be saved.",
+                actionButtonText: "Yes, Cancel",
+                secondaryButtonText: "Continue Editing",
+                handleConfirm: async () => {
+                    setShowModal(false);
+                    setIsNavigating(true);
+                    // Small delay to let state update before proceeding
+                    await new Promise((resolve) => setTimeout(resolve, 0));
+                    blocker.proceed?.();
+                },
+                closeModal: () => {
+                    setShowModal(false);
+                    blocker.reset?.();
+                }
+            });
+        }
+    }, [blocker.state, blocker]);
+
+    /**
      * Run validation for a specific field
      */
     const runValidate = (fieldName, value) => {
@@ -174,6 +224,8 @@ export default function useRequestAwardApproval(agreementId) {
                 }
             }).unwrap();
 
+            // Allow navigation after successful submission
+            setIsNavigating(true);
             navigate(`/agreements/${agreementId}/procurement-tracker`, {
                 state: { awardApprovalSuccess: true }
             });
@@ -185,10 +237,29 @@ export default function useRequestAwardApproval(agreementId) {
     };
 
     /**
-     * Handle cancel - navigate back to previous page
+     * Handle cancel - show confirmation modal before navigating away
      */
     const handleCancel = () => {
-        navigate(-1);
+        if (!hasChanged) {
+            // No changes, navigate immediately
+            navigate(-1);
+            return;
+        }
+
+        setShowModal(true);
+        setModalProps({
+            heading: "Are you sure you want to cancel? Your changes will not be saved.",
+            actionButtonText: "Yes, Cancel",
+            secondaryButtonText: "Continue Editing",
+            handleConfirm: () => {
+                setShowModal(false);
+                setIsNavigating(true);
+                navigate(-1);
+            },
+            closeModal: () => {
+                setShowModal(false);
+            }
+        });
     };
 
     return {
@@ -222,6 +293,9 @@ export default function useRequestAwardApproval(agreementId) {
         validationResult,
         MemoizedDatePicker,
         clinAssignments,
-        setClinAssignments
+        setClinAssignments,
+        showModal,
+        setShowModal,
+        modalProps
     };
 }
