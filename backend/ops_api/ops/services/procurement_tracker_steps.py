@@ -83,11 +83,28 @@ class ProcurementTrackerStepService:
         Raises:
             ResourceNotFoundError: If procurement tracker step doesn't exist
         """
+        # Use with_polymorphic to enable loading of subclass relationships
+        from sqlalchemy.orm import with_polymorphic
+
+        poly = with_polymorphic(ProcurementTrackerStep, [DefaultProcurementTrackerStep])
+
         stmt = (
-            select(ProcurementTrackerStep)
-            .where(ProcurementTrackerStep.id == id)
+            select(poly)
+            .where(poly.id == id)
             .options(
-                selectinload(ProcurementTrackerStep.procurement_tracker),
+                selectinload(poly.procurement_tracker),
+                # Load all user relationships that may be serialized
+                selectinload(poly.DefaultProcurementTrackerStep.acquisition_planning_completed_by_user),
+                selectinload(poly.DefaultProcurementTrackerStep.pre_solicitation_completed_by_user),
+                selectinload(poly.DefaultProcurementTrackerStep.solicitation_completed_by_user),
+                selectinload(poly.DefaultProcurementTrackerStep.evaluation_completed_by_user),
+                selectinload(poly.DefaultProcurementTrackerStep.pre_award_completed_by_user),
+                selectinload(poly.DefaultProcurementTrackerStep.pre_award_requested_by_user),
+                selectinload(poly.DefaultProcurementTrackerStep.pre_award_approval_responded_by_user),
+                selectinload(poly.DefaultProcurementTrackerStep.award_completed_by_user),
+                selectinload(poly.DefaultProcurementTrackerStep.award_approval_requested_by_user),
+                selectinload(poly.DefaultProcurementTrackerStep.award_approval_responded_by_user),
+                selectinload(poly.DefaultProcurementTrackerStep.award_vendor),
             )
         )
         step = self.db_session.scalar(stmt)
@@ -280,7 +297,32 @@ class ProcurementTrackerStepService:
 
         # Commit once after all operations (atomic transaction)
         self.db_session.commit()
-        self.db_session.refresh(step)
+
+        # Re-fetch with all relationships loaded using with_polymorphic
+        from sqlalchemy.orm import with_polymorphic
+
+        poly = with_polymorphic(ProcurementTrackerStep, [DefaultProcurementTrackerStep])
+
+        stmt_reload = (
+            select(poly)
+            .where(poly.id == step.id)
+            .options(
+                selectinload(poly.procurement_tracker),
+                # Load all user relationships that may be serialized
+                selectinload(poly.DefaultProcurementTrackerStep.acquisition_planning_completed_by_user),
+                selectinload(poly.DefaultProcurementTrackerStep.pre_solicitation_completed_by_user),
+                selectinload(poly.DefaultProcurementTrackerStep.solicitation_completed_by_user),
+                selectinload(poly.DefaultProcurementTrackerStep.evaluation_completed_by_user),
+                selectinload(poly.DefaultProcurementTrackerStep.pre_award_completed_by_user),
+                selectinload(poly.DefaultProcurementTrackerStep.pre_award_requested_by_user),
+                selectinload(poly.DefaultProcurementTrackerStep.pre_award_approval_responded_by_user),
+                selectinload(poly.DefaultProcurementTrackerStep.award_completed_by_user),
+                selectinload(poly.DefaultProcurementTrackerStep.award_approval_requested_by_user),
+                selectinload(poly.DefaultProcurementTrackerStep.award_approval_responded_by_user),
+                selectinload(poly.DefaultProcurementTrackerStep.award_vendor),
+            )
+        )
+        step = self.db_session.scalar(stmt_reload)
 
         logger.debug(f"Successfully updated procurement tracker step {id}")
 

@@ -1104,16 +1104,18 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
             # Serialize vendor relationship
             if "award_vendor" in data and data["award_vendor"]:
                 vendor = data.pop("award_vendor")
-                data["vendor"] = (
-                    {
+                # Check if vendor is actually a Vendor object, not just an ID
+                if hasattr(vendor, "id"):
+                    data["vendor"] = {
                         "id": vendor.id,
                         "name": vendor.name,
                         "duns": vendor.duns,
                         "vendor_type": vendor.vendor_type.name if vendor.vendor_type else None,
                     }
-                    if vendor
-                    else None
-                )
+                else:
+                    # If vendor is just an int (relationship not loaded), set vendor to None
+                    # The vendor_id field already has the value from award_vendor_id above
+                    data["vendor"] = None
             else:
                 data.pop("award_vendor", None)
                 data["vendor"] = None
