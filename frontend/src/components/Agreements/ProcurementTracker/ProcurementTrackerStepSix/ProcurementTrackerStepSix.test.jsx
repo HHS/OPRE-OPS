@@ -268,15 +268,15 @@ describe("ProcurementTrackerStepSix", () => {
             expect(label).toBeInTheDocument();
         });
 
-        it("renders Send to Approval button", () => {
+        it("renders Request Award Approval button", () => {
             render(<ProcurementTrackerStepSix {...defaultProps} />);
 
-            const button = screen.getByRole("button", { name: /Send to Approval/i });
+            const button = screen.getByRole("button", { name: /Request Award Approval/i });
             expect(button).toBeInTheDocument();
             expect(button).not.toBeDisabled();
         });
 
-        it("renders Send to Approval button as disabled when approval already requested", () => {
+        it("renders Request Award Approval button as disabled when approval already requested", () => {
             const props = {
                 ...defaultProps,
                 stepSixData: {
@@ -287,18 +287,18 @@ describe("ProcurementTrackerStepSix", () => {
             };
             render(<ProcurementTrackerStepSix {...props} />);
 
-            const button = screen.getByRole("button", { name: /Send to Approval/i });
+            const button = screen.getByRole("button", { name: /Request Award Approval/i });
             expect(button).toBeDisabled();
         });
 
-        it("renders Send to Approval button as disabled when BLI is in review", () => {
+        it("renders Request Award Approval button as disabled when BLI is in review", () => {
             const props = {
                 ...defaultProps,
                 budgetLineItems: [{ id: 1, in_review: true }]
             };
             render(<ProcurementTrackerStepSix {...props} />);
 
-            const button = screen.getByRole("button", { name: /Send to Approval/i });
+            const button = screen.getByRole("button", { name: /Request Award Approval/i });
             expect(button).toBeDisabled();
         });
 
@@ -430,18 +430,34 @@ describe("ProcurementTrackerStepSix", () => {
             expect(checkbox).toBeDisabled();
         });
 
-        it("checkbox is disabled when approval is not approved", () => {
+        it("checkbox is disabled when approval has not been requested", () => {
             const props = {
                 ...defaultProps,
                 stepSixData: {
                     ...defaultProps.stepSixData,
-                    approval_status: "PENDING"
+                    approval_requested: false,
+                    approval_status: null
                 }
             };
             render(<ProcurementTrackerStepSix {...props} />);
 
             const checkbox = screen.getByRole("checkbox");
             expect(checkbox).toBeDisabled();
+        });
+
+        it("checkbox is enabled when approval has been requested", () => {
+            const props = {
+                ...defaultProps,
+                stepSixData: {
+                    ...defaultProps.stepSixData,
+                    approval_requested: true,
+                    approval_status: "PENDING"
+                }
+            };
+            render(<ProcurementTrackerStepSix {...props} />);
+
+            const checkbox = screen.getByRole("checkbox");
+            expect(checkbox).not.toBeDisabled();
         });
 
         it("checkbox is disabled when isDisabled is true", () => {
@@ -794,11 +810,11 @@ describe("ProcurementTrackerStepSix", () => {
         });
     });
 
-    describe("Send to Approval Button", () => {
+    describe("Request Award Approval Button", () => {
         it("navigates to award approval page when clicked", () => {
             render(<ProcurementTrackerStepSix {...defaultProps} />);
 
-            const button = screen.getByRole("button", { name: /Send to Approval/i });
+            const button = screen.getByRole("button", { name: /Request Award Approval/i });
             fireEvent.click(button);
 
             expect(mockNavigate).toHaveBeenCalledWith("/agreements/123/award-approval");

@@ -71,13 +71,12 @@ const ProcurementTrackerStepSix = ({
     } = useProcurementTrackerStepSix(stepSixData, handleSetCompletedStepNumber);
 
     // Disabled flags for form controls
-    const isApprovalApproved = stepSixData?.approval_status === "APPROVED";
     const isApprovalRequested =
         stepSixData?.approval_requested &&
         (stepSixData?.approval_status == null || stepSixData?.approval_status === "PENDING");
     const isTargetCompletionDateSaveDisabled =
         isDisabled || validatorRes.hasErrors("targetCompletionDate") || !targetCompletionDate || !stepSixData?.id;
-    const isAwardCheckboxDisabled = isDisabled || !isActiveStep || !isApprovalApproved;
+    const isAwardCheckboxDisabled = isDisabled || !isActiveStep || !stepSixData?.approval_requested;
     const isUsersComboBoxDisabled = isDisabled || !isAwardCheckboxChecked || authorizedUsers.length === 0;
     const isAwardFieldsDisabled = isDisabled || !isAwardCheckboxChecked;
 
@@ -184,7 +183,7 @@ const ProcurementTrackerStepSix = ({
                                 }
                                 data-cy="request-award-approval-btn"
                             >
-                                Send to Approval
+                                Request Award Approval
                             </button>
                         </div>
 
