@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { flushSync } from "react-dom";
 import { useNavigate, useBlocker } from "react-router-dom";
 import {
     useUpdateProcurementTrackerStepMutation,
@@ -192,7 +193,10 @@ export default function useRequestPreAwardApproval(agreementId) {
             }).unwrap();
 
             // Allow navigation after successful submission
-            setIsNavigating(true);
+            // Use flushSync to ensure state update completes before navigation
+            flushSync(() => {
+                setIsNavigating(true);
+            });
             navigate(`/agreements/${agreementId}/procurement-tracker`, {
                 state: { success: true }
             });

@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { flushSync } from "react-dom";
 import { useNavigate, useBlocker } from "react-router-dom";
 import { useSelector, shallowEqual } from "react-redux";
 import { useUpdateProcurementTrackerStepMutation } from "../../../api/opsAPI";
@@ -224,7 +225,9 @@ export default function useApprovePreAwardApproval(agreementId) {
             secondaryButtonText: "Continue Reviewing",
             handleConfirm: () => {
                 setShowModal(false);
-                setIsNavigating(true);
+                flushSync(() => {
+                    setIsNavigating(true);
+                });
                 navigate("/agreements?filter=change-requests");
             },
             closeModal: () => {

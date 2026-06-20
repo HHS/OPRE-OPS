@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { flushSync } from "react-dom";
 import { useNavigate, useBlocker } from "react-router-dom";
 import {
     useGetAgreementByIdQuery,
@@ -225,7 +226,10 @@ export default function useRequestAwardApproval(agreementId) {
             }).unwrap();
 
             // Allow navigation after successful submission
-            setIsNavigating(true);
+            // Use flushSync to ensure state update completes before navigation
+            flushSync(() => {
+                setIsNavigating(true);
+            });
             navigate(`/agreements/${agreementId}/procurement-tracker`, {
                 state: { awardApprovalSuccess: true }
             });

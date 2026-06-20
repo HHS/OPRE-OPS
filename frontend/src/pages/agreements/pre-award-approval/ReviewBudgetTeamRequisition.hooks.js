@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
+import { flushSync } from "react-dom";
 import { useNavigate, useBlocker } from "react-router-dom";
 import { useSelector, shallowEqual } from "react-redux";
 import { useUpdateProcurementTrackerStepMutation } from "../../../api/opsAPI";
@@ -196,14 +197,16 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
                     }).unwrap();
 
                     // Allow navigation after successful approval
-                    setIsNavigating(true);
-
                     setAlert({
                         type: "success",
                         heading: "Pre-Award Requisition approved",
                         message: `"${agreement?.name}" agreement has been successfully approved for Pre-Award Requisition. The COR will be notified to upload the Final Consensus Memo to the HHS Consolidated Acquisition Solution (HCAS). The agreement will be locked from editing until after it's awarded.`
                     });
                     scrollToTop();
+                    // Use flushSync to ensure state update completes before navigation
+                    flushSync(() => {
+                        setIsNavigating(true);
+                    });
                     navigate("/agreements?filter=change-requests");
                 } catch (error) {
                     setSubmitError(
@@ -260,8 +263,6 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
             }).unwrap();
 
             // Allow navigation after successful save
-            setIsNavigating(true);
-
             // Success: Show success message and redirect
             setAlert({
                 type: "success",
@@ -269,6 +270,10 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
                 message: "Requisition information has been saved. You can return later to complete the approval."
             });
             scrollToTop();
+            // Use flushSync to ensure state update completes before navigation
+            flushSync(() => {
+                setIsNavigating(true);
+            });
             navigate("/agreements?filter=change-requests");
 
             setIsSubmitting(false);
@@ -296,7 +301,9 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
                 setShowModal(false);
             },
             handleSecondary: () => {
-                setIsNavigating(true);
+                flushSync(() => {
+                    setIsNavigating(true);
+                });
                 navigate("/agreements?filter=change-requests");
             },
             closeModal: () => {
