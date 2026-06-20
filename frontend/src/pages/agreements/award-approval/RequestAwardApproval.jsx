@@ -10,6 +10,7 @@ import TextArea from "../../../components/UI/Form/TextArea";
 import CurrencyInput from "../../../components/UI/Form/CurrencyInput";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
+import Accordion from "../../../components/UI/Accordion";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import useRequestAwardApproval from "./RequestAwardApproval.hooks";
 import CLINSelector from "../../../components/BudgetLineItems/CLINSelector";
@@ -262,138 +263,150 @@ export const RequestAwardApproval = () => {
             </AgreementBLIAccordion>
 
             {/* Vendor Information */}
-            <fieldset className="usa-fieldset margin-top-4">
-                <legend className="usa-legend usa-legend--large">Vendor Information</legend>
-                <p className="margin-top-1 margin-bottom-3">Add the vendor information for this contract.</p>
+            <Accordion
+                heading="Vendor Information"
+                level={3}
+                isClosed={false}
+                dataCy="vendor-information-accordion"
+            >
+                <fieldset className="usa-fieldset">
+                    <p className="margin-top-1 margin-bottom-3">Add the vendor information for this contract.</p>
 
-                <div className="grid-row grid-gap margin-top-3">
-                    <div className="grid-col-4">
-                        <label
-                            className="usa-label"
-                            htmlFor="vendor"
-                        >
-                            Vendor
-                        </label>
-                        <select
-                            id="vendor"
-                            name="vendor"
-                            className="usa-select"
-                            value={selectedVendor?.id || ""}
-                            onChange={(e) => {
-                                const vendorId = parseInt(e.target.value);
-                                const vendor = vendors.find((v) => v.id === vendorId);
-                                setSelectedVendor(vendor || null);
-                                runValidate("vendor", vendorId);
-                            }}
-                            required
-                            aria-required="true"
-                            data-cy="vendor-select"
-                        >
-                            <option value="">- Select Vendor -</option>
-                            {vendors.map((vendor) => (
-                                <option
-                                    key={vendor.id}
-                                    value={vendor.id}
-                                >
-                                    {vendor.name}
-                                </option>
-                            ))}
-                        </select>
-                        {validationResult.getErrors("vendor")?.length > 0 && (
-                            <div
-                                className="usa-error-message"
-                                role="alert"
-                            >
-                                {validationResult.getErrors("vendor")[0]}
-                            </div>
-                        )}
-                    </div>
-
-                    <SummaryBox
-                        leftLabel="Unique Entity ID (SAM.gov ID)"
-                        leftValue={selectedVendor?.duns || "—"}
-                        rightLabel="Vendor Type"
-                        rightValue={formatVendorType(selectedVendor?.vendor_type) || "—"}
-                        dataCy="vendor-info-box"
-                        className="grid-col-5 margin-left-3 margin-top-3"
-                    />
-                </div>
-            </fieldset>
-
-            {/* Award Information */}
-            <fieldset className="usa-fieldset margin-top-4">
-                <legend className="usa-legend usa-legend--large">Award Information</legend>
-                <p className="margin-top-1 margin-bottom-0">Add the award information for this contract.</p>
-
-                <div className="grid-row grid-gap flex-align-end">
-                    <div className="grid-col-4">
-                        <div
-                            className={`usa-form-group padding-bottom-1 ${validationResult.getErrors("contractNumber")?.length > 0 ? "usa-form-group--error" : ""}`}
-                        >
+                    <div className="grid-row grid-gap margin-top-3">
+                        <div className="grid-col-4">
                             <label
-                                className={`usa-label ${validationResult.getErrors("contractNumber")?.length > 0 ? "usa-label--error" : ""}`}
-                                htmlFor="contractNumber"
+                                className="usa-label"
+                                htmlFor="vendor"
                             >
-                                Contract #
+                                Vendor
                             </label>
-                            {validationResult.getErrors("contractNumber")?.length > 0 && (
+                            <select
+                                id="vendor"
+                                name="vendor"
+                                className="usa-select"
+                                value={selectedVendor?.id || ""}
+                                onChange={(e) => {
+                                    const vendorId = parseInt(e.target.value);
+                                    const vendor = vendors.find((v) => v.id === vendorId);
+                                    setSelectedVendor(vendor || null);
+                                    runValidate("vendor", vendorId);
+                                }}
+                                required
+                                aria-required="true"
+                                data-cy="vendor-select"
+                            >
+                                <option value="">- Select Vendor -</option>
+                                {vendors.map((vendor) => (
+                                    <option
+                                        key={vendor.id}
+                                        value={vendor.id}
+                                    >
+                                        {vendor.name}
+                                    </option>
+                                ))}
+                            </select>
+                            {validationResult.getErrors("vendor")?.length > 0 && (
                                 <div
                                     className="usa-error-message"
                                     role="alert"
                                 >
-                                    {validationResult.getErrors("contractNumber")[0]}
+                                    {validationResult.getErrors("vendor")[0]}
                                 </div>
                             )}
-                            <input
-                                id="contractNumber"
-                                name="contractNumber"
-                                className={`usa-input ${validationResult.getErrors("contractNumber")?.length > 0 ? "usa-input--error" : ""}`}
-                                type="text"
-                                value={contractNumber}
-                                onChange={(e) => {
-                                    setContractNumber(e.target.value);
-                                    runValidate("contractNumber", e.target.value);
+                        </div>
+
+                        <SummaryBox
+                            leftLabel="Unique Entity ID (SAM.gov ID)"
+                            leftValue={selectedVendor?.duns || "—"}
+                            rightLabel="Vendor Type"
+                            rightValue={formatVendorType(selectedVendor?.vendor_type) || "—"}
+                            dataCy="vendor-info-box"
+                            className="grid-col-5 margin-left-3 margin-top-3"
+                        />
+                    </div>
+                </fieldset>
+            </Accordion>
+
+            {/* Award Information */}
+            <Accordion
+                heading="Award Information"
+                level={3}
+                isClosed={false}
+                dataCy="award-information-accordion"
+            >
+                <fieldset className="usa-fieldset">
+                    <p className="margin-top-1 margin-bottom-0">Add the award information for this contract.</p>
+
+                    <div className="grid-row grid-gap flex-align-end">
+                        <div className="grid-col-4">
+                            <div
+                                className={`usa-form-group padding-bottom-1 ${validationResult.getErrors("contractNumber")?.length > 0 ? "usa-form-group--error" : ""}`}
+                            >
+                                <label
+                                    className={`usa-label ${validationResult.getErrors("contractNumber")?.length > 0 ? "usa-label--error" : ""}`}
+                                    htmlFor="contractNumber"
+                                >
+                                    Contract #
+                                </label>
+                                {validationResult.getErrors("contractNumber")?.length > 0 && (
+                                    <div
+                                        className="usa-error-message"
+                                        role="alert"
+                                    >
+                                        {validationResult.getErrors("contractNumber")[0]}
+                                    </div>
+                                )}
+                                <input
+                                    id="contractNumber"
+                                    name="contractNumber"
+                                    className={`usa-input ${validationResult.getErrors("contractNumber")?.length > 0 ? "usa-input--error" : ""}`}
+                                    type="text"
+                                    value={contractNumber}
+                                    onChange={(e) => {
+                                        setContractNumber(e.target.value);
+                                        runValidate("contractNumber", e.target.value);
+                                    }}
+                                    required
+                                    aria-required="true"
+                                    data-cy="contract-number-input"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="grid-col-4 padding-bottom-1">
+                            <CurrencyInput
+                                name="awardAmount"
+                                label="Award Amount"
+                                value={awardAmount}
+                                onChange={(_name, value) => {
+                                    setAwardAmount(value);
+                                    runValidate("awardAmount", value);
                                 }}
-                                required
-                                aria-required="true"
-                                data-cy="contract-number-input"
+                                messages={validationResult.getErrors("awardAmount") || []}
+                                isRequiredNoShow={true}
+                                dataCy="award-amount-input"
+                            />
+                        </div>
+
+                        <div className="grid-col-4">
+                            <MemoizedDatePicker
+                                id="awardDate"
+                                name="awardDate"
+                                label="Award Date"
+                                hint="mm/dd/yyyy"
+                                value={awardDate}
+                                onChange={(e) => {
+                                    setAwardDate(e.target.value);
+                                    runValidate("awardDate", e.target.value);
+                                }}
+                                messages={validationResult.getErrors("awardDate") || []}
+                                isRequiredNoShow={true}
+                                dataCy="award-date-input"
                             />
                         </div>
                     </div>
-
-                    <div className="grid-col-4 padding-bottom-1">
-                        <CurrencyInput
-                            name="awardAmount"
-                            label="Award Amount"
-                            value={awardAmount}
-                            onChange={(_name, value) => {
-                                setAwardAmount(value);
-                                runValidate("awardAmount", value);
-                            }}
-                            messages={validationResult.getErrors("awardAmount") || []}
-                            isRequiredNoShow={true}
-                            dataCy="award-amount-input"
-                        />
-                    </div>
-
-                    <div className="grid-col-4">
-                        <MemoizedDatePicker
-                            id="awardDate"
-                            name="awardDate"
-                            label="Award Date"
-                            hint="mm/dd/yyyy"
-                            value={awardDate}
-                            onChange={(e) => {
-                                setAwardDate(e.target.value);
-                                runValidate("awardDate", e.target.value);
-                            }}
-                            messages={validationResult.getErrors("awardDate") || []}
-                            isRequiredNoShow={true}
-                            dataCy="award-date-input"
-                        />
-                    </div>
-                </div>
-            </fieldset>
+                </fieldset>
+            </Accordion>
 
             {/* Notes (Optional) */}
             <div className="margin-top-4">
