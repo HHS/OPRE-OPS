@@ -57,7 +57,8 @@ export default defineConfig({
             "cypress/e2e/reportingPage.cy.js",
             "cypress/e2e/procurementDashboard.cy.js",
             "cypress/e2e/preAwardApproval.cy.js",
-            "cypress/e2e/changeRequestsPagination.cy.js"
+            "cypress/e2e/changeRequestsPagination.cy.js",
+            "cypress/e2e/requestAwardApproval.cy.js"
         ],
         // Adding custom task logging, for better a11y output
         // ref: https://docs.cypress.io/api/commands/task#Usage

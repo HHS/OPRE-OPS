@@ -16,6 +16,7 @@ import AgreementDetailsView from "./AgreementDetailsView";
  * @param {boolean} [props.isAgreementAwarded] - if the agreement is awarded
  * @param {boolean} [props.hasAgreementChanged] - if the agreement properties has changed
  * @param {boolean} [props.isPreAwardInReview] - if the agreement is in review for pre-award approval
+ * @param {boolean} [props.isAwardInReview] - if the agreement is in review for award approval
  * @returns {React.ReactElement} - The rendered component.
  */
 const AgreementDetails = ({
@@ -28,7 +29,8 @@ const AgreementDetails = ({
     isAgreementNotDeveloped,
     isAgreementAwarded = false,
     hasAgreementChanged = false,
-    isPreAwardInReview = false
+    isPreAwardInReview = false,
+    isAwardInReview = false
 }) => {
     const isSuperUser = useIsUserSuperUser();
     // eslint-disable-next-line no-unused-vars
@@ -45,6 +47,7 @@ const AgreementDetails = ({
                 isEditable={isEditable}
                 hasUnsavedChanges={hasAgreementChanged}
                 isPreAwardInReview={isPreAwardInReview}
+                isAwardInReview={isAwardInReview}
             />
 
             {isEditMode && isEditable ? (

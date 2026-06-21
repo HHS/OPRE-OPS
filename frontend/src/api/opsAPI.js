@@ -83,7 +83,8 @@ export const opsApi = createApi({
         "Cans",
         "ProcurementTrackers",
         "Procurement Tracker Steps",
-        "Budget Requisitions"
+        "Budget Requisitions",
+        "Vendors"
     ],
     baseQuery: getBaseQueryWithReauth(baseQuery),
     endpoints: (builder) => ({
@@ -1153,6 +1154,10 @@ export const opsApi = createApi({
             query: (division_id) => `/divisions/${division_id}`,
             providesTags: ["Divisions"]
         }),
+        getVendors: builder.query({
+            query: () => `/vendors/`,
+            providesTags: ["Vendors"]
+        }),
         addDocument: builder.mutation({
             query: (data) => {
                 return {
@@ -1319,6 +1324,7 @@ export const {
     useUpdateChangeRequestMutation,
     useGetDivisionsQuery,
     useGetDivisionQuery,
+    useGetVendorsQuery,
     useAddDocumentMutation,
     useGetDocumentsByAgreementIdQuery,
     useUpdateDocumentStatusMutation,

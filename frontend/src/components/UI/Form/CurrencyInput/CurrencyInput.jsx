@@ -15,6 +15,8 @@ import CurrencyInputField from "react-currency-input-field";
  * @param {string} [props.className] - Additional CSS classes to apply to the component (optional).
  * @param {Function} [props.setEnteredAmount] - A function to call when the input value changes.
  * @param {string} [props.placeholder] - The placeholder text to display in the input
+ * @param {boolean} [props.isRequiredNoShow] - Flag for required field without showing asterisk (optional, not passed to DOM)
+ * @param {string} [props.dataCy] - Cypress data-cy attribute (optional)
  * @returns {JSX.Element} - The rendered component.
  */
 const CurrencyInput = ({
@@ -27,6 +29,8 @@ const CurrencyInput = ({
     className,
     setEnteredAmount,
     placeholder = "$",
+    isRequiredNoShow, // eslint-disable-line no-unused-vars -- Extracted to prevent passing to DOM
+    dataCy,
     ...rest
 }) => {
     // displayValue holds the raw typed string (e.g. "5.") so a trailing
@@ -49,7 +53,14 @@ const CurrencyInput = ({
     }, [value]);
 
     return (
-        <div className={cx("usa-form-group", pending && "pending", className)}>
+        <div
+            className={cx(
+                "usa-form-group",
+                pending && "pending",
+                messages.length && "usa-form-group--error",
+                className
+            )}
+        >
             <label
                 className={`usa-label ${messages.length ? "usa-label--error" : ""} `}
                 htmlFor={name}
@@ -73,6 +84,7 @@ const CurrencyInput = ({
                 decimalSeparator="."
                 decimalsLimit={2}
                 placeholder={placeholder}
+                data-cy={dataCy}
                 onValueChange={(rawValue, _name, values) => {
                     const f = values?.float;
                     const floatValue = typeof f === "number" ? f : NaN;

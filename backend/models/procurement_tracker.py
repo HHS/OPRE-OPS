@@ -10,6 +10,7 @@ from sqlalchemy import (
     Date,
     ForeignKey,
     Integer,
+    Numeric,
     String,
     Text,
     Index,
@@ -36,50 +37,50 @@ __all__ = [
 # ============================================================================
 
 
-class ProcurementTrackerStatus(Enum):
+class ProcurementTrackerStatus(str, Enum):
     """Status of the procurement tracker"""
 
-    ACTIVE = auto()
-    INACTIVE = auto()
-    COMPLETED = auto()
+    ACTIVE = "ACTIVE"
+    INACTIVE = "INACTIVE"
+    COMPLETED = "COMPLETED"
 
     def __str__(self):
-        return self.name
+        return self.value
 
 
-class ProcurementTrackerType(Enum):
+class ProcurementTrackerType(str, Enum):
     """Type of procurement tracker workflow"""
 
-    DEFAULT = auto()
+    DEFAULT = "DEFAULT"
 
     def __str__(self):
-        return self.name
+        return self.value
 
 
-class ProcurementTrackerStepType(Enum):
+class ProcurementTrackerStepType(str, Enum):
     """Type of procurement workflow step"""
 
-    ACQUISITION_PLANNING = auto()
-    PRE_SOLICITATION = auto()
-    SOLICITATION = auto()
-    EVALUATION = auto()
-    PRE_AWARD = auto()
-    AWARD = auto()
+    ACQUISITION_PLANNING = "ACQUISITION_PLANNING"
+    PRE_SOLICITATION = "PRE_SOLICITATION"
+    SOLICITATION = "SOLICITATION"
+    EVALUATION = "EVALUATION"
+    PRE_AWARD = "PRE_AWARD"
+    AWARD = "AWARD"
 
     def __str__(self):
-        return self.name
+        return self.value
 
 
-class ProcurementTrackerStepStatus(Enum):
+class ProcurementTrackerStepStatus(str, Enum):
     """Status of an individual tracker step"""
 
-    PENDING = auto()
-    ACTIVE = auto()
-    COMPLETED = auto()
-    SKIPPED = auto()
+    PENDING = "PENDING"
+    ACTIVE = "ACTIVE"
+    COMPLETED = "COMPLETED"
+    SKIPPED = "SKIPPED"
 
     def __str__(self):
-        return self.name
+        return self.value
 
 
 # ============================================================================
@@ -147,10 +148,16 @@ class ProcurementTracker(BaseModel):
     )
 
     # Polymorphic configuration
+    # Note: Base class is abstract - only subclasses should be instantiated
     __mapper_args__ = {
-        "polymorphic_identity": "procurement_tracker",
         "polymorphic_on": "tracker_type",
     }
+
+    def __init__(self, *args, **kwargs):
+        # Prevent direct instantiation of base class
+        if self.__class__ == ProcurementTracker:
+            raise TypeError("ProcurementTracker is abstract - use DefaultProcurementTracker instead")
+        super().__init__(*args, **kwargs)
 
     @BaseModel.display_name.getter
     def display_name(self):
@@ -495,6 +502,112 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
         viewonly=True,
     )
 
+    # AWARD step fields (OPS-1640)
+    award_target_completion_date: Mapped[Optional[date]] = mapped_column(
+        Date,
+        nullable=True,
+    )
+    award_task_completed_by: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        ForeignKey("ops_user.id"),
+        nullable=True,
+    )
+    award_date_completed: Mapped[Optional[date]] = mapped_column(
+        Date,
+        nullable=True,
+    )
+    award_notes: Mapped[Optional[str]] = mapped_column(
+        Text,
+        nullable=True,
+    )
+
+    # AWARD approval request fields (requester side - OPS-1640)
+    award_approval_requested: Mapped[Optional[bool]] = mapped_column(
+        Boolean,
+        nullable=True,
+    )
+    award_approval_requested_date: Mapped[Optional[date]] = mapped_column(
+        Date,
+        nullable=True,
+    )
+    award_approval_requested_by: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        ForeignKey("ops_user.id"),
+        nullable=True,
+    )
+    award_requestor_notes: Mapped[Optional[str]] = mapped_column(
+        Text,
+        nullable=True,
+    )
+
+    # AWARD approval response fields (reviewer side - out of scope for OPS-1640)
+    award_approval_status: Mapped[Optional[str]] = mapped_column(
+        String(20),
+        nullable=True,
+    )
+    award_approval_responded_by: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        ForeignKey("ops_user.id"),
+        nullable=True,
+    )
+    award_approval_responded_date: Mapped[Optional[date]] = mapped_column(
+        Date,
+        nullable=True,
+    )
+    award_approval_reviewer_notes: Mapped[Optional[str]] = mapped_column(
+        Text,
+        nullable=True,
+    )
+
+    # AWARD vendor information fields (OPS-1640)
+    award_vendor_id: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        ForeignKey("vendor.id"),
+        nullable=True,
+    )
+
+    # AWARD contract/award information fields (OPS-1640)
+    award_contract_number: Mapped[Optional[str]] = mapped_column(
+        String(100),
+        nullable=True,
+    )
+    award_amount: Mapped[Optional[float]] = mapped_column(
+        Numeric(12, 2),
+        nullable=True,
+    )
+    award_date: Mapped[Optional[date]] = mapped_column(
+        Date,
+        nullable=True,
+    )
+
+    # Relationship for award completed by user
+    award_completed_by_user: Mapped[Optional["User"]] = relationship(
+        "User",
+        foreign_keys=[award_task_completed_by],
+        viewonly=True,
+    )
+
+    # Relationship for award approval requested by user
+    award_approval_requested_by_user: Mapped[Optional["User"]] = relationship(
+        "User",
+        foreign_keys=[award_approval_requested_by],
+        viewonly=True,
+    )
+
+    # Relationship for award approval responded by user
+    award_approval_responded_by_user: Mapped[Optional["User"]] = relationship(
+        "User",
+        foreign_keys=[award_approval_responded_by],
+        viewonly=True,
+    )
+
+    # Relationship for award vendor
+    award_vendor: Mapped[Optional["Vendor"]] = relationship(
+        "Vendor",
+        foreign_keys=[award_vendor_id],
+        viewonly=True,
+    )
+
     # Polymorphic configuration
     __mapper_args__ = {
         "polymorphic_identity": "default_step",
@@ -587,7 +700,33 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
             data.pop("pre_award_completed_by_user", None)
             data.pop("pre_award_requested_by_user", None)
             data.pop("pre_award_approval_responded_by_user", None)
+            data.pop("pre_award_requisition_number", None)
+            data.pop("pre_award_requisition_date", None)
+            data.pop("pre_award_requisition_approved_by", None)
+            data.pop("pre_award_requisition_approved_date", None)
             data.pop("pre_award_requisition_approved_by_user", None)
+
+            # Remove AWARD-specific fields
+            data.pop("award_target_completion_date", None)
+            data.pop("award_task_completed_by", None)
+            data.pop("award_date_completed", None)
+            data.pop("award_notes", None)
+            data.pop("award_approval_requested", None)
+            data.pop("award_approval_requested_date", None)
+            data.pop("award_approval_requested_by", None)
+            data.pop("award_requestor_notes", None)
+            data.pop("award_approval_status", None)
+            data.pop("award_approval_responded_by", None)
+            data.pop("award_approval_responded_date", None)
+            data.pop("award_approval_reviewer_notes", None)
+            data.pop("award_completed_by_user", None)
+            data.pop("award_approval_requested_by_user", None)
+            data.pop("award_approval_responded_by_user", None)
+            data.pop("award_vendor_id", None)
+            data.pop("award_vendor", None)
+            data.pop("award_contract_number", None)
+            data.pop("award_amount", None)
+            data.pop("award_date", None)
 
         # Handle PRE_SOLICITATION-specific fields
         elif self.step_type == ProcurementTrackerStepType.PRE_SOLICITATION:
@@ -643,7 +782,33 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
             data.pop("pre_award_completed_by_user", None)
             data.pop("pre_award_requested_by_user", None)
             data.pop("pre_award_approval_responded_by_user", None)
+            data.pop("pre_award_requisition_number", None)
+            data.pop("pre_award_requisition_date", None)
+            data.pop("pre_award_requisition_approved_by", None)
+            data.pop("pre_award_requisition_approved_date", None)
             data.pop("pre_award_requisition_approved_by_user", None)
+
+            # Remove AWARD-specific fields
+            data.pop("award_target_completion_date", None)
+            data.pop("award_task_completed_by", None)
+            data.pop("award_date_completed", None)
+            data.pop("award_notes", None)
+            data.pop("award_approval_requested", None)
+            data.pop("award_approval_requested_date", None)
+            data.pop("award_approval_requested_by", None)
+            data.pop("award_requestor_notes", None)
+            data.pop("award_approval_status", None)
+            data.pop("award_approval_responded_by", None)
+            data.pop("award_approval_responded_date", None)
+            data.pop("award_approval_reviewer_notes", None)
+            data.pop("award_completed_by_user", None)
+            data.pop("award_approval_requested_by_user", None)
+            data.pop("award_approval_responded_by_user", None)
+            data.pop("award_vendor_id", None)
+            data.pop("award_vendor", None)
+            data.pop("award_contract_number", None)
+            data.pop("award_amount", None)
+            data.pop("award_date", None)
 
         # Handle SOLICITATION-specific fields
         elif self.step_type == ProcurementTrackerStepType.SOLICITATION:
@@ -699,7 +864,33 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
             data.pop("pre_award_completed_by_user", None)
             data.pop("pre_award_requested_by_user", None)
             data.pop("pre_award_approval_responded_by_user", None)
+            data.pop("pre_award_requisition_number", None)
+            data.pop("pre_award_requisition_date", None)
+            data.pop("pre_award_requisition_approved_by", None)
+            data.pop("pre_award_requisition_approved_date", None)
             data.pop("pre_award_requisition_approved_by_user", None)
+
+            # Remove AWARD-specific fields
+            data.pop("award_target_completion_date", None)
+            data.pop("award_task_completed_by", None)
+            data.pop("award_date_completed", None)
+            data.pop("award_notes", None)
+            data.pop("award_approval_requested", None)
+            data.pop("award_approval_requested_date", None)
+            data.pop("award_approval_requested_by", None)
+            data.pop("award_requestor_notes", None)
+            data.pop("award_approval_status", None)
+            data.pop("award_approval_responded_by", None)
+            data.pop("award_approval_responded_date", None)
+            data.pop("award_approval_reviewer_notes", None)
+            data.pop("award_completed_by_user", None)
+            data.pop("award_approval_requested_by_user", None)
+            data.pop("award_approval_responded_by_user", None)
+            data.pop("award_vendor_id", None)
+            data.pop("award_vendor", None)
+            data.pop("award_contract_number", None)
+            data.pop("award_amount", None)
+            data.pop("award_date", None)
 
         # Handle EVALUATION-specific fields
         elif self.step_type == ProcurementTrackerStepType.EVALUATION:
@@ -755,7 +946,33 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
             data.pop("pre_award_completed_by_user", None)
             data.pop("pre_award_requested_by_user", None)
             data.pop("pre_award_approval_responded_by_user", None)
+            data.pop("pre_award_requisition_number", None)
+            data.pop("pre_award_requisition_date", None)
+            data.pop("pre_award_requisition_approved_by", None)
+            data.pop("pre_award_requisition_approved_date", None)
             data.pop("pre_award_requisition_approved_by_user", None)
+
+            # Remove AWARD-specific fields
+            data.pop("award_target_completion_date", None)
+            data.pop("award_task_completed_by", None)
+            data.pop("award_date_completed", None)
+            data.pop("award_notes", None)
+            data.pop("award_approval_requested", None)
+            data.pop("award_approval_requested_date", None)
+            data.pop("award_approval_requested_by", None)
+            data.pop("award_requestor_notes", None)
+            data.pop("award_approval_status", None)
+            data.pop("award_approval_responded_by", None)
+            data.pop("award_approval_responded_date", None)
+            data.pop("award_approval_reviewer_notes", None)
+            data.pop("award_completed_by_user", None)
+            data.pop("award_approval_requested_by_user", None)
+            data.pop("award_approval_responded_by_user", None)
+            data.pop("award_vendor_id", None)
+            data.pop("award_vendor", None)
+            data.pop("award_contract_number", None)
+            data.pop("award_amount", None)
+            data.pop("award_date", None)
 
         # Handle PRE_AWARD-specific fields
         elif self.step_type == ProcurementTrackerStepType.PRE_AWARD:
@@ -828,6 +1045,135 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
             data.pop("evaluation_notes", None)
             data.pop("evaluation_completed_by_user", None)
 
+            # Remove AWARD-specific fields
+            data.pop("award_target_completion_date", None)
+            data.pop("award_task_completed_by", None)
+            data.pop("award_date_completed", None)
+            data.pop("award_notes", None)
+            data.pop("award_approval_requested", None)
+            data.pop("award_approval_requested_date", None)
+            data.pop("award_approval_requested_by", None)
+            data.pop("award_requestor_notes", None)
+            data.pop("award_approval_status", None)
+            data.pop("award_approval_responded_by", None)
+            data.pop("award_approval_responded_date", None)
+            data.pop("award_approval_reviewer_notes", None)
+            data.pop("award_completed_by_user", None)
+            data.pop("award_approval_requested_by_user", None)
+            data.pop("award_approval_responded_by_user", None)
+            data.pop("award_vendor_id", None)
+            data.pop("award_vendor", None)
+            data.pop("award_contract_number", None)
+            data.pop("award_amount", None)
+            data.pop("award_date", None)
+
+        # Handle AWARD-specific fields (OPS-1640)
+        elif self.step_type == ProcurementTrackerStepType.AWARD:
+            # Map prefixed columns to API field names
+            data["target_completion_date"] = data.pop("award_target_completion_date", None)
+            data["task_completed_by"] = data.pop("award_task_completed_by", None)
+            data["date_completed"] = data.pop("award_date_completed", None)
+            data["notes"] = data.pop("award_notes", None)
+
+            # Map approval request fields
+            data["approval_requested"] = data.pop("award_approval_requested", None)
+            data["approval_requested_date"] = data.pop("award_approval_requested_date", None)
+            data["approval_requested_by"] = data.pop("award_approval_requested_by", None)
+            data["requestor_notes"] = data.pop("award_requestor_notes", None)
+
+            # Map approval response fields
+            data["approval_status"] = data.pop("award_approval_status", None)
+            data["approval_responded_by"] = data.pop("award_approval_responded_by", None)
+            data["approval_responded_date"] = data.pop("award_approval_responded_date", None)
+            data["reviewer_notes"] = data.pop("award_approval_reviewer_notes", None)
+
+            # Map the relationship
+            if "award_completed_by_user" in data:
+                data["completed_by_user"] = data.pop("award_completed_by_user", None)
+
+            # Map the approval requested by user relationship
+            if "award_approval_requested_by_user" in data:
+                data["requested_by_user"] = data.pop("award_approval_requested_by_user", None)
+
+            # Map the approval responded by user relationship
+            if "award_approval_responded_by_user" in data:
+                data["approval_responded_by_user"] = data.pop("award_approval_responded_by_user", None)
+
+            # Map vendor and award information fields (OPS-1640)
+            data["vendor_id"] = data.pop("award_vendor_id", None)
+            # Serialize vendor relationship
+            if "award_vendor" in data and data["award_vendor"]:
+                vendor = data.pop("award_vendor")
+                # Check if vendor is actually a Vendor object, not just an ID
+                if hasattr(vendor, "id"):
+                    data["vendor"] = {
+                        "id": vendor.id,
+                        "name": vendor.name,
+                        "duns": vendor.duns,
+                        "vendor_type": vendor.vendor_type.name if vendor.vendor_type else None,
+                    }
+                else:
+                    # If vendor is just an int (relationship not loaded), set vendor to None
+                    # The vendor_id field already has the value from award_vendor_id above
+                    data["vendor"] = None
+            else:
+                data.pop("award_vendor", None)
+                data["vendor"] = None
+            data["contract_number"] = data.pop("award_contract_number", None)
+            data["award_amount"] = float(data.pop("award_amount")) if data.get("award_amount") is not None else None
+            data["award_date"] = data.pop("award_date", None)
+
+            # Remove ACQUISITION_PLANNING-specific fields
+            data.pop("acquisition_planning_task_completed_by", None)
+            data.pop("acquisition_planning_date_completed", None)
+            data.pop("acquisition_planning_notes", None)
+            data.pop("acquisition_planning_completed_by_user", None)
+
+            # Remove PRE_SOLICITATION-specific fields
+            data.pop("pre_solicitation_target_completion_date", None)
+            data.pop("pre_solicitation_task_completed_by", None)
+            data.pop("pre_solicitation_date_completed", None)
+            data.pop("pre_solicitation_notes", None)
+            data.pop("pre_solicitation_draft_solicitation_date", None)
+            data.pop("pre_solicitation_completed_by_user", None)
+
+            # Remove SOLICITATION-specific fields
+            data.pop("solicitation_task_completed_by", None)
+            data.pop("solicitation_date_completed", None)
+            data.pop("solicitation_notes", None)
+            data.pop("solicitation_period_start_date", None)
+            data.pop("solicitation_period_end_date", None)
+            data.pop("solicitation_completed_by_user", None)
+
+            # Remove EVALUATION-specific fields
+            data.pop("evaluation_target_completion_date", None)
+            data.pop("evaluation_task_completed_by", None)
+            data.pop("evaluation_date_completed", None)
+            data.pop("evaluation_notes", None)
+            data.pop("evaluation_completed_by_user", None)
+
+            # Remove PRE_AWARD-specific fields
+            data.pop("pre_award_target_completion_date", None)
+            data.pop("pre_award_task_completed_by", None)
+            data.pop("pre_award_date_completed", None)
+            data.pop("pre_award_notes", None)
+            data.pop("pre_award_approval_requested", None)
+            data.pop("pre_award_approval_requested_date", None)
+            data.pop("pre_award_approval_requested_by", None)
+            data.pop("pre_award_requestor_notes", None)
+            data.pop("pre_award_approval_status", None)
+            data.pop("pre_award_approval_responded_by", None)
+            data.pop("pre_award_approval_responded_date", None)
+            data.pop("pre_award_approval_reviewer_notes", None)
+            data.pop("pre_award_completed_by_user", None)
+            data.pop("pre_award_requested_by_user", None)
+            data.pop("pre_award_approval_responded_by_user", None)
+            data.pop("pre_award_requisition_number", None)
+            data.pop("pre_award_requisition_date", None)
+            data.pop("pre_award_requisition_approved_by", None)
+            data.pop("pre_award_requisition_approved_date", None)
+            data.pop("pre_award_requisition_approved_by_user", None)
+
         else:
             # Remove all step-specific fields for other step types
             data.pop("acquisition_planning_task_completed_by", None)
@@ -870,6 +1216,33 @@ class DefaultProcurementTrackerStep(ProcurementTrackerStep):
             data.pop("pre_award_completed_by_user", None)
             data.pop("pre_award_requested_by_user", None)
             data.pop("pre_award_approval_responded_by_user", None)
+            data.pop("pre_award_requisition_number", None)
+            data.pop("pre_award_requisition_date", None)
+            data.pop("pre_award_requisition_approved_by", None)
+            data.pop("pre_award_requisition_approved_date", None)
+            data.pop("pre_award_requisition_approved_by_user", None)
+
+            # Remove AWARD-specific fields
+            data.pop("award_target_completion_date", None)
+            data.pop("award_task_completed_by", None)
+            data.pop("award_date_completed", None)
+            data.pop("award_notes", None)
+            data.pop("award_approval_requested", None)
+            data.pop("award_approval_requested_date", None)
+            data.pop("award_approval_requested_by", None)
+            data.pop("award_requestor_notes", None)
+            data.pop("award_approval_status", None)
+            data.pop("award_approval_responded_by", None)
+            data.pop("award_approval_responded_date", None)
+            data.pop("award_approval_reviewer_notes", None)
+            data.pop("award_completed_by_user", None)
+            data.pop("award_approval_requested_by_user", None)
+            data.pop("award_approval_responded_by_user", None)
+            data.pop("award_vendor_id", None)
+            data.pop("award_vendor", None)
+            data.pop("award_contract_number", None)
+            data.pop("award_amount", None)
+            data.pop("award_date", None)
 
         return data
 
@@ -998,9 +1371,7 @@ class DefaultProcurementTracker(ProcurementTracker):
         )
 
         if not include_inactive:
-            linked_query = linked_query.where(
-                ProcurementTracker.status == ProcurementTrackerStatus.ACTIVE
-            )
+            linked_query = linked_query.where(ProcurementTracker.status == ProcurementTrackerStatus.ACTIVE)
 
         existing = session.execute(linked_query).scalar_one_or_none()
 
@@ -1018,9 +1389,7 @@ class DefaultProcurementTracker(ProcurementTracker):
         )
 
         if not include_inactive:
-            unlinked_query = unlinked_query.where(
-                ProcurementTracker.status == ProcurementTrackerStatus.ACTIVE
-            )
+            unlinked_query = unlinked_query.where(ProcurementTracker.status == ProcurementTrackerStatus.ACTIVE)
 
         unlinked = session.execute(unlinked_query).scalars().first()
 

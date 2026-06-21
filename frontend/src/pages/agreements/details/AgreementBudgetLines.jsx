@@ -47,6 +47,7 @@ import icons from "../../../uswds/img/sprite.svg";
  * @param {boolean} props.isAgreementNotDeveloped - Whether the agreement is not yet developed.
  * @param {boolean} props.isAgreementAwarded - Whether the agreement is awarded.
  * @param {boolean} [props.isPreAwardInReview] - if the agreement is in review for pre-award approval
+ * @param {boolean} [props.isAwardInReview] - if the agreement is in review for award approval
  * @param {Function} props.setIsEditMode - The function to set the edit mode.
  * @returns {JSX.Element} - The rendered component.
  */
@@ -56,7 +57,8 @@ const AgreementBudgetLines = ({
     setIsEditMode,
     isAgreementNotDeveloped,
     isAgreementAwarded,
-    isPreAwardInReview = false
+    isPreAwardInReview = false,
+    isAwardInReview = false
 }) => {
     // TODO: Create a custom hook for this business logix (./AgreementBudgetLines.hooks.js)
     const navigate = useNavigate();
@@ -72,8 +74,8 @@ const AgreementBudgetLines = ({
     // Regular users must have permission and agreement must be in editable state
     const canRegularUserEdit = agreement?._meta.isEditable && !isAgreementNotDeveloped && !allBudgetLinesInReview;
 
-    // Pre-award in review blocks everyone; otherwise super users bypass checks, regular users must pass all
-    const isAgreementEditable = !isPreAwardInReview && (isSuperUser || canRegularUserEdit);
+    // Pre-award or award in review blocks everyone; otherwise super users bypass checks, regular users must pass all
+    const isAgreementEditable = !isPreAwardInReview && !isAwardInReview && (isSuperUser || canRegularUserEdit);
     const filters = { agreementIds: [agreement?.id] };
 
     // details for AgreementTotalBudgetLinesCard
@@ -87,6 +89,8 @@ const AgreementBudgetLines = ({
                 return "Agreements that are grants, other partner agreements (IAAs, IPAs, IDDAs), \nor direct obligations have not been developed yet, but are coming soon.";
             case isPreAwardInReview:
                 return "This agreement is In Review for Pre-Award Approval. Edits or changes cannot be made at this time.";
+            case isAwardInReview:
+                return "This agreement is In Review for Award Approval. Edits or changes cannot be made at this time.";
             case allBudgetLinesInReview:
                 return "Budget lines In Review Status cannot be sent for status changes";
             default:

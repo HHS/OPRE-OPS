@@ -72,6 +72,7 @@ from ops_api.ops.views import (
     SPECIAL_TOPICS_LIST_API_VIEW_FUNC,
     USERS_ITEM_API_VIEW_FUNC,
     USERS_LIST_API_VIEW_FUNC,
+    VENDORS_LIST_API_VIEW_FUNC,
     VERSION_API_VIEW_FUNC,
 )
 
@@ -219,6 +220,11 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/users/",
         view_func=USERS_LIST_API_VIEW_FUNC,
+    )
+
+    api_bp.add_url_rule(
+        "/vendors/",
+        view_func=VENDORS_LIST_API_VIEW_FUNC,
     )
 
     api_bp.add_url_rule("/cans/<int:id>/history/", view_func=CAN_HISTORY_LIST_API_VIEW_FUNC)

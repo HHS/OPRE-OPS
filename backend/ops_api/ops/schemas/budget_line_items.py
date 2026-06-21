@@ -7,6 +7,7 @@ from marshmallow.experimental.context import Context
 
 from models import AgreementType, BudgetLineItemStatus, BudgetLineSortCondition, ProjectType
 from ops_api.ops.schemas.change_requests import GenericChangeRequestResponseSchema
+from ops_api.ops.schemas.clins import CLINSchema  # noqa: F401 - imported for Marshmallow registry
 from ops_api.ops.schemas.pagination import PaginationListSchema
 
 
@@ -44,6 +45,7 @@ class RequestBodySchema(Schema):
         BudgetLineItemStatus,
         allow_none=True,
         load_default=None,
+        by_value=True,
     )
     line_description = fields.Str(allow_none=True, load_default=None)
     can_id = fields.Int(allow_none=True, load_default=None)
@@ -255,10 +257,12 @@ class BudgetLineItemResponseSchema(Schema):
     can = fields.Nested(BudgetLineItemCANSchema(), required=True)
     can_id = fields.Int(required=True)
     services_component_id = fields.Int(load_default=None, dump_default=None, allow_none=True)
+    clin_id = fields.Int(load_default=None, dump_default=None, allow_none=True)
+    clin = fields.Nested("ops_api.ops.schemas.clins.CLINSchema", load_default=None, dump_default=None, allow_none=True)
     amount = fields.Float(required=True)
     total = fields.Float(required=True)
     line_description = fields.Str(required=True)
-    status = fields.Enum(BudgetLineItemStatus, required=True)
+    status = fields.Enum(BudgetLineItemStatus, required=True, by_value=True)
     is_obe = fields.Bool(required=True)
     comments = fields.Str(load_default=None, dump_default=None, allow_none=True)
     proc_shop_fee_percentage = fields.Float(load_default=None, dump_default=None, allow_none=True)

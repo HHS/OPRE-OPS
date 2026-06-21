@@ -513,7 +513,13 @@ class BudgetLineItemService:
 
         # Determine if direct edit or change request is needed
         directly_editable = is_super_user(current_user, current_app) or (
-            not has_status_change and budget_line_item.status in [BudgetLineItemStatus.DRAFT]
+            not has_status_change
+            and budget_line_item.status
+            in [
+                BudgetLineItemStatus.DRAFT,
+                BudgetLineItemStatus.PLANNED,
+                BudgetLineItemStatus.IN_EXECUTION,
+            ]
         )
 
         change_request_ids = []
@@ -655,11 +661,8 @@ class BudgetLineItemService:
 
     @staticmethod
     def _validation_change_status_higher_than_draft(budget_line_item, updated_fields):
-        if (
-            "status" in updated_fields
-            and updated_fields["status"] != budget_line_item.status
-            and budget_line_item.status in [BudgetLineItemStatus.DRAFT]
-        ) or (budget_line_item.status not in [BudgetLineItemStatus.DRAFT]):
+        # Only validate required fields when actually changing status
+        if "status" in updated_fields and updated_fields["status"] != budget_line_item.status:
             # check required fields on budget line item
             bli_required_fields = (
                 BudgetLineItem.get_required_fields_for_status_change()
