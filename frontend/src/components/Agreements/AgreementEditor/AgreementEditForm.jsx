@@ -101,6 +101,8 @@ const AgreementEditForm = ({
         handleCancel,
         handleOnChangeSelectedProcurementShop,
         runValidate,
+        checkUniqueOnBlur,
+        uniquenessErrors,
         isProcurementShopDisabled,
         disabledMessage,
         fundingMethod,
@@ -192,15 +194,18 @@ const AgreementEditForm = ({
             <Input
                 name="name"
                 label="Agreement Title"
-                messages={res.getErrors("name")}
+                messages={[...res.getErrors("name"), ...uniquenessErrors.name]}
                 maxLength={200}
-                className={cn("name")}
+                className={[cn("name"), uniquenessErrors.name.length > 0 && "usa-form-group usa-form-group--error"]
+                    .filter(Boolean)
+                    .join(" ")}
                 isRequired={true}
                 value={agreementTitle}
                 onChange={(name, value) => {
                     setAgreementTitle(value);
                     runValidate(name, value);
                 }}
+                onBlur={(_, value) => checkUniqueOnBlur("name", value)}
                 isDisabled={isFieldDisabled(AgreementFields.Name, immutableFields, isSuperUser, isAgreementAwarded)}
                 tooltipMsg={awardedImmutableFieldsTooltipMsg}
             />
@@ -208,8 +213,17 @@ const AgreementEditForm = ({
                 name="nickname"
                 label="Agreement Nickname or Acronym"
                 maxLength={40}
+                messages={uniquenessErrors.nick_name}
+                className={uniquenessErrors.nick_name.length > 0 ? "usa-form-group usa-form-group--error" : ""}
                 value={agreementNickName || ""}
                 onChange={(_, value) => setAgreementNickName(value)}
+                onBlur={(_, value) => {
+                    const trimmed = value?.trim() || "";
+                    if (trimmed !== value) {
+                        setAgreementNickName(trimmed);
+                    }
+                    checkUniqueOnBlur("nick_name", trimmed);
+                }}
             />
             {!isWizardMode && (
                 <ProjectComboBox
@@ -398,6 +412,7 @@ const AgreementEditForm = ({
                         setAgreementReason(value);
                         if (isReviewMode) {
                             runValidate(name, value);
+                            runValidate("vendor", null, { agreement_reason: value });
                         }
                     }}
                     isDisabled={isFieldDisabled(
@@ -463,7 +478,7 @@ const AgreementEditForm = ({
                     messages={res.getErrors("project_officer")}
                     onChange={(name, value) => {
                         if (isReviewMode) {
-                            runValidate(name, value);
+                            runValidate(name, value, { project_officer_id: value });
                         }
                     }}
                     overrideStyles={{ width: "15em" }}

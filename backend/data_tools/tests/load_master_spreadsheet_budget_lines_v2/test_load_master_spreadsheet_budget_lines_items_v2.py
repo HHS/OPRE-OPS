@@ -315,9 +315,7 @@ def test_create_model(db_with_data_v2):
     # Check history records
     history_records = (
         db_with_data_v2.execute(
-            select(OpsDBHistory)
-            .where(OpsDBHistory.row_key == str(bli_model.id))
-            .order_by(OpsDBHistory.created_on.desc())
+            select(OpsDBHistory).where(OpsDBHistory.row_key == str(bli_model.id)).order_by(OpsDBHistory.id.desc())
         )
         .scalars()
         .all()
@@ -535,9 +533,7 @@ def test_create_model_lock_in_proc_shop(db_with_data_v2):
     # Check history records
     history_records = (
         db_with_data_v2.execute(
-            select(OpsDBHistory)
-            .where(OpsDBHistory.row_key == str(bli_model.id))
-            .order_by(OpsDBHistory.created_on.desc())
+            select(OpsDBHistory).where(OpsDBHistory.row_key == str(bli_model.id)).order_by(OpsDBHistory.id.desc())
         )
         .scalars()
         .all()
@@ -616,9 +612,7 @@ def test_create_model_lock_in_proc_shop_fee_not_found(db_with_data_v2):
     # Check history records
     history_records = (
         db_with_data_v2.execute(
-            select(OpsDBHistory)
-            .where(OpsDBHistory.row_key == str(bli_model.id))
-            .order_by(OpsDBHistory.created_on.desc())
+            select(OpsDBHistory).where(OpsDBHistory.row_key == str(bli_model.id)).order_by(OpsDBHistory.id.desc())
         )
         .scalars()
         .all()
@@ -746,9 +740,7 @@ def test_create_model_for_aa_agreement(db_for_aas):
     # Check history records
     history_records = (
         db_for_aas.execute(
-            select(OpsDBHistory)
-            .where(OpsDBHistory.row_key == str(bli_model.id))
-            .order_by(OpsDBHistory.created_on.desc())
+            select(OpsDBHistory).where(OpsDBHistory.row_key == str(bli_model.id)).order_by(OpsDBHistory.id.desc())
         )
         .scalars()
         .all()

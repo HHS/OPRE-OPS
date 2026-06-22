@@ -16,7 +16,13 @@ const AgreementTabs = () => {
     const { search } = useLocation();
     const changeRequestsTotal = useChangeRequestTotal();
     const userRoles = useSelector((state) => state.auth?.activeUser?.roles) ?? [];
-    const displayReviewTab = !userRoles.every((role) => role?.name === USER_ROLES.VIEWER_EDITOR);
+    // Only display the "For Review" tab if the user has the REVIEWER_APPROVER, SUPER_USER, or BUDGET_TEAM role
+    const displayReviewTab = userRoles.some(
+        (role) =>
+            role?.name === USER_ROLES.REVIEWER_APPROVER ||
+            role?.name === USER_ROLES.SUPER_USER ||
+            role?.name === USER_ROLES.BUDGET_TEAM
+    );
 
     const paths = [
         {
@@ -57,7 +63,8 @@ const AgreementTabs = () => {
                     </Link>
                     {hasChangeRequestsOnReviewTab && (
                         <span
-                            className={`margin-left-neg-1 position-absolute bottom-2 ${tabStyles.notificationCircle}`}
+                            className={`position-absolute bottom-2 ${tabStyles.notificationCircle}`}
+                            style={{ marginLeft: "2px" }}
                         >
                             {changeRequestsTotal}
                         </span>

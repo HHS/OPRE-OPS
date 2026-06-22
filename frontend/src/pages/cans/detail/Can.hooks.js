@@ -1,6 +1,6 @@
 import React from "react";
 import { useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import { useGetCanByIdQuery, useGetCanFundingQuery } from "../../../api/opsAPI";
 import { USER_ROLES } from "../../../components/Users/User.constants";
 import { NO_DATA } from "../../../constants";
@@ -15,12 +15,14 @@ export default function useCan() {
      */
 
     const urlPathParams = useParams();
+    const location = useLocation();
+
     const activeUser = useSelector((state) => state.auth.activeUser);
     const userRoles = activeUser?.roles ?? [];
     const isBudgetTeam = userRoles?.some((role) => role?.name === USER_ROLES.BUDGET_TEAM);
 
     const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(getCurrentFiscalYear());
-    const fiscalYear = Number(selectedFiscalYear);
+    const fiscalYear = selectedFiscalYear === "All" ? null : Number(selectedFiscalYear);
     const canId = parseInt(urlPathParams.id ?? "-1");
     const initialModalProps = {
         heading: "",
@@ -34,6 +36,15 @@ export default function useCan() {
         detailPage: false,
         fundingPage: false
     });
+
+    React.useEffect(() => {
+        setIsEditMode((prev) => {
+            if (prev.detailPage || prev.fundingPage) {
+                return { detailPage: false, fundingPage: false };
+            }
+            return prev;
+        });
+    }, [location.pathname]);
 
     /** @type {{data?: CAN | undefined, isLoading: boolean, isFetching: boolean}} */
     const {
@@ -49,21 +60,23 @@ export default function useCan() {
         data: CANFunding,
         isLoading: CANFundingLoading,
         isFetching: isCANFundingFetching
-    } = useGetCanFundingQuery({ id: canId, fiscalYear: fiscalYear }, { refetchOnMountOrArgChange: true });
+    } = useGetCanFundingQuery({ id: canId, fiscalYear }, { refetchOnMountOrArgChange: true });
 
-    const { data: previousFYfundingSummary } = useGetCanFundingQuery({
-        id: canId,
-        fiscalYear: fiscalYear - 1
-    });
+    const { data: previousFYfundingSummary } = useGetCanFundingQuery(
+        { id: canId, fiscalYear: fiscalYear ? fiscalYear - 1 : null },
+        { skip: !fiscalYear }
+    );
 
     const budgetLineItemsByFiscalYear = React.useMemo(() => {
-        if (!fiscalYear || !can) return [];
+        if (!can) return [];
+        if (!fiscalYear) return can?.budget_line_items ?? [];
 
         return can?.budget_line_items?.filter((bli) => bli.fiscal_year === fiscalYear) ?? [];
     }, [can, fiscalYear]);
 
     const fundingReceivedByFiscalYear = React.useMemo(() => {
-        if (!fiscalYear || !can) return [];
+        if (!can) return [];
+        if (!fiscalYear) return can?.funding_received ?? [];
 
         return can?.funding_received?.filter((fr) => fr.fiscal_year === fiscalYear) ?? [];
     }, [can, fiscalYear]);

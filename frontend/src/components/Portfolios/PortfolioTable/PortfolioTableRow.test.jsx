@@ -119,7 +119,7 @@ describe("PortfolioTableRow", () => {
             />
         );
 
-        // CurrencyFormat displays $0 for zero available funding (getDecimalScale returns 0 for 0 values)
+        // formatCurrency renders "$0" (no decimals) when the value is exactly 0
         expect(screen.getByText("$0")).toBeInTheDocument();
     });
 

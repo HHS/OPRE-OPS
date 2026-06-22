@@ -284,6 +284,56 @@ describe("AgreementBudgetLines", () => {
         expect(screen.getByText("Budget Lines")).toBeInTheDocument();
     });
 
+    describe("Read-Only User Permissions", () => {
+        const readOnlyStore = configureStore({
+            reducer: {
+                auth: () => ({
+                    activeUser: {
+                        id: 1,
+                        full_name: "Read Only User",
+                        email: "readonly@example.com",
+                        roles: [{ name: USER_ROLES.READ_ONLY }]
+                    }
+                })
+            }
+        });
+
+        const renderReadOnly = (props = {}) =>
+            render(
+                <Provider store={readOnlyStore}>
+                    <Router
+                        location={history.location}
+                        navigator={history}
+                    >
+                        <AgreementBudgetLines
+                            {...defaultProps}
+                            {...props}
+                        />
+                    </Router>
+                </Provider>
+            );
+
+        test("does not show the Edit button for a read-only user on an editable agreement", () => {
+            renderReadOnly();
+
+            expect(screen.queryByRole("button", { name: /^edit$/i })).not.toBeInTheDocument();
+        });
+
+        test("does not show the Request BL Status Change button for a read-only user", () => {
+            renderReadOnly({ canUserEditBudgetLines: true });
+
+            expect(screen.queryByText("Request BL Status Change")).not.toBeInTheDocument();
+        });
+
+        test("does not show the disabled Request BL Status Change button for a read-only user on a non-editable agreement", () => {
+            renderReadOnly({
+                agreement: { ...mockAgreement, _meta: { isEditable: false } }
+            });
+
+            expect(screen.queryByText("Request BL Status Change")).not.toBeInTheDocument();
+        });
+    });
+
     test("super user permissions override agreement restrictions", () => {
         // Create a test store with super user
         const testStore = configureStore({

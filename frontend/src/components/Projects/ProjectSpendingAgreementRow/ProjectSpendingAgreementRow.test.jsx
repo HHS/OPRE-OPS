@@ -1,8 +1,14 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { BrowserRouter } from "react-router-dom";
 import ProjectSpendingAgreementRow from "./ProjectSpendingAgreementRow";
+
+vi.mock("../../../api/opsAPI", () => ({
+    useGetAgreementSpendingByIdQuery: vi.fn()
+}));
+
+import { useGetAgreementSpendingByIdQuery } from "../../../api/opsAPI";
 
 const mockAgreement = {
     id: 1,
@@ -22,13 +28,14 @@ const mockAgreement = {
     budget_line_items: []
 };
 
-const renderRow = (fyTotal = null) =>
+const renderRow = ({ fyTotal = null, fiscalYear = 2043 } = {}) =>
     render(
         <BrowserRouter>
             <table>
                 <tbody>
                     <ProjectSpendingAgreementRow
                         agreement={mockAgreement}
+                        fiscalYear={fiscalYear}
                         fyTotal={fyTotal}
                     />
                 </tbody>
@@ -37,6 +44,10 @@ const renderRow = (fyTotal = null) =>
     );
 
 describe("ProjectSpendingAgreementRow", () => {
+    beforeEach(() => {
+        useGetAgreementSpendingByIdQuery.mockReturnValue({ data: undefined });
+    });
+
     it("renders agreement name linked to agreement detail", () => {
         renderRow();
         const link = screen.getByRole("link", { name: /African American Child/i });
@@ -60,16 +71,44 @@ describe("ProjectSpendingAgreementRow", () => {
         expect(screen.getByText("$3,298,795,497.00")).toBeInTheDocument();
     });
 
-    it("shows -- for FY total when fyTotal is null", () => {
-        renderRow(null);
+    it("shows -- for FY total when fyTotal is null and endpoint has no data", () => {
+        renderRow({ fyTotal: null });
         const cells = screen.getAllByRole("cell");
         expect(cells[4]).toHaveTextContent("TBD");
     });
 
-    it("shows currency when fyTotal is provided", () => {
-        renderRow(151217218);
+    it("shows currency when fyTotal prop is provided and endpoint has no data", () => {
+        renderRow({ fyTotal: 151217218 });
         const cells = screen.getAllByRole("cell");
         expect(cells[4]).toHaveTextContent("$151,217,218.00");
+    });
+
+    it("prefers FY total from the endpoint over the fyTotal prop", () => {
+        useGetAgreementSpendingByIdQuery.mockReturnValue({
+            data: { fy_total: { 2043: "5000.00" } }
+        });
+        renderRow({ fyTotal: 151217218, fiscalYear: 2043 });
+        const cells = screen.getAllByRole("cell");
+        expect(cells[4]).toHaveTextContent("$5,000.00");
+        expect(cells[4]).not.toHaveTextContent("$151,217,218.00");
+    });
+
+    it("falls back to fyTotal prop when endpoint has no entry for the selected FY", () => {
+        useGetAgreementSpendingByIdQuery.mockReturnValue({
+            data: { fy_total: { 2044: "5000.00" } }
+        });
+        renderRow({ fyTotal: 151217218, fiscalYear: 2043 });
+        const cells = screen.getAllByRole("cell");
+        expect(cells[4]).toHaveTextContent("$151,217,218.00");
+    });
+
+    it("coerces Decimal-string values from the endpoint to formatted currency", () => {
+        useGetAgreementSpendingByIdQuery.mockReturnValue({
+            data: { fy_total: { 2043: "1234567.00" } }
+        });
+        renderRow({ fyTotal: null, fiscalYear: 2043 });
+        const cells = screen.getAllByRole("cell");
+        expect(cells[4]).toHaveTextContent("$1,234,567.00");
     });
 
     it("expands to show detail fields on chevron click", async () => {

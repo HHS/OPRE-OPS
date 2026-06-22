@@ -1,10 +1,9 @@
-import CurrencyFormat from "react-currency-format";
+import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import { Link } from "react-router-dom";
 import TableRowExpandable from "../../UI/TableRowExpandable/TableRowExpandable";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import { expandedRowBGColor } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { NO_DATA } from "../../../constants";
-import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { formatProjectDate } from "../../../pages/projects/list/ProjectsList.helpers";
 
@@ -58,36 +57,8 @@ const ProjectTableRow = ({ project, selectedFiscalYear }) => {
             <td>{convertCodeForDisplay("project", project.project_type)}</td>
             <td>{formatProjectDate(project.start_date)}</td>
             <td>{formatProjectDate(project.end_date)}</td>
-            <td>
-                {fyTotal !== null ? (
-                    <CurrencyFormat
-                        value={fyTotal}
-                        displayType={"text"}
-                        thousandSeparator={true}
-                        prefix={"$"}
-                        decimalScale={getDecimalScale(fyTotal)}
-                        fixedDecimalScale={true}
-                        renderText={(value) => value}
-                    />
-                ) : (
-                    NO_DATA
-                )}
-            </td>
-            <td>
-                {projectTotal !== null && projectTotal > 0 ? (
-                    <CurrencyFormat
-                        value={projectTotal}
-                        displayType={"text"}
-                        thousandSeparator={true}
-                        prefix={"$"}
-                        decimalScale={getDecimalScale(projectTotal)}
-                        fixedDecimalScale={true}
-                        renderText={(value) => value}
-                    />
-                ) : (
-                    NO_DATA
-                )}
-            </td>
+            <td>{fyTotal !== null ? formatCurrency(fyTotal) : NO_DATA}</td>
+            <td>{projectTotal !== null && projectTotal > 0 ? formatCurrency(projectTotal) : NO_DATA}</td>
         </>
     );
 

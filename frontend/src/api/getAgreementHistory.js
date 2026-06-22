@@ -7,5 +7,10 @@ export const getAgreementHistoryByIdAndPage = async (id, page) => {
     const api_version = ApplicationContext.get().helpers().backEndConfig.apiVersion;
     const endpoint = `/api/${api_version}/agreements/${id}/history/?limit=${limit}&offset=${offset}`;
     const responseData = await ApplicationContext.get().helpers().callBackend(endpoint, "get");
-    return responseData;
+    return {
+        data: responseData.data,
+        count: responseData.count,
+        limit: responseData.limit,
+        offset: responseData.offset
+    };
 };

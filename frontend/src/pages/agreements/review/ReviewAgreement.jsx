@@ -21,6 +21,7 @@ import {
     findPeriodEnd,
     findPeriodStart
 } from "../../../helpers/servicesComponent.helpers";
+import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { actionOptions } from "./ReviewAgreement.constants";
 import useReviewAgreement from "./ReviewAgreement.hooks";
@@ -90,6 +91,12 @@ export const ReviewAgreement = () => {
             }
         }
     }, [isLoadingAgreement, errorAgreement, agreement, canUserEditAgreement, navigate]);
+
+    React.useEffect(() => {
+        if (isAlertActive && Object.entries(pageErrors).length > 0) {
+            scrollToTop();
+        }
+    }, [isAlertActive, pageErrors]);
 
     if (isLoadingAgreement) {
         return (
@@ -314,13 +321,15 @@ export const ReviewAgreement = () => {
                 >
                     Edit
                 </button>
-                {!isSubmissionReady || !(agreementValidationResults && agreementValidationResults.isValid()) ? (
+                {!isSubmissionReady ||
+                (agreementValidationResults && !agreementValidationResults.isValid()) ||
+                hasBLIError ? (
                     <Tooltip
                         key={isSubmissionReady ? "submission-ready" : "submission-not-ready"}
                         label={
                             !isSubmissionReady
-                                ? "In order to send to approval, select a status change and budge line(s)"
-                                : "In order to send to approval, click edit to resolve any errors"
+                                ? "In order to send to approval, select a status change and budget line(s)"
+                                : "In order to send this agreement to approval, click edit to update the required information."
                         }
                         position="top"
                     >

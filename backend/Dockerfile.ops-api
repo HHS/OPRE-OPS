@@ -1,4 +1,4 @@
-FROM python:3.14.2-alpine3.22 AS deps
+FROM python:3.14.5-alpine3.23 AS deps
 
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH=/home/app
@@ -9,7 +9,8 @@ COPY ./ops_api/Pipfile ./ops_api/Pipfile.lock /home/app/
 WORKDIR /home/app
 
 # hadolint ignore=DL3018
-RUN python -m venv .venv && \
+RUN apk update && apk upgrade --no-cache && \
+   python -m venv .venv && \
    .venv/bin/pip install --upgrade pip && \
    apk add --update --no-cache alpine-sdk && \
    apk add --update --no-cache curl && \

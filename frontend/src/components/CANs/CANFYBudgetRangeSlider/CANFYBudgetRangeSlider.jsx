@@ -1,6 +1,5 @@
 import React from "react";
 import DoubleRangeSlider from "../../UI/DoubleRangeSlider";
-import CurrencyFormat from "react-currency-format";
 /**
  * @typedef {Object} CANFYBudgetRangeSliderProps
  * @property {[number, number]} fyBudgetRange - The min and max of the fiscal year budget range
@@ -91,21 +90,15 @@ const CANFYBudgetRangeSlider = ({
 
             <div className="margin-top-1 display-flex flex-justify-center font-12px padding-right-10">
                 <span>
-                    <CurrencyFormat
-                        value={minValue}
-                        decimalScale={2}
-                        thousandSeparator={true}
-                        displayType="text"
-                        prefix={"$ "}
-                    />
+                    {`$ ${new Intl.NumberFormat("en-US", {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0
+                    }).format(minValue)}`}
                     <span> to </span>
-                    <CurrencyFormat
-                        value={maxValue}
-                        decimalScale={2}
-                        thousandSeparator={true}
-                        displayType="text"
-                        prefix={"$ "}
-                    />
+                    {`$ ${new Intl.NumberFormat("en-US", {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0
+                    }).format(maxValue)}`}
                 </span>
             </div>
         </>

@@ -13,11 +13,64 @@ import { NO_DATA } from "../../../constants.js";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper.js";
 import { getCurrentFiscalYear } from "../../../helpers/utils.js";
 import useAlert from "../../../hooks/use-alert.hooks";
+import useNavigationBlocker from "../../../hooks/useNavigationBlocker.hooks";
 import suite from "./CanFundingSuite.js";
 
 /**
  * @typedef {import("../../../types/CANTypes").FundingReceived} FundingReceived
  */
+
+/**
+ * @typedef {{ fiscal_year: number, can_id: number, budget: number | string }} BudgetPayload
+ * @typedef {{ fiscal_year: number, can_id: number, funding: number | string, notes?: string }} ReceivedPayload
+ *
+ * @typedef {
+ *   | { kind: "budget-add", payload: BudgetPayload }
+ *   | { kind: "budget-update", id: number, payload: BudgetPayload }
+ *   | { kind: "received-add", tempId: string, payload: ReceivedPayload }
+ *   | { kind: "received-update", id: number, payload: ReceivedPayload }
+ *   | { kind: "received-update-temp", tempId: string, payload: ReceivedPayload }
+ *   | { kind: "received-delete", id: number }
+ *   | { kind: "received-delete-temp", tempId: string }
+ * } PendingAction
+ */
+
+/**
+ * Append an action to the pending-actions queue, collapsing redundant entries.
+ *
+ * Collapsing rules keep the queue semantically minimal without changing the
+ * user-visible order of the remaining actions:
+ *   - a new budget intent supersedes any previous budget intent
+ *   - re-editing the same persisted received row supersedes the prior update
+ *   - editing a still-staged received row (tempId) merges into its received-add
+ *   - deleting a persisted row drops any pending update for that row first
+ *   - deleting a staged-only row drops its received-add entirely
+ *
+ * @param {PendingAction[]} queue
+ * @param {PendingAction} action
+ * @returns {PendingAction[]}
+ */
+export const mergePendingAction = (queue, action) => {
+    switch (action.kind) {
+        case "budget-add":
+        case "budget-update":
+            return [...queue.filter((a) => a.kind !== "budget-add" && a.kind !== "budget-update"), action];
+        case "received-add":
+            return [...queue, action];
+        case "received-update":
+            return [...queue.filter((a) => !(a.kind === "received-update" && a.id === action.id)), action];
+        case "received-update-temp":
+            return queue.map((a) =>
+                a.kind === "received-add" && a.tempId === action.tempId ? { ...a, payload: action.payload } : a
+            );
+        case "received-delete":
+            return [...queue.filter((a) => !(a.kind === "received-update" && a.id === action.id)), action];
+        case "received-delete-temp":
+            return queue.filter((a) => !(a.kind === "received-add" && a.tempId === action.tempId));
+        default:
+            return queue;
+    }
+};
 
 /**
  * @description - Custom hook for the CAN Funding component.
@@ -54,6 +107,7 @@ export default function useCanFunding(
     const [totalReceived, setTotalReceived] = React.useState(receivedFunding || 0);
     const [enteredFundingReceived, setEnteredFundingReceived] = React.useState([...fundingReceived]);
     const [deletedFundingReceivedIds, setDeletedFundingReceivedIds] = React.useState([]);
+    const [pendingActions, setPendingActions] = React.useState(/** @type {PendingAction[]} */ ([]));
     const [budgetEnteredAmount, setBudgetEnteredAmount] = React.useState(totalFunding);
     const [fundingReceivedEnteredAmount, setFundingReceivedEnteredAmount] = React.useState("");
     const [modalProps, setModalProps] = React.useState({
@@ -80,6 +134,14 @@ export default function useCanFunding(
     };
 
     const [fundingReceivedForm, setFundingReceivedForm] = React.useState(initialFundingReceivedForm);
+    const [, setValidationVersion] = React.useState(0);
+
+    React.useEffect(() => {
+        const unsubscribe = suite.subscribe(() => {
+            setValidationVersion((v) => v + 1);
+        });
+        return unsubscribe;
+    }, []);
 
     const [addCanFundingBudget] = useAddCanFundingBudgetsMutation();
     const [updateCanFundingBudget] = useUpdateCanFundingBudgetMutation();
@@ -91,17 +153,45 @@ export default function useCanFunding(
         useSelector((state) => state.auth?.activeUser?.display_name ?? state.auth?.activeUser?.full_name) || "";
 
     React.useEffect(() => {
-        setTotalReceived(receivedFunding);
-    }, [receivedFunding]);
+        if (!isEditMode) {
+            setTotalReceived(receivedFunding);
+        }
+    }, [receivedFunding, isEditMode]);
 
     React.useEffect(() => {
-        setBudgetForm((b) => ({ ...b, submittedAmount: totalFunding }));
-        setBudgetEnteredAmount(totalFunding);
-    }, [totalFunding]);
+        if (!isEditMode) {
+            setBudgetForm((b) => ({ ...b, submittedAmount: totalFunding }));
+            setBudgetEnteredAmount(totalFunding);
+        }
+    }, [totalFunding, isEditMode]);
 
     React.useEffect(() => {
-        setEnteredFundingReceived([...fundingReceived]);
-    }, [fundingReceived]);
+        if (!isEditMode) {
+            setEnteredFundingReceived([...fundingReceived]);
+        }
+    }, [fundingReceived, isEditMode]);
+
+    const hasChanged = React.useMemo(() => {
+        if (!isEditMode) return false;
+        const budgetChanged = +budgetEnteredAmount !== +totalFunding;
+        const budgetSubmitted = budgetForm.isSubmitted;
+        const fundingReceivedInProgress =
+            fundingReceivedEnteredAmount !== "" || fundingReceivedForm.enteredNotes !== "";
+        const hasNewFundingReceived = enteredFundingReceived.some((e) => "tempId" in e);
+        const hasDeletedFunding = deletedFundingReceivedIds.length > 0;
+        return (
+            budgetChanged || budgetSubmitted || fundingReceivedInProgress || hasNewFundingReceived || hasDeletedFunding
+        );
+    }, [
+        isEditMode,
+        budgetEnteredAmount,
+        totalFunding,
+        budgetForm.isSubmitted,
+        fundingReceivedEnteredAmount,
+        fundingReceivedForm.enteredNotes,
+        enteredFundingReceived,
+        deletedFundingReceivedIds
+    ]);
 
     /** @param {string} value */
     const handleEnteredBudgetAmount = (value) => {
@@ -131,119 +221,100 @@ export default function useCanFunding(
         warning: "warning"
     });
 
+    const saveChanges = React.useCallback(async () => {
+        for (const action of pendingActions) {
+            switch (action.kind) {
+                case "budget-add":
+                    if (+action.payload.budget >= 0) {
+                        await addCanFundingBudget({ data: action.payload }).unwrap();
+                    }
+                    break;
+                case "budget-update":
+                    if (+action.payload.budget >= 0) {
+                        await updateCanFundingBudget({ id: action.id, data: action.payload }).unwrap();
+                    }
+                    break;
+                case "received-add":
+                    await addCanFundingReceived({ data: action.payload }).unwrap();
+                    break;
+                case "received-update":
+                    await updateCanFundingReceived({ id: action.id, data: action.payload }).unwrap();
+                    break;
+                case "received-delete":
+                    try {
+                        await deleteCanFundingReceived(action.id).unwrap();
+                    } catch (err) {
+                        // RTK Query's .unwrap() treats 2xx with no JSON body as
+                        // an error (originalStatus 200). Only delete returns an
+                        // empty 200, so we suppress it here rather than globally.
+                        if (err?.originalStatus === 200) continue;
+                        throw err;
+                    }
+                    break;
+            }
+        }
+
+        setPendingActions([]);
+        setAlert({
+            type: "success",
+            heading: "CAN Updated",
+            message: `The CAN ${canNumber} has been successfully updated.`
+        });
+    }, [
+        pendingActions,
+        canNumber,
+        updateCanFundingBudget,
+        addCanFundingBudget,
+        addCanFundingReceived,
+        updateCanFundingReceived,
+        deleteCanFundingReceived,
+        setAlert
+    ]);
+
+    const onFundingExit = React.useCallback(() => {
+        toggleEditMode();
+        resetWelcomeModal();
+    }, [toggleEditMode, resetWelcomeModal]);
+
+    const { showBlockerModal, setShowBlockerModal, blockerModalProps, setIsCancelling } = useNavigationBlocker({
+        hasChanged,
+        saveChanges,
+        onExit: onFundingExit,
+        onSaveError: () => {
+            setAlert({
+                type: "error",
+                heading: "Error",
+                message: "An error occurred while updating the CAN."
+            });
+        }
+    });
+
+    const wasEditModeRef = React.useRef(isEditMode);
+    React.useEffect(() => {
+        if (!wasEditModeRef.current && isEditMode) {
+            setIsCancelling(false);
+        }
+        wasEditModeRef.current = isEditMode;
+    }, [isEditMode, setIsCancelling]);
+
     /** @param {React.FormEvent<HTMLFormElement>} e */
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const payload = {
-            fiscal_year: fiscalYear,
-            can_id: canId,
-            budget: budgetForm.submittedAmount
-        };
-
-        const handleFundingBudget = async () => {
-            if (+payload.budget >= 0) {
-                if (currentFiscalYearFundingId) {
-                    // PATCH for existing CAN Funding
-                    await updateCanFundingBudget({
-                        id: currentFiscalYearFundingId,
-                        data: payload
-                    }).unwrap();
-                    console.log("CAN Funding Updated");
-                } else {
-                    // POST for new CAN Funding
-                    await addCanFundingBudget({
-                        data: payload
-                    }).unwrap();
-                    console.log("CAN Funding Added");
-                }
-            }
-        };
-
-        const handleFundingReceived = async () => {
-            /** @type {Promise<any>[]} */
-            const fundingPromise = [];
-            enteredFundingReceived.map((fundingItem) => {
-                //POST
-                if (fundingItem.id === NO_DATA && "tempId" in fundingItem) {
-                    fundingPromise.push(
-                        addCanFundingReceived({
-                            data: {
-                                fiscal_year: fiscalYear,
-                                can_id: canId,
-                                funding: fundingItem.funding,
-                                notes: fundingItem.notes
-                            }
-                        })
-                    );
-                } else if (fundingItem.id !== NO_DATA && "tempId" in fundingItem) {
-                    //PATCH
-                    fundingPromise.push(
-                        updateCanFundingReceived({
-                            id: fundingItem.id,
-                            data: {
-                                fiscal_year: fiscalYear,
-                                can_id: canId,
-                                funding: fundingItem.funding,
-                                notes: fundingItem.notes
-                            }
-                        })
-                    );
-                }
-            });
-            await Promise.all(fundingPromise);
-        };
-
-        const handleDeleteFundingReceived = async () => {
-            /** @type {Promise<any>[]} */
-            const deletePromise = [];
-            deletedFundingReceivedIds.map((id) => {
-                deletePromise.push(deleteCanFundingReceived(id));
-            });
-            await Promise.all(deletePromise);
-        };
-
         try {
-            const operations = [
-                { name: "handleFundingBudget", fn: handleFundingBudget },
-                { name: "handleFundingReceived", fn: handleFundingReceived },
-                { name: "handleDeleteFundingReceived", fn: handleDeleteFundingReceived }
-            ];
-
-            const results = await Promise.allSettled(operations.map((operation) => operation.fn()));
-            const failures = results
-                .map((result, index) =>
-                    result.status === "rejected" ? { operation: operations[index].name, reason: result.reason } : null
-                )
-                .filter(Boolean);
-
-            if (failures.length > 0) {
-                console.error("Failed CAN funding operations:", failures);
-                throw failures[0].reason || new Error("CAN funding update failed");
-            }
-
-            setAlert({
-                type: "success",
-                heading: "CAN Updated",
-                message: `The CAN ${canNumber} has been successfully updated.`
-            });
+            await saveChanges();
+            cleanUp();
         } catch (error) {
             console.error("Error Updating CAN", error);
             setAlert({
                 type: "error",
                 heading: "Error",
-                message: "An error occurred while updating the CAN.",
-                redirectUrl: "/error"
+                message: "An error occurred while updating the CAN."
             });
         }
-
-        cleanUp();
     };
 
-    /** @param {React.FormEvent<HTMLFormElement>} e */
-    const handleAddBudget = (e) => {
-        e.preventDefault();
-
+    const handleAddBudget = () => {
         const nextForm = {
             ...budgetForm,
             submittedAmount: budgetEnteredAmount,
@@ -251,6 +322,21 @@ export default function useCanFunding(
         };
         setBudgetForm(nextForm);
         setBudgetEnteredAmount("");
+        setPendingActions((q) =>
+            mergePendingAction(
+                q,
+                currentFiscalYearFundingId
+                    ? {
+                          kind: "budget-update",
+                          id: currentFiscalYearFundingId,
+                          payload: { fiscal_year: fiscalYear, can_id: canId, budget: budgetEnteredAmount }
+                      }
+                    : {
+                          kind: "budget-add",
+                          payload: { fiscal_year: fiscalYear, can_id: canId, budget: budgetEnteredAmount }
+                      }
+            )
+        );
         setAlert({
             type: "success",
             heading: "FY Budget Updated",
@@ -258,10 +344,7 @@ export default function useCanFunding(
         });
     };
 
-    /** @param {React.FormEvent<HTMLFormElement>} e */
-    const handleAddFundingReceived = (e) => {
-        e.preventDefault();
-
+    const handleAddFundingReceived = () => {
         // Update total received first using the functional update pattern
 
         // update the table data
@@ -277,9 +360,32 @@ export default function useCanFunding(
             fiscal_year: fiscalYear
         };
 
+        const receivedPayload = {
+            fiscal_year: fiscalYear,
+            can_id: canId,
+            funding: fundingReceivedEnteredAmount,
+            notes: fundingReceivedForm.enteredNotes
+        };
+
         // Check if we are editing an existing funding received
         if (fundingReceivedForm.isEditing) {
             editFundingReceived(newFundingReceived);
+            setPendingActions((q) =>
+                mergePendingAction(
+                    q,
+                    newFundingReceived.id === NO_DATA
+                        ? {
+                              kind: "received-update-temp",
+                              tempId: newFundingReceived.tempId,
+                              payload: receivedPayload
+                          }
+                        : {
+                              kind: "received-update",
+                              id: /** @type {number} */ (/** @type {unknown} */ (newFundingReceived.id)),
+                              payload: receivedPayload
+                          }
+                )
+            );
             setAlert({
                 type: "success",
                 heading: "Funding Received Updated",
@@ -289,6 +395,13 @@ export default function useCanFunding(
             // Add the new funding received
             setTotalReceived((currentTotal) => currentTotal + +fundingReceivedEnteredAmount);
             setEnteredFundingReceived([...enteredFundingReceived, newFundingReceived]);
+            setPendingActions((q) =>
+                mergePendingAction(q, {
+                    kind: "received-add",
+                    tempId: newFundingReceived.tempId,
+                    payload: receivedPayload
+                })
+            );
             setAlert({
                 type: "success",
                 heading: "Funding Received Added",
@@ -380,6 +493,19 @@ export default function useCanFunding(
                 if (matchingFundingReceived?.id !== NO_DATA) {
                     const newDeletedFundingReceivedIds = [...deletedFundingReceivedIds, fundingReceivedId];
                     setDeletedFundingReceivedIds(newDeletedFundingReceivedIds);
+                    setPendingActions((q) =>
+                        mergePendingAction(q, {
+                            kind: "received-delete",
+                            id: /** @type {number} */ (matchingFundingReceived?.id)
+                        })
+                    );
+                } else if (matchingFundingReceived?.tempId) {
+                    setPendingActions((q) =>
+                        mergePendingAction(q, {
+                            kind: "received-delete-temp",
+                            tempId: matchingFundingReceived.tempId
+                        })
+                    );
                 }
                 setTotalReceived((currentTotal) => currentTotal - +(matchingFundingReceived?.funding ?? 0));
                 setAlert({
@@ -398,6 +524,7 @@ export default function useCanFunding(
             actionButtonText: "Cancel Edits",
             secondaryButtonText: "Continue Editing",
             handleConfirm: () => {
+                setIsCancelling(true);
                 setTotalReceived(receivedFunding || 0);
                 cleanUp();
             }
@@ -405,8 +532,10 @@ export default function useCanFunding(
     };
 
     const cleanUp = () => {
+        setIsCancelling(true);
         setDeletedFundingReceivedIds([]);
         setEnteredFundingReceived([...fundingReceived]);
+        setPendingActions([]);
         setBudgetForm({ submittedAmount: totalFunding, isSubmitted: false });
         setBudgetEnteredAmount(totalFunding);
         setShowModal(false);
@@ -428,10 +557,10 @@ export default function useCanFunding(
      * Executes validation for a specific form field
      * @param {string} name - The name of the form field to validate
      * @param {number|string} value - The value to validate for the given field
-     * @returns {void}
+     * @returns {import("vest").SuiteResult<string, string>} Vest suite result, exposing `hasErrors(name)` and `getErrors(name)`
      */
     const runValidate = (name, value) => {
-        suite.run(
+        return suite.run(
             {
                 remainingAmount: +budgetForm.submittedAmount - totalReceived + +fundingReceivedForm.originalAmount,
                 receivedFunding,
@@ -439,6 +568,15 @@ export default function useCanFunding(
             },
             name
         );
+    };
+
+    /**
+     * Clears any existing validation error for a single field without re-running validation.
+     * @param {string} name - The name of the form field whose error should be cleared
+     * @returns {void}
+     */
+    const clearValidationError = (name) => {
+        suite.resetField(name);
     };
 
     /**
@@ -479,6 +617,7 @@ export default function useCanFunding(
         handleSubmit,
         modalProps,
         runValidate,
+        clearValidationError,
         res,
         cn,
         setShowModal,
@@ -496,6 +635,9 @@ export default function useCanFunding(
         deleteFundingReceived,
         deletedFundingReceivedIds,
         budgetEnteredAmount,
-        fundingReceivedEnteredAmount
+        fundingReceivedEnteredAmount,
+        showBlockerModal,
+        setShowBlockerModal,
+        blockerModalProps
     };
 }

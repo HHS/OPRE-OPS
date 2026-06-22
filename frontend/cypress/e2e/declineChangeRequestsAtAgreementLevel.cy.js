@@ -19,14 +19,15 @@ const waitForAgreementHistory = (agreementId, bearer_token, startedAt = Date.now
             failOnStatusCode: false
         })
         .then((response) => {
-            const hasEntries = response.status === 200 && Array.isArray(response.body) && response.body.length > 0;
+            const hasEntries =
+                response.status === 200 && Array.isArray(response.body.data) && response.body.data.length > 0;
             if (hasEntries) {
                 return;
             }
             const elapsedMs = Date.now() - startedAt;
             if (elapsedMs >= HISTORY_TIMEOUT_MS) {
                 expect(response.status, "agreement history status").to.eq(200);
-                expect(response.body, "agreement history entries").to.be.an("array").and.have.length.greaterThan(0);
+                expect(response.body.data, "agreement history entries").to.be.an("array").and.have.length.greaterThan(0);
                 return;
             }
             cy.wait(HISTORY_POLL_INTERVAL_MS);

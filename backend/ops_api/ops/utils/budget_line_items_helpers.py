@@ -11,6 +11,8 @@ from models import (
     BudgetLineItemStatus,
     Division,
     Portfolio,
+    ProcurementTrackerStatus,
+    ProcurementTrackerStepType,
 )
 from ops_api.ops.services.ops_service import AuthorizationError, ResourceNotFoundError
 from ops_api.ops.utils.agreements_helpers import associated_with_agreement
@@ -98,6 +100,50 @@ def is_bli_editable(budget_line_item):
         editable = False
 
     return editable
+
+
+def is_pre_award_in_review(agreement):
+    """
+    Check if the agreement's pre-award approval is currently in review.
+
+    Returns True if pre-award approval has been requested and is awaiting decision.
+    Uses defensive logic: explicitly checks for terminal states (fully approved or declined),
+    and treats all other cases as "in review" when approval has been requested.
+
+    Args:
+        agreement: Agreement object to check
+
+    Returns:
+        bool: True if pre-award is in review, False otherwise
+    """
+    if not agreement or not agreement.procurement_trackers:
+        return False
+
+    # Get the active procurement tracker
+    tracker = next((t for t in agreement.procurement_trackers if t.status == ProcurementTrackerStatus.ACTIVE), None)
+    if not tracker:
+        return False
+
+    pre_award_step = next(
+        (step for step in tracker.steps if step.step_type == ProcurementTrackerStepType.PRE_AWARD), None
+    )
+
+    if not pre_award_step or not pre_award_step.pre_award_approval_requested:
+        return False
+
+    # Explicitly check for terminal states (approval process complete)
+    if (
+        pre_award_step.pre_award_approval_status == "APPROVED"
+        and pre_award_step.pre_award_requisition_approved_by is not None
+    ):
+        return False  # Fully approved - not in review
+
+    if pre_award_step.pre_award_approval_status == "DECLINED":
+        return False  # Declined - not in review
+
+    # All other cases when approval is requested: in review
+    # This includes None, "PENDING", "APPROVED" without requisition, and any unexpected values
+    return True
 
 
 def bli_associated_with_agreement(id: int) -> bool:

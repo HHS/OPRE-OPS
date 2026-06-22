@@ -178,6 +178,9 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# npm lockfile (project uses bun; bun.lock is the authoritative lockfile)
+frontend/package-lock.json
+
 # Cypress
 
 /frontend/cypress/screenshots/
@@ -264,3 +267,6 @@ docs/openapi_reports/yamllint_*
 
 *storybook.log
 storybook-static
+
+.worktrees/
+progress/

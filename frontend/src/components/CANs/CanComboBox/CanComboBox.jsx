@@ -89,7 +89,7 @@ const CanComboBox = ({
                     selectedData={selectedCan}
                     setSelectedData={handleChange}
                     defaultString={defaultString}
-                    optionText={(can) => can.display_name || can.number}
+                    optionText={(can) => (can.nick_name ? `${can.number} (${can.nick_name})` : can.number)}
                     overrideStyles={overrideStyles}
                     messages={messages}
                     isDisabled={isDisabled}

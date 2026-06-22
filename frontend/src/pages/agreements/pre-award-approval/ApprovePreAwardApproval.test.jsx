@@ -170,6 +170,19 @@ describe("ApprovePreAwardApproval", () => {
         expect(screen.getByTestId("agreement-can-review-accordion")).toBeInTheDocument();
     });
 
+    it("should display instructional text with HCAS reference", () => {
+        renderComponent();
+
+        const instructionalText = screen.getByText((content, element) => {
+            return (
+                element?.tagName.toLowerCase() === "p" &&
+                content.includes("Review the agreement details and Final Consensus Memo") &&
+                content.includes("upload the Final Consensus Memo to the HHS Consolidated Acquisition Solution (HCAS)")
+            );
+        });
+        expect(instructionalText).toBeInTheDocument();
+    });
+
     it("should show permission denied for unauthorized users", () => {
         renderComponent({ ...mockHookData, hasPermission: false });
 
@@ -228,7 +241,7 @@ describe("ApprovePreAwardApproval", () => {
 
         // Check the confirmation checkbox first
         const checkbox = screen.getByRole("checkbox", {
-            name: /I understand that approving for Pre-Award means the Requisition will be submitted/i
+            name: /I understand that approving for Pre-Award means the Requisition will be submitted by the Budget Team/i
         });
         await user.click(checkbox);
 
@@ -326,7 +339,8 @@ describe("ApprovePreAwardApproval", () => {
         expect(
             screen.getByText(/Upload Documents is coming soon! For now, please review within the OPRE preferred tool/)
         ).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: "Download document (disabled)" })).toBeDisabled();
+        // FileUploadButton with download variant - aria-label comes from buttonText prop
+        expect(screen.getByRole("button", { name: "Download File" })).toBeDisabled();
     });
 
     it("should not display submitter notes section when notes are empty", () => {
@@ -335,14 +349,24 @@ describe("ApprovePreAwardApproval", () => {
         expect(screen.queryByText("Submitter's Notes")).not.toBeInTheDocument();
     });
 
-    it("should render approval confirmation checkbox", () => {
+    it("should render approval confirmation checkbox with updated HCAS text", () => {
         renderComponent();
 
         const checkbox = screen.getByRole("checkbox", {
-            name: /I understand that approving for Pre-Award means the Requisition will be submitted/i
+            name: /I understand that approving for Pre-Award means the Requisition will be submitted by the Budget Team/i
         });
         expect(checkbox).toBeInTheDocument();
         expect(checkbox).not.toBeChecked();
+
+        // Verify the checkbox label contains the full HCAS reference text
+        const checkboxLabel = screen.getByText((content, element) => {
+            return (
+                element?.tagName.toLowerCase() === "label" &&
+                content.includes("Requisition will be submitted by the Budget Team") &&
+                content.includes("upload the Final Consensus Memo to the HHS Consolidated Acquisition Solution (HCAS)")
+            );
+        });
+        expect(checkboxLabel).toBeInTheDocument();
     });
 
     it("should disable approve button when checkbox is not checked", () => {
@@ -357,7 +381,7 @@ describe("ApprovePreAwardApproval", () => {
         renderComponent();
 
         const checkbox = screen.getByRole("checkbox", {
-            name: /I understand that approving for Pre-Award means the Requisition will be submitted/i
+            name: /I understand that approving for Pre-Award means the Requisition will be submitted by the Budget Team/i
         });
         const approveButton = screen.getByRole("button", { name: "Approve Pre-Award" });
 
@@ -372,7 +396,7 @@ describe("ApprovePreAwardApproval", () => {
         renderComponent({ ...mockHookData, approvalAlreadyProcessed: true });
 
         const checkbox = screen.getByRole("checkbox", {
-            name: /I understand that approving for Pre-Award means the Requisition will be submitted/i
+            name: /I understand that approving for Pre-Award means the Requisition will be submitted by the Budget Team/i
         });
         expect(checkbox).toBeDisabled();
     });

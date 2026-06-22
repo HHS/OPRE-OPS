@@ -6,7 +6,6 @@ import {
     useGetProjectByIdQuery,
     useGetProjectSpendingByIdQuery
 } from "../../../api/opsAPI";
-import DebugCode from "../../../components/DebugCode";
 import FiscalYear from "../../../components/UI/FiscalYear";
 import DonutGraphWithLegendCard from "../../../components/UI/Cards/DonutGraphWithLegendCard";
 import { AGREEMENT_TYPE_ORDER } from "../../../components/Agreements/AgreementSpendingCards/AgreementSpendingCards.constants";
@@ -102,9 +101,9 @@ const ProjectSpending = () => {
         return allAgreements.filter((a) => fyIds.has(a.id));
     }, [allAgreements, selectedFY, spendingData]);
 
-    // Per-agreement FY total — only derivable when exactly one agreement exists in the FY.
-    // When multiple agreements share a FY the project-level total cannot be split without
-    // a backend change to /projects/:id/spending/. Pass null to signal "unavailable".
+    // Fallback per-agreement FY total, passed to each row while the per-agreement
+    // spending query is in flight. Only populated when exactly one agreement exists
+    // in the FY (where the project-level total equals the agreement-level total).
     const fyTotals = React.useMemo(() => {
         const fyTotal = spendingData?.total_by_fiscal_year?.[selectedFY];
         if (agreementsForFY.length === 1 && fyTotal != null) {
@@ -231,15 +230,6 @@ const ProjectSpending = () => {
                         />
                     ))}
             </section>
-
-            <DebugCode
-                title="Project Spending API Response"
-                data={spendingData}
-            />
-            <DebugCode
-                title="Agreements (raw list / filtered)"
-                data={{ all: allAgreements, forFY: agreementsForFY, selectedFY }}
-            />
         </App>
     );
 };

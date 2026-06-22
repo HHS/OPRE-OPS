@@ -79,6 +79,8 @@ const baseHookState = {
     handleCancel: vi.fn(),
     handleOnChangeSelectedProcurementShop: vi.fn(),
     runValidate: vi.fn(),
+    checkUniqueOnBlur: vi.fn(),
+    uniquenessErrors: { name: [], nick_name: [] },
     isProcurementShopDisabled: false,
     disabledMessage: vi.fn(),
     fundingMethod: [],

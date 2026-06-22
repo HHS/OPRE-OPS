@@ -1,6 +1,5 @@
 import { faPen } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import CurrencyFormat from "react-currency-format";
 import CANBudgetByFYCard from "../../../components/CANs/CANBudgetByFYCard/CANBudgetByFYCard";
 import CANBudgetForm from "../../../components/CANs/CANBudgetForm";
 import CANFundingInfoCard from "../../../components/CANs/CANFundingInfoCard";
@@ -11,8 +10,10 @@ import Accordion from "../../../components/UI/Accordion";
 import ReceivedFundingCard from "../../../components/UI/Cards/BudgetCard/ReceivedFundingCard";
 import CurrencyCard from "../../../components/UI/Cards/CurrencyCard";
 import ConfirmationModal from "../../../components/UI/Modals/index.js";
+import SaveChangesAndExitModal from "../../../components/UI/Modals/SaveChangesAndExitModal";
 import RoundedBox from "../../../components/UI/RoundedBox";
 import useCanFunding from "./CanFunding.hooks.js";
+import Tooltip from "../../../components/UI/USWDS/Tooltip";
 
 /**
  * @typedef {import("../../../types/CANTypes").FundingDetails} FundingDetails
@@ -81,6 +82,7 @@ const CanFunding = ({
         handleSubmit,
         modalProps,
         runValidate,
+        clearValidationError,
         cn,
         res,
         setShowModal,
@@ -98,7 +100,10 @@ const CanFunding = ({
         deleteFundingReceived,
         deletedFundingReceivedIds,
         budgetEnteredAmount,
-        fundingReceivedEnteredAmount
+        fundingReceivedEnteredAmount,
+        showBlockerModal,
+        setShowBlockerModal,
+        blockerModalProps
     } = useCanFunding(
         canId,
         canNumber,
@@ -139,19 +144,56 @@ const CanFunding = ({
                     handleConfirm={modalProps.handleConfirm}
                 />
             )}
+            {showBlockerModal && (
+                <SaveChangesAndExitModal
+                    heading={blockerModalProps.heading}
+                    description={blockerModalProps.description}
+                    actionButtonText={blockerModalProps.actionButtonText}
+                    secondaryButtonText={blockerModalProps.secondaryButtonText}
+                    handleConfirm={blockerModalProps.handleConfirm}
+                    handleSecondary={blockerModalProps.handleSecondary}
+                    closeModal={blockerModalProps.closeModal}
+                    setShowModal={setShowBlockerModal}
+                />
+            )}
             <div className="display-flex flex-justify">
                 <h2>{!isEditMode ? "CAN Funding" : `Review FY ${fiscalYear} Funding Information`}</h2>
-                {showButton && (
+                {!showButton ? (
+                    <Tooltip
+                        label="Only data from the current fiscal year can be edited."
+                        position="bottom"
+                        className="display-inline-flex flex-align-center"
+                    >
+                        <button
+                            type="button"
+                            id="edit"
+                            className="cursor-not-allowed"
+                            style={{ cursor: "not-allowed", display: "inline-flex", alignItems: "center" }}
+                            disabled={!showButton}
+                            onClick={toggleEditMode}
+                        >
+                            <FontAwesomeIcon
+                                icon={faPen}
+                                size="2x"
+                                className="height-2 width-2 margin-right-1 text-base-light"
+                                title="edit"
+                                data-position="top"
+                            />
+                            <span className="text-base-light">Edit</span>
+                        </button>
+                    </Tooltip>
+                ) : (
                     <button
                         type="button"
                         id="edit"
                         className="hover:text-underline cursor-pointer"
+                        disabled={!showButton}
                         onClick={toggleEditMode}
                     >
                         <FontAwesomeIcon
                             icon={faPen}
                             size="2x"
-                            className="text-primary height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
+                            className="height-2 width-2 margin-right-1 text-primary cursor-pointer"
                             title="edit"
                             data-position="top"
                         />
@@ -218,14 +260,10 @@ const CanFunding = ({
                                         id="carry-forward-card"
                                     >
                                         <p className="margin-0 text-base-dark">Previous FYs Carry Forward</p>
-                                        <CurrencyFormat
-                                            value={carryForwardFunding}
-                                            displayType="text"
-                                            thousandSeparator={true}
-                                            decimalScale={2}
-                                            fixedDecimalScale={true}
-                                            prefix="$ "
-                                        />
+                                        {`$ ${new Intl.NumberFormat("en-US", {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2
+                                        }).format(carryForwardFunding)}`}
                                     </RoundedBox>
                                 )}
                                 <CANBudgetForm
@@ -239,6 +277,7 @@ const CanFunding = ({
                                     fiscalYear={fiscalYear}
                                     handleAddBudget={handleAddBudget}
                                     runValidate={runValidate}
+                                    clearValidationError={clearValidationError}
                                     setBudgetAmount={handleEnteredBudgetAmount}
                                 />
                             </div>
@@ -270,6 +309,7 @@ const CanFunding = ({
                                     cn={cn}
                                     res={res}
                                     runValidate={runValidate}
+                                    clearValidationError={clearValidationError}
                                     cancelFundingReceived={cancelFundingReceived}
                                 />
                             </div>
@@ -293,7 +333,7 @@ const CanFunding = ({
                 ) : (
                     <CANFundingReceivedTable
                         fundingReceived={enteredFundingReceived}
-                        totalFunding={totalFunding}
+                        totalFunding={isEditMode ? budgetForm.submittedAmount : totalFunding}
                         isEditMode={isEditMode}
                         populateFundingReceivedForm={populateFundingReceivedForm}
                         deleteFundingReceived={deleteFundingReceived}

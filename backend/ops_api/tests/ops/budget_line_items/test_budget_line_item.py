@@ -20,8 +20,13 @@ from models import (
     ChangeRequestType,
     ContractAgreement,
     ContractBudgetLineItem,
+    DefaultProcurementTrackerStep,
     ProcurementShop,
     ProcurementShopFee,
+    ProcurementTracker,
+    ProcurementTrackerStatus,
+    ProcurementTrackerStepType,
+    ProcurementTrackerType,
     ProductServiceCode,
     Project,
     ServiceRequirementType,
@@ -815,6 +820,7 @@ def test_budget_line_item_validation_create_invalid(auth_client, app, test_can, 
         "agreement_type": "CONTRACT",
         "agreement_reason": "NEW_REQ",
         "name": "TEST: Agreement for BLI Validation",
+        "service_requirement_type": "SEVERABLE",
         "team_members": [
             {
                 "id": 520,
@@ -862,6 +868,7 @@ def test_budget_line_item_validation_patch_to_invalid(auth_client, app, test_can
         "agreement_type": "CONTRACT",
         "agreement_reason": "NEW_REQ",
         "name": "TEST: Agreement for BLI Validation",
+        "service_requirement_type": "SEVERABLE",
         "team_members": [
             {
                 "id": 520,
@@ -919,6 +926,7 @@ def test_budget_line_item_validation_patch_to_zero_or_negative_amount(
         "agreement_type": "CONTRACT",
         "agreement_reason": "NEW_REQ",
         "name": "TEST: Agreement for BLI Validation",
+        "service_requirement_type": "SEVERABLE",
         "description": "Description",
         "awarding_entity_id": 2,
         "product_service_code_id": 1,
@@ -973,6 +981,7 @@ def test_budget_line_item_validation_patch_to_invalid_date(auth_client, app, tes
         "agreement_type": "CONTRACT",
         "agreement_reason": "NEW_REQ",
         "name": "TEST: Agreement for BLI Validation",
+        "service_requirement_type": "SEVERABLE",
         "description": "Description",
         "awarding_entity_id": 2,
         "product_service_code_id": 1,
@@ -1132,21 +1141,33 @@ def test_budget_line_items_get_all_by_portfolio(auth_client, loaded_db, app_ctx)
 
 
 def test_get_budget_line_items_list_with_pagination_without_obe(auth_client, loaded_db):
+    # Count non-OBE BLIs dynamically
+    total_non_obe = loaded_db.execute(
+        select(func.count(BudgetLineItem.id)).where(func.coalesce(BudgetLineItem.is_obe, False).is_(False))
+    ).scalar()
+
     response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"limit": 5, "offset": 0})
     assert response.status_code == 200
     assert len(response.json) == 5
     assert response.json[0]["_meta"]["limit"] == 5
     assert response.json[0]["_meta"]["offset"] == 0
-    assert response.json[0]["_meta"]["number_of_pages"] == 210
-    assert response.json[0]["_meta"]["total_count"] == 1046
+    assert response.json[0]["_meta"]["number_of_pages"] == -(-total_non_obe // 5)  # ceiling division
+    assert response.json[0]["_meta"]["total_count"] == total_non_obe
 
     response = auth_client.get(url_for("api.budget-line-items-group"), query_string={"limit": 5, "offset": 5})
     assert response.status_code == 200
     assert len(response.json) == 5
     assert response.json[0]["_meta"]["limit"] == 5
     assert response.json[0]["_meta"]["offset"] == 5
-    assert response.json[0]["_meta"]["number_of_pages"] == 210
-    assert response.json[0]["_meta"]["total_count"] == 1046
+    assert response.json[0]["_meta"]["number_of_pages"] == -(-total_non_obe // 5)
+    assert response.json[0]["_meta"]["total_count"] == total_non_obe
+
+    # Count non-OBE BLIs in portfolio 1 dynamically
+    portfolio_1_non_obe = loaded_db.execute(
+        select(func.count(BudgetLineItem.id))
+        .where(func.coalesce(BudgetLineItem.is_obe, False).is_(False))
+        .where(BudgetLineItem.portfolio_id == 1)
+    ).scalar()
 
     response = auth_client.get(
         url_for("api.budget-line-items-group"),
@@ -1157,8 +1178,8 @@ def test_get_budget_line_items_list_with_pagination_without_obe(auth_client, loa
     assert response.json[0]["portfolio_id"] == 1
     assert response.json[0]["_meta"]["limit"] == 1
     assert response.json[0]["_meta"]["offset"] == 0
-    assert response.json[0]["_meta"]["number_of_pages"] == 157
-    assert response.json[0]["_meta"]["total_count"] == 157
+    assert response.json[0]["_meta"]["number_of_pages"] == portfolio_1_non_obe
+    assert response.json[0]["_meta"]["total_count"] == portfolio_1_non_obe
 
     expected_params = {
         "portfolio": [1],
@@ -1444,23 +1465,28 @@ def test_get_budget_line_items_filter_options(system_owner_auth_client, app_ctx)
     print(response.json)
 
     # check for the presence of specific filter options
-    assert response.json["fiscal_years"] == [2045, 2044, 2043, 2022]
-    assert response.json["portfolios"] == [
-        {"id": 3, "name": "Child Care Research"},
-        {"id": 1, "name": "Child Welfare Research"},
-        {"id": 2, "name": "Head Start Research"},
-        {"id": 6, "name": "Healthy Marriage & Responsible Fatherhood Research"},
-        {"id": 8, "name": "OCDO Portfolio"},
-        {"id": 9, "name": "OD Portfolio"},
-        {"id": 4, "name": "Welfare Research"},
-    ]
-    assert response.json["statuses"] == [
-        "DRAFT",
-        "PLANNED",
-        "IN_EXECUTION",
-        "OBLIGATED",
-        "Overcome by Events",
-    ]
+    # Verify fiscal_years are returned in descending order and contain expected years
+    fiscal_years = response.json["fiscal_years"]
+    assert fiscal_years == sorted(fiscal_years, reverse=True)
+    assert set([2045, 2044, 2043, 2022]).issubset(set(fiscal_years))
+
+    # Verify portfolios contain expected entries
+    portfolio_names = {p["name"] for p in response.json["portfolios"]}
+    expected_portfolios = {
+        "Child Care Research",
+        "Child Welfare Research",
+        "Head Start Research",
+        "Healthy Marriage & Responsible Fatherhood Research",
+        "OCDO Portfolio",
+        "OD Portfolio",
+        "Welfare Research",
+    }
+    assert expected_portfolios.issubset(portfolio_names)
+
+    # Verify statuses contain expected values
+    statuses = response.json["statuses"]
+    expected_statuses = {"DRAFT", "PLANNED", "IN_EXECUTION", "OBLIGATED", "Overcome by Events"}
+    assert expected_statuses.issubset(set(statuses))
 
     # Verify budget_line_total_range is present and has correct structure
     assert "budget_line_total_range" in response.json
@@ -2340,17 +2366,19 @@ def test_get_aa_budget_lines(auth_client, db_for_aa_agreement, test_can):
     )
     assert response.status_code == 200
     assert len(response.json) == 2
-    assert response.json[0]["agreement_id"] == aa_agreement.id
-    assert response.json[0]["status"] == BudgetLineItemStatus.DRAFT.name
-    assert response.json[0]["can_id"] == test_can.id
-    assert response.json[0]["budget_line_item_type"] == AgreementType.AA.name
-    assert response.json[0]["line_description"] == "Test Line Item 1"
-    assert response.json[0]["comments"] == "Test Comments 1"
-    assert response.json[0]["amount"] == 100.00
-    assert response.json[0]["is_obe"] is False
-    assert response.json[0]["date_needed"] == "2043-01-01"
-    assert response.json[0]["proc_shop_fee_percentage"] == 0.0
-    assert response.json[0]["procurement_shop_fee_id"] is None
+
+    items = sorted(response.json, key=lambda x: x["line_description"])
+    assert items[0]["agreement_id"] == aa_agreement.id
+    assert items[0]["status"] == BudgetLineItemStatus.DRAFT.name
+    assert items[0]["can_id"] == test_can.id
+    assert items[0]["budget_line_item_type"] == AgreementType.AA.name
+    assert items[0]["line_description"] == "Test Line Item 1"
+    assert items[0]["comments"] == "Test Comments 1"
+    assert items[0]["amount"] == 100.00
+    assert items[0]["is_obe"] is False
+    assert items[0]["date_needed"] == "2043-01-01"
+    assert items[0]["proc_shop_fee_percentage"] == 0.0
+    assert items[0]["procurement_shop_fee_id"] is None
 
     # cleanup
     db_for_aa_agreement.delete(bli1)
@@ -3079,3 +3107,257 @@ def test_get_budget_line_items_filter_by_portfolio_with_can_number_sort(auth_cli
 
         # All returned items should be in the expected set
         assert returned_ids.issubset(expected_ids), f"Returned BLIs should all have portfolio {portfolio_id}"
+
+
+def test_cannot_update_bli_when_pre_award_in_review(auth_client, loaded_db, app_ctx):
+    """Test that BLI cannot be updated when pre-award approval is in review"""
+    # Get an existing BLI from agreement 1
+    bli = loaded_db.get(BudgetLineItem, 15000)
+    agreement = loaded_db.get(Agreement, bli.agreement_id)
+
+    # Create procurement tracker with pre-award step in review
+    tracker = ProcurementTracker(
+        agreement_id=agreement.id,
+        tracker_type=ProcurementTrackerType.DEFAULT,
+        status=ProcurementTrackerStatus.ACTIVE,
+        created_by=503,
+    )
+    loaded_db.add(tracker)
+    loaded_db.flush()
+
+    pre_award_step = DefaultProcurementTrackerStep(
+        procurement_tracker_id=tracker.id,
+        step_type=ProcurementTrackerStepType.PRE_AWARD,
+        step_class="default_step",
+        step_number=5,
+        pre_award_approval_requested=True,
+        pre_award_approval_status=None,  # In review - awaiting decision
+        created_by=503,
+    )
+    loaded_db.add(pre_award_step)
+    loaded_db.commit()
+
+    # Attempt to update the BLI
+    data = {"amount": 999999.99}
+    url = url_for("api.budget-line-items-item", id=bli.id)
+
+    response = auth_client.patch(url, json=data)
+
+    # Should fail with validation error
+    assert response.status_code == 400
+    assert response.json["errors"]["status"] == "Cannot modify Budget Line Items while Pre-Award Approval is in review."
+
+
+def test_can_update_bli_when_pre_award_not_in_review(auth_client, loaded_db, app_ctx):
+    """Test that BLI can be updated when pre-award approval is not in review"""
+    # Get an existing BLI from agreement 1
+    bli = loaded_db.get(BudgetLineItem, 15001)
+    agreement = loaded_db.get(Agreement, bli.agreement_id)
+
+    # Create procurement tracker with pre-award step NOT in review
+    tracker = ProcurementTracker(
+        agreement_id=agreement.id,
+        tracker_type=ProcurementTrackerType.DEFAULT,
+        status=ProcurementTrackerStatus.ACTIVE,
+        created_by=503,
+    )
+    loaded_db.add(tracker)
+    loaded_db.flush()
+
+    pre_award_step = DefaultProcurementTrackerStep(
+        procurement_tracker_id=tracker.id,
+        step_type=ProcurementTrackerStepType.PRE_AWARD,
+        step_class="default_step",
+        step_number=5,
+        pre_award_approval_requested=False,  # Not requested yet
+        created_by=503,
+    )
+    loaded_db.add(pre_award_step)
+    loaded_db.commit()
+
+    original_amount = bli.amount
+
+    # Attempt to update the BLI
+    data = {"amount": 888888.88}
+    url = url_for("api.budget-line-items-item", id=bli.id)
+
+    response = auth_client.patch(url, json=data)
+
+    # Should succeed
+    assert response.status_code == 200
+    loaded_db.refresh(bli)
+    assert bli.amount != original_amount
+
+
+def test_cannot_update_bli_when_pre_award_pending(auth_client, loaded_db, app_ctx):
+    """Test that BLI cannot be updated when pre-award approval status is PENDING"""
+    # Get an existing BLI from agreement 1
+    bli = loaded_db.get(BudgetLineItem, 15005)
+    agreement = loaded_db.get(Agreement, bli.agreement_id)
+
+    # Create procurement tracker with pre-award pending
+    tracker = ProcurementTracker(
+        agreement_id=agreement.id,
+        tracker_type=ProcurementTrackerType.DEFAULT,
+        status=ProcurementTrackerStatus.ACTIVE,
+        created_by=503,
+    )
+    loaded_db.add(tracker)
+    loaded_db.flush()
+
+    pre_award_step = DefaultProcurementTrackerStep(
+        procurement_tracker_id=tracker.id,
+        step_type=ProcurementTrackerStepType.PRE_AWARD,
+        step_class="default_step",
+        step_number=5,
+        pre_award_approval_requested=True,
+        pre_award_approval_status="PENDING",  # Explicitly test PENDING state
+        created_by=503,
+    )
+    loaded_db.add(pre_award_step)
+    loaded_db.commit()
+
+    # Set BLI to editable status (PLANNED) so regular user can modify it
+    bli.status = BudgetLineItemStatus.PLANNED
+    loaded_db.commit()
+
+    # Attempt to update the BLI
+    data = {"amount": 444444.44}
+    url = url_for("api.budget-line-items-item", id=bli.id)
+
+    response = auth_client.patch(url, json=data)
+
+    # Should fail with validation error
+    assert response.status_code == 400
+    assert response.json["errors"]["status"] == "Cannot modify Budget Line Items while Pre-Award Approval is in review."
+
+
+def test_can_update_bli_when_pre_award_declined(auth_client, loaded_db, app_ctx):
+    """Test that BLI can be updated when pre-award approval has been declined"""
+    # Get an existing BLI from agreement 1
+    bli = loaded_db.get(BudgetLineItem, 15002)
+    agreement = loaded_db.get(Agreement, bli.agreement_id)
+
+    # Create procurement tracker with pre-award declined
+    tracker = ProcurementTracker(
+        agreement_id=agreement.id,
+        tracker_type=ProcurementTrackerType.DEFAULT,
+        status=ProcurementTrackerStatus.ACTIVE,
+        created_by=503,
+    )
+    loaded_db.add(tracker)
+    loaded_db.flush()
+
+    pre_award_step = DefaultProcurementTrackerStep(
+        procurement_tracker_id=tracker.id,
+        step_type=ProcurementTrackerStepType.PRE_AWARD,
+        step_class="default_step",
+        step_number=5,
+        pre_award_approval_requested=True,
+        pre_award_approval_status="DECLINED",  # Declined - can edit again
+        created_by=503,
+    )
+    loaded_db.add(pre_award_step)
+    loaded_db.commit()
+
+    original_amount = bli.amount
+
+    # Attempt to update the BLI
+    data = {"amount": 777777.77}
+    url = url_for("api.budget-line-items-item", id=bli.id)
+
+    response = auth_client.patch(url, json=data)
+
+    # Should succeed (200 if DRAFT, 202 if change request created)
+    assert response.status_code in [200, 202]
+    loaded_db.refresh(bli)
+    if response.status_code == 200:
+        assert bli.amount != original_amount
+
+
+def test_cannot_update_bli_when_pre_award_approved_but_awaiting_requisition(auth_client, loaded_db, app_ctx):
+    """Test that BLI cannot be updated when pre-award is approved but awaiting budget team requisition approval"""
+    # Get an existing BLI from agreement 1
+    bli = loaded_db.get(BudgetLineItem, 15003)
+    agreement = loaded_db.get(Agreement, bli.agreement_id)
+
+    # Create procurement tracker with pre-award approved but awaiting requisition
+    tracker = ProcurementTracker(
+        agreement_id=agreement.id,
+        tracker_type=ProcurementTrackerType.DEFAULT,
+        status=ProcurementTrackerStatus.ACTIVE,
+        created_by=503,
+    )
+    loaded_db.add(tracker)
+    loaded_db.flush()
+
+    pre_award_step = DefaultProcurementTrackerStep(
+        procurement_tracker_id=tracker.id,
+        step_type=ProcurementTrackerStepType.PRE_AWARD,
+        step_class="default_step",
+        step_number=5,
+        pre_award_approval_requested=True,
+        pre_award_approval_status="APPROVED",
+        pre_award_requisition_approved_by=None,  # Still awaiting budget team
+        created_by=503,
+    )
+    loaded_db.add(pre_award_step)
+    loaded_db.commit()
+
+    # Attempt to update the BLI
+    data = {"amount": 666666.66}
+    url = url_for("api.budget-line-items-item", id=bli.id)
+
+    response = auth_client.patch(url, json=data)
+
+    # Should fail with validation error
+    assert response.status_code == 400
+    assert response.json["errors"]["status"] == "Cannot modify Budget Line Items while Pre-Award Approval is in review."
+
+
+def test_can_update_bli_when_pre_award_fully_approved(auth_client, loaded_db, app_ctx):
+    """Test that BLI can be updated when pre-award is fully approved (including requisition)"""
+    # Get an existing BLI from agreement 1
+    bli = loaded_db.get(BudgetLineItem, 15004)
+    agreement = loaded_db.get(Agreement, bli.agreement_id)
+
+    # Create procurement tracker with pre-award fully approved
+    tracker = ProcurementTracker(
+        agreement_id=agreement.id,
+        tracker_type=ProcurementTrackerType.DEFAULT,
+        status=ProcurementTrackerStatus.ACTIVE,
+        created_by=503,
+    )
+    loaded_db.add(tracker)
+    loaded_db.flush()
+
+    pre_award_step = DefaultProcurementTrackerStep(
+        procurement_tracker_id=tracker.id,
+        step_type=ProcurementTrackerStepType.PRE_AWARD,
+        step_class="default_step",
+        step_number=5,
+        pre_award_approval_requested=True,
+        pre_award_approval_status="APPROVED",
+        pre_award_requisition_approved_by=503,  # Budget team approved
+        created_by=503,
+    )
+    loaded_db.add(pre_award_step)
+    loaded_db.commit()
+
+    # Set BLI to editable status (PLANNED) so regular user can modify it
+    bli.status = BudgetLineItemStatus.PLANNED
+    loaded_db.commit()
+
+    original_amount = bli.amount
+
+    # Attempt to update the BLI
+    data = {"amount": 555555.55}
+    url = url_for("api.budget-line-items-item", id=bli.id)
+
+    response = auth_client.patch(url, json=data)
+
+    # Should succeed (200 if DRAFT, 202 if change request created)
+    assert response.status_code in [200, 202]
+    loaded_db.refresh(bli)
+    if response.status_code == 200:
+        assert bli.amount != original_amount

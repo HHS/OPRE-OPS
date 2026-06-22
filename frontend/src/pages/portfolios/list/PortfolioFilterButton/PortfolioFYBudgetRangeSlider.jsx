@@ -1,6 +1,5 @@
 import React from "react";
 import DoubleRangeSlider from "../../../../components/UI/DoubleRangeSlider";
-import CurrencyFormat from "react-currency-format";
 
 /**
  * @typedef {Object} PortfolioFYBudgetRangeSliderProps
@@ -102,21 +101,15 @@ const PortfolioFYBudgetRangeSlider = ({
 
             <div className="margin-top-1 display-flex flex-justify-center font-12px padding-right-10">
                 <span>
-                    <CurrencyFormat
-                        value={minValue}
-                        decimalScale={0}
-                        thousandSeparator={true}
-                        displayType="text"
-                        prefix={"$ "}
-                    />
+                    {`$ ${new Intl.NumberFormat("en-US", {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0
+                    }).format(minValue)}`}
                     <span> to </span>
-                    <CurrencyFormat
-                        value={maxValue}
-                        decimalScale={0}
-                        thousandSeparator={true}
-                        displayType="text"
-                        prefix={"$ "}
-                    />
+                    {`$ ${new Intl.NumberFormat("en-US", {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0
+                    }).format(maxValue)}`}
                 </span>
             </div>
         </>

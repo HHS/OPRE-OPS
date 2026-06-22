@@ -17,12 +17,12 @@ jobs:
     name: Trufflehog Secret Scanning
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
           fetch-depth: 0
       - name: TruffleHog OSS
         id: trufflehog
-        uses: trufflesecurity/trufflehog@17456f8c7d042d8c82c9a8ca9e937231f9f42e26 # v3.95.2
+        uses: trufflesecurity/trufflehog@30d5bb91af1a771378349dbbb0c82129392acf70 # v3.95.6
         env:
           GITHUB_HEAD_REF_SAFE: ${{ github.head_ref }}
         continue-on-error: true
@@ -50,7 +50,7 @@ jobs:
     name: A11y Regression Gate
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
 
       - uses: ./.github/actions/setup-javascript
 
@@ -108,6 +108,14 @@ jobs:
     name: Semgrep Scan
     uses: ./.github/workflows/security_semgrep.yml
 
+  snyk-analysis:
+    permissions:
+      contents: read
+      security-events: write
+    name: Snyk SCA
+    secrets: inherit
+    uses: ./.github/workflows/security_snyk.yml
+
   lint:
     name: Linting
     runs-on: ubuntu-latest
@@ -117,7 +125,7 @@ jobs:
     steps:
       - name: Check out PR head commit
         if: github.event_name == 'pull_request'
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
@@ -125,7 +133,7 @@ jobs:
 
       - name: Check out push commit
         if: github.event_name != 'pull_request'
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
 
       - name: Detect commit source
         id: detect

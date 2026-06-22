@@ -62,6 +62,7 @@ logger.add(sys.stderr, format=format, level=LOG_LEVEL)
             "roles",
             "master_spreadsheet_budget_lines_v2",
             "award_date",
+            "agreement_missing_data",
         ],
         case_sensitive=False,
     ),
@@ -165,6 +166,8 @@ def main(
                     from data_tools.src.load_master_spreadsheet_budget_lines_v2.utils import transform
                 case "award_date":
                     from data_tools.src.load_award_date.utils import transform
+                case "agreement_missing_data":
+                    from data_tools.src.load_agreement_missing_data.utils import transform
                 case _:
                     raise ValueError(f"Unsupported data type: {type}")
 

@@ -66,8 +66,10 @@ describe("AgreementCANReview", () => {
 
         const headingCard = screen.getByRole("heading", { name: "G994426-1Y CAN Available Budget" });
         const toggle = screen.getByRole("button", { name: "Off (Drafts excluded) After Approval" });
-        const totalSpendingCardBeforeApproval = screen.getByText("$3,000,000.00");
-        const remainingBudgetCardBeforeApproval = screen.getByText("$ 37,000,000");
+        const totalSpendingCardBeforeApproval = screen.getByText(/\$3,000,000\.00/);
+        const remainingBudgetCardBeforeApproval = screen.getByText((content, element) => {
+            return element?.textContent === "$ 37,000,000.00";
+        });
 
         expect(headingCard).toBeInTheDocument();
         expect(toggle).toBeInTheDocument();
@@ -91,8 +93,10 @@ describe("AgreementCANReview", () => {
         );
 
         const toggleAfterApproval = screen.getByRole("button", { name: "On (Drafts included) After Approval" });
-        const totalSpendingCardAfterApproval1 = screen.getByText("$5,000,000.00");
-        const remainingBudgetCardAfterApproval1 = screen.getByText("$ 35,000,000");
+        const totalSpendingCardAfterApproval1 = screen.getByText(/\$5,000,000\.00/);
+        const remainingBudgetCardAfterApproval1 = screen.getByText((content, element) => {
+            return element?.textContent === "$ 35,000,000.00";
+        });
 
         expect(toggleAfterApproval).toBeInTheDocument();
         expect(totalSpendingCardAfterApproval1).toBeInTheDocument();

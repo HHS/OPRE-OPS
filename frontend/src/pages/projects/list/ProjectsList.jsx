@@ -1,9 +1,8 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { PacmanLoader } from "react-spinners";
-import { useGetProjectsQuery, useLazyGetProjectsQuery } from "../../../api/opsAPI";
+import { useGetProjectsQuery, useLazyGetProjectsQuery, useGetProjectsFilterOptionsQuery } from "../../../api/opsAPI";
 import App from "../../../App";
-import DebugCode from "../../../components/DebugCode";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import ProjectSummaryCardsSection from "../../../components/Projects/ProjectSummaryCardsSection";
 import ProjectsTable from "../../../components/Projects/ProjectsTable";
@@ -17,6 +16,8 @@ import { getCurrentFiscalYear } from "../../../helpers/utils";
 import useAlert from "../../../hooks/use-alert.hooks";
 import icons from "../../../uswds/img/sprite.svg";
 import { handleProjectsExport, PROJECT_SORT_CODES } from "./ProjectsList.helpers";
+import ProjectFilterButton from "./ProjectFilterButton/ProjectFilterButton";
+import ProjectFilterTags from "./ProjectFilterTags/ProjectFilterTags";
 
 /**
  * Page component for the projects list with server-side pagination, sorting, and fiscal year filtering.
@@ -31,6 +32,15 @@ const ProjectsList = () => {
     const { setAlert } = useAlert();
     const [getAllProjectsTrigger] = useLazyGetProjectsQuery();
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions(PROJECT_SORT_CODES.TITLE, false);
+    const [filters, setFilters] = React.useState({
+        fiscalYear: [],
+        portfolio: [],
+        projectSearch: [],
+        agreementSearch: [],
+        projectType: []
+    });
+
+    const { data: projectFilterOptions, isLoading: isLoadingProjectFilterOptions } = useGetProjectsFilterOptionsQuery();
 
     const {
         data: projectsResponse,
@@ -38,6 +48,9 @@ const ProjectsList = () => {
         isFetching,
         isError
     } = useGetProjectsQuery({
+        filters: {
+            ...filters
+        },
         sortConditions: sortCondition,
         sortDescending,
         page: currentPage - 1,
@@ -64,7 +77,10 @@ const ProjectsList = () => {
 
     const handleChangeFiscalYear = (newValue) => {
         setSelectedFiscalYear(newValue);
+        setFilters((prev) => ({ ...prev, fiscalYear: [] }));
     };
+
+    const fiscalYearDropdownValue = filters.fiscalYear.length >= 2 ? "Multi" : selectedFiscalYear;
 
     const fiscalYearDisplay = selectedFiscalYear === "All" ? "All FYs" : `FY ${selectedFiscalYear}`;
 
@@ -91,7 +107,7 @@ const ProjectsList = () => {
                     TabsSection={
                         <div className="margin-left-auto">
                             <FiscalYear
-                                fiscalYear={selectedFiscalYear}
+                                fiscalYear={fiscalYearDropdownValue}
                                 handleChangeFiscalYear={handleChangeFiscalYear}
                                 showAllOption={true}
                             />
@@ -113,42 +129,60 @@ const ProjectsList = () => {
                 title="Projects"
                 subtitle="All Projects"
                 details="This is a list of all projects across OPRE for the selected fiscal year. Draft budget lines are not included in the Totals."
+                FilterTags={
+                    <ProjectFilterTags
+                        filters={filters}
+                        setFilters={setFilters}
+                    />
+                }
                 FilterButton={
-                    <div>
-                        {totalCount > 0 && (
-                            <button
-                                type="button"
-                                style={{ fontSize: "16px" }}
-                                className="usa-button--unstyled text-primary display-flex flex-align-end cursor-pointer"
-                                data-cy="projects-export"
-                                onClick={() =>
-                                    handleProjectsExport(
-                                        exportTableToXlsx,
-                                        setIsExporting,
-                                        setAlert,
-                                        getAllProjectsTrigger,
-                                        selectedFiscalYear,
-                                        sortCondition,
-                                        sortDescending,
-                                        totalCount
-                                    )
-                                }
-                            >
-                                <svg
-                                    className="height-2 width-2 margin-right-05"
-                                    style={{ fill: "#005EA2", height: "24px", width: "24px" }}
-                                >
-                                    <use href={`${icons}#save_alt`}></use>
-                                </svg>
-                                <span>Export</span>
-                            </button>
-                        )}
-                    </div>
+                    <>
+                        <div className="display-flex">
+                            <div>
+                                {totalCount > 0 && (
+                                    <button
+                                        type="button"
+                                        style={{ fontSize: "16px" }}
+                                        className="usa-button--unstyled text-primary display-flex flex-align-end cursor-pointer"
+                                        data-cy="projects-export"
+                                        onClick={() =>
+                                            handleProjectsExport(
+                                                exportTableToXlsx,
+                                                setIsExporting,
+                                                setAlert,
+                                                getAllProjectsTrigger,
+                                                selectedFiscalYear,
+                                                sortCondition,
+                                                sortDescending,
+                                                totalCount
+                                            )
+                                        }
+                                    >
+                                        <svg
+                                            className="height-2 width-2 margin-right-05"
+                                            style={{ fill: "#005EA2", height: "24px", width: "24px" }}
+                                        >
+                                            <use href={`${icons}#save_alt`}></use>
+                                        </svg>
+                                        <span>Export</span>
+                                    </button>
+                                )}
+                            </div>
+                            <div className="margin-left-205">
+                                <ProjectFilterButton
+                                    filters={filters}
+                                    setFilters={setFilters}
+                                    projectFilterOptions={projectFilterOptions}
+                                    isLoadingOptions={isLoadingProjectFilterOptions}
+                                />
+                            </div>
+                        </div>
+                    </>
                 }
                 TabsSection={
                     <div className="margin-left-auto">
                         <FiscalYear
-                            fiscalYear={selectedFiscalYear}
+                            fiscalYear={fiscalYearDropdownValue}
                             handleChangeFiscalYear={handleChangeFiscalYear}
                             showAllOption={true}
                         />
@@ -183,9 +217,7 @@ const ProjectsList = () => {
                         )}
                     </>
                 }
-            >
-                <DebugCode data={projectsResponse} />
-            </TablePageLayout>
+            ></TablePageLayout>
         </App>
     );
 };

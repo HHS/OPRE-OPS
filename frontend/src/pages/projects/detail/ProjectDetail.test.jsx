@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
 import ProjectDetail from "./ProjectDetail";
@@ -29,6 +29,11 @@ vi.mock("../../../App", () => ({
     default: ({ children }) => <div data-testid="app-wrapper">{children}</div>
 }));
 
+vi.mock("../../../components/Projects/ProjectHistoryPanel", () => ({
+    __esModule: true,
+    default: () => <div data-testid="project-history-panel" />
+}));
+
 const mockProject = {
     id: 1000,
     title: "Human Services Interoperability Support",
@@ -53,7 +58,8 @@ const mockProject = {
     team_members: [
         { id: 500, full_name: "Chris Fortunato", email: "chris.fortunato@example.com" },
         { id: 503, full_name: "Amelia Popham", email: "amelia@example.com" }
-    ]
+    ],
+    _meta: { isEditable: true }
 };
 
 describe("ProjectDetail", () => {
@@ -80,19 +86,22 @@ describe("ProjectDetail", () => {
         });
     });
 
-    const renderComponent = (id = "1000") =>
-        render(
+    const renderComponent = (id = "1000") => {
+        const router = createMemoryRouter(
+            [
+                {
+                    path: "/projects/:id",
+                    element: <ProjectDetail />
+                }
+            ],
+            { initialEntries: [`/projects/${id}`] }
+        );
+        return render(
             <Provider store={mockStore}>
-                <MemoryRouter initialEntries={[`/projects/${id}`]}>
-                    <Routes>
-                        <Route
-                            path="/projects/:id"
-                            element={<ProjectDetail />}
-                        />
-                    </Routes>
-                </MemoryRouter>
+                <RouterProvider router={router} />
             </Provider>
         );
+    };
 
     it("renders loading state when the project is loading", () => {
         mockUseGetProjectByIdQuery.mockReturnValue({
@@ -185,21 +194,67 @@ describe("ProjectDetail", () => {
         });
 
         // Render outside a :id route so useParams returns no id
+        const router = createMemoryRouter(
+            [
+                {
+                    path: "/projects",
+                    element: <ProjectDetail />
+                }
+            ],
+            { initialEntries: ["/projects"] }
+        );
         render(
             <Provider store={mockStore}>
-                <MemoryRouter initialEntries={["/projects"]}>
-                    <Routes>
-                        <Route
-                            path="/projects"
-                            element={<ProjectDetail />}
-                        />
-                    </Routes>
-                </MemoryRouter>
+                <RouterProvider router={router} />
             </Provider>
         );
 
         // Query is skipped (projectId === -1), nothing errored, nothing loaded
         expect(mockNavigate).not.toHaveBeenCalled();
+    });
+
+    it("shows an enabled edit button when _meta.isEditable is true", () => {
+        mockUseGetProjectByIdQuery.mockReturnValue({
+            data: mockProject,
+            isLoading: false,
+            error: undefined
+        });
+
+        renderComponent();
+
+        const editButton = screen.getByRole("button", { name: /edit/i });
+        expect(editButton).not.toHaveAttribute("aria-disabled");
+    });
+
+    it("shows a disabled edit button when _meta.isEditable is false", () => {
+        mockUseGetProjectByIdQuery.mockReturnValue({
+            data: { ...mockProject, _meta: { isEditable: false } },
+            isLoading: false,
+            error: undefined
+        });
+
+        renderComponent();
+
+        const editButton = screen.getByRole("button", { name: /edit/i });
+        expect(editButton).toHaveAttribute("aria-disabled", "true");
+    });
+
+    it("switches to edit mode when edit button is clicked", async () => {
+        const { userEvent: ue } = await import("@testing-library/user-event");
+        const user = ue.setup();
+
+        mockUseGetProjectByIdQuery.mockReturnValue({
+            data: mockProject,
+            isLoading: false,
+            error: undefined
+        });
+
+        renderComponent();
+
+        await user.click(screen.getByRole("button", { name: /edit/i }));
+
+        expect(screen.getByText("Edit Project")).toBeInTheDocument();
+        expect(screen.getByLabelText("Project Title")).toBeInTheDocument();
     });
 
     it("fires navigate when a tab is clicked", async () => {

@@ -1,12 +1,15 @@
 import React from "react";
 import { useSelector } from "react-redux";
 import { NavLink, useLocation } from "react-router-dom";
+import { PROCUREMENT_DASHBOARD_ROLES, USER_ROLES } from "../../Users/User.constants";
 
 const NavMenu = () => {
     const activeUser = useSelector((state) => state.auth?.activeUser);
     const isUserAdmin = activeUser?.roles?.some((role) => role?.name === "USER_ADMIN");
+    const hasProcurementAccess = activeUser?.roles?.some((role) => PROCUREMENT_DASHBOARD_ROLES.includes(role?.name));
+    const isReadOnlyUser = activeUser?.roles?.some((role) => role?.name === USER_ROLES.READ_ONLY);
 
-    const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+    const [isMenuOpen, setIsMenuOpen] = React.useState(null);
     const location = useLocation();
     /**
      * Returns the CSS class for a NavLink based on its active state
@@ -83,13 +86,41 @@ const NavMenu = () => {
                     </NavLink>
                 </li>
                 <li className="usa-nav__primary-item">
-                    <NavLink
-                        to="/reporting"
-                        className={getNavLinkClass}
-                        end
+                    <button
+                        type="button"
+                        className="usa-accordion__button usa-nav__link"
+                        aria-expanded={isMenuOpen === "reporting"}
+                        aria-controls="reporting-nav-section"
+                        onClick={() => setIsMenuOpen(isMenuOpen === "reporting" ? null : "reporting")}
                     >
-                        Reporting
-                    </NavLink>
+                        <span>Reporting</span>
+                    </button>
+                    <ul
+                        id="reporting-nav-section"
+                        className="usa-nav__submenu"
+                        style={{ display: isMenuOpen === "reporting" ? "block" : "none" }}
+                    >
+                        <li className="usa-nav__submenu-item">
+                            <NavLink
+                                to="/reporting"
+                                className={getNavLinkClass}
+                                end
+                            >
+                                OPRE Budget Reporting
+                            </NavLink>
+                        </li>
+                        {hasProcurementAccess && (
+                            <li className="usa-nav__submenu-item">
+                                <NavLink
+                                    to="/procurement-dashboard"
+                                    className={getNavLinkClass}
+                                    end
+                                >
+                                    Procurement Dashboard
+                                </NavLink>
+                            </li>
+                        )}
+                    </ul>
                 </li>
                 {isUserAdmin && (
                     <li className="usa-nav__primary-item">
@@ -101,27 +132,31 @@ const NavMenu = () => {
                         </NavLink>
                     </li>
                 )}
-                <li className="usa-nav__primary-item">
-                    <button
-                        type="button"
-                        className="usa-accordion__button usa-nav__link"
-                        aria-expanded={isMenuOpen}
-                        aria-controls="basic-mega-nav-section-two"
-                        onClick={() => setIsMenuOpen(!isMenuOpen)}
-                    >
-                        <span>Create</span>
-                    </button>
-                    <ul
-                        id="basic-mega-nav-section-two"
-                        className="usa-nav__submenu"
-                        style={{ display: isMenuOpen ? "block" : "none" }}
-                    >
-                        <li className="usa-nav__submenu-item">
-                            <NavLink to="/projects/create">Project</NavLink>
-                            <NavLink to="/agreements/create">Agreement</NavLink>
-                        </li>
-                    </ul>
-                </li>
+                {!isReadOnlyUser && (
+                    <li className="usa-nav__primary-item">
+                        <button
+                            type="button"
+                            className="usa-accordion__button usa-nav__link"
+                            aria-expanded={isMenuOpen === "create"}
+                            aria-controls="basic-mega-nav-section-two"
+                            onClick={() => setIsMenuOpen(isMenuOpen === "create" ? null : "create")}
+                        >
+                            <span>Create</span>
+                        </button>
+                        <ul
+                            id="basic-mega-nav-section-two"
+                            className="usa-nav__submenu"
+                            style={{ display: isMenuOpen === "create" ? "block" : "none" }}
+                        >
+                            <li className="usa-nav__submenu-item">
+                                <NavLink to="/projects/create">Project</NavLink>
+                            </li>
+                            <li className="usa-nav__submenu-item">
+                                <NavLink to="/agreements/create">Agreement</NavLink>
+                            </li>
+                        </ul>
+                    </li>
+                )}
                 <li className="usa-nav__primary-item margin-left-auto">
                     <NavLink
                         to="/help-center/"

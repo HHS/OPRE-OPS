@@ -1,10 +1,9 @@
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import CurrencyFormat from "react-currency-format";
 import { Link } from "react-router-dom";
 import { NO_DATA } from "../../../constants";
 import { getBudgetLineCreatedDate, getProcurementShopLabel } from "../../../helpers/budgetLines.helpers";
-import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
+import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import { convertCodeForDisplay, formatDateNeeded } from "../../../helpers/utils";
 import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
 import { useGetServicesComponentDisplayName } from "../../../hooks/useServicesComponents.hooks";
@@ -13,6 +12,7 @@ import { AWARD_TYPE_LABELS } from "../../../pages/agreements/agreements.constant
 import TableRowExpandable from "../../UI/TableRowExpandable";
 import { expandedRowBGColor } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
+import tableStyles from "../../UI/Table/table.module.css";
 import TableTag from "../../UI/TableTag";
 import TextClip from "../../UI/Text/TextClip";
 import { useGetPortfolioByIdQuery } from "../../../api/opsAPI";
@@ -46,49 +46,46 @@ const AllBLIRow = ({ budgetLine }) => {
         <>
             <td data-cy="bli-id">{budgetLine.id}</td>
             <td data-cy="agreement-name">
-                {budgetLine?.agreement?.id ? (
-                    <Link
-                        to={`/agreements/${budgetLine.agreement.id}`}
-                        className="text-ink text-no-underline"
-                        aria-label={agreementLinkLabel}
-                    >
+                <div className={tableStyles.textClipContainer}>
+                    {budgetLine?.agreement?.id ? (
+                        <Link
+                            to={`/agreements/${budgetLine.agreement.id}`}
+                            className="text-ink text-no-underline"
+                            aria-label={agreementLinkLabel}
+                        >
+                            <TextClip
+                                text={agreementName}
+                                maxLines={1}
+                            />
+                        </Link>
+                    ) : (
                         <TextClip
                             text={agreementName}
                             maxLines={1}
                         />
-                    </Link>
-                ) : (
-                    <TextClip
-                        text={agreementName}
-                        maxLines={1}
-                    />
-                )}
+                    )}
+                </div>
             </td>
             <td data-cy="agreement-type">
-                <TextClip
-                    text={convertCodeForDisplay("agreementType", budgetLine?.agreement?.agreement_type) || NO_DATA}
-                    maxLines={1}
-                />
+                <div className={tableStyles.textClipContainer}>
+                    <TextClip
+                        text={convertCodeForDisplay("agreementType", budgetLine?.agreement?.agreement_type) || NO_DATA}
+                        maxLines={1}
+                    />
+                </div>
             </td>
             <td data-cy="service-component">{serviceComponentName}</td>
             <td data-cy="date-needed">{formatDateNeeded(budgetLine?.date_needed ?? "")}</td>
             <td data-cy="can">{budgetLine?.can?.display_name}</td>
             <td data-cy="portfolio-name">
-                <TextClip
-                    text={isPortfolioLoading ? "Loading..." : (budgetLinePortfolio?.abbreviation ?? NO_DATA)}
-                    maxLines={1}
-                />
+                <div className={tableStyles.textClipContainer}>
+                    <TextClip
+                        text={isPortfolioLoading ? "Loading..." : (budgetLinePortfolio?.abbreviation ?? NO_DATA)}
+                        maxLines={1}
+                    />
+                </div>
             </td>
-            <td data-cy="amount">
-                <CurrencyFormat
-                    value={budgetLineTotalPlusFees}
-                    displayType={"text"}
-                    thousandSeparator={true}
-                    prefix={"$"}
-                    decimalScale={getDecimalScale(budgetLineTotalPlusFees)}
-                    fixedDecimalScale={true}
-                />
-            </td>
+            <td data-cy="amount">{formatCurrency(budgetLineTotalPlusFees)}</td>
             <td data-cy="status">
                 <TableTag
                     inReview={isBudgetLineInReview}
@@ -130,29 +127,11 @@ const AllBLIRow = ({ budgetLine }) => {
                 </dl>
                 <dl className="grid-col-auto margin-top-0 font-12px">
                     <dt className="margin-0 text-base-dark">Subtotal</dt>
-                    <dd className="margin-0">
-                        <CurrencyFormat
-                            value={budgetLine?.amount ?? 0}
-                            displayType={"text"}
-                            thousandSeparator={true}
-                            prefix={"$"}
-                            decimalScale={getDecimalScale(budgetLine?.amount ?? 0)}
-                            fixedDecimalScale={true}
-                        />
-                    </dd>
+                    <dd className="margin-0">{formatCurrency(budgetLine?.amount ?? 0)}</dd>
                 </dl>
                 <dl className="grid-col-auto margin-top-0 font-12px">
                     <dt className="margin-0 text-base-dark">Fees</dt>
-                    <dd className="margin-0">
-                        <CurrencyFormat
-                            value={feeTotal}
-                            displayType={"text"}
-                            thousandSeparator={true}
-                            prefix={"$"}
-                            decimalScale={getDecimalScale(feeTotal)}
-                            fixedDecimalScale={true}
-                        />
-                    </dd>
+                    <dd className="margin-0">{formatCurrency(feeTotal)}</dd>
                 </dl>
             </div>
             <p className="font-12px margin-0 margin-top-1 text-base-dark">

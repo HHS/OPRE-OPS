@@ -30,7 +30,11 @@ export const ProjectOfficerComboBox = ({
     label
 }) => {
     const navigate = useNavigate();
-    const { data: users, error: errorUsers, isLoading: isLoadingUsers } = useGetUsersQuery({});
+    const {
+        data: users,
+        error: errorUsers,
+        isLoading: isLoadingUsers
+    } = useGetUsersQuery({ excludeReadOnlyUsers: true });
 
     if (isLoadingUsers) {
         return <div>Loading...</div>;
@@ -42,7 +46,7 @@ export const ProjectOfficerComboBox = ({
 
     const handleChange = (user) => {
         setSelectedProjectOfficer(user);
-        onChange("project_officer", user.id);
+        onChange("project_officer", user?.id ?? null);
     };
 
     return (

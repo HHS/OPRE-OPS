@@ -1,11 +1,11 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, act } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { vi } from "vitest";
 import store from "../../../store";
 import PreAwardApprovalAlert from "./PreAwardApprovalAlert";
 import * as opsAPI from "../../../api/opsAPI";
 
-const mockDismissNotification = vi.fn();
+const mockDismissNotification = vi.fn().mockResolvedValue({});
 
 vi.spyOn(opsAPI, "useDismissNotificationMutation").mockReturnValue([
     mockDismissNotification,
@@ -30,7 +30,8 @@ const declinedNotification = {
     id: 2,
     notification_type: "PRE_AWARD_APPROVAL_NOTIFICATION",
     title: "Pre-Award Approval Response",
-    message: "Your pre-award approval request has been declined by Jane Smith.",
+    message:
+        "This agreement has been declined for Pre-Award. Please do not upload the Final Consensus Memo to the HHS Consolidated Acquisition Solution (HCAS) until changes have been made and re-submitted for approval.",
     is_read: false,
     procurement_tracker_step: {
         id: 5,
@@ -100,7 +101,7 @@ describe("PreAwardApprovalAlert", () => {
         );
 
         expect(screen.getByText("Pre-Award Approval Response")).toBeInTheDocument();
-        expect(screen.getByText(/Your pre-award approval request has been declined by Jane Smith/)).toBeInTheDocument();
+        expect(screen.getByText(/This agreement has been declined for Pre-Award/)).toBeInTheDocument();
     });
 
     it("should NOT render request alert (only shows Approved/Declined)", () => {
@@ -213,6 +214,152 @@ describe("PreAwardApprovalAlert", () => {
 
         expect(screen.getAllByText("Pre-Award Approval Response")).toHaveLength(2);
         expect(screen.getByText(/Your pre-award approval request has been approved by John Doe/)).toBeInTheDocument();
-        expect(screen.getByText(/Your pre-award approval request has been declined by Jane Smith/)).toBeInTheDocument();
+        expect(screen.getByText(/This agreement has been declined for Pre-Award/)).toBeInTheDocument();
+    });
+
+    describe("Auto-dismiss behavior", () => {
+        beforeEach(() => {
+            vi.useFakeTimers();
+        });
+
+        afterEach(() => {
+            vi.useRealTimers();
+        });
+
+        it("should auto-dismiss approved notifications after 6 seconds", () => {
+            render(
+                <Provider store={store}>
+                    <PreAwardApprovalAlert
+                        notifications={[approvedNotification]}
+                        isVisible={true}
+                        setIsVisible={() => {}}
+                    />
+                </Provider>
+            );
+
+            // Initially notification is visible
+            expect(screen.getByText("Pre-Award Approval Response")).toBeInTheDocument();
+
+            // Dismiss should not have been called yet
+            expect(mockDismissNotification).not.toHaveBeenCalled();
+
+            // Fast-forward time by 6 seconds
+            act(() => {
+                vi.advanceTimersByTime(6000);
+            });
+
+            // Dismiss should have been called for the approved notification
+            expect(mockDismissNotification).toHaveBeenCalledWith(1);
+        });
+
+        it("should auto-dismiss declined notifications", () => {
+            render(
+                <Provider store={store}>
+                    <PreAwardApprovalAlert
+                        notifications={[declinedNotification]}
+                        isVisible={true}
+                        setIsVisible={() => {}}
+                    />
+                </Provider>
+            );
+
+            // Initially notification is visible
+            expect(screen.getByText("Pre-Award Approval Response")).toBeInTheDocument();
+
+            // Fast-forward time by 6 seconds
+            act(() => {
+                vi.advanceTimersByTime(6000);
+            });
+
+            // Dismiss should have been called for declined notification
+            expect(mockDismissNotification).toHaveBeenCalledWith(2);
+        });
+
+        it("should auto-dismiss all notifications when both types present", () => {
+            render(
+                <Provider store={store}>
+                    <PreAwardApprovalAlert
+                        notifications={[approvedNotification, declinedNotification]}
+                        isVisible={true}
+                        setIsVisible={() => {}}
+                    />
+                </Provider>
+            );
+
+            // Fast-forward time by 6 seconds
+            act(() => {
+                vi.advanceTimersByTime(6000);
+            });
+
+            // Dismiss should be called for both notifications
+            expect(mockDismissNotification).toHaveBeenCalledTimes(2);
+            expect(mockDismissNotification).toHaveBeenCalledWith(1);
+            expect(mockDismissNotification).toHaveBeenCalledWith(2);
+        });
+
+        it("should preserve existing timers when new notifications arrive", () => {
+            const firstNotification = {
+                id: 1,
+                notification_type: "PRE_AWARD_APPROVAL_NOTIFICATION",
+                is_read: false,
+                procurement_tracker_step: { approval_status: "APPROVED" }
+            };
+            const secondNotification = {
+                id: 2,
+                notification_type: "PRE_AWARD_APPROVAL_NOTIFICATION",
+                is_read: false,
+                procurement_tracker_step: { approval_status: "DECLINED" }
+            };
+
+            // Start with one notification
+            const { rerender } = render(
+                <Provider store={store}>
+                    <PreAwardApprovalAlert
+                        notifications={[firstNotification]}
+                        isVisible={true}
+                    />
+                </Provider>
+            );
+
+            // First notification's timer starts at 0ms
+            expect(mockDismissNotification).not.toHaveBeenCalled();
+
+            // Advance timer partway (3 seconds)
+            act(() => {
+                vi.advanceTimersByTime(3000);
+            });
+
+            // Should NOT have dismissed yet
+            expect(mockDismissNotification).not.toHaveBeenCalled();
+
+            // Re-render with a second notification added (gets its own 6s timer from now)
+            rerender(
+                <Provider store={store}>
+                    <PreAwardApprovalAlert
+                        notifications={[firstNotification, secondNotification]}
+                        isVisible={true}
+                    />
+                </Provider>
+            );
+
+            // Advance 3 more seconds (total 6 seconds for first notification)
+            act(() => {
+                vi.advanceTimersByTime(3000);
+            });
+
+            // First notification should dismiss at 6 seconds total (not restarted to 9s)
+            expect(mockDismissNotification).toHaveBeenCalledTimes(1);
+            expect(mockDismissNotification).toHaveBeenCalledWith(1);
+
+            // Second notification should still be counting (only 3s elapsed for it)
+            // Advance 3 more seconds (total 6s for second notification)
+            act(() => {
+                vi.advanceTimersByTime(3000);
+            });
+
+            // Second notification should now also dismiss
+            expect(mockDismissNotification).toHaveBeenCalledTimes(2);
+            expect(mockDismissNotification).toHaveBeenCalledWith(2);
+        });
     });
 });

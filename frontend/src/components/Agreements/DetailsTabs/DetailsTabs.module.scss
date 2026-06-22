@@ -33,3 +33,7 @@
     pointer-events: none;
     cursor: not-allowed;
 }
+
+.tabsList :global(.usa-tooltip__body) {
+    text-align: center;
+}

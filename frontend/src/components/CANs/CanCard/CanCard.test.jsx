@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { BrowserRouter } from "react-router-dom";
 import CanCard from "./CanCard";
@@ -13,18 +13,41 @@ vi.mock("../../../api/opsAPI", () => ({
     ]
 }));
 
-// Mock the ResponsiveDonutWithInnerPercent component
 vi.mock("../../UI/DataViz/LineGraph/ReverseLineGraph", () => ({
     __esModule: true,
-    default: () => <div data-testid="mock-reverse-line-graph" />
+    default: ({ setActiveId }) => (
+        <div data-testid="mock-reverse-line-graph">
+            <div
+                data-testid="received-bar"
+                onMouseEnter={() => setActiveId?.(1)}
+                onMouseLeave={() => setActiveId?.(0)}
+            />
+            <div
+                data-testid="expected-bar"
+                onMouseEnter={() => setActiveId?.(2)}
+                onMouseLeave={() => setActiveId?.(0)}
+            />
+        </div>
+    )
 }));
 vi.mock("../../UI/DataViz/LineGraph", () => ({
     __esModule: true,
-    default: ({ data }) => (
+    default: ({ data, setActiveId }) => (
         <div
             data-testid="mock-line-graph"
             data-graph-data={JSON.stringify(data)}
-        />
+        >
+            <div
+                data-testid="spending-bar"
+                onMouseEnter={() => setActiveId?.(1)}
+                onMouseLeave={() => setActiveId?.(0)}
+            />
+            <div
+                data-testid="available-bar"
+                onMouseEnter={() => setActiveId?.(2)}
+                onMouseLeave={() => setActiveId?.(0)}
+            />
+        </div>
     )
 }));
 
@@ -63,7 +86,7 @@ describe("CanCard", () => {
         expect(screen.getByText("$10,000,000.00")).toBeInTheDocument(); // Total funding
         expect(screen.getByText("$6,000,000.00")).toBeInTheDocument(); // Received funding
         expect(screen.getByText("$4,000,000.00")).toBeInTheDocument(); // Expected funding
-        expect(screen.getByText("$1,000,000.00")).toBeInTheDocument(); // Spending = planned + executing + obligated = 1M + 2M + 0
+        expect(screen.getByText("$3,000,000.00")).toBeInTheDocument(); // Spending = planned + executing + obligated = 1M + 2M + 0 = 3M
         expect(screen.getByText("$7,000,000.00")).toBeInTheDocument(); // Available funding
 
         // Check if chart sections are rendered
@@ -132,7 +155,89 @@ describe("CanCard", () => {
         expect(graphData[1].percent).toBe(70);
     });
 
-    // Add more test cases as needed
+    it("applies fake-bold to Received label on hover", async () => {
+        render(
+            <BrowserRouter>
+                <CanCard
+                    canId={mockCan.id}
+                    fiscalYear={mockFiscalYear}
+                />
+            </BrowserRouter>
+        );
+
+        await waitFor(() => {
+            expect(screen.getByTestId("received-label")).toBeInTheDocument();
+        });
+
+        fireEvent.mouseEnter(screen.getByTestId("received-bar"));
+        expect(screen.getByTestId("received-label")).toHaveClass("fake-bold");
+
+        fireEvent.mouseLeave(screen.getByTestId("received-bar"));
+        expect(screen.getByTestId("received-label")).not.toHaveClass("fake-bold");
+    });
+
+    it("applies fake-bold to Expected label on hover", async () => {
+        render(
+            <BrowserRouter>
+                <CanCard
+                    canId={mockCan.id}
+                    fiscalYear={mockFiscalYear}
+                />
+            </BrowserRouter>
+        );
+
+        await waitFor(() => {
+            expect(screen.getByTestId("expected-label")).toBeInTheDocument();
+        });
+
+        fireEvent.mouseEnter(screen.getByTestId("expected-bar"));
+        expect(screen.getByTestId("expected-label")).toHaveClass("fake-bold");
+
+        fireEvent.mouseLeave(screen.getByTestId("expected-bar"));
+        expect(screen.getByTestId("expected-label")).not.toHaveClass("fake-bold");
+    });
+
+    it("applies fake-bold to Spending label on hover", async () => {
+        render(
+            <BrowserRouter>
+                <CanCard
+                    canId={mockCan.id}
+                    fiscalYear={mockFiscalYear}
+                />
+            </BrowserRouter>
+        );
+
+        await waitFor(() => {
+            expect(screen.getByTestId("spending-label")).toBeInTheDocument();
+        });
+
+        fireEvent.mouseEnter(screen.getByTestId("spending-bar"));
+        expect(screen.getByTestId("spending-label")).toHaveClass("fake-bold");
+
+        fireEvent.mouseLeave(screen.getByTestId("spending-bar"));
+        expect(screen.getByTestId("spending-label")).not.toHaveClass("fake-bold");
+    });
+
+    it("applies fake-bold to Available label on hover", async () => {
+        render(
+            <BrowserRouter>
+                <CanCard
+                    canId={mockCan.id}
+                    fiscalYear={mockFiscalYear}
+                />
+            </BrowserRouter>
+        );
+
+        await waitFor(() => {
+            expect(screen.getByTestId("available-label")).toBeInTheDocument();
+        });
+
+        fireEvent.mouseEnter(screen.getByTestId("available-bar"));
+        expect(screen.getByTestId("available-label")).toHaveClass("fake-bold");
+
+        fireEvent.mouseLeave(screen.getByTestId("available-bar"));
+        expect(screen.getByTestId("available-label")).not.toHaveClass("fake-bold");
+    });
 });
 
 it("displays TBD when total_funding is 0", async () => {

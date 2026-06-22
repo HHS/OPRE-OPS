@@ -8,7 +8,8 @@ import { MemoryRouter } from "react-router-dom";
 
 const mockFn = TestApplicationContext.helpers().mockFn;
 
-// Mock the ComboBox component
+// Mock the ComboBox component — render option text via the production ``optionText``
+// prop so the test exercises the real formatter rather than re-implementing it.
 vi.mock("../../UI/Form/ComboBox", () => ({
     default: vi.fn((props) => (
         <div data-testid="mocked-combobox">
@@ -23,7 +24,7 @@ vi.mock("../../UI/Form/ComboBox", () => ({
                         key={can.id}
                         value={can.id}
                     >
-                        {can.display_name || can.number}
+                        {props.optionText(can)}
                     </option>
                 ))}
             </select>
@@ -38,14 +39,13 @@ vi.mock("../../../hooks/useGetAllCans", () => ({
             {
                 id: 500,
                 number: "G99HRF2",
-                display_name: "G99HRF2",
-                description: "Test CAN 1"
+                nick_name: "HS",
+                description: "Test CAN with nickname"
             },
             {
                 id: 501,
                 number: "G99IA14",
-                display_name: "G99IA14",
-                description: "Test CAN 2"
+                description: "Test CAN without nickname"
             }
         ],
         error: null,
@@ -124,7 +124,7 @@ describe("CanComboBox", () => {
         expect(selectElement.disabled).toBe(false);
     });
 
-    it("should pass the correct data to ComboBox", () => {
+    it("should render CAN options as 'number (nickname)' when a nickname exists, and just the number otherwise", () => {
         render(
             <MemoryRouter>
                 <Provider store={store}>
@@ -133,8 +133,7 @@ describe("CanComboBox", () => {
             </MemoryRouter>
         );
 
-        // Verify that CAN options are rendered
-        expect(screen.getByText("G99HRF2")).toBeInTheDocument();
+        expect(screen.getByText("G99HRF2 (HS)")).toBeInTheDocument();
         expect(screen.getByText("G99IA14")).toBeInTheDocument();
     });
 

@@ -74,6 +74,14 @@ src/components/UI/Alert/
 
 **Coverage**: `*.stories.jsx` files are excluded from the 90% coverage gate.
 
+**How to add a story:**
+1. Create `ComponentName.stories.jsx` next to `ComponentName.jsx`.
+2. Default-export `{ title: "UI/<Path>", component }` per the title hierarchy in `.storybook/README.md`.
+3. Named-export each variant as a CSF object — use `args` for props and `parameters.store.preloadedState` / `parameters.reactRouter.initialEntries` for context. See `src/components/UI/Alert/Alert.stories.jsx` and `src/components/UI/Button/GoBackButton/GoBackButton.stories.jsx` for reference.
+4. Run `bun run storybook` to verify; `bun run lint` runs `eslint-plugin-storybook` over story files and `.storybook/` config.
+
+**Enforcement**: PRs that touch `frontend/src/components/**` or `frontend/.storybook/**` must pass the `Storybook Build` workflow. A non-blocking `Stories Coverage Check` warns when an added/changed `src/components/UI/` component lacks a co-located `*.stories.jsx`.
+
 See [`.storybook/README.md`](.storybook/README.md) for the full conventions guide.
 
 ### Code Quality
@@ -125,7 +133,26 @@ bun run format       # Format code (Prettier)
 - Tests are co-located with their components (`.test.jsx` files)
 - E2E tests use **Cypress** in `cypress/e2e/*.cy.js`
 
-## Fee Percentage Format Convention
+## scrollToTop After Success Alerts
+
+Always call `scrollToTop()` after `setAlert({ type: "success", ... })` in action handlers that navigate away from the current page. This ensures the user sees the success alert banner at the top before the page transitions.
+
+```javascript
+// CORRECT — scrollToTop after success alert, before navigate
+setAlert({ type: "success", heading: "Saved", message: "..." });
+scrollToTop();
+navigate("/agreements");
+
+// INCORRECT — user may miss the alert if scrolled down on a long form
+setAlert({ type: "success", heading: "Saved", message: "..." });
+navigate("/agreements");
+```
+
+Import from `src/helpers/scrollToTop.helper`. Do NOT call `scrollToTop()` on error paths.
+
+## Numeric Display Conventions
+
+### Fee Percentage Storage
 
 **CRITICAL**: Fee percentages are whole numbers (e.g., `5.0` = 5%). The `calculateTotal` helper in `src/helpers/agreement.helpers.js` divides by 100 internally.
 
@@ -137,13 +164,62 @@ const fee = calculateTotal(budgetLines, 5.0); // 5% fee rate
 const fee = calculateTotal(budgetLines, 5.0 / 100); // Results in 0.05% fee rate
 ```
 
+### Currency Display: Always Show Two-Digit Cents
+
+Currency values in the UI must render with exactly two decimal places (rounded, not truncated). Never display a raw float like `$130,143,958.5836`.
+
+For **display-only** (read-only) currency, use the `formatCurrency()` helper from `src/helpers/currencyFormat.helpers.js`. It already enforces the project convention: zero renders as `$0` (no decimals), non-zero renders with exactly two decimals (e.g., `$1,234.50`). Null, undefined, NaN, and Infinity coerce to `$0`.
+
+```jsx
+import { formatCurrency } from "../../helpers/currencyFormat.helpers";
+
+// CORRECT — handles zero suppression and 2-decimal rounding internally
+<span>{formatCurrency(amount)}</span>
+
+// INCORRECT — manual Intl.NumberFormat without the zero-suppression rule
+<span>{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount)}</span>
+```
+
+For **form inputs** accepting currency, use the `CurrencyInput` component (`src/components/UI/Form/CurrencyInput/CurrencyInput.jsx`), which wraps `react-currency-input-field`.
+
+For card totals rendered at large font sizes (`font-sans-xl` / 2 rem or larger), use `src/components/UI/CurrencyWithSmallCents/CurrencyWithSmallCents.jsx` to render dollars in the large font and cents in a smaller font. This is required — large bold cents at 32 px+ look disproportionate. See `BudgetCard`, `BigBudgetCard`, `CurrencyCard`, and `ReceivedFundingCard` for existing usage. Cards with smaller text sizes for amounts (e.g., legend rows, table cells) can render cents at the same size as the dollars using `formatCurrency()`.
+
+### Percentages: Use the `<1%` and 99-Cap Conventions
+
+Multi-segment legends and summary breakdowns must follow these display rules:
+
+1. A non-zero value that rounds down to 0% displays as `<1%`, never `0%`. `0%` is reserved for values that are truly zero.
+2. When one segment would round to 100% but other non-zero segments exist, cap the dominant segment at `99%` (per Figma spec — never `>99%`).
+3. When all segments round to whole numbers, the displayed integers should sum to exactly 100 via the largest-remainder algorithm.
+
+Use the helpers in `src/helpers/utils.js`:
+
+- `computeDisplayPercents(items)` — apply this to the **full array** of legend/segment items. It performs cross-item normalization (rules 1–3 above) and is the right choice for any multi-item legend, donut, or stacked bar. Examples: `BLIStatusSummaryCard`, `PortfolioLegend`, `AgreementSpendingCards`.
+- `computeDisplayPercent(value, total)` — single-item helper. Only handles rule 1 (`<1%`). Use this only when the surrounding context already guarantees rules 2 and 3 don't apply (e.g., a standalone metric, not a legend).
+
+```javascript
+// CORRECT — cross-item normalization for a legend
+const legendData = computeDisplayPercents(rawItems);
+
+// INCORRECT — per-item calls in a loop lose the 99-cap and sum-to-100 rules
+const legendData = rawItems.map((item) => ({
+    ...item,
+    percent: computeDisplayPercent(item.value, total)
+}));
+```
+
+The `Tag` component renders these values verbatim, so a `percent` of `"<1"` displays as `<1%` and `99` displays as `99%` without further string handling.
+
 ## Important Files
 
 - `src/api/opsAPI.js`: RTK Query API with all endpoints
 - `src/api/opsAuthAPI.js`: Authentication-specific endpoints
 - `src/store.js`: Redux store configuration
 - `src/components/UI/`: Shared UI components
+- `src/components/UI/CurrencyWithSmallCents/CurrencyWithSmallCents.jsx`: Required for large-font (font-sans-xl+) currency totals on cards
 - `src/helpers/agreement.helpers.js`: Agreement calculation helpers
+- `src/helpers/utils.js`: Shared helpers including `computeDisplayPercents` / `computeDisplayPercent` and `convertToCurrency`
+- `src/helpers/currencyFormat.helpers.js`: `formatCurrency` helper for display-only currency rendering
 - `src/pages/`: Page-level components (route targets)
 - `cypress/e2e/`: E2E test specs
 - `cypress/support/commands.js`: Custom Cypress commands

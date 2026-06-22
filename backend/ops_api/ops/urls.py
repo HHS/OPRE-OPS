@@ -7,6 +7,7 @@ from ops_api.ops.views import (
     AGREEMENT_ITEM_API_VIEW_FUNC,
     AGREEMENT_LIST_API_VIEW_FUNC,
     AGREEMENT_LIST_FILTER_OPTION_API_VIEW_FUNC,
+    AGREEMENT_SPENDING_ITEM_API_VIEW_FUNC,
     AZURE_SAS_TOKEN_VIEW_FUNC,
     BUDGET_LINE_ITEMS_ITEM_API_VIEW_FUNC,
     BUDGET_LINE_ITEMS_LIST_API_VIEW_FUNC,
@@ -53,9 +54,11 @@ from ops_api.ops.views import (
     PROCUREMENT_TRACKER_STEP_ITEM_API_VIEW_FUNC,
     PROCUREMENT_TRACKER_STEP_LIST_API_VIEW_FUNC,
     PROCUREMENT_TRACKER_STEP_PENDING_APPROVALS_API_VIEW_FUNC,
+    PROCUREMENT_TRACKER_STEP_PENDING_REQUISITIONS_API_VIEW_FUNC,
     PRODUCT_SERVICE_CODE_ITEM_API_VIEW_FUNC,
     PRODUCT_SERVICE_CODE_LIST_API_VIEW_FUNC,
     PROJECT_FUNDING_API_VIEW_FUNC,
+    PROJECT_HISTORY_LIST_API_VIEW_FUNC,
     PROJECT_ITEM_API_VIEW_FUNC,
     PROJECT_LIST_API_VIEW_FUNC,
     PROJECT_LIST_FILTER_OPTION_API_VIEW_FUNC,
@@ -172,6 +175,10 @@ def register_api(api_bp: Blueprint) -> None:
         view_func=PROCUREMENT_TRACKER_STEP_PENDING_APPROVALS_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
+        "/procurement-tracker-steps/pending-requisitions/",
+        view_func=PROCUREMENT_TRACKER_STEP_PENDING_REQUISITIONS_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
         "/procurement-tracker-steps/<int:id>",
         view_func=PROCUREMENT_TRACKER_STEP_ITEM_API_VIEW_FUNC,
     )
@@ -248,6 +255,10 @@ def register_api(api_bp: Blueprint) -> None:
         "/projects/<int:id>/spending/",
         view_func=PROJECT_SPENDING_ITEM_API_VIEW_FUNC,
     )
+    api_bp.add_url_rule(
+        "/projects/<int:id>/history/",
+        view_func=PROJECT_HISTORY_LIST_API_VIEW_FUNC,
+    )
 
     api_bp.add_url_rule(
         "/agreements/<int:id>",
@@ -260,6 +271,10 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/agreements/<int:id>/history/",
         view_func=AGREEMENT_HISTORY_LIST_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/agreements/<int:id>/spending/",
+        view_func=AGREEMENT_SPENDING_ITEM_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
         "/agreement-agencies/",

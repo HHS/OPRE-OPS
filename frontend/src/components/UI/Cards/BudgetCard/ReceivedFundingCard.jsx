@@ -1,4 +1,4 @@
-import CurrencyFormat from "react-currency-format";
+import { formatCurrency } from "../../../../helpers/currencyFormat.helpers";
 import CurrencyWithSmallCents from "../../CurrencyWithSmallCents/CurrencyWithSmallCents";
 import ReverseLineGraph from "../../DataViz/LineGraph/ReverseLineGraph";
 import RoundedBox from "../../RoundedBox";
@@ -51,9 +51,9 @@ const ReceivedFundingCard = ({ title, totalReceived, totalFunding }) => {
                     dollarsClasses="font-sans-xl text-bold margin-bottom-0"
                     centsStyles={{ fontSize: "10px" }}
                 />
-                {totalFunding > 0 && <Tag tagStyle={"budgetAvailable"}>Received</Tag>}
+                {totalReceived > 0 && <Tag tagStyle={"budgetAvailable"}>Received</Tag>}
             </div>
-            {totalFunding > 0 && (
+            {totalReceived > 0 && (
                 <div
                     id="currency-summary-card"
                     className="margin-top-2"
@@ -63,25 +63,7 @@ const ReceivedFundingCard = ({ title, totalReceived, totalFunding }) => {
             )}
             <div className="font-12px margin-top-2 display-flex flex-justify-end">
                 <div data-testid="received-funding-card-text">
-                    Received{" "}
-                    <CurrencyFormat
-                        value={totalReceived ?? 0}
-                        displayType={"text"}
-                        thousandSeparator={true}
-                        prefix={"$"}
-                        decimalScale={totalReceived > 0 ? 2 : 0}
-                        fixedDecimalScale
-                    />{" "}
-                    of{" "}
-                    <CurrencyFormat
-                        value={totalFunding ?? 0}
-                        displayType={"text"}
-                        thousandSeparator={true}
-                        prefix={"$"}
-                        renderText={(totalFunding) => <span>{totalFunding}</span>}
-                        decimalScale={totalFunding > 0 ? 2 : 0}
-                        fixedDecimalScale
-                    />
+                    Received {formatCurrency(totalReceived ?? 0)} of <span>{formatCurrency(totalFunding ?? 0)}</span>
                 </div>
             </div>
         </RoundedBox>

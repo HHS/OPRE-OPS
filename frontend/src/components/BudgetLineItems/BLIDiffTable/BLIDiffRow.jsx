@@ -1,6 +1,5 @@
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import CurrencyFormat from "react-currency-format";
 import { useSelector } from "react-redux";
 import {
     BLI_STATUS,
@@ -9,7 +8,7 @@ import {
     getBudgetLineCreatedDate,
     getProcurementShopLabel
 } from "../../../helpers/budgetLines.helpers";
-import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
+import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import { fiscalYearFromDate, formatDateNeeded } from "../../../helpers/utils";
 import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
@@ -80,15 +79,7 @@ const BLIDiffRow = ({ budgetLine, changeType, statusChangeTo = "" }) => {
             </td>
             <td className={addDiffClass(changeRequestTypes.includes(KEY_NAMES.CAN))}>{canLabel(budgetLine)}</td>
             <td className={addDiffClass(changeRequestTypes.includes(KEY_NAMES.AMOUNT))}>
-                <CurrencyFormat
-                    value={budgetLine?.amount || 0}
-                    displayType={"text"}
-                    thousandSeparator={true}
-                    prefix={"$"}
-                    decimalScale={getDecimalScale(budgetLine?.amount || 0)}
-                    fixedDecimalScale={true}
-                    renderText={(value) => value}
-                />
+                {formatCurrency(budgetLine?.amount || 0)}
             </td>
             <td
                 className={
@@ -96,15 +87,7 @@ const BLIDiffRow = ({ budgetLine, changeType, statusChangeTo = "" }) => {
                     addDiffClass(changeRequestTypes.includes(KEY_NAMES.PROC_SHOP))
                 }
             >
-                <CurrencyFormat
-                    value={feeTotal}
-                    displayType={"text"}
-                    thousandSeparator={true}
-                    prefix={"$"}
-                    decimalScale={getDecimalScale(feeTotal)}
-                    fixedDecimalScale={true}
-                    renderText={(value) => value}
-                />
+                {formatCurrency(feeTotal)}
             </td>
             <td
                 className={
@@ -112,15 +95,7 @@ const BLIDiffRow = ({ budgetLine, changeType, statusChangeTo = "" }) => {
                     addDiffClass(changeRequestTypes.includes(KEY_NAMES.PROC_SHOP))
                 }
             >
-                <CurrencyFormat
-                    value={budgetLineTotalPlusFees}
-                    displayType={"text"}
-                    thousandSeparator={true}
-                    prefix={"$"}
-                    decimalScale={getDecimalScale(budgetLineTotalPlusFees)}
-                    fixedDecimalScale={true}
-                    renderText={(value) => value}
-                />
+                {formatCurrency(budgetLineTotalPlusFees)}
             </td>
             <td className={isActionable ? addDiffClass(changeRequestTypes.includes(KEY_NAMES.STATUS)) : ""}>
                 {isActionable ? (

@@ -10,6 +10,11 @@ import classnames from "vest/classnames";
 import ConfirmationModal from "../../components/UI/Modals/ConfirmationModal";
 import useAlert from "../../hooks/use-alert.hooks";
 
+const DISPLAY_TO_API_TYPE = {
+    Research: "RESEARCH",
+    "Admin & Support": "ADMINISTRATIVE_AND_SUPPORT"
+};
+
 const CreateProject = () => {
     const [showModal, setShowModal] = useState(false);
     const [modalProps, setModalProps] = useState({
@@ -55,7 +60,7 @@ const CreateProject = () => {
     // prepare data for submission
     const editedProject = {
         ...project,
-        project_type: project.project_type.toUpperCase()
+        project_type: DISPLAY_TO_API_TYPE[project.project_type] || project.project_type
     };
 
     if (isError) {

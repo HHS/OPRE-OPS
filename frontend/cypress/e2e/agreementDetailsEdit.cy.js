@@ -18,14 +18,15 @@ const waitForAgreementHistory = (agreementId, bearer_token, startedAt = Date.now
             failOnStatusCode: false
         })
         .then((response) => {
-            const hasEntries = response.status === 200 && Array.isArray(response.body) && response.body.length > 0;
+            const hasEntries =
+                response.status === 200 && Array.isArray(response.body.data) && response.body.data.length > 0;
             if (hasEntries) {
                 return;
             }
             const elapsedMs = Date.now() - startedAt;
             if (elapsedMs >= HISTORY_TIMEOUT_MS) {
                 expect(response.status, "agreement history status").to.eq(200);
-                expect(response.body, "agreement history entries").to.be.an("array").and.have.length.greaterThan(0);
+                expect(response.body.data, "agreement history entries").to.be.an("array").and.have.length.greaterThan(0);
                 return;
             }
             cy.wait(HISTORY_POLL_INTERVAL_MS);
@@ -446,6 +447,8 @@ describe("Awarded Agreement", () => {
         cy.get("#agreementNotes").clear();
         cy.get("#agreementNotes").type("Adding notes as agreement team member.");
         cy.get("[data-cy='continue-btn']").click();
+        // wait for page to finish loading after save
+        cy.url().should("not.include", "mode=edit");
         // verify notes are added
         cy.get("[data-cy='details-notes']").should("contain", "Adding notes as agreement team member.");
         checkAgreementHistory();
@@ -475,6 +478,8 @@ describe("Awarded Agreement", () => {
         cy.get("#agreementNotes").clear();
         cy.get("#agreementNotes").type("Adding notes as agreement power user.");
         cy.get("[data-cy='continue-btn']").click();
+        // wait for page to finish loading after save
+        cy.url().should("not.include", "mode=edit");
         // verify notes are added
         cy.get("[data-cy='details-notes']").should("contain", "Adding notes as agreement power user.");
         checkAgreementHistory();

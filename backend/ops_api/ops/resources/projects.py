@@ -1,14 +1,17 @@
 from flask import Response, current_app, request
+from flask_jwt_extended import get_current_user
 from typing_extensions import List
 
 from models import AdministrativeAndSupportProject, Project, ProjectType, ResearchProject
 from models.base import BaseModel
 from models.events import OpsEventType
+from models.utils import generate_project_events_update
 from models.utils.fiscal_year import get_current_fiscal_year
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.schemas.projects import (
+    MetaSchema,
     ProjectCreationRequestSchema,
     ProjectFundingRequestSchema,
     ProjectFundingResponseSchema,
@@ -22,7 +25,20 @@ from ops_api.ops.schemas.projects import (
 )
 from ops_api.ops.services.projects import ProjectsService
 from ops_api.ops.utils.events import OpsEventHandler
+from ops_api.ops.utils.projects_helpers import check_project_user_association
 from ops_api.ops.utils.response import make_response_with_headers
+
+
+def _dump_project_for_history(project: Project) -> dict:
+    """Serialize a project for use in OpsEvent payloads. Uses the type-specific response schema, minus _meta."""
+    match project.project_type:
+        case ProjectType.RESEARCH:
+            schema = ResearchProjectResponse(exclude=["_meta"])
+        case ProjectType.ADMINISTRATIVE_AND_SUPPORT:
+            schema = ProjectResponse(exclude=["_meta"])
+        case _:
+            schema = ProjectResponse(exclude=["_meta"])
+    return schema.dump(project)
 
 
 class ProjectItemAPI(BaseItemAPI):
@@ -37,15 +53,18 @@ class ProjectItemAPI(BaseItemAPI):
         project = service.get(id)
         match project.project_type:
             case ProjectType.RESEARCH:
-                research_schema = ResearchProjectResponse()
-                serialized_project = research_schema.dump(project)
+                schema = ResearchProjectResponse(exclude=["_meta"])
             case ProjectType.ADMINISTRATIVE_AND_SUPPORT:
                 # No separate schema for admin project yet but there will be
-                admin_schema = ProjectResponse()
-                serialized_project = admin_schema.dump(project)
+                schema = ProjectResponse(exclude=["_meta"])
             case _:
-                general_schema = ProjectResponse()
-                serialized_project = general_schema.dump(project)
+                schema = ProjectResponse(exclude=["_meta"])
+        serialized_project = schema.dump(project)
+
+        current_user = get_current_user()
+        serialized_project["_meta"] = MetaSchema().dump(
+            {"isEditable": check_project_user_association(project, current_user)}
+        )
 
         return make_response_with_headers(serialized_project)
 
@@ -55,8 +74,20 @@ class ProjectItemAPI(BaseItemAPI):
             request_schema = ProjectUpdateRequestSchema(partial=True)
             data = request_schema.load(request.json)
             service = ProjectsService(current_app.db_session)
+
+            old_project = service.get(id)
+            old_serialized_project = _dump_project_for_history(old_project)
+
             updated_project, status_code = service.update(id, data)
-            meta.metadata.update({"updated_project": updated_project.to_dict()})
+            new_serialized_project = _dump_project_for_history(updated_project)
+
+            updates = generate_project_events_update(
+                old_serialized_project,
+                new_serialized_project,
+                updated_project.id,
+                updated_project.updated_by,
+            )
+            meta.metadata.update({"project_updates": updates})
             return make_response_with_headers({"id": updated_project.id}, status_code)
 
 
@@ -102,7 +133,7 @@ class ProjectListAPI(BaseListAPI):
                 return make_response_with_headers({}, 400)
             service = ProjectsService(current_app.db_session)
             project = service.create(data)
-            meta.metadata.update({"new_project": project.to_dict()})
+            meta.metadata.update({"new_project": {"id": project.id}})
             return make_response_with_headers({"id": project.id}, 201)
 
 

@@ -3,6 +3,7 @@ import { getLocalISODate } from "../../../../helpers/utils";
 import TextArea from "../../../UI/Form/TextArea";
 import ConfirmationModal from "../../../UI/Modals/ConfirmationModal";
 import TermTag from "../../../UI/Term/TermTag";
+import Tooltip from "../../../UI/USWDS/Tooltip/Tooltip";
 import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepFive from "./ProcurementTrackerStepFive.hooks";
 import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
@@ -73,9 +74,11 @@ const ProcurementTrackerStepFive = ({
     // Disabled flags for form controls
     const isApprovalDeclined = stepFiveData?.approval_status === "DECLINED";
     const isApprovalApproved = stepFiveData?.approval_status === "APPROVED";
+    const isRequisitionApproved = !!stepFiveData?.requisition_approved_by;
+    const isAwaitingBudgetTeam = isApprovalApproved && !isRequisitionApproved;
     const isTargetCompletionDateSaveDisabled =
         isDisabled || validatorRes.hasErrors("targetCompletionDate") || !targetCompletionDate || !stepFiveData?.id;
-    const isPreAwardCheckboxDisabled = isDisabled || !isActiveStep || !isApprovalApproved;
+    const isPreAwardCheckboxDisabled = isDisabled || !isActiveStep || !isApprovalApproved || isAwaitingBudgetTeam;
     const isUsersComboBoxDisabled = isDisabled || !isPreAwardComplete || authorizedUsers.length === 0;
     const isPreAwardFieldsDisabled = isDisabled || !isPreAwardComplete;
     const hasBLIInReview = budgetLineItems?.some((bli) => bli.in_review) ?? false;
@@ -90,8 +93,32 @@ const ProcurementTrackerStepFive = ({
         !step5DateCompleted ||
         validatorRes.hasErrors() ||
         !stepFiveData?.id ||
-        stepFiveData?.approval_status !== ProcurementTrackerPreAwardApprovalStatus.APPROVED
+        stepFiveData?.approval_status !== ProcurementTrackerPreAwardApprovalStatus.APPROVED ||
+        !stepFiveData?.requisition_approved_by // Budget team must approve requisition before completing step
     );
+
+    // Calculate which specific condition is blocking the pre-award approval request
+    // Precedence order (most actionable first): BLI in review > approval already requested > step not active > global disabled
+    const getPreAwardTooltipMessage = () => {
+        // Most actionable: user can resolve BLI reviews immediately
+        if (hasBLIInReview) {
+            return "Budget lines In Review Status must be approved or declined before you can request pre-award approval";
+        }
+        // Less actionable: user typically waits for reviewer (but can be explicit about the state)
+        if (stepFiveData?.approval_requested && stepFiveData?.approval_status !== "DECLINED") {
+            return "Pre-Award Approval has already been requested";
+        }
+        // Requires completing prior step, usually obvious from UI
+        if (!isActiveStep) {
+            return "Complete Step 4 before requesting Pre-Award Approval";
+        }
+        // Generic fallback for global disabled state (no tracker, agreement not editable, etc.)
+        if (isDisabled) {
+            return "Pre-Award Approval cannot be requested at this time";
+        }
+        return ""; // No tooltip when button is enabled
+    };
+
     return (
         <>
             {showModal && (
@@ -106,11 +133,16 @@ const ProcurementTrackerStepFive = ({
             {isReadOnly && (
                 <div>
                     <p>
-                        Edit the Agreement to match the Vendor Price Sheet and ensure any final Budget Changes are
-                        approved, if needed. Request Pre-Award Approval from the Procurement Shop. If you have a target
-                        completion date for when the Final Consensus Memo will be sent, enter it below. Once you receive
-                        Pre-Award Approval and send the Final Consensus Memo to the Procurement Shop, check this task as
-                        complete.
+                        All agreements need Pre-Award Approval before the Final Consensus Memo can be sent to the
+                        Procurement Shop. Review the Vendor Price Sheet and make any edits or budget line status changes
+                        as needed. After final edits are approved by the Division Director(s), come back here and click
+                        Request Pre-Award Approval.
+                    </p>
+                    <p>
+                        Once you receive Pre-Award Approval, and the Budget Team submits the requisition, upload the
+                        Final Consensus Memo to the HHS Consolidated Acquisition Solution (HCAS), and check this step as
+                        complete. If you have a target completion date for when the Final Consensus Memo will be sent,
+                        enter it below.
                     </p>
                     {stepStatus === PROCUREMENT_STEP_STATUS.COMPLETED && (
                         <div className="display-flex flex-align-center margin-top-5">
@@ -123,7 +155,7 @@ const ProcurementTrackerStepFive = ({
                             <p className="margin-y-0">
                                 The Agreement was edited to match the Vendor Price Sheet and any final Budget Changes
                                 were approved, if needed. Pre-Award Approval was received and the Final Consensus Memo
-                                has been sent to the Procurement Shop.
+                                has been sent to the HHS Consolidated Acquisition Solution (HCAS).
                             </p>
                         </div>
                     )}
@@ -154,14 +186,19 @@ const ProcurementTrackerStepFive = ({
                 (stepStatus === PROCUREMENT_STEP_STATUS.PENDING || stepStatus === PROCUREMENT_STEP_STATUS.ACTIVE) && (
                     <fieldset className="usa-fieldset">
                         <p>
-                            Edit the Agreement to match the Vendor Price Sheet and ensure any final Budget Changes are
-                            approved, if needed. Request Pre-Award Approval from the Procurement Shop. If you have a
-                            target completion date for when the Final Consensus Memo will be sent, enter it below. Once
-                            you receive Pre-Award Approval and send the Final Consensus Memo to the Procurement Shop,
-                            check this task as complete.
+                            All agreements need Pre-Award Approval before the Final Consensus Memo can be sent to the
+                            Procurement Shop. Review the Vendor Price Sheet and make any edits or budget line status
+                            changes as needed. After final edits are approved by the Division Director(s), come back
+                            here and click Request Pre-Award Approval.
+                        </p>
+                        <p>
+                            Once you receive Pre-Award Approval, and the Budget Team submits the requisition, upload the
+                            Final Consensus Memo to the HHS Consolidated Acquisition Solution (HCAS), and check this
+                            step as complete. If you have a target completion date for when the Final Consensus Memo
+                            will be sent, enter it below.
                         </p>
 
-                        <div className="display-flex flex-align-end margin-bottom-2">
+                        <div className="display-flex flex-align-end margin-bottom-4">
                             {stepFiveData?.target_completion_date ? (
                                 <TermTag
                                     term="Target Completion Date"
@@ -203,24 +240,61 @@ const ProcurementTrackerStepFive = ({
                         {/* Pre-Award Approval Request Section */}
                         {
                             <div className="margin-bottom-3">
-                                <p>
-                                    Before completing this step, you may request Pre-Award Approval from your Division
-                                    Director.
-                                </p>
-                                <button
-                                    type="button"
-                                    className="usa-button"
-                                    onClick={() => navigate(`/agreements/${agreementId}/pre-award-approval`)}
-                                    disabled={isRequestBtnDisabled}
-                                    title={
-                                        isRequestBtnDisabled
-                                            ? "Pre-Award Approval cannot be requested right now. Ensure this step is unlocked, Pre-Award Approval has not already been requested, and that no Budget Line Items are currently in review."
-                                            : undefined
-                                    }
-                                    data-cy="request-pre-award-approval-btn"
+                                <Tooltip
+                                    label={getPreAwardTooltipMessage()}
+                                    position="top"
                                 >
-                                    Request Pre-Award Approval
-                                </button>
+                                    <button
+                                        type="button"
+                                        className="usa-button"
+                                        onClick={() => navigate(`/agreements/${agreementId}/pre-award-approval`)}
+                                        disabled={isRequestBtnDisabled}
+                                        data-cy="request-pre-award-approval-btn"
+                                    >
+                                        Request Pre-Award Approval
+                                    </button>
+                                </Tooltip>
+                                {isApprovalDeclined && (
+                                    <div
+                                        className="usa-alert usa-alert--error usa-alert--slim margin-top-2"
+                                        role="alert"
+                                    >
+                                        <div className="usa-alert__body">
+                                            <p className="usa-alert__text">
+                                                This agreement has been declined for Pre-Award. Please do not upload the
+                                                Final Consensus Memo to the HHS Consolidated Acquisition Solution (HCAS)
+                                                until changes have been made and re-submitted for approval above.
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+                                {stepFiveData?.approval_requested && !isRequisitionApproved && !isApprovalDeclined && (
+                                    <div
+                                        className="usa-alert usa-alert--warning usa-alert--slim margin-top-2"
+                                        role="status"
+                                    >
+                                        <div className="usa-alert__body">
+                                            <p className="usa-alert__text">
+                                                This agreement is In Review for Pre-Award Approval. Edits or changes
+                                                cannot be made at this time.
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+                                {isRequisitionApproved && (
+                                    <div
+                                        className="usa-alert usa-alert--success usa-alert--slim margin-top-2"
+                                        role="status"
+                                    >
+                                        <div className="usa-alert__body">
+                                            <p className="usa-alert__text">
+                                                This agreement has been approved for Pre-Award. Please upload the Final
+                                                Consensus Memo to the HHS Consolidated Acquisition Solution (HCAS), and
+                                                continue your progress in the Procurement Tracker.
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         }
 
@@ -241,7 +315,7 @@ const ProcurementTrackerStepFive = ({
                             >
                                 The Agreement was edited to match the Vendor Price Sheet and any final Budget Changes
                                 were approved, if needed. I received Pre-Award Approval and the Final Consensus Memo has
-                                been sent to the Procurement Shop.
+                                been sent to the HHS Consolidated Acquisition Solution (HCAS).
                             </label>
                         </div>
                         <div className="display-flex flex-align-center">
@@ -316,9 +390,16 @@ const ProcurementTrackerStepFive = ({
             {!isReadOnly && stepStatus === PROCUREMENT_STEP_STATUS.COMPLETED && (
                 <div>
                     <p>
-                        OPRE edits the Agreement to match the Vendor Price Sheet and ensures any final Budget Changes
-                        are approved, if needed. Once OPRE receives Pre-Award Approval and sends the Final Consensus
-                        Memo to the Procurement Shop, this step is marked complete.
+                        All agreements need Pre-Award Approval before the Final Consensus Memo can be sent to the
+                        Procurement Shop. Review the Vendor Price Sheet and make any edits or budget line status changes
+                        as needed. After final edits are approved by the Division Director(s), come back here and click
+                        Request Pre-Award Approval.
+                    </p>
+                    <p>
+                        Once you receive Pre-Award Approval, and the Budget Team submits the requisition, upload the
+                        Final Consensus Memo to the HHS Consolidated Acquisition Solution (HCAS), and check this step as
+                        complete. If you have a target completion date for when the Final Consensus Memo will be sent,
+                        enter it below.
                     </p>
                     <div className="display-flex flex-align-center margin-top-5">
                         <FontAwesomeIcon
@@ -331,7 +412,7 @@ const ProcurementTrackerStepFive = ({
                         <p className="margin-y-0">
                             The Agreement was edited to match the Vendor Price Sheet and any final Budget Changes were
                             approved, if needed. Pre-Award Approval was received and the Final Consensus Memo has been
-                            sent to the Procurement Shop.
+                            sent to the HHS Consolidated Acquisition Solution (HCAS).
                         </p>
                     </div>
                     <dl className="display-flex flex-wrap">

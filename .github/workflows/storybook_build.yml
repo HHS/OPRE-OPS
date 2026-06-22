@@ -23,10 +23,57 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
 
       - uses: ./.github/actions/setup-javascript
 
       - name: Build Storybook
         working-directory: ./frontend
         run: CI=true timeout 600 bun run build-storybook
+
+  stories-coverage:
+    name: Stories Coverage Check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          fetch-depth: 0
+
+      - name: Warn on UI components missing co-located stories
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          missing=()
+          while IFS= read -r file; do
+            [ -z "$file" ] && continue
+            case "$file" in
+              *.test.jsx|*.stories.jsx|*/index.js|*/index.jsx) continue ;;
+            esac
+            [ -f "$file" ] || continue
+            story="${file%.jsx}.stories.jsx"
+            if [ ! -f "$story" ]; then
+              missing+=("$file")
+              echo "::warning file=$file::Missing co-located $(basename "$story") for new/changed UI component. See frontend/.storybook/README.md."
+            fi
+          done < <(git diff --name-only --diff-filter=AM "$BASE_SHA" "$HEAD_SHA" -- 'frontend/src/components/UI/**/*.jsx')
+
+          {
+            echo "## Storybook stories coverage"
+            if [ ${#missing[@]} -eq 0 ]; then
+              echo ""
+              echo "All changed \`src/components/UI/\` components have a co-located \`*.stories.jsx\`."
+            else
+              echo ""
+              echo "The following UI components were added or changed without a co-located \`*.stories.jsx\`:"
+              echo ""
+              for f in "${missing[@]}"; do
+                echo "- \`$f\`"
+              done
+              echo ""
+              echo "Adding stories is **strongly encouraged** for components in \`src/components/UI/\`. See \`frontend/.storybook/README.md\`."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

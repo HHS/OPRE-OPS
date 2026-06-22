@@ -1,4 +1,4 @@
-from marshmallow import EXCLUDE, Schema, fields
+from marshmallow import EXCLUDE, Schema, fields, pre_load
 
 from models import (
     AcquisitionType,
@@ -70,6 +70,12 @@ class AgreementData(Schema):
         allow_none=True,
         load_default=[],
     )
+
+    @pre_load
+    def normalize_nick_name(self, data, **kwargs):
+        if "nick_name" in data and isinstance(data["nick_name"], str):
+            data["nick_name"] = data["nick_name"].strip() or None
+        return data
 
     # Nested entities for atomic creation
     budget_line_items = fields.List(
@@ -153,6 +159,7 @@ class AgreementRequestSchema(PaginationListSchema):
     only_my = fields.List(fields.Boolean(), required=False)
     award_type = fields.List(fields.Enum(AgreementClassification), required=False)
     exact_match = fields.List(fields.Boolean(), required=False, load_default=[True])
+    include_procurement = fields.List(fields.Boolean(), required=False, load_default=[False])
 
 
 class AgreementFiltersQueryParametersSchema(Schema):
@@ -224,7 +231,7 @@ class AgreementListResponse(FyObligatedMixin, AgreementData):
     project = fields.Nested(ProjectSchema())
     product_service_code = fields.Nested(ProductServiceCodeSchema)
     budget_line_items = fields.List(
-        fields.Nested(BudgetLineItemResponseSchema, only=["id", "amount", "fees", "status", "is_obe"]),
+        fields.Nested(BudgetLineItemResponseSchema, only=["id", "amount", "fees", "status", "is_obe", "fiscal_year"]),
         allow_none=True,
     )
     procurement_shop = fields.Nested(ProcurementShopSchema)

@@ -831,7 +831,8 @@ const useCreateBLIsAndSCs = (
                     // creating new agreement
                     const newServicesComponents = servicesComponents
                         .filter((sc) => !("created_on" in sc))
-                        .map(({ display_title, ...sc }) => ({
+                        // eslint-disable-next-line no-unused-vars
+                        .map(({ display_title, has_changed, popStartDate, popEndDate, mode, ...sc }) => ({
                             ...sc,
                             ref: display_title
                         }));
@@ -880,10 +881,14 @@ const useCreateBLIsAndSCs = (
                     const changedServicesComponents = existingServicesComponents.filter((sc) => sc.has_changed);
 
                     const serviceComponentsCreationPromises = newServicesComponents.map((sc) => {
-                        return addServicesComponent(sc).unwrap();
+                        // eslint-disable-next-line no-unused-vars
+                        const { display_title, has_changed, popStartDate, popEndDate, mode, ...cleanSc } = sc;
+                        return addServicesComponent(cleanSc).unwrap();
                     });
                     const serviceComponentsUpdatePromises = changedServicesComponents.map((sc) => {
-                        return updateServicesComponent({ id: sc.id, data: sc }).unwrap();
+                        // eslint-disable-next-line no-unused-vars
+                        const { display_title, has_changed, popStartDate, popEndDate, mode, ...cleanSc } = sc;
+                        return updateServicesComponent({ id: sc.id, data: cleanSc }).unwrap();
                     });
 
                     const createdServiceComponents = await Promise.all(serviceComponentsCreationPromises);
@@ -1001,6 +1006,7 @@ const useCreateBLIsAndSCs = (
 
     React.useEffect(() => {
         if (blocker.state === "blocked") {
+            const destination = blocker.location?.pathname;
             const modalContent = hasFinancialSnapshotChanges
                 ? {
                       heading: "Save changes before leaving?",
@@ -1012,7 +1018,7 @@ const useCreateBLIsAndSCs = (
                 : {
                       heading: "Save changes before leaving?",
                       description: "You have unsaved changes. If you leave without saving, these changes will be lost.",
-                      actionButtonText: "Save",
+                      actionButtonText: "Save Changes",
                       secondaryButtonText: "Leave without saving"
                   };
             setShowSaveChangesModal(true);
@@ -1021,7 +1027,10 @@ const useCreateBLIsAndSCs = (
                 handleConfirm: async () => {
                     await handleSaveRef.current(true);
                     setShowSaveChangesModal(false);
-                    await proceedIfBlocked();
+                    blocker.reset();
+                    if (destination) {
+                        navigate(destination);
+                    }
                 },
                 handleSecondary: async () => {
                     setHasUnsavedChanges(false);
@@ -1034,7 +1043,7 @@ const useCreateBLIsAndSCs = (
                 }
             });
         }
-    }, [blocker, hasFinancialSnapshotChanges, setIsEditMode]);
+    }, [blocker, hasFinancialSnapshotChanges, setIsEditMode, navigate]);
 
     return {
         blocker,

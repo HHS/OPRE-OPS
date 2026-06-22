@@ -366,3 +366,80 @@ it("should handle cancelling out of workflow on step 2", () => {
 });
 
 // TODO: Add test for cancelling out of workflow on step 3
+
+it("allows entering a decimal budget line amount", () => {
+    // Step One - Select a Project
+    cy.get("#project-combobox-input").type("Human Services Interoperability Support{enter}");
+    cy.get("#continue").click();
+
+    // Step Two - Create an Agreement
+    cy.get("dt").should("contain", "Project");
+    cy.get("#agreement-type-filter").select("CONTRACT");
+    cy.get("#name").type("E2E Decimal Amount Test");
+    cy.get("#contract-type").select("FIRM_FIXED_PRICE");
+    cy.get("#service_requirement_type").select("SEVERABLE");
+    cy.get("#description").type("Test Agreement Description");
+    cy.get("#product_service_code_id").select("Other Scientific and Technical Consulting Services");
+    cy.get("#agreement_reason").select("NEW_REQ");
+    cy.get("#project-officer-combobox-input").type("Chris Fortunato{enter}");
+    cy.get("[data-cy='continue-btn']").click();
+
+    // Step Three - Add Services Component and Budget Line
+    cy.get("#servicesComponentSelect").select("1");
+    cy.get("#pop-start-date").type("01/01/2024");
+    cy.get("#pop-end-date").type("01/01/2025");
+    cy.get("#description").type("This is a description.");
+    cy.get("[data-cy='add-services-component-btn']").click();
+    cy.get("h2").should("contain", "Base Period 1");
+
+    // Add a budget line item with a decimal amount
+    cy.get("#allServicesComponentSelect").select("Base Period 1");
+    cy.get("#need-by-date").type("01/01/2030");
+    cy.get("#can-combobox-input").type("G99MVT3{enter}");
+    cy.get("#enteredAmount").clear().type("500.75");
+
+    // The decimal value should be accepted and retained by the input.
+    // No cleanup needed — the test stops before submitting, so no agreement is created.
+    cy.get("#enteredAmount").should("have.value", "500.75");
+});
+
+it("can save a draft agreement from step 2", () => {
+    cy.intercept("POST", "**/agreements").as("postAgreement");
+
+    // Step One - Select a Project
+    cy.get("#project-combobox-input").type("Human Services Interoperability Support{enter}");
+    cy.get("#continue").click();
+
+    // Step Two - Fill minimum required fields
+    cy.get("#agreement-type-filter").select("CONTRACT");
+    cy.get("#name").type("E2E Draft Save Test");
+    cy.get("#contract-type").select("FIRM_FIXED_PRICE");
+    cy.get("#service_requirement_type").select("SEVERABLE");
+
+    // Click Save Draft
+    const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
+    cy.get("[data-cy='save-draft-btn']").click();
+
+    // Verify the POST was made and agreement was created
+    cy.wait("@postAgreement").then((interception) => {
+        const { statusCode, body } = interception.response;
+        expect(statusCode).to.equal(201);
+        expect(body.message).to.contain("Agreement created");
+        const agreementId = body.id;
+
+        // Verify navigation to agreements list
+        cy.url().should("include", "/agreements");
+
+        // Cleanup: delete the test agreement
+        cy.request({
+            method: "DELETE",
+            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+            headers: {
+                Authorization: bearer_token,
+                Accept: "application/json"
+            }
+        }).then((response) => {
+            expect(response.status).to.eq(200);
+        });
+    });
+});

@@ -64,7 +64,7 @@ runs:
         INPUT_TF_VARS: ${{ inputs.tf_vars }}
 
     - name: Setup Terraform
-      uses: hashicorp/setup-terraform@5e8dbf3c6d9deaf4193ca7a8fb23f2ac83bb6c85 # v4.0.0
+      uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
       with:
         terraform_version: ${{ inputs.terraform_version }}
         terraform_wrapper: false
@@ -90,7 +90,7 @@ runs:
     - name: Download Plan
       id: download-plan
       if: ${{ inputs.plan_workflow_file != '' }}
-      uses: dawidd6/action-download-artifact@8305c0f1062bb0d184d09ef4493ecb9288447732 # v20
+      uses: dawidd6/action-download-artifact@b6e2e70617bc3265edd6dab6c906732b2f1ae151 # v21
       with:
         github_token: ${{ inputs.github_token }}
         workflow: ${{ inputs.plan_workflow_file }}

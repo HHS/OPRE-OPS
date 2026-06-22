@@ -82,7 +82,8 @@ export const opsApi = createApi({
         "Documents",
         "Cans",
         "ProcurementTrackers",
-        "Procurement Tracker Steps"
+        "Procurement Tracker Steps",
+        "Budget Requisitions"
     ],
     baseQuery: getBaseQueryWithReauth(baseQuery),
     endpoints: (builder) => ({
@@ -93,10 +94,13 @@ export const opsApi = createApi({
                     budgetLineStatus,
                     portfolio,
                     agreementName,
+                    nickName,
                     agreementType,
                     projectTitle,
                     contractNumber,
-                    awardType
+                    awardType,
+                    awardingEntityId,
+                    includeProcurement
                 },
                 onlyMy,
                 sortConditions,
@@ -122,6 +126,9 @@ export const opsApi = createApi({
                         }
                     });
                 }
+                if (nickName) {
+                    nickName.forEach((value) => queryParams.push(`nick_name=${encodeURIComponent(value)}`));
+                }
                 if (agreementType) {
                     agreementType.forEach((type) =>
                         queryParams.push(`agreement_type=${encodeURIComponent(type.type)}`)
@@ -137,6 +144,12 @@ export const opsApi = createApi({
                 }
                 if (awardType) {
                     awardType.forEach((award) => queryParams.push(`award_type=${encodeURIComponent(award.awardType)}`));
+                }
+                if (awardingEntityId) {
+                    awardingEntityId.forEach((id) => queryParams.push(`awarding_entity_id=${id}`));
+                }
+                if (includeProcurement) {
+                    queryParams.push("include_procurement=true");
                 }
                 if (onlyMy) {
                     queryParams.push("only_my=true");
@@ -163,7 +176,10 @@ export const opsApi = createApi({
                         count: response.count,
                         limit: response.limit,
                         offset: response.offset,
-                        totals: response.totals ?? null
+                        totals: response.totals ?? null,
+                        procurement_overview: response.procurement_overview ?? null,
+                        procurement_step_summary: response.procurement_step_summary ?? null,
+                        procurement_days_in_step: response.procurement_days_in_step ?? null
                     };
                 }
                 // Backward compatibility with old "agreements" key
@@ -173,7 +189,10 @@ export const opsApi = createApi({
                         count: response.count,
                         limit: response.limit,
                         offset: response.offset,
-                        totals: response.totals ?? null
+                        totals: response.totals ?? null,
+                        procurement_overview: response.procurement_overview ?? null,
+                        procurement_step_summary: response.procurement_step_summary ?? null,
+                        procurement_days_in_step: response.procurement_days_in_step ?? null
                     };
                 }
                 // Legacy array format (no pagination)
@@ -182,7 +201,10 @@ export const opsApi = createApi({
                     count: response.length,
                     limit: response.length,
                     offset: 0,
-                    totals: null
+                    totals: null,
+                    procurement_overview: null,
+                    procurement_step_summary: null,
+                    procurement_days_in_step: null
                 };
             },
             providesTags: ["Agreements", "BudgetLineItems"]
@@ -284,8 +306,10 @@ export const opsApi = createApi({
         getCanFilterOptions: builder.query({
             query: ({ fiscalYear }) => {
                 const queryParams = [];
-                if (fiscalYear) {
-                    queryParams.push(`fiscal_year=${fiscalYear}`);
+                if (fiscalYear && fiscalYear.length > 0) {
+                    fiscalYear.forEach((year) => {
+                        queryParams.push(`fiscal_year=${year}`);
+                    });
                 }
                 const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
                 return `/cans-filters/${queryString}`;
@@ -440,23 +464,94 @@ export const opsApi = createApi({
             providesTags: ["Users"]
         }),
         getResearchProjects: builder.query({
-            query: () => `/projects/?project_type=RESEARCH`,
-            transformResponse: (response) => {
-                // New wrapped format with data key
-                if (response.data) {
-                    return response.data;
+            // `/projects/` is capped at limit=50 by `PaginationListSchema`.
+            // Rather than deviating from that constraint we page through all results
+            // here so the Create Agreement project dropdown always shows every
+            // research project regardless of how many exist.
+            async queryFn(_arg, _queryApi, _extraOptions, fetchWithBQ) {
+                const BATCH_SIZE = 50;
+                const allProjects = [];
+                let offset = 0;
+                let total = Infinity; // set on first wrapped response
+
+                while (allProjects.length < total) {
+                    const result = await fetchWithBQ(
+                        `/projects/?project_type=RESEARCH&limit=${BATCH_SIZE}&offset=${offset}`
+                    );
+                    if (result.error) return { error: result.error };
+
+                    const response = result.data;
+
+                    // Legacy array format (no wrapper) — all results in one shot
+                    if (Array.isArray(response)) {
+                        return { data: response };
+                    }
+
+                    // Wrapped format: { data: [...], count: N, ... }
+                    const page = response.data ?? [];
+                    total = response.count ?? page.length;
+                    if (page.length === 0) break; // guard against malformed count
+                    allProjects.push(...page);
+                    offset += BATCH_SIZE;
                 }
-                // Legacy array format (no wrapper) - for backward compatibility during transition
-                return response;
+
+                return { data: allProjects };
             },
             providesTags: ["ResearchProjects"]
         }),
         getProjects: builder.query({
-            query: ({ sortConditions, sortDescending, page, limit, fiscalYear } = {}) => {
+            query: ({ sortConditions, sortDescending, page, limit, fiscalYear, filters } = {}) => {
                 const queryParams = [];
-                if (fiscalYear && fiscalYear !== "All") {
+
+                // Add filter parameters if they exist and are not empty
+                if (filters) {
+                    // fiscal_year filter
+                    if (filters.fiscalYear && filters.fiscalYear.length > 0) {
+                        filters.fiscalYear.forEach((fy) => {
+                            if (fy.id !== "all") {
+                                queryParams.push(`fiscal_year=${fy.id}`);
+                            }
+                        });
+                    }
+
+                    // portfolio_id filter
+                    if (filters.portfolio && filters.portfolio.length > 0) {
+                        filters.portfolio.forEach((portfolio) => {
+                            queryParams.push(`portfolio_id=${portfolio.id}`);
+                        });
+                    }
+
+                    // project_search filter
+                    if (filters.projectSearch && filters.projectSearch.length > 0) {
+                        filters.projectSearch.forEach((project) => {
+                            queryParams.push(`project_search=${encodeURIComponent(project.title)}`);
+                        });
+                    }
+
+                    // agreement_search filter
+                    if (filters.agreementSearch && filters.agreementSearch.length > 0) {
+                        filters.agreementSearch.forEach((agreement) => {
+                            queryParams.push(`agreement_search=${encodeURIComponent(agreement.title)}`);
+                        });
+                    }
+
+                    // project_type filter
+                    if (filters.projectType && filters.projectType.length > 0) {
+                        filters.projectType.forEach((type) => {
+                            queryParams.push(`project_type=${type.id}`);
+                        });
+                    }
+                }
+
+                // Legacy fiscal year parameter (when not using filters)
+                if (
+                    fiscalYear &&
+                    fiscalYear !== "All" &&
+                    (!filters || !filters.fiscalYear || filters.fiscalYear.length === 0)
+                ) {
                     queryParams.push(`fiscal_year=${fiscalYear}`);
                 }
+
                 if (sortConditions) {
                     queryParams.push(`sort_field=${sortConditions}`);
                     queryParams.push(`sort_descending=${sortDescending}`);
@@ -503,8 +598,16 @@ export const opsApi = createApi({
             query: (id) => `/projects/${id}/spending/`,
             providesTags: ["ResearchProjects", "BudgetLineItems"]
         }),
+        getAgreementSpendingById: builder.query({
+            query: (id) => `/agreements/${id}/spending/`,
+            providesTags: (_result, _error, id) => [{ type: "Agreements", id }, "BudgetLineItems"]
+        }),
         getProjectFundingById: builder.query({
             query: ({ id, fiscalYear }) => `/projects/${id}/funding/?fiscal_year=${fiscalYear}`,
+            providesTags: ["ResearchProjects"]
+        }),
+        getProjectsFilterOptions: builder.query({
+            query: () => `/projects-filters/`,
             providesTags: ["ResearchProjects"]
         }),
         getProjectsByPortfolio: builder.query({
@@ -569,6 +672,15 @@ export const opsApi = createApi({
             }),
             invalidatesTags: ["ResearchProjects"]
         }),
+        updateProject: builder.mutation({
+            query: ({ id, data }) => ({
+                url: `/projects/${id}`,
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: data
+            }),
+            invalidatesTags: ["ResearchProjects"]
+        }),
         updateBudgetLineItemStatus: builder.mutation({
             query: ({ id, status }) => ({
                 url: `/budget-line-items/${id}`,
@@ -599,7 +711,14 @@ export const opsApi = createApi({
             providesTags: ["AgreementReasons"]
         }),
         getUsers: builder.query({
-            query: () => `/users/`,
+            query: ({ excludeReadOnlyUsers } = {}) => {
+                const queryParams = [];
+                if (excludeReadOnlyUsers) {
+                    queryParams.push("exclude_read_only=true");
+                }
+                const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
+                return `/users/${queryString}`;
+            },
             transformResponse: (response) => (Array.isArray(response) ? response.map(normalizeUser) : response),
             providesTags: ["Users"]
         }),
@@ -647,8 +766,10 @@ export const opsApi = createApi({
                 budgetMax
             }) => {
                 let queryParams = [];
-                if (fiscalYear) {
-                    queryParams.push(`fiscal_year=${fiscalYear}`);
+                if (fiscalYear && fiscalYear.length > 0) {
+                    fiscalYear.forEach((year) => {
+                        queryParams.push(`fiscal_year=${year}`);
+                    });
                 }
                 if (sortConditions) {
                     queryParams.push(`sort_conditions=${sortConditions}`);
@@ -821,6 +942,10 @@ export const opsApi = createApi({
                 const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
                 return `/cans/${canId}/history/${queryString}`;
             },
+            transformResponse: (response) => ({
+                items: response.data,
+                count: response.count
+            }),
             providesTags: ["Cans"]
         }),
         getNotificationsByUserId: builder.query({
@@ -999,9 +1124,14 @@ export const opsApi = createApi({
             invalidatesTags: ["ServicesComponents", "Agreements", "BudgetLineItems", "AgreementHistory"]
         }),
         getChangeRequestsList: builder.query({
-            query: ({ userId }) => ({
-                url: `/change-requests/${userId ? `?userId=${userId}` : ""}`
-            }),
+            query: ({ userId, limit, offset }) => {
+                const params = new URLSearchParams();
+                if (userId) params.append("userId", userId);
+                if (limit !== undefined) params.append("limit", limit);
+                if (offset !== undefined) params.append("offset", offset);
+                const qs = params.toString();
+                return { url: `/change-requests/${qs ? `?${qs}` : ""}` };
+            },
             providesTags: ["ChangeRequests"]
         }),
         updateChangeRequest: builder.mutation({
@@ -1061,6 +1191,15 @@ export const opsApi = createApi({
             query: (agreement_id) => `/procurement-trackers/?agreement_id=${agreement_id}`,
             providesTags: ["ProcurementTrackers"]
         }),
+        getProcurementTrackersByAgreementIds: builder.query({
+            query: (agreementIds) => {
+                const queryParams = agreementIds.map((id) => `agreement_id=${id}`);
+                queryParams.push(`limit=${agreementIds.length}`);
+                return `/procurement-trackers/?${queryParams.join("&")}`;
+            },
+            transformResponse: (response) => response?.data || [],
+            providesTags: ["ProcurementTrackers"]
+        }),
         updateProcurementTrackerStep: builder.mutation({
             query: ({ stepId, data }) => {
                 return {
@@ -1070,11 +1209,15 @@ export const opsApi = createApi({
                     body: data
                 };
             },
-            invalidatesTags: ["ProcurementTrackers", "Procurement Tracker Steps"]
+            invalidatesTags: ["ProcurementTrackers", "Procurement Tracker Steps", "Budget Requisitions"]
         }),
         getPendingPreAwardApprovals: builder.query({
             query: () => `/procurement-tracker-steps/pending-approvals/`,
             providesTags: ["Procurement Tracker Steps"]
+        }),
+        getPendingBudgetRequisitions: builder.query({
+            query: () => `/procurement-tracker-steps/pending-requisitions/`,
+            providesTags: ["Budget Requisitions"]
         })
     })
 });
@@ -1120,11 +1263,14 @@ export const {
     useLazyGetProjectsQuery,
     useGetProjectByIdQuery,
     useGetProjectSpendingByIdQuery,
+    useGetAgreementSpendingByIdQuery,
     useGetProjectFundingByIdQuery,
+    useGetProjectsFilterOptionsQuery,
     useGetProjectsByPortfolioQuery,
     useGetResearchProjectsQuery,
     useGetResearchProjectsByPortfolioQuery,
     useAddResearchProjectsMutation,
+    useUpdateProjectMutation,
     useUpdateBudgetLineItemStatusMutation,
     useGetAgreementTypesQuery,
     useGetProductServiceCodesQuery,
@@ -1179,6 +1325,9 @@ export const {
     useGetResearchMethodologiesQuery,
     useGetSpecialTopicsQuery,
     useGetProcurementTrackersByAgreementIdQuery,
+    useGetProcurementTrackersByAgreementIdsQuery,
+    useLazyGetProcurementTrackersByAgreementIdsQuery,
     useUpdateProcurementTrackerStepMutation,
-    useGetPendingPreAwardApprovalsQuery
+    useGetPendingPreAwardApprovalsQuery,
+    useGetPendingBudgetRequisitionsQuery
 } = opsApi;

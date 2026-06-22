@@ -204,6 +204,70 @@ paths:
                         type: number
                         format: float
                         description: Total executing amount
+                  procurement_overview:
+                    type: object
+                    nullable: true
+                    description: Procurement overview data grouped by BLI status
+                    properties:
+                      status_data:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            status:
+                              type: string
+                              example: PLANNED
+                            label:
+                              type: string
+                              example: Planned
+                            amount:
+                              type: number
+                              format: float
+                            amount_percent:
+                              type: number
+                              format: float
+                            agreements:
+                              type: integer
+                            agreements_percent:
+                              type: number
+                              format: float
+                      total_amount:
+                        type: number
+                        format: float
+                      total_agreements:
+                        type: integer
+                  procurement_step_summary:
+                    type: object
+                    nullable: true
+                    description: Agreement counts and dollar amounts per procurement step (1-6)
+                    properties:
+                      step_data:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            step:
+                              type: integer
+                              minimum: 1
+                              maximum: 6
+                            agreements:
+                              type: integer
+                            agreements_percent:
+                              type: number
+                              format: float
+                            amount:
+                              type: number
+                              format: float
+                      total_agreement_count:
+                        type: integer
+                  procurement_days_in_step:
+                    type: object
+                    nullable: true
+                    description: Days each agreement has spent in its active procurement step, keyed by step number then agreement ID
+                    additionalProperties:
+                      type: object
+                      additionalProperties:
+                        type: integer
                 required:
                   - data
                   - count
@@ -610,9 +674,47 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AgreementHistory"
+                $ref: "#/components/schemas/AgreementHistoryResponse"
+  /agreements/{id}/spending/:
+    get:
+      tags:
+        - Agreements
+      operationId: getAgreementSpending
+      summary: Get per-agreement fiscal year spending totals
+      description: |
+        Returns per-agreement spending totals grouped by fiscal year.
+        Only includes non-DRAFT budget line items (or OBE items regardless
+        of status) with a fiscal_year assigned. Totals include both BLI
+        amounts and fees.
+
+        Used by the Project Spending tab to populate the FY Total column
+        when multiple agreements exist in the same fiscal year.
+      parameters:
+        - in: path
+          name: id
+          description: Agreement ID
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            example: 1
+      responses:
+        "200":
+          description: OK - Successfully retrieved agreement spending metadata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgreementSpendingMetadata"
+              example:
+                fy_total:
+                  "2043": "1234567.00"
+                  "2044": "890000.00"
+                  "2045": "151217218.00"
+        "401":
+          description: Unauthorized
         "404":
-          description: Not Found
+          description: Not Found - Agreement does not exist
   /agreements-filters/:
     get:
       tags:
@@ -2826,14 +2928,66 @@ paths:
       tags:
         - Users
       operationId: getAllUsers
-      description: Get all Users
+      description: Get all Users. Returns full user details for admins, or SafeUser (id and full_name only) for non-admins viewing other users.
       parameters:
         - $ref: "#/components/parameters/simulatedError"
+        - name: id
+          in: query
+          description: Filter by user ID
+          schema:
+            type: integer
         - name: oidc_id
           in: query
+          description: Filter by OIDC ID
           schema:
             type: string
           example: e5711101-bc3e-41e5-a6a2-051874b307ca
+        - name: hhs_id
+          in: query
+          description: Filter by HHS ID
+          schema:
+            type: string
+        - name: email
+          in: query
+          description: Filter by email
+          schema:
+            type: string
+        - name: status
+          in: query
+          description: Filter by user status
+          schema:
+            type: string
+            enum: [active, inactive, locked]
+        - name: division
+          in: query
+          description: Filter by division ID
+          schema:
+            type: integer
+        - name: first_name
+          in: query
+          description: Filter by first name
+          schema:
+            type: string
+        - name: last_name
+          in: query
+          description: Filter by last name
+          schema:
+            type: string
+        - name: roles
+          in: query
+          description: Filter by role names (can specify multiple)
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
+        - name: exclude_read_only
+          in: query
+          description: Exclude users with READ_ONLY role from results
+          schema:
+            type: boolean
+            default: false
       responses:
         "200":
           description: OK
@@ -2910,23 +3064,77 @@ paths:
                       updated_by: 101
                       created_on: "2023-04-06T20:33:38.292475"
                       updated_on: null
-  /users/{user_id}:
+    post:
+      tags:
+        - Users
+      operationId: createUser
+      description: Create a new user. Only USER_ADMIN role can create users.
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                first_name:
+                  type: string
+                  nullable: true
+                last_name:
+                  type: string
+                  nullable: true
+                division:
+                  type: integer
+                  nullable: true
+                status:
+                  type: string
+                  enum: [active, inactive, locked]
+                  default: inactive
+                roles:
+                  type: array
+                  items:
+                    type: string
+                  default: []
+            example:
+              email: "new.user@example.com"
+              first_name: "John"
+              last_name: "Doe"
+              division: 1
+              status: "active"
+              roles: ["COR"]
+      responses:
+        "202":
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Bad Request - Invalid data or insufficient permissions
+        "403":
+          description: Forbidden - User does not have USER_ADMIN role
+  /users/{id}:
     get:
       tags:
         - Users
       operationId: getUserById
-      description: Get User by Id
+      description: Get User by Id. Returns full user details for admins or when viewing own profile, SafeUser (id and full_name only) otherwise.
       parameters:
         - $ref: "#/components/parameters/simulatedError"
         - in: path
-          name: user_id
+          name: id
           description: User Id
           required: true
           schema:
             type: integer
             format: int32
             minimum: 0
-            default: 0
       responses:
         "200":
           description: OK
@@ -2937,6 +3145,129 @@ paths:
               examples:
                 "0":
                   $ref: "#/components/examples/User"
+        "404":
+          description: User not found
+    put:
+      tags:
+        - Users
+      operationId: updateUser
+      description: Update a user by ID. Only USER_ADMIN role can update users.
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: id
+          description: User Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: integer
+                email:
+                  type: string
+                  format: email
+                first_name:
+                  type: string
+                  nullable: true
+                last_name:
+                  type: string
+                  nullable: true
+                division:
+                  type: integer
+                  nullable: true
+                status:
+                  type: string
+                  enum: [active, inactive, locked]
+                roles:
+                  type: array
+                  items:
+                    type: string
+            example:
+              email: "updated.user@example.com"
+              first_name: "Jane"
+              last_name: "Smith"
+              division: 2
+              status: "active"
+              roles: ["Division Director"]
+      responses:
+        "200":
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Bad Request - Invalid data, user cannot deactivate themselves, or insufficient permissions
+        "403":
+          description: Forbidden - User does not have USER_ADMIN role
+        "404":
+          description: User not found
+    patch:
+      tags:
+        - Users
+      operationId: partialUpdateUser
+      description: Partially update a user by ID. Only USER_ADMIN role can update users.
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: id
+          description: User Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: integer
+                email:
+                  type: string
+                  format: email
+                first_name:
+                  type: string
+                  nullable: true
+                last_name:
+                  type: string
+                  nullable: true
+                division:
+                  type: integer
+                  nullable: true
+                status:
+                  type: string
+                  enum: [active, inactive, locked]
+                roles:
+                  type: array
+                  items:
+                    type: string
+            example:
+              status: "inactive"
+      responses:
+        "200":
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Bad Request - Invalid data, user cannot deactivate themselves, or insufficient permissions
+        "403":
+          description: Forbidden - User does not have USER_ADMIN role
+        "404":
+          description: User not found
   /login/:
     servers:
       - url: https://localhost:8080/auth
@@ -3297,8 +3628,11 @@ paths:
       operationId: updateProject
       summary: Update an existing Project
       description: |
-        Update a Project by ID. The project_type field cannot be changed.
-        Only the fields provided in the request body will be updated.
+        Update a Project by ID. Only the fields provided in the request body
+        will be updated. Authorization is enforced per-project: only users
+        associated with the project (creator, team leaders, agreement team
+        members, COR/ACOR, division directors, portfolio team leaders) and
+        users with the BUDGET_TEAM or SYSTEM_OWNER roles may update a project.
       parameters:
         - $ref: "#/components/parameters/simulatedError"
         - in: path
@@ -3342,6 +3676,8 @@ paths:
           description: Bad Request - Invalid input or validation error
         "401":
           description: Unauthorized
+        "403":
+          description: Forbidden - User is not authorized to update this project
         "404":
           description: Not Found - Project does not exist
         "500":
@@ -3445,6 +3781,51 @@ paths:
         "404":
           description: Not Found - Project does not exist
 
+  /projects/{id}/history/:
+    get:
+      tags:
+        - Project History
+      operationId: getAllProjectHistory
+      summary: Get a paginated list of Project history items, sorted by timestamp newest first by default
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: id
+          description: Project Id
+          required: true
+          schema:
+            type: integer
+          example: 1000
+        - name: offset
+          in: query
+          schema:
+            type: integer
+          example: 0
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+          example: 10
+        - name: sort_asc
+          in: query
+          description: Optional parameter that sets whether to sort the results in ascending (oldest to newest) order
+          schema:
+            type: boolean
+          example: true
+      description: Get ProjectHistory entries for a project.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectHistoryList"
+        "401":
+          description: Insufficient Privileges to use this endpoint.
+        "403":
+          description: Forbidden
+
   /projects-filters/:
     get:
       tags:
@@ -3524,9 +3905,23 @@ paths:
                   agreement_names:
                     type: array
                     items:
-                      type: string
-                    description: List of agreement names and nicknames associated with projects (sorted alphabetically, no duplicates)
-                    example: ["Agreement 001", "Contract Alpha", "Grant Beta"]
+                      type: object
+                      required:
+                        - id
+                        - name
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                    description: List of agreement names and nicknames associated with projects (sorted alphabetically by name, no duplicates)
+                    example:
+                      - id: 1
+                        name: "Agreement 001"
+                      - id: 2
+                        name: "Contract Alpha"
+                      - id: 3
+                        name: "Grant Beta"
         "401":
           description: Unauthorized
         "500":
@@ -4395,9 +4790,26 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/GenericChangeRequest"
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/GenericChangeRequest"
+                  count:
+                    type: integer
+                    description: Total number of change requests after permission filtering, before pagination
+                  limit:
+                    type: integer
+                    description: Maximum number of change requests returned
+                  offset:
+                    type: integer
+                    description: Number of change requests skipped
+                required:
+                  - data
+                  - count
+                  - limit
+                  - offset
         "400":
           description: Bad Request
         "401":
@@ -5318,11 +5730,30 @@ components:
         - portfolio_id
         - number
     CANHistoryList:
-      description: A list of CAN objects with their history
-      type: array
-      items:
-        anyOf:
-          - $ref: "#/components/schemas/CANHistoryItem"
+      description: Paginated list of CAN history items
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/CANHistoryItem"
+        count:
+          type: integer
+          description: Total number of history items matching the query
+          example: 25
+        limit:
+          type: integer
+          description: Maximum number of items returned
+          example: 10
+        offset:
+          type: integer
+          description: Number of items skipped
+          example: 0
+      required:
+        - data
+        - count
+        - limit
+        - offset
     CANHistoryItem:
       description: A single CAN object with its history
       type: object
@@ -5376,6 +5807,84 @@ components:
         - id
         - can_id
         - ops_event_id
+    ProjectHistoryList:
+      description: Paginated list of Project history items
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProjectHistoryItem"
+        count:
+          type: integer
+          description: Total number of history items matching the query
+          example: 25
+        limit:
+          type: integer
+          description: Maximum number of items returned
+          example: 10
+        offset:
+          type: integer
+          description: Number of items skipped
+          example: 0
+      required:
+        - data
+        - count
+        - limit
+        - offset
+    ProjectHistoryItem:
+      description: A single Project history record
+      type: object
+      properties:
+        id:
+          type: integer
+          description: The unique identifier for the history record.
+          example: 2
+        project_id:
+          type: integer
+          nullable: true
+          description: FK to the Project (null if the project has been deleted).
+          example: 1000
+        project_id_record:
+          type: integer
+          description: Stable Project id reference that survives deletion.
+          example: 1000
+        ops_event_id:
+          type: integer
+          nullable: true
+          description: FK to the OPS event that triggered the history record.
+          example: 4
+        history_title:
+          type: string
+          description: Short title of the history event.
+          example: "Change to Project Title"
+        history_message:
+          type: string
+          description: Human-readable description of the history event in Markdown format.
+          example: "Amelia Popham changed the Project Title from Foo to Bar."
+        timestamp:
+          type: string
+          description: The timestamp of when the history event was created.
+          format: date-time
+          example: "2026-05-26T12:00:00.000000Z"
+        history_type:
+          type: string
+          enum:
+            - PROJECT_CREATED
+            - PROJECT_TITLE_EDITED
+            - PROJECT_SHORT_TITLE_EDITED
+            - PROJECT_DESCRIPTION_EDITED
+            - PROJECT_URL_EDITED
+            - PROJECT_TYPE_EDITED
+            - PROJECT_TEAM_LEADER_ADDED
+            - PROJECT_TEAM_LEADER_REMOVED
+          example: "PROJECT_TITLE_EDITED"
+      required:
+        - id
+        - project_id_record
+        - history_title
+        - history_message
+        - timestamp
     FundingReceived:
       description: Funding Received Object
       type: object
@@ -6051,6 +6560,25 @@ components:
             "2023": [1, 2]
             "2024": [1]
             "2025": [2]
+    AgreementSpendingMetadata:
+      description: Per-agreement fiscal year spending totals
+      type: object
+      required:
+        - fy_total
+      properties:
+        fy_total:
+          type: object
+          description: |
+            Spending totals keyed by fiscal year. Includes BLIs that are OBE or
+            non-DRAFT and have a fiscal_year assigned. Values are the sum of BLI
+            amount and fees for that fiscal year.
+          additionalProperties:
+            type: string
+            description: Decimal amount as string for precision
+          example:
+            "2043": "1234567.00"
+            "2044": "890000.00"
+            "2045": "151217218.00"
     AgreementName:
       description: Agreement identifier with ID and name (nick_name preferred over title)
       type: object
@@ -6398,6 +6926,17 @@ components:
           type: string
           enum: [RESEARCH, ADMINISTRATIVE_AND_SUPPORT]
           example: RESEARCH
+        _meta:
+          type: object
+          description: |
+            Server-computed metadata for this project, scoped to the current user.
+          properties:
+            isEditable:
+              type: boolean
+              description: |
+                True when the current user is authorized to update this project
+                (see PATCH /projects/{id} for the authorization rules).
+              example: true
       required:
         - title
     ResearchProjects:
@@ -6405,12 +6944,31 @@ components:
       type: array
       items:
         $ref: "#/components/schemas/ResearchProjectListItem"
-    AgreementHistory:
-      description: List of Agreement History records
-      type: array
-      items:
-        anyOf:
-          - $ref: "#/components/schemas/AgreementHistoryItem"
+    AgreementHistoryResponse:
+      description: Paginated Agreement History response
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/AgreementHistoryItem"
+        count:
+          type: integer
+          description: Total number of history records matching the query
+          example: 25
+        limit:
+          type: integer
+          description: Maximum number of records per page
+          example: 10
+        offset:
+          type: integer
+          description: Number of records skipped
+          example: 0
+      required:
+        - data
+        - count
+        - limit
+        - offset
     AgreementHistoryItem:
       type: object
       properties:
@@ -7970,6 +8528,17 @@ components:
           type: string
           format: date-time
           example: "2023-04-06T20:33:38.292475Z"
+        _meta:
+          type: object
+          description: |
+            Server-computed metadata for this project, scoped to the current user.
+          properties:
+            isEditable:
+              type: boolean
+              description: |
+                True when the current user is authorized to update this project
+                (see PATCH /projects/{id} for the authorization rules).
+              example: true
       required:
         - id
         - project_type

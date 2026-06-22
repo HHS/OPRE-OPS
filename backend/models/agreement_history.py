@@ -1022,14 +1022,21 @@ def create_procurement_tracker_step_update_history_event(
         requester_name = requester_user.full_name
 
         if status == "APPROVED":
-            history_title = "Pre-Award Approval Approved"
+            # Extract first name from full name (e.g., "Dave Director" -> "Dave")
+            name_parts = event_user.full_name.split() if event_user.full_name else []
+            approver_first_name = name_parts[0] if name_parts else "Unknown"
+            history_title = "Pre-Award Approved & Requisition Started"
             history_message = (
-                f"{event_user.full_name} approved the agreement for pre-award as requested by {requester_name}. "
-                f"The requisition will be submitted by the Budget Team before the Final Consensus Memo is sent to the procurement shop."
+                f"Director {approver_first_name} approved this agreement for pre-award as requested by {requester_name}. "
+                f"Next, the Budget Team will submit the requisition and then the COR will be notified to upload the "
+                f"Final Consensus Memo to the HHS Consolidated Acquisition Solution (HCAS)."
             )
         elif status == "DECLINED":
-            history_title = "Pre-Award Approval Declined"
-            history_message = f"{event_user.full_name} declined this agreement for pre-award as requested by {requester_name}."
+            # Extract first name from full name (e.g., "Dave Director" -> "Dave")
+            name_parts = event_user.full_name.split() if event_user.full_name else []
+            approver_first_name = name_parts[0] if name_parts else "Unknown"
+            history_title = "Pre-Award Declined"
+            history_message = f"Director {approver_first_name} declined this agreement for pre-award as requested by {requester_name}."
         else:
             history_title = None
 
@@ -1043,6 +1050,22 @@ def create_procurement_tracker_step_update_history_event(
                 timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                 history_type=AgreementHistoryType.PROCUREMENT_TRACKER_STEP_UPDATED,
             )
+
+    # Handle requisition approval events
+    if "requisition_approved_by" in updates and updates["requisition_approved_by"]["new_value"] is not None:
+        return AgreementHistory(
+            agreement_id=procurement_tracker.agreement_id,
+            agreement_id_record=procurement_tracker.agreement_id,
+            ops_event_id=event.id,
+            history_title="Requisition Submitted for Pre-Award",
+            history_message=(
+                "The Budget Team submitted the requisition and entered it into OPS to complete the pre-award step "
+                "of the Procurement Tracker. The Final Consensus Memo can be uploaded to the HHS Consolidated "
+                "Acquisition Solution (HCAS)."
+            ),
+            timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            history_type=AgreementHistoryType.PROCUREMENT_TRACKER_STEP_UPDATED,
+        )
 
     # Handle status change events (step completion)
     if "status" not in updates:
@@ -1068,7 +1091,7 @@ def create_procurement_tracker_step_update_history_event(
         history_message = f"{event_user.full_name} completed step 4 of the Procurement Tracker. The evaluations are complete and OPRE has internally selected a vendor."
     elif step_type == str(ProcurementTrackerStepType.PRE_AWARD):
         history_title = "Pre-Award Completed"
-        history_message = f"{event_user.full_name} completed step 5 of the Procurement Tracker. Pre-Award Approval was received and the Final Consensus Memo was sent to the Procurement Shop."
+        history_message = f"{event_user.full_name} completed step 5 of the Procurement Tracker. Pre-Award Approval was received and the Final Consensus Memo was sent to the HHS Consolidated Acquisition Solution (HCAS)."
     else:
         return None  # Only steps 1-5 completion events are supported
 

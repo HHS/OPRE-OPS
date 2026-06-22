@@ -10,6 +10,7 @@
  * @property {string} VIEWER_EDITOR - Represents a basic user role.
  * @property {string} PROCUREMENT_TEAM
  * @property {string} SUPER_USER - Represents a super user role.
+ * @property {string} READ_ONLY - Represents a read-only user role.
  */
 export const USER_ROLES = {
     USER_ADMIN: "USER_ADMIN",
@@ -18,8 +19,17 @@ export const USER_ROLES = {
     REVIEWER_APPROVER: "REVIEWER_APPROVER",
     VIEWER_EDITOR: "VIEWER_EDITOR",
     PROCUREMENT_TEAM: "PROCUREMENT_TEAM",
-    SUPER_USER: "SUPER_USER"
+    SUPER_USER: "SUPER_USER",
+    READ_ONLY: "READ_ONLY"
 };
+
+export const PROCUREMENT_DASHBOARD_ROLES = [
+    USER_ROLES.PROCUREMENT_TEAM,
+    USER_ROLES.BUDGET_TEAM,
+    USER_ROLES.REVIEWER_APPROVER,
+    USER_ROLES.SYSTEM_OWNER,
+    USER_ROLES.SUPER_USER
+];
 
 /**
  * Enum for User statuses.

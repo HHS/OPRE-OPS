@@ -12,12 +12,12 @@ jobs:
       JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
       JWT_PUBLIC_KEY: ${{ secrets.JWT_PUBLIC_KEY }}
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
       - uses: ./.github/actions/setup-python
       # Stand up the system stack, to have something to poke
       - name: Run backend unit tests
         working-directory: ./backend/ops_api/
-        run: pipenv run pytest
+        run: pipenv run pytest -n 4 --cov
 
   backend-data-tools:
     name: Data-Tools Unit Tests
@@ -25,17 +25,17 @@ jobs:
     env:
       JWT_PRIVATE_KEY: "__blank__"
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
       - uses: ./.github/actions/setup-python
       - name: Run backend unit tests
         working-directory: ./backend/data_tools/
-        run: pipenv install --dev && pipenv run pytest
+        run: pipenv install --dev && pipenv run pytest -n 4 --cov
 
   frontend:
     name: Frontend Unit Tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
       - uses: ./.github/actions/setup-javascript
       # Stand up the system stack, to have something to poke
       - name: Run frontend unit tests

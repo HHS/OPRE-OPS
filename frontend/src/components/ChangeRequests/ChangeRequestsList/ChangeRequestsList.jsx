@@ -1,11 +1,21 @@
 import * as React from "react";
+import { useState } from "react";
 import { useSelector } from "react-redux";
-import { useGetChangeRequestsListQuery, useGetPendingPreAwardApprovalsQuery } from "../../../api/opsAPI";
+import {
+    useGetChangeRequestsListQuery,
+    useGetPendingPreAwardApprovalsQuery,
+    useGetPendingBudgetRequisitionsQuery
+} from "../../../api/opsAPI";
 import BudgetChangeReviewCard from "../BudgetChangeReviewCard";
 import ProcurementShopReviewCard from "../ProcurementShopReviewCard";
 import StatusChangeReviewCard from "../StatusChangeReviewCard";
 import PreAwardReviewCard from "../PreAwardReviewCard";
+import BudgetTeamRequisitionReviewCard from "../BudgetTeamRequisitionReviewCard";
+import PaginationNav from "../../UI/PaginationNav/PaginationNav";
 import { useNavigate } from "react-router-dom";
+
+const BLI_STATUS_IN_EXECUTION = "In Execution";
+const PAGE_SIZE = 10;
 
 /**
  * @component Change Requests List component.
@@ -17,12 +27,20 @@ import { useNavigate } from "react-router-dom";
 function ChangeRequestsList({ handleReviewChangeRequest }) {
     const navigate = useNavigate();
     const userId = useSelector((state) => state.auth?.activeUser?.id) ?? null;
-    /** @type {{data?: ChangeRequest[] | undefined, isError: boolean, isLoading: boolean}} */
+    const [currentPage, setCurrentPage] = useState(1); // 1-indexed for UI
+
+    /** @type {{data?: {data: ChangeRequest[], count: number, limit: number, offset: number} | undefined, isError: boolean, isLoading: boolean}} */
     const {
-        data: changeRequests,
+        data: changeRequestsResponse,
         isLoading: loadingChangeRequests,
         isError: errorChangeRequests
-    } = useGetChangeRequestsListQuery({ userId }, { skip: !userId, refetchOnMountOrArgChange: true });
+    } = useGetChangeRequestsListQuery(
+        { userId, limit: PAGE_SIZE, offset: (currentPage - 1) * PAGE_SIZE },
+        { skip: !userId, refetchOnMountOrArgChange: true }
+    );
+    const changeRequests = changeRequestsResponse?.data;
+    const totalCount = changeRequestsResponse?.count || 0;
+    const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
     // Fetch pending pre-award approvals
     const {
@@ -31,25 +49,70 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
         isError: errorPreAwardApprovals
     } = useGetPendingPreAwardApprovalsQuery(undefined, { refetchOnMountOrArgChange: true });
 
+    // Fetch pending budget team requisitions
+    const {
+        data: budgetRequisitions,
+        isLoading: loadingBudgetRequisitions,
+        isError: errorBudgetRequisitions
+    } = useGetPendingBudgetRequisitionsQuery(undefined, { refetchOnMountOrArgChange: true });
+
+    const calculateExecutingTotal = (budgetLineItems = []) => {
+        return budgetLineItems
+            .filter((bli) => bli.status === BLI_STATUS_IN_EXECUTION)
+            .reduce((sum, bli) => sum + (bli.amount || 0), 0);
+    };
+
+    const calculateExecutingBliCount = (budgetLineItems = []) => {
+        return budgetLineItems.filter((bli) => bli.status === BLI_STATUS_IN_EXECUTION).length;
+    };
+
+    const getObligateByDate = (budgetLineItems = []) => {
+        const executingBlis = budgetLineItems.filter(
+            (bli) => bli.status === BLI_STATUS_IN_EXECUTION && bli.date_needed
+        );
+        if (executingBlis.length === 0) return null;
+        const dates = executingBlis.map((bli) => new Date(bli.date_needed));
+        return new Date(Math.min(...dates)).toISOString().split("T")[0];
+    };
+
     // Handle navigation to error page in useEffect to avoid setState during render
     React.useEffect(() => {
-        if (errorChangeRequests || errorPreAwardApprovals) {
+        if (errorChangeRequests || errorPreAwardApprovals || errorBudgetRequisitions) {
             navigate("/error");
         }
-    }, [errorChangeRequests, errorPreAwardApprovals, navigate]);
+    }, [errorChangeRequests, errorPreAwardApprovals, errorBudgetRequisitions, navigate]);
 
-    if (loadingChangeRequests || loadingPreAwardApprovals) {
+    if (loadingChangeRequests || loadingPreAwardApprovals || loadingBudgetRequisitions) {
         return <h1>Loading...</h1>;
     }
-    if (errorChangeRequests || errorPreAwardApprovals) {
+    if (errorChangeRequests || errorPreAwardApprovals || errorBudgetRequisitions) {
         return null;
     }
 
     const hasChangeRequests = changeRequests && changeRequests.length > 0;
     const hasPreAwardApprovals = preAwardApprovals && preAwardApprovals.length > 0;
+    const hasBudgetRequisitions = budgetRequisitions && budgetRequisitions.length > 0;
 
-    return hasChangeRequests || hasPreAwardApprovals ? (
+    return hasChangeRequests || hasPreAwardApprovals || hasBudgetRequisitions ? (
         <>
+            {/* Budget Team Requisition Cards */}
+            {budgetRequisitions?.map((step) => (
+                <BudgetTeamRequisitionReviewCard
+                    key={`budget-requisition-${step.id}`}
+                    agreementId={step.procurement_tracker?.agreement?.id}
+                    requestorId={step.approval_requested_by}
+                    requestDate={step.approval_requested_date}
+                    executingBliCount={calculateExecutingBliCount(
+                        step.procurement_tracker?.agreement?.budget_line_items ?? []
+                    )}
+                    executingTotal={calculateExecutingTotal(
+                        step.procurement_tracker?.agreement?.budget_line_items ?? []
+                    )}
+                    obligateByDate={getObligateByDate(step.procurement_tracker?.agreement?.budget_line_items ?? [])}
+                    agreementTotal={step.procurement_tracker?.agreement?.agreement_total ?? 0}
+                />
+            ))}
+
             {/* Pre-Award Approval Cards */}
             {preAwardApprovals?.map((step) => (
                 <PreAwardReviewCard
@@ -57,7 +120,14 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
                     agreementId={step.procurement_tracker?.agreement?.id}
                     requestorId={step.approval_requested_by}
                     requestDate={step.approval_requested_date}
-                    requestorNotes={step.requestor_notes}
+                    executingBliCount={calculateExecutingBliCount(
+                        step.procurement_tracker?.agreement?.budget_line_items ?? []
+                    )}
+                    executingTotal={calculateExecutingTotal(
+                        step.procurement_tracker?.agreement?.budget_line_items ?? []
+                    )}
+                    obligateByDate={getObligateByDate(step.procurement_tracker?.agreement?.budget_line_items ?? [])}
+                    agreementTotal={step.procurement_tracker?.agreement?.agreement_total ?? 0}
                 />
             ))}
 
@@ -118,6 +188,16 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
                         )}
                     </React.Fragment>
                 )
+            )}
+
+            {totalPages > 1 && (
+                <div className="margin-top-3">
+                    <PaginationNav
+                        currentPage={currentPage}
+                        setCurrentPage={setCurrentPage}
+                        totalPages={totalPages}
+                    />
+                </div>
             )}
         </>
     ) : (

@@ -1,6 +1,5 @@
-import CurrencyFormat from "react-currency-format";
 import { Link } from "react-router-dom";
-import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
+import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
 import Tooltip from "../../UI/USWDS/Tooltip";
 import { displayActivePeriod } from "./CANTableRow.helpers";
 import { NO_DATA } from "../../../constants";
@@ -42,44 +41,9 @@ const CANTableRow = ({ activePeriod, canId, fundingSummary, name, nickname, obli
             <td>{portfolio}</td>
             <td>{displayActivePeriod(activePeriod)}</td>
             <td>{obligateBy}</td>
-            <td>
-                {totalFunding > 0 ? (
-                    <CurrencyFormat
-                        value={totalFunding}
-                        displayType={"text"}
-                        thousandSeparator={true}
-                        prefix={"$"}
-                        decimalScale={getDecimalScale(totalFunding)}
-                        fixedDecimalScale={true}
-                    />
-                ) : (
-                    <span className="text-ink">{NO_DATA}</span>
-                )}
-            </td>
-            {fundingReceived === 0 ? (
-                <td>TBD</td>
-            ) : (
-                <td>
-                    <CurrencyFormat
-                        value={fundingReceived}
-                        displayType={"text"}
-                        thousandSeparator={true}
-                        prefix={"$"}
-                        decimalScale={getDecimalScale(fundingReceived)}
-                        fixedDecimalScale={true}
-                    />
-                </td>
-            )}
-            <td>
-                <CurrencyFormat
-                    value={availableFunds}
-                    displayType={"text"}
-                    thousandSeparator={true}
-                    prefix={"$"}
-                    decimalScale={getDecimalScale(availableFunds)}
-                    fixedDecimalScale={true}
-                />
-            </td>
+            <td>{totalFunding > 0 ? formatCurrency(totalFunding) : <span className="text-ink">{NO_DATA}</span>}</td>
+            {fundingReceived === 0 ? <td>TBD</td> : <td>{formatCurrency(fundingReceived)}</td>}
+            <td>{formatCurrency(availableFunds)}</td>
         </tr>
     );
 };

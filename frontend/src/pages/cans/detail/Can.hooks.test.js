@@ -6,6 +6,7 @@ const useSelectorMock = vi.fn();
 const useParamsMock = vi.fn();
 const useGetCanByIdQueryMock = vi.fn();
 const useGetCanFundingQueryMock = vi.fn();
+let mockPathname = "/cans/42";
 
 vi.mock("react-redux", () => ({
     useSelector: (selector) => useSelectorMock(selector)
@@ -15,7 +16,8 @@ vi.mock("react-router-dom", async (importOriginal) => {
     const actual = await importOriginal();
     return {
         ...actual,
-        useParams: () => useParamsMock()
+        useParams: () => useParamsMock(),
+        useLocation: () => ({ pathname: mockPathname })
     };
 });
 
@@ -84,6 +86,7 @@ const canFixture = {
 describe("useCan", () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        mockPathname = "/cans/42";
 
         useParamsMock.mockReturnValue({ id: "42" });
         useSelectorMock.mockImplementation((selector) =>
@@ -260,5 +263,53 @@ describe("useCan", () => {
 
         expect(result.current.isLoading).toBe(false);
         expect(result.current.isTableLoading).toBe(true);
+    });
+
+    it("handles 'All' fiscal year selection without infinite loop", async () => {
+        useGetCanFundingQueryMock.mockImplementation(({ fiscalYear }) => {
+            if (fiscalYear === 2025) {
+                return { data: { funding: { available_funding: 75 } }, isLoading: false };
+            }
+            return {
+                data: {
+                    funding: {
+                        total_funding: 1500,
+                        planned_funding: 300,
+                        obligated_funding: 100,
+                        in_execution_funding: 200,
+                        in_draft_funding: 400,
+                        received_funding: 300
+                    }
+                },
+                isLoading: false
+            };
+        });
+
+        const { result } = renderHook(() => useCan());
+
+        act(() => {
+            result.current.setSelectedFiscalYear("All");
+        });
+
+        await waitFor(() => {
+            expect(result.current.fiscalYear).toBeNull();
+        });
+
+        expect(result.current.budgetLineItemsByFiscalYear.map((item) => item.id)).toEqual([11, 12, 13]);
+        expect(result.current.fundingReceivedByFiscalYear.map((item) => item.id)).toEqual([1, 2]);
+    });
+
+    it("resets isEditMode when location.pathname changes", () => {
+        const { result, rerender } = renderHook(() => useCan());
+
+        act(() => {
+            result.current.toggleDetailPageEditMode();
+        });
+        expect(result.current.isEditMode.detailPage).toBe(true);
+
+        mockPathname = "/cans/42/funding";
+        rerender();
+
+        expect(result.current.isEditMode).toEqual({ detailPage: false, fundingPage: false });
     });
 });

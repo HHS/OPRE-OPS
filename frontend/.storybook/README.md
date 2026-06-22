@@ -66,6 +66,7 @@ Follow this naming convention so Storybook's sidebar stays organized:
 |---|---|---|
 | DataViz primitives | `UI/DataViz/` | `UI/DataViz/LineGraph` |
 | Card composites | `UI/Cards/` | `UI/Cards/BudgetCard` |
+| Sliders | `UI/Slider/` | `UI/Slider/DoubleRangeSlider` |
 | Shared UI | `UI/` | `UI/Alert` |
 | Feature/domain | `Features/<Domain>/` | `Features/CANs/CanCard` |
 

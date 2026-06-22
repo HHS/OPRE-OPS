@@ -16,7 +16,7 @@ jobs:
       packages: write
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
       - name: Build and publish the Docker image for ${{ github.repository }}
         uses: ./.github/actions/build-and-push
@@ -33,10 +33,10 @@ jobs:
 
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
       - name: Update yaml file to provide revision suffix
-        uses: fjogeleit/yaml-update-action@04ff6ec06568fd21197db746472e36cc425de850 # v0.16.1
+        uses: fjogeleit/yaml-update-action@dffe9a5223d84653c13374032382f6bb5de8e5ef # v0.17.0
         with:
           valueFile: './.github/container-app-suffixes.yml'
           propertyPath: 'template.revisionSuffix'
