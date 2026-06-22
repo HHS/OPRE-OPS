@@ -95,9 +95,7 @@ class AgreementEditBundleService:
             result.services_components_created = created_sc_count
 
             # 3. SC updates
-            result.services_components_updated = self._update_services_components(
-                sc_payload.get("update", []) or []
-            )
+            result.services_components_updated = self._update_services_components(sc_payload.get("update", []) or [])
 
             # 4. BLI creates (resolves services_component_ref using sc_ref_map)
             result.budget_line_items_created = self._create_budget_line_items(
@@ -105,28 +103,20 @@ class AgreementEditBundleService:
             )
 
             # 5. BLI updates — may produce change requests; collected for post-commit notify
-            updated_count, change_request_ids = self._update_budget_line_items(
-                bli_payload.get("update", []) or []
-            )
+            updated_count, change_request_ids = self._update_budget_line_items(bli_payload.get("update", []) or [])
             result.budget_line_items_updated = updated_count
             result.change_request_ids.extend(change_request_ids)
             deferred_notifications.extend(change_request_ids)
 
             # 6. BLI deletes (before SC deletes — BLIs reference SCs)
-            result.budget_line_items_deleted = self._delete_budget_line_items(
-                bli_payload.get("delete", []) or []
-            )
+            result.budget_line_items_deleted = self._delete_budget_line_items(bli_payload.get("delete", []) or [])
 
             # 7. SC deletes
-            result.services_components_deleted = self._delete_services_components(
-                sc_payload.get("delete", []) or []
-            )
+            result.services_components_deleted = self._delete_services_components(sc_payload.get("delete", []) or [])
 
             # 8. Commit the entire bundle
             self.db_session.commit()
-            logger.info(
-                f"Agreement edit bundle committed for agreement_id={agreement_id}: {result}"
-            )
+            logger.info(f"Agreement edit bundle committed for agreement_id={agreement_id}: {result}")
 
         except IntegrityError as e:
             self.db_session.rollback()
@@ -179,9 +169,7 @@ class AgreementEditBundleService:
     # Services Components
     # ------------------------------------------------------------------
 
-    def _create_services_components(
-        self, agreement_id: int, items: list[dict[str, Any]]
-    ) -> tuple[dict[str, int], int]:
+    def _create_services_components(self, agreement_id: int, items: list[dict[str, Any]]) -> tuple[dict[str, int], int]:
         sc_ref_map: dict[str, int] = {}
         sc_create_schema = NestedServicesComponentRequestSchema()
         for idx, sc_data in enumerate(items):
@@ -255,9 +243,7 @@ class AgreementEditBundleService:
                 "schema": patch_schema,
                 "request": fake_request,
             }
-            _, _, ids = self._blis.update_with_change_request_ids(
-                bli_id, updated_fields, commit=False
-            )
+            _, _, ids = self._blis.update_with_change_request_ids(bli_id, updated_fields, commit=False)
             change_request_ids.extend(ids)
         return len(items), change_request_ids
 

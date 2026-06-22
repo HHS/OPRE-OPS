@@ -502,12 +502,8 @@ class BudgetLineItemService:
                 query = query.order_by(sort_logic.desc()) if sort_descending else query.order_by(sort_logic)
         return query, agreement_joined
 
-    def update(
-        self, id: int, updated_fields: dict[str, Any], commit: bool = True
-    ) -> tuple[BudgetLineItem, int]:
-        budget_line_item, status_code, _ = self.update_with_change_request_ids(
-            id, updated_fields, commit=commit
-        )
+    def update(self, id: int, updated_fields: dict[str, Any], commit: bool = True) -> tuple[BudgetLineItem, int]:
+        budget_line_item, status_code, _ = self.update_with_change_request_ids(id, updated_fields, commit=commit)
         return budget_line_item, status_code
 
     def update_with_change_request_ids(
@@ -592,9 +588,7 @@ class BudgetLineItemService:
                     return True
         return False
 
-    def _apply_direct_edits(
-        self, budget_line_item: BudgetLineItem, updated_fields: dict, commit: bool = True
-    ) -> None:
+    def _apply_direct_edits(self, budget_line_item: BudgetLineItem, updated_fields: dict, commit: bool = True) -> None:
         """Apply direct edits to the budget line item"""
         filtered_dict = {
             k: v for k, v in updated_fields.items() if k not in ["method", "request", "schema", "requestor_notes"]

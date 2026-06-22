@@ -519,9 +519,7 @@ class AgreementsService(OpsService[Agreement]):
 
         return paginated_results, metadata
 
-    def _handle_proc_shop_change(
-        self, agreement: Agreement, new_value: int, commit: bool = True
-    ) -> int | None:
+    def _handle_proc_shop_change(self, agreement: Agreement, new_value: int, commit: bool = True) -> int | None:
         if agreement.awarding_entity_id == new_value:
             return None  # No change needed
 

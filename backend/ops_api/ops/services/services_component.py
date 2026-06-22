@@ -99,9 +99,7 @@ class ServicesComponentService:
 
         return new_sc
 
-    def update(
-        self, obj_id: int, updated_fields: dict[str, Any], commit: bool = True
-    ) -> tuple[ServicesComponent, int]:
+    def update(self, obj_id: int, updated_fields: dict[str, Any], commit: bool = True) -> tuple[ServicesComponent, int]:
         """
         Update an existing services component.
 

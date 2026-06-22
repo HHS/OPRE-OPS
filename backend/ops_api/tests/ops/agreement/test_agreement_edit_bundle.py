@@ -184,18 +184,14 @@ def test_invalid_can_in_new_bli_rolls_back_entire_bundle(auth_client, bundle_con
     """An invalid CAN on a new BLI must leave SC creates and agreement edits unpersisted."""
     initial_agreement_name = bundle_contract.name
     initial_sc_count = loaded_db.scalar(
-        select(func.count())
-        .select_from(ServicesComponent)
-        .where(ServicesComponent.agreement_id == bundle_contract.id)
+        select(func.count()).select_from(ServicesComponent).where(ServicesComponent.agreement_id == bundle_contract.id)
     )
 
     response = auth_client.patch(
         _bundle_url(bundle_contract.id),
         json={
             "agreement": {"agreement_type": "CONTRACT", "name": "Should-not-persist"},
-            "services_components": {
-                "create": [{"ref": "newsc", "number": 5, "optional": False, "description": "x"}]
-            },
+            "services_components": {"create": [{"ref": "newsc", "number": 5, "optional": False, "description": "x"}]},
             "budget_line_items": {
                 "create": [
                     {
@@ -215,18 +211,14 @@ def test_invalid_can_in_new_bli_rolls_back_entire_bundle(auth_client, bundle_con
     refreshed = loaded_db.get(ContractAgreement, bundle_contract.id)
     assert refreshed.name == initial_agreement_name
     final_sc_count = loaded_db.scalar(
-        select(func.count())
-        .select_from(ServicesComponent)
-        .where(ServicesComponent.agreement_id == bundle_contract.id)
+        select(func.count()).select_from(ServicesComponent).where(ServicesComponent.agreement_id == bundle_contract.id)
     )
     assert final_sc_count == initial_sc_count
 
 
 def test_invalid_services_component_ref_rolls_back(auth_client, bundle_contract, loaded_db):
     initial_bli_count = loaded_db.scalar(
-        select(func.count())
-        .select_from(BudgetLineItem)
-        .where(BudgetLineItem.agreement_id == bundle_contract.id)
+        select(func.count()).select_from(BudgetLineItem).where(BudgetLineItem.agreement_id == bundle_contract.id)
     )
 
     response = auth_client.patch(
@@ -249,9 +241,7 @@ def test_invalid_services_component_ref_rolls_back(auth_client, bundle_contract,
     assert response.status_code == 400
 
     final_bli_count = loaded_db.scalar(
-        select(func.count())
-        .select_from(BudgetLineItem)
-        .where(BudgetLineItem.agreement_id == bundle_contract.id)
+        select(func.count()).select_from(BudgetLineItem).where(BudgetLineItem.agreement_id == bundle_contract.id)
     )
     assert final_bli_count == initial_bli_count
 
