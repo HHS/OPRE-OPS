@@ -25,6 +25,9 @@ import TeamMemberList from "../TeamMemberList";
 import ProjectComboBox from "../../Projects/ProjectComboBox";
 import { isFieldDisabled } from "./AgreementEditForm.helpers";
 import useAgreementEditForm from "./AgreementEditForm.hooks";
+import { cleanAgreementForApi, formatTeamMember } from "../../../helpers/agreement.helpers";
+import { useEditAgreement } from "./AgreementEditorContext.hooks";
+import useHasStateChanged from "../../../hooks/useHasStateChanged.hooks";
 
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
@@ -46,6 +49,7 @@ import useAgreementEditForm from "./AgreementEditForm.hooks";
  * @param {function} [props.onSaved] - Called with `{ ok, conflictField?, error? }` after a `saveTrigger`-driven save attempt completes. - optional
  * @param {function} [props.onValidityChange] - Called with `true` when the form is valid (no required-field, vest, or uniqueness errors), `false` otherwise. - optional
  * @param {function} [props.onProcurementShopChangeStateChange] - Called when the "needs Division Director approval" state changes, with `{ shouldRequestChange, oldProcurementShop, newProcurementShop }`. Lets a parent host its own confirmation modal. - optional
+ * @param {React.MutableRefObject<{getSlice: () => object|null}|null>} [props.bundleSliceRef] - When provided, the component populates `ref.current = { getSlice }`. `getSlice()` returns either `null` (no agreement-level changes) or the cleaned agreement payload, suitable for the agreement edit-bundle endpoint. - optional
  * @returns {React.ReactElement} - The rendered component.
  */
 const AgreementEditForm = ({
@@ -63,7 +67,8 @@ const AgreementEditForm = ({
     saveTrigger,
     onSaved,
     onValidityChange,
-    onProcurementShopChangeStateChange
+    onProcurementShopChangeStateChange,
+    bundleSliceRef
 }) => {
     const {
         cn,
@@ -201,6 +206,31 @@ const AgreementEditForm = ({
             newProcurementShop: selectedProcurementShop
         });
     }, [onProcurementShopChangeStateChange, shouldRequestChange, procurementShop, selectedProcurementShop]);
+
+    // Bundle slice export. Same payload shape that `saveAgreement` would PATCH today,
+    // but emitted as a slice the parent page can fold into a single edit-bundle PATCH.
+    // Returns null when nothing has changed so the orchestrator can skip the agreement
+    // section entirely.
+    const editorState = useEditAgreement();
+    const hasAgreementChangedForBundle = useHasStateChanged(editorState?.agreement);
+    useEffect(() => {
+        if (!bundleSliceRef) return;
+        bundleSliceRef.current = {
+            getSlice: () => {
+                const liveAgreement = editorState?.agreement;
+                if (!liveAgreement) return null;
+                if (!hasAgreementChangedForBundle) return null;
+                const data = {
+                    ...liveAgreement,
+                    team_members: (selectedTeamMembers ?? []).map(formatTeamMember),
+                    requesting_agency_id: requestingAgency ? requestingAgency.id : null,
+                    servicing_agency_id: servicingAgency ? servicingAgency.id : null
+                };
+                const { cleanData } = cleanAgreementForApi(data);
+                return cleanData;
+            }
+        };
+    });
 
     if (isLoadingProductServiceCodes) {
         return <div>Loading...</div>;

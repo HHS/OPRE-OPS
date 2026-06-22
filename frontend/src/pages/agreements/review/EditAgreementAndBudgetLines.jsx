@@ -1,8 +1,12 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import App from "../../../App";
 import { getUser } from "../../../api/getUser";
-import { useGetAgreementByIdQuery, useGetServicesComponentsListQuery } from "../../../api/opsAPI";
+import {
+    useGetAgreementByIdQuery,
+    useGetServicesComponentsListQuery,
+    useUpdateAgreementEditBundleMutation
+} from "../../../api/opsAPI";
 import AgreementEditForm from "../../../components/Agreements/AgreementEditor/AgreementEditForm";
 import { EditAgreementProvider } from "../../../components/Agreements/AgreementEditor/AgreementEditorContext";
 import CreateBLIsAndSCs from "../../../components/BudgetLineItems/CreateBLIsAndSCs";
@@ -10,7 +14,6 @@ import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
 import { BLI_STATUS, hasAnyBliInSelectedStatus } from "../../../helpers/budgetLines.helpers";
 import { calculateAgreementTotal } from "../../../helpers/agreement.helpers";
-import { scrollToCenter } from "../../../helpers/scrollToCenter.helper";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import useAlert from "../../../hooks/use-alert.hooks";
 
@@ -18,6 +21,11 @@ import useAlert from "../../../hooks/use-alert.hooks";
  * Single-page edit screen used by the review flow. Stacks Agreement Details, Acquisition Details,
  * Services Components, and Budget Lines on one page so users can address validation errors without
  * stepping through the Create Agreement wizard.
+ *
+ * On Save Changes, the page reads each child's bundle slice via a ref and fires a single
+ * `PATCH /agreements/:id/edit-bundle`. The backend commits every change in one DB transaction —
+ * any failure rolls back the whole thing, so this screen can never leave the agreement in a
+ * partially-saved state.
  *
  * Route: /agreements/review/:id/edit
  *
@@ -37,15 +45,10 @@ const EditAgreementAndBudgetLines = () => {
     const [isAgreementFormValid, setIsAgreementFormValid] = useState(true);
     const [isBudgetLinesValid, setIsBudgetLinesValid] = useState(true);
 
-    // Save coordination via incrementing triggers. Each child runs its save when
-    // its trigger increments, then reports back through `onSaved`. We chain them
-    // so the agreement saves first, then the budget lines.
-    const [agreementSaveTrigger, setAgreementSaveTrigger] = useState(0);
-    const [bliSaveTrigger, setBliSaveTrigger] = useState(0);
-    // Bumped after a save failure + SC refetch to tell the editor context to
-    // reseed services_components from canonical server data (reverting any
-    // optimistic edits the user had made).
-    const [servicesComponentsReseedKey, setServicesComponentsReseedKey] = useState(0);
+    // Children populate these refs with `{ getSlice }` callbacks so the page can
+    // read their current edits synchronously when the user clicks Save Changes.
+    const agreementSliceRef = useRef(null);
+    const blisSliceRef = useRef(null);
 
     // Procurement-shop change-request state pushed up by the agreement form.
     // When `shouldRequestChange` is true, saving has to be confirmed because
@@ -70,12 +73,13 @@ const EditAgreementAndBudgetLines = () => {
     const {
         data: servicesComponents,
         error: errorServicesComponent,
-        isLoading: isLoadingServicesComponents,
-        refetch: refetchServicesComponents
+        isLoading: isLoadingServicesComponents
     } = useGetServicesComponentsListQuery(agreementId, {
         refetchOnMountOrArgChange: true,
         skip: !isValidId
     });
+
+    const [updateEditBundle] = useUpdateAgreementEditBundleMutation();
 
     useEffect(() => {
         if (agreement?.project_officer_id) {
@@ -90,79 +94,29 @@ const EditAgreementAndBudgetLines = () => {
         navigate(`/agreements/review/${agreementId}`);
     };
 
-    const startSave = useCallback(() => {
-        setIsSaving(true);
-        // Kick off the agreement save first; BLI save chains in `handleAgreementSaved`.
-        setAgreementSaveTrigger((n) => n + 1);
-    }, []);
-
-    const handlePageSave = () => {
-        if (isSaving) return;
-        // Procurement-shop changes on agreements with planned BLIs route through
-        // a change request — confirm before sending it to the Division Director.
-        if (procurementShopChangeState.shouldRequestChange) {
-            setShowProcurementShopModal(true);
-            return;
+    const buildBundle = () => {
+        const bundle = {};
+        const agreementSlice = agreementSliceRef.current?.getSlice?.();
+        if (agreementSlice) {
+            bundle.agreement = agreementSlice;
         }
-        startSave();
+        const bliSlice = blisSliceRef.current?.getSlice?.() ?? {};
+        if (bliSlice.services_components) {
+            bundle.services_components = bliSlice.services_components;
+        }
+        if (bliSlice.budget_line_items) {
+            bundle.budget_line_items = bliSlice.budget_line_items;
+        }
+        return bundle;
     };
 
-    const reportSaveError = useCallback(
-        (error) => {
-            const detail = error?.data?.error || error?.message || "Please try again.";
-            setAlert({
-                type: "error",
-                heading: "Error saving changes",
-                message: `An error occurred while saving. ${detail}`
-            });
-        },
-        [setAlert]
-    );
-
-    const revertOptimisticServicesComponents = useCallback(async () => {
+    const fireBundleSave = async () => {
+        if (isSaving) return;
+        setIsSaving(true);
         try {
-            await refetchServicesComponents().unwrap();
-        } catch (err) {
-            // If refetch fails, fall back to whatever cache we have. The reseed
-            // still pulls from the current prop, which is the last known good list.
-            console.error("Failed to refetch services components after save error", err);
-        }
-        setServicesComponentsReseedKey((n) => n + 1);
-    }, [refetchServicesComponents]);
+            const bundle = buildBundle();
+            await updateEditBundle({ id: agreementId, data: bundle }).unwrap();
 
-    const handleAgreementSaved = useCallback(
-        (result) => {
-            if (!result.ok) {
-                // The user may have already made optimistic SC edits in the
-                // editor context; refetch + reseed reverts them on failure.
-                revertOptimisticServicesComponents();
-                if (result.conflictField) {
-                    requestAnimationFrame(() => scrollToCenter(result.conflictField));
-                } else {
-                    reportSaveError(result.error);
-                }
-                setIsSaving(false);
-                return;
-            }
-            // Agreement saved (or skipped because unchanged): chain into BLI save.
-            setBliSaveTrigger((n) => n + 1);
-        },
-        [reportSaveError, revertOptimisticServicesComponents]
-    );
-
-    const handleBLISaved = useCallback(
-        (result) => {
-            if (!result.ok) {
-                // Reseed services components from the server so optimistic edits
-                // (e.g. PoP end date) revert to persisted values on save failure.
-                revertOptimisticServicesComponents();
-                reportSaveError(result.error);
-                setIsSaving(false);
-                return;
-            }
-            // Both saves succeeded — set the single page-level success alert and redirect
-            // back to the review page. Children have suppressed their own success alerts
-            // so this is the one source of truth for the user-facing message.
             const { shouldRequestChange, oldProcurementShop, newProcurementShop } = procurementShopChangeState;
             if (shouldRequestChange && oldProcurementShop && newProcurementShop) {
                 const budgetLines = agreement?.budget_line_items ?? [];
@@ -188,17 +142,28 @@ const EditAgreementAndBudgetLines = () => {
                 });
             }
             scrollToTop();
+        } catch (error) {
+            const detail = error?.data?.error || error?.message || "Please try again.";
+            setAlert({
+                type: "error",
+                heading: "Error saving changes",
+                message: `An error occurred while saving. ${detail}`
+            });
+        } finally {
             setIsSaving(false);
-        },
-        [
-            reportSaveError,
-            setAlert,
-            agreementId,
-            revertOptimisticServicesComponents,
-            procurementShopChangeState,
-            agreement?.budget_line_items
-        ]
-    );
+        }
+    };
+
+    const handlePageSave = () => {
+        if (isSaving) return;
+        // Procurement-shop changes on agreements with planned BLIs route through
+        // a change request — confirm before sending it to the Division Director.
+        if (procurementShopChangeState.shouldRequestChange) {
+            setShowProcurementShopModal(true);
+            return;
+        }
+        fireBundleSave();
+    };
 
     useEffect(() => {
         if (!isValidId || errorAgreement || errorServicesComponent) {
@@ -249,7 +214,6 @@ const EditAgreementAndBudgetLines = () => {
                 projectOfficer={projectOfficer}
                 alternateProjectOfficer={alternateProjectOfficer}
                 servicesComponents={servicesComponents ?? []}
-                servicesComponentsReseedKey={servicesComponentsReseedKey}
             >
                 <h1 className="font-sans-lg margin-bottom-2">Edit Agreement Details</h1>
                 {showProcurementShopModal && (
@@ -258,7 +222,7 @@ const EditAgreementAndBudgetLines = () => {
                         actionButtonText="Send to Approval"
                         secondaryButtonText="Continue Editing"
                         setShowModal={setShowProcurementShopModal}
-                        handleConfirm={startSave}
+                        handleConfirm={fireBundleSave}
                     />
                 )}
                 <AgreementEditForm
@@ -266,10 +230,9 @@ const EditAgreementAndBudgetLines = () => {
                     isAgreementAwarded={isAgreementAwarded}
                     areAnyBudgetLinesPlanned={areAnyBudgetLinesPlanned}
                     hideFooterButtons={true}
-                    saveTrigger={agreementSaveTrigger}
-                    onSaved={handleAgreementSaved}
                     onValidityChange={setIsAgreementFormValid}
                     onProcurementShopChangeStateChange={setProcurementShopChangeState}
+                    bundleSliceRef={agreementSliceRef}
                 />
                 <CreateBLIsAndSCs
                     workflow="agreement"
@@ -284,9 +247,8 @@ const EditAgreementAndBudgetLines = () => {
                     continueBtnText="Save Changes"
                     hideFooterButtons={true}
                     hideWizardChrome={true}
-                    saveTrigger={bliSaveTrigger}
-                    onSaved={handleBLISaved}
                     onValidityChange={setIsBudgetLinesValid}
+                    bundleSliceRef={blisSliceRef}
                 />
                 <div className="grid-row flex-justify-end margin-top-4">
                     <button

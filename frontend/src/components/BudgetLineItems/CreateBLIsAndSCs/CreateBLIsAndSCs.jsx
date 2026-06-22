@@ -15,6 +15,8 @@ import BudgetLinesForm from "../BudgetLinesForm";
 import BudgetLinesTable from "../BudgetLinesTable";
 import useCreateBLIsAndSCs from "./CreateBLIsAndSCs.hooks";
 import { findIfOptional } from "../../../helpers/servicesComponent.helpers";
+import { cleanBudgetLineItemForApi } from "../../../helpers/agreement.helpers";
+import { useEditAgreement } from "../../Agreements/AgreementEditor/AgreementEditorContext.hooks";
 
 /**
  * Renders the Create Budget Lines and Services Components with React context.
@@ -42,6 +44,7 @@ import { findIfOptional } from "../../../helpers/servicesComponent.helpers";
  * @param {number} [props.saveTrigger] - Increment from a parent to request a batch save. The component runs `handleSave(false, true)` and reports back via `onSaved`. - optional
  * @param {function} [props.onSaved] - Called with `{ ok, error? }` after a `saveTrigger`-driven save attempt completes. - optional
  * @param {function} [props.onValidityChange] - Called with `true` when the budget-lines form is valid (no vest errors and the user is allowed to edit), `false` otherwise. Only meaningful in review mode. - optional
+ * @param {React.MutableRefObject<{getSlice: () => object}|null>} [props.bundleSliceRef] - When provided, the component populates `ref.current = { getSlice }`. `getSlice()` returns `{ services_components: { create, update, delete }, budget_line_items: { create, update, delete } }` reflecting the user's current edits, suitable for the agreement edit-bundle endpoint. Used by the review-flow edit page so it can fire one atomic mutation instead of fanning out per-resource calls. - optional
  * @returns {JSX.Element} - The rendered component.
  */
 export const CreateBLIsAndSCs = ({
@@ -66,7 +69,8 @@ export const CreateBLIsAndSCs = ({
     hideWizardChrome = false,
     saveTrigger,
     onSaved,
-    onValidityChange
+    onValidityChange,
+    bundleSliceRef
 }) => {
     const {
         blocker,
@@ -102,6 +106,7 @@ export const CreateBLIsAndSCs = ({
         handleSave,
         budgetLinesForCards,
         tempBudgetLines,
+        deletedBudgetLines,
         isBudgetLineNotDraft,
         budgetFormSuite,
         datePickerSuite,
@@ -157,6 +162,96 @@ export const CreateBLIsAndSCs = ({
             onValidityChange(isBLIsValid);
         }
     }, [onValidityChange, isBLIsValid]);
+
+    // Bundle slice export. The page (`EditAgreementAndBudgetLines`) reads this synchronously
+    // when the user clicks Save Changes and folds it into a single edit-bundle PATCH so that
+    // a partial-success failure mode is impossible (one transaction, all or nothing).
+    const editorState = useEditAgreement();
+    const deletedServicesComponentsIds = editorState?.deleted_services_components_ids ?? [];
+    useEffect(() => {
+        if (!bundleSliceRef) return;
+        bundleSliceRef.current = {
+            getSlice: () => {
+                // Capture each new SC's ref BEFORE stripping UI-only fields. The ref is used
+                // by new BLIs to link to a not-yet-persisted SC via `services_component_ref`.
+                const newScsRaw = servicesComponents.filter((sc) => !("created_on" in sc));
+                const newScs = newScsRaw.map((sc) => {
+                    const ref = sc.display_title ?? String(sc.number ?? "");
+                    // eslint-disable-next-line no-unused-vars
+                    const { display_title, has_changed, popStartDate, popEndDate, mode, ...clean } = sc;
+                    return { ...clean, ref };
+                });
+                const changedScs = servicesComponents
+                    .filter((sc) => "created_on" in sc && sc.has_changed)
+                    .map((sc) => {
+                        // eslint-disable-next-line no-unused-vars
+                        const { display_title, has_changed, popStartDate, popEndDate, mode, ...clean } = sc;
+                        return { id: sc.id, ...clean };
+                    });
+
+                // For BLIs we need to resolve the SC link. New BLIs carry only
+                // `services_component_number`; the link is either:
+                //   - an existing persisted SC (use services_component_id directly), or
+                //   - a new SC in the same bundle (use services_component_ref).
+                const existingScByNumber = new Map(
+                    servicesComponents.filter((sc) => "created_on" in sc).map((sc) => [sc.number, sc])
+                );
+                const newScByNumber = new Map(newScs.map((sc) => [sc.number, sc]));
+
+                const linkBliToSc = (bli) => {
+                    if (bli.services_component_number == null) return {};
+                    const existingSc = existingScByNumber.get(bli.services_component_number);
+                    if (existingSc) {
+                        return { services_component_id: existingSc.id };
+                    }
+                    const newSc = newScByNumber.get(bli.services_component_number);
+                    if (newSc) {
+                        return { services_component_ref: newSc.ref };
+                    }
+                    return {};
+                };
+
+                const newBlis = tempBudgetLines
+                    .filter((bli) => !("created_on" in bli))
+                    .map((bli) => {
+                        const link = linkBliToSc(bli);
+                        const { data: cleaned } = cleanBudgetLineItemForApi(bli);
+                        return { ...cleaned, ...link };
+                    });
+
+                // For the dirty check we compare cleaned-vs-cleaned so the UI-only
+                // decorations (services_component_number, serviceComponentGroupingLabel,
+                // fees, _meta, etc.) don't make every existing BLI look "changed".
+                const updatedBlis = tempBudgetLines
+                    .filter((bli) => "created_on" in bli)
+                    .map((bli) => {
+                        const baseline = budgetLines.find((b) => b.id === bli.id);
+                        const { id, data: cleaned } = cleanBudgetLineItemForApi(bli);
+                        if (baseline) {
+                            const { data: cleanedBaseline } = cleanBudgetLineItemForApi(baseline);
+                            if (JSON.stringify(cleaned) === JSON.stringify(cleanedBaseline)) {
+                                return null;
+                            }
+                        }
+                        return { id, ...cleaned };
+                    })
+                    .filter(Boolean);
+
+                return {
+                    services_components: {
+                        create: newScs,
+                        update: changedScs,
+                        delete: deletedServicesComponentsIds
+                    },
+                    budget_line_items: {
+                        create: newBlis,
+                        update: updatedBlis,
+                        delete: (deletedBudgetLines ?? []).map((b) => b.id)
+                    }
+                };
+            }
+        };
+    });
 
     return (
         <>

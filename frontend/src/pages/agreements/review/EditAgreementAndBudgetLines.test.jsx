@@ -2,7 +2,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi, beforeEach } from "vitest";
 import authSlice from "../../../components/Auth/authSlice";
 import alertSlice from "../../../components/UI/Alert/alertSlice";
 import EditAgreementAndBudgetLines from "./EditAgreementAndBudgetLines";
@@ -31,9 +31,27 @@ const mockAgreement = {
 let mockAgreementResult = { data: mockAgreement, error: null, isLoading: false };
 const mockServicesComponentsResult = { data: [], error: null, isLoading: false };
 
+// Spy + result for the new single-mutation save path. Tests can override
+// `nextBundleResult` to either resolve with a body or reject with an error.
+const updateBundleMock = vi.fn();
+let nextBundleResult = { resolveWith: { ok: true } };
+
 vi.mock("../../../api/opsAPI", () => ({
     useGetAgreementByIdQuery: () => mockAgreementResult,
-    useGetServicesComponentsListQuery: () => mockServicesComponentsResult
+    useGetServicesComponentsListQuery: () => mockServicesComponentsResult,
+    useUpdateAgreementEditBundleMutation: () => [
+        (...args) => {
+            updateBundleMock(...args);
+            return {
+                unwrap: () => {
+                    if (nextBundleResult.rejectWith) {
+                        return Promise.reject(nextBundleResult.rejectWith);
+                    }
+                    return Promise.resolve(nextBundleResult.resolveWith);
+                }
+            };
+        }
+    ]
 }));
 
 vi.mock("../../../api/getUser", () => ({
@@ -53,26 +71,22 @@ vi.mock("../../../components/Agreements/AgreementEditor/AgreementEditorContext",
     EditAgreementProvider: ({ children }) => <div data-testid="edit-agreement-provider">{children}</div>
 }));
 
-// Test doubles for the children: each one watches `saveTrigger` and reports the
-// configured fake result through `onSaved`. Tests can override `nextAgreementResult`
-// or `nextBLIResult` to simulate failure paths without touching the real components.
-let nextAgreementResult = { ok: true };
-let nextBLIResult = { ok: true };
-const agreementSaveSpy = vi.fn();
-const bliSaveSpy = vi.fn();
+// Each child mock immediately registers a `getSlice` getter on the bundleSliceRef so
+// the page can read its slice when the user clicks Save Changes. Tests can override
+// the static slices to assert what the page sends in the bundle payload.
+let agreementSlice = { name: "Edited Agreement" };
+let blisSlice = {
+    services_components: { create: [], update: [], delete: [] },
+    budget_line_items: { create: [], update: [], delete: [] }
+};
 
 vi.mock("../../../components/Agreements/AgreementEditor/AgreementEditForm", async () => {
-    const { useEffect, useRef } = await vi.importActual("react");
-    function MockAgreementEditForm({ hideFooterButtons, isReviewMode, saveTrigger, onSaved }) {
-        // Latch on the trigger value: only respond when it actually increments.
-        // The page's `onSaved` callback may change reference across renders, so
-        // depending on it would cause an infinite re-render loop.
-        const lastSeenTrigger = useRef(saveTrigger);
+    const { useEffect } = await vi.importActual("react");
+    function MockAgreementEditForm({ hideFooterButtons, isReviewMode, bundleSliceRef }) {
         useEffect(() => {
-            if (!saveTrigger || saveTrigger === lastSeenTrigger.current) return;
-            lastSeenTrigger.current = saveTrigger;
-            agreementSaveSpy(saveTrigger);
-            onSaved?.(nextAgreementResult);
+            if (bundleSliceRef) {
+                bundleSliceRef.current = { getSlice: () => agreementSlice };
+            }
         });
         return (
             <div data-testid="agreement-edit-form">
@@ -85,14 +99,12 @@ vi.mock("../../../components/Agreements/AgreementEditor/AgreementEditForm", asyn
 });
 
 vi.mock("../../../components/BudgetLineItems/CreateBLIsAndSCs", async () => {
-    const { useEffect, useRef } = await vi.importActual("react");
-    function MockCreateBLIsAndSCs({ hideFooterButtons, hideWizardChrome, isReviewMode, saveTrigger, onSaved }) {
-        const lastSeenTrigger = useRef(saveTrigger);
+    const { useEffect } = await vi.importActual("react");
+    function MockCreateBLIsAndSCs({ hideFooterButtons, hideWizardChrome, isReviewMode, bundleSliceRef }) {
         useEffect(() => {
-            if (!saveTrigger || saveTrigger === lastSeenTrigger.current) return;
-            lastSeenTrigger.current = saveTrigger;
-            bliSaveSpy(saveTrigger);
-            onSaved?.(nextBLIResult);
+            if (bundleSliceRef) {
+                bundleSliceRef.current = { getSlice: () => blisSlice };
+            }
         });
         return (
             <div data-testid="create-blis-and-scs">
@@ -131,10 +143,13 @@ const renderPage = () =>
 describe("EditAgreementAndBudgetLines", () => {
     beforeEach(() => {
         navigateMock.mockReset();
-        agreementSaveSpy.mockReset();
-        bliSaveSpy.mockReset();
-        nextAgreementResult = { ok: true };
-        nextBLIResult = { ok: true };
+        updateBundleMock.mockReset();
+        nextBundleResult = { resolveWith: { ok: true } };
+        agreementSlice = { name: "Edited Agreement" };
+        blisSlice = {
+            services_components: { create: [], update: [], delete: [] },
+            budget_line_items: { create: [], update: [], delete: [] }
+        };
         mockAgreementResult = { data: mockAgreement, error: null, isLoading: false };
     });
 
@@ -163,42 +178,42 @@ describe("EditAgreementAndBudgetLines", () => {
         expect(navigateMock).toHaveBeenCalledWith("/agreements/review/42");
     });
 
-    it("chains agreement save then BLI save when Save changes is clicked", async () => {
+    it("fires a single edit-bundle mutation combining both child slices", async () => {
         renderPage();
         fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
-        await waitFor(() => {
-            expect(agreementSaveSpy).toHaveBeenCalled();
-            expect(bliSaveSpy).toHaveBeenCalled();
+        await waitFor(() => expect(updateBundleMock).toHaveBeenCalledTimes(1));
+        expect(updateBundleMock).toHaveBeenCalledWith({
+            id: 42,
+            data: {
+                agreement: { name: "Edited Agreement" },
+                services_components: { create: [], update: [], delete: [] },
+                budget_line_items: { create: [], update: [], delete: [] }
+            }
         });
         await waitFor(() => {
             expect(screen.getByRole("button", { name: "Save changes" })).not.toBeDisabled();
         });
     });
 
-    it("does not run the BLI save when the agreement save fails", async () => {
-        nextAgreementResult = { ok: false, error: { message: "boom" } };
+    it("omits the agreement section when the agreement slice is null", async () => {
+        agreementSlice = null;
         renderPage();
         fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
-        await waitFor(() => {
-            expect(agreementSaveSpy).toHaveBeenCalled();
-        });
-        // Give the page a moment to (incorrectly) chain the BLI save if the contract is broken.
-        await new Promise((r) => setTimeout(r, 0));
-        expect(bliSaveSpy).not.toHaveBeenCalled();
+        await waitFor(() => expect(updateBundleMock).toHaveBeenCalledTimes(1));
+        const arg = updateBundleMock.mock.calls[0][0];
+        expect(arg.data.agreement).toBeUndefined();
+        expect(arg.data.services_components).toBeDefined();
+        expect(arg.data.budget_line_items).toBeDefined();
+    });
+
+    it("re-enables the save button after a failure (no partial-state cleanup)", async () => {
+        nextBundleResult = { rejectWith: { data: { error: "boom" } } };
+        renderPage();
+        fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+        await waitFor(() => expect(updateBundleMock).toHaveBeenCalledTimes(1));
         await waitFor(() => {
             expect(screen.getByRole("button", { name: "Save changes" })).not.toBeDisabled();
         });
-    });
-
-    it("does not run the BLI save when the agreement save reports a conflict field", async () => {
-        nextAgreementResult = { ok: false, conflictField: "name" };
-        renderPage();
-        fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
-        await waitFor(() => {
-            expect(agreementSaveSpy).toHaveBeenCalled();
-        });
-        await new Promise((r) => setTimeout(r, 0));
-        expect(bliSaveSpy).not.toHaveBeenCalled();
     });
 
     it("renders an access denied screen when the agreement is not editable", () => {
