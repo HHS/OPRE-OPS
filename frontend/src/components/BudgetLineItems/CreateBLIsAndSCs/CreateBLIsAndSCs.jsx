@@ -211,21 +211,36 @@ export const CreateBLIsAndSCs = ({
                     return {};
                 };
 
+                // Apply the SC link last so it wins over whatever services_component_id
+                // was present on the cleaned payload — for an existing BLI reassigned to
+                // a not-yet-persisted (in-bundle) SC, we must drop the stale id and emit
+                // services_component_ref instead.
+                const applyScLink = (cleaned, link) => {
+                    const out = { ...cleaned, ...link };
+                    if ("services_component_ref" in link) {
+                        delete out.services_component_id;
+                    }
+                    return out;
+                };
+
                 const newBlis = tempBudgetLines
                     .filter((bli) => !("created_on" in bli))
                     .map((bli) => {
                         const link = linkBliToSc(bli);
                         const { data: cleaned } = cleanBudgetLineItemForApi(bli);
-                        return { ...cleaned, ...link };
+                        return applyScLink(cleaned, link);
                     });
 
                 // For the dirty check we compare cleaned-vs-cleaned so the UI-only
                 // decorations (services_component_number, serviceComponentGroupingLabel,
                 // fees, _meta, etc.) don't make every existing BLI look "changed".
+                // Apply linkBliToSc to updates as well so an existing BLI moved onto an
+                // in-bundle (newly-created) SC carries services_component_ref.
                 const updatedBlis = tempBudgetLines
                     .filter((bli) => "created_on" in bli)
                     .map((bli) => {
                         const baseline = budgetLines.find((b) => b.id === bli.id);
+                        const link = linkBliToSc(bli);
                         const { id, data: cleaned } = cleanBudgetLineItemForApi(bli);
                         if (baseline) {
                             const { data: cleanedBaseline } = cleanBudgetLineItemForApi(baseline);
@@ -233,7 +248,7 @@ export const CreateBLIsAndSCs = ({
                                 return null;
                             }
                         }
-                        return { id, ...cleaned };
+                        return { id, ...applyScLink(cleaned, link) };
                     })
                     .filter(Boolean);
 

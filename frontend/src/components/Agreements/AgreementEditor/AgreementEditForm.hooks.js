@@ -10,7 +10,11 @@ import {
     useLazyGetAgreementsQuery,
     useUpdateAgreementMutation
 } from "../../../api/opsAPI";
-import { calculateAgreementTotal, cleanAgreementForApi, formatTeamMember } from "../../../helpers/agreement.helpers.js";
+import {
+    buildProcurementShopChangeAlert,
+    cleanAgreementForApi,
+    formatTeamMember
+} from "../../../helpers/agreement.helpers.js";
 import { scrollToCenter } from "../../../helpers/scrollToCenter.helper";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import useAlert from "../../../hooks/use-alert.hooks";
@@ -397,29 +401,14 @@ const useAgreementEditForm = (
                     console.log(`UPDATE: agreement updated: ${JSON.stringify(fulfilled, null, 2)}`);
                     if (!suppressSuccessAlert) {
                         if (shouldRequestChange) {
-                            const oldTotal = calculateAgreementTotal(
-                                agreement?.budget_line_items ?? [],
-                                procurementShop?.fee_percentage ?? 0
+                            setAlert(
+                                buildProcurementShopChangeAlert({
+                                    budgetLines: agreement?.budget_line_items ?? [],
+                                    oldProcurementShop: procurementShop,
+                                    newProcurementShop: selectedProcurementShop,
+                                    redirectUrl
+                                })
                             );
-                            const newTotal = calculateAgreementTotal(
-                                agreement?.budget_line_items ?? [],
-                                selectedProcurementShop?.fee_percentage ?? 0
-                            );
-                            const procurementShopChanges = `Procurement Shop: ${procurementShop?.name} (${procurementShop?.abbr}) to ${selectedProcurementShop.name} (${selectedProcurementShop.abbr})`;
-                            const feeRateChanges = `Fee Rate: ${procurementShop?.fee_percentage}% to ${selectedProcurementShop.fee_percentage}%`;
-                            const feeTotalChanges = `Fee Total: $${oldTotal} to $${newTotal}`;
-
-                            setAlert({
-                                type: "success",
-                                heading: "Changes Sent to Approval",
-                                message:
-                                    `Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.\n\n` +
-                                    `<strong>Pending Changes:</strong>\n` +
-                                    `<ul><li>${procurementShopChanges}</li>` +
-                                    `<li>${feeRateChanges}</li>` +
-                                    `<li>${feeTotalChanges}</li></ul>`,
-                                redirectUrl: redirectUrl
-                            });
                         } else {
                             setAlert({
                                 type: "success",

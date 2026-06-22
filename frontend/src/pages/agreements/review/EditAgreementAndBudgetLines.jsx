@@ -13,7 +13,7 @@ import CreateBLIsAndSCs from "../../../components/BudgetLineItems/CreateBLIsAndS
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
 import { BLI_STATUS, hasAnyBliInSelectedStatus } from "../../../helpers/budgetLines.helpers";
-import { calculateAgreementTotal } from "../../../helpers/agreement.helpers";
+import { buildProcurementShopChangeAlert } from "../../../helpers/agreement.helpers";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import useAlert from "../../../hooks/use-alert.hooks";
 
@@ -119,20 +119,14 @@ const EditAgreementAndBudgetLines = () => {
 
             const { shouldRequestChange, oldProcurementShop, newProcurementShop } = procurementShopChangeState;
             if (shouldRequestChange && oldProcurementShop && newProcurementShop) {
-                const budgetLines = agreement?.budget_line_items ?? [];
-                const oldTotal = calculateAgreementTotal(budgetLines, oldProcurementShop?.fee_percentage ?? 0);
-                const newTotal = calculateAgreementTotal(budgetLines, newProcurementShop?.fee_percentage ?? 0);
-                setAlert({
-                    type: "success",
-                    heading: "Changes Sent to Approval",
-                    message:
-                        `Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.\n\n` +
-                        `<strong>Pending Changes:</strong>\n` +
-                        `<ul><li>Procurement Shop: ${oldProcurementShop?.name} (${oldProcurementShop?.abbr}) to ${newProcurementShop.name} (${newProcurementShop.abbr})</li>` +
-                        `<li>Fee Rate: ${oldProcurementShop?.fee_percentage}% to ${newProcurementShop.fee_percentage}%</li>` +
-                        `<li>Fee Total: $${oldTotal} to $${newTotal}</li></ul>`,
-                    redirectUrl: `/agreements/review/${agreementId}`
-                });
+                setAlert(
+                    buildProcurementShopChangeAlert({
+                        budgetLines: agreement?.budget_line_items ?? [],
+                        oldProcurementShop,
+                        newProcurementShop,
+                        redirectUrl: `/agreements/review/${agreementId}`
+                    })
+                );
             } else {
                 setAlert({
                     type: "success",
