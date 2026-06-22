@@ -424,6 +424,7 @@ const AgreementEditForm = ({
                 value={contractType}
                 onChange={(name, value) => {
                     setContractType(value);
+                    runValidate(name, value, { contract_type: value });
                 }}
                 isDisabled={isFieldDisabled(
                     AgreementFields.ContractType,
