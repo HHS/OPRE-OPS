@@ -53,7 +53,7 @@ class ChangeRequestService(OpsService[ChangeRequest]):
 
         When ``commit`` is False, the change request is added (and flushed to assign id)
         but neither committed nor notified. The caller must commit and then call
-        ``_notify_division_reviewers`` for each deferred change request once the bundle
+        ``notify_division_reviewers`` for each deferred change request once the bundle
         commit succeeds. This avoids notifying reviewers about a transaction that ends up
         rolled back.
         """
@@ -66,7 +66,7 @@ class ChangeRequestService(OpsService[ChangeRequest]):
         self.db_session.add(change_request)
         if commit:
             self.db_session.commit()
-            self._notify_division_reviewers(change_request)
+            self.notify_division_reviewers(change_request)
 
         return change_request
 
@@ -198,7 +198,7 @@ class ChangeRequestService(OpsService[ChangeRequest]):
 
     # --- Notification Handling ---
 
-    def _notify_division_reviewers(
+    def notify_division_reviewers(
         self, change_request: Union[AgreementChangeRequest, BudgetLineItemChangeRequest]
     ) -> None:
         division_director_ids: set[int] = set()

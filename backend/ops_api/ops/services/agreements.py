@@ -44,7 +44,7 @@ from ops_api.ops.services.ops_service import (
     ResourceNotFoundError,
     ValidationError,
 )
-from ops_api.ops.utils.agreements_helpers import associated_with_agreement
+from ops_api.ops.utils.agreements_helpers import associated_with_agreement, is_agreement_name_unique_violation
 from ops_api.ops.utils.budget_line_items_helpers import create_budget_line_item_instance
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.validation.agreement_validator import AgreementValidator
@@ -206,7 +206,7 @@ class AgreementsService(OpsService[Agreement]):
             logger.error(f"Failed to create agreement - integrity constraint violated: {e}")
 
             # Check if it's the unique name constraint
-            if "ix_agreement_name_type_lower" in str(e):
+            if is_agreement_name_unique_violation(e):
                 raise ValidationError(
                     {
                         "name": [
@@ -393,7 +393,7 @@ class AgreementsService(OpsService[Agreement]):
             logger.error(f"Failed to update agreement id={id} - integrity constraint violated: {e}")
 
             # Check if it's the unique name constraint
-            if "ix_agreement_name_type_lower" in str(e):
+            if is_agreement_name_unique_violation(e):
                 raise ValidationError(
                     {
                         "name": [

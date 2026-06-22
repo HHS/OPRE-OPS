@@ -1,4 +1,4 @@
-from marshmallow import Schema, fields
+from marshmallow import Schema, ValidationError, fields, validates
 
 
 class _ServicesComponentMutationsSchema(Schema):
@@ -37,3 +37,19 @@ class AgreementEditBundleRequestSchema(Schema):
         _BudgetLineItemMutationsSchema,
         load_default=lambda: {"create": [], "update": [], "delete": []},
     )
+
+    @validates("agreement")
+    def _reject_nested_collections(self, value, **kwargs):
+        """Reject nested SC / BLI arrays in the agreement section.
+
+        Those collections belong in the bundle's top-level ``services_components`` /
+        ``budget_line_items`` keys, where the orchestrator can apply create/update/delete
+        atomically. Silently stripping them would hide client bugs.
+        """
+        if not value:
+            return
+        nested = [k for k in ("budget_line_items", "services_components") if k in value]
+        if nested:
+            raise ValidationError(
+                f"{nested} must be sent at the top level of the bundle, not nested under 'agreement'."
+            )
