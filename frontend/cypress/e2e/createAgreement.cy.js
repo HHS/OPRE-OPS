@@ -70,7 +70,7 @@ it("can create an SEVERABLE agreement", () => {
     cy.get("p").should("contain", "You have not added any Services Component yet.");
     cy.get("#servicesComponentSelect").select("1");
     cy.get("#pop-start-date").type("01/01/2024");
-    cy.get("#pop-end-date").type("01/01/2025");
+    cy.get("#pop-end-date").type("01/01/2045");
     cy.get("#description").type("This is a description.");
     cy.get("[data-cy='add-services-component-btn']").click();
     cy.get("h2").should("contain", "Base Period 1");
@@ -230,7 +230,7 @@ it("can create an NON-SEVERABLE agreement", () => {
     cy.get("#servicesComponentSelect").select("2");
     cy.get(".usa-checkbox").click();
     cy.get("#pop-start-date").type("01/01/2030");
-    cy.get("#pop-end-date").type("01/01/2031");
+    cy.get("#pop-end-date").type("01/01/2035");
     cy.get("#description").type("This is a description.");
     cy.get("[data-cy='add-services-component-btn']").click();
     cy.get("h2").should("contain", "Optional Services Component 2");
