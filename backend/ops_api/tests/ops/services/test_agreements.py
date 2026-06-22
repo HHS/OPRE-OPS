@@ -216,7 +216,8 @@ def test_creates_change_request_when_planned_bli(mock_event_handler, mock_cr_ser
             "requested_change_diff": {"awarding_entity_id": {"new": 7, "old": 1}},
             "created_by": 99,
             "change_request_type": ChangeRequestType.AGREEMENT_CHANGE_REQUEST,
-        }
+        },
+        commit=True
     )
     assert result == 101
 
