@@ -94,7 +94,8 @@ class ServicesComponentService:
             else:
                 self.db_session.flush()
         except IntegrityError as e:
-            self.db_session.rollback()
+            if commit:
+                self.db_session.rollback()
             raise ValidationError({"number": ["Services Component with this number already exists"]}) from e
 
         return new_sc
@@ -138,7 +139,8 @@ class ServicesComponentService:
             else:
                 self.db_session.flush()
         except IntegrityError as e:
-            self.db_session.rollback()
+            if commit:
+                self.db_session.rollback()
             raise ValidationError({"number": ["Services Component with this number already exists"]}) from e
 
         return updated_service_component, 200

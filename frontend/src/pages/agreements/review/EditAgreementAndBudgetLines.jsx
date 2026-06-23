@@ -44,6 +44,9 @@ const EditAgreementAndBudgetLines = () => {
     const [isSaving, setIsSaving] = useState(false);
     const [isAgreementFormValid, setIsAgreementFormValid] = useState(true);
     const [isBudgetLinesValid, setIsBudgetLinesValid] = useState(true);
+    // Bumped on save failure so the editor reseeds services_components from the
+    // server-cached list, reverting any optimistic edits the user had in flight.
+    const [servicesComponentsReseedKey, setServicesComponentsReseedKey] = useState(0);
 
     // Children populate these refs with `{ getSlice }` callbacks so the page can
     // read their current edits synchronously when the user clicks Save Changes.
@@ -146,6 +149,10 @@ const EditAgreementAndBudgetLines = () => {
                 heading: "Error saving changes",
                 message: `An error occurred while saving. ${detail}`
             });
+            // Bundle save is atomic — on failure the server state is unchanged.
+            // Reseed services_components so optimistic edits revert to the server
+            // copy, leaving the form consistent for the user to retry.
+            setServicesComponentsReseedKey((key) => key + 1);
         } finally {
             setIsSaving(false);
         }
@@ -211,6 +218,7 @@ const EditAgreementAndBudgetLines = () => {
                 projectOfficer={projectOfficer}
                 alternateProjectOfficer={alternateProjectOfficer}
                 servicesComponents={servicesComponents ?? []}
+                servicesComponentsReseedKey={servicesComponentsReseedKey}
             >
                 <h1 className="font-sans-lg margin-bottom-2">Edit Agreement Details</h1>
                 {showProcurementShopModal && (

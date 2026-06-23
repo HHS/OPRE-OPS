@@ -29,14 +29,11 @@ class AgreementEditBundleRequestSchema(Schema):
     """
 
     agreement = fields.Dict(load_default=None)
-    services_components = fields.Nested(
-        _ServicesComponentMutationsSchema,
-        load_default=lambda: {"create": [], "update": [], "delete": []},
-    )
-    budget_line_items = fields.Nested(
-        _BudgetLineItemMutationsSchema,
-        load_default=lambda: {"create": [], "update": [], "delete": []},
-    )
+    # load_default=None (not a dict literal) so that when the key is omitted, Marshmallow
+    # doesn't bypass the nested schema by returning a raw default. The orchestrator
+    # normalizes None → {} via `payload.get(...) or {}`, so an absent key is still a no-op.
+    services_components = fields.Nested(_ServicesComponentMutationsSchema, load_default=None)
+    budget_line_items = fields.Nested(_BudgetLineItemMutationsSchema, load_default=None)
 
     @validates("agreement")
     def _reject_nested_collections(self, value, **kwargs):

@@ -599,6 +599,8 @@ class BudgetLineItemService:
         self.db_session.add(budget_line_item)
         if commit:
             self.db_session.commit()
+        else:
+            self.db_session.flush()
 
     # Fields that can always be edited directly, even on PLANNED/EXECUTING BLIs, without a change request.
     ALWAYS_DIRECT_EDIT_FIELDS = {"services_component_id", "line_description"}
@@ -634,6 +636,8 @@ class BudgetLineItemService:
             self.db_session.add(budget_line_item)
             if commit:
                 self.db_session.commit()
+            else:
+                self.db_session.flush()
 
         if changed_budget_or_status_prop_keys:
             change_request_service = ChangeRequestService(self.db_session)

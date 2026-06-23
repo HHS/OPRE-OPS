@@ -257,6 +257,9 @@ const router = createBrowserRouter(
                     path="/agreements/edit/:id/*"
                     element={<EditAgreement />}
                 />
+                {/* React Router v6 matches by specificity, not registration order — `:id/edit`
+                    wins over `:id/*` regardless of which is declared first. Keeping the
+                    specific route above the wildcard so the relationship reads top-down. */}
                 <Route
                     path="/agreements/review/:id/edit"
                     element={<EditAgreementAndBudgetLines />}
