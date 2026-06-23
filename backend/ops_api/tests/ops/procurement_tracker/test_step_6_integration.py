@@ -30,9 +30,7 @@ def step_6_test_data(app_ctx, loaded_db):
     clin_count = loaded_db.query(CLIN).filter(CLIN.agreement_id == agreement.id).count()
     if clin_count == 0:
         # Create a CLIN for testing
-        clin = CLIN(
-            agreement_id=agreement.id, number=1001, name="Test CLIN for Step 6"
-        )
+        clin = CLIN(agreement_id=agreement.id, number=1001, name="Test CLIN for Step 6")
         loaded_db.add(clin)
 
     # Create a procurement tracker with Steps 1-6
