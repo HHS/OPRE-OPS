@@ -12,6 +12,7 @@ from sqlalchemy.orm import joinedload, selectinload
 
 from models import (
     CAN,
+    CLIN,
     Agreement,
     AgreementChangeRequest,
     AgreementReason,
@@ -516,6 +517,15 @@ class BudgetLineItemService:
             not has_status_change and budget_line_item.status in [BudgetLineItemStatus.DRAFT]
         )
 
+        # Lazy CLIN creation: if clin_id is provided and looks like a CLIN number (1-10),
+        # ensure CLIN record exists and replace with actual CLIN ID
+        if "clin_id" in updated_fields and updated_fields["clin_id"] is not None:
+            clin_value = updated_fields["clin_id"]
+            # Assume values 1-10 are CLIN numbers, not CLIN IDs (IDs start at 5000)
+            if 1 <= clin_value <= 10:
+                actual_clin_id = self._ensure_clin_exists(budget_line_item, clin_value)
+                updated_fields["clin_id"] = actual_clin_id
+
         change_request_ids = []
         if directly_editable:
             self._apply_direct_edits(budget_line_item, updated_fields)
@@ -577,6 +587,46 @@ class BudgetLineItemService:
         budget_line_item.updated_by = get_current_user().id
         self.db_session.add(budget_line_item)
         self.db_session.commit()
+
+    def _ensure_clin_exists(self, budget_line_item: BudgetLineItem, clin_number: int) -> int:
+        """
+        Ensure a CLIN record exists for the given CLIN number and agreement.
+        Creates CLIN record if it doesn't exist (lazy creation pattern, similar to services components).
+
+        Args:
+            budget_line_item: The BLI being updated
+            clin_number: The CLIN number (1-10) from frontend
+
+        Returns:
+            The CLIN record ID to use for the foreign key
+        """
+        agreement = budget_line_item.agreement
+        if not agreement:
+            raise ValidationError({"clin_id": "Cannot assign CLIN to budget line item without an agreement."})
+
+        # Check if CLIN record already exists for this (number, agreement_id) pair
+        existing_clin = self.db_session.execute(
+            select(CLIN).where(CLIN.number == clin_number).where(CLIN.agreement_id == agreement.id)
+        ).scalar_one_or_none()
+
+        if existing_clin:
+            return existing_clin.id
+
+        # Lazy create: CLIN doesn't exist yet, create it now
+        new_clin = CLIN(
+            number=clin_number,
+            name=f"CLIN {clin_number}",
+            agreement_id=agreement.id,
+            pop_start_date=agreement.sc_start_date,  # Use services component dates
+            pop_end_date=agreement.sc_end_date,
+            created_by=get_current_user().id,
+        )
+        self.db_session.add(new_clin)
+        self.db_session.flush()  # Get the ID without committing
+
+        logger.info(f"Lazy created CLIN {clin_number} (ID {new_clin.id}) for agreement {agreement.id}")
+
+        return new_clin.id
 
     # Fields that can always be edited directly, even on PLANNED/EXECUTING BLIs, without a change request.
     ALWAYS_DIRECT_EDIT_FIELDS = {"services_component_id", "line_description", "clin_id"}
