@@ -211,12 +211,6 @@ export default function useApprovePreAwardApproval(agreementId) {
     const handleDecline = () => handleAction("DECLINED");
 
     const handleCancel = () => {
-        if (!hasChanged) {
-            // No changes, navigate immediately
-            navigate("/agreements?filter=change-requests");
-            return;
-        }
-
         setShowModal(true);
         setModalProps({
             heading:

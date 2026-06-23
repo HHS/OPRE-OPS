@@ -207,12 +207,6 @@ export default function useRequestPreAwardApproval(agreementId) {
     };
 
     const handleCancel = () => {
-        if (!hasChanged) {
-            // No changes, navigate immediately
-            navigate(-1);
-            return;
-        }
-
         setShowModal(true);
         setModalProps({
             heading: "Are you sure you want to cancel? Your changes will not be saved.",

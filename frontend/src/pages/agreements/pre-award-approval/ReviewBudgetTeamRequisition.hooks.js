@@ -285,12 +285,6 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
 
     // Cancel handler
     const handleCancel = () => {
-        if (!hasChanged) {
-            // No changes, navigate immediately
-            navigate("/agreements?filter=change-requests");
-            return;
-        }
-
         setShowModal(true);
         setModalProps({
             heading: "Are you sure you want to cancel?",

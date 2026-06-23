@@ -244,12 +244,6 @@ export default function useRequestAwardApproval(agreementId) {
      * Handle cancel - show confirmation modal before navigating away
      */
     const handleCancel = () => {
-        if (!hasChanged) {
-            // No changes, navigate immediately
-            navigate(-1);
-            return;
-        }
-
         setShowModal(true);
         setModalProps({
             heading: "Are you sure you want to cancel? Your changes will not be saved.",
