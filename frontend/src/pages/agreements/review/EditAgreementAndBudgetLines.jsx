@@ -137,7 +137,10 @@ const EditAgreementAndBudgetLines = () => {
             }
             scrollToTop();
         } catch (error) {
-            const detail = error?.data?.error || error?.message || "If you continue to experience this issue, please submit a Budget Support Request through ORBIT.";
+            const detail =
+                error?.data?.error ||
+                error?.message ||
+                "If you continue to experience this issue, please submit a Budget Support Request through ORBIT.";
             setAlert({
                 type: "error",
                 heading: "Error saving changes",
