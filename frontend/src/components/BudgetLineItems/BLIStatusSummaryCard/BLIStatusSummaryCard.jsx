@@ -92,9 +92,7 @@ const BLIStatusSummaryCard = ({
                     </div>
                 </div>
                 <div>
-                    <span className={isGraphActive ? "fake-bold" : ""}>
-                        {formatCurrency(value)}
-                    </span>
+                    <span className={isGraphActive ? "fake-bold" : ""}>{formatCurrency(value)}</span>
                     <Tag
                         className="margin-left-1"
                         tagStyle="darkTextWhiteBackground"
