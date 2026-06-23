@@ -513,13 +513,7 @@ class BudgetLineItemService:
 
         # Determine if direct edit or change request is needed
         directly_editable = is_super_user(current_user, current_app) or (
-            not has_status_change
-            and budget_line_item.status
-            in [
-                BudgetLineItemStatus.DRAFT,
-                BudgetLineItemStatus.PLANNED,
-                BudgetLineItemStatus.IN_EXECUTION,
-            ]
+            not has_status_change and budget_line_item.status in [BudgetLineItemStatus.DRAFT]
         )
 
         change_request_ids = []
@@ -585,7 +579,7 @@ class BudgetLineItemService:
         self.db_session.commit()
 
     # Fields that can always be edited directly, even on PLANNED/EXECUTING BLIs, without a change request.
-    ALWAYS_DIRECT_EDIT_FIELDS = {"services_component_id", "line_description"}
+    ALWAYS_DIRECT_EDIT_FIELDS = {"services_component_id", "line_description", "clin_number"}
 
     def _handle_change_requests(
         self,

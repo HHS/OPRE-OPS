@@ -85,7 +85,6 @@ def _bli_has_editable_status(budget_line_item):
     return is_super_user(current_user, current_app) or budget_line_item.status in [
         BudgetLineItemStatus.DRAFT,
         BudgetLineItemStatus.PLANNED,
-        BudgetLineItemStatus.IN_EXECUTION,
     ]
 
 
