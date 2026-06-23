@@ -219,6 +219,7 @@ export const RequestAwardApproval = () => {
                 )}
                 {selectedBudgetLineId && (
                     <CLINSelector
+                        key={selectedBudgetLineId}
                         budgetLineId={selectedBudgetLineId}
                         onAddCLIN={handleAddCLIN}
                         currentClinNumber={clinAssignments[selectedBudgetLineId]}

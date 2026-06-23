@@ -112,4 +112,25 @@ describe("CLINSelector", () => {
 
         expect(mockOnAddCLIN).toHaveBeenCalledWith(9);
     });
+
+    it("should reset selection when remounted for a different budget line", () => {
+        const { rerender } = render(
+            <CLINSelector
+                key={1}
+                budgetLineId={1}
+                onAddCLIN={mockOnAddCLIN}
+                currentClinNumber={5}
+            />
+        );
+        expect(screen.getByLabelText("CLIN")).toHaveValue("5");
+
+        rerender(
+            <CLINSelector
+                key={2}
+                budgetLineId={2}
+                onAddCLIN={mockOnAddCLIN}
+            />
+        );
+        expect(screen.getByLabelText("CLIN")).toHaveValue("");
+    });
 });
