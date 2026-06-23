@@ -202,7 +202,7 @@ export default function useRequestAwardApproval(agreementId) {
             const clinUpdatePromises = Object.entries(clinAssignments).map(([budgetLineId, clinNumber]) =>
                 updateBudgetLineItem({
                     id: parseInt(budgetLineId),
-                    data: { clin_number: clinNumber }
+                    data: { clin_id: clinNumber }
                 }).unwrap()
             );
 

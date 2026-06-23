@@ -22,7 +22,9 @@ const parseDateString = (dateString) => {
 };
 
 const suite = create((data = {}, fieldName) => {
-    only(fieldName);
+    if (fieldName) {
+        only(fieldName);
+    }
 
     // Vendor validation - numeric ID must be > 0
     test("vendor", "Vendor is required", () => {

@@ -31,7 +31,7 @@ def step_6_test_data(app_ctx, loaded_db):
     if clin_count == 0:
         # Create a CLIN for testing
         clin = CLIN(
-            agreement_id=agreement.id, clin_number="1001", clin_description="Test CLIN for Step 6", amount=100000.00
+            agreement_id=agreement.id, number=1001, name="Test CLIN for Step 6"
         )
         loaded_db.add(clin)
 

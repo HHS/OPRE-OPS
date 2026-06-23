@@ -31,6 +31,6 @@ describe("Request Award Approval Page", () => {
     });
 
     it("has request award approval button", () => {
-        cy.contains("button", "Request Award Approval").should("be.visible");
+        cy.get('[data-cy="request-award-approval-submit"]').should("be.visible").and("contain", "Send to Approval");
     });
 });
