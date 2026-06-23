@@ -6,6 +6,81 @@ NOTE: types of changes are 'New Feature', 'Improvements', 'Fixes'
 */
 export const data = [
     {
+        releaseDate: "2026-06-17",
+        version: "1.413.3",
+        changes: [
+            {
+                id: "0001",
+                subject: "View Project Spending tab",
+                type: "New Feature",
+                description:
+                    "You can now view a breakdown of a project's total spending for a selected FY and a list of all agreements within it on the Project Spending tab."
+            },
+            {
+                id: "0002",
+                subject: "View Project Funding tab",
+                type: "New Feature",
+                description:
+                    "You can now view a breakdown of a project's funding for a selected FY and a list of all CANs associated with it on the Project Funding tab."
+            },
+            {
+                id: "0003",
+                subject: "Filter CAN list by all fiscal years",
+                type: "Improvements",
+                description: "You can now filter the CANs list page by all fiscal years."
+            },
+            {
+                id: "0004",
+                subject: "CAN Funding",
+                type: "Improvements",
+                description:
+                    "Each CAN now includes the TAS number in the CAN funding information. Also, when editing a CAN's budget and funding, there's improved detection of unsaved changes to prevent losing edits, and clear information on why CAN funding cannot be edited for previous fiscal years."
+            },
+            {
+                id: "0005",
+                subject: "Improved agreement validations",
+                type: "Improvements",
+                description:
+                    "Agreements now have improved validation for required fields on status change requests, as well as validation that agreement titles and nicknames are unique."
+            },
+            {
+                id: "0006",
+                subject: "For Review tab visibility",
+                type: "Fixes",
+                description:
+                    "There was a bug where the For Review tab on the agreement list page was displaying for all users, even when they don't have the permissions to review and approve. Now only reviewer/approver roles can view change requests in the For Review tab in agreements."
+            },
+            {
+                id: "0007",
+                subject: "Missing change requests for Reviewer/Approvers",
+                type: "Fixes",
+                description:
+                    "A user reported a bug in which they were not able to see any change requests on their For Review tab. After investigating we discovered it had to do with missing pagination which has been resolved. Now, all change requests can be viewed."
+            },
+            {
+                id: "0008",
+                subject: "Saving agreement drafts",
+                type: "Fixes",
+                description:
+                    "We discovered a bug that when you save an agreement as a draft, it was not being saved. That problem has now been fixed."
+            },
+            {
+                id: "0009",
+                subject: "Adding cents to budget line amounts",
+                type: "Fixes",
+                description:
+                    "We discovered a bug where cents were not being properly accounted for in budget line amounts and that has now been fixed."
+            },
+            {
+                id: "0010",
+                subject: "Missing procurement tracker for executing budget lines",
+                type: "Fixes",
+                description:
+                    "Some budget lines in executing status did not have an active procurement tracker as expected because they were migrated instead of manually entered inside OPS. We've since deployed a fix so that all budget lines in executing status will have a procurement tracker, regardless if they were migrated or entered into OPS manually."
+            }
+        ]
+    },
+    {
         releaseDate: "2026-04-10",
         version: "1.355.8",
         changes: [
