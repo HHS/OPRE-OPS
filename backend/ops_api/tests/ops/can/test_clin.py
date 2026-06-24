@@ -1,14 +1,14 @@
-from models import CLIN, Agreement, BudgetLineItem
+from models import CLIN, ContractAgreement, ContractBudgetLineItem
 
 
 def test_clin_retrieve(loaded_db, app_ctx):
     # Test lazy CLIN creation by creating a BLI with clin_id assignment
-    # Get an agreement to attach the BLI to
-    agreement = loaded_db.query(Agreement).first()
-    assert agreement is not None, "Test requires at least one agreement in test data"
+    # Get a contract agreement to attach the BLI to
+    agreement = loaded_db.query(ContractAgreement).first()
+    assert agreement is not None, "Test requires at least one contract agreement in test data"
 
     # Create a test BLI with clin_id to trigger lazy creation
-    bli = BudgetLineItem(
+    bli = ContractBudgetLineItem(
         agreement_id=agreement.id,
         can_id=1,  # Assume CAN 1 exists in test data
         amount=1000,
