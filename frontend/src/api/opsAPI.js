@@ -499,6 +499,34 @@ export const opsApi = createApi({
             },
             providesTags: ["ResearchProjects"]
         }),
+        getAllProjects: builder.query({
+            async queryFn(_arg, _queryApi, _extraOptions, fetchWithBQ) {
+                const BATCH_SIZE = 50;
+                const allProjects = [];
+                let offset = 0;
+                let total = Infinity;
+
+                while (allProjects.length < total) {
+                    const result = await fetchWithBQ(`/projects/?limit=${BATCH_SIZE}&offset=${offset}`);
+                    if (result.error) return { error: result.error };
+
+                    const response = result.data;
+
+                    if (Array.isArray(response)) {
+                        return { data: response };
+                    }
+
+                    const page = response.data ?? [];
+                    total = response.count ?? page.length;
+                    if (page.length === 0) break;
+                    allProjects.push(...page);
+                    offset += BATCH_SIZE;
+                }
+
+                return { data: allProjects };
+            },
+            providesTags: ["ResearchProjects"]
+        }),
         getProjects: builder.query({
             query: ({ sortConditions, sortDescending, page, limit, fiscalYear, filters } = {}) => {
                 const queryParams = [];
@@ -1268,6 +1296,7 @@ export const {
     useGetProjectsFilterOptionsQuery,
     useGetProjectsByPortfolioQuery,
     useGetResearchProjectsQuery,
+    useGetAllProjectsQuery,
     useGetResearchProjectsByPortfolioQuery,
     useAddResearchProjectsMutation,
     useUpdateProjectMutation,
