@@ -154,11 +154,15 @@ def test_step_6_completion_full_flow(auth_client, app_ctx, loaded_db, step_6_tes
     assert procurement_action.award_date is not None
 
 
-def test_step_6_cannot_complete_without_approval(auth_client, app_ctx, loaded_db, step_6_test_data):
-    """Test Step 6 cannot be completed without approval_status = APPROVED."""
+def test_step_6_can_complete_without_approval(auth_client, app_ctx, loaded_db, step_6_test_data):
+    """Test Step 6 CAN be completed without approval_status = APPROVED.
+
+    Per business rules, COR should be able to complete Step 6 before Budget Team approval.
+    The approval workflow and step completion are independent.
+    """
     step_6 = step_6_test_data["step_6"]
 
-    # Set approval status to PENDING
+    # Set approval status to PENDING (not yet approved)
     step_6.award_approval_status = "PENDING"
     loaded_db.commit()
     loaded_db.refresh(step_6)
@@ -171,10 +175,10 @@ def test_step_6_cannot_complete_without_approval(auth_client, app_ctx, loaded_db
 
     response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{step_6.id}", json=completion_payload)
 
-    assert response.status_code == 400
-    # Check if error message contains "approval" in either message or errors field
-    response_text = str(response.json).lower()
-    assert "approval" in response_text
+    # Should succeed - COR can complete Step 6 before approval
+    assert response.status_code == 200
+    loaded_db.refresh(step_6)
+    assert step_6.status == ProcurementTrackerStepStatus.COMPLETED
 
 
 def test_step_6_cannot_complete_without_vendor(auth_client, app_ctx, loaded_db, step_6_test_data):
