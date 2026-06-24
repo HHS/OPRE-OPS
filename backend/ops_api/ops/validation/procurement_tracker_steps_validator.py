@@ -154,7 +154,6 @@ class ProcurementTrackerStepsValidator:
                 ResourceExistsRule(),
                 UserAssociationRule(),
                 AwardAgreementDataRequiredRule(),
-                # AwardApprovalRequiredRule(),  # Removed: COR should be able to complete Step 6 before approval
                 AwardCompletionRequiredFieldsRule(),
                 CompletedByUpdateAuthorizationRule(),
                 NoUpdatingCompletedProcurementStepRule(),
