@@ -13,16 +13,13 @@ def test_clin_retrieve(loaded_db, app_ctx):
         can_id=1,  # Assume CAN 1 exists in test data
         amount=1000,
         status="DRAFT",
-        clin_id=999  # Assign CLIN number to trigger lazy creation
+        clin_id=999,  # Assign CLIN number to trigger lazy creation
     )
     loaded_db.add(bli)
     loaded_db.flush()  # Trigger lazy creation
 
     # Verify CLIN was lazily created
-    clin = loaded_db.query(CLIN).filter(
-        CLIN.number == 999,
-        CLIN.agreement_id == agreement.id
-    ).first()
+    clin = loaded_db.query(CLIN).filter(CLIN.number == 999, CLIN.agreement_id == agreement.id).first()
     assert clin is not None, "CLIN should be lazily created when BLI is assigned clin_id"
     assert clin.name == "CLIN 999"
 

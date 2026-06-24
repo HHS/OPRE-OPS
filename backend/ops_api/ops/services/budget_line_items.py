@@ -525,6 +525,11 @@ class BudgetLineItemService:
             if 1 <= clin_value <= 10:
                 actual_clin_id = self._ensure_clin_exists(budget_line_item, clin_value)
                 updated_fields["clin_id"] = actual_clin_id
+            elif clin_value < 5000:
+                # Invalid CLIN number: not in 1-10 range and not a valid CLIN ID
+                raise ValueError(
+                    f"Invalid CLIN number: {clin_value}. Must be 1-10 for CLIN numbers or >= 5000 for existing CLIN IDs."
+                )
 
         change_request_ids = []
         if directly_editable:

@@ -25,15 +25,15 @@ class ContactType(Enum):
     CUSTOMER = auto()
 
 
-class VendorType(Enum):
-    SMALL_BUSINESS = auto()
-    EIGHT_A = auto()
-    HUBZONE = auto()
-    WOMAN_OWNED = auto()
-    VETERAN_OWNED = auto()
-    SERVICE_DISABLED_VETERAN_OWNED = auto()
-    LARGE_BUSINESS = auto()
-    OTHER = auto()
+class VendorType(str, Enum):
+    SMALL_BUSINESS = "SMALL_BUSINESS"
+    EIGHT_A = "EIGHT_A"
+    HUBZONE = "HUBZONE"
+    WOMAN_OWNED = "WOMAN_OWNED"
+    VETERAN_OWNED = "VETERAN_OWNED"
+    SERVICE_DISABLED_VETERAN_OWNED = "SERVICE_DISABLED_VETERAN_OWNED"
+    LARGE_BUSINESS = "LARGE_BUSINESS"
+    OTHER = "OTHER"
 
 
 class Contact(BaseModel):

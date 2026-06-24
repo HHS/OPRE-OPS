@@ -73,7 +73,8 @@ class ProcurementTrackerStepsValidator:
         Args:
             procurement_tracker_step: The procurement tracker step being validated
         """
-        from ops_api.ops.validation.rules.procurement_tracker_step import (  # AwardApprovalRequiredRule,  # Removed: COR should be able to complete Step 6 before approval
+        # Note: AwardApprovalRequiredRule removed - COR should be able to complete Step 6 before approval
+        from ops_api.ops.validation.rules.procurement_tracker_step import (
             AcquisitionPlanningRequiredFieldsRule,
             AwardAgreementDataRequiredRule,
             AwardCompletionRequiredFieldsRule,
