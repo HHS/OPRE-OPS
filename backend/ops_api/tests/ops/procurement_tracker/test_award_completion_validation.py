@@ -155,8 +155,11 @@ def test_award_target_completion_date_saves_separately(auth_client, app_ctx, loa
     assert test_award_step.status == ProcurementTrackerStepStatus.ACTIVE  # Status unchanged
 
 
-def test_award_completion_fails_without_approval(auth_client, app_ctx, loaded_db, test_award_step):
-    """Test that AWARD step completion fails without approval status = APPROVED."""
+def test_award_completion_succeeds_without_approval(auth_client, app_ctx, loaded_db, test_award_step):
+    """Test that AWARD step completion succeeds without approval status set.
+
+    Per business rules, COR can complete Step 6 before Budget Team approval.
+    """
     update_data = {
         "status": "COMPLETED",
         "task_completed_by": 500,
@@ -164,11 +167,11 @@ def test_award_completion_fails_without_approval(auth_client, app_ctx, loaded_db
     }
 
     response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{test_award_step.id}", json=update_data)
-    assert response.status_code == 400
-    assert "errors" in response.json
-    # Check if any error message contains "approval"
-    error_messages = " ".join(str(v) for v in response.json["errors"].values())
-    assert "approval" in error_messages.lower()
+    assert response.status_code == 200
+
+    # Verify completion
+    loaded_db.refresh(test_award_step)
+    assert test_award_step.status == ProcurementTrackerStepStatus.COMPLETED
 
 
 def test_award_completion_succeeds_with_approval_approved(auth_client, app_ctx, loaded_db, test_award_step):
@@ -192,8 +195,12 @@ def test_award_completion_succeeds_with_approval_approved(auth_client, app_ctx, 
     assert test_award_step.status == ProcurementTrackerStepStatus.COMPLETED
 
 
-def test_award_completion_fails_with_declined_approval(auth_client, app_ctx, loaded_db, test_award_step):
-    """Test that AWARD step completion fails when approval_status is DECLINED."""
+def test_award_completion_succeeds_with_declined_approval(auth_client, app_ctx, loaded_db, test_award_step):
+    """Test that AWARD step completion succeeds even when approval_status is DECLINED.
+
+    Per business rules, COR can complete Step 6 regardless of approval status.
+    Step completion and approval workflow are independent.
+    """
     test_award_step.award_approval_status = "DECLINED"
     loaded_db.commit()
     loaded_db.refresh(test_award_step)
@@ -205,15 +212,18 @@ def test_award_completion_fails_with_declined_approval(auth_client, app_ctx, loa
     }
 
     response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{test_award_step.id}", json=update_data)
-    assert response.status_code == 400
-    assert "errors" in response.json
-    # Check if any error message contains "declined"
-    error_messages = " ".join(str(v) for v in response.json["errors"].values())
-    assert "declined" in error_messages.lower()
+    assert response.status_code == 200
+
+    # Verify completion
+    loaded_db.refresh(test_award_step)
+    assert test_award_step.status == ProcurementTrackerStepStatus.COMPLETED
 
 
-def test_award_completion_fails_with_pending_approval(auth_client, app_ctx, loaded_db, test_award_step):
-    """Test that AWARD step completion fails when approval_status is PENDING."""
+def test_award_completion_succeeds_with_pending_approval(auth_client, app_ctx, loaded_db, test_award_step):
+    """Test that AWARD step completion succeeds when approval_status is PENDING.
+
+    Per business rules, COR can complete Step 6 while approval is still pending.
+    """
     test_award_step.award_approval_status = "PENDING"
     loaded_db.commit()
     loaded_db.refresh(test_award_step)
@@ -225,8 +235,8 @@ def test_award_completion_fails_with_pending_approval(auth_client, app_ctx, load
     }
 
     response = auth_client.patch(f"/api/v1/procurement-tracker-steps/{test_award_step.id}", json=update_data)
-    assert response.status_code == 400
-    assert "errors" in response.json
-    # Check if any error message contains "pending"
-    error_messages = " ".join(str(v) for v in response.json["errors"].values())
-    assert "pending" in error_messages.lower()
+    assert response.status_code == 200
+
+    # Verify completion
+    loaded_db.refresh(test_award_step)
+    assert test_award_step.status == ProcurementTrackerStepStatus.COMPLETED
