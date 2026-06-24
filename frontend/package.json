@@ -36,7 +36,7 @@
         "rehype-raw": "7.0.0",
         "remark-gfm": "4.0.1",
         "sass": "1.101.0",
-        "styled-components": "6.4.2",
+        "styled-components": "6.4.3",
         "vest": "6.3.2"
     },
     "overrides": {
