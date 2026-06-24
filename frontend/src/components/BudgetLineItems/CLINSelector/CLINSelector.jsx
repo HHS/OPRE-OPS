@@ -1,5 +1,4 @@
 import { useState } from "react";
-import PropTypes from "prop-types";
 
 // Fixed CLIN options 1-10
 const CLIN_OPTIONS = Array.from({ length: 10 }, (_, i) => ({
@@ -80,12 +79,6 @@ const CLINSelector = ({ onAddCLIN, budgetLineId, currentClinNumber }) => {
             </div>
         </div>
     );
-};
-
-CLINSelector.propTypes = {
-    onAddCLIN: PropTypes.func.isRequired,
-    budgetLineId: PropTypes.number.isRequired,
-    currentClinNumber: PropTypes.number
 };
 
 export default CLINSelector;

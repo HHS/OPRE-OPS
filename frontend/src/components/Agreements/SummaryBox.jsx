@@ -1,5 +1,3 @@
-import PropTypes from "prop-types";
-
 /**
  * Generic summary box component that displays two label-value pairs side-by-side
  * @param {Object} props
@@ -57,20 +55,3 @@ const SummaryBox = ({
 };
 
 export default SummaryBox;
-
-SummaryBox.propTypes = {
-    // New flexible props
-    leftLabel: PropTypes.string,
-    leftValue: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    rightLabel: PropTypes.string,
-    rightValue: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    className: PropTypes.string,
-    dataCy: PropTypes.string,
-    width: PropTypes.string,
-    minHeight: PropTypes.string,
-    // Legacy prop for backward compatibility
-    selectedProductServiceCode: PropTypes.shape({
-        naics: PropTypes.number.isRequired,
-        support_code: PropTypes.string.isRequired
-    })
-};
