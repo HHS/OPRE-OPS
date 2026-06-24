@@ -489,18 +489,6 @@ describe("AgreementProcurementTracker", () => {
         expect(accordions).toHaveLength(6);
     });
 
-    it("renders debug code component when active tracker exists", () => {
-        useGetProcurementTrackersByAgreementIdQuery.mockReturnValue({
-            data: mockTrackerData,
-            isLoading: false,
-            isError: false
-        });
-
-        renderWithProviders(<AgreementProcurementTracker agreement={mockAgreement} />);
-
-        expect(screen.getByTestId("debug-code")).toBeInTheDocument();
-    });
-
     describe("Accordion and Step 1 Functionality", () => {
         const mockTrackerWithSteps = {
             data: [

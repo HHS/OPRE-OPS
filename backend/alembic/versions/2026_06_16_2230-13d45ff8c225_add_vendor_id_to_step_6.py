@@ -9,7 +9,7 @@ New fields:
 - award_amount: Total award amount
 - award_date: Award signature date
 
-Revision ID: abc123def456
+Revision ID: 13d45ff8c225
 Revises: merge_heads_001
 Create Date: 2026-06-16 22:30:00.000000+00:00
 
@@ -21,7 +21,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'abc123def456'
+revision: str = '13d45ff8c225'
 down_revision: Union[str, None] = 'merge_heads_001'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None

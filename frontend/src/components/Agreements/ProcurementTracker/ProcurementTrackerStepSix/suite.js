@@ -40,7 +40,9 @@ const compareDateToToday = (dateString, comparison) => {
 const suite = create((data = {}, fieldName) => {
     // Normalize null/undefined to empty object
     data = data ?? {};
-    only(fieldName);
+    if (fieldName) {
+        only(fieldName);
+    }
 
     // dateCompleted: required validation must run first
     test("dateCompleted", "This is required information", () => {

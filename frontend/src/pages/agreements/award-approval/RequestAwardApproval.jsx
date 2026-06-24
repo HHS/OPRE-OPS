@@ -470,7 +470,8 @@ export const RequestAwardApproval = () => {
                         !selectedVendor ||
                         !contractNumber ||
                         !awardAmount ||
-                        !awardDate
+                        !awardDate ||
+                        hasMissingCLINs
                     }
                     data-cy="request-award-approval-submit"
                 >

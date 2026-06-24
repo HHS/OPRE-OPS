@@ -7,7 +7,6 @@ import ProcurementTrackerStepFour from "../../../components/Agreements/Procureme
 import ProcurementTrackerStepFive from "../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepFive";
 import ProcurementTrackerStepSix from "../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepSix";
 import StepBuilderAccordion from "../../../components/Agreements/ProcurementTracker/StepBuilderAccordion";
-import DebugCode from "../../../components/DebugCode";
 import StepIndicator from "../../../components/UI/StepIndicator";
 import { IS_PROCUREMENT_TRACKER_READY_MAP } from "../../../constants";
 import { useIsUserSuperUser, useIsUserOnlyProcurementTeam } from "../../../hooks/user.hooks";
@@ -264,7 +263,6 @@ const AgreementProcurementTracker = ({ agreement }) => {
                     </StepBuilderAccordion>
                 );
             })}
-            {activeTracker && <DebugCode data={activeTracker}></DebugCode>}
         </>
     );
 };

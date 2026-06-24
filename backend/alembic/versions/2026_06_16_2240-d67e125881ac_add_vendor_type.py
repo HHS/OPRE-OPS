@@ -1,7 +1,7 @@
 """Add vendor_type to vendor table
 
-Revision ID: def789ghi012
-Revises: abc123def456
+Revision ID: d67e125881ac
+Revises: 13d45ff8c225
 Create Date: 2026-06-16 22:40:00.000000+00:00
 
 """
@@ -12,8 +12,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'def789ghi012'
-down_revision: Union[str, None] = 'abc123def456'
+revision: str = 'd67e125881ac'
+down_revision: Union[str, None] = '13d45ff8c225'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -50,4 +50,14 @@ def downgrade() -> None:
     op.drop_column('vendor', 'vendor_type')
 
     # Drop enum type
-    sa.Enum(name='vendortype').drop(op.get_bind())
+    sa.Enum(
+        'SMALL_BUSINESS',
+        'EIGHT_A',
+        'HUBZONE',
+        'WOMAN_OWNED',
+        'VETERAN_OWNED',
+        'SERVICE_DISABLED_VETERAN_OWNED',
+        'LARGE_BUSINESS',
+        'OTHER',
+        name='vendortype'
+    ).drop(op.get_bind())
