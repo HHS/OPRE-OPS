@@ -76,15 +76,12 @@ describe("ChangeIcons", () => {
             <ChangeIcons
                 {...defaultProps}
                 isItemEditable={false}
-                item={{ ...mockItem, status: "IN_EXECUTION" }}
+                item={{ ...mockItem, status: "OBLIGATED" }}
                 lockedMessage={CHANGE_REQUESTS_TOOLTIP_LOADING}
             />
         );
 
-        expect(getEditTooltip()).toHaveAttribute(
-            "data-label",
-            "If you need to edit a budget line in Executing Status, please contact the budget team"
-        );
+        expect(getEditTooltip()).toHaveAttribute("data-label", "Obligated budget lines cannot be edited");
     });
 
     it("keeps the loading tooltip when no static fallback exists", () => {

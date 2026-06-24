@@ -52,6 +52,7 @@ const BLIRow = ({
     const loggedInUserFullName = useGetLoggedInUserFullName();
     const budgetLineTotalPlusFees = (budgetLine?.amount ?? 0) + (budgetLine?.fees ?? 0);
     const isBudgetLineEditable = budgetLine._meta?.isEditable;
+    const isBudgetLineDeletable = budgetLine._meta?.isDeletable ?? isBudgetLineEditable;
     const location = useLocation();
     const isApprovePage = location.pathname.includes("approve");
     const isBLIInReview = budgetLine?.in_review || false;
@@ -69,6 +70,7 @@ const BLIRow = ({
                 scrollToCenter("budget-line-form");
             }}
             isItemEditable={isBudgetLineEditable}
+            isItemDeletable={isBudgetLineDeletable}
             duplicateIcon={true}
             lockedMessage={lockedMessage}
         />

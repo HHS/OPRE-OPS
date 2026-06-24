@@ -33,6 +33,11 @@ from ops_api.ops.services.budget_line_items import (
 )
 from ops_api.ops.services.ops_service import OpsService
 from ops_api.ops.utils.agreements_helpers import associated_with_agreement
+from ops_api.ops.utils.budget_line_items_helpers import (
+    compute_bli_editable,
+    compute_bli_is_deletable,
+    get_bli_locked_message,
+)
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.users import is_super_user
@@ -202,45 +207,28 @@ def _list_item_meta(
     is_super: bool,
     user_agreement_associations: dict,
 ) -> dict:
-    """Build _meta for a single BLI in the list response (pagination + isEditable)."""
+    """Build _meta for a single BLI in the list response (pagination + isEditable/isDeletable)."""
     meta = meta_schema.dump(data_for_meta)
     in_review = serialized_bli.get("in_review", False)
     if is_budget_team:
-        meta["isEditable"] = _is_bli_editable_optimized(budget_line_item, in_review, is_super)
+        is_associated = True
     elif serialized_bli.get("agreement_id"):
         agreement_id = serialized_bli["agreement_id"]
         if agreement_id not in user_agreement_associations:
             user_agreement_associations[agreement_id] = associated_with_agreement(agreement_id)
         is_associated = user_agreement_associations[agreement_id]
-        meta["isEditable"] = is_associated and _is_bli_editable_optimized(budget_line_item, in_review, is_super)
+    else:
+        is_associated = False
+
+    if is_associated:
+        meta["isEditable"] = compute_bli_editable(budget_line_item, in_review, is_super)
+        meta["isDeletable"] = compute_bli_is_deletable(budget_line_item, in_review, is_super)
+        meta["lockedMessage"] = get_bli_locked_message(budget_line_item, in_review, is_super)
     else:
         meta["isEditable"] = False
+        meta["isDeletable"] = False
+        meta["lockedMessage"] = None
     return meta
-
-
-def _is_bli_editable_optimized(budget_line_item: BudgetLineItem | None, in_review: bool, is_super: bool) -> bool:
-    """
-    Optimized version of is_bli_editable that uses pre-computed in_review value
-    instead of querying the database.
-    """
-    from models import BudgetLineItemStatus
-
-    if budget_line_item is None:
-        return False
-    # Check if status is editable
-    editable = is_super or budget_line_item.status in [
-        BudgetLineItemStatus.DRAFT,
-        BudgetLineItemStatus.PLANNED,
-    ]
-
-    # Use pre-computed in_review instead of querying
-    if in_review:
-        editable = False
-
-    if not is_super and budget_line_item.is_obe:
-        editable = False
-
-    return editable
 
 
 class BudgetLineItemsListFilterOptionAPI(BaseItemAPI):
