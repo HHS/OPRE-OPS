@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "2fcb4b8df119795426e8acec300002856b6448b59c4b3d81fc5cccc90bdd20ed"
+            "sha256": "22eb964ed1db9cfd558e1702c3df921862dff96d1fe31040282e6b4a28f9ab40"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -18,12 +18,12 @@
     "default": {
         "alembic": {
             "hashes": [
-                "sha256:a5ed4adcf6d8a4cb575f3d759f071b03cd6e5c7618eb796cb52497be25bfe19a",
-                "sha256:cb6e1fd84b6174ab8dbb2329f86d631ba9559dd78df550b57804d607672cedbc"
+                "sha256:06d8ba9d04558022f5395e9317de03d270f3dced49cee01f89fe7a13c26f14bc",
+                "sha256:1554982221dd17e9a749b53902407578eb305e453f71999e8c7f0a48389fff8e"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.10'",
-            "version": "==1.18.4"
+            "version": "==1.18.5"
         },
         "alembic-postgresql-enum": {
             "hashes": [
