@@ -3,10 +3,29 @@ from typing import Any
 from flask import current_app
 from flask_jwt_extended import get_current_user
 from sqlalchemy import inspect
+from sqlalchemy.exc import IntegrityError
 
 from models import Agreement, User
 from ops_api.ops.services.ops_service import ResourceNotFoundError
 from ops_api.ops.utils.users import is_super_user
+
+# Name of the unique index that enforces case-insensitive (name, agreement_type) uniqueness.
+# Defined in models/agreements.py and migration 2025_12_09_1950-d8f34037b656.
+AGREEMENT_NAME_UNIQUE_INDEX = "ix_agreement_name_type_lower"
+
+
+def is_agreement_name_unique_violation(error: IntegrityError) -> bool:
+    """Return True if ``error`` was raised by the agreement (name, agreement_type) unique index.
+
+    Prefer the structured ``constraint_name`` from the underlying psycopg diagnostics; fall back
+    to a substring check on the error message when the driver doesn't expose diag (e.g. SQLite
+    in unit tests, or wrapped errors).
+    """
+    diag = getattr(getattr(error, "orig", None), "diag", None)
+    constraint_name = getattr(diag, "constraint_name", None) if diag is not None else None
+    if constraint_name == AGREEMENT_NAME_UNIQUE_INDEX:
+        return True
+    return AGREEMENT_NAME_UNIQUE_INDEX in str(error)
 
 
 def associated_with_agreement(id: int) -> bool:

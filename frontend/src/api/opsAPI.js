@@ -243,6 +243,21 @@ export const opsApi = createApi({
             },
             invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "ServicesComponents"]
         }),
+        updateAgreementEditBundle: builder.mutation({
+            query: ({ id, data }) => ({
+                url: `/agreements/${id}/edit-bundle`,
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: data
+            }),
+            invalidatesTags: [
+                "Agreements",
+                "BudgetLineItems",
+                "AgreementHistory",
+                "ServicesComponents",
+                "ChangeRequests"
+            ]
+        }),
         deleteAgreement: builder.mutation({
             query: (id) => ({
                 url: `/agreements/${id}`,
@@ -1243,6 +1258,7 @@ export const {
     useLazyGetAgreementsQuery,
     useAddAgreementMutation,
     useUpdateAgreementMutation,
+    useUpdateAgreementEditBundleMutation,
     useDeleteAgreementMutation,
     useGetAgreementAgenciesQuery,
     useGetAllAgreementAgenciesQuery,

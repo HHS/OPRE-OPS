@@ -1,4 +1,4 @@
-import { useReducer } from "react";
+import { useEffect, useReducer, useRef } from "react";
 import { defaultState, editAgreementReducer, initialState } from "./AgreementEditorContext.hooks";
 import { AgreementEditorContext, EditAgreementDispatchContext } from "./contexts";
 
@@ -12,6 +12,10 @@ let modifiedInitialState = { ...initialState };
  * @param {Object} props.projectOfficer - The project officer to set, if any.
  * @param {Object} props.alternateProjectOfficer - The alternate project officer to set, if any.
  * @param {Array} props.servicesComponents - The list of service components associated with the agreement.
+ * @param {number} [props.servicesComponentsReseedKey] - When this value changes, the provider reseeds
+ *   `services_components` in context from the current `servicesComponents` prop. Use this to revert
+ *   optimistic edits after a save failure. Avoid bumping it on routine prop changes (e.g. RTK Query
+ *   tag invalidation after a successful save) — that would wipe in-progress edits.
  * @param {React.ReactNode} props.children - The child components.
  * @returns {JSX.Element} The AgreementEditorContext provider.
  */
@@ -20,6 +24,7 @@ export function EditAgreementProvider({
     projectOfficer,
     alternateProjectOfficer,
     servicesComponents,
+    servicesComponentsReseedKey = 0,
     children
 }) {
     if (agreement) {
@@ -42,6 +47,24 @@ export function EditAgreementProvider({
     }
 
     const [state, dispatch] = useReducer(editAgreementReducer, modifiedInitialState);
+
+    // Reseed services_components from the latest prop only when the parent
+    // explicitly bumps `servicesComponentsReseedKey` (e.g. after a save failure
+    // and refetch). Watching the prop directly would reset in-progress edits on
+    // any RTK Query refetch, including the one after a successful save.
+    const servicesComponentsRef = useRef(servicesComponents);
+    useEffect(() => {
+        servicesComponentsRef.current = servicesComponents;
+    }, [servicesComponents]);
+
+    const isFirstReseed = useRef(true);
+    useEffect(() => {
+        if (isFirstReseed.current) {
+            isFirstReseed.current = false;
+            return;
+        }
+        dispatch({ type: "RESEED_SERVICES_COMPONENTS", payload: servicesComponentsRef.current ?? [] });
+    }, [servicesComponentsReseedKey]);
 
     return (
         <AgreementEditorContext.Provider value={state}>
