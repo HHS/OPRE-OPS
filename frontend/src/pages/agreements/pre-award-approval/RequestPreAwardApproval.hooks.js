@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useMemo, useEffect } from "react";
+import { flushSync } from "react-dom";
+import { useNavigate, useBlocker } from "react-router-dom";
 import {
     useUpdateProcurementTrackerStepMutation,
     useAddDocumentMutation,
@@ -29,6 +30,11 @@ export default function useRequestPreAwardApproval(agreementId) {
     const [uploadError, setUploadError] = useState("");
     const [submitError, setSubmitError] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Modal state for cancel confirmation and navigation blocking
+    const [showModal, setShowModal] = useState(false);
+    const [modalProps, setModalProps] = useState({});
+    const [isNavigating, setIsNavigating] = useState(false);
 
     const [updateProcurementTrackerStep] = useUpdateProcurementTrackerStepMutation();
     const [addDocument] = useAddDocumentMutation();
@@ -68,6 +74,44 @@ export default function useRequestPreAwardApproval(agreementId) {
 
     // Check if Step 4 (Evaluation) is completed
     const isStep4Completed = step4?.status === PROCUREMENT_STEP_STATUS.COMPLETED;
+
+    /**
+     * Track if any changes have been made to the form
+     */
+    const hasChanged = useMemo(() => {
+        return notes.trim() !== "" || selectedFile !== null;
+    }, [notes, selectedFile]);
+
+    /**
+     * Navigation blocker - prevents accidental navigation when there are unsaved changes
+     */
+    const blocker = useBlocker(
+        ({ currentLocation, nextLocation }) =>
+            !isNavigating && hasChanged && currentLocation.pathname !== nextLocation.pathname
+    );
+
+    // Handle blocker state changes
+    useEffect(() => {
+        if (blocker.state === "blocked") {
+            setShowModal(true);
+            setModalProps({
+                heading: "Are you sure you want to cancel? Your changes will not be saved.",
+                actionButtonText: "Yes, Cancel",
+                secondaryButtonText: "Continue Editing",
+                handleConfirm: () => {
+                    setShowModal(false);
+                    flushSync(() => {
+                        setIsNavigating(true);
+                    });
+                    blocker.proceed?.();
+                },
+                closeModal: () => {
+                    setShowModal(false);
+                    blocker.reset?.();
+                }
+            });
+        }
+    }, [blocker.state, blocker]);
 
     const handleFileChange = (/** @type {any} */ e) => {
         const file = e.target.files[0];
@@ -148,7 +192,11 @@ export default function useRequestPreAwardApproval(agreementId) {
                 }
             }).unwrap();
 
-            // Navigate back to procurement tracker with success message
+            // Allow navigation after successful submission
+            // Use flushSync to ensure state update completes before navigation
+            flushSync(() => {
+                setIsNavigating(true);
+            });
             navigate(`/agreements/${agreementId}/procurement-tracker`, {
                 state: { success: true }
             });
@@ -159,7 +207,20 @@ export default function useRequestPreAwardApproval(agreementId) {
     };
 
     const handleCancel = () => {
-        navigate(-1);
+        setShowModal(true);
+        setModalProps({
+            heading: "Are you sure you want to cancel? Your changes will not be saved.",
+            actionButtonText: "Yes, Cancel",
+            secondaryButtonText: "Continue Editing",
+            handleConfirm: () => {
+                setShowModal(false);
+                setIsNavigating(true);
+                navigate(-1);
+            },
+            closeModal: () => {
+                setShowModal(false);
+            }
+        });
     };
 
     return {
@@ -186,6 +247,9 @@ export default function useRequestPreAwardApproval(agreementId) {
         isApprovalPending,
         hasApprovalBeenRequested,
         hasBLIInReview,
-        isStep4Completed
+        isStep4Completed,
+        showModal,
+        setShowModal,
+        modalProps
     };
 }

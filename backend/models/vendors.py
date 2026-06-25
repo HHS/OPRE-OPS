@@ -25,6 +25,17 @@ class ContactType(Enum):
     CUSTOMER = auto()
 
 
+class VendorType(str, Enum):
+    SMALL_BUSINESS = "SMALL_BUSINESS"
+    EIGHT_A = "EIGHT_A"
+    HUBZONE = "HUBZONE"
+    WOMAN_OWNED = "WOMAN_OWNED"
+    VETERAN_OWNED = "VETERAN_OWNED"
+    SERVICE_DISABLED_VETERAN_OWNED = "SERVICE_DISABLED_VETERAN_OWNED"
+    LARGE_BUSINESS = "LARGE_BUSINESS"
+    OTHER = "OTHER"
+
+
 class Contact(BaseModel):
     __tablename__ = "contact"
 
@@ -66,6 +77,7 @@ class Vendor(BaseModel):
     id: Mapped[int] = BaseModel.get_pk_column(sequence=Sequence("vendor_id_seq", start=100, increment=1))
     name: Mapped[str]
     duns: Mapped[Optional[str]] = mapped_column(String(), nullable=True)
+    vendor_type: Mapped[Optional[VendorType]] = mapped_column(ENUM(VendorType), nullable=True)
     active: Mapped[bool] = mapped_column(Boolean(), default=True, nullable=False)
 
     contacts: Mapped[List[Contact]] = relationship(

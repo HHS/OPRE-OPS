@@ -39,6 +39,12 @@ export type BudgetLine = {
     services_component_id?: number;
     services_component_number?: number;
     serviceComponentGroupingLabel?: string;
+    clin_id?: number | null;
+    clin?: {
+        id: number;
+        number: number | null;
+        name?: string | null;
+    } | null;
     status: string;
     is_obe: boolean;
     team_members: SafeUser[];

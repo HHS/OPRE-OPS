@@ -20,12 +20,10 @@ from models import (
     DefaultProcurementTracker,
     ProcurementAction,
     ProcurementActionStatus,
-    ProcurementTracker,
     ProcurementTrackerStatus,
     ProcurementTrackerStep,
     ProcurementTrackerStepStatus,
     ProcurementTrackerStepType,
-    ProcurementTrackerType,
 )
 
 
@@ -255,6 +253,14 @@ def agreement_with_ops_user(bdd_client, test_non_admin_user, loaded_db, context)
 
 @given("I have a Contract Agreement with OPS user as a team member and a new award procurement action")
 def agreement_with_ops_user_and_procurement_action(bdd_client, test_non_admin_user, loaded_db, context):
+    from models.services_components import CLIN
+    from models.vendors import Vendor
+
+    # Create a vendor for the agreement
+    vendor = Vendor(name="Test Vendor for Award", duns="123456789")
+    loaded_db.add(vendor)
+    loaded_db.flush()
+
     contract_agreement = ContractAgreement(
         name=str(uuid.uuid4()),
         contract_number="CT1234",
@@ -265,8 +271,15 @@ def agreement_with_ops_user_and_procurement_action(bdd_client, test_non_admin_us
         awarding_entity_id=1,
         agreement_reason=AgreementReason.NEW_REQ,
         project_officer_id=test_non_admin_user.id,  # The id of the user in our auth client
+        vendor_id=vendor.id,  # Add vendor for Award step validation
     )
     loaded_db.add(contract_agreement)
+    loaded_db.commit()
+    loaded_db.flush()
+
+    # Create a CLIN for the agreement (required for Award step)
+    clin = CLIN(agreement_id=contract_agreement.id, number=1001, name="Test CLIN for Award")
+    loaded_db.add(clin)
     loaded_db.commit()
     loaded_db.flush()
 
@@ -359,10 +372,9 @@ def procurement_tracker_with_incomplete_step_4(loaded_db, context):
     """Create procurement tracker with Step 4 in PENDING status"""
     agreement = context["agreement"]
 
-    procurement_tracker = ProcurementTracker(
+    procurement_tracker = DefaultProcurementTracker(
         agreement_id=agreement.id,
         status=ProcurementTrackerStatus.ACTIVE,
-        tracker_type=ProcurementTrackerType.DEFAULT,
         active_step_number=5,
     )
     loaded_db.add(procurement_tracker)
@@ -427,7 +439,7 @@ def procurement_tracker_with_completed_step(loaded_db, context):
 def procurement_tracker_no_steps(loaded_db, context):
     agreement = context["agreement"]
 
-    procurement_tracker = ProcurementTracker(agreement_id=agreement.id, tracker_type=ProcurementTrackerType.DEFAULT)
+    procurement_tracker = DefaultProcurementTracker(agreement_id=agreement.id)
     loaded_db.add(procurement_tracker)
     loaded_db.commit()
 
@@ -452,6 +464,11 @@ def procurement_tracker_with_uncompleted_final_step(loaded_db, context):
         procurement_action=procurement_action.id,
     )
 
+    # Mark all prior steps as completed (Steps 1-5 must be completed before completing Step 6)
+    for step in procurement_tracker.steps[:-1]:  # All except the final step
+        step.status = ProcurementTrackerStepStatus.COMPLETED
+        step.step_completed_date = date.today()
+
     loaded_db.add(procurement_tracker)
     loaded_db.commit()
 
@@ -463,6 +480,9 @@ def working_with_final_step(loaded_db, context):
     """Set the context's procurement_tracker_step to the final step."""
     procurement_tracker = context["procurement_tracker"]
     procurement_tracker.steps[-1].status = ProcurementTrackerStepStatus.PENDING
+    # Set approval status to APPROVED for Award step (step 6)
+    if procurement_tracker.steps[-1].step_type == ProcurementTrackerStepType.AWARD:
+        procurement_tracker.steps[-1].award_approval_status = "APPROVED"
     final_step_number = procurement_tracker.steps[-1].step_number
     procurement_tracker.active_step_number = final_step_number
     final_step = procurement_tracker.steps[-1]
@@ -684,6 +704,8 @@ def have_procurement_step_with_no_presolicitation_package(context):
 def have_valid_completed_final_procurement_step(context):
     data = {
         "status": "COMPLETED",
+        "task_completed_by": context["user_id"],
+        "date_completed": date.today().isoformat(),
     }
 
     context["request_body"] = data
@@ -855,7 +877,7 @@ def check_successful_response(context, loaded_db, setup_and_teardown):
     procurement_tracker_id = response.get_json().get("procurement_tracker_id")
     step_number = response.get_json().get("step_number")
 
-    procurement_tracker = loaded_db.query(ProcurementTracker).filter_by(id=procurement_tracker_id).first()
+    procurement_tracker = loaded_db.query(DefaultProcurementTracker).filter_by(id=procurement_tracker_id).first()
     assert procurement_tracker.active_step_number == step_number + 1
 
     # Check that step number 2 has step_start_date set to today
@@ -875,10 +897,13 @@ def check_successful_response(context, loaded_db, setup_and_teardown):
 def check_successful_completion_response(context, loaded_db, setup_and_teardown):
     response = context["response_patch"]
     procurement_tracker_step = context["procurement_tracker_step"]
+    if response.status_code != 200:
+        print(f"Response status: {response.status_code}")
+        print(f"Response body: {response.get_json()}")
     assert response.status_code == 200
     procurement_tracker_id = response.get_json().get("procurement_tracker_id")
 
-    procurement_tracker = loaded_db.query(ProcurementTracker).filter_by(id=procurement_tracker_id).first()
+    procurement_tracker = loaded_db.query(DefaultProcurementTracker).filter_by(id=procurement_tracker_id).first()
     # Steps aren't 0 based so active step should equal length of step list
     assert procurement_tracker.active_step_number == len(procurement_tracker.steps)
 

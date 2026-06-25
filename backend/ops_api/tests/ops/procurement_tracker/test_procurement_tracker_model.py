@@ -700,3 +700,102 @@ def test_step_to_dict_excludes_pre_award_approval_response_fields_from_other_ste
     assert "pre_award_approval_responded_by" not in step_1_dict
     assert "pre_award_approval_responded_date" not in step_1_dict
     assert "pre_award_approval_reviewer_notes" not in step_1_dict
+
+
+def test_award_fields_exist(loaded_db):
+    """Test that award fields exist on all steps (OPS-1640)."""
+    tracker = DefaultProcurementTracker.create_with_steps(agreement_id=1)
+    loaded_db.add(tracker)
+    loaded_db.commit()
+
+    # All steps have the prefixed award columns
+    for step in tracker.steps:
+        assert hasattr(step, "award_target_completion_date")
+        assert hasattr(step, "award_task_completed_by")
+        assert hasattr(step, "award_date_completed")
+        assert hasattr(step, "award_notes")
+        assert hasattr(step, "award_approval_requested")
+        assert hasattr(step, "award_approval_requested_date")
+        assert hasattr(step, "award_approval_requested_by")
+        assert hasattr(step, "award_requestor_notes")
+        assert hasattr(step, "award_approval_status")
+        assert hasattr(step, "award_approval_responded_by")
+        assert hasattr(step, "award_approval_responded_date")
+        assert hasattr(step, "award_approval_reviewer_notes")
+
+
+def test_step_to_dict_maps_award_fields(loaded_db, test_user):
+    """Test that to_dict() maps award fields to API field names for AWARD step (OPS-1640)."""
+    tracker = DefaultProcurementTracker.create_with_steps(agreement_id=1)
+    loaded_db.add(tracker)
+    loaded_db.commit()
+
+    # Update step 6 with award data
+    step_6 = tracker.steps[5]
+    step_6.award_target_completion_date = date(2026, 4, 15)
+    step_6.award_task_completed_by = test_user.id
+    step_6.award_date_completed = date(2026, 4, 10)
+    step_6.award_notes = "Award received and uploaded"
+    step_6.award_approval_requested = True
+    step_6.award_approval_requested_date = date(2026, 4, 5)
+    step_6.award_approval_requested_by = test_user.id
+    step_6.award_requestor_notes = "Please approve award"
+    step_6.award_approval_status = "APPROVED"
+    step_6.award_approval_responded_by = test_user.id
+    step_6.award_approval_responded_date = date(2026, 4, 8)
+    step_6.award_approval_reviewer_notes = "Award approved"
+    loaded_db.commit()
+
+    # Step 6 (AWARD) should map to unprefixed names
+    step_6_dict = tracker.steps[5].to_dict()
+
+    # Check standard fields
+    assert "target_completion_date" in step_6_dict
+    assert "task_completed_by" in step_6_dict
+    assert "date_completed" in step_6_dict
+    assert "notes" in step_6_dict
+    assert step_6_dict["target_completion_date"] == "2026-04-15"
+    assert step_6_dict["task_completed_by"] == test_user.id
+    assert step_6_dict["date_completed"] == "2026-04-10"
+    assert step_6_dict["notes"] == "Award received and uploaded"
+
+    # Check approval request fields
+    assert "approval_requested" in step_6_dict
+    assert "approval_requested_date" in step_6_dict
+    assert "approval_requested_by" in step_6_dict
+    assert "requestor_notes" in step_6_dict
+    assert step_6_dict["approval_requested"] is True
+    assert step_6_dict["approval_requested_date"] == "2026-04-05"
+    assert step_6_dict["approval_requested_by"] == test_user.id
+    assert step_6_dict["requestor_notes"] == "Please approve award"
+
+    # Check approval response fields
+    assert "approval_status" in step_6_dict
+    assert "approval_responded_by" in step_6_dict
+    assert "approval_responded_date" in step_6_dict
+    assert "reviewer_notes" in step_6_dict
+    assert step_6_dict["approval_status"] == "APPROVED"
+    assert step_6_dict["approval_responded_by"] == test_user.id
+    assert step_6_dict["approval_responded_date"] == "2026-04-08"
+    assert step_6_dict["reviewer_notes"] == "Award approved"
+
+    # Prefixed versions should be removed
+    assert "award_target_completion_date" not in step_6_dict
+    assert "award_task_completed_by" not in step_6_dict
+    assert "award_date_completed" not in step_6_dict
+    assert "award_notes" not in step_6_dict
+    assert "award_approval_requested" not in step_6_dict
+    assert "award_approval_requested_date" not in step_6_dict
+    assert "award_approval_requested_by" not in step_6_dict
+    assert "award_requestor_notes" not in step_6_dict
+    assert "award_approval_status" not in step_6_dict
+    assert "award_approval_responded_by" not in step_6_dict
+    assert "award_approval_responded_date" not in step_6_dict
+    assert "award_approval_reviewer_notes" not in step_6_dict
+
+    # Other step fields should be excluded from AWARD steps
+    assert "acquisition_planning_task_completed_by" not in step_6_dict
+    assert "pre_solicitation_target_completion_date" not in step_6_dict
+    assert "solicitation_task_completed_by" not in step_6_dict
+    assert "evaluation_target_completion_date" not in step_6_dict
+    assert "pre_award_target_completion_date" not in step_6_dict

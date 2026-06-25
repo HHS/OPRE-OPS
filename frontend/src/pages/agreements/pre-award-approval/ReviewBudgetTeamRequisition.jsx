@@ -328,12 +328,12 @@ export const ReviewBudgetTeamRequisition = () => {
                 <SaveChangesAndExitModal
                     heading={modalProps.heading}
                     description={modalProps.description}
-                    setShowModal={setShowModal}
+                    setShowModal={modalProps.closeModal || setShowModal}
                     actionButtonText={modalProps.actionButtonText}
                     secondaryButtonText={modalProps.secondaryButtonText}
                     handleConfirm={modalProps.handleConfirm}
                     handleSecondary={modalProps.handleSecondary}
-                    closeModal={() => setShowModal(false)}
+                    closeModal={modalProps.closeModal || (() => setShowModal(false))}
                 />
             )}
         </App>

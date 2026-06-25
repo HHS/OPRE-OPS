@@ -17,26 +17,26 @@ def test_budget_line_item_status_names():
 
 def test_budget_line_item_status_values():
     """Verify status values match their expected string representations."""
-    assert BudgetLineItemStatus.DRAFT.value == "Draft"
-    assert BudgetLineItemStatus.PLANNED.value == "Planned"
-    assert BudgetLineItemStatus.IN_EXECUTION.value == "In Execution"
-    assert BudgetLineItemStatus.OBLIGATED.value == "Obligated"
+    assert BudgetLineItemStatus.DRAFT.value == "DRAFT"
+    assert BudgetLineItemStatus.PLANNED.value == "PLANNED"
+    assert BudgetLineItemStatus.IN_EXECUTION.value == "IN_EXECUTION"
+    assert BudgetLineItemStatus.OBLIGATED.value == "OBLIGATED"
 
 
 def test_budget_line_item_status_str_representation():
-    """Verify string conversion returns the human-readable value."""
-    assert str(BudgetLineItemStatus.DRAFT) == "Draft"
-    assert str(BudgetLineItemStatus.PLANNED) == "Planned"
-    assert str(BudgetLineItemStatus.IN_EXECUTION) == "In Execution"
-    assert str(BudgetLineItemStatus.OBLIGATED) == "Obligated"
+    """Verify string conversion returns the database value."""
+    assert str(BudgetLineItemStatus.DRAFT) == "DRAFT"
+    assert str(BudgetLineItemStatus.PLANNED) == "PLANNED"
+    assert str(BudgetLineItemStatus.IN_EXECUTION) == "IN_EXECUTION"
+    assert str(BudgetLineItemStatus.OBLIGATED) == "OBLIGATED"
 
 
 def test_budget_line_item_status_from_string():
     """Verify retrieving enum members by their string values."""
-    assert BudgetLineItemStatus("Draft") == BudgetLineItemStatus.DRAFT
-    assert BudgetLineItemStatus("Planned") == BudgetLineItemStatus.PLANNED
-    assert BudgetLineItemStatus("In Execution") == BudgetLineItemStatus.IN_EXECUTION
-    assert BudgetLineItemStatus("Obligated") == BudgetLineItemStatus.OBLIGATED
+    assert BudgetLineItemStatus("DRAFT") == BudgetLineItemStatus.DRAFT
+    assert BudgetLineItemStatus("PLANNED") == BudgetLineItemStatus.PLANNED
+    assert BudgetLineItemStatus("IN_EXECUTION") == BudgetLineItemStatus.IN_EXECUTION
+    assert BudgetLineItemStatus("OBLIGATED") == BudgetLineItemStatus.OBLIGATED
 
 
 def test_budget_line_item_status_equality():

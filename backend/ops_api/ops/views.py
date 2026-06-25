@@ -27,6 +27,7 @@ from models import (
     ServicesComponent,
     SpecialTopic,
     User,
+    Vendor,
 )
 from ops_api.ops.document.api import DocumentItemAPI, DocumentListAPI
 from ops_api.ops.resources.agreement_agency import (
@@ -130,6 +131,7 @@ from ops_api.ops.resources.special_topics import (
     SpecialTopicsListAPI,
 )
 from ops_api.ops.resources.users import UsersItemAPI, UsersListAPI
+from ops_api.ops.resources.vendors import VendorsListAPI
 from ops_api.ops.utils.version import VersionAPI
 
 # AGREEMENT ENDPOINTS
@@ -224,6 +226,9 @@ DIVISIONS_LIST_API_VIEW_FUNC = DivisionsListAPI.as_view("divisions-group", Divis
 # USER ENDPOINTS
 USERS_ITEM_API_VIEW_FUNC = UsersItemAPI.as_view("users-item", User)
 USERS_LIST_API_VIEW_FUNC = UsersListAPI.as_view("users-group", User)
+
+# VENDOR ENDPOINTS
+VENDORS_LIST_API_VIEW_FUNC = VendorsListAPI.as_view("vendors-group", Vendor)
 
 # FUNDING SUMMARY ENDPOINTS
 PORTFOLIO_FUNDING_SUMMARY_ITEM_API_VIEW_FUNC = PortfolioFundingSummaryItemAPI.as_view(

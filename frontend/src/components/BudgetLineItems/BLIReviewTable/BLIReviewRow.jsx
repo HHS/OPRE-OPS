@@ -1,4 +1,5 @@
 import { faClock } from "@fortawesome/free-regular-svg-icons";
+import { faPen } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { getBudgetLineCreatedDate, getProcurementShopLabel } from "../../../helpers/budgetLines.helpers";
 import { formatCurrency } from "../../../helpers/currencyFormat.helpers";
@@ -17,7 +18,7 @@ import { NO_DATA } from "../../../constants";
 import Tooltip from "../../UI/USWDS/Tooltip";
 import { actionOptions } from "../../../pages/agreements/review/ReviewAgreement.constants";
 import { BUDGET_LINE_STATUSES } from "./BLIReviewTable.constants";
-import React from "react";
+import React, { memo } from "react";
 /**
  * @typedef {import('../../../types/BudgetLineTypes').BudgetLine} BudgetLine
  */
@@ -30,6 +31,9 @@ import React from "react";
  * @property {Function} [setSelectedBLIs] - The function to set the selected budget line items.
  * @property {string} action
  * @property {boolean} [showCheckbox] - Whether to show the checkbox for selection.
+ * @property {Function} [onAddCLINClick] - Callback when "+ CLIN" button is clicked with budgetLine.id
+ * @property {boolean} [showCLINColumn] - Whether to show the CLIN column
+ * @property {Object} [clinAssignments] - Map of budgetLineId to CLIN number assignments
  */
 
 /**
@@ -43,11 +47,15 @@ const BLIReviewRow = ({
     setSelectedBLIs,
     action,
     showCheckbox = true,
-    readOnly = false
+    readOnly = false,
+    onAddCLINClick = () => {},
+    showCLINColumn = false,
+    clinAssignments = {}
 }) => {
-    const { isExpanded, setIsExpanded, setIsRowActive } = useTableRow();
+    const { isExpanded, setIsExpanded, isRowActive, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const loggedInUserFullName = useGetLoggedInUserFullName();
+
     const feeTotal = budgetLine?.fees;
     const budgetLineTotalPlusFees = budgetLine?.total ?? 0;
 
@@ -151,6 +159,23 @@ const BLIReviewRow = ({
 
         const fiscalYear = fiscalYearFromDate(dateNeeded || "") ?? NO_DATA;
 
+        // Use local assignment if available, otherwise fall back to backend clin.number
+        const assignedClinNumber = clinAssignments[budgetLine.id];
+        const isDraftStatus = budgetLine?.status === BUDGET_LINE_STATUSES.DRAFT;
+
+        // Draft BLIs show "N/A", non-Draft show "CLIN X" or "TBD"
+        const clinNumber = isDraftStatus
+            ? "N/A"
+            : assignedClinNumber
+              ? `CLIN ${assignedClinNumber}`
+              : (budgetLine?.clin?.number ?? NO_DATA);
+
+        // Only apply error styling to non-Draft BLIs with missing CLIN
+        const clinErrorClasses = !isDraftStatus ? `${addErrorClassIfNotFound(clinNumber, isReviewMode)}` : "";
+        // For CLIN column, show error in review mode regardless of selection (Award Approval page)
+        // For other columns, only show error when selected (Review Agreement page)
+        const clinClasses = isReviewMode ? clinErrorClasses : budgetLine.selected ? clinErrorClasses : "";
+
         const canNumber = budgetLine?.can?.number ?? NO_DATA;
         const canNumberErrorClasses = `${addErrorClassIfNotFound(canNumber, isReviewMode)}`;
         const canNumberClasses = budgetLine.selected ? canNumberErrorClasses : "";
@@ -165,6 +190,7 @@ const BLIReviewRow = ({
         return (
             <>
                 {renderCheckboxCell()}
+                {showCLINColumn && <td className={clinClasses}>{clinNumber}</td>}
                 <td className={dateNeededClasses}>{dateNeededFormatted}</td>
                 <td>{fiscalYear}</td>
                 <td className={canNumberClasses}>{canNumber}</td>
@@ -172,10 +198,24 @@ const BLIReviewRow = ({
                 <td>{formatCurrency(feeValue)}</td>
                 <td>{formatCurrency(totalWithFees)}</td>
                 <td>
-                    <TableTag
-                        status={budgetLine?.status}
-                        inReview={budgetLine?.in_review}
-                    />
+                    {isRowActive && onAddCLINClick && showCLINColumn && !isDraftStatus ? (
+                        <button
+                            className="usa-button usa-button--unstyled text-primary"
+                            onClick={() => onAddCLINClick(budgetLine.id)}
+                            data-cy="add-clin-hover-button"
+                        >
+                            <FontAwesomeIcon
+                                icon={faPen}
+                                className="height-2 width-2"
+                            />
+                            CLIN
+                        </button>
+                    ) : (
+                        <TableTag
+                            status={budgetLine?.status}
+                            inReview={budgetLine?.in_review}
+                        />
+                    )}
                 </td>
             </>
         );
@@ -183,7 +223,7 @@ const BLIReviewRow = ({
 
     const ExpandedData = (
         <td
-            colSpan={9}
+            colSpan={showCLINColumn ? 10 : 9}
             className="border-top-none"
             style={expandedRowBGColor}
         >
@@ -217,15 +257,18 @@ const BLIReviewRow = ({
         </td>
     );
     return (
-        <TableRowExpandable
-            tableRowData={TableRowData}
-            expandedData={ExpandedData}
-            isExpanded={isExpanded}
-            setIsExpanded={setIsExpanded}
-            setIsRowActive={setIsRowActive}
-            className={`${!readOnly && !budgetLine.actionable ? "text-gray-50" : ""}`}
-        />
+        <>
+            <TableRowExpandable
+                tableRowData={TableRowData}
+                expandedData={ExpandedData}
+                isExpanded={isExpanded}
+                setIsExpanded={setIsExpanded}
+                setIsRowActive={setIsRowActive}
+                className={`${!readOnly && !budgetLine.actionable ? "text-gray-50" : ""}`}
+            />
+        </>
     );
 };
 
-export default BLIReviewRow;
+// Memoize to prevent re-renders when parent table re-renders
+export default memo(BLIReviewRow);

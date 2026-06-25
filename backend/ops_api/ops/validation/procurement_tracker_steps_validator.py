@@ -73,8 +73,11 @@ class ProcurementTrackerStepsValidator:
         Args:
             procurement_tracker_step: The procurement tracker step being validated
         """
+        # Note: AwardApprovalRequiredRule removed - COR should be able to complete Step 6 before approval
         from ops_api.ops.validation.rules.procurement_tracker_step import (
             AcquisitionPlanningRequiredFieldsRule,
+            AwardAgreementDataRequiredRule,
+            AwardCompletionRequiredFieldsRule,
             CompletedByUpdateAuthorizationRule,
             EvaluationCompletionRequiredFieldsRule,
             NoBLIsInReviewForApprovalRequestRule,
@@ -141,6 +144,17 @@ class ProcurementTrackerStepsValidator:
                 PreAwardApprovalResponseAuthorizationRule(),
                 PreAwardApprovalResponseValidationRule(),
                 PreAwardCompletionRequiredFieldsRule(),
+                CompletedByUpdateAuthorizationRule(),
+                NoUpdatingCompletedProcurementStepRule(),
+                NoFutureCompletionDateUpdateValidationRule(),
+                NoPastTargetCompletionDateUpdateRule(),
+            ]
+        elif procurement_tracker_step.step_type == ProcurementTrackerStepType.AWARD:
+            return [
+                ResourceExistsRule(),
+                UserAssociationRule(),
+                AwardAgreementDataRequiredRule(),
+                AwardCompletionRequiredFieldsRule(),
                 CompletedByUpdateAuthorizationRule(),
                 NoUpdatingCompletedProcurementStepRule(),
                 NoFutureCompletionDateUpdateValidationRule(),

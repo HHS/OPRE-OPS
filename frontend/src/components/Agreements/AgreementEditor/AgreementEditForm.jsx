@@ -16,7 +16,7 @@ import AgreementReasonSelect from "../AgreementReasonSelect";
 import AgreementTypeSelect from "../AgreementTypeSelect";
 import ProcurementShopSelectWithFee from "../ProcurementShopSelectWithFee";
 import ProductServiceCodeSelect from "../ProductServiceCodeSelect";
-import ProductServiceCodeSummaryBox from "../ProductServiceCodeSummaryBox";
+import SummaryBox from "../SummaryBox";
 import ProjectOfficerComboBox from "../ProjectOfficerComboBox";
 import ResearchMethodologyComboBox from "../ResearchMethodologyComboBox";
 import SpecialTopicComboBox from "../SpecialTopicComboBox";
@@ -475,7 +475,12 @@ const AgreementEditForm = ({
             {selectedProductServiceCode &&
                 selectedProductServiceCode.naics &&
                 selectedProductServiceCode.support_code && (
-                    <ProductServiceCodeSummaryBox selectedProductServiceCode={selectedProductServiceCode} />
+                    <SummaryBox
+                        selectedProductServiceCode={selectedProductServiceCode}
+                        width="19.5625rem"
+                        minHeight="4.375rem"
+                        className="margin-top-4"
+                    />
                 )}
             <div className="margin-top-3">
                 <ProcurementShopSelectWithFee

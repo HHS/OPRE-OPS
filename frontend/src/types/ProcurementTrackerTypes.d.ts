@@ -70,13 +70,31 @@ export type ProcurementTrackerPreAwardStep = ProcurementTrackerStep & {
     reviewer_notes?: string | null;
 };
 
+export type ProcurementTrackerAwardStep = ProcurementTrackerStep & {
+    target_completion_date?: string | null;
+    task_completed_by?: number | null;
+    date_completed?: string | null;
+    notes?: string | null;
+    // Award approval request fields
+    approval_requested?: boolean | null;
+    approval_requested_date?: string | null;
+    approval_requested_by?: number | null;
+    requestor_notes?: string | null;
+    // Award approval response fields (reusing PreAward approval status type)
+    approval_status?: ProcurementTrackerPreAwardApprovalStatus | null;
+    approval_responded_by?: number | null;
+    approval_responded_date?: string | null;
+    reviewer_notes?: string | null;
+};
+
 export type ProcurementTrackerResponseStep =
     | ProcurementTrackerStep
     | ProcurementTrackerAcquisitionPlanningStep
     | ProcurementTrackerPreSolicitationStep
     | ProcurementTrackerSolicitationStep
     | ProcurementTrackerEvaluationStep
-    | ProcurementTrackerPreAwardStep;
+    | ProcurementTrackerPreAwardStep
+    | ProcurementTrackerAwardStep;
 
 export type ProcurementTracker = {
     id: number;
