@@ -715,6 +715,94 @@ paths:
           description: Unauthorized
         "404":
           description: Not Found - Agreement does not exist
+  /agreements/{id}/edit-bundle:
+    patch:
+      tags:
+        - Agreements
+      operationId: patchAgreementEditBundle
+      summary: Atomically update an agreement plus its services components and budget line items
+      description: |
+        Apply an agreement-level update along with create / update / delete mutations on
+        its services components and budget line items in a single database transaction.
+        If any step fails, the entire bundle is rolled back so no partial writes survive.
+
+        Replaces the prior client-side fan-out of separate PATCH/POST/DELETE calls in the
+        review-flow edit page, which could leave the agreement in a partially-saved state.
+
+        Order of operations (within the transaction):
+          1. Agreement-level update (optional)
+          2. Services component creates (flushed first so new BLIs can reference them
+             via `services_component_ref`)
+          3. Services component updates
+          4. Budget line item creates (resolves `services_component_ref` against the
+             newly-created services components)
+          5. Budget line item updates (may produce change requests)
+          6. Budget line item deletes
+          7. Services component deletes
+
+        Any of the four top-level keys (`agreement`, `services_components`,
+        `budget_line_items`) can be omitted; an empty bundle is a no-op. Nested
+        `services_components` / `budget_line_items` arrays inside the `agreement`
+        section are rejected — they must be sent at the top level of the bundle.
+
+        Reviewer notifications for any change requests produced by BLI updates are
+        sent **after** the bundle commit succeeds. If a notification fails, the change
+        request id is returned in `failed_notification_change_request_ids` so the
+        client can surface a "saved, but the approval request didn't go out" message.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Agreement ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AgreementEditBundleRequest"
+      responses:
+        "200":
+          description: Bundle saved successfully (no change requests produced)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgreementEditBundleResponse"
+        "202":
+          description: |
+            Bundle saved successfully and one or more change requests were created.
+            The change request ids are returned in `change_request_ids`.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgreementEditBundleResponse"
+        "400":
+          description: |
+            Bad Request - The bundle payload is invalid. Common causes:
+            - Nested `services_components` / `budget_line_items` arrays inside `agreement`
+            - SC / BLI update items missing an `id`
+            - A BLI references a `services_component_ref` not present in this bundle
+            - Duplicate agreement name (case-insensitive within the same agreement type)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  errors:
+                    type: object
+                    additionalProperties:
+                      type: array
+                      items:
+                        type: string
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not Found - Agreement does not exist
+        "500":
+          description: Internal Server Error
   /agreements-filters/:
     get:
       tags:
@@ -7680,6 +7768,157 @@ components:
     ServicesComponentRequestPost:
       allOf:
         - $ref: "#/components/schemas/ServicesComponentRequest"
+    AgreementEditBundleRequest:
+      type: object
+      description: |
+        Bundle payload for `PATCH /agreements/{id}/edit-bundle`. Any of the
+        top-level keys may be omitted; an empty bundle is a no-op.
+      properties:
+        agreement:
+          description: |
+            Agreement-level fields to update (partial). Validated against the
+            per-agreement-type schema, keyed off the existing agreement's type.
+            Nested `services_components` / `budget_line_items` arrays are rejected —
+            send those at the top level of the bundle so the orchestrator can
+            apply create / update / delete atomically.
+          oneOf:
+            - $ref: "#/components/schemas/AgreementData"
+            - $ref: "#/components/schemas/ContractAgreementData"
+            - $ref: "#/components/schemas/GrantAgreementData"
+            - $ref: "#/components/schemas/DirectAgreementData"
+            - $ref: "#/components/schemas/IaaAgreementData"
+            - $ref: "#/components/schemas/AaAgreementData"
+          nullable: true
+        services_components:
+          type: object
+          description: Services component create / update / delete buckets.
+          properties:
+            create:
+              type: array
+              description: |
+                Services components to create. Each item may include a `ref`
+                string; budget line items in the same bundle can reference the
+                newly-created SC by setting `services_component_ref` to that value.
+              items:
+                allOf:
+                  - $ref: "#/components/schemas/ServicesComponentRequest"
+                  - type: object
+                    properties:
+                      ref:
+                        type: string
+                        description: |
+                          Optional client-supplied identifier resolved to the
+                          new services component's id within this bundle.
+            update:
+              type: array
+              description: Services components to update. Each item must include `id`.
+              items:
+                allOf:
+                  - $ref: "#/components/schemas/ServicesComponentRequest"
+                  - type: object
+                    required:
+                      - id
+                    properties:
+                      id:
+                        type: integer
+            delete:
+              type: array
+              description: IDs of services components to delete.
+              items:
+                type: integer
+        budget_line_items:
+          type: object
+          description: Budget line item create / update / delete buckets.
+          properties:
+            create:
+              type: array
+              description: |
+                Budget line items to create. May set `services_component_ref` to
+                the `ref` of an SC being created in the same bundle.
+              items:
+                allOf:
+                  - $ref: "#/components/schemas/BudgetLineItemRequest"
+                  - type: object
+                    properties:
+                      services_component_ref:
+                        type: string
+                        description: |
+                          Reference to a services component being created in the
+                          same bundle. Resolved to that SC's new id at apply time.
+            update:
+              type: array
+              description: |
+                Budget line items to update. Each item must include `id`. May set
+                `services_component_ref` to retarget the BLI to a not-yet-persisted
+                in-bundle SC.
+              items:
+                allOf:
+                  - $ref: "#/components/schemas/BudgetLineItemRequest"
+                  - type: object
+                    required:
+                      - id
+                    properties:
+                      id:
+                        type: integer
+                      services_component_ref:
+                        type: string
+            delete:
+              type: array
+              description: IDs of budget line items to delete.
+              items:
+                type: integer
+    AgreementEditBundleResponse:
+      type: object
+      required:
+        - message
+        - id
+        - agreement_updated
+        - services_components_created
+        - services_components_updated
+        - services_components_deleted
+        - budget_line_items_created
+        - budget_line_items_updated
+        - budget_line_items_deleted
+        - change_request_ids
+        - failed_notification_change_request_ids
+      properties:
+        message:
+          type: string
+          example: "Agreement edit bundle saved"
+        id:
+          type: integer
+          description: ID of the agreement the bundle was applied to
+        agreement_updated:
+          type: boolean
+          description: Whether the agreement-level fields were updated.
+        services_components_created:
+          type: integer
+        services_components_updated:
+          type: integer
+        services_components_deleted:
+          type: integer
+        budget_line_items_created:
+          type: integer
+        budget_line_items_updated:
+          type: integer
+        budget_line_items_deleted:
+          type: integer
+        change_request_ids:
+          type: array
+          description: |
+            IDs of any change requests created by BLI updates within this bundle.
+            When non-empty the response status is 202.
+          items:
+            type: integer
+        failed_notification_change_request_ids:
+          type: array
+          description: |
+            IDs of change requests that committed successfully but whose
+            post-commit reviewer notification failed. Surfaced so the client
+            can tell the user "saved, but the approval request didn't go out —
+            please retry".
+          items:
+            type: integer
     ProcurementShop:
       type: object
       properties:
