@@ -1,4 +1,5 @@
 import cx from "clsx";
+import state from "react";
 
 /**
  * A textarea input component.
@@ -30,6 +31,7 @@ export const TextArea = ({
     pending = false,
     messages = []
 }) => {
+    const [textLength, setTextLength] = state.useState(value.length);
     if (!hintMsg && maxLength) hintMsg = `Maximum ${maxLength} characters`;
     return (
         <fieldset
@@ -61,7 +63,7 @@ export const TextArea = ({
                     </span>
                 )}
                 <textarea
-                    className={`usa-textarea ${messages.length ? "usa-input--error" : ""} `}
+                    className={`usa-textarea ${messages.length ? "usa-input--error" : ""} ${maxLength ? "margin-bottom-1" : ""}`}
                     id={name}
                     name={name}
                     rows={5}
@@ -71,17 +73,20 @@ export const TextArea = ({
                     value={value}
                     aria-describedby={`${name}-with-hint-textarea-info ${name}-with-hint-textarea-hint`}
                 />
+                <span
+                    id={`${name}-with-hint-textarea-info`}
+                    className="usa-character-count__message usa-hint"
+
+                >
+                    {maxLength - textLength} left
+                </span>
             </div>
-            <span
-                id={`${name}-with-hint-textarea-info`}
-                className="usa-character-count__message usa-sr-only"
-            >
-                You can enter up to {maxLength} characters
-            </span>
         </fieldset>
     );
     function handleChange(e) {
         onChange(name, e.target.value);
+        // Count down from the max character count
+        setTextLength(e.target.value.length);
     }
 };
 

@@ -49,12 +49,12 @@ const Agreement = () => {
         }
     }, [location.state?.success, location.pathname, location.search, navigate]);
 
-    // Auto-dismiss success alert after 10 seconds
+    // Auto-dismiss success alert after 6 seconds
     useEffect(() => {
         if (showPreAwardSuccessAlert) {
             const timer = setTimeout(() => {
                 setShowPreAwardSuccessAlert(false);
-            }, 10000);
+            }, 6000);
             return () => clearTimeout(timer);
         }
     }, [showPreAwardSuccessAlert]);
