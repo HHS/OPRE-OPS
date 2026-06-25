@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { useDeleteAgreementMutation, useGetResearchProjectsQuery } from "../../api/opsAPI";
+import { useDeleteAgreementMutation, useGetAllProjectsQuery } from "../../api/opsAPI";
 import {
     useEditAgreement,
     useSetState,
@@ -50,7 +50,7 @@ export const StepSelectProject = ({
         data: projects,
         error: errorProjects,
         isLoading: isLoadingProjects
-    } = useGetResearchProjectsQuery(undefined, { refetchOnMountOrArgChange: true });
+    } = useGetAllProjectsQuery(undefined, { refetchOnMountOrArgChange: true });
     const [deleteAgreement] = useDeleteAgreementMutation();
 
     if (isLoadingProjects) {

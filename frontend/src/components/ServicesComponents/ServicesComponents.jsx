@@ -11,6 +11,7 @@ import ServicesComponentsList from "./ServicesComponentsList";
  * @param { 'NON_SEVERABLE' | 'SEVERABLE'} props.serviceRequirementType - The type of service requirement.
  * @param {number} props.agreementId - The ID of the agreement.
  * @param {boolean} [props.isEditMode] - Whether the component is in edit mode.
+ * @param {boolean} [props.isReviewMode] - Whether the component is in review mode (single-page edit screen).
  * @param {string} props.continueBtnText - The text to display on the "Continue" button.
  * @param {"agreement" | "none"} props.workflow - The workflow type.
 
@@ -23,6 +24,7 @@ const ServicesComponents = ({
     serviceRequirementType,
     agreementId,
     isEditMode = false,
+    isReviewMode = false,
     continueBtnText,
     workflow,
     setHasUnsavedChanges,
@@ -63,6 +65,7 @@ const ServicesComponents = ({
                 handleCancel={handleCancel}
                 servicesComponentsNumbers={servicesComponentsNumbers}
                 isEditMode={isEditMode}
+                isReviewMode={isReviewMode}
                 formKey={formKey}
                 hasUnsavedChanges={hasUnsavedChanges}
                 workflow={workflow}

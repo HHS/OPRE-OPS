@@ -44,7 +44,7 @@ from ops_api.ops.services.ops_service import (
     ResourceNotFoundError,
     ValidationError,
 )
-from ops_api.ops.utils.agreements_helpers import associated_with_agreement
+from ops_api.ops.utils.agreements_helpers import associated_with_agreement, is_agreement_name_unique_violation
 from ops_api.ops.utils.budget_line_items_helpers import create_budget_line_item_instance
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.validation.agreement_validator import AgreementValidator
@@ -206,7 +206,7 @@ class AgreementsService(OpsService[Agreement]):
             logger.error(f"Failed to create agreement - integrity constraint violated: {e}")
 
             # Check if it's the unique name constraint
-            if "ix_agreement_name_type_lower" in str(e):
+            if is_agreement_name_unique_violation(e):
                 raise ValidationError(
                     {
                         "name": [
@@ -328,9 +328,19 @@ class AgreementsService(OpsService[Agreement]):
 
         return bli_count
 
-    def update(self, id: int, updated_fields: dict[str, Any], partial: bool = True) -> tuple[Agreement, int]:
+    def update(
+        self,
+        id: int,
+        updated_fields: dict[str, Any],
+        partial: bool = True,
+        commit: bool = True,
+    ) -> tuple[Agreement, int]:
         """
-        Update an existing agreement
+        Update an existing agreement.
+
+        When ``commit`` is False, all writes (the merged agreement and any procurement-shop
+        change request) are flushed but not committed. The caller owns the eventual commit
+        and any deferred reviewer notifications (used by the edit-bundle orchestrator).
         """
         agreement = self.db_session.get(Agreement, id)
 
@@ -363,13 +373,17 @@ class AgreementsService(OpsService[Agreement]):
             add_update_vendor(self.db_session, updated_fields.get("vendor"), agreement_data, "vendor")
 
             self.db_session.merge(agreement_data)
-            self.db_session.commit()
+            if commit:
+                self.db_session.commit()
+            else:
+                self.db_session.flush()
 
             change_request_id = None
             if awarding_entity_id:
-                change_request_id = self._handle_proc_shop_change(agreement, awarding_entity_id)
+                change_request_id = self._handle_proc_shop_change(agreement, awarding_entity_id, commit=commit)
 
-            self.db_session.commit()
+            if commit:
+                self.db_session.commit()
 
             return agreement, 202 if change_request_id else 200
 
@@ -379,7 +393,7 @@ class AgreementsService(OpsService[Agreement]):
             logger.error(f"Failed to update agreement id={id} - integrity constraint violated: {e}")
 
             # Check if it's the unique name constraint
-            if "ix_agreement_name_type_lower" in str(e):
+            if is_agreement_name_unique_violation(e):
                 raise ValidationError(
                     {
                         "name": [
@@ -505,7 +519,7 @@ class AgreementsService(OpsService[Agreement]):
 
         return paginated_results, metadata
 
-    def _handle_proc_shop_change(self, agreement: Agreement, new_value: int) -> int | None:
+    def _handle_proc_shop_change(self, agreement: Agreement, new_value: int, commit: bool = True) -> int | None:
         if agreement.awarding_entity_id == new_value:
             return None  # No change needed
 
@@ -549,7 +563,8 @@ class AgreementsService(OpsService[Agreement]):
                         },
                         "created_by": get_current_user().id,
                         "change_request_type": ChangeRequestType.AGREEMENT_CHANGE_REQUEST,
-                    }
+                    },
+                    commit=commit,
                 )
                 cr_meta.metadata.update(
                     {

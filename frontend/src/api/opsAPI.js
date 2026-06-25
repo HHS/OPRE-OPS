@@ -63,7 +63,7 @@ export const opsApi = createApi({
     reducerPath: "opsApi",
     tagTypes: [
         "Agreements",
-        "ResearchProjects",
+        "Projects",
         "User",
         "Users",
         "AgreementTypes",
@@ -243,6 +243,21 @@ export const opsApi = createApi({
                 };
             },
             invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "ServicesComponents"]
+        }),
+        updateAgreementEditBundle: builder.mutation({
+            query: ({ id, data }) => ({
+                url: `/agreements/${id}/edit-bundle`,
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: data
+            }),
+            invalidatesTags: [
+                "Agreements",
+                "BudgetLineItems",
+                "AgreementHistory",
+                "ServicesComponents",
+                "ChangeRequests"
+            ]
         }),
         deleteAgreement: builder.mutation({
             query: (id) => ({
@@ -464,41 +479,33 @@ export const opsApi = createApi({
                 Array.isArray(response) ? response.map(normalizeUser) : normalizeUser(response),
             providesTags: ["Users"]
         }),
-        getResearchProjects: builder.query({
-            // `/projects/` is capped at limit=50 by `PaginationListSchema`.
-            // Rather than deviating from that constraint we page through all results
-            // here so the Create Agreement project dropdown always shows every
-            // research project regardless of how many exist.
+        getAllProjects: builder.query({
             async queryFn(_arg, _queryApi, _extraOptions, fetchWithBQ) {
                 const BATCH_SIZE = 50;
                 const allProjects = [];
                 let offset = 0;
-                let total = Infinity; // set on first wrapped response
+                let total = Infinity;
 
                 while (allProjects.length < total) {
-                    const result = await fetchWithBQ(
-                        `/projects/?project_type=RESEARCH&limit=${BATCH_SIZE}&offset=${offset}`
-                    );
+                    const result = await fetchWithBQ(`/projects/?limit=${BATCH_SIZE}&offset=${offset}`);
                     if (result.error) return { error: result.error };
 
                     const response = result.data;
 
-                    // Legacy array format (no wrapper) — all results in one shot
                     if (Array.isArray(response)) {
                         return { data: response };
                     }
 
-                    // Wrapped format: { data: [...], count: N, ... }
                     const page = response.data ?? [];
                     total = response.count ?? page.length;
-                    if (page.length === 0) break; // guard against malformed count
+                    if (page.length === 0) break;
                     allProjects.push(...page);
                     offset += BATCH_SIZE;
                 }
 
                 return { data: allProjects };
             },
-            providesTags: ["ResearchProjects"]
+            providesTags: ["Projects"]
         }),
         getProjects: builder.query({
             query: ({ sortConditions, sortDescending, page, limit, fiscalYear, filters } = {}) => {
@@ -588,16 +595,16 @@ export const opsApi = createApi({
                     offset: 0
                 };
             },
-            providesTags: ["ResearchProjects"]
+            providesTags: ["Projects"]
         }),
         getProjectById: builder.query({
             query: (id) => `/projects/${id}`,
             transformResponse: (response) => normalizeProjectUsers(response),
-            providesTags: ["ResearchProjects"]
+            providesTags: ["Projects"]
         }),
         getProjectSpendingById: builder.query({
             query: (id) => `/projects/${id}/spending/`,
-            providesTags: ["ResearchProjects", "BudgetLineItems"]
+            providesTags: ["Projects", "BudgetLineItems"]
         }),
         getAgreementSpendingById: builder.query({
             query: (id) => `/agreements/${id}/spending/`,
@@ -605,11 +612,11 @@ export const opsApi = createApi({
         }),
         getProjectFundingById: builder.query({
             query: ({ id, fiscalYear }) => `/projects/${id}/funding/?fiscal_year=${fiscalYear}`,
-            providesTags: ["ResearchProjects"]
+            providesTags: ["Projects"]
         }),
         getProjectsFilterOptions: builder.query({
             query: () => `/projects-filters/`,
-            providesTags: ["ResearchProjects"]
+            providesTags: ["Projects"]
         }),
         getProjectsByPortfolio: builder.query({
             query: ({ fiscal_year, portfolio_id, search }) => {
@@ -637,7 +644,7 @@ export const opsApi = createApi({
                 // Legacy array format (no wrapper) - for backward compatibility during transition
                 return Array.isArray(response) ? response.map(normalizeProjectUsers) : response;
             },
-            providesTags: ["ResearchProjects"]
+            providesTags: ["Projects"]
         }),
         getResearchProjectsByPortfolio: builder.query({
             query: ({ fiscal_year, portfolio_id, search }) => {
@@ -663,7 +670,7 @@ export const opsApi = createApi({
                 // Legacy array format (no wrapper) - for backward compatibility during transition
                 return response;
             },
-            providesTags: ["ResearchProjects"]
+            providesTags: ["Projects"]
         }),
         addResearchProjects: builder.mutation({
             query: (body) => ({
@@ -671,7 +678,7 @@ export const opsApi = createApi({
                 method: "POST",
                 body
             }),
-            invalidatesTags: ["ResearchProjects"]
+            invalidatesTags: ["Projects"]
         }),
         updateProject: builder.mutation({
             query: ({ id, data }) => ({
@@ -680,7 +687,7 @@ export const opsApi = createApi({
                 headers: { "Content-Type": "application/json" },
                 body: data
             }),
-            invalidatesTags: ["ResearchProjects"]
+            invalidatesTags: ["Projects"]
         }),
         updateBudgetLineItemStatus: builder.mutation({
             query: ({ id, status }) => ({
@@ -1248,6 +1255,7 @@ export const {
     useLazyGetAgreementsQuery,
     useAddAgreementMutation,
     useUpdateAgreementMutation,
+    useUpdateAgreementEditBundleMutation,
     useDeleteAgreementMutation,
     useGetAgreementAgenciesQuery,
     useGetAllAgreementAgenciesQuery,
@@ -1272,7 +1280,7 @@ export const {
     useGetProjectFundingByIdQuery,
     useGetProjectsFilterOptionsQuery,
     useGetProjectsByPortfolioQuery,
-    useGetResearchProjectsQuery,
+    useGetAllProjectsQuery,
     useGetResearchProjectsByPortfolioQuery,
     useAddResearchProjectsMutation,
     useUpdateProjectMutation,

@@ -104,9 +104,13 @@ class BudgetLineItemService:
     def __init__(self, db_session):
         self.db_session = db_session
 
-    def create(self, create_request: dict[str, Any]) -> BudgetLineItem:
+    def create(self, create_request: dict[str, Any], commit: bool = True) -> BudgetLineItem:
         """
         Create a new Budget Line Item and save it to the database.
+
+        When ``commit`` is False, the new BLI is added to the session and flushed to
+        populate its id, but the session is not committed. The caller is then
+        responsible for committing (used by the edit-bundle orchestrator).
         """
         agreement_id = create_request["agreement_id"]
 
@@ -126,10 +130,13 @@ class BudgetLineItemService:
         new_bli = create_budget_line_item_instance(agreement.agreement_type, create_request)
 
         self.db_session.add(new_bli)
-        self.db_session.commit()
+        if commit:
+            self.db_session.commit()
+        else:
+            self.db_session.flush()
         return new_bli
 
-    def delete(self, id: int) -> None:
+    def delete(self, id: int, commit: bool = True) -> None:
         """
         Delete a Budget Line Item with the given id.
         """
@@ -148,7 +155,8 @@ class BudgetLineItemService:
             )
 
         self.db_session.delete(bli)
-        self.db_session.commit()
+        if commit:
+            self.db_session.commit()
         return bli
 
     def get(self, id: int) -> BudgetLineItem:
@@ -495,7 +503,18 @@ class BudgetLineItemService:
                 query = query.order_by(sort_logic.desc()) if sort_descending else query.order_by(sort_logic)
         return query, agreement_joined
 
-    def update(self, id: int, updated_fields: dict[str, Any]) -> tuple[BudgetLineItem, int]:
+    def update(self, id: int, updated_fields: dict[str, Any], commit: bool = True) -> tuple[BudgetLineItem, int]:
+        budget_line_item, status_code, _ = self.update_with_change_request_ids(id, updated_fields, commit=commit)
+        return budget_line_item, status_code
+
+    def update_with_change_request_ids(
+        self, id: int, updated_fields: dict[str, Any], commit: bool = True
+    ) -> tuple[BudgetLineItem, int, list[int]]:
+        """Same as ``update`` but also returns the ids of any change requests created.
+
+        Useful for transactional callers (the edit-bundle orchestrator) that need to
+        defer reviewer notifications until after the bundle commit succeeds.
+        """
         budget_line_item = self._get_budget_line_item(id)
         self._validation(budget_line_item, updated_fields)
 
@@ -531,15 +550,17 @@ class BudgetLineItemService:
                     f"Invalid CLIN number: {clin_value}. Must be 1-10 for CLIN numbers or >= 5000 for existing CLIN IDs."
                 )
 
-        change_request_ids = []
+        change_request_ids: list[int] = []
         if directly_editable:
-            self._apply_direct_edits(budget_line_item, updated_fields)
+            self._apply_direct_edits(budget_line_item, updated_fields, commit=commit)
         else:
-            change_request_ids = self._handle_change_requests(budget_line_item, id, request, schema, updated_fields)
+            change_request_ids = self._handle_change_requests(
+                budget_line_item, id, request, schema, updated_fields, commit=commit
+            )
 
         logger.debug(f"Updated BLI: {budget_line_item.to_dict()}")
 
-        return budget_line_item, 202 if change_request_ids else 200
+        return budget_line_item, (202 if change_request_ids else 200), change_request_ids
 
     def _get_budget_line_item(self, id: int) -> BudgetLineItem:
         """Retrieve budget line item by ID or raise appropriate error"""
@@ -582,7 +603,7 @@ class BudgetLineItemService:
                     return True
         return False
 
-    def _apply_direct_edits(self, budget_line_item: BudgetLineItem, updated_fields: dict) -> None:
+    def _apply_direct_edits(self, budget_line_item: BudgetLineItem, updated_fields: dict, commit: bool = True) -> None:
         """Apply direct edits to the budget line item"""
         filtered_dict = {
             k: v for k, v in updated_fields.items() if k not in ["method", "request", "schema", "requestor_notes"]
@@ -591,7 +612,10 @@ class BudgetLineItemService:
         budget_line_item.updated_on = datetime.now()
         budget_line_item.updated_by = get_current_user().id
         self.db_session.add(budget_line_item)
-        self.db_session.commit()
+        if commit:
+            self.db_session.commit()
+        else:
+            self.db_session.flush()
 
     def _ensure_clin_exists(self, budget_line_item: BudgetLineItem, clin_number: int) -> int:
         """
@@ -643,6 +667,7 @@ class BudgetLineItemService:
         request,
         schema,
         updated_fields: dict,
+        commit: bool = True,
     ) -> list:
         """Handle changes that require change requests"""
         change_data, changing_from_data = validate_and_prepare_change_data(
@@ -664,7 +689,10 @@ class BudgetLineItemService:
             budget_line_item.updated_on = datetime.now()
             budget_line_item.updated_by = get_current_user().id
             self.db_session.add(budget_line_item)
-            self.db_session.commit()
+            if commit:
+                self.db_session.commit()
+            else:
+                self.db_session.flush()
 
         if changed_budget_or_status_prop_keys:
             change_request_service = ChangeRequestService(self.db_session)
@@ -675,6 +703,7 @@ class BudgetLineItemService:
                 change_data,
                 changed_budget_or_status_prop_keys,
                 updated_fields.get("requestor_notes"),
+                commit=commit,
             )
         return []
 

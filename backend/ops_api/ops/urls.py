@@ -3,6 +3,7 @@ from flask import Blueprint
 from ops_api.ops.views import (
     AGREEMENT_AGENCY_ITEM_API_VIEW_FUNC,
     AGREEMENT_AGENCY_LIST_API_VIEW_FUNC,
+    AGREEMENT_EDIT_BUNDLE_API_VIEW_FUNC,
     AGREEMENT_HISTORY_LIST_API_VIEW_FUNC,
     AGREEMENT_ITEM_API_VIEW_FUNC,
     AGREEMENT_LIST_API_VIEW_FUNC,
@@ -281,6 +282,10 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/agreements/<int:id>/spending/",
         view_func=AGREEMENT_SPENDING_ITEM_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/agreements/<int:id>/edit-bundle",
+        view_func=AGREEMENT_EDIT_BUNDLE_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
         "/agreement-agencies/",
