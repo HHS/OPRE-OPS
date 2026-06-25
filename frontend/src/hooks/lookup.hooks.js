@@ -1,7 +1,7 @@
 import React from "react";
 import {
     useGetProductServiceCodesQuery,
-    useGetResearchProjectsQuery,
+    useGetAllProjectsQuery,
     useGetAgreementByIdQuery,
     useGetBudgetLineItemQuery,
     useGetCanByIdQuery
@@ -37,7 +37,7 @@ export const useGetNameForProductServiceCodeId = (id) => {
 export const useGetNameForResearchProjectId = (id) => {
     const [displayName, setDisplayName] = React.useState("unknown");
 
-    const { data, isSuccess } = useGetResearchProjectsQuery();
+    const { data, isSuccess } = useGetAllProjectsQuery(undefined);
 
     React.useEffect(() => {
         if (isSuccess) {
