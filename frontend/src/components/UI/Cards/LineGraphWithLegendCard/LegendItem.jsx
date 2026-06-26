@@ -52,7 +52,7 @@ const LegendItem = ({ activeId, id, label, value, color, percent, tagStyleActive
                     {formatCurrency(value)}
                 </span>
                 <Tag
-                    className="margin-left-1"
+                    className={"margin-left-1" + (isGraphActive ? " fake-bold" : "")}
                     tagStyle="darkTextWhiteBackground"
                     text={`${percent}%`}
                     label={label}
