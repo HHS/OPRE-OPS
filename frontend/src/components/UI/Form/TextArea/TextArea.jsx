@@ -76,7 +76,6 @@ export const TextArea = ({
                 <span
                     id={`${name}-with-hint-textarea-info`}
                     className="usa-character-count__message usa-hint"
-
                 >
                     {maxLength - textLength} left
                 </span>
