@@ -106,7 +106,7 @@ vi.mock("../../../constants.js", () => ({
             { name: "USER_ADMIN", label: "User Admin" },
             { name: "BUDGET_TEAM", label: "Budget Team" },
             { name: "PROCUREMENT_TEAM", label: "Procurement Team" },
-            { name: "SUPER_USER", label: "Temp Year End Role" }
+            { name: "SUPER_USER", label: "Administrative Power User" }
         ]
     }
 }));

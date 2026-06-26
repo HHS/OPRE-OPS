@@ -209,9 +209,9 @@ class PowerUserAuthClient(FlaskClient):
         user, additional_claims = _get_user_for_auth(
             528,
             oidc_id="00000000-0000-1111-a111-000000000028",
-            email="power.user@email.com",
-            first_name="Power",
-            last_name="Owner",
+            email="admin.power.user@email.com",
+            first_name="Admin",
+            last_name="Power User",
             division=1,
         )
         access_token = create_access_token(identity=user, additional_claims=additional_claims)

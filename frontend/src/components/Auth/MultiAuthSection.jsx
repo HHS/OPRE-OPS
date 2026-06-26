@@ -270,7 +270,7 @@ const MultiAuthSection = () => {
                                     onClick={() => handleFakeAuthLogin("power_user")}
                                     disabled={isAuthenticating}
                                 >
-                                    Power User
+                                    Administrative Power User
                                 </button>
                             </p>
                             <p>
