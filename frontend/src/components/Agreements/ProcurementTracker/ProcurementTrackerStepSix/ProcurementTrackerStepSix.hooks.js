@@ -14,8 +14,9 @@ import useAlert from "../../../../hooks/use-alert.hooks";
 /**
  * Custom hook to manage the state and logic for Procurement Tracker Step Six (Award).
  * @param {ProcurementTrackerAwardStep | undefined} stepSixData - The data for step six of the procurement tracker.
- * @param {Function | undefined} handleSetCompletedStepNumber - Function to set the completed step number.
+ * @param {Function | undefined} handleSetCompletedStepNumber - Function to set the completed step number (unused for final step).
  */
+// eslint-disable-next-line no-unused-vars
 export default function useProcurementTrackerStepSix(stepSixData, handleSetCompletedStepNumber) {
     const [isAwardCheckboxChecked, setIsAwardCheckboxChecked] = React.useState(false);
     const [selectedUser, setSelectedUser] = React.useState(/** @type {SafeUser | undefined} */ (undefined));
@@ -99,7 +100,11 @@ export default function useProcurementTrackerStepSix(stepSixData, handleSetCompl
                 stepId,
                 data: payload
             }).unwrap();
-            handleSetCompletedStepNumber && handleSetCompletedStepNumber(6);
+            // Step 6 is the final step - don't trigger accordion remount
+            // Unlike Steps 1-5, there's no "next step" to open, and remounting
+            // causes a race condition where the form shows with stale "ACTIVE" status
+            // before RTK Query refetches the updated "COMPLETED" status
+            // handleSetCompletedStepNumber && handleSetCompletedStepNumber(6);
             console.log("Procurement Tracker Step 6 Completed");
         } catch (error) {
             console.error("Failed to complete Procurement Tracker Step 6", error);

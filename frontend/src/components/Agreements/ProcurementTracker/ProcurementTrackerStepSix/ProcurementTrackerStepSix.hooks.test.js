@@ -478,7 +478,7 @@ describe("useProcurementTrackerStepSix", () => {
             expect(callArgs.data.notes).toBe("Award completed");
         });
 
-        it("calls handleSetCompletedStepNumber with 6 after successful completion", async () => {
+        it("does not call handleSetCompletedStepNumber for Step 6 (final step)", async () => {
             const unwrapMock = vi.fn().mockResolvedValue({});
             mockPatchStepSix.mockReturnValue({ unwrap: unwrapMock });
 
@@ -495,7 +495,9 @@ describe("useProcurementTrackerStepSix", () => {
                 await result.current.handleStepSixComplete(6);
             });
 
-            expect(mockHandleSetCompletedStepNumber).toHaveBeenCalledWith(6);
+            // Step 6 is the final step - it should NOT trigger accordion remount
+            // to avoid race condition with RTK Query refetch
+            expect(mockHandleSetCompletedStepNumber).not.toHaveBeenCalled();
         });
 
         it("does not call handleSetCompletedStepNumber if undefined", async () => {
