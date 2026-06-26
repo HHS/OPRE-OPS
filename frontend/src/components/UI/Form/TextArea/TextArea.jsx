@@ -31,7 +31,7 @@ export const TextArea = ({
     pending = false,
     messages = []
 }) => {
-    const [textLength, setTextLength] = state.useState(value.length);
+    const [textLength, setTextLength] = state.useState(value?.length ?? 0);
     if (!hintMsg && maxLength) hintMsg = `Maximum ${maxLength} characters`;
     return (
         <fieldset
