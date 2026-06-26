@@ -8,6 +8,7 @@ from flask import current_app
 from flask_jwt_extended import current_user, get_current_user
 from loguru import logger
 from sqlalchemy import Select, String, case, cast, func, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload, selectinload
 
 from models import (
@@ -622,6 +623,9 @@ class BudgetLineItemService:
         Ensure a CLIN record exists for the given CLIN number and agreement.
         Creates CLIN record if it doesn't exist (lazy creation pattern, similar to services components).
 
+        Handles concurrent creation: if multiple requests try to create the same CLIN simultaneously,
+        the first succeeds and others catch the IntegrityError and use the existing record.
+
         Args:
             budget_line_item: The BLI being updated
             clin_number: The CLIN number (1-10) from frontend
@@ -642,20 +646,58 @@ class BudgetLineItemService:
             return existing_clin.id
 
         # Lazy create: CLIN doesn't exist yet, create it now
-        new_clin = CLIN(
-            number=clin_number,
-            name=f"CLIN {clin_number}",
-            agreement_id=agreement.id,
-            pop_start_date=agreement.sc_start_date,  # Use services component dates
-            pop_end_date=agreement.sc_end_date,
-            created_by=get_current_user().id,
-        )
-        self.db_session.add(new_clin)
-        self.db_session.flush()  # Get the ID without committing
+        # Use try/except to handle race condition where another transaction creates the same CLIN concurrently
+        try:
+            new_clin = CLIN(
+                number=clin_number,
+                name=f"CLIN {clin_number}",
+                agreement_id=agreement.id,
+                pop_start_date=agreement.sc_start_date,  # Use services component dates
+                pop_end_date=agreement.sc_end_date,
+                created_by=get_current_user().id,
+            )
+            self.db_session.add(new_clin)
+            self.db_session.flush()  # Get the ID without committing
 
-        logger.info(f"Lazy created CLIN {clin_number} (ID {new_clin.id}) for agreement {agreement.id}")
+            logger.info(f"Lazy created CLIN {clin_number} (ID {new_clin.id}) for agreement {agreement.id}")
+            return new_clin.id
 
-        return new_clin.id
+        except IntegrityError as e:
+            # Another transaction created this CLIN between our check and insert
+            # Check for the CLIN unique constraint violation (constraint name or key columns in error message)
+            error_msg = str(e.orig).lower()
+            is_clin_duplicate = (
+                "clin_number_agreement_id_key" in error_msg
+                or ("unique constraint" in error_msg and "number" in error_msg and "agreement_id" in error_msg)
+            )
+
+            if is_clin_duplicate:
+                self.db_session.rollback()
+                # Fetch the CLIN that was created by the concurrent transaction
+                # Note: The rollback only affects the failed CLIN insert; caller's BLI changes haven't been staged yet
+                concurrent_clin = self.db_session.execute(
+                    select(CLIN).where(CLIN.number == clin_number).where(CLIN.agreement_id == agreement.id)
+                ).scalar_one_or_none()
+
+                if concurrent_clin:
+                    logger.debug(
+                        f"CLIN {clin_number} for agreement {agreement.id} was created by concurrent request, "
+                        f"using existing ID {concurrent_clin.id}"
+                    )
+                    return concurrent_clin.id
+                else:
+                    # CLIN triggered duplicate error but is no longer available
+                    # This can happen if the concurrent transaction rolled back
+                    logger.error(
+                        f"CLIN {clin_number} for agreement {agreement.id} triggered duplicate key error "
+                        f"but could not be found after rollback (concurrent transaction may have rolled back)"
+                    )
+                    raise ValidationError({
+                        "clin_id": f"Failed to create or retrieve CLIN {clin_number}. Please try again."
+                    })
+
+            # Re-raise if it's a different integrity error
+            raise
 
     # Fields that can always be edited directly, even on PLANNED/EXECUTING BLIs, without a change request.
     ALWAYS_DIRECT_EDIT_FIELDS = {"services_component_id", "line_description", "clin_id"}
