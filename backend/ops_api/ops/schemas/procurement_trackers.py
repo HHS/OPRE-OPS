@@ -18,9 +18,9 @@ class ProcurementTrackerResponseSchema(Schema):
 
     id = fields.Integer(required=True)
     agreement_id = fields.Integer(required=True)
-    status = fields.Enum(ProcurementTrackerStatus, required=True)
+    status = fields.Enum(ProcurementTrackerStatus, required=True, by_value=True)
     procurement_action = fields.Integer(allow_none=True)
-    tracker_type = fields.Enum(ProcurementTrackerType, required=True)
+    tracker_type = fields.Enum(ProcurementTrackerType, required=True, by_value=True)
     active_step_number = fields.Integer(allow_none=True)
 
     # Nested steps

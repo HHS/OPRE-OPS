@@ -5,6 +5,7 @@ import AgreementMetaAccordion from "../../../components/Agreements/AgreementMeta
 import Accordion from "../../../components/UI/Accordion";
 import TextArea from "../../../components/UI/Form/TextArea";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
+import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import useRequestPreAwardApproval from "./RequestPreAwardApproval.hooks";
 import { PreAwardBudgetLinesReviewAccordion } from "./PreAwardBudgetLinesReviewAccordion";
@@ -45,7 +46,10 @@ export const RequestPreAwardApproval = () => {
         isApprovalPending,
         hasApprovalBeenRequested,
         hasBLIInReview,
-        isStep4Completed
+        isStep4Completed,
+        showModal,
+        setShowModal,
+        modalProps
     } = useRequestPreAwardApproval(agreementId);
 
     // Calculate upload disabled state
@@ -73,6 +77,16 @@ export const RequestPreAwardApproval = () => {
 
     return (
         <App breadCrumbName="Request Pre-Award Approval">
+            {showModal && (
+                <ConfirmationModal
+                    heading={modalProps.heading}
+                    setShowModal={modalProps.closeModal || setShowModal}
+                    actionButtonText={modalProps.actionButtonText}
+                    secondaryButtonText={modalProps.secondaryButtonText}
+                    handleConfirm={modalProps.handleConfirm}
+                />
+            )}
+
             <PageHeader
                 title="Request Pre-Award Approval"
                 subTitle={agreement?.name}

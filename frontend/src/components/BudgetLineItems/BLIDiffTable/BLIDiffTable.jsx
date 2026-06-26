@@ -1,4 +1,4 @@
-import _ from "lodash";
+import { useMemo } from "react";
 import { SORT_TYPES, useSortData } from "../../../hooks/use-sortable-data.hooks";
 import Table from "../../UI/Table";
 import { useSetSortConditions } from "../../UI/Table/Table.hooks";
@@ -18,14 +18,18 @@ import "./BLIDiffTable.scss";
 const BLIDiffTable = ({ budgetLines = [], changeType, statusChangeTo = "" }) => {
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
 
-    const sortedBudgetLines = budgetLines
-        .slice()
-        .sort((a, b) => Date.parse(a.created_on) - Date.parse(b.created_on))
-        .reverse();
+    // Memoize initial sorting by creation date
+    const sortedBudgetLines = useMemo(
+        () =>
+            budgetLines
+                .slice()
+                .sort((a, b) => Date.parse(a.created_on) - Date.parse(b.created_on))
+                .reverse(),
+        [budgetLines]
+    );
 
-    let copiedBudgetLines = _.cloneDeep(sortedBudgetLines);
-
-    copiedBudgetLines = useSortData(copiedBudgetLines, sortDescending, sortCondition, SORT_TYPES.BLI_DIFF);
+    // Use shallow copy instead of deep clone - useSortData doesn't mutate nested properties
+    const copiedBudgetLines = useSortData([...sortedBudgetLines], sortDescending, sortCondition, SORT_TYPES.BLI_DIFF);
 
     return (
         <>

@@ -15,7 +15,7 @@ import PaginationNav from "../../UI/PaginationNav/PaginationNav";
 import { useNavigate } from "react-router-dom";
 /** @typedef {import("../../../types/ProcurementTrackerTypes").ProcurementTrackerPreAwardStep} ProcurementTrackerPreAwardStep */
 
-const BLI_STATUS_IN_EXECUTION = "In Execution";
+const BLI_STATUS_IN_EXECUTION = "IN_EXECUTION";
 const PAGE_SIZE = 10;
 
 /**
