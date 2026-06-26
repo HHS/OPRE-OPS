@@ -301,21 +301,50 @@ const ProcurementTrackerStepSix = ({
 
             {/* State 3: Completed Non-ReadOnly View */}
             {!isReadOnly && stepStatus === PROCUREMENT_STEP_STATUS.COMPLETED && (
-                <div className="display-flex flex-align-center">
-                    <FontAwesomeIcon
-                        icon={faCircleCheck}
-                        className="text-green margin-right-1"
-                        size="lg"
-                    />
-                    <span>
-                        Completed by {stepSixCompletedByUserName || "Unknown"} on{" "}
-                        {stepSixDateCompletedLabel || "Unknown"}
-                    </span>
-                    {stepSixNotesLabel && (
-                        <div className="margin-left-2">
-                            <strong>Notes:</strong> {stepSixNotesLabel}
+                <div>
+                    <p>
+                        Once you receive the signed award, please send it to the Budget Team and click Request Award
+                        Approval below. During this process you will add CLINs, and update the Vendor and Vendor Type.
+                        The budget team will review everything has been entered correctly before changing the agreement
+                        to Awarded in OPS.
+                    </p>
+                    <div className="display-flex flex-align-center margin-top-5">
+                        <FontAwesomeIcon
+                            icon={faCircleCheck}
+                            size="lg"
+                            className="margin-right-1 flex-shrink-0 text-primary-darker"
+                            aria-hidden="true"
+                        />
+                        <p className="margin-y-0">Award received and uploaded. CLINs entered and Award Approval requested.</p>
+                    </div>
+                    <dl className="display-flex flex-wrap">
+                        <div className="width-full">
+                            <TermTag
+                                term="Target Completion Date"
+                                description={stepSixTargetCompletionDateLabel || "None"}
+                            />
                         </div>
-                    )}
+                        <TermTag
+                            term="Completed By"
+                            description={stepSixCompletedByUserName || "Unknown"}
+                            className="margin-right-4"
+                        />
+                        <TermTag
+                            term="Date Completed"
+                            description={stepSixDateCompletedLabel || "Unknown"}
+                        />
+                        {stepSixData?.approval_status && (
+                            <TermTag
+                                term="Award Approval Status"
+                                description={stepSixData.approval_status}
+                                className="margin-left-4"
+                            />
+                        )}
+                        <div className="width-full">
+                            <dt className="margin-0 text-base-dark margin-top-3 font-12px">Notes</dt>
+                            <dd className="margin-0 margin-top-1">{stepSixNotesLabel || "None"}</dd>
+                        </div>
+                    </dl>
                 </div>
             )}
         </>
