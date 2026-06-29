@@ -681,10 +681,10 @@
       status: "ACTIVE"
     },
     { // 528
-      first_name: "Power",
-      last_name: "User",
+      first_name: "Admin",
+      last_name: "Power User",
       division: 1,
-      email: "power.user@email.com",
+      email: "admin.power.user@email.com",
       oidc_id: "00000000-0000-1111-a111-000000000028",
       roles: [{"tablename":  "role", "id": 7}],
       status: "ACTIVE"
