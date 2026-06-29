@@ -1,5 +1,6 @@
-import { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useMemo, useEffect } from "react";
+import { flushSync } from "react-dom";
+import { useNavigate, useBlocker } from "react-router-dom";
 import { useSelector, shallowEqual } from "react-redux";
 import { useUpdateProcurementTrackerStepMutation } from "../../../api/opsAPI";
 import useAlert from "../../../hooks/use-alert.hooks";
@@ -43,6 +44,7 @@ export default function useApprovePreAwardApproval(agreementId) {
     const [modalProps, setModalProps] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState("");
+    const [isNavigating, setIsNavigating] = useState(false);
 
     // Use separate selectors with shallowEqual to prevent infinite loops
     // @ts-expect-error - Redux state typing in JS files
@@ -95,6 +97,45 @@ export default function useApprovePreAwardApproval(agreementId) {
     }, [userRoles, userId, allBudgetLines]);
 
     /**
+     * Track if any changes have been made to the form
+     */
+    const hasChanged = useMemo(() => {
+        return reviewerNotes.trim() !== "";
+    }, [reviewerNotes]);
+
+    /**
+     * Navigation blocker - prevents accidental navigation when there are unsaved changes
+     */
+    const blocker = useBlocker(
+        ({ currentLocation, nextLocation }) =>
+            !isNavigating && hasChanged && currentLocation.pathname !== nextLocation.pathname
+    );
+
+    // Handle blocker state changes
+    useEffect(() => {
+        if (blocker.state === "blocked") {
+            setShowModal(true);
+            setModalProps({
+                heading:
+                    "Are you sure you want to cancel? This will exit the review process and you can come back to it later.",
+                actionButtonText: "Cancel",
+                secondaryButtonText: "Continue Reviewing",
+                handleConfirm: () => {
+                    setShowModal(false);
+                    flushSync(() => {
+                        setIsNavigating(true);
+                    });
+                    blocker.proceed?.();
+                },
+                closeModal: () => {
+                    setShowModal(false);
+                    blocker.reset?.();
+                }
+            });
+        }
+    }, [blocker.state, blocker]);
+
+    /**
      * @param {"APPROVED" | "DECLINED"} action
      */
     const handleAction = async (action) => {
@@ -137,6 +178,9 @@ export default function useApprovePreAwardApproval(agreementId) {
                         data: updateData
                     }).unwrap();
 
+                    // Allow navigation after successful action
+                    setIsNavigating(true);
+
                     // Show alert and navigate back to For Review tab
                     setAlert({
                         type: action === "APPROVED" ? "success" : "error",
@@ -175,7 +219,13 @@ export default function useApprovePreAwardApproval(agreementId) {
             secondaryButtonText: "Continue Reviewing",
             handleConfirm: () => {
                 setShowModal(false);
+                flushSync(() => {
+                    setIsNavigating(true);
+                });
                 navigate("/agreements?filter=change-requests");
+            },
+            closeModal: () => {
+                setShowModal(false);
             }
         });
     };

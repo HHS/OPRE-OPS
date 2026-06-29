@@ -27,12 +27,14 @@ from models import (
     ServicesComponent,
     SpecialTopic,
     User,
+    Vendor,
 )
 from ops_api.ops.document.api import DocumentItemAPI, DocumentListAPI
 from ops_api.ops.resources.agreement_agency import (
     AgreementAgencyItemAPI,
     AgreementAgencyListAPI,
 )
+from ops_api.ops.resources.agreement_edit_bundle import AgreementEditBundleAPI
 from ops_api.ops.resources.agreement_history import AgreementHistoryListAPI
 from ops_api.ops.resources.agreement_spending import AgreementSpendingItemAPI
 from ops_api.ops.resources.agreements import (
@@ -129,12 +131,14 @@ from ops_api.ops.resources.special_topics import (
     SpecialTopicsListAPI,
 )
 from ops_api.ops.resources.users import UsersItemAPI, UsersListAPI
+from ops_api.ops.resources.vendors import VendorsListAPI
 from ops_api.ops.utils.version import VersionAPI
 
 # AGREEMENT ENDPOINTS
 AGREEMENT_ITEM_API_VIEW_FUNC = AgreementItemAPI.as_view("agreements-item", Agreement)
 AGREEMENT_LIST_API_VIEW_FUNC = AgreementListAPI.as_view("agreements-group", Agreement)
 AGREEMENT_SPENDING_ITEM_API_VIEW_FUNC = AgreementSpendingItemAPI.as_view("agreements-spending-item", Agreement)
+AGREEMENT_EDIT_BUNDLE_API_VIEW_FUNC = AgreementEditBundleAPI.as_view("agreements-edit-bundle", Agreement)
 
 # Agreement History Endpoint
 AGREEMENT_HISTORY_LIST_API_VIEW_FUNC = AgreementHistoryListAPI.as_view("agreement-history", AgreementHistory)
@@ -222,6 +226,9 @@ DIVISIONS_LIST_API_VIEW_FUNC = DivisionsListAPI.as_view("divisions-group", Divis
 # USER ENDPOINTS
 USERS_ITEM_API_VIEW_FUNC = UsersItemAPI.as_view("users-item", User)
 USERS_LIST_API_VIEW_FUNC = UsersListAPI.as_view("users-group", User)
+
+# VENDOR ENDPOINTS
+VENDORS_LIST_API_VIEW_FUNC = VendorsListAPI.as_view("vendors-group", Vendor)
 
 # FUNDING SUMMARY ENDPOINTS
 PORTFOLIO_FUNDING_SUMMARY_ITEM_API_VIEW_FUNC = PortfolioFundingSummaryItemAPI.as_view(

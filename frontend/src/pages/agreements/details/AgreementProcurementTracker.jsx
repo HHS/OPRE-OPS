@@ -5,8 +5,8 @@ import ProcurementTrackerStepTwo from "../../../components/Agreements/Procuremen
 import ProcurementTrackerStepThree from "../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepThree";
 import ProcurementTrackerStepFour from "../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepFour";
 import ProcurementTrackerStepFive from "../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepFive";
+import ProcurementTrackerStepSix from "../../../components/Agreements/ProcurementTracker/ProcurementTrackerStepSix";
 import StepBuilderAccordion from "../../../components/Agreements/ProcurementTracker/StepBuilderAccordion";
-import DebugCode from "../../../components/DebugCode";
 import StepIndicator from "../../../components/UI/StepIndicator";
 import { IS_PROCUREMENT_TRACKER_READY_MAP } from "../../../constants";
 import { useIsUserSuperUser, useIsUserOnlyProcurementTeam } from "../../../hooks/user.hooks";
@@ -247,22 +247,22 @@ const AgreementProcurementTracker = ({ agreement }) => {
                                 </p>
                             </div>
                         )}
-                        {step.step_number === 6 && (
-                            <div className="usa-fieldset">
-                                <p>
-                                    Once you receive the signed award, click Request Award Approval below. During this
-                                    process you will upload the award document, add CLINs, and update the Vendor and
-                                    Vendor Type. The budget team will review everything has been entered correctly
-                                    before changing the agreement to Awarded in OPS. Enter the Target Completion Date as
-                                    the date you expect to receive the signed award, and once you Request Award
-                                    Approval, check this step as complete.
-                                </p>
-                            </div>
+                        {IS_PROCUREMENT_TRACKER_READY_MAP.STEP_6 && step.step_number === 6 && (
+                            <ProcurementTrackerStepSix
+                                stepStatus={step.status}
+                                stepSixData={step}
+                                authorizedUsers={authorizedUsers}
+                                isDisabled={isStepDisabled}
+                                isActiveStep={activeTracker?.active_step_number === step.step_number}
+                                agreementId={agreement?.id}
+                                budgetLineItems={agreement?.budget_line_items}
+                                handleSetCompletedStepNumber={handleSetCompletedStepNumber}
+                                isReadOnly={isProcurementTeamOnly}
+                            />
                         )}
                     </StepBuilderAccordion>
                 );
             })}
-            {activeTracker && <DebugCode data={activeTracker}></DebugCode>}
         </>
     );
 };

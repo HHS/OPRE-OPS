@@ -10,7 +10,11 @@ import {
     useLazyGetAgreementsQuery,
     useUpdateAgreementMutation
 } from "../../../api/opsAPI";
-import { calculateAgreementTotal, cleanAgreementForApi, formatTeamMember } from "../../../helpers/agreement.helpers.js";
+import {
+    buildProcurementShopChangeAlert,
+    cleanAgreementForApi,
+    formatTeamMember
+} from "../../../helpers/agreement.helpers.js";
 import { scrollToCenter } from "../../../helpers/scrollToCenter.helper";
 import { scrollToTop } from "../../../helpers/scrollToTop.helper";
 import useAlert from "../../../hooks/use-alert.hooks";
@@ -111,6 +115,20 @@ const useAgreementEditForm = (
         selected_project_officer: selectedProjectOfficer,
         selected_alternate_project_officer: selectedAlternateProjectOfficer
     } = useEditAgreement();
+
+    // Capture the original agreement identity once at mount. The reducer mutates
+    // agreement.name/nick_name/agreement_type as the user types, so comparing
+    // against `agreement?.name` would treat the typed-in duplicate as "the
+    // current row" and suppress the conflict. We need the pre-edit baseline.
+    const originalAgreementRef = React.useRef(null);
+    if (originalAgreementRef.current === null && agreement?.id) {
+        originalAgreementRef.current = {
+            id: agreement.id,
+            name: agreement.name,
+            nick_name: agreement.nick_name,
+            agreement_type: agreement.agreement_type
+        };
+    }
     const {
         notes: agreementNotes,
         vendor: agreementVendor,
@@ -238,12 +256,15 @@ const useAgreementEditForm = (
                 const totalMatches = result?.count ?? 0;
                 // The current agreement (in edit mode) is itself in the result set when its
                 // saved value still matches the input. Treat that one row as not a conflict.
+                // Compare against the original (pre-edit) values, not the live reducer state,
+                // since `agreement.name` / `nick_name` get mutated as the user types.
+                const original = originalAgreementRef.current;
                 const currentMatchesInput =
-                    !!agreement?.id &&
+                    !!original?.id &&
                     (field === "name"
-                        ? agreement?.agreement_type === agreementType &&
-                          (agreement?.name ?? "").toLowerCase() === trimmed.toLowerCase()
-                        : agreement?.nick_name === trimmed);
+                        ? original.agreement_type === agreementType &&
+                          (original.name ?? "").toLowerCase() === trimmed.toLowerCase()
+                        : original.nick_name === trimmed);
                 const conflict = totalMatches > (currentMatchesInput ? 1 : 0);
                 setUniquenessErrors((prev) => ({
                     ...prev,
@@ -255,14 +276,7 @@ const useAgreementEditForm = (
                 return false;
             }
         },
-        [
-            agreement?.id,
-            agreement?.agreement_type,
-            agreement?.name,
-            agreement?.nick_name,
-            agreementType,
-            triggerGetAgreements
-        ]
+        [agreementType, triggerGetAgreements]
     );
 
     const checkUniqueOnBlur = React.useMemo(
@@ -329,6 +343,10 @@ const useAgreementEditForm = (
             type: "ADD_TEAM_MEMBER",
             payload: teamMember
         });
+        if (isReviewMode) {
+            const newTeamMembers = [...(selectedTeamMembers ?? []), teamMember];
+            runValidate("team-members", newTeamMembers, { team_members: newTeamMembers });
+        }
     };
 
     const removeTeamMember = (teamMember) => {
@@ -336,6 +354,10 @@ const useAgreementEditForm = (
             type: "REMOVE_TEAM_MEMBER",
             payload: teamMember
         });
+        if (isReviewMode) {
+            const newTeamMembers = (selectedTeamMembers ?? []).filter((member) => member.id !== teamMember.id);
+            runValidate("team-members", newTeamMembers, { team_members: newTeamMembers });
+        }
     };
 
     const setResearchMethodology = (researchMethodologies) => {
@@ -353,7 +375,12 @@ const useAgreementEditForm = (
     };
 
     const saveAgreement = React.useCallback(
-        async (redirectUrl = null, skipChangeCheck = false) => {
+        async (
+            redirectUrl = null,
+            skipChangeCheck = false,
+            suppressErrorAlert = false,
+            suppressSuccessAlert = false
+        ) => {
             const data = {
                 ...agreement,
                 team_members: selectedTeamMembers.map((team_member) => {
@@ -372,48 +399,37 @@ const useAgreementEditForm = (
                 try {
                     const fulfilled = await updateAgreement({ id: id, data: cleanData }).unwrap();
                     console.log(`UPDATE: agreement updated: ${JSON.stringify(fulfilled, null, 2)}`);
-                    if (shouldRequestChange) {
-                        const oldTotal = calculateAgreementTotal(
-                            agreement?.budget_line_items ?? [],
-                            procurementShop?.fee_percentage ?? 0
-                        );
-                        const newTotal = calculateAgreementTotal(
-                            agreement?.budget_line_items ?? [],
-                            selectedProcurementShop?.fee_percentage ?? 0
-                        );
-                        const procurementShopChanges = `Procurement Shop: ${procurementShop?.name} (${procurementShop?.abbr}) to ${selectedProcurementShop.name} (${selectedProcurementShop.abbr})`;
-                        const feeRateChanges = `Fee Rate: ${procurementShop?.fee_percentage}% to ${selectedProcurementShop.fee_percentage}%`;
-                        const feeTotalChanges = `Fee Total: $${oldTotal} to $${newTotal}`;
-
-                        setAlert({
-                            type: "success",
-                            heading: "Changes Sent to Approval",
-                            message:
-                                `Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.\n\n` +
-                                `<strong>Pending Changes:</strong>\n` +
-                                `<ul><li>${procurementShopChanges}</li>` +
-                                `<li>${feeRateChanges}</li>` +
-                                `<li>${feeTotalChanges}</li></ul>`,
-                            redirectUrl: redirectUrl
-                        });
-                    } else {
-                        setAlert({
-                            type: "success",
-                            heading: "Agreement Updated",
-                            message: `The agreement ${agreement.name} has been successfully updated.`,
-                            redirectUrl: redirectUrl
-                        });
+                    if (!suppressSuccessAlert) {
+                        if (shouldRequestChange) {
+                            setAlert(
+                                buildProcurementShopChangeAlert({
+                                    budgetLines: agreement?.budget_line_items ?? [],
+                                    oldProcurementShop: procurementShop,
+                                    newProcurementShop: selectedProcurementShop,
+                                    redirectUrl
+                                })
+                            );
+                        } else {
+                            setAlert({
+                                type: "success",
+                                heading: "Agreement Updated",
+                                message: `The agreement ${agreement.name} has been successfully updated.`,
+                                redirectUrl: redirectUrl
+                            });
+                        }
+                        scrollToTop();
                     }
-                    scrollToTop();
                     return true;
                 } catch (rejected) {
                     console.error(`UPDATE: agreement updated failed: ${JSON.stringify(rejected, null, 2)}`);
-                    setAlert({
-                        type: "error",
-                        heading: "Error",
-                        message: "An error occurred while saving the agreement.",
-                        redirectUrl: "/error"
-                    });
+                    if (!suppressErrorAlert) {
+                        setAlert({
+                            type: "error",
+                            heading: "Error",
+                            message: "An error occurred while saving the agreement.",
+                            redirectUrl: "/error"
+                        });
+                    }
                     // Don't call scrollToTop on error - let the redirect happen
                     throw rejected; // Re-throw to prevent further execution
                 }
@@ -457,7 +473,7 @@ const useAgreementEditForm = (
         wasEditModeRef.current = isEditMode;
     }, [isEditMode, setIsCancelling]);
 
-    const verifyUniquenessBeforeSubmit = async () => {
+    const verifyUniquenessBeforeSubmit = React.useCallback(async () => {
         checkUniqueOnBlur.cancel();
         const [nameConflict, nickNameConflict] = await Promise.all([
             runUniqueCheck("name", agreementTitle),
@@ -466,7 +482,7 @@ const useAgreementEditForm = (
         if (nameConflict) return "name";
         if (nickNameConflict) return "nickname";
         return null;
-    };
+    }, [checkUniqueOnBlur, runUniqueCheck, agreementTitle, agreementNickName]);
 
     const handleContinue = async () => {
         const conflictFieldId = await verifyUniquenessBeforeSubmit();
@@ -697,6 +713,8 @@ const useAgreementEditForm = (
         fundingMethod: FUNDING_METHOD,
         agreementFilterOptions: AGREEMENT_FILTER_OPTIONS,
         handleAgreementFilterChange,
+        procurementShop,
+        shouldRequestChange,
         setAgreementDescription,
         setAgreementNickName,
         setAgreementReason,
@@ -713,6 +731,7 @@ const useAgreementEditForm = (
         setShowBlockerModal,
         blockerModalProps,
         saveAgreement,
+        verifyUniquenessBeforeSubmit,
         isLoadingProductServiceCodes,
         isLoadingProjects
     };

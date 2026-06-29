@@ -69,7 +69,11 @@ class ProcurementTrackerStepItemAPI(BaseItemAPI):
             )
 
             event_meta.metadata.update(
-                {"procurement_tracker_step_updates": events_update, "procurement_tracker_step": updated_step.to_dict()}
+                {
+                    "step_id": updated_step.id,
+                    "procurement_tracker_step_updates": events_update,
+                    "procurement_tracker_step": updated_step.to_dict(),
+                }
             )
 
             # Serialize and return response

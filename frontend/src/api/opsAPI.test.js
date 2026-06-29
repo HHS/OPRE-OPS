@@ -1122,19 +1122,19 @@ describe("opsAPI - Wave 2 high-yield endpoint coverage", () => {
     });
 });
 
-describe("opsAPI - getResearchProjects queryFn pagination", () => {
+describe("opsAPI - getAllProjects queryFn pagination", () => {
     afterEach(() => server.resetHandlers());
 
     it("returns all projects when total fits in a single batch", async () => {
         const mockProjects = [
             { id: 1, title: "Child Care Research", project_type: "RESEARCH" },
-            { id: 2, title: "Head Start Study", project_type: "RESEARCH" }
+            { id: 2, title: "Admin Project", project_type: "ADMINISTRATIVE" }
         ];
 
         server.use(
             http.get("*/api/v1/projects/", ({ request }) => {
                 const url = new URL(request.url);
-                expect(url.searchParams.get("project_type")).toBe("RESEARCH");
+                expect(url.searchParams.has("project_type")).toBe(false);
                 expect(url.searchParams.get("limit")).toBe("50");
                 expect(url.searchParams.get("offset")).toBe("0");
                 return HttpResponse.json({ data: mockProjects, count: 2, limit: 50, offset: 0 });
@@ -1142,7 +1142,7 @@ describe("opsAPI - getResearchProjects queryFn pagination", () => {
         );
 
         const storeRef = setupApiStore(opsApi);
-        const result = await storeRef.store.dispatch(opsApi.endpoints.getResearchProjects.initiate(undefined));
+        const result = await storeRef.store.dispatch(opsApi.endpoints.getAllProjects.initiate(undefined));
 
         expect(result.data).toEqual(mockProjects);
         expect(result.data).toHaveLength(2);
@@ -1166,7 +1166,7 @@ describe("opsAPI - getResearchProjects queryFn pagination", () => {
         );
 
         const storeRef = setupApiStore(opsApi);
-        const result = await storeRef.store.dispatch(opsApi.endpoints.getResearchProjects.initiate(undefined));
+        const result = await storeRef.store.dispatch(opsApi.endpoints.getAllProjects.initiate(undefined));
 
         expect(callCount).toBe(2);
         expect(result.data).toHaveLength(51);
@@ -1174,12 +1174,12 @@ describe("opsAPI - getResearchProjects queryFn pagination", () => {
     });
 
     it("returns all items immediately for legacy array response format", async () => {
-        const legacyProjects = [{ id: 1, title: "Legacy Project", project_type: "RESEARCH" }];
+        const legacyProjects = [{ id: 1, title: "Legacy Project" }];
 
         server.use(http.get("*/api/v1/projects/", () => HttpResponse.json(legacyProjects)));
 
         const storeRef = setupApiStore(opsApi);
-        const result = await storeRef.store.dispatch(opsApi.endpoints.getResearchProjects.initiate(undefined));
+        const result = await storeRef.store.dispatch(opsApi.endpoints.getAllProjects.initiate(undefined));
 
         expect(result.data).toEqual(legacyProjects);
     });
@@ -1192,19 +1192,18 @@ describe("opsAPI - getResearchProjects queryFn pagination", () => {
         );
 
         const storeRef = setupApiStore(opsApi);
-        const result = await storeRef.store.dispatch(opsApi.endpoints.getResearchProjects.initiate(undefined));
+        const result = await storeRef.store.dispatch(opsApi.endpoints.getAllProjects.initiate(undefined));
 
         expect(result.error).toBeDefined();
     });
 
     it("breaks out of the loop when the backend returns an empty page", async () => {
-        // Guards against an infinite loop if `count` is mis-reported by the server
         server.use(
             http.get("*/api/v1/projects/", () => HttpResponse.json({ data: [], count: 99, limit: 50, offset: 0 }))
         );
 
         const storeRef = setupApiStore(opsApi);
-        const result = await storeRef.store.dispatch(opsApi.endpoints.getResearchProjects.initiate(undefined));
+        const result = await storeRef.store.dispatch(opsApi.endpoints.getAllProjects.initiate(undefined));
 
         expect(result.data).toEqual([]);
     });

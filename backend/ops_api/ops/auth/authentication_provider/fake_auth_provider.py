@@ -46,9 +46,9 @@ class FakeAuthProvider(AuthenticationProvider):
                 "sub": "00000000-0000-1111-a111-000000000027",
             },
             "power_user": {
-                "given_name": "Power",
-                "family_name": "User",
-                "email": "power.user@email.com",
+                "given_name": "Admin",
+                "family_name": "Power User",
+                "email": "admin.power.user@email.com",
                 "sub": "00000000-0000-1111-a111-000000000028",
             },
             "read_only_user": {

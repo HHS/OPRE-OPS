@@ -66,12 +66,15 @@ class ServicesComponentService:
         # Return results with no additional metadata
         return services_components, None
 
-    def create(self, create_request: dict[str, Any]) -> ServicesComponent:
+    def create(self, create_request: dict[str, Any], commit: bool = True) -> ServicesComponent:
         """
         Create a new services component.
 
         Args:
             create_request: Dictionary containing the data for the new services component
+            commit: When False, the SC is added (and flushed to assign id) but not committed.
+                The caller is responsible for the eventual commit (used by the edit-bundle
+                orchestrator).
 
         Returns:
             The newly created services component
@@ -86,14 +89,18 @@ class ServicesComponentService:
 
         try:
             self.db_session.add(new_sc)
-            self.db_session.commit()
+            if commit:
+                self.db_session.commit()
+            else:
+                self.db_session.flush()
         except IntegrityError as e:
-            self.db_session.rollback()
+            if commit:
+                self.db_session.rollback()
             raise ValidationError({"number": ["Services Component with this number already exists"]}) from e
 
         return new_sc
 
-    def update(self, obj_id: int, updated_fields: dict[str, Any]) -> tuple[ServicesComponent, int]:
+    def update(self, obj_id: int, updated_fields: dict[str, Any], commit: bool = True) -> tuple[ServicesComponent, int]:
         """
         Update an existing services component.
 
@@ -127,14 +134,18 @@ class ServicesComponentService:
 
         try:
             self.db_session.merge(updated_service_component)
-            self.db_session.commit()
+            if commit:
+                self.db_session.commit()
+            else:
+                self.db_session.flush()
         except IntegrityError as e:
-            self.db_session.rollback()
+            if commit:
+                self.db_session.rollback()
             raise ValidationError({"number": ["Services Component with this number already exists"]}) from e
 
         return updated_service_component, 200
 
-    def delete(self, obj_id: int) -> None:
+    def delete(self, obj_id: int, commit: bool = True) -> None:
         """
         Delete a services component.
 
@@ -151,7 +162,8 @@ class ServicesComponentService:
         services_component = self.get(obj_id)
 
         self.db_session.delete(services_component)
-        self.db_session.commit()
+        if commit:
+            self.db_session.commit()
 
     def _sc_associated_with_agreement(self, obj_id: int) -> bool:
         """

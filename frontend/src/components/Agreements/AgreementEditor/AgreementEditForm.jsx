@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { AgreementFields } from "../../../pages/agreements/agreements.constants";
 import ContractTypeSelect from "../../ServicesComponents/ContractTypeSelect";
@@ -15,7 +16,7 @@ import AgreementReasonSelect from "../AgreementReasonSelect";
 import AgreementTypeSelect from "../AgreementTypeSelect";
 import ProcurementShopSelectWithFee from "../ProcurementShopSelectWithFee";
 import ProductServiceCodeSelect from "../ProductServiceCodeSelect";
-import ProductServiceCodeSummaryBox from "../ProductServiceCodeSummaryBox";
+import SummaryBox from "../SummaryBox";
 import ProjectOfficerComboBox from "../ProjectOfficerComboBox";
 import ResearchMethodologyComboBox from "../ResearchMethodologyComboBox";
 import SpecialTopicComboBox from "../SpecialTopicComboBox";
@@ -24,6 +25,9 @@ import TeamMemberList from "../TeamMemberList";
 import ProjectComboBox from "../../Projects/ProjectComboBox";
 import { isFieldDisabled } from "./AgreementEditForm.helpers";
 import useAgreementEditForm from "./AgreementEditForm.hooks";
+import { cleanAgreementForApi, formatTeamMember } from "../../../helpers/agreement.helpers";
+import { useEditAgreement } from "./AgreementEditorContext.hooks";
+import useHasStateChanged from "../../../hooks/useHasStateChanged.hooks";
 
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
@@ -40,6 +44,12 @@ import useAgreementEditForm from "./AgreementEditForm.hooks";
  * @param {string} [props.cancelHeading] - The heading for the cancel modal. - optional
  * @param {boolean} [props.isAgreementAwarded] - Whether any budget lines are obligated. - optional
  * @param {boolean} [props.areAnyBudgetLinesPlanned] - Whether any budget lines are planned. - optional
+ * @param {boolean} [props.hideFooterButtons] - Whether to hide the bottom action row (Cancel / Save Draft / Save Changes). - optional
+ * @param {number} [props.saveTrigger] - Increment from a parent to request a save. The form runs uniqueness check then save and reports back via `onSaved`. - optional
+ * @param {function} [props.onSaved] - Called with `{ ok, conflictField?, error? }` after a `saveTrigger`-driven save attempt completes. - optional
+ * @param {function} [props.onValidityChange] - Called with `true` when the form is valid (no required-field, vest, or uniqueness errors), `false` otherwise. - optional
+ * @param {function} [props.onProcurementShopChangeStateChange] - Called when the "needs Division Director approval" state changes, with `{ shouldRequestChange, oldProcurementShop, newProcurementShop }`. Lets a parent host its own confirmation modal. - optional
+ * @param {React.MutableRefObject<{getSlice: () => object|null}|null>} [props.bundleSliceRef] - When provided, the component populates `ref.current = { getSlice }`. `getSlice()` returns either `null` (no agreement-level changes) or the cleaned agreement payload, suitable for the agreement edit-bundle endpoint. - optional
  * @returns {React.ReactElement} - The rendered component.
  */
 const AgreementEditForm = ({
@@ -52,7 +62,13 @@ const AgreementEditForm = ({
     selectedAgreementId,
     cancelHeading,
     isAgreementAwarded = false,
-    areAnyBudgetLinesPlanned = false
+    areAnyBudgetLinesPlanned = false,
+    hideFooterButtons = false,
+    saveTrigger,
+    onSaved,
+    onValidityChange,
+    onProcurementShopChangeStateChange,
+    bundleSliceRef
 }) => {
     const {
         cn,
@@ -123,7 +139,11 @@ const AgreementEditForm = ({
         showBlockerModal,
         setShowBlockerModal,
         blockerModalProps,
-        isLoadingProductServiceCodes
+        saveAgreement,
+        verifyUniquenessBeforeSubmit,
+        isLoadingProductServiceCodes,
+        procurementShop,
+        shouldRequestChange
     } = useAgreementEditForm(
         isAgreementAwarded,
         areAnyBudgetLinesPlanned,
@@ -138,6 +158,79 @@ const AgreementEditForm = ({
     );
 
     const awardedImmutableFieldsTooltipMsg = "This information cannot be edited on awarded agreements";
+
+    // Refs let the saveTrigger effect read the latest functions without re-running
+    // every time those callbacks are recreated.
+    const saveAgreementRef = useRef(saveAgreement);
+    const verifyUniquenessRef = useRef(verifyUniquenessBeforeSubmit);
+    const onSavedRef = useRef(onSaved);
+    useEffect(() => {
+        saveAgreementRef.current = saveAgreement;
+        verifyUniquenessRef.current = verifyUniquenessBeforeSubmit;
+        onSavedRef.current = onSaved;
+    });
+
+    useEffect(() => {
+        if (!saveTrigger) return;
+        let cancelled = false;
+        (async () => {
+            try {
+                const conflictField = await verifyUniquenessRef.current?.();
+                if (cancelled) return;
+                if (conflictField) {
+                    onSavedRef.current?.({ ok: false, conflictField });
+                    return;
+                }
+                await saveAgreementRef.current?.(null, false, true, true);
+                if (!cancelled) onSavedRef.current?.({ ok: true });
+            } catch (error) {
+                if (!cancelled) onSavedRef.current?.({ ok: false, error });
+            }
+        })();
+        return () => {
+            cancelled = true;
+        };
+    }, [saveTrigger]);
+
+    useEffect(() => {
+        if (onValidityChange) {
+            onValidityChange(!shouldDisableBtn);
+        }
+    }, [onValidityChange, shouldDisableBtn]);
+
+    useEffect(() => {
+        if (!onProcurementShopChangeStateChange) return;
+        onProcurementShopChangeStateChange({
+            shouldRequestChange,
+            oldProcurementShop: procurementShop,
+            newProcurementShop: selectedProcurementShop
+        });
+    }, [onProcurementShopChangeStateChange, shouldRequestChange, procurementShop, selectedProcurementShop]);
+
+    // Bundle slice export. Same payload shape that `saveAgreement` would PATCH today,
+    // but emitted as a slice the parent page can fold into a single edit-bundle PATCH.
+    // Returns null when nothing has changed so the orchestrator can skip the agreement
+    // section entirely.
+    const editorState = useEditAgreement();
+    const hasAgreementChangedForBundle = useHasStateChanged(editorState?.agreement);
+    useEffect(() => {
+        if (!bundleSliceRef) return;
+        bundleSliceRef.current = {
+            getSlice: () => {
+                const liveAgreement = editorState?.agreement;
+                if (!liveAgreement) return null;
+                if (!hasAgreementChangedForBundle) return null;
+                const data = {
+                    ...liveAgreement,
+                    team_members: (selectedTeamMembers ?? []).map(formatTeamMember),
+                    requesting_agency_id: requestingAgency ? requestingAgency.id : null,
+                    servicing_agency_id: servicingAgency ? servicingAgency.id : null
+                };
+                const { cleanData } = cleanAgreementForApi(data);
+                return cleanData;
+            }
+        };
+    });
 
     if (isLoadingProductServiceCodes) {
         return <div>Loading...</div>;
@@ -331,6 +424,7 @@ const AgreementEditForm = ({
                 value={contractType}
                 onChange={(name, value) => {
                     setContractType(value);
+                    runValidate(name, value, { contract_type: value });
                 }}
                 isDisabled={isFieldDisabled(
                     AgreementFields.ContractType,
@@ -381,7 +475,12 @@ const AgreementEditForm = ({
             {selectedProductServiceCode &&
                 selectedProductServiceCode.naics &&
                 selectedProductServiceCode.support_code && (
-                    <ProductServiceCodeSummaryBox selectedProductServiceCode={selectedProductServiceCode} />
+                    <SummaryBox
+                        selectedProductServiceCode={selectedProductServiceCode}
+                        width="19.5625rem"
+                        minHeight="4.375rem"
+                        className="margin-top-4"
+                    />
                 )}
             <div className="margin-top-3">
                 <ProcurementShopSelectWithFee
@@ -518,40 +617,42 @@ const AgreementEditForm = ({
                 value={agreementNotes || ""}
                 onChange={(name, value) => setAgreementNotes(value)}
             />
-            <div className="grid-row flex-justify margin-top-8">
-                {isWizardMode ? <GoBackButton handleGoBack={goBack} /> : <div />}
-                <div>
-                    <button
-                        type="button"
-                        className="usa-button usa-button--unstyled margin-right-2"
-                        data-cy="cancel-button"
-                        onClick={handleCancel}
-                    >
-                        Cancel
-                    </button>
-                    {isWizardMode && (
+            {!hideFooterButtons && (
+                <div className="grid-row flex-justify margin-top-8">
+                    {isWizardMode ? <GoBackButton handleGoBack={goBack} /> : <div />}
+                    <div>
                         <button
                             type="button"
-                            className="usa-button usa-button--outline"
-                            onClick={handleDraft}
-                            disabled={!isReviewMode && shouldDisableBtn}
-                            data-cy="save-draft-btn"
+                            className="usa-button usa-button--unstyled margin-right-2"
+                            data-cy="cancel-button"
+                            onClick={handleCancel}
                         >
-                            Save Draft
+                            Cancel
                         </button>
-                    )}
-                    <button
-                        type="button"
-                        id="continue"
-                        className="usa-button"
-                        onClick={handleContinue}
-                        disabled={shouldDisableBtn}
-                        data-cy="continue-btn"
-                    >
-                        {isWizardMode ? "Continue" : "Save Changes"}
-                    </button>
+                        {isWizardMode && (
+                            <button
+                                type="button"
+                                className="usa-button usa-button--outline"
+                                onClick={handleDraft}
+                                disabled={!isReviewMode && shouldDisableBtn}
+                                data-cy="save-draft-btn"
+                            >
+                                Save Draft
+                            </button>
+                        )}
+                        <button
+                            type="button"
+                            id="continue"
+                            className="usa-button"
+                            onClick={handleContinue}
+                            disabled={shouldDisableBtn}
+                            data-cy="continue-btn"
+                        >
+                            {isWizardMode ? "Continue" : "Save Changes"}
+                        </button>
+                    </div>
                 </div>
-            </div>
+            )}
         </>
     );
 };

@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-alembic = "==1.18.4"
+alembic = "==1.18.5"
 alembic-postgresql-enum = "==1.10.0"
 authlib = "==1.7.2"
 azure-identity = "==1.25.3"
@@ -31,8 +31,8 @@ black = {extras = ["d"], version = "==26.5.1"}
 flake8 = "==7.3.0"
 isort = "==8.0.1"
 nox = "==2026.4.10"
-numpy = "==2.4.6"
-pytest = "==9.1.0"
+numpy = "==2.5.0"
+pytest = "==9.1.1"
 pytest-bdd = "==8.1.0"
 pytest-cov = "==7.1.0"
 pytest-docker = {extras = ["docker-compose-v2"], version = "==3.2.5"}
@@ -41,7 +41,7 @@ pytest-mock = "==3.15.1"
 pytest-xdist = "==3.8.0"
 filelock = "==3.29.4"
 ipython = "==9.14.1"
-locust = "==2.44.3"
+locust = "==2.44.4"
 
 [requires]
 python_version = "3.14"

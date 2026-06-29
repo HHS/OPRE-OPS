@@ -441,20 +441,20 @@ describe("create agreement and test validations", () => {
                     cy.get('[data-cy="send-to-approval-btn"]').should("be.disabled");
 
                     cy.get('[data-cy="edit-agreement-btn"]').click();
-                    cy.get("#continue").click();
-                    cy.get('[data-cy="continue-btn"]').should("not.be.disabled").click();
-                    cy.get(".usa-form-group--error").should("exist");
+                    cy.url().should("include", `/agreements/review/${agreementId}/edit`);
+                    cy.contains("h1", "Edit Agreement Details").should("be.visible");
+                    cy.contains("Loading...").should("not.exist");
+
+                    cy.get('[data-cy="save-edit-agreement-btn"]').should("be.disabled");
                     cy.get("tbody").children().as("table-rows").should("have.length", 2);
                     cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
                     cy.get("[data-cy='edit-row']").click();
-                    cy.get(".usa-form-group--error").should("have.length", 4);
+                    cy.get("#budget-line-form").find(".usa-form-group--error").should("have.length", 3);
                     cy.get('[data-cy="update-budget-line"]').should("be.disabled");
 
-                    cy.contains("Loading...").should("not.exist");
                     cy.get("#can-combobox-input").should("not.be.disabled");
                     cy.get("#can-combobox-input").clear().type("G994426{enter}");
                     cy.get(".can-combobox__single-value").should("contain", "G994426");
-                    selectFirstRealOption("#allServicesComponentSelect");
                     cy.get("#need-by-date").clear().type("09/01/2048");
                     cy.get("#enteredAmount").clear().type("111111");
                     cy.get("#enteredDescription").clear().type("test line description");
@@ -463,8 +463,13 @@ describe("create agreement and test validations", () => {
                     cy.get("#budget-line-form").find(".usa-form-group--error").should("not.exist");
                     cy.get("#budget-line-form").should("not.contain", "Update Budget Line");
 
-                    cy.get('[data-cy="continue-btn"]').should("not.be.disabled").click();
+                    cy.get('[data-cy="save-edit-agreement-btn"]', { timeout: 20000 })
+                        .should("not.be.disabled")
+                        .click();
 
+                    cy.url({ timeout: 30000 })
+                        .should("include", `/agreements/review/${agreementId}`)
+                        .and("not.include", "/edit");
                     visitReviewPage(agreementId);
                     cy.get("h1", { timeout: 20000 })
                         .should("be.visible")

@@ -90,8 +90,8 @@ describe("Power User tests", () => {
 
     it("can login as a power user", () => {
         cy.visit(`/users/528`);
-        cy.get(".usa-card__body").should("contain", "Temp Year End Role");
-        cy.get(".usa-card__body").should("contain", "power.user@email.com");
+        cy.get(".usa-card__body").should("contain", "Administrative Power User");
+        cy.get(".usa-card__body").should("contain", "admin.power.user@email.com");
     });
 
     it("can edit an CONTRACT agreement budget lines", () => {

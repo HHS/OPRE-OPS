@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { test, describe, expect, vi } from "vitest";
 import { Provider } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
@@ -135,7 +135,8 @@ vi.mock("./CreateBLIsAndSCs.hooks", () => ({
             budgetLinesForCards: [],
             groupedBudgetLinesByServicesComponent: [],
             isSuperUser: true, // This would come from the Redux store in the real hook
-            isAgreementNotYetDeveloped
+            isAgreementNotYetDeveloped,
+            res: { isValid: () => true, hasErrors: () => false, getErrors: () => ({}) }
         };
     })
 }));
@@ -343,5 +344,85 @@ describe("CreateBLIsAndSCs", () => {
         );
 
         expect(screen.getByTestId("services-components")).toBeInTheDocument();
+    });
+
+    test("hideFooterButtons hides the Cancel/Continue action row", () => {
+        const mockStore = createMockStore();
+        const contractAgreement = { ...agreement, agreement_type: AgreementType.CONTRACT };
+
+        render(
+            <Provider store={mockStore}>
+                <BrowserRouter>
+                    <CreateBLIsAndSCs
+                        budgetLines={contractAgreement.budget_line_items}
+                        selectedResearchProject={contractAgreement}
+                        selectedAgreement={contractAgreement}
+                        selectedProcurementShop={contractAgreement.procurement_shop}
+                        isEditMode={true}
+                        continueBtnText="Save Changes"
+                        wizardSteps={wizardSteps}
+                        workflow="none"
+                        currentStep={1}
+                        isReviewMode={false}
+                        canUserEditBudgetLines={false}
+                        setIsEditMode={setIsEditMode}
+                        includeDrafts={true}
+                        setIncludeDrafts={setIncludeDrafts}
+                        hideFooterButtons={true}
+                    />
+                </BrowserRouter>
+            </Provider>
+        );
+
+        expect(screen.queryByTestId("continue-btn")).not.toBeInTheDocument();
+        expect(screen.queryByTestId("cancel-button")).not.toBeInTheDocument();
+    });
+
+    test("runs handleSave and reports ok via onSaved when saveTrigger increments", async () => {
+        const mockStore = createMockStore();
+        const contractAgreement = { ...agreement, agreement_type: AgreementType.CONTRACT };
+        const handleSave = vi.fn().mockResolvedValue(undefined);
+        const useCreateBLIsAndSCs = (await import("./CreateBLIsAndSCs.hooks")).default;
+        // Wrap the existing default mock to keep all the fields (totals, suites, etc.)
+        // but inject our handleSave so we can observe the trigger-driven call.
+        const origImpl = vi.mocked(useCreateBLIsAndSCs).getMockImplementation();
+        vi.mocked(useCreateBLIsAndSCs).mockImplementation((...args) => ({
+            ...origImpl(...args),
+            handleSave
+        }));
+
+        const onSaved = vi.fn();
+        const renderWithTrigger = (saveTrigger) => (
+            <Provider store={mockStore}>
+                <BrowserRouter>
+                    <CreateBLIsAndSCs
+                        budgetLines={contractAgreement.budget_line_items}
+                        selectedAgreement={contractAgreement}
+                        selectedProcurementShop={contractAgreement.procurement_shop}
+                        isEditMode={true}
+                        continueBtnText="Save Changes"
+                        wizardSteps={wizardSteps}
+                        workflow="none"
+                        currentStep={1}
+                        isReviewMode={false}
+                        canUserEditBudgetLines={false}
+                        setIsEditMode={setIsEditMode}
+                        includeDrafts={true}
+                        setIncludeDrafts={setIncludeDrafts}
+                        saveTrigger={saveTrigger}
+                        onSaved={onSaved}
+                    />
+                </BrowserRouter>
+            </Provider>
+        );
+        const { rerender } = render(renderWithTrigger(0));
+        expect(onSaved).not.toHaveBeenCalled();
+
+        rerender(renderWithTrigger(1));
+        await waitFor(() => expect(onSaved).toHaveBeenCalledWith({ ok: true }));
+        expect(handleSave).toHaveBeenCalledWith(false, true, true);
+
+        // Restore the default mock so other tests aren't affected.
+        vi.mocked(useCreateBLIsAndSCs).mockImplementation(origImpl);
     });
 });

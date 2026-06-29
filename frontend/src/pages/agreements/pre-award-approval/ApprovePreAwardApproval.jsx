@@ -73,7 +73,7 @@ export const ApprovePreAwardApproval = () => {
             {showModal && (
                 <ConfirmationModal
                     heading={modalProps.heading}
-                    setShowModal={setShowModal}
+                    setShowModal={modalProps.closeModal || setShowModal}
                     actionButtonText={modalProps.actionButtonText}
                     secondaryButtonText={modalProps.secondaryButtonText}
                     handleConfirm={modalProps.handleConfirm}
