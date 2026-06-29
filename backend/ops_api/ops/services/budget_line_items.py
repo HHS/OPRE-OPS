@@ -666,9 +666,8 @@ class BudgetLineItemService:
             # Another transaction created this CLIN between our check and insert
             # Check for the CLIN unique constraint violation (constraint name or key columns in error message)
             error_msg = str(e.orig).lower()
-            is_clin_duplicate = (
-                "clin_number_agreement_id_key" in error_msg
-                or ("unique constraint" in error_msg and "number" in error_msg and "agreement_id" in error_msg)
+            is_clin_duplicate = "clin_number_agreement_id_key" in error_msg or (
+                "unique constraint" in error_msg and "number" in error_msg and "agreement_id" in error_msg
             )
 
             if is_clin_duplicate:
@@ -692,9 +691,9 @@ class BudgetLineItemService:
                         f"CLIN {clin_number} for agreement {agreement.id} triggered duplicate key error "
                         f"but could not be found after rollback (concurrent transaction may have rolled back)"
                     )
-                    raise ValidationError({
-                        "clin_id": f"Failed to create or retrieve CLIN {clin_number}. Please try again."
-                    })
+                    raise ValidationError(
+                        {"clin_id": f"Failed to create or retrieve CLIN {clin_number}. Please try again."}
+                    )
 
             # Re-raise if it's a different integrity error
             raise

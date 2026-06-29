@@ -104,11 +104,7 @@ const AgreementProcurementTracker = ({ agreement }) => {
     // - Active tracker: use active_step_number (defaults to 1 if not set)
     // - Completed tracker: show step 6 (final step)
     // - No tracker: default to step 1
-    const currentStep = hasActiveTracker
-        ? activeTracker.active_step_number || 1
-        : hasCompletedTracker
-            ? 6
-            : 1;
+    const currentStep = hasActiveTracker ? activeTracker.active_step_number || 1 : hasCompletedTracker ? 6 : 1;
 
     // Accordion behavior: open the current step
     const accordionOpenStep = currentStep;

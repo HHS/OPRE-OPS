@@ -315,7 +315,9 @@ const ProcurementTrackerStepSix = ({
                             className="margin-right-1 flex-shrink-0 text-primary-darker"
                             aria-hidden="true"
                         />
-                        <p className="margin-y-0">Award received and uploaded. CLINs entered and Award Approval requested.</p>
+                        <p className="margin-y-0">
+                            Award received and uploaded. CLINs entered and Award Approval requested.
+                        </p>
                     </div>
                     <dl className="display-flex flex-wrap">
                         <div className="width-full">
