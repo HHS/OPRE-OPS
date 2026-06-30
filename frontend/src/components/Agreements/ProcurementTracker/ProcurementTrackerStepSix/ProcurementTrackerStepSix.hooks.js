@@ -11,6 +11,8 @@ import useAlert from "../../../../hooks/use-alert.hooks";
  * @typedef {import("../../../../types/UserTypes").SafeUser} SafeUser
  */
 
+const MemoizedDatePicker = React.memo(DatePicker);
+
 /**
  * Custom hook to manage the state and logic for Procurement Tracker Step Six (Award).
  * @param {ProcurementTrackerAwardStep | undefined} stepSixData - The data for step six of the procurement tracker.
@@ -23,6 +25,7 @@ export default function useProcurementTrackerStepSix(stepSixData, handleSetCompl
     const [targetCompletionDate, setTargetCompletionDate] = React.useState("");
     const [stepSixDateCompleted, setStepSixDateCompleted] = React.useState("");
     const [stepSixNotes, setStepSixNotes] = React.useState("");
+    const [isSubmitting, setIsSubmitting] = React.useState(false);
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({
         heading: "",
@@ -38,7 +41,6 @@ export default function useProcurementTrackerStepSix(stepSixData, handleSetCompl
     const stepSixTargetCompletionDateLabel =
         formatDateToMonthDayYear(stepSixData?.target_completion_date ?? "") ?? undefined;
     const stepSixNotesLabel = stepSixData?.notes;
-    const MemoizedDatePicker = React.memo(DatePicker);
 
     /**
      * @param {string} name
@@ -95,6 +97,7 @@ export default function useProcurementTrackerStepSix(stepSixData, handleSetCompl
             payload.target_completion_date = formatDateForApi(targetCompletionDate);
         }
 
+        setIsSubmitting(true);
         try {
             await patchStepSix({
                 stepId,
@@ -106,6 +109,7 @@ export default function useProcurementTrackerStepSix(stepSixData, handleSetCompl
             // before RTK Query refetches the updated "COMPLETED" status
             // handleSetCompletedStepNumber && handleSetCompletedStepNumber(6);
             console.log("Procurement Tracker Step 6 Completed");
+            // Don't set isSubmitting(false) on success - let the completed state render
         } catch (error) {
             console.error("Failed to complete Procurement Tracker Step 6", error);
             setAlert({
@@ -113,6 +117,7 @@ export default function useProcurementTrackerStepSix(stepSixData, handleSetCompl
                 heading: "Error",
                 message: "There was an error completing the procurement tracker step. Please try again."
             });
+            setIsSubmitting(false); // Re-enable form on error
         }
     };
 
@@ -155,6 +160,7 @@ export default function useProcurementTrackerStepSix(stepSixData, handleSetCompl
         setStepSixDateCompleted,
         stepSixNotes,
         setStepSixNotes,
+        isSubmitting,
         showModal,
         setShowModal,
         modalProps,

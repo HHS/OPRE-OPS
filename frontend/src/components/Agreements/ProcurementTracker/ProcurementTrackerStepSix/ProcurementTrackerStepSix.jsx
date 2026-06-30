@@ -57,6 +57,7 @@ const ProcurementTrackerStepSix = ({
         stepSixNotes,
         setStepSixNotes,
         stepSixNotesLabel,
+        isSubmitting,
         runValidate,
         validatorRes,
         stepSixDateCompletedLabel,
@@ -73,7 +74,9 @@ const ProcurementTrackerStepSix = ({
     // Disabled flags for form controls
     const isApprovalRequested =
         stepSixData?.approval_requested &&
-        (stepSixData?.approval_status == null || stepSixData?.approval_status === "PENDING");
+        (stepSixData?.approval_status === null ||
+            stepSixData?.approval_status === undefined ||
+            stepSixData?.approval_status === "PENDING");
     const isTargetCompletionDateSaveDisabled =
         isDisabled || validatorRes.hasErrors("targetCompletionDate") || !targetCompletionDate || !stepSixData?.id;
     const isAwardCheckboxDisabled = isDisabled || !isActiveStep || !stepSixData?.approval_requested;
@@ -284,6 +287,7 @@ const ProcurementTrackerStepSix = ({
                                     onClick={() => handleStepSixComplete(stepSixData?.id)}
                                     disabled={
                                         isDisabled ||
+                                        isSubmitting ||
                                         validatorRes.hasErrors("dateCompleted") ||
                                         validatorRes.hasErrors("users") ||
                                         !selectedUser ||
@@ -292,7 +296,7 @@ const ProcurementTrackerStepSix = ({
                                     }
                                     data-cy="complete-step-6"
                                 >
-                                    Complete Step 6
+                                    {isSubmitting ? "Completing..." : "Complete Step 6"}
                                 </button>
                             </div>
                         </fieldset>
