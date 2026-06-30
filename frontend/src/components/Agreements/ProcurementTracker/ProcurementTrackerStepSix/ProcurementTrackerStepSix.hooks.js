@@ -16,10 +16,9 @@ const MemoizedDatePicker = React.memo(DatePicker);
 /**
  * Custom hook to manage the state and logic for Procurement Tracker Step Six (Award).
  * @param {ProcurementTrackerAwardStep | undefined} stepSixData - The data for step six of the procurement tracker.
- * @param {Function | undefined} handleSetCompletedStepNumber - Function to set the completed step number (unused for final step).
+ * @param {Function | undefined} _handleSetCompletedStepNumber - Function to set the completed step number (unused for final step).
  */
-// eslint-disable-next-line no-unused-vars
-export default function useProcurementTrackerStepSix(stepSixData, handleSetCompletedStepNumber) {
+export default function useProcurementTrackerStepSix(stepSixData, _handleSetCompletedStepNumber) {
     const [isAwardCheckboxChecked, setIsAwardCheckboxChecked] = React.useState(
         () => stepSixData?.approval_requested ?? false
     );

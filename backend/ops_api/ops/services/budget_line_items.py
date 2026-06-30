@@ -542,7 +542,7 @@ class BudgetLineItemService:
         if "clin_id" in updated_fields and updated_fields["clin_id"] is not None:
             clin_value = updated_fields["clin_id"]
             if not (1 <= clin_value <= 10):
-                raise ValueError(f"Invalid CLIN number: {clin_value}. Must be between 1 and 10.")
+                raise ValidationError({"clin_id": f"Invalid CLIN number: {clin_value}. Must be between 1 and 10."})
             actual_clin_id = self._ensure_clin_exists(budget_line_item, clin_value)
             updated_fields["clin_id"] = actual_clin_id
 
