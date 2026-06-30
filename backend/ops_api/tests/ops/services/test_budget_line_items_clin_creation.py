@@ -190,32 +190,39 @@ class TestCLINLazyCreation:
                     return result_mock
             return original_execute(statement)
 
-        # Mock add() to raise IntegrityError on second CLIN creation attempt
-        original_add = loaded_db.add
-        add_call_count = {"count": 0}
+        # Mock flush() to raise IntegrityError on second CLIN creation attempt
+        original_flush = loaded_db.flush
+        flush_call_count = {"count": 0}
 
-        def mock_add(instance):
-            if isinstance(instance, CLIN) and instance.number == clin_number:
-                add_call_count["count"] += 1
-                if add_call_count["count"] == 1:
-                    # First request: succeed and track the created CLIN ID
-                    original_add(instance)
-                    loaded_db.flush()
+        def mock_flush():
+            # Check if we just added a CLIN
+            clin_in_new = None
+            for obj in loaded_db.new:
+                if isinstance(obj, CLIN) and obj.number == clin_number:
+                    clin_in_new = obj
+                    break
+
+            if clin_in_new:
+                flush_call_count["count"] += 1
+                if flush_call_count["count"] == 1:
+                    # First flush: succeed and track ID
+                    original_flush()
                     nonlocal created_clin_id
-                    created_clin_id = instance.id
+                    created_clin_id = clin_in_new.id
                     return
                 else:
-                    # Second concurrent request: raise IntegrityError
+                    # Second flush: raise IntegrityError
                     mock_orig = mocker.Mock()
                     mock_orig.__str__ = (
                         lambda self: 'duplicate key value violates unique constraint "clin_number_agreement_id_key"'
                     )
                     error = IntegrityError("statement", "params", mock_orig)
                     raise error
-            original_add(instance)
+            else:
+                original_flush()
 
         mocker.patch.object(loaded_db, "execute", side_effect=mock_execute)
-        mocker.patch.object(loaded_db, "add", side_effect=mock_add)
+        mocker.patch.object(loaded_db, "flush", side_effect=mock_flush)
 
         # Act: First request creates the CLIN (execute returns None, add succeeds)
         clin_id_1 = service._ensure_clin_exists(bli, clin_number)
@@ -228,8 +235,8 @@ class TestCLINLazyCreation:
         assert clin_id_1 == clin_id_2
         assert clin_id_1 == created_clin_id
 
-        # Assert: add() was called twice (both requests attempted INSERT)
-        assert add_call_count["count"] == 2
+        # Assert: flush() was called twice (both requests attempted INSERT)
+        assert flush_call_count["count"] == 2
 
     def test_concurrent_clin_creation_not_found_after_rollback_raises_error(self, loaded_db, app_ctx, mocker):
         """
