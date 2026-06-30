@@ -152,4 +152,64 @@ describe("DatePicker", () => {
             expect(defaultProps.onChange).toHaveBeenCalled();
         });
     });
+
+    it("syncs disabled state when isDisabled prop changes", async () => {
+        const { rerender } = render(
+            <DatePicker
+                {...defaultProps}
+                isDisabled={false}
+            />
+        );
+
+        const input = getExternalInput();
+        const button = screen.getByRole("button");
+
+        // Initially not disabled
+        expect(input).not.toBeDisabled();
+        expect(button).not.toBeDisabled();
+
+        // Rerender with isDisabled=true
+        rerender(
+            <DatePicker
+                {...defaultProps}
+                isDisabled={true}
+            />
+        );
+
+        // Should now be disabled
+        await waitFor(() => {
+            expect(input).toBeDisabled();
+            expect(button).toBeDisabled();
+        });
+    });
+
+    it("syncs disabled state from true to false", async () => {
+        const { rerender } = render(
+            <DatePicker
+                {...defaultProps}
+                isDisabled={true}
+            />
+        );
+
+        const input = getExternalInput();
+        const button = screen.getByRole("button");
+
+        // Initially disabled
+        expect(input).toBeDisabled();
+        expect(button).toBeDisabled();
+
+        // Rerender with isDisabled=false
+        rerender(
+            <DatePicker
+                {...defaultProps}
+                isDisabled={false}
+            />
+        );
+
+        // Should now be enabled
+        await waitFor(() => {
+            expect(input).not.toBeDisabled();
+            expect(button).not.toBeDisabled();
+        });
+    });
 });

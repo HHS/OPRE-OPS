@@ -20,7 +20,9 @@ const MemoizedDatePicker = React.memo(DatePicker);
  */
 // eslint-disable-next-line no-unused-vars
 export default function useProcurementTrackerStepSix(stepSixData, handleSetCompletedStepNumber) {
-    const [isAwardCheckboxChecked, setIsAwardCheckboxChecked] = React.useState(false);
+    const [isAwardCheckboxChecked, setIsAwardCheckboxChecked] = React.useState(
+        () => stepSixData?.approval_requested ?? false
+    );
     const [selectedUser, setSelectedUser] = React.useState(/** @type {SafeUser | undefined} */ (undefined));
     const [targetCompletionDate, setTargetCompletionDate] = React.useState("");
     const [stepSixDateCompleted, setStepSixDateCompleted] = React.useState("");
@@ -41,6 +43,13 @@ export default function useProcurementTrackerStepSix(stepSixData, handleSetCompl
     const stepSixTargetCompletionDateLabel =
         formatDateToMonthDayYear(stepSixData?.target_completion_date ?? "") ?? undefined;
     const stepSixNotesLabel = stepSixData?.notes;
+
+    // Sync checkbox state when approval_requested changes (e.g., after requesting approval)
+    React.useEffect(() => {
+        if (stepSixData?.approval_requested !== undefined && stepSixData?.approval_requested !== null) {
+            setIsAwardCheckboxChecked(stepSixData.approval_requested);
+        }
+    }, [stepSixData?.approval_requested]);
 
     /**
      * @param {string} name

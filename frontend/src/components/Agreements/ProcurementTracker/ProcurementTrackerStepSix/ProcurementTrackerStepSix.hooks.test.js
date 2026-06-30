@@ -106,6 +106,58 @@ describe("useProcurementTrackerStepSix", () => {
 
             expect(result.current.MemoizedDatePicker).toBeDefined();
         });
+
+        it("initializes isAwardCheckboxChecked to true when approval_requested is true", () => {
+            const stepDataWithApproval = {
+                ...mockStepSixData,
+                approval_requested: true
+            };
+
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepSix(stepDataWithApproval, mockHandleSetCompletedStepNumber)
+            );
+
+            expect(result.current.isAwardCheckboxChecked).toBe(true);
+        });
+
+        it("initializes isAwardCheckboxChecked to false when approval_requested is false", () => {
+            const stepDataWithoutApproval = {
+                ...mockStepSixData,
+                approval_requested: false
+            };
+
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepSix(stepDataWithoutApproval, mockHandleSetCompletedStepNumber)
+            );
+
+            expect(result.current.isAwardCheckboxChecked).toBe(false);
+        });
+
+        it("initializes isAwardCheckboxChecked to false when approval_requested is null", () => {
+            const stepDataWithNullApproval = {
+                ...mockStepSixData,
+                approval_requested: null
+            };
+
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepSix(stepDataWithNullApproval, mockHandleSetCompletedStepNumber)
+            );
+
+            expect(result.current.isAwardCheckboxChecked).toBe(false);
+        });
+
+        it("initializes isAwardCheckboxChecked to false when approval_requested is undefined", () => {
+            const stepDataWithUndefinedApproval = {
+                ...mockStepSixData,
+                approval_requested: undefined
+            };
+
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepSix(stepDataWithUndefinedApproval, mockHandleSetCompletedStepNumber)
+            );
+
+            expect(result.current.isAwardCheckboxChecked).toBe(false);
+        });
     });
 
     describe("State Updates", () => {
@@ -169,6 +221,79 @@ describe("useProcurementTrackerStepSix", () => {
             });
 
             expect(result.current.stepSixNotes).toBe("Test notes");
+        });
+
+        it("syncs isAwardCheckboxChecked when approval_requested prop changes to true", () => {
+            const initialStepData = {
+                ...mockStepSixData,
+                approval_requested: false
+            };
+
+            const { result, rerender } = renderHook(
+                ({ stepSixData }) => useProcurementTrackerStepSix(stepSixData, mockHandleSetCompletedStepNumber),
+                { initialProps: { stepSixData: initialStepData } }
+            );
+
+            expect(result.current.isAwardCheckboxChecked).toBe(false);
+
+            // Change prop to true
+            const updatedStepData = {
+                ...mockStepSixData,
+                approval_requested: true
+            };
+
+            rerender({ stepSixData: updatedStepData });
+
+            expect(result.current.isAwardCheckboxChecked).toBe(true);
+        });
+
+        it("syncs isAwardCheckboxChecked when approval_requested prop changes to false", () => {
+            const initialStepData = {
+                ...mockStepSixData,
+                approval_requested: true
+            };
+
+            const { result, rerender } = renderHook(
+                ({ stepSixData }) => useProcurementTrackerStepSix(stepSixData, mockHandleSetCompletedStepNumber),
+                { initialProps: { stepSixData: initialStepData } }
+            );
+
+            expect(result.current.isAwardCheckboxChecked).toBe(true);
+
+            // Change prop to false
+            const updatedStepData = {
+                ...mockStepSixData,
+                approval_requested: false
+            };
+
+            rerender({ stepSixData: updatedStepData });
+
+            expect(result.current.isAwardCheckboxChecked).toBe(false);
+        });
+
+        it("does not sync isAwardCheckboxChecked when approval_requested is null", () => {
+            const initialStepData = {
+                ...mockStepSixData,
+                approval_requested: true
+            };
+
+            const { result, rerender } = renderHook(
+                ({ stepSixData }) => useProcurementTrackerStepSix(stepSixData, mockHandleSetCompletedStepNumber),
+                { initialProps: { stepSixData: initialStepData } }
+            );
+
+            expect(result.current.isAwardCheckboxChecked).toBe(true);
+
+            // Change prop to null - should not sync
+            const updatedStepData = {
+                ...mockStepSixData,
+                approval_requested: null
+            };
+
+            rerender({ stepSixData: updatedStepData });
+
+            // Should remain true (no sync)
+            expect(result.current.isAwardCheckboxChecked).toBe(true);
         });
     });
 
