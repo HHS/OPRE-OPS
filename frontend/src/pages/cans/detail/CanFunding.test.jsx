@@ -31,6 +31,10 @@ vi.mock("./CanFunding.hooks.js", () => ({
     })
 }));
 
+vi.mock("../../../hooks/user.hooks", () => ({
+    useIsUserReadOnly: () => false
+}));
+
 vi.mock("../../../components/CANs/CANBudgetByFYCard/CANBudgetByFYCard", () => ({
     default: () => <div>Budget by FY card</div>
 }));
