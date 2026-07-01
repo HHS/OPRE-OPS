@@ -11,17 +11,22 @@ import useAlert from "../../../../hooks/use-alert.hooks";
  * @typedef {import("../../../../types/UserTypes").SafeUser} SafeUser
  */
 
+const MemoizedDatePicker = React.memo(DatePicker);
+
 /**
  * Custom hook to manage the state and logic for Procurement Tracker Step Six (Award).
  * @param {ProcurementTrackerAwardStep | undefined} stepSixData - The data for step six of the procurement tracker.
- * @param {Function | undefined} handleSetCompletedStepNumber - Function to set the completed step number.
+ * @param {Function | undefined} _handleSetCompletedStepNumber - Function to set the completed step number (unused for final step).
  */
-export default function useProcurementTrackerStepSix(stepSixData, handleSetCompletedStepNumber) {
-    const [isAwardCheckboxChecked, setIsAwardCheckboxChecked] = React.useState(false);
+export default function useProcurementTrackerStepSix(stepSixData, _handleSetCompletedStepNumber) {
+    const [isAwardCheckboxChecked, setIsAwardCheckboxChecked] = React.useState(
+        () => stepSixData?.approval_requested ?? false
+    );
     const [selectedUser, setSelectedUser] = React.useState(/** @type {SafeUser | undefined} */ (undefined));
     const [targetCompletionDate, setTargetCompletionDate] = React.useState("");
     const [stepSixDateCompleted, setStepSixDateCompleted] = React.useState("");
     const [stepSixNotes, setStepSixNotes] = React.useState("");
+    const [isSubmitting, setIsSubmitting] = React.useState(false);
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({
         heading: "",
@@ -37,7 +42,13 @@ export default function useProcurementTrackerStepSix(stepSixData, handleSetCompl
     const stepSixTargetCompletionDateLabel =
         formatDateToMonthDayYear(stepSixData?.target_completion_date ?? "") ?? undefined;
     const stepSixNotesLabel = stepSixData?.notes;
-    const MemoizedDatePicker = React.memo(DatePicker);
+
+    // Sync checkbox state when approval_requested changes (e.g., after requesting approval)
+    React.useEffect(() => {
+        if (stepSixData?.approval_requested !== undefined && stepSixData?.approval_requested !== null) {
+            setIsAwardCheckboxChecked(stepSixData.approval_requested);
+        }
+    }, [stepSixData?.approval_requested]);
 
     /**
      * @param {string} name
@@ -94,13 +105,21 @@ export default function useProcurementTrackerStepSix(stepSixData, handleSetCompl
             payload.target_completion_date = formatDateForApi(targetCompletionDate);
         }
 
+        setIsSubmitting(true);
         try {
             await patchStepSix({
                 stepId,
                 data: payload
             }).unwrap();
-            handleSetCompletedStepNumber && handleSetCompletedStepNumber(6);
+            // Step 6 is the final step - don't trigger accordion remount
+            // Unlike Steps 1-5, there's no "next step" to open, and remounting
+            // causes a race condition where the form shows with stale "ACTIVE" status
+            // before RTK Query refetches the updated "COMPLETED" status
+            // handleSetCompletedStepNumber && handleSetCompletedStepNumber(6);
             console.log("Procurement Tracker Step 6 Completed");
+            // Reset isSubmitting after a brief delay to prevent button from getting stuck
+            // if refetch is delayed or cache update fails
+            setTimeout(() => setIsSubmitting(false), 1000);
         } catch (error) {
             console.error("Failed to complete Procurement Tracker Step 6", error);
             setAlert({
@@ -108,6 +127,7 @@ export default function useProcurementTrackerStepSix(stepSixData, handleSetCompl
                 heading: "Error",
                 message: "There was an error completing the procurement tracker step. Please try again."
             });
+            setIsSubmitting(false); // Re-enable form on error
         }
     };
 
@@ -150,6 +170,7 @@ export default function useProcurementTrackerStepSix(stepSixData, handleSetCompl
         setStepSixDateCompleted,
         stepSixNotes,
         setStepSixNotes,
+        isSubmitting,
         showModal,
         setShowModal,
         modalProps,
