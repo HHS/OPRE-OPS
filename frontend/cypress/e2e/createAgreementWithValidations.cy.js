@@ -336,7 +336,7 @@ beforeEach(() => {
 
 afterEach(() => {
     cy.injectAxe();
-    // A11Y-SUPPRESSION: owner=frontend-team expires=2026-06-30 rationale=Page intentionally renders two mains during legacy layout transition.
+    // A11Y-SUPPRESSION: owner=frontend-team expires=2026-12-31 rationale=Page intentionally renders two mains during legacy layout transition.
     cy.checkA11y(
         null,
         {
