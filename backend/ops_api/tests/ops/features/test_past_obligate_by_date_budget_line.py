@@ -6,7 +6,6 @@ from pytest_bdd import given, scenario, then, when
 from models import (
     AgreementReason,
     AgreementType,
-    BudgetLineItem,
     BudgetLineItemStatus,
     ContractAgreement,
     ContractBudgetLineItem,
@@ -18,36 +17,6 @@ from models import (
 @pytest.fixture(scope="function")
 def context():
     return {}
-
-
-def cleanup(loaded_db, context):
-    if "created_bli_id" in context:
-        bli = loaded_db.get(BudgetLineItem, context["created_bli_id"])
-        if bli is not None:
-            loaded_db.delete(bli)
-
-    if "bli" in context:
-        bli = loaded_db.get(BudgetLineItem, context["bli"].id)
-        if bli is not None:
-            loaded_db.delete(bli)
-
-    if "services_component" in context:
-        sc = loaded_db.get(ServicesComponent, context["services_component"].id)
-        if sc is not None:
-            loaded_db.delete(sc)
-
-    if "agreement" in context:
-        agreement = loaded_db.get(ContractAgreement, context["agreement"].id)
-        if agreement is not None:
-            loaded_db.delete(agreement)
-
-    loaded_db.commit()
-
-
-@pytest.fixture()
-def setup_and_teardown(loaded_db, context):
-    yield
-    cleanup(loaded_db, context)
 
 
 @scenario(
@@ -210,7 +179,7 @@ def budget_team_transition_new_bli_to_planned(bdd_client, context):
 
 
 @then("the PATCH response is successful for the Administrative Power User")
-def patch_success_power_user(context, setup_and_teardown):
+def patch_success_power_user(context):
     assert context["response_patch"].status_code == 200
 
 
@@ -221,12 +190,12 @@ def post_creates_bli(context):
 
 
 @then("the transition to PLANNED is successful for the Administrative Power User")
-def transition_success_power_user(context, setup_and_teardown):
+def transition_success_power_user(context):
     assert context["response_patch"].status_code == 200
 
 
 @then("the PATCH is rejected with a Need By Date in the future error")
-def patch_rejected_future_date_error(context, setup_and_teardown):
+def patch_rejected_future_date_error(context):
     assert context["response_patch"].status_code == 400
     assert (
         "BLI must have a Need By Date in the future when status is not DRAFT"
@@ -235,7 +204,7 @@ def patch_rejected_future_date_error(context, setup_and_teardown):
 
 
 @then("the transition to PLANNED is rejected with a Need By Date in the future error")
-def transition_rejected_future_date_error(context, setup_and_teardown):
+def transition_rejected_future_date_error(context):
     assert context["response_patch"].status_code == 400
     assert (
         "BLI must have a Need By Date in the future when status is not DRAFT"

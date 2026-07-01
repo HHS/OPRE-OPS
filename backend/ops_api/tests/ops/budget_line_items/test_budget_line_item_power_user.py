@@ -901,10 +901,6 @@ def test_power_user_create_bli_with_past_obligate_by_date(
         in budget_team_transition_response.json["errors"]["date_needed"]
     )
 
-    loaded_db.delete(loaded_db.get(ContractBudgetLineItem, power_user_bli_id))
-    loaded_db.delete(loaded_db.get(ContractBudgetLineItem, budget_team_bli_id))
-    loaded_db.commit()
-
 
 @pytest.mark.parametrize(
     "bli_status",
