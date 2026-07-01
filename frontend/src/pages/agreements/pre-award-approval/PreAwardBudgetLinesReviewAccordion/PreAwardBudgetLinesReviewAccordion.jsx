@@ -70,6 +70,7 @@ export const PreAwardBudgetLinesReviewAccordion = ({
                                         isReviewMode={true}
                                         servicesComponentNumber={group.servicesComponentNumber}
                                         action=""
+                                        errorStatuses={["PLANNED", "IN_EXECUTION"]}
                                     />
                                 ) : (
                                     <p className="text-center margin-y-7">

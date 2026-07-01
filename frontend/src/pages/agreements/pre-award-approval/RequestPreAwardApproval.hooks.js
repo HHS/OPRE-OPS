@@ -15,7 +15,11 @@ import {
     uploadDocumentToInMemory
 } from "../../../components/Agreements/Documents/Document";
 import { PROCUREMENT_STEP_STATUS } from "../../../components/Agreements/ProcurementTracker/ProcurementTracker.constants";
+import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import usePreAwardApprovalData from "./usePreAwardApprovalData";
+import agreementSuite, { validateBudgetLineItems } from "./suite";
+
+export const VALIDATABLE_BLI_STATUSES = [BLI_STATUS.PLANNED, BLI_STATUS.EXECUTING];
 
 /**
  * Custom hook for the Request Pre-Award Approval page
@@ -74,6 +78,79 @@ export default function useRequestPreAwardApproval(agreementId) {
 
     // Check if Step 4 (Evaluation) is completed
     const isStep4Completed = step4?.status === PROCUREMENT_STEP_STATUS.COMPLETED;
+
+    // Only PLANNED and IN_EXECUTION budget lines participate in pre-award validation.
+    // Draft and obligated lines are shown for context but never trigger errors here.
+    const validatableBudgetLines = useMemo(
+        () => allBudgetLines.filter(/** @param {any} bli */ (bli) => VALIDATABLE_BLI_STATUSES.includes(bli.status)),
+        [allBudgetLines]
+    );
+
+    const [suiteResult, setSuiteResult] = useState(null);
+    const [pageErrors, setPageErrors] = useState({});
+    const [isAlertActive, setIsAlertActive] = useState(false);
+
+    useEffect(() => {
+        if (!agreement) return undefined;
+        const result = agreementSuite.run({ ...agreement });
+        setSuiteResult(result);
+        return () => {
+            agreementSuite.reset();
+        };
+    }, [agreement]);
+
+    const bliValidationResults = useMemo(() => {
+        if (validatableBudgetLines.length === 0) return [];
+        return validateBudgetLineItems(validatableBudgetLines);
+    }, [validatableBudgetLines]);
+
+    const hasBLIError = useMemo(() => bliValidationResults.some(({ isValid }) => !isValid), [bliValidationResults]);
+
+    const agreementValidationResults = useMemo(() => suiteResult, [suiteResult]);
+
+    useEffect(() => {
+        if (!agreement) {
+            setPageErrors({});
+            setIsAlertActive(false);
+            return;
+        }
+
+        const aggregated = {};
+
+        if (agreementValidationResults && !agreementValidationResults.isValid()) {
+            const errors = { ...agreementValidationResults.getErrors() };
+            // Match ReviewAgreement behavior: for CONTRACT/IAA the project officer
+            // field is labelled "COR" in the UI, so rekey the error accordingly.
+            if (
+                (agreement.agreement_type === "CONTRACT" || agreement.agreement_type === "IAA") &&
+                Object.prototype.hasOwnProperty.call(errors, "project-officer")
+            ) {
+                errors.cor = errors["project-officer"];
+                delete errors["project-officer"];
+            }
+            Object.assign(aggregated, errors);
+        }
+
+        if (hasBLIError) {
+            const seen = new Set();
+            bliValidationResults.forEach(({ isValid, errors }) => {
+                if (isValid) return;
+                Object.entries(errors).forEach(([fieldName, messages]) => {
+                    if (seen.has(fieldName)) return;
+                    seen.add(fieldName);
+                    aggregated[fieldName] = messages;
+                });
+            });
+        }
+
+        if (Object.keys(aggregated).length > 0) {
+            setPageErrors(aggregated);
+            setIsAlertActive(true);
+        } else {
+            setPageErrors({});
+            setIsAlertActive(false);
+        }
+    }, [agreement, agreementValidationResults, hasBLIError, bliValidationResults]);
 
     /**
      * Track if any changes have been made to the form
@@ -250,6 +327,12 @@ export default function useRequestPreAwardApproval(agreementId) {
         isStep4Completed,
         showModal,
         setShowModal,
-        modalProps
+        modalProps,
+        validatableBudgetLines,
+        agreementValidationResults,
+        hasBLIError,
+        pageErrors,
+        isAlertActive,
+        setIsAlertActive
     };
 }
