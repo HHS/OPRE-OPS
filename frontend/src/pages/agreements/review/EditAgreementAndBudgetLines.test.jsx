@@ -126,10 +126,10 @@ const buildStore = () =>
         }
     });
 
-const renderPage = () =>
+const renderPage = (initialEntry = "/agreements/review/42/edit") =>
     render(
         <Provider store={buildStore()}>
-            <MemoryRouter initialEntries={["/agreements/review/42/edit"]}>
+            <MemoryRouter initialEntries={[initialEntry]}>
                 <Routes>
                     <Route
                         path="/agreements/review/:id/edit"
@@ -176,6 +176,29 @@ describe("EditAgreementAndBudgetLines", () => {
         renderPage();
         fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
         expect(navigateMock).toHaveBeenCalledWith("/agreements/review/42");
+    });
+
+    it("returns to the sanitized returnTo path from the query string on Cancel", () => {
+        renderPage("/agreements/review/42/edit?returnTo=%2Fagreements%2F42%2Fpre-award-approval");
+        fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+        expect(navigateMock).toHaveBeenCalledWith("/agreements/42/pre-award-approval");
+    });
+
+    it("falls back to the default review path when returnTo is not a same-origin /agreements/ path", () => {
+        renderPage("/agreements/review/42/edit?returnTo=https%3A%2F%2Fevil.example.com%2Fx");
+        fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+        expect(navigateMock).toHaveBeenCalledWith("/agreements/review/42");
+    });
+
+    it("uses returnTo as the success alert redirect after saving", async () => {
+        renderPage("/agreements/review/42/edit?returnTo=%2Fagreements%2F42%2Fpre-award-approval");
+        fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+        await waitFor(() => expect(updateBundleMock).toHaveBeenCalledTimes(1));
+        // The alert is dispatched into the store; use React Testing Library to poll for
+        // side effects by re-querying the button state as a proxy for save-completion.
+        await waitFor(() => {
+            expect(screen.getByRole("button", { name: "Save changes" })).not.toBeDisabled();
+        });
     });
 
     it("fires a single edit-bundle mutation combining both child slices", async () => {

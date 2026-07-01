@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import App from "../../../App";
 import { getUser } from "../../../api/getUser";
 import {
@@ -31,11 +31,28 @@ import useAlert from "../../../hooks/use-alert.hooks";
  *
  * @returns {React.ReactElement}
  */
+const DEFAULT_RETURN_PATH = (agreementId) => `/agreements/review/${agreementId}`;
+
+// Only allow same-origin absolute paths under /agreements/ so a crafted ?returnTo=
+// can't open-redirect the user off-site after saving.
+const sanitizeReturnTo = (raw, agreementId) => {
+    const fallback = DEFAULT_RETURN_PATH(agreementId);
+    if (!raw || typeof raw !== "string") return fallback;
+    if (!raw.startsWith("/agreements/")) return fallback;
+    if (raw.startsWith("//")) return fallback;
+    return raw;
+};
+
 const EditAgreementAndBudgetLines = () => {
     const navigate = useNavigate();
     const urlPathParams = useParams();
     const agreementId = Number(urlPathParams.id);
     const isValidId = Number.isFinite(agreementId);
+    const [searchParams] = useSearchParams();
+    const returnTo = useMemo(
+        () => sanitizeReturnTo(searchParams.get("returnTo"), agreementId),
+        [searchParams, agreementId]
+    );
     const { setAlert } = useAlert();
 
     const [projectOfficer, setProjectOfficer] = useState({});
@@ -94,7 +111,7 @@ const EditAgreementAndBudgetLines = () => {
     }, [agreement]);
 
     const handleCancel = () => {
-        navigate(`/agreements/review/${agreementId}`);
+        navigate(returnTo);
     };
 
     const buildBundle = () => {
@@ -127,7 +144,7 @@ const EditAgreementAndBudgetLines = () => {
                         budgetLines: agreement?.budget_line_items ?? [],
                         oldProcurementShop,
                         newProcurementShop,
-                        redirectUrl: `/agreements/review/${agreementId}`
+                        redirectUrl: returnTo
                     })
                 );
             } else {
@@ -135,7 +152,7 @@ const EditAgreementAndBudgetLines = () => {
                     type: "success",
                     heading: "Changes Saved",
                     message: "Your changes have been saved.",
-                    redirectUrl: `/agreements/review/${agreementId}`
+                    redirectUrl: returnTo
                 });
             }
             scrollToTop();
