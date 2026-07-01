@@ -34,6 +34,7 @@ import { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
 import { useEditAgreement } from "../../Agreements/AgreementEditor/AgreementEditorContext.hooks";
 import datePickerSuite from "../BudgetLinesForm/datePickerSuite";
 import budgetFormSuite from "../BudgetLinesForm/suite";
+import scFormSuite from "../../ServicesComponents/ServicesComponentForm/suite";
 import suite from "./suite";
 
 /**
@@ -169,6 +170,7 @@ const useCreateBLIsAndSCs = (
     const budgetLinePageErrorsExist = budgetLinePageErrors.length > 0;
     // card data
     const notDraftBLIs = getNonDRAFTBudgetLines(tempBudgetLines);
+    const nonDraftBudgetLines = notDraftBLIs;
     const budgetLinesForCards = includeDrafts ? tempBudgetLines : notDraftBLIs;
     /**
      * Get the total fees for the cards
@@ -1072,6 +1074,8 @@ const useCreateBLIsAndSCs = (
         budgetLines,
         budgetLinesForCards,
         datePickerSuite,
+        scFormSuite,
+        nonDraftBudgetLines,
         deletedBudgetLines,
         enteredAmount,
         enteredDescription,

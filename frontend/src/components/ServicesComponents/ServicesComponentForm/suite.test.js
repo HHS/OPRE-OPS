@@ -8,13 +8,27 @@ const BLI_POP_MESSAGE =
 const sc = (number, period_start, period_end) => ({ number, period_start, period_end });
 const bli = (date_needed) => ({ date_needed });
 
+// Converts MM/DD/YYYY (form field) to YYYY-MM-DD (API format), mirroring the hook.
+const toISO = (mdy) => {
+    if (!mdy) return null;
+    const [m, d, y] = mdy.split("/");
+    return `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
+};
+
+// Replicates what useServicesComponents does before calling suite.run:
+// replaces the edited SC's period dates with the live form values.
+const mergeFormDates = (scs, editedNumber, popStartDate, popEndDate) =>
+    scs.map((s) =>
+        s.number === editedNumber
+            ? { ...s, period_start: toISO(popStartDate) ?? s.period_start, period_end: toISO(popEndDate) ?? s.period_end }
+            : s
+    );
+
 // Base valid add-mode data — no PoP boundary checks run in add mode
 const validAddData = {
     servicesComponentSelect: 1,
     mode: "add",
     number: 1,
-    popStartDate: "01/01/2025",
-    popEndDate: "12/31/2025",
     allServicesComponents: [],
     nonDraftBudgetLines: []
 };
@@ -68,15 +82,13 @@ describe("ServicesComponentForm Validation Suite", () => {
             servicesComponentSelect: 1,
             mode: "edit",
             number: 1,
-            allServicesComponents: singleSC,
             nonDraftBudgetLines: bliInside
         };
 
         it("passes when new start is before the BLI date and new end is after it", () => {
             const result = suite.run({
                 ...baseEdit,
-                popStartDate: "01/01/2025",
-                popEndDate: "12/31/2025"
+                allServicesComponents: mergeFormDates(singleSC, 1, "01/01/2025", "12/31/2025")
             });
             expect(result.getErrors("popStartDate")).toHaveLength(0);
             expect(result.getErrors("popEndDate")).toHaveLength(0);
@@ -85,8 +97,7 @@ describe("ServicesComponentForm Validation Suite", () => {
         it("passes when start is moved earlier (window expands)", () => {
             const result = suite.run({
                 ...baseEdit,
-                popStartDate: "07/01/2024", // earlier than original
-                popEndDate: "12/31/2025"
+                allServicesComponents: mergeFormDates(singleSC, 1, "07/01/2024", "12/31/2025")
             });
             expect(result.getErrors("popStartDate")).toHaveLength(0);
             expect(result.getErrors("popEndDate")).toHaveLength(0);
@@ -95,8 +106,7 @@ describe("ServicesComponentForm Validation Suite", () => {
         it("fails when start is moved after the BLI date (BLI falls outside window start)", () => {
             const result = suite.run({
                 ...baseEdit,
-                popStartDate: "07/01/2025", // after the BLI date of 2025-06-15
-                popEndDate: "12/31/2025"
+                allServicesComponents: mergeFormDates(singleSC, 1, "07/01/2025", "12/31/2025")
             });
             expect(result.getErrors("popStartDate")).toContain(BLI_POP_MESSAGE);
         });
@@ -104,8 +114,7 @@ describe("ServicesComponentForm Validation Suite", () => {
         it("fails when end is moved before the BLI date (BLI falls outside window end)", () => {
             const result = suite.run({
                 ...baseEdit,
-                popStartDate: "01/01/2025",
-                popEndDate: "05/31/2025" // before the BLI date of 2025-06-15
+                allServicesComponents: mergeFormDates(singleSC, 1, "01/01/2025", "05/31/2025")
             });
             expect(result.getErrors("popEndDate")).toContain(BLI_POP_MESSAGE);
         });
@@ -113,8 +122,7 @@ describe("ServicesComponentForm Validation Suite", () => {
         it("fails when both start and end are moved to exclude the BLI date", () => {
             const result = suite.run({
                 ...baseEdit,
-                popStartDate: "07/01/2025", // after BLI date
-                popEndDate: "12/31/2025"
+                allServicesComponents: mergeFormDates(singleSC, 1, "07/01/2025", "12/31/2025")
             });
             expect(result.getErrors("popStartDate")).toContain(BLI_POP_MESSAGE);
         });
@@ -122,8 +130,7 @@ describe("ServicesComponentForm Validation Suite", () => {
         it("does not fire when there are no non-draft BLIs", () => {
             const result = suite.run({
                 ...baseEdit,
-                popStartDate: "07/01/2025",
-                popEndDate: "12/31/2025",
+                allServicesComponents: mergeFormDates(singleSC, 1, "07/01/2025", "12/31/2025"),
                 nonDraftBudgetLines: []
             });
             expect(result.getErrors("popStartDate")).toHaveLength(0);
@@ -133,8 +140,7 @@ describe("ServicesComponentForm Validation Suite", () => {
         it("does not fire when BLIs have no date_needed", () => {
             const result = suite.run({
                 ...baseEdit,
-                popStartDate: "07/01/2025",
-                popEndDate: "12/31/2025",
+                allServicesComponents: mergeFormDates(singleSC, 1, "07/01/2025", "12/31/2025"),
                 nonDraftBudgetLines: [bli(null), bli(null)]
             });
             expect(result.getErrors("popStartDate")).toHaveLength(0);
@@ -163,7 +169,6 @@ describe("ServicesComponentForm Validation Suite", () => {
             servicesComponentSelect: 1,
             mode: "edit",
             number: 1,
-            allServicesComponents: twoSCs,
             nonDraftBudgetLines: bliBetween
         };
 
@@ -172,8 +177,7 @@ describe("ServicesComponentForm Validation Suite", () => {
             // window end (SC 2 still ends 2025-12-31), so BLI at 2025-08-15 is safe.
             const result = suite.run({
                 ...baseEdit,
-                popStartDate: "01/01/2025",
-                popEndDate: "05/31/2025" // earlier SC 1 end
+                allServicesComponents: mergeFormDates(twoSCs, 1, "01/01/2025", "05/31/2025")
             });
             expect(result.getErrors("popEndDate")).toHaveLength(0);
         });
@@ -184,8 +188,7 @@ describe("ServicesComponentForm Validation Suite", () => {
             // still before the BLI date.
             const result = suite.run({
                 ...baseEdit,
-                popStartDate: "03/01/2025", // later than original 2025-01-01
-                popEndDate: "06/30/2025"
+                allServicesComponents: mergeFormDates(twoSCs, 1, "03/01/2025", "06/30/2025")
             });
             expect(result.getErrors("popStartDate")).toHaveLength(0);
         });
@@ -195,10 +198,8 @@ describe("ServicesComponentForm Validation Suite", () => {
                 servicesComponentSelect: 2,
                 mode: "edit",
                 number: 2,
-                allServicesComponents: twoSCs,
                 nonDraftBudgetLines: bliBetween,
-                popStartDate: "04/01/2025",
-                popEndDate: "09/30/2025" // tightened but still after BLI 2025-08-15
+                allServicesComponents: mergeFormDates(twoSCs, 2, "04/01/2025", "09/30/2025")
             });
             expect(result.getErrors("popEndDate")).toHaveLength(0);
         });
@@ -210,10 +211,8 @@ describe("ServicesComponentForm Validation Suite", () => {
                 servicesComponentSelect: 2,
                 mode: "edit",
                 number: 2,
-                allServicesComponents: twoSCs,
                 nonDraftBudgetLines: bliBetween,
-                popStartDate: "04/01/2025",
-                popEndDate: "07/31/2025" // before BLI 2025-08-15
+                allServicesComponents: mergeFormDates(twoSCs, 2, "04/01/2025", "07/31/2025")
             });
             expect(result.getErrors("popEndDate")).toContain(BLI_POP_MESSAGE);
         });
@@ -227,8 +226,7 @@ describe("ServicesComponentForm Validation Suite", () => {
             const result = suite.run({
                 ...baseEdit,
                 nonDraftBudgetLines: earlyBli,
-                popStartDate: "04/01/2025", // SC 1 start moved to match SC 2 start
-                popEndDate: "06/30/2025"
+                allServicesComponents: mergeFormDates(twoSCs, 1, "04/01/2025", "06/30/2025")
             });
             expect(result.getErrors("popStartDate")).toContain(BLI_POP_MESSAGE);
         });

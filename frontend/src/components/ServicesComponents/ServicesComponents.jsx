@@ -14,7 +14,8 @@ import ServicesComponentsList from "./ServicesComponentsList";
  * @param {boolean} [props.isReviewMode] - Whether the component is in review mode (single-page edit screen).
  * @param {string} props.continueBtnText - The text to display on the "Continue" button.
  * @param {"agreement" | "none"} props.workflow - The workflow type.
-
+ * @param {import('vest').Suite<any, any>} [props.scFormSuite] - Vest validation suite for the SC form.
+ * @param {import('../../../types/BudgetLineTypes').BudgetLine[]} [props.nonDraftBudgetLines] - Non-draft BLIs used by the SC form suite for PoP validation.
  * @returns {React.ReactElement}
  *
  * @example
@@ -28,7 +29,9 @@ const ServicesComponents = ({
     continueBtnText,
     workflow,
     setHasUnsavedChanges,
-    hasUnsavedChanges
+    hasUnsavedChanges,
+    scFormSuite,
+    nonDraftBudgetLines = []
 }) => {
     const {
         formData,
@@ -42,8 +45,15 @@ const ServicesComponents = ({
         handleCancel,
         setFormDataById,
         servicesComponentsNumbers,
-        formKey
-    } = useServicesComponents(agreementId, serviceRequirementType, continueBtnText, setHasUnsavedChanges);
+        formKey,
+        allServicesComponentsForSuite
+    } = useServicesComponents(
+        agreementId,
+        serviceRequirementType,
+        continueBtnText,
+        setHasUnsavedChanges,
+        scFormSuite
+    );
 
     return (
         <>
@@ -69,6 +79,9 @@ const ServicesComponents = ({
                 formKey={formKey}
                 hasUnsavedChanges={hasUnsavedChanges}
                 workflow={workflow}
+                scFormSuite={scFormSuite}
+                allServicesComponentsForSuite={allServicesComponentsForSuite}
+                nonDraftBudgetLines={nonDraftBudgetLines}
             />
 
             <ServicesComponentsList
