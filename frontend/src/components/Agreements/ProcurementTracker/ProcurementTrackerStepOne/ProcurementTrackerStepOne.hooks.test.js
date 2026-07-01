@@ -59,7 +59,32 @@ describe("useProcurementTrackerStepOne", () => {
             expect(result.current.isPreSolicitationPackageSent).toBe(false);
             expect(result.current.selectedUser).toEqual({});
             expect(result.current.step1DateCompleted).toBe("");
+            expect(result.current.step1Notes).toBe("Test notes");
+        });
+
+        it("initializes step1Notes to empty string when stepOneData has no notes", () => {
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepOne({ id: 1 }, mockHandleSetCompletedStepNumber)
+            );
+
             expect(result.current.step1Notes).toBe("");
+        });
+
+        it("seeds step1Notes with existing notes from stepOneData so they render editable", () => {
+            const { result } = renderHook(() =>
+                useProcurementTrackerStepOne(
+                    { id: 1, notes: "Existing notes to edit" },
+                    mockHandleSetCompletedStepNumber
+                )
+            );
+
+            expect(result.current.step1Notes).toBe("Existing notes to edit");
+
+            act(() => {
+                result.current.setStep1Notes("Edited notes");
+            });
+
+            expect(result.current.step1Notes).toBe("Edited notes");
         });
 
         it("provides MemoizedDatePicker component", () => {
@@ -131,6 +156,97 @@ describe("useProcurementTrackerStepOne", () => {
             });
 
             expect(result.current.step1Notes).toBe("New notes");
+        });
+
+        describe("handleSaveNotes", () => {
+            beforeEach(() => {
+                mockUnwrap.mockResolvedValue({ success: true });
+            });
+
+            it("PATCHes procurement tracker step with only the notes field", async () => {
+                const { result } = renderHook(() =>
+                    useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber)
+                );
+
+                act(() => {
+                    result.current.setStep1Notes("Updated notes");
+                });
+
+                await act(async () => {
+                    await result.current.handleSaveNotes(1);
+                });
+
+                expect(mockPatchStepOne).toHaveBeenCalledWith({
+                    stepId: 1,
+                    data: { notes: "Updated notes" }
+                });
+                expect(mockPatchStepOne).toHaveBeenCalledTimes(1);
+                const call = mockPatchStepOne.mock.calls[0][0];
+                expect(Object.keys(call.data)).toEqual(["notes"]);
+            });
+
+            it("trims whitespace from notes before sending", async () => {
+                const { result } = renderHook(() =>
+                    useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber)
+                );
+
+                act(() => {
+                    result.current.setStep1Notes("   Padded notes   ");
+                });
+
+                await act(async () => {
+                    await result.current.handleSaveNotes(1);
+                });
+
+                expect(mockPatchStepOne).toHaveBeenCalledWith({
+                    stepId: 1,
+                    data: { notes: "Padded notes" }
+                });
+            });
+
+            it("triggers a success alert on successful save", async () => {
+                const mockSetAlert = vi.fn();
+                useAlert.mockReturnValue({ setAlert: mockSetAlert });
+
+                const { result } = renderHook(() =>
+                    useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber)
+                );
+
+                await act(async () => {
+                    await result.current.handleSaveNotes(1);
+                });
+
+                expect(mockSetAlert).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        type: "success",
+                        heading: "Notes Saved"
+                    })
+                );
+            });
+
+            it("triggers an error alert when the API call fails", async () => {
+                const mockSetAlert = vi.fn();
+                useAlert.mockReturnValue({ setAlert: mockSetAlert });
+                vi.spyOn(console, "error").mockImplementation(() => {});
+                const mockError = new Error("API Error");
+                mockUnwrap.mockRejectedValue(mockError);
+
+                const { result } = renderHook(() =>
+                    useProcurementTrackerStepOne(mockStepOneData, mockHandleSetCompletedStepNumber)
+                );
+
+                await act(async () => {
+                    await result.current.handleSaveNotes(1);
+                });
+
+                expect(console.error).toHaveBeenCalledWith("Failed to save notes", mockError);
+                expect(mockSetAlert).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        type: "error",
+                        heading: "Error"
+                    })
+                );
+            });
         });
     });
 
@@ -385,6 +501,7 @@ describe("useProcurementTrackerStepOne", () => {
 
             act(() => {
                 result.current.setStep1DateCompleted("2024-03-20");
+                result.current.setStep1Notes("");
             });
 
             await act(async () => {

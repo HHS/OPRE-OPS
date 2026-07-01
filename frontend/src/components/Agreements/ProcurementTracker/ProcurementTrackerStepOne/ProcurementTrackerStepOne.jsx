@@ -4,7 +4,7 @@ import TermTag from "../../../UI/Term/TermTag";
 import UsersComboBox from "../../UsersComboBox";
 import useProcurementTrackerStepOne from "./ProcurementTrackerStepOne.hooks";
 import { getLocalISODate } from "../../../../helpers/utils";
-import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
+import { faCircleCheck, faCheck } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { PROCUREMENT_STEP_STATUS } from "../ProcurementTracker.constants";
 
@@ -49,6 +49,7 @@ const ProcurementTrackerStepOne = ({
         setStep1Notes,
         step1Notes,
         handleStep1Complete,
+        handleSaveNotes,
         cancelModalStep1,
         disableStep1Buttons,
         modalProps,
@@ -162,15 +163,34 @@ const ProcurementTrackerStepOne = ({
                                 maxDate={getLocalISODate()}
                             />
                         </div>
-                        <TextArea
-                            name="notes"
-                            label="Notes (optional)"
-                            className="margin-top-2"
-                            maxLength={750}
-                            value={step1Notes}
-                            onChange={(_, value) => setStep1Notes(value)}
-                            isDisabled={isDisabled || !isPreSolicitationPackageSent}
-                        />
+                        <div style={{ display: "table" }}>
+                            <TextArea
+                                name="notes"
+                                label="Notes (optional)"
+                                className="margin-top-2"
+                                maxLength={750}
+                                value={step1Notes}
+                                onChange={(_, value) => setStep1Notes(value)}
+                                textAreaStyle={{ height: "8.5rem", minWidth: "30rem" }}
+                                isDisabled={isDisabled}
+                            />
+                            <div className="display-flex flex-justify-end">
+                                <button
+                                    type="button"
+                                    className="usa-button usa-button--unstyled"
+                                    data-cy="save-notes-button"
+                                    onClick={() => handleSaveNotes(stepOneData?.id)}
+                                    disabled={isDisabled}
+                                >
+                                    <FontAwesomeIcon
+                                        icon={faCheck}
+                                        size="2x"
+                                        className={"text-primary height-2 width-2 cursor-pointer"}
+                                    />
+                                    Save Notes
+                                </button>
+                            </div>
+                        </div>
                         <div className="margin-top-2 display-flex flex-justify-end">
                             <button
                                 type="button"
