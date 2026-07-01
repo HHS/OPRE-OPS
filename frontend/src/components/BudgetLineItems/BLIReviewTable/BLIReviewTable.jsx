@@ -24,6 +24,7 @@ import { BUDGET_LINE_TABLE_HEADERS_LIST } from "./BLIReviewTable.constants";
  * @param {Function} [props.onAddCLINClick] - Callback when "+ CLIN" is clicked with budgetLine.id
  * @param {Boolean} [props.showCLINColumn] - Whether to show the CLIN column (Award page only)
  * @param {Object} [props.clinAssignments] - Map of budgetLineId to CLIN number assignments
+ * @param {string[]} [props.errorStatuses] - Restrict inline error styling in review mode to BLIs whose status is in this list. Omit to apply to all rows.
  * @returns {React.ReactElement} - The rendered table component.
  */
 const AgreementBLIReviewTable = ({
@@ -38,7 +39,8 @@ const AgreementBLIReviewTable = ({
     readOnly = false,
     onAddCLINClick,
     showCLINColumn = false,
-    clinAssignments = {}
+    clinAssignments = {},
+    errorStatuses
 }) => {
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
 
@@ -118,6 +120,7 @@ const AgreementBLIReviewTable = ({
                         onAddCLINClick={onAddCLINClick}
                         showCLINColumn={showCLINColumn}
                         clinAssignments={clinAssignments}
+                        errorStatuses={errorStatuses}
                     />
                 ))}
             </Table>
