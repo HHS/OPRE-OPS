@@ -5,7 +5,33 @@ import { vi, beforeEach } from "vitest";
 import "@testing-library/jest-dom";
 import BudgetLinesForm from "./BudgetLinesForm";
 import suite from "./suite";
+import datePickerSuite from "./datePickerSuite";
 import { USER_ROLES } from "../../Users/User.constants";
+
+const POP_ERROR = "Date must fall within the agreement's period of performance";
+
+// Returns YYYY-MM-DD n days from today.
+const isoFromToday = (n) => {
+    const d = new Date();
+    d.setDate(d.getDate() + n);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+};
+
+// Returns MM/DD/YYYY n days from today.
+const screenFromToday = (n) => {
+    const iso = isoFromToday(n);
+    const [year, month, day] = iso.split("-");
+    return `${month}/${day}/${year}`;
+};
+
+// Convert YYYY-MM-DD → MM/DD/YYYY.
+const isoToScreen = (iso) => {
+    const [year, month, day] = iso.split("-");
+    return `${month}/${day}/${year}`;
+};
 
 // Mount-tracking counters for DatePicker stability regression test.
 // A bug where a `React.memo(DatePicker)` wrapper is recreated inside the
@@ -111,6 +137,7 @@ describe("BudgetLinesForm Validation Integration", () => {
     // Reset suite state before each test to prevent stale validation errors
     beforeEach(() => {
         suite.reset();
+        datePickerSuite.reset();
     });
 
     const defaultProps = {
@@ -368,6 +395,157 @@ describe("BudgetLinesForm Validation Integration", () => {
             // Should show success classes since validation doesn't run
             const canComboBox = screen.getByTestId("can-combobox");
             expect(canComboBox).toHaveClass("success");
+        });
+    });
+
+    describe("PoP boundary validation — DRAFT BLI", () => {
+        // SC window: opens 30 days out, closes 120 days out.
+        const SC_START = isoFromToday(30);
+        const SC_END = isoFromToday(120);
+
+        const regularUserStore = createMockStore([{ id: 3, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }]);
+
+        // Base props: DRAFT, editing, not review mode — datePickerSuite is active.
+        const popBaseProps = {
+            ...defaultProps,
+            budgetFormSuite: suite,
+            datePickerSuite,
+            isEditing: true,
+            isReviewMode: false,
+            isBudgetLineNotDraft: false,
+            scStartDate: SC_START,
+            scEndDate: SC_END
+        };
+
+        it("shows PoP error when date is before scStartDate", () => {
+            render(
+                <Provider store={regularUserStore}>
+                    <BudgetLinesForm
+                        {...popBaseProps}
+                        needByDate={screenFromToday(15)}
+                    />
+                </Provider>
+            );
+            const datePicker = screen.getByTestId("date-picker");
+            const messages = JSON.parse(datePicker.getAttribute("data-messages"));
+            expect(messages).toContain(POP_ERROR);
+        });
+
+        it("shows PoP error when date is after scEndDate", () => {
+            render(
+                <Provider store={regularUserStore}>
+                    <BudgetLinesForm
+                        {...popBaseProps}
+                        needByDate={screenFromToday(130)}
+                    />
+                </Provider>
+            );
+            const datePicker = screen.getByTestId("date-picker");
+            const messages = JSON.parse(datePicker.getAttribute("data-messages"));
+            expect(messages).toContain(POP_ERROR);
+        });
+
+        it("does not show PoP error when date equals scStartDate exactly", () => {
+            render(
+                <Provider store={regularUserStore}>
+                    <BudgetLinesForm
+                        {...popBaseProps}
+                        needByDate={isoToScreen(SC_START)}
+                    />
+                </Provider>
+            );
+            const datePicker = screen.getByTestId("date-picker");
+            const messages = JSON.parse(datePicker.getAttribute("data-messages"));
+            expect(messages).not.toContain(POP_ERROR);
+        });
+
+        it("does not show PoP error when date equals scEndDate exactly", () => {
+            render(
+                <Provider store={regularUserStore}>
+                    <BudgetLinesForm
+                        {...popBaseProps}
+                        needByDate={isoToScreen(SC_END)}
+                    />
+                </Provider>
+            );
+            const datePicker = screen.getByTestId("date-picker");
+            const messages = JSON.parse(datePicker.getAttribute("data-messages"));
+            expect(messages).not.toContain(POP_ERROR);
+        });
+
+        it("does not show PoP error when date falls inside the window", () => {
+            render(
+                <Provider store={regularUserStore}>
+                    <BudgetLinesForm
+                        {...popBaseProps}
+                        needByDate={screenFromToday(60)}
+                    />
+                </Provider>
+            );
+            const datePicker = screen.getByTestId("date-picker");
+            const messages = JSON.parse(datePicker.getAttribute("data-messages"));
+            expect(messages).not.toContain(POP_ERROR);
+        });
+
+        it("does not show PoP error when needByDate is null", () => {
+            render(
+                <Provider store={regularUserStore}>
+                    <BudgetLinesForm
+                        {...popBaseProps}
+                        needByDate={null}
+                    />
+                </Provider>
+            );
+            const datePicker = screen.getByTestId("date-picker");
+            const messages = JSON.parse(datePicker.getAttribute("data-messages"));
+            expect(messages).not.toContain(POP_ERROR);
+        });
+    });
+
+    describe("PoP boundary validation — PLANNED BLI", () => {
+        const SC_START = isoFromToday(30);
+        const SC_END = isoFromToday(120);
+
+        const regularUserStore = createMockStore([{ id: 3, name: USER_ROLES.VIEWER_EDITOR, is_superuser: false }]);
+
+        // PLANNED BLI: isBudgetLineNotDraft=true, isReviewMode=false
+        const plannedBaseProps = {
+            ...defaultProps,
+            budgetFormSuite: suite,
+            datePickerSuite,
+            isEditing: true,
+            isReviewMode: false,
+            isBudgetLineNotDraft: true,
+            scStartDate: SC_START,
+            scEndDate: SC_END
+        };
+
+        it("shows PoP error when date is before scStartDate on a PLANNED BLI", () => {
+            render(
+                <Provider store={regularUserStore}>
+                    <BudgetLinesForm
+                        {...plannedBaseProps}
+                        needByDate={screenFromToday(15)}
+                    />
+                </Provider>
+            );
+            const datePicker = screen.getByTestId("date-picker");
+            const messages = JSON.parse(datePicker.getAttribute("data-messages"));
+            expect(messages).toContain(POP_ERROR);
+        });
+
+        it("does not show PoP error when date falls on the boundary of a PLANNED BLI", () => {
+            render(
+                <Provider store={regularUserStore}>
+                    <BudgetLinesForm
+                        {...plannedBaseProps}
+                        needByDate={isoToScreen(SC_START)}
+                    />
+                </Provider>
+            );
+            const datePicker = screen.getByTestId("date-picker");
+            const messages = JSON.parse(datePicker.getAttribute("data-messages"));
+            expect(messages).not.toContain(POP_ERROR);
         });
     });
 });

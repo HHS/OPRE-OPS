@@ -45,13 +45,4 @@ DateRangePickerWrapper.propTypes = {
     className: PropTypes.string
 };
 
-export default React.memo(DateRangePickerWrapper, (prevProps, nextProps) => {
-    // Return true if passing nextProps to render would return
-    // the same result as passing prevProps to render,
-    // otherwise return false
-    return (
-        prevProps.id === nextProps.id &&
-        prevProps.className === nextProps.className &&
-        React.Children.count(prevProps.children) === React.Children.count(nextProps.children)
-    );
-});
+export default React.memo(DateRangePickerWrapper);
