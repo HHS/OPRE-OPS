@@ -476,10 +476,10 @@ describe("ReviewBudgetTeamRequisition", () => {
                 ...defaultHookReturn,
                 showModal: true,
                 modalProps: {
-                    heading: "Are you sure you want to cancel?",
-                    description: "Any information you have entered will be discarded.",
-                    actionButtonText: "Continue Editing",
-                    secondaryButtonText: "Discard Changes",
+                    heading: "Are you sure you want to cancel this task? Your input will be not be saved.",
+                    description: "",
+                    actionButtonText: "Yes, Cancel Task",
+                    secondaryButtonText: "Continue Editing",
                     handleConfirm: vi.fn(),
                     handleSecondary: vi.fn()
                 }
@@ -488,7 +488,9 @@ describe("ReviewBudgetTeamRequisition", () => {
             render(<ReviewBudgetTeamRequisition />);
 
             expect(screen.getByTestId("modal")).toBeInTheDocument();
-            expect(screen.getByText("Are you sure you want to cancel?")).toBeInTheDocument();
+            expect(
+                screen.getByText("Are you sure you want to cancel this task? Your input will be not be saved.")
+            ).toBeInTheDocument();
         });
 
         it("should disable cancel button while submitting", () => {
