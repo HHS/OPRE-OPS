@@ -539,12 +539,23 @@ class BudgetLineItemService:
 
         # Lazy CLIN creation: if clin_id is provided and looks like a CLIN number (1-10),
         # ensure CLIN record exists and replace with actual CLIN ID
+        # If clin_id is already a CLIN record ID (>= 5000), pass it through unchanged
         if "clin_id" in updated_fields and updated_fields["clin_id"] is not None:
             clin_value = updated_fields["clin_id"]
-            if not (1 <= clin_value <= 10):
-                raise ValidationError({"clin_id": f"Invalid CLIN number: {clin_value}. Must be between 1 and 10."})
-            actual_clin_id = self._ensure_clin_exists(budget_line_item, clin_value)
-            updated_fields["clin_id"] = actual_clin_id
+            # CLIN numbers are 1-10 and need lazy creation
+            # CLIN IDs are >= 5000 (from sequence) and reference existing records
+            if 1 <= clin_value <= 10:
+                # CLIN number: ensure the CLIN record exists and get its ID
+                actual_clin_id = self._ensure_clin_exists(budget_line_item, clin_value)
+                updated_fields["clin_id"] = actual_clin_id
+            elif clin_value >= 5000:
+                # CLIN ID: already a valid foreign key, pass through unchanged
+                pass
+            else:
+                # Invalid: not a CLIN number (1-10) and not a CLIN ID (>= 5000)
+                raise ValidationError(
+                    {"clin_id": f"Invalid CLIN value: {clin_value}. Must be 1-10 for CLIN numbers or >= 5000 for CLIN IDs."}
+                )
 
         change_request_ids: list[int] = []
         if directly_editable:

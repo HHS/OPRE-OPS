@@ -157,6 +157,7 @@ class TestCLINLazyCreation:
         clin_number = 7
 
         # Create the CLIN that the "concurrent" request would have created
+        # but DON'T commit it yet - we need to simulate it appearing after IntegrityError
         concurrent_clin = CLIN(
             number=clin_number,
             name=f"CLIN {clin_number}",
@@ -165,13 +166,33 @@ class TestCLINLazyCreation:
             pop_end_date=agreement.sc_end_date,
             created_by=500,
         )
-        loaded_db.add(concurrent_clin)
-        loaded_db.commit()
+        concurrent_clin.id = 5999  # Assign ID to simulate committed record
 
         service = BudgetLineItemService(loaded_db)
 
-        # Mock flush() to raise IntegrityError, simulating that another request
-        # created the CLIN between our SELECT check and our INSERT
+        # Track how many times execute() is called to distinguish initial check vs retry
+        execute_call_count = {"count": 0}
+
+        original_execute = loaded_db.execute
+
+        def mock_execute(statement, *args, **kwargs):
+            execute_call_count["count"] += 1
+            # First call: initial existence check should return None (CLIN doesn't exist yet)
+            if execute_call_count["count"] == 1:
+                mock_result = mocker.Mock()
+                mock_result.scalar_one_or_none.return_value = None
+                return mock_result
+            # Second call: after IntegrityError, return the "concurrent" CLIN
+            elif execute_call_count["count"] == 2:
+                mock_result = mocker.Mock()
+                mock_result.scalar_one_or_none.return_value = concurrent_clin
+                return mock_result
+            else:
+                return original_execute(statement, *args, **kwargs)
+
+        mocker.patch.object(loaded_db, "execute", side_effect=mock_execute)
+
+        # Mock flush() to raise IntegrityError when trying to create CLIN
         original_flush = loaded_db.flush
 
         def mock_flush():

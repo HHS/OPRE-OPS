@@ -117,7 +117,9 @@ export default function useProcurementTrackerStepSix(stepSixData, _handleSetComp
             // before RTK Query refetches the updated "COMPLETED" status
             // handleSetCompletedStepNumber && handleSetCompletedStepNumber(6);
             console.log("Procurement Tracker Step 6 Completed");
-            // Don't set isSubmitting(false) on success - let the completed state render
+            // Reset isSubmitting after a brief delay to prevent button from getting stuck
+            // if refetch is delayed or cache update fails
+            setTimeout(() => setIsSubmitting(false), 1000);
         } catch (error) {
             console.error("Failed to complete Procurement Tracker Step 6", error);
             setAlert({
