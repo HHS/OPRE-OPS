@@ -554,7 +554,9 @@ class BudgetLineItemService:
             else:
                 # Invalid: not a CLIN number (1-10) and not a CLIN ID (>= 5000)
                 raise ValidationError(
-                    {"clin_id": f"Invalid CLIN value: {clin_value}. Must be 1-10 for CLIN numbers or >= 5000 for CLIN IDs."}
+                    {
+                        "clin_id": f"Invalid CLIN value: {clin_value}. Must be 1-10 for CLIN numbers or >= 5000 for CLIN IDs."
+                    }
                 )
 
         change_request_ids: list[int] = []
