@@ -236,6 +236,48 @@ def test_create_models_upsert(db_for_aas):
     db_for_aas.commit()
 
 
+def test_create_models_preserves_existing_fields(db_for_aas):
+    """Re-importing an existing AA must not null out fields the CSV does not carry."""
+    from data_tools.src.load_aas.utils import AAData, create_models
+
+    sys_user = get_or_create_sys_user(db_for_aas)
+
+    data = AAData(
+        PROJECT_NAME="Test Project",
+        AA_NAME="Family Support Research",
+        REQUESTING_AGENCY_NAME="HHS",
+        SERVICING_AGENCY_NAME="NSF",
+        SERVICE_REQUIREMENT_TYPE=ServiceRequirementType.SEVERABLE.name,
+    )
+
+    # A procurement shop to reference (the test DB does not seed these).
+    proc_shop = ProcurementShop(name="Test Shop", abbr="TS")
+    db_for_aas.add(proc_shop)
+    db_for_aas.commit()
+
+    # Initial import creates the AA. These fields are not present in the AA CSV.
+    create_models(data, sys_user, db_for_aas)
+    aa_model = db_for_aas.execute(select(AaAgreement).where(AaAgreement.name == "Family Support Research")).scalar()
+
+    # Simulate the fields being populated later (e.g. via the app/UI).
+    aa_model.awarding_entity_id = proc_shop.id
+    aa_model.project_officer_id = sys_user.id
+    db_for_aas.commit()
+
+    # Re-import the same AA row.
+    create_models(data, sys_user, db_for_aas)
+
+    aa_model = db_for_aas.execute(select(AaAgreement).where(AaAgreement.name == "Family Support Research")).scalar()
+    assert aa_model.awarding_entity_id == proc_shop.id
+    assert aa_model.project_officer_id == sys_user.id
+
+    # cleanup created data (delete the agreement before the shop it references)
+    db_for_aas.delete(aa_model)
+    db_for_aas.commit()
+    db_for_aas.execute(text("DELETE FROM procurement_shop"))
+    db_for_aas.commit()
+
+
 def test_transform_with_csv(db_for_aas, tmp_path):
     """Test transform function with CSV data"""
     from csv import DictReader

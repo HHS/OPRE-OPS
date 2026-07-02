@@ -191,6 +191,11 @@ def create_models(data: AAData, sys_user: User, session: Session) -> None:
             aa.id = existing_aa.id
             aa.created_on = existing_aa.created_on
             aa.created_by = existing_aa.created_by
+            # Preserve fields the CSV does not carry so the upsert does not null them out
+            aa.awarding_entity_id = existing_aa.awarding_entity_id
+            aa.product_service_code_id = existing_aa.product_service_code_id
+            aa.project_officer_id = existing_aa.project_officer_id
+            aa.alternate_project_officer_id = existing_aa.alternate_project_officer_id
 
             updates = generate_agreement_events_update(
                 existing_aa.to_dict(),
@@ -228,7 +233,7 @@ def create_models(data: AAData, sys_user: User, session: Session) -> None:
         # Set Dry Run true so that we don't commit at the end of the function
         # This allows us to rollback the session if dry_run is enabled or not commit changes
         # if something errors after this point
-        agreement_history_trigger_func(ops_event, session, sys_user, dry_run=True)
+        agreement_history_trigger_func(ops_event, session, sys_user, dry_run=False)
         session.commit()
 
         # Refresh aa to ensure we have the ID (important!)
@@ -253,6 +258,13 @@ def create_models(data: AAData, sys_user: User, session: Session) -> None:
                     session.commit()
 
                     session.add(new_budget_line_item)
+
+            # Repoint CLINs to the new AA so they survive the agreement delete
+            # (clin.agreement_id has ondelete=CASCADE, so otherwise they'd be deleted).
+            clins = session.execute(select(CLIN).where(CLIN.agreement_id == existing_agreement.id)).scalars().all()
+            for clin in clins:
+                clin.agreement_id = aa.id
+            session.commit()
 
             logger.info(f"Removing existing agreement {existing_agreement.name} with ID {existing_agreement.id}")
             session.delete(existing_agreement)

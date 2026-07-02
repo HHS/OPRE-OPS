@@ -406,14 +406,24 @@ def create_change_request_history_event(
             if old_proc_shop:
                 old_proc_shop_abbr = old_proc_shop.abbr
                 old_proc_shop_fee_total = (
-                    sum([(item.amount * (old_proc_shop.fee_percentage / 100)) for item in agreement.budget_line_items])
+                    sum(
+                        [
+                            (item.amount or 0) * (old_proc_shop.fee_percentage / 100)
+                            for item in agreement.budget_line_items
+                        ]
+                    )
                     if agreement
                     else 0
                 )
             if new_proc_shop:
                 new_proc_shop_abbr = new_proc_shop.abbr
                 new_proc_shop_fee_total = (
-                    sum([(item.amount * (new_proc_shop.fee_percentage / 100)) for item in agreement.budget_line_items])
+                    sum(
+                        [
+                            (item.amount or 0) * (new_proc_shop.fee_percentage / 100)
+                            for item in agreement.budget_line_items
+                        ]
+                    )
                     if agreement
                     else 0
                 )
@@ -671,7 +681,7 @@ def create_agreement_update_history_event(
                     old_proc_shop_fee_total = (
                         sum(
                             [
-                                (item.amount * (old_proc_shop.fee_percentage / 100))
+                                (item.amount or 0) * (old_proc_shop.fee_percentage / 100)
                                 for item in agreement.budget_line_items
                             ]
                         )
@@ -684,7 +694,7 @@ def create_agreement_update_history_event(
                     new_proc_shop_fee_total = (
                         sum(
                             [
-                                (item.amount * (new_proc_shop.fee_percentage / 100))
+                                (item.amount or 0) * (new_proc_shop.fee_percentage / 100)
                                 for item in agreement.budget_line_items
                             ]
                         )
