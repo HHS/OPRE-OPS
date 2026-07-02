@@ -849,6 +849,59 @@ def test_power_user_update_obligate_by_date(
     loaded_db.commit()
 
 
+def test_power_user_create_bli_with_past_obligate_by_date(
+    power_user_auth_client,
+    budget_team_auth_client,
+    loaded_db,
+    test_can,
+    test_contract,
+):
+    """Administrative Power Users can POST a new BLI and transition it past DRAFT with a past
+    `date_needed`. Budget Team users hit the same endpoint successfully on POST (status is DRAFT)
+    but are blocked when they attempt to transition past DRAFT with a past date.
+    """
+    agreement = test_contract
+    past_date = "2020-06-21"
+    target_status = BudgetLineItemStatus.PLANNED
+
+    payload = {
+        "agreement_id": agreement.id,
+        "line_description": f"Past date BLI for {target_status.name}",
+        "can_id": test_can.id,
+        "amount": 3500,
+        "status": "DRAFT",
+        "date_needed": past_date,
+        "proc_shop_fee_percentage": 1.23,
+        "services_component_id": agreement.awarding_entity_id,
+    }
+
+    # Power user POST + transition: should succeed.
+    post_response = power_user_auth_client.post("/api/v1/budget-line-items/", json=payload)
+    assert post_response.status_code == 201
+    power_user_bli_id = post_response.json["id"]
+
+    transition_response = power_user_auth_client.patch(
+        url_for("api.budget-line-items-item", id=power_user_bli_id),
+        json={"status": target_status.name},
+    )
+    assert transition_response.status_code == 200
+
+    # Budget team user POST succeeds (DRAFT), but transition with the past date is rejected.
+    budget_team_post_response = budget_team_auth_client.post("/api/v1/budget-line-items/", json=payload)
+    assert budget_team_post_response.status_code == 201
+    budget_team_bli_id = budget_team_post_response.json["id"]
+
+    budget_team_transition_response = budget_team_auth_client.patch(
+        url_for("api.budget-line-items-item", id=budget_team_bli_id),
+        json={"status": target_status.name},
+    )
+    assert budget_team_transition_response.status_code == 400
+    assert (
+        "BLI must have a Need By Date in the future when status is not DRAFT"
+        in budget_team_transition_response.json["errors"]["date_needed"]
+    )
+
+
 @pytest.mark.parametrize(
     "bli_status",
     [
