@@ -20,6 +20,8 @@ Coverage is not enabled by default so that running individual tests stays fast. 
 
 Test files mirror source structure: `ops/resources/agreements.py` → `tests/ops/resources/test_agreements.py`.
 
+For the full CI check suite across both packages (ops_api + data_tools, including lint, format, and Docker pre-flight for data_tools), use the `/backend-tests` skill — it is NOT auto-invoked, so invoke it explicitly (e.g., `/backend-tests all`).
+
 ### Code Quality
 
 ```bash
@@ -39,7 +41,7 @@ alembic upgrade head
 alembic downgrade -1   # Rollback
 ```
 
-Migration files are in `backend/alembic/versions/`. Always review auto-generated migrations before applying.
+Migration files are in `backend/alembic/versions/`. Always review auto-generated migrations before applying. Use the `/db-migrations` skill for the full workflow — it includes Docker pre-flight checks, a review checklist (renamed columns, enum value changes, NOT NULL two-step migrations), and a critical reminder that new models inheriting `BaseModel` also need a `*_history` table. The skill is NOT auto-invoked.
 
 ## Architecture
 
