@@ -190,6 +190,12 @@ describe("EditAgreementAndBudgetLines", () => {
         expect(navigateMock).toHaveBeenCalledWith("/agreements/review/42");
     });
 
+    it("falls back to the default review path when returnTo contains path traversal", () => {
+        renderPage("/agreements/review/42/edit?returnTo=%2Fagreements%2F..%2Fadmin");
+        fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+        expect(navigateMock).toHaveBeenCalledWith("/agreements/review/42");
+    });
+
     it("uses returnTo as the success alert redirect after saving", async () => {
         renderPage("/agreements/review/42/edit?returnTo=%2Fagreements%2F42%2Fpre-award-approval");
         fireEvent.click(screen.getByRole("button", { name: "Save changes" }));

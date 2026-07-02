@@ -86,14 +86,14 @@ export default function useRequestPreAwardApproval(agreementId) {
         [allBudgetLines]
     );
 
-    const [suiteResult, setSuiteResult] = useState(null);
+    const [agreementValidationResults, setAgreementValidationResults] = useState(null);
     const [pageErrors, setPageErrors] = useState({});
     const [isAlertActive, setIsAlertActive] = useState(false);
 
     useEffect(() => {
         if (!agreement) return undefined;
         const result = agreementSuite.run({ ...agreement });
-        setSuiteResult(result);
+        setAgreementValidationResults(result);
         return () => {
             agreementSuite.reset();
         };
@@ -105,8 +105,6 @@ export default function useRequestPreAwardApproval(agreementId) {
     }, [validatableBudgetLines]);
 
     const hasBLIError = useMemo(() => bliValidationResults.some(({ isValid }) => !isValid), [bliValidationResults]);
-
-    const agreementValidationResults = useMemo(() => suiteResult, [suiteResult]);
 
     useEffect(() => {
         if (!agreement) {

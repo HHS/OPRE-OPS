@@ -2,6 +2,7 @@ import AgreementBLIAccordion from "../../../../components/Agreements/AgreementBL
 import AgreementBLIReviewTable from "../../../../components/BudgetLineItems/BLIReviewTable";
 import ServicesComponentAccordion from "../../../../components/ServicesComponents/ServicesComponentAccordion";
 import ReviewExecutingTotalAccordion from "../../../../components/BudgetLineItems/ReviewExecutingTotalAccordion/ReviewExecutingTotalAccordion";
+import { VALIDATABLE_BLI_STATUSES } from "../RequestPreAwardApproval.hooks";
 import {
     findDescription,
     findIfOptional,
@@ -70,7 +71,7 @@ export const PreAwardBudgetLinesReviewAccordion = ({
                                         isReviewMode={true}
                                         servicesComponentNumber={group.servicesComponentNumber}
                                         action=""
-                                        errorStatuses={["PLANNED", "IN_EXECUTION"]}
+                                        errorStatuses={VALIDATABLE_BLI_STATUSES}
                                     />
                                 ) : (
                                     <p className="text-center margin-y-7">
