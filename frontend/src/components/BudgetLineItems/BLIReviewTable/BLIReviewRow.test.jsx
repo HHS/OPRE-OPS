@@ -181,6 +181,55 @@ describe("BLIReviewRow", () => {
         expect(setSelectedBLIs).toHaveBeenCalledWith(defaultBudgetLine.id.toString());
     });
 
+    describe("errorStatuses prop", () => {
+        // CLIN column error class is gated on rowInReviewMode directly (no `selected` guard),
+        // making it the cleanest target for testing errorStatuses gating.
+        const bliWithMissingClin = (status) => ({
+            ...defaultBudgetLine,
+            status,
+            clin_id: null,
+            clin: null
+        });
+
+        it("applies error styling to a PLANNED row when its status is in errorStatuses", () => {
+            renderComponent({
+                isReviewMode: true,
+                showCLINColumn: true,
+                errorStatuses: ["PLANNED", "IN_EXECUTION"],
+                budgetLine: bliWithMissingClin("PLANNED")
+            });
+
+            const tbdCells = screen.getAllByText("TBD");
+            const errorCell = tbdCells.find((cell) => cell.classList.contains("table-item-error"));
+            expect(errorCell).toBeDefined();
+        });
+
+        it("suppresses error styling on a DRAFT row when errorStatuses excludes DRAFT", () => {
+            renderComponent({
+                isReviewMode: true,
+                showCLINColumn: true,
+                errorStatuses: ["PLANNED", "IN_EXECUTION"],
+                budgetLine: bliWithMissingClin("DRAFT")
+            });
+
+            // DRAFT shows "N/A" not "TBD", and should have no error class
+            const naCell = screen.getByText("N/A");
+            expect(naCell.classList.contains("table-item-error")).toBe(false);
+        });
+
+        it("applies error styling to all statuses when errorStatuses is omitted", () => {
+            renderComponent({
+                isReviewMode: true,
+                showCLINColumn: true,
+                budgetLine: bliWithMissingClin("PLANNED")
+            });
+
+            const tbdCells = screen.getAllByText("TBD");
+            const errorCell = tbdCells.find((cell) => cell.classList.contains("table-item-error"));
+            expect(errorCell).toBeDefined();
+        });
+    });
+
     describe("CLIN Selector", () => {
         // Note: Hover interaction tests are covered by E2E tests rather than unit tests
         // because React Testing Library's hover simulation doesn't reliably trigger state updates

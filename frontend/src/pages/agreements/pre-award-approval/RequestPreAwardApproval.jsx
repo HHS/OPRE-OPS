@@ -63,7 +63,7 @@ export const RequestPreAwardApproval = () => {
     } = useRequestPreAwardApproval(agreementId);
 
     const isAgreementEditable = agreement?._meta?.isEditable;
-    const hasValidationErrors = isAlertActive && Object.keys(pageErrors).length > 0;
+    const hasValidationErrors = isAlertActive && Object.keys(pageErrors).length > 0 && isStep4Completed;
     const isAgreementInvalid = Boolean(agreementValidationResults && !agreementValidationResults.isValid());
     const cn = agreementValidationResults
         ? classnames(agreementValidationResults, {
