@@ -94,7 +94,14 @@ vi.mock("../../../components/UI/Modals/SaveChangesAndExitModal", () => ({
     ) => (
         <div data-testid="modal">
             <h2>{heading}</h2>
-            <button onClick={handleConfirm}>{actionButtonText}</button>
+            <button
+                onClick={() => {
+                    setShowModal(false);
+                    handleConfirm();
+                }}
+            >
+                {actionButtonText}
+            </button>
             {handleSecondary && <button onClick={handleSecondary}>{secondaryButtonText}</button>}
             <button onClick={closeModal}>Close</button>
         </div>
