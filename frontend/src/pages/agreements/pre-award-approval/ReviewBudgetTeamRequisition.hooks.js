@@ -141,19 +141,20 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
         if (blocker.state === "blocked") {
             setShowModal(true);
             setModalProps({
-                heading: "Are you sure you want to cancel?",
-                description: "Any information you have entered will be discarded.",
-                actionButtonText: "Continue Editing",
-                secondaryButtonText: "Discard Changes",
+                heading: "Are you sure you want to cancel this task? Your input will not be saved.",
+                description: "",
+                actionButtonText: "Yes, Cancel Task",
+                secondaryButtonText: "Continue Editing",
                 handleConfirm: () => {
-                    setShowModal(false);
-                },
-                handleSecondary: () => {
                     setShowModal(false);
                     flushSync(() => {
                         setIsNavigating(true);
                     });
                     blocker.proceed?.();
+                },
+                handleSecondary: () => {
+                    setShowModal(false);
+                    blocker.reset?.();
                 },
                 closeModal: () => {
                     setShowModal(false);
@@ -287,18 +288,18 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
     const handleCancel = () => {
         setShowModal(true);
         setModalProps({
-            heading: "Are you sure you want to cancel?",
-            description: "Any information you have entered will be discarded.",
-            actionButtonText: "Continue Editing",
-            secondaryButtonText: "Discard Changes",
+            heading: "Are you sure you want to cancel this task? Your input will not be saved.",
+            description: "",
+            actionButtonText: "Yes, Cancel Task",
+            secondaryButtonText: "Continue Editing",
             handleConfirm: () => {
-                setShowModal(false);
-            },
-            handleSecondary: () => {
                 flushSync(() => {
                     setIsNavigating(true);
                 });
                 navigate("/agreements?filter=change-requests");
+            },
+            handleSecondary: () => {
+                setShowModal(false);
             },
             closeModal: () => {
                 setShowModal(false);

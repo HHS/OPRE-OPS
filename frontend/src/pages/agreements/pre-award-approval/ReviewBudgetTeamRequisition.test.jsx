@@ -94,7 +94,14 @@ vi.mock("../../../components/UI/Modals/SaveChangesAndExitModal", () => ({
     ) => (
         <div data-testid="modal">
             <h2>{heading}</h2>
-            <button onClick={handleConfirm}>{actionButtonText}</button>
+            <button
+                onClick={() => {
+                    setShowModal(false);
+                    handleConfirm();
+                }}
+            >
+                {actionButtonText}
+            </button>
             {handleSecondary && <button onClick={handleSecondary}>{secondaryButtonText}</button>}
             <button onClick={closeModal}>Close</button>
         </div>
@@ -476,10 +483,10 @@ describe("ReviewBudgetTeamRequisition", () => {
                 ...defaultHookReturn,
                 showModal: true,
                 modalProps: {
-                    heading: "Are you sure you want to cancel?",
-                    description: "Any information you have entered will be discarded.",
-                    actionButtonText: "Continue Editing",
-                    secondaryButtonText: "Discard Changes",
+                    heading: "Are you sure you want to cancel this task? Your input will not be saved.",
+                    description: "",
+                    actionButtonText: "Yes, Cancel Task",
+                    secondaryButtonText: "Continue Editing",
                     handleConfirm: vi.fn(),
                     handleSecondary: vi.fn()
                 }
@@ -488,7 +495,9 @@ describe("ReviewBudgetTeamRequisition", () => {
             render(<ReviewBudgetTeamRequisition />);
 
             expect(screen.getByTestId("modal")).toBeInTheDocument();
-            expect(screen.getByText("Are you sure you want to cancel?")).toBeInTheDocument();
+            expect(
+                screen.getByText("Are you sure you want to cancel this task? Your input will not be saved.")
+            ).toBeInTheDocument();
         });
 
         it("should disable cancel button while submitting", () => {
