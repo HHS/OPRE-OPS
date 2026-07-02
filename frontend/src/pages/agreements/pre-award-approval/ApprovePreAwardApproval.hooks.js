@@ -129,6 +129,7 @@ export default function useApprovePreAwardApproval(agreementId) {
                 },
                 closeModal: () => {
                     setShowModal(false);
+                    blocker.reset?.();
                 }
             });
         }

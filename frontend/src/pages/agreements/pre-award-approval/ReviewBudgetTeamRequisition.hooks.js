@@ -158,6 +158,7 @@ export default function useReviewBudgetTeamRequisition(agreementId) {
                 },
                 closeModal: () => {
                     setShowModal(false);
+                    blocker.reset?.();
                 }
             });
         }
