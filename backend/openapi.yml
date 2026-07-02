@@ -4781,10 +4781,16 @@ paths:
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServicesComponent"
         "400":
           description: Bad Request
         "401":
           description: Unauthorized
+        "403":
+          description: Forbidden
         "500":
           description: Internal Server Error
     patch:
@@ -4812,10 +4818,16 @@ paths:
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServicesComponent"
         "400":
           description: Bad Request
         "401":
           description: Unauthorized
+        "403":
+          description: Forbidden
         "500":
           description: Internal Server Error
     delete:
@@ -4837,10 +4849,23 @@ paths:
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: ServicesComponent deleted
+                  id:
+                    type: integer
+                    example: 1
         "400":
           description: Bad Request
         "401":
           description: Unauthorized
+        "403":
+          description: Forbidden
         "500":
           description: Internal Server Error
   /change-requests/:
@@ -7748,26 +7773,28 @@ components:
           example: false
         description:
           type: string
-        display_title:
+          nullable: true
+        sub_component:
           type: string
-        display_name:
-          type: string
-        clin_id:
-          type: integer
-          example: 1
+          nullable: true
+          example: "SC1.1"
         period_start:
           type: string
+          format: date
+          nullable: true
           example: "2023-05-06"
         period_end:
           type: string
+          format: date
+          nullable: true
           example: "2023-06-30"
-      required:
-        - contract_agreement_id
-        - number
-        - optional
     ServicesComponentRequestPost:
       allOf:
         - $ref: "#/components/schemas/ServicesComponentRequest"
+      required:
+        - agreement_id
+        - number
+        - optional
     AgreementEditBundleRequest:
       type: object
       description: |

@@ -963,3 +963,214 @@ def test_get_services_component_returns_sub_component(
     loaded_db.delete(sc)
     loaded_db.delete(ca)
     loaded_db.commit()
+
+
+# =============================================================================
+# PoP window validation tests for ServicesComponentService.update()
+# =============================================================================
+
+
+@pytest.fixture()
+def pop_validation_agreement(loaded_db, test_project):
+    """
+    A contract agreement with two SCs and a mix of draft/non-draft BLIs.
+
+    SC 1: 2025-01-01 → 2025-06-30
+    SC 2: 2025-04-01 → 2025-12-31
+    Overall window: 2025-01-01 → 2025-12-31
+
+    BLI A (PLANNED, date_needed=2025-08-15) — inside SC 2's window
+    BLI B (DRAFT,   date_needed=2025-02-01) — inside SC 1's window but ignored because DRAFT
+    """
+    ca = ContractAgreement(
+        name="CTXX99001-pop-validation",
+        contract_number="XXXX000099001",
+        contract_type=ContractType.FIRM_FIXED_PRICE,
+        service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
+        product_service_code_id=2,
+        agreement_type=AgreementType.CONTRACT,
+        project_id=test_project.id,
+        created_by=4,
+    )
+    loaded_db.add(ca)
+    loaded_db.commit()
+
+    sc1 = ServicesComponent(
+        agreement_id=ca.id,
+        number=1,
+        optional=False,
+        description="SC 1 — Jan to Jun",
+        period_start=datetime.date(2025, 1, 1),
+        period_end=datetime.date(2025, 6, 30),
+    )
+    sc2 = ServicesComponent(
+        agreement_id=ca.id,
+        number=2,
+        optional=False,
+        description="SC 2 — Apr to Dec",
+        period_start=datetime.date(2025, 4, 1),
+        period_end=datetime.date(2025, 12, 31),
+    )
+    loaded_db.add_all([sc1, sc2])
+    loaded_db.commit()
+
+    bli_planned = ContractBudgetLineItem(
+        line_description="Planned BLI inside SC 2 window",
+        agreement_id=ca.id,
+        services_component_id=sc2.id,
+        amount=10000.00,
+        status=BudgetLineItemStatus.PLANNED,
+        date_needed=datetime.date(2025, 8, 15),
+        created_by=4,
+    )
+    bli_draft = ContractBudgetLineItem(
+        line_description="Draft BLI — should be ignored by validation",
+        agreement_id=ca.id,
+        services_component_id=sc1.id,
+        amount=5000.00,
+        status=BudgetLineItemStatus.DRAFT,
+        date_needed=datetime.date(2025, 2, 1),
+        created_by=4,
+    )
+    loaded_db.add_all([bli_planned, bli_draft])
+    loaded_db.commit()
+
+    yield {"agreement": ca, "sc1": sc1, "sc2": sc2, "bli_planned": bli_planned, "bli_draft": bli_draft}
+
+    loaded_db.delete(bli_planned)
+    loaded_db.delete(bli_draft)
+    loaded_db.delete(sc1)
+    loaded_db.delete(sc2)
+    loaded_db.delete(ca)
+    loaded_db.commit()
+
+
+def test_update_sc_period_end_before_non_draft_bli_raises_validation_error(
+    auth_client, loaded_db, pop_validation_agreement
+):
+    """
+    Shrinking SC 2's period_end to 2025-07-31 moves the overall window end to
+    2025-07-31 (SC 1 ends 2025-06-30), leaving the planned BLI at 2025-08-15
+    outside the window — must raise a 400 validation error.
+    """
+    sc2 = pop_validation_agreement["sc2"]
+
+    response = auth_client.patch(
+        url_for("api.services-component-item", id=sc2.id),
+        json={"period_end": "2025-07-31"},
+    )
+
+    assert response.status_code == 400
+    assert "period_start" in response.json["errors"]
+
+
+def test_update_sc_period_start_after_non_draft_bli_raises_validation_error(
+    auth_client, loaded_db, pop_validation_agreement
+):
+    """
+    Moving SC 1's period_start to 2025-04-01 makes the overall window start
+    2025-04-01 (same as SC 2). Adding a non-draft BLI at 2025-02-01 (before
+    the new window start) must trigger a validation error.
+    """
+    sc1 = pop_validation_agreement["sc1"]
+    ca = pop_validation_agreement["agreement"]
+
+    early_bli = ContractBudgetLineItem(
+        line_description="Early planned BLI before new window start",
+        agreement_id=ca.id,
+        services_component_id=sc1.id,
+        amount=8000.00,
+        status=BudgetLineItemStatus.PLANNED,
+        date_needed=datetime.date(2025, 2, 1),
+        created_by=4,
+    )
+    loaded_db.add(early_bli)
+    loaded_db.commit()
+
+    try:
+        response = auth_client.patch(
+            url_for("api.services-component-item", id=sc1.id),
+            json={"period_start": "2025-04-01"},
+        )
+
+        assert response.status_code == 400
+        assert "period_start" in response.json["errors"]
+    finally:
+        loaded_db.delete(early_bli)
+        loaded_db.commit()
+
+
+def test_update_sc1_period_end_earlier_while_sc2_still_covers_bli_passes(
+    auth_client, loaded_db, pop_validation_agreement
+):
+    """
+    Shrinking SC 1's period_end from 2025-06-30 to 2025-05-31 does NOT move
+    the overall window end (SC 2 still ends 2025-12-31). The planned BLI at
+    2025-08-15 remains inside the window — should succeed with 200.
+    """
+    sc1 = pop_validation_agreement["sc1"]
+
+    response = auth_client.patch(
+        url_for("api.services-component-item", id=sc1.id),
+        json={"period_end": "2025-05-31"},
+    )
+
+    assert response.status_code == 200
+
+
+def test_update_sc1_period_start_later_while_sc2_still_covers_bli_passes(
+    auth_client, loaded_db, pop_validation_agreement
+):
+    """
+    Moving SC 1's period_start from 2025-01-01 to 2025-03-01 keeps the overall
+    window start at 2025-03-01 (still before SC 2's start of 2025-04-01). The
+    planned BLI at 2025-08-15 remains well inside the window — should succeed.
+    """
+    sc1 = pop_validation_agreement["sc1"]
+
+    response = auth_client.patch(
+        url_for("api.services-component-item", id=sc1.id),
+        json={"period_start": "2025-03-01"},
+    )
+
+    assert response.status_code == 200
+
+
+def test_draft_blis_are_ignored_by_pop_validation(
+    auth_client, loaded_db, pop_validation_agreement
+):
+    """
+    The fixture's draft BLI sits at 2025-02-01 (inside SC 1's current window).
+    Shrinking SC 2's period_end to 2025-07-31 would leave it outside the window
+    if it were a non-draft BLI — but because it is DRAFT the validation must
+    pass. (The planned BLI at 2025-08-15 also falls outside, so we temporarily
+    remove it for this test.)
+    """
+    sc2 = pop_validation_agreement["sc2"]
+    bli_planned = pop_validation_agreement["bli_planned"]
+
+    loaded_db.delete(bli_planned)
+    loaded_db.commit()
+
+    try:
+        response = auth_client.patch(
+            url_for("api.services-component-item", id=sc2.id),
+            json={"period_end": "2025-07-31"},
+        )
+
+        assert response.status_code == 200
+    finally:
+        loaded_db.refresh(sc2)
+        sc2.period_end = datetime.date(2025, 12, 31)
+        restored_bli = ContractBudgetLineItem(
+            line_description="Planned BLI inside SC 2 window",
+            agreement_id=pop_validation_agreement["agreement"].id,
+            services_component_id=sc2.id,
+            amount=10000.00,
+            status=BudgetLineItemStatus.PLANNED,
+            date_needed=datetime.date(2025, 8, 15),
+            created_by=4,
+        )
+        loaded_db.add(restored_bli)
+        loaded_db.commit()
+        pop_validation_agreement["bli_planned"] = restored_bli
