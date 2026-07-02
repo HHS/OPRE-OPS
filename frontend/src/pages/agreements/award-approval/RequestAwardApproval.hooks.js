@@ -155,7 +155,6 @@ export default function useRequestAwardApproval(agreementId) {
                 },
                 closeModal: () => {
                     setShowModal(false);
-                    blocker.reset?.();
                 }
             });
         }
