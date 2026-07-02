@@ -25,11 +25,12 @@ function parseISO(dateStr) {
 const suite = create((data = {}, fieldName) => {
     if (fieldName) only(fieldName);
 
-    if (data.mode !== "edit") return;
     test("servicesComponentSelect", "This is required information", () => {
         // servicesComponentSelect is a number (the SC number); treat 0 / falsy as blank
         enforce(data.servicesComponentSelect).isNumeric().greaterThan(0);
     });
+
+    if (data.mode !== "edit") return;
     const allSCs = data.allServicesComponents ?? [];
     const nonDraftBLIs = data.nonDraftBudgetLines ?? [];
     if (allSCs.length === 0 || nonDraftBLIs.length === 0) return;
