@@ -16,7 +16,6 @@ const agreementDetailsData = {
     awarding_entity_id: 2,
     agreement_reason: "NEW_REQ",
     project_officer_id: 500,
-    team_members: [{ id: 502 }, { id: 504 }],
     notes: "This is a note.",
     vendor: "Test Vendor"
 };
@@ -292,13 +291,6 @@ const fillRequiredAgreementDetails = () => {
         "Chris Fortunato",
         0
     );
-    selectComboboxOption(
-        "#team-member-combobox-input",
-        ".team-member-combobox__menu",
-        ".team-member-combobox__option",
-        "System Owner",
-        1
-    );
     cy.get("#agreementNotes").clear().type(agreementDetailsData.notes);
 };
 
@@ -400,8 +392,19 @@ describe("create agreement and test validations", () => {
         });
     });
 
-    it("enables review status transitions when valid data exists", () => {
+    it("enables review status transitions with a COR but no team members", () => {
         createValidAgreement().then((agreementId) => {
+            // The agreement is created with a COR (project_officer_id) but no team members.
+            // Confirm the send-to-approval flow proves team members are not required.
+            cy.request({
+                method: "GET",
+                url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                headers: getAuthHeaders()
+            }).then((response) => {
+                expect(response.body.project_officer_id).to.eq(agreementDetailsData.project_officer_id);
+                expect(response.body.team_members).to.have.length(0);
+            });
+
             createServicesComponent(agreementId).then((servicesComponentId) => {
                 createBudgetLineItem(agreementId, servicesComponentId).then(() => {
                     cy.visit(`/agreements/${agreementId}/budget-lines`);

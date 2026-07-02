@@ -38,10 +38,6 @@ const suite = create((data = {}, fieldName = undefined) => {
         enforce(data.contract_type).notEquals("-Select an option-");
         enforce(data.contract_type).isNotEmpty();
     });
-    test("team-members", "This information is required to submit for approval", () => {
-        const teamMembers = Array.isArray(data.team_members) ? data.team_members : [];
-        enforce(teamMembers).longerThan(0);
-    });
     // test to ensure at least one budget line item exists
     test("budget-line-items", "Must have at least one budget line item", () => {
         const budgetLines = Array.isArray(data.budget_line_items) ? data.budget_line_items : [];
